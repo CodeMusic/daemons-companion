@@ -29,9 +29,11 @@ only keep the list, it walks beside you through it. Three pieces and a game:
 - **The day has a character.** Each weekday has its **colour** (the UI's tones), its **musical note**, its
   **chakra**, and its **virtue** with a statement ("charity cures greed"), and the nudges lean toward that virtue.
   The game already uses the same week (DAEMONS vision 9.21: the rainbow in order and the notes C to B, Sunday first),
-  so the table is **one table, exported from DAEMONS**, never typed twice. *OPEN: RoverRadio's day-to-virtue pairing
-  is in RoverCodeBase; DAEMONS pairs the seven virtues with its seven leaders (T-318) but not with days. Use
-  RoverRadio's, or make one?*
+  so the table is **one table, exported from DAEMONS**, never typed twice. **RoverRadio's own pairing is taken**
+  (docs/INHERITANCE.md): Sunday red, C, Root, *Chastity cures Lust*; Monday orange, D, Sacral, *Temperance cures
+  Gluttony*; Tuesday yellow, E, Solar Plexus, *Charity cures Greed*; Wednesday green, F, Heart, *Diligence cures Sloth*;
+  Thursday blue, G, Throat, *Forgiveness cures Wrath*; Friday indigo, A, Third Eye, *Kindness cures Envy*; Saturday
+  violet, B, Crown, *Humility cures Pride*. *(The user's own design; change it here and in the export if wanted.)*
 - **The AI is Musai's shape**, which is also the game's: one pass reasons **logically** (what are the real steps, in
   what order, how long), one **associatively** (why this matters to you, what would make it easier to start, what it
   connects to), and a third reads both, notes where they **agree** and where they **don't**, and writes the plan that
@@ -73,12 +75,15 @@ only keep the list, it walks beside you through it. Three pieces and a game:
 
 ## 4. The devices
 
-- **The handheld, ESP32-S3** -- RoverCodeBase is PlatformIO + Arduino (`env:esp32dev`) with TFT_eSPI, a rotary
-  encoder, a CC1101 radio, PN532 NFC, IR and M5Unified: that looks like a LilyGO T-Embed-class board. *OPEN: which
-  exact board is in hand?* Its brain-region layout (AuditoryCortex, PrefrontalCortex, VisualCortex...) is kept; the
+- **The handheld, ESP32-S3** -- RoverCodeBase's pins match the **LilyGO T-Embed CC1101** pin for pin (ST7789 170x320,
+  encoder, 8 WS2812s, PN532 NFC, BQ25896 charger, CC1101, SD, IR, I2S audio) -- but its `platformio.ini` targets
+  `esp32dev`, the classic ESP32, and it does not build from a fresh clone (docs/INHERITANCE.md). *OPEN: is the
+  T-Embed CC1101 the board in hand?* Its brain-region layout (AuditoryCortex, PrefrontalCortex, VisualCortex...) is kept; the
   first firmware job is a clean build of RoverCodeBase's skeleton on the S3, then the daemon and the step on screen,
   then sync.
-- **The Pi Zero device** -- RoverCub (Python, the Penphin assistant, buttons, pixels) and RoverOSpi in RoverVerse.
+- **The Pi Zero device** -- the one with a screen is **RoverRevival** (The RoverVerse): a Pi Zero 2 W with a Waveshare
+  1.44" 128x128 LCD and a joystick, and the real pet model (happiness, hunger, energy). RoverCub (no screen: an LED
+  grid and push-to-talk) has the voice assistant; RoverOSpi is config, not an app.
   Python means the save reader and the step logic can be shared code. *OPEN: which Pi Zero board and screen?*
 - **Both speak the same small sync protocol** to the server (HTTP + JSON over Wi-Fi to start: pull today's step and
   the daemon's picture and mood, push ticks). RoverSeer was going to be Redmine-backed; this server takes its role
@@ -122,8 +127,9 @@ the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's s
 
 - **Passing someone else carrying a device** is an event: **your INDEX "sees" their daemon** -- written into your
   save as *seen* at the next sync -- and **your daemon's friendship grows**.
-- **The radio**: RoverCodeBase uses RadioLib with a CC1101 (sub-GHz). LoRa needs an SX126x/SX127x radio; RadioLib
-  drives both. *OPEN: which radio the chosen board carries -- a CC1101 can find nearby units, but LoRa reaches far
+- **The radio**: the T-Embed's CC1101 is sub-GHz FSK, not LoRa, and no RoverRadio code ever drove it (RadioLib is
+  listed, never included). LoRa needs an SX126x/SX127x radio -- the only LoRa in the old work is an M5 LoRa433 module
+  (RoverOS_rSeries). RadioLib drives both kinds. *OPEN: which radio the chosen board carries -- a CC1101 can find nearby units, but LoRa reaches far
   and is what the mesh wants.*
 
 ## 10. Later, by design

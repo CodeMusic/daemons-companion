@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+*.sav
+*.sqlite
+.env
+.pio/
+__pycache__/
+.venv/

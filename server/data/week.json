@@ -1,40 +1,61 @@
 {
- "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21). The virtue for each day comes from RoverRadio (companion C-01) when known.",
+ "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21); its hue, chakra and virtue are RoverRadio's day table (companion docs/INHERITANCE.md).",
  "days": [
   {
    "day": "Sunday",
    "colour": "#833131",
-   "note": "C"
+   "hue": "red",
+   "note": "C",
+   "chakra": "Root",
+   "virtue": "Chastity cures Lust"
   },
   {
    "day": "Monday",
    "colour": "#734120",
-   "note": "D"
+   "hue": "orange",
+   "note": "D",
+   "chakra": "Sacral",
+   "virtue": "Temperance cures Gluttony"
   },
   {
    "day": "Tuesday",
    "colour": "#B4B439",
-   "note": "E"
+   "hue": "yellow",
+   "note": "E",
+   "chakra": "Solar Plexus",
+   "virtue": "Charity cures Greed"
   },
   {
    "day": "Wednesday",
    "colour": "#41AC41",
-   "note": "F"
+   "hue": "green",
+   "note": "F",
+   "chakra": "Heart",
+   "virtue": "Diligence cures Sloth"
   },
   {
    "day": "Thursday",
    "colour": "#315A62",
-   "note": "G"
+   "hue": "blue",
+   "note": "G",
+   "chakra": "Throat",
+   "virtue": "Forgiveness cures Wrath"
   },
   {
    "day": "Friday",
    "colour": "#393194",
-   "note": "A"
+   "hue": "indigo",
+   "note": "A",
+   "chakra": "Third Eye",
+   "virtue": "Kindness cures Envy"
   },
   {
    "day": "Saturday",
    "colour": "#7B3194",
-   "note": "B"
+   "hue": "violet",
+   "note": "B",
+   "chakra": "Crown",
+   "virtue": "Humility cures Pride"
   }
  ]
 }

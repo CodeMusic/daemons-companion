@@ -1,6 +1,6 @@
 # The plan -- daemons-companion
 
-*The high-level picture is [vision.md](vision.md); this is the detail. Started 2026-10-03, the first sprint. Design before code; a decision recorded here is one the user made, and
+*The high-level picture is [vision.md](vision.md); this is the detail. Started 2026-10-03, the anniversary sprint -- a month to the day since DAEMONS moved to the GBA. Design before code; a decision recorded here is one the user made, and
 everything marked OPEN is a question for them.*
 
 ## 1. What it is
@@ -144,7 +144,7 @@ the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's s
 
 ## 12. Phases
 
-1. **Foundations (the first sprint)**: this plan, the repo, the save reader on copies, the server and app
+1. **Foundations (the anniversary sprint)**: this plan, the repo, the save reader on copies, the server and app
    skeletons talking to each other, the week's table exported from DAEMONS.
 2. **Goals**: the three-pass breakdown, Today, the step on a screen.
 3. **The device**: the ESP32-S3 firmware showing the daemon and the step, syncing; then the Pi Zero.

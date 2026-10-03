@@ -1,0 +1,5 @@
+{
+  "edition": "CONTENT",
+  "savePath": "/path/to/a/COPY/of/your/daemonsContent.sav",
+  "ai": { "enabled": false, "baseUrl": "http://localhost:4000/v1", "model": "", "apiKeyEnv": null }
+}

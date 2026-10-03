@@ -1,0 +1,40 @@
+{
+ "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21). The virtue for each day comes from RoverRadio (companion C-01) when known.",
+ "days": [
+  {
+   "day": "Sunday",
+   "colour": "#833131",
+   "note": "C"
+  },
+  {
+   "day": "Monday",
+   "colour": "#734120",
+   "note": "D"
+  },
+  {
+   "day": "Tuesday",
+   "colour": "#B4B439",
+   "note": "E"
+  },
+  {
+   "day": "Wednesday",
+   "colour": "#41AC41",
+   "note": "F"
+  },
+  {
+   "day": "Thursday",
+   "colour": "#315A62",
+   "note": "G"
+  },
+  {
+   "day": "Friday",
+   "colour": "#393194",
+   "note": "A"
+  },
+  {
+   "day": "Saturday",
+   "colour": "#7B3194",
+   "note": "B"
+  }
+ ]
+}

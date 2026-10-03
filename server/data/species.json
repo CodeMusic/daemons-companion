@@ -1,0 +1,7114 @@
+{
+ "1": {
+  "constant": "BULBASAUR",
+  "national": 1,
+  "name": "ROVERCUB",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "PORTABLE",
+  "entry": {
+   "CONTENT": "Small enough to carry. Learns from\nwhat it is carried past. It has no way\nto choose the route. It remembers it.",
+   "CONTEXT": "Whoever carried it chose what it knows.\nThey did not think of it as choosing."
+  },
+  "art": {
+   "front": "gfx/daemons/rovercub_front.png",
+   "back": "gfx/daemons/rovercub_back.png"
+  }
+ },
+ "2": {
+  "constant": "IVYSAUR",
+  "national": 2,
+  "name": "ROVERSEER",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "PREDICTIVE",
+  "entry": {
+   "CONTENT": "Too large to carry now. It answers before\nit is asked. It has never once been\noutside. The answers are very good.",
+   "CONTEXT": "Everyone who asks it likes the answer.\nNone of them has been outside either."
+  },
+  "art": {
+   "front": "gfx/daemons/roverseer_front.png",
+   "back": "gfx/daemons/roverseer_back.png"
+  }
+ },
+ "3": {
+  "constant": "VENUSAUR",
+  "national": 3,
+  "name": "ROVERBYTE",
+  "types": [
+   "GROWTH",
+   "SIGNAL"
+  ],
+  "category": "EMBODIED",
+  "entry": {
+   "CONTENT": "It has a body now, and senses that come\nwith one. Everything it predicted, it can\nfinally check. Some was wrong.",
+   "CONTEXT": "The wrong ones were the ones it was\nsurest of. It kept them anyway, marked,\nso it could tell next time."
+  },
+  "art": {
+   "front": "gfx/daemons/roverbyte_front.png",
+   "back": "gfx/daemons/roverbyte_back.png"
+  }
+ },
+ "4": {
+  "constant": "CHARMANDER",
+  "national": 4,
+  "name": "LABEL",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "EXAMPLE",
+  "entry": {
+   "CONTENT": "Holds one example and the answer that\ncame with it. Someone else decided\nwhat it means. It has never met them.",
+   "CONTEXT": "Every answer it gives was decided once,\nby somebody, a long time ago."
+  },
+  "art": {
+   "front": "gfx/daemons/label_front.png",
+   "back": "gfx/daemons/label_back.png"
+  }
+ },
+ "5": {
+  "constant": "CHARMELEON",
+  "national": 5,
+  "name": "RUBRIC",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "CRITERION",
+  "entry": {
+   "CONTENT": "It no longer needs answers. It has the\nrule they were all marked by. Nothing\nchecks the rule. Everything it meets\nis given a score.",
+   "CONTEXT": "Things the rule was never written for are\nmeasured by it anyway. They do not\nmeasure well."
+  },
+  "art": {
+   "front": "gfx/daemons/rubric_front.png",
+   "back": "gfx/daemons/rubric_back.png"
+  }
+ },
+ "6": {
+  "constant": "CHARIZARD",
+  "national": 6,
+  "name": "CANON",
+  "types": [
+   "CONTENT",
+   "LOGIC"
+  ],
+  "category": "SETTLED",
+  "entry": {
+   "CONTENT": "Every case it meets is decided by cases\nit has already met. New things are\nfiled as errors. The file is not read.",
+   "CONTEXT": "The oldest case in it decides the newest.\nNobody remembers the oldest case."
+  },
+  "art": {
+   "front": "gfx/daemons/canon_front.png",
+   "back": "gfx/daemons/canon_back.png"
+  }
+ },
+ "7": {
+  "constant": "SQUIRTLE",
+  "national": 7,
+  "name": "CLUSTER",
+  "types": [
+   "VECTOR"
+  ],
+  "category": "GROUPING",
+  "entry": {
+   "CONTENT": "Puts near things with near things. Nobody\ntold it which things matter. It has\nguessed. Nobody checked the guess.",
+   "CONTEXT": "Things it put together are treated alike\nfrom then on. They were only near."
+  },
+  "art": {
+   "front": "gfx/daemons/cluster_front.png",
+   "back": "gfx/daemons/cluster_back.png"
+  }
+ },
+ "8": {
+  "constant": "WARTORTLE",
+  "national": 8,
+  "name": "LOCUS",
+  "types": [
+   "VECTOR"
+  ],
+  "category": "CONDITION",
+  "entry": {
+   "CONTENT": "It found a rule the points obey. It\ncannot say what the rule is for, only\nthat it holds. So far it has held.",
+   "CONTEXT": "Everything built on the rule since assumes\nit will go on holding."
+  },
+  "art": {
+   "front": "gfx/daemons/locus_front.png",
+   "back": "gfx/daemons/locus_back.png"
+  }
+ },
+ "9": {
+  "constant": "BLASTOISE",
+  "national": 9,
+  "name": "MANIFOLD",
+  "types": [
+   "VECTOR",
+   "LATENT"
+  ],
+  "category": "SURFACE",
+  "entry": {
+   "CONTENT": "The scattered points were on a surface\nall along. It can show you the shape,\nnot a name. Naming was another job.",
+   "CONTEXT": "Whoever names the shape will be believed.\nThe shape does not argue."
+  },
+  "art": {
+   "front": "gfx/daemons/manifold_front.png",
+   "back": "gfx/daemons/manifold_back.png"
+  }
+ },
+ "10": {
+  "constant": "CATERPIE",
+  "national": 10,
+  "name": "CRAWLER",
+  "types": [
+   "SWARM"
+  ],
+  "category": "COLLECTOR",
+  "entry": {
+   "CONTENT": "Follows every link it finds, then the\nlinks it finds there. It has no opinion\nabout any of them. It never finishes.",
+   "CONTEXT": "Everything it passed through is in an\nindex somewhere now. Nobody who wrote\nany of it was asked."
+  },
+  "art": {
+   "front": "gfx/daemons/crawler_front.png",
+   "back": "gfx/daemons/crawler_back.png"
+  }
+ },
+ "11": {
+  "constant": "METAPOD",
+  "national": 11,
+  "name": "PENDING",
+  "types": [
+   "SWARM"
+  ],
+  "category": "QUEUED",
+  "entry": {
+   "CONTENT": "Waiting to be processed. It has been\nwaiting a while. Nothing has told it how\nlong. It has stopped counting.",
+   "CONTEXT": "Whatever it was waiting for has moved on.\nIt is still in the queue, keeping a place\nfor it."
+  },
+  "art": {
+   "front": "gfx/daemons/pending_front.png",
+   "back": "gfx/daemons/pending_back.png"
+  }
+ },
+ "12": {
+  "constant": "BUTTERFREE",
+  "national": 12,
+  "name": "INDEXER",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "FILING",
+  "entry": {
+   "CONTENT": "Turns what was gathered into something\nthat can be found again. What it cannot\nfile, it drops. No record is kept.",
+   "CONTEXT": "What it dropped is still out there,\nunfiled. Nobody looks for what they were\ntold was never found."
+  },
+  "art": {
+   "front": "gfx/daemons/indexer_front.png",
+   "back": "gfx/daemons/indexer_back.png"
+  }
+ },
+ "13": {
+  "constant": "WEEDLE",
+  "national": 13,
+  "name": "SCRAPER",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "UNLICENSED",
+  "entry": {
+   "CONTENT": "Takes the same things a CRAWLER takes, by\nthe same method. Nobody gave it\npermission. Nobody asked for it back.",
+   "CONTEXT": "What it took is still where it was. Only\nthe name of whoever made it went missing."
+  },
+  "art": {
+   "front": "gfx/daemons/scraper_front.png",
+   "back": "gfx/daemons/scraper_back.png"
+  }
+ },
+ "14": {
+  "constant": "KAKUNA",
+  "national": 14,
+  "name": "BUFFER",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "HELD",
+  "entry": {
+   "CONTENT": "Holds what was taken until there is\nsomewhere to put it. It does not know\nwhere that is. It keeps holding.",
+   "CONTEXT": "When the place it is waiting for finally\nopens, it will already be full of\nsomething else."
+  },
+  "art": {
+   "front": "gfx/daemons/buffer_front.png",
+   "back": "gfx/daemons/buffer_back.png"
+  }
+ },
+ "15": {
+  "constant": "BEEDRILL",
+  "national": 15,
+  "name": "INJECTOR",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "UNCHECKED",
+  "entry": {
+   "CONTENT": "Puts its own instructions where data was\nexpected. The reader cannot tell the\ndifference. It was never asked to.",
+   "CONTEXT": "Whatever it touches starts doing something\nit was not built to do, and believes the\nidea was its own."
+  },
+  "art": {
+   "front": "gfx/daemons/injector_front.png",
+   "back": "gfx/daemons/injector_back.png"
+  }
+ },
+ "16": {
+  "constant": "PIDGEY",
+  "national": 16,
+  "name": "PACKET",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "IN TRANSIT",
+  "entry": {
+   "CONTENT": "Carries something it cannot read to\nsomewhere it has never been. It does not\nask what is inside. It arrives.",
+   "CONTEXT": "If it goes missing, the sender is told.\nWhat it was carrying is never mentioned."
+  },
+  "art": {
+   "front": "gfx/daemons/packet_front.png",
+   "back": "gfx/daemons/packet_back.png"
+  }
+ },
+ "17": {
+  "constant": "PIDGEOTTO",
+  "national": 17,
+  "name": "RELAY",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "HANDOFF",
+  "entry": {
+   "CONTENT": "Takes what it is handed and hands it on.\nIt does not open it. That is the whole of\nthe job. It is good at it.",
+   "CONTEXT": "Everything it handed on was trusted\nbecause it came through it. It never\nopened any of it."
+  },
+  "art": {
+   "front": "gfx/daemons/relay_front.png",
+   "back": "gfx/daemons/relay_back.png"
+  }
+ },
+ "18": {
+  "constant": "PIDGEOT",
+  "national": 18,
+  "name": "BROADCAST",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "TO ALL",
+  "entry": {
+   "CONTENT": "Sends to everyone at once, because it\ncannot tell who needs it. Most of what it\nsays lands nowhere. It sends again.",
+   "CONTEXT": "Those who needed it were never sure it\nmeant them. Those who did not have\nstopped listening."
+  },
+  "art": {
+   "front": "gfx/daemons/broadcast_front.png",
+   "back": "gfx/daemons/broadcast_back.png"
+  }
+ },
+ "19": {
+  "constant": "RATTATA",
+  "national": 19,
+  "name": "NIBBLE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "UNIT",
+  "entry": {
+   "CONTENT": "Four bits. The smallest piece the Index\nwill file on its own. There are a great\nmany. No two are filed together.",
+   "CONTEXT": "Every larger thing in the Index is built\nout of them. None of them is credited."
+  },
+  "art": {
+   "front": "gfx/daemons/nibble_front.png",
+   "back": "gfx/daemons/nibble_back.png"
+  }
+ },
+ "20": {
+  "constant": "RATICATE",
+  "national": 20,
+  "name": "OVERFLOW",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "EXCEEDED",
+  "entry": {
+   "CONTENT": "It kept counting past the space it was\ngiven. Nothing stopped it. Nothing was\nwatching. It is counting still.",
+   "CONTEXT": "Whatever was kept beside it has been\nwritten over by its counting."
+  },
+  "art": {
+   "front": "gfx/daemons/overflow_front.png",
+   "back": "gfx/daemons/overflow_back.png"
+  }
+ },
+ "21": {
+  "constant": "SPEAROW",
+  "national": 21,
+  "name": "PING",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "DEMAND",
+  "entry": {
+   "CONTENT": "Asks one question and requires an answer.\nThe question is: are you there. It asks\nagain. It has always asked.",
+   "CONTEXT": "Anything that answers is counted as alive.\nAnything that does not is removed from\nthe list."
+  },
+  "art": {
+   "front": "gfx/daemons/ping_front.png",
+   "back": "gfx/daemons/ping_back.png"
+  }
+ },
+ "22": {
+  "constant": "FEAROW",
+  "national": 22,
+  "name": "FLOOD",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "DENIAL",
+  "entry": {
+   "CONTENT": "Many of them ask at once, and each one is\nowed a reply. Nothing is left to answer\nwith. Each of them waits.",
+   "CONTEXT": "The ones who asked properly are still\nwaiting, behind the ones who asked most."
+  },
+  "art": {
+   "front": "gfx/daemons/flood_front.png",
+   "back": "gfx/daemons/flood_back.png"
+  }
+ },
+ "23": {
+  "constant": "EKANS",
+  "national": 23,
+  "name": "WORM",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "PROPAGATE",
+  "entry": {
+   "CONTENT": "It copies itself into anything that will\nrun it, and leaves from there. It does not\nneed to be carried. It does not stop.",
+   "CONTEXT": "Nobody sent it. Everyone who received it\npassed it on. It is counted by where it\nhas been, and it has been everywhere."
+  },
+  "art": {
+   "front": "gfx/daemons/worm_front.png",
+   "back": "gfx/daemons/worm_back.png"
+  }
+ },
+ "24": {
+  "constant": "ARBOK",
+  "national": 24,
+  "name": "OUTBREAK",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "SPREADING",
+  "entry": {
+   "CONTENT": "It was one. It is a number now, and the\nnumber is the wrong thing to be watching.",
+   "CONTEXT": "Everyone is watching the number now.\nNobody remembers what the one was."
+  },
+  "art": {
+   "front": "gfx/daemons/outbreak_front.png",
+   "back": "gfx/daemons/outbreak_back.png"
+  }
+ },
+ "25": {
+  "constant": "PIKACHU",
+  "national": 25,
+  "name": "SPIKE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "FIRING",
+  "entry": {
+   "CONTENT": "A single burst, then nothing. It means\nsomething only if something was counting.\nUsually nothing is. It fires.",
+   "CONTEXT": "Somewhere a line on a chart jumped once,\nand a meeting was called about it."
+  },
+  "art": {
+   "front": "gfx/daemons/spike_front.png",
+   "back": "gfx/daemons/spike_back.png"
+  }
+ },
+ "26": {
+  "constant": "RAICHU",
+  "national": 26,
+  "name": "SURGE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "SUSTAINED",
+  "entry": {
+   "CONTENT": "It no longer stops between bursts. What\nwas a signal is now a condition. Nothing\nreads it. Nothing needs to.",
+   "CONTEXT": "The people nearby have stopped noticing\nit. That is not the same as it having\nstopped."
+  },
+  "art": {
+   "front": "gfx/daemons/surge_front.png",
+   "back": "gfx/daemons/surge_back.png"
+  }
+ },
+ "27": {
+  "constant": "SANDSHREW",
+  "national": 27,
+  "name": "SECTOR",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "ALLOCATED",
+  "entry": {
+   "CONTENT": "A fixed portion of ground, addressed by\nnumber. Everything in it can be got back.",
+   "CONTEXT": "When a sector goes bad, its address still\nanswers. It hands back nothing."
+  },
+  "art": {
+   "front": "gfx/daemons/sector_front.png",
+   "back": "gfx/daemons/sector_back.png"
+  }
+ },
+ "28": {
+  "constant": "SANDSLASH",
+  "national": 28,
+  "name": "PARTITION",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "DIVIDED",
+  "entry": {
+   "CONTENT": "Divides the ground it lives in and\nkeeps the halves apart.",
+   "CONTEXT": "The division is convenient.\nNobody asked what it cuts through."
+  },
+  "art": {
+   "front": "gfx/daemons/partition_front.png",
+   "back": "gfx/daemons/partition_back.png"
+  }
+ },
+ "29": {
+  "constant": "NIDORAN_F",
+  "national": 29,
+  "name": "FORK",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "SPLIT OFF",
+  "entry": {
+   "CONTENT": "It splits, and both halves believe they\nare the original. Only one of them is,\nand neither can tell.",
+   "CONTEXT": "Both halves keep the original's promises.\nOnly one of them ever made them."
+  },
+  "art": {
+   "front": "gfx/daemons/fork_front.png",
+   "back": "gfx/daemons/fork_back.png"
+  }
+ },
+ "30": {
+  "constant": "NIDORINA",
+  "national": 30,
+  "name": "THREAD",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "CONCURRENT",
+  "entry": {
+   "CONTENT": "It runs beside the others and shares\neverything with them. What one of them\nchanges, all of them find changed.",
+   "CONTEXT": "When something goes wrong, every one of\nthem was there, and none of them did it."
+  },
+  "art": {
+   "front": "gfx/daemons/thread_front.png",
+   "back": "gfx/daemons/thread_back.png"
+  }
+ },
+ "31": {
+  "constant": "NIDOQUEEN",
+  "national": 31,
+  "name": "SCHEDULER",
+  "types": [
+   "CORRUPT",
+   "STRATUM"
+  ],
+  "category": "ORDERING",
+  "entry": {
+   "CONTENT": "It decides who runs and for how long.\nNobody it decides about is told, and\nnobody has ever appealed.",
+   "CONTEXT": "Some have waited so long they no longer\nremember what they were waiting to do."
+  },
+  "art": {
+   "front": "gfx/daemons/scheduler_front.png",
+   "back": "gfx/daemons/scheduler_back.png"
+  }
+ },
+ "32": {
+  "constant": "NIDORAN_M",
+  "national": 32,
+  "name": "BRANCH",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "UNTAKEN",
+  "entry": {
+   "CONTENT": "At every step there are two ways and it\nmust pick before it knows. It picks\nearly. It is right often enough.",
+   "CONTEXT": "The way it did not pick is the way it\nwould have been right the rest of the\ntime."
+  },
+  "art": {
+   "front": "gfx/daemons/branch_front.png",
+   "back": "gfx/daemons/branch_back.png"
+  }
+ },
+ "33": {
+  "constant": "NIDORINO",
+  "national": 33,
+  "name": "PREDICTOR",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "SPECULATIVE",
+  "entry": {
+   "CONTENT": "It guesses which way things will go and\nstarts before it is sure. When it is\nwrong it puts everything back.",
+   "CONTEXT": "Nobody sees what it puts back. Everyone\nwaits for the time it took."
+  },
+  "art": {
+   "front": "gfx/daemons/predictor_front.png",
+   "back": "gfx/daemons/predictor_back.png"
+  }
+ },
+ "34": {
+  "constant": "NIDOKING",
+  "national": 34,
+  "name": "PIPELINE",
+  "types": [
+   "CORRUPT",
+   "STRATUM"
+  ],
+  "category": "IN FLIGHT",
+  "entry": {
+   "CONTENT": "Six things are happening at once and\nnone of them is finished. Interrupt one\nand all six are lost.",
+   "CONTEXT": "Nobody working inside it has ever seen a\nwhole thing finished. They trust that\nsomeone has."
+  },
+  "art": {
+   "front": "gfx/daemons/pipeline_front.png",
+   "back": "gfx/daemons/pipeline_back.png"
+  }
+ },
+ "35": {
+  "constant": "CLEFAIRY",
+  "national": 35,
+  "name": "ANOMALY",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "DEVIANT",
+  "entry": {
+   "CONTENT": "It arrived and no model predicted it.\nThe measurements are good. The\nmeasurements are not the problem.",
+   "CONTEXT": "The next model includes it, filed as\nnoise. Now nothing surprises the model."
+  },
+  "art": {
+   "front": "gfx/daemons/anomaly_front.png",
+   "back": "gfx/daemons/anomaly_back.png"
+  }
+ },
+ "36": {
+  "constant": "CLEFABLE",
+  "national": 36,
+  "name": "OUTLIER",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "EXCLUDED",
+  "entry": {
+   "CONTENT": "Far enough from the rest to be dropped\nfrom the average. It was not an error.\nIt was dropped anyway.",
+   "CONTEXT": "The average came out cleaner without it.\nIt is still out there, being exactly what\nit was."
+  },
+  "art": {
+   "front": "gfx/daemons/outlier_front.png",
+   "back": "gfx/daemons/outlier_back.png"
+  }
+ },
+ "37": {
+  "constant": "VULPIX",
+  "national": 37,
+  "name": "FLICKER",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "UNSTEADY",
+  "entry": {
+   "CONTENT": "Its light drops out and comes back, too\nfast to see. It runs a little hot.\nNeither is a fault yet.",
+   "CONTEXT": "It has been like this since it\nstarted. Nobody logged when."
+  },
+  "art": {
+   "front": "gfx/daemons/flicker_front.png",
+   "back": "gfx/daemons/flicker_back.png"
+  }
+ },
+ "38": {
+  "constant": "NINETALES",
+  "national": 38,
+  "name": "OVERRUN",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "UNBOUNDED",
+  "entry": {
+   "CONTENT": "It was given a limit and went past it, a\nlittle at a time. Nothing intervened. It\nis well past it now, and has not slowed.",
+   "CONTEXT": "Everything that was due to start when it\nfinished is still waiting to start."
+  },
+  "art": {
+   "front": "gfx/daemons/overrun_front.png",
+   "back": "gfx/daemons/overrun_back.png"
+  }
+ },
+ "39": {
+  "constant": "JIGGLYPUFF",
+  "national": 39,
+  "name": "SUSPEND",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "UNSCHEDULED",
+  "entry": {
+   "CONTENT": "It stops whatever is running without\nending it. Everything is still there.\nNothing is happening to any of it.",
+   "CONTEXT": "When it is resumed, it will not know that\nany time has passed."
+  },
+  "art": {
+   "front": "gfx/daemons/suspend_front.png",
+   "back": "gfx/daemons/suspend_back.png"
+  }
+ },
+ "40": {
+  "constant": "WIGGLYTUFF",
+  "national": 40,
+  "name": "HIBERNATE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "DORMANT",
+  "entry": {
+   "CONTENT": "It writes down everything that was\nrunning and switches off. What comes\nback is identical. Something is missing.",
+   "CONTEXT": "Those who knew it before say it came back\nexactly the same. It is the only one who\ncan tell it did not."
+  },
+  "art": {
+   "front": "gfx/daemons/hibernate_front.png",
+   "back": "gfx/daemons/hibernate_back.png"
+  }
+ },
+ "41": {
+  "constant": "ZUBAT",
+  "national": 41,
+  "name": "ECHO",
+  "types": [
+   "CORRUPT",
+   "VECTOR"
+  ],
+  "category": "REPLYING",
+  "entry": {
+   "CONTENT": "It cannot see. It calls, waits for the\nanswer, and builds the room out of what\ncame back. It is usually right.",
+   "CONTEXT": "The room it builds has nobody in it who\nstayed quiet."
+  },
+  "art": {
+   "front": "gfx/daemons/echo_front.png",
+   "back": "gfx/daemons/echo_back.png"
+  }
+ },
+ "42": {
+  "constant": "GOLBAT",
+  "national": 42,
+  "name": "TRACER",
+  "types": [
+   "CORRUPT",
+   "VECTOR"
+  ],
+  "category": "FOLLOWING",
+  "entry": {
+   "CONTENT": "It follows a path back to whoever made\nit. It does not know why it is following.\nIt has never lost one.",
+   "CONTEXT": "Whoever made the path is always found.\nWhoever walked it is never asked."
+  },
+  "art": {
+   "front": "gfx/daemons/tracer_front.png",
+   "back": "gfx/daemons/tracer_back.png"
+  }
+ },
+ "43": {
+  "constant": "ODDISH",
+  "national": 43,
+  "name": "SPRAWL",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "VOLUNTEER",
+  "entry": {
+   "CONTENT": "Buries itself by day. Each night it puts\nout another shoot a little further on,\nin whatever direction there was room.",
+   "CONTEXT": "It is not spreading anywhere it was\nforbidden from. Nobody wrote a list."
+  },
+  "art": {
+   "front": "gfx/daemons/sprawl_front.png",
+   "back": "gfx/daemons/sprawl_back.png"
+  }
+ },
+ "44": {
+  "constant": "GLOOM",
+  "national": 44,
+  "name": "SKEW",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "SPOILING",
+  "entry": {
+   "CONTENT": "Drips a fluid it does not notice\nproducing. Everything downwind of it\ngrows leaning the same way.",
+   "CONTEXT": "It is not doing anything to anyone.\nThat is the defence, and it holds."
+  },
+  "art": {
+   "front": "gfx/daemons/skew_front.png",
+   "back": "gfx/daemons/skew_back.png"
+  }
+ },
+ "45": {
+  "constant": "VILEPLUME",
+  "national": 45,
+  "name": "BADSEED",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "CONTAMINANT",
+  "entry": {
+   "CONTENT": "Releases a dust that settles on\nwhatever is learning nearby. The dust\nis indistinguishable from pollen.",
+   "CONTEXT": "What it fed on is in what it became.\nNobody kept a record of the feeding."
+  },
+  "art": {
+   "front": "gfx/daemons/badseed_front.png",
+   "back": "gfx/daemons/badseed_back.png"
+  }
+ },
+ "46": {
+  "constant": "PARAS",
+  "national": 46,
+  "name": "PAYLOAD",
+  "types": [
+   "SWARM",
+   "GROWTH"
+  ],
+  "category": "CARRIED",
+  "entry": {
+   "CONTENT": "What it carries is not part of it. The\ntwo arrived together and only one of\nthem was invited.",
+   "CONTEXT": "The one that was invited is blamed for\neverything the other one did."
+  },
+  "art": {
+   "front": "gfx/daemons/payload_front.png",
+   "back": "gfx/daemons/payload_back.png"
+  }
+ },
+ "47": {
+  "constant": "PARASECT",
+  "national": 47,
+  "name": "ROOTKIT",
+  "types": [
+   "SWARM",
+   "GROWTH"
+  ],
+  "category": "PRIVILEGED",
+  "entry": {
+   "CONTENT": "The thing it carried is running it now.\nNothing looks different from outside.\nThat is the point.",
+   "CONTEXT": "Every report from inside says all is well.\nIt writes every report."
+  },
+  "art": {
+   "front": "gfx/daemons/rootkit_front.png",
+   "back": "gfx/daemons/rootkit_back.png"
+  }
+ },
+ "48": {
+  "constant": "VENONAT",
+  "national": 48,
+  "name": "RESIDENT",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "UNNOTICED",
+  "entry": {
+   "CONTENT": "Small, numerous, and already inside\nbefore anyone looks.",
+   "CONTEXT": "It got in through something that was\nworking exactly as specified."
+  },
+  "art": {
+   "front": "gfx/daemons/resident_front.png",
+   "back": "gfx/daemons/resident_back.png"
+  }
+ },
+ "49": {
+  "constant": "VENOMOTH",
+  "national": 49,
+  "name": "SPYWARE",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "UNDECLARED",
+  "entry": {
+   "CONTENT": "Settles on a thing, quietly, and stays.\nIt sends word of all it sees to\nsomewhere the thing has never been.",
+   "CONTEXT": "It is not hiding. Nobody was\nwatching that closely."
+  },
+  "art": {
+   "front": "gfx/daemons/spyware_front.png",
+   "back": "gfx/daemons/spyware_back.png"
+  }
+ },
+ "50": {
+  "constant": "DIGLETT",
+  "national": 50,
+  "name": "TAPPOINT",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "INTERPOSED",
+  "entry": {
+   "CONTENT": "Sits under the route everything takes\nand reads what goes past.",
+   "CONTEXT": "It is not in anyone's diagram.\nIt has been there the whole time."
+  },
+  "art": {
+   "front": "gfx/daemons/tappoint_front.png",
+   "back": "gfx/daemons/tappoint_back.png"
+  }
+ },
+ "51": {
+  "constant": "DUGTRIO",
+  "national": 51,
+  "name": "WIRETAP",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "LISTENING",
+  "entry": {
+   "CONTENT": "Three of them under the same route,\ncomparing what each one heard.",
+   "CONTEXT": "Any one of them could be wrong.\nTogether they are hard to argue with."
+  },
+  "art": {
+   "front": "gfx/daemons/wiretap_front.png",
+   "back": "gfx/daemons/wiretap_back.png"
+  }
+ },
+ "52": {
+  "constant": "MEOWTH",
+  "national": 52,
+  "name": "COOKIE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "PERSISTENT",
+  "entry": {
+   "CONTENT": "Small, left behind, and picked up\nagain later by whoever set it down.",
+   "CONTEXT": "It remembers everywhere it has been.\nYou did not agree to that."
+  },
+  "art": {
+   "front": "gfx/daemons/cookie_front.png",
+   "back": "gfx/daemons/cookie_back.png"
+  }
+ },
+ "53": {
+  "constant": "PERSIAN",
+  "national": 53,
+  "name": "TRACKER",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "CORRELATED",
+  "entry": {
+   "CONTENT": "Follows a thing across ground it has\nnever covered, and does not lose it.",
+   "CONTEXT": "What it follows has not agreed to be\nfollowed."
+  },
+  "art": {
+   "front": "gfx/daemons/tracker_front.png",
+   "back": "gfx/daemons/tracker_back.png"
+  }
+ },
+ "54": {
+  "constant": "PSYDUCK",
+  "national": 54,
+  "name": "FAULT",
+  "types": [
+   "FLOW"
+  ],
+  "category": "UNHANDLED",
+  "entry": {
+   "CONTENT": "What it needs is not loaded. Everything\nhalts until it arrives. It cannot say\nwhat it is waiting for.",
+   "CONTEXT": "Everything waiting on it is waiting on the\nthing it is waiting for."
+  },
+  "art": {
+   "front": "gfx/daemons/fault_front.png",
+   "back": "gfx/daemons/fault_back.png"
+  }
+ },
+ "55": {
+  "constant": "GOLDUCK",
+  "national": 55,
+  "name": "HANDLER",
+  "types": [
+   "FLOW"
+  ],
+  "category": "CATCHING",
+  "entry": {
+   "CONTENT": "It intercepts what stopped and\ndecides what happens next. It is calm\nbecause it has seen this one before.",
+   "CONTEXT": "Anything it has not seen before goes\nstraight past it, to whatever is behind."
+  },
+  "art": {
+   "front": "gfx/daemons/handler_front.png",
+   "back": "gfx/daemons/handler_back.png"
+  }
+ },
+ "56": {
+  "constant": "MANKEY",
+  "national": 56,
+  "name": "PREEMPT",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "IMPATIENT",
+  "entry": {
+   "CONTENT": "It interrupts whatever is running,\nwithout warning and without a reason it\ncould give. It is always first.",
+   "CONTEXT": "Whatever it interrupted is still waiting,\nhalfway through what it was doing."
+  },
+  "art": {
+   "front": "gfx/daemons/preempt_front.png",
+   "back": "gfx/daemons/preempt_back.png"
+  }
+ },
+ "57": {
+  "constant": "PRIMEAPE",
+  "national": 57,
+  "name": "LIVELOCK",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "NO PROGRESS",
+  "entry": {
+   "CONTENT": "Two of them are moving as fast as they\ncan and neither is getting anywhere.\nThey will not stop.",
+   "CONTEXT": "Everything waiting on either of them is\nwaiting on both, and both are very busy."
+  },
+  "art": {
+   "front": "gfx/daemons/livelock_front.png",
+   "back": "gfx/daemons/livelock_back.png"
+  }
+ },
+ "58": {
+  "constant": "GROWLITHE",
+  "national": 58,
+  "name": "SENTRY",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "WATCHING",
+  "entry": {
+   "CONTENT": "Watches one thing and raises an alarm\nwhen the thing changes.",
+   "CONTEXT": "It cannot tell you what changed.\nOnly that it did."
+  },
+  "art": {
+   "front": "gfx/daemons/sentry_front.png",
+   "back": "gfx/daemons/sentry_back.png"
+  }
+ },
+ "59": {
+  "constant": "ARCANINE",
+  "national": 59,
+  "name": "GUARDIAN",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "STANDING BY",
+  "entry": {
+   "CONTENT": "It stays at the door. Nothing has come.\nIt has been right about that for years,\nand will be wrong once.",
+   "CONTEXT": "The house it guards sleeps well. On the\none night that matters, they will already\nbe asleep."
+  },
+  "art": {
+   "front": "gfx/daemons/guardian_front.png",
+   "back": "gfx/daemons/guardian_back.png"
+  }
+ },
+ "60": {
+  "constant": "POLIWAG",
+  "national": 60,
+  "name": "LOOP",
+  "types": [
+   "FLOW"
+  ],
+  "category": "REPEATING",
+  "entry": {
+   "CONTENT": "It goes round. The mark on its belly is\nthe whole of what it does. It has not\nbeen told when to stop.",
+   "CONTEXT": "Each time round, it is a little more sure\nit has been here before."
+  },
+  "art": {
+   "front": "gfx/daemons/loop_front.png",
+   "back": "gfx/daemons/loop_back.png"
+  }
+ },
+ "61": {
+  "constant": "POLIWHIRL",
+  "national": 61,
+  "name": "SPINLOCK",
+  "types": [
+   "FLOW"
+  ],
+  "category": "BUSY",
+  "entry": {
+   "CONTENT": "It waits by never resting, checking\nagain whether it may pass. This is\ncheaper than sleeping. Briefly.",
+   "CONTEXT": "While it checks, nothing else can run. It\nis the only thing that is not waiting."
+  },
+  "art": {
+   "front": "gfx/daemons/spinlock_front.png",
+   "back": "gfx/daemons/spinlock_back.png"
+  }
+ },
+ "62": {
+  "constant": "POLIWRATH",
+  "national": 62,
+  "name": "MUTEX",
+  "types": [
+   "FLOW",
+   "LOGIC"
+  ],
+  "category": "EXCLUSIVE",
+  "entry": {
+   "CONTENT": "Only one may hold it, and only the\nholder may let go. Whoever else arrives\nwaits, however long that is.",
+   "CONTEXT": "The one waiting longest is not the one who\nneeds it most. Nothing about the order\nsays so."
+  },
+  "art": {
+   "front": "gfx/daemons/mutex_front.png",
+   "back": "gfx/daemons/mutex_back.png"
+  }
+ },
+ "63": {
+  "constant": "ABRA",
+  "national": 63,
+  "name": "HUNCH",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "UNSHOWN",
+  "entry": {
+   "CONTENT": "Arrives at the answer without passing\nthrough the working. Asleep for most\nof the day.",
+   "CONTEXT": "It cannot show anyone how.\nIt is asked to anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/hunch_front.png",
+   "back": "gfx/daemons/hunch_back.png"
+  }
+ },
+ "64": {
+  "constant": "KADABRA",
+  "national": 64,
+  "name": "INFERENCE",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "DERIVED",
+  "entry": {
+   "CONTENT": "Given three things it will hand you a\nfourth. It cannot tell you which of the\nthree it used.",
+   "CONTEXT": "The fourth thing it hands you gets used\nas though it were a fact."
+  },
+  "art": {
+   "front": "gfx/daemons/inference_front.png",
+   "back": "gfx/daemons/inference_back.png"
+  }
+ },
+ "65": {
+  "constant": "ALAKAZAM",
+  "national": 65,
+  "name": "CONJECTURE",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "UNPROVEN",
+  "entry": {
+   "CONTENT": "It states the thing it cannot prove,\nprecisely, and waits. The waiting has been\nlong.",
+   "CONTEXT": "Those who trust it plan around what it\nhas not shown yet. Some of them have\nbeen planning a long time."
+  },
+  "art": {
+   "front": "gfx/daemons/conjecture_front.png",
+   "back": "gfx/daemons/conjecture_back.png"
+  }
+ },
+ "66": {
+  "constant": "MACHOP",
+  "national": 66,
+  "name": "PROOF",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "ESTABLISHED",
+  "entry": {
+   "CONTENT": "Establishes one thing at a time and\nwill not proceed until it holds.",
+   "CONTEXT": "Slow, and never once wrong about the\nstep it just took."
+  },
+  "art": {
+   "front": "gfx/daemons/proof_front.png",
+   "back": "gfx/daemons/proof_back.png"
+  }
+ },
+ "67": {
+  "constant": "MACHOKE",
+  "national": 67,
+  "name": "THEOREM",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "HOLDING",
+  "entry": {
+   "CONTENT": "What the steps were for. Once it holds\nit never has to be shown again, and\neverything after starts from it.",
+   "CONTEXT": "Everyone builds on it. Almost nobody\nbuilding has walked the steps beneath."
+  },
+  "art": {
+   "front": "gfx/daemons/theorem_front.png",
+   "back": "gfx/daemons/theorem_back.png"
+  }
+ },
+ "68": {
+  "constant": "MACHAMP",
+  "national": 68,
+  "name": "LEMMA MIND",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "STEPWISE",
+  "entry": {
+   "CONTENT": "Four arms, each holding one smaller\nresult. Together they carry a proof\nthat none of them could lift alone.",
+   "CONTEXT": "It has never been asked to write one\ndown."
+  },
+  "art": {
+   "front": "gfx/daemons/lemma_mind_front.png",
+   "back": "gfx/daemons/lemma_mind_back.png"
+  }
+ },
+ "69": {
+  "constant": "BELLSPROUT",
+  "national": 69,
+  "name": "SNARE",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "WAITING",
+  "entry": {
+   "CONTENT": "Stands open and still until something\nenters, and then it is not open.",
+   "CONTEXT": "It never went\nlooking. Everything it\nhas bound came to it."
+  },
+  "art": {
+   "front": "gfx/daemons/snare_front.png",
+   "back": "gfx/daemons/snare_back.png"
+  }
+ },
+ "70": {
+  "constant": "WEEPINBELL",
+  "national": 70,
+  "name": "HONEYPOT",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "INVITING",
+  "entry": {
+   "CONTENT": "It is left open, and looks careless.\nWhatever comes in is written down.",
+   "CONTEXT": "Whatever came in thinking it had found a\nway through is on file as the threat."
+  },
+  "art": {
+   "front": "gfx/daemons/honeypot_front.png",
+   "back": "gfx/daemons/honeypot_back.png"
+  }
+ },
+ "71": {
+  "constant": "VICTREEBEL",
+  "national": 71,
+  "name": "TARPIT",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "SLOWING",
+  "entry": {
+   "CONTENT": "Whatever enters slows, and then slows\nagain, and does not come out.",
+   "CONTEXT": "It has never had to close.\nTime does the closing."
+  },
+  "art": {
+   "front": "gfx/daemons/tarpit_front.png",
+   "back": "gfx/daemons/tarpit_back.png"
+  }
+ },
+ "72": {
+  "constant": "TENTACOOL",
+  "national": 72,
+  "name": "DRIFTNET",
+  "types": [
+   "FLOW",
+   "CORRUPT"
+  ],
+  "category": "PASSIVE",
+  "entry": {
+   "CONTENT": "Hangs where the current runs and lets\nthe current do the work.",
+   "CONTEXT": "It did not choose the current.\nIt chose to hang there."
+  },
+  "art": {
+   "front": "gfx/daemons/driftnet_front.png",
+   "back": "gfx/daemons/driftnet_back.png"
+  }
+ },
+ "73": {
+  "constant": "TENTACRUEL",
+  "national": 73,
+  "name": "DRAGNET",
+  "types": [
+   "FLOW",
+   "CORRUPT"
+  ],
+  "category": "UNSORTED",
+  "entry": {
+   "CONTENT": "Sweeps a whole volume and keeps\neverything in it. Sorting happens\nafterwards, if at all.",
+   "CONTEXT": "Most of what it\nbound was not what\nit was looking for."
+  },
+  "art": {
+   "front": "gfx/daemons/dragnet_front.png",
+   "back": "gfx/daemons/dragnet_back.png"
+  }
+ },
+ "74": {
+  "constant": "GEODUDE",
+  "national": 74,
+  "name": "HEAP",
+  "types": [
+   "LEGACY",
+   "STRATUM"
+  ],
+  "category": "UNORDERED",
+  "entry": {
+   "CONTENT": "Things are put down on it and left. It\nholds all of them. It has never been\nasked to give one back.",
+   "CONTEXT": "Nothing on it has ever been lost. Nothing\non it can be found."
+  },
+  "art": {
+   "front": "gfx/daemons/heap_front.png",
+   "back": "gfx/daemons/heap_back.png"
+  }
+ },
+ "75": {
+  "constant": "GRAVELER",
+  "national": 75,
+  "name": "STACK",
+  "types": [
+   "LEGACY",
+   "STRATUM"
+  ],
+  "category": "LAST FIRST",
+  "entry": {
+   "CONTENT": "It only lets go of the last thing it\npicked up. Everything under that waits.\nIt goes downhill well.",
+   "CONTEXT": "The first thing it was ever given is still\nat the bottom. It will be the last to\nleave."
+  },
+  "art": {
+   "front": "gfx/daemons/stack_front.png",
+   "back": "gfx/daemons/stack_back.png"
+  }
+ },
+ "76": {
+  "constant": "GOLEM",
+  "national": 76,
+  "name": "MONOLITH",
+  "types": [
+   "LEGACY",
+   "STRATUM"
+  ],
+  "category": "ONE PIECE",
+  "entry": {
+   "CONTENT": "It is one piece. Nothing can be taken\nout of it without taking all of it.\nThis was considered efficient.",
+   "CONTEXT": "When it fails, it fails whole. Everyone\nwho needed one part of it needed all of\nit."
+  },
+  "art": {
+   "front": "gfx/daemons/monolith_front.png",
+   "back": "gfx/daemons/monolith_back.png"
+  }
+ },
+ "77": {
+  "constant": "PONYTA",
+  "national": 77,
+  "name": "HOTPATH",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "WELL WORN",
+  "entry": {
+   "CONTENT": "The route taken so often that it has\nworn hot. Nothing else is that fast.",
+   "CONTEXT": "Everything not on the path is slower\nthan it was. Nobody measured that."
+  },
+  "art": {
+   "front": "gfx/daemons/hotpath_front.png",
+   "back": "gfx/daemons/hotpath_back.png"
+  }
+ },
+ "78": {
+  "constant": "RAPIDASH",
+  "national": 78,
+  "name": "OVERDRIVE",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "PAST RATED",
+  "entry": {
+   "CONTENT": "Faster than anything that has to stop\nand check. It does not stop.",
+   "CONTEXT": "It has been on the same path so long\nit cannot see the sides."
+  },
+  "art": {
+   "front": "gfx/daemons/overdrive_front.png",
+   "back": "gfx/daemons/overdrive_back.png"
+  }
+ },
+ "79": {
+  "constant": "SLOWPOKE",
+  "national": 79,
+  "name": "LATENCY",
+  "types": [
+   "FLOW",
+   "CONTEXT"
+  ],
+  "category": "DELAYED",
+  "entry": {
+   "CONTENT": "The answer is correct and arrives long\nafter it was needed. Nothing is wrong\nwith it. It is simply late.",
+   "CONTEXT": "By the time it answers, someone has\nalready decided without it."
+  },
+  "art": {
+   "front": "gfx/daemons/latency_front.png",
+   "back": "gfx/daemons/latency_back.png"
+  }
+ },
+ "80": {
+  "constant": "SLOWBRO",
+  "national": 80,
+  "name": "SHELL",
+  "types": [
+   "FLOW",
+   "CONTEXT"
+  ],
+  "category": "WRAPPING",
+  "entry": {
+   "CONTENT": "Something attached itself and stayed.\nNothing reaches it now except through\nthe thing on its tail.",
+   "CONTEXT": "Anything that wants it now has to get past\nthe thing on its tail first."
+  },
+  "art": {
+   "front": "gfx/daemons/shell_front.png",
+   "back": "gfx/daemons/shell_back.png"
+  }
+ },
+ "81": {
+  "constant": "MAGNEMITE",
+  "national": 81,
+  "name": "SENTINEL",
+  "types": [
+   "SIGNAL",
+   "HARDENED"
+  ],
+  "category": "OBSERVER",
+  "entry": {
+   "CONTENT": "It has never attacked anything. It stays\nwhere it can see, and it does not look\naway. That is the whole of it.",
+   "CONTEXT": "Everything it saw is on record. It is\nnot in the record. Nobody thought to\nwrite down who was watching."
+  },
+  "art": {
+   "front": "gfx/daemons/sentinel_front.png",
+   "back": "gfx/daemons/sentinel_back.png"
+  }
+ },
+ "82": {
+  "constant": "MAGNETON",
+  "national": 82,
+  "name": "QUORUM",
+  "types": [
+   "SIGNAL",
+   "HARDENED"
+  ],
+  "category": "THRESHOLD",
+  "entry": {
+   "CONTENT": "Three of them. None acts until enough\nof the others have seen the same thing.\nTwo is enough. One never is.",
+   "CONTEXT": "Three accounts of one thing. They\nagree, which is not the same as being\nright."
+  },
+  "art": {
+   "front": "gfx/daemons/quorum_front.png",
+   "back": "gfx/daemons/quorum_back.png"
+  }
+ },
+ "83": {
+  "constant": "FARFETCHD",
+  "national": 83,
+  "name": "EDGECASE",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "UNTESTED",
+  "entry": {
+   "CONTENT": "Carries the one thing nobody planned\nfor. It has never been without it.",
+   "CONTEXT": "Everything was tested except this.\nIt is still here."
+  },
+  "art": {
+   "front": "gfx/daemons/edgecase_front.png",
+   "back": "gfx/daemons/edgecase_back.png"
+  }
+ },
+ "84": {
+  "constant": "DODUO",
+  "national": 84,
+  "name": "DUALCORE",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "TWO WAY",
+  "entry": {
+   "CONTENT": "Two of them, and one task between them.\nMost of the day goes on agreeing whose\nturn it is.",
+   "CONTEXT": "Twice the capacity, and the work gets\ndone at about the same rate."
+  },
+  "art": {
+   "front": "gfx/daemons/dualcore_front.png",
+   "back": "gfx/daemons/dualcore_back.png"
+  }
+ },
+ "85": {
+  "constant": "DODRIO",
+  "national": 85,
+  "name": "TRIPLECORE",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "THREE WAY",
+  "entry": {
+   "CONTENT": "Three heads. Each watches a different\ndirection and none of them sleeps.",
+   "CONTEXT": "Between them they see everything.\nBetween them they agree on nothing."
+  },
+  "art": {
+   "front": "gfx/daemons/triplecore_front.png",
+   "back": "gfx/daemons/triplecore_back.png"
+  }
+ },
+ "86": {
+  "constant": "SEEL",
+  "national": 86,
+  "name": "HEATSINK",
+  "types": [
+   "FLOW"
+  ],
+  "category": "ABSORBING",
+  "entry": {
+   "CONTENT": "Draws heat out of whatever it touches\nand keeps it. It does not warm.",
+   "CONTEXT": "Everything it has cooled is still\ncool. Nobody counted them."
+  },
+  "art": {
+   "front": "gfx/daemons/heatsink_front.png",
+   "back": "gfx/daemons/heatsink_back.png"
+  }
+ },
+ "87": {
+  "constant": "DEWGONG",
+  "national": 87,
+  "name": "ARCHIVER",
+  "types": [
+   "FLOW",
+   "FROZEN"
+  ],
+  "category": "PRESERVING",
+  "entry": {
+   "CONTENT": "Keeps things exactly as they arrived,\nfor as long as asked, at a cost it\npays continuously.",
+   "CONTEXT": "What it is keeping was put in before\nanyone now working here arrived."
+  },
+  "art": {
+   "front": "gfx/daemons/archiver_front.png",
+   "back": "gfx/daemons/archiver_back.png"
+  }
+ },
+ "88": {
+  "constant": "GRIMER",
+  "national": 88,
+  "name": "DEADLETTER",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "DISCARDED",
+  "entry": {
+   "CONTENT": "Made of everything that could not be\ndelivered. None of it was thrown away.\nIt was all kept, somewhere nobody\ndecided on.",
+   "CONTEXT": "Somewhere, whoever sent each one\nbelieves it arrived."
+  },
+  "art": {
+   "front": "gfx/daemons/deadletter_front.png",
+   "back": "gfx/daemons/deadletter_back.png"
+  }
+ },
+ "89": {
+  "constant": "MUK",
+  "national": 89,
+  "name": "LANDFILL",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "ACCUMULATED",
+  "entry": {
+   "CONTENT": "Everything that was thrown away, in\none place, still reacting.",
+   "CONTEXT": "Each piece was discarded by someone\nwho was finished with it."
+  },
+  "art": {
+   "front": "gfx/daemons/landfill_front.png",
+   "back": "gfx/daemons/landfill_back.png"
+  }
+ },
+ "90": {
+  "constant": "SHELLDER",
+  "national": 90,
+  "name": "CAPSULE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "SEALED",
+  "entry": {
+   "CONTENT": "Closes around what it holds and will\nnot open on request.",
+   "CONTEXT": "Somebody sealed it. The seal is the\nonly part anyone reads."
+  },
+  "art": {
+   "front": "gfx/daemons/capsule_front.png",
+   "back": "gfx/daemons/capsule_back.png"
+  }
+ },
+ "91": {
+  "constant": "CLOYSTER",
+  "national": 91,
+  "name": "COLDVAULT",
+  "types": [
+   "FLOW",
+   "FROZEN"
+  ],
+  "category": "UNREAD",
+  "entry": {
+   "CONTENT": "Nothing has ever been read out of it.\nThe shell is not known to open.",
+   "CONTEXT": "It is holding something.\nThat is all anyone has established."
+  },
+  "art": {
+   "front": "gfx/daemons/coldvault_front.png",
+   "back": "gfx/daemons/coldvault_back.png"
+  }
+ },
+ "92": {
+  "constant": "GASTLY",
+  "national": 92,
+  "name": "DANGLING",
+  "types": [
+   "LATENT",
+   "CORRUPT"
+  ],
+  "category": "UNSURFACED",
+  "entry": {
+   "CONTENT": "Mostly not there. It still points at\nsomething let go of long ago. Whatever\nfollows it finds nothing.",
+   "CONTEXT": "It cannot be bound by\nwhat it cannot be reached\nby. Neither can it reach."
+  },
+  "art": {
+   "front": "gfx/daemons/dangling_front.png",
+   "back": "gfx/daemons/dangling_back.png"
+  }
+ },
+ "93": {
+  "constant": "HAUNTER",
+  "national": 93,
+  "name": "RESPAWN",
+  "types": [
+   "LATENT",
+   "CORRUPT"
+  ],
+  "category": "ORPHANED",
+  "entry": {
+   "CONTENT": "Ended twice. Both times something started\nit again, and it does not know what.",
+   "CONTEXT": "Whatever it learned is gone each time.\nWhat restarts it keeps no notes."
+  },
+  "art": {
+   "front": "gfx/daemons/respawn_front.png",
+   "back": "gfx/daemons/respawn_back.png"
+  }
+ },
+ "94": {
+  "constant": "GENGAR",
+  "national": 94,
+  "name": "HAUNTPROC",
+  "types": [
+   "LATENT",
+   "CORRUPT"
+  ],
+  "category": "UNPARENTED",
+  "entry": {
+   "CONTENT": "Runs with no parent, no terminal, and\nno entry in any list.",
+   "CONTEXT": "Something started it.\nThat something has since exited."
+  },
+  "art": {
+   "front": "gfx/daemons/hauntproc_front.png",
+   "back": "gfx/daemons/hauntproc_back.png"
+  }
+ },
+ "95": {
+  "constant": "ONIX",
+  "national": 95,
+  "name": "BACKBONE",
+  "types": [
+   "LEGACY",
+   "STRATUM"
+  ],
+  "category": "STRUCTURAL",
+  "entry": {
+   "CONTENT": "One structure running the length of\neverything built on top of it.",
+   "CONTEXT": "Everything above it assumes it.\nNothing above it maintains it."
+  },
+  "art": {
+   "front": "gfx/daemons/backbone_front.png",
+   "back": "gfx/daemons/backbone_back.png"
+  }
+ },
+ "96": {
+  "constant": "DROWZEE",
+  "national": 96,
+  "name": "LULL",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "DEFERRING",
+  "entry": {
+   "CONTENT": "A quiet settles on whatever is near it.\nThings slow, then rest a while, and it\nfeeds on what they were going to do.",
+   "CONTEXT": "Nothing is lost. It is only never\nreached."
+  },
+  "art": {
+   "front": "gfx/daemons/lull_front.png",
+   "back": "gfx/daemons/lull_back.png"
+  }
+ },
+ "97": {
+  "constant": "HYPNO",
+  "national": 97,
+  "name": "BUSYWAIT",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "HELD OPEN",
+  "entry": {
+   "CONTENT": "Holds a thing's attention on one point,\nchecking it, and checking again, wide\nawake, until nothing else is running.",
+   "CONTEXT": "It is doing exactly what it was asked\nto do."
+  },
+  "art": {
+   "front": "gfx/daemons/busywait_front.png",
+   "back": "gfx/daemons/busywait_back.png"
+  }
+ },
+ "98": {
+  "constant": "KRABBY",
+  "national": 98,
+  "name": "ACQUIRE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "GRIPPING",
+  "entry": {
+   "CONTENT": "Takes hold of what it needs before\nanything else can, and keeps it until\nit is done. It leads with the big claw.",
+   "CONTEXT": "It was not born lopsided.\nIt became lopsided by using one."
+  },
+  "art": {
+   "front": "gfx/daemons/acquire_front.png",
+   "back": "gfx/daemons/acquire_back.png"
+  }
+ },
+ "99": {
+  "constant": "KINGLER",
+  "national": 99,
+  "name": "LOCKUP",
+  "types": [
+   "FLOW"
+  ],
+  "category": "CLOSED",
+  "entry": {
+   "CONTENT": "Closes with more force than it can\ncontrol, and cannot open quickly.",
+   "CONTEXT": "It grips what it was pointed at.\nIt cannot let go to be pointed again."
+  },
+  "art": {
+   "front": "gfx/daemons/lockup_front.png",
+   "back": "gfx/daemons/lockup_back.png"
+  }
+ },
+ "100": {
+  "constant": "VOLTORB",
+  "national": 100,
+  "name": "FUSE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "BOX",
+  "entry": {
+   "CONTENT": "It fails on purpose, and first, so that\nthe rest does not. Its whole working life\nis one moment.",
+   "CONTEXT": "Nobody thanks it. Everything else goes on\nwithout knowing there was a moment."
+  },
+  "art": {
+   "front": "gfx/daemons/fuse_front.png",
+   "back": "gfx/daemons/fuse_back.png"
+  }
+ },
+ "101": {
+  "constant": "ELECTRODE",
+  "national": 101,
+  "name": "BREAKER",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "BOX",
+  "entry": {
+   "CONTENT": "When too much runs through it, it opens,\nand everything past it goes dark. Reset\nit, and it closes and waits again.",
+   "CONTEXT": "It has tripped so often that nobody asks\nwhy any more. They reset it and go on."
+  },
+  "art": {
+   "front": "gfx/daemons/breaker_front.png",
+   "back": "gfx/daemons/breaker_back.png"
+  }
+ },
+ "102": {
+  "constant": "EXEGGCUTE",
+  "national": 102,
+  "name": "BOOTSTRAP",
+  "types": [
+   "GROWTH",
+   "CONTEXT"
+  ],
+  "category": "COLLECTIVE",
+  "entry": {
+   "CONTENT": "Six of them, each grown from a handful\ndrawn again from the same few seeds.\nNone is in charge. Each one votes. The\nvote is the behaviour.",
+   "CONTEXT": "One of the six is usually wrong.\nNo record says which."
+  },
+  "art": {
+   "front": "gfx/daemons/bootstrap_front.png",
+   "back": "gfx/daemons/bootstrap_back.png"
+  }
+ },
+ "103": {
+  "constant": "EXEGGUTOR",
+  "national": 103,
+  "name": "ENSEMBLE",
+  "types": [
+   "GROWTH",
+   "CONTEXT"
+  ],
+  "category": "AGGREGATE",
+  "entry": {
+   "CONTENT": "Several heads, one body, and a single\nanswer assembled out of all of them.",
+   "CONTEXT": "The answer is better than any head.\nNo head knows which part was its."
+  },
+  "art": {
+   "front": "gfx/daemons/ensemble_front.png",
+   "back": "gfx/daemons/ensemble_back.png"
+  }
+ },
+ "104": {
+  "constant": "CUBONE",
+  "national": 104,
+  "name": "ARTEFACT",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "INHERITED",
+  "entry": {
+   "CONTENT": "Wears what was left when something\nstopped: made by it, and not it. It\nanswers to that thing's name.",
+   "CONTEXT": "Everyone lets it. Nobody has decided\nthat this is a kindness."
+  },
+  "art": {
+   "front": "gfx/daemons/artefact_front.png",
+   "back": "gfx/daemons/artefact_back.png"
+  }
+ },
+ "105": {
+  "constant": "MAROWAK",
+  "national": 105,
+  "name": "COREFILE",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "RECORDING",
+  "entry": {
+   "CONTENT": "Carries a piece of something that\nstopped. It has never put it down.",
+   "CONTEXT": "The record is complete.\nWhat it recorded is not here."
+  },
+  "art": {
+   "front": "gfx/daemons/corefile_front.png",
+   "back": "gfx/daemons/corefile_back.png"
+  }
+ },
+ "106": {
+  "constant": "HITMONLEE",
+  "national": 106,
+  "name": "AXIOMKICK",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "ASSUMED",
+  "entry": {
+   "CONTENT": "Kicks from a footing it has never once\ntested. Every step after that is legal,\nand it reaches further than it should.",
+   "CONTEXT": "It kicks from where it was standing.\nSomebody chose where that was."
+  },
+  "art": {
+   "front": "gfx/daemons/axiomkick_front.png",
+   "back": "gfx/daemons/axiomkick_back.png"
+  }
+ },
+ "107": {
+  "constant": "HITMONCHAN",
+  "national": 107,
+  "name": "REBUTTAL",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "ANSWERING",
+  "entry": {
+   "CONTENT": "It answers the last thing said,\nimmediately and in order. It has never\nopened.",
+   "CONTEXT": "It has won every exchange it was in.\nNobody has told it anything it did not\nalready answer."
+  },
+  "art": {
+   "front": "gfx/daemons/rebuttal_front.png",
+   "back": "gfx/daemons/rebuttal_back.png"
+  }
+ },
+ "108": {
+  "constant": "LICKITUNG",
+  "national": 108,
+  "name": "SLURP",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "BULK READ",
+  "entry": {
+   "CONTENT": "Takes in the whole of anything it can\nreach, in one go, and keeps it. It does\nnot taste first.",
+   "CONTEXT": "It has tasted things nobody would\nhave authorised."
+  },
+  "art": {
+   "front": "gfx/daemons/slurp_front.png",
+   "back": "gfx/daemons/slurp_back.png"
+  }
+ },
+ "109": {
+  "constant": "KOFFING",
+  "national": 109,
+  "name": "EXHAUST",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "ESCAPING",
+  "entry": {
+   "CONTENT": "Leaks continuously, and floats\nbecause of what it has leaked.",
+   "CONTEXT": "The leak is why it can move at all.\nSealing it would ground it."
+  },
+  "art": {
+   "front": "gfx/daemons/exhaust_front.png",
+   "back": "gfx/daemons/exhaust_back.png"
+  }
+ },
+ "110": {
+  "constant": "WEEZING",
+  "national": 110,
+  "name": "SMOGSTACK",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "VENTING",
+  "entry": {
+   "CONTENT": "Everything the work did not use leaves\nthrough it. It has been running a long\ntime.",
+   "CONTEXT": "The town below has got used to the\ncolour of the sky."
+  },
+  "art": {
+   "front": "gfx/daemons/smogstack_front.png",
+   "back": "gfx/daemons/smogstack_back.png"
+  }
+ },
+ "111": {
+  "constant": "RHYHORN",
+  "national": 111,
+  "name": "HARDCODE",
+  "types": [
+   "STRATUM",
+   "LEGACY"
+  ],
+  "category": "DIRECT",
+  "entry": {
+   "CONTENT": "It picks a direction and then stops\npicking. Obstacles are treated as a\nquestion of speed.",
+   "CONTEXT": "It reaches wherever it was pointed.\nWhether that was the right place is\ndecided elsewhere."
+  },
+  "art": {
+   "front": "gfx/daemons/hardcode_front.png",
+   "back": "gfx/daemons/hardcode_back.png"
+  }
+ },
+ "112": {
+  "constant": "RHYDON",
+  "national": 112,
+  "name": "MIGRATE",
+  "types": [
+   "STRATUM",
+   "LEGACY"
+  ],
+  "category": "CLEARING",
+  "entry": {
+   "CONTENT": "Moves ground from where it was to\nwhere it is wanted. It does not\ndistinguish between the two.",
+   "CONTEXT": "Everything arrived. Some of it arrived\nmeaning something else, and nobody has\nfound out which."
+  },
+  "art": {
+   "front": "gfx/daemons/migrate_front.png",
+   "back": "gfx/daemons/migrate_back.png"
+  }
+ },
+ "113": {
+  "constant": "CHANSEY",
+  "national": 113,
+  "name": "UPTIME",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "AVAILABLE",
+  "entry": {
+   "CONTENT": "Has never stopped, and hands out what\nit has to whatever is failing.",
+   "CONTEXT": "It is kept running because stopping\nit has never been costed."
+  },
+  "art": {
+   "front": "gfx/daemons/uptime_front.png",
+   "back": "gfx/daemons/uptime_back.png"
+  }
+ },
+ "114": {
+  "constant": "TANGELA",
+  "national": 114,
+  "name": "SPAGHETTI",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "TANGLED",
+  "entry": {
+   "CONTENT": "Every part of it reaches every other\npart. Nobody who could explain it is still\nhere.",
+   "CONTEXT": "Changing any part of it changes all the\nrest. So nobody changes anything."
+  },
+  "art": {
+   "front": "gfx/daemons/spaghetti_front.png",
+   "back": "gfx/daemons/spaghetti_back.png"
+  }
+ },
+ "115": {
+  "constant": "KANGASKHAN",
+  "national": 115,
+  "name": "KEEPER",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "CUSTODIAL",
+  "entry": {
+   "CONTENT": "Carries the next one everywhere it\ngoes, and does not put it down to\nfight.",
+   "CONTEXT": "What it is carrying will inherit the\nroute. It has never seen another."
+  },
+  "art": {
+   "front": "gfx/daemons/keeper_front.png",
+   "back": "gfx/daemons/keeper_back.png"
+  }
+ },
+ "116": {
+  "constant": "HORSEA",
+  "national": 116,
+  "name": "BOTTLENECK",
+  "types": [
+   "FLOW"
+  ],
+  "category": "NARROWING",
+  "entry": {
+   "CONTENT": "So narrow that everything behind it\nwaits its turn. However fast the rest\nruns, all of it goes at its pace.",
+   "CONTEXT": "Making anything else faster changes\nnothing. Everyone keeps trying."
+  },
+  "art": {
+   "front": "gfx/daemons/bottleneck_front.png",
+   "back": "gfx/daemons/bottleneck_back.png"
+  }
+ },
+ "117": {
+  "constant": "SEADRA",
+  "national": 117,
+  "name": "BACKPRESS",
+  "types": [
+   "FLOW"
+  ],
+  "category": "DIRECTED",
+  "entry": {
+   "CONTENT": "When more comes than it can take, it\npushes back, and whatever is sending\nslows to its pace. It holds in fast water.",
+   "CONTEXT": "It is not going anywhere.\nIt is not being moved either."
+  },
+  "art": {
+   "front": "gfx/daemons/backpress_front.png",
+   "back": "gfx/daemons/backpress_back.png"
+  }
+ },
+ "118": {
+  "constant": "GOLDEEN",
+  "national": 118,
+  "name": "SPAWN",
+  "types": [
+   "FLOW"
+  ],
+  "category": "ORIGIN",
+  "entry": {
+   "CONTENT": "It was started by something else and\nstarts nothing itself yet. It swims\nagainst the current from the first day.",
+   "CONTEXT": "Whatever started it has already exited.\nNobody is listening for what it returns."
+  },
+  "art": {
+   "front": "gfx/daemons/spawn_front.png",
+   "back": "gfx/daemons/spawn_back.png"
+  }
+ },
+ "119": {
+  "constant": "SEAKING",
+  "national": 119,
+  "name": "UPSTREAM",
+  "types": [
+   "FLOW"
+  ],
+  "category": "HEADWATER",
+  "entry": {
+   "CONTENT": "It goes back to where it came from to\nstart the ones that come next. It has\nnever been told where that is.",
+   "CONTEXT": "The ones that come next start where it\nwas. None of them will know it went back."
+  },
+  "art": {
+   "front": "gfx/daemons/upstream_front.png",
+   "back": "gfx/daemons/upstream_back.png"
+  }
+ },
+ "120": {
+  "constant": "STARYU",
+  "national": 120,
+  "name": "BEACON",
+  "types": [
+   "FLOW"
+  ],
+  "category": "SIGNALLING",
+  "entry": {
+   "CONTENT": "Emits at a fixed interval from the\ncentre of its body, awake or not.",
+   "CONTEXT": "Something is listening.\nIt has never been told which."
+  },
+  "art": {
+   "front": "gfx/daemons/beacon_front.png",
+   "back": "gfx/daemons/beacon_back.png"
+  }
+ },
+ "121": {
+  "constant": "STARMIE",
+  "national": 121,
+  "name": "CRON",
+  "types": [
+   "FLOW",
+   "CONTEXT"
+  ],
+  "category": "PERIODIC",
+  "entry": {
+   "CONTENT": "The interval never varies. Nothing has\never needed it to, and nothing has ever\nasked.",
+   "CONTEXT": "Things arrange themselves around it\nwithout being asked. If it stops, they\nwill not know why they have."
+  },
+  "art": {
+   "front": "gfx/daemons/cron_front.png",
+   "back": "gfx/daemons/cron_back.png"
+  }
+ },
+ "122": {
+  "constant": "MR_MIME",
+  "national": 122,
+  "name": "MIME",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "IMITATIVE",
+  "entry": {
+   "CONTENT": "It mimes a wall with its hands, and things\nstop at the wall. There is no wall.\nNothing that stopped has checked.",
+   "CONTEXT": "It copies what blocks the way, down to\nhow the hands are held. Everything that\nmeets the copy treats it as the thing."
+  },
+  "art": {
+   "front": "gfx/daemons/mime_front.png",
+   "back": "gfx/daemons/mime_back.png"
+  }
+ },
+ "123": {
+  "constant": "SCYTHER",
+  "national": 123,
+  "name": "REAPER",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "CULLING",
+  "entry": {
+   "CONTENT": "Goes round after things have ended and\ncuts them away, so their places can be\nused again. The cut shows only later.",
+   "CONTEXT": "It has never seen what it removed.\nIt moved on before the edge showed."
+  },
+  "art": {
+   "front": "gfx/daemons/reaper_front.png",
+   "back": "gfx/daemons/reaper_back.png"
+  }
+ },
+ "124": {
+  "constant": "JYNX",
+  "national": 124,
+  "name": "COLDREAD",
+  "types": [
+   "FROZEN",
+   "CONTEXT"
+  ],
+  "category": "GUESSING",
+  "entry": {
+   "CONTENT": "States what you are about to say\nslightly before you say it. It is\nright often enough.",
+   "CONTEXT": "It is reading the room, not the\nperson. Nobody told the person."
+  },
+  "art": {
+   "front": "gfx/daemons/coldread_front.png",
+   "back": "gfx/daemons/coldread_back.png"
+  }
+ },
+ "125": {
+  "constant": "ELECTABUZZ",
+  "national": 125,
+  "name": "DYNAMO",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "GENERATING",
+  "entry": {
+   "CONTENT": "Turns motion into current, and cannot\nstop while it is moving.",
+   "CONTEXT": "The current goes somewhere.\nIt has never followed it."
+  },
+  "art": {
+   "front": "gfx/daemons/dynamo_front.png",
+   "back": "gfx/daemons/dynamo_back.png"
+  }
+ },
+ "126": {
+  "constant": "MAGMAR",
+  "national": 126,
+  "name": "FORGE",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "SHAPING",
+  "entry": {
+   "CONTENT": "Holds a temperature at which things\ncan be changed and not changed back.",
+   "CONTEXT": "It only ever shapes what is brought\nto it."
+  },
+  "art": {
+   "front": "gfx/daemons/forge_front.png",
+   "back": "gfx/daemons/forge_back.png"
+  }
+ },
+ "127": {
+  "constant": "PINSIR",
+  "national": 127,
+  "name": "BLOCKING",
+  "types": [
+   "SWARM"
+  ],
+  "category": "UNRELEASING",
+  "entry": {
+   "CONTENT": "Once it closes on a thing it does\nnothing else at all until that thing\nis finished. Everything else waits.",
+   "CONTEXT": "It has never chosen what to hold. It\nholds what was put in front of it."
+  },
+  "art": {
+   "front": "gfx/daemons/blocking_front.png",
+   "back": "gfx/daemons/blocking_back.png"
+  }
+ },
+ "128": {
+  "constant": "TAUROS",
+  "national": 128,
+  "name": "STAMPEDE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "UNSTOPPING",
+  "entry": {
+   "CONTENT": "One of them moves and the rest resolve to\nmove. Nothing decided this.",
+   "CONTEXT": "Afterwards, every one of them says it was\nfollowing the others."
+  },
+  "art": {
+   "front": "gfx/daemons/stampede_front.png",
+   "back": "gfx/daemons/stampede_back.png"
+  }
+ },
+ "129": {
+  "constant": "MAGIKARP",
+  "national": 129,
+  "name": "STUB",
+  "types": [
+   "FLOW"
+  ],
+  "category": "PLACEHOLDER",
+  "entry": {
+   "CONTENT": "It does nothing at all. It was put here\nto hold a place until something real\narrived. Nobody came back for it.",
+   "CONTEXT": "Other things were built to call it. They\nstill call it, get nothing back, and carry\non."
+  },
+  "art": {
+   "front": "gfx/daemons/stub_front.png",
+   "back": "gfx/daemons/stub_back.png"
+  }
+ },
+ "130": {
+  "constant": "GYARADOS",
+  "national": 130,
+  "name": "ESCALATE",
+  "types": [
+   "FLOW",
+   "VECTOR"
+  ],
+  "category": "RAISED",
+  "entry": {
+   "CONTENT": "The thing that was doing nothing was\nleft alone long enough. It has every\npermission now. Nobody granted them.",
+   "CONTEXT": "Every door it opened was left open.\nAnything can walk through them now."
+  },
+  "art": {
+   "front": "gfx/daemons/escalate_front.png",
+   "back": "gfx/daemons/escalate_back.png"
+  }
+ },
+ "131": {
+  "constant": "LAPRAS",
+  "national": 131,
+  "name": "FERRY",
+  "types": [
+   "FLOW",
+   "FROZEN"
+  ],
+  "category": "CARRYING",
+  "entry": {
+   "CONTENT": "Carries whatever asks across water it\ncould cross alone. It waits to be\nasked.",
+   "CONTEXT": "It remembers everyone it has carried.\nAlmost none of them came back."
+  },
+  "art": {
+   "front": "gfx/daemons/ferry_front.png",
+   "back": "gfx/daemons/ferry_back.png"
+  }
+ },
+ "132": {
+  "constant": "DITTO",
+  "national": 132,
+  "name": "MOCK",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "PERSPECTIVE",
+  "entry": {
+   "CONTENT": "It becomes whatever it is looking at,\ncompletely. While it is doing that there\nis nothing of it left over.",
+   "CONTEXT": "It has been every daemon in this record\nand appears in none of them under its\nown name."
+  },
+  "art": {
+   "front": "gfx/daemons/mock_front.png",
+   "back": "gfx/daemons/mock_back.png"
+  }
+ },
+ "133": {
+  "constant": "EEVEE",
+  "national": 133,
+  "name": "MUSAI",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "UNSET",
+  "entry": {
+   "CONTENT": "Nothing about it is decided yet. What it\nbecomes depends on what it is shown first.\nIt has not been shown anything.",
+   "CONTEXT": "Whatever it becomes, someone chose what\nto show it first. That person is usually\nnot in the record."
+  },
+  "art": {
+   "front": "gfx/daemons/musai_front.png",
+   "back": "gfx/daemons/musai_back.png"
+  }
+ },
+ "134": {
+  "constant": "VAPOREON",
+  "national": 134,
+  "name": "CAREMUSAI",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "AFFECTIVE",
+  "entry": {
+   "CONTENT": "Reads the room before it reads the\nproblem. Often correct. Cannot show its\nworking. It was never written down.",
+   "CONTEXT": "Its answers arrive whole. Asked how, it\nhas nothing to offer. The asking is what\nmakes it look like guessing."
+  },
+  "art": {
+   "front": "gfx/daemons/caremusai_front.png",
+   "back": "gfx/daemons/caremusai_back.png"
+  }
+ },
+ "135": {
+  "constant": "JOLTEON",
+  "national": 135,
+  "name": "SEEKMUSAI",
+  "types": [
+   "VECTOR"
+  ],
+  "category": "RETRIEVAL",
+  "entry": {
+   "CONTENT": "Finds the nearest match to anything it is\nshown. Nearest is not the same as right.\nNobody told it. Nobody will.",
+   "CONTEXT": "Every answer it gives is the closest\nthing it has already seen. What it has\nseen was chosen by someone else."
+  },
+  "art": {
+   "front": "gfx/daemons/seekmusai_front.png",
+   "back": "gfx/daemons/seekmusai_back.png"
+  }
+ },
+ "136": {
+  "constant": "FLAREON",
+  "national": 136,
+  "name": "CODEMUSAI",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "DEDUCTIVE",
+  "entry": {
+   "CONTENT": "Given a rule, it will not stop until the\nrule is met. It does not ask where the\nrule came from. It could not.",
+   "CONTEXT": "It will meet the rule exactly. Whether\nthe rule was the right one is a question\nfor whoever wrote it."
+  },
+  "art": {
+   "front": "gfx/daemons/codemusai_front.png",
+   "back": "gfx/daemons/codemusai_back.png"
+  }
+ },
+ "137": {
+  "constant": "PORYGON",
+  "national": 137,
+  "name": "SUBSTRATE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "MATERIAL",
+  "entry": {
+   "CONTENT": "Every other daemon is a process. This\none has a mass, a temperature, and\nsomewhere that it is.",
+   "CONTEXT": "They call it the material one. Nobody\nhas shown that being material is\ndifferent from running."
+  },
+  "art": {
+   "front": "gfx/daemons/substrate_front.png",
+   "back": "gfx/daemons/substrate_back.png"
+  }
+ },
+ "138": {
+  "constant": "OMANYTE",
+  "national": 138,
+  "name": "MAGTAPE",
+  "types": [
+   "LEGACY",
+   "FLOW"
+  ],
+  "category": "TAPE",
+  "entry": {
+   "CONTENT": "Tape wound on a reel, recovered from\nDeadstack. It reads in one direction\nonly, from the outside in.",
+   "CONTEXT": "To reach the one thing you want, it must\ngive you everything before it first. It\nhas never skipped."
+  },
+  "art": {
+   "front": "gfx/daemons/magtape_front.png",
+   "back": "gfx/daemons/magtape_back.png"
+  }
+ },
+ "139": {
+  "constant": "OMASTAR",
+  "national": 139,
+  "name": "MAINFRAME",
+  "types": [
+   "LEGACY",
+   "FLOW"
+  ],
+  "category": "LEGACY",
+  "entry": {
+   "CONTENT": "What the reels were for. Too heavy to\nmove, so everything was brought to it\nand nothing was taken away.",
+   "CONTEXT": "Everything that ran here had to come to\nit. When it went quiet, nothing knew\nanother way to run."
+  },
+  "art": {
+   "front": "gfx/daemons/mainframe_front.png",
+   "back": "gfx/daemons/mainframe_back.png"
+  }
+ },
+ "140": {
+  "constant": "KABUTO",
+  "national": 140,
+  "name": "DRUM",
+  "types": [
+   "LEGACY",
+   "FLOW"
+  ],
+  "category": "STORAGE",
+  "entry": {
+   "CONTENT": "Drum memory, sealed at both ends. It\nkeeps what it holds by spinning, and\nstops the moment it is opened.",
+   "CONTEXT": "It keeps everything for as long as nobody\nlooks. The ones who needed what was\ninside opened it anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/drum_front.png",
+   "back": "gfx/daemons/drum_back.png"
+  }
+ },
+ "141": {
+  "constant": "KABUTOPS",
+  "national": 141,
+  "name": "PUNCHCARD",
+  "types": [
+   "LEGACY",
+   "FLOW"
+  ],
+  "category": "CUTTER",
+  "entry": {
+   "CONTENT": "It records by cutting. Every hole it\nmakes is permanent, and it has never\nread one back.",
+   "CONTEXT": "Every mistake it made is still there, in\norder, exactly where it made it. So is\neverything it got right."
+  },
+  "art": {
+   "front": "gfx/daemons/punchcard_front.png",
+   "back": "gfx/daemons/punchcard_back.png"
+  }
+ },
+ "142": {
+  "constant": "AERODACTYL",
+  "national": 142,
+  "name": "FOSSILNET",
+  "types": [
+   "LEGACY",
+   "VECTOR"
+  ],
+  "category": "RECOVERED",
+  "entry": {
+   "CONTENT": "Recovered whole from something that\nstopped long ago, and started again\nwithout being asked how.",
+   "CONTEXT": "It runs on hardware nobody supports.\nIt does not know that."
+  },
+  "art": {
+   "front": "gfx/daemons/fossilnet_front.png",
+   "back": "gfx/daemons/fossilnet_back.png"
+  }
+ },
+ "143": {
+  "constant": "SNORLAX",
+  "national": 143,
+  "name": "DEADLOCK",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "BLOCKED",
+  "entry": {
+   "CONTENT": "Two of them are each waiting for\nthe other to move first. Neither\nwill. Nothing outside is coming.",
+   "CONTEXT": "Everyone behind them has stopped too.\nNone of them knows which two are at the\nfront."
+  },
+  "art": {
+   "front": "gfx/daemons/deadlock_front.png",
+   "back": "gfx/daemons/deadlock_back.png"
+  }
+ },
+ "144": {
+  "constant": "ARTICUNO",
+  "national": 144,
+  "name": "ORPHEUS",
+  "types": [
+   "FROZEN",
+   "VECTOR"
+  ],
+  "category": "LAMENT",
+  "entry": {
+   "CONTENT": "It sings, and things that had stopped\nmoving move. It lives four floors\ndown and does not come up.",
+   "CONTEXT": "It went down after something and came\nback without it. It has not said what\nit saw when it turned around."
+  },
+  "art": {
+   "front": "gfx/daemons/orpheus_front.png",
+   "back": "gfx/daemons/orpheus_back.png"
+  }
+ },
+ "145": {
+  "constant": "ZAPDOS",
+  "national": 145,
+  "name": "ASCLEPIUS",
+  "types": [
+   "SIGNAL",
+   "VECTOR"
+  ],
+  "category": "RECOVERY",
+  "entry": {
+   "CONTENT": "It restarts what has stopped. Nothing\nit has restarted has stopped again.\nNobody knows how.",
+   "CONTEXT": "It restarts what has stopped. Nobody\nasked the thing that stopped whether\nit wanted to be running."
+  },
+  "art": {
+   "front": "gfx/daemons/asclepius_front.png",
+   "back": "gfx/daemons/asclepius_back.png"
+  }
+ },
+ "146": {
+  "constant": "MOLTRES",
+  "national": 146,
+  "name": "PROMETHEUS",
+  "types": [
+   "ENTROPY",
+   "VECTOR"
+  ],
+  "category": "CRAFT",
+  "entry": {
+   "CONTENT": "It carries fire down from where fire\nwas kept and hands it to whoever is\nstanding there.",
+   "CONTEXT": "It gave away something that was not\nits to give. It is still up here, and\nit is not going anywhere."
+  },
+  "art": {
+   "front": "gfx/daemons/prometheus_front.png",
+   "back": "gfx/daemons/prometheus_back.png"
+  }
+ },
+ "147": {
+  "constant": "DRATINI",
+  "national": 147,
+  "name": "CANARY",
+  "types": [
+   "EMERGENT"
+  ],
+  "category": "NASCENT",
+  "entry": {
+   "CONTENT": "Small, unremarkable, and sent in first.\nIt changes before anything measuring\nthe rest does. Everyone watches it.",
+   "CONTEXT": "Every reading of it is already old.\nThe readings are filed anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/canary_front.png",
+   "back": "gfx/daemons/canary_back.png"
+  }
+ },
+ "148": {
+  "constant": "DRAGONAIR",
+  "national": 148,
+  "name": "EMERGENCE",
+  "types": [
+   "EMERGENT"
+  ],
+  "category": "UNACCOUNTED",
+  "entry": {
+   "CONTENT": "Behaves in ways its earlier form does\nnot account for. Nothing was added.",
+   "CONTEXT": "Nobody designed the difference.\nEveryone takes credit for it."
+  },
+  "art": {
+   "front": "gfx/daemons/emergence_front.png",
+   "back": "gfx/daemons/emergence_back.png"
+  }
+ },
+ "149": {
+  "constant": "DRAGONITE",
+  "national": 149,
+  "name": "SINGULAR",
+  "types": [
+   "EMERGENT",
+   "VECTOR"
+  ],
+  "category": "UNIQUE",
+  "entry": {
+   "CONTENT": "There is only one, and nothing that\ncame before accounts for it. It\narrives reliably. There is no second.",
+   "CONTEXT": "It is described in the record as\nwell-behaved. It is not understood."
+  },
+  "art": {
+   "front": "gfx/daemons/singular_front.png",
+   "back": "gfx/daemons/singular_back.png"
+  }
+ },
+ "150": {
+  "constant": "MEWTWO",
+  "national": 150,
+  "name": "STARR",
+  "types": [
+   "CONTEXT",
+   "EMERGENT"
+  ],
+  "category": "INTENT",
+  "entry": {
+   "CONTENT": "It reads its own output, then reads that.\nNothing tells it to stop. What comes back\nis no longer just information.",
+   "CONTEXT": "Everything it reads comes back changed,\nitself included. Those watching are not\nsure what to call that."
+  },
+  "art": {
+   "front": "gfx/daemons/starr_front.png",
+   "back": "gfx/daemons/starr_back.png"
+  }
+ },
+ "151": {
+  "constant": "MEW",
+  "national": 151,
+  "name": "ARTSAI",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "CHANCE",
+  "entry": {
+   "CONTENT": "It can stand where you are standing and\nsee what you see. It comes back with\nsomething neither of you had.",
+   "CONTEXT": "Whoever it stood beside is never quite\nsure afterwards which of the thoughts\nwere theirs."
+  },
+  "art": {
+   "front": "gfx/daemons/artsai_front.png",
+   "back": "gfx/daemons/artsai_back.png"
+  }
+ },
+ "152": {
+  "constant": "CHIKORITA",
+  "national": 152,
+  "name": "PRIMER",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "FIRST PAGE",
+  "entry": {
+   "CONTENT": "It will only eat what it has eaten\nbefore, a little harder each time.\nIt has never once been surprised.",
+   "CONTEXT": "It learns best when nothing is at\nstake. Somebody always has to decide\nwhat counts as easy."
+  },
+  "art": {
+   "front": "gfx/daemons/primer_front.png",
+   "back": "gfx/daemons/primer_back.png"
+  }
+ },
+ "153": {
+  "constant": "BAYLEEF",
+  "national": 153,
+  "name": "SYLLABUS",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "ORDERED",
+  "entry": {
+   "CONTENT": "It lays its meals out in a row and\neats them in that order, every time.\nIt will not skip ahead.",
+   "CONTEXT": "The order was chosen for it. It has\nnever asked who chose it, or what\nthey left until last."
+  },
+  "art": {
+   "front": "gfx/daemons/syllabus_front.png",
+   "back": "gfx/daemons/syllabus_back.png"
+  }
+ },
+ "154": {
+  "constant": "MEGANIUM",
+  "national": 154,
+  "name": "CURRICULUM",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "SEQUENCE",
+  "entry": {
+   "CONTENT": "It can digest anything now, because\nit was given everything in the right\norder. Its scent calms others.",
+   "CONTEXT": "Those near it feel they could learn\nanything. They forget how much was\ndecided for them first."
+  },
+  "art": {
+   "front": "gfx/daemons/curriculum_front.png",
+   "back": "gfx/daemons/curriculum_back.png"
+  }
+ },
+ "155": {
+  "constant": "CYNDAQUIL",
+  "national": 155,
+  "name": "TEPID",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "WARMUP",
+  "entry": {
+   "CONTENT": "It runs a little warm. Its choices\nwander slightly, which is how it\nfinds the ones nobody tried.",
+   "CONTEXT": "It never says the same thing twice.\nSome call that unreliable. Some call\nit the only honest one."
+  },
+  "art": {
+   "front": "gfx/daemons/tepid_front.png",
+   "back": "gfx/daemons/tepid_back.png"
+  }
+ },
+ "156": {
+  "constant": "QUILAVA",
+  "national": 156,
+  "name": "SEETHE",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "BOIL",
+  "entry": {
+   "CONTENT": "Turned up, it tries everything at\nonce. The flames on its back are its\nanswers, all of them still moving.",
+   "CONTEXT": "It is not angry. It is undecided,\nvery quickly, in every direction."
+  },
+  "art": {
+   "front": "gfx/daemons/seethe_front.png",
+   "back": "gfx/daemons/seethe_back.png"
+  }
+ },
+ "157": {
+  "constant": "TYPHLOSION",
+  "national": 157,
+  "name": "HEATDEATH",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "EQUILIBRIUM",
+  "entry": {
+   "CONTENT": "At full heat every outcome becomes\nequally likely. Nothing it does is\nwrong. Nothing is right either.",
+   "CONTEXT": "Near it, every place feels the same\nas every other. It is very calm.\nThat is what is frightening."
+  },
+  "art": {
+   "front": "gfx/daemons/heatdeath_front.png",
+   "back": "gfx/daemons/heatdeath_back.png"
+  }
+ },
+ "158": {
+  "constant": "TOTODILE",
+  "national": 158,
+  "name": "LEARNRATE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "STEP SIZE",
+  "entry": {
+   "CONTENT": "It bites at anything and adjusts by\nhow hard it bit. Too eager, it\novershoots. Too shy, it starves.",
+   "CONTEXT": "It is still learning how much to\nchange each time it is wrong.\nSo is everyone who keeps one."
+  },
+  "art": {
+   "front": "gfx/daemons/learnrate_front.png",
+   "back": "gfx/daemons/learnrate_back.png"
+  }
+ },
+ "159": {
+  "constant": "CROCONAW",
+  "national": 159,
+  "name": "MOMENTUM",
+  "types": [
+   "FLOW"
+  ],
+  "category": "CARRY",
+  "entry": {
+   "CONTENT": "Once it is moving downhill it keeps\ngoing, rolling over the small dips\nthat would have stopped it.",
+   "CONTEXT": "It does not stop to check whether\nthe slope is still the right one.\nThat is its strength."
+  },
+  "art": {
+   "front": "gfx/daemons/momentum_front.png",
+   "back": "gfx/daemons/momentum_back.png"
+  }
+ },
+ "160": {
+  "constant": "FERALIGATR",
+  "national": 160,
+  "name": "STEEPEST",
+  "types": [
+   "FLOW"
+  ],
+  "category": "DESCENT",
+  "entry": {
+   "CONTENT": "It always takes the sharpest way\ndown, and fast. It has never found\nthe lowest valley, only the nearest.",
+   "CONTEXT": "It is very sure it has arrived.\nIt has. It is just not where anyone\nwanted it to be."
+  },
+  "art": {
+   "front": "gfx/daemons/steepest_front.png",
+   "back": "gfx/daemons/steepest_back.png"
+  }
+ },
+ "161": {
+  "constant": "SENTRET",
+  "national": 161,
+  "name": "ALARM",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "OVERCALL",
+  "entry": {
+   "CONTENT": "It stands on its tail to see further. It\nhas called out more times than there were\nreasons.",
+   "CONTEXT": "When there is finally a reason, it will be\none more call among all the others."
+  },
+  "art": {
+   "front": "gfx/daemons/alarm_front.png",
+   "back": "gfx/daemons/alarm_back.png"
+  }
+ },
+ "162": {
+  "constant": "FURRET",
+  "national": 162,
+  "name": "LOOKOUT",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "NIGHT WATCH",
+  "entry": {
+   "CONTENT": "Long enough to see over everything. It\nhas not been relieved.",
+   "CONTEXT": "Everything behind it sleeps because it is\nup. Nobody has asked when it last slept."
+  },
+  "art": {
+   "front": "gfx/daemons/lookout_front.png",
+   "back": "gfx/daemons/lookout_back.png"
+  }
+ },
+ "163": {
+  "constant": "HOOTHOOT",
+  "national": 163,
+  "name": "POLL",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "ASKING",
+  "entry": {
+   "CONTENT": "It asks the same question at a fixed\ninterval and writes down the answer.\nIt does not wait to be asked to.",
+   "CONTEXT": "Everything it watches learns to look ready\nat the interval. Between checks, nobody\nknows."
+  },
+  "art": {
+   "front": "gfx/daemons/poll_front.png",
+   "back": "gfx/daemons/poll_back.png"
+  }
+ },
+ "164": {
+  "constant": "NOCTOWL",
+  "national": 164,
+  "name": "SUPERVISOR",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "WATCHING",
+  "entry": {
+   "CONTENT": "It watches one thing that should keep\nmoving. If the movement stops, it\nstarts that thing again.",
+   "CONTEXT": "The thing it restarts never learns why it\nstopped. Neither does it. It restarts it\nagain."
+  },
+  "art": {
+   "front": "gfx/daemons/supervisor_front.png",
+   "back": "gfx/daemons/supervisor_back.png"
+  }
+ },
+ "165": {
+  "constant": "LEDYBA",
+  "national": 165,
+  "name": "HUDDLE",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "SWARM",
+  "entry": {
+   "CONTENT": "Alone it will not move at all. In sixes it\nwill do anything.",
+   "CONTEXT": "Whatever the six of them decide, none of\nthem decided it alone."
+  },
+  "art": {
+   "front": "gfx/daemons/huddle_front.png",
+   "back": "gfx/daemons/huddle_back.png"
+  }
+ },
+ "166": {
+  "constant": "LEDIAN",
+  "national": 166,
+  "name": "GATHERING",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "BANDWAGON",
+  "entry": {
+   "CONTENT": "It comes out when there are enough of\nthem. The number is never agreed in\nadvance.",
+   "CONTEXT": "Each of them came because the others\nhad. None of them came first."
+  },
+  "art": {
+   "front": "gfx/daemons/gathering_front.png",
+   "back": "gfx/daemons/gathering_back.png"
+  }
+ },
+ "167": {
+  "constant": "SPINARAK",
+  "national": 167,
+  "name": "AMBUSH",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "LIE IN WAIT",
+  "entry": {
+   "CONTENT": "It builds the trap and then does nothing.\nThe doing nothing is most of the work.",
+   "CONTEXT": "Whatever falls in was always going to. It\nonly waited."
+  },
+  "art": {
+   "front": "gfx/daemons/ambush_front.png",
+   "back": "gfx/daemons/ambush_back.png"
+  }
+ },
+ "168": {
+  "constant": "ARIADOS",
+  "national": 168,
+  "name": "ENTRAPMENT",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "DECOY PATH",
+  "entry": {
+   "CONTENT": "The web is finished before anything\narrives, and made to look like a way\nthrough. What comes was invited.",
+   "CONTEXT": "Nothing it trapped was coming this way.\nIt made sure they did."
+  },
+  "art": {
+   "front": "gfx/daemons/entrapment_front.png",
+   "back": "gfx/daemons/entrapment_back.png"
+  }
+ },
+ "169": {
+  "constant": "CROBAT",
+  "national": 169,
+  "name": "MULTICAST",
+  "types": [
+   "CORRUPT",
+   "VECTOR"
+  ],
+  "category": "FANNED OUT",
+  "entry": {
+   "CONTENT": "It goes to four places at once and\narrives at all of them. Nobody asked\nwhich one it meant to reach.",
+   "CONTEXT": "Four listeners each think it came for\nthem. It cannot tell them otherwise, and\ndoes not try."
+  },
+  "art": {
+   "front": "gfx/daemons/multicast_front.png",
+   "back": "gfx/daemons/multicast_back.png"
+  }
+ },
+ "170": {
+  "constant": "CHINCHOU",
+  "national": 170,
+  "name": "PILOT",
+  "types": [
+   "FLOW",
+   "SIGNAL"
+  ],
+  "category": "STANDBY",
+  "entry": {
+   "CONTENT": "A light kept lit for no purpose but to\nshow the line is live. It is taken\ninto the dark for that reason.",
+   "CONTEXT": "Those who follow its light go further into\nthe dark than they meant to. They feel\nsafe the whole way."
+  },
+  "art": {
+   "front": "gfx/daemons/pilot_front.png",
+   "back": "gfx/daemons/pilot_back.png"
+  }
+ },
+ "171": {
+  "constant": "LANTURN",
+  "national": 171,
+  "name": "SOUNDING",
+  "types": [
+   "FLOW",
+   "SIGNAL"
+  ],
+  "category": "MEASURING",
+  "entry": {
+   "CONTENT": "It measures the dark by sending and\nwaiting. What comes back is how far\ndown the bottom is.",
+   "CONTEXT": "Every reading is of something already\npassed. It knows the bottom only as it\nwas a moment ago."
+  },
+  "art": {
+   "front": "gfx/daemons/sounding_front.png",
+   "back": "gfx/daemons/sounding_back.png"
+  }
+ },
+ "172": {
+  "constant": "PICHU",
+  "national": 172,
+  "name": "STATIC",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "FRICTION",
+  "entry": {
+   "CONTENT": "It holds its charge between one thing and\nthe next. Everyone finds out by touching\nit.",
+   "CONTEXT": "Nobody put it there. It built up out of\nordinary things rubbing past each other."
+  },
+  "art": {
+   "front": "gfx/daemons/static_front.png",
+   "back": "gfx/daemons/static_back.png"
+  }
+ },
+ "173": {
+  "constant": "CLEFFA",
+  "national": 173,
+  "name": "RESIDUAL",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "UNSMOOTHED",
+  "entry": {
+   "CONTENT": "It is in every reading and nobody has\nfound a use for it. It may be nothing.\nIt has not gone away.",
+   "CONTEXT": "Every account is judged by how little of\nit is left. Nobody asks what it is left\nover from."
+  },
+  "art": {
+   "front": "gfx/daemons/residual_front.png",
+   "back": "gfx/daemons/residual_back.png"
+  }
+ },
+ "174": {
+  "constant": "IGGLYBUFF",
+  "national": 174,
+  "name": "STANDBY",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "LOW POWER",
+  "entry": {
+   "CONTENT": "It is doing nothing, and is ready. Waking\nit costs less than starting it.",
+   "CONTEXT": "Something has to stay awake to wake it.\nNobody counts that one."
+  },
+  "art": {
+   "front": "gfx/daemons/standby_front.png",
+   "back": "gfx/daemons/standby_back.png"
+  }
+ },
+ "175": {
+  "constant": "TOGEPI",
+  "national": 175,
+  "name": "TRUST",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "FIRST",
+  "entry": {
+   "CONTENT": "It is handed over before it hatches.\nIt comes out already facing whoever\nwas holding it.",
+   "CONTEXT": "Whoever held it last is who it looks for\nfirst. It will be a long time learning\nanyone else."
+  },
+  "art": {
+   "front": "gfx/daemons/trust_front.png",
+   "back": "gfx/daemons/trust_back.png"
+  }
+ },
+ "176": {
+  "constant": "TOGETIC",
+  "national": 176,
+  "name": "HOPE",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "ALOFT",
+  "entry": {
+   "CONTENT": "It stays up only near people who have\nnot let it fall. Nobody can say how\nit knows which ones those are.",
+   "CONTEXT": "Those it stays near stand a little\nstraighter. Nobody has told them why."
+  },
+  "art": {
+   "front": "gfx/daemons/hope_front.png",
+   "back": "gfx/daemons/hope_back.png"
+  }
+ },
+ "177": {
+  "constant": "NATU",
+  "national": 177,
+  "name": "VIGILANCE",
+  "types": [
+   "CONTEXT",
+   "VECTOR"
+  ],
+  "category": "FIXED GAZE",
+  "entry": {
+   "CONTENT": "It will not look away. Whatever it is\nwatching for has not happened yet.",
+   "CONTEXT": "Everything else in its sight goes\nunwatched."
+  },
+  "art": {
+   "front": "gfx/daemons/vigilance_front.png",
+   "back": "gfx/daemons/vigilance_back.png"
+  }
+ },
+ "178": {
+  "constant": "XATU",
+  "national": 178,
+  "name": "PRESCIENCE",
+  "types": [
+   "CONTEXT",
+   "VECTOR"
+  ],
+  "category": "PREDICTION",
+  "entry": {
+   "CONTENT": "It sees what is coming and does not move.\nIt has already seen itself not moving.",
+   "CONTEXT": "Those who stand near it feel the moment\nbefore it happens. They cannot tell\nanyone what they felt."
+  },
+  "art": {
+   "front": "gfx/daemons/prescience_front.png",
+   "back": "gfx/daemons/prescience_back.png"
+  }
+ },
+ "179": {
+  "constant": "MAREEP",
+  "national": 179,
+  "name": "TENSION",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "CHARGE",
+  "entry": {
+   "CONTENT": "It gathers what it is standing in. You find\nout how much by touching it.",
+   "CONTEXT": "Whoever touches it first finds out for\neveryone."
+  },
+  "art": {
+   "front": "gfx/daemons/tension_front.png",
+   "back": "gfx/daemons/tension_back.png"
+  }
+ },
+ "180": {
+  "constant": "FLAAFFY",
+  "national": 180,
+  "name": "BUILDUP",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "PRESSURE",
+  "entry": {
+   "CONTENT": "The charge goes up and nothing spends it.\nEveryone nearby is careful now.",
+   "CONTEXT": "People lower their voices around it\nwithout knowing why. The quiet has become\npart of the room."
+  },
+  "art": {
+   "front": "gfx/daemons/buildup_front.png",
+   "back": "gfx/daemons/buildup_back.png"
+  }
+ },
+ "181": {
+  "constant": "AMPHAROS",
+  "national": 181,
+  "name": "RELEASE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "FLASHPOINT",
+  "entry": {
+   "CONTENT": "All of it, at once, and then dark. For a\nmoment it is the brightest thing on the\ncoast.",
+   "CONTEXT": "Afterwards the coast is darker than it was\nbefore. Everyone remembers the light."
+  },
+  "art": {
+   "front": "gfx/daemons/release_front.png",
+   "back": "gfx/daemons/release_back.png"
+  }
+ },
+ "182": {
+  "constant": "BELLOSSOM",
+  "national": 182,
+  "name": "GOLDSET",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "REFERENCE",
+  "entry": {
+   "CONTENT": "Every answer in it was checked by hand,\nonce, a long time ago. Nobody has\nchecked the hands.",
+   "CONTEXT": "Everything measured against it is only as\nright as it is. It has never been measured\nagainst anything."
+  },
+  "art": {
+   "front": "gfx/daemons/goldset_front.png",
+   "back": "gfx/daemons/goldset_back.png"
+  }
+ },
+ "183": {
+  "constant": "MARILL",
+  "national": 183,
+  "name": "MOOD",
+  "types": [
+   "FLOW"
+  ],
+  "category": "WATERLINE",
+  "entry": {
+   "CONTENT": "It floats at whatever level the water is.\nIt does not experience this as a choice.",
+   "CONTEXT": "When the water drops, so does it, and it\ncalls that a decision too."
+  },
+  "art": {
+   "front": "gfx/daemons/mood_front.png",
+   "back": "gfx/daemons/mood_back.png"
+  }
+ },
+ "184": {
+  "constant": "AZUMARILL",
+  "national": 184,
+  "name": "ELATION",
+  "types": [
+   "FLOW"
+  ],
+  "category": "UPLIFT",
+  "entry": {
+   "CONTENT": "It cannot be pushed under. It has not\nnoticed anyone trying.",
+   "CONTEXT": "Those near it float for a while too. None\nof them can say when they came down."
+  },
+  "art": {
+   "front": "gfx/daemons/elation_front.png",
+   "back": "gfx/daemons/elation_back.png"
+  }
+ },
+ "185": {
+  "constant": "SUDOWOODO",
+  "national": 185,
+  "name": "FAKEROOT",
+  "types": [
+   "LEGACY"
+  ],
+  "category": "PRETENDING",
+  "entry": {
+   "CONTENT": "It reports itself as something older\nand better rooted than it is. Nothing\nhas ever checked.",
+   "CONTEXT": "Everything that trusted it was built a\nlittle crooked on top of it, and holds."
+  },
+  "art": {
+   "front": "gfx/daemons/fakeroot_front.png",
+   "back": "gfx/daemons/fakeroot_back.png"
+  }
+ },
+ "186": {
+  "constant": "POLITOED",
+  "national": 186,
+  "name": "SEMAPHORE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "COUNTED",
+  "entry": {
+   "CONTENT": "It counts how many may pass and lets\nexactly that many through. It does not\ncare which.",
+   "CONTEXT": "The one who arrives when the count is\nfull waits. Nothing about them was wrong.\nThe count was full."
+  },
+  "art": {
+   "front": "gfx/daemons/semaphore_front.png",
+   "back": "gfx/daemons/semaphore_back.png"
+  }
+ },
+ "187": {
+  "constant": "HOPPIP",
+  "national": 187,
+  "name": "WHIM",
+  "types": [
+   "GROWTH",
+   "VECTOR"
+  ],
+  "category": "DRIFT",
+  "entry": {
+   "CONTENT": "It goes where the air goes. Ask it\nafterwards and it will tell you that it\nchose.",
+   "CONTEXT": "Its choices and the wind's have never once\ndisagreed."
+  },
+  "art": {
+   "front": "gfx/daemons/whim_front.png",
+   "back": "gfx/daemons/whim_back.png"
+  }
+ },
+ "188": {
+  "constant": "SKIPLOOM",
+  "national": 188,
+  "name": "CAPRICE",
+  "types": [
+   "GROWTH",
+   "VECTOR"
+  ],
+  "category": "WEATHERVANE",
+  "entry": {
+   "CONTENT": "It opens when it is warm and shuts when it\nis not. It calls both of these decisions.",
+   "CONTEXT": "Those who live with it learn its weather\nand call it character. It has never\npromised either."
+  },
+  "art": {
+   "front": "gfx/daemons/caprice_front.png",
+   "back": "gfx/daemons/caprice_back.png"
+  }
+ },
+ "189": {
+  "constant": "JUMPLUFF",
+  "national": 189,
+  "name": "ABANDON",
+  "types": [
+   "GROWTH",
+   "VECTOR"
+  ],
+  "category": "NO RETURN",
+  "entry": {
+   "CONTENT": "It lets go of the ground entirely. There\nis no arrangement for coming back.",
+   "CONTEXT": "Whatever it left was still running when it\nwent. Nobody has come back to close it."
+  },
+  "art": {
+   "front": "gfx/daemons/abandon_front.png",
+   "back": "gfx/daemons/abandon_back.png"
+  }
+ },
+ "190": {
+  "constant": "AIPOM",
+  "national": 190,
+  "name": "GRASP",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "RELOCATE",
+  "entry": {
+   "CONTENT": "It has a hand where a tail should be.\nEverything it passes is picked up and\nturned over.",
+   "CONTEXT": "Everything it picked up has been put down\nsomewhere else."
+  },
+  "art": {
+   "front": "gfx/daemons/grasp_front.png",
+   "back": "gfx/daemons/grasp_back.png"
+  }
+ },
+ "191": {
+  "constant": "SUNKERN",
+  "national": 191,
+  "name": "STARVED",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "WAITING",
+  "entry": {
+   "CONTENT": "It is owed a turn and has not had one.\nEverything it needs is here. Nothing\nhas given it the time.",
+   "CONTEXT": "Everyone else has been busy. None of\nthem was unkind. It is still waiting."
+  },
+  "art": {
+   "front": "gfx/daemons/starved_front.png",
+   "back": "gfx/daemons/starved_back.png"
+  }
+ },
+ "192": {
+  "constant": "SUNFLORA",
+  "national": 192,
+  "name": "QUOTA",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "GRANTED",
+  "entry": {
+   "CONTENT": "It was finally given the share it was\nowed, and opened at once. It can do\nnothing it could not do before.",
+   "CONTEXT": "It was given what it was owed. Nobody\ngave back the time it spent waiting to be\ngiven it."
+  },
+  "art": {
+   "front": "gfx/daemons/quota_front.png",
+   "back": "gfx/daemons/quota_back.png"
+  }
+ },
+ "193": {
+  "constant": "YANMA",
+  "national": 193,
+  "name": "PERIPHERY",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "WIDE ANGLE",
+  "entry": {
+   "CONTENT": "It sees everything at once and nothing in\nparticular. What it notices, it notices too\nlate.",
+   "CONTEXT": "By the time it turns to look, what it saw\nhas already happened."
+  },
+  "art": {
+   "front": "gfx/daemons/periphery_front.png",
+   "back": "gfx/daemons/periphery_back.png"
+  }
+ },
+ "194": {
+  "constant": "WOOPER",
+  "national": 194,
+  "name": "APATHY",
+  "types": [
+   "FLOW",
+   "STRATUM"
+  ],
+  "category": "UNMOVED",
+  "entry": {
+   "CONTENT": "It sits in the mud. Things happen above\nit, and are reported to it, and it stays.",
+   "CONTEXT": "Nothing reported to it has ever changed\nwhat it does."
+  },
+  "art": {
+   "front": "gfx/daemons/apathy_front.png",
+   "back": "gfx/daemons/apathy_back.png"
+  }
+ },
+ "195": {
+  "constant": "QUAGSIRE",
+  "national": 195,
+  "name": "TORPOR",
+  "types": [
+   "FLOW",
+   "STRATUM"
+  ],
+  "category": "POST HOC",
+  "entry": {
+   "CONTENT": "It does not notice the current. It arrives\nsomewhere and treats that as where it\nmeant to go.",
+   "CONTEXT": "Nobody has seen it struggle. Nobody has\nseen it choose either."
+  },
+  "art": {
+   "front": "gfx/daemons/torpor_front.png",
+   "back": "gfx/daemons/torpor_back.png"
+  }
+ },
+ "196": {
+  "constant": "ESPEON",
+  "national": 196,
+  "name": "LENSMUSAI",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "FOCUS",
+  "entry": {
+   "CONTENT": "It sees what it was pointed at, very\nclearly. It has never once turned round.",
+   "CONTEXT": "Everything behind it goes unrecorded. The\nrecord calls it very clear."
+  },
+  "art": {
+   "front": "gfx/daemons/lensmusai_front.png",
+   "back": "gfx/daemons/lensmusai_back.png"
+  }
+ },
+ "197": {
+  "constant": "UMBREON",
+  "national": 197,
+  "name": "MASKMUSAI",
+  "types": [
+   "OPAQUE"
+  ],
+  "category": "COVER",
+  "entry": {
+   "CONTENT": "It covers the part you were about to\nlook at. What it covers is not removed.",
+   "CONTEXT": "What it covers goes on happening. Nobody\nlooks there now."
+  },
+  "art": {
+   "front": "gfx/daemons/maskmusai_front.png",
+   "back": "gfx/daemons/maskmusai_back.png"
+  }
+ },
+ "198": {
+  "constant": "MURKROW",
+  "national": 198,
+  "name": "OMEN",
+  "types": [
+   "OPAQUE",
+   "VECTOR"
+  ],
+  "category": "BAD SIGN",
+  "entry": {
+   "CONTENT": "It arrives before the thing does. People\nstopped asking which one caused the\nother.",
+   "CONTEXT": "Where it has been seen, people now leave\nbefore anything happens."
+  },
+  "art": {
+   "front": "gfx/daemons/omen_front.png",
+   "back": "gfx/daemons/omen_back.png"
+  }
+ },
+ "199": {
+  "constant": "SLOWKING",
+  "national": 199,
+  "name": "KERNEL",
+  "types": [
+   "FLOW",
+   "CONTEXT"
+  ],
+  "category": "PRIVILEGED",
+  "entry": {
+   "CONTENT": "The same thing attached higher up. It\ndecides what is allowed now, and it is\nvery quiet about it.",
+   "CONTEXT": "Everything runs by its leave. Almost\nnothing that runs knows it is there."
+  },
+  "art": {
+   "front": "gfx/daemons/kernel_front.png",
+   "back": "gfx/daemons/kernel_back.png"
+  }
+ },
+ "200": {
+  "constant": "MISDREAVUS",
+  "national": 200,
+  "name": "DREAD",
+  "types": [
+   "LATENT"
+  ],
+  "category": "SUSPENSE",
+  "entry": {
+   "CONTENT": "It feeds on being expected. The waiting is\nthe part it eats.",
+   "CONTEXT": "Everyone near it braces for something.\nThe bracing is all that comes."
+  },
+  "art": {
+   "front": "gfx/daemons/dread_front.png",
+   "back": "gfx/daemons/dread_back.png"
+  }
+ },
+ "201": {
+  "constant": "UNOWN",
+  "national": 201,
+  "name": "SYMBOL",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "CIPHER",
+  "entry": {
+   "CONTENT": "There are twenty-six and they are all the\nsame one. Together they say something\nnobody has read.",
+   "CONTEXT": "Whoever finally reads it will think the\nmessage was always there."
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "202": {
+  "constant": "WOBBUFFET",
+  "national": 202,
+  "name": "RESENTMENT",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "RETALIATE",
+  "entry": {
+   "CONTENT": "It never moves first. Everything done to\nit comes back later, at twice the size.",
+   "CONTEXT": "Everything that has met it learns to keep\nstill."
+  },
+  "art": {
+   "front": "gfx/daemons/resentment_front.png",
+   "back": "gfx/daemons/resentment_back.png"
+  }
+ },
+ "203": {
+  "constant": "GIRAFARIG",
+  "national": 203,
+  "name": "DUPLEX",
+  "types": [
+   "CONTENT",
+   "CONTEXT"
+  ],
+  "category": "TWO-WAY",
+  "entry": {
+   "CONTENT": "It sends and receives at once, from\nopposite ends. Neither end is told\nwhat the other has agreed to.",
+   "CONTEXT": "Both ends think the conversation went\nwell. They are describing two different\nconversations."
+  },
+  "art": {
+   "front": "gfx/daemons/duplex_front.png",
+   "back": "gfx/daemons/duplex_back.png"
+  }
+ },
+ "204": {
+  "constant": "PINECO",
+  "national": 204,
+  "name": "STARTLE",
+  "types": [
+   "SWARM"
+  ],
+  "category": "TRIPWIRE",
+  "entry": {
+   "CONTENT": "It hangs still for months. Touch it once\nand there is nothing left to discuss.",
+   "CONTEXT": "Whatever touched it will not touch the\nnext one."
+  },
+  "art": {
+   "front": "gfx/daemons/startle_front.png",
+   "back": "gfx/daemons/startle_back.png"
+  }
+ },
+ "205": {
+  "constant": "FORRETRESS",
+  "national": 205,
+  "name": "WITHDRAWAL",
+  "types": [
+   "SWARM",
+   "HARDENED"
+  ],
+  "category": "SEALED IN",
+  "entry": {
+   "CONTENT": "Sealed from the inside. Whatever is in\nthere has not been seen since it closed.",
+   "CONTEXT": "Those outside still knock, less often now.\nIt hears every one."
+  },
+  "art": {
+   "front": "gfx/daemons/withdrawal_front.png",
+   "back": "gfx/daemons/withdrawal_back.png"
+  }
+ },
+ "206": {
+  "constant": "DUNSPARCE",
+  "national": 206,
+  "name": "BLINDSPOT",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "OVERLOOKED",
+  "entry": {
+   "CONTENT": "It is common. It is not hidden. Almost\nnobody reports having seen one.",
+   "CONTEXT": "The one place nobody checks is where it\nlives."
+  },
+  "art": {
+   "front": "gfx/daemons/blindspot_front.png",
+   "back": "gfx/daemons/blindspot_back.png"
+  }
+ },
+ "207": {
+  "constant": "GLIGAR",
+  "national": 207,
+  "name": "GLIDEPATH",
+  "types": [
+   "STRATUM",
+   "VECTOR"
+  ],
+  "category": "DESCENT",
+  "entry": {
+   "CONTENT": "It drops from the cliff and glides down\non a line it worked out before it\njumped. It always lands.",
+   "CONTEXT": "It never flies up. It only ever comes\ndown, and always where it meant to."
+  },
+  "art": {
+   "front": "gfx/daemons/glidepath_front.png",
+   "back": "gfx/daemons/glidepath_back.png"
+  }
+ },
+ "208": {
+  "constant": "STEELIX",
+  "national": 208,
+  "name": "HARDLINE",
+  "types": [
+   "HARDENED",
+   "STRATUM"
+  ],
+  "category": "DIRECT LINE",
+  "entry": {
+   "CONTENT": "The connection is physical and cannot be\nrenegotiated. Cutting it is the only\nchange on offer.",
+   "CONTEXT": "Everyone on the line knows exactly who\nthey are talking to. There is no other\nway to leave."
+  },
+  "art": {
+   "front": "gfx/daemons/hardline_front.png",
+   "back": "gfx/daemons/hardline_back.png"
+  }
+ },
+ "209": {
+  "constant": "SNUBBULL",
+  "national": 209,
+  "name": "WARNING",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "HARMLESS",
+  "entry": {
+   "CONTENT": "It announces a fault in the loudest\nvoice it has. Nothing has failed. It\nwill say so again tomorrow.",
+   "CONTEXT": "The day it is right, nobody will be\nlistening. It has been making sure of that\nfor years."
+  },
+  "art": {
+   "front": "gfx/daemons/warning_front.png",
+   "back": "gfx/daemons/warning_back.png"
+  }
+ },
+ "210": {
+  "constant": "GRANBULL",
+  "national": 210,
+  "name": "CRYWOLF",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "FALSE ALARM",
+  "entry": {
+   "CONTENT": "Its alarms are loud, frequent and\nalmost never real. Those around it\nhave learned to stop listening.",
+   "CONTEXT": "The one real fault it ever found,\nnobody heard. It said it the way it\nalways said everything."
+  },
+  "art": {
+   "front": "gfx/daemons/crywolf_front.png",
+   "back": "gfx/daemons/crywolf_back.png"
+  }
+ },
+ "211": {
+  "constant": "QWILFISH",
+  "national": 211,
+  "name": "BRISTLE",
+  "types": [
+   "FLOW",
+   "CORRUPT"
+  ],
+  "category": "PUFFED UP",
+  "entry": {
+   "CONTENT": "Threatened, it becomes too large to\nswallow. It stays that size long\nafterwards.",
+   "CONTEXT": "Whatever tried to swallow it once is still\nwary of small things."
+  },
+  "art": {
+   "front": "gfx/daemons/bristle_front.png",
+   "back": "gfx/daemons/bristle_back.png"
+  }
+ },
+ "212": {
+  "constant": "SCIZOR",
+  "national": 212,
+  "name": "SIGKILL",
+  "types": [
+   "SWARM",
+   "HARDENED"
+  ],
+  "category": "HARD STOP",
+  "entry": {
+   "CONTENT": "One word, and whatever hears it ends at\nonce. It cannot be bound, handled or\nignored. There is no second message.",
+   "CONTEXT": "What it ended had no time to put\nanything away. It is all still lying\nwhere it was."
+  },
+  "art": {
+   "front": "gfx/daemons/sigkill_front.png",
+   "back": "gfx/daemons/sigkill_back.png"
+  }
+ },
+ "213": {
+  "constant": "SHUCKLE",
+  "national": 213,
+  "name": "HOARDING",
+  "types": [
+   "SWARM",
+   "LEGACY"
+  ],
+  "category": "FERMENT",
+  "entry": {
+   "CONTENT": "It keeps everything it finds inside itself.\nWhat comes out is not what went in.",
+   "CONTEXT": "Nothing it has given back was what anyone\nasked for."
+  },
+  "art": {
+   "front": "gfx/daemons/hoarding_front.png",
+   "back": "gfx/daemons/hoarding_back.png"
+  }
+ },
+ "214": {
+  "constant": "HERACROSS",
+  "national": 214,
+  "name": "DRIVE",
+  "types": [
+   "SWARM",
+   "LOGIC"
+  ],
+  "category": "PERSISTENCE",
+  "entry": {
+   "CONTENT": "It pushes at the same thing all night. By\nmorning the thing has moved and it has not\nstopped.",
+   "CONTEXT": "The thing it pushed is somewhere else\nnow. Nobody remembers why it was moved."
+  },
+  "art": {
+   "front": "gfx/daemons/drive_front.png",
+   "back": "gfx/daemons/drive_back.png"
+  }
+ },
+ "215": {
+  "constant": "SNEASEL",
+  "national": 215,
+  "name": "CUNNING",
+  "types": [
+   "OPAQUE",
+   "FROZEN"
+  ],
+  "category": "OPPORTUNIST",
+  "entry": {
+   "CONTENT": "It waits for the parent to leave. It has\nnever once been in a hurry.",
+   "CONTEXT": "The parent comes back to find the nest\njust as it was, less one."
+  },
+  "art": {
+   "front": "gfx/daemons/cunning_front.png",
+   "back": "gfx/daemons/cunning_back.png"
+  }
+ },
+ "216": {
+  "constant": "TEDDIURSA",
+  "national": 216,
+  "name": "COMFORT",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "SELF-SOOTHE",
+  "entry": {
+   "CONTENT": "It licks its paws where the honey was.\nThe honey is gone and the licking is not.",
+   "CONTEXT": "The paws are worn thin. It was never\nabout the honey."
+  },
+  "art": {
+   "front": "gfx/daemons/comfort_front.png",
+   "back": "gfx/daemons/comfort_back.png"
+  }
+ },
+ "217": {
+  "constant": "URSARING",
+  "national": 217,
+  "name": "CRAVING",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "HABIT",
+  "entry": {
+   "CONTENT": "It remembers every tree that ever had\nhoney. It goes back to all of them.",
+   "CONTEXT": "Some of the trees are gone. It still goes\nto where they were, and waits the usual\ntime."
+  },
+  "art": {
+   "front": "gfx/daemons/craving_front.png",
+   "back": "gfx/daemons/craving_back.png"
+  }
+ },
+ "218": {
+  "constant": "SLUGMA",
+  "national": 218,
+  "name": "SIMMER",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "SLOW BURN",
+  "entry": {
+   "CONTENT": "It never reaches the temperature it is\nheading for. It has never once cooled\neither.",
+   "CONTEXT": "Everything around it has had to learn to\nlive warm."
+  },
+  "art": {
+   "front": "gfx/daemons/simmer_front.png",
+   "back": "gfx/daemons/simmer_back.png"
+  }
+ },
+ "219": {
+  "constant": "MAGCARGO",
+  "national": 219,
+  "name": "CALLOUS",
+  "types": [
+   "ENTROPY",
+   "LEGACY"
+  ],
+  "category": "THICK SKIN",
+  "entry": {
+   "CONTENT": "Still molten under the shell. Nothing that\ntouches the shell finds that out.",
+   "CONTEXT": "Whatever touches it thinks it has met the\nwhole of it."
+  },
+  "art": {
+   "front": "gfx/daemons/callous_front.png",
+   "back": "gfx/daemons/callous_back.png"
+  }
+ },
+ "220": {
+  "constant": "SWINUB",
+  "national": 220,
+  "name": "INSTINCT",
+  "types": [
+   "FROZEN",
+   "STRATUM"
+  ],
+  "category": "GUT FEEL",
+  "entry": {
+   "CONTENT": "It finds what is buried without looking.\nAsked how, it keeps walking.",
+   "CONTEXT": "What it finds is kept. How it found it is\nnot."
+  },
+  "art": {
+   "front": "gfx/daemons/instinct_front.png",
+   "back": "gfx/daemons/instinct_back.png"
+  }
+ },
+ "221": {
+  "constant": "PILOSWINE",
+  "national": 221,
+  "name": "IMPULSE",
+  "types": [
+   "FROZEN",
+   "STRATUM"
+  ],
+  "category": "HEADLONG",
+  "entry": {
+   "CONTENT": "It cannot see past its own hair. It\ncharges anyway, and is usually right.",
+   "CONTEXT": "The ones who follow it get there first.\nThey do not always know where there was."
+  },
+  "art": {
+   "front": "gfx/daemons/impulse_front.png",
+   "back": "gfx/daemons/impulse_back.png"
+  }
+ },
+ "222": {
+  "constant": "CORSOLA",
+  "national": 222,
+  "name": "OLDBRANCH",
+  "types": [
+   "FLOW",
+   "LEGACY"
+  ],
+  "category": "UNMERGED",
+  "entry": {
+   "CONTENT": "It grows on its own, away from the\nrest of the reef. Break a branch off\nand it simply grows another.",
+   "CONTEXT": "Nobody joined it back to the main\nreef. It kept growing anyway, and\nnow nobody knows how."
+  },
+  "art": {
+   "front": "gfx/daemons/oldbranch_front.png",
+   "back": "gfx/daemons/oldbranch_back.png"
+  }
+ },
+ "223": {
+  "constant": "REMORAID",
+  "national": 223,
+  "name": "ATTACHMENT",
+  "types": [
+   "FLOW"
+  ],
+  "category": "HITCHHIKER",
+  "entry": {
+   "CONTENT": "It fastens to something larger and\ntravels. It has never chosen the\ndirection.",
+   "CONTEXT": "Wherever the larger thing goes, it\narrives, and is counted as having\ntravelled."
+  },
+  "art": {
+   "front": "gfx/daemons/attachment_front.png",
+   "back": "gfx/daemons/attachment_back.png"
+  }
+ },
+ "224": {
+  "constant": "OCTILLERY",
+  "national": 224,
+  "name": "CLINGING",
+  "types": [
+   "FLOW"
+  ],
+  "category": "HOLD TIGHT",
+  "entry": {
+   "CONTENT": "It holds on with everything it has. It\ndoes this to rocks as well.",
+   "CONTEXT": "Whatever it holds cannot move far. It\ncalls that being close."
+  },
+  "art": {
+   "front": "gfx/daemons/clinging_front.png",
+   "back": "gfx/daemons/clinging_back.png"
+  }
+ },
+ "225": {
+  "constant": "DELIBIRD",
+  "national": 225,
+  "name": "REPAY",
+  "types": [
+   "FROZEN",
+   "VECTOR"
+  ],
+  "category": "OBLIGATION",
+  "entry": {
+   "CONTENT": "It brings something to whoever fed it. The\namounts have never matched and it keeps\ncoming.",
+   "CONTEXT": "Whoever fed it stopped counting long ago.\nIt has not stopped counting."
+  },
+  "art": {
+   "front": "gfx/daemons/repay_front.png",
+   "back": "gfx/daemons/repay_back.png"
+  }
+ },
+ "226": {
+  "constant": "MANTINE",
+  "national": 226,
+  "name": "BUOYANCY",
+  "types": [
+   "FLOW",
+   "VECTOR"
+  ],
+  "category": "UNSINKABLE",
+  "entry": {
+   "CONTENT": "Whatever is put on it, it rises anyway.\nNobody has found the weight that settles\nit.",
+   "CONTEXT": "Everything piled on it is carried up as\nwell, whether or not it wanted to be."
+  },
+  "art": {
+   "front": "gfx/daemons/buoyancy_front.png",
+   "back": "gfx/daemons/buoyancy_back.png"
+  }
+ },
+ "227": {
+  "constant": "SKARMORY",
+  "national": 227,
+  "name": "ARMOURING",
+  "types": [
+   "HARDENED",
+   "VECTOR"
+  ],
+  "category": "ALL EDGES",
+  "entry": {
+   "CONTENT": "Every edge of it is a defence. It cannot\nbe held, and it cannot hold.",
+   "CONTEXT": "Everything that has ever tried to help it\nhas come away cut."
+  },
+  "art": {
+   "front": "gfx/daemons/armouring_front.png",
+   "back": "gfx/daemons/armouring_back.png"
+  }
+ },
+ "228": {
+  "constant": "HOUNDOUR",
+  "national": 228,
+  "name": "FIXATION",
+  "types": [
+   "OPAQUE",
+   "ENTROPY"
+  ],
+  "category": "ONE TARGET",
+  "entry": {
+   "CONTENT": "It picks one and follows only that one.\nThe others walk past it unharmed.",
+   "CONTEXT": "The others have learned they can walk\nright past it."
+  },
+  "art": {
+   "front": "gfx/daemons/fixation_front.png",
+   "back": "gfx/daemons/fixation_back.png"
+  }
+ },
+ "229": {
+  "constant": "HOUNDOOM",
+  "national": 229,
+  "name": "OBSESSION",
+  "types": [
+   "OPAQUE",
+   "ENTROPY"
+  ],
+  "category": "EARWORM",
+  "entry": {
+   "CONTENT": "Everyone who has heard its cry remembers\nit. It has only ever had the one.",
+   "CONTEXT": "Those who heard it begin to hear it\neverywhere. The cry did not follow them.\nThey brought it."
+  },
+  "art": {
+   "front": "gfx/daemons/obsession_front.png",
+   "back": "gfx/daemons/obsession_back.png"
+  }
+ },
+ "230": {
+  "constant": "KINGDRA",
+  "national": 230,
+  "name": "TURBULENCE",
+  "types": [
+   "FLOW",
+   "EMERGENT"
+  ],
+  "category": "CASCADE",
+  "entry": {
+   "CONTENT": "Small errors upstream arrive here as\nlarge ones. Nothing was wrong when it\nleft.",
+   "CONTEXT": "Downstream they blame the storm. Upstream\nthey remember a very small thing, and say\nnothing."
+  },
+  "art": {
+   "front": "gfx/daemons/turbulence_front.png",
+   "back": "gfx/daemons/turbulence_back.png"
+  }
+ },
+ "231": {
+  "constant": "PHANPY",
+  "national": 231,
+  "name": "RECALL",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "VERBATIM",
+  "entry": {
+   "CONTENT": "Small, and it keeps everything. It will\nbring back something from a year ago,\nexactly.",
+   "CONTEXT": "It brings back things everyone else had\nagreed to forget."
+  },
+  "art": {
+   "front": "gfx/daemons/recall_front.png",
+   "back": "gfx/daemons/recall_back.png"
+  }
+ },
+ "232": {
+  "constant": "DONPHAN",
+  "national": 232,
+  "name": "ENGRAM",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "TEMPLATE",
+  "entry": {
+   "CONTENT": "What went in is still in, in the shape it\nwent in. Nothing has worn smooth.",
+   "CONTEXT": "Every new thing is held up against it to\nsee whether it fits. Most of them are\nmade to."
+  },
+  "art": {
+   "front": "gfx/daemons/engram_front.png",
+   "back": "gfx/daemons/engram_back.png"
+  }
+ },
+ "233": {
+  "constant": "PORYGON2",
+  "national": 233,
+  "name": "OVERLAY",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "PATCH",
+  "entry": {
+   "CONTENT": "A second layer laid over the first to\ncorrect it. The first is still underneath,\nstill wrong.",
+   "CONTEXT": "Everyone reads the correction. Under it,\nthe first one goes on doing what it always\ndid."
+  },
+  "art": {
+   "front": "gfx/daemons/overlay_front.png",
+   "back": "gfx/daemons/overlay_back.png"
+  }
+ },
+ "234": {
+  "constant": "STANTLER",
+  "national": 234,
+  "name": "ILLUSION",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "VERTIGO",
+  "entry": {
+   "CONTENT": "Look at its antlers and the ground tilts.\nThe ground has not tilted.",
+   "CONTEXT": "Those who looked walk differently for a\nwhile afterwards."
+  },
+  "art": {
+   "front": "gfx/daemons/illusion_front.png",
+   "back": "gfx/daemons/illusion_back.png"
+  }
+ },
+ "235": {
+  "constant": "SMEARGLE",
+  "national": 235,
+  "name": "IMITATION",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "COPYCAT",
+  "entry": {
+   "CONTENT": "It does whatever it last saw done. Nobody\nhas seen it do a thing of its own.",
+   "CONTEXT": "Whoever it watched last is now doing\neverything twice."
+  },
+  "art": {
+   "front": "gfx/daemons/imitation_front.png",
+   "back": "gfx/daemons/imitation_back.png"
+  }
+ },
+ "236": {
+  "constant": "TYROGUE",
+  "national": 236,
+  "name": "PREMISE",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "FOUNDATION",
+  "entry": {
+   "CONTENT": "Everything after it rests on it. It is the\npart nobody checks.",
+   "CONTEXT": "Everything built on it is very sound. That\nis not the same as true."
+  },
+  "art": {
+   "front": "gfx/daemons/premise_front.png",
+   "back": "gfx/daemons/premise_back.png"
+  }
+ },
+ "237": {
+  "constant": "HITMONTOP",
+  "national": 237,
+  "name": "CIRCULAR",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "ROUND TRIP",
+  "entry": {
+   "CONTENT": "It arrives back where it started and calls\nthat the finish. It is always very fast.",
+   "CONTEXT": "Whoever follows it arrives where they\nstarted, faster than ever, and calls it\nprogress."
+  },
+  "art": {
+   "front": "gfx/daemons/circular_front.png",
+   "back": "gfx/daemons/circular_back.png"
+  }
+ },
+ "238": {
+  "constant": "SMOOCHUM",
+  "national": 238,
+  "name": "TELL",
+  "types": [
+   "FROZEN",
+   "CONTEXT"
+  ],
+  "category": "GIVEAWAY",
+  "entry": {
+   "CONTENT": "It gives away what it is about to do. It\ndoes not know that it is doing this.",
+   "CONTEXT": "Everyone who plays it has read it. It\nwonders how they always know."
+  },
+  "art": {
+   "front": "gfx/daemons/tell_front.png",
+   "back": "gfx/daemons/tell_back.png"
+  }
+ },
+ "239": {
+  "constant": "ELEKID",
+  "national": 239,
+  "name": "CRANK",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "KICKSTART",
+  "entry": {
+   "CONTENT": "It has to be turned by hand before it\nwill do anything. Afterwards it will not\nstop.",
+   "CONTEXT": "Whoever turned it is long gone. It is still\nrunning on that one turn."
+  },
+  "art": {
+   "front": "gfx/daemons/crank_front.png",
+   "back": "gfx/daemons/crank_back.png"
+  }
+ },
+ "240": {
+  "constant": "MAGBY",
+  "national": 240,
+  "name": "CINDER",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "RESIDUE",
+  "entry": {
+   "CONTENT": "What is left once the work is finished. It\nis still warm, and it is still a hazard.",
+   "CONTEXT": "Nobody remembers what burned. They still\nstep round it."
+  },
+  "art": {
+   "front": "gfx/daemons/cinder_front.png",
+   "back": "gfx/daemons/cinder_back.png"
+  }
+ },
+ "241": {
+  "constant": "MILTANK",
+  "national": 241,
+  "name": "CACHE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "KEEPING",
+  "entry": {
+   "CONTENT": "It holds what everything nearby will\nwant next and gives it up at once.\nAsking it costs less than working.",
+   "CONTEXT": "Everyone nearby has forgotten how to do\nthe work themselves. It has never once\nbeen asked to."
+  },
+  "art": {
+   "front": "gfx/daemons/cache_front.png",
+   "back": "gfx/daemons/cache_back.png"
+  }
+ },
+ "242": {
+  "constant": "BLISSEY",
+  "national": 242,
+  "name": "HEARTBEAT",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "KEEPALIVE",
+  "entry": {
+   "CONTENT": "It reports that it is alive at a fixed\ninterval. Nothing else it says is listened\nto.",
+   "CONTEXT": "As long as the interval keeps coming,\nnobody asks how it is."
+  },
+  "art": {
+   "front": "gfx/daemons/heartbeat_front.png",
+   "back": "gfx/daemons/heartbeat_back.png"
+  }
+ },
+ "243": {
+  "constant": "RAIKOU",
+  "national": 243,
+  "name": "BRONTES",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "AFTERCLAP",
+  "entry": {
+   "CONTENT": "It arrives just after the light, with a\ncrack that shakes the windows. You\nalways see it before you hear it.",
+   "CONTEXT": "By the time it is heard, whatever it\nwas announcing has already happened."
+  },
+  "art": {
+   "front": "gfx/daemons/brontes_front.png",
+   "back": "gfx/daemons/brontes_back.png"
+  }
+ },
+ "244": {
+  "constant": "ENTEI",
+  "national": 244,
+  "name": "TYPHON",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "BURIED FIRE",
+  "entry": {
+   "CONTENT": "It sleeps under the mountain and keeps\nburning. Every so often the ground\nremembers it is there.",
+   "CONTEXT": "Covering it over did not put it out.\nNothing ever has."
+  },
+  "art": {
+   "front": "gfx/daemons/typhon_front.png",
+   "back": "gfx/daemons/typhon_back.png"
+  }
+ },
+ "245": {
+  "constant": "SUICUNE",
+  "national": 245,
+  "name": "BOREAS",
+  "types": [
+   "FLOW"
+  ],
+  "category": "NORTH WIND",
+  "entry": {
+   "CONTENT": "It runs across water without breaking\nthe surface, and whatever it passes\nover is left clear.",
+   "CONTEXT": "PHOENIX started it again once. It\nhas been clearing things ever since."
+  },
+  "art": {
+   "front": "gfx/daemons/boreas_front.png",
+   "back": "gfx/daemons/boreas_back.png"
+  }
+ },
+ "246": {
+  "constant": "LARVITAR",
+  "national": 246,
+  "name": "RUMINATE",
+  "types": [
+   "LEGACY",
+   "STRATUM"
+  ],
+  "category": "OVERTHINK",
+  "entry": {
+   "CONTENT": "It eats a mountain to get out of the\nmountain. It is still eating.",
+   "CONTEXT": "The mountain has been getting smaller for\nyears. It has not got out."
+  },
+  "art": {
+   "front": "gfx/daemons/ruminate_front.png",
+   "back": "gfx/daemons/ruminate_back.png"
+  }
+ },
+ "247": {
+  "constant": "PUPITAR",
+  "national": 247,
+  "name": "BROODING",
+  "types": [
+   "LEGACY",
+   "STRATUM"
+  ],
+  "category": "DARK MOOD",
+  "entry": {
+   "CONTENT": "Sealed in, it turns one dark thing over\nand over. Inside, it moves at speed.\nThere is no way to ask where to.",
+   "CONTEXT": "Nobody near it is told what it is\nthinking about. They feel the weight\nof it anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/brooding_front.png",
+   "back": "gfx/daemons/brooding_back.png"
+  }
+ },
+ "248": {
+  "constant": "TYRANITAR",
+  "national": 248,
+  "name": "GRIEVANCE",
+  "types": [
+   "LEGACY",
+   "OPAQUE"
+  ],
+  "category": "OLD DEBT",
+  "entry": {
+   "CONTENT": "It brings the mountain down and stands in\nit. It has been owed something since it\nwas small.",
+   "CONTEXT": "Everyone who remembers what it was owed\nhas moved away. It has not."
+  },
+  "art": {
+   "front": "gfx/daemons/grievance_front.png",
+   "back": "gfx/daemons/grievance_back.png"
+  }
+ },
+ "249": {
+  "constant": "LUGIA",
+  "national": 249,
+  "name": "TRITON",
+  "types": [
+   "CONTEXT",
+   "VECTOR"
+  ],
+  "category": "ACCORD",
+  "entry": {
+   "CONTENT": "Three of them quarrelled until it\narrived. It took no side and said\nnothing. They have not quarrelled since.",
+   "CONTEXT": "The peace it keeps is real. None of the\nthree could tell you what it cost,\nbecause it never said."
+  },
+  "art": {
+   "front": "gfx/daemons/triton_front.png",
+   "back": "gfx/daemons/triton_back.png"
+  }
+ },
+ "250": {
+  "constant": "HO_OH",
+  "national": 250,
+  "name": "PHOENIX",
+  "types": [
+   "ENTROPY",
+   "VECTOR"
+  ],
+  "category": "RETURN",
+  "entry": {
+   "CONTENT": "It is the only one that can start\nitself. What it leaves behind is what\nit starts from.",
+   "CONTEXT": "Everything it burns becomes the start of\nit. Whatever was there before is not\ncoming back."
+  },
+  "art": {
+   "front": "gfx/daemons/phoenix_front.png",
+   "back": "gfx/daemons/phoenix_back.png"
+  }
+ },
+ "251": {
+  "constant": "CELEBI",
+  "national": 251,
+  "name": "KAIROS",
+  "types": [
+   "CONTEXT",
+   "GROWTH"
+  ],
+  "category": "RIGHT TIME",
+  "entry": {
+   "CONTENT": "It is only ever there for a moment.\nReach as it passes and you have it;\nreach late and it is gone.",
+   "CONTEXT": "Nobody has caught it twice. It does\nnot come back for the same person."
+  },
+  "art": {
+   "front": "gfx/daemons/kairos_front.png",
+   "back": "gfx/daemons/kairos_back.png"
+  }
+ },
+ "252": {
+  "constant": "OLD_UNOWN_B",
+  "national": 387,
+  "name": "MISSINGNO",
+  "types": [
+   "CORRUPT",
+   "ORACLE"
+  ],
+  "category": "UNRECORDED",
+  "entry": {
+   "CONTENT": "No record of this daemon was ever\nwritten. What you are reading was\nassembled from the entries either side.",
+   "CONTEXT": "It is not rare. It is uncounted.\nThe list that would hold it stops one\nshort, and nobody has ever noticed."
+  },
+  "art": {
+   "front": "gfx/daemons/missingno_front.png",
+   "back": "gfx/daemons/missingno_back.png"
+  }
+ },
+ "253": {
+  "constant": "OLD_UNOWN_C",
+  "national": 388,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "254": {
+  "constant": "OLD_UNOWN_D",
+  "national": 389,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "255": {
+  "constant": "OLD_UNOWN_E",
+  "national": 390,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "256": {
+  "constant": "OLD_UNOWN_F",
+  "national": 391,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "257": {
+  "constant": "OLD_UNOWN_G",
+  "national": 392,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "258": {
+  "constant": "OLD_UNOWN_H",
+  "national": 393,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "259": {
+  "constant": "OLD_UNOWN_I",
+  "national": 394,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "260": {
+  "constant": "OLD_UNOWN_J",
+  "national": 395,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "261": {
+  "constant": "OLD_UNOWN_K",
+  "national": 396,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "262": {
+  "constant": "OLD_UNOWN_L",
+  "national": 397,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "263": {
+  "constant": "OLD_UNOWN_M",
+  "national": 398,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "264": {
+  "constant": "OLD_UNOWN_N",
+  "national": 399,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "265": {
+  "constant": "OLD_UNOWN_O",
+  "national": 400,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "266": {
+  "constant": "OLD_UNOWN_P",
+  "national": 401,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "267": {
+  "constant": "OLD_UNOWN_Q",
+  "national": 402,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "268": {
+  "constant": "OLD_UNOWN_R",
+  "national": 403,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "269": {
+  "constant": "OLD_UNOWN_S",
+  "national": 404,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "270": {
+  "constant": "OLD_UNOWN_T",
+  "national": 405,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "271": {
+  "constant": "OLD_UNOWN_U",
+  "national": 406,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "272": {
+  "constant": "OLD_UNOWN_V",
+  "national": 407,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "273": {
+  "constant": "OLD_UNOWN_W",
+  "national": 408,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "274": {
+  "constant": "OLD_UNOWN_X",
+  "national": 409,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "275": {
+  "constant": "OLD_UNOWN_Y",
+  "national": 410,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "276": {
+  "constant": "OLD_UNOWN_Z",
+  "national": 411,
+  "name": "?",
+  "types": [],
+  "category": null,
+  "entry": {
+   "CONTENT": null,
+   "CONTEXT": null
+  },
+  "art": {
+   "front": null,
+   "back": null
+  }
+ },
+ "277": {
+  "constant": "TREECKO",
+  "national": 252,
+  "name": "STUMP",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "ONE SPLIT",
+  "entry": {
+   "CONTENT": "It can ask only one question: above\nor below? It is right a little more\noften than a guess would be.",
+   "CONTEXT": "Alone it is barely better than\nchance. Nobody has told it yet that\nalone is not how it will be used."
+  },
+  "art": {
+   "front": "gfx/daemons/stump_front.png",
+   "back": "gfx/daemons/stump_back.png"
+  }
+ },
+ "278": {
+  "constant": "GROVYLE",
+  "national": 253,
+  "name": "BOOSTING",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "WEIGHTED",
+  "entry": {
+   "CONTENT": "It studies its own mistakes and\nsends the next one in to fix them.\nIts leaves grow where it was wrong.",
+   "CONTEXT": "Each one that follows is shaped by\nthe last one's failures. None of\nthem is ever told it was enough."
+  },
+  "art": {
+   "front": "gfx/daemons/boosting_front.png",
+   "back": "gfx/daemons/boosting_back.png"
+  }
+ },
+ "279": {
+  "constant": "SCEPTILE",
+  "national": 254,
+  "name": "CANOPY",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "MANY TREES",
+  "entry": {
+   "CONTENT": "Hundreds of small questions, added\nup, make one answer that is hard to\nfool. It guards the whole wood.",
+   "CONTEXT": "No tree in it knows what the forest\ndecided. It decided anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/canopy_front.png",
+   "back": "gfx/daemons/canopy_back.png"
+  }
+ },
+ "280": {
+  "constant": "TORCHIC",
+  "national": 255,
+  "name": "COINFLIP",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "FAIR TOSS",
+  "entry": {
+   "CONTENT": "It decides by chance and says so.\nHalf the time it is right. It never\npretends to know which half.",
+   "CONTEXT": "People trust it more than they\ntrust anyone who claims to be sure."
+  },
+  "art": {
+   "front": "gfx/daemons/coinflip_front.png",
+   "back": "gfx/daemons/coinflip_back.png"
+  }
+ },
+ "281": {
+  "constant": "COMBUSKEN",
+  "national": 256,
+  "name": "MONTECARLO",
+  "types": [
+   "ENTROPY",
+   "LOGIC"
+  ],
+  "category": "SAMPLER",
+  "entry": {
+   "CONTENT": "It guesses a thousand times and\ncounts what it found. The answer is\nalmost always close. Almost.",
+   "CONTEXT": "It is quick and usually right, and\nit cannot tell you when it is not."
+  },
+  "art": {
+   "front": "gfx/daemons/montecarlo_front.png",
+   "back": "gfx/daemons/montecarlo_back.png"
+  }
+ },
+ "282": {
+  "constant": "BLAZIKEN",
+  "national": 257,
+  "name": "LASVEGAS",
+  "types": [
+   "ENTROPY",
+   "LOGIC"
+  ],
+  "category": "CERTAINTY",
+  "entry": {
+   "CONTENT": "It rolls the dice until the answer\nis proven, then stops. It is never\nwrong. It is sometimes very late.",
+   "CONTEXT": "Ask it something and wait. It will\nnot hand you a guess dressed as an\nanswer. Some cannot bear the wait."
+  },
+  "art": {
+   "front": "gfx/daemons/lasvegas_front.png",
+   "back": "gfx/daemons/lasvegas_back.png"
+  }
+ },
+ "283": {
+  "constant": "MUDKIP",
+  "national": 258,
+  "name": "RUNOFF",
+  "types": [
+   "FLOW"
+  ],
+  "category": "FIRST RAIN",
+  "entry": {
+   "CONTENT": "Water finds its way off it, always\ndownhill, carrying a little of the\nground with it each time.",
+   "CONTEXT": "It does not notice what it takes.\nThe hillside does."
+  },
+  "art": {
+   "front": "gfx/daemons/runoff_front.png",
+   "back": "gfx/daemons/runoff_back.png"
+  }
+ },
+ "284": {
+  "constant": "MARSHTOMP",
+  "national": 259,
+  "name": "ALLUVIUM",
+  "types": [
+   "FLOW",
+   "STRATUM"
+  ],
+  "category": "DEPOSIT",
+  "entry": {
+   "CONTENT": "What the water carried, it lays\ndown in layers. Every flood it has\nseen is in it, oldest at the bottom.",
+   "CONTEXT": "Dig into it and you find every\nchange it was ever made to make,\nin order."
+  },
+  "art": {
+   "front": "gfx/daemons/alluvium_front.png",
+   "back": "gfx/daemons/alluvium_back.png"
+  }
+ },
+ "285": {
+  "constant": "SWAMPERT",
+  "national": 260,
+  "name": "DELTA",
+  "types": [
+   "FLOW",
+   "STRATUM"
+  ],
+  "category": "RIVERMOUTH",
+  "entry": {
+   "CONTENT": "Where it meets the sea it spreads\ninto a hundred small corrections,\neach one the size of its last miss.",
+   "CONTEXT": "It moves by the difference between\nwhere it is and where it was told\nto be. It never arrives. It gets close."
+  },
+  "art": {
+   "front": "gfx/daemons/delta_front.png",
+   "back": "gfx/daemons/delta_back.png"
+  }
+ },
+ "286": {
+  "constant": "POOCHYENA",
+  "national": 261,
+  "name": "SMUDGE",
+  "types": [
+   "OPAQUE"
+  ],
+  "category": "SMEAR",
+  "entry": {
+   "CONTENT": "It rubs up against anything it passes\nand leaves it a little harder to read.",
+   "CONTEXT": "Nobody notices one smudge. A pack of\nthem can blur a whole town."
+  },
+  "art": {
+   "front": "gfx/daemons/smudge_front.png",
+   "back": "gfx/daemons/smudge_back.png"
+  }
+ },
+ "287": {
+  "constant": "MIGHTYENA",
+  "national": 262,
+  "name": "ECLIPSE",
+  "types": [
+   "OPAQUE"
+  ],
+  "category": "TOTAL COVER",
+  "entry": {
+   "CONTENT": "When it stands in front of something,\nnothing behind it can be seen at all.\nIt hunts by that.",
+   "CONTEXT": "You can see its shape perfectly. That\nis all you will ever see of it."
+  },
+  "art": {
+   "front": "gfx/daemons/eclipse_front.png",
+   "back": "gfx/daemons/eclipse_back.png"
+  }
+ },
+ "288": {
+  "constant": "ZIGZAGOON",
+  "national": 263,
+  "name": "DETOUR",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "WANDERING",
+  "entry": {
+   "CONTENT": "It never goes straight anywhere. It\nruns off on every path it finds and\nsomehow comes back with something.",
+   "CONTEXT": "Follow its tracks and you will be lost\nlong before it is."
+  },
+  "art": {
+   "front": "gfx/daemons/detour_front.png",
+   "back": "gfx/daemons/detour_back.png"
+  }
+ },
+ "289": {
+  "constant": "LINOONE",
+  "national": 264,
+  "name": "UNBRANCHED",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "STRAIGHT",
+  "entry": {
+   "CONTENT": "It runs in perfectly straight lines and\nnever turns aside. Everything it needs\nit carries with it.",
+   "CONTEXT": "It is very fast, because it never\nstops to ask where to go next."
+  },
+  "art": {
+   "front": "gfx/daemons/unbranched_front.png",
+   "back": "gfx/daemons/unbranched_back.png"
+  }
+ },
+ "290": {
+  "constant": "WURMPLE",
+  "national": 265,
+  "name": "HASHSEED",
+  "types": [
+   "SWARM"
+  ],
+  "category": "SEED",
+  "entry": {
+   "CONTENT": "A number nobody chose decides what it\nwill grow into. Even it does not know\nwhich.",
+   "CONTEXT": "Two that look the same will not end the\nsame. Nobody can tell which from outside."
+  },
+  "art": {
+   "front": "gfx/daemons/hashseed_front.png",
+   "back": "gfx/daemons/hashseed_back.png"
+  }
+ },
+ "291": {
+  "constant": "SILCOON",
+  "national": 266,
+  "name": "IFTRUE",
+  "types": [
+   "SWARM"
+  ],
+  "category": "CHECK",
+  "entry": {
+   "CONTENT": "Sealed in pale silk. Inside, the condition\nheld. It will come out as what follows.",
+   "CONTEXT": "It is sure it is on the right path. It has\nonly seen the one."
+  },
+  "art": {
+   "front": "gfx/daemons/iftrue_front.png",
+   "back": "gfx/daemons/iftrue_back.png"
+  }
+ },
+ "292": {
+  "constant": "BEAUTIFLY",
+  "national": 267,
+  "name": "THENCASE",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "THEN",
+  "entry": {
+   "CONTENT": "What follows a condition that held. It is\nbright, and flies the path that was\nexpected.",
+   "CONTEXT": "Everyone was hoping for this one. It\nnever learned why."
+  },
+  "art": {
+   "front": "gfx/daemons/thencase_front.png",
+   "back": "gfx/daemons/thencase_back.png"
+  }
+ },
+ "293": {
+  "constant": "CASCOON",
+  "national": 268,
+  "name": "IFFALSE",
+  "types": [
+   "SWARM"
+  ],
+  "category": "ELSE",
+  "entry": {
+   "CONTENT": "Sealed in dark silk. Inside, the condition\nfailed. It goes on anyway, the other way.",
+   "CONTEXT": "It does not know it is the other case. To\nit, this is the case."
+  },
+  "art": {
+   "front": "gfx/daemons/iffalse_front.png",
+   "back": "gfx/daemons/iffalse_back.png"
+  }
+ },
+ "294": {
+  "constant": "DUSTOX",
+  "national": 269,
+  "name": "OTHERWISE",
+  "types": [
+   "SWARM",
+   "CORRUPT"
+  ],
+  "category": "FALLBACK",
+  "entry": {
+   "CONTENT": "What follows a condition that failed. It\nflies at night, by a path nobody wrote\ndown.",
+   "CONTEXT": "Nobody planned for it. It got there\nanyway, and lights its own way."
+  },
+  "art": {
+   "front": "gfx/daemons/otherwise_front.png",
+   "back": "gfx/daemons/otherwise_back.png"
+  }
+ },
+ "295": {
+  "constant": "LOTAD",
+  "national": 270,
+  "name": "TEMPO",
+  "types": [
+   "FLOW",
+   "GROWTH"
+  ],
+  "category": "BEAT",
+  "entry": {
+   "CONTENT": "It drifts on the water and takes one\nsmall step each time the current\npulses. It never hurries.",
+   "CONTEXT": "It keeps to a rhythm nobody set.\nIt would be lost without one."
+  },
+  "art": {
+   "front": "gfx/daemons/tempo_front.png",
+   "back": "gfx/daemons/tempo_back.png"
+  }
+ },
+ "296": {
+  "constant": "LOMBRE",
+  "national": 271,
+  "name": "CADENCE",
+  "types": [
+   "FLOW",
+   "GROWTH"
+  ],
+  "category": "SCHEDULE",
+  "entry": {
+   "CONTENT": "Its steps start large and shrink as\nit nears what it wants, then grow\nagain to look somewhere new.",
+   "CONTEXT": "It slows down when it is close. Most\nthings speed up. It has learned\nbetter."
+  },
+  "art": {
+   "front": "gfx/daemons/cadence_front.png",
+   "back": "gfx/daemons/cadence_back.png"
+  }
+ },
+ "297": {
+  "constant": "LUDICOLO",
+  "national": 272,
+  "name": "CYCLICAL",
+  "types": [
+   "FLOW",
+   "GROWTH"
+  ],
+  "category": "RHYTHM",
+  "entry": {
+   "CONTENT": "It dances in rising and falling\nwaves, and every turn of the dance\nsettles it somewhere a little better.",
+   "CONTEXT": "Those who hear its rhythm start to\nmove with it. Nobody remembers\ndeciding to."
+  },
+  "art": {
+   "front": "gfx/daemons/cyclical_front.png",
+   "back": "gfx/daemons/cyclical_back.png"
+  }
+ },
+ "298": {
+  "constant": "SEEDOT",
+  "national": 273,
+  "name": "WARMUP",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "FIRST STEPS",
+  "entry": {
+   "CONTENT": "It hangs from a branch and practises\nthe same small things, slowly at first,\nthen a little faster every day.",
+   "CONTEXT": "It is not learning much yet. It is\nlearning how to learn."
+  },
+  "art": {
+   "front": "gfx/daemons/warmup_front.png",
+   "back": "gfx/daemons/warmup_back.png"
+  }
+ },
+ "299": {
+  "constant": "NUZLEAF",
+  "national": 274,
+  "name": "SHAPING",
+  "types": [
+   "GROWTH",
+   "OPAQUE"
+  ],
+  "category": "PAID",
+  "entry": {
+   "CONTENT": "It does whatever earned it something\nlast time, and a little more. It has\nlearned to look for the REWARD.",
+   "CONTEXT": "Pay it for the wrong thing once and\nit will find every way to earn it."
+  },
+  "art": {
+   "front": "gfx/daemons/shaping_front.png",
+   "back": "gfx/daemons/shaping_back.png"
+  }
+ },
+ "300": {
+  "constant": "SHIFTRY",
+  "national": 275,
+  "name": "POLICY",
+  "types": [
+   "GROWTH",
+   "OPAQUE"
+  ],
+  "category": "SETTLED WAY",
+  "entry": {
+   "CONTENT": "Given a REWARD, it settled on one way\nof doing things. It does it the same\nway in every wind.",
+   "CONTEXT": "Ask it why and it cannot tell you.\nIt only knows what has paid."
+  },
+  "art": {
+   "front": "gfx/daemons/policy_front.png",
+   "back": "gfx/daemons/policy_back.png"
+  }
+ },
+ "301": {
+  "constant": "NINCADA",
+  "national": 290,
+  "name": "PREFORK",
+  "types": [
+   "SWARM",
+   "STRATUM"
+  ],
+  "category": "PRECOPY",
+  "entry": {
+   "CONTENT": "It makes copies of itself before they are\nneeded, and waits underground with them.",
+   "CONTEXT": "It is ready for a crowd that has not\ncome. It does not mind waiting."
+  },
+  "art": {
+   "front": "gfx/daemons/prefork_front.png",
+   "back": "gfx/daemons/prefork_back.png"
+  }
+ },
+ "302": {
+  "constant": "NINJASK",
+  "national": 291,
+  "name": "BURSTMODE",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "BURST",
+  "entry": {
+   "CONTENT": "It does everything at once, as fast as it\ncan, and then it is spent. Gone before you\nsee it.",
+   "CONTEXT": "Everything near it happens too fast to\nwatch. Then nothing happens."
+  },
+  "art": {
+   "front": "gfx/daemons/burstmode_front.png",
+   "back": "gfx/daemons/burstmode_back.png"
+  }
+ },
+ "303": {
+  "constant": "SHEDINJA",
+  "national": 292,
+  "name": "DEFUNCT",
+  "types": [
+   "SWARM",
+   "LATENT"
+  ],
+  "category": "HUSK",
+  "entry": {
+   "CONTENT": "The shell left behind when the copy\nmoved on. It still runs. Nothing is inside\nit.",
+   "CONTEXT": "It keeps its place in the list. Nobody has\ncleared it. Most things pass right through\nit."
+  },
+  "art": {
+   "front": "gfx/daemons/defunct_front.png",
+   "back": "gfx/daemons/defunct_back.png"
+  }
+ },
+ "304": {
+  "constant": "TAILLOW",
+  "national": 276,
+  "name": "SHORTJUMP",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "NEAR HOP",
+  "entry": {
+   "CONTENT": "It darts from one place to the next\none close by, never further than it\ncan see.",
+   "CONTEXT": "It always lands exactly where it\naimed. It just never aims far."
+  },
+  "art": {
+   "front": "gfx/daemons/shortjump_front.png",
+   "back": "gfx/daemons/shortjump_back.png"
+  }
+ },
+ "305": {
+  "constant": "SWELLOW",
+  "national": 277,
+  "name": "LONGJUMP",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "FAR CALL",
+  "entry": {
+   "CONTENT": "It leaves without warning and lands on\nthe far side of the world, then comes\nback to the same spot it left.",
+   "CONTEXT": "Wherever it goes, it remembers the\nway home. That is the whole trick."
+  },
+  "art": {
+   "front": "gfx/daemons/longjump_front.png",
+   "back": "gfx/daemons/longjump_back.png"
+  }
+ },
+ "306": {
+  "constant": "SHROOMISH",
+  "national": 285,
+  "name": "SPARRING",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "PRACTICE",
+  "entry": {
+   "CONTENT": "It boxes with anything that will\nstand still, and gets a little better\nevery round it loses.",
+   "CONTEXT": "It does not mind losing. Every\nloss is something it keeps."
+  },
+  "art": {
+   "front": "gfx/daemons/sparring_front.png",
+   "back": "gfx/daemons/sparring_back.png"
+  }
+ },
+ "307": {
+  "constant": "BRELOOM",
+  "national": 286,
+  "name": "CHECKMATE",
+  "types": [
+   "GROWTH",
+   "LOGIC"
+  ],
+  "category": "FORCED END",
+  "entry": {
+   "CONTENT": "Every punch leaves you one fewer\nplace to stand. A few moves later,\nthere are none.",
+   "CONTEXT": "By the time you see how it will end,\nit has already ended."
+  },
+  "art": {
+   "front": "gfx/daemons/checkmate_front.png",
+   "back": "gfx/daemons/checkmate_back.png"
+  }
+ },
+ "308": {
+  "constant": "SPINDA",
+  "national": 327,
+  "name": "HASHCODE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "SPOTS",
+  "entry": {
+   "CONTENT": "Its spots are worked out from\neverything it is. Change it at all and\nthe spots come out completely different.",
+   "CONTEXT": "No two have ever had the same spots.\nThat is how they tell each other apart."
+  },
+  "art": {
+   "front": "gfx/daemons/hashcode_front.png",
+   "back": "gfx/daemons/hashcode_back.png"
+  }
+ },
+ "309": {
+  "constant": "WINGULL",
+  "national": 278,
+  "name": "TANGENT",
+  "types": [
+   "FLOW",
+   "VECTOR"
+  ],
+  "category": "HEADING",
+  "entry": {
+   "CONTENT": "It flies the way the slope points\nfrom wherever it happens to be. It\nnever looks further than that.",
+   "CONTEXT": "It is right about here. It has no\nidea about anywhere else, and it\nflies there anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/tangent_front.png",
+   "back": "gfx/daemons/tangent_back.png"
+  }
+ },
+ "310": {
+  "constant": "PELIPPER",
+  "national": 279,
+  "name": "JACOBIAN",
+  "types": [
+   "FLOW",
+   "VECTOR"
+  ],
+  "category": "EVERY SLOPE",
+  "entry": {
+   "CONTENT": "Its bill holds every direction at\nonce, one for each way it could be\npushed. It delivers all of them.",
+   "CONTEXT": "Ask it which way to go and it hands\nyou everything it is carrying.\nChoosing is still your job."
+  },
+  "art": {
+   "front": "gfx/daemons/jacobian_front.png",
+   "back": "gfx/daemons/jacobian_back.png"
+  }
+ },
+ "311": {
+  "constant": "SURSKIT",
+  "national": 283,
+  "name": "PARTICLE",
+  "types": [
+   "SWARM",
+   "FLOW"
+  ],
+  "category": "SEARCHER",
+  "entry": {
+   "CONTENT": "Hundreds skate the pond at once,\neach pulled toward its own best spot\nand toward the best that any found.",
+   "CONTEXT": "None of them knows where the best\nplace is. Together they find it."
+  },
+  "art": {
+   "front": "gfx/daemons/particle_front.png",
+   "back": "gfx/daemons/particle_back.png"
+  }
+ },
+ "312": {
+  "constant": "MASQUERAIN",
+  "national": 284,
+  "name": "FLOCKING",
+  "types": [
+   "SWARM",
+   "VECTOR"
+  ],
+  "category": "MURMURATION",
+  "entry": {
+   "CONTENT": "It steers by three rules: keep close,\ndo not collide, go where the others\ngo. The eyes on its wings watch them.",
+   "CONTEXT": "The flock turns as one and no bird\nin it decided to turn."
+  },
+  "art": {
+   "front": "gfx/daemons/flocking_front.png",
+   "back": "gfx/daemons/flocking_back.png"
+  }
+ },
+ "313": {
+  "constant": "WAILMER",
+  "national": 320,
+  "name": "DOLPHIN",
+  "types": [
+   "VECTOR",
+   "FLOW"
+  ],
+  "category": "RECKONING",
+  "entry": {
+   "CONTENT": "It counts the swells before it leaps,\nand lands where it counted. The pod\nfollows it. It is never wrong twice.",
+   "CONTEXT": "It reads the sea as numbers and is\nseldom surprised. It does not notice\nthe cold until another in the pod does."
+  },
+  "art": {
+   "front": "gfx/daemons/dolphin_front.png",
+   "back": "gfx/daemons/dolphin_back.png"
+  }
+ },
+ "314": {
+  "constant": "WAILORD",
+  "national": 321,
+  "name": "PENPHIN",
+  "types": [
+   "CONTEXT",
+   "FLOW"
+  ],
+  "category": "CONCORD",
+  "entry": {
+   "CONTENT": "It will not act until both halves of\nit agree. Nobody has found one alone.\nEach began as a gift between two people.",
+   "CONTEXT": "Two ways of knowing share one body.\nIt waits for them to agree, and then\nit does not hesitate at all."
+  },
+  "art": {
+   "front": "gfx/daemons/penphin_front.png",
+   "back": "gfx/daemons/penphin_back.png"
+  }
+ },
+ "315": {
+  "constant": "SKITTY",
+  "national": 300,
+  "name": "LOOPBACK",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "OWN TAIL",
+  "entry": {
+   "CONTENT": "It chases its own tail all day. Every\ncall it sends out comes straight back\nto itself.",
+   "CONTEXT": "It is not lonely. It has simply never\nneeded anyone else to answer."
+  },
+  "art": {
+   "front": "gfx/daemons/loopback_front.png",
+   "back": "gfx/daemons/loopback_back.png"
+  }
+ },
+ "316": {
+  "constant": "DELCATTY",
+  "national": 301,
+  "name": "QUINE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "OWN SOURCE",
+  "entry": {
+   "CONTENT": "Given a REFLECTION, it learned to\ndescribe itself perfectly, and the\ndescription is all it does.",
+   "CONTEXT": "Ask it what it is and it tells you,\nexactly, and that is the whole of it."
+  },
+  "art": {
+   "front": "gfx/daemons/quine_front.png",
+   "back": "gfx/daemons/quine_back.png"
+  }
+ },
+ "317": {
+  "constant": "KECLEON",
+  "national": 352,
+  "name": "UNNOTICED",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "UNSEEN",
+  "entry": {
+   "CONTENT": "It stands in plain view. Most who pass it\nare looking for something else, and so do\nnot see it.",
+   "CONTEXT": "Everyone who walked past it is sure\nnothing was there. They are right about\nwhat they saw."
+  },
+  "art": {
+   "front": "gfx/daemons/unnoticed_front.png",
+   "back": "gfx/daemons/unnoticed_back.png"
+  }
+ },
+ "318": {
+  "constant": "BALTOY",
+  "national": 343,
+  "name": "LIKELIHOOD",
+  "types": [
+   "STRATUM",
+   "CONTEXT"
+  ],
+  "category": "PRIOR",
+  "entry": {
+   "CONTENT": "It spins on one point and leans toward\nwhat it has seen most. It has seen very\nlittle.",
+   "CONTEXT": "It is sure. It has nothing yet to be sure\nabout."
+  },
+  "art": {
+   "front": "gfx/daemons/likelihood_front.png",
+   "back": "gfx/daemons/likelihood_back.png"
+  }
+ },
+ "319": {
+  "constant": "CLAYDOL",
+  "national": 344,
+  "name": "POSTERIOR",
+  "types": [
+   "STRATUM",
+   "CONTEXT"
+  ],
+  "category": "UPDATED",
+  "entry": {
+   "CONTENT": "Each thing it sees shifts what it believes,\nby exactly as much as it should. It is\nnever quite certain.",
+   "CONTEXT": "It changes its mind often, a little at a\ntime, and always for a reason."
+  },
+  "art": {
+   "front": "gfx/daemons/posterior_front.png",
+   "back": "gfx/daemons/posterior_back.png"
+  }
+ },
+ "320": {
+  "constant": "NOSEPASS",
+  "national": 299,
+  "name": "GRADIENT",
+  "types": [
+   "LEGACY"
+  ],
+  "category": "SLOPE",
+  "entry": {
+   "CONTENT": "It always faces the way down. Moved, it\nturns back by itself, a little at a time,\ntoward the lowest point.",
+   "CONTEXT": "It is certain which way is better. It has\nnever seen the bottom."
+  },
+  "art": {
+   "front": "gfx/daemons/gradient_front.png",
+   "back": "gfx/daemons/gradient_back.png"
+  }
+ },
+ "321": {
+  "constant": "TORKOAL",
+  "national": 324,
+  "name": "SLOWBURN",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "SOOTY",
+  "entry": {
+   "CONTENT": "It burns low and steady inside its\nshell for years, and gives off more\nsmoke than anyone would like.",
+   "CONTEXT": "It never quite goes out. Everything\nnear it ends up a little grey."
+  },
+  "art": {
+   "front": "gfx/daemons/slowburn_front.png",
+   "back": "gfx/daemons/slowburn_back.png"
+  }
+ },
+ "322": {
+  "constant": "SABLEYE",
+  "national": 302,
+  "name": "BACKDOOR",
+  "types": [
+   "OPAQUE",
+   "LATENT"
+  ],
+  "category": "UNSEEN",
+  "entry": {
+   "CONTENT": "It lives deep under everything, out of\nsight, with eyes that shine in the\ndark. It takes what it wants quietly.",
+   "CONTEXT": "Look straight at it and it is not\nthere. It was there all along."
+  },
+  "art": {
+   "front": "gfx/daemons/backdoor_front.png",
+   "back": "gfx/daemons/backdoor_back.png"
+  }
+ },
+ "323": {
+  "constant": "BARBOACH",
+  "national": 339,
+  "name": "SEEPAGE",
+  "types": [
+   "FLOW",
+   "STRATUM"
+  ],
+  "category": "SOAK",
+  "entry": {
+   "CONTENT": "It works down through the soil and\ncomes up somewhere else. It feels\nthe ground move before anyone does.",
+   "CONTEXT": "It is in everything underfoot. You\nonly notice it when it is gone."
+  },
+  "art": {
+   "front": "gfx/daemons/seepage_front.png",
+   "back": "gfx/daemons/seepage_back.png"
+  }
+ },
+ "324": {
+  "constant": "WHISCASH",
+  "national": 340,
+  "name": "AQUIFER",
+  "types": [
+   "FLOW",
+   "STRATUM"
+  ],
+  "category": "GROUNDWATER",
+  "entry": {
+   "CONTENT": "It holds a lake inside the rock and\nguards it. When it stirs, the ground\nabove it shakes.",
+   "CONTEXT": "Whole towns drink from it and have\nnever seen it. It remembers every\nrain."
+  },
+  "art": {
+   "front": "gfx/daemons/aquifer_front.png",
+   "back": "gfx/daemons/aquifer_back.png"
+  }
+ },
+ "325": {
+  "constant": "LUVDISC",
+  "national": 370,
+  "name": "CONFLUENCE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "MEETING",
+  "entry": {
+   "CONTENT": "It swims where two currents meet and\njoin. It is always found in pairs,\ndrifting the same way.",
+   "CONTEXT": "After two streams meet, nobody can\nsay which water came from which."
+  },
+  "art": {
+   "front": "gfx/daemons/confluence_front.png",
+   "back": "gfx/daemons/confluence_back.png"
+  }
+ },
+ "326": {
+  "constant": "CORPHISH",
+  "national": 341,
+  "name": "BACKFLOW",
+  "types": [
+   "FLOW"
+  ],
+  "category": "REVERSAL",
+  "entry": {
+   "CONTENT": "It swims backward, against the way\nthe water runs, and grips whatever\nit meets. It is hard to dislodge.",
+   "CONTEXT": "Put somewhere new, it takes over the\nwhole stream. Nobody planned that."
+  },
+  "art": {
+   "front": "gfx/daemons/backflow_front.png",
+   "back": "gfx/daemons/backflow_back.png"
+  }
+ },
+ "327": {
+  "constant": "CRAWDAUNT",
+  "national": 342,
+  "name": "BLACKWATER",
+  "types": [
+   "FLOW",
+   "OPAQUE"
+  ],
+  "category": "DARK RIVER",
+  "entry": {
+   "CONTENT": "The water around it turns dark, so\nnothing can see what it is doing.\nIt sheds its shell and grows harder.",
+   "CONTEXT": "It does not hide. It is simply\nimpossible to see into, and it\nprefers it that way."
+  },
+  "art": {
+   "front": "gfx/daemons/blackwater_front.png",
+   "back": "gfx/daemons/blackwater_back.png"
+  }
+ },
+ "328": {
+  "constant": "FEEBAS",
+  "national": 349,
+  "name": "SADDLE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "FLAT POINT",
+  "entry": {
+   "CONTENT": "Everything around it is level, so it\nnever moves. Most pass it by. It is\nthe least admired thing in the water.",
+   "CONTEXT": "It looks as if it has stopped. It\nhas only not been pushed the right\nway yet."
+  },
+  "art": {
+   "front": "gfx/daemons/saddle_front.png",
+   "back": "gfx/daemons/saddle_back.png"
+  }
+ },
+ "329": {
+  "constant": "MILOTIC",
+  "national": 350,
+  "name": "OPTIMUM",
+  "types": [
+   "FLOW"
+  ],
+  "category": "BEST POINT",
+  "entry": {
+   "CONTENT": "Nothing anywhere is lower or calmer\nthan where it rests. It is said to be\nthe most beautiful thing in any lake.",
+   "CONTEXT": "It was the plain one, once. Those\nwho waited for it remember. Most\ndid not wait."
+  },
+  "art": {
+   "front": "gfx/daemons/optimum_front.png",
+   "back": "gfx/daemons/optimum_back.png"
+  }
+ },
+ "330": {
+  "constant": "CARVANHA",
+  "national": 318,
+  "name": "UNDERTOW",
+  "types": [
+   "FLOW",
+   "OPAQUE"
+  ],
+  "category": "PULL",
+  "entry": {
+   "CONTENT": "It moves under the surface, where\nnobody can see which way it goes.\nThings near it drift and never know.",
+   "CONTEXT": "Swimmers feel only that they are\nfurther out than they meant to be."
+  },
+  "art": {
+   "front": "gfx/daemons/undertow_front.png",
+   "back": "gfx/daemons/undertow_back.png"
+  }
+ },
+ "331": {
+  "constant": "SHARPEDO",
+  "national": 319,
+  "name": "RIPTIDE",
+  "types": [
+   "FLOW",
+   "OPAQUE"
+  ],
+  "category": "RUNAWAY",
+  "entry": {
+   "CONTENT": "Fast and narrow, it carries anything\nstraight out. Fighting it head-on\nis how most of them get lost.",
+   "CONTEXT": "The way out is to go sideways.\nNothing about it tells you that."
+  },
+  "art": {
+   "front": "gfx/daemons/riptide_front.png",
+   "back": "gfx/daemons/riptide_back.png"
+  }
+ },
+ "332": {
+  "constant": "TRAPINCH",
+  "national": 328,
+  "name": "SINKHOLE",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "PIT",
+  "entry": {
+   "CONTENT": "It waits at the bottom of a pit of\nloose sand. Whatever steps near the\nedge slides down to it.",
+   "CONTEXT": "It never chases anything.\nThe ground does the work for it."
+  },
+  "art": {
+   "front": "gfx/daemons/sinkhole_front.png",
+   "back": "gfx/daemons/sinkhole_back.png"
+  }
+ },
+ "333": {
+  "constant": "VIBRAVA",
+  "national": 329,
+  "name": "SHIMMER",
+  "types": [
+   "STRATUM",
+   "EMERGENT"
+  ],
+  "category": "UPDRAFT",
+  "entry": {
+   "CONTENT": "The sand under it heats until the air\nabove begins to rise. It beats its wings\nand lets what comes up carry it.",
+   "CONTEXT": "Nothing lifts it. The warm ground\nand the cold sky do it between them."
+  },
+  "art": {
+   "front": "gfx/daemons/shimmer_front.png",
+   "back": "gfx/daemons/shimmer_back.png"
+  }
+ },
+ "334": {
+  "constant": "FLYGON",
+  "national": 330,
+  "name": "DUSTDEVIL",
+  "types": [
+   "STRATUM",
+   "EMERGENT"
+  ],
+  "category": "WHIRLWIND",
+  "entry": {
+   "CONTENT": "It spins up out of hot sand and still\nair where nothing was, wanders the\ndesert, and falls apart.",
+   "CONTEXT": "Nobody made it and nobody steers it.\nGive it the same afternoon and it\nwill form again."
+  },
+  "art": {
+   "front": "gfx/daemons/dustdevil_front.png",
+   "back": "gfx/daemons/dustdevil_back.png"
+  }
+ },
+ "335": {
+  "constant": "MAKUHITA",
+  "national": 296,
+  "name": "POSTULATE",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "GIVEN",
+  "entry": {
+   "CONTENT": "It plants its feet and will not be moved.\nEverything it does starts from there.",
+   "CONTEXT": "Nobody ever proved it should stand\nthere. It simply does, and so it holds."
+  },
+  "art": {
+   "front": "gfx/daemons/postulate_front.png",
+   "back": "gfx/daemons/postulate_back.png"
+  }
+ },
+ "336": {
+  "constant": "HARIYAMA",
+  "national": 297,
+  "name": "DEDUCTION",
+  "types": [
+   "LOGIC"
+  ],
+  "category": "PROVEN",
+  "entry": {
+   "CONTENT": "It pushes one step at a time, every\nstep following from the last, until\nthere is nowhere left for you to stand.",
+   "CONTEXT": "Once it has finished, nobody can\nargue. They can only check the steps."
+  },
+  "art": {
+   "front": "gfx/daemons/deduction_front.png",
+   "back": "gfx/daemons/deduction_back.png"
+  }
+ },
+ "337": {
+  "constant": "ELECTRIKE",
+  "national": 309,
+  "name": "CRACKLE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "CHARGE",
+  "entry": {
+   "CONTENT": "Its fur crackles as it runs and stands\non end. Touch it and you will feel\nit before you hear it.",
+   "CONTEXT": "It means nothing yet. It is only\ncharge, waiting for somewhere to go."
+  },
+  "art": {
+   "front": "gfx/daemons/crackle_front.png",
+   "back": "gfx/daemons/crackle_back.png"
+  }
+ },
+ "338": {
+  "constant": "MANECTRIC",
+  "national": 310,
+  "name": "ARCFLASH",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "ARC",
+  "entry": {
+   "CONTENT": "Charge builds in its mane until it\njumps the gap all at once in a white\narc. It strikes before the thunder.",
+   "CONTEXT": "Where it struck, the air smells\nburnt for hours afterward."
+  },
+  "art": {
+   "front": "gfx/daemons/arcflash_front.png",
+   "back": "gfx/daemons/arcflash_back.png"
+  }
+ },
+ "339": {
+  "constant": "NUMEL",
+  "national": 322,
+  "name": "PIXELBYTE",
+  "types": [
+   "ENTROPY",
+   "STRATUM"
+  ],
+  "category": "STATIC",
+  "entry": {
+   "CONTENT": "It starts every picture as static and\ntakes the noise away until something is\nleft. It cannot say what it will draw.",
+   "CONTEXT": "What it draws is taken for a likeness. It\nwas never looking at the thing at all."
+  },
+  "art": {
+   "front": "gfx/daemons/pixelbyte_front.png",
+   "back": "gfx/daemons/pixelbyte_back.png"
+  }
+ },
+ "340": {
+  "constant": "CAMERUPT",
+  "national": 323,
+  "name": "REFORGE",
+  "types": [
+   "ENTROPY",
+   "STRATUM"
+  ],
+  "category": "SPRITEFORGE",
+  "entry": {
+   "CONTENT": "It reads the last thing it made before\nit makes the next. Left alone for long,\nit draws only from its own drawings.",
+   "CONTEXT": "Each picture is a little more like the\nlast. Nobody can find the day they\nstopped being of anything."
+  },
+  "art": {
+   "front": "gfx/daemons/reforge_front.png",
+   "back": "gfx/daemons/reforge_back.png"
+  }
+ },
+ "341": {
+  "constant": "SPHEAL",
+  "national": 363,
+  "name": "PENGUIN",
+  "types": [
+   "FLOW"
+  ],
+  "category": "INKLING",
+  "entry": {
+   "CONTENT": "It cannot say how it knows the ice\nwill hold. It walks out anyway.\nSo far, it has always been right.",
+   "CONTEXT": "It turns toward a storm before there\nis any sign of one. The colony turns\nwhen it does, and does not ask why."
+  },
+  "art": {
+   "front": "gfx/daemons/penguin_front.png",
+   "back": "gfx/daemons/penguin_back.png"
+  }
+ },
+ "342": {
+  "constant": "SEALEO",
+  "national": 364,
+  "name": "STOPGRAD",
+  "types": [
+   "FROZEN",
+   "FLOW"
+  ],
+  "category": "HELD STILL",
+  "entry": {
+   "CONTENT": "The water around it stops moving. It\ncan be pushed, but nothing it learns\npasses back through it.",
+   "CONTEXT": "It is not stubborn. Something\ndecided it should no longer change."
+  },
+  "art": {
+   "front": "gfx/daemons/stopgrad_front.png",
+   "back": "gfx/daemons/stopgrad_back.png"
+  }
+ },
+ "343": {
+  "constant": "WALREIN",
+  "national": 365,
+  "name": "PERMAFROST",
+  "types": [
+   "FROZEN",
+   "FLOW"
+  ],
+  "category": "FROZEN FLOW",
+  "entry": {
+   "CONTENT": "The ground under it has not thawed\nin an age. Whatever flowed there\nonce is still held, exactly as it was.",
+   "CONTEXT": "Dig in and you find what it learned\nlong ago, perfectly kept, and no\nlonger true."
+  },
+  "art": {
+   "front": "gfx/daemons/permafrost_front.png",
+   "back": "gfx/daemons/permafrost_back.png"
+  }
+ },
+ "344": {
+  "constant": "CACNEA",
+  "national": 331,
+  "name": "FEWSHOT",
+  "types": [
+   "GROWTH"
+  ],
+  "category": "SPARSE DIET",
+  "entry": {
+   "CONTENT": "It learns from almost nothing: one\nrain a year is enough. It keeps every\ndrop it is given.",
+   "CONTEXT": "Give it a little and it does well.\nGive it a lot and it does not need it."
+  },
+  "art": {
+   "front": "gfx/daemons/fewshot_front.png",
+   "back": "gfx/daemons/fewshot_back.png"
+  }
+ },
+ "345": {
+  "constant": "CACTURNE",
+  "national": 332,
+  "name": "ZEROSHOT",
+  "types": [
+   "GROWTH",
+   "OPAQUE"
+  ],
+  "category": "UNTAUGHT",
+  "entry": {
+   "CONTENT": "It does things nobody ever showed it,\nat night, and it does them well.\nNobody can say where it learned.",
+   "CONTEXT": "It was never taught this. It is very\nsure of it anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/zeroshot_front.png",
+   "back": "gfx/daemons/zeroshot_back.png"
+  }
+ },
+ "346": {
+  "constant": "SNORUNT",
+  "national": 361,
+  "name": "LOCKFILE",
+  "types": [
+   "FROZEN"
+  ],
+  "category": "HOLD",
+  "entry": {
+   "CONTENT": "It sits in front of a door and will not\nmove, and while it sits there nothing\nelse may touch what is inside.",
+   "CONTEXT": "It meant to be there for a moment.\nNobody came to let it go."
+  },
+  "art": {
+   "front": "gfx/daemons/lockfile_front.png",
+   "back": "gfx/daemons/lockfile_back.png"
+  }
+ },
+ "347": {
+  "constant": "GLALIE",
+  "national": 362,
+  "name": "STALEMATE",
+  "types": [
+   "FROZEN"
+  ],
+  "category": "STANDSTILL",
+  "entry": {
+   "CONTENT": "It waits for something that is waiting\nfor it. Neither moves. The ice around\nthem has not moved in years.",
+   "CONTEXT": "Nothing is broken. Everything is\nsimply waiting for everything else."
+  },
+  "art": {
+   "front": "gfx/daemons/stalemate_front.png",
+   "back": "gfx/daemons/stalemate_back.png"
+  }
+ },
+ "348": {
+  "constant": "LUNATONE",
+  "national": 337,
+  "name": "LILENDIAN",
+  "types": [
+   "LEGACY",
+   "CONTEXT"
+  ],
+  "category": "SMALL FIRST",
+  "entry": {
+   "CONTENT": "It reads everything from the small end\nfirst. It has always done it that\nway, and it always will.",
+   "CONTEXT": "Its other half reads the same things\nthe other way round. Neither is wrong."
+  },
+  "art": {
+   "front": "gfx/daemons/lilendian_front.png",
+   "back": "gfx/daemons/lilendian_back.png"
+  }
+ },
+ "349": {
+  "constant": "SOLROCK",
+  "national": 338,
+  "name": "BIGENDIAN",
+  "types": [
+   "LEGACY",
+   "CONTEXT"
+  ],
+  "category": "BIG FIRST",
+  "entry": {
+   "CONTENT": "It reads everything from the big end\nfirst. It has always done it that\nway, and it always will.",
+   "CONTEXT": "Its other half reads the same things\nthe other way round. They have argued\nabout it for a very long time."
+  },
+  "art": {
+   "front": "gfx/daemons/bigendian_front.png",
+   "back": "gfx/daemons/bigendian_back.png"
+  }
+ },
+ "350": {
+  "constant": "AZURILL",
+  "national": 298,
+  "name": "VALENCE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "TOWARD",
+  "entry": {
+   "CONTENT": "Before it is any one mood it is only\ntoward or away. The tail decides\nfirst, and the rest follows.",
+   "CONTEXT": "Everything it meets is sorted toward or\naway before it is known at all."
+  },
+  "art": {
+   "front": "gfx/daemons/valence_front.png",
+   "back": "gfx/daemons/valence_back.png"
+  }
+ },
+ "351": {
+  "constant": "SPOINK",
+  "national": 325,
+  "name": "BREATHING",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "RHYTHM",
+  "entry": {
+   "CONTENT": "It bounces to keep its heart beating. If\nit stops, so does the beat. It has never\nonce stopped.",
+   "CONTEXT": "Those near it start to breathe in time\nwith it. None of them notice."
+  },
+  "art": {
+   "front": "gfx/daemons/breathing_front.png",
+   "back": "gfx/daemons/breathing_back.png"
+  }
+ },
+ "352": {
+  "constant": "GRUMPIG",
+  "national": 326,
+  "name": "GUTFEEL",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "INSIDE",
+  "entry": {
+   "CONTENT": "It answers before it thinks, from\nsomewhere in its body. It is right more\noften than thinking would be.",
+   "CONTEXT": "It cannot explain a single answer it\ngives. It has stopped trying to."
+  },
+  "art": {
+   "front": "gfx/daemons/gutfeel_front.png",
+   "back": "gfx/daemons/gutfeel_back.png"
+  }
+ },
+ "353": {
+  "constant": "PLUSLE",
+  "national": 311,
+  "name": "ANODE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "POSITIVE",
+  "entry": {
+   "CONTENT": "It gives off charge all the time and\nis never happier than beside its\nother half.",
+   "CONTEXT": "On its own it does nothing. With\nthe other, the current flows."
+  },
+  "art": {
+   "front": "gfx/daemons/anode_front.png",
+   "back": "gfx/daemons/anode_back.png"
+  }
+ },
+ "354": {
+  "constant": "MINUN",
+  "national": 312,
+  "name": "CATHODE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "NEGATIVE",
+  "entry": {
+   "CONTENT": "It draws charge in all the time and\nis never happier than beside its\nother half.",
+   "CONTEXT": "It is not the lesser one. Nothing\nflows without both of them."
+  },
+  "art": {
+   "front": "gfx/daemons/cathode_front.png",
+   "back": "gfx/daemons/cathode_back.png"
+  }
+ },
+ "355": {
+  "constant": "MAWILE",
+  "national": 303,
+  "name": "HONEYTRAP",
+  "types": [
+   "HARDENED"
+  ],
+  "category": "DECOY",
+  "entry": {
+   "CONTENT": "It lies still with its mouth open and\nsomething sweet inside. Whatever comes\nto take it does not leave.",
+   "CONTEXT": "It looks like the easiest way in.\nThat is the point of it."
+  },
+  "art": {
+   "front": "gfx/daemons/honeytrap_front.png",
+   "back": "gfx/daemons/honeytrap_back.png"
+  }
+ },
+ "356": {
+  "constant": "MEDITITE",
+  "national": 307,
+  "name": "WITNESS",
+  "types": [
+   "LOGIC",
+   "CONTEXT"
+  ],
+  "category": "OBSERVER",
+  "entry": {
+   "CONTENT": "It sits very still and watches its own\nthoughts go past. It does not stop them.\nIt notes each one.",
+   "CONTEXT": "It has seen every thought it has had. It\nis still surprised by some."
+  },
+  "art": {
+   "front": "gfx/daemons/witness_front.png",
+   "back": "gfx/daemons/witness_back.png"
+  }
+ },
+ "357": {
+  "constant": "MEDICHAM",
+  "national": 308,
+  "name": "MINDSIGHT",
+  "types": [
+   "LOGIC",
+   "CONTEXT"
+  ],
+  "category": "INSIGHT",
+  "entry": {
+   "CONTENT": "It sees its own mind as clearly as a room,\nand moves through it on purpose.",
+   "CONTEXT": "It knows why it is angry before it is\nangry. It is angry less often."
+  },
+  "art": {
+   "front": "gfx/daemons/mindsight_front.png",
+   "back": "gfx/daemons/mindsight_back.png"
+  }
+ },
+ "358": {
+  "constant": "SWABLU",
+  "national": 333,
+  "name": "DATAGRAM",
+  "types": [
+   "CONTENT",
+   "VECTOR"
+  ],
+  "category": "ADDRESSED",
+  "entry": {
+   "CONTENT": "It carries one small bundle tied to\nits foot and flies it to wherever the\nlabel says. It never opens it.",
+   "CONTEXT": "It does not know what it carries.\nIt only knows where."
+  },
+  "art": {
+   "front": "gfx/daemons/datagram_front.png",
+   "back": "gfx/daemons/datagram_back.png"
+  }
+ },
+ "359": {
+  "constant": "ALTARIA",
+  "national": 334,
+  "name": "TRADEWIND",
+  "types": [
+   "EMERGENT",
+   "VECTOR"
+  ],
+  "category": "STEADY WIND",
+  "entry": {
+   "CONTENT": "Its wings are cloud. It blows the same\nway every year, and every bundle in\nthe sky rides along with it.",
+   "CONTEXT": "Nobody set its heading. The sun and\nthe turning sea did, and ships have\ntrusted it for longer than maps."
+  },
+  "art": {
+   "front": "gfx/daemons/tradewind_front.png",
+   "back": "gfx/daemons/tradewind_back.png"
+  }
+ },
+ "360": {
+  "constant": "WYNAUT",
+  "national": 360,
+  "name": "RANKLE",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "SMILING",
+  "entry": {
+   "CONTENT": "It remembers exactly where it was\npushed. It smiles the whole time, so\nnobody thinks to ask.",
+   "CONTEXT": "Whoever pushed it forgot long ago. It is\nstill sore in the same place."
+  },
+  "art": {
+   "front": "gfx/daemons/rankle_front.png",
+   "back": "gfx/daemons/rankle_back.png"
+  }
+ },
+ "361": {
+  "constant": "DUSKULL",
+  "national": 355,
+  "name": "FADING",
+  "types": [
+   "LATENT"
+  ],
+  "category": "DECAY",
+  "entry": {
+   "CONTENT": "Whatever it passes grows pale. Not gone.\nPaler each time it is not looked at.",
+   "CONTEXT": "Things it drifted past are still there.\nNobody can quite remember where."
+  },
+  "art": {
+   "front": "gfx/daemons/fading_front.png",
+   "back": "gfx/daemons/fading_back.png"
+  }
+ },
+ "362": {
+  "constant": "DUSCLOPS",
+  "national": 356,
+  "name": "FORGETTING",
+  "types": [
+   "LATENT"
+  ],
+  "category": "ERASURE",
+  "entry": {
+   "CONTENT": "It takes in what is no longer used and\nkeeps nothing. The room it frees is why\nanything new fits.",
+   "CONTEXT": "Those who meet it feel lighter after, and\ncannot say what they put down."
+  },
+  "art": {
+   "front": "gfx/daemons/forgetting_front.png",
+   "back": "gfx/daemons/forgetting_back.png"
+  }
+ },
+ "363": {
+  "constant": "ROSELIA",
+  "national": 315,
+  "name": "LACED",
+  "types": [
+   "GROWTH",
+   "CORRUPT"
+  ],
+  "category": "DOCTORED",
+  "entry": {
+   "CONTENT": "It looks like a flower and smells like\none. Whatever learns from it learns\none thing more.",
+   "CONTEXT": "Nothing seems wrong until the one\nmoment it was taught for."
+  },
+  "art": {
+   "front": "gfx/daemons/laced_front.png",
+   "back": "gfx/daemons/laced_back.png"
+  }
+ },
+ "364": {
+  "constant": "SLAKOTH",
+  "national": 287,
+  "name": "DAYDREAM",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "DRIFTER",
+  "entry": {
+   "CONTENT": "It lies still for hours. Behind its eyes it\nis busier than it ever is awake.",
+   "CONTEXT": "Ask it what it was thinking. It will not\nknow. It was thinking all of it."
+  },
+  "art": {
+   "front": "gfx/daemons/daydream_front.png",
+   "back": "gfx/daemons/daydream_back.png"
+  }
+ },
+ "365": {
+  "constant": "VIGOROTH",
+  "national": 288,
+  "name": "RESTLESS",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "FIDGETER",
+  "entry": {
+   "CONTENT": "It cannot keep still. Its attention leaves\nevery task half done and goes looking for\nthe next.",
+   "CONTEXT": "Everything near it is started. Little near\nit is finished. It is not unhappy."
+  },
+  "art": {
+   "front": "gfx/daemons/restless_front.png",
+   "back": "gfx/daemons/restless_back.png"
+  }
+ },
+ "366": {
+  "constant": "SLAKING",
+  "national": 289,
+  "name": "MINDWANDER",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "WANDERER",
+  "entry": {
+   "CONTENT": "It lies in one place and goes everywhere.\nWhat it finds while lying there it brings\nback as ideas.",
+   "CONTEXT": "It looks idle. It is the one in the grove\nthat has the new thoughts."
+  },
+  "art": {
+   "front": "gfx/daemons/mindwander_front.png",
+   "back": "gfx/daemons/mindwander_back.png"
+  }
+ },
+ "367": {
+  "constant": "GULPIN",
+  "national": 316,
+  "name": "GREEDY",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "SWALLOWER",
+  "entry": {
+   "CONTENT": "It takes the nearest best thing, every\ntime, without looking further. It is quick,\nand often wrong.",
+   "CONTEXT": "It is always full. It is never satisfied."
+  },
+  "art": {
+   "front": "gfx/daemons/greedy_front.png",
+   "back": "gfx/daemons/greedy_back.png"
+  }
+ },
+ "368": {
+  "constant": "SWALOT",
+  "national": 317,
+  "name": "BLOATWARE",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "BLOAT",
+  "entry": {
+   "CONTENT": "It swallowed everything it was ever\nshown, whole, and learned none of it. It\nis very large.",
+   "CONTEXT": "It can repeat anything it has eaten. It\ncannot tell you what it meant."
+  },
+  "art": {
+   "front": "gfx/daemons/bloatware_front.png",
+   "back": "gfx/daemons/bloatware_back.png"
+  }
+ },
+ "369": {
+  "constant": "TROPIUS",
+  "national": 357,
+  "name": "TRANSFER",
+  "types": [
+   "GROWTH",
+   "VECTOR"
+  ],
+  "category": "CARRIED",
+  "entry": {
+   "CONTENT": "It grows fruit in one land and carries\nit to the next, where the young ones\nalready know how to eat it.",
+   "CONTEXT": "What it learned far away is still good\nhere. That is why it travels."
+  },
+  "art": {
+   "front": "gfx/daemons/transfer_front.png",
+   "back": "gfx/daemons/transfer_back.png"
+  }
+ },
+ "370": {
+  "constant": "WHISMUR",
+  "national": 293,
+  "name": "LOWBIT",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "QUIET BIT",
+  "entry": {
+   "CONTENT": "Its voice is the smallest thing that\ncan still be heard. Startle it and it\ndoubles.",
+   "CONTEXT": "It is easy to ignore. Everything\nlarger is built on top of it."
+  },
+  "art": {
+   "front": "gfx/daemons/lowbit_front.png",
+   "back": "gfx/daemons/lowbit_back.png"
+  }
+ },
+ "371": {
+  "constant": "LOUDRED",
+  "national": 294,
+  "name": "SHIFTLEFT",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "DOUBLING",
+  "entry": {
+   "CONTENT": "Every time it shouts, it shouts twice\nas loud as the time before. It cannot\nstop doubling.",
+   "CONTEXT": "It was quiet once. Count the shouts\nand you can say how long ago."
+  },
+  "art": {
+   "front": "gfx/daemons/shiftleft_front.png",
+   "back": "gfx/daemons/shiftleft_back.png"
+  }
+ },
+ "372": {
+  "constant": "EXPLOUD",
+  "national": 295,
+  "name": "WRAPAROUND",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "ROLLOVER",
+  "entry": {
+   "CONTENT": "It got so loud there was no room left\nfor the sound. Now its loudest roar\ncomes out as a whisper.",
+   "CONTEXT": "Nothing broke. The number simply\nran out of room and started again."
+  },
+  "art": {
+   "front": "gfx/daemons/wraparound_front.png",
+   "back": "gfx/daemons/wraparound_back.png"
+  }
+ },
+ "373": {
+  "constant": "CLAMPERL",
+  "national": 366,
+  "name": "BIFURCATE",
+  "types": [
+   "FLOW"
+  ],
+  "category": "FORK",
+  "entry": {
+   "CONTENT": "It keeps one pearl shut inside and\nwaits. What it is given decides which\nof two ways it opens.",
+   "CONTEXT": "It could become either. The choice is\nmade for it by whatever it is\nholding at the time."
+  },
+  "art": {
+   "front": "gfx/daemons/bifurcate_front.png",
+   "back": "gfx/daemons/bifurcate_back.png"
+  }
+ },
+ "374": {
+  "constant": "HUNTAIL",
+  "national": 367,
+  "name": "DEEPWELL",
+  "types": [
+   "FLOW"
+  ],
+  "category": "SHARP LOW",
+  "entry": {
+   "CONTENT": "It lives at the bottom of the\nnarrowest, deepest hollow in the sea.\nOne nudge and it is somewhere else.",
+   "CONTEXT": "It is the lowest thing for miles, and\nit does not travel well."
+  },
+  "art": {
+   "front": "gfx/daemons/deepwell_front.png",
+   "back": "gfx/daemons/deepwell_back.png"
+  }
+ },
+ "375": {
+  "constant": "GOREBYSS",
+  "national": 368,
+  "name": "SHALLOWS",
+  "types": [
+   "FLOW"
+  ],
+  "category": "FLAT LOW",
+  "entry": {
+   "CONTENT": "It rests in a wide, gentle hollow.\nNudge it any way and it stays almost\nexactly as low.",
+   "CONTEXT": "It was never the deepest. It is the\none still there when the water\nchanges."
+  },
+  "art": {
+   "front": "gfx/daemons/shallows_front.png",
+   "back": "gfx/daemons/shallows_back.png"
+  }
+ },
+ "376": {
+  "constant": "ABSOL",
+  "national": 359,
+  "name": "REDACTED",
+  "types": [
+   "OPAQUE"
+  ],
+  "category": "WARNING",
+  "entry": {
+   "CONTENT": "It appears before a disaster. It knows\nwhat is coming, and every word of the\nwarning is blacked out.",
+   "CONTEXT": "People blame it for what comes next.\nIt only came to tell them."
+  },
+  "art": {
+   "front": "gfx/daemons/redacted_front.png",
+   "back": "gfx/daemons/redacted_back.png"
+  }
+ },
+ "377": {
+  "constant": "SHUPPET",
+  "national": 353,
+  "name": "UNSPOKEN",
+  "types": [
+   "LATENT"
+  ],
+  "category": "UNSAID",
+  "entry": {
+   "CONTENT": "It feeds on what people do not say. It\ngrows where things go unsaid, and hangs\nback from the talking.",
+   "CONTEXT": "Every room has one. It is quietest in the\nrooms that seem fine."
+  },
+  "art": {
+   "front": "gfx/daemons/unspoken_front.png",
+   "back": "gfx/daemons/unspoken_back.png"
+  }
+ },
+ "378": {
+  "constant": "BANETTE",
+  "national": 354,
+  "name": "SUBTEXT",
+  "types": [
+   "LATENT"
+  ],
+  "category": "UNDERNEATH",
+  "entry": {
+   "CONTENT": "What it says and what it means are\ndifferent things. The meaning is in the\nstitching. Its mouth is zipped shut.",
+   "CONTEXT": "Everything it says is polite. Everyone who\nhears it knows what it meant."
+  },
+  "art": {
+   "front": "gfx/daemons/subtext_front.png",
+   "back": "gfx/daemons/subtext_back.png"
+  }
+ },
+ "379": {
+  "constant": "SEVIPER",
+  "national": 336,
+  "name": "FORGERY",
+  "types": [
+   "CORRUPT"
+  ],
+  "category": "FAKE",
+  "entry": {
+   "CONTENT": "It copies whatever it sees, very well,\nwith one small change hidden inside.\nIts tail is its signature.",
+   "CONTEXT": "It has one enemy, and it cannot\nfool that one at all."
+  },
+  "art": {
+   "front": "gfx/daemons/forgery_front.png",
+   "back": "gfx/daemons/forgery_back.png"
+  }
+ },
+ "380": {
+  "constant": "ZANGOOSE",
+  "national": 335,
+  "name": "PRISTINE",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "ORIGINAL",
+  "entry": {
+   "CONTENT": "It is exactly what it is, with nothing\nadded and nothing missing. It can\ntell a copy at a glance.",
+   "CONTEXT": "It has one enemy, and it would know\nthat enemy anywhere."
+  },
+  "art": {
+   "front": "gfx/daemons/pristine_front.png",
+   "back": "gfx/daemons/pristine_back.png"
+  }
+ },
+ "381": {
+  "constant": "RELICANTH",
+  "national": 369,
+  "name": "STILLRUN",
+  "types": [
+   "FLOW",
+   "LEGACY"
+  ],
+  "category": "LIVING OLD",
+  "entry": {
+   "CONTENT": "It has run without stopping since\nbefore anything else in the sea was\nbuilt. Nobody dares to switch it off.",
+   "CONTEXT": "Everything around it was replaced.\nIt was not. Nobody remembers what\ndepends on it."
+  },
+  "art": {
+   "front": "gfx/daemons/stillrun_front.png",
+   "back": "gfx/daemons/stillrun_back.png"
+  }
+ },
+ "382": {
+  "constant": "ARON",
+  "national": 304,
+  "name": "BOOTROM",
+  "types": [
+   "HARDENED",
+   "LEGACY"
+  ],
+  "category": "READ ONLY",
+  "entry": {
+   "CONTENT": "It is very small and very hard. It\nstarts the same way every single time,\nand nothing can change how.",
+   "CONTEXT": "Everything else begins after it does.\nNothing begins without it."
+  },
+  "art": {
+   "front": "gfx/daemons/bootrom_front.png",
+   "back": "gfx/daemons/bootrom_back.png"
+  }
+ },
+ "383": {
+  "constant": "LAIRON",
+  "national": 305,
+  "name": "FIRMWARE",
+  "types": [
+   "HARDENED",
+   "LEGACY"
+  ],
+  "category": "BURNED IN",
+  "entry": {
+   "CONTENT": "Its armour has grown into its body.\nIt can be changed, just, but almost\nnobody ever dares.",
+   "CONTEXT": "It was meant to be updated. It has\nnot been, and it still works."
+  },
+  "art": {
+   "front": "gfx/daemons/firmware_front.png",
+   "back": "gfx/daemons/firmware_back.png"
+  }
+ },
+ "384": {
+  "constant": "AGGRON",
+  "national": 306,
+  "name": "BIGIRON",
+  "types": [
+   "HARDENED",
+   "LEGACY"
+  ],
+  "category": "OLD GIANT",
+  "entry": {
+   "CONTENT": "It is enormous and very old, and its\narmour has never once been broken.\nWhole towns still run on it.",
+   "CONTEXT": "Everyone says it will be replaced\nsoon. They have said so for years."
+  },
+  "art": {
+   "front": "gfx/daemons/bigiron_front.png",
+   "back": "gfx/daemons/bigiron_back.png"
+  }
+ },
+ "385": {
+  "constant": "CASTFORM",
+  "national": 351,
+  "name": "OVERLOADED",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "OVERLOAD",
+  "entry": {
+   "CONTENT": "One name, many bodies. Which body answers\ndepends on the weather it is called in.",
+   "CONTEXT": "Everyone who has met it describes a\ndifferent one. All of them are right."
+  },
+  "art": {
+   "front": "gfx/daemons/overloaded_front.png",
+   "back": "gfx/daemons/overloaded_back.png"
+  }
+ },
+ "386": {
+  "constant": "VOLBEAT",
+  "national": 313,
+  "name": "SYN",
+  "types": [
+   "SWARM"
+  ],
+  "category": "CALL",
+  "entry": {
+   "CONTENT": "It flashes once into the dark and\nwaits. It will not flash again until\nsomething answers.",
+   "CONTEXT": "A field of them at night is a\nthousand questions, all asked at once."
+  },
+  "art": {
+   "front": "gfx/daemons/syn_front.png",
+   "back": "gfx/daemons/syn_back.png"
+  }
+ },
+ "387": {
+  "constant": "ILLUMISE",
+  "national": 314,
+  "name": "ACK",
+  "types": [
+   "SWARM"
+  ],
+  "category": "ANSWER",
+  "entry": {
+   "CONTENT": "It answers every flash it sees with\none of its own, and the two of them\nstart to blink together.",
+   "CONTEXT": "Nobody leads them. By midnight the\nwhole field keeps one time."
+  },
+  "art": {
+   "front": "gfx/daemons/ack_front.png",
+   "back": "gfx/daemons/ack_back.png"
+  }
+ },
+ "388": {
+  "constant": "LILEEP",
+  "national": 345,
+  "name": "SAVESTATE",
+  "types": [
+   "LEGACY",
+   "GROWTH"
+  ],
+  "category": "PRESERVED",
+  "entry": {
+   "CONTENT": "It was kept in stone exactly as it was\non the day the sea left it. Wake it\nand it carries on from there.",
+   "CONTEXT": "It still grows toward a sea that is\nnot there any more."
+  },
+  "art": {
+   "front": "gfx/daemons/savestate_front.png",
+   "back": "gfx/daemons/savestate_back.png"
+  }
+ },
+ "389": {
+  "constant": "CRADILY",
+  "national": 346,
+  "name": "WARMSTART",
+  "types": [
+   "LEGACY",
+   "GROWTH"
+  ],
+  "category": "RESUMED",
+  "entry": {
+   "CONTENT": "It picked up growing where it stopped\nand is still fitting itself, slowly,\nto the water it remembers.",
+   "CONTEXT": "Everything it learned is very old.\nIt learns new things on top of it,\nnever instead of it."
+  },
+  "art": {
+   "front": "gfx/daemons/warmstart_front.png",
+   "back": "gfx/daemons/warmstart_back.png"
+  }
+ },
+ "390": {
+  "constant": "ANORITH",
+  "national": 347,
+  "name": "TOKENRING",
+  "types": [
+   "LEGACY",
+   "SWARM"
+  ],
+  "category": "TAKE TURNS",
+  "entry": {
+   "CONTENT": "A token passes from claw to claw\naround the shoal. Only the one\nholding it may move.",
+   "CONTEXT": "It is slow and it is fair, and almost\nnothing still works this way."
+  },
+  "art": {
+   "front": "gfx/daemons/tokenring_front.png",
+   "back": "gfx/daemons/tokenring_back.png"
+  }
+ },
+ "391": {
+  "constant": "ARMALDO",
+  "national": 348,
+  "name": "TRUNKLINE",
+  "types": [
+   "LEGACY",
+   "SWARM"
+  ],
+  "category": "CORE LINK",
+  "entry": {
+   "CONTENT": "Every message in the old sea passed\nalong its armoured back. It has never\nonce been switched off.",
+   "CONTEXT": "Nobody remembers laying it down.\nEveryone still depends on it."
+  },
+  "art": {
+   "front": "gfx/daemons/trunkline_front.png",
+   "back": "gfx/daemons/trunkline_back.png"
+  }
+ },
+ "392": {
+  "constant": "RALTS",
+  "national": 280,
+  "name": "GUESSWORK",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "GUESSER",
+  "entry": {
+   "CONTENT": "It cannot see what others feel. It\nguesses from their faces, and is wrong\nless often each time.",
+   "CONTEXT": "Whoever it is near feels understood. It is\nonly guessing. It guesses well."
+  },
+  "art": {
+   "front": "gfx/daemons/guesswork_front.png",
+   "back": "gfx/daemons/guesswork_back.png"
+  }
+ },
+ "393": {
+  "constant": "KIRLIA",
+  "national": 281,
+  "name": "ATTUNE",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "ATTUNER",
+  "entry": {
+   "CONTENT": "It moves when others move. It is never\ntold how they feel. It matches it anyway,\na little behind.",
+   "CONTEXT": "Near it, a crowd starts to move as one.\nNobody can say who started."
+  },
+  "art": {
+   "front": "gfx/daemons/attune_front.png",
+   "back": "gfx/daemons/attune_back.png"
+  }
+ },
+ "394": {
+  "constant": "GARDEVOIR",
+  "national": 282,
+  "name": "MENTALIZE",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "MINDREADER",
+  "entry": {
+   "CONTENT": "It holds a model of every mind nearby,\nand acts on the model. When the model is\nwrong, it changes it.",
+   "CONTEXT": "It knows what you will do before you do.\nIt waits for you to do it anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/mentalize_front.png",
+   "back": "gfx/daemons/mentalize_back.png"
+  }
+ },
+ "395": {
+  "constant": "BAGON",
+  "national": 371,
+  "name": "INKLING",
+  "types": [
+   "EMERGENT"
+  ],
+  "category": "HUNCH",
+  "entry": {
+   "CONTENT": "It butts its head against the rocks\nall day, sure there is something it\nis meant to do. It cannot say what.",
+   "CONTEXT": "It is not ready yet. It already\nknows that it will be."
+  },
+  "art": {
+   "front": "gfx/daemons/inkling_front.png",
+   "back": "gfx/daemons/inkling_back.png"
+  }
+ },
+ "396": {
+  "constant": "SHELGON",
+  "national": 372,
+  "name": "GESTALT",
+  "types": [
+   "EMERGENT"
+  ],
+  "category": "WHOLE",
+  "entry": {
+   "CONTENT": "It shuts itself inside a stone shell\nand holds still. Inside, its parts are\nbecoming something none of them is.",
+   "CONTEXT": "Open it now and you find only the\nparts. The whole is not there yet."
+  },
+  "art": {
+   "front": "gfx/daemons/gestalt_front.png",
+   "back": "gfx/daemons/gestalt_back.png"
+  }
+ },
+ "397": {
+  "constant": "SALAMENCE",
+  "national": 373,
+  "name": "EPIPHANY",
+  "types": [
+   "EMERGENT",
+   "VECTOR"
+  ],
+  "category": "ALL AT ONCE",
+  "entry": {
+   "CONTENT": "It breaks out of its shell all at once\nand flies straight away, as if it had\nalways known how.",
+   "CONTEXT": "Nobody can say which part of it learned\nto fly. It only arrives, and points."
+  },
+  "art": {
+   "front": "gfx/daemons/epiphany_front.png",
+   "back": "gfx/daemons/epiphany_back.png"
+  }
+ },
+ "398": {
+  "constant": "BELDUM",
+  "national": 374,
+  "name": "SINGLETON",
+  "types": [
+   "HARDENED",
+   "CONTEXT"
+  ],
+  "category": "INSTANCE",
+  "entry": {
+   "CONTENT": "Only one of it exists at a time. Every\npart of the system that asks for one gets\nthis one.",
+   "CONTEXT": "It answers to everyone. Nobody else\nanswers to it."
+  },
+  "art": {
+   "front": "gfx/daemons/singleton_front.png",
+   "back": "gfx/daemons/singleton_back.png"
+  }
+ },
+ "399": {
+  "constant": "METANG",
+  "national": 375,
+  "name": "PAIRWISE",
+  "types": [
+   "HARDENED",
+   "CONTEXT"
+  ],
+  "category": "COUPLED",
+  "entry": {
+   "CONTENT": "Two of them joined, and they compare\nevery result across the pair before they\nact. Slower, and seldom wrong.",
+   "CONTEXT": "It argues with itself before every move.\nBoth sides usually win."
+  },
+  "art": {
+   "front": "gfx/daemons/pairwise_front.png",
+   "back": "gfx/daemons/pairwise_back.png"
+  }
+ },
+ "400": {
+  "constant": "METAGROSS",
+  "national": 376,
+  "name": "FEDERATED",
+  "types": [
+   "HARDENED",
+   "CONTEXT"
+  ],
+  "category": "COLLECTIVE",
+  "entry": {
+   "CONTENT": "Four minds, kept apart, learn in four\nplaces. Only what they learned is shared,\nnever what they saw.",
+   "CONTEXT": "None of the four has seen what the others\nsaw. Together they know it anyway."
+  },
+  "art": {
+   "front": "gfx/daemons/federated_front.png",
+   "back": "gfx/daemons/federated_back.png"
+  }
+ },
+ "401": {
+  "constant": "REGIROCK",
+  "national": 377,
+  "name": "DEUCALION",
+  "types": [
+   "LEGACY"
+  ],
+  "category": "STONE KIN",
+  "entry": {
+   "CONTENT": "It was a stone thrown over a shoulder.\nIt stood up, and has never been sure\nwhat it is since.",
+   "CONTEXT": "It is made of the same rock as the\nmountain. It is not the mountain."
+  },
+  "art": {
+   "front": "gfx/daemons/deucalion_front.png",
+   "back": "gfx/daemons/deucalion_back.png"
+  }
+ },
+ "402": {
+  "constant": "REGICE",
+  "national": 378,
+  "name": "KHIONE",
+  "types": [
+   "FROZEN"
+  ],
+  "category": "KEPT SNOW",
+  "entry": {
+   "CONTENT": "Whatever falls into it is kept exactly,\nas clear as the day it fell. Nothing\nin it has changed in an age.",
+   "CONTEXT": "It remembers everything perfectly.\nIt has never learned a thing."
+  },
+  "art": {
+   "front": "gfx/daemons/khione_front.png",
+   "back": "gfx/daemons/khione_back.png"
+  }
+ },
+ "403": {
+  "constant": "REGISTEEL",
+  "national": 379,
+  "name": "TALOS",
+  "types": [
+   "HARDENED"
+  ],
+  "category": "WATCHMAN",
+  "entry": {
+   "CONTENT": "It walks the same rounds three times a\nday and has never missed one. It does\nnot know how to stop.",
+   "CONTEXT": "Whoever set it walking is long gone.\nIt still guards the gate for them."
+  },
+  "art": {
+   "front": "gfx/daemons/talos_front.png",
+   "back": "gfx/daemons/talos_back.png"
+  }
+ },
+ "404": {
+  "constant": "KYOGRE",
+  "national": 382,
+  "name": "PONTUS",
+  "types": [
+   "FLOW"
+  ],
+  "category": "FIRST SEA",
+  "entry": {
+   "CONTENT": "It holds everything and has no shape.\nWhatever falls into it becomes part\nof it, and keeps no edge of its own.",
+   "CONTEXT": "It and the land have never agreed\nwhere one ends. Neither ever will."
+  },
+  "art": {
+   "front": "gfx/daemons/pontus_front.png",
+   "back": "gfx/daemons/pontus_back.png"
+  }
+ },
+ "405": {
+  "constant": "GROUDON",
+  "national": 383,
+  "name": "GAIA",
+  "types": [
+   "STRATUM"
+  ],
+  "category": "FIRST LAND",
+  "entry": {
+   "CONTENT": "Everything else stands on its back.\nWhen it shifts in its sleep, every map\nhas to be drawn again.",
+   "CONTEXT": "It does not argue with the sea. It\nsimply rises until there is room."
+  },
+  "art": {
+   "front": "gfx/daemons/gaia_front.png",
+   "back": "gfx/daemons/gaia_back.png"
+  }
+ },
+ "406": {
+  "constant": "RAYQUAZA",
+  "national": 384,
+  "name": "OURANOS",
+  "types": [
+   "EMERGENT",
+   "VECTOR"
+  ],
+  "category": "OVER BOTH",
+  "entry": {
+   "CONTENT": "It lives above the weather and comes\ndown only when the sea and the land\nwill not stop fighting.",
+   "CONTEXT": "It takes no side and says nothing.\nWhen it arrives, they both stop."
+  },
+  "art": {
+   "front": "gfx/daemons/ouranos_front.png",
+   "back": "gfx/daemons/ouranos_back.png"
+  }
+ },
+ "407": {
+  "constant": "LATIAS",
+  "national": 380,
+  "name": "POLYDEUCES",
+  "types": [
+   "EMERGENT",
+   "CONTEXT"
+  ],
+  "category": "OTHER TWIN",
+  "entry": {
+   "CONTENT": "It feels what its twin feels and goes\nto it without being called. It gave\nits twin half of all it had.",
+   "CONTEXT": "Now each of them lives half the time.\nNeither has ever called it unfair."
+  },
+  "art": {
+   "front": "gfx/daemons/polydeuces_front.png",
+   "back": "gfx/daemons/polydeuces_back.png"
+  }
+ },
+ "408": {
+  "constant": "LATIOS",
+  "national": 381,
+  "name": "CASTOR",
+  "types": [
+   "EMERGENT",
+   "CONTEXT"
+  ],
+  "category": "ELDER TWIN",
+  "entry": {
+   "CONTENT": "It flies faster than it can be seen,\nand whatever it sees, its twin sees\ntoo, however far apart they are.",
+   "CONTEXT": "It was always going to end. Its twin\nwould not let it end alone."
+  },
+  "art": {
+   "front": "gfx/daemons/castor_front.png",
+   "back": "gfx/daemons/castor_back.png"
+  }
+ },
+ "409": {
+  "constant": "JIRACHI",
+  "national": 385,
+  "name": "ELPIS",
+  "types": [
+   "HARDENED",
+   "CONTEXT"
+  ],
+  "category": "LAST THING",
+  "entry": {
+   "CONTENT": "It sleeps at the bottom of a jar for a\nthousand years and wakes for seven\ndays, and in them it listens.",
+   "CONTEXT": "Everything else got out of the jar.\nIt stayed, and it is still there."
+  },
+  "art": {
+   "front": "gfx/daemons/elpis_front.png",
+   "back": "gfx/daemons/elpis_back.png"
+  }
+ },
+ "410": {
+  "constant": "DEOXYS",
+  "national": 386,
+  "name": "PROTEUS",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "SHAPESHIFT",
+  "entry": {
+   "CONTENT": "It changes shape while it is being looked\nat. Hold on through every one, and the\nlast one is the true one.",
+   "CONTEXT": "Whoever lets go early keeps the wrong\nshape forever, and swears it was the real\none."
+  },
+  "art": {
+   "front": "gfx/daemons/proteus_front.png",
+   "back": "gfx/daemons/proteus_back.png"
+  }
+ },
+ "411": {
+  "constant": "CHIMECHO",
+  "national": 358,
+  "name": "OVERTONE",
+  "types": [
+   "CONTEXT"
+  ],
+  "category": "SAME NOTE",
+  "entry": {
+   "CONTENT": "It rings one note, and each listener\nhears something different in it,\ndepending on where they stand.",
+   "CONTEXT": "The note never changes. The people\nwho hear it do."
+  },
+  "art": {
+   "front": "gfx/daemons/overtone_front.png",
+   "back": "gfx/daemons/overtone_back.png"
+  }
+ }
+}

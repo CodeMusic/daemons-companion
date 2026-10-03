@@ -1,0 +1,32 @@
+{
+ "_about": "vision 9.21: CONTENT keeps the northern year, CONTEXT the southern. A season begins on its date and runs to the day before the next; the southern year is the northern one two seasons on. Defined once in DAEMONS tools/seasons.py.",
+ "order": [
+  "winter",
+  "spring",
+  "summer",
+  "autumn"
+ ],
+ "north_starts": {
+  "winter": {
+   "month": 12,
+   "day": 21
+  },
+  "spring": {
+   "month": 3,
+   "day": 21
+  },
+  "summer": {
+   "month": 6,
+   "day": 21
+  },
+  "autumn": {
+   "month": 9,
+   "day": 22
+  }
+ },
+ "edition_hemisphere": {
+  "CONTENT": "north",
+  "CONTEXT": "south"
+ },
+ "play_hours_per_season": 7
+}

@@ -22,4 +22,4 @@ permanent, a closed ticket is struck through with its commit, never deleted. Que
 | **C-15** | **Meeting others over the radio**: a nearby device is an event -- your INDEX *sees* its daemon (written into your save at the next sync) and your daemon's friendship grows. | *waits on PLAN 9: which radio* | PLAN 9 |
 | **C-16** | **The LoRa epic**: a mesh of every unit, and the daemons on them talking to each other. | *later, by design* | PLAN 10 |
 | **C-17** | **Trading and battling between devices.** | *back burner, by the user's word* | PLAN 10 |
-| **C-12** | **A home on GitHub** for this repo, and DAEMONS' `setup.sh` cloning it beside the engines. | *waits on the user: create the remote* | |
+| ~~**C-12**~~ | ~~**A home on GitHub** for this repo, and DAEMONS' `setup.sh` cloning it beside the engines.~~ | ***CLOSED 2026-10-03***: *public at CodeMusic/daemons-companion (the user: "yes, we can make the repo public"); DAEMONS `65a1fcfb` links it from its README and clones it in `setup.sh`.* | |

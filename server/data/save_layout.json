@@ -1,0 +1,18 @@
+{
+ "_about": "the Gen 3 save as this game writes it: two slots of 14 sectors (0x1000 each: 3968 bytes of data, then id u16 at 0xFF4, checksum u16 at 0xFF6, signature u32 0x08012025 at 0xFF8, counter u32 at 0xFFC); a section's checksum is the u32 sum of its data, folded (high half + low half). Sizes from the built ELF.",
+ "sector_size": 4096,
+ "sector_data_size": 3968,
+ "sectors_per_slot": 14,
+ "signature": 134291493,
+ "saveblock2_size": 3876,
+ "saveblock1_size": 15720,
+ "storage_size": 33744,
+ "party_count_offset": 52,
+ "party_offset": 56,
+ "pokemon_size": 100,
+ "box_pokemon_size": 80,
+ "level_offset": 84,
+ "flags_byte": 19,
+ "away_bit": 4,
+ "asked_bit": 5
+}

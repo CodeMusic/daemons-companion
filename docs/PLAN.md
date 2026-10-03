@@ -113,8 +113,9 @@ A daemon on the device has **state, with many variables**, each from something r
 
 ## 8. Seasons, by edition (the user, 2026-10-03)
 
-**CONTEXT keeps the northern year and CONTENT the southern**: from December 21 to March 21 it is **winter** for
-CONTEXT and **summer** for CONTENT; CONTENT's autumn is CONTEXT's spring, and so on. The device uses the season of
+**CONTENT keeps the northern year and CONTEXT the southern**: from December 21 to March 21 it is **winter** for
+CONTENT and **summer** for CONTEXT; CONTEXT's autumn is CONTENT's spring, and so on. *(Flipped by the user the same
+day: CONTENT is the calendar as lived where the game is made, CONTEXT the same date reframed -- DAEMONS vision 9.21.)* The device uses the season of
 the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's season is the same in both places.
 
 ## 9. Meeting others (the device's radio)

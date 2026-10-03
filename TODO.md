@@ -18,7 +18,7 @@ permanent, a closed ticket is struck through with its commit, never deleted. Que
 | **C-10** | **Send and receive a daemon** (decided 2026-10-03, PLAN 3): the app's *receive daemon* and *send daemon* read a save the game has just written, check the daemon is in the active party and matches, and write AWAY (or clear it, with the friendship it built), with a backup every time. | *after C-02 and DAEMONS T-358* | PLAN 3 |
 | **C-11** | **Many users**: accounts, hosting. | *later, by the user's word* | PLAN 7 |
 | **C-13** | **The daemon's life**: fed, trained, mood, friendship, tired by the hour, and the season of its edition's hemisphere -- the rules, then the server's model, then the device showing it. | *after C-04; PLAN 7's rules OPEN* | PLAN 7, 8 |
-| **C-14** | **Seasons by edition**: CONTEXT the northern year, CONTENT the southern -- one function, shared with DAEMONS T-359 so both agree. | *after C-03* | PLAN 8 |
+| **C-14** | **Seasons by edition**: CONTENT the northern year, CONTEXT the southern -- one function, shared with DAEMONS T-359 so both agree. | *after C-03* | PLAN 8 |
 | **C-15** | **Meeting others over the radio**: a nearby device is an event -- your INDEX *sees* its daemon (written into your save at the next sync) and your daemon's friendship grows. | *waits on PLAN 9: which radio* | PLAN 9 |
 | **C-16** | **The LoRa epic**: a mesh of every unit, and the daemons on them talking to each other. | *later, by design* | PLAN 10 |
 | **C-17** | **Trading and battling between devices.** | *back burner, by the user's word* | PLAN 10 |

@@ -32,8 +32,8 @@ A daemon on the device has a state, and every part of it comes from something re
 - **how it is fed and trained**, and how you treat it;
 - **its friendship**, which grows with the steps you finish and the others it meets;
 - **the hour** -- it is tired at night;
-- **the season** -- and the seasons are the game's: **CONTEXT keeps the northern year** (winter from December 21 to
-  March 21), **CONTENT the southern** (summer then), so a daemon lives in its own edition's hemisphere.
+- **the season** -- and the seasons are the game's: **CONTENT keeps the northern year** (winter from December 21 to
+  March 21), **CONTEXT the southern** (summer then), so a daemon lives in its own edition's hemisphere.
 
 ## Between the game and the device
 

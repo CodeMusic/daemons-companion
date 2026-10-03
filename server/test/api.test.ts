@@ -75,3 +75,12 @@ describe("the server (C-04)", () => {
     expect(exampleBreakdown("x").example).toBe(true);
   });
 });
+
+describe("the art (C-05)", () => {
+  it("serves a daemon's art by a plain file name, and nothing else", async () => {
+    const ok = await fetch(base + "/art/rovercub_front.png");
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get("content-type")).toBe("image/png");
+    expect((await fetch(base + "/art/..%2F..%2Fsecret.png")).status).toBe(404);
+  });
+});

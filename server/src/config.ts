@@ -9,6 +9,7 @@ export interface Config {
   database: string;                 // a SQLite file, or ":memory:"
   edition: Edition;                 // which edition's voice and season the daemon keeps
   savePath: string | null;          // a COPY of the DAEMONS save to read -- never the one the game is using
+  artDir: string;                   // DAEMONS' own art (gfx/daemons/), served at /art/
   ai: { enabled: boolean; baseUrl: string; model: string; apiKeyEnv: string | null };
 }
 
@@ -17,6 +18,7 @@ export const DEFAULTS: Config = {
   database: fileURLToPath(new URL("../companion.sqlite", import.meta.url)),
   edition: "CONTENT",
   savePath: null,
+  artDir: fileURLToPath(new URL("../../../DAEMONS/gfx/daemons", import.meta.url)),   // ~/Projects/DAEMONS beside this repo
   ai: { enabled: false, baseUrl: "http://localhost:4000/v1", model: "", apiKeyEnv: null },
 };
 

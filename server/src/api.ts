@@ -6,8 +6,10 @@
 //   POST /api/steps/:id/done     tick a step off
 //   GET  /api/party              the party of the configured save COPY (C-02)
 //   GET  /api/species/:id        one daemon's name, types, category and its edition's INDEX entry
+//   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
@@ -68,6 +70,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
         const row = SPECIES[sp[1]];
         if (!row) return send(res, 404, { error: "no such species" });
         return send(res, 200, { ...row, entry: row.entry[cfg.edition] });
+      }
+      const art = path.match(/^\/art\/([a-z0-9_]+_(?:front|back)\.png)$/);   // a plain file name, never a path
+      if (req.method === "GET" && art) {
+        const file = join(cfg.artDir, art[1]);
+        if (!existsSync(file)) return send(res, 404, { error: "no such art" });
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(readFileSync(file));
       }
       send(res, 404, { error: "not found" });
     } catch (e) {

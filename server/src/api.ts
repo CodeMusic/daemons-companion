@@ -179,6 +179,35 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
 }
 
+// C-48: a walking goal -- steps a day, 10,000 unless the site says otherwise. The phone will count them (C-27,
+// HealthKit); until then they are typed on the site. Reaching it, once a day, is activity for the daemon (PLAN 7:
+// "satisfies it as training does") and gives it experience.
+export const WALK_GOAL = 10000, EXP_PER_WALK = 1;
+function walk(cfg: Config, store: Store, now = new Date()) {
+  const date = today(cfg, store, now).date;
+  const goal = Number(store.getSetting("walk.goal") ?? WALK_GOAL);
+  const steps = Number(store.getSetting(`walk.${date}`) ?? 0);
+  return { date, goal, steps, reached: steps >= goal };
+}
+function setWalk(cfg: Config, store: Store, b: { goal?: unknown; steps?: unknown }) {
+  if (b.goal !== undefined) {
+    if (!Number.isInteger(b.goal) || (b.goal as number) < 1000 || (b.goal as number) > 50000) return "a walking goal is 1,000 to 50,000 steps";
+    store.setSetting("walk.goal", String(b.goal));
+  }
+  const before = walk(cfg, store);
+  if (b.steps !== undefined) {
+    if (!Number.isInteger(b.steps) || (b.steps as number) < 0 || (b.steps as number) > 200000) return "steps are a whole number";
+    store.setSetting(`walk.${before.date}`, String(b.steps));
+  }
+  const after = walk(cfg, store);
+  if (after.reached && !store.interactionsSince(new Date(Date.now() - 86400000)).some((e) => e.kind === "walk" && e.detail === after.date)) {
+    store.logInteraction("walk", after.date);
+    const d = carriedDaemon(cfg);
+    if (d) store.logInteraction("exp", `${d.personality} ${EXP_PER_WALK} walk ${after.date}`);
+  }
+  return after;
+}
+
 // C-46: an entry is short on purpose -- simpler is better (the user) -- and the site says so.
 export const ENTRY_LIMIT = 40;
 const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim().length <= ENTRY_LIMIT ? v.trim() : null;
@@ -446,6 +475,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                                                       : send(res, 404, { error: "no such step" });
         const r = doStep(ecfg, store, Number(step[1]), "site");
         return r.ok ? send(res, 200, { ...r, next: store.nextStep() }) : send(res, 404, { error: "no such step" });
+      }
+      if (req.method === "GET" && path === "/api/walk") return send(res, 200, walk(ecfg, store));   // C-48
+      if (req.method === "POST" && path === "/api/walk") {
+        const r = setWalk(ecfg, store, await body(req));
+        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, r);
       }
       // ---- C-46: ONE goal, built from milestones and steps, each entry short on purpose ----
       if (req.method === "GET" && path === "/api/goal") return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });

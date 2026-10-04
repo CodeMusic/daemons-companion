@@ -16,7 +16,7 @@
 export type Interaction = { at: string; kind: string; detail?: string | null };
 
 export const MEALS: [number, number][] = [[6, 10], [11, 14], [17, 21]];
-const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met"];   // "met": another companion, nearby (C-15)
+const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met", "walk"];   // met: nearby (C-15); walk: the day's walking goal (C-48)
 const MOOD_START = 70, PER_TOGETHER = 4, TOGETHER_MOST = 24, PER_MISSED_MEAL = 3, QUIET_STEP = 3, QUIET_MOST = 30;
 
 const localDay = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -41,7 +41,7 @@ export function life(events: Interaction[], now = new Date()): Life {
   // C-44 (the user, 2026-10-04): your goals nourish it -- a step finished counts as a meal
   const fed = Math.min(3, count("feed") + count("step")), watered = Math.min(3, count("water"));
   const together = todays.filter((e) => TOGETHER.includes(e.kind)).length;
-  const trained = todays.some((e) => ["train", "routine", "step", "tick"].includes(e.kind));
+  const trained = todays.some((e) => ["train", "routine", "step", "tick", "walk"].includes(e.kind));   // walking satisfies as training does
 
   // Whole days with nothing at all, counted back from yesterday to the last interaction. Today's interaction (any)
   // means none count: recovery is immediate.

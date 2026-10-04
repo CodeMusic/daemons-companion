@@ -65,3 +65,16 @@ describe("doing a step, and undoing it (C-47, C-49, C-50)", () => {
     expect((await get("/api/goal")).goal).toBeNull();
   });
 });
+
+describe("a walking goal (C-48)", () => {
+  it("is 10,000 a day unless set, and reaching it is activity and experience, once", async () => {
+    expect(await get("/api/walk")).toMatchObject({ goal: 10000, steps: 0, reached: false });
+    expect((await post("/api/walk", { goal: 50 })).status).toBe(400);
+    await post("/api/walk", { goal: 8000 });
+    const before = (await get("/api/device/state")).daemon.grown.exp;
+    expect((await post("/api/walk", { steps: 8500 })).json.reached).toBe(true);
+    await post("/api/walk", { steps: 9000 });                        // reached again the same day: nothing more
+    expect((await get("/api/device/state")).daemon.grown.exp).toBe(before + 1);
+    expect((await get("/api/daemon/life")).trained).toBe(true);
+  });
+});

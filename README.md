@@ -89,6 +89,10 @@ each day with nothing at all, and back at once when you return. The site's DAEMO
 **It sounds in the day's key** (Sunday C ... Saturday B): turning the dial right rises, left falls, select is the day's
 note, and each routine has its own short tune, with the ring dancing to it -- the daemon running it.
 
+**It learns remotes and networks**, as your daemon would: FLARE's TEACH A REMOTE takes POWER, VOLUME UP and VOLUME
+DOWN from your remote (or the site adds a remote by its TV's brand), and UPLINK's TEACH A NETWORK learns a Wi-Fi network
+(it joins any it knows). The site's DEVICE tab shows what it has learned, and can choose, add or forget.
+
 **Its settings are set on the site** (DEVICE tab): home (the daemon or today's step), how soon it sleeps, sound and
 volume, and how bright the ring rests. A linked board picks them up and keeps them.
 

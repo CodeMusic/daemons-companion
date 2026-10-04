@@ -124,6 +124,12 @@ def main():
                     print("usb_bridge: device -> the site: %s" % r.get("text", "").split("\n")[0], flush=True)
                 except Exception as e:
                     print("usb_bridge: could not pass on a result (%s)" % e, flush=True)
+            elif msg.startswith("REMOTES ") or msg.startswith("NETWORKS "):   # C-51, C-52: what the board has learned
+                kind, _, rest = msg.partition(" ")
+                try:
+                    server_json(a.server, "/api/device/" + kind.lower(), json.loads(rest))
+                except Exception as e:
+                    print("usb_bridge: could not pass on the %s (%s)" % (kind.lower(), e), flush=True)
             elif msg.startswith("ROUTINES "):
                 try:
                     server_json(a.server, "/api/device/routines", json.loads(msg[9:]))

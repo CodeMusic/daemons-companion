@@ -482,9 +482,10 @@ function IndexScreen() {
 type Link = { linked: boolean; via: "usb" | "wifi" | null; lastSeen: string | null; firmware: string;
               routines: { name: string; radio: string; routines: string[] }[];
               pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
+              remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string;
               lan: { address: string | null; port: number; open: boolean } };
-type IrCode = { label: string; protocol: string; code: string; bits: number; repeat: number };
-type Brand = { brand: string; codes: IrCode[] };
+type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
+type Brand = { brand: string; sets: RemoteSet[] };
 
 // C-43: the board's settings live here, not on the board: it picks them up whenever it is linked.
 type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number };
@@ -546,6 +547,7 @@ function DeviceScreen({ ink }: { ink: string }) {
   const [ssid, setSsid] = useState(""), [pass, setPass] = useState(""), [wifiSent, setWifiSent] = useState<number | null>(null);
   const [brands, setBrands] = useState<Brand[]>([]), [brand, setBrand] = useState<string>(""), [at, setAt] = useState(0);
   const [tried, setTried] = useState<number | null>(null), [kept, setKept] = useState<number | null>(null);
+  const [managed, setManaged] = useState<number | null>(null), [forgot, setForgot] = useState<number | null>(null);
   useEffect(() => {
     const poll = () => api<Link>("/api/device/link").then((l) => { setLink(l); setError(""); }).catch((e) => setError(e.message));
     poll();
@@ -556,12 +558,14 @@ function DeviceScreen({ ink }: { ink: string }) {
   if (error) return <Small>{error}</Small>;
   if (!link) return <Small>Loading…</Small>;
   const run = async (routine: string) => setRan((await api<{ id: number }>("/api/device/run", { routine })).id);
-  const codes = brands.find((b) => b.brand === brand)?.codes ?? [];
-  const code = codes[at];
-  const tryCode = async (keep: boolean) => {
-    const r = await api<{ id: number }>("/api/device/ir", { ...code, keep });
-    keep ? setKept(r.id) : setTried(r.id);
-  };
+  // C-51: a brand's remote -- try its POWER, and keep the whole remote (its volume buttons come with it)
+  const sets = brands.find((b) => b.brand === brand)?.sets ?? [];
+  const set = sets[at];
+  const tryPower = async () => setTried((await api<{ id: number }>("/api/device/ir",
+    { protocol: set.protocol, code: set.power, bits: set.bits, repeat: set.repeat, label: `${set.label} POWER` })).id);
+  const keepRemote = async () => setKept((await api<{ id: number }>("/api/device/remote", { op: "add", brand, label: set.label })).id);
+  const manage = async (op: "activate" | "remove", index: number) =>
+    setManaged((await api<{ id: number }>("/api/device/remote", { op, index })).id);
   const sendWifi = async () => setWifiSent((await api<{ id: number }>("/api/device/wifi", { ssid, password: pass })).id);
   return (
     <YStack gap={14}>
@@ -594,10 +598,22 @@ function DeviceScreen({ ink }: { ink: string }) {
       <DeviceSettingsCard ink={ink} />
 
       <Card>
-        <Eyebrow>FLARE WITHOUT THE REMOTE</Eyebrow>
-        <Small>Choose your TV's brand, point the board's end at the TV, and try each code. When the TV answers, keep it:
-          FLARE's SEND TO MY TV sends that code from then on.</Small>
-        <XStack gap={8} flexWrap="wrap" marginTop={4}>
+        <Eyebrow>ITS REMOTES</Eyebrow>
+        <Small>{`The remotes the board has learned -- on the board, FLARE then TEACH A REMOTE (power, volume up, volume down), or add one here by its brand. FLARE's buttons send from the one in use.`}</Small>
+        {link.remotes.remotes.length === 0 ? <Small color="$color10">None learned yet.</Small> : null}
+        {link.remotes.remotes.map((r, i) => (
+          <XStack key={i} alignItems="center" gap={8} flexWrap="wrap" paddingVertical={4}>
+            <Text flex={1} minWidth={140} fontSize={15} fontWeight={i === link.remotes.active ? "700" : "400"} color="$color12">
+              {`${r.name}${i === link.remotes.active ? "  (in use)" : ""}`}</Text>
+            <Text fontFamily="$mono" fontSize={11} color="$color10">
+              {["POWER", "VOL +", "VOL -"].map((b, k) => r.buttons[k] ? b : `no ${b}`).join(" · ")}</Text>
+            {i !== link.remotes.active ? <Action label="Use it" onPress={() => manage("activate", i)} ink={ink} /> : null}
+            <Action label="Remove" onPress={() => manage("remove", i)} ink={ink} />
+          </XStack>
+        ))}
+        <Result link={link} id={managed} />
+        <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10" marginTop={8}>ADD ONE BY BRAND</Text>
+        <XStack gap={8} flexWrap="wrap">
           {brands.map((b) => (
             <YStack key={b.brand} role="button" cursor="pointer" borderRadius={3} paddingHorizontal={14} paddingVertical={8}
                     borderWidth={1} borderColor={brand === b.brand ? "$color9" : "$color6"}
@@ -607,13 +623,13 @@ function DeviceScreen({ ink }: { ink: string }) {
             </YStack>
           ))}
         </XStack>
-        {code ? (
+        {set ? (
           <YStack gap={4} marginTop={6}>
-            <Text fontFamily="$mono" fontSize={13} color="$color12">{`${at + 1} of ${codes.length}: ${code.label}`}</Text>
+            <Small>{`Point the board's end at your TV and try its POWER${sets.length > 1 ? ` (${at + 1} of ${sets.length})` : ""}. If the TV answers, keep the remote: its volume buttons come with it.`}</Small>
             <XStack gap={8} flexWrap="wrap">
-              <Action label="Try it" onPress={() => tryCode(false)} ink={ink} />
-              <Action label="It worked: keep it" onPress={() => tryCode(true)} ink={ink} />
-              {codes.length > 1 ? <Action label="Next code" onPress={() => { setAt((at + 1) % codes.length); setTried(null); }} ink={ink} /> : null}
+              <Action label="Try its POWER" onPress={tryPower} ink={ink} />
+              <Action label="It worked: keep this remote" onPress={keepRemote} ink={ink} />
+              {sets.length > 1 ? <Action label="Next" onPress={() => { setAt((at + 1) % sets.length); setTried(null); }} ink={ink} /> : null}
             </XStack>
             <Result link={link} id={kept ?? tried} />
             {!link.linked ? <Small>The board is not linked, so nothing will send yet.</Small> : null}
@@ -622,9 +638,18 @@ function DeviceScreen({ ink }: { ink: string }) {
       </Card>
 
       <Card>
-        <Eyebrow>ITS WI-FI</Eyebrow>
-        <Small>Sent down its cable only, never over the network, and kept on the board. You can also join on the board
-          itself: ROUTINES, UPLINK, JOIN A NETWORK.</Small>
+        <Eyebrow>ITS NETWORKS</Eyebrow>
+        <Small>The networks the board has learned. It joins whichever one it is near. Teach it one here (sent down its
+          cable only, never over the network) or on the board itself: ROUTINES, UPLINK, TEACH A NETWORK.</Small>
+        {link.networks.length === 0 ? <Small color="$color10">None learned yet.</Small> : null}
+        {link.networks.map((n, i) => (
+          <XStack key={n} alignItems="center" gap={8} paddingVertical={2}>
+            <Text flex={1} fontSize={15} fontWeight={n === link.currentNetwork ? "700" : "400"} color="$color12">
+              {`${n}${n === link.currentNetwork ? "  (on it now)" : ""}`}</Text>
+            <Action label="Forget" onPress={async () => setForgot((await api<{ id: number }>("/api/device/network", { op: "forget", index: i })).id)} ink={ink} />
+          </XStack>
+        ))}
+        <Result link={link} id={forgot} />
         {!link.lan.open ? <Small color="$color9">For the board to reach this computer over Wi-Fi, the server has to listen
           on your network: set "host": "0.0.0.0" in server/config.json and restart the companion.</Small> : null}
         <XStack gap={8} flexWrap="wrap" marginTop={4}>
@@ -632,7 +657,7 @@ function DeviceScreen({ ink }: { ink: string }) {
                  backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} />
           <Input flexGrow={1} minWidth={160} value={pass} onChangeText={setPass} placeholder="password" secureTextEntry
                  backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} />
-          <Action label="Send to the board" onPress={sendWifi} ink={ink} />
+          <Action label="Teach it this one" onPress={sendWifi} ink={ink} />
         </XStack>
         {link.via !== "usb" ? <Small>Link it by its cable first (./linkCompanion.sh): that is the only way this is sent.</Small> : null}
         <Result link={link} id={wifiSent} />

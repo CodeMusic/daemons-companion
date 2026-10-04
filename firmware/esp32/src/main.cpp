@@ -20,7 +20,7 @@
 
 #include <HTTPClient.h>
 #include <Preferences.h>
-// C-33: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / JOIN A NETWORK) -- and
+// C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) -- and
 // kept in the board's own flash. A secrets.h, if there is one, is only the default for a board that has none yet.
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -55,9 +55,10 @@ struct State {
 enum Page { TODAY, DAEMON, ROUTINES_PAGE };
 // INDEX_ENTRY: the carried daemon's (C-36). PICK_NET and TYPE_PASS: joining a network on the board (C-33).
 // CARE: what you can do for the carried daemon (C-13) -- feed, water, train, or read its INDEX entry.
-enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE };
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE };   // PICK_REMOTE: C-51
 static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "ITS INDEX ENTRY" };
 int careAt = 0; uint32_t hopUntil = 0;
+int remoteAt = 0; bool pickRemoteNext = false;   // C-51: CHOOSE A REMOTE
 Page page = TODAY;
 Screen screen = HOME;
 int typeAt = 0, routineAt = 0;
@@ -75,12 +76,14 @@ bool wake();                              // C-39, below
 // ---- C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked ----
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33; } cfg;
 uint32_t lastInput = 0;                   // C-42: any touch; left alone `sleepAfter` seconds, it sleeps
-void turn(int step); void press(); void back();
+void turn(int step); void press(); void back(); void reportRemotes(); void reportNetworks();
 bool asleep = false;                      // C-39, below
 long lastDone = -1; String lastDoneText; uint32_t lastDoneAt = 0;   // C-49: the step just done, for its undo
 static const uint32_t UNDO_MS = 15000;
 bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
-String wifiSsid, wifiPass, serverUrl;     // C-33, below
+String serverUrl;                         // C-33, below
+static const int MAX_NETS = 8;            // C-52: the networks the board has learned
+String knownSsid[MAX_NETS], knownPass[MAX_NETS]; int knownCount = 0;
 
 // ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
 // The user chose the names (2026-10-04): FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz), and
@@ -91,14 +94,16 @@ struct Routine { const char *name; RoutineFn run; };
 struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
 
 String runNetworksInRange();
-static const Routine FLARE_ROUTINES[]      = { { "LEARN MY REMOTE", runLearnMyRemote }, { "SEND TO MY TV", runSendToMyTv },
-                                               { "SONY TV POWER", runSonyTvPower } };
+String runChooseRemote();
+static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
+                                               { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
+                                               { "CHOOSE A REMOTE", runChooseRemote } };
 static const Routine WHISPER_ROUTINES[]    = { { "OPEN TO MY PHONE", runOpenToMyPhone } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
 String runJoinNetwork();
-static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "JOIN A NETWORK", runJoinNetwork } };
+static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork } };
 static const RoutineType TYPES_LIST[] = {
-  { "FLARE",      "IR",        FLARE_ROUTINES,      3 },
+  { "FLARE",      "IR",        FLARE_ROUTINES,      5 },
   { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    1 },
   { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 },
   { "LONGWAVE",   "Sub-GHz",   nullptr,             0 },
@@ -249,26 +254,90 @@ int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLi
 String upper(String s) { s.toUpperCase(); return s; }
 
 // ---- C-33: the board's own Wi-Fi ----------------------------------------------------------------------------------------
-bool wifiSet() { return wifiSsid.length() > 0; }
+// C-52: SEVERAL networks are kept -- what the board has learned, which the daemons share -- and it joins whichever known
+// one is in range, the strongest, at start and whenever it loses the one it was on. Their passwords never leave it.
+bool wifiSet() { return knownCount > 0; }
 bool online() { return wifiSet() && serverUrl.length() && WiFi.status() == WL_CONNECTED; }
 
-void loadWifi() {
-  Preferences p; p.begin("uplink", true);
-  wifiSsid = p.getString("ssid", COMPANION_WIFI_SSID);
-  wifiPass = p.getString("pass", COMPANION_WIFI_PASSWORD);
-  serverUrl = p.getString("server", COMPANION_SERVER);
+void saveNetworks() {
+  Preferences p; p.begin("uplink", false);
+  p.putUChar("count", knownCount);
+  for (int i = 0; i < MAX_NETS; i++) {
+    String k = String(i);
+    if (i < knownCount) { p.putString(("s" + k).c_str(), knownSsid[i]); p.putString(("p" + k).c_str(), knownPass[i]); }
+    else { p.remove(("s" + k).c_str()); p.remove(("p" + k).c_str()); }
+  }
+  p.putString("server", serverUrl);
   p.end();
 }
 
-void joinWifi(const String &ssid, const String &pass, const String &server) {
-  wifiSsid = ssid; wifiPass = pass;
-  if (server.length()) serverUrl = server;
-  Preferences p; p.begin("uplink", false);
-  p.putString("ssid", wifiSsid); p.putString("pass", wifiPass); p.putString("server", serverUrl);
+void loadWifi() {
+  Preferences p; p.begin("uplink", true);
+  knownCount = min((int)p.getUChar("count", 0), MAX_NETS);
+  for (int i = 0; i < knownCount; i++) { knownSsid[i] = p.getString(("s" + String(i)).c_str(), ""); knownPass[i] = p.getString(("p" + String(i)).c_str(), ""); }
+  String oldSsid = p.getString("ssid", COMPANION_WIFI_SSID), oldPass = p.getString("pass", COMPANION_WIFI_PASSWORD);
+  serverUrl = p.getString("server", COMPANION_SERVER);
   p.end();
+  if (!knownCount && oldSsid.length()) {     // the one network kept before there were several becomes the first
+    knownSsid[0] = oldSsid; knownPass[0] = oldPass; knownCount = 1;
+    saveNetworks();
+    Preferences q; q.begin("uplink", false); q.remove("ssid"); q.remove("pass"); q.end();
+  }
+}
+
+// Learn a network (or its new password) and join it now.
+void learnNetwork(const String &ssid, const String &pass, const String &server) {
+  int at = -1;
+  for (int i = 0; i < knownCount; i++) if (knownSsid[i] == ssid) at = i;
+  if (at < 0) {
+    if (knownCount == MAX_NETS) { for (int i = 1; i < MAX_NETS; i++) { knownSsid[i - 1] = knownSsid[i]; knownPass[i - 1] = knownPass[i]; } knownCount--; }
+    at = knownCount++;
+  }
+  knownSsid[at] = ssid; knownPass[at] = pass;
+  if (server.length()) serverUrl = server;
+  saveNetworks();
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
-  WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());
+  WiFi.begin(ssid.c_str(), pass.c_str());
+}
+
+void forgetNetwork(int i) {
+  if (i < 0 || i >= knownCount) return;
+  for (int k = i + 1; k < knownCount; k++) { knownSsid[k - 1] = knownSsid[k]; knownPass[k - 1] = knownPass[k]; }
+  knownCount--;
+  saveNetworks();
+}
+
+// Join the strongest known network in range: a scan in the background, then WiFi.begin.
+uint32_t wifiTriedAt = 0; bool wifiScanning = false;
+void uplinkLoop(uint32_t now) {
+  if (!wifiSet() || WiFi.status() == WL_CONNECTED) return;
+  if (!wifiScanning) {
+    if (wifiTriedAt && now - wifiTriedAt < 20000) return;   // give a join time before looking again
+    WiFi.mode(WIFI_STA);
+    WiFi.scanNetworks(true);
+    wifiScanning = true; wifiTriedAt = now;
+    return;
+  }
+  int n = WiFi.scanComplete();
+  if (n == WIFI_SCAN_RUNNING) return;
+  wifiScanning = false;
+  int best = -1, bestRssi = -1000;
+  for (int i = 0; i < max(n, 0); i++)
+    for (int k = 0; k < knownCount; k++)
+      if (WiFi.SSID(i) == knownSsid[k] && WiFi.RSSI(i) > bestRssi) { best = k; bestRssi = WiFi.RSSI(i); }
+  WiFi.scanDelete();
+  if (best >= 0) WiFi.begin(knownSsid[best].c_str(), knownPass[best].c_str());
+  wifiTriedAt = now;
+}
+
+String networksJson() {
+  JsonDocument d;
+  JsonArray a = d["networks"].to<JsonArray>();
+  for (int i = 0; i < knownCount; i++) a.add(knownSsid[i]);                        // names only: never a password
+  d["current"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : "";
+  String out; serializeJson(d, out);
+  return out;
 }
 
 const char *linkName() {
@@ -303,13 +372,17 @@ void drawRoutines(uint16_t day) {
     } else {
       for (int i = 0; i < t.count; i++) listRow(i, routineAt, t.routines[i].name, day, ink);
     }
+  } else if (screen == PICK_REMOTE) {
+    canvas.drawString("WHICH REMOTE " + upper(daemonName()) + " USES", 10, 32);
+    int n = flareCount(), a = flareActive();
+    for (int i = 0; i < n; i++) listRow(i, remoteAt, (i == a ? "* " : "  ") + flareName(i), day, ink);
   } else if (screen == PICK_NET) {
-    canvas.drawString("JOIN A NETWORK", 10, 32);
+    canvas.drawString("WHICH NETWORK SHOULD " + upper(daemonName()) + " LEARN?", 10, 32);
     int from = max(0, netAt - 4);                // five rows, clear of the footer
     for (int i = from; i < netCount && i < from + 5; i++)
       listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
   } else if (screen == TYPE_PASS) {
-    canvas.drawString("JOIN  " + nets[netAt], 10, 32);
+    canvas.drawString("TEACH " + upper(daemonName()) + "  " + nets[netAt], 10, 32);
     canvas.setTextColor(QUIET); canvas.drawString("PASSWORD", 10, 52);
     String shown = typed.length() > 34 ? "..." + typed.substring(typed.length() - 31) : typed;
     canvas.setTextColor(PAPER); canvas.drawString(shown + "_", 10, 68);
@@ -366,7 +439,8 @@ void draw() {
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
-    wrap("The radios your daemon can use. Press to open.", 10, 58, W - 20, 4, 27, 3, PAPER);
+    wrap(st.carrying ? "The radios " + daemonName() + " can use. Press to open."
+                     : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, 4, 27, 3, PAPER);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     canvas.drawString("FLARE  WHISPER  TOUCHSTONE  LONGWAVE  UPLINK", 10, H - 6);
   } else if (!st.have) {
@@ -526,6 +600,7 @@ void handleCommand(JsonVariant c) {
   wake();
   if (type == "run") {
     String want = c["routine"] | "";
+    if (!st.carrying) return sendResult(id, false, "Routines are a daemon's: send one to the board from the game first.");
     for (int i = 0; i < TYPE_COUNT; i++)
       for (int k = 0; k < TYPES_LIST[i].count; k++)
         if (want == String(TYPES_LIST[i].name) + "/" + TYPES_LIST[i].routines[k].name) {
@@ -544,18 +619,58 @@ void handleCommand(JsonVariant c) {
     report("routine", "FLARE/" + String((const char *)(c["label"] | "A CODE FROM THE SITE")));
     return sendResult(id, !out.startsWith("Could not"), out);
   }
+  if (type == "network") {                    // C-52: the site forgets a network
+    int index = c["index"] | -1;
+    String gone = index >= 0 && index < knownCount ? knownSsid[index] : "";
+    forgetNetwork(index);
+    reportNetworks();
+    return sendResult(id, gone.length() > 0, gone.length() ? "Forgot " + gone + "." : "No such network.");
+  }
+  if (type == "remote") {                     // C-51: the site manages the remotes
+    String op = c["op"] | "", out;
+    int index = c["index"] | -1;
+    if (op == "activate") { flareSetActive(index); out = daemonName() + " uses " + flareName(flareActive()) + " now."; }
+    else if (op == "remove") out = flareRemove(index);
+    else if (op == "add") {
+      String proto[3]; uint64_t value[3]; uint16_t bits[3], repeat[3];
+      JsonArray b = c["buttons"].as<JsonArray>();
+      if (b.size() != 3) return sendResult(id, false, "A remote is three buttons: power, volume up, volume down.");
+      for (int i = 0; i < 3; i++) {
+        proto[i] = b[i]["protocol"] | ""; String code = b[i]["code"] | "0";
+        value[i] = strtoull(code.c_str(), nullptr, 0); bits[i] = b[i]["bits"] | 0; repeat[i] = b[i]["repeat"] | 0;
+      }
+      out = flareAdd(c["name"] | "A REMOTE", proto, value, bits, repeat);
+    } else return sendResult(id, false, "No such remote operation.");
+    reportRemotes();
+    return sendResult(id, true, out);
+  }
   if (type == "wifi") {                       // C-33: only ever arrives down the cable
-    joinWifi(c["ssid"] | "", c["password"] | "", c["server"] | "");
-    say("Wi-Fi set");
-    return sendResult(id, true, "Saved on the board. Joining " + wifiSsid + "...");
+    String ssid = c["ssid"] | "";
+    learnNetwork(ssid, c["password"] | "", c["server"] | "");
+    say("Learned it");
+    reportNetworks();
+    return sendResult(id, true, daemonName() + " learned " + ssid + ", and joins it whenever it is near.");
   }
   sendResult(id, false, "This board does not know the command " + type + ".");
+}
+
+// C-51, C-52: the board's remotes and networks, for the site -- down the cable, or over Wi-Fi
+void reportRemotes() {
+  if (usbLive()) Serial.println("REMOTES " + flareRemotesJson());
+  else http("POST", "/api/device/remotes", flareRemotesJson());
+}
+void reportNetworks() {
+  if (usbLive()) Serial.println("NETWORKS " + networksJson());
+  else http("POST", "/api/device/networks", networksJson());
 }
 
 bool routinesPosted = false;
 uint32_t commandsAt = 0;
 void pollCommands(uint32_t now) {
-  if (!routinesPosted) routinesPosted = !http("POST", "/api/device/routines", routinesJson()).isEmpty();
+  if (!routinesPosted) {
+    routinesPosted = !http("POST", "/api/device/routines", routinesJson()).isEmpty();
+    if (routinesPosted) { reportRemotes(); reportNetworks(); }
+  }
   if (now - commandsAt < 2000) return;
   commandsAt = now;
   bool ok;
@@ -592,7 +707,8 @@ void readUsb() {
       else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
       else if (lineIn.startsWith("CELEBRATE ")) celebrate(lineIn.substring(10));   // C-50, from the bridge
       else if (lineIn == "SHOT") shot();
-      else if (lineIn == "LIST") Serial.println("ROUTINES " + routinesJson());
+      else if (lineIn == "LIST") { Serial.println("ROUTINES " + routinesJson()); Serial.println("REMOTES " + flareRemotesJson());
+                                   Serial.println("NETWORKS " + networksJson()); }
       else if (lineIn.startsWith("KEY ")) {         // the controls, from the computer, for a check with SHOT
         String k = lineIn.substring(4);
         if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
@@ -628,6 +744,7 @@ void turn(int step) {
   if (screen == HOME) page = (Page)((page + 3 + step) % 3);
   else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
   else if (screen == CARE) careAt = (careAt + 4 + step) % 4;
+  else if (screen == PICK_REMOTE && flareCount()) remoteAt = (remoteAt + flareCount() + step) % flareCount();
   else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
   else if (screen == TYPE_PASS) wheelAt = (wheelAt + WHEEL_N + step) % WHEEL_N;
   else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
@@ -657,6 +774,14 @@ void report(const String &kind, const String &detail) {
 }
 
 void progress(const String &text) { runResult = text; draw(); }
+// C-51: the routines are the daemon's -- they speak in its name
+String daemonName() { return st.carrying && st.daemon.nickname.length() ? st.daemon.nickname : "Your daemon"; }
+String runChooseRemote() {
+  if (!flareCount()) return daemonName() + " knows no remote yet.\nChoose TEACH A REMOTE, or add one by brand on the site.";
+  pickRemoteNext = true; remoteAt = flareActive();
+  return "";
+}
+void reportRemotes();
 bool giveUp() { return !digitalRead(PIN_SIDE_KEY); }
 
 void runRoutine() {
@@ -667,6 +792,8 @@ void runRoutine() {
   soundRoutine(t.name);                 // C-40: its tune, the ring dancing -- the daemon starting the routine
   runResult = t.routines[routineAt].run();
   if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
+  if (pickRemoteNext) { pickRemoteNext = false; screen = PICK_REMOTE; }    // C-51: CHOOSE A REMOTE, a list
+  if (!strcmp(t.name, "FLARE") && routineAt == 0) reportRemotes();         // a remote taught: the site hears of it
   while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
   sideWas = true;
   report("routine", String(t.name) + "/" + t.routines[routineAt].name);
@@ -681,10 +808,19 @@ void press() {
   if (screen == HOME) {
     if (page == TODAY) tick();
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
-    else if (page == ROUTINES_PAGE) { screen = TYPES; typeAt = 0; }
+    else if (page == ROUTINES_PAGE) {
+      if (!st.carrying) say("Needs a daemon");                     // C-51: the routines are the daemon's
+      else { screen = TYPES; typeAt = 0; }
+    }
   } else if (screen == TYPES) { screen = LIST; routineAt = 0; }
   else if (screen == LIST) { if (TYPES_LIST[typeAt].count > 0) runRoutine(); }
   else if (screen == RUN) runRoutine();
+  else if (screen == PICK_REMOTE) {
+    flareSetActive(remoteAt);
+    runResult = daemonName() + " uses " + flareName(remoteAt) + " now.";
+    screen = RUN;
+    reportRemotes();
+  }
   else if (screen == CARE) {
     if (careAt == 3) screen = INDEX_ENTRY;
     else {
@@ -700,10 +836,11 @@ void press() {
   else if (screen == TYPE_PASS) {
     if (wheelAt) typed += WHEEL[wheelAt];
     else {                                     // OK: join
-      joinWifi(nets[netAt], typed, "");
-      runResult = "Joining " + nets[netAt] + "...\n\nThe corner says WIFI once it has." +
-                  (serverUrl.length() ? "" : "\nLink it over the cable once, and it learns where the server is.");
+      learnNetwork(nets[netAt], typed, "");
+      runResult = daemonName() + " learned " + nets[netAt] + ", and joins it whenever it is near.\n\nThe corner says WIFI once it has." +
+                  (serverUrl.length() ? "" : "\nLink it by the cable once, and it learns where the server is.");
       screen = RUN;
+      reportNetworks();
     }
   }
   dirty = true;
@@ -718,7 +855,7 @@ void back() {
   if (screen == INDEX_ENTRY) { screen = CARE; careAt = 3; }
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
-  else if (screen == PICK_NET) screen = LIST;
+  else if (screen == PICK_NET || screen == PICK_REMOTE) screen = LIST;
   else if (screen == RUN) screen = LIST;
   else if (screen == LIST) screen = TYPES;
   else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
@@ -779,11 +916,13 @@ String runNetworksInRange() {
   if (!wifiSet()) WiFi.mode(WIFI_STA);   // with no network set the radio is idle; it listens for the scan
   int n = WiFi.scanNetworks();
   if (n <= 0) return n == 0 ? "No networks in range." : "The scan did not finish. Press to try again.";
-  String out = String(n) + (n == 1 ? " network in range:" : " networks in range:");
+  String out = daemonName() + " hears " + String(n) + (n == 1 ? " network" : " networks") + "  (* it knows):";
   for (int i = 0; i < n && i < 6; i++) {
     String name = WiFi.SSID(i);
+    bool known = false;
+    for (int k = 0; k < knownCount; k++) if (knownSsid[k] == name) known = true;
     if (!name.length()) name = "(hidden)";
-    out += "\n" + name + "  " + String(WiFi.RSSI(i)) + " dBm";
+    out += "\n" + String(known ? "* " : "  ") + name + "  " + String(WiFi.RSSI(i)) + " dBm";
   }
   WiFi.scanDelete();
   return out;
@@ -818,10 +957,10 @@ void setup() {
   pinMode(TFT_BL, OUTPUT); digitalWrite(TFT_BL, HIGH);
   canvas.setColorDepth(16);
   canvas.createSprite(W, H);
-  loadWifi();
-  if (wifiSet()) { WiFi.mode(WIFI_STA); WiFi.begin(wifiSsid.c_str(), wifiPass.c_str()); }
+  loadWifi();                                 // C-52: uplinkLoop joins the strongest known network in range
   ledsBegin();
   soundBegin();
+  flareBegin();                               // C-51: an older single learned code becomes the first remote
   loadSettings();
   lastInput = millis();
   page = cfg.home == "today" ? TODAY : DAEMON;   // C-42: it starts at home
@@ -852,6 +991,7 @@ void loop() {
   }
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
   askForArt();
+  uplinkLoop(now);
   ledsLoop();
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }

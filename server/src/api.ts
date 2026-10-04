@@ -32,7 +32,7 @@ import { execFile, execFileSync } from "node:child_process";
 import { platform } from "node:os";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
-import irPowerJson from "../data/ir_power.json" with { type: "json" };
+import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
@@ -308,7 +308,8 @@ const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a =
 const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
-    ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines"].includes(p),
+    ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
+     "/api/device/remotes", "/api/device/networks"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
@@ -384,7 +385,40 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         store.setSetting("device", JSON.stringify(s));
         return send(res, 200, s);
       }
-      if (req.method === "GET" && path === "/api/ir/brands") return send(res, 200, irPowerJson.brands);   // C-34
+      if (req.method === "GET" && path === "/api/ir/brands") return send(res, 200, irCodesJson.brands);   // C-34, C-51
+      // C-51: the board's remotes -- what it reports, and what the site asks of it
+      if (req.method === "POST" && path === "/api/device/remotes") {
+        const b = await body(req);
+        hub.remotes = { active: Number(b.active ?? 0), remotes: Array.isArray(b.remotes) ? b.remotes : [] };
+        return send(res, 200, { ok: true });
+      }
+      // C-52: the networks the board has learned (names only), and forgetting one
+      if (req.method === "POST" && path === "/api/device/networks") {
+        const b = await body(req);
+        hub.networks = Array.isArray(b.networks) ? b.networks.map(String) : [];
+        hub.currentNetwork = typeof b.current === "string" ? b.current : "";
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === "POST" && path === "/api/device/network") {
+        const b = await body(req);
+        if (b.op !== "forget" || !Number.isInteger(b.index)) return send(res, 400, { error: "forget a network: {op: forget, index}" });
+        return send(res, 200, { id: hub.send({ type: "network", op: "forget", index: b.index }) });
+      }
+      if (req.method === "POST" && path === "/api/device/remote") {
+        const b = await body(req);
+        if (b.op === "activate" || b.op === "remove") {
+          if (!Number.isInteger(b.index)) return send(res, 400, { error: "which remote: {index}" });
+          return send(res, 200, { id: hub.send({ type: "remote", op: b.op, index: b.index }) });
+        }
+        if (b.op === "add") {                      // a brand's whole remote, from the code table
+          const set = irCodesJson.brands.find((x) => x.brand === b.brand)?.sets.find((x) => x.label === b.label);
+          if (!set) return send(res, 400, { error: "no such remote in the table" });
+          const button = (code: string) => ({ protocol: set.protocol, code, bits: set.bits, repeat: set.repeat });
+          return send(res, 200, { id: hub.send({ type: "remote", op: "add", name: set.label,
+                                                 buttons: [button(set.power), button(set.volumeUp), button(set.volumeDown)] }) });
+        }
+        return send(res, 400, { error: "op is activate, remove or add" });
+      }
       if (req.method === "POST" && path === "/api/device/ir") {     // C-34: one IR code, sent (and kept if asked)
         const b = await body(req);
         if (typeof b.protocol !== "string" || typeof b.code !== "string" || !Number.isInteger(b.bits))

@@ -6,7 +6,7 @@
 // It lives in memory: a link is a now, not a record. What a routine did is kept as tending the daemon elsewhere (C-13).
 
 export type Via = "usb" | "wifi";
-export type Command = { id: number; type: "run" | "wifi" | "ir"; [k: string]: unknown };
+export type Command = { id: number; type: "run" | "wifi" | "ir" | "remote" | "network"; [k: string]: unknown };
 export type Result = { id: number; ok: boolean; text: string; at: string };
 export type RoutineType = { name: string; radio: string; routines: string[] };
 
@@ -20,6 +20,9 @@ export class DeviceHub {
   private results: Result[] = [];
   private nextId = 1;
   routines: RoutineType[] = [];
+  remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] } = { active: 0, remotes: [] };   // C-51
+  networks: string[] = [];                                                                                   // C-52
+  currentNetwork = "";
   firmware = "";
 
   seen(via: Via, now = Date.now()) { this.seenAt = now; this.via = via; }
@@ -27,7 +30,8 @@ export class DeviceHub {
   link(now = Date.now()) {
     const linked = this.seenAt > 0 && now - this.seenAt < FRESH_MS;
     return { linked, via: linked ? this.via : null, lastSeen: this.seenAt ? new Date(this.seenAt).toISOString() : null,
-             firmware: this.firmware, routines: this.routines, pending: this.queue.map(({ id, type }) => ({ id, type })),
+             firmware: this.firmware, routines: this.routines, remotes: this.remotes, networks: this.networks,
+             currentNetwork: this.currentNetwork, pending: this.queue.map(({ id, type }) => ({ id, type })),
              results: this.results };
   }
 

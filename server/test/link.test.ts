@@ -65,17 +65,41 @@ describe("a Wi-Fi password only goes down the cable (C-33)", () => {
   });
 });
 
-describe("FLARE without the remote (C-34)", () => {
-  it("offers TV power codes by brand, Sony first, each one the board can send", async () => {
+describe("FLARE without the remote (C-34, C-51)", () => {
+  it("offers whole remotes by brand, Sony first, each with its three buttons", async () => {
     const brands = await get("/api/ir/brands");
     expect(brands[0].brand).toBe("Sony");
-    expect(brands[0].codes[0]).toMatchObject({ protocol: "SONY", code: "0xA90", bits: 12 });
-    for (const b of brands) for (const c of b.codes) expect(c.code).toMatch(/^0x[0-9A-F]+$/);
+    expect(brands[0].sets[0]).toMatchObject({ protocol: "SONY", bits: 12, power: "0xA90", volumeUp: "0x490", volumeDown: "0xC90" });
+    for (const b of brands) for (const s of b.sets) for (const k of ["power", "volumeUp", "volumeDown"]) expect(s[k]).toMatch(/^0x[0-9A-F]+$/);
+  });
+
+  it("sends the board a brand's whole remote to keep, and refuses one not in the table", async () => {
+    expect((await post("/api/device/remote", { op: "add", brand: "Sony", label: "NOPE" })).status).toBe(400);
+    expect((await post("/api/device/remote", { op: "add", brand: "Sony", label: "SONY" })).status).toBe(200);
+    const { commands } = await get("/api/device/commands?via=usb");
+    expect(commands[0]).toMatchObject({ type: "remote", op: "add", name: "SONY" });
+    expect(commands[0].buttons.map((b: any) => b.code)).toEqual(["0xA90", "0x490", "0xC90"]);
+  });
+
+  it("knows the board's remotes as it reports them", async () => {
+    await post("/api/device/remotes", { active: 1, remotes: [{ name: "REMOTE 1", buttons: [true, false, false] }, { name: "SONY", buttons: [true, true, true] }] });
+    expect((await get("/api/device/link")).remotes.active).toBe(1);
   });
 
   it("queues a code to try, and refuses one without its protocol", async () => {
     expect((await post("/api/device/ir", { code: "0xA90", bits: 12 })).status).toBe(400);
     expect((await post("/api/device/ir", { protocol: "SONY", code: "0xA90", bits: 12, repeat: 2 })).status).toBe(200);
+  });
+});
+
+describe("the networks the board has learned (C-52)", () => {
+  it("knows them by name only, and asks the board to forget one", async () => {
+    await post("/api/device/networks", { networks: ["home", "studio"], current: "home" });
+    const l = await get("/api/device/link");
+    expect([l.networks, l.currentNetwork]).toEqual([["home", "studio"], "home"]);
+    expect((await post("/api/device/network", { op: "forget" })).status).toBe(400);
+    const id = (await post("/api/device/network", { op: "forget", index: 1 })).json.id;
+    expect((await get("/api/device/commands?via=wifi")).commands.find((c: any) => c.id === id)).toMatchObject({ type: "network", index: 1 });
   });
 });
 

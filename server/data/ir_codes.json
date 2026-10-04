@@ -1,0 +1,17 @@
+{
+  "_about": "C-34, C-51: TV remotes by brand, for FLARE when the remote is lost -- each set is a whole remote, POWER, VOLUME UP and VOLUME DOWN, so once its POWER works the other two are known. Written here from each protocol's published command table, not copied from a code database: Sony SIRC is device 1 (TV) with commands 21 (power), 18 (volume up) and 19 (volume down), 12 bits with SIRC's repeats; Samsung's and Panasonic's are their own protocols'; LG, Vizio and Toshiba use NEC. A start: brands and sets are added as they are checked, and a larger list only once its licence lets it live in this public repo.",
+  "brands": [
+    { "brand": "Sony", "sets": [
+      { "label": "SONY", "protocol": "SONY", "bits": 12, "repeat": 2, "power": "0xA90", "volumeUp": "0x490", "volumeDown": "0xC90" } ] },
+    { "brand": "Samsung", "sets": [
+      { "label": "SAMSUNG", "protocol": "SAMSUNG", "bits": 32, "repeat": 0, "power": "0xE0E040BF", "volumeUp": "0xE0E0E01F", "volumeDown": "0xE0E0D02F" } ] },
+    { "brand": "LG", "sets": [
+      { "label": "LG", "protocol": "NEC", "bits": 32, "repeat": 0, "power": "0x20DF10EF", "volumeUp": "0x20DF40BF", "volumeDown": "0x20DFC03F" } ] },
+    { "brand": "Panasonic", "sets": [
+      { "label": "PANASONIC", "protocol": "PANASONIC", "bits": 48, "repeat": 0, "power": "0x40040100BCBD", "volumeUp": "0x400401000405", "volumeDown": "0x400401008485" } ] },
+    { "brand": "Toshiba", "sets": [
+      { "label": "TOSHIBA", "protocol": "NEC", "bits": 32, "repeat": 0, "power": "0x02FD48B7", "volumeUp": "0x02FD58A7", "volumeDown": "0x02FD7887" } ] },
+    { "brand": "Vizio", "sets": [
+      { "label": "VIZIO", "protocol": "NEC", "bits": 32, "repeat": 0, "power": "0x20DF10EF", "volumeUp": "0x20DF40BF", "volumeDown": "0x20DFC03F" } ] }
+  ]
+}

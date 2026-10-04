@@ -17,13 +17,16 @@ The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's c
 
 | type | routine | what it does |
 |---|---|---|
-| FLARE | LEARN MY REMOTE | point your TV's remote at the board, press POWER once; it remembers that code (across power-offs) |
-| FLARE | SEND TO MY TV | sends the learned code from the board's IR end |
-| FLARE | SONY TV POWER | a Sony TV's POWER (Sony's own protocol), no remote needed: the first brand of C-34 |
+| FLARE | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn; kept, and chosen |
+| FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
+| FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; the site can add one by brand |
 | WHISPER | OPEN TO MY PHONE | your phone connects ("DAEMONS companion", in nRF Connect or LightBlue); the board says hello, and a word you write back appears |
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
-| LONGWAVE | -- | not wired yet: it is tried with the board in hand first |
-| UPLINK | NETWORKS IN RANGE | the Wi-Fi networks around you, by strength. Joins nothing |
+| LONGWAVE | -- | later |
+| UPLINK | NETWORKS IN RANGE | the Wi-Fi networks it hears, those it knows marked * |
+| UPLINK | TEACH A NETWORK | your daemon learns a network: choose one, spell its password on the wheel; it joins any it knows when near |
+
+Routines are the daemon's: they need one on the board, and speak in its name.
 
 A routine that waits (for a remote, a tag, a phone) says so on the screen; **the top button gives up**. Every routine
 you run is told to the server as tending your daemon (C-13).

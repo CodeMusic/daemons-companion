@@ -11,6 +11,7 @@
 #include <IRutils.h>
 #include <NimBLEDevice.h>
 #include "radios.h"
+#include "sound.h"
 
 // LilyGO's pin map (examples/utilities.h): IR out and in, the PN532 on I2C with its IRQ and reset.
 static const int PIN_IR_TX = 2, PIN_IR_RX = 1, PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 17, PIN_NFC_RST = 45;
@@ -52,90 +53,182 @@ String runReadMyTag() {
   return "No tag in 15 seconds.\nPress to try again.";
 }
 
-// ---- FLARE (IR): learn one button from your own remote, then send it. Remembered across power-offs. ---------------
+// ---- FLARE (IR): the daemon learns your remotes (C-51) ------------------------------------------------------------
+// A REMOTE is three buttons -- POWER, VOLUME UP, VOLUME DOWN -- taught together ("press POWER: ARTSAI is listening"),
+// or added from the site by brand (a brand's three codes are known once its POWER is). Up to six are kept in the
+// board's flash; one is chosen, and FLARE's buttons send from it. They belong to the board -- the daemons share them.
 static IRrecv irIn(PIN_IR_RX, 1024, 50, true);
 static IRsend irOut(PIN_IR_TX);
-static Preferences flareMemory;
+static Preferences remotes;
+static const int MAX_REMOTES = 6;
+static const char *BUTTONS[3] = { "POWER", "VOLUME UP", "VOLUME DOWN" };
 
-String runLearnMyRemote() {
+// One button as kept: a protocol's value, or -- for a remote the library cannot name -- its timings, sent back as heard.
+struct Button { int32_t type = -1; uint16_t bits = 0, repeat = 0; uint64_t value = 0; uint16_t rawLen = 0; uint16_t raw[300]; };
+static Button scratch[3];
+
+static String key(const char *what, int r, int b = -1) { return String(what) + r + (b >= 0 ? "_" + String(b) : ""); }
+static size_t keptSize(const Button &b) { return offsetof(Button, raw) + b.rawLen * sizeof(uint16_t); }
+
+int flareCount()  { remotes.begin("remotes", true); int n = remotes.getUChar("count", 0); remotes.end(); return n; }
+int flareActive() { remotes.begin("remotes", true); int a = remotes.getUChar("active", 0); remotes.end(); return a; }
+String flareName(int r) { remotes.begin("remotes", true); String n = remotes.getString(key("n", r).c_str(), "REMOTE " + String(r + 1)); remotes.end(); return n; }
+void flareSetActive(int r) { if (r < 0 || r >= flareCount()) return; remotes.begin("remotes", false); remotes.putUChar("active", r); remotes.end(); }
+
+static bool loadButton(int r, int b, Button &out) {
+  remotes.begin("remotes", true);
+  size_t got = remotes.getBytes(key("b", r, b).c_str(), &out, sizeof out);
+  remotes.end();
+  return got >= offsetof(Button, raw) && out.type != -1;
+}
+
+static void saveRemote(int r, const String &name, Button *buttons) {
+  remotes.begin("remotes", false);
+  remotes.putString(key("n", r).c_str(), name);
+  for (int b = 0; b < 3; b++) remotes.putBytes(key("b", r, b).c_str(), &buttons[b], keptSize(buttons[b]));
+  remotes.end();
+}
+
+static void moveRemote(int from, int to) {
+  Button b3[3];
+  for (int b = 0; b < 3; b++) if (!loadButton(from, b, b3[b])) b3[b] = Button();
+  saveRemote(to, flareName(from), b3);
+}
+
+String flareRemove(int r) {
+  int n = flareCount();
+  if (r < 0 || r >= n) return "No such remote.";
+  String gone = flareName(r);
+  for (int k = r; k < n - 1; k++) moveRemote(k + 1, k);
+  remotes.begin("remotes", false);
+  remotes.remove(key("n", n - 1).c_str());
+  for (int b = 0; b < 3; b++) remotes.remove(key("b", n - 1, b).c_str());
+  remotes.putUChar("count", n - 1);
+  int a = remotes.getUChar("active", 0);
+  remotes.putUChar("active", a > r ? a - 1 : (a == r ? 0 : a));
+  remotes.end();
+  return "Forgot " + gone + ".";
+}
+
+static String addRemote(const String &name, Button *buttons) {
+  int n = flareCount();
+  if (n >= MAX_REMOTES) return "";
+  saveRemote(n, name, buttons);
+  remotes.begin("remotes", false); remotes.putUChar("count", n + 1); remotes.putUChar("active", n); remotes.end();
+  return name;
+}
+
+// From the site: a brand's three codes (C-34's search, now whole remotes).
+String flareAdd(const String &name, const String protocol[3], const uint64_t value[3], const uint16_t bits[3], const uint16_t repeat[3]) {
+  Button b3[3];
+  for (int b = 0; b < 3; b++) {
+    decode_type_t t = strToDecodeType(protocol[b].c_str());
+    if (t == UNKNOWN) return "Could not keep it: this board does not know the protocol " + protocol[b] + ".";
+    b3[b].type = t; b3[b].value = value[b]; b3[b].bits = bits[b]; b3[b].repeat = repeat[b];
+  }
+  return addRemote(name, b3).length() ? daemonName() + " knows " + name + " now, and FLARE uses it." :
+                                        daemonName() + " knows six remotes already. Remove one on the site first.";
+}
+
+// The remotes, for the site (sent with LIST).
+String flareRemotesJson() {
+  String out = "{\"active\":" + String(flareActive()) + ",\"remotes\":[";
+  for (int r = 0, n = flareCount(); r < n; r++) {
+    if (r) out += ",";
+    out += "{\"name\":\"" + flareName(r) + "\",\"buttons\":[";
+    for (int b = 0; b < 3; b++) { Button x; out += String(b ? "," : "") + (loadButton(r, b, x) ? "true" : "false"); }
+    out += "]}";
+  }
+  return out + "]}";
+}
+
+// The single code taught before remotes (the user's first learned POWER) becomes the first remote, once.
+void flareBegin() {
+  Preferences old;
+  old.begin("flare", true);
+  bool had = old.isKey("type");
+  Button power;
+  if (had) {
+    power.type = old.getInt("type"); power.bits = old.getUShort("bits"); power.repeat = old.getUShort("repeat", 0);
+    if (old.isKey("value")) power.value = old.getULong64("value");
+    if (old.isKey("raw")) { power.rawLen = old.getBytesLength("raw") / 2; old.getBytes("raw", power.raw, min((size_t)power.rawLen * 2, sizeof power.raw)); }
+  }
+  old.end();
+  if (!had || flareCount() > 0) return;
+  Button b3[3]; b3[0] = power;
+  addRemote("REMOTE 1", b3);
+  old.begin("flare", false); old.clear(); old.end();
+}
+
+static bool listenFor(Button &out, int which) {
+  progress("Point your remote at " + daemonName() + " and press " + BUTTONS[which] + ".\n\n" + daemonName() +
+           " is listening.  (" + String(which + 1) + " of 3)\n\ntop button: give up");
   irIn.enableIRIn();
-  progress("Point your TV's remote at the board and press its POWER button once.\n\ntop button: give up");
   decode_results got;
-  uint32_t until = millis() + 15000;
+  uint32_t until = millis() + 20000;
   bool heard = false;
   while (millis() < until && !heard) {
-    if (giveUp()) { irIn.disableIRIn(); return "Given up."; }
+    if (giveUp()) break;
     if (irIn.decode(&got)) {
-      if (got.repeat || got.decode_type == UNKNOWN && got.rawlen < 12) irIn.resume();   // a repeat, or noise
+      if (got.repeat || (got.decode_type == UNKNOWN && got.rawlen < 12)) irIn.resume();   // a repeat, or noise
       else heard = true;
     }
     delay(5);
   }
   irIn.disableIRIn();
-  if (!heard) return "Heard nothing in 15 seconds.\nPress to try again.";
-  flareMemory.begin("flare", false);
-  flareMemory.putInt("type", got.decode_type);
-  if (hasACState(got.decode_type)) {                 // long codes (air conditioners) keep their whole state
-    flareMemory.putBytes("state", got.state, got.bits / 8);
-  } else if (got.decode_type != UNKNOWN) {
-    flareMemory.putULong64("value", got.value);
-  } else {                                           // an unknown remote: keep its timings to send them back as they were
+  if (!heard) return false;
+  out = Button();
+  out.type = got.decode_type; out.bits = got.bits;
+  out.repeat = got.decode_type == SONY ? kSonyMinRepeat : 0;            // Sony's TVs want their code three times
+  if (got.decode_type != UNKNOWN && !hasACState(got.decode_type)) out.value = got.value;
+  else {                                                                 // timings, sent back as they were heard
+    out.type = UNKNOWN;
     uint16_t n = getCorrectedRawLength(&got);
     uint16_t *raw = resultToRawArray(&got);
-    flareMemory.putBytes("raw", raw, n * sizeof(uint16_t));
+    out.rawLen = min((int)n, 300);
+    memcpy(out.raw, raw, out.rawLen * sizeof(uint16_t));
     delete[] raw;
   }
-  flareMemory.putUShort("bits", got.bits);
-  flareMemory.end();
-  return "Learned it: " + typeToString(got.decode_type) + ", " + String(got.bits) + " bits.\n\nNow choose SEND TO MY TV.";
+  return true;
 }
 
-String runSendToMyTv() {
-  flareMemory.begin("flare", true);
-  if (!flareMemory.isKey("type")) { flareMemory.end(); return "Nothing learned yet.\nChoose LEARN MY REMOTE first."; }
-  decode_type_t type = (decode_type_t)flareMemory.getInt("type");
-  uint16_t bits = flareMemory.getUShort("bits");
-  irOut.begin();
-  if (hasACState(type)) {
-    uint8_t state[64]; size_t n = flareMemory.getBytes("state", state, sizeof state);
-    irOut.send(type, state, n);
-  } else if (type != UNKNOWN) {
-    irOut.send(type, flareMemory.getULong64("value"), bits, flareMemory.getUShort("repeat", 0));
-  } else {
-    size_t bytes = flareMemory.getBytesLength("raw");
-    uint16_t *raw = new uint16_t[bytes / 2];
-    flareMemory.getBytes("raw", raw, bytes);
-    irOut.sendRaw(raw, bytes / 2, 38);
-    delete[] raw;
+// TEACH A REMOTE: three buttons, one after another, then kept as a remote and chosen.
+String runTeachRemote() {
+  if (flareCount() >= MAX_REMOTES) return daemonName() + " knows six remotes already.\nRemove one on the site first.";
+  for (int b = 0; b < 3; b++) {
+    if (!listenFor(scratch[b], b)) return giveUp() ? "Given up. " + daemonName() + " forgets this one."
+                                                   : daemonName() + " heard nothing for " + BUTTONS[b] + ".\nPress to start again.";
+    progress(daemonName() + " learned " + BUTTONS[b] + ".");
+    delay(500);
   }
-  flareMemory.end();
-  return "Sent " + typeToString(type) + ".\n\nDid your TV answer? Point the board's end at it and press to send again.";
+  String name = "REMOTE " + String(flareCount() + 1);
+  addRemote(name, scratch);
+  return daemonName() + " learned your remote: POWER, VOLUME UP and VOLUME DOWN.\n\nIt is " + name + ", and FLARE uses it now.";
 }
 
-// A Sony TV's POWER, without a remote to learn from (C-34's first brand): Sony's own protocol (SIRC), 12 bits, device 1
-// (a TV), command 21 (power) -- 0xA90, the code every Sony TV since the 1990s answers. Sent with the repeats SIRC wants.
-String runSonyTvPower() {
+static String sendButton(int which) {
+  int n = flareCount();
+  if (!n) return daemonName() + " knows no remote yet.\nChoose TEACH A REMOTE, or add one by brand on the site.";
+  int r = flareActive();
+  Button b;
+  if (!loadButton(r, which, b))
+    return flareName(r) + " has no " + BUTTONS[which] + " yet.\nTEACH A REMOTE teaches all three.";
   irOut.begin();
-  irOut.sendSony(0xA90, 12, kSonyMinRepeat);
-  return "Sent a Sony TV's POWER.\n\nPoint the board's end at the TV, from a few steps away. Press to send again.";
+  if (b.type == UNKNOWN) irOut.sendRaw(b.raw, b.rawLen, 38);
+  else irOut.send((decode_type_t)b.type, b.value, b.bits, b.repeat);
+  return daemonName() + " sent " + BUTTONS[which] + "  (" + flareName(r) + ").\n\nPress to send it again.";
 }
+String runPower()      { return sendButton(0); }
+String runVolumeUp()   { return sendButton(1); }
+String runVolumeDown() { return sendButton(2); }
 
-// C-34: a code the site is trying, from the brand the user chose -- the way a universal remote is set up. Sent once;
-// kept (as SEND TO MY TV's code, across power-offs) when the user says it was the one.
-String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint16_t repeat, bool keep) {
+// C-34: one code the site is trying (a brand's POWER), sent once.
+String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint16_t repeat, bool) {
   decode_type_t type = strToDecodeType(protocol.c_str());
   if (type == UNKNOWN) return "Could not send: this board does not know the protocol " + protocol + ".";
   irOut.begin();
   if (!irOut.send(type, value, bits, repeat)) return "Could not send " + protocol + " with " + String(bits) + " bits.";
-  if (keep) {
-    flareMemory.begin("flare", false);
-    flareMemory.clear();
-    flareMemory.putInt("type", type); flareMemory.putULong64("value", value);
-    flareMemory.putUShort("bits", bits); flareMemory.putUShort("repeat", repeat);
-    flareMemory.end();
-    return "Kept. SEND TO MY TV sends this code from now on.";
-  }
-  return "Sent " + protocol + " " + uint64ToString(value, 16) + ".";
+  return daemonName() + " sent " + protocol + " " + uint64ToString(value, 16) + ".";
 }
 
 // ---- WHISPER (Bluetooth): your phone opens it, and a word goes each way. -----------------------------------------

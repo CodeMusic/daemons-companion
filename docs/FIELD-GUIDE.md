@@ -15,8 +15,8 @@ cd daemons-companion
 ./bindCompanion.sh
 ```
 
-- **See:** the site opens at <http://localhost:8081>, five tabs across the top: **TODAY · GOALS · DAEMON · PROFILE ·
-  SETTINGS**. The whole page wears the day's colour (Sunday is a deep red).
+- **See:** the site opens at <http://localhost:8081>, the tabs across the top: **TODAY · GOALS · DAEMON · INDEX ·
+  DEVICE · PROFILE · SETTINGS**. The whole page wears the day's colour (Sunday is a deep red).
 
 ## 2. Set your save (this is the part that confused you)
 
@@ -39,8 +39,11 @@ Go to **SETTINGS**.
 
 - **TODAY:** the day's colour, note and virtue; the season; **THE ONE THING** — the single next step. Click **Done**
   and it advances.
-- **GOALS:** type a goal, click **Break it down**. (The AI is off by default, so you get a marked example plan —
-  that's expected.) Tick steps off.
+- **GOALS:** set **one goal** (a few words -- the count shows the limit). Then **+** adds its rows: a **step**, or a
+  **milestone** that holds its own steps (Clean the house: BATHROOM -- mop the floor, scrub the toilet ...).
+  **See:** each entry's letters counted against 40. Tap a step to do it, tap again to undo it.
+- **WALKING** (on GOALS): 10,000 steps a day unless you choose; type today's steps until the phone counts them.
+  **See:** reaching it says your daemon is glad of the walk.
 
 ## 4. Your party, and the PROFILE
 
@@ -98,9 +101,13 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   Turn the dial. **See and hear:** it wakes at home, to the first notes of the title theme; the turn did nothing else.
 - **Care:** at home, **see** its mood, meals and water; **press** for CARE and FEED it. **See and hear:** it hops, a
   glad little phrase, "Eaten.", and fed goes up by one. The site's DAEMON tab shows the same.
-- **Grown on the device:** finish a few steps (GOALS, or press on TODAY). **See:** fed goes up, and home's level
-  reads "L9 > 10" once it has grown past one. Bring it home in the game, SYNC. **See:** "PIP came home grown: level
-  9 to 10." -- and in the game, its new level and stats.
+- **A step, on the board:** turn to TODAY. **See:** the step, its milestone above it ("BATHROOM 1/3"). **Press.**
+  **Hear:** five notes of your daemon's own (generated from its number and the day). **See:** the next step at once,
+  and "done: ... top button: undo" at the foot. **Top button** within 15 seconds: **hear** the five notes backwards,
+  and the step is back. Finish a milestone: **seven notes and a rainbow**. Finish the goal: **a longer climb, and the
+  ring blooming into colour.**
+- **Grown on the device:** each step done is a meal and **one experience point** (limited leveling). Bring the daemon
+  home in the game, SYNC. **See:** "PIP came home with 3 more experience." -- and in the game, its experience.
 - **A routine:** run any. **Hear and see:** its own short tune, the ring dancing to it, before it runs.
 - **DAEMON:** **See:** the daemon you carry, **drawn as the game draws it** (its streaks too), twice its size, with its
   level, friendship and what it holds. **Press:** its **INDEX entry**, in your edition's voice. **Top button:** back.
@@ -108,14 +115,18 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   (Sub-GHz), UPLINK (Wi-Fi). **Press** to open one; the **top button** goes back.
 - **Try each radio** (choose it, press to run, press again to run again; the top button gives up a wait):
   - **TOUCHSTONE -> READ MY TAG:** hold your NTAG or MIFARE card to the board. **See:** its kind and its ID.
-  - **FLARE -> LEARN MY REMOTE:** point your TV remote at the board, press POWER. **See:** "Learned it: <protocol>".
-    Then **SEND TO MY TV** with the board's end toward the TV. **See:** the TV turns off (or on).
-  - **FLARE -> SONY TV POWER** (a Sony TV, no remote needed): the board's end toward the TV, a few steps away.
-    **See:** the TV turns off (or on).
+  - **FLARE -> TEACH A REMOTE:** point your remote at the board. **See:** "Point your remote at ARTSAI and press
+    POWER -- ARTSAI is listening (1 of 3)"; then VOLUME UP, then VOLUME DOWN. **See:** "ARTSAI learned your remote".
+    Then **POWER**, **VOLUME UP**, **VOLUME DOWN** send from it; **CHOOSE A REMOTE** picks among those it knows.
+  - **No remote?** On the site's DEVICE tab, ITS REMOTES: choose your TV's brand, **Try its POWER**, and if the TV
+    answers, **It worked: keep this remote** -- its volume buttons come with it. (Sony is kept already, as SONY.)
   - **WHISPER -> OPEN TO MY PHONE:** on your phone, open nRF Connect (free), connect to **DAEMONS companion**.
     **See:** "Your phone is here"; on the phone, the TX line shows "Hello from your daemon." Write a word to the RX
     line as text. **See:** "Both ways work", and your word.
-  - **UPLINK -> NETWORKS IN RANGE:** **See:** the Wi-Fi networks around you, by name and strength.
+  - **UPLINK -> NETWORKS IN RANGE:** **See:** "ARTSAI hears N networks", those it knows marked *.
+  - **UPLINK -> TEACH A NETWORK:** choose your network, spell its password on the wheel, OK. **See:** "ARTSAI learned
+    <name>, and joins it whenever it is near"; the corner says WIFI. The site's ITS NETWORKS lists what it knows.
+  - Routines are the daemon's: with none on the board, ROUTINES says to send one from the game.
   - **LONGWAVE** opens on "No routines yet" -- tried with the board in hand first (PLAN §10).
   - **See (in the bridge's window), after each:** "the device ran <TYPE>/<ROUTINE>" -- told to the server as tending
     your daemon.

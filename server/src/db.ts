@@ -16,7 +16,18 @@ export class Store {
       CREATE TABLE IF NOT EXISTS subitems (id INTEGER PRIMARY KEY, goal INTEGER NOT NULL REFERENCES goals(id),
         title TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);
       CREATE TABLE IF NOT EXISTS steps (id INTEGER PRIMARY KEY, subitem INTEGER NOT NULL REFERENCES subitems(id),
-        text TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);`);
+        text TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);
+      CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
+  }
+
+  // C-22: the save the app is married to -- the game it carries daemons for. Unset until the first SYNC.
+  married(): { name: string; trainerId: number; secretId: number } | null {
+    const row = this.db.prepare("SELECT value FROM settings WHERE key = 'married'").get() as { value: string } | undefined;
+    return row ? JSON.parse(row.value) : null;
+  }
+
+  marry(game: { name: string; trainerId: number; secretId: number }) {
+    this.db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('married', ?)").run(JSON.stringify(game));
   }
 
   addGoal(title: string, plan?: Plan): Goal {

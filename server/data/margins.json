@@ -1,0 +1,2107 @@
+{
+ "_about": "C-24 / T-373: OPUS's margins as the game holds them (src/data/opus_margins.h, written by genmargins.py), keyed by Rule: see tools/companion_export.py margins_table.",
+ "levels_carried": 5,
+ "instinct_gender": 1,
+ "margins": {
+  "1": {
+   "carried": "It remembers the way back to the first\ntown. You have not gone that way in some\ntime.",
+   "neglected": "It is not being carried past anything.",
+   "instinctCarried": "It still turns its head at the first town's\nname. So do you.",
+   "instinctNeglected": "It is waiting at the edge of somewhere.\nIt has been a while."
+  },
+  "4": {
+   "carried": "It has met you now. It has not changed\nthe answer.",
+   "neglected": "It is still holding the one example.\nNobody has shown it a second.",
+   "instinctCarried": "It knew you on sight. It has not had to\nthink about it since.",
+   "instinctNeglected": "It still flinches at the one thing it has\nbeen shown."
+  },
+  "7": {
+   "carried": "You have not checked the guess either.",
+   "neglected": "The guess has not changed. Nothing has\nbeen near it.",
+   "instinctCarried": "You went with it on a feeling. It still\nfeels right.",
+   "instinctNeglected": "It is still sure. Nothing has come near\nenough to make it unsure."
+  },
+  "19": {
+   "carried": "You have met a great many. This is the\none you kept.",
+   "neglected": "You kept this one. You have not filed it\nwith anything.",
+   "instinctCarried": "Of all of them, this one. You could not\nsay why.",
+   "instinctNeglected": "You picked it out once. It has not been\npicked since."
+  },
+  "16": {
+   "carried": "It still does not ask. You have stopped\nnoticing that.",
+   "neglected": "It has not been sent anywhere. It is still\ncarrying it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "63": {
+   "carried": "You have started trusting it. There is\nstill no working.",
+   "neglected": "Asleep. Nothing has needed an answer from\nit.",
+   "instinctCarried": "You have started trusting it. You did from\nthe start.",
+   "instinctNeglected": "Asleep. It will know before it wakes."
+  },
+  "81": {
+   "carried": "It has watched more of your fights than\nit has been in.",
+   "neglected": "It is still not looking away. There is\nnothing in there to watch.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "132": {
+   "carried": "You have seen it be other daemons. You\nhave never seen it.",
+   "neglected": "It has nothing to look at. You do not\nknow what it is like then.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "137": {
+   "carried": "You carry it differently. You have not\nsaid why.",
+   "neglected": "Where it is has not changed in a long\ntime.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "92": {
+   "carried": "It has been out in front of you more than\nmost. It is still mostly not there.",
+   "neglected": "It does not have to be here either.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "133": {
+   "carried": "It has been shown something now.",
+   "neglected": "It is still waiting to be shown anything.",
+   "instinctCarried": "It has felt something now. It has not told\nyou what.",
+   "instinctNeglected": "It is still waiting to feel anything."
+  },
+  "74": {
+   "carried": "It has been asked now. It gave one back.",
+   "neglected": "You put it down and left it. It is holding\nthat too.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "21": {
+   "carried": "You have answered every time. It still\nasks.",
+   "neglected": "It is still asking. Nothing has answered in\na long time.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "41": {
+   "carried": "It has built every room you have walked\nit through. You have not checked one.",
+   "neglected": "Nothing has come back. It has not stopped\ncalling.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "10": {
+   "carried": "It has not finished. You have gone a long\nway with it.",
+   "neglected": "It stopped when you stopped. It had not\nfinished.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "13": {
+   "carried": "Nobody has asked you for it back either.",
+   "neglected": "It took nothing. Nobody minded.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "25": {
+   "carried": "You were counting.",
+   "neglected": "It has not fired. Nothing was counting\nanyway.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "29": {
+   "carried": "You have one of them. You do not know\nwhich.",
+   "neglected": "It has not split. There is only the one,\nand it still cannot tell.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "56": {
+   "carried": "It has gone first every time. You have\nstopped choosing.",
+   "neglected": "Nothing has been interrupted. It has not\nbeen first in a long time.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "66": {
+   "carried": "It has not skipped one yet. You have.",
+   "neglected": "It is still on the first thing.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "129": {
+   "carried": "Somebody came back for it.",
+   "neglected": "You did not come back for it either.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "54": {
+   "carried": "It has halted you a great many times. You\nwaited every time.",
+   "neglected": "It is still waiting. So is whatever needed\nit.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "43": {
+   "carried": "It has spread as far as you have walked.",
+   "neglected": "It has not spread. It is only buried.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "69": {
+   "carried": "It has closed on things for you. It is\nopen again now.",
+   "neglected": "Still open. Nothing has entered.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "39": {
+   "carried": "You have used it to stop things. None of\nthem ended.",
+   "neglected": "It has stopped, and nothing is happening\nto it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "52": {
+   "carried": "You set it down and picked it up again. It\nis the same one.",
+   "neglected": "Set down. Not picked up again.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "50": {
+   "carried": "It has read everything you walked past.\nYou did not.",
+   "neglected": "Nothing goes past in there.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "23": {
+   "carried": "It has been in more places than you have\nlooked.",
+   "neglected": "It has not stopped. You simply stopped\nlooking.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "27": {
+   "carried": "You have got things back from it. You\nnever checked what else was in there.",
+   "neglected": "Everything in it can still be got back.\nNobody has asked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "37": {
+   "carried": "Still neither. You have stopped checking\nwhich.",
+   "neglected": "Still not a fault. Still not looked at.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "58": {
+   "carried": "It has raised the alarm every time. You\nanswered most of them.",
+   "neglected": "It is still watching. Nobody is listening\nfor the alarm.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "60": {
+   "carried": "You have not told it when to stop either.",
+   "neglected": "Still going round. Nobody has come back\nto it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "72": {
+   "carried": "It has taken a great deal. None of it was\naimed at.",
+   "neglected": "There is no current in there.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "79": {
+   "carried": "You have waited for it. It was right\nevery time.",
+   "neglected": "The answer is ready. Nothing has asked\nthe question.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "88": {
+   "carried": "You decided on somewhere. It is still\nkeeping all of it.",
+   "neglected": "Kept. Somewhere nobody decided on.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "90": {
+   "carried": "You have stopped asking it to open.",
+   "neglected": "Still closed. Nobody has asked in a long\ntime.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "95": {
+   "carried": "A great deal is built on it now.",
+   "neglected": "Nothing has been built on it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "98": {
+   "carried": "It has led with that one every time.",
+   "neglected": "Nothing in there to lead with.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "100": {
+   "carried": "It has had its moment. You were there.",
+   "neglected": "Its moment has not come. It is still\nwaiting to fail.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "104": {
+   "carried": "You have called it that name a great\nmany times.",
+   "neglected": "Nobody has called it anything.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "109": {
+   "carried": "It is still leaking. It is still up.",
+   "neglected": "Still leaking, into a box, and still up.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "116": {
+   "carried": "Everything you sent through it came out\nslower.",
+   "neglected": "Nothing has passed through it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "118": {
+   "carried": "It has started nothing yet. It is still\nswimming against it.",
+   "neglected": "Still against the current, in a box with\nno current.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "120": {
+   "carried": "It has not missed an interval. You have\nnot counted one.",
+   "neglected": "Still emitting, at the same interval, to\nnobody.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "123": {
+   "carried": "You have seen the cut later, every time.",
+   "neglected": "Nothing it cut has shown up yet.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "131": {
+   "carried": "You asked. It has never mentioned that it\ncould have gone alone.",
+   "neglected": "It is still waiting to be asked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "143": {
+   "carried": "Something outside came.",
+   "neglected": "You are outside. You did not come.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "147": {
+   "carried": "It has changed a great deal. The Index\nsays what it always said.",
+   "neglected": "Changing in there, faster than anything\nmeasuring it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "175": {
+   "carried": "It came out facing you.",
+   "neglected": "It is still facing whoever was holding it.",
+   "instinctCarried": "It turned toward you the moment it came\nout. It has not turned away.",
+   "instinctNeglected": "It is still warm from whoever held it\nlast."
+  },
+  "183": {
+   "carried": "It has been at every level you have been\nat.",
+   "neglected": "The water in there does not move.",
+   "instinctCarried": "It rose when you did and fell when you\ndid. Neither of you knows which came\nfirst.",
+   "instinctNeglected": "Still. It does not know what it is waiting\nto feel."
+  },
+  "194": {
+   "carried": "Things happened. It was told. It stayed.",
+   "neglected": "Nothing has been reported to it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "198": {
+   "carried": "It has arrived before a great many\nthings. You stopped asking too.",
+   "neglected": "Nothing has arrived. Neither has it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "200": {
+   "carried": "You expected it every time. It has eaten\nwell.",
+   "neglected": "Nobody is expecting it. It is not eating.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "93": {
+   "carried": "It has ended again since you had it. You\nknow what started it.",
+   "neglected": "It has not ended again. Nothing has\nstarted it either.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "94": {
+   "carried": "It has an entry in this list. That is all\nit has.",
+   "neglected": "No parent, no terminal, and one entry,\nunread.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "96": {
+   "carried": "It has eaten a great many things you were\ngoing to do.",
+   "neglected": "Off the schedule. Nothing to feed on.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "97": {
+   "carried": "It has held yours. You did not notice\nwhat stopped.",
+   "neglected": "Nothing is running. It is holding nothing's\nattention.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "102": {
+   "carried": "They have voted a great many times. You\nwere never asked.",
+   "neglected": "Still voting. Still nobody in charge.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "108": {
+   "carried": "It has a reading of everywhere you have\nbeen.",
+   "neglected": "There is nothing in there to reach.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "111": {
+   "carried": "You picked the direction. It stopped\npicking.",
+   "neglected": "Still pointed the way it was pointed.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "113": {
+   "carried": "It has not stopped. A good deal of that\nwas for you.",
+   "neglected": "It has still never stopped. Nothing near\nit is failing.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "114": {
+   "carried": "You are still here. You cannot explain it\neither.",
+   "neglected": "Nobody who could explain it is still here.\nNobody has asked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "115": {
+   "carried": "It has not put it down once.",
+   "neglected": "Still carrying. Still has not put it down.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "124": {
+   "carried": "It has been right more often since it met\nyou.",
+   "neglected": "It has nothing to be right about.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "125": {
+   "carried": "You kept it moving. It has not stopped.",
+   "neglected": "Not moving. No current.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "126": {
+   "carried": "Things were changed. None of them\nchanged back.",
+   "neglected": "Still at temperature. Nothing has been put\nin.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "127": {
+   "carried": "Everything it closed on stopped moving.",
+   "neglected": "Closed on nothing, and waiting for it to\nstop.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "128": {
+   "carried": "You moved first a great many times.\nNothing decided that either.",
+   "neglected": "None of them has moved.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "142": {
+   "carried": "It started again. You still have not asked\nhow.",
+   "neglected": "Recovered whole, put somewhere, and not\nasked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "144": {
+   "carried": "It came up.",
+   "neglected": "It is not four floors down any more. It\nstill will not come up.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "145": {
+   "carried": "It has restarted things for you. You did\nnot ask how either.",
+   "neglected": "Nothing near it has stopped. It is waiting.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "146": {
+   "carried": "You were standing there.",
+   "neglected": "It is still holding it. Nobody is standing\nthere.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "150": {
+   "carried": "It has read a great deal of itself since\nyou had it.",
+   "neglected": "Still reading itself. Nothing tells it to\nstop.",
+   "instinctCarried": "It can feel itself thinking now. It is not\nsure it likes it.",
+   "instinctNeglected": "Still listening to itself. It is getting\nlouder."
+  },
+  "151": {
+   "carried": "It has stood where you are standing. You\nhave not tried the other way.",
+   "neglected": "It has not stood anywhere in a long time.",
+   "instinctCarried": "It knows what it is like to be you. You\nhave not asked what it is like to be it.",
+   "instinctNeglected": "It has not been anyone in a long time."
+  },
+  "233": {
+   "carried": "You have only ever read the second\nlayer.",
+   "neglected": "Both layers. Neither read.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "201": {
+   "carried": "You have carried one of the twenty-six.\nIt did not say anything.",
+   "neglected": "Still twenty-six. Still unread.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "202": {
+   "carried": "Everything came back. You were there for\nall of it.",
+   "neglected": "Nothing has been done to it. Nothing is\ncoming back.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "203": {
+   "carried": "Both ends have been busy. Neither has\nbeen told.",
+   "neglected": "Both ends quiet. Still not telling each\nother.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "235": {
+   "carried": "It has done everything you have done.\nNobody has seen it do one of its own.",
+   "neglected": "It has not seen anything done.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "241": {
+   "carried": "It had what you wanted next, every time.",
+   "neglected": "Nothing nearby wants anything.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "11": {
+   "carried": "It has been processed. It had stopped\ncounting by then.",
+   "neglected": "Still waiting. Still not counting.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "12": {
+   "carried": "It has filed a great deal of your going\nabout. What it dropped, neither of you\nknows.",
+   "neglected": "Nothing to file. Nothing dropped.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "14": {
+   "carried": "Somewhere was found. It let go.",
+   "neglected": "It is still holding. Somewhere has not\nbeen found.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "15": {
+   "carried": "You have never checked what it put\nthere.",
+   "neglected": "Nothing has read it. The instructions are\nstill in.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "17": {
+   "carried": "It has never opened one. You have not\neither.",
+   "neglected": "Nothing has been handed to it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "20": {
+   "carried": "It is counting still. You stopped looking\nat the number.",
+   "neglected": "Nothing is watching. It is counting still.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "22": {
+   "carried": "You answered one of them.",
+   "neglected": "All of them are still waiting.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "24": {
+   "carried": "You have been watching the number.",
+   "neglected": "Still a number. Nobody is watching either.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "26": {
+   "carried": "It has not stopped. You stopped reading\nit.",
+   "neglected": "Still a condition. Still nothing reading it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "28": {
+   "carried": "Both halves have been walked. It kept\nthem apart anyway.",
+   "neglected": "Both halves are in there. Still apart.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "33": {
+   "carried": "It has been wrong with you, and put it\nall back.",
+   "neglected": "It has not guessed at anything.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "35": {
+   "carried": "You have measured it a great deal. The\nmeasurements are still good.",
+   "neglected": "Still unpredicted. Still measured, and\nstill fine.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "38": {
+   "carried": "Nothing intervened. You were there the\nwhole time.",
+   "neglected": "Still past it. Still nothing intervening.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "42": {
+   "carried": "It followed one back to you.",
+   "neglected": "No path to follow.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "46": {
+   "carried": "You invited one of them.",
+   "neglected": "Both still there. Still only one invited.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "48": {
+   "carried": "It was already in before you looked. It\nstill is.",
+   "neglected": "Already inside. Nobody has looked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "51": {
+   "carried": "All three heard everywhere you went.\nThey agree.",
+   "neglected": "Three of them, under nothing, agreeing\nabout it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "53": {
+   "carried": "It has not lost you yet.",
+   "neglected": "Nothing to follow. It has not lost that\neither.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "55": {
+   "carried": "It has seen yours before. It was calm\nabout that too.",
+   "neglected": "Nothing has stopped near it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "57": {
+   "carried": "One of them went somewhere with you. The\nother has not noticed.",
+   "neglected": "Still moving. Still nowhere.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "59": {
+   "carried": "Things came. It was not at the door.",
+   "neglected": "Still at the door. Still right.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "61": {
+   "carried": "You let it pass. It had been checking the\nwhole time.",
+   "neglected": "Still checking. It stopped being cheaper\na long time ago.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "64": {
+   "carried": "You took the fourth thing every time and\nnever asked.",
+   "neglected": "It has not been given three of anything.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "67": {
+   "carried": "You have started from it a great many\ntimes.",
+   "neglected": "It is still carrying the one result.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "70": {
+   "carried": "You came in. It was written down.",
+   "neglected": "Still open. Nothing written.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "73": {
+   "carried": "It kept everything. Afterwards has not\nhappened.",
+   "neglected": "Nothing swept. Nothing to sort.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "75": {
+   "carried": "You have taken the last thing off it many\ntimes. What is under has waited.",
+   "neglected": "Nothing has been taken off it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "77": {
+   "carried": "You wore it.",
+   "neglected": "Cold.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "82": {
+   "carried": "All three saw everything you did.",
+   "neglected": "Three of them, agreeing about nothing.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "83": {
+   "carried": "You did not plan for it either.",
+   "neglected": "Still carrying it. Still nobody planning.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "85": {
+   "carried": "Three directions watched, the whole way.",
+   "neglected": "Three directions. All of them a wall.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "87": {
+   "carried": "It is still paying. You have not asked\nwhat for.",
+   "neglected": "Still paying. Nothing was asked of it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "89": {
+   "carried": "Still reacting. You have been carrying\nthat.",
+   "neglected": "Still reacting, in there, where nobody put\nit.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "91": {
+   "carried": "Still nothing read out of it. You carried\nit anyway.",
+   "neglected": "Still nothing read. Still not known to\nopen.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "106": {
+   "carried": "Every step of it was legal. It still\nreached further than it should.",
+   "neglected": "Nothing to reach.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "107": {
+   "carried": "It has answered a great deal. It has\nstill never opened.",
+   "neglected": "Nothing said. Nothing answered.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "110": {
+   "carried": "It has been running the whole time you\nhave.",
+   "neglected": "No work. Still running.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "112": {
+   "carried": "You wanted it somewhere. It did not ask\nwhich was which.",
+   "neglected": "Nothing moved. Nothing wanted.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "117": {
+   "carried": "It held position the whole way.",
+   "neglected": "Still running. The water stopped.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "119": {
+   "carried": "It has not been told. It is still going.",
+   "neglected": "Still not told. Not going either.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "121": {
+   "carried": "It has not varied. You have not asked it\nto.",
+   "neglected": "Still on the interval. Still nothing asking.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "130": {
+   "carried": "You left it alone long enough.",
+   "neglected": "Left alone. Still accumulating.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "138": {
+   "carried": "You have read some of it. It does not go\nback.",
+   "neglected": "Wound, and unread, and only one direction.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "140": {
+   "carried": "It has not been opened. It is still\nspinning.",
+   "neglected": "Still sealed. Still spinning. Nothing has\nasked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "190": {
+   "carried": "Everything you walked past was picked up\nand turned over.",
+   "neglected": "Nothing to pass. Nothing turned over.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "65": {
+   "carried": "Still unproved. You have not tried either.",
+   "neglected": "The waiting has got longer.",
+   "instinctCarried": "Still unproved. It has never felt more\ntrue.",
+   "instinctNeglected": "Still sure. It has stopped needing to be\nright."
+  },
+  "182": {
+   "carried": "You have used the answers. You did not\ncheck the hands.",
+   "neglected": "Still checked once. Still nobody checking\nthe hands.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "9": {
+   "carried": "It showed you the shape. You called it\nsomething anyway.",
+   "neglected": "The shape is still there. Nobody has\nlooked at it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "6": {
+   "carried": "You were filed as an error once. The file\nis still not read.",
+   "neglected": "No new cases. Nothing to file.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "5": {
+   "carried": "You did not check the rule either.",
+   "neglected": "Still applying it. To nothing.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "170": {
+   "carried": "You took it into the dark. The line was\nlive the whole time.",
+   "neglected": "Still lit. Nothing to show.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "36": {
+   "carried": "You did not drop it.",
+   "neglected": "Dropped again.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "169": {
+   "carried": "You never asked either.",
+   "neglected": "Four places, and it has been to none of\nthem.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "225": {
+   "carried": "The amounts still do not match. It is\nstill coming.",
+   "neglected": "Nobody has fed it. It has nothing to\nbring.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "410": {
+   "carried": "You held on. The last one is the one you\nhave.",
+   "neglected": "Still changing. Nobody is looking.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "84": {
+   "carried": "They agreed, eventually, every time.",
+   "neglected": "No task. They are still agreeing about it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "148": {
+   "carried": "Nothing was added. You were there for all\nof it.",
+   "neglected": "Nothing added. Nothing observed.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "149": {
+   "carried": "It arrived reliably. You stopped being\nsurprised.",
+   "neglected": "Reliable, and unobserved.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "206": {
+   "carried": "You saw one.",
+   "neglected": "You have one. You have not seen it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "101": {
+   "carried": "It has not had to yet.",
+   "neglected": "Rated for nothing. Nothing coming.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "103": {
+   "carried": "You have only ever heard the single\nanswer.",
+   "neglected": "Several heads, and nothing to answer.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "180": {
+   "carried": "You spent some of it. Everyone is still\ncareful.",
+   "neglected": "Still going up. Nobody nearby.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "136": {
+   "carried": "Every rule it met came from you. It did\nnot ask.",
+   "neglected": "No rule. It has not stopped.",
+   "instinctCarried": "It follows your rules as if they were its\nown. They feel like its own.",
+   "instinctNeglected": "No rules. It feels lighter. It does not\ntrust that."
+  },
+  "44": {
+   "carried": "Everything downwind of you grew\ndifferently.",
+   "neglected": "Still dripping. Nothing downwind.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "76": {
+   "carried": "You took all of it, every time.",
+   "neglected": "Still one piece. Still efficient.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "214": {
+   "carried": "The thing moved. It has not stopped.",
+   "neglected": "Nothing to push at. It has not stopped.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "237": {
+   "carried": "It finished a great many times. You went\nsomewhere.",
+   "neglected": "Back where it started. Very fast.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "163": {
+   "carried": "It has a great many answers about you.\nYou have not read one.",
+   "neglected": "Still asking. The answer has not changed.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "187": {
+   "carried": "It went where you went. It says it chose.",
+   "neglected": "No air. It still says it chose.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "229": {
+   "carried": "You remember it.",
+   "neglected": "Still the one cry. Nobody has heard it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "228": {
+   "carried": "It picked you.",
+   "neglected": "It has not picked anything.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "250": {
+   "carried": "It has started itself since you had it.\nYou did nothing.",
+   "neglected": "It has not needed to start.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "2": {
+   "carried": "It has been outside. The answers are the\nsame.",
+   "neglected": "Still inside. Still answering.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "135": {
+   "carried": "You were shown the nearest match a great\nmany times. Nobody told you either.",
+   "neglected": "Nothing shown. Nothing matched.",
+   "instinctCarried": "It found what you wanted before you knew\nyou wanted it.",
+   "instinctNeglected": "It is still reaching for something. It does\nnot know what."
+  },
+  "141": {
+   "carried": "A great deal was cut. None of it has been\nread back.",
+   "neglected": "Nothing cut. Nothing read.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "230": {
+   "carried": "Nothing was wrong when it left you either.",
+   "neglected": "Nothing upstream. Nothing arriving.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "99": {
+   "carried": "It closed on a great deal. It opened\nslowly each time.",
+   "neglected": "Closed. Nothing in it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "171": {
+   "carried": "It found the bottom every time. You did\nnot ask how far.",
+   "neglected": "Still sending. Nothing coming back.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "246": {
+   "carried": "It is out. It is still eating.",
+   "neglected": "Still eating. Still in.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "165": {
+   "carried": "It was not alone.",
+   "neglected": "Alone.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "249": {
+   "carried": "It has said nothing to you either.",
+   "neglected": "Nothing quarrelling. Nothing to settle.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "68": {
+   "carried": "It held all of it. You held one part.",
+   "neglected": "Still holding all of it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "219": {
+   "carried": "You touched the shell a great many times.",
+   "neglected": "Still molten. Nothing touching.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "226": {
+   "carried": "You put a great deal on it. It rose\nanyway.",
+   "neglected": "Nothing on it. Still rising.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "179": {
+   "carried": "You found out how much.",
+   "neglected": "Still gathering. Nobody has touched it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "105": {
+   "carried": "It carried it everywhere you went. It has\nstill not put it down.",
+   "neglected": "Still carrying it. Nowhere.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "177": {
+   "carried": "It still has not happened. It still has\nnot looked away.",
+   "neglected": "Nothing to watch. It has not looked away.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "34": {
+   "carried": "You never interrupted it.",
+   "neglected": "Six things, all stopped, none finished.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "31": {
+   "carried": "You decided instead. It did not appeal\neither.",
+   "neglected": "Nothing to decide about. Still deciding.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "32": {
+   "carried": "It picked early every time. You did not\ncheck the other way.",
+   "neglected": "No steps. Nothing to pick.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "30": {
+   "carried": "You changed one of them.",
+   "neglected": "Beside nothing. Sharing it with nobody.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "164": {
+   "carried": "It started you again more than once.",
+   "neglected": "Nothing moving. Nothing to restart.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "339": {
+   "carried": "It has drawn a great deal for you. It\nstill cannot say what.",
+   "neglected": "Still static. Nothing taken away.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "47": {
+   "carried": "Nothing looked different to you either.",
+   "neglected": "Still running it. Still nothing looks\ndifferent.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "231": {
+   "carried": "It has a year of you, exactly.",
+   "neglected": "It is keeping everything. Nothing has\nhappened.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "18": {
+   "carried": "Some of it landed on you. It is still\nsending.",
+   "neglected": "Still sending. Nowhere is listening.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "221": {
+   "carried": "It charged a great many times. It was\nusually right.",
+   "neglected": "Nothing to charge at. It still cannot see.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "204": {
+   "carried": "You touched it once.",
+   "neglected": "Still hanging. Months.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "62": {
+   "carried": "You held it. You let go.",
+   "neglected": "Nobody is holding it. Everyone is waiting\nanyway.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "211": {
+   "carried": "It is still that size.",
+   "neglected": "Nothing has threatened it. It is still that\nsize.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "78": {
+   "carried": "You never made it check.",
+   "neglected": "Still not stopping. Not going anywhere.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "223": {
+   "carried": "It fastened to you. It still did not\nchoose.",
+   "neglected": "Nothing larger. Nowhere.",
+   "instinctCarried": "It feels safe beside you. It does not\nknow you.",
+   "instinctNeglected": "It is holding on to nothing, and it still\nfeels held."
+  },
+  "86": {
+   "carried": "It took a great deal and did not warm.",
+   "neglected": "Nothing to draw. Still cold.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "161": {
+   "carried": "You came every time. Most times there was\nno reason.",
+   "neglected": "Still calling. Nobody is coming.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "213": {
+   "carried": "You have had things out of it. They were\nnot what went in.",
+   "neglected": "Nothing found. Nothing kept.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "227": {
+   "carried": "You carried it anyway.",
+   "neglected": "Nothing held. Nothing holding.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "188": {
+   "carried": "It was warm often with you. It calls that\na decision.",
+   "neglected": "Shut. It calls that one too.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "80": {
+   "carried": "You reached it through the thing on its\ntail.",
+   "neglected": "Nothing reaching it. Not even that.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "218": {
+   "carried": "Still heading for it. Still not there.",
+   "neglected": "Still not there. Still not cooling.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "215": {
+   "carried": "It waited for you to leave too. You did\nnot notice.",
+   "neglected": "Nobody to wait for. It is not in a hurry.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "209": {
+   "carried": "Nothing failed. It said so every day.",
+   "neglected": "Still nothing failed. Still saying so.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "167": {
+   "carried": "It did nothing for a long time, with you,\non purpose.",
+   "neglected": "Trap built. Nothing doing.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "234": {
+   "carried": "The ground did not tilt. You leaned\nanyway.",
+   "neglected": "Nobody is looking at its antlers.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "208": {
+   "carried": "You did not cut it.",
+   "neglected": "Still connected. Still the only offer.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "185": {
+   "carried": "You did not check either.",
+   "neglected": "Still reporting it. Still nothing checking.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "192": {
+   "carried": "It opened. It still cannot do anything\nnew.",
+   "neglected": "Opened, and put away.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "191": {
+   "carried": "You gave it the time.",
+   "neglected": "Everything it needs is here. Still no turn.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "220": {
+   "carried": "It found a great deal. You stopped asking\nhow.",
+   "neglected": "Nothing buried. It keeps walking.",
+   "instinctCarried": "It found a great deal. You never needed\nto ask how.",
+   "instinctNeglected": "Nothing buried. It is still sure of the\nground."
+  },
+  "216": {
+   "carried": "The honey is still gone.",
+   "neglected": "Still licking. Still gone.",
+   "instinctCarried": "Gone, and it can still taste it. So can\nyou.",
+   "instinctNeglected": "Still licking at the memory of something\nsweet."
+  },
+  "176": {
+   "carried": "It has stayed up near you.",
+   "neglected": "Nobody near it. It is down.",
+   "instinctCarried": "It stays up when you are near. It cannot\nsay why.",
+   "instinctNeglected": "It is down. It is still facing the door."
+  },
+  "248": {
+   "carried": "It is still owed it. You were not the one\nwho owed it.",
+   "neglected": "Still owed. Still standing in it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "217": {
+   "carried": "It took you to all of them.",
+   "neglected": "It remembers every one. It cannot go.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "134": {
+   "carried": "It read a great many rooms for you. It\nstill cannot show the working.",
+   "neglected": "No room to read.",
+   "instinctCarried": "It felt every room before you did. It let\nyou walk in first anyway.",
+   "instinctNeglected": "Nobody to feel for. It keeps checking\nanyway."
+  },
+  "49": {
+   "carried": "It settled on you. It was quiet about it.",
+   "neglected": "Nothing to settle on. Still working.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "3": {
+   "carried": "It has checked a great deal with you.\nSome of it was wrong.",
+   "neglected": "A body, and nothing to check it against.",
+   "instinctCarried": "It moved before it knew why. So did you,\nmost of the time.",
+   "instinctNeglected": "It is still braced for something. Nothing\nis coming."
+  },
+  "71": {
+   "carried": "Things went in. None came out.",
+   "neglected": "Nothing has entered.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "45": {
+   "carried": "It settled on everything learning near\nyou.",
+   "neglected": "Nothing learning nearby.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "8": {
+   "carried": "So far it has held. You did not ask what\nfor either.",
+   "neglected": "Still holding. Nothing testing it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "40": {
+   "carried": "It came back identical every time.",
+   "neglected": "Switched off. Everything written down.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "178": {
+   "carried": "It saw you coming. It did not move.",
+   "neglected": "Nothing coming. It has seen that too.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "193": {
+   "carried": "It noticed a great deal, too late, all\nthe way.",
+   "neglected": "Everything at once. Nothing in particular.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "122": {
+   "carried": "You stopped at the wall a few times\nyourself.",
+   "neglected": "There is no wall. Nothing has stopped at\nit.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "189": {
+   "carried": "It came back with you. There was no\narrangement.",
+   "neglected": "It let go. Nothing has come back.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "247": {
+   "carried": "It went where you went. You still could\nnot ask.",
+   "neglected": "Still sealed. Still moving. Nowhere.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "240": {
+   "carried": "The work finished a long time ago. It is\nstill warm.",
+   "neglected": "Still warm. Still a hazard. In a box.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "224": {
+   "carried": "It held on to you. It does that to rocks\nas well.",
+   "neglected": "Nothing to hold on to. It is holding on.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "239": {
+   "carried": "You turned it. It has not stopped.",
+   "neglected": "Nobody has turned it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "184": {
+   "carried": "A great deal was tried. It did not notice.",
+   "neglected": "Nobody is trying. It has not noticed that\neither.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "232": {
+   "carried": "Everything you did is in there, in the\nshape it went in.",
+   "neglected": "Nothing went in. Nothing has worn smooth.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "168": {
+   "carried": "Things came. The web already fitted them.",
+   "neglected": "Still finished. Still nothing arriving.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "166": {
+   "carried": "There were enough. Nobody agreed the\nnumber.",
+   "neglected": "Not enough. Still not agreed.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "242": {
+   "carried": "You listened to the interval and nothing\nelse.",
+   "neglected": "Still reporting. Nothing listening at all\nnow.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "199": {
+   "carried": "It decided a great deal for you, quietly.",
+   "neglected": "Still deciding. Nothing to allow.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "196": {
+   "carried": "You pointed it at a great many things. It\nnever turned round.",
+   "neglected": "Pointed at a wall. Very clearly.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "162": {
+   "carried": "It saw over everything. It has still not\nbeen relieved.",
+   "neglected": "Nothing to see over. Still not relieved.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "139": {
+   "carried": "You brought it a great deal. You took\nnothing away.",
+   "neglected": "Nothing brought. Nothing taken.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "197": {
+   "carried": "It covered a great deal. None of it was\nremoved.",
+   "neglected": "Nothing to cover. It is covering it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "236": {
+   "carried": "You did not check it either.",
+   "neglected": "Nothing rests on it. Still unchecked.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "360": {
+   "carried": "It remembers where you pushed. It smiled\nthe whole time.",
+   "neglected": "Nobody has pushed. It is still smiling.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "340": {
+   "carried": "You gave it something else to read.",
+   "neglected": "Left alone. Drawing from its own drawings.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "181": {
+   "carried": "You saw the moment.",
+   "neglected": "All of it still held. No moment yet.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "173": {
+   "carried": "It was in every reading of yours too.",
+   "neglected": "Still in everything. Still no use.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "186": {
+   "carried": "It let you through. It did not care which\nof you it was.",
+   "neglected": "Nothing passing. It is still counting.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "212": {
+   "carried": "There was no second message.",
+   "neglected": "Still no second message.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "174": {
+   "carried": "You woke it a great many times. It cost\nless each time.",
+   "neglected": "Doing nothing. Still ready.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "172": {
+   "carried": "You found out by touching it.",
+   "neglected": "Still holding it. Nobody has touched it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "238": {
+   "carried": "You read it every time. It still does not\nknow.",
+   "neglected": "Nothing to give away. It is giving it\naway.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "195": {
+   "carried": "It arrived everywhere you did, and meant\nall of it.",
+   "neglected": "No current. It has arrived nowhere, and\nmeans that too.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "350": {
+   "carried": "The tail was toward you. The rest\nfollowed.",
+   "neglected": "Neither toward nor away. The tail has not\ndecided.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "205": {
+   "carried": "It has not opened for you either.",
+   "neglected": "Still sealed. Still from the inside.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "152": {
+   "carried": "You decided what it met, and in what\norder. It has not been surprised yet.",
+   "neglected": "It is still on the first thing it was given.\nNobody has made it harder.",
+   "instinctCarried": "It took everything you gave it calmly.\nYou were careful what you gave it.",
+   "instinctNeglected": "It is comfortable. It has been\ncomfortable a long time."
+  },
+  "153": {
+   "carried": "You have kept to its order. You have not\nasked about the last one either.",
+   "neglected": "Its row is laid out. Nobody has come to\nstart it.",
+   "instinctCarried": "It liked knowing what came next. So did\nyou.",
+   "instinctNeglected": "It is still waiting for the next thing in\nthe row."
+  },
+  "154": {
+   "carried": "It has been through everything you set in\nfront of it. You set all of it.",
+   "neglected": "Its scent still calms the box. Nobody in\nthere is learning anything.",
+   "instinctCarried": "Beside it, everything felt ready to be\nlearned. It was.",
+   "instinctNeglected": "It is calm. Nothing near it is being\nlearned."
+  },
+  "155": {
+   "carried": "It has wandered off your path a few\ntimes. You let it.",
+   "neglected": "Cooling. Its choices have stopped\nwandering.",
+   "instinctCarried": "You never knew which way it would go.\nYou liked that.",
+   "instinctNeglected": "It has gone cold enough to be\npredictable."
+  },
+  "156": {
+   "carried": "You have turned it up often. It has not\nsettled on anything yet.",
+   "neglected": "Its flames are low. Every answer is still\nin there, waiting.",
+   "instinctCarried": "Beside it you felt hurried, in every\ndirection at once.",
+   "instinctNeglected": "It is still undecided. Slowly now."
+  },
+  "157": {
+   "carried": "You have taken it everywhere. It has\nmade everywhere the same.",
+   "neglected": "Shut away, it is still warm. Everything\nnear it has evened out.",
+   "instinctCarried": "Every place felt the same beside it. You\nkept going anyway.",
+   "instinctNeglected": "It is very calm in there. So is everything\nelse."
+  },
+  "158": {
+   "carried": "It has been wrong in front of you many\ntimes. Each time it changed a little less.",
+   "neglected": "It has not been wrong in a while. It has\nnot changed either.",
+   "instinctCarried": "Its first bites were too hard. It learned\nhow hard you could take.",
+   "instinctNeglected": "It is hungry, and not sure how hard to\nbite."
+  },
+  "159": {
+   "carried": "It has carried you over a few dips you\nwould have stopped at.",
+   "neglected": "Stopped. The next small dip will be\nenough to keep it there.",
+   "instinctCarried": "It never stopped to check. Some days you\ndid not either.",
+   "instinctNeglected": "Still. Starting again will take more than\nit did."
+  },
+  "160": {
+   "carried": "It took you down the fastest way every\ntime. You have not looked over the next\nridge.",
+   "neglected": "It has settled in the nearest low place.\nIt is sure of it.",
+   "instinctCarried": "It always felt like arriving. It was\nalways the nearest place.",
+   "instinctNeglected": "It is sure it is where it should be.\nNobody has said otherwise."
+  },
+  "277": {
+   "carried": "You keep asking it. It keeps being a\nlittle right.",
+   "neglected": "Alone, and asking nobody.",
+   "instinctCarried": "You leaned on it more than its one\nquestion deserved. It held.",
+   "instinctNeglected": "It is still asking above or below. Nobody\nneeds the answer."
+  },
+  "278": {
+   "carried": "Its leaves are thick now. You know where\neach one grew.",
+   "neglected": "No new leaves. Nothing has been wrong\nnear it.",
+   "instinctCarried": "It kept fixing what the last one missed.\nYou never had to ask.",
+   "instinctNeglected": "It is still waiting to be told it was\nenough."
+  },
+  "279": {
+   "carried": "You have trusted its answer more than any\none of its trees.",
+   "neglected": "The wood is still deciding things. Nobody\ncomes to ask.",
+   "instinctCarried": "It always seemed to know. No part of it\ndid.",
+   "instinctNeglected": "Quiet in there, the way a wood is quiet."
+  },
+  "280": {
+   "carried": "You have followed it either way. It has\nnot pretended once.",
+   "neglected": "Nothing to decide. It is still not\npretending.",
+   "instinctCarried": "You trusted it more than the sure ones.",
+   "instinctNeglected": "Heads or tails. Nobody has asked it to\nland."
+  },
+  "281": {
+   "carried": "It has been close every time you asked.\nYou have not checked how close.",
+   "neglected": "No guesses. It is not even close to\nanything.",
+   "instinctCarried": "It was always nearly right. Nearly felt\nlike enough.",
+   "instinctNeglected": "It is still counting something nobody\nasked about."
+  },
+  "282": {
+   "carried": "You have waited for it every time. It has\nnot been wrong yet.",
+   "neglected": "It is still rolling for something. Nobody\nis waiting on the answer.",
+   "instinctCarried": "Waiting on it was hard. Being sure was\nworth it, most days.",
+   "instinctNeglected": "Somewhere in there, it is still rolling."
+  },
+  "283": {
+   "carried": "It has run down every hill you took it\nover. They are all a little lower.",
+   "neglected": "No rain. It has taken nothing from anyone\nin a while.",
+   "instinctCarried": "Everywhere it went, it took a little with\nit. You did not notice either.",
+   "instinctNeglected": "Dry. The hillside has stopped losing\nanything."
+  },
+  "284": {
+   "carried": "There is a layer for each of your fights\nnow, the first one deepest.",
+   "neglected": "Nothing new has settled on it since you\nput it down.",
+   "instinctCarried": "Dig into it and you would find yourself,\nin order.",
+   "instinctNeglected": "Its top layer is the day you left it."
+  },
+  "285": {
+   "carried": "It is closer to where you wanted it than\nit has ever been. It has not arrived.",
+   "neglected": "Nobody is telling it where to be. It has\nstopped correcting.",
+   "instinctCarried": "It never arrived anywhere with you. It\nwas always close.",
+   "instinctNeglected": "It is still spreading toward somewhere it\nwas once told to go."
+  },
+  "309": {
+   "carried": "It took you wherever the ground tipped.\nYou did not look further either.",
+   "neglected": "Nothing slopes in there. It does not know\nwhich way to go.",
+   "instinctCarried": "It always seemed to know the way. Only\never the next bit of it.",
+   "instinctNeglected": "It is facing whichever way it last tipped."
+  },
+  "310": {
+   "carried": "It has handed you every way there was.\nYou have chosen each time.",
+   "neglected": "Its bill is still full. Nobody is choosing.",
+   "instinctCarried": "It always brought too much. You never\nminded choosing.",
+   "instinctNeglected": "It is holding every direction, and going\nnone of them."
+  },
+  "330": {
+   "carried": "You are further from where you started\nthan you meant to be.",
+   "neglected": "Nothing near it has drifted in a while.",
+   "instinctCarried": "You felt it pulling, a little, all the\nway. You went anyway.",
+   "instinctNeglected": "Still water. It is still under it."
+  },
+  "331": {
+   "carried": "It has carried you out more than once.\nYou have always found the side.",
+   "neglected": "It is still pulling at nothing, straight\nout.",
+   "instinctCarried": "It took you out further than you liked.\nYou came back each time, some other way.",
+   "instinctNeglected": "Fast, and going nowhere now."
+  },
+  "328": {
+   "carried": "You have kept it when you did not have\nto.",
+   "neglected": "Still level. Still not pushed.",
+   "instinctCarried": "You never thought it was plain. Or you\ndid, and stayed.",
+   "instinctNeglected": "It is waiting for the right way to be\npushed."
+  },
+  "329": {
+   "carried": "You waited for it.",
+   "neglected": "It is resting at its lowest. Nothing in\nthere needs to move.",
+   "instinctCarried": "You remember what it looked like before.\nIt does too.",
+   "instinctNeglected": "Calm. It is still the most beautiful thing\nin there."
+  },
+  "323": {
+   "carried": "It has come up beside you in every place\nyou went.",
+   "neglected": "Gone from underfoot. Something feels\ndrier.",
+   "instinctCarried": "It felt the ground shift before you did.\nYou started trusting that.",
+   "instinctNeglected": "Somewhere under the floor, it is still\nsoaking down."
+  },
+  "324": {
+   "carried": "It has taken in everything you walked it\nthrough. It has kept all of it.",
+   "neglected": "It is holding its lake still. Nothing is\ndrawing from it.",
+   "instinctCarried": "It remembers every rain you walked\nthrough together.",
+   "instinctNeglected": "Deep, and quiet. It remembers the last\nrain."
+  },
+  "326": {
+   "carried": "It has gone against you a few times. It\nhas not let go.",
+   "neglected": "It is gripping the box. Nothing else is in\nits stream.",
+   "instinctCarried": "It held on through all of it, the wrong\nway round.",
+   "instinctNeglected": "Still holding on, against nothing."
+  },
+  "327": {
+   "carried": "You have carried it a long way. You have\nnever seen what it was doing.",
+   "neglected": "Dark in there. It has grown harder\nanyway.",
+   "instinctCarried": "You never saw into it. It never seemed to\nmind.",
+   "instinctNeglected": "The water around it has not cleared."
+  },
+  "295": {
+   "carried": "It kept to its step the whole way. You\nlearned to wait for it.",
+   "neglected": "No current. It has not taken a step in a\nlong time.",
+   "instinctCarried": "You walked a little slower with it. It\nnever asked you to.",
+   "instinctNeglected": "It is still keeping time to something."
+  },
+  "296": {
+   "carried": "It slowed down every time it was close.\nYou started to notice when it was close.",
+   "neglected": "Its steps have stopped. It was nowhere\nnear anything.",
+   "instinctCarried": "It always slowed before you knew you\nwere close.",
+   "instinctNeglected": "It is between steps, and not sure how big\nthe next should be."
+  },
+  "297": {
+   "carried": "You have been moving with it for some\ntime. You did not decide to.",
+   "neglected": "The dance has stopped. It settled where\nit was.",
+   "instinctCarried": "You caught yourself keeping time to it\nmore than once.",
+   "instinctNeglected": "It is still swaying a little, to something\nnobody else can hear."
+  },
+  "311": {
+   "carried": "You have carried one. It has been looking\nfor the others the whole time.",
+   "neglected": "Alone in there, it is still pulled toward\nthe best spot it ever found.",
+   "instinctCarried": "It never knew the best place. With you it\ndid not seem to need to.",
+   "instinctNeglected": "It is skating in circles, waiting for the\nrest."
+  },
+  "312": {
+   "carried": "It has kept close, never collided, and\ngone where you went.",
+   "neglected": "Nobody to keep close to. Its wings are\nstill watching.",
+   "instinctCarried": "You turned together often. Neither of you\nremembers who turned first.",
+   "instinctNeglected": "Its wings are open, watching for a flock\nthat is not there."
+  },
+  "222": {
+   "carried": "It has grown a great deal with you.\nNobody has joined it back to anything.",
+   "neglected": "It is still growing in there, on its own.\nNobody is watching how.",
+   "instinctCarried": "It broke a few times along the way. It\ngrew back each time.",
+   "instinctNeglected": "Away from everything, still branching."
+  },
+  "373": {
+   "carried": "It has stayed shut the whole way with\nyou. It is still holding the one pearl.",
+   "neglected": "Shut. Whatever it is holding has not\nchanged.",
+   "instinctCarried": "It could have become either. With you, it\nnever seemed to mind which.",
+   "instinctNeglected": "Still closed around the one thing."
+  },
+  "374": {
+   "carried": "It has travelled with you anyway.",
+   "neglected": "It is deep in there, and nothing is\nnudging it.",
+   "instinctCarried": "It never liked being moved. You moved it\neverywhere, gently.",
+   "instinctNeglected": "Lowest thing in the box. Nothing has\nnudged it."
+  },
+  "375": {
+   "carried": "You have pushed it every way there is. It\nhas stayed almost exactly where it was.",
+   "neglected": "Still there. The water has not changed\nyet.",
+   "instinctCarried": "It never seemed to mind where you took\nit. It was always about the same.",
+   "instinctNeglected": "It is resting, as low as it ever needed to\nbe."
+  },
+  "325": {
+   "carried": "You have been drifting the same way for a\nlong time now.",
+   "neglected": "It is drifting, and nothing is drifting\nbeside it.",
+   "instinctCarried": "By now nobody could say which of you was\ngoing which way.",
+   "instinctNeglected": "It is waiting where two currents would\nmeet."
+  },
+  "381": {
+   "carried": "It has kept running the whole time you\ncarried it. You have not switched it off\neither.",
+   "neglected": "Still running. Nobody remembers why it was\nleft on.",
+   "instinctCarried": "You felt older beside it. Steadier too.",
+   "instinctNeglected": "It has not stopped. It does not know how."
+  },
+  "342": {
+   "carried": "You have taught it a great deal. None of\nit has gone back through.",
+   "neglected": "It is held still. Nothing has tried to\nchange it.",
+   "instinctCarried": "It took everything you gave it and\nchanged nothing. You did not mind.",
+   "instinctNeglected": "Cold and still, exactly as it was left."
+  },
+  "343": {
+   "carried": "It still remembers the way you fought at\nfirst.",
+   "neglected": "Frozen exactly as you left it.",
+   "instinctCarried": "Something in it is still how you were when\nyou met.",
+   "instinctNeglected": "It is keeping something for you. It may\nnot be true any more."
+  },
+  "332": {
+   "carried": "You have carried it everywhere. It has\nnever once had to chase anything.",
+   "neglected": "Its pit is still dug. Nothing has come\nnear the edge.",
+   "instinctCarried": "Things came to you more easily with it\nnear. You stopped wondering why.",
+   "instinctNeglected": "It is waiting at the bottom of something."
+  },
+  "333": {
+   "carried": "It has gone up whenever the ground was\nwarm. You have learned when that is.",
+   "neglected": "Cool sand. Nothing is rising.",
+   "instinctCarried": "It never seemed to work at flying. Some\ndays with you it just rose.",
+   "instinctNeglected": "It is resting on cold ground, waiting for\nthe warm."
+  },
+  "334": {
+   "carried": "It has come apart in front of you more\nthan once. Each time, something like it\ncame back.",
+   "neglected": "No wind. It has not formed in a while.",
+   "instinctCarried": "You never steered it. It went where you\nwere going anyway.",
+   "instinctNeglected": "Somewhere in there, sand is waiting for\nthe right afternoon."
+  },
+  "358": {
+   "carried": "It has delivered everything you gave it.\nIt has not opened one.",
+   "neglected": "Its bundle is still tied on. Nobody has\nwritten where.",
+   "instinctCarried": "It never asked what it was carrying for\nyou. You never told it.",
+   "instinctNeglected": "It is holding something for someone. It\ndoes not know who."
+  },
+  "359": {
+   "carried": "You have trusted its heading more than\nyour map.",
+   "neglected": "It is still blowing the same way. Nothing\nis riding along.",
+   "instinctCarried": "It always felt like being carried the\nright way.",
+   "instinctNeglected": "Steady, and going nowhere you are."
+  },
+  "395": {
+   "carried": "It has butted every rock you passed. It\nstill cannot say what for.",
+   "neglected": "Its head is down. It is still sure of\nsomething.",
+   "instinctCarried": "It was sure of something the whole time.\nSo, somehow, were you.",
+   "instinctNeglected": "It is not ready yet. It is still sure it\nwill be."
+  },
+  "396": {
+   "carried": "You have carried the shell everywhere.\nYou have not seen what is inside it.",
+   "neglected": "Still shut. The parts are still parts.",
+   "instinctCarried": "You felt something taking shape in there.\nYou did not open it to check.",
+   "instinctNeglected": "Shut, and very still. Something is not\nfinished."
+  },
+  "397": {
+   "carried": "You did not see it learn to fly. You were\nthere.",
+   "neglected": "It knows how to fly. Nothing has asked it\nto.",
+   "instinctCarried": "It arrived all at once. You knew it would\nbefore it did.",
+   "instinctNeglected": "It is pointing at something. Nobody is\nlooking where."
+  },
+  "388": {
+   "carried": "You woke it, and it carried on as if you\nhad always been there.",
+   "neglected": "Put back in the dark. It will carry on\nfrom here, whenever that is.",
+   "instinctCarried": "It still reaches for a sea that is not\nthere. It reaches toward you as well.",
+   "instinctNeglected": "It is stopped, exactly where it was."
+  },
+  "389": {
+   "carried": "It has learned a great deal from you, on\ntop of everything it already knew.",
+   "neglected": "It has stopped fitting itself to anything\nnew.",
+   "instinctCarried": "Everything you showed it went on top.\nNone of the old went away.",
+   "instinctNeglected": "Still growing toward the water it\nremembers."
+  },
+  "390": {
+   "carried": "It has waited its turn every time. You\nhave not hurried it.",
+   "neglected": "Nobody is passing it the token.",
+   "instinctCarried": "Being with it felt slow, and fair.",
+   "instinctNeglected": "It is holding still. It is not its turn."
+  },
+  "391": {
+   "carried": "Everything you did went along it. You\nhave not switched it off.",
+   "neglected": "It is still carrying messages in there.\nNobody remembers sending them.",
+   "instinctCarried": "You leaned on it without noticing. It did\nnot mind.",
+   "instinctNeglected": "Still on. Still carrying something for\neveryone."
+  },
+  "286": {
+   "carried": "Everything you have walked it past is a\nlittle harder to read now.",
+   "neglected": "Nothing has been smudged in a while.",
+   "instinctCarried": "Things got a little blurrier with it\naround. You did not mind.",
+   "instinctNeglected": "It is rubbing against the walls of the\nbox."
+  },
+  "287": {
+   "carried": "You know its shape very well by now. That\nis all you know.",
+   "neglected": "Nothing is standing behind it.",
+   "instinctCarried": "You never saw past it. You stopped\ntrying.",
+   "instinctNeglected": "In the dark it is only a shape. It was\nonly a shape before."
+  },
+  "288": {
+   "carried": "It has taken you off every path you were\non. You came back with something each\ntime.",
+   "neglected": "It is not wandering. It has nothing to\nbring back.",
+   "instinctCarried": "You were lost with it more than once. It\nnever was.",
+   "instinctNeglected": "It is sniffing at the corners, looking for\na path."
+  },
+  "289": {
+   "carried": "It has run straight ahead every time you\nlet it. You have let it more and more.",
+   "neglected": "It has stopped. It does not know how to\nturn.",
+   "instinctCarried": "It never asked where you were going. It\njust went.",
+   "instinctNeglected": "Still pointed straight ahead, at the wall."
+  },
+  "298": {
+   "carried": "It has practised the same small things\nwith you every day. It is quicker at them\nnow.",
+   "neglected": "It has stopped practising. Nothing is\ngetting quicker.",
+   "instinctCarried": "It was slow at first. You were patient. It\nnoticed.",
+   "instinctNeglected": "It is hanging from something, very still."
+  },
+  "299": {
+   "carried": "It has learned what you pay for. It does\na little more of it each time.",
+   "neglected": "Nothing is being paid for. It is still\nlooking.",
+   "instinctCarried": "It always seemed to know what would\nplease you, before you knew you had\nshown it.",
+   "instinctNeglected": "It is waiting for something to be worth\ndoing."
+  },
+  "300": {
+   "carried": "It does things your way now. It could not\ntell you why.",
+   "neglected": "It has kept its one way, with nothing to\ndo it to.",
+   "instinctCarried": "It settled into your ways quickly. You did\nnot know you had any.",
+   "instinctNeglected": "Same way, every wind. There is no wind in\nthere."
+  },
+  "304": {
+   "carried": "You have gone a long way in short hops.",
+   "neglected": "It is perched. The next place is out of\nsight.",
+   "instinctCarried": "Every hop with it felt safe. They were\nall small.",
+   "instinctNeglected": "It can see nothing near enough to land\non."
+  },
+  "305": {
+   "carried": "It has gone a long way with you. It still\nknows where you started.",
+   "neglected": "It is home. It is waiting to be somewhere\nelse.",
+   "instinctCarried": "Wherever it took you, you never felt far\nfrom home.",
+   "instinctNeglected": "It is still facing the way home."
+  },
+  "306": {
+   "carried": "It has lost in front of you more than\nonce. It kept every one.",
+   "neglected": "Nothing to box. It is not losing, or\ngetting better.",
+   "instinctCarried": "It never minded losing with you. You\nminded less, after a while.",
+   "instinctNeglected": "It is shadowboxing in the dark."
+  },
+  "307": {
+   "carried": "You have stopped watching how its fights\nend. You already know.",
+   "neglected": "Nowhere left to stand in there. Nothing is\nstanding.",
+   "instinctCarried": "You always knew how it would end, a\nlittle before it did.",
+   "instinctNeglected": "Still. It has already worked out how this\nends."
+  },
+  "370": {
+   "carried": "You have heard it, even when it was\nquiet.",
+   "neglected": "Too quiet in there to hear.",
+   "instinctCarried": "It was always the small sound under\neverything else.",
+   "instinctNeglected": "It is whispering. Nothing is listening."
+  },
+  "371": {
+   "carried": "It was quiet when you met. You could\ncount from there.",
+   "neglected": "It has stopped doubling. It is still very\nloud in there.",
+   "instinctCarried": "It got louder every day with you. You\ngot used to it every day.",
+   "instinctNeglected": "Loud, and getting no louder."
+  },
+  "372": {
+   "carried": "You have heard it at its loudest. It\nsounded like a whisper.",
+   "neglected": "Its roar is very quiet now. That is not\nthe same as quiet.",
+   "instinctCarried": "You learned to listen for the whisper. It\nwas the loudest it could be.",
+   "instinctNeglected": "Somewhere in there, it is starting again\nfrom nothing."
+  },
+  "315": {
+   "carried": "It has called out the whole time you\ncarried it. You have answered once or\ntwice.",
+   "neglected": "It is chasing its tail. It is not lonely.",
+   "instinctCarried": "It never needed you to answer. You did\nanyway.",
+   "instinctNeglected": "Round and round. It does not need anyone."
+  },
+  "316": {
+   "carried": "It has told you exactly what it is many\ntimes. You have not asked anything else.",
+   "neglected": "It is describing itself to nobody.",
+   "instinctCarried": "You always knew exactly what it was. That\nwas a comfort.",
+   "instinctNeglected": "It is saying what it is, over and over,\nvery quietly."
+  },
+  "363": {
+   "carried": "You have learned a lot beside it. You do\nnot know what else.",
+   "neglected": "Nothing is learning from it in there.",
+   "instinctCarried": "It always smelled sweet. You never asked\nwhat else was on it.",
+   "instinctNeglected": "It is waiting for one particular moment."
+  },
+  "386": {
+   "carried": "It has asked you every night. You have\nanswered every time.",
+   "neglected": "It flashed once, a long time ago. It is\nstill waiting.",
+   "instinctCarried": "It felt good to be answered. It felt good\nto answer it.",
+   "instinctNeglected": "One flash, in the dark, a long time ago."
+  },
+  "387": {
+   "carried": "It has answered everything you asked. You\nblink together now.",
+   "neglected": "Nothing to answer in there. It is keeping\ntime anyway.",
+   "instinctCarried": "Somewhere along the way you started\nkeeping the same time.",
+   "instinctNeglected": "It is answering a flash nobody sent."
+  },
+  "207": {
+   "carried": "It has come down with you from every\nheight. It always meant where.",
+   "neglected": "It is on the ground. There is no cliff in\nthere.",
+   "instinctCarried": "It never went up with you. It was always\nsure of the way down.",
+   "instinctNeglected": "It is waiting for somewhere high enough to\ncome down from."
+  },
+  "335": {
+   "carried": "You have built a lot on it. You have not\nasked why it stands there.",
+   "neglected": "It is standing where it was put. Nothing is\nbeing built on it.",
+   "instinctCarried": "You leaned on it without asking. It held.",
+   "instinctNeglected": "Feet planted. It is still taking it as\ngiven."
+  },
+  "336": {
+   "carried": "You have stopped checking its steps.",
+   "neglected": "Its last step was a long time ago. The\nnext one still follows from it.",
+   "instinctCarried": "Every fight with it went one way. You\ncould feel it going there.",
+   "instinctNeglected": "It is standing on its last step, waiting\nfor the next."
+  },
+  "322": {
+   "carried": "It has been with you all along. You have\nlooked straight at it.",
+   "neglected": "Its eyes are still shining in there.",
+   "instinctCarried": "You always felt it before you saw it.",
+   "instinctNeglected": "It is somewhere in there, under\neverything."
+  },
+  "355": {
+   "carried": "You have watched it look easy many times.",
+   "neglected": "It is lying very still, with something\nsweet inside.",
+   "instinctCarried": "It always looked like the easy way in.\nYou never fell for it.",
+   "instinctNeglected": "Still open. Nothing has come near."
+  },
+  "382": {
+   "carried": "Every fight you have had with it began\nthe same way.",
+   "neglected": "It has not been started in a long time. It\nwill start the same way.",
+   "instinctCarried": "Everything with it began the same way.\nThat steadied you.",
+   "instinctNeglected": "Small and hard, waiting to be the first\nthing."
+  },
+  "383": {
+   "carried": "You have not changed it. It still works.",
+   "neglected": "Nobody has dared to touch it. It has not\nbeen asked to work.",
+   "instinctCarried": "It felt finished the day you met it.",
+   "instinctNeglected": "It is waiting for an update nobody is\ngoing to send."
+  },
+  "384": {
+   "carried": "You have not replaced it either.",
+   "neglected": "Put away, which is not the same as\nreplaced.",
+   "instinctCarried": "Everything rested on it. You did not have\nto think about that.",
+   "instinctNeglected": "Old, and very still, and not broken."
+  },
+  "337": {
+   "carried": "You have felt it before you heard it many\ntimes now.",
+   "neglected": "Its fur is flat. Nothing is building up.",
+   "instinctCarried": "Your hands always tingled after. You\nstopped noticing.",
+   "instinctNeglected": "Charged, and nowhere to go."
+  },
+  "338": {
+   "carried": "You have stopped flinching at the\nthunder. It always came after.",
+   "neglected": "The charge is building in there. There is\nno gap to jump.",
+   "instinctCarried": "It struck before you were ready, every\ntime. You came to like that.",
+   "instinctNeglected": "The air near it still smells faintly burnt."
+  },
+  "353": {
+   "carried": "It has given you a great deal. It is still\nlooking for its other half.",
+   "neglected": "On its own, it is doing nothing.",
+   "instinctCarried": "It was always happiest when it was not\nalone.",
+   "instinctNeglected": "It is giving off charge to nobody."
+  },
+  "354": {
+   "carried": "It has taken in everything you gave it. It\nwas not the lesser one.",
+   "neglected": "Drawing charge from nothing.",
+   "instinctCarried": "Something flowed between you. Neither of\nyou made it alone.",
+   "instinctNeglected": "It is waiting for its other half."
+  },
+  "321": {
+   "carried": "Everything you carry beside it is a little\ngrey now.",
+   "neglected": "Still burning, low. The box is getting\nsmoky.",
+   "instinctCarried": "It never went out on you. Not once.",
+   "instinctNeglected": "Low, and steady, and not out."
+  },
+  "308": {
+   "carried": "You could pick it out of any crowd now,\nby its spots alone.",
+   "neglected": "Its spots are exactly as they were. So is\neverything else.",
+   "instinctCarried": "You knew it by its spots from the first\nday.",
+   "instinctNeglected": "Nobody is looking at its spots."
+  },
+  "344": {
+   "carried": "You did not have to show it much. It kept\nall of it.",
+   "neglected": "It is living on the last thing you showed\nit.",
+   "instinctCarried": "It never needed much from you. It took it\ngladly.",
+   "instinctNeglected": "One rain. It is still living on it."
+  },
+  "345": {
+   "carried": "It does things you never showed it. You\nhave stopped asking where from.",
+   "neglected": "It is doing something in there, at night.\nNobody showed it how.",
+   "instinctCarried": "It knew what to do before you did, more\nthan once.",
+   "instinctNeglected": "Sure of something nobody taught it."
+  },
+  "380": {
+   "carried": "It is exactly as it was when you met. It\nlooked at you once, and decided.",
+   "neglected": "Nothing added, nothing missing, nothing\nhappening.",
+   "instinctCarried": "It looked straight at you once and knew.\nIt has not looked again.",
+   "instinctNeglected": "It is watching for its one enemy."
+  },
+  "379": {
+   "carried": "It has copied a great deal of you by\nnow. You have not found the change.",
+   "neglected": "It is copying the walls of the box.",
+   "instinctCarried": "Something about it was always a little\noff. You liked it anyway.",
+   "instinctNeglected": "It is practising its signature in the dark."
+  },
+  "348": {
+   "carried": "It has read everything you did from the\nsmall end first. It got the same answer.",
+   "neglected": "It is reading nothing, small end first.",
+   "instinctCarried": "It always started with the little things.\nSo, with it, did you.",
+   "instinctNeglected": "It is waiting for its other half to read\nthe other end."
+  },
+  "349": {
+   "carried": "It has read everything you did from the\nbig end first. It got the same answer.",
+   "neglected": "It is reading nothing, big end first.",
+   "instinctCarried": "It always started with the big things. You\nwere glad of that, some days.",
+   "instinctNeglected": "Still arguing, with nobody, about which\nend comes first."
+  },
+  "369": {
+   "carried": "What it learned with you in one place has\nbeen good in the next.",
+   "neglected": "It is carrying fruit from somewhere far\naway. Nobody is eating it.",
+   "instinctCarried": "It always brought something from the last\nplace. It was always welcome.",
+   "instinctNeglected": "It is still ripening something from far\naway."
+  },
+  "411": {
+   "carried": "You hear something different in it now. It\nis the same note.",
+   "neglected": "It is ringing. Nobody is standing anywhere\nnear it.",
+   "instinctCarried": "Its note sounded different every place\nyou stood.",
+   "instinctNeglected": "One note, still the same. Nobody to hear\nit differently."
+  },
+  "376": {
+   "carried": "It has come before every hard fight you\nhave had. You have not blamed it.",
+   "neglected": "It is in there, with something to tell.\nEvery word is blacked out.",
+   "instinctCarried": "You always felt it was trying to tell you\nsomething.",
+   "instinctNeglected": "It knows what is coming. It is waiting for\nsomeone to tell."
+  },
+  "346": {
+   "carried": "It has held every door you asked it to.\nYou have come back for it each time.",
+   "neglected": "It is still sitting where you left it.\nNobody has come to let it go.",
+   "instinctCarried": "It never moved from where you put it.\nYou never had to wonder.",
+   "instinctNeglected": "Still sitting in front of something. It was\nonly meant to be a moment."
+  },
+  "347": {
+   "carried": "You have never once waited for it to move\nfirst.",
+   "neglected": "In there, it is waiting for something that\nis waiting for it.",
+   "instinctCarried": "With you, something always moved first. It\nwas usually you.",
+   "instinctNeglected": "Nothing is broken in there. Nothing is\nmoving either."
+  },
+  "404": {
+   "carried": "You have poured a great deal into it.\nNone of it has kept its edge.",
+   "neglected": "Everything that fell into it is still in it.",
+   "instinctCarried": "Beside it, you were never sure where you\nstopped.",
+   "instinctNeglected": "Deep, and without a shape. It does not\nneed one."
+  },
+  "405": {
+   "carried": "You have stood on it for a long time.\nYour map has changed.",
+   "neglected": "Asleep. The maps are holding, for now.",
+   "instinctCarried": "Everything felt steadier with it under\nyou.",
+   "instinctNeglected": "It is shifting a little, in its sleep."
+  },
+  "406": {
+   "carried": "It came down when you needed it. It has\nnot taken your side either.",
+   "neglected": "It is above everything in there. Nothing\nbelow it is fighting.",
+   "instinctCarried": "When it was near, the arguing stopped.\nYours too.",
+   "instinctNeglected": "High above the box, saying nothing."
+  },
+  "245": {
+   "carried": "Everywhere you have taken it is a little\nclearer.",
+   "neglected": "It is standing on still water. Nothing is\nbeing cleared.",
+   "instinctCarried": "You felt clearer after it passed. You\ncould not have said why.",
+   "instinctNeglected": "The surface it rests on has not broken."
+  },
+  "243": {
+   "carried": "You stopped waiting for the crack. You\nknew from the light.",
+   "neglected": "No light, so no thunder.",
+   "instinctCarried": "Your heart jumped every time. It never\nstopped jumping.",
+   "instinctNeglected": "It is the quiet after something."
+  },
+  "244": {
+   "carried": "You have carried it everywhere. It has\nnot gone out.",
+   "neglected": "Put away, and still burning.",
+   "instinctCarried": "It was always warmer near it than you\nexpected.",
+   "instinctNeglected": "Somewhere under everything, it is still\nburning."
+  },
+  "403": {
+   "carried": "It has walked every round you gave it. It\nwalks them for you now.",
+   "neglected": "It is still walking its rounds in there.\nNobody remembers setting them.",
+   "instinctCarried": "It felt like being guarded by someone who\nwould never leave.",
+   "instinctNeglected": "It is guarding a gate nobody comes to."
+  },
+  "401": {
+   "carried": "It has been beside you a long time. It is\nstill not sure what it is.",
+   "neglected": "It is lying down again, like a stone.",
+   "instinctCarried": "It was never sure what it was. With you it\ndid not seem to matter.",
+   "instinctNeglected": "Still made of the mountain. Still not the\nmountain."
+  },
+  "402": {
+   "carried": "It remembers every fight you have had,\nexactly. It has not learned from one.",
+   "neglected": "Nothing new has fallen into it.",
+   "instinctCarried": "It kept everything you gave it, exactly\nas it was. Even the parts you would have\nlet go.",
+   "instinctNeglected": "Clear, and cold, and keeping everything."
+  },
+  "408": {
+   "carried": "Everything you have shown it, somewhere,\nits twin has seen.",
+   "neglected": "It is seeing the inside of the box. So,\nsomewhere, is its twin.",
+   "instinctCarried": "It was never alone with you. Its twin was\nalways there too.",
+   "instinctNeglected": "It is waiting for its twin to come."
+  },
+  "407": {
+   "carried": "It has given you a great deal. It has\ngiven away half of everything before.",
+   "neglected": "It is feeling what its twin feels, from in\nthere.",
+   "instinctCarried": "It came to you without being called, more\nthan once.",
+   "instinctNeglected": "It has given half of everything. It does\nnot think that unfair."
+  },
+  "251": {
+   "carried": "You reached at the right moment.",
+   "neglected": "You reached in time. Then you put it\naway.",
+   "instinctCarried": "You felt the moment before it came. You\nwere ready.",
+   "instinctNeglected": "The moment it was there for has passed.\nIt stayed anyway."
+  },
+  "409": {
+   "carried": "It has been awake for you longer than it\nshould be. It is still listening.",
+   "neglected": "Asleep at the bottom of something. Still\nthere.",
+   "instinctCarried": "It listened to everything. You said more\nthan you meant to.",
+   "instinctNeglected": "Everything else got out. It is still here."
+  }
+ }
+}

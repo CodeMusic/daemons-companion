@@ -26,7 +26,9 @@
   "index": 2089,
   "game_clear": 2092,
   "diploma": 788,
-  "daemons_flags_start": 2304
+  "daemons_flags_start": 2304,
+  "companion_linked": 2416,
+  "companion_recalled": 2417
  },
  "items": {
   "opus": 375

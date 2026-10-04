@@ -122,12 +122,19 @@ function DaemonScreen({ ink }: { ink: string }) {
     api<{ party: Daemon[] }>("/api/party").then((r) => setParty(r.party)).catch((e) => setError(e.message));
   }, []);
   useEffect(load, [load]);
-  // C-10: the game asks (its party menu's SEND or CALL HOME, then a save); this answers, with the game closed.
-  const answer = async () => {
-    const r = await api<{ answered: { nickname: string; now: string }[] }>("/api/away/answer", {});
-    setNote(r.answered.length
-      ? r.answered.map((a) => a.now === "away" ? `${a.nickname} is on your device now.` : `${a.nickname} is home.`).join(" ")
-      : "Nothing was asked. In the game, choose SEND or CALL HOME and let it save first.");
+  // C-21: the one SYNC. It reads the save, receives or returns a daemon if the game asked, links the save (so the
+  // game shows SEND), and settles a daemon brought home without the app. Close the game first.
+  const syncNow = async () => {
+    const r = await api<{ sameGame: boolean; firstSave: boolean; married: { name: string }; received: string[];
+                          returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean }>("/api/sync", {});
+    const said: string[] = [];
+    if (!r.sameGame) said.push(`This save belongs to a different game. Your companion carries daemons for ${r.married.name}'s.`);
+    if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");
+    r.received.forEach((n) => said.push(`${n} is with your device now.`));
+    r.returned.forEach((n) => said.push(`${n} is home.`));
+    r.refused.forEach((n) => said.push(`${n} waits: one daemon at a time.`));
+    if (r.recalledSeen) said.push("The daemon you brought home in the game is settled here too.");
+    setNote(said.length ? said.join(" ") : "Synced. Nothing was waiting.");
     load();
   };
   if (error) return <Small>{error}</Small>;
@@ -135,12 +142,10 @@ function DaemonScreen({ ink }: { ink: string }) {
   const asked = party.some((d) => d.asked);
   return (
     <YStack gap={14}>
-      {asked ? (
-        <Card borderColor="$color9">
-          <Small>The game is asking. Close it first, then answer here.</Small>
-          <Action label="Answer the game" onPress={answer} ink={ink} />
-        </Card>
-      ) : null}
+      <Card borderColor={asked ? "$color9" : "$color5"}>
+        <Small>{asked ? "The game is asking. Close it first, then SYNC." : "Close the game, then SYNC to bring your save across."}</Small>
+        <Action label="SYNC" onPress={syncNow} ink={ink} />
+      </Card>
       {note ? <Small>{note}</Small> : null}
       <XStack flexWrap="wrap" gap={12}>
         {party.map((d) => (
@@ -169,7 +174,7 @@ function DaemonScreen({ ink }: { ink: string }) {
 // C-23: the PROFILE -- whichever save was synced: who it belongs to and how far it has gone, as the trainer card says.
 type Profile = { name: string; trainerId: number; playTime: { hours: number; minutes: number }; edition: string;
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
-                 gameClear: boolean; savedIn: { place: string } | null };
+                 gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null };
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -195,6 +200,10 @@ function ProfileScreen() {
         <Eyebrow>{p.edition} · ID No. {id}</Eyebrow>
         <Text fontFamily="$mono" fontSize={28} fontWeight="700" letterSpacing={2} color="$color12">{p.name}</Text>
         <Small>{p.savedIn?.place ? `Last saved in ${p.savedIn.place}` : "Last saved somewhere the map does not name"}</Small>
+        <Small color={p.thisGame === false ? "$color10" : undefined}>
+          {p.thisGame === null ? "Not yet synced: the first save you SYNC becomes your companion's game."
+            : p.thisGame ? "Your companion's game." : `A different game: your companion carries daemons for ${p.marriedTo}'s.`}
+        </Small>
       </Card>
       <Card>
         <Fact label="PLAY TIME">{p.playTime.hours}:{String(p.playTime.minutes).padStart(2, "0")}</Fact>

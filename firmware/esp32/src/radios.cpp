@@ -112,6 +112,14 @@ String runSendToMyTv() {
   return "Sent " + typeToString(type) + ".\n\nDid your TV answer? Point the board's end at it and press to send again.";
 }
 
+// A Sony TV's POWER, without a remote to learn from (C-34's first brand): Sony's own protocol (SIRC), 12 bits, device 1
+// (a TV), command 21 (power) -- 0xA90, the code every Sony TV since the 1990s answers. Sent with the repeats SIRC wants.
+String runSonyTvPower() {
+  irOut.begin();
+  irOut.sendSony(0xA90, 12, kSonyMinRepeat);
+  return "Sent a Sony TV's POWER.\n\nPoint the board's end at the TV, from a few steps away. Press to send again.";
+}
+
 // ---- WHISPER (Bluetooth): your phone opens it, and a word goes each way. -----------------------------------------
 // The Nordic UART service, which a general Bluetooth app on the phone (nRF Connect, or LightBlue) already knows:
 // the board says hello on TX, and whatever the phone writes to RX comes back on the screen.

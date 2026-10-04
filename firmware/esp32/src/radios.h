@@ -5,6 +5,7 @@
 String runReadMyTag();       // TOUCHSTONE (NFC)
 String runLearnMyRemote();   // FLARE (IR)
 String runSendToMyTv();      // FLARE (IR)
+String runSonyTvPower();     // FLARE (IR): no remote needed
 String runOpenToMyPhone();   // WHISPER (Bluetooth)
 
 void progress(const String &text);   // says what a routine is waiting for, on the RUN screen

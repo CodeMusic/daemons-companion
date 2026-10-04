@@ -18,6 +18,7 @@ The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's c
 |---|---|---|
 | FLARE | LEARN MY REMOTE | point your TV's remote at the board, press POWER once; it remembers that code (across power-offs) |
 | FLARE | SEND TO MY TV | sends the learned code from the board's IR end |
+| FLARE | SONY TV POWER | a Sony TV's POWER (Sony's own protocol), no remote needed: the first brand of C-34 |
 | WHISPER | OPEN TO MY PHONE | your phone connects ("DAEMONS companion", in nRF Connect or LightBlue); the board says hello, and a word you write back appears |
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
 | LONGWAVE | -- | not wired yet: it is tried with the board in hand first |

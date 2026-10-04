@@ -62,12 +62,13 @@ struct Routine { const char *name; RoutineFn run; };
 struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
 
 String runNetworksInRange();
-static const Routine FLARE_ROUTINES[]      = { { "LEARN MY REMOTE", runLearnMyRemote }, { "SEND TO MY TV", runSendToMyTv } };
+static const Routine FLARE_ROUTINES[]      = { { "LEARN MY REMOTE", runLearnMyRemote }, { "SEND TO MY TV", runSendToMyTv },
+                                               { "SONY TV POWER", runSonyTvPower } };
 static const Routine WHISPER_ROUTINES[]    = { { "OPEN TO MY PHONE", runOpenToMyPhone } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange } };
 static const RoutineType TYPES_LIST[] = {
-  { "FLARE",      "IR",        FLARE_ROUTINES,      2 },
+  { "FLARE",      "IR",        FLARE_ROUTINES,      3 },
   { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    1 },
   { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 },
   { "LONGWAVE",   "Sub-GHz",   nullptr,             0 },

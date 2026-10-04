@@ -97,6 +97,8 @@ pio run -t upload
   - **TOUCHSTONE -> READ MY TAG:** hold your NTAG or MIFARE card to the board. **See:** its kind and its ID.
   - **FLARE -> LEARN MY REMOTE:** point your TV remote at the board, press POWER. **See:** "Learned it: <protocol>".
     Then **SEND TO MY TV** with the board's end toward the TV. **See:** the TV turns off (or on).
+  - **FLARE -> SONY TV POWER** (a Sony TV, no remote needed): the board's end toward the TV, a few steps away.
+    **See:** the TV turns off (or on).
   - **WHISPER -> OPEN TO MY PHONE:** on your phone, open nRF Connect (free), connect to **DAEMONS companion**.
     **See:** "Your phone is here"; on the phone, the TX line shows "Hello from your daemon." Write a word to the RX
     line as text. **See:** "Both ways work", and your word.

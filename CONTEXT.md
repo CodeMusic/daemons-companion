@@ -32,7 +32,9 @@ chose them, 2026-10-04): **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE**
 **UPLINK** (Wi-Fi). Each starts with one test routine, run **only against equipment the author owns**, to confirm
 the board works:
 
-- **FLARE (IR)**: learn the power button from the author's own TV remote, then send that one code to their TV.
+- **FLARE (IR)**: learn the power button from the author's own TV remote, then send that one code to their TV. With
+  the remote lost, the author picks their TV's brand on the site and steps through that brand's POWER codes one
+  click at a time until their own TV answers -- the setup every universal remote has -- and keeps the one that works.
 - **WHISPER (Bluetooth)**: offer a connection the author's own phone can open, and pass a message each way.
 - **TOUCHSTONE (NFC)**: read the **identifier** and type of the author's own tags (a MIFARE Classic card, an NTAG card
   or sticker) — confirming the reader works, nothing more.
@@ -48,7 +50,8 @@ the board works:
   spoof, or defeat any credential, lock, car, or payment system. Reading a tag's public ID is a functional check, not
   an attack.
 - Nothing here targets other people, networks, or property.
-- **Credentials and secrets stay out of the repo** (Wi-Fi passwords live in an ignored `secrets.h`).
+- **Credentials and secrets stay out of the repo**: the author's Wi-Fi password is typed by the author, into the site
+  or on the device, and kept in the board's own flash (or an ignored `secrets.h`).
 
 If a change ever drifted outside these boundaries, that would be a real concern — but nothing in this project does.
 It is a personal creature-companion toy that happens to switch off its own TV and read its own tags.

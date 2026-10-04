@@ -39,11 +39,32 @@ beside it.*
 | | | |
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself first, an iPhone and iPad app from the same code later | **running as a site, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). Four screens: **TODAY** (the day's colour, note and virtue, the season, and the one thing to do), **GOALS** (add one, see its steps, tick them off), **DAEMON** (your party, and answering the game when it asks to send a daemon), **PROFILE** (the save's trainer, play time, INDEX, MARKS and progress) |
-| `firmware/esp32/` | **the handheld** -- ESP32-S3, PlatformIO + Arduino, grown from RoverCodeBase | not started: waits on which board (TODO C-07) |
+| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself first, an iPhone and iPad app from the same code later | **running as a site, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). Five screens: **TODAY** (the day's colour, note and virtue, the season, and the one thing to do), **GOALS** (add one, see its steps, tick them off), **DAEMON** (your party; **SYNC** brings a daemon across or home, and shows what it holds), **PROFILE** (the save's trainer, play time, INDEX, MARKS and progress), **SETTINGS** (your save's path) |
+| `firmware/esp32/` | **the handheld** -- the **LilyGO T-Embed CC1101** (ESP32-S3), PlatformIO + Arduino, grown from RoverCodeBase | **running on the board.** The day, the one step (press to tick it off), the daemon you carry and what it holds, and **ROUTINES**: the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz, not wired yet), UPLINK (Wi-Fi). Over the USB cable or Wi-Fi. See [Flash the handheld](#flash-the-handheld) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
 **Local first, one person.** Everything runs on your own machine; accounts, many users and hosting come later.
+
+## Flash the handheld
+
+With the T-Embed CC1101 plugged in by a USB-C cable that carries data, and
+[PlatformIO](https://platformio.org) installed (`pip install platformio`):
+
+```sh
+cd firmware/esp32
+pio run -t upload                              # build and flash
+~/.platformio/penv/bin/python usb_bridge.py    # link it to the server over the cable
+```
+
+The bridge finds the board's port, hands it the server's state every five seconds, and passes back what you do on it
+(a step ticked off, a routine run). The corner of the screen says **USB** while it is linked. Start the server first
+(`./bindCompanion.sh` or `./bindCompanion.sh server`).
+
+**On the board:** **turn** the dial to choose, **press** the front button to open or confirm, and the **top button**
+goes back (and gives up a routine that is waiting). The pages are TODAY, DAEMON and ROUTINES.
+
+[`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode if an upload cannot connect,
+Wi-Fi instead of the cable, watching it talk, putting the factory firmware back, and what each routine does.
 
 ## Each part on its own
 
@@ -117,8 +138,17 @@ JSON in, JSON out, on this machine only.
 | `POST /api/away/answer` | answer the game's requests to send or bring home a daemon, after a backup |
 | `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |
 | `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines |
-| `GET /api/device/state` | what a device shows: the day, the season, the one next step, its daemon |
+| `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time |
+| `GET /api/settings` | the save path, where it came from, and whether it is a save |
+| `POST /api/settings` | `{savePath}` -- set it (kept by the server; overrides `config.json`) |
+| `POST /api/settings/pick` | a native file picker, on Mac |
+| `POST /api/settings/reveal` | open the save's folder in Finder |
+| `GET /api/device/state` | what a device shows: the day, the season, the one next step, its daemon and what it holds |
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |
+| `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |
+
+**Only the device routes (`/api/device/*`) and the art answer from another machine** on your network, when `host` is
+`0.0.0.0`; everything else answers this machine only.
 
 ## Read next
 

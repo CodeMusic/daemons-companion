@@ -17,6 +17,8 @@
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
+import { execFileSync } from "node:child_process";
+import { platform } from "node:os";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
@@ -116,31 +118,82 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal } : null, daemon };
 }
 
+// C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else
+// config.json. `source` tells the user which, so "it just worked" never leaves them wondering where it read from.
+function settingsView(cfg: Config, store: Store) {
+  const set = store.getSetting("savePath");
+  const savePath = set ?? cfg.savePath ?? null;
+  return { savePath, dir: savePath ? dirname(savePath) : null, exists: !!(savePath && existsSync(savePath)),
+           source: set ? "settings" : cfg.savePath ? "config.json" : "none", edition: cfg.edition,
+           canPick: platform() === "darwin" };
+}
+
+// A native "choose file" dialog on the user's own Mac, so they get a real path (a browser file picker hides it). Only
+// local, only on request. Returns null if the user cancels or this is not a Mac.
+function pickSaveFile(): Promise<string | null> {
+  if (platform() !== "darwin") return Promise.resolve(null);
+  try {
+    const script = 'try\nPOSIX path of (choose file with prompt "Choose your DAEMONS .sav" of type {"sav","public.data"})\nend try';
+    const out = execFileSync("osascript", ["-e", script], { encoding: "utf-8" }).trim();
+    return Promise.resolve(out || null);
+  } catch {
+    return Promise.resolve(null);
+  }
+}
+
+function revealInFinder(p: string | null) {
+  if (!p || platform() !== "darwin") return;
+  try {
+    if (existsSync(p)) execFileSync("open", ["-R", p]);          // reveal the file
+    else if (existsSync(dirname(p))) execFileSync("open", [dirname(p)]);   // or just open the folder it should go in
+  } catch { /* best effort */ }
+}
+
 export function makeServer(cfg: Config, store = new Store(cfg.database)): Server {
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
       const path = url.pathname;
+      // C-29: the save path the user set in Settings (stored in the db) overrides config.json; everything that reads
+      // or writes a save uses `ecfg`, so the user never edits a file by hand.
+      const ecfg: Config = { ...cfg, savePath: store.getSetting("savePath") ?? cfg.savePath };
       if (req.method === "OPTIONS") {
         res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-methods": "GET,POST",
                              "access-control-allow-headers": "content-type" });
         return res.end();
       }
-      if (req.method === "GET" && path === "/api/today") return send(res, 200, today(cfg, store));
-      if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(cfg));
-      if (req.method === "POST" && path === "/api/sync") return send(res, 200, sync(cfg, store));
-      if (req.method === "GET" && path === "/api/device/state") return send(res, 200, deviceState(cfg, store));
+      if (req.method === "GET" && path === "/api/today") return send(res, 200, today(ecfg, store));
+      if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
+      if (req.method === "POST" && path === "/api/sync") return send(res, 200, sync(ecfg, store));
+      if (req.method === "GET" && path === "/api/device/state") return send(res, 200, deviceState(ecfg, store));
       if (req.method === "POST" && path === "/api/device/ticks") {
         const b = await body(req);
         if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))
           return send(res, 400, { error: "steps must be a list of step ids" });
         const done = b.steps.filter((id: number) => store.completeStep(id));
-        return send(res, 200, { done, state: deviceState(cfg, store) });
+        return send(res, 200, { done, state: deviceState(ecfg, store) });
+      }
+      // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.
+      if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store));
+      if (req.method === "POST" && path === "/api/settings") {
+        const b = await body(req);
+        const p = typeof b.savePath === "string" ? b.savePath.trim() : "";
+        store.setSetting("savePath", p || null);
+        return send(res, 200, settingsView({ ...cfg, savePath: p || cfg.savePath }, store));
+      }
+      if (req.method === "POST" && path === "/api/settings/pick") {
+        const picked = await pickSaveFile();
+        if (picked) store.setSetting("savePath", picked);
+        return send(res, 200, { picked, ...settingsView({ ...cfg, savePath: picked ?? ecfg.savePath }, store) });
+      }
+      if (req.method === "POST" && path === "/api/settings/reveal") {
+        revealInFinder(ecfg.savePath);
+        return send(res, 200, { ok: true });
       }
       const partyArt = path.match(/^\/art\/party\/(\d)\.png$/);
       if (req.method === "GET" && partyArt) {
-        if (!cfg.savePath || !existsSync(cfg.savePath)) return send(res, 404, { error: "no save is configured" });
-        const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.slot === Number(partyArt[1]));
+        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save is configured" });
+        const d = readSave(new Uint8Array(readFileSync(ecfg.savePath))).party.find((p) => p.slot === Number(partyArt[1]));
         const row = d && SPECIES[String(d.species)];
         const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
         if (!d || !file || !existsSync(file)) return send(res, 404, { error: "no art for that slot" });
@@ -163,15 +216,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
                                                    : send(res, 404, { error: "no such step" });
       }
       if (req.method === "GET" && path === "/api/profile") {
-        if (!cfg.savePath || !existsSync(cfg.savePath)) return send(res, 404, { error: "no save named -- set savePath to a COPY of your save" });
-        const prof = readProfile(new Uint8Array(readFileSync(cfg.savePath)));
+        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });
+        const prof = readProfile(new Uint8Array(readFileSync(ecfg.savePath)));
         const m = store.married();
         const thisGame = m ? m.name === prof.name && m.trainerId === prof.trainerId && m.secretId === prof.secretId : null;
-        return send(res, 200, { ...prof, edition: cfg.edition, thisGame, marriedTo: m ? m.name : null });
+        return send(res, 200, { ...prof, edition: ecfg.edition, thisGame, marriedTo: m ? m.name : null });
       }
       if (req.method === "GET" && path === "/api/party") {
-        if (!cfg.savePath) return send(res, 404, { error: "no save named -- set savePath to a COPY of your save" });
-        return send(res, 200, readSave(new Uint8Array(readFileSync(cfg.savePath))));
+        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });
+        return send(res, 200, readSave(new Uint8Array(readFileSync(ecfg.savePath))));
       }
       const sp = path.match(/^\/api\/species\/(\d+)$/);
       if (req.method === "GET" && sp) {

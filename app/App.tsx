@@ -113,18 +113,21 @@ function GoalsScreen({ goals, reload, ink }: { goals: Goal[]; reload: () => void
   );
 }
 
-function DaemonScreen({ ink }: { ink: string }) {
+type Settings = { savePath: string | null; dir: string | null; exists: boolean; source: string; canPick: boolean };
+
+function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<{ name: string; category: string; entry: string } | null>(null);
   const [note, setNote] = useState("");
+  const [needPath, setNeedPath] = useState(false);   // C-30: SYNC with no save path set -> a modal that teaches it
   const load = useCallback(() => {
-    api<{ party: Daemon[] }>("/api/party").then((r) => setParty(r.party)).catch((e) => setError(e.message));
+    api<{ party: Daemon[] }>("/api/party").then((r) => { setParty(r.party); setError(""); }).catch((e) => setError(e.message));
   }, []);
   useEffect(load, [load]);
   // C-21: the one SYNC. It reads the save, receives or returns a daemon if the game asked, links the save (so the
   // game shows SEND), and settles a daemon brought home without the app. Close the game first.
-  const syncNow = async () => {
+  const doSync = async () => {
     const r = await api<{ sameGame: boolean; firstSave: boolean; married: { name: string }; received: string[];
                           returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean }>("/api/sync", {});
     const said: string[] = [];
@@ -137,18 +140,38 @@ function DaemonScreen({ ink }: { ink: string }) {
     setNote(said.length ? said.join(" ") : "Synced. Nothing was waiting.");
     load();
   };
-  if (error) return <Small>{error}</Small>;
-  if (!party) return <Small>Reading your save…</Small>;
-  const asked = party.some((d) => d.asked);
+  // C-30: before syncing, make sure a save is set. If not, teach it rather than fail.
+  const syncNow = async () => {
+    const s = await api<Settings>("/api/settings");
+    if (!s.exists) { setNeedPath(true); return; }
+    await doSync();
+  };
+  const pickAndSync = async () => {
+    const r = await api<Settings & { picked: string | null }>("/api/settings/pick", {});
+    if (r.picked) { setNeedPath(false); await doSync(); }
+  };
+  // The SYNC card is always shown -- when no save is set yet, SYNC is how the user is taught to set one (C-30).
+  const asked = party?.some((d) => d.asked) ?? false;
   return (
     <YStack gap={14}>
+      {needPath ? (
+        <Card borderColor="$color9" borderLeftWidth={6} borderLeftColor="$color9">
+          <Eyebrow>FIRST, YOUR SAVE</Eyebrow>
+          <Small>To sync, the app needs your DAEMONS save (a .sav file). From an emulator, it is the .sav beside the ROM; from a cartridge, pull the save to your computer first.</Small>
+          <XStack gap={8} flexWrap="wrap" marginTop={4}>
+            <Action label="Choose a save…" onPress={pickAndSync} ink={ink} />
+            <Action label="Settings" onPress={() => { setNeedPath(false); goSettings(); }} ink={ink} />
+          </XStack>
+        </Card>
+      ) : null}
       <Card borderColor={asked ? "$color9" : "$color5"}>
         <Small>{asked ? "The game is asking. Close it first, then SYNC." : "Close the game, then SYNC to bring your save across."}</Small>
         <Action label="SYNC" onPress={syncNow} ink={ink} />
       </Card>
       {note ? <Small>{note}</Small> : null}
+      {error && !needPath ? <Small color="$color8">{error}</Small> : null}
       <XStack flexWrap="wrap" gap={12}>
-        {party.map((d) => (
+        {(party ?? []).map((d) => (
           <YStack key={d.slot} width={150} alignItems="center" backgroundColor="$color1" borderWidth={1}
                   borderColor="$color5" borderRadius={4} padding={10} gap={2} opacity={d.away ? 0.45 : 1}
                   cursor="pointer" hoverStyle={{ borderColor: "$color9" }} role="button"
@@ -225,7 +248,48 @@ function ProfileScreen() {
   );
 }
 
-const TABS = ["today", "goals", "daemon", "profile"] as const;
+// C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
+// works; "open the folder" shows where to put a save.
+function SettingsScreen({ ink }: { ink: string }) {
+  const [s, setS] = useState<Settings | null>(null);
+  const [typed, setTyped] = useState("");
+  const [note, setNote] = useState("");
+  const load = useCallback(() => {
+    api<Settings>("/api/settings").then((r) => { setS(r); setTyped(r.savePath ?? ""); }).catch(() => {});
+  }, []);
+  useEffect(load, [load]);
+  const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(r.savePath ?? ""); setNote(r.exists ? "Save set." : "No file chosen."); };
+  const save = async () => { const r = await api<Settings>("/api/settings", { savePath: typed }); setS(r); setNote(r.exists ? "Save set." : "That path has no file yet."); };
+  const reveal = async () => { await api("/api/settings/reveal", {}); };
+  if (!s) return <Small>Loading…</Small>;
+  return (
+    <YStack gap={14}>
+      <Card borderLeftWidth={6} borderLeftColor={s.exists ? "$color9" : "$color5"}>
+        <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
+        <Text fontFamily="$mono" fontSize={13} color="$color12" wordWrap="break-word">{s.savePath ?? "not set"}</Text>
+        <Small color={s.exists ? "$color10" : "$color8"}>
+          {s.exists ? `Found${s.source === "config.json" ? " (from config.json)" : ""}.` : "No file at that path yet."}
+        </Small>
+        <XStack gap={8} flexWrap="wrap" marginTop={4}>
+          {s.canPick ? <Action label="Choose a save…" onPress={pick} ink={ink} /> : null}
+          {s.dir ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}
+        </XStack>
+      </Card>
+      <Card>
+        <Eyebrow>OR TYPE THE PATH</Eyebrow>
+        <Small>From an emulator, the .sav beside the ROM. From a cartridge, pull the save to your computer first. Point the emulator and the app at the same file and it just works.</Small>
+        <XStack gap={8} alignItems="center" flexWrap="wrap" marginTop={4}>
+          <Input flexGrow={1} minWidth={220} value={typed} onChangeText={setTyped} onSubmitEditing={save}
+                 placeholder="/path/to/your.sav" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} fontFamily="$mono" />
+          <Action label="Save" onPress={save} ink={ink} />
+        </XStack>
+        {note ? <Small>{note}</Small> : null}
+      </Card>
+    </YStack>
+  );
+}
+
+const TABS = ["today", "goals", "daemon", "profile", "settings"] as const;
 
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
@@ -263,8 +327,9 @@ function Shell() {
         {error ? <Small>{error}</Small> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen goals={goals} reload={reload} ink={ink} /> : null}
-        {tab === "daemon" ? <DaemonScreen ink={ink} /> : null}
+        {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
+        {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
       </ScrollView>
       <StatusBar style="dark" />
     </YStack>

@@ -30,6 +30,18 @@ export class Store {
     this.db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('married', ?)").run(JSON.stringify(game));
   }
 
+  // C-29: a plain string setting. The save path the user chose lives here, overriding config.json, so it survives
+  // without editing a file by hand.
+  getSetting(key: string): string | null {
+    const row = this.db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
+    return row ? row.value : null;
+  }
+
+  setSetting(key: string, value: string | null) {
+    if (value === null) this.db.prepare("DELETE FROM settings WHERE key = ?").run(key);
+    else this.db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").run(key, value);
+  }
+
   addGoal(title: string, plan?: Plan): Goal {
     const now = new Date().toISOString();
     const g = Number(this.db.prepare("INSERT INTO goals (title, created) VALUES (?, ?)").run(title, now).lastInsertRowid);

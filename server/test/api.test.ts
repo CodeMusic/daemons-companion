@@ -74,6 +74,21 @@ describe("the server (C-04)", () => {
   it("the example breakdown is marked as one", () => {
     expect(exampleBreakdown("x").example).toBe(true);
   });
+
+  it("C-29: Settings reports the save path and its source, and setting one overrides config.json", async () => {
+    const before = await get("/api/settings");
+    expect(before.savePath).toBe(savePath);
+    expect(before.source).toBe("config.json");
+    expect(before.exists).toBe(true);
+    const set = await post("/api/settings", { savePath: "/tmp/elsewhere.sav" });
+    expect(set.savePath).toBe("/tmp/elsewhere.sav");
+    expect(set.source).toBe("settings");
+    expect(set.exists).toBe(false);                      // the party now reads the overridden path and finds nothing
+    expect((await get("/api/party")).error).toMatch(/set it in Settings/);
+    const cleared = await post("/api/settings", { savePath: "" });
+    expect(cleared.source).toBe("config.json");          // back to config.json
+    expect((await get("/api/party")).party[0].nickname).toBe("PIP");
+  });
 });
 
 describe("the art (C-05)", () => {

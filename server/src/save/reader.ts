@@ -28,6 +28,8 @@ export interface PartyDaemon {
   friendship: number;
   moves: number[];         // its four routines' move ids, 0 for an empty slot (C-18: the streaks)
   heldItem: number;        // C-31: the item it holds, 0 for none -- it goes with it to the device
+  exp: number;             // C-24: its experience, from which a boxed daemon's level is read
+  metLevel: number;        // C-24: the level it was met at (OPUS's margins: what it has gained since)
   holding: string | null;  // that item's name, as the game names it
   away: boolean;           // on the companion's device (T-358)
   asked: boolean;          // the game's half of a send or return, waiting for the app
@@ -118,6 +120,7 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
   const species = sv.getUint16(growth, true);
   const heldItem = sv.getUint16(growth + 2, true);
   const attacks = ORDERS[personality % 24].indexOf("A") * 12;
+  const misc = ORDERS[personality % 24].indexOf("M") * 12;
   const moves = [0, 1, 2, 3].map((k) => sv.getUint16(attacks + 2 * k, true));
   return {
     slot, personality, otId, species,
@@ -127,6 +130,8 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
     friendship: sv.getUint8(growth + 9),
     moves,
     heldItem,
+    exp: sv.getUint32(growth + 4, true),                    // C-24: a boxed daemon's level is read from this
+    metLevel: sv.getUint16(misc + 2, true) & 0x7f,          // originsInfo's low 7 bits: the level it was met at
     holding: heldItem ? ITEMS[String(heldItem)]?.name ?? `item #${heldItem}` : null,
     away: !!(flags & (1 << l.away_bit)),
     asked: !!(flags & (1 << l.asked_bit)),
@@ -162,4 +167,24 @@ export function readSave(save: Uint8Array, l: Layout = LAYOUT): SaveRead {
     trainerId: new DataView(sb2.buffer, sb2.byteOffset).getUint32(0x0a, true),
     party,
   };
+}
+
+// C-24: the PC's boxes -- fourteen of thirty, after PokemonStorage's currentBox (one byte, padded to four). A record
+// that will not decrypt is skipped rather than failing the whole read: the boxes are for OPUS's margins, not for writing.
+export function readBoxes(save: Uint8Array, l: Layout = LAYOUT): (PartyDaemon & { box: number; pos: number })[] {
+  const { slot } = blocks(save, l);
+  const storage = new Uint8Array(l.storage_size);
+  for (let id = 5; id <= 13; id++) {
+    const sec = slot.sections.get(id);
+    if (sec) storage.set(sec.subarray(0, sectionSize(id, l)), (id - 5) * l.sector_data_size);
+  }
+  const out: (PartyDaemon & { box: number; pos: number })[] = [];
+  for (let i = 0; i < 14 * 30; i++) {
+    const off = 4 + i * l.box_pokemon_size;
+    try {
+      const d = readDaemon(storage.subarray(off, off + l.box_pokemon_size), i, l);
+      if (d) out.push({ ...d, box: Math.floor(i / 30), pos: i % 30 });
+    } catch { /* a damaged record */ }
+  }
+  return out;
 }

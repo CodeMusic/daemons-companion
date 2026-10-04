@@ -271,7 +271,10 @@ void readUsb() {
     char c = Serial.read();
     if (c == '\n') {
       lineIn.trim();
-      if (lineIn.startsWith("STATE ") && takeState(lineIn.substring(6))) usbSeen = millis();
+      if (lineIn.startsWith("STATE ")) {
+        if (takeState(lineIn.substring(6))) usbSeen = millis();
+        else Serial.printf("UNREAD %u\n", lineIn.length());   // the bridge says so, rather than the corner silently not changing
+      }
       else if (lineIn == "PING") { usbSeen = millis(); Serial.println("PONG"); }
       lineIn = "";
     } else if (lineIn.length() < 4096) lineIn += c;
@@ -372,6 +375,9 @@ String runNetworksInRange() {
 
 void setup() {
   pinMode(PIN_PWR_EN, OUTPUT); digitalWrite(PIN_PWR_EN, HIGH);
+  // The bridge's STATE line is ~300 bytes and the USB receive buffer defaults to 256: while the screen is being drawn
+  // the rest was dropped, the JSON arrived cut short, and the corner said NO LINK with the bridge plainly connected.
+  Serial.setRxBufferSize(4096);
   Serial.begin(115200);
   pinMode(PIN_ENC_A, INPUT_PULLUP); pinMode(PIN_ENC_B, INPUT_PULLUP); pinMode(PIN_ENC_KEY, INPUT_PULLUP);
   pinMode(PIN_SIDE_KEY, INPUT_PULLUP);

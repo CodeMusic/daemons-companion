@@ -70,6 +70,9 @@ def main():
                     print("usb_bridge: step %d ticked off on the device" % step, flush=True)
                 except Exception as e:
                     print("usb_bridge: could not tick step %d (%s)" % (step, e), flush=True)
+            elif msg.startswith("UNREAD "):
+                print("usb_bridge: the device could not read the state it was sent (%s bytes arrived)" % msg.split()[1],
+                      flush=True)
             elif msg.startswith("INTERACT "):
                 # C-13: a routine was run on the device -- tending the daemon. Passed on as the device would over Wi-Fi.
                 parts = msg.split(" ", 2)

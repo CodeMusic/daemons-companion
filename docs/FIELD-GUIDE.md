@@ -62,12 +62,20 @@ writes its own copy back).
    - **See:** "<name> is with your device now." In the app's party, that daemon is **washed out / ON YOUR DEVICE**.
 4. **Bring it home:** in the game, the same daemon's menu now offers **CALL HOME**. Choose it, save, close, **SYNC**.
    - **See:** "<name> is home."
-5. **One at a time:** with one daemon AWAY, try to SEND a second.
+5. **Only a well daemon goes:** hurt or poison a daemon (a battle will do), then try to SEND it.
+   - **See (in game):** "Restore <name> before it goes: full health, and nothing ailing it." Heal it and SEND works.
+6. **It is not here, so nothing reaches it:** with a daemon AWAY, try to use an item on it from the bag, choose
+   ITEM in its party menu, or GIVE it something in the PORT.
+   - **See (in game):** "<name> is AWAY on your device." in the party and the bag, "<name> is AWAY." in the PORT --
+     and the item stays in your bag.
+7. **What it holds goes with it:** give a daemon something to hold *before* you SEND it, then SYNC.
+   - **See (in the app, DAEMON):** "holding <item>" under it; the handheld's DAEMON page says the same.
+8. **One at a time:** with one daemon AWAY, try to SEND a second.
    - **See (in game):** "One at a time: <name> is with your device now."
-6. **The emergency way (no app):** with a daemon AWAY, choose **CALL HOME** and answer **NO**.
+9. **The emergency way (no app):** with a daemon AWAY, choose **CALL HOME** and answer **NO**.
    - **See:** a warning, then "Bring <name> home without the app?" — yes brings it home; the game tells you to SYNC
      before sending another. Next **SYNC** settles it.
-7. **Married to one save:** SYNC a *different* game's save.
+10. **Married to one save:** SYNC a *different* game's save.
    - **See:** "This save belongs to a different game…"; PROFILE says whose game the companion carries for. It is shown
      but never written.
 

@@ -30,7 +30,7 @@ static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000;
 TFT_eSPI tft;
 TFT_eSprite canvas(&tft);   // drawn whole, then pushed, so nothing flickers
 
-struct Daemon { String name, nickname; int level = 0, friendship = 0; };
+struct Daemon { String name, nickname, holding; int level = 0, friendship = 0; };
 struct State {
   bool have = false;
   String date, edition, season, day, colour = "#5b6b8c", note, virtue;
@@ -99,6 +99,7 @@ bool takeState(const String &json) {
   if (st.carrying) {
     st.daemon.name = doc["daemon"]["name"] | ""; st.daemon.nickname = doc["daemon"]["nickname"] | "";
     st.daemon.level = doc["daemon"]["level"] | 0; st.daemon.friendship = doc["daemon"]["friendship"] | 0;
+    st.daemon.holding = doc["daemon"]["holding"] | "";   // what it held when it was sent (T-374)
   }
   dirty = true;
   return true;
@@ -215,6 +216,7 @@ void draw() {
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
       canvas.drawString(st.daemon.name + "  L" + String(st.daemon.level), 10, 92);
       canvas.drawString("friendship " + String(st.daemon.friendship), 10, 112);
+      if (st.daemon.holding.length()) canvas.drawString("holding " + st.daemon.holding, 10, 132);
     } else {
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
     }

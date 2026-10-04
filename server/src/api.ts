@@ -14,6 +14,10 @@
 //   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
 //   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
 //   GET  /api/device/art         C-36: the carried daemon's front sprite, as sixteen colours and four bits a pixel
+//   GET  /api/device/commands    C-32: the device takes what the site sent it; POST /api/device/results answers each,
+//                                POST /api/device/routines says what routines it has
+//   GET  /api/device/link        C-32 (this machine only): linked or not, by which way, its routines and results;
+//                                POST /api/device/run {routine}, /api/device/wifi {ssid, password}, /api/device/ir {...}
 //   POST /api/device/ticks       C-09: {steps: [ids]} -- the steps a device ticked off; answers with the new state
 //   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
@@ -24,6 +28,7 @@ import { execFile, execFileSync } from "node:child_process";
 import { platform } from "node:os";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
+import irPowerJson from "../data/ir_power.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
@@ -33,6 +38,8 @@ import { answerRequests, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { deviceArt, repaint, streakColours } from "./art.js";
 import { deviceDay } from "./days.js";
+import { DeviceHub, type Via } from "./device.js";
+import { networkInterfaces } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
@@ -134,7 +141,9 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
                       artKey: `${d.species}-${d.moves.join(".")}` };
   }
   const dd = deviceDay(t.day.day);
-  return { date: t.date, edition: t.edition, season: t.season,
+  // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
+  const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
+  return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue, menu: dd.menu, led: dd.led },
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal } : null, daemon };
 }
@@ -173,17 +182,28 @@ function revealInFinder(p: string | null) {
 
 const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
 const DEVICE_DOOR = [
-  (m: string, p: string) => m === "GET" && (p === "/api/device/state" || p === "/api/device/art"),
-  (m: string, p: string) => m === "POST" && (p === "/api/device/ticks" || p === "/api/device/interact"),
+  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
+  (m: string, p: string) => m === "POST" &&
+    ["/api/device/ticks", "/api/device/interact", "/api/device/results", "/api/device/routines"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
 
-export function makeServer(cfg: Config, store = new Store(cfg.database)): Server {
+// C-33: where a device on the Wi-Fi finds this server -- this machine's address on the local network.
+export function lanAddress(): string | null {
+  for (const list of Object.values(networkInterfaces()))
+    for (const a of list ?? []) if (a.family === "IPv4" && !a.internal) return a.address;
+  return null;
+}
+
+export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub()): Server {
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
       const path = url.pathname;
+      // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
+      // the device itself, on the Wi-Fi.
+      const via: Via = url.searchParams.get("via") === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : "wifi";
       // C-29: the save path the user set in Settings (stored in the db) overrides config.json; everything that reads
       // or writes a save uses `ecfg`, so the user never edits a file by hand.
       const ecfg: Config = { ...cfg, savePath: store.getSetting("savePath") ?? cfg.savePath };
@@ -200,7 +220,47 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(ecfg, store));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
       if (req.method === "POST" && path === "/api/sync") return send(res, 200, sync(ecfg, store));
-      if (req.method === "GET" && path === "/api/device/state") return send(res, 200, deviceState(ecfg, store));
+      if (req.method === "GET" && path === "/api/device/state") { hub.seen(via); return send(res, 200, deviceState(ecfg, store)); }
+      // ---- C-32: the link. The device's side: its commands, its results, its routines. ----
+      if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via) }); }
+      if (req.method === "POST" && path === "/api/device/results") {
+        const b = await body(req);
+        for (const r of Array.isArray(b.results) ? b.results : [b]) if (r && r.id != null) hub.answer(r);
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === "POST" && path === "/api/device/routines") {
+        const b = await body(req);
+        if (!Array.isArray(b.types)) return send(res, 400, { error: "routines need {types: [...]}" });
+        hub.routines = b.types.map((t: any) => ({ name: String(t.name), radio: String(t.radio),
+                                                   routines: (t.routines ?? []).map(String) }));
+        hub.firmware = String(b.firmware ?? "");
+        return send(res, 200, { ok: true });
+      }
+      // ---- the site's side (this machine only): what the link is, and the commands it sends ----
+      if (req.method === "GET" && path === "/api/device/link")
+        return send(res, 200, { ...hub.link(), lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" } });
+      if (req.method === "POST" && path === "/api/device/run") {
+        const b = await body(req);
+        if (typeof b.routine !== "string" || !hub.hasRoutine(b.routine))
+          return send(res, 400, { error: "the device has no such routine" });
+        return send(res, 200, { id: hub.send({ type: "run", routine: b.routine }) });
+      }
+      if (req.method === "POST" && path === "/api/device/wifi") {   // C-33: handed down the cable only
+        const b = await body(req);
+        if (typeof b.ssid !== "string" || !b.ssid || typeof b.password !== "string")
+          return send(res, 400, { error: "Wi-Fi needs a network name and its password" });
+        const addr = lanAddress();
+        return send(res, 200, { id: hub.send({ type: "wifi", ssid: b.ssid, password: b.password,
+                                               server: addr ? `http://${addr}:${cfg.port}` : "" }) });
+      }
+      if (req.method === "GET" && path === "/api/ir/brands") return send(res, 200, irPowerJson.brands);   // C-34
+      if (req.method === "POST" && path === "/api/device/ir") {     // C-34: one IR code, sent (and kept if asked)
+        const b = await body(req);
+        if (typeof b.protocol !== "string" || typeof b.code !== "string" || !Number.isInteger(b.bits))
+          return send(res, 400, { error: "an IR code needs {protocol, code, bits}" });
+        return send(res, 200, { id: hub.send({ type: "ir", protocol: b.protocol, code: b.code, bits: b.bits,
+                                               repeat: Number(b.repeat ?? 0), keep: !!b.keep, label: String(b.label ?? "") }) });
+      }
       if (req.method === "POST" && path === "/api/device/ticks") {
         const b = await body(req);
         if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))

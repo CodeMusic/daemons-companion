@@ -17,12 +17,17 @@
 #include "leds.h"
 #include <mbedtls/base64.h>
 
+#include <HTTPClient.h>
+#include <Preferences.h>
+// C-33: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / JOIN A NETWORK) -- and
+// kept in the board's own flash. A secrets.h, if there is one, is only the default for a board that has none yet.
 #if __has_include("secrets.h")
 #include "secrets.h"
-#include <HTTPClient.h>
-#define COMPANION_HAS_WIFI 1
-#else
-#define COMPANION_HAS_WIFI 0
+#endif
+#ifndef COMPANION_WIFI_SSID
+#define COMPANION_WIFI_SSID ""
+#define COMPANION_WIFI_PASSWORD ""
+#define COMPANION_SERVER ""
 #endif
 
 // LilyGO's own pin map (examples/utilities.h): the peripherals' power, the encoder, and the top button (BOARD_USER_KEY).
@@ -45,16 +50,22 @@ struct State {
 // HOME turns between TODAY, DAEMON and ROUTINES with the encoder. ROUTINES opens a list of routine TYPES, a type opens
 // its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the top button goes back.
 enum Page { TODAY, DAEMON, ROUTINES_PAGE };
-enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY };   // INDEX_ENTRY: the carried daemon's (C-36)
+// INDEX_ENTRY: the carried daemon's (C-36). PICK_NET and TYPE_PASS: joining a network on the board (C-33).
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS };
 Page page = TODAY;
 Screen screen = HOME;
 int typeAt = 0, routineAt = 0;
+// C-33: joining a network on the board -- the networks in range, then the password on a letter wheel. WHEEL[0] is OK.
+String nets[12]; int netRssi[12], netCount = 0, netAt = 0, wheelAt = 1; String typed; bool joinNext = false;
+static const char WHEEL[] = "\x01abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
+static const int WHEEL_N = sizeof(WHEEL) - 1;
 String runResult;
 uint32_t usbSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
 String flash, lineIn;
 bool dirty = true;
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 bool wake();                              // C-39, below
+String wifiSsid, wifiPass, serverUrl;     // C-33, below
 
 // ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
 // The user chose the names (2026-10-04): FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz), and
@@ -69,13 +80,14 @@ static const Routine FLARE_ROUTINES[]      = { { "LEARN MY REMOTE", runLearnMyRe
                                                { "SONY TV POWER", runSonyTvPower } };
 static const Routine WHISPER_ROUTINES[]    = { { "OPEN TO MY PHONE", runOpenToMyPhone } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
-static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange } };
+String runJoinNetwork();
+static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "JOIN A NETWORK", runJoinNetwork } };
 static const RoutineType TYPES_LIST[] = {
   { "FLARE",      "IR",        FLARE_ROUTINES,      3 },
   { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    1 },
   { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 },
   { "LONGWAVE",   "Sub-GHz",   nullptr,             0 },
-  { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     1 },
+  { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     2 },
 };
 static const int TYPE_COUNT = sizeof(TYPES_LIST) / sizeof(TYPES_LIST[0]);
 
@@ -102,6 +114,12 @@ bool takeState(const String &json) {
   st.date = doc["date"] | ""; st.edition = doc["edition"] | ""; st.season = doc["season"] | "";
   st.day = doc["day"]["name"] | ""; st.colour = doc["day"]["colour"] | "#5b6b8c";
   st.note = doc["day"]["note"] | ""; st.virtue = doc["day"]["virtue"] | "";
+  // C-33: where the server is on the Wi-Fi, when it says (it listens on the network) -- kept for when the cable is out
+  const char *lan = doc["server"] | "";
+  if (strlen(lan) && serverUrl != lan) {
+    serverUrl = lan;
+    Preferences p; p.begin("uplink", false); p.putString("server", serverUrl); p.end();
+  }
   st.menu = doc["day"]["menu"] | st.colour.c_str();     // C-37: the tamed rainbow week, else the game's trim
   st.led = doc["day"]["led"] | st.menu.c_str();
   ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));
@@ -177,14 +195,33 @@ int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLi
 
 String upper(String s) { s.toUpperCase(); return s; }
 
+// ---- C-33: the board's own Wi-Fi ----------------------------------------------------------------------------------------
+bool wifiSet() { return wifiSsid.length() > 0; }
+bool online() { return wifiSet() && serverUrl.length() && WiFi.status() == WL_CONNECTED; }
+
+void loadWifi() {
+  Preferences p; p.begin("uplink", true);
+  wifiSsid = p.getString("ssid", COMPANION_WIFI_SSID);
+  wifiPass = p.getString("pass", COMPANION_WIFI_PASSWORD);
+  serverUrl = p.getString("server", COMPANION_SERVER);
+  p.end();
+}
+
+void joinWifi(const String &ssid, const String &pass, const String &server) {
+  wifiSsid = ssid; wifiPass = pass;
+  if (server.length()) serverUrl = server;
+  Preferences p; p.begin("uplink", false);
+  p.putString("ssid", wifiSsid); p.putString("pass", wifiPass); p.putString("server", serverUrl);
+  p.end();
+  WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());
+}
+
 const char *linkName() {
   if (millis() - usbSeen < USB_FRESH_MS && usbSeen) return "USB";
-#if COMPANION_HAS_WIFI
-  if (WiFi.status() == WL_CONNECTED) return "WIFI";
-  return "WIFI...";
-#else
-  return "NO LINK";
-#endif
+  if (!wifiSet()) return "NO LINK";
+  return WiFi.status() == WL_CONNECTED ? "WIFI" : "WIFI...";
 }
 
 // The ROUTINES screens: a list with the day's colour behind the chosen row (TYPES, LIST), or what a routine found
@@ -213,13 +250,36 @@ void drawRoutines(uint16_t day) {
     } else {
       for (int i = 0; i < t.count; i++) listRow(i, routineAt, t.routines[i].name, day, ink);
     }
+  } else if (screen == PICK_NET) {
+    canvas.drawString("JOIN A NETWORK", 10, 32);
+    int from = max(0, netAt - 5);
+    for (int i = from; i < netCount && i < from + 6; i++)
+      listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
+  } else if (screen == TYPE_PASS) {
+    canvas.drawString("JOIN  " + nets[netAt], 10, 32);
+    canvas.setTextColor(QUIET); canvas.drawString("PASSWORD", 10, 52);
+    String shown = typed.length() > 34 ? "..." + typed.substring(typed.length() - 31) : typed;
+    canvas.setTextColor(PAPER); canvas.drawString(shown + "_", 10, 68);
+    for (int k = -4; k <= 4; k++) {           // the wheel: the letter chosen in the middle, its neighbours either side
+      int at = (wheelAt + k + WHEEL_N) % WHEEL_N;
+      String ch = at == 0 ? "OK" : String(WHEEL[at]) == " " ? "SPC" : String(WHEEL[at]);
+      int x = W / 2 + k * 32;
+      if (k == 0) {
+        canvas.fillRoundRect(x - 22, 98, 44, 36, 4, day);
+        canvas.setTextFont(4); canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM); canvas.drawString(ch, x, 117);
+      } else {
+        canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(MC_DATUM); canvas.drawString(ch, x, 117);
+      }
+    }
+    canvas.setTextDatum(TL_DATUM);
   } else {   // RUN
     canvas.drawString(String(t.name) + " / " + t.routines[routineAt].name, 10, 32);
     wrap(runResult, 12, 54, W - 24, 2, 17, 6, PAPER);
   }
   canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-  canvas.drawString(screen == RUN ? "press: run again    top button: back" : "turn: choose    press: open    top button: back",
-                    10, H - 4);
+  canvas.drawString(screen == RUN ? "press: run again    top button: back"
+                    : screen == TYPE_PASS ? "turn: letter    press: add it (OK: join)    top: delete"
+                    : "turn: choose    press: open    top button: back", 10, H - 4);
 }
 
 void draw() {
@@ -251,8 +311,8 @@ void draw() {
     canvas.drawString("FLARE  WHISPER  TOUCHSTONE  LONGWAVE  UPLINK", 10, H - 6);
   } else if (!st.have) {
     wrap("Looking for the companion.", 10, 40, W - 20, 4, 28, 2, PAPER);
-    wrap(COMPANION_HAS_WIFI ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"
-                            : "Run usb_bridge.py on the computer, or add include/secrets.h for Wi-Fi.",
+    wrap(wifiSet() ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"
+                   : "Run ./linkCompanion.sh on the computer, or join a network: ROUTINES, UPLINK.",
          10, 100, W - 20, 2, 18, 3, QUIET);
   } else if (page == TODAY) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
@@ -294,20 +354,27 @@ void draw() {
 void say(const String &word) { flash = word; flashUntil = millis() + 1500; dirty = true; }
 
 // ---- the server ------------------------------------------------------------------------------------------------------
-#if COMPANION_HAS_WIFI
-bool httpState(const char *method, const String &path, const String &body) {
-  if (WiFi.status() != WL_CONNECTED) return false;
-  HTTPClient http;
-  http.setTimeout(4000);
-  http.begin(String(COMPANION_SERVER) + path);
+// One request to the server over Wi-Fi; the answer's body, or "" with *ok false.
+String http(const char *method, const String &path, const String &body, bool *ok = nullptr) {
+  if (ok) *ok = false;
+  if (!online()) return "";
+  HTTPClient h;
+  h.setTimeout(4000);
+  h.begin(serverUrl + path);
   int code;
-  if (!strcmp(method, "POST")) { http.addHeader("content-type", "application/json"); code = http.POST(body); }
-  else code = http.GET();
-  bool ok = code == 200 && takeState(http.getString());
-  http.end();
-  return ok;
+  if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body); }
+  else code = h.GET();
+  String out = code == 200 ? h.getString() : "";
+  h.end();
+  if (ok) *ok = code == 200;
+  return out;
 }
-#endif
+
+bool httpState(const char *method, const String &path, const String &body) {
+  bool ok;
+  String got = http(method, path, body, &ok);
+  return ok && takeState(got);
+}
 
 bool usbLive() { return usbSeen && millis() - usbSeen < USB_FRESH_MS; }
 
@@ -315,10 +382,80 @@ void tick() {
   if (!st.have || st.step < 0) { say("Nothing yet"); return; }
   long id = st.step;
   if (usbLive()) { Serial.printf("TICK %ld\n", id); say("Done."); return; }
-#if COMPANION_HAS_WIFI
   if (httpState("POST", "/api/device/ticks", "{\"steps\":[" + String(id) + "]}")) { say("Done."); return; }
-#endif
   say("No link");
+}
+
+// ---- C-32: the site and the device, linked. The site's COMMANDS arrive down the cable (CMD lines, from the bridge) or
+// over Wi-Fi (GET /api/device/commands); each is answered with a RESULT the same way. LIST asks what routines this
+// board has, so the site's list is the board's own.
+String routinesJson() {
+  JsonDocument d;
+  d["firmware"] = "t-embed-cc1101 2";
+  JsonArray types = d["types"].to<JsonArray>();
+  for (int i = 0; i < TYPE_COUNT; i++) {
+    JsonObject t = types.add<JsonObject>();
+    t["name"] = TYPES_LIST[i].name; t["radio"] = TYPES_LIST[i].radio;
+    JsonArray r = t["routines"].to<JsonArray>();
+    for (int k = 0; k < TYPES_LIST[i].count; k++) r.add(TYPES_LIST[i].routines[k].name);
+  }
+  String out; serializeJson(d, out);
+  return out;
+}
+
+void sendResult(long id, bool ok, const String &text) {
+  JsonDocument d; d["id"] = id; d["ok"] = ok; d["text"] = text;
+  String out; serializeJson(d, out);
+  if (usbLive()) Serial.println("RESULT " + out);
+  else http("POST", "/api/device/results", out);
+}
+
+void runRoutine();
+void report(const String &kind, const String &detail);
+void handleCommand(JsonVariant c) {
+  long id = c["id"] | -1;
+  String type = c["type"] | "";
+  wake();
+  if (type == "run") {
+    String want = c["routine"] | "";
+    for (int i = 0; i < TYPE_COUNT; i++)
+      for (int k = 0; k < TYPES_LIST[i].count; k++)
+        if (want == String(TYPES_LIST[i].name) + "/" + TYPES_LIST[i].routines[k].name) {
+          typeAt = i; routineAt = k;
+          runRoutine();
+          return sendResult(id, true, runResult);
+        }
+    return sendResult(id, false, "This board has no routine " + want + ".");
+  }
+  if (type == "ir") {                         // C-34: one IR code from the site's search
+    String code = c["code"] | "0";
+    String out = runFlareCode(c["protocol"] | "", strtoull(code.c_str(), nullptr, 0), c["bits"] | 0, c["repeat"] | 0,
+                              c["keep"] | false);
+    for (int i = 0; i < TYPE_COUNT; i++) if (!strcmp(TYPES_LIST[i].name, "FLARE")) typeAt = i;
+    runResult = out; screen = RUN; dirty = true;
+    report("routine", "FLARE/" + String((const char *)(c["label"] | "A CODE FROM THE SITE")));
+    return sendResult(id, !out.startsWith("Could not"), out);
+  }
+  if (type == "wifi") {                       // C-33: only ever arrives down the cable
+    joinWifi(c["ssid"] | "", c["password"] | "", c["server"] | "");
+    say("Wi-Fi set");
+    return sendResult(id, true, "Saved on the board. Joining " + wifiSsid + "...");
+  }
+  sendResult(id, false, "This board does not know the command " + type + ".");
+}
+
+bool routinesPosted = false;
+uint32_t commandsAt = 0;
+void pollCommands(uint32_t now) {
+  if (!routinesPosted) routinesPosted = !http("POST", "/api/device/routines", routinesJson()).isEmpty();
+  if (now - commandsAt < 2000) return;
+  commandsAt = now;
+  bool ok;
+  String got = http("GET", "/api/device/commands", "", &ok);
+  if (!ok) return;
+  JsonDocument d;
+  if (deserializeJson(d, got)) return;
+  for (JsonVariant c : d["commands"].as<JsonArray>()) handleCommand(c);
 }
 
 // SHOT: the screen as it is, down the cable -- so the layout can be checked without looking at the board
@@ -346,6 +483,12 @@ void readUsb() {
       }
       else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
       else if (lineIn == "SHOT") shot();
+      else if (lineIn == "LIST") Serial.println("ROUTINES " + routinesJson());
+      else if (lineIn.startsWith("CMD ")) {
+        JsonDocument d;
+        if (deserializeJson(d, lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length());
+        else handleCommand(d.as<JsonVariant>());
+      }
       else if (lineIn.startsWith("GO ")) {          // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
         String to = lineIn.substring(3);
         screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
@@ -373,6 +516,8 @@ void readEncoder() {
     ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
     if (screen == HOME) page = (Page)((page + 3 + step) % 3);
     else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
+    else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
+    else if (screen == TYPE_PASS) wheelAt = (wheelAt + WHEEL_N + step) % WHEEL_N;
     else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
       routineAt = (routineAt + TYPES_LIST[typeAt].count + step) % TYPES_LIST[typeAt].count;
     dirty = true;
@@ -383,16 +528,9 @@ void readEncoder() {
 // bridge (an INTERACT line), or over Wi-Fi -- where the daemon's life will read it.
 void report(const String &kind, const String &detail) {
   if (usbLive()) { Serial.printf("INTERACT %s %s\n", kind.c_str(), detail.c_str()); return; }
-#if COMPANION_HAS_WIFI
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.setTimeout(3000);
-    http.begin(String(COMPANION_SERVER) + "/api/device/interact");
-    http.addHeader("content-type", "application/json");
-    http.POST("{\"kind\":\"" + kind + "\",\"detail\":\"" + detail + "\"}");
-    http.end();
-  }
-#endif
+  JsonDocument d; d["kind"] = kind; d["detail"] = detail;
+  String body; serializeJson(d, body);
+  http("POST", "/api/device/interact", body);
 }
 
 void progress(const String &text) { runResult = text; draw(); }
@@ -404,6 +542,7 @@ void runRoutine() {
   screen = RUN;
   draw();
   runResult = t.routines[routineAt].run();
+  if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
   while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
   sideWas = true;
   report("routine", String(t.name) + "/" + t.routines[routineAt].name);
@@ -420,6 +559,16 @@ void press() {
   } else if (screen == TYPES) { screen = LIST; routineAt = 0; }
   else if (screen == LIST) { if (TYPES_LIST[typeAt].count > 0) runRoutine(); }
   else if (screen == RUN) runRoutine();
+  else if (screen == PICK_NET && netCount) { screen = TYPE_PASS; typed = ""; wheelAt = 1; }
+  else if (screen == TYPE_PASS) {
+    if (wheelAt) typed += WHEEL[wheelAt];
+    else {                                     // OK: join
+      joinWifi(nets[netAt], typed, "");
+      runResult = "Joining " + nets[netAt] + "...\n\nThe corner says WIFI once it has." +
+                  (serverUrl.length() ? "" : "\nLink it over the cable once, and it learns where the server is.");
+      screen = RUN;
+    }
+  }
   dirty = true;
 }
 
@@ -427,6 +576,8 @@ void press() {
 void back() {
   ledsDark();                                                   // C-38
   if (screen == INDEX_ENTRY) { screen = HOME; page = DAEMON; }
+  else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
+  else if (screen == PICK_NET) screen = LIST;
   else if (screen == RUN) screen = LIST;
   else if (screen == LIST) screen = TYPES;
   else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
@@ -478,9 +629,7 @@ void readKey() {
 
 // ---- UPLINK (Wi-Fi): the networks in range, by name and strength. Lists only; joins nothing. --------------------
 String runNetworksInRange() {
-#if !COMPANION_HAS_WIFI
-  WiFi.mode(WIFI_STA);           // over USB the radio is idle; it only listens for the length of the scan
-#endif
+  if (!wifiSet()) WiFi.mode(WIFI_STA);   // with no network set the radio is idle; it listens for the scan
   int n = WiFi.scanNetworks();
   if (n <= 0) return n == 0 ? "No networks in range." : "The scan did not finish. Press to try again.";
   String out = String(n) + (n == 1 ? " network in range:" : " networks in range:");
@@ -491,6 +640,22 @@ String runNetworksInRange() {
   }
   WiFi.scanDelete();
   return out;
+}
+
+// ---- UPLINK (Wi-Fi): JOIN A NETWORK -- choose one in range, type its password on the wheel (C-33). --------------------
+String runJoinNetwork() {
+  if (!wifiSet()) WiFi.mode(WIFI_STA);
+  int n = WiFi.scanNetworks();
+  if (n <= 0) return n == 0 ? "No networks in range." : "The scan did not finish. Press to try again.";
+  netCount = 0;
+  for (int i = 0; i < n && netCount < 12; i++) {
+    if (!WiFi.SSID(i).length()) continue;      // a hidden network cannot be chosen by name
+    nets[netCount] = WiFi.SSID(i); netRssi[netCount++] = WiFi.RSSI(i);
+  }
+  WiFi.scanDelete();
+  if (!netCount) return "Only hidden networks are in range.";
+  joinNext = true;
+  return "";
 }
 
 void setup() {
@@ -506,10 +671,8 @@ void setup() {
   pinMode(TFT_BL, OUTPUT); digitalWrite(TFT_BL, HIGH);
   canvas.setColorDepth(16);
   canvas.createSprite(W, H);
-#if COMPANION_HAS_WIFI
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(COMPANION_WIFI_SSID, COMPANION_WIFI_PASSWORD);
-#endif
+  loadWifi();
+  if (wifiSet()) { WiFi.mode(WIFI_STA); WiFi.begin(wifiSsid.c_str(), wifiPass.c_str()); }
   ledsBegin();
   draw();
 }
@@ -521,14 +684,9 @@ void askForArt() {
   if (artAskedAt && millis() - artAskedAt < 5000) return;
   artAskedAt = millis();
   if (usbLive()) { Serial.println("ART?"); return; }
-#if COMPANION_HAS_WIFI
-  if (WiFi.status() != WL_CONNECTED) return;
-  HTTPClient http;
-  http.setTimeout(4000);
-  http.begin(String(COMPANION_SERVER) + "/api/device/art");
-  if (http.GET() == 200) takeArt(http.getString());
-  http.end();
-#endif
+  bool ok;
+  String got = http("GET", "/api/device/art", "", &ok);
+  if (ok) takeArt(got);
 }
 
 void loop() {
@@ -537,12 +695,10 @@ void loop() {
   readKey();
   uint32_t now = millis();
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println("HELLO daemons-companion t-embed-cc1101 1"); dirty = true; }
-#if COMPANION_HAS_WIFI
-  if (!usbLive() && (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000))) {
-    lastPoll = now;
-    httpState("GET", "/api/device/state", "");
+  if (!usbLive() && online()) {
+    if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
+    pollCommands(now);                        // C-32: what the site sent, over Wi-Fi
   }
-#endif
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
   askForArt();
   ledsLoop();

@@ -303,7 +303,123 @@ function SettingsScreen({ ink }: { ink: string }) {
   );
 }
 
-const TABS = ["today", "goals", "daemon", "profile", "settings"] as const;
+// ---- C-32: the site and the device, linked. The server is the hub: this screen asks it what the link is, sends the
+// board commands through it, and shows what the board answered. C-33 (its Wi-Fi) and C-34 (FLARE's search) live here.
+type Link = { linked: boolean; via: "usb" | "wifi" | null; lastSeen: string | null; firmware: string;
+              routines: { name: string; radio: string; routines: string[] }[];
+              pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
+              lan: { address: string | null; port: number; open: boolean } };
+type IrCode = { label: string; protocol: string; code: string; bits: number; repeat: number };
+type Brand = { brand: string; codes: IrCode[] };
+
+function Result({ link, id }: { link: Link; id: number | null }) {
+  if (id == null) return null;
+  const r = link.results.find((x) => x.id === id);
+  if (!r) return <Small>Sent to the board… {link.pending.some((p) => p.id === id) ? "(waiting for it to pick it up)" : ""}</Small>;
+  return <Text fontFamily="$mono" fontSize={12} lineHeight={18} color={r.ok ? "$color12" : "$color9"} whiteSpace="pre-wrap">{r.text}</Text>;
+}
+
+function DeviceScreen({ ink }: { ink: string }) {
+  const [link, setLink] = useState<Link | null>(null);
+  const [error, setError] = useState("");
+  const [ran, setRan] = useState<number | null>(null);
+  const [ssid, setSsid] = useState(""), [pass, setPass] = useState(""), [wifiSent, setWifiSent] = useState<number | null>(null);
+  const [brands, setBrands] = useState<Brand[]>([]), [brand, setBrand] = useState<string>(""), [at, setAt] = useState(0);
+  const [tried, setTried] = useState<number | null>(null), [kept, setKept] = useState<number | null>(null);
+  useEffect(() => {
+    const poll = () => api<Link>("/api/device/link").then((l) => { setLink(l); setError(""); }).catch((e) => setError(e.message));
+    poll();
+    const t = setInterval(poll, 1500);                        // while this tab is open
+    api<Brand[]>("/api/ir/brands").then(setBrands).catch(() => {});
+    return () => clearInterval(t);
+  }, []);
+  if (error) return <Small>{error}</Small>;
+  if (!link) return <Small>Loading…</Small>;
+  const run = async (routine: string) => setRan((await api<{ id: number }>("/api/device/run", { routine })).id);
+  const codes = brands.find((b) => b.brand === brand)?.codes ?? [];
+  const code = codes[at];
+  const tryCode = async (keep: boolean) => {
+    const r = await api<{ id: number }>("/api/device/ir", { ...code, keep });
+    keep ? setKept(r.id) : setTried(r.id);
+  };
+  const sendWifi = async () => setWifiSent((await api<{ id: number }>("/api/device/wifi", { ssid, password: pass })).id);
+  return (
+    <YStack gap={14}>
+      <Card borderLeftWidth={6} borderLeftColor={link.linked ? "$color9" : "$color5"}>
+        <Eyebrow>THE HANDHELD</Eyebrow>
+        <Text fontSize={20} fontWeight="600" color="$color12">
+          {link.linked ? `Linked, by ${link.via === "usb" ? "its cable" : "Wi-Fi"}` : "Not linked"}
+        </Text>
+        <Small>{link.linked ? link.firmware
+          : "Plug it in and run ./linkCompanion.sh, or let it join your Wi-Fi (below)."}</Small>
+      </Card>
+
+      {link.linked ? (
+        <Card>
+          <Eyebrow>ITS ROUTINES</Eyebrow>
+          <Small>Run any of them from here. The board shows it running, and its answer comes back below.</Small>
+          {link.routines.filter((t) => t.routines.length).map((t) => (
+            <YStack key={t.name} gap={2} marginTop={6}>
+              <Text fontFamily="$mono" fontSize={12} letterSpacing={1} color="$color10">{t.name} ({t.radio})</Text>
+              <XStack gap={8} flexWrap="wrap">
+                {t.routines.filter((r) => r !== "JOIN A NETWORK").map((r) =>
+                  <Action key={r} label={r} onPress={() => run(`${t.name}/${r}`)} ink={ink} />)}
+              </XStack>
+            </YStack>
+          ))}
+          <Result link={link} id={ran} />
+        </Card>
+      ) : null}
+
+      <Card>
+        <Eyebrow>FLARE WITHOUT THE REMOTE</Eyebrow>
+        <Small>Choose your TV's brand, point the board's end at the TV, and try each code. When the TV answers, keep it:
+          FLARE's SEND TO MY TV sends that code from then on.</Small>
+        <XStack gap={8} flexWrap="wrap" marginTop={4}>
+          {brands.map((b) => (
+            <YStack key={b.brand} role="button" cursor="pointer" borderRadius={3} paddingHorizontal={14} paddingVertical={8}
+                    borderWidth={1} borderColor={brand === b.brand ? "$color9" : "$color6"}
+                    backgroundColor={brand === b.brand ? "$color9" : "$color1"} hoverStyle={{ borderColor: "$color9" }}
+                    onPress={() => { setBrand(b.brand); setAt(0); setTried(null); setKept(null); }}>
+              <Text fontSize={13} fontWeight={brand === b.brand ? "700" : "400"} color={brand === b.brand ? ink : "$color12"}>{b.brand}</Text>
+            </YStack>
+          ))}
+        </XStack>
+        {code ? (
+          <YStack gap={4} marginTop={6}>
+            <Text fontFamily="$mono" fontSize={13} color="$color12">{`${at + 1} of ${codes.length}: ${code.label}`}</Text>
+            <XStack gap={8} flexWrap="wrap">
+              <Action label="Try it" onPress={() => tryCode(false)} ink={ink} />
+              <Action label="It worked: keep it" onPress={() => tryCode(true)} ink={ink} />
+              {codes.length > 1 ? <Action label="Next code" onPress={() => { setAt((at + 1) % codes.length); setTried(null); }} ink={ink} /> : null}
+            </XStack>
+            <Result link={link} id={kept ?? tried} />
+            {!link.linked ? <Small>The board is not linked, so nothing will send yet.</Small> : null}
+          </YStack>
+        ) : null}
+      </Card>
+
+      <Card>
+        <Eyebrow>ITS WI-FI</Eyebrow>
+        <Small>Sent down its cable only, never over the network, and kept on the board. You can also join on the board
+          itself: ROUTINES, UPLINK, JOIN A NETWORK.</Small>
+        {!link.lan.open ? <Small color="$color9">For the board to reach this computer over Wi-Fi, the server has to listen
+          on your network: set "host": "0.0.0.0" in server/config.json and restart the companion.</Small> : null}
+        <XStack gap={8} flexWrap="wrap" marginTop={4}>
+          <Input flexGrow={1} minWidth={160} value={ssid} onChangeText={setSsid} placeholder="network name"
+                 backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} />
+          <Input flexGrow={1} minWidth={160} value={pass} onChangeText={setPass} placeholder="password" secureTextEntry
+                 backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} />
+          <Action label="Send to the board" onPress={sendWifi} ink={ink} />
+        </XStack>
+        {link.via !== "usb" ? <Small>Link it by its cable first (./linkCompanion.sh): that is the only way this is sent.</Small> : null}
+        <Result link={link} id={wifiSent} />
+      </Card>
+    </YStack>
+  );
+}
+
+const TABS = ["today", "goals", "daemon", "device", "profile", "settings"] as const;
 
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
@@ -342,6 +458,7 @@ function Shell() {
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen goals={goals} reload={reload} ink={ink} /> : null}
         {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
+        {tab === "device" ? <DeviceScreen ink={ink} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
       </ScrollView>

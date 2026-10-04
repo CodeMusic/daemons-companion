@@ -100,7 +100,7 @@ String runSendToMyTv() {
     uint8_t state[64]; size_t n = flareMemory.getBytes("state", state, sizeof state);
     irOut.send(type, state, n);
   } else if (type != UNKNOWN) {
-    irOut.send(type, flareMemory.getULong64("value"), bits);
+    irOut.send(type, flareMemory.getULong64("value"), bits, flareMemory.getUShort("repeat", 0));
   } else {
     size_t bytes = flareMemory.getBytesLength("raw");
     uint16_t *raw = new uint16_t[bytes / 2];
@@ -118,6 +118,24 @@ String runSonyTvPower() {
   irOut.begin();
   irOut.sendSony(0xA90, 12, kSonyMinRepeat);
   return "Sent a Sony TV's POWER.\n\nPoint the board's end at the TV, from a few steps away. Press to send again.";
+}
+
+// C-34: a code the site is trying, from the brand the user chose -- the way a universal remote is set up. Sent once;
+// kept (as SEND TO MY TV's code, across power-offs) when the user says it was the one.
+String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint16_t repeat, bool keep) {
+  decode_type_t type = strToDecodeType(protocol.c_str());
+  if (type == UNKNOWN) return "Could not send: this board does not know the protocol " + protocol + ".";
+  irOut.begin();
+  if (!irOut.send(type, value, bits, repeat)) return "Could not send " + protocol + " with " + String(bits) + " bits.";
+  if (keep) {
+    flareMemory.begin("flare", false);
+    flareMemory.clear();
+    flareMemory.putInt("type", type); flareMemory.putULong64("value", value);
+    flareMemory.putUShort("bits", bits); flareMemory.putUShort("repeat", repeat);
+    flareMemory.end();
+    return "Kept. SEND TO MY TV sends this code from now on.";
+  }
+  return "Sent " + protocol + " " + uint64ToString(value, 16) + ".";
 }
 
 // ---- WHISPER (Bluetooth): your phone opens it, and a word goes each way. -----------------------------------------

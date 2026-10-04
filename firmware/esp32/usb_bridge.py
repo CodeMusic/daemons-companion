@@ -8,7 +8,11 @@
 It speaks the device's side of the sync protocol (C-09) on the device's behalf: every few seconds it asks the server
 for GET /api/device/state and sends it down the cable as one line, "STATE {...}"; when the device says "TICK <id>"
 (its encoder pressed), it posts POST /api/device/ticks and sends back the new state. The device shows USB in its
-corner while a bridge is talking to it. Needs pyserial (PlatformIO's own Python has it:
+corner while a bridge is talking to it.
+
+C-32, the site and the device linked: every second it takes what the site sent the device (GET /api/device/commands)
+and passes each down as "CMD {...}"; the device's "RESULT {...}" goes back to POST /api/device/results, and its
+"ROUTINES {...}" (asked with LIST when the bridge starts, and every minute) to POST /api/device/routines. Needs pyserial (PlatformIO's own Python has it:
 ~/.platformio/penv/bin/python usb_bridge.py). Ctrl-C stops it.
 """
 import argparse, glob, json, sys, time, urllib.request
@@ -42,14 +46,25 @@ def main():
     port = a.port or find_port()
     dev = serial.Serial(port, 115200, timeout=0.2)
     print("usb_bridge: %s <-> %s" % (port, a.server), flush=True)
-    last, sent = 0.0, None
+    last, sent, listed, polled = 0.0, None, 0.0, 0.0
     buf = b""
     while True:
         now = time.time()
+        if now - listed > 60:                       # C-32: what routines the device has, for the site
+            listed = now
+            dev.write(b"LIST\n")
+        if now - polled > 1.0:                      # C-32: what the site sent the device
+            polled = now
+            try:
+                for cmd in server_json(a.server, "/api/device/commands?via=usb")["commands"]:
+                    dev.write(("CMD " + json.dumps(cmd, separators=(",", ":")) + "\n").encode())
+                    print("usb_bridge: the site -> device: %s %s" % (cmd["type"], cmd.get("routine") or cmd.get("label") or ""), flush=True)
+            except Exception:
+                pass                                # the state below says when the server is away
         if now - last > a.every:
             last = now
             try:
-                state = server_json(a.server, "/api/device/state")
+                state = server_json(a.server, "/api/device/state?via=usb")
                 line = json.dumps(state, separators=(",", ":"))
                 dev.write(("STATE " + line + "\n").encode())
                 if line != sent:
@@ -89,6 +104,18 @@ def main():
                     print("usb_bridge: the device ran %s" % (parts[2] if len(parts) > 2 else parts[1]), flush=True)
                 except Exception as e:
                     print("usb_bridge: could not pass on an interaction (%s)" % e, flush=True)
+            elif msg.startswith("RESULT "):
+                try:
+                    r = json.loads(msg[7:])
+                    server_json(a.server, "/api/device/results", r)
+                    print("usb_bridge: device -> the site: %s" % r.get("text", "").split("\n")[0], flush=True)
+                except Exception as e:
+                    print("usb_bridge: could not pass on a result (%s)" % e, flush=True)
+            elif msg.startswith("ROUTINES "):
+                try:
+                    server_json(a.server, "/api/device/routines", json.loads(msg[9:]))
+                except Exception as e:
+                    print("usb_bridge: could not pass on the routines (%s)" % e, flush=True)
             elif msg and not msg.startswith("HELLO"):
                 print("device: " + msg, flush=True)
 

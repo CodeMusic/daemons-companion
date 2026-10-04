@@ -30,7 +30,7 @@ describe("the sync protocol's server side (C-09)", () => {
   it("gives a device its day, season, next step and the party's AWAY daemon", async () => {
     await post("/api/goals", { title: "Tidy the garage", breakdown: true });
     const s = await get("/api/device/state");
-    expect(Object.keys(s).sort()).toEqual(["daemon", "date", "day", "edition", "season", "step"]);
+    expect(Object.keys(s).sort()).toEqual(["daemon", "date", "day", "edition", "season", "server", "step"]);
     expect(s.daemon).toMatchObject({ nickname: "LABEL", slot: 1, art: "/art/party/1.png", mood: null });
     expect(s.step.text).toBe("Write down what done looks like");
   });

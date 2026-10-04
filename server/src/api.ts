@@ -19,7 +19,10 @@
 //                                POST /api/device/routines says what routines it has
 //   GET  /api/device/link        C-32 (this machine only): linked or not, by which way, its routines and results;
 //                                POST /api/device/run {routine}, /api/device/wifi {ssid, password}, /api/device/ir {...}
-//   POST /api/device/ticks       C-09: {steps: [ids]} -- the steps a device ticked off; answers with the new state
+//   POST /api/device/ticks       C-09: {steps: [ids]} -- the steps a device ticked off; answers with the new state and
+//                                what to celebrate (C-50); POST /api/device/untick {step} undoes one (C-49)
+//   GET  /api/goal               C-46: the one goal; POST /api/goal {title, replace?}, /api/goal/step {text, milestone?},
+//                                /api/goal/milestone {title}, /api/goal/remove {step | milestone}; /api/steps/:id/undo
 //   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
@@ -41,7 +44,7 @@ import { season } from "./seasons.js";
 import { deviceArt, repaint, streakColours } from "./art.js";
 import { deviceDay } from "./days.js";
 import { life } from "./life.js";
-import { expFor, levelFromExp } from "./save/growth.js";
+import { levelFromExp } from "./save/growth.js";
 import { DeviceHub, type Via } from "./device.js";
 import { networkInterfaces } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -176,10 +179,20 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
 }
 
-// C-45: experience gained on the device. Each step finished gives the carried daemon a twentieth of what its next level
-// costs on its own growth curve -- reckoned from the level it has already reached here -- so twenty steps are a level.
-// Kept by its personality until it is home, when SYNC writes it into the save.
-const STEPS_PER_LEVEL = 20;
+// C-46: an entry is short on purpose -- simpler is better (the user) -- and the site says so.
+export const ENTRY_LIMIT = 40;
+const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim().length <= ENTRY_LIMIT ? v.trim() : null;
+
+// A step done, from the site or the board: kept as time together (C-13), a meal (C-44), and experience (C-47).
+export function doStep(cfg: Config, store: Store, id: number, from: "site" | "device") {
+  const r = store.completeStep(id);
+  if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(cfg, store, id); }
+  return r;
+}
+
+// C-45, C-47: experience gained on the device. LIMITED LEVELING (the user, 2026-10-04): one step completed is one
+// experience point -- a variable to tune later. Kept by its personality until it is home, when SYNC writes it.
+export const EXP_PER_STEP = 1;
 function pendingExp(store: Store, personality: number) {
   const rows = store.expAfter(personality, Number(store.getSetting(`exp.applied.${personality}`) ?? 0));
   return { exp: rows.reduce((n, r) => n + r.gain, 0), last: rows.length ? rows[rows.length - 1].id : 0 };
@@ -188,14 +201,12 @@ function carriedDaemon(cfg: Config) {
   if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
   try { return readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away) ?? null; } catch { return null; }
 }
-export function growFromStep(cfg: Config, store: Store) {
+export function growFromStep(cfg: Config, store: Store, stepId: number) {
   const d = carriedDaemon(cfg);
   if (!d) return;
   const curve = SPECIES[String(d.species)]?.growth ?? 0;
-  const level = levelFromExp(curve, d.exp + pendingExp(store, d.personality).exp);
-  if (level >= 100) return;
-  const gain = Math.ceil((expFor(curve, level + 1) - expFor(curve, level)) / STEPS_PER_LEVEL);
-  store.logInteraction("exp", `${d.personality} ${gain}`);
+  if (levelFromExp(curve, d.exp + pendingExp(store, d.personality).exp) >= 100) return;
+  store.logInteraction("exp", `${d.personality} ${EXP_PER_STEP} step ${stepId}`);   // the step's id, so an undo takes it back
 }
 
 // C-13: the carried daemon's life, read from two weeks of what was done together.
@@ -229,7 +240,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
   return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
            settings: deviceSettings(store),
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue, menu: dd.menu, led: dd.led },
-           step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal } : null, daemon };
+           step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon };
 }
 
 // C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else
@@ -268,7 +279,7 @@ const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a =
 const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
-    ["/api/device/ticks", "/api/device/interact", "/api/device/results", "/api/device/routines"].includes(p),
+    ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
@@ -352,13 +363,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { id: hub.send({ type: "ir", protocol: b.protocol, code: b.code, bits: b.bits,
                                                repeat: Number(b.repeat ?? 0), keep: !!b.keep, label: String(b.label ?? "") }) });
       }
+      if (req.method === "POST" && path === "/api/device/untick") {   // C-49: a step ticked on the board by accident
+        const b = await body(req);
+        if (!Number.isInteger(b.step) || !store.undoStep(b.step)) return send(res, 404, { error: "no such step" });
+        return send(res, 200, { undone: b.step, state: deviceState(ecfg, store) });
+      }
       if (req.method === "POST" && path === "/api/device/ticks") {
         const b = await body(req);
         if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))
           return send(res, 400, { error: "steps must be a list of step ids" });
-        const done = b.steps.filter((id: number) => store.completeStep(id));
-        for (const id of done) { store.logInteraction("step", `device ${id}`); growFromStep(ecfg, store); }   // C-13, C-45
-        return send(res, 200, { done, state: deviceState(ecfg, store) });
+        const results = b.steps.map((id: number) => ({ id, ...doStep(ecfg, store, id, "device") }));
+        const done = results.filter((r: any) => r.ok).map((r: any) => r.id);
+        // C-50: what the board celebrates -- the biggest thing these ticks finished
+        const celebrate = results.some((r: any) => r.goal) ? "goal" : results.some((r: any) => r.milestone) ? "milestone"
+                        : results.some((r: any) => r.fresh) ? "step" : null;
+        return send(res, 200, { done, celebrate, state: deviceState(ecfg, store) });
       }
       // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
       // C-13: the site's own care -- feed, water, train -- kept as the device's are
@@ -421,11 +440,41 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const goal = store.addGoal(b.title, bd?.plan);
         return send(res, 201, { goal, breakdown: bd });
       }
-      const step = path.match(/^\/api\/steps\/(\d+)\/done$/);
+      const step = path.match(/^\/api\/steps\/(\d+)\/(done|undo)$/);
       if (req.method === "POST" && step) {
-        const ok = store.completeStep(Number(step[1]));
-        if (ok) { store.logInteraction("step", `site ${step[1]}`); growFromStep(ecfg, store); }   // C-13, C-45
-        return ok ? send(res, 200, { next: store.nextStep() }) : send(res, 404, { error: "no such step" });
+        if (step[2] === "undo") return store.undoStep(Number(step[1])) ? send(res, 200, { next: store.nextStep() })
+                                                                      : send(res, 404, { error: "no such step" });
+        const r = doStep(ecfg, store, Number(step[1]), "site");
+        return r.ok ? send(res, 200, { ...r, next: store.nextStep() }) : send(res, 404, { error: "no such step" });
+      }
+      // ---- C-46: ONE goal, built from milestones and steps, each entry short on purpose ----
+      if (req.method === "GET" && path === "/api/goal") return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });
+      if (req.method === "POST" && path === "/api/goal") {
+        const b = await body(req);
+        const title = entry(b.title);
+        if (!title) return send(res, 400, { error: `a goal is a few words, at most ${ENTRY_LIMIT} letters` });
+        const open = store.currentGoal();
+        if (open && !b.replace) return send(res, 409, { error: "one goal at a time: finish this one, or replace it", goal: open });
+        if (open) store.db.prepare("UPDATE goals SET done = ? WHERE id = ?").run(`set aside ${new Date().toISOString()}`, open.id);
+        const g = store.addGoal(title);
+        return send(res, 201, { goal: g, limit: ENTRY_LIMIT });
+      }
+      if (req.method === "POST" && (path === "/api/goal/step" || path === "/api/goal/milestone")) {
+        const b = await body(req), g = store.currentGoal();
+        if (!g) return send(res, 400, { error: "set a goal first" });
+        const text = entry(b.text ?? b.title);
+        if (!text) return send(res, 400, { error: `keep it short: at most ${ENTRY_LIMIT} letters` });
+        const ok = path.endsWith("milestone") ? store.addMilestone(g.id, text)
+                 : store.addStep(g.id, text, Number.isInteger(b.milestone) ? b.milestone : undefined);
+        if (ok == null) return send(res, 400, { error: "no such milestone in this goal" });
+        return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });
+      }
+      if (req.method === "POST" && path === "/api/goal/remove") {
+        const b = await body(req);
+        if (Number.isInteger(b.step)) store.removeStep(b.step);
+        else if (Number.isInteger(b.milestone)) store.removeMilestone(b.milestone);
+        else return send(res, 400, { error: "remove {step} or {milestone}" });
+        return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });
       }
       if (req.method === "GET" && path === "/api/profile") {
         if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });

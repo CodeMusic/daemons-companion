@@ -13,6 +13,7 @@
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
 //   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
 //   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
+//   GET  /api/device/art         C-36: the carried daemon's front sprite, as sixteen colours and four bits a pixel
 //   POST /api/device/ticks       C-09: {steps: [ids]} -- the steps a device ticked off; answers with the new state
 //   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
@@ -30,7 +31,8 @@ import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { answerRequests, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
-import { repaint, streakColours } from "./art.js";
+import { deviceArt, repaint, streakColours } from "./art.js";
+import { deviceDay } from "./days.js";
 import { fileURLToPath } from "node:url";
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
@@ -107,16 +109,33 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
 // one document and pushes the steps ticked off on it. Its daemon is the party's AWAY one -- sending a daemon in the game
 // is what puts it on the device. Its mood is C-13's, whose rules are open, so it is null until they are written. This
 // is on the local network only and carries no secret; accounts are C-11's.
+// A party daemon's front sprite as the game draws it, its streaks painted for its routines (C-18); null if none.
+function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
+  if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
+  const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find(which);
+  const row = d && SPECIES[String(d.species)];
+  const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
+  if (!d || !file || !existsSync(file)) return null;
+  const png = readFileSync(file);
+  return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
+}
+
 export function deviceState(cfg: Config, store: Store, now = new Date()) {
   const t = today(cfg, store, now);
   let daemon = null;
   if (cfg.savePath && existsSync(cfg.savePath)) {
     const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away);
+    const row = d && SPECIES[String(d.species)];
+    // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
+    // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
     if (d) daemon = { slot: d.slot, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
-                      holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null };
+                      holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
+                      types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[cfg.edition] ?? "",
+                      artKey: `${d.species}-${d.moves.join(".")}` };
   }
+  const dd = deviceDay(t.day.day);
   return { date: t.date, edition: t.edition, season: t.season,
-           day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue },
+           day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue, menu: dd.menu, led: dd.led },
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal } : null, daemon };
 }
 
@@ -154,7 +173,7 @@ function revealInFinder(p: string | null) {
 
 const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
 const DEVICE_DOOR = [
-  (m: string, p: string) => m === "GET" && p === "/api/device/state",
+  (m: string, p: string) => m === "GET" && (p === "/api/device/state" || p === "/api/device/art"),
   (m: string, p: string) => m === "POST" && (p === "/api/device/ticks" || p === "/api/device/interact"),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
@@ -216,15 +235,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
       }
       const partyArt = path.match(/^\/art\/party\/(\d)\.png$/);
       if (req.method === "GET" && partyArt) {
-        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save is configured" });
-        const d = readSave(new Uint8Array(readFileSync(ecfg.savePath))).party.find((p) => p.slot === Number(partyArt[1]));
-        const row = d && SPECIES[String(d.species)];
-        const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
-        if (!d || !file || !existsSync(file)) return send(res, 404, { error: "no art for that slot" });
-        const png = readFileSync(file);
-        const body = row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
+        const body = partyPng(ecfg, (p) => p.slot === Number(partyArt[1]));
+        if (!body) return send(res, 404, { error: "no art for that slot" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);
+      }
+      if (req.method === "GET" && path === "/api/device/art") {   // C-36: the carried daemon, as a device draws it
+        const body = partyPng(ecfg, (p) => p.away);
+        if (!body) return send(res, 404, { error: "no daemon is on the device" });
+        return send(res, 200, deviceArt(body));
       }
       if (req.method === "GET" && path === "/api/goals") return send(res, 200, store.goals());
       if (req.method === "POST" && path === "/api/goals") {

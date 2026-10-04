@@ -48,6 +48,30 @@ describe("the sync protocol's server side (C-09)", () => {
   });
 });
 
+describe("the daemon on the handheld (C-36) and the day's colours (C-37, C-38)", () => {
+  it("carries the daemon's INDEX entry in the edition's voice, its kind, and a key for its art", async () => {
+    const s = await get("/api/device/state");
+    expect(s.daemon.entry.length).toBeGreaterThan(20);
+    expect(s.daemon.category).not.toBe("");
+    expect(s.daemon.types.length).toBeGreaterThan(0);
+    expect(s.daemon.artKey).toMatch(/^4-/);                  // species 4, then its routines
+  });
+
+  it("sends the carried daemon's art as sixteen RGB565 colours and 4-bit pixels", async () => {
+    const a = await get("/api/device/art");
+    expect([a.w, a.h, a.palette.length]).toEqual([64, 64, 16]);
+    expect(Buffer.from(a.pixels, "base64").length).toBe(2048);
+    expect(a.palette.every((c: number) => c >= 0 && c <= 0xffff)).toBe(true);
+  });
+
+  it("gives the day a menu colour and a light colour of its own, not the CHECKPOINT's trim", async () => {
+    const s = await get("/api/device/state");
+    expect(s.day.menu).toMatch(/^#[0-9A-F]{6}$/);
+    expect(s.day.led).toMatch(/^#[0-9A-F]{6}$/);
+    expect(s.day.menu).not.toBe(s.day.colour);
+  });
+});
+
 describe("the day's date (found live, 2026-10-03)", () => {
   it("is the local date, the same day the weekday names", () => {
     const late = new Date(2026, 9, 3, 23, 30);               // Saturday 3 October, 11:30pm local

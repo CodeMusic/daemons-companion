@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
-import { repaint, streakColours } from "../src/art.js";
+import { decodeIndexedPng, deviceArt, repaint, streakColours } from "../src/art.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 import streaksJson from "../data/streaks.json" with { type: "json" };
 
@@ -43,5 +43,22 @@ describe("a party daemon's streaks, painted as the game paints them (C-18)", () 
       at += 12 + len;
     }
     expect(inflateSync(Buffer.concat(idat)).length).toBeGreaterThan(0);
+  });
+});
+
+describe("a sprite as a device draws it (C-36)", () => {
+  const png = readFileSync(new URL("../data/art/artsai.png", import.meta.url));
+
+  it("decodes the indexed PNG to the game's sixteen colours (checked against PIL on all 386, 2026-10-04)", () => {
+    const { w, h, px } = decodeIndexedPng(png);
+    expect([w, h]).toEqual([64, 64]);
+    expect(Math.max(...px)).toBeLessThan(16);
+    expect(px[0]).toBe(0);                                      // the corner is the transparent colour
+  });
+
+  it("packs two pixels a byte, the left one high", () => {
+    const { px } = decodeIndexedPng(png);
+    const packed = Buffer.from(deviceArt(png).pixels, "base64");
+    for (let i = 0; i < px.length; i += 2) expect(packed[i >> 1]).toBe((px[i] << 4) | px[i + 1]);
   });
 });

@@ -12,11 +12,15 @@ static const int CLOCKWISE = 1;
 static Adafruit_NeoPixel ring(N, PIN, NEO_GRB + NEO_KHZ800);
 static uint32_t dayRgb = 0x4060FF, touchedAt = 0, effectAt = 0;
 static enum { NONE, SPIN, FLASH, DARK } effect = NONE;
-static int spinDir = 1, spinFrom = 0, shown = -2;   // `shown` avoids rewriting the ring when nothing changed
+static int spinDir = 1, spinFrom = 0, shown = -2;
+static bool sleeping = false;   // `shown` avoids rewriting the ring when nothing changed
 
-static uint32_t third(uint32_t rgb) {               // a third of the day's colour: 33%
-  return ring.Color(((rgb >> 16) & 255) / 3, ((rgb >> 8) & 255) / 3, (rgb & 255) / 3);
+static int restPercent = 33;                        // the user's 33%; the site can change it (C-43)
+static uint32_t share(uint32_t rgb, int percent) {
+  return ring.Color(((rgb >> 16) & 255) * percent / 100, ((rgb >> 8) & 255) * percent / 100, (rgb & 255) * percent / 100);
 }
+static uint32_t third(uint32_t rgb) { return share(rgb, restPercent); }   // the ring at rest
+void ledsBrightness(int percent) { restPercent = constrain(percent, 0, 100); shown = -2; }
 
 static void fill(uint32_t c) { for (int i = 0; i < N; i++) ring.setPixelColor(i, c); }
 
@@ -30,11 +34,45 @@ void ledsSpin(int dir) {
   if (effect == SPIN && dir == spinDir) return;      // a turn that keeps going lets the light finish its round
   effect = SPIN; spinDir = dir; effectAt = millis();
 }
-static bool sleeping = false;
 void ledsSleep(bool on) { sleeping = on; effect = NONE; touch(); }
 
 void ledsFlash() { touch(); effect = FLASH; effectAt = millis(); }
 void ledsDark()  { touch(); effect = DARK;  effectAt = millis(); }
+
+// C-40: one frame of a dance, shown at once (the tune is playing, so the loop is not running).
+void ledsDance(int kind, int step, int steps) {
+  if (sleeping) return;
+  touch();
+  if (kind < 0) { effect = NONE; shown = -2; ledsLoop(); return; }
+  uint32_t day = dayRgb, dim = share(dayRgb, 12), white = ring.Color(170, 170, 170);
+  fill(dim);
+  switch (kind) {
+    case DANCE_SPARKLE:                                // a few bright points, a different few each note
+      for (int k = 0; k < 3; k++) ring.setPixelColor(random(N), k ? share(day, 100) : white);
+      break;
+    case DANCE_GLIMMER: {                              // the whole ring breathing, softly
+      int p = 15 + (int)(45 * (0.5f + 0.5f * sinf(step * 1.4f)));
+      fill(share(day, p));
+      break;
+    }
+    case DANCE_PULSE:                                  // a knock: all on, then dim
+      if (step % 2 == 0) fill(share(day, 90));
+      break;
+    case DANCE_WAVE: {                                 // two lights rolling round, slowly
+      int at = (step * 2) % N;
+      ring.setPixelColor(at, share(day, 100)); ring.setPixelColor((at + 1) % N, share(day, 50));
+      break;
+    }
+    default: {                                         // a sweep: one white light, a trail of the day behind it
+      int at = steps ? step * N / steps : 0;
+      ring.setPixelColor(at % N, white);
+      ring.setPixelColor((at + N - 1) % N, share(day, 60));
+      ring.setPixelColor((at + N - 2) % N, share(day, 25));
+    }
+  }
+  ring.show();
+  shown = -3;                                          // the next rest frame is redrawn
+}
 
 void ledsLoop() {
   uint32_t now = millis(), t = now - effectAt;

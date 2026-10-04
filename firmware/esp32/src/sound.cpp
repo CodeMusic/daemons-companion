@@ -1,0 +1,125 @@
+// C-40, C-41: the board's sounds. The T-Embed CC1101's speaker is I2S on BCLK 46, LRCLK 40, DIN 7 (LilyGO's
+// utilities.h, driven as its own mic-and-speaker test drives it: 16 kHz, 16-bit, the left channel, I2S_NUM_1).
+//
+// The voice is a square wave with a short rise and fall -- the game's own chip voice, and no clicks. Just enough tones
+// to be recognised: the user's rule is that two give enough character.
+//
+// Every interaction is in the DAY'S KEY: its note (vision 9.21: Sunday C ... Saturday B) in the octave above middle C.
+// A routine's tune is that routine's shape in the day's key, so the same routine sounds a little different each day
+// and always like itself. The wake jingle is the one thing NOT in the day's key: it is the front door, and the title
+// screen is in C# (vision 7.14g, "a semitone above everywhere you will go").
+#include <driver/i2s.h>
+#include "sound.h"
+#include "leds.h"
+
+static const i2s_port_t PORT = I2S_NUM_1;
+static const int RATE = 16000, PIN_BCLK = 46, PIN_LRCLK = 40, PIN_DIN = 7;
+static bool ready = false, enabled = true;
+static int amplitude = 5000;                 // 0..~16000; the site's volume sets it
+static int root = 60 + 12;                   // the day's note, as MIDI (C5 by default)
+static uint32_t lastTurn = 0;
+
+void soundBegin() {
+  i2s_config_t cfg = {};
+  cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
+  cfg.sample_rate = RATE;
+  cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
+  cfg.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
+  cfg.communication_format = I2S_COMM_FORMAT_STAND_I2S;
+  cfg.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
+  cfg.dma_buf_count = 8;
+  cfg.dma_buf_len = 256;
+  cfg.tx_desc_auto_clear = true;              // silence, not the last buffer again, when nothing is playing
+  i2s_pin_config_t pins = {};
+  pins.mck_io_num = I2S_PIN_NO_CHANGE;
+  pins.bck_io_num = PIN_BCLK; pins.ws_io_num = PIN_LRCLK; pins.data_out_num = PIN_DIN; pins.data_in_num = I2S_PIN_NO_CHANGE;
+  if (i2s_driver_install(PORT, &cfg, 0, nullptr) != ESP_OK) return;
+  if (i2s_set_pin(PORT, &pins) != ESP_OK) { i2s_driver_uninstall(PORT); return; }
+  i2s_zero_dma_buffer(PORT);
+  ready = true;
+}
+
+void soundSettings(bool on, int volume) {
+  enabled = on;
+  amplitude = constrain(volume, 0, 100) * 120;   // 100 is 12000, LilyGO's own test tone level
+}
+
+void soundDay(const String &note) {
+  static const char *NAMES = "C D EF G A B";   // C=0 D=2 E=4 F=5 G=7 A=9 B=11
+  const char *at = strchr(NAMES, note.length() ? note[0] : 'C');
+  root = 72 + (at ? (int)(at - NAMES) : 0);
+}
+
+static float hz(int midi) { return 440.0f * powf(2.0f, (midi - 69) / 12.0f); }
+
+// One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself).
+static void tone(int midi, int ms, float level = 1.0f) {
+  if (!ready || !enabled || amplitude == 0) return;
+  static int16_t buf[256];
+  int total = RATE * ms / 1000, rise = RATE * 4 / 1000, fall = RATE * 8 / 1000;
+  float period = RATE / hz(midi), phase = 0;
+  int amp = (int)(amplitude * level);
+  for (int done = 0; done < total;) {
+    int n = min(256, total - done);
+    for (int i = 0; i < n; i++, done++) {
+      float env = done < rise ? (float)done / rise : done > total - fall ? (float)(total - done) / fall : 1.0f;
+      buf[i] = (int16_t)((phase < period / 2 ? amp : -amp) * env);
+      if ((phase += 1) >= period) phase -= period;
+    }
+    size_t wrote;
+    i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY);
+  }
+}
+
+static void rest(int ms) {
+  if (!ready || !enabled) { delay(ms); return; }
+  static int16_t zero[256] = {0};
+  for (int total = RATE * ms / 1000; total > 0; total -= 256) {
+    size_t wrote;
+    i2s_write(PORT, zero, min(256, total) * sizeof(int16_t), &wrote, portMAX_DELAY);
+  }
+}
+
+// The dial turns in detents, often several a second: a pair for each would pile up behind the dial, so a turn
+// sounds only when the last one has had time to finish.
+void soundTurn(int dir) {
+  if (millis() - lastTurn < 90) return;
+  lastTurn = millis();
+  if (dir > 0) { tone(root, 28, 0.6f); tone(root + 7, 34, 0.6f); }
+  else         { tone(root + 7, 28, 0.6f); tone(root, 34, 0.6f); }
+}
+
+void soundSelect() { tone(root + 12, 55); }
+void soundBack()   { tone(root - 12, 45, 0.7f); }
+
+// ---- a routine's tune: about six notes, its own shape in the day's key, the ring dancing in step --------------------
+struct Note { int8_t semis; uint16_t ms; };          // semis from the day's root; 127 is a rest
+static const Note FLARE[]      = { {0, 60}, {4, 60}, {7, 60}, {12, 60}, {16, 60}, {19, 140} };   // a flare going up
+static const Note WHISPER[]    = { {12, 110}, {7, 110}, {9, 110}, {4, 110}, {7, 110}, {0, 200} }; // said softly, settling
+static const Note TOUCHSTONE[] = { {0, 70}, {127, 50}, {0, 70}, {7, 90}, {127, 40}, {12, 160} }; // a knock, and an answer
+static const Note LONGWAVE[]   = { {0, 120}, {-5, 120}, {0, 120}, {-5, 120}, {0, 120}, {7, 200} }; // a long slow wave
+static const Note UPLINK[]     = { {0, 70}, {7, 70}, {12, 70}, {7, 70}, {14, 70}, {12, 160} };   // looking, finding
+static const Note WAKE[]       = { {0, 190}, {7, 330}, {5, 50}, {2, 140}, {5, 190}, {4, 470} };  // the title's opening
+
+static void play(const Note *notes, int n, int base, int dance, float level) {
+  for (int i = 0; i < n; i++) {
+    ledsDance(dance, i, n);
+    if (notes[i].semis == 127) rest(notes[i].ms);
+    else tone(base + notes[i].semis, notes[i].ms, level);
+  }
+  rest(20);
+  ledsDance(-1, 0, 0);                               // back to the ring at rest
+}
+
+void soundRoutine(const char *type) {
+  const Note *t = UPLINK; int dance = DANCE_SWEEP;
+  if (!strcmp(type, "FLARE"))           { t = FLARE;      dance = DANCE_SPARKLE; }
+  else if (!strcmp(type, "WHISPER"))    { t = WHISPER;    dance = DANCE_GLIMMER; }
+  else if (!strcmp(type, "TOUCHSTONE")) { t = TOUCHSTONE; dance = DANCE_PULSE; }
+  else if (!strcmp(type, "LONGWAVE"))   { t = LONGWAVE;   dance = DANCE_WAVE; }
+  play(t, 6, root, dance, 0.8f);
+}
+
+// C-41: the title theme's opening phrase (mus_title.mid, its first track: C#4 held, up to G#4, then F#-D#-F#, onto a
+// long F), quickened to a second and a half and an octave up -- in the title's own C#, whatever the day.
+void soundWake() { play(WAKE, 6, 61 + 12, DANCE_SWEEP, 0.8f); }

@@ -78,3 +78,18 @@ describe("FLARE without the remote (C-34)", () => {
     expect((await post("/api/device/ir", { protocol: "SONY", code: "0xA90", bits: 12, repeat: 2 })).status).toBe(200);
   });
 });
+
+describe("the board's settings, set on the site (C-43)", () => {
+  it("starts at the daemon, sleeps after two minutes, and carries them in the state", async () => {
+    const s = await get("/api/device/settings");
+    expect(s).toEqual({ home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33 });
+    expect((await get("/api/device/state")).settings).toEqual(s);
+  });
+
+  it("changes one at a time and refuses what the board cannot do", async () => {
+    expect((await post("/api/device/settings", { sound: false })).json).toMatchObject({ sound: false, home: "daemon" });
+    expect((await post("/api/device/settings", { home: "routines" })).status).toBe(400);
+    expect((await post("/api/device/settings", { volume: 101 })).status).toBe(400);
+    expect((await get("/api/device/state")).settings.sound).toBe(false);
+  });
+});

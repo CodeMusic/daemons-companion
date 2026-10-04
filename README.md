@@ -78,6 +78,15 @@ goes back when you let it go (and gives up a routine that is waiting). The pages
 entry) and ROUTINES. **Sleep:** hold the top button and press the front one -- the screen and the lights go dark until
 you turn the dial or press anything (that touch only wakes it).
 
+**Home is the daemon you carry** -- large, breathing, drifting, now and then hopping. Any menu left alone goes to sleep
+(two minutes, by default), and waking always lands back at home, to a few notes of the title theme.
+
+**It sounds in the day's key** (Sunday C ... Saturday B): turning the dial right rises, left falls, select is the day's
+note, and each routine has its own short tune, with the ring dancing to it -- the daemon running it.
+
+**Its settings are set on the site** (DEVICE tab): home (the daemon or today's step), how soon it sleeps, sound and
+volume, and how bright the ring rests. A linked board picks them up and keeps them.
+
 **The ring of lights** glows the day's colour at a third, and goes out after a minute unused; touching anything brings
 it back. Turning the dial runs a white light once round the ring (clockwise for right), select flashes it white, and
 back darkens it for a moment.
@@ -167,6 +176,14 @@ JSON in, JSON out, on this machine only.
 | `POST /api/settings/reveal` | open the save's folder in Finder |
 | `GET /api/device/state` | what a device shows: the day (and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry |
 | `GET /api/device/art` | the carried daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels |
+| `GET /api/device/link` | (this machine) the board: linked or not and how, its routines, their results |
+| `POST /api/device/run` | `{routine}` -- run one of the board's routines |
+| `POST /api/device/wifi` | `{ssid, password}` -- the board's Wi-Fi, sent down its cable only |
+| `POST /api/device/ir` | `{protocol, code, bits, keep?}` -- one IR code, tried (and kept for SEND TO MY TV) |
+| `GET`/`POST /api/device/settings` | the board's settings: home, sleep, sound, volume, ring |
+| `GET /api/device/commands` | (the board) what the site sent it; `POST /api/device/results` and `/api/device/routines` answer |
+| `GET /api/index` | the save's INDEX: seen and bound, each entry, and OPUS's margins |
+| `GET /api/ir/brands` | TV power codes by brand, for FLARE's search |
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |
 | `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |
 

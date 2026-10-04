@@ -15,6 +15,7 @@
 #include <WiFi.h>           // always: UPLINK's scan works over USB too, without joining a network
 #include "radios.h"
 #include "leds.h"
+#include "sound.h"
 #include <mbedtls/base64.h>
 
 #include <HTTPClient.h>
@@ -66,6 +67,9 @@ String flash, lineIn;
 bool dirty = true;
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 bool wake();                              // C-39, below
+// ---- C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked ----
+struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33; } cfg;
+uint32_t lastInput = 0;                   // C-42: any touch; left alone `sleepAfter` seconds, it sleeps
 void turn(int step); void press(); void back();
 bool asleep = false;                      // C-39, below
 String wifiSsid, wifiPass, serverUrl;     // C-33, below
@@ -106,6 +110,33 @@ bool lightColour(const String &h) {           // as the app decides (App.tsx onC
   return 0.2126 * lin((v >> 16) & 255) + 0.7152 * lin((v >> 8) & 255) + 0.0722 * lin(v & 255) > 0.3;
 }
 
+void applySettings() {
+  soundSettings(cfg.sound, cfg.volume);
+  ledsBrightness(cfg.ring);
+}
+
+void loadSettings() {
+  Preferences p; p.begin("settings", true);
+  cfg.home = p.getString("home", cfg.home); cfg.sleepAfter = p.getInt("sleep", cfg.sleepAfter);
+  cfg.sound = p.getBool("sound", cfg.sound); cfg.volume = p.getInt("volume", cfg.volume); cfg.ring = p.getInt("ring", cfg.ring);
+  p.end();
+  applySettings();
+}
+
+void takeSettings(JsonVariant s) {
+  Settings got;
+  got.home = s["home"] | cfg.home.c_str(); got.sleepAfter = s["sleepAfter"] | cfg.sleepAfter;
+  got.sound = s["sound"] | cfg.sound; got.volume = s["volume"] | cfg.volume; got.ring = s["ring"] | cfg.ring;
+  if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
+      got.ring == cfg.ring) return;
+  cfg = got;
+  Preferences p; p.begin("settings", false);
+  p.putString("home", cfg.home); p.putInt("sleep", cfg.sleepAfter); p.putBool("sound", cfg.sound);
+  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring);
+  p.end();
+  applySettings();
+}
+
 // ---- the state, from the server's JSON ------------------------------------------------------------------------------
 bool takeState(const String &json) {
   JsonDocument whole;
@@ -123,6 +154,8 @@ bool takeState(const String &json) {
     serverUrl = lan;
     Preferences p; p.begin("uplink", false); p.putString("server", serverUrl); p.end();
   }
+  soundDay(st.note);                         // C-40: the interactions are in the day's key
+  if (!doc["settings"].isNull()) takeSettings(doc["settings"]);
   st.menu = doc["day"]["menu"] | st.colour.c_str();     // C-37: the tamed rainbow week, else the game's trim
   st.led = doc["day"]["led"] | st.menu.c_str();
   ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));
@@ -330,18 +363,27 @@ void draw() {
     canvas.drawString(st.virtue, 10, H - 6);
   } else {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
-    canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
     if (st.carrying) {
-      drawArt(W - 134, 30, 2);                                  // C-36: as the game draws it, twice its size
-      canvas.setTextFont(4); canvas.setTextColor(PAPER); canvas.drawString(st.daemon.nickname, 10, 58);
+      // C-42: the board's home -- the daemon, large, and alive: it bobs as it breathes, drifts a little either way,
+      // and now and then hops. (Device-only animated sprites come later; a daemon sent here comes more to life.)
+      uint32_t t = millis();
+      int bob = (int)roundf(3 * sinf(t / 420.0f));
+      int drift = (int)roundf(10 * sinf(t / 2900.0f));
+      int hop = (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
+      drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
+      int x = 168;
+      canvas.setTextDatum(TL_DATUM);
+      canvas.setTextFont(st.daemon.nickname.length() <= 8 ? 4 : 2); canvas.setTextColor(PAPER);
+      canvas.drawString(st.daemon.nickname, x, 40);
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
       // its species beside its level -- unless its nickname already is the species
-      canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + "L" + String(st.daemon.level), 10, 92);
-      canvas.drawString("friendship " + String(st.daemon.friendship), 10, 112);
-      if (st.daemon.holding.length()) canvas.drawString("holding " + st.daemon.holding, 10, 132);
-      canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
-      canvas.drawString("press: its INDEX entry", 10, H - 4);
+      canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + "L" + String(st.daemon.level), x, 72);
+      canvas.drawString("friendship " + String(st.daemon.friendship), x, 90);
+      if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 108, W - x - 6, 2, 16, 2, QUIET);
+      canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+      canvas.drawString("press: its INDEX entry", x, H - 4);
     } else {
+      canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
     }
   }
@@ -501,9 +543,9 @@ void readUsb() {
       }
       else if (lineIn.startsWith("GO ")) {          // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
         String to = lineIn.substring(3);
+        wake();
         screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
         page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : TODAY;
-        wake();
         draw();
       }
       else if (lineIn == "PING") { usbSeen = millis(); Serial.println("PONG"); }
@@ -518,6 +560,7 @@ int8_t encLast = 0, encSum = 0;
 void turn(int step) {
   if (wake()) return;                   // C-39: a turn that wakes the board does nothing else
   ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
+  soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) page = (Page)((page + 3 + step) % 3);
   else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
   else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
@@ -556,6 +599,7 @@ void runRoutine() {
   runResult = "Running...";
   screen = RUN;
   draw();
+  soundRoutine(t.name);                 // C-40: its tune, the ring dancing -- the daemon starting the routine
   runResult = t.routines[routineAt].run();
   if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
   while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
@@ -566,7 +610,9 @@ void runRoutine() {
 
 // The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
 void press() {
+  lastInput = millis();
   ledsFlash();                                                  // C-38
+  soundSelect();                                                // C-40
   if (screen == HOME) {
     if (page == TODAY) tick();
     else if (page == DAEMON && st.carrying) screen = INDEX_ENTRY;     // C-36
@@ -589,7 +635,9 @@ void press() {
 
 // The top button: back one step.
 void back() {
+  lastInput = millis();
   ledsDark();                                                   // C-38
+  soundBack();                                                  // C-40
   if (screen == INDEX_ENTRY) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
   else if (screen == PICK_NET) screen = LIST;
@@ -612,11 +660,17 @@ void sleepNow() {
 }
 
 // True if this input was spent waking the board.
+// Waking lands on home -- the daemon, by default (C-42) -- whatever menu it fell asleep in, to the title's jingle (C-41).
 bool wake() {
+  lastInput = millis();
   if (!asleep) return false;
   asleep = false;
+  screen = HOME;
+  page = cfg.home == "today" ? TODAY : DAEMON;
+  draw();
   digitalWrite(TFT_BL, HIGH);
   ledsSleep(false);
+  soundWake();
   dirty = true;
   return true;
 }
@@ -689,6 +743,10 @@ void setup() {
   loadWifi();
   if (wifiSet()) { WiFi.mode(WIFI_STA); WiFi.begin(wifiSsid.c_str(), wifiPass.c_str()); }
   ledsBegin();
+  soundBegin();
+  loadSettings();
+  lastInput = millis();
+  page = cfg.home == "today" ? TODAY : DAEMON;   // C-42: it starts at home
   draw();
 }
 
@@ -717,6 +775,11 @@ void loop() {
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
   askForArt();
   ledsLoop();
+  // C-42: any menu, left alone, goes to sleep; waking lands at home
+  if (!asleep && cfg.sleepAfter > 0 && now - lastInput > (uint32_t)cfg.sleepAfter * 1000) sleepNow();
+  // the daemon at home is alive: redraw it a few times a second
+  static uint32_t lifeAt = 0;
+  if (!asleep && screen == HOME && page == DAEMON && st.carrying && now - lifeAt > 90) { lifeAt = now; dirty = true; }
   if (dirty && !asleep) draw();
   delay(1);
 }

@@ -361,6 +361,52 @@ type Link = { linked: boolean; via: "usb" | "wifi" | null; lastSeen: string | nu
 type IrCode = { label: string; protocol: string; code: string; bits: number; repeat: number };
 type Brand = { brand: string; codes: IrCode[] };
 
+// C-43: the board's settings live here, not on the board: it picks them up whenever it is linked.
+type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number };
+
+function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
+  return (
+    <XStack gap={6} flexWrap="wrap">
+      {options.map(([v, label]) => (
+        <YStack key={String(v)} role="button" cursor="pointer" borderRadius={3} paddingHorizontal={12} paddingVertical={6}
+                borderWidth={1} borderColor={v === value ? "$color9" : "$color6"} backgroundColor={v === value ? "$color9" : "$color1"}
+                hoverStyle={{ borderColor: "$color9" }} onPress={() => onPick(v)}>
+          <Text fontSize={13} fontWeight={v === value ? "700" : "400"} color={v === value ? ink : "$color12"}>{label}</Text>
+        </YStack>
+      ))}
+    </XStack>
+  );
+}
+
+function DeviceSettingsCard({ ink }: { ink: string }) {
+  const [s, setS] = useState<DeviceSettings | null>(null);
+  useEffect(() => { api<DeviceSettings>("/api/device/settings").then(setS).catch(() => {}); }, []);
+  if (!s) return null;
+  const set = async (patch: Partial<DeviceSettings>) => setS(await api<DeviceSettings>("/api/device/settings", patch));
+  const Row = (p: { label: string; children: React.ReactNode }) =>
+    <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
+  return (
+    <Card>
+      <Eyebrow>ITS SETTINGS</Eyebrow>
+      <Small>Set here and carried to the board the next time it is linked; it keeps them when it is not.</Small>
+      <Row label="HOME, WHERE IT WAKES">
+        <Choice<DeviceSettings["home"]> value={s.home} options={[["daemon", "The daemon"], ["today", "Today's step"]]} onPick={(home) => set({ home })} ink={ink} />
+      </Row>
+      <Row label="SLEEP WHEN LEFT ALONE">
+        <Choice value={s.sleepAfter} options={[[30, "30 s"], [60, "1 min"], [120, "2 min"], [300, "5 min"], [0, "Never"]]}
+                onPick={(sleepAfter) => set({ sleepAfter })} ink={ink} />
+      </Row>
+      <Row label="SOUND">
+        <Choice value={s.sound ? s.volume : 0} options={[[0, "Off"], [20, "Quiet"], [40, "Middle"], [70, "Loud"]]}
+                onPick={(v) => set(v === 0 ? { sound: false } : { sound: true, volume: v })} ink={ink} />
+      </Row>
+      <Row label="THE RING AT REST">
+        <Choice value={s.ring} options={[[0, "Off"], [15, "Dim"], [33, "A third"], [60, "Bright"]]} onPick={(ring) => set({ ring })} ink={ink} />
+      </Row>
+    </Card>
+  );
+}
+
 function Result({ link, id }: { link: Link; id: number | null }) {
   if (id == null) return null;
   const r = link.results.find((x) => x.id === id);
@@ -419,6 +465,8 @@ function DeviceScreen({ ink }: { ink: string }) {
           <Result link={link} id={ran} />
         </Card>
       ) : null}
+
+      <DeviceSettingsCard ink={ink} />
 
       <Card>
         <Eyebrow>FLARE WITHOUT THE REMOTE</Eyebrow>

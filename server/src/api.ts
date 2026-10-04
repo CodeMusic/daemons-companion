@@ -114,6 +114,24 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup };
 }
 
+// C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
+// that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
+export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33 };
+export type DeviceSettings = typeof DEVICE_SETTINGS;
+export function deviceSettings(store: Store): DeviceSettings {
+  try { return { ...DEVICE_SETTINGS, ...JSON.parse(store.getSetting("device") ?? "{}") }; }
+  catch { return { ...DEVICE_SETTINGS }; }
+}
+function checkSettings(b: any): DeviceSettings | string {
+  const s = { ...DEVICE_SETTINGS, ...b };
+  if (!["daemon", "today"].includes(s.home)) return "home is daemon or today";
+  if (!Number.isInteger(s.sleepAfter) || s.sleepAfter < 0 || s.sleepAfter > 3600) return "sleepAfter is 0 (never) to 3600 seconds";
+  if (typeof s.sound !== "boolean") return "sound is on or off";
+  if (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100) return "volume is 0 to 100";
+  if (!Number.isInteger(s.ring) || s.ring < 0 || s.ring > 100) return "ring is 0 to 100";
+  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring };
+}
+
 // C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
 // one document and pushes the steps ticked off on it. Its daemon is the party's AWAY one -- sending a daemon in the game
 // is what puts it on the device. Its mood is C-13's, whose rules are open, so it is null until they are written. This
@@ -146,6 +164,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
   return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
+           settings: deviceSettings(store),
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue, menu: dd.menu, led: dd.led },
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal } : null, daemon };
 }
@@ -254,6 +273,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const addr = lanAddress();
         return send(res, 200, { id: hub.send({ type: "wifi", ssid: b.ssid, password: b.password,
                                                server: addr ? `http://${addr}:${cfg.port}` : "" }) });
+      }
+      if (req.method === "GET" && path === "/api/device/settings") return send(res, 200, deviceSettings(store));   // C-43
+      if (req.method === "POST" && path === "/api/device/settings") {
+        const s = checkSettings({ ...deviceSettings(store), ...(await body(req)) });
+        if (typeof s === "string") return send(res, 400, { error: s });
+        store.setSetting("device", JSON.stringify(s));
+        return send(res, 200, s);
       }
       if (req.method === "GET" && path === "/api/ir/brands") return send(res, 200, irPowerJson.brands);   // C-34
       if (req.method === "POST" && path === "/api/device/ir") {     // C-34: one IR code, sent (and kept if asked)

@@ -42,79 +42,117 @@ only keep the list, it walks beside you through it. Three pieces and a game:
 
 ## 3. The daemon you carry (the link to DAEMONS)
 
-**Decided by the user, 2026-10-03** (DAEMONS T-358 is the game's side):
+**Decided by the user, 2026-10-03, and reshaped 2026-10-04** (DAEMONS T-358 and T-370 are the game's side):
 
-- **Sending is started in the game.** A daemon in the party has an option to go to the device. The game **saves**
-  and tells the player to open their save in the app. In the app, **"receive daemon"** reads the save, **checks that
-  daemon is in the active party and matches**, and only then writes **AWAY** into the save and takes the daemon.
-- **Coming home is the same, reversed.** With an away daemon in the party, its option starts the return: the game
-  saves, and the app's **"send daemon"** checks the daemon is in the party and matches, clears AWAY, and writes back
-  what it brought home (its friendship).
-- **While AWAY**: its sprites are **washed out** everywhere (party, PORT, summary), so the player always knows it is
-  on the device. It **cannot battle, be traded or be released.** It **can be deposited in the PORT and withdrawn**, so
-  the player can still play with six fighting daemons.
-- **What comes home: friendship**, built by the steps finished with it and the others it met (section 9). The site is
-  gamified in the game's own look, so carrying a daemon feels part of the game.
+- **One daemon at a time.** The companion carries one daemon. The game will not offer SEND while one is AWAY or
+  asked for, and the app refuses a second.
+- **One button in the app: SYNC.** It reads the save and brings everything across -- the trainer, the INDEX, the
+  party (section 6, the PROFILE in section 5). **If the game is waiting to send a daemon, the same button receives
+  it; if it is waiting to call one home, the same button returns it.** Otherwise it only syncs. There is no separate
+  "receive" or "send" to choose between.
+- **SEND appears in the game only after the first SYNC.** The app writes a flag into the save the first time it
+  syncs it, and the game shows SEND (and the people on the CHECKPOINT's second floor talk about the companion) only
+  once that flag is set. A player who never uses the companion never sees it.
+- **Sending starts in the game.** A party daemon's menu offers SEND; the game **saves** and tells the player to open
+  the save in the app. SYNC checks the daemon is in the active party and matches, writes **AWAY**, and takes it.
+- **Coming home is the same, reversed**, and brings back the friendship it built.
+- **The emergency way home, without the app.** So a daemon is never stuck in limbo when the app is out of reach, the
+  game also offers to bring an AWAY daemon home **on its own**. It warns first: the companion still thinks it is
+  out, so **to send another, release it in the app** -- and the next SYNC sees it home and settles both sides anyway.
+- **The app is married to one save.** The first save it syncs is *its* game, known by the trainer's ID and secret ID
+  (which never change) and the trainer's name. **Load a different save and the app says so** -- this belongs to a
+  different game. It will still sync it and show that save's data, but **a daemon carried for the first game can
+  only go home to the first game's save.** That stops a daemon received from one save being returned into another.
+- **While AWAY**: washed out everywhere in the game (party, PORT, summary); it **cannot battle, be traded or be
+  released**; it **can** go into the PORT and come back out.
+- **What comes home: friendship**, built by the steps finished with it and the others it met (section 9).
 
 **How it works:**
 
 - **Which daemon it is**: a Gen 3 daemon is identified by its *personality value* and *original trainer ID*
   together, which never change -- the server keys on those, never on a party slot.
 - **Where the marks live in the save**: every daemon's record has **four unused bits** in its flags byte (beside *is
-  egg* and *bad egg*; `struct BoxPokemon`'s `unused:4`), outside the part the game checksums. Two of them carry the
-  link: **AWAY**, and **ASKED** (the game's half of a send or a return, waiting for the app). They travel with the
-  daemon through the PORT, because the whole record moves.
+  egg* and *bad egg*; `struct BoxPokemon`'s `unused:4`). Two of them carry the link: **AWAY**, and **ASKED** (the
+  game's half of a send or a return, waiting for the app). They travel with the daemon through the PORT.
 - **Editing the save safely**: Gen 3 keeps **two copies** of the save and uses the newer valid one; the writer edits
-  that one, recomputes its section checksums, reads it back to validate, and **always keeps a backup**. The game must
-  be **closed** while the save is edited (an emulator: quit it; an EZ-Flash: copy the `.sav` to the computer, edit,
-  copy back). *The DAEMONS rule stands: development never touches the user's own save -- tests run on copies.*
+  that one, recomputes its section checksums, reads it back, and **always keeps a backup**. The game must be
+  **closed** while the save is edited. *Development never touches the user's own save -- tests run on copies.*
 - **No duplicates**: the save keeps the daemon (the master copy); the device holds its picture, its INDEX entry and
-  its life (section 7). The server refuses to send one daemon twice.
+  its life (section 7).
 
-**Still OPEN:** the option's name in the game's register (to send, and to call home).
+**Still OPEN:** the menu's words (SEND, CALL HOME, STAY and the messages are drafts in the game).
 
 ## 4. The devices
 
-- **The handheld, ESP32-S3** -- RoverCodeBase's pins match the **LilyGO T-Embed CC1101** pin for pin (ST7789 170x320,
-  encoder, 8 WS2812s, PN532 NFC, BQ25896 charger, CC1101, SD, IR, I2S audio) -- but its `platformio.ini` targets
-  `esp32dev`, the classic ESP32, and it does not build from a fresh clone (docs/INHERITANCE.md). *OPEN: is the
-  T-Embed CC1101 the board in hand?* Its brain-region layout (AuditoryCortex, PrefrontalCortex, VisualCortex...) is kept; the
-  first firmware job is a clean build of RoverCodeBase's skeleton on the S3, then the daemon and the step on screen,
-  then sync.
-- **The Pi Zero device** -- the one with a screen is **RoverRevival** (The RoverVerse): a Pi Zero 2 W with a Waveshare
-  1.44" 128x128 LCD and a joystick, and the real pet model (happiness, hunger, energy). RoverCub (no screen: an LED
-  grid and push-to-talk) has the voice assistant; RoverOSpi is config, not an app.
-  Python means the save reader and the step logic can be shared code. *OPEN: which Pi Zero board and screen?*
-- **Both speak the same small sync protocol** to the server (HTTP + JSON over Wi-Fi to start: pull today's step and
-  the daemon's picture and mood, push ticks). RoverSeer was going to be Redmine-backed; this server takes its role
-  without Redmine, and can import from it later if wanted.
+- **The handheld: the LilyGO T-Embed CC1101** (the user, 2026-10-04: the board in hand) -- ESP32-S3, ST7789 170x320,
+  an encoder, 8 WS2812s, PN532 NFC, a BQ25896 charger, CC1101, SD, IR, I2S audio. RoverCodeBase's pins match it, but its
+  `platformio.ini` targets `esp32dev` and does not build from a fresh clone (docs/INHERITANCE.md), so the firmware
+  starts clean for the S3, keeping RoverCodeBase's brain-region layout where it helps: first the day, the step and
+  the daemon on screen over Wi-Fi, then ticking a step off with the encoder. *Whether it can count steps (an
+  accelerometer) is to be checked on the board.*
+- **The Pi Zero device: a Pi Zero 2 W** (the user, 2026-10-04). *OPEN: which screen* (RoverRevival used a Waveshare
+  1.44" 128x128 LCD with a joystick). Python means the save reader and the step logic can be shared code.
+- **A phone can be the device too** (the user, 2026-10-04): the app on iOS and Android carries the daemon and finds
+  others nearby over Bluetooth, so anyone can take part without the hardware -- and keep the same daemon if they get
+  a device later.
+- **All of them speak the same small sync protocol** to the server (HTTP + JSON over Wi-Fi: pull the day, the step
+  and the daemon; push ticks). The server listens on this machine only until a device needs it; then it listens on
+  the local network, with nothing secret on it.
+- **Wi-Fi credentials never go in the repo** -- a local, ignored file on the device's side, set at flashing.
 
 ## 5. The app
 
 **Expo / React Native** (the user, 2026-10-03): one TypeScript codebase, running as a **local site** first and built
-to **iOS** later. Screens to start: **Today** (the day's colour, note, virtue; the one step), **Goals** (add one, let
-the AI break it down, edit), **Daemon** (open a save, see the party, send one, see who is away), **Devices** (pair,
-last sync).
+to **iOS** later. **Tamagui** for its components and themes (the user, 2026-10-04): the day's colour themes the
+whole app, as the device is themed. *One (onestack.dev) was weighed the same day and left for now: its strengths --
+a server-rendered site, a sync engine for many users -- belong to C-11. OPEN until then: whether to move to it.*
+
+Screens:
+
+- **Today** -- the day's colour, note and virtue; the season; the one next step.
+- **Goals** -- add one, let the AI break it down, edit, tick steps off.
+- **Daemon** -- the party, who is away, and **SYNC** (section 3).
+- **INDEX** -- the save's INDEX, as the game keeps it (section 6).
+- **Profile** -- whichever save was synced: the trainer's name, play time, daemons seen and bound, MARKS, and how far
+  the game has gone; and whether this save is the one the app is married to.
+- **Devices** -- pair, last sync.
 
 ## 6. Every daemon carries its INDEX entry
 
 The device shows the daemon's **INDEX entry** -- its category and its entry in **its own edition's voice** (CONTENT's
 for a CONTENT save, CONTEXT's for a CONTEXT one), exported from DAEMONS with the rest (C-03).
 
-## 7. The daemon's life (the user, 2026-10-03)
+**The app has the INDEX too** (the user, 2026-10-04): **it reflects the synced save's own INDEX** -- the daemons seen
+and bound, shown as the game shows them -- so the app and the device read the same entries. **If the save holds OPUS,
+the app shows OPUS's margins beside each entry it has** (the page is wide enough for both).
+
+**The words always match the game's.** INDEX entries and margins change as the game is written, so the export
+carries them (DAEMONS `tools/companion_export.py`), and **a check fails whenever the companion's copy differs from
+what the game is built from** -- run in DAEMONS' push routine, so a release never ships words the companion does not
+have.
+
+## 7. The daemon's life (the user, 2026-10-03; the base rules 2026-10-04)
 
 A daemon on the device has **state, with many variables**, each from something real:
 
 | | moves with |
 |---|---|
-| **fed** | feeding it -- it gets hungry over the day |
-| **trained** | training it |
+| **fed** | feeding it -- **three meals a day**, which is also a cue for you to eat |
+| **watered** | giving it water, the same way |
+| **trained** | training it -- for now, choosing TRAIN; later small games shaped like your own tasks (matching socks when the laundry is waiting) |
+| **active** | anything it can notice without being asked -- **your steps**, where the device can count them -- satisfies it as training does |
 | **mood** | how you interact with it, and the steps you finish |
-| **friendship** | the steps finished with it, and the others it meets over radio (section 9) -- this is what goes home |
+| **friendship** | the steps finished with it, and the others it meets nearby (section 9) -- this is what goes home |
 | **tired** | the real hour: it is tired at night |
 | **season** | the real date, in **its edition's hemisphere** (section 8) |
 
-*OPEN: the exact rules (how fast hunger rises, what training does, how a missed day lands -- tired, never ruined).*
+**It must never pester you** (the user's rule). You should not have to babysit it:
+
+- **Small effects.** Missing a meal or a session costs a little, never much.
+- **Interaction makes it happier and calmer**; that is the reward, not a penalty avoided.
+- **A day with no interaction at all makes it a little less happy** -- each such day a little more -- **and any
+  interaction brings it back quickly.**
+- **It never nags.** A meal time can be a gentle cue on the screen; nothing repeats, buzzes or escalates.
 
 ## 8. Seasons, by edition (the user, 2026-10-03)
 
@@ -123,14 +161,16 @@ CONTENT and **summer** for CONTEXT; CONTEXT's autumn is CONTENT's spring, and so
 day: CONTENT is the calendar as lived where the game is made, CONTEXT the same date reframed -- DAEMONS vision 9.21.)* The device uses the season of
 the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's season is the same in both places.
 
-## 9. Meeting others (the device's radio)
+## 9. Meeting others nearby
 
-- **Passing someone else carrying a device** is an event: **your INDEX "sees" their daemon** -- written into your
+- **Passing someone else carrying a daemon** is an event: **your INDEX "sees" their daemon** -- written into your
   save as *seen* at the next sync -- and **your daemon's friendship grows**.
-- **The radio**: the T-Embed's CC1101 is sub-GHz FSK, not LoRa, and no RoverRadio code ever drove it (RadioLib is
-  listed, never included). LoRa needs an SX126x/SX127x radio -- the only LoRa in the old work is an M5 LoRa433 module
-  (RoverOS_rSeries). RadioLib drives both kinds. *OPEN: which radio the chosen board carries -- a CC1101 can find nearby units, but LoRa reaches far
-  and is what the mesh wants.*
+- **Bluetooth first** (the user, 2026-10-04): the T-Embed's ESP32-S3, the Pi Zero 2 W and every phone all speak
+  Bluetooth Low Energy, so it is the one radio that lets every kind of companion find every other. A short, slow
+  advertising beacon and an occasional scan keep it light on power.
+- **LoRa and the mesh are later** (C-16): a mesh would pass messages through every unit, so a daemon could be known to
+  be in the mesh though out of radio range. The T-Embed also carries a CC1101 (sub-GHz), which RadioLib can drive;
+  it is kept for that later work.
 
 ## 10. Later, by design
 

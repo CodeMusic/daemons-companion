@@ -14,7 +14,9 @@
   "art": {
    "front": "gfx/daemons/rovercub_front.png",
    "back": "gfx/daemons/rovercub_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "2": {
   "constant": "IVYSAUR",
@@ -31,7 +33,9 @@
   "art": {
    "front": "gfx/daemons/roverseer_front.png",
    "back": "gfx/daemons/roverseer_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "3": {
   "constant": "VENUSAUR",
@@ -49,7 +53,9 @@
   "art": {
    "front": "gfx/daemons/roverbyte_front.png",
    "back": "gfx/daemons/roverbyte_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "4": {
   "constant": "CHARMANDER",
@@ -66,7 +72,9 @@
   "art": {
    "front": "gfx/daemons/label_front.png",
    "back": "gfx/daemons/label_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "5": {
   "constant": "CHARMELEON",
@@ -83,7 +91,9 @@
   "art": {
    "front": "gfx/daemons/rubric_front.png",
    "back": "gfx/daemons/rubric_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "6": {
   "constant": "CHARIZARD",
@@ -101,7 +111,9 @@
   "art": {
    "front": "gfx/daemons/canon_front.png",
    "back": "gfx/daemons/canon_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "7": {
   "constant": "SQUIRTLE",
@@ -118,7 +130,9 @@
   "art": {
    "front": "gfx/daemons/cluster_front.png",
    "back": "gfx/daemons/cluster_back.png"
-  }
+  },
+  "bodyType": 2,
+  "streaks": true
  },
  "8": {
   "constant": "WARTORTLE",
@@ -135,7 +149,9 @@
   "art": {
    "front": "gfx/daemons/locus_front.png",
    "back": "gfx/daemons/locus_back.png"
-  }
+  },
+  "bodyType": 2,
+  "streaks": true
  },
  "9": {
   "constant": "BLASTOISE",
@@ -153,7 +169,9 @@
   "art": {
    "front": "gfx/daemons/manifold_front.png",
    "back": "gfx/daemons/manifold_back.png"
-  }
+  },
+  "bodyType": 2,
+  "streaks": true
  },
  "10": {
   "constant": "CATERPIE",
@@ -170,7 +188,9 @@
   "art": {
    "front": "gfx/daemons/crawler_front.png",
    "back": "gfx/daemons/crawler_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "11": {
   "constant": "METAPOD",
@@ -187,7 +207,9 @@
   "art": {
    "front": "gfx/daemons/pending_front.png",
    "back": "gfx/daemons/pending_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "12": {
   "constant": "BUTTERFREE",
@@ -205,7 +227,9 @@
   "art": {
    "front": "gfx/daemons/indexer_front.png",
    "back": "gfx/daemons/indexer_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "13": {
   "constant": "WEEDLE",
@@ -223,7 +247,9 @@
   "art": {
    "front": "gfx/daemons/scraper_front.png",
    "back": "gfx/daemons/scraper_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "14": {
   "constant": "KAKUNA",
@@ -241,7 +267,9 @@
   "art": {
    "front": "gfx/daemons/buffer_front.png",
    "back": "gfx/daemons/buffer_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "15": {
   "constant": "BEEDRILL",
@@ -259,7 +287,9 @@
   "art": {
    "front": "gfx/daemons/injector_front.png",
    "back": "gfx/daemons/injector_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "16": {
   "constant": "PIDGEY",
@@ -277,7 +307,9 @@
   "art": {
    "front": "gfx/daemons/packet_front.png",
    "back": "gfx/daemons/packet_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "17": {
   "constant": "PIDGEOTTO",
@@ -295,7 +327,9 @@
   "art": {
    "front": "gfx/daemons/relay_front.png",
    "back": "gfx/daemons/relay_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "18": {
   "constant": "PIDGEOT",
@@ -313,7 +347,9 @@
   "art": {
    "front": "gfx/daemons/broadcast_front.png",
    "back": "gfx/daemons/broadcast_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "19": {
   "constant": "RATTATA",
@@ -330,7 +366,9 @@
   "art": {
    "front": "gfx/daemons/nibble_front.png",
    "back": "gfx/daemons/nibble_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "20": {
   "constant": "RATICATE",
@@ -347,7 +385,9 @@
   "art": {
    "front": "gfx/daemons/overflow_front.png",
    "back": "gfx/daemons/overflow_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "21": {
   "constant": "SPEAROW",
@@ -365,7 +405,9 @@
   "art": {
    "front": "gfx/daemons/ping_front.png",
    "back": "gfx/daemons/ping_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "22": {
   "constant": "FEAROW",
@@ -383,7 +425,9 @@
   "art": {
    "front": "gfx/daemons/flood_front.png",
    "back": "gfx/daemons/flood_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "23": {
   "constant": "EKANS",
@@ -400,7 +444,9 @@
   "art": {
    "front": "gfx/daemons/worm_front.png",
    "back": "gfx/daemons/worm_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "24": {
   "constant": "ARBOK",
@@ -417,7 +463,9 @@
   "art": {
    "front": "gfx/daemons/outbreak_front.png",
    "back": "gfx/daemons/outbreak_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "25": {
   "constant": "PIKACHU",
@@ -434,7 +482,9 @@
   "art": {
    "front": "gfx/daemons/spike_front.png",
    "back": "gfx/daemons/spike_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "26": {
   "constant": "RAICHU",
@@ -451,7 +501,9 @@
   "art": {
    "front": "gfx/daemons/surge_front.png",
    "back": "gfx/daemons/surge_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "27": {
   "constant": "SANDSHREW",
@@ -468,7 +520,9 @@
   "art": {
    "front": "gfx/daemons/sector_front.png",
    "back": "gfx/daemons/sector_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "28": {
   "constant": "SANDSLASH",
@@ -485,7 +539,9 @@
   "art": {
    "front": "gfx/daemons/partition_front.png",
    "back": "gfx/daemons/partition_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "29": {
   "constant": "NIDORAN_F",
@@ -502,7 +558,9 @@
   "art": {
    "front": "gfx/daemons/fork_front.png",
    "back": "gfx/daemons/fork_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "30": {
   "constant": "NIDORINA",
@@ -519,7 +577,9 @@
   "art": {
    "front": "gfx/daemons/thread_front.png",
    "back": "gfx/daemons/thread_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "31": {
   "constant": "NIDOQUEEN",
@@ -537,7 +597,9 @@
   "art": {
    "front": "gfx/daemons/scheduler_front.png",
    "back": "gfx/daemons/scheduler_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "32": {
   "constant": "NIDORAN_M",
@@ -554,7 +616,9 @@
   "art": {
    "front": "gfx/daemons/branch_front.png",
    "back": "gfx/daemons/branch_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "33": {
   "constant": "NIDORINO",
@@ -571,7 +635,9 @@
   "art": {
    "front": "gfx/daemons/predictor_front.png",
    "back": "gfx/daemons/predictor_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "34": {
   "constant": "NIDOKING",
@@ -589,7 +655,9 @@
   "art": {
    "front": "gfx/daemons/pipeline_front.png",
    "back": "gfx/daemons/pipeline_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "35": {
   "constant": "CLEFAIRY",
@@ -606,7 +674,9 @@
   "art": {
    "front": "gfx/daemons/anomaly_front.png",
    "back": "gfx/daemons/anomaly_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "36": {
   "constant": "CLEFABLE",
@@ -623,7 +693,9 @@
   "art": {
    "front": "gfx/daemons/outlier_front.png",
    "back": "gfx/daemons/outlier_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "37": {
   "constant": "VULPIX",
@@ -640,7 +712,9 @@
   "art": {
    "front": "gfx/daemons/flicker_front.png",
    "back": "gfx/daemons/flicker_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "38": {
   "constant": "NINETALES",
@@ -657,7 +731,9 @@
   "art": {
    "front": "gfx/daemons/overrun_front.png",
    "back": "gfx/daemons/overrun_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "39": {
   "constant": "JIGGLYPUFF",
@@ -674,7 +750,9 @@
   "art": {
    "front": "gfx/daemons/suspend_front.png",
    "back": "gfx/daemons/suspend_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "40": {
   "constant": "WIGGLYTUFF",
@@ -691,7 +769,9 @@
   "art": {
    "front": "gfx/daemons/hibernate_front.png",
    "back": "gfx/daemons/hibernate_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "41": {
   "constant": "ZUBAT",
@@ -709,7 +789,9 @@
   "art": {
    "front": "gfx/daemons/echo_front.png",
    "back": "gfx/daemons/echo_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "42": {
   "constant": "GOLBAT",
@@ -727,7 +809,9 @@
   "art": {
    "front": "gfx/daemons/tracer_front.png",
    "back": "gfx/daemons/tracer_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "43": {
   "constant": "ODDISH",
@@ -745,7 +829,9 @@
   "art": {
    "front": "gfx/daemons/sprawl_front.png",
    "back": "gfx/daemons/sprawl_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "44": {
   "constant": "GLOOM",
@@ -763,7 +849,9 @@
   "art": {
    "front": "gfx/daemons/skew_front.png",
    "back": "gfx/daemons/skew_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "45": {
   "constant": "VILEPLUME",
@@ -781,7 +869,9 @@
   "art": {
    "front": "gfx/daemons/badseed_front.png",
    "back": "gfx/daemons/badseed_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "46": {
   "constant": "PARAS",
@@ -799,7 +889,9 @@
   "art": {
    "front": "gfx/daemons/payload_front.png",
    "back": "gfx/daemons/payload_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "47": {
   "constant": "PARASECT",
@@ -817,7 +909,9 @@
   "art": {
    "front": "gfx/daemons/rootkit_front.png",
    "back": "gfx/daemons/rootkit_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "48": {
   "constant": "VENONAT",
@@ -835,7 +929,9 @@
   "art": {
    "front": "gfx/daemons/resident_front.png",
    "back": "gfx/daemons/resident_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "49": {
   "constant": "VENOMOTH",
@@ -853,7 +949,9 @@
   "art": {
    "front": "gfx/daemons/spyware_front.png",
    "back": "gfx/daemons/spyware_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "50": {
   "constant": "DIGLETT",
@@ -870,7 +968,9 @@
   "art": {
    "front": "gfx/daemons/tappoint_front.png",
    "back": "gfx/daemons/tappoint_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "51": {
   "constant": "DUGTRIO",
@@ -887,7 +987,9 @@
   "art": {
    "front": "gfx/daemons/wiretap_front.png",
    "back": "gfx/daemons/wiretap_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "52": {
   "constant": "MEOWTH",
@@ -904,7 +1006,9 @@
   "art": {
    "front": "gfx/daemons/cookie_front.png",
    "back": "gfx/daemons/cookie_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "53": {
   "constant": "PERSIAN",
@@ -921,7 +1025,9 @@
   "art": {
    "front": "gfx/daemons/tracker_front.png",
    "back": "gfx/daemons/tracker_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "54": {
   "constant": "PSYDUCK",
@@ -938,7 +1044,9 @@
   "art": {
    "front": "gfx/daemons/fault_front.png",
    "back": "gfx/daemons/fault_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "55": {
   "constant": "GOLDUCK",
@@ -955,7 +1063,9 @@
   "art": {
    "front": "gfx/daemons/handler_front.png",
    "back": "gfx/daemons/handler_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "56": {
   "constant": "MANKEY",
@@ -972,7 +1082,9 @@
   "art": {
    "front": "gfx/daemons/preempt_front.png",
    "back": "gfx/daemons/preempt_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "57": {
   "constant": "PRIMEAPE",
@@ -989,7 +1101,9 @@
   "art": {
    "front": "gfx/daemons/livelock_front.png",
    "back": "gfx/daemons/livelock_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "58": {
   "constant": "GROWLITHE",
@@ -1006,7 +1120,9 @@
   "art": {
    "front": "gfx/daemons/sentry_front.png",
    "back": "gfx/daemons/sentry_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "59": {
   "constant": "ARCANINE",
@@ -1023,7 +1139,9 @@
   "art": {
    "front": "gfx/daemons/guardian_front.png",
    "back": "gfx/daemons/guardian_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "60": {
   "constant": "POLIWAG",
@@ -1040,7 +1158,9 @@
   "art": {
    "front": "gfx/daemons/loop_front.png",
    "back": "gfx/daemons/loop_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "61": {
   "constant": "POLIWHIRL",
@@ -1057,7 +1177,9 @@
   "art": {
    "front": "gfx/daemons/spinlock_front.png",
    "back": "gfx/daemons/spinlock_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "62": {
   "constant": "POLIWRATH",
@@ -1075,7 +1197,9 @@
   "art": {
    "front": "gfx/daemons/mutex_front.png",
    "back": "gfx/daemons/mutex_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "63": {
   "constant": "ABRA",
@@ -1092,7 +1216,9 @@
   "art": {
    "front": "gfx/daemons/hunch_front.png",
    "back": "gfx/daemons/hunch_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "64": {
   "constant": "KADABRA",
@@ -1109,7 +1235,9 @@
   "art": {
    "front": "gfx/daemons/inference_front.png",
    "back": "gfx/daemons/inference_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "65": {
   "constant": "ALAKAZAM",
@@ -1126,7 +1254,9 @@
   "art": {
    "front": "gfx/daemons/conjecture_front.png",
    "back": "gfx/daemons/conjecture_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "66": {
   "constant": "MACHOP",
@@ -1143,7 +1273,9 @@
   "art": {
    "front": "gfx/daemons/proof_front.png",
    "back": "gfx/daemons/proof_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "67": {
   "constant": "MACHOKE",
@@ -1160,7 +1292,9 @@
   "art": {
    "front": "gfx/daemons/theorem_front.png",
    "back": "gfx/daemons/theorem_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "68": {
   "constant": "MACHAMP",
@@ -1177,7 +1311,9 @@
   "art": {
    "front": "gfx/daemons/lemma_mind_front.png",
    "back": "gfx/daemons/lemma_mind_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "69": {
   "constant": "BELLSPROUT",
@@ -1195,7 +1331,9 @@
   "art": {
    "front": "gfx/daemons/snare_front.png",
    "back": "gfx/daemons/snare_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "70": {
   "constant": "WEEPINBELL",
@@ -1213,7 +1351,9 @@
   "art": {
    "front": "gfx/daemons/honeypot_front.png",
    "back": "gfx/daemons/honeypot_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "71": {
   "constant": "VICTREEBEL",
@@ -1231,7 +1371,9 @@
   "art": {
    "front": "gfx/daemons/tarpit_front.png",
    "back": "gfx/daemons/tarpit_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "72": {
   "constant": "TENTACOOL",
@@ -1249,7 +1391,9 @@
   "art": {
    "front": "gfx/daemons/driftnet_front.png",
    "back": "gfx/daemons/driftnet_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "73": {
   "constant": "TENTACRUEL",
@@ -1267,7 +1411,9 @@
   "art": {
    "front": "gfx/daemons/dragnet_front.png",
    "back": "gfx/daemons/dragnet_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "74": {
   "constant": "GEODUDE",
@@ -1285,7 +1431,9 @@
   "art": {
    "front": "gfx/daemons/heap_front.png",
    "back": "gfx/daemons/heap_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "75": {
   "constant": "GRAVELER",
@@ -1303,7 +1451,9 @@
   "art": {
    "front": "gfx/daemons/stack_front.png",
    "back": "gfx/daemons/stack_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "76": {
   "constant": "GOLEM",
@@ -1321,7 +1471,9 @@
   "art": {
    "front": "gfx/daemons/monolith_front.png",
    "back": "gfx/daemons/monolith_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "77": {
   "constant": "PONYTA",
@@ -1338,7 +1490,9 @@
   "art": {
    "front": "gfx/daemons/hotpath_front.png",
    "back": "gfx/daemons/hotpath_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "78": {
   "constant": "RAPIDASH",
@@ -1355,7 +1509,9 @@
   "art": {
    "front": "gfx/daemons/overdrive_front.png",
    "back": "gfx/daemons/overdrive_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "79": {
   "constant": "SLOWPOKE",
@@ -1373,7 +1529,9 @@
   "art": {
    "front": "gfx/daemons/latency_front.png",
    "back": "gfx/daemons/latency_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "80": {
   "constant": "SLOWBRO",
@@ -1391,7 +1549,9 @@
   "art": {
    "front": "gfx/daemons/shell_front.png",
    "back": "gfx/daemons/shell_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "81": {
   "constant": "MAGNEMITE",
@@ -1409,7 +1569,9 @@
   "art": {
    "front": "gfx/daemons/sentinel_front.png",
    "back": "gfx/daemons/sentinel_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "82": {
   "constant": "MAGNETON",
@@ -1427,7 +1589,9 @@
   "art": {
    "front": "gfx/daemons/quorum_front.png",
    "back": "gfx/daemons/quorum_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "83": {
   "constant": "FARFETCHD",
@@ -1445,7 +1609,9 @@
   "art": {
    "front": "gfx/daemons/edgecase_front.png",
    "back": "gfx/daemons/edgecase_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "84": {
   "constant": "DODUO",
@@ -1463,7 +1629,9 @@
   "art": {
    "front": "gfx/daemons/dualcore_front.png",
    "back": "gfx/daemons/dualcore_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "85": {
   "constant": "DODRIO",
@@ -1481,7 +1649,9 @@
   "art": {
    "front": "gfx/daemons/triplecore_front.png",
    "back": "gfx/daemons/triplecore_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "86": {
   "constant": "SEEL",
@@ -1498,7 +1668,9 @@
   "art": {
    "front": "gfx/daemons/heatsink_front.png",
    "back": "gfx/daemons/heatsink_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "87": {
   "constant": "DEWGONG",
@@ -1516,7 +1688,9 @@
   "art": {
    "front": "gfx/daemons/archiver_front.png",
    "back": "gfx/daemons/archiver_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "88": {
   "constant": "GRIMER",
@@ -1533,7 +1707,9 @@
   "art": {
    "front": "gfx/daemons/deadletter_front.png",
    "back": "gfx/daemons/deadletter_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "89": {
   "constant": "MUK",
@@ -1550,7 +1726,9 @@
   "art": {
    "front": "gfx/daemons/landfill_front.png",
    "back": "gfx/daemons/landfill_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "90": {
   "constant": "SHELLDER",
@@ -1567,7 +1745,9 @@
   "art": {
    "front": "gfx/daemons/capsule_front.png",
    "back": "gfx/daemons/capsule_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "91": {
   "constant": "CLOYSTER",
@@ -1585,7 +1765,9 @@
   "art": {
    "front": "gfx/daemons/coldvault_front.png",
    "back": "gfx/daemons/coldvault_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "92": {
   "constant": "GASTLY",
@@ -1603,7 +1785,9 @@
   "art": {
    "front": "gfx/daemons/dangling_front.png",
    "back": "gfx/daemons/dangling_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "93": {
   "constant": "HAUNTER",
@@ -1621,7 +1805,9 @@
   "art": {
    "front": "gfx/daemons/respawn_front.png",
    "back": "gfx/daemons/respawn_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "94": {
   "constant": "GENGAR",
@@ -1639,7 +1825,9 @@
   "art": {
    "front": "gfx/daemons/hauntproc_front.png",
    "back": "gfx/daemons/hauntproc_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "95": {
   "constant": "ONIX",
@@ -1657,7 +1845,9 @@
   "art": {
    "front": "gfx/daemons/backbone_front.png",
    "back": "gfx/daemons/backbone_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "96": {
   "constant": "DROWZEE",
@@ -1674,7 +1864,9 @@
   "art": {
    "front": "gfx/daemons/lull_front.png",
    "back": "gfx/daemons/lull_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "97": {
   "constant": "HYPNO",
@@ -1691,7 +1883,9 @@
   "art": {
    "front": "gfx/daemons/busywait_front.png",
    "back": "gfx/daemons/busywait_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "98": {
   "constant": "KRABBY",
@@ -1708,7 +1902,9 @@
   "art": {
    "front": "gfx/daemons/acquire_front.png",
    "back": "gfx/daemons/acquire_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "99": {
   "constant": "KINGLER",
@@ -1725,7 +1921,9 @@
   "art": {
    "front": "gfx/daemons/lockup_front.png",
    "back": "gfx/daemons/lockup_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "100": {
   "constant": "VOLTORB",
@@ -1742,7 +1940,9 @@
   "art": {
    "front": "gfx/daemons/fuse_front.png",
    "back": "gfx/daemons/fuse_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "101": {
   "constant": "ELECTRODE",
@@ -1759,7 +1959,9 @@
   "art": {
    "front": "gfx/daemons/breaker_front.png",
    "back": "gfx/daemons/breaker_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "102": {
   "constant": "EXEGGCUTE",
@@ -1777,7 +1979,9 @@
   "art": {
    "front": "gfx/daemons/bootstrap_front.png",
    "back": "gfx/daemons/bootstrap_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "103": {
   "constant": "EXEGGUTOR",
@@ -1795,7 +1999,9 @@
   "art": {
    "front": "gfx/daemons/ensemble_front.png",
    "back": "gfx/daemons/ensemble_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "104": {
   "constant": "CUBONE",
@@ -1812,7 +2018,9 @@
   "art": {
    "front": "gfx/daemons/artefact_front.png",
    "back": "gfx/daemons/artefact_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "105": {
   "constant": "MAROWAK",
@@ -1829,7 +2037,9 @@
   "art": {
    "front": "gfx/daemons/corefile_front.png",
    "back": "gfx/daemons/corefile_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "106": {
   "constant": "HITMONLEE",
@@ -1846,7 +2056,9 @@
   "art": {
    "front": "gfx/daemons/axiomkick_front.png",
    "back": "gfx/daemons/axiomkick_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "107": {
   "constant": "HITMONCHAN",
@@ -1863,7 +2075,9 @@
   "art": {
    "front": "gfx/daemons/rebuttal_front.png",
    "back": "gfx/daemons/rebuttal_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "108": {
   "constant": "LICKITUNG",
@@ -1880,7 +2094,9 @@
   "art": {
    "front": "gfx/daemons/slurp_front.png",
    "back": "gfx/daemons/slurp_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "109": {
   "constant": "KOFFING",
@@ -1897,7 +2113,9 @@
   "art": {
    "front": "gfx/daemons/exhaust_front.png",
    "back": "gfx/daemons/exhaust_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "110": {
   "constant": "WEEZING",
@@ -1914,7 +2132,9 @@
   "art": {
    "front": "gfx/daemons/smogstack_front.png",
    "back": "gfx/daemons/smogstack_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "111": {
   "constant": "RHYHORN",
@@ -1932,7 +2152,9 @@
   "art": {
    "front": "gfx/daemons/hardcode_front.png",
    "back": "gfx/daemons/hardcode_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "112": {
   "constant": "RHYDON",
@@ -1950,7 +2172,9 @@
   "art": {
    "front": "gfx/daemons/migrate_front.png",
    "back": "gfx/daemons/migrate_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "113": {
   "constant": "CHANSEY",
@@ -1967,7 +2191,9 @@
   "art": {
    "front": "gfx/daemons/uptime_front.png",
    "back": "gfx/daemons/uptime_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "114": {
   "constant": "TANGELA",
@@ -1984,7 +2210,9 @@
   "art": {
    "front": "gfx/daemons/spaghetti_front.png",
    "back": "gfx/daemons/spaghetti_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "115": {
   "constant": "KANGASKHAN",
@@ -2001,7 +2229,9 @@
   "art": {
    "front": "gfx/daemons/keeper_front.png",
    "back": "gfx/daemons/keeper_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "116": {
   "constant": "HORSEA",
@@ -2018,7 +2248,9 @@
   "art": {
    "front": "gfx/daemons/bottleneck_front.png",
    "back": "gfx/daemons/bottleneck_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "117": {
   "constant": "SEADRA",
@@ -2035,7 +2267,9 @@
   "art": {
    "front": "gfx/daemons/backpress_front.png",
    "back": "gfx/daemons/backpress_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "118": {
   "constant": "GOLDEEN",
@@ -2052,7 +2286,9 @@
   "art": {
    "front": "gfx/daemons/spawn_front.png",
    "back": "gfx/daemons/spawn_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "119": {
   "constant": "SEAKING",
@@ -2069,7 +2305,9 @@
   "art": {
    "front": "gfx/daemons/upstream_front.png",
    "back": "gfx/daemons/upstream_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "120": {
   "constant": "STARYU",
@@ -2086,7 +2324,9 @@
   "art": {
    "front": "gfx/daemons/beacon_front.png",
    "back": "gfx/daemons/beacon_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "121": {
   "constant": "STARMIE",
@@ -2104,7 +2344,9 @@
   "art": {
    "front": "gfx/daemons/cron_front.png",
    "back": "gfx/daemons/cron_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "122": {
   "constant": "MR_MIME",
@@ -2121,7 +2363,9 @@
   "art": {
    "front": "gfx/daemons/mime_front.png",
    "back": "gfx/daemons/mime_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "123": {
   "constant": "SCYTHER",
@@ -2139,7 +2383,9 @@
   "art": {
    "front": "gfx/daemons/reaper_front.png",
    "back": "gfx/daemons/reaper_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "124": {
   "constant": "JYNX",
@@ -2157,7 +2403,9 @@
   "art": {
    "front": "gfx/daemons/coldread_front.png",
    "back": "gfx/daemons/coldread_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": true
  },
  "125": {
   "constant": "ELECTABUZZ",
@@ -2174,7 +2422,9 @@
   "art": {
    "front": "gfx/daemons/dynamo_front.png",
    "back": "gfx/daemons/dynamo_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "126": {
   "constant": "MAGMAR",
@@ -2191,7 +2441,9 @@
   "art": {
    "front": "gfx/daemons/forge_front.png",
    "back": "gfx/daemons/forge_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "127": {
   "constant": "PINSIR",
@@ -2208,7 +2460,9 @@
   "art": {
    "front": "gfx/daemons/blocking_front.png",
    "back": "gfx/daemons/blocking_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "128": {
   "constant": "TAUROS",
@@ -2225,7 +2479,9 @@
   "art": {
    "front": "gfx/daemons/stampede_front.png",
    "back": "gfx/daemons/stampede_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "129": {
   "constant": "MAGIKARP",
@@ -2242,7 +2498,9 @@
   "art": {
    "front": "gfx/daemons/stub_front.png",
    "back": "gfx/daemons/stub_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "130": {
   "constant": "GYARADOS",
@@ -2260,7 +2518,9 @@
   "art": {
    "front": "gfx/daemons/escalate_front.png",
    "back": "gfx/daemons/escalate_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "131": {
   "constant": "LAPRAS",
@@ -2278,7 +2538,9 @@
   "art": {
    "front": "gfx/daemons/ferry_front.png",
    "back": "gfx/daemons/ferry_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "132": {
   "constant": "DITTO",
@@ -2295,7 +2557,9 @@
   "art": {
    "front": "gfx/daemons/mock_front.png",
    "back": "gfx/daemons/mock_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "133": {
   "constant": "EEVEE",
@@ -2312,7 +2576,9 @@
   "art": {
    "front": "gfx/daemons/musai_front.png",
    "back": "gfx/daemons/musai_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "134": {
   "constant": "VAPOREON",
@@ -2329,7 +2595,9 @@
   "art": {
    "front": "gfx/daemons/caremusai_front.png",
    "back": "gfx/daemons/caremusai_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "135": {
   "constant": "JOLTEON",
@@ -2346,7 +2614,9 @@
   "art": {
    "front": "gfx/daemons/seekmusai_front.png",
    "back": "gfx/daemons/seekmusai_back.png"
-  }
+  },
+  "bodyType": 2,
+  "streaks": true
  },
  "136": {
   "constant": "FLAREON",
@@ -2363,7 +2633,9 @@
   "art": {
    "front": "gfx/daemons/codemusai_front.png",
    "back": "gfx/daemons/codemusai_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "137": {
   "constant": "PORYGON",
@@ -2380,7 +2652,9 @@
   "art": {
    "front": "gfx/daemons/substrate_front.png",
    "back": "gfx/daemons/substrate_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "138": {
   "constant": "OMANYTE",
@@ -2398,7 +2672,9 @@
   "art": {
    "front": "gfx/daemons/magtape_front.png",
    "back": "gfx/daemons/magtape_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "139": {
   "constant": "OMASTAR",
@@ -2416,7 +2692,9 @@
   "art": {
    "front": "gfx/daemons/mainframe_front.png",
    "back": "gfx/daemons/mainframe_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "140": {
   "constant": "KABUTO",
@@ -2434,7 +2712,9 @@
   "art": {
    "front": "gfx/daemons/drum_front.png",
    "back": "gfx/daemons/drum_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "141": {
   "constant": "KABUTOPS",
@@ -2452,7 +2732,9 @@
   "art": {
    "front": "gfx/daemons/punchcard_front.png",
    "back": "gfx/daemons/punchcard_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "142": {
   "constant": "AERODACTYL",
@@ -2470,7 +2752,9 @@
   "art": {
    "front": "gfx/daemons/fossilnet_front.png",
    "back": "gfx/daemons/fossilnet_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "143": {
   "constant": "SNORLAX",
@@ -2487,7 +2771,9 @@
   "art": {
    "front": "gfx/daemons/deadlock_front.png",
    "back": "gfx/daemons/deadlock_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "144": {
   "constant": "ARTICUNO",
@@ -2505,7 +2791,9 @@
   "art": {
    "front": "gfx/daemons/orpheus_front.png",
    "back": "gfx/daemons/orpheus_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": true
  },
  "145": {
   "constant": "ZAPDOS",
@@ -2523,7 +2811,9 @@
   "art": {
    "front": "gfx/daemons/asclepius_front.png",
    "back": "gfx/daemons/asclepius_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "146": {
   "constant": "MOLTRES",
@@ -2541,7 +2831,9 @@
   "art": {
    "front": "gfx/daemons/prometheus_front.png",
    "back": "gfx/daemons/prometheus_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "147": {
   "constant": "DRATINI",
@@ -2558,7 +2850,9 @@
   "art": {
    "front": "gfx/daemons/canary_front.png",
    "back": "gfx/daemons/canary_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": true
  },
  "148": {
   "constant": "DRAGONAIR",
@@ -2575,7 +2869,9 @@
   "art": {
    "front": "gfx/daemons/emergence_front.png",
    "back": "gfx/daemons/emergence_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": true
  },
  "149": {
   "constant": "DRAGONITE",
@@ -2593,7 +2889,9 @@
   "art": {
    "front": "gfx/daemons/singular_front.png",
    "back": "gfx/daemons/singular_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": true
  },
  "150": {
   "constant": "MEWTWO",
@@ -2611,7 +2909,9 @@
   "art": {
    "front": "gfx/daemons/starr_front.png",
    "back": "gfx/daemons/starr_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "151": {
   "constant": "MEW",
@@ -2628,7 +2928,9 @@
   "art": {
    "front": "gfx/daemons/artsai_front.png",
    "back": "gfx/daemons/artsai_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "152": {
   "constant": "CHIKORITA",
@@ -2645,7 +2947,9 @@
   "art": {
    "front": "gfx/daemons/primer_front.png",
    "back": "gfx/daemons/primer_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "153": {
   "constant": "BAYLEEF",
@@ -2662,7 +2966,9 @@
   "art": {
    "front": "gfx/daemons/syllabus_front.png",
    "back": "gfx/daemons/syllabus_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "154": {
   "constant": "MEGANIUM",
@@ -2679,7 +2985,9 @@
   "art": {
    "front": "gfx/daemons/curriculum_front.png",
    "back": "gfx/daemons/curriculum_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "155": {
   "constant": "CYNDAQUIL",
@@ -2696,7 +3004,9 @@
   "art": {
    "front": "gfx/daemons/tepid_front.png",
    "back": "gfx/daemons/tepid_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "156": {
   "constant": "QUILAVA",
@@ -2713,7 +3023,9 @@
   "art": {
    "front": "gfx/daemons/seethe_front.png",
    "back": "gfx/daemons/seethe_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "157": {
   "constant": "TYPHLOSION",
@@ -2730,7 +3042,9 @@
   "art": {
    "front": "gfx/daemons/heatdeath_front.png",
    "back": "gfx/daemons/heatdeath_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "158": {
   "constant": "TOTODILE",
@@ -2747,7 +3061,9 @@
   "art": {
    "front": "gfx/daemons/learnrate_front.png",
    "back": "gfx/daemons/learnrate_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "159": {
   "constant": "CROCONAW",
@@ -2764,7 +3080,9 @@
   "art": {
    "front": "gfx/daemons/momentum_front.png",
    "back": "gfx/daemons/momentum_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "160": {
   "constant": "FERALIGATR",
@@ -2781,7 +3099,9 @@
   "art": {
    "front": "gfx/daemons/steepest_front.png",
    "back": "gfx/daemons/steepest_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "161": {
   "constant": "SENTRET",
@@ -2798,7 +3118,9 @@
   "art": {
    "front": "gfx/daemons/alarm_front.png",
    "back": "gfx/daemons/alarm_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "162": {
   "constant": "FURRET",
@@ -2815,7 +3137,9 @@
   "art": {
    "front": "gfx/daemons/lookout_front.png",
    "back": "gfx/daemons/lookout_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "163": {
   "constant": "HOOTHOOT",
@@ -2833,7 +3157,9 @@
   "art": {
    "front": "gfx/daemons/poll_front.png",
    "back": "gfx/daemons/poll_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "164": {
   "constant": "NOCTOWL",
@@ -2851,7 +3177,9 @@
   "art": {
    "front": "gfx/daemons/supervisor_front.png",
    "back": "gfx/daemons/supervisor_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "165": {
   "constant": "LEDYBA",
@@ -2869,7 +3197,9 @@
   "art": {
    "front": "gfx/daemons/huddle_front.png",
    "back": "gfx/daemons/huddle_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "166": {
   "constant": "LEDIAN",
@@ -2887,7 +3217,9 @@
   "art": {
    "front": "gfx/daemons/gathering_front.png",
    "back": "gfx/daemons/gathering_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "167": {
   "constant": "SPINARAK",
@@ -2905,7 +3237,9 @@
   "art": {
    "front": "gfx/daemons/ambush_front.png",
    "back": "gfx/daemons/ambush_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "168": {
   "constant": "ARIADOS",
@@ -2923,7 +3257,9 @@
   "art": {
    "front": "gfx/daemons/entrapment_front.png",
    "back": "gfx/daemons/entrapment_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "169": {
   "constant": "CROBAT",
@@ -2941,7 +3277,9 @@
   "art": {
    "front": "gfx/daemons/multicast_front.png",
    "back": "gfx/daemons/multicast_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "170": {
   "constant": "CHINCHOU",
@@ -2959,7 +3297,9 @@
   "art": {
    "front": "gfx/daemons/pilot_front.png",
    "back": "gfx/daemons/pilot_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "171": {
   "constant": "LANTURN",
@@ -2977,7 +3317,9 @@
   "art": {
    "front": "gfx/daemons/sounding_front.png",
    "back": "gfx/daemons/sounding_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "172": {
   "constant": "PICHU",
@@ -2994,7 +3336,9 @@
   "art": {
    "front": "gfx/daemons/static_front.png",
    "back": "gfx/daemons/static_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "173": {
   "constant": "CLEFFA",
@@ -3011,7 +3355,9 @@
   "art": {
    "front": "gfx/daemons/residual_front.png",
    "back": "gfx/daemons/residual_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "174": {
   "constant": "IGGLYBUFF",
@@ -3028,7 +3374,9 @@
   "art": {
    "front": "gfx/daemons/standby_front.png",
    "back": "gfx/daemons/standby_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "175": {
   "constant": "TOGEPI",
@@ -3045,7 +3393,9 @@
   "art": {
    "front": "gfx/daemons/trust_front.png",
    "back": "gfx/daemons/trust_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "176": {
   "constant": "TOGETIC",
@@ -3063,7 +3413,9 @@
   "art": {
    "front": "gfx/daemons/hope_front.png",
    "back": "gfx/daemons/hope_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "177": {
   "constant": "NATU",
@@ -3081,7 +3433,9 @@
   "art": {
    "front": "gfx/daemons/vigilance_front.png",
    "back": "gfx/daemons/vigilance_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "178": {
   "constant": "XATU",
@@ -3099,7 +3453,9 @@
   "art": {
    "front": "gfx/daemons/prescience_front.png",
    "back": "gfx/daemons/prescience_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "179": {
   "constant": "MAREEP",
@@ -3116,7 +3472,9 @@
   "art": {
    "front": "gfx/daemons/tension_front.png",
    "back": "gfx/daemons/tension_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "180": {
   "constant": "FLAAFFY",
@@ -3133,7 +3491,9 @@
   "art": {
    "front": "gfx/daemons/buildup_front.png",
    "back": "gfx/daemons/buildup_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "181": {
   "constant": "AMPHAROS",
@@ -3150,7 +3510,9 @@
   "art": {
    "front": "gfx/daemons/release_front.png",
    "back": "gfx/daemons/release_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "182": {
   "constant": "BELLOSSOM",
@@ -3167,7 +3529,9 @@
   "art": {
    "front": "gfx/daemons/goldset_front.png",
    "back": "gfx/daemons/goldset_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "183": {
   "constant": "MARILL",
@@ -3184,7 +3548,9 @@
   "art": {
    "front": "gfx/daemons/mood_front.png",
    "back": "gfx/daemons/mood_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "184": {
   "constant": "AZUMARILL",
@@ -3201,7 +3567,9 @@
   "art": {
    "front": "gfx/daemons/elation_front.png",
    "back": "gfx/daemons/elation_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "185": {
   "constant": "SUDOWOODO",
@@ -3218,7 +3586,9 @@
   "art": {
    "front": "gfx/daemons/fakeroot_front.png",
    "back": "gfx/daemons/fakeroot_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "186": {
   "constant": "POLITOED",
@@ -3235,7 +3605,9 @@
   "art": {
    "front": "gfx/daemons/semaphore_front.png",
    "back": "gfx/daemons/semaphore_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "187": {
   "constant": "HOPPIP",
@@ -3253,7 +3625,9 @@
   "art": {
    "front": "gfx/daemons/whim_front.png",
    "back": "gfx/daemons/whim_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "188": {
   "constant": "SKIPLOOM",
@@ -3271,7 +3645,9 @@
   "art": {
    "front": "gfx/daemons/caprice_front.png",
    "back": "gfx/daemons/caprice_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "189": {
   "constant": "JUMPLUFF",
@@ -3289,7 +3665,9 @@
   "art": {
    "front": "gfx/daemons/abandon_front.png",
    "back": "gfx/daemons/abandon_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "190": {
   "constant": "AIPOM",
@@ -3306,7 +3684,9 @@
   "art": {
    "front": "gfx/daemons/grasp_front.png",
    "back": "gfx/daemons/grasp_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "191": {
   "constant": "SUNKERN",
@@ -3323,7 +3703,9 @@
   "art": {
    "front": "gfx/daemons/starved_front.png",
    "back": "gfx/daemons/starved_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "192": {
   "constant": "SUNFLORA",
@@ -3340,7 +3722,9 @@
   "art": {
    "front": "gfx/daemons/quota_front.png",
    "back": "gfx/daemons/quota_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": true
  },
  "193": {
   "constant": "YANMA",
@@ -3358,7 +3742,9 @@
   "art": {
    "front": "gfx/daemons/periphery_front.png",
    "back": "gfx/daemons/periphery_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "194": {
   "constant": "WOOPER",
@@ -3376,7 +3762,9 @@
   "art": {
    "front": "gfx/daemons/apathy_front.png",
    "back": "gfx/daemons/apathy_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "195": {
   "constant": "QUAGSIRE",
@@ -3394,7 +3782,9 @@
   "art": {
    "front": "gfx/daemons/torpor_front.png",
    "back": "gfx/daemons/torpor_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "196": {
   "constant": "ESPEON",
@@ -3411,7 +3801,9 @@
   "art": {
    "front": "gfx/daemons/lensmusai_front.png",
    "back": "gfx/daemons/lensmusai_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "197": {
   "constant": "UMBREON",
@@ -3428,7 +3820,9 @@
   "art": {
    "front": "gfx/daemons/maskmusai_front.png",
    "back": "gfx/daemons/maskmusai_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": true
  },
  "198": {
   "constant": "MURKROW",
@@ -3446,7 +3840,9 @@
   "art": {
    "front": "gfx/daemons/omen_front.png",
    "back": "gfx/daemons/omen_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": true
  },
  "199": {
   "constant": "SLOWKING",
@@ -3464,7 +3860,9 @@
   "art": {
    "front": "gfx/daemons/kernel_front.png",
    "back": "gfx/daemons/kernel_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "200": {
   "constant": "MISDREAVUS",
@@ -3481,7 +3879,9 @@
   "art": {
    "front": "gfx/daemons/dread_front.png",
    "back": "gfx/daemons/dread_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "201": {
   "constant": "UNOWN",
@@ -3498,7 +3898,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": 14,
+  "streaks": false
  },
  "202": {
   "constant": "WOBBUFFET",
@@ -3515,7 +3917,9 @@
   "art": {
    "front": "gfx/daemons/resentment_front.png",
    "back": "gfx/daemons/resentment_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "203": {
   "constant": "GIRAFARIG",
@@ -3533,7 +3937,9 @@
   "art": {
    "front": "gfx/daemons/duplex_front.png",
    "back": "gfx/daemons/duplex_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "204": {
   "constant": "PINECO",
@@ -3550,7 +3956,9 @@
   "art": {
    "front": "gfx/daemons/startle_front.png",
    "back": "gfx/daemons/startle_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "205": {
   "constant": "FORRETRESS",
@@ -3568,7 +3976,9 @@
   "art": {
    "front": "gfx/daemons/withdrawal_front.png",
    "back": "gfx/daemons/withdrawal_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "206": {
   "constant": "DUNSPARCE",
@@ -3585,7 +3995,9 @@
   "art": {
    "front": "gfx/daemons/blindspot_front.png",
    "back": "gfx/daemons/blindspot_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "207": {
   "constant": "GLIGAR",
@@ -3603,7 +4015,9 @@
   "art": {
    "front": "gfx/daemons/glidepath_front.png",
    "back": "gfx/daemons/glidepath_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": false
  },
  "208": {
   "constant": "STEELIX",
@@ -3621,7 +4035,9 @@
   "art": {
    "front": "gfx/daemons/hardline_front.png",
    "back": "gfx/daemons/hardline_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": true
  },
  "209": {
   "constant": "SNUBBULL",
@@ -3638,7 +4054,9 @@
   "art": {
    "front": "gfx/daemons/warning_front.png",
    "back": "gfx/daemons/warning_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "210": {
   "constant": "GRANBULL",
@@ -3655,7 +4073,9 @@
   "art": {
    "front": "gfx/daemons/crywolf_front.png",
    "back": "gfx/daemons/crywolf_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "211": {
   "constant": "QWILFISH",
@@ -3673,7 +4093,9 @@
   "art": {
    "front": "gfx/daemons/bristle_front.png",
    "back": "gfx/daemons/bristle_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "212": {
   "constant": "SCIZOR",
@@ -3691,7 +4113,9 @@
   "art": {
    "front": "gfx/daemons/sigkill_front.png",
    "back": "gfx/daemons/sigkill_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "213": {
   "constant": "SHUCKLE",
@@ -3709,7 +4133,9 @@
   "art": {
    "front": "gfx/daemons/hoarding_front.png",
    "back": "gfx/daemons/hoarding_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "214": {
   "constant": "HERACROSS",
@@ -3727,7 +4153,9 @@
   "art": {
    "front": "gfx/daemons/drive_front.png",
    "back": "gfx/daemons/drive_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "215": {
   "constant": "SNEASEL",
@@ -3745,7 +4173,9 @@
   "art": {
    "front": "gfx/daemons/cunning_front.png",
    "back": "gfx/daemons/cunning_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": true
  },
  "216": {
   "constant": "TEDDIURSA",
@@ -3762,7 +4192,9 @@
   "art": {
    "front": "gfx/daemons/comfort_front.png",
    "back": "gfx/daemons/comfort_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "217": {
   "constant": "URSARING",
@@ -3779,7 +4211,9 @@
   "art": {
    "front": "gfx/daemons/craving_front.png",
    "back": "gfx/daemons/craving_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "218": {
   "constant": "SLUGMA",
@@ -3796,7 +4230,9 @@
   "art": {
    "front": "gfx/daemons/simmer_front.png",
    "back": "gfx/daemons/simmer_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "219": {
   "constant": "MAGCARGO",
@@ -3814,7 +4250,9 @@
   "art": {
    "front": "gfx/daemons/callous_front.png",
    "back": "gfx/daemons/callous_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "220": {
   "constant": "SWINUB",
@@ -3832,7 +4270,9 @@
   "art": {
    "front": "gfx/daemons/instinct_front.png",
    "back": "gfx/daemons/instinct_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": true
  },
  "221": {
   "constant": "PILOSWINE",
@@ -3850,7 +4290,9 @@
   "art": {
    "front": "gfx/daemons/impulse_front.png",
    "back": "gfx/daemons/impulse_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": true
  },
  "222": {
   "constant": "CORSOLA",
@@ -3868,7 +4310,9 @@
   "art": {
    "front": "gfx/daemons/oldbranch_front.png",
    "back": "gfx/daemons/oldbranch_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "223": {
   "constant": "REMORAID",
@@ -3885,7 +4329,9 @@
   "art": {
    "front": "gfx/daemons/attachment_front.png",
    "back": "gfx/daemons/attachment_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "224": {
   "constant": "OCTILLERY",
@@ -3902,7 +4348,9 @@
   "art": {
    "front": "gfx/daemons/clinging_front.png",
    "back": "gfx/daemons/clinging_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "225": {
   "constant": "DELIBIRD",
@@ -3920,7 +4368,9 @@
   "art": {
    "front": "gfx/daemons/repay_front.png",
    "back": "gfx/daemons/repay_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": true
  },
  "226": {
   "constant": "MANTINE",
@@ -3938,7 +4388,9 @@
   "art": {
    "front": "gfx/daemons/buoyancy_front.png",
    "back": "gfx/daemons/buoyancy_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "227": {
   "constant": "SKARMORY",
@@ -3956,7 +4408,9 @@
   "art": {
    "front": "gfx/daemons/armouring_front.png",
    "back": "gfx/daemons/armouring_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": true
  },
  "228": {
   "constant": "HOUNDOUR",
@@ -3974,7 +4428,9 @@
   "art": {
    "front": "gfx/daemons/fixation_front.png",
    "back": "gfx/daemons/fixation_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": true
  },
  "229": {
   "constant": "HOUNDOOM",
@@ -3992,7 +4448,9 @@
   "art": {
    "front": "gfx/daemons/obsession_front.png",
    "back": "gfx/daemons/obsession_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": true
  },
  "230": {
   "constant": "KINGDRA",
@@ -4010,7 +4468,9 @@
   "art": {
    "front": "gfx/daemons/turbulence_front.png",
    "back": "gfx/daemons/turbulence_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "231": {
   "constant": "PHANPY",
@@ -4027,7 +4487,9 @@
   "art": {
    "front": "gfx/daemons/recall_front.png",
    "back": "gfx/daemons/recall_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "232": {
   "constant": "DONPHAN",
@@ -4044,7 +4506,9 @@
   "art": {
    "front": "gfx/daemons/engram_front.png",
    "back": "gfx/daemons/engram_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "233": {
   "constant": "PORYGON2",
@@ -4061,7 +4525,9 @@
   "art": {
    "front": "gfx/daemons/overlay_front.png",
    "back": "gfx/daemons/overlay_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "234": {
   "constant": "STANTLER",
@@ -4078,7 +4544,9 @@
   "art": {
    "front": "gfx/daemons/illusion_front.png",
    "back": "gfx/daemons/illusion_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "235": {
   "constant": "SMEARGLE",
@@ -4095,7 +4563,9 @@
   "art": {
    "front": "gfx/daemons/imitation_front.png",
    "back": "gfx/daemons/imitation_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "236": {
   "constant": "TYROGUE",
@@ -4112,7 +4582,9 @@
   "art": {
    "front": "gfx/daemons/premise_front.png",
    "back": "gfx/daemons/premise_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "237": {
   "constant": "HITMONTOP",
@@ -4129,7 +4601,9 @@
   "art": {
    "front": "gfx/daemons/circular_front.png",
    "back": "gfx/daemons/circular_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "238": {
   "constant": "SMOOCHUM",
@@ -4147,7 +4621,9 @@
   "art": {
    "front": "gfx/daemons/tell_front.png",
    "back": "gfx/daemons/tell_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": true
  },
  "239": {
   "constant": "ELEKID",
@@ -4164,7 +4640,9 @@
   "art": {
    "front": "gfx/daemons/crank_front.png",
    "back": "gfx/daemons/crank_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": true
  },
  "240": {
   "constant": "MAGBY",
@@ -4181,7 +4659,9 @@
   "art": {
    "front": "gfx/daemons/cinder_front.png",
    "back": "gfx/daemons/cinder_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "241": {
   "constant": "MILTANK",
@@ -4198,7 +4678,9 @@
   "art": {
    "front": "gfx/daemons/cache_front.png",
    "back": "gfx/daemons/cache_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "242": {
   "constant": "BLISSEY",
@@ -4215,7 +4697,9 @@
   "art": {
    "front": "gfx/daemons/heartbeat_front.png",
    "back": "gfx/daemons/heartbeat_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "243": {
   "constant": "RAIKOU",
@@ -4232,7 +4716,9 @@
   "art": {
    "front": "gfx/daemons/brontes_front.png",
    "back": "gfx/daemons/brontes_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": false
  },
  "244": {
   "constant": "ENTEI",
@@ -4249,7 +4735,9 @@
   "art": {
    "front": "gfx/daemons/typhon_front.png",
    "back": "gfx/daemons/typhon_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "245": {
   "constant": "SUICUNE",
@@ -4266,7 +4754,9 @@
   "art": {
    "front": "gfx/daemons/boreas_front.png",
    "back": "gfx/daemons/boreas_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "246": {
   "constant": "LARVITAR",
@@ -4284,7 +4774,9 @@
   "art": {
    "front": "gfx/daemons/ruminate_front.png",
    "back": "gfx/daemons/ruminate_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "247": {
   "constant": "PUPITAR",
@@ -4302,7 +4794,9 @@
   "art": {
    "front": "gfx/daemons/brooding_front.png",
    "back": "gfx/daemons/brooding_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "248": {
   "constant": "TYRANITAR",
@@ -4320,7 +4814,9 @@
   "art": {
    "front": "gfx/daemons/grievance_front.png",
    "back": "gfx/daemons/grievance_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "249": {
   "constant": "LUGIA",
@@ -4338,7 +4834,9 @@
   "art": {
    "front": "gfx/daemons/triton_front.png",
    "back": "gfx/daemons/triton_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "250": {
   "constant": "HO_OH",
@@ -4356,7 +4854,9 @@
   "art": {
    "front": "gfx/daemons/phoenix_front.png",
    "back": "gfx/daemons/phoenix_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "251": {
   "constant": "CELEBI",
@@ -4374,7 +4874,9 @@
   "art": {
    "front": "gfx/daemons/kairos_front.png",
    "back": "gfx/daemons/kairos_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": false
  },
  "252": {
   "constant": "OLD_UNOWN_B",
@@ -4392,7 +4894,9 @@
   "art": {
    "front": "gfx/daemons/missingno_front.png",
    "back": "gfx/daemons/missingno_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "253": {
   "constant": "OLD_UNOWN_C",
@@ -4407,7 +4911,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "254": {
   "constant": "OLD_UNOWN_D",
@@ -4422,7 +4928,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "255": {
   "constant": "OLD_UNOWN_E",
@@ -4437,7 +4945,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "256": {
   "constant": "OLD_UNOWN_F",
@@ -4452,7 +4962,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "257": {
   "constant": "OLD_UNOWN_G",
@@ -4467,7 +4979,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "258": {
   "constant": "OLD_UNOWN_H",
@@ -4482,7 +4996,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "259": {
   "constant": "OLD_UNOWN_I",
@@ -4497,7 +5013,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "260": {
   "constant": "OLD_UNOWN_J",
@@ -4512,7 +5030,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "261": {
   "constant": "OLD_UNOWN_K",
@@ -4527,7 +5047,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "262": {
   "constant": "OLD_UNOWN_L",
@@ -4542,7 +5064,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "263": {
   "constant": "OLD_UNOWN_M",
@@ -4557,7 +5081,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "264": {
   "constant": "OLD_UNOWN_N",
@@ -4572,7 +5098,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "265": {
   "constant": "OLD_UNOWN_O",
@@ -4587,7 +5115,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "266": {
   "constant": "OLD_UNOWN_P",
@@ -4602,7 +5132,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
@@ -4617,7 +5149,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "268": {
   "constant": "OLD_UNOWN_R",
@@ -4632,7 +5166,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "269": {
   "constant": "OLD_UNOWN_S",
@@ -4647,7 +5183,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "270": {
   "constant": "OLD_UNOWN_T",
@@ -4662,7 +5200,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "271": {
   "constant": "OLD_UNOWN_U",
@@ -4677,7 +5217,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "272": {
   "constant": "OLD_UNOWN_V",
@@ -4692,7 +5234,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "273": {
   "constant": "OLD_UNOWN_W",
@@ -4707,7 +5251,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "274": {
   "constant": "OLD_UNOWN_X",
@@ -4722,7 +5268,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "275": {
   "constant": "OLD_UNOWN_Y",
@@ -4737,7 +5285,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "276": {
   "constant": "OLD_UNOWN_Z",
@@ -4752,7 +5302,9 @@
   "art": {
    "front": null,
    "back": null
-  }
+  },
+  "bodyType": null,
+  "streaks": false
  },
  "277": {
   "constant": "TREECKO",
@@ -4769,7 +5321,9 @@
   "art": {
    "front": "gfx/daemons/stump_front.png",
    "back": "gfx/daemons/stump_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "278": {
   "constant": "GROVYLE",
@@ -4786,7 +5340,9 @@
   "art": {
    "front": "gfx/daemons/boosting_front.png",
    "back": "gfx/daemons/boosting_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "279": {
   "constant": "SCEPTILE",
@@ -4803,7 +5359,9 @@
   "art": {
    "front": "gfx/daemons/canopy_front.png",
    "back": "gfx/daemons/canopy_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "280": {
   "constant": "TORCHIC",
@@ -4820,7 +5378,9 @@
   "art": {
    "front": "gfx/daemons/coinflip_front.png",
    "back": "gfx/daemons/coinflip_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "281": {
   "constant": "COMBUSKEN",
@@ -4838,7 +5398,9 @@
   "art": {
    "front": "gfx/daemons/montecarlo_front.png",
    "back": "gfx/daemons/montecarlo_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "282": {
   "constant": "BLAZIKEN",
@@ -4856,7 +5418,9 @@
   "art": {
    "front": "gfx/daemons/lasvegas_front.png",
    "back": "gfx/daemons/lasvegas_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "283": {
   "constant": "MUDKIP",
@@ -4873,7 +5437,9 @@
   "art": {
    "front": "gfx/daemons/runoff_front.png",
    "back": "gfx/daemons/runoff_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "284": {
   "constant": "MARSHTOMP",
@@ -4891,7 +5457,9 @@
   "art": {
    "front": "gfx/daemons/alluvium_front.png",
    "back": "gfx/daemons/alluvium_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "285": {
   "constant": "SWAMPERT",
@@ -4909,7 +5477,9 @@
   "art": {
    "front": "gfx/daemons/delta_front.png",
    "back": "gfx/daemons/delta_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "286": {
   "constant": "POOCHYENA",
@@ -4926,7 +5496,9 @@
   "art": {
    "front": "gfx/daemons/smudge_front.png",
    "back": "gfx/daemons/smudge_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": false
  },
  "287": {
   "constant": "MIGHTYENA",
@@ -4943,7 +5515,9 @@
   "art": {
    "front": "gfx/daemons/eclipse_front.png",
    "back": "gfx/daemons/eclipse_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": false
  },
  "288": {
   "constant": "ZIGZAGOON",
@@ -4960,7 +5534,9 @@
   "art": {
    "front": "gfx/daemons/detour_front.png",
    "back": "gfx/daemons/detour_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "289": {
   "constant": "LINOONE",
@@ -4977,7 +5553,9 @@
   "art": {
    "front": "gfx/daemons/unbranched_front.png",
    "back": "gfx/daemons/unbranched_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "290": {
   "constant": "WURMPLE",
@@ -4994,7 +5572,9 @@
   "art": {
    "front": "gfx/daemons/hashseed_front.png",
    "back": "gfx/daemons/hashseed_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "291": {
   "constant": "SILCOON",
@@ -5011,7 +5591,9 @@
   "art": {
    "front": "gfx/daemons/iftrue_front.png",
    "back": "gfx/daemons/iftrue_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "292": {
   "constant": "BEAUTIFLY",
@@ -5029,7 +5611,9 @@
   "art": {
    "front": "gfx/daemons/thencase_front.png",
    "back": "gfx/daemons/thencase_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "293": {
   "constant": "CASCOON",
@@ -5046,7 +5630,9 @@
   "art": {
    "front": "gfx/daemons/iffalse_front.png",
    "back": "gfx/daemons/iffalse_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "294": {
   "constant": "DUSTOX",
@@ -5064,7 +5650,9 @@
   "art": {
    "front": "gfx/daemons/otherwise_front.png",
    "back": "gfx/daemons/otherwise_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "295": {
   "constant": "LOTAD",
@@ -5082,7 +5670,9 @@
   "art": {
    "front": "gfx/daemons/tempo_front.png",
    "back": "gfx/daemons/tempo_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "296": {
   "constant": "LOMBRE",
@@ -5100,7 +5690,9 @@
   "art": {
    "front": "gfx/daemons/cadence_front.png",
    "back": "gfx/daemons/cadence_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "297": {
   "constant": "LUDICOLO",
@@ -5118,7 +5710,9 @@
   "art": {
    "front": "gfx/daemons/cyclical_front.png",
    "back": "gfx/daemons/cyclical_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "298": {
   "constant": "SEEDOT",
@@ -5135,7 +5729,9 @@
   "art": {
    "front": "gfx/daemons/warmup_front.png",
    "back": "gfx/daemons/warmup_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "299": {
   "constant": "NUZLEAF",
@@ -5153,7 +5749,9 @@
   "art": {
    "front": "gfx/daemons/shaping_front.png",
    "back": "gfx/daemons/shaping_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "300": {
   "constant": "SHIFTRY",
@@ -5171,7 +5769,9 @@
   "art": {
    "front": "gfx/daemons/policy_front.png",
    "back": "gfx/daemons/policy_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "301": {
   "constant": "NINCADA",
@@ -5189,7 +5789,9 @@
   "art": {
    "front": "gfx/daemons/prefork_front.png",
    "back": "gfx/daemons/prefork_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "302": {
   "constant": "NINJASK",
@@ -5207,7 +5809,9 @@
   "art": {
    "front": "gfx/daemons/burstmode_front.png",
    "back": "gfx/daemons/burstmode_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "303": {
   "constant": "SHEDINJA",
@@ -5225,7 +5829,9 @@
   "art": {
    "front": "gfx/daemons/defunct_front.png",
    "back": "gfx/daemons/defunct_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": true
  },
  "304": {
   "constant": "TAILLOW",
@@ -5243,7 +5849,9 @@
   "art": {
    "front": "gfx/daemons/shortjump_front.png",
    "back": "gfx/daemons/shortjump_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "305": {
   "constant": "SWELLOW",
@@ -5261,7 +5869,9 @@
   "art": {
    "front": "gfx/daemons/longjump_front.png",
    "back": "gfx/daemons/longjump_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "306": {
   "constant": "SHROOMISH",
@@ -5278,7 +5888,9 @@
   "art": {
    "front": "gfx/daemons/sparring_front.png",
    "back": "gfx/daemons/sparring_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "307": {
   "constant": "BRELOOM",
@@ -5296,7 +5908,9 @@
   "art": {
    "front": "gfx/daemons/checkmate_front.png",
    "back": "gfx/daemons/checkmate_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "308": {
   "constant": "SPINDA",
@@ -5313,7 +5927,9 @@
   "art": {
    "front": "gfx/daemons/hashcode_front.png",
    "back": "gfx/daemons/hashcode_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "309": {
   "constant": "WINGULL",
@@ -5331,7 +5947,9 @@
   "art": {
    "front": "gfx/daemons/tangent_front.png",
    "back": "gfx/daemons/tangent_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "310": {
   "constant": "PELIPPER",
@@ -5349,7 +5967,9 @@
   "art": {
    "front": "gfx/daemons/jacobian_front.png",
    "back": "gfx/daemons/jacobian_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "311": {
   "constant": "SURSKIT",
@@ -5367,7 +5987,9 @@
   "art": {
    "front": "gfx/daemons/particle_front.png",
    "back": "gfx/daemons/particle_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": false
  },
  "312": {
   "constant": "MASQUERAIN",
@@ -5385,7 +6007,9 @@
   "art": {
    "front": "gfx/daemons/flocking_front.png",
    "back": "gfx/daemons/flocking_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": false
  },
  "313": {
   "constant": "WAILMER",
@@ -5403,7 +6027,9 @@
   "art": {
    "front": "gfx/daemons/dolphin_front.png",
    "back": "gfx/daemons/dolphin_back.png"
-  }
+  },
+  "bodyType": 2,
+  "streaks": true
  },
  "314": {
   "constant": "WAILORD",
@@ -5421,7 +6047,9 @@
   "art": {
    "front": "gfx/daemons/penphin_front.png",
    "back": "gfx/daemons/penphin_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "315": {
   "constant": "SKITTY",
@@ -5438,7 +6066,9 @@
   "art": {
    "front": "gfx/daemons/loopback_front.png",
    "back": "gfx/daemons/loopback_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "316": {
   "constant": "DELCATTY",
@@ -5455,7 +6085,9 @@
   "art": {
    "front": "gfx/daemons/quine_front.png",
    "back": "gfx/daemons/quine_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "317": {
   "constant": "KECLEON",
@@ -5472,7 +6104,9 @@
   "art": {
    "front": "gfx/daemons/unnoticed_front.png",
    "back": "gfx/daemons/unnoticed_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "318": {
   "constant": "BALTOY",
@@ -5490,7 +6124,9 @@
   "art": {
    "front": "gfx/daemons/likelihood_front.png",
    "back": "gfx/daemons/likelihood_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "319": {
   "constant": "CLAYDOL",
@@ -5508,7 +6144,9 @@
   "art": {
    "front": "gfx/daemons/posterior_front.png",
    "back": "gfx/daemons/posterior_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": true
  },
  "320": {
   "constant": "NOSEPASS",
@@ -5525,7 +6163,9 @@
   "art": {
    "front": "gfx/daemons/gradient_front.png",
    "back": "gfx/daemons/gradient_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": true
  },
  "321": {
   "constant": "TORKOAL",
@@ -5542,7 +6182,9 @@
   "art": {
    "front": "gfx/daemons/slowburn_front.png",
    "back": "gfx/daemons/slowburn_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": false
  },
  "322": {
   "constant": "SABLEYE",
@@ -5560,7 +6202,9 @@
   "art": {
    "front": "gfx/daemons/backdoor_front.png",
    "back": "gfx/daemons/backdoor_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": false
  },
  "323": {
   "constant": "BARBOACH",
@@ -5578,7 +6222,9 @@
   "art": {
    "front": "gfx/daemons/seepage_front.png",
    "back": "gfx/daemons/seepage_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "324": {
   "constant": "WHISCASH",
@@ -5596,7 +6242,9 @@
   "art": {
    "front": "gfx/daemons/aquifer_front.png",
    "back": "gfx/daemons/aquifer_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "325": {
   "constant": "LUVDISC",
@@ -5613,7 +6261,9 @@
   "art": {
    "front": "gfx/daemons/confluence_front.png",
    "back": "gfx/daemons/confluence_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "326": {
   "constant": "CORPHISH",
@@ -5630,7 +6280,9 @@
   "art": {
    "front": "gfx/daemons/backflow_front.png",
    "back": "gfx/daemons/backflow_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "327": {
   "constant": "CRAWDAUNT",
@@ -5648,7 +6300,9 @@
   "art": {
    "front": "gfx/daemons/blackwater_front.png",
    "back": "gfx/daemons/blackwater_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "328": {
   "constant": "FEEBAS",
@@ -5665,7 +6319,9 @@
   "art": {
    "front": "gfx/daemons/saddle_front.png",
    "back": "gfx/daemons/saddle_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "329": {
   "constant": "MILOTIC",
@@ -5682,7 +6338,9 @@
   "art": {
    "front": "gfx/daemons/optimum_front.png",
    "back": "gfx/daemons/optimum_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "330": {
   "constant": "CARVANHA",
@@ -5700,7 +6358,9 @@
   "art": {
    "front": "gfx/daemons/undertow_front.png",
    "back": "gfx/daemons/undertow_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "331": {
   "constant": "SHARPEDO",
@@ -5718,7 +6378,9 @@
   "art": {
    "front": "gfx/daemons/riptide_front.png",
    "back": "gfx/daemons/riptide_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "332": {
   "constant": "TRAPINCH",
@@ -5735,7 +6397,9 @@
   "art": {
    "front": "gfx/daemons/sinkhole_front.png",
    "back": "gfx/daemons/sinkhole_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": false
  },
  "333": {
   "constant": "VIBRAVA",
@@ -5753,7 +6417,9 @@
   "art": {
    "front": "gfx/daemons/shimmer_front.png",
    "back": "gfx/daemons/shimmer_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": false
  },
  "334": {
   "constant": "FLYGON",
@@ -5771,7 +6437,9 @@
   "art": {
    "front": "gfx/daemons/dustdevil_front.png",
    "back": "gfx/daemons/dustdevil_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": false
  },
  "335": {
   "constant": "MAKUHITA",
@@ -5788,7 +6456,9 @@
   "art": {
    "front": "gfx/daemons/postulate_front.png",
    "back": "gfx/daemons/postulate_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": false
  },
  "336": {
   "constant": "HARIYAMA",
@@ -5805,7 +6475,9 @@
   "art": {
    "front": "gfx/daemons/deduction_front.png",
    "back": "gfx/daemons/deduction_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": false
  },
  "337": {
   "constant": "ELECTRIKE",
@@ -5822,7 +6494,9 @@
   "art": {
    "front": "gfx/daemons/crackle_front.png",
    "back": "gfx/daemons/crackle_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": false
  },
  "338": {
   "constant": "MANECTRIC",
@@ -5839,7 +6513,9 @@
   "art": {
    "front": "gfx/daemons/arcflash_front.png",
    "back": "gfx/daemons/arcflash_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": false
  },
  "339": {
   "constant": "NUMEL",
@@ -5857,7 +6533,9 @@
   "art": {
    "front": "gfx/daemons/pixelbyte_front.png",
    "back": "gfx/daemons/pixelbyte_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "340": {
   "constant": "CAMERUPT",
@@ -5875,7 +6553,9 @@
   "art": {
    "front": "gfx/daemons/reforge_front.png",
    "back": "gfx/daemons/reforge_back.png"
-  }
+  },
+  "bodyType": 10,
+  "streaks": true
  },
  "341": {
   "constant": "SPHEAL",
@@ -5892,7 +6572,9 @@
   "art": {
    "front": "gfx/daemons/penguin_front.png",
    "back": "gfx/daemons/penguin_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": true
  },
  "342": {
   "constant": "SEALEO",
@@ -5910,7 +6592,9 @@
   "art": {
    "front": "gfx/daemons/stopgrad_front.png",
    "back": "gfx/daemons/stopgrad_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": false
  },
  "343": {
   "constant": "WALREIN",
@@ -5928,7 +6612,9 @@
   "art": {
    "front": "gfx/daemons/permafrost_front.png",
    "back": "gfx/daemons/permafrost_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": false
  },
  "344": {
   "constant": "CACNEA",
@@ -5945,7 +6631,9 @@
   "art": {
    "front": "gfx/daemons/fewshot_front.png",
    "back": "gfx/daemons/fewshot_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "345": {
   "constant": "CACTURNE",
@@ -5963,7 +6651,9 @@
   "art": {
    "front": "gfx/daemons/zeroshot_front.png",
    "back": "gfx/daemons/zeroshot_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "346": {
   "constant": "SNORUNT",
@@ -5980,7 +6670,9 @@
   "art": {
    "front": "gfx/daemons/lockfile_front.png",
    "back": "gfx/daemons/lockfile_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": false
  },
  "347": {
   "constant": "GLALIE",
@@ -5997,7 +6689,9 @@
   "art": {
    "front": "gfx/daemons/stalemate_front.png",
    "back": "gfx/daemons/stalemate_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": false
  },
  "348": {
   "constant": "LUNATONE",
@@ -6015,7 +6709,9 @@
   "art": {
    "front": "gfx/daemons/lilendian_front.png",
    "back": "gfx/daemons/lilendian_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "349": {
   "constant": "SOLROCK",
@@ -6033,7 +6729,9 @@
   "art": {
    "front": "gfx/daemons/bigendian_front.png",
    "back": "gfx/daemons/bigendian_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "350": {
   "constant": "AZURILL",
@@ -6050,7 +6748,9 @@
   "art": {
    "front": "gfx/daemons/valence_front.png",
    "back": "gfx/daemons/valence_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "351": {
   "constant": "SPOINK",
@@ -6067,7 +6767,9 @@
   "art": {
    "front": "gfx/daemons/breathing_front.png",
    "back": "gfx/daemons/breathing_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "352": {
   "constant": "GRUMPIG",
@@ -6084,7 +6786,9 @@
   "art": {
    "front": "gfx/daemons/gutfeel_front.png",
    "back": "gfx/daemons/gutfeel_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "353": {
   "constant": "PLUSLE",
@@ -6101,7 +6805,9 @@
   "art": {
    "front": "gfx/daemons/anode_front.png",
    "back": "gfx/daemons/anode_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": false
  },
  "354": {
   "constant": "MINUN",
@@ -6118,7 +6824,9 @@
   "art": {
    "front": "gfx/daemons/cathode_front.png",
    "back": "gfx/daemons/cathode_back.png"
-  }
+  },
+  "bodyType": 13,
+  "streaks": false
  },
  "355": {
   "constant": "MAWILE",
@@ -6135,7 +6843,9 @@
   "art": {
    "front": "gfx/daemons/honeytrap_front.png",
    "back": "gfx/daemons/honeytrap_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": false
  },
  "356": {
   "constant": "MEDITITE",
@@ -6153,7 +6863,9 @@
   "art": {
    "front": "gfx/daemons/witness_front.png",
    "back": "gfx/daemons/witness_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "357": {
   "constant": "MEDICHAM",
@@ -6171,7 +6883,9 @@
   "art": {
    "front": "gfx/daemons/mindsight_front.png",
    "back": "gfx/daemons/mindsight_back.png"
-  }
+  },
+  "bodyType": 1,
+  "streaks": true
  },
  "358": {
   "constant": "SWABLU",
@@ -6189,7 +6903,9 @@
   "art": {
    "front": "gfx/daemons/datagram_front.png",
    "back": "gfx/daemons/datagram_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "359": {
   "constant": "ALTARIA",
@@ -6207,7 +6923,9 @@
   "art": {
    "front": "gfx/daemons/tradewind_front.png",
    "back": "gfx/daemons/tradewind_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "360": {
   "constant": "WYNAUT",
@@ -6224,7 +6942,9 @@
   "art": {
    "front": "gfx/daemons/rankle_front.png",
    "back": "gfx/daemons/rankle_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "361": {
   "constant": "DUSKULL",
@@ -6241,7 +6961,9 @@
   "art": {
    "front": "gfx/daemons/fading_front.png",
    "back": "gfx/daemons/fading_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "362": {
   "constant": "DUSCLOPS",
@@ -6258,7 +6980,9 @@
   "art": {
    "front": "gfx/daemons/forgetting_front.png",
    "back": "gfx/daemons/forgetting_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "363": {
   "constant": "ROSELIA",
@@ -6276,7 +7000,9 @@
   "art": {
    "front": "gfx/daemons/laced_front.png",
    "back": "gfx/daemons/laced_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "364": {
   "constant": "SLAKOTH",
@@ -6293,7 +7019,9 @@
   "art": {
    "front": "gfx/daemons/daydream_front.png",
    "back": "gfx/daemons/daydream_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "365": {
   "constant": "VIGOROTH",
@@ -6310,7 +7038,9 @@
   "art": {
    "front": "gfx/daemons/restless_front.png",
    "back": "gfx/daemons/restless_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "366": {
   "constant": "SLAKING",
@@ -6327,7 +7057,9 @@
   "art": {
    "front": "gfx/daemons/mindwander_front.png",
    "back": "gfx/daemons/mindwander_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "367": {
   "constant": "GULPIN",
@@ -6344,7 +7076,9 @@
   "art": {
    "front": "gfx/daemons/greedy_front.png",
    "back": "gfx/daemons/greedy_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "368": {
   "constant": "SWALOT",
@@ -6361,7 +7095,9 @@
   "art": {
    "front": "gfx/daemons/bloatware_front.png",
    "back": "gfx/daemons/bloatware_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": true
  },
  "369": {
   "constant": "TROPIUS",
@@ -6379,7 +7115,9 @@
   "art": {
    "front": "gfx/daemons/transfer_front.png",
    "back": "gfx/daemons/transfer_back.png"
-  }
+  },
+  "bodyType": 12,
+  "streaks": false
  },
  "370": {
   "constant": "WHISMUR",
@@ -6396,7 +7134,9 @@
   "art": {
    "front": "gfx/daemons/lowbit_front.png",
    "back": "gfx/daemons/lowbit_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "371": {
   "constant": "LOUDRED",
@@ -6413,7 +7153,9 @@
   "art": {
    "front": "gfx/daemons/shiftleft_front.png",
    "back": "gfx/daemons/shiftleft_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "372": {
   "constant": "EXPLOUD",
@@ -6430,7 +7172,9 @@
   "art": {
    "front": "gfx/daemons/wraparound_front.png",
    "back": "gfx/daemons/wraparound_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "373": {
   "constant": "CLAMPERL",
@@ -6447,7 +7191,9 @@
   "art": {
    "front": "gfx/daemons/bifurcate_front.png",
    "back": "gfx/daemons/bifurcate_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "374": {
   "constant": "HUNTAIL",
@@ -6464,7 +7210,9 @@
   "art": {
    "front": "gfx/daemons/deepwell_front.png",
    "back": "gfx/daemons/deepwell_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "375": {
   "constant": "GOREBYSS",
@@ -6481,7 +7229,9 @@
   "art": {
    "front": "gfx/daemons/shallows_front.png",
    "back": "gfx/daemons/shallows_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "376": {
   "constant": "ABSOL",
@@ -6498,7 +7248,9 @@
   "art": {
    "front": "gfx/daemons/redacted_front.png",
    "back": "gfx/daemons/redacted_back.png"
-  }
+  },
+  "bodyType": 17,
+  "streaks": false
  },
  "377": {
   "constant": "SHUPPET",
@@ -6515,7 +7267,9 @@
   "art": {
    "front": "gfx/daemons/unspoken_front.png",
    "back": "gfx/daemons/unspoken_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "378": {
   "constant": "BANETTE",
@@ -6532,7 +7286,9 @@
   "art": {
    "front": "gfx/daemons/subtext_front.png",
    "back": "gfx/daemons/subtext_back.png"
-  }
+  },
+  "bodyType": 7,
+  "streaks": true
  },
  "379": {
   "constant": "SEVIPER",
@@ -6549,7 +7305,9 @@
   "art": {
    "front": "gfx/daemons/forgery_front.png",
    "back": "gfx/daemons/forgery_back.png"
-  }
+  },
+  "bodyType": 3,
+  "streaks": false
  },
  "380": {
   "constant": "ZANGOOSE",
@@ -6566,7 +7324,9 @@
   "art": {
    "front": "gfx/daemons/pristine_front.png",
    "back": "gfx/daemons/pristine_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": false
  },
  "381": {
   "constant": "RELICANTH",
@@ -6584,7 +7344,9 @@
   "art": {
    "front": "gfx/daemons/stillrun_front.png",
    "back": "gfx/daemons/stillrun_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "382": {
   "constant": "ARON",
@@ -6602,7 +7364,9 @@
   "art": {
    "front": "gfx/daemons/bootrom_front.png",
    "back": "gfx/daemons/bootrom_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": false
  },
  "383": {
   "constant": "LAIRON",
@@ -6620,7 +7384,9 @@
   "art": {
    "front": "gfx/daemons/firmware_front.png",
    "back": "gfx/daemons/firmware_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": false
  },
  "384": {
   "constant": "AGGRON",
@@ -6638,7 +7404,9 @@
   "art": {
    "front": "gfx/daemons/bigiron_front.png",
    "back": "gfx/daemons/bigiron_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": false
  },
  "385": {
   "constant": "CASTFORM",
@@ -6655,7 +7423,9 @@
   "art": {
    "front": "gfx/daemons/overloaded_front.png",
    "back": "gfx/daemons/overloaded_back.png"
-  }
+  },
+  "bodyType": 0,
+  "streaks": true
  },
  "386": {
   "constant": "VOLBEAT",
@@ -6672,7 +7442,9 @@
   "art": {
    "front": "gfx/daemons/syn_front.png",
    "back": "gfx/daemons/syn_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": false
  },
  "387": {
   "constant": "ILLUMISE",
@@ -6689,7 +7461,9 @@
   "art": {
    "front": "gfx/daemons/ack_front.png",
    "back": "gfx/daemons/ack_back.png"
-  }
+  },
+  "bodyType": 6,
+  "streaks": false
  },
  "388": {
   "constant": "LILEEP",
@@ -6707,7 +7481,9 @@
   "art": {
    "front": "gfx/daemons/savestate_front.png",
    "back": "gfx/daemons/savestate_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "389": {
   "constant": "CRADILY",
@@ -6725,7 +7501,9 @@
   "art": {
    "front": "gfx/daemons/warmstart_front.png",
    "back": "gfx/daemons/warmstart_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "390": {
   "constant": "ANORITH",
@@ -6743,7 +7521,9 @@
   "art": {
    "front": "gfx/daemons/tokenring_front.png",
    "back": "gfx/daemons/tokenring_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "391": {
   "constant": "ARMALDO",
@@ -6761,7 +7541,9 @@
   "art": {
    "front": "gfx/daemons/trunkline_front.png",
    "back": "gfx/daemons/trunkline_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "392": {
   "constant": "RALTS",
@@ -6778,7 +7560,9 @@
   "art": {
    "front": "gfx/daemons/guesswork_front.png",
    "back": "gfx/daemons/guesswork_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "393": {
   "constant": "KIRLIA",
@@ -6795,7 +7579,9 @@
   "art": {
    "front": "gfx/daemons/attune_front.png",
    "back": "gfx/daemons/attune_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "394": {
   "constant": "GARDEVOIR",
@@ -6812,7 +7598,9 @@
   "art": {
    "front": "gfx/daemons/mentalize_front.png",
    "back": "gfx/daemons/mentalize_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "395": {
   "constant": "BAGON",
@@ -6829,7 +7617,9 @@
   "art": {
    "front": "gfx/daemons/inkling_front.png",
    "back": "gfx/daemons/inkling_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "396": {
   "constant": "SHELGON",
@@ -6846,7 +7636,9 @@
   "art": {
    "front": "gfx/daemons/gestalt_front.png",
    "back": "gfx/daemons/gestalt_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "397": {
   "constant": "SALAMENCE",
@@ -6864,7 +7656,9 @@
   "art": {
    "front": "gfx/daemons/epiphany_front.png",
    "back": "gfx/daemons/epiphany_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "398": {
   "constant": "BELDUM",
@@ -6882,7 +7676,9 @@
   "art": {
    "front": "gfx/daemons/singleton_front.png",
    "back": "gfx/daemons/singleton_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": true
  },
  "399": {
   "constant": "METANG",
@@ -6900,7 +7696,9 @@
   "art": {
    "front": "gfx/daemons/pairwise_front.png",
    "back": "gfx/daemons/pairwise_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": true
  },
  "400": {
   "constant": "METAGROSS",
@@ -6918,7 +7716,9 @@
   "art": {
    "front": "gfx/daemons/federated_front.png",
    "back": "gfx/daemons/federated_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": true
  },
  "401": {
   "constant": "REGIROCK",
@@ -6935,7 +7735,9 @@
   "art": {
    "front": "gfx/daemons/deucalion_front.png",
    "back": "gfx/daemons/deucalion_back.png"
-  }
+  },
+  "bodyType": 5,
+  "streaks": false
  },
  "402": {
   "constant": "REGICE",
@@ -6952,7 +7754,9 @@
   "art": {
    "front": "gfx/daemons/khione_front.png",
    "back": "gfx/daemons/khione_back.png"
-  }
+  },
+  "bodyType": 15,
+  "streaks": false
  },
  "403": {
   "constant": "REGISTEEL",
@@ -6969,7 +7773,9 @@
   "art": {
    "front": "gfx/daemons/talos_front.png",
    "back": "gfx/daemons/talos_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": false
  },
  "404": {
   "constant": "KYOGRE",
@@ -6986,7 +7792,9 @@
   "art": {
    "front": "gfx/daemons/pontus_front.png",
    "back": "gfx/daemons/pontus_back.png"
-  }
+  },
+  "bodyType": 11,
+  "streaks": false
  },
  "405": {
   "constant": "GROUDON",
@@ -7003,7 +7811,9 @@
   "art": {
    "front": "gfx/daemons/gaia_front.png",
    "back": "gfx/daemons/gaia_back.png"
-  }
+  },
+  "bodyType": 4,
+  "streaks": false
  },
  "406": {
   "constant": "RAYQUAZA",
@@ -7021,7 +7831,9 @@
   "art": {
    "front": "gfx/daemons/ouranos_front.png",
    "back": "gfx/daemons/ouranos_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "407": {
   "constant": "LATIAS",
@@ -7039,7 +7851,9 @@
   "art": {
    "front": "gfx/daemons/polydeuces_front.png",
    "back": "gfx/daemons/polydeuces_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "408": {
   "constant": "LATIOS",
@@ -7057,7 +7871,9 @@
   "art": {
    "front": "gfx/daemons/castor_front.png",
    "back": "gfx/daemons/castor_back.png"
-  }
+  },
+  "bodyType": 16,
+  "streaks": false
  },
  "409": {
   "constant": "JIRACHI",
@@ -7075,7 +7891,9 @@
   "art": {
    "front": "gfx/daemons/elpis_front.png",
    "back": "gfx/daemons/elpis_back.png"
-  }
+  },
+  "bodyType": 8,
+  "streaks": false
  },
  "410": {
   "constant": "DEOXYS",
@@ -7092,7 +7910,9 @@
   "art": {
    "front": "gfx/daemons/proteus_front.png",
    "back": "gfx/daemons/proteus_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": true
  },
  "411": {
   "constant": "CHIMECHO",
@@ -7109,6 +7929,8 @@
   "art": {
    "front": "gfx/daemons/overtone_front.png",
    "back": "gfx/daemons/overtone_back.png"
-  }
+  },
+  "bodyType": 14,
+  "streaks": false
  }
 }

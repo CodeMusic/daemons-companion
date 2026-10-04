@@ -24,7 +24,7 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   return j as T;
 }
 
-const artFor = (name: string) => `${SERVER}/art/${name.toLowerCase().replace(/ /g, "_").replace(/[^a-z0-9_]/g, "")}_front.png`;
+// C-18: a party daemon's art is the server's -- drawn as the game draws it, its streaks painted for its routines.
 
 function TodayScreen({ today, reload, accent }: { today: Today; reload: () => void; accent: string }) {
   const done = async () => { if (today.next) { await api(`/api/steps/${today.next.step.id}/done`, {}); reload(); } };
@@ -123,7 +123,7 @@ function DaemonScreen({ accent }: { accent: string }) {
         {party.map((d) => (
           <Pressable key={d.slot} style={[s.daemon, d.away && s.away]} accessibilityRole="button"
                      onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ name: x.name, category: x.category, entry: x.entry }))}>
-            <Image source={{ uri: artFor(d.name) }} style={[s.art, PIXELATED]} />
+            <Image source={{ uri: `${SERVER}/art/party/${d.slot}.png` }} style={[s.art, PIXELATED]} />
             <Text style={s.daemonName}>{d.nickname}</Text>
             <Text style={s.small}>{d.name} · L{d.level}</Text>
             {d.away ? <Text style={[s.small, { color: accent }]}>ON YOUR DEVICE</Text> : null}

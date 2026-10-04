@@ -8,6 +8,7 @@
 //   GET  /api/species/:id        one daemon's name, types, category and its edition's INDEX entry
 //   POST /api/away/answer        answer the game's AWAY requests in the configured save (C-10), after a backup
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
+//   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
@@ -19,6 +20,10 @@ import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
 import { answerRequests } from "./save/writer.js";
 import { season } from "./seasons.js";
+import { repaint, streakColours } from "./art.js";
+import { fileURLToPath } from "node:url";
+
+const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -68,6 +73,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
       }
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(cfg, store));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(cfg));
+      const partyArt = path.match(/^\/art\/party\/(\d)\.png$/);
+      if (req.method === "GET" && partyArt) {
+        if (!cfg.savePath || !existsSync(cfg.savePath)) return send(res, 404, { error: "no save is configured" });
+        const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.slot === Number(partyArt[1]));
+        const row = d && SPECIES[String(d.species)];
+        const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
+        if (!d || !file || !existsSync(file)) return send(res, 404, { error: "no art for that slot" });
+        const png = readFileSync(file);
+        const body = row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
+        return res.end(body);
+      }
       if (req.method === "GET" && path === "/api/goals") return send(res, 200, store.goals());
       if (req.method === "POST" && path === "/api/goals") {
         const b = await body(req);

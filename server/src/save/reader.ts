@@ -24,6 +24,7 @@ export interface PartyDaemon {
   nickname: string;
   level: number;
   friendship: number;
+  moves: number[];         // its four routines' move ids, 0 for an empty slot (C-18: the streaks)
   away: boolean;           // on the companion's device (T-358)
   asked: boolean;          // the game's half of a send or return, waiting for the app
 }
@@ -111,12 +112,15 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
   if (sum !== v.getUint16(28, true)) throw new Error(`party slot ${slot}: the record's checksum fails`);
   const growth = ORDERS[personality % 24].indexOf("G") * 12;
   const species = sv.getUint16(growth, true);
+  const attacks = ORDERS[personality % 24].indexOf("A") * 12;
+  const moves = [0, 1, 2, 3].map((k) => sv.getUint16(attacks + 2 * k, true));
   return {
     slot, personality, otId, species,
     name: SPECIES[String(species)]?.name ?? `#${species}`,
     nickname: decodeText(rec.subarray(8, 18)),
     level: rec.length > l.level_offset ? rec[l.level_offset] : 0,
     friendship: sv.getUint8(growth + 9),
+    moves,
     away: !!(flags & (1 << l.away_bit)),
     asked: !!(flags & (1 << l.asked_bit)),
   };

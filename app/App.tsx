@@ -1,13 +1,16 @@
 // C-05: the companion's app -- Today, Goals and Daemon, against the local server (server/, npm start). It runs as a
-// local site first (npm run web) and builds to iOS from the same code later. The day's colour themes it, as the
-// device will be themed; the daemon art is DAEMONS' own, drawn pixel for pixel.
+// local site first (npm run web) and builds to iOS from the same code later. The daemon art is DAEMONS' own, drawn
+// pixel for pixel.
+// C-20: on Tamagui. The whole app sits in today's theme (tamagui.config.ts): $color9 is the day's colour, $color1 to
+// $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Platform } from "react-native";
+import { Button, Input, ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
+import config, { DAYS, WEEK_COLOURS } from "./tamagui.config";
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 const SERVER = process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
-const MONO = Platform.select({ web: "ui-monospace, Menlo, monospace", default: "Menlo" });
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string };
@@ -25,36 +28,56 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   return j as T;
 }
 
-// C-18: a party daemon's art is the server's -- drawn as the game draws it, its streaks painted for its routines.
+// Words on the day's colour: ink on the light days (Tuesday's yellow), paper on the dark ones.
+function onColour(hex: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.3 ? "#1d2026" : "#fbfaf6";
+}
 
-function TodayScreen({ today, reload, accent }: { today: Today; reload: () => void; accent: string }) {
-  const done = async () => { if (today.next) { await api(`/api/steps/${today.next.step.id}/done`, {}); reload(); } };
+const Eyebrow = (p: { children: React.ReactNode }) =>
+  <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="$color11">{p.children}</Text>;
+const Small = (p: { children: React.ReactNode; struck?: boolean; color?: string }) =>
+  <Text fontSize={14} lineHeight={20} color={p.struck ? "$color8" : (p.color ?? "$color11")}
+        textDecorationLine={p.struck ? "line-through" : "none"}>{p.children}</Text>;
+const Card = (p: React.ComponentProps<typeof YStack>) =>
+  <YStack backgroundColor="$color1" borderWidth={1} borderColor="$color5" borderRadius={4} padding={16} gap={6} {...p} />;
+
+function Action({ label, onPress, ink }: { label: string; onPress: () => void; ink: string }) {
   return (
-    <View style={s.stack}>
-      <View style={[s.card, { borderColor: accent }]}>
-        <Text style={s.eyebrow}>{today.day.day.toUpperCase()} · {today.day.note} · {today.season.toUpperCase()}</Text>
-        <Text style={s.virtue}>{today.day.virtue}</Text>
-        <Text style={s.small}>{today.day.chakra} · {today.day.hue} · {today.edition}</Text>
-      </View>
-      <View style={[s.card, s.focus, { borderColor: accent }]}>
-        <Text style={s.eyebrow}>THE ONE THING</Text>
-        {today.next ? (
-          <>
-            <Text style={s.step}>{today.next.step.text}</Text>
-            <Text style={s.small}>{today.next.goal} › {today.next.subitem}</Text>
-            <Pressable style={[s.button, { backgroundColor: accent }]} onPress={done} accessibilityRole="button">
-              <Text style={s.buttonText}>Done</Text>
-            </Pressable>
-          </>
-        ) : (
-          <Text style={s.small}>Nothing to do yet. Add a goal, and the first step will wait here.</Text>
-        )}
-      </View>
-    </View>
+    <Button alignSelf="flex-start" marginTop={8} backgroundColor="$color9" borderRadius={3} paddingHorizontal={18}
+            hoverStyle={{ backgroundColor: "$color10" }} pressStyle={{ backgroundColor: "$color10" }} onPress={onPress}>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={1} fontWeight="700" color={ink}>{label}</Text>
+    </Button>
   );
 }
 
-function GoalsScreen({ goals, reload, accent }: { goals: Goal[]; reload: () => void; accent: string }) {
+function TodayScreen({ today, reload, ink }: { today: Today; reload: () => void; ink: string }) {
+  const done = async () => { if (today.next) { await api(`/api/steps/${today.next.step.id}/done`, {}); reload(); } };
+  return (
+    <YStack gap={14}>
+      <Card>
+        <Eyebrow>{today.day.day.toUpperCase()} · {today.day.note} · {today.season.toUpperCase()}</Eyebrow>
+        <Text fontSize={24} fontWeight="600" color="$color12">{today.day.virtue}</Text>
+        <Small>{today.day.chakra} · {today.day.hue} · {today.edition}</Small>
+      </Card>
+      <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
+        <Eyebrow>THE ONE THING</Eyebrow>
+        {today.next ? (
+          <>
+            <Text fontSize={22} fontWeight="600" lineHeight={30} color="$color12">{today.next.step.text}</Text>
+            <Small>{today.next.goal} › {today.next.subitem}</Small>
+            <Action label="Done" onPress={done} ink={ink} />
+          </>
+        ) : (
+          <Small>Nothing to do yet. Add a goal, and the first step will wait here.</Small>
+        )}
+      </Card>
+    </YStack>
+  );
+}
+
+function GoalsScreen({ goals, reload, ink }: { goals: Goal[]; reload: () => void; ink: string }) {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const add = async () => {
@@ -65,31 +88,32 @@ function GoalsScreen({ goals, reload, accent }: { goals: Goal[]; reload: () => v
     reload();
   };
   return (
-    <View style={s.stack}>
-      <View style={s.row}>
-        <TextInput nativeID="new-goal" style={s.input} value={title} onChangeText={setTitle} onSubmitEditing={add}
-                   placeholder="Something you want to get done" placeholderTextColor="#8a8f98" />
-        <Pressable style={[s.button, { backgroundColor: accent }]} onPress={add} accessibilityRole="button">
-          <Text style={s.buttonText}>Break it down</Text>
-        </Pressable>
-      </View>
-      {note ? <Text style={s.small}>{note}</Text> : null}
+    <YStack gap={14}>
+      <XStack gap={10} alignItems="center" flexWrap="wrap">
+        <Input id="new-goal" flexGrow={1} minWidth={220} value={title} onChangeText={setTitle} onSubmitEditing={add}
+               placeholder="Something you want to get done" backgroundColor="$color1" borderColor="$color6"
+               color="$color12" fontSize={15} />
+        <Action label="Break it down" onPress={add} ink={ink} />
+      </XStack>
+      {note ? <Small>{note}</Small> : null}
       {goals.map((g) => (
-        <View key={g.id} style={s.card}>
-          <Text style={[s.goal, g.done && s.struck]}>{g.title}</Text>
+        <Card key={g.id}>
+          <Text fontSize={17} fontWeight="700" color={g.done ? "$color8" : "$color12"}
+                textDecorationLine={g.done ? "line-through" : "none"}>{g.title}</Text>
           {g.subitems.map((si) => (
-            <View key={si.id} style={s.sub}>
-              <Text style={[s.subTitle, si.done && s.struck]}>{si.title}</Text>
-              {si.steps.map((st) => <Text key={st.id} style={[s.small, st.done && s.struck]}>· {st.text}</Text>)}
-            </View>
+            <YStack key={si.id} marginTop={6} gap={2}>
+              <Text fontSize={15} fontWeight="600" color={si.done ? "$color8" : "$color12"}
+                    textDecorationLine={si.done ? "line-through" : "none"}>{si.title}</Text>
+              {si.steps.map((st) => <Small key={st.id} struck={st.done}>· {st.text}</Small>)}
+            </YStack>
           ))}
-        </View>
+        </Card>
       ))}
-    </View>
+    </YStack>
   );
 }
 
-function DaemonScreen({ accent }: { accent: string }) {
+function DaemonScreen({ ink }: { ink: string }) {
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<{ name: string; category: string; entry: string } | null>(null);
@@ -106,108 +130,92 @@ function DaemonScreen({ accent }: { accent: string }) {
       : "Nothing was asked. In the game, choose SEND or CALL HOME and let it save first.");
     load();
   };
-  if (error) return <Text style={s.small}>{error}</Text>;
-  if (!party) return <Text style={s.small}>Reading your save…</Text>;
+  if (error) return <Small>{error}</Small>;
+  if (!party) return <Small>Reading your save…</Small>;
   const asked = party.some((d) => d.asked);
   return (
-    <View style={s.stack}>
+    <YStack gap={14}>
       {asked ? (
-        <View style={[s.card, { borderColor: accent }]}>
-          <Text style={s.small}>The game is asking. Close it first, then answer here.</Text>
-          <Pressable style={[s.button, { backgroundColor: accent }]} onPress={answer} accessibilityRole="button">
-            <Text style={s.buttonText}>Answer the game</Text>
-          </Pressable>
-        </View>
+        <Card borderColor="$color9">
+          <Small>The game is asking. Close it first, then answer here.</Small>
+          <Action label="Answer the game" onPress={answer} ink={ink} />
+        </Card>
       ) : null}
-      {note ? <Text style={s.small}>{note}</Text> : null}
-      <View style={s.grid}>
+      {note ? <Small>{note}</Small> : null}
+      <XStack flexWrap="wrap" gap={12}>
         {party.map((d) => (
-          <Pressable key={d.slot} style={[s.daemon, d.away && s.away]} accessibilityRole="button"
-                     onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ name: x.name, category: x.category, entry: x.entry }))}>
-            <Image source={{ uri: `${SERVER}/art/party/${d.slot}.png` }} style={[s.art, PIXELATED]} />
-            <Text style={s.daemonName}>{d.nickname}</Text>
-            <Text style={s.small}>{d.name} · L{d.level}</Text>
-            {d.away ? <Text style={[s.small, { color: accent }]}>ON YOUR DEVICE</Text> : null}
-            {d.asked ? <Text style={[s.small, { color: accent }]}>{d.away ? "ASKED HOME" : "ASKED TO GO"}</Text> : null}
-          </Pressable>
+          <YStack key={d.slot} width={150} alignItems="center" backgroundColor="$color1" borderWidth={1}
+                  borderColor="$color5" borderRadius={4} padding={10} gap={2} opacity={d.away ? 0.45 : 1}
+                  cursor="pointer" hoverStyle={{ borderColor: "$color9" }} role="button"
+                  onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ name: x.name, category: x.category, entry: x.entry }))}>
+            <Image source={{ uri: `${SERVER}/art/party/${d.slot}.png` }} style={[{ width: 128, height: 128 }, PIXELATED]} />
+            <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{d.nickname}</Text>
+            <Small>{d.name} · L{d.level}</Small>
+            {d.away ? <Small color="$color10">ON YOUR DEVICE</Small> : null}
+            {d.asked ? <Small color="$color10">{d.away ? "ASKED HOME" : "ASKED TO GO"}</Small> : null}
+          </YStack>
         ))}
-      </View>
+      </XStack>
       {open ? (
-        <View style={[s.card, { borderColor: accent }]}>
-          <Text style={s.eyebrow}>{open.name} · {open.category} DAEMON</Text>
-          <Text style={s.entry}>{open.entry}</Text>
-        </View>
+        <Card borderColor="$color9">
+          <Eyebrow>{open.name} · {open.category} DAEMON</Eyebrow>
+          <Text fontSize={16} lineHeight={24} color="$color12">{open.entry}</Text>
+        </Card>
       ) : null}
-    </View>
+    </YStack>
   );
 }
 
-export default function App() {
-  const [tab, setTab] = useState<"today" | "goals" | "daemon">("today");
+const TABS = ["today", "goals", "daemon"] as const;
+
+function Shell() {
+  const [tab, setTab] = useState<(typeof TABS)[number]>("today");
   const [today, setToday] = useState<Today | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [error, setError] = useState("");
   const reload = useCallback(() => {
-    api<Today>("/api/today").then(setToday).catch((e) => setError(`${e.message} -- is the server running? (server/: npm start)`));
+    api<Today>("/api/today").then(setToday).catch((e) => setError(`${e.message} -- is the server running? (./bindCompanion.sh)`));
     api<Goal[]>("/api/goals").then(setGoals).catch(() => {});
   }, []);
   useEffect(reload, [reload]);
-  const accent = today?.day.colour ?? "#5b6b8c";
+  // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's
+  // theme, to look at all seven without waiting a week.
+  const asked = Platform.OS === "web" ? new URLSearchParams(globalThis.location?.search ?? "").get("day")?.toLowerCase() : null;
+  const day = asked && DAYS.includes(asked) ? asked
+    : today && DAYS.includes(today.day.day.toLowerCase()) ? today.day.day.toLowerCase() : null;
+  const ink = onColour(day ? WEEK_COLOURS[day] : "#5b6b8c");
 
-  return (
-    <View style={s.page}>
-      <View style={[s.bar, { borderBottomColor: accent }]}>
-        <Text style={[s.brand, { color: accent }]}>DAEMONS · companion</Text>
-        <View style={s.tabs}>
-          {(["today", "goals", "daemon"] as const).map((t) => (
-            <Pressable key={t} onPress={() => setTab(t)} accessibilityRole="tab" accessibilityState={{ selected: tab === t }}
-                       style={[s.tab, tab === t && { borderBottomColor: accent }]}>
-              <Text style={[s.tabText, tab === t && s.tabOn]}>{t.toUpperCase()}</Text>
-            </Pressable>
+  const page = (
+    <YStack flex={1} backgroundColor="$color2">
+      <YStack paddingTop={24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
+        <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+        <XStack gap={20} marginTop={12} role="tablist">
+          {TABS.map((t) => (
+            <YStack key={t} paddingVertical={10} borderBottomWidth={3} cursor="pointer" role="tab"
+                    aria-selected={tab === t} borderBottomColor={tab === t ? "$color9" : "transparent"}
+                    onPress={() => setTab(t)}>
+              <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} fontWeight={tab === t ? "700" : "400"}
+                    color={tab === t ? "$color12" : "$color10"}>{t.toUpperCase()}</Text>
+            </YStack>
           ))}
-        </View>
-      </View>
-      <ScrollView contentContainerStyle={s.body}>
-        {error ? <Text style={s.small}>{error}</Text> : null}
-        {tab === "today" && today ? <TodayScreen today={today} reload={reload} accent={accent} /> : null}
-        {tab === "goals" ? <GoalsScreen goals={goals} reload={reload} accent={accent} /> : null}
-        {tab === "daemon" ? <DaemonScreen accent={accent} /> : null}
+        </XStack>
+      </YStack>
+      <ScrollView contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
+        {error ? <Small>{error}</Small> : null}
+        {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
+        {tab === "goals" ? <GoalsScreen goals={goals} reload={reload} ink={ink} /> : null}
+        {tab === "daemon" ? <DaemonScreen ink={ink} /> : null}
       </ScrollView>
       <StatusBar style="dark" />
-    </View>
+    </YStack>
   );
+  return day ? <Theme name={day as any}>{page}</Theme> : page;
 }
 
-const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#f3f1ea" },
-  bar: { paddingTop: 24, paddingHorizontal: 20, borderBottomWidth: 3, backgroundColor: "#faf8f2" },
-  brand: { fontFamily: MONO, fontSize: 13, letterSpacing: 2, fontWeight: "600" },
-  tabs: { flexDirection: "row", gap: 20, marginTop: 12 },
-  tab: { paddingVertical: 10, borderBottomWidth: 3, borderBottomColor: "transparent" },
-  tabText: { fontFamily: MONO, fontSize: 12, letterSpacing: 1.5, color: "#7a7f88" },
-  tabOn: { color: "#1d2026", fontWeight: "700" },
-  body: { padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" },
-  stack: { gap: 14 },
-  card: { backgroundColor: "#fffdf8", borderWidth: 1, borderColor: "#dcd8cc", borderRadius: 4, padding: 16, gap: 6 },
-  focus: { borderLeftWidth: 6, paddingVertical: 20 },
-  eyebrow: { fontFamily: MONO, fontSize: 11, letterSpacing: 1.5, color: "#6b7079" },
-  virtue: { fontSize: 24, fontWeight: "600", color: "#1d2026" },
-  step: { fontSize: 22, fontWeight: "600", color: "#1d2026", lineHeight: 30 },
-  small: { fontSize: 14, color: "#5a5f68", lineHeight: 20 },
-  button: { alignSelf: "flex-start", paddingVertical: 10, paddingHorizontal: 18, borderRadius: 3, marginTop: 8 },
-  buttonText: { color: "#fff", fontFamily: MONO, fontSize: 13, letterSpacing: 1, fontWeight: "700" },
-  row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
-  input: { flexGrow: 1, minWidth: 220, borderWidth: 1, borderColor: "#cfcabc", borderRadius: 3, padding: 10, fontSize: 15,
-           backgroundColor: "#fffdf8", color: "#1d2026" },
-  goal: { fontSize: 17, fontWeight: "700", color: "#1d2026" },
-  sub: { marginTop: 6, gap: 2 },
-  subTitle: { fontSize: 15, fontWeight: "600", color: "#30343b" },
-  struck: { textDecorationLine: "line-through", color: "#9a9ea6" },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  daemon: { width: 150, alignItems: "center", backgroundColor: "#fffdf8", borderWidth: 1, borderColor: "#dcd8cc",
-            borderRadius: 4, padding: 10, gap: 2 },
-  away: { opacity: 0.45 },
-  art: { width: 128, height: 128 },
-  daemonName: { fontFamily: MONO, fontSize: 13, fontWeight: "700", color: "#1d2026" },
-  entry: { fontSize: 16, lineHeight: 24, color: "#1d2026" },
-});
+export default function App() {
+  return (
+    <TamaguiProvider config={config} defaultTheme="light">
+      <Shell />
+    </TamaguiProvider>
+  );
+}

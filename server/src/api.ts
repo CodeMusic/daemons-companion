@@ -40,6 +40,7 @@ import { answerRequests, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { deviceArt, repaint, streakColours } from "./art.js";
 import { deviceDay } from "./days.js";
+import { life } from "./life.js";
 import { DeviceHub, type Via } from "./device.js";
 import { networkInterfaces } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -147,6 +148,11 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
 }
 
+// C-13: the carried daemon's life, read from two weeks of what was done together.
+export function daemonLife(store: Store, now = new Date()) {
+  return life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000)), now);
+}
+
 export function deviceState(cfg: Config, store: Store, now = new Date()) {
   const t = today(cfg, store, now);
   let daemon = null;
@@ -158,7 +164,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
     if (d) daemon = { slot: d.slot, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[cfg.edition] ?? "",
-                      artKey: `${d.species}-${d.moves.join(".")}` };
+                      artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now) };
   }
   const dd = deviceDay(t.day.day);
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
@@ -294,9 +300,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))
           return send(res, 400, { error: "steps must be a list of step ids" });
         const done = b.steps.filter((id: number) => store.completeStep(id));
+        for (const id of done) store.logInteraction("step", `device ${id}`);         // C-13: a step finished with it
         return send(res, 200, { done, state: deviceState(ecfg, store) });
       }
       // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
+      // C-13: the site's own care -- feed, water, train -- kept as the device's are
+      const care = path.match(/^\/api\/daemon\/(feed|water|train)$/);
+      if (req.method === "POST" && care) { store.logInteraction(care[1], "site"); return send(res, 200, daemonLife(store)); }
+      if (req.method === "GET" && path === "/api/daemon/life") return send(res, 200, daemonLife(store));
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
@@ -353,8 +364,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       const step = path.match(/^\/api\/steps\/(\d+)\/done$/);
       if (req.method === "POST" && step) {
-        return store.completeStep(Number(step[1])) ? send(res, 200, { next: store.nextStep() })
-                                                   : send(res, 404, { error: "no such step" });
+        const ok = store.completeStep(Number(step[1]));
+        if (ok) store.logInteraction("step", `site ${step[1]}`);                 // C-13: a step finished with it
+        return ok ? send(res, 200, { next: store.nextStep() }) : send(res, 404, { error: "no such step" });
       }
       if (req.method === "GET" && path === "/api/profile") {
         if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });

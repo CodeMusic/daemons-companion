@@ -120,6 +120,12 @@ void soundRoutine(const char *type) {
   play(t, 6, root, dance, 0.8f);
 }
 
+// C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them
+static const Note CARE_TUNES[3][3] = { { {0, 70}, {4, 70}, {7, 150} },      // fed: a full chord, settling
+                                       { {7, 60}, {12, 60}, {9, 140} },     // watered: a splash and a sip
+                                       { {0, 60}, {7, 60}, {12, 150} } };   // trained: up, and up
+void soundCare(int what) { play(CARE_TUNES[constrain(what, 0, 2)], 3, root, DANCE_PULSE, 0.8f); }
+
 // C-41: the title theme's opening phrase (mus_title.mid, its first track: C#4 held, up to G#4, then F#-D#-F#, onto a
 // long F), quickened to a second and a half and an octave up -- in the title's own C#, whatever the day.
 void soundWake() { play(WAKE, 6, 61 + 12, DANCE_SWEEP, 0.8f); }

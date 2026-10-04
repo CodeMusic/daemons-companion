@@ -116,6 +116,32 @@ function GoalsScreen({ goals, reload, ink }: { goals: Goal[]; reload: () => void
 
 type Settings = { savePath: string | null; dir: string | null; exists: boolean; valid: boolean; source: string; canPick: boolean };
 
+// C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
+type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
+              trained: boolean; tired: string; quietDays: number; cue: string | null };
+
+function LifeCard({ ink, name }: { ink: string; name: string }) {
+  const [l, setL] = useState<Life | null>(null);
+  const [said, setSaid] = useState("");
+  useEffect(() => { api<Life>("/api/daemon/life").then(setL).catch(() => {}); }, []);
+  if (!l) return null;
+  const care = async (what: "feed" | "water" | "train", word: string) => { setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word); };
+  return (
+    <Card borderLeftWidth={6} borderLeftColor="$color9">
+      <Eyebrow>{`${name}, TODAY`}</Eyebrow>
+      <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>
+      <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}`}</Small>
+      {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
+      <XStack gap={8} flexWrap="wrap" marginTop={4}>
+        <Action label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
+        <Action label="Water" onPress={() => care("water", "Drunk.")} ink={ink} />
+        <Action label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
+      </XStack>
+      {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
 function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
@@ -162,8 +188,10 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   };
   // The SYNC card is always shown -- when no save is set yet, SYNC is how the user is taught to set one (C-30).
   const asked = party?.some((d) => d.asked) ?? false;
+  const away = party?.find((d) => d.away);
   return (
     <YStack gap={14}>
+      {away ? <LifeCard ink={ink} name={away.nickname} /> : null}
       {needPath ? (
         <Card borderColor="$color9" borderLeftWidth={6} borderLeftColor="$color9">
           <Eyebrow>FIRST, YOUR SAVE</Eyebrow>

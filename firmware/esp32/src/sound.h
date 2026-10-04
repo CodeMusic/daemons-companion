@@ -11,3 +11,4 @@ void soundSelect();                        // one tone, the day's own
 void soundBack();                          // the day's note an octave down, softly
 void soundRoutine(const char *type);       // a routine starting: its tune, the ring dancing to it
 void soundWake();                          // waking from sleep: the title theme's opening, quickened
+void soundCare(int what);                  // C-13: fed (0), watered (1), trained (2) -- a little glad phrase

@@ -39,7 +39,8 @@ static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000;
 TFT_eSPI tft;
 TFT_eSprite canvas(&tft);   // drawn whole, then pushed, so nothing flickers
 
-struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0; };
+struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0;
+                String word, cue; int fed = 0, watered = 0, due = 0; };          // C-13: its life, as the server reads it
 struct State {
   bool have = false;
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue;
@@ -52,7 +53,10 @@ struct State {
 // its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the top button goes back.
 enum Page { TODAY, DAEMON, ROUTINES_PAGE };
 // INDEX_ENTRY: the carried daemon's (C-36). PICK_NET and TYPE_PASS: joining a network on the board (C-33).
-enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS };
+// CARE: what you can do for the carried daemon (C-13) -- feed, water, train, or read its INDEX entry.
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE };
+static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "ITS INDEX ENTRY" };
+int careAt = 0; uint32_t hopUntil = 0;
 Page page = TODAY;
 Screen screen = HOME;
 int typeAt = 0, routineAt = 0;
@@ -169,6 +173,9 @@ bool takeState(const String &json) {
     st.daemon.category = doc["daemon"]["category"] | ""; st.daemon.entry = doc["daemon"]["entry"] | "";
     st.daemon.entry.replace("\n", " ");     // the game's line breaks are for its own window; this screen wraps its own
     st.daemon.artKey = doc["daemon"]["artKey"] | "";
+    JsonVariant lf = doc["daemon"]["life"];
+    st.daemon.word = lf["word"] | ""; st.daemon.cue = lf["cue"] | "";
+    st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
     st.daemon.types = "";
     for (JsonVariant t : doc["daemon"]["types"].as<JsonArray>())
       st.daemon.types += (st.daemon.types.length() ? " / " : "") + String((const char *)(t | ""));
@@ -262,9 +269,9 @@ const char *linkName() {
 
 // The ROUTINES screens: a list with the day's colour behind the chosen row (TYPES, LIST), or what a routine found
 // (RUN). Turn to choose, press to open or run, the top button to go back.
-void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink) {
+void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width = W - 12) {
   int y = 52 + i * 19;
-  if (i == at) canvas.fillRect(6, y - 2, W - 12, 18, day);
+  if (i == at) canvas.fillRect(6, y - 2, width, 18, day);
   canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM);
   canvas.setTextColor(i == at ? ink : PAPER);
   canvas.drawString(text, 12, y);
@@ -328,7 +335,14 @@ void draw() {
   canvas.setTextDatum(MR_DATUM);
   canvas.drawString(linkName(), W - 8, 13);
 
-  if (screen == INDEX_ENTRY) {                                // C-36: its INDEX entry, in the edition's voice
+  if (screen == CARE) {                                      // C-13
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);
+    for (int i = 0; i < 4; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
+    drawArt(W - 70, 34, 1);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("turn: choose    press: do it    top button: back", 10, H - 4);
+  } else if (screen == INDEX_ENTRY) {                         // C-36: its INDEX entry, in the edition's voice
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
     canvas.setTextColor(QUIET);
@@ -370,6 +384,7 @@ void draw() {
       int bob = (int)roundf(3 * sinf(t / 420.0f));
       int drift = (int)roundf(10 * sinf(t / 2900.0f));
       int hop = (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
+      if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
       drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
       int x = 168;
       canvas.setTextDatum(TL_DATUM);
@@ -378,10 +393,13 @@ void draw() {
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
       // its species beside its level -- unless its nickname already is the species
       canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + "L" + String(st.daemon.level), x, 72);
-      canvas.drawString("friendship " + String(st.daemon.friendship), x, 90);
-      if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 108, W - x - 6, 2, 16, 2, QUIET);
+      // C-13: how it is, and its day -- never more than this, and never a nag
+      if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
+      canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
+      if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 126, W - x - 6, 1, 11, 2, QUIET);
+      else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 126, W - x - 6, 1, 11, 2, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
-      canvas.drawString("press: its INDEX entry", x, H - 4);
+      canvas.drawString("press: care for it", x, H - 4);
     } else {
       canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
@@ -563,6 +581,7 @@ void turn(int step) {
   soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) page = (Page)((page + 3 + step) % 3);
   else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
+  else if (screen == CARE) careAt = (careAt + 4 + step) % 4;
   else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
   else if (screen == TYPE_PASS) wheelAt = (wheelAt + WHEEL_N + step) % WHEEL_N;
   else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
@@ -588,7 +607,7 @@ void report(const String &kind, const String &detail) {
   if (usbLive()) { Serial.printf("INTERACT %s %s\n", kind.c_str(), detail.c_str()); return; }
   JsonDocument d; d["kind"] = kind; d["detail"] = detail;
   String body; serializeJson(d, body);
-  http("POST", "/api/device/interact", body);
+  if (http("POST", "/api/device/interact", body).length()) httpState("GET", "/api/device/state", "");   // its new life
 }
 
 void progress(const String &text) { runResult = text; draw(); }
@@ -615,11 +634,22 @@ void press() {
   soundSelect();                                                // C-40
   if (screen == HOME) {
     if (page == TODAY) tick();
-    else if (page == DAEMON && st.carrying) screen = INDEX_ENTRY;     // C-36
+    else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) { screen = TYPES; typeAt = 0; }
   } else if (screen == TYPES) { screen = LIST; routineAt = 0; }
   else if (screen == LIST) { if (TYPES_LIST[typeAt].count > 0) runRoutine(); }
   else if (screen == RUN) runRoutine();
+  else if (screen == CARE) {
+    if (careAt == 3) screen = INDEX_ENTRY;
+    else {
+      static const char *KIND[] = { "feed", "water", "train" }, *SAID[] = { "Eaten.", "Drunk.", "Trained." };
+      report(KIND[careAt], "device");
+      say(SAID[careAt]);
+      soundCare(careAt);
+      hopUntil = millis() + 480;
+      screen = HOME; page = DAEMON;
+    }
+  }
   else if (screen == PICK_NET && netCount) { screen = TYPE_PASS; typed = ""; wheelAt = 1; }
   else if (screen == TYPE_PASS) {
     if (wheelAt) typed += WHEEL[wheelAt];
@@ -638,7 +668,8 @@ void back() {
   lastInput = millis();
   ledsDark();                                                   // C-38
   soundBack();                                                  // C-40
-  if (screen == INDEX_ENTRY) { screen = HOME; page = DAEMON; }
+  if (screen == INDEX_ENTRY) { screen = CARE; careAt = 3; }
+  else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
   else if (screen == PICK_NET) screen = LIST;
   else if (screen == RUN) screen = LIST;

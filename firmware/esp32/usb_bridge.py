@@ -101,7 +101,10 @@ def main():
                 parts = msg.split(" ", 2)
                 try:
                     server_json(a.server, "/api/device/interact", {"kind": parts[1], "detail": parts[2] if len(parts) > 2 else ""})
-                    print("usb_bridge: the device ran %s" % (parts[2] if len(parts) > 2 else parts[1]), flush=True)
+                    print("usb_bridge: the device %s" % ("ran " + parts[2] if parts[1] == "routine" else "-- " + parts[1]), flush=True)
+                    # C-13: its life changed -- send the new state now, not in five seconds
+                    state = server_json(a.server, "/api/device/state?via=usb")
+                    dev.write(("STATE " + json.dumps(state, separators=(",", ":")) + "\n").encode())
                 except Exception as e:
                     print("usb_bridge: could not pass on an interaction (%s)" % e, flush=True)
             elif msg.startswith("RESULT "):

@@ -78,7 +78,10 @@ goes back when you let it go (and gives up a routine that is waiting). The pages
 entry) and ROUTINES. **Sleep:** hold the top button and press the front one -- the screen and the lights go dark until
 you turn the dial or press anything (that touch only wakes it).
 
-**Home is the daemon you carry** -- large, breathing, drifting, now and then hopping. Any menu left alone goes to sleep
+**Home is the daemon you carry** -- large, breathing, drifting, now and then hopping -- and **how it is**: its mood in
+a word, how it has eaten and drunk today, and at a meal time one quiet line. **Press** for CARE: feed it, water it,
+train it, or read its INDEX entry. It never nags (PLAN 7): small effects, happier for time together, a little lower for
+each day with nothing at all, and back at once when you return. The site's DAEMON tab shows and does the same. Any menu left alone goes to sleep
 (two minutes, by default), and waking always lands back at home, to a few notes of the title theme.
 
 **It sounds in the day's key** (Sunday C ... Saturday B): turning the dial right rises, left falls, select is the day's
@@ -183,6 +186,8 @@ JSON in, JSON out, on this machine only.
 | `GET`/`POST /api/device/settings` | the board's settings: home, sleep, sound, volume, ring |
 | `GET /api/device/commands` | (the board) what the site sent it; `POST /api/device/results` and `/api/device/routines` answer |
 | `GET /api/index` | the save's INDEX: seen and bound, each entry, and OPUS's margins |
+| `GET /api/daemon/life` | the carried daemon's life: mood, fed, watered, trained, tired, a cue at a meal time |
+| `POST /api/daemon/feed` (`water`, `train`) | tend it from the site |
 | `GET /api/ir/brands` | TV power codes by brand, for FLARE's search |
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |
 | `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |

@@ -37,6 +37,11 @@ export class Store {
     this.db.prepare("INSERT INTO interactions (at, kind, detail) VALUES (?, ?, ?)").run(at.toISOString(), kind, detail);
   }
 
+  // C-13: everything since a moment, oldest first -- the daemon's life reads two weeks of it
+  interactionsSince(since: Date): { at: string; kind: string; detail: string | null }[] {
+    return this.db.prepare("SELECT at, kind, detail FROM interactions WHERE at >= ? ORDER BY id").all(since.toISOString()) as any;
+  }
+
   lastInteraction(): { at: string; kind: string; detail: string | null } | null {
     return (this.db.prepare("SELECT at, kind, detail FROM interactions ORDER BY id DESC LIMIT 1").get() as
       { at: string; kind: string; detail: string | null } | undefined) ?? null;

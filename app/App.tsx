@@ -303,6 +303,55 @@ function SettingsScreen({ ink }: { ink: string }) {
   );
 }
 
+// ---- C-24: the save's own INDEX -- what was seen and bound, as the game shows it, each entry in the save's edition's
+// voice; and OPUS's margin beside an entry, when the save holds OPUS and the game would show one.
+type IndexEntry = { national: number; species: number; name: string; bound: boolean; art: string | null;
+                    category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string } };
+type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
+
+function IndexScreen() {
+  const [ix, setIx] = useState<Index | null>(null);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState<number | null>(null);
+  useEffect(() => { api<Index>("/api/index").then(setIx).catch((e) => setError(e.message)); }, []);
+  if (error) return <Small>{error}</Small>;
+  if (!ix) return <Small>Loading…</Small>;
+  const flat = (s: string) => s.replace(/\n/g, " ");      // the game's line breaks are for its own window
+  return (
+    <YStack gap={10}>
+      <Card>
+        <Eyebrow>THE INDEX</Eyebrow>
+        <Text fontSize={20} fontWeight="600" color="$color12">{ix.seen} seen · {ix.bound} bound</Text>
+        {ix.opus ? <Small>OPUS is in your bag: where it has written beside an entry, it is shown.</Small> : null}
+      </Card>
+      {ix.entries.map((e) => (
+        <Card key={e.national} padding={12} cursor={e.bound ? "pointer" : "default"}
+              onPress={() => e.bound && setOpen(open === e.national ? null : e.national)}>
+          <XStack gap={12} alignItems="center">
+            {e.art ? <Image source={{ uri: SERVER + e.art }} style={[{ width: 64, height: 64 }, PIXELATED as any]} /> : null}
+            <YStack flex={1}>
+              <Text fontFamily="$mono" fontSize={11} color="$color10">{`No. ${String(e.national).padStart(3, "0")}`}</Text>
+              <Text fontSize={16} fontWeight="600" color="$color12">{e.name}</Text>
+              {e.bound ? <Small>{`${e.category} · ${(e.types ?? []).join(" / ")}`}</Small> : <Small>Seen</Small>}
+            </YStack>
+            {e.margin ? <Text fontFamily="$mono" fontSize={11} color="$color9">MARGIN</Text> : null}
+          </XStack>
+          {open === e.national ? (
+            <YStack gap={8} marginTop={8}>
+              <Text fontSize={15} lineHeight={22} color="$color12">{flat(e.entry ?? "")}</Text>
+              {e.margin ? (
+                <YStack borderLeftWidth={3} borderLeftColor="$color9" paddingLeft={10}>
+                  <Text fontSize={14} lineHeight={21} fontStyle="italic" color="$color11">{flat(e.margin.text)}</Text>
+                </YStack>
+              ) : null}
+            </YStack>
+          ) : null}
+        </Card>
+      ))}
+    </YStack>
+  );
+}
+
 // ---- C-32: the site and the device, linked. The server is the hub: this screen asks it what the link is, sends the
 // board commands through it, and shows what the board answered. C-33 (its Wi-Fi) and C-34 (FLARE's search) live here.
 type Link = { linked: boolean; via: "usb" | "wifi" | null; lastSeen: string | null; firmware: string;
@@ -419,7 +468,7 @@ function DeviceScreen({ ink }: { ink: string }) {
   );
 }
 
-const TABS = ["today", "goals", "daemon", "device", "profile", "settings"] as const;
+const TABS = ["today", "goals", "daemon", "index", "device", "profile", "settings"] as const;
 
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
@@ -458,6 +507,7 @@ function Shell() {
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen goals={goals} reload={reload} ink={ink} /> : null}
         {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
+        {tab === "index" ? <IndexScreen /> : null}
         {tab === "device" ? <DeviceScreen ink={ink} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}

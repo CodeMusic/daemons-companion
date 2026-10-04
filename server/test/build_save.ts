@@ -16,7 +16,8 @@ export function encodeText(s: string, len: number): Uint8Array {
 }
 
 export interface DaemonSpec { personality: number; otId: number; species: number; nickname: string; level: number;
-                              friendship?: number; away?: boolean; asked?: boolean; held?: number }
+                              friendship?: number; away?: boolean; asked?: boolean; held?: number;
+                              metLevel?: number; exp?: number }
 
 export function buildDaemon(d: DaemonSpec): Uint8Array {
   const rec = new Uint8Array(l.pokemon_size);
@@ -32,6 +33,9 @@ export function buildDaemon(d: DaemonSpec): Uint8Array {
   sv.setUint16(growth, d.species, true);
   sv.setUint8(growth + 9, d.friendship ?? 70);
   sv.setUint16(growth + 2, d.held ?? 0, true);
+  sv.setUint32(growth + 4, d.exp ?? 0, true);
+  const misc = ORDERS[d.personality % 24].indexOf("M") * 12;
+  sv.setUint16(misc + 2, (d.metLevel ?? 0) & 0x7f, true);       // originsInfo: the level it was met at
   let sum = 0;
   for (let i = 0; i < 48; i += 2) sum = (sum + sv.getUint16(i, true)) & 0xffff;
   v.setUint16(28, sum, true);
@@ -43,7 +47,8 @@ export function buildDaemon(d: DaemonSpec): Uint8Array {
 
 // A whole save: both slots written, slot A with counterA and slot B with counterB, each holding its own party.
 export function buildSave(opts: { player: string; trainerId: number; slots: { counter: number; party: DaemonSpec[] }[];
-                                  edit?: (sb2: Uint8Array, sb1: Uint8Array) => void }): Uint8Array {
+                                  edit?: (sb2: Uint8Array, sb1: Uint8Array) => void;
+                                  boxes?: DaemonSpec[] }): Uint8Array {     // C-24: into the PC, box 1 onwards
   const save = new Uint8Array(0x20000);
   opts.slots.forEach((slot, index) => {
     const sb2 = new Uint8Array(l.saveblock2_size);
@@ -53,11 +58,14 @@ export function buildSave(opts: { player: string; trainerId: number; slots: { co
     sb1[l.party_count_offset] = slot.party.length;
     slot.party.forEach((d, i) => sb1.set(buildDaemon(d), l.party_offset + i * l.pokemon_size));
     opts.edit?.(sb2, sb1);
+    const storage = new Uint8Array(l.storage_size);
+    (opts.boxes ?? []).forEach((d, i) => storage.set(buildDaemon(d).subarray(0, l.box_pokemon_size), 4 + i * l.box_pokemon_size));
     for (let id = 0; id < l.sectors_per_slot; id++) {
       const data = new Uint8Array(l.sector_size);
       const size = sectionSize(id);
       if (id === 0) data.set(sb2.subarray(0, size));
       else if (id <= 4) data.set(sb1.subarray((id - 1) * l.sector_data_size, (id - 1) * l.sector_data_size + size));
+      else data.set(storage.subarray((id - 5) * l.sector_data_size, (id - 5) * l.sector_data_size + size));
       const v = new DataView(data.buffer);
       v.setUint16(0xff4, id, true);
       v.setUint16(0xff6, sectionChecksum(data, size), true);

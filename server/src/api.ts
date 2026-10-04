@@ -7,6 +7,7 @@
 //   GET  /api/party              the party of the configured save COPY (C-02)
 //   GET  /api/profile            C-23: the save's trainer, play time, INDEX counts, MARKS, progress and where it was saved
 //   GET  /api/species/:id        one daemon's name, types, category and its edition's INDEX entry
+//   GET  /api/index              C-24: the save's INDEX -- seen and bound, each entry in the edition's voice, OPUS's margins
 //   POST /api/away/answer        answer the game's AWAY requests in the configured save (C-10), after a backup
 //   POST /api/sync               C-21: the one SYNC -- read the save, receive or return a daemon if the game asked,
 //                                link the save, settle a daemon brought home without the app; the married save only
@@ -34,6 +35,7 @@ import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
+import { readIndex } from "./save/index.js";
 import { answerRequests, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { deviceArt, repaint, streakColours } from "./art.js";
@@ -300,6 +302,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);
       }
+      const speciesArt = path.match(/^\/art\/species\/(\d+)\.png$/);   // C-24: as the INDEX draws it, in its type's colours
+      if (req.method === "GET" && speciesArt) {
+        const row = SPECIES[speciesArt[1]];
+        const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
+        if (!file || !existsSync(file)) return send(res, 404, { error: "no art for that species" });
+        const png = readFileSync(file);   // no routines to paint: the streak slots take the body's mid tone
+        const body = row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(body);
+      }
       if (req.method === "GET" && path === "/api/device/art") {   // C-36: the carried daemon, as a device draws it
         const body = partyPng(ecfg, (p) => p.away);
         if (!body) return send(res, 404, { error: "no daemon is on the device" });
@@ -324,6 +336,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const m = store.married();
         const thisGame = m ? m.name === prof.name && m.trainerId === prof.trainerId && m.secretId === prof.secretId : null;
         return send(res, 200, { ...prof, edition: ecfg.edition, thisGame, marriedTo: m ? m.name : null });
+      }
+      if (req.method === "GET" && path === "/api/index") {          // C-24: the save's own INDEX, OPUS's margins with it
+        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });
+        return send(res, 200, readIndex(new Uint8Array(readFileSync(ecfg.savePath)), ecfg.edition));
       }
       if (req.method === "GET" && path === "/api/party") {
         if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });

@@ -36,10 +36,10 @@ you run is told to the server as tending your daemon (C-13).
 
 ## Flash it
 
-From `firmware/esp32/`:
+From the repo root:
 
 ```sh
-pio run -t upload
+./updateCompanion.sh          # or, from firmware/esp32/: pio run -t upload
 ```
 
 The ESP32-S3 has its own USB, so it usually goes into download mode by itself. **If the upload cannot connect**:
@@ -51,10 +51,10 @@ The ESP32-S3 has its own USB, so it usually goes into download mode by itself. *
 
 ## Try it over the cable (no Wi-Fi)
 
-With the device plugged in and the server running:
+With the device plugged in, from the repo root (it starts the server too, if none is running):
 
 ```sh
-~/.platformio/penv/bin/python usb_bridge.py
+./linkCompanion.sh            # or, from firmware/esp32/: ~/.platformio/penv/bin/python usb_bridge.py
 ```
 
 The bridge finds the device's port and hands it the server's state every five seconds; the corner of the screen says

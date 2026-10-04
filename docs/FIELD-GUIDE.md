@@ -84,9 +84,7 @@ writes its own copy back).
 See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, with the board plugged in:
 
 ```sh
-cd firmware/esp32
-pio run -t upload
-~/.platformio/penv/bin/python usb_bridge.py
+./updateCompanion.sh --link   # flash the board, then link it (or ./linkCompanion.sh alone, to link without flashing)
 ```
 
 - **See:** the day's band at the top with **USB** in the corner; **TODAY** shows the one step.

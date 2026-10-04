@@ -25,6 +25,8 @@ background, and opens the app at <http://localhost:8081>. **Ctrl-C stops both.**
 | `./bindCompanion.sh server` | **only the server**, in this terminal |
 | `./bindCompanion.sh app [web\|ios\|android]` | **only the app**, against a server you started yourself |
 | `./bindCompanion.sh test` | the server's **type check and tests** |
+| `./updateCompanion.sh` | **flash the handheld** with the newest firmware ([below](#flash-the-handheld)) |
+| `./linkCompanion.sh` | **link the handheld** to the server over its cable |
 
 **The app runs in the foreground, so Expo's own keys work in the same terminal**: `w` opens the site, `i` the iOS
 Simulator, `a` the Android emulator, `r` reloads. A session started as a site can reach the others without starting
@@ -51,10 +53,21 @@ With the T-Embed CC1101 plugged in by a USB-C cable that carries data, and
 [PlatformIO](https://platformio.org) installed (`pip install platformio`):
 
 ```sh
-cd firmware/esp32
-pio run -t upload                              # build and flash
-~/.platformio/penv/bin/python usb_bridge.py    # link it to the server over the cable
+./updateCompanion.sh          # build the firmware and flash it to the board
+./linkCompanion.sh            # link it to the server over the cable (starts the server if none is running)
+./updateCompanion.sh --link   # both, one after the other
 ```
+
+| | |
+|---|---|
+| `./updateCompanion.sh` | build and **flash** the board; stops a running bridge first (it holds the port) |
+| `./updateCompanion.sh --link` | flash, then link |
+| `./updateCompanion.sh --build` | only build, to check it compiles (no board needed) |
+| `./linkCompanion.sh` | the **bridge**, in this terminal; starts the server in the background if none is answering, and Ctrl-C stops both |
+| `./linkCompanion.sh --port PORT` | a particular serial port |
+
+With the site open too, run `./bindCompanion.sh` in one terminal and `./linkCompanion.sh` in another: the link uses
+the site's server. By hand, the same is `pio run -t upload` and `python usb_bridge.py` in `firmware/esp32/`.
 
 The bridge finds the board's port, hands it the server's state every five seconds, and passes back what you do on it
 (a step ticked off, a routine run). The corner of the screen says **USB** while it is linked. Start the server first

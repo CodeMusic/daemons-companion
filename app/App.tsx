@@ -5,7 +5,7 @@
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
-import { Image, Platform } from "react-native";
+import { AppState, Image, Platform } from "react-native";
 import { Button, Input, ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import config, { DAYS, WEEK_COLOURS } from "./tamagui.config";
 import * as SecureStore from "expo-secure-store";
@@ -781,8 +781,14 @@ function Shell() {
     api<Goal[]>("/api/goals").then(setGoals).catch(() => {});
   }, []);
   useEffect(reload, [reload]);
-  // C-27, C-48: on the phone, today's steps from Apple Health, each time the app opens
-  useEffect(() => { if (ON_PHONE) sendTodaysSteps().then(() => reload()).catch(() => {}); }, [reload]);
+  // C-27, C-48: on the phone, today's steps from Apple Health -- when the app opens, and each time it comes back
+  useEffect(() => {
+    if (!ON_PHONE) return;
+    const sync = () => sendTodaysSteps().then(() => reload()).catch(() => {});
+    sync();
+    const sub = AppState.addEventListener("change", (s) => { if (s === "active") sync(); });
+    return () => sub.remove();
+  }, [reload]);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's
   // theme, to look at all seven without waiting a week.
   const asked = Platform.OS === "web" ? new URLSearchParams(globalThis.location?.search ?? "").get("day")?.toLowerCase() : null;

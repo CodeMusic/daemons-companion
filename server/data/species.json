@@ -17,7 +17,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   45,
+   49,
+   49,
+   45,
+   65,
+   65
+  ]
  },
  "2": {
   "constant": "IVYSAUR",
@@ -37,7 +45,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   62,
+   63,
+   60,
+   80,
+   80
+  ]
  },
  "3": {
   "constant": "VENUSAUR",
@@ -58,7 +74,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   82,
+   83,
+   80,
+   100,
+   100
+  ]
  },
  "4": {
   "constant": "CHARMANDER",
@@ -78,7 +102,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   39,
+   52,
+   43,
+   65,
+   60,
+   50
+  ]
  },
  "5": {
   "constant": "CHARMELEON",
@@ -98,7 +130,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   58,
+   64,
+   58,
+   80,
+   80,
+   65
+  ]
  },
  "6": {
   "constant": "CHARIZARD",
@@ -119,7 +159,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   78,
+   84,
+   78,
+   100,
+   109,
+   85
+  ]
  },
  "7": {
   "constant": "SQUIRTLE",
@@ -139,7 +187,15 @@
   },
   "bodyType": 2,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   44,
+   48,
+   65,
+   43,
+   50,
+   64
+  ]
  },
  "8": {
   "constant": "WARTORTLE",
@@ -159,7 +215,15 @@
   },
   "bodyType": 2,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   59,
+   63,
+   80,
+   58,
+   65,
+   80
+  ]
  },
  "9": {
   "constant": "BLASTOISE",
@@ -180,7 +244,15 @@
   },
   "bodyType": 2,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   79,
+   83,
+   100,
+   78,
+   85,
+   105
+  ]
  },
  "10": {
   "constant": "CATERPIE",
@@ -200,7 +272,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   30,
+   35,
+   45,
+   20,
+   20
+  ]
  },
  "11": {
   "constant": "METAPOD",
@@ -220,7 +300,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   20,
+   55,
+   30,
+   25,
+   25
+  ]
  },
  "12": {
   "constant": "BUTTERFREE",
@@ -241,7 +329,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   45,
+   50,
+   70,
+   80,
+   80
+  ]
  },
  "13": {
   "constant": "WEEDLE",
@@ -262,7 +358,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   35,
+   30,
+   50,
+   20,
+   20
+  ]
  },
  "14": {
   "constant": "KAKUNA",
@@ -283,7 +387,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   25,
+   50,
+   35,
+   25,
+   25
+  ]
  },
  "15": {
   "constant": "BEEDRILL",
@@ -304,7 +416,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   80,
+   40,
+   75,
+   45,
+   80
+  ]
  },
  "16": {
   "constant": "PIDGEY",
@@ -325,7 +445,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   45,
+   40,
+   56,
+   35,
+   35
+  ]
  },
  "17": {
   "constant": "PIDGEOTTO",
@@ -346,7 +474,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   63,
+   60,
+   55,
+   71,
+   50,
+   50
+  ]
  },
  "18": {
   "constant": "PIDGEOT",
@@ -367,7 +503,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   83,
+   80,
+   75,
+   91,
+   70,
+   70
+  ]
  },
  "19": {
   "constant": "RATTATA",
@@ -387,7 +531,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   30,
+   56,
+   35,
+   72,
+   25,
+   35
+  ]
  },
  "20": {
   "constant": "RATICATE",
@@ -407,7 +559,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   55,
+   81,
+   60,
+   97,
+   50,
+   70
+  ]
  },
  "21": {
   "constant": "SPEAROW",
@@ -428,7 +588,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   60,
+   30,
+   70,
+   31,
+   31
+  ]
  },
  "22": {
   "constant": "FEAROW",
@@ -449,7 +617,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   90,
+   65,
+   100,
+   61,
+   61
+  ]
  },
  "23": {
   "constant": "EKANS",
@@ -469,7 +645,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   60,
+   44,
+   55,
+   40,
+   54
+  ]
  },
  "24": {
   "constant": "ARBOK",
@@ -489,7 +673,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   85,
+   69,
+   80,
+   65,
+   79
+  ]
  },
  "25": {
   "constant": "PIKACHU",
@@ -509,7 +701,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   55,
+   30,
+   90,
+   50,
+   40
+  ]
  },
  "26": {
   "constant": "RAICHU",
@@ -529,7 +729,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   90,
+   55,
+   100,
+   90,
+   80
+  ]
  },
  "27": {
   "constant": "SANDSHREW",
@@ -549,7 +757,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   75,
+   85,
+   40,
+   20,
+   30
+  ]
  },
  "28": {
   "constant": "SANDSLASH",
@@ -569,7 +785,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   75,
+   100,
+   110,
+   65,
+   45,
+   55
+  ]
  },
  "29": {
   "constant": "NIDORAN_F",
@@ -589,7 +813,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   55,
+   47,
+   52,
+   41,
+   40,
+   40
+  ]
  },
  "30": {
   "constant": "NIDORINA",
@@ -609,7 +841,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   62,
+   67,
+   56,
+   55,
+   55
+  ]
  },
  "31": {
   "constant": "NIDOQUEEN",
@@ -630,7 +870,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   82,
+   87,
+   76,
+   75,
+   85
+  ]
  },
  "32": {
   "constant": "NIDORAN_M",
@@ -650,7 +898,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   46,
+   57,
+   40,
+   50,
+   40,
+   40
+  ]
  },
  "33": {
   "constant": "NIDORINO",
@@ -670,7 +926,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   61,
+   72,
+   57,
+   65,
+   55,
+   55
+  ]
  },
  "34": {
   "constant": "NIDOKING",
@@ -691,7 +955,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   81,
+   92,
+   77,
+   85,
+   85,
+   75
+  ]
  },
  "35": {
   "constant": "CLEFAIRY",
@@ -711,7 +983,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   70,
+   45,
+   48,
+   35,
+   60,
+   65
+  ]
  },
  "36": {
   "constant": "CLEFABLE",
@@ -731,7 +1011,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   95,
+   70,
+   73,
+   60,
+   85,
+   90
+  ]
  },
  "37": {
   "constant": "VULPIX",
@@ -751,7 +1039,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   38,
+   41,
+   40,
+   65,
+   50,
+   65
+  ]
  },
  "38": {
   "constant": "NINETALES",
@@ -771,7 +1067,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   73,
+   76,
+   75,
+   100,
+   81,
+   100
+  ]
  },
  "39": {
   "constant": "JIGGLYPUFF",
@@ -791,7 +1095,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   115,
+   45,
+   20,
+   20,
+   45,
+   25
+  ]
  },
  "40": {
   "constant": "WIGGLYTUFF",
@@ -811,7 +1123,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   140,
+   70,
+   45,
+   45,
+   75,
+   50
+  ]
  },
  "41": {
   "constant": "ZUBAT",
@@ -832,7 +1152,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   45,
+   35,
+   55,
+   30,
+   40
+  ]
  },
  "42": {
   "constant": "GOLBAT",
@@ -853,7 +1181,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   75,
+   80,
+   70,
+   90,
+   65,
+   75
+  ]
  },
  "43": {
   "constant": "ODDISH",
@@ -874,7 +1210,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   45,
+   50,
+   55,
+   30,
+   75,
+   65
+  ]
  },
  "44": {
   "constant": "GLOOM",
@@ -895,7 +1239,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   65,
+   70,
+   40,
+   85,
+   75
+  ]
  },
  "45": {
   "constant": "VILEPLUME",
@@ -916,7 +1268,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   75,
+   80,
+   85,
+   50,
+   100,
+   90
+  ]
  },
  "46": {
   "constant": "PARAS",
@@ -937,7 +1297,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   70,
+   55,
+   25,
+   45,
+   55
+  ]
  },
  "47": {
   "constant": "PARASECT",
@@ -958,7 +1326,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   95,
+   80,
+   30,
+   60,
+   80
+  ]
  },
  "48": {
   "constant": "VENONAT",
@@ -979,7 +1355,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   55,
+   50,
+   45,
+   40,
+   55
+  ]
  },
  "49": {
   "constant": "VENOMOTH",
@@ -1000,7 +1384,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   65,
+   60,
+   90,
+   90,
+   75
+  ]
  },
  "50": {
   "constant": "DIGLETT",
@@ -1020,7 +1412,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   10,
+   55,
+   25,
+   95,
+   35,
+   45
+  ]
  },
  "51": {
   "constant": "DUGTRIO",
@@ -1040,7 +1440,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   80,
+   50,
+   120,
+   50,
+   70
+  ]
  },
  "52": {
   "constant": "MEOWTH",
@@ -1060,7 +1468,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   45,
+   35,
+   90,
+   40,
+   40
+  ]
  },
  "53": {
   "constant": "PERSIAN",
@@ -1080,7 +1496,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   70,
+   60,
+   115,
+   65,
+   65
+  ]
  },
  "54": {
   "constant": "PSYDUCK",
@@ -1100,7 +1524,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   52,
+   48,
+   55,
+   65,
+   50
+  ]
  },
  "55": {
   "constant": "GOLDUCK",
@@ -1120,7 +1552,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   80,
+   82,
+   78,
+   85,
+   95,
+   80
+  ]
  },
  "56": {
   "constant": "MANKEY",
@@ -1140,7 +1580,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   80,
+   35,
+   70,
+   35,
+   45
+  ]
  },
  "57": {
   "constant": "PRIMEAPE",
@@ -1160,7 +1608,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   105,
+   60,
+   95,
+   60,
+   70
+  ]
  },
  "58": {
   "constant": "GROWLITHE",
@@ -1180,7 +1636,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   55,
+   70,
+   45,
+   60,
+   70,
+   50
+  ]
  },
  "59": {
   "constant": "ARCANINE",
@@ -1200,7 +1664,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   90,
+   110,
+   80,
+   95,
+   100,
+   80
+  ]
  },
  "60": {
   "constant": "POLIWAG",
@@ -1220,7 +1692,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   50,
+   40,
+   90,
+   40,
+   40
+  ]
  },
  "61": {
   "constant": "POLIWHIRL",
@@ -1240,7 +1720,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   65,
+   65,
+   65,
+   90,
+   50,
+   50
+  ]
  },
  "62": {
   "constant": "POLIWRATH",
@@ -1261,7 +1749,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   85,
+   95,
+   70,
+   70,
+   90
+  ]
  },
  "63": {
   "constant": "ABRA",
@@ -1281,7 +1777,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   25,
+   20,
+   15,
+   90,
+   105,
+   55
+  ]
  },
  "64": {
   "constant": "KADABRA",
@@ -1301,7 +1805,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   35,
+   30,
+   105,
+   120,
+   70
+  ]
  },
  "65": {
   "constant": "ALAKAZAM",
@@ -1321,7 +1833,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   55,
+   50,
+   45,
+   120,
+   135,
+   85
+  ]
  },
  "66": {
   "constant": "MACHOP",
@@ -1341,7 +1861,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   80,
+   50,
+   35,
+   35,
+   35
+  ]
  },
  "67": {
   "constant": "MACHOKE",
@@ -1361,7 +1889,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   100,
+   70,
+   45,
+   50,
+   60
+  ]
  },
  "68": {
   "constant": "MACHAMP",
@@ -1381,7 +1917,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   130,
+   80,
+   55,
+   65,
+   85
+  ]
  },
  "69": {
   "constant": "BELLSPROUT",
@@ -1402,7 +1946,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   75,
+   35,
+   40,
+   70,
+   30
+  ]
  },
  "70": {
   "constant": "WEEPINBELL",
@@ -1423,7 +1975,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   65,
+   90,
+   50,
+   55,
+   85,
+   45
+  ]
  },
  "71": {
   "constant": "VICTREEBEL",
@@ -1444,7 +2004,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   105,
+   65,
+   70,
+   100,
+   60
+  ]
  },
  "72": {
   "constant": "TENTACOOL",
@@ -1465,7 +2033,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   40,
+   40,
+   35,
+   70,
+   50,
+   100
+  ]
  },
  "73": {
   "constant": "TENTACRUEL",
@@ -1486,7 +2062,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   70,
+   65,
+   100,
+   80,
+   120
+  ]
  },
  "74": {
   "constant": "GEODUDE",
@@ -1507,7 +2091,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   80,
+   100,
+   20,
+   30,
+   30
+  ]
  },
  "75": {
   "constant": "GRAVELER",
@@ -1528,7 +2120,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   55,
+   95,
+   115,
+   35,
+   45,
+   45
+  ]
  },
  "76": {
   "constant": "GOLEM",
@@ -1549,7 +2149,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   110,
+   130,
+   45,
+   55,
+   65
+  ]
  },
  "77": {
   "constant": "PONYTA",
@@ -1569,7 +2177,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   85,
+   55,
+   90,
+   65,
+   65
+  ]
  },
  "78": {
   "constant": "RAPIDASH",
@@ -1589,7 +2205,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   100,
+   70,
+   105,
+   80,
+   80
+  ]
  },
  "79": {
   "constant": "SLOWPOKE",
@@ -1610,7 +2234,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   90,
+   65,
+   65,
+   15,
+   40,
+   40
+  ]
  },
  "80": {
   "constant": "SLOWBRO",
@@ -1631,7 +2263,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   95,
+   75,
+   110,
+   30,
+   100,
+   80
+  ]
  },
  "81": {
   "constant": "MAGNEMITE",
@@ -1652,7 +2292,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   5,
+   110,
+   45,
+   5,
+   95
+  ]
  },
  "82": {
   "constant": "MAGNETON",
@@ -1673,7 +2321,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   108,
+   5,
+   151,
+   70,
+   5,
+   126
+  ]
  },
  "83": {
   "constant": "FARFETCHD",
@@ -1694,7 +2350,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   52,
+   65,
+   55,
+   60,
+   58,
+   62
+  ]
  },
  "84": {
   "constant": "DODUO",
@@ -1715,7 +2379,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   85,
+   45,
+   75,
+   35,
+   35
+  ]
  },
  "85": {
   "constant": "DODRIO",
@@ -1736,7 +2408,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   110,
+   70,
+   100,
+   60,
+   60
+  ]
  },
  "86": {
   "constant": "SEEL",
@@ -1756,7 +2436,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   45,
+   55,
+   45,
+   45,
+   70
+  ]
  },
  "87": {
   "constant": "DEWGONG",
@@ -1777,7 +2465,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   90,
+   70,
+   80,
+   70,
+   70,
+   95
+  ]
  },
  "88": {
   "constant": "GRIMER",
@@ -1797,7 +2493,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   80,
+   80,
+   50,
+   25,
+   40,
+   50
+  ]
  },
  "89": {
   "constant": "MUK",
@@ -1817,7 +2521,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   105,
+   105,
+   75,
+   50,
+   65,
+   100
+  ]
  },
  "90": {
   "constant": "SHELLDER",
@@ -1837,7 +2549,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   30,
+   65,
+   100,
+   40,
+   45,
+   25
+  ]
  },
  "91": {
   "constant": "CLOYSTER",
@@ -1858,7 +2578,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   50,
+   95,
+   180,
+   70,
+   85,
+   45
+  ]
  },
  "92": {
   "constant": "GASTLY",
@@ -1879,7 +2607,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   30,
+   35,
+   30,
+   80,
+   100,
+   35
+  ]
  },
  "93": {
   "constant": "HAUNTER",
@@ -1900,7 +2636,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   45,
+   50,
+   45,
+   95,
+   115,
+   55
+  ]
  },
  "94": {
   "constant": "GENGAR",
@@ -1921,7 +2665,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   65,
+   60,
+   110,
+   130,
+   75
+  ]
  },
  "95": {
   "constant": "ONIX",
@@ -1942,7 +2694,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   45,
+   160,
+   70,
+   30,
+   45
+  ]
  },
  "96": {
   "constant": "DROWZEE",
@@ -1962,7 +2722,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   48,
+   45,
+   42,
+   43,
+   90
+  ]
  },
  "97": {
   "constant": "HYPNO",
@@ -1982,7 +2750,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   85,
+   73,
+   70,
+   67,
+   73,
+   115
+  ]
  },
  "98": {
   "constant": "KRABBY",
@@ -2002,7 +2778,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   30,
+   105,
+   90,
+   50,
+   25,
+   25
+  ]
  },
  "99": {
   "constant": "KINGLER",
@@ -2022,7 +2806,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   55,
+   130,
+   115,
+   75,
+   50,
+   50
+  ]
  },
  "100": {
   "constant": "VOLTORB",
@@ -2042,7 +2834,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   30,
+   50,
+   100,
+   55,
+   55
+  ]
  },
  "101": {
   "constant": "ELECTRODE",
@@ -2062,7 +2862,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   50,
+   70,
+   140,
+   80,
+   80
+  ]
  },
  "102": {
   "constant": "EXEGGCUTE",
@@ -2083,7 +2891,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   60,
+   40,
+   80,
+   40,
+   60,
+   45
+  ]
  },
  "103": {
   "constant": "EXEGGUTOR",
@@ -2104,7 +2920,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   95,
+   95,
+   85,
+   55,
+   125,
+   65
+  ]
  },
  "104": {
   "constant": "CUBONE",
@@ -2124,7 +2948,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   50,
+   95,
+   35,
+   40,
+   50
+  ]
  },
  "105": {
   "constant": "MAROWAK",
@@ -2144,7 +2976,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   80,
+   110,
+   45,
+   50,
+   80
+  ]
  },
  "106": {
   "constant": "HITMONLEE",
@@ -2164,7 +3004,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   120,
+   53,
+   87,
+   35,
+   110
+  ]
  },
  "107": {
   "constant": "HITMONCHAN",
@@ -2184,7 +3032,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   105,
+   79,
+   76,
+   35,
+   110
+  ]
  },
  "108": {
   "constant": "LICKITUNG",
@@ -2204,7 +3060,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   90,
+   55,
+   75,
+   30,
+   60,
+   75
+  ]
  },
  "109": {
   "constant": "KOFFING",
@@ -2224,7 +3088,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   65,
+   95,
+   35,
+   60,
+   45
+  ]
  },
  "110": {
   "constant": "WEEZING",
@@ -2244,7 +3116,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   90,
+   120,
+   60,
+   85,
+   70
+  ]
  },
  "111": {
   "constant": "RHYHORN",
@@ -2265,7 +3145,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   85,
+   95,
+   25,
+   30,
+   30
+  ]
  },
  "112": {
   "constant": "RHYDON",
@@ -2286,7 +3174,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   105,
+   130,
+   120,
+   40,
+   45,
+   45
+  ]
  },
  "113": {
   "constant": "CHANSEY",
@@ -2306,7 +3202,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   250,
+   5,
+   5,
+   50,
+   35,
+   105
+  ]
  },
  "114": {
   "constant": "TANGELA",
@@ -2326,7 +3230,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   55,
+   115,
+   60,
+   100,
+   40
+  ]
  },
  "115": {
   "constant": "KANGASKHAN",
@@ -2346,7 +3258,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   105,
+   95,
+   80,
+   90,
+   40,
+   80
+  ]
  },
  "116": {
   "constant": "HORSEA",
@@ -2366,7 +3286,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   30,
+   40,
+   70,
+   60,
+   70,
+   25
+  ]
  },
  "117": {
   "constant": "SEADRA",
@@ -2386,7 +3314,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   55,
+   65,
+   95,
+   85,
+   95,
+   45
+  ]
  },
  "118": {
   "constant": "GOLDEEN",
@@ -2406,7 +3342,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   67,
+   60,
+   63,
+   35,
+   50
+  ]
  },
  "119": {
   "constant": "SEAKING",
@@ -2426,7 +3370,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   80,
+   92,
+   65,
+   68,
+   65,
+   80
+  ]
  },
  "120": {
   "constant": "STARYU",
@@ -2446,7 +3398,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   30,
+   45,
+   55,
+   85,
+   70,
+   55
+  ]
  },
  "121": {
   "constant": "STARMIE",
@@ -2467,7 +3427,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   60,
+   75,
+   85,
+   115,
+   100,
+   85
+  ]
  },
  "122": {
   "constant": "MR_MIME",
@@ -2487,7 +3455,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   45,
+   65,
+   90,
+   100,
+   120
+  ]
  },
  "123": {
   "constant": "SCYTHER",
@@ -2508,7 +3484,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   110,
+   80,
+   105,
+   55,
+   80
+  ]
  },
  "124": {
   "constant": "JYNX",
@@ -2529,7 +3513,15 @@
   },
   "bodyType": 15,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   50,
+   35,
+   95,
+   115,
+   95
+  ]
  },
  "125": {
   "constant": "ELECTABUZZ",
@@ -2549,7 +3541,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   83,
+   57,
+   105,
+   95,
+   85
+  ]
  },
  "126": {
   "constant": "MAGMAR",
@@ -2569,7 +3569,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   95,
+   57,
+   93,
+   100,
+   85
+  ]
  },
  "127": {
   "constant": "PINSIR",
@@ -2589,7 +3597,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   65,
+   125,
+   100,
+   85,
+   55,
+   70
+  ]
  },
  "128": {
   "constant": "TAUROS",
@@ -2609,7 +3625,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   75,
+   100,
+   95,
+   110,
+   40,
+   70
+  ]
  },
  "129": {
   "constant": "MAGIKARP",
@@ -2629,7 +3653,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   20,
+   10,
+   55,
+   80,
+   15,
+   20
+  ]
  },
  "130": {
   "constant": "GYARADOS",
@@ -2650,7 +3682,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   95,
+   125,
+   79,
+   81,
+   60,
+   100
+  ]
  },
  "131": {
   "constant": "LAPRAS",
@@ -2671,7 +3711,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   130,
+   85,
+   80,
+   60,
+   85,
+   95
+  ]
  },
  "132": {
   "constant": "DITTO",
@@ -2691,7 +3739,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
  },
  "133": {
   "constant": "EEVEE",
@@ -2711,7 +3767,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   55,
+   55,
+   50,
+   55,
+   45,
+   65
+  ]
  },
  "134": {
   "constant": "VAPOREON",
@@ -2731,7 +3795,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   130,
+   65,
+   60,
+   65,
+   110,
+   95
+  ]
  },
  "135": {
   "constant": "JOLTEON",
@@ -2751,7 +3823,15 @@
   },
   "bodyType": 2,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   65,
+   60,
+   130,
+   110,
+   95
+  ]
  },
  "136": {
   "constant": "FLAREON",
@@ -2771,7 +3851,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   130,
+   60,
+   65,
+   95,
+   110
+  ]
  },
  "137": {
   "constant": "PORYGON",
@@ -2791,7 +3879,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   60,
+   70,
+   40,
+   85,
+   75
+  ]
  },
  "138": {
   "constant": "OMANYTE",
@@ -2812,7 +3908,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   40,
+   100,
+   35,
+   90,
+   55
+  ]
  },
  "139": {
   "constant": "OMASTAR",
@@ -2833,7 +3937,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   60,
+   125,
+   55,
+   115,
+   70
+  ]
  },
  "140": {
   "constant": "KABUTO",
@@ -2854,7 +3966,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   30,
+   80,
+   90,
+   55,
+   55,
+   45
+  ]
  },
  "141": {
   "constant": "KABUTOPS",
@@ -2875,7 +3995,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   115,
+   105,
+   80,
+   65,
+   70
+  ]
  },
  "142": {
   "constant": "AERODACTYL",
@@ -2896,7 +4024,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   105,
+   65,
+   130,
+   60,
+   75
+  ]
  },
  "143": {
   "constant": "SNORLAX",
@@ -2916,7 +4052,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   160,
+   110,
+   65,
+   30,
+   65,
+   110
+  ]
  },
  "144": {
   "constant": "ARTICUNO",
@@ -2937,7 +4081,15 @@
   },
   "bodyType": 15,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   90,
+   85,
+   100,
+   85,
+   95,
+   125
+  ]
  },
  "145": {
   "constant": "ZAPDOS",
@@ -2958,7 +4110,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   90,
+   90,
+   85,
+   100,
+   125,
+   90
+  ]
  },
  "146": {
   "constant": "MOLTRES",
@@ -2979,7 +4139,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   90,
+   100,
+   90,
+   90,
+   125,
+   85
+  ]
  },
  "147": {
   "constant": "DRATINI",
@@ -2999,7 +4167,15 @@
   },
   "bodyType": 16,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   41,
+   64,
+   45,
+   50,
+   50,
+   50
+  ]
  },
  "148": {
   "constant": "DRAGONAIR",
@@ -3019,7 +4195,15 @@
   },
   "bodyType": 16,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   61,
+   84,
+   65,
+   70,
+   70,
+   70
+  ]
  },
  "149": {
   "constant": "DRAGONITE",
@@ -3040,7 +4224,15 @@
   },
   "bodyType": 16,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   91,
+   134,
+   95,
+   80,
+   100,
+   100
+  ]
  },
  "150": {
   "constant": "MEWTWO",
@@ -3061,7 +4253,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   106,
+   110,
+   90,
+   130,
+   154,
+   90
+  ]
  },
  "151": {
   "constant": "MEW",
@@ -3081,7 +4281,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
  },
  "152": {
   "constant": "CHIKORITA",
@@ -3101,7 +4309,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   45,
+   49,
+   65,
+   45,
+   49,
+   65
+  ]
  },
  "153": {
   "constant": "BAYLEEF",
@@ -3121,7 +4337,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   62,
+   80,
+   60,
+   63,
+   80
+  ]
  },
  "154": {
   "constant": "MEGANIUM",
@@ -3141,7 +4365,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   82,
+   100,
+   80,
+   83,
+   100
+  ]
  },
  "155": {
   "constant": "CYNDAQUIL",
@@ -3161,7 +4393,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   39,
+   52,
+   43,
+   65,
+   60,
+   50
+  ]
  },
  "156": {
   "constant": "QUILAVA",
@@ -3181,7 +4421,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   58,
+   64,
+   58,
+   80,
+   80,
+   65
+  ]
  },
  "157": {
   "constant": "TYPHLOSION",
@@ -3201,7 +4449,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   78,
+   84,
+   78,
+   100,
+   109,
+   85
+  ]
  },
  "158": {
   "constant": "TOTODILE",
@@ -3221,7 +4477,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   65,
+   64,
+   43,
+   44,
+   48
+  ]
  },
  "159": {
   "constant": "CROCONAW",
@@ -3241,7 +4505,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   65,
+   80,
+   80,
+   58,
+   59,
+   63
+  ]
  },
  "160": {
   "constant": "FERALIGATR",
@@ -3261,7 +4533,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   85,
+   105,
+   100,
+   78,
+   79,
+   83
+  ]
  },
  "161": {
   "constant": "SENTRET",
@@ -3281,7 +4561,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   46,
+   34,
+   20,
+   35,
+   45
+  ]
  },
  "162": {
   "constant": "FURRET",
@@ -3301,7 +4589,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   85,
+   76,
+   64,
+   90,
+   45,
+   55
+  ]
  },
  "163": {
   "constant": "HOOTHOOT",
@@ -3322,7 +4618,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   30,
+   30,
+   50,
+   36,
+   56
+  ]
  },
  "164": {
   "constant": "NOCTOWL",
@@ -3343,7 +4647,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   100,
+   50,
+   50,
+   70,
+   76,
+   96
+  ]
  },
  "165": {
   "constant": "LEDYBA",
@@ -3364,7 +4676,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   40,
+   20,
+   30,
+   55,
+   40,
+   80
+  ]
  },
  "166": {
   "constant": "LEDIAN",
@@ -3385,7 +4705,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   55,
+   35,
+   50,
+   85,
+   55,
+   110
+  ]
  },
  "167": {
   "constant": "SPINARAK",
@@ -3406,7 +4734,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   40,
+   60,
+   40,
+   30,
+   40,
+   40
+  ]
  },
  "168": {
   "constant": "ARIADOS",
@@ -3427,7 +4763,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   70,
+   90,
+   70,
+   40,
+   60,
+   60
+  ]
  },
  "169": {
   "constant": "CROBAT",
@@ -3448,7 +4792,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   85,
+   90,
+   80,
+   130,
+   70,
+   80
+  ]
  },
  "170": {
   "constant": "CHINCHOU",
@@ -3469,7 +4821,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   75,
+   38,
+   38,
+   67,
+   56,
+   56
+  ]
  },
  "171": {
   "constant": "LANTURN",
@@ -3490,7 +4850,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   125,
+   58,
+   58,
+   67,
+   76,
+   76
+  ]
  },
  "172": {
   "constant": "PICHU",
@@ -3510,7 +4878,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   20,
+   40,
+   15,
+   60,
+   35,
+   35
+  ]
  },
  "173": {
   "constant": "CLEFFA",
@@ -3530,7 +4906,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   50,
+   25,
+   28,
+   15,
+   45,
+   55
+  ]
  },
  "174": {
   "constant": "IGGLYBUFF",
@@ -3550,7 +4934,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   90,
+   30,
+   15,
+   15,
+   40,
+   20
+  ]
  },
  "175": {
   "constant": "TOGEPI",
@@ -3570,7 +4962,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   35,
+   20,
+   65,
+   20,
+   40,
+   65
+  ]
  },
  "176": {
   "constant": "TOGETIC",
@@ -3591,7 +4991,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   55,
+   40,
+   85,
+   40,
+   80,
+   105
+  ]
  },
  "177": {
   "constant": "NATU",
@@ -3612,7 +5020,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   50,
+   45,
+   70,
+   70,
+   45
+  ]
  },
  "178": {
   "constant": "XATU",
@@ -3633,7 +5049,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   75,
+   70,
+   95,
+   95,
+   70
+  ]
  },
  "179": {
   "constant": "MAREEP",
@@ -3653,7 +5077,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   55,
+   40,
+   40,
+   35,
+   65,
+   45
+  ]
  },
  "180": {
   "constant": "FLAAFFY",
@@ -3673,7 +5105,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   55,
+   55,
+   45,
+   80,
+   60
+  ]
  },
  "181": {
   "constant": "AMPHAROS",
@@ -3693,7 +5133,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   75,
+   75,
+   55,
+   115,
+   90
+  ]
  },
  "182": {
   "constant": "BELLOSSOM",
@@ -3713,7 +5161,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   75,
+   80,
+   85,
+   50,
+   90,
+   100
+  ]
  },
  "183": {
   "constant": "MARILL",
@@ -3733,7 +5189,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   70,
+   20,
+   50,
+   40,
+   20,
+   50
+  ]
  },
  "184": {
   "constant": "AZUMARILL",
@@ -3753,7 +5217,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   100,
+   50,
+   80,
+   50,
+   50,
+   80
+  ]
  },
  "185": {
   "constant": "SUDOWOODO",
@@ -3773,7 +5245,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   100,
+   115,
+   30,
+   30,
+   65
+  ]
  },
  "186": {
   "constant": "POLITOED",
@@ -3793,7 +5273,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   75,
+   75,
+   70,
+   90,
+   100
+  ]
  },
  "187": {
   "constant": "HOPPIP",
@@ -3814,7 +5302,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   35,
+   35,
+   40,
+   50,
+   35,
+   55
+  ]
  },
  "188": {
   "constant": "SKIPLOOM",
@@ -3835,7 +5331,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   55,
+   45,
+   50,
+   80,
+   45,
+   65
+  ]
  },
  "189": {
   "constant": "JUMPLUFF",
@@ -3856,7 +5360,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   75,
+   55,
+   70,
+   110,
+   55,
+   85
+  ]
  },
  "190": {
   "constant": "AIPOM",
@@ -3876,7 +5388,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   55,
+   70,
+   55,
+   85,
+   40,
+   55
+  ]
  },
  "191": {
   "constant": "SUNKERN",
@@ -3896,7 +5416,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   30,
+   30,
+   30,
+   30,
+   30,
+   30
+  ]
  },
  "192": {
   "constant": "SUNFLORA",
@@ -3916,7 +5444,15 @@
   },
   "bodyType": 12,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   75,
+   75,
+   55,
+   30,
+   105,
+   85
+  ]
  },
  "193": {
   "constant": "YANMA",
@@ -3937,7 +5473,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   65,
+   45,
+   95,
+   75,
+   45
+  ]
  },
  "194": {
   "constant": "WOOPER",
@@ -3958,7 +5502,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   55,
+   45,
+   45,
+   15,
+   25,
+   25
+  ]
  },
  "195": {
   "constant": "QUAGSIRE",
@@ -3979,7 +5531,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   95,
+   85,
+   85,
+   35,
+   65,
+   65
+  ]
  },
  "196": {
   "constant": "ESPEON",
@@ -3999,7 +5559,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   65,
+   60,
+   110,
+   130,
+   95
+  ]
  },
  "197": {
   "constant": "UMBREON",
@@ -4019,7 +5587,15 @@
   },
   "bodyType": 17,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   95,
+   65,
+   110,
+   65,
+   60,
+   130
+  ]
  },
  "198": {
   "constant": "MURKROW",
@@ -4040,7 +5616,15 @@
   },
   "bodyType": 17,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   85,
+   42,
+   91,
+   85,
+   42
+  ]
  },
  "199": {
   "constant": "SLOWKING",
@@ -4061,7 +5645,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   95,
+   75,
+   80,
+   30,
+   100,
+   110
+  ]
  },
  "200": {
   "constant": "MISDREAVUS",
@@ -4081,7 +5673,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   60,
+   60,
+   60,
+   85,
+   85,
+   85
+  ]
  },
  "201": {
   "constant": "UNOWN",
@@ -4101,7 +5701,15 @@
   },
   "bodyType": 14,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   48,
+   72,
+   48,
+   48,
+   72,
+   48
+  ]
  },
  "202": {
   "constant": "WOBBUFFET",
@@ -4121,7 +5729,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   190,
+   33,
+   58,
+   33,
+   33,
+   58
+  ]
  },
  "203": {
   "constant": "GIRAFARIG",
@@ -4142,7 +5758,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   80,
+   65,
+   85,
+   90,
+   65
+  ]
  },
  "204": {
   "constant": "PINECO",
@@ -4162,7 +5786,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   65,
+   90,
+   15,
+   35,
+   35
+  ]
  },
  "205": {
   "constant": "FORRETRESS",
@@ -4183,7 +5815,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   75,
+   90,
+   140,
+   40,
+   60,
+   60
+  ]
  },
  "206": {
   "constant": "DUNSPARCE",
@@ -4203,7 +5843,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   100,
+   70,
+   70,
+   45,
+   65,
+   65
+  ]
  },
  "207": {
   "constant": "GLIGAR",
@@ -4224,7 +5872,15 @@
   },
   "bodyType": 4,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   65,
+   75,
+   105,
+   85,
+   35,
+   65
+  ]
  },
  "208": {
   "constant": "STEELIX",
@@ -4245,7 +5901,15 @@
   },
   "bodyType": 8,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   75,
+   85,
+   200,
+   30,
+   55,
+   65
+  ]
  },
  "209": {
   "constant": "SNUBBULL",
@@ -4265,7 +5929,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   60,
+   80,
+   50,
+   30,
+   40,
+   40
+  ]
  },
  "210": {
   "constant": "GRANBULL",
@@ -4285,7 +5957,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   90,
+   120,
+   75,
+   45,
+   60,
+   60
+  ]
  },
  "211": {
   "constant": "QWILFISH",
@@ -4306,7 +5986,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   65,
+   95,
+   75,
+   85,
+   55,
+   55
+  ]
  },
  "212": {
   "constant": "SCIZOR",
@@ -4327,7 +6015,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   130,
+   100,
+   65,
+   55,
+   80
+  ]
  },
  "213": {
   "constant": "SHUCKLE",
@@ -4348,7 +6044,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   20,
+   10,
+   230,
+   5,
+   10,
+   230
+  ]
  },
  "214": {
   "constant": "HERACROSS",
@@ -4369,7 +6073,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   125,
+   75,
+   85,
+   40,
+   95
+  ]
  },
  "215": {
   "constant": "SNEASEL",
@@ -4390,7 +6102,15 @@
   },
   "bodyType": 17,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   55,
+   95,
+   55,
+   115,
+   35,
+   75
+  ]
  },
  "216": {
   "constant": "TEDDIURSA",
@@ -4410,7 +6130,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   80,
+   50,
+   40,
+   50,
+   50
+  ]
  },
  "217": {
   "constant": "URSARING",
@@ -4430,7 +6158,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   90,
+   130,
+   75,
+   55,
+   75,
+   75
+  ]
  },
  "218": {
   "constant": "SLUGMA",
@@ -4450,7 +6186,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   40,
+   40,
+   20,
+   70,
+   40
+  ]
  },
  "219": {
   "constant": "MAGCARGO",
@@ -4471,7 +6215,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   50,
+   120,
+   30,
+   80,
+   80
+  ]
  },
  "220": {
   "constant": "SWINUB",
@@ -4492,7 +6244,15 @@
   },
   "bodyType": 15,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   50,
+   50,
+   40,
+   50,
+   30,
+   30
+  ]
  },
  "221": {
   "constant": "PILOSWINE",
@@ -4513,7 +6273,15 @@
   },
   "bodyType": 15,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   100,
+   80,
+   50,
+   60,
+   60
+  ]
  },
  "222": {
   "constant": "CORSOLA",
@@ -4534,7 +6302,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   55,
+   55,
+   85,
+   35,
+   65,
+   85
+  ]
  },
  "223": {
   "constant": "REMORAID",
@@ -4554,7 +6330,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   65,
+   35,
+   65,
+   65,
+   35
+  ]
  },
  "224": {
   "constant": "OCTILLERY",
@@ -4574,7 +6358,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   75,
+   105,
+   75,
+   45,
+   105,
+   75
+  ]
  },
  "225": {
   "constant": "DELIBIRD",
@@ -4595,7 +6387,15 @@
   },
   "bodyType": 15,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   45,
+   55,
+   45,
+   75,
+   65,
+   45
+  ]
  },
  "226": {
   "constant": "MANTINE",
@@ -4616,7 +6416,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   65,
+   40,
+   70,
+   70,
+   80,
+   140
+  ]
  },
  "227": {
   "constant": "SKARMORY",
@@ -4637,7 +6445,15 @@
   },
   "bodyType": 8,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   65,
+   80,
+   140,
+   70,
+   40,
+   70
+  ]
  },
  "228": {
   "constant": "HOUNDOUR",
@@ -4658,7 +6474,15 @@
   },
   "bodyType": 17,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   45,
+   60,
+   30,
+   65,
+   80,
+   50
+  ]
  },
  "229": {
   "constant": "HOUNDOOM",
@@ -4679,7 +6503,15 @@
   },
   "bodyType": 17,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   75,
+   90,
+   50,
+   95,
+   110,
+   80
+  ]
  },
  "230": {
   "constant": "KINGDRA",
@@ -4700,7 +6532,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   75,
+   95,
+   95,
+   85,
+   95,
+   95
+  ]
  },
  "231": {
   "constant": "PHANPY",
@@ -4720,7 +6560,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   90,
+   60,
+   60,
+   40,
+   40,
+   40
+  ]
  },
  "232": {
   "constant": "DONPHAN",
@@ -4740,7 +6588,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   90,
+   120,
+   120,
+   50,
+   60,
+   60
+  ]
  },
  "233": {
   "constant": "PORYGON2",
@@ -4760,7 +6616,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   85,
+   80,
+   90,
+   60,
+   105,
+   95
+  ]
  },
  "234": {
   "constant": "STANTLER",
@@ -4780,7 +6644,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   73,
+   95,
+   62,
+   85,
+   85,
+   65
+  ]
  },
  "235": {
   "constant": "SMEARGLE",
@@ -4800,7 +6672,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   55,
+   20,
+   35,
+   75,
+   20,
+   45
+  ]
  },
  "236": {
   "constant": "TYROGUE",
@@ -4820,7 +6700,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   35,
+   35,
+   35,
+   35,
+   35
+  ]
  },
  "237": {
   "constant": "HITMONTOP",
@@ -4840,7 +6728,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   95,
+   95,
+   70,
+   35,
+   110
+  ]
  },
  "238": {
   "constant": "SMOOCHUM",
@@ -4861,7 +6757,15 @@
   },
   "bodyType": 15,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   30,
+   15,
+   65,
+   85,
+   65
+  ]
  },
  "239": {
   "constant": "ELEKID",
@@ -4881,7 +6785,15 @@
   },
   "bodyType": 13,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   63,
+   37,
+   95,
+   65,
+   55
+  ]
  },
  "240": {
   "constant": "MAGBY",
@@ -4901,7 +6813,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   75,
+   37,
+   83,
+   70,
+   55
+  ]
  },
  "241": {
   "constant": "MILTANK",
@@ -4921,7 +6841,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   95,
+   80,
+   105,
+   100,
+   40,
+   70
+  ]
  },
  "242": {
   "constant": "BLISSEY",
@@ -4941,7 +6869,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   255,
+   10,
+   10,
+   55,
+   75,
+   135
+  ]
  },
  "243": {
   "constant": "RAIKOU",
@@ -4961,7 +6897,15 @@
   },
   "bodyType": 13,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   90,
+   85,
+   75,
+   115,
+   115,
+   100
+  ]
  },
  "244": {
   "constant": "ENTEI",
@@ -4981,7 +6925,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   115,
+   115,
+   85,
+   100,
+   90,
+   75
+  ]
  },
  "245": {
   "constant": "SUICUNE",
@@ -5001,7 +6953,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   75,
+   115,
+   85,
+   90,
+   115
+  ]
  },
  "246": {
   "constant": "LARVITAR",
@@ -5022,7 +6982,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   50,
+   64,
+   50,
+   41,
+   45,
+   50
+  ]
  },
  "247": {
   "constant": "PUPITAR",
@@ -5043,7 +7011,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   70,
+   84,
+   70,
+   51,
+   65,
+   70
+  ]
  },
  "248": {
   "constant": "TYRANITAR",
@@ -5064,7 +7040,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   134,
+   110,
+   61,
+   95,
+   100
+  ]
  },
  "249": {
   "constant": "LUGIA",
@@ -5085,7 +7069,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   106,
+   90,
+   130,
+   110,
+   90,
+   154
+  ]
  },
  "250": {
   "constant": "HO_OH",
@@ -5106,7 +7098,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   106,
+   130,
+   90,
+   90,
+   110,
+   154
+  ]
  },
  "251": {
   "constant": "CELEBI",
@@ -5127,7 +7127,15 @@
   },
   "bodyType": 14,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
  },
  "252": {
   "constant": "OLD_UNOWN_B",
@@ -5148,7 +7156,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   33,
+   136,
+   0,
+   29,
+   6,
+   6
+  ]
  },
  "253": {
   "constant": "OLD_UNOWN_C",
@@ -5166,7 +7182,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "254": {
   "constant": "OLD_UNOWN_D",
@@ -5184,7 +7201,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "255": {
   "constant": "OLD_UNOWN_E",
@@ -5202,7 +7220,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "256": {
   "constant": "OLD_UNOWN_F",
@@ -5220,7 +7239,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "257": {
   "constant": "OLD_UNOWN_G",
@@ -5238,7 +7258,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "258": {
   "constant": "OLD_UNOWN_H",
@@ -5256,7 +7277,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "259": {
   "constant": "OLD_UNOWN_I",
@@ -5274,7 +7296,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "260": {
   "constant": "OLD_UNOWN_J",
@@ -5292,7 +7315,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "261": {
   "constant": "OLD_UNOWN_K",
@@ -5310,7 +7334,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "262": {
   "constant": "OLD_UNOWN_L",
@@ -5328,7 +7353,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "263": {
   "constant": "OLD_UNOWN_M",
@@ -5346,7 +7372,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "264": {
   "constant": "OLD_UNOWN_N",
@@ -5364,7 +7391,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "265": {
   "constant": "OLD_UNOWN_O",
@@ -5382,7 +7410,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "266": {
   "constant": "OLD_UNOWN_P",
@@ -5400,7 +7429,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
@@ -5418,7 +7448,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "268": {
   "constant": "OLD_UNOWN_R",
@@ -5436,7 +7467,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "269": {
   "constant": "OLD_UNOWN_S",
@@ -5454,7 +7486,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "270": {
   "constant": "OLD_UNOWN_T",
@@ -5472,7 +7505,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "271": {
   "constant": "OLD_UNOWN_U",
@@ -5490,7 +7524,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "272": {
   "constant": "OLD_UNOWN_V",
@@ -5508,7 +7543,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "273": {
   "constant": "OLD_UNOWN_W",
@@ -5526,7 +7562,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "274": {
   "constant": "OLD_UNOWN_X",
@@ -5544,7 +7581,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "275": {
   "constant": "OLD_UNOWN_Y",
@@ -5562,7 +7600,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "276": {
   "constant": "OLD_UNOWN_Z",
@@ -5580,7 +7619,8 @@
   },
   "bodyType": null,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": null
  },
  "277": {
   "constant": "TREECKO",
@@ -5600,7 +7640,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   45,
+   35,
+   70,
+   65,
+   55
+  ]
  },
  "278": {
   "constant": "GROVYLE",
@@ -5620,7 +7668,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   65,
+   45,
+   95,
+   85,
+   65
+  ]
  },
  "279": {
   "constant": "SCEPTILE",
@@ -5640,7 +7696,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   85,
+   65,
+   120,
+   105,
+   85
+  ]
  },
  "280": {
   "constant": "TORCHIC",
@@ -5660,7 +7724,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   45,
+   60,
+   40,
+   45,
+   70,
+   50
+  ]
  },
  "281": {
   "constant": "COMBUSKEN",
@@ -5681,7 +7753,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   85,
+   60,
+   55,
+   85,
+   60
+  ]
  },
  "282": {
   "constant": "BLAZIKEN",
@@ -5702,7 +7782,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   120,
+   70,
+   80,
+   110,
+   70
+  ]
  },
  "283": {
   "constant": "MUDKIP",
@@ -5722,7 +7810,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   70,
+   50,
+   40,
+   50,
+   50
+  ]
  },
  "284": {
   "constant": "MARSHTOMP",
@@ -5743,7 +7839,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   85,
+   70,
+   50,
+   60,
+   70
+  ]
  },
  "285": {
   "constant": "SWAMPERT",
@@ -5764,7 +7868,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   100,
+   110,
+   90,
+   60,
+   85,
+   90
+  ]
  },
  "286": {
   "constant": "POOCHYENA",
@@ -5784,7 +7896,15 @@
   },
   "bodyType": 17,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   35,
+   55,
+   35,
+   35,
+   30,
+   30
+  ]
  },
  "287": {
   "constant": "MIGHTYENA",
@@ -5804,7 +7924,15 @@
   },
   "bodyType": 17,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   90,
+   70,
+   70,
+   60,
+   60
+  ]
  },
  "288": {
   "constant": "ZIGZAGOON",
@@ -5824,7 +7952,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   38,
+   30,
+   41,
+   60,
+   30,
+   41
+  ]
  },
  "289": {
   "constant": "LINOONE",
@@ -5844,7 +7980,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   78,
+   70,
+   61,
+   100,
+   50,
+   61
+  ]
  },
  "290": {
   "constant": "WURMPLE",
@@ -5864,7 +8008,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   45,
+   45,
+   35,
+   20,
+   20,
+   30
+  ]
  },
  "291": {
   "constant": "SILCOON",
@@ -5884,7 +8036,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   35,
+   55,
+   15,
+   25,
+   25
+  ]
  },
  "292": {
   "constant": "BEAUTIFLY",
@@ -5905,7 +8065,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   70,
+   50,
+   65,
+   90,
+   50
+  ]
  },
  "293": {
   "constant": "CASCOON",
@@ -5925,7 +8093,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   35,
+   55,
+   15,
+   25,
+   25
+  ]
  },
  "294": {
   "constant": "DUSTOX",
@@ -5946,7 +8122,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   50,
+   70,
+   65,
+   50,
+   90
+  ]
  },
  "295": {
   "constant": "LOTAD",
@@ -5967,7 +8151,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   30,
+   30,
+   30,
+   40,
+   50
+  ]
  },
  "296": {
   "constant": "LOMBRE",
@@ -5988,7 +8180,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   50,
+   50,
+   50,
+   60,
+   70
+  ]
  },
  "297": {
   "constant": "LUDICOLO",
@@ -6009,7 +8209,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   70,
+   70,
+   70,
+   90,
+   100
+  ]
  },
  "298": {
   "constant": "SEEDOT",
@@ -6029,7 +8237,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   40,
+   50,
+   30,
+   30,
+   30
+  ]
  },
  "299": {
   "constant": "NUZLEAF",
@@ -6050,7 +8266,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   70,
+   40,
+   60,
+   60,
+   40
+  ]
  },
  "300": {
   "constant": "SHIFTRY",
@@ -6071,7 +8295,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   100,
+   60,
+   80,
+   90,
+   60
+  ]
  },
  "301": {
   "constant": "NINCADA",
@@ -6092,7 +8324,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   31,
+   45,
+   90,
+   40,
+   30,
+   30
+  ]
  },
  "302": {
   "constant": "NINJASK",
@@ -6113,7 +8353,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   61,
+   90,
+   45,
+   160,
+   50,
+   50
+  ]
  },
  "303": {
   "constant": "SHEDINJA",
@@ -6134,7 +8382,15 @@
   },
   "bodyType": 6,
   "streaks": true,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   1,
+   90,
+   45,
+   40,
+   30,
+   30
+  ]
  },
  "304": {
   "constant": "TAILLOW",
@@ -6155,7 +8411,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   40,
+   55,
+   30,
+   85,
+   30,
+   30
+  ]
  },
  "305": {
   "constant": "SWELLOW",
@@ -6176,7 +8440,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   85,
+   60,
+   125,
+   50,
+   50
+  ]
  },
  "306": {
   "constant": "SHROOMISH",
@@ -6196,7 +8468,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   60,
+   40,
+   60,
+   35,
+   40,
+   60
+  ]
  },
  "307": {
   "constant": "BRELOOM",
@@ -6217,7 +8497,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   60,
+   130,
+   80,
+   70,
+   60,
+   60
+  ]
  },
  "308": {
   "constant": "SPINDA",
@@ -6237,7 +8525,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   60,
+   60,
+   60,
+   60,
+   60,
+   60
+  ]
  },
  "309": {
   "constant": "WINGULL",
@@ -6258,7 +8554,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   30,
+   30,
+   85,
+   55,
+   30
+  ]
  },
  "310": {
   "constant": "PELIPPER",
@@ -6279,7 +8583,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   50,
+   100,
+   65,
+   85,
+   70
+  ]
  },
  "311": {
   "constant": "SURSKIT",
@@ -6300,7 +8612,15 @@
   },
   "bodyType": 6,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   30,
+   32,
+   65,
+   50,
+   52
+  ]
  },
  "312": {
   "constant": "MASQUERAIN",
@@ -6321,7 +8641,15 @@
   },
   "bodyType": 6,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   60,
+   62,
+   60,
+   80,
+   82
+  ]
  },
  "313": {
   "constant": "WAILMER",
@@ -6342,7 +8670,15 @@
   },
   "bodyType": 2,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   85,
+   55,
+   90,
+   50,
+   55
+  ]
  },
  "314": {
   "constant": "WAILORD",
@@ -6363,7 +8699,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   95,
+   100,
+   85,
+   85,
+   100,
+   85
+  ]
  },
  "315": {
   "constant": "SKITTY",
@@ -6383,7 +8727,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   50,
+   45,
+   45,
+   50,
+   35,
+   35
+  ]
  },
  "316": {
   "constant": "DELCATTY",
@@ -6403,7 +8755,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   70,
+   65,
+   65,
+   70,
+   55,
+   55
+  ]
  },
  "317": {
   "constant": "KECLEON",
@@ -6423,7 +8783,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   60,
+   90,
+   70,
+   40,
+   60,
+   120
+  ]
  },
  "318": {
   "constant": "BALTOY",
@@ -6444,7 +8812,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   40,
+   40,
+   55,
+   55,
+   40,
+   70
+  ]
  },
  "319": {
   "constant": "CLAYDOL",
@@ -6465,7 +8841,15 @@
   },
   "bodyType": 4,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   70,
+   105,
+   75,
+   70,
+   120
+  ]
  },
  "320": {
   "constant": "NOSEPASS",
@@ -6485,7 +8869,15 @@
   },
   "bodyType": 5,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   30,
+   45,
+   135,
+   30,
+   45,
+   90
+  ]
  },
  "321": {
   "constant": "TORKOAL",
@@ -6505,7 +8897,15 @@
   },
   "bodyType": 10,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   85,
+   140,
+   20,
+   85,
+   70
+  ]
  },
  "322": {
   "constant": "SABLEYE",
@@ -6526,7 +8926,15 @@
   },
   "bodyType": 17,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   75,
+   75,
+   50,
+   65,
+   65
+  ]
  },
  "323": {
   "constant": "BARBOACH",
@@ -6547,7 +8955,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   48,
+   43,
+   60,
+   46,
+   41
+  ]
  },
  "324": {
   "constant": "WHISCASH",
@@ -6568,7 +8984,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   110,
+   78,
+   73,
+   60,
+   76,
+   71
+  ]
  },
  "325": {
   "constant": "LUVDISC",
@@ -6588,7 +9012,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   43,
+   30,
+   55,
+   97,
+   40,
+   65
+  ]
  },
  "326": {
   "constant": "CORPHISH",
@@ -6608,7 +9040,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   43,
+   80,
+   65,
+   35,
+   50,
+   35
+  ]
  },
  "327": {
   "constant": "CRAWDAUNT",
@@ -6629,7 +9069,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   63,
+   120,
+   85,
+   55,
+   90,
+   55
+  ]
  },
  "328": {
   "constant": "FEEBAS",
@@ -6649,7 +9097,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   20,
+   15,
+   20,
+   80,
+   10,
+   55
+  ]
  },
  "329": {
   "constant": "MILOTIC",
@@ -6669,7 +9125,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   95,
+   60,
+   79,
+   81,
+   100,
+   125
+  ]
  },
  "330": {
   "constant": "CARVANHA",
@@ -6690,7 +9154,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   45,
+   90,
+   20,
+   65,
+   65,
+   20
+  ]
  },
  "331": {
   "constant": "SHARPEDO",
@@ -6711,7 +9183,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   70,
+   120,
+   40,
+   95,
+   95,
+   40
+  ]
  },
  "332": {
   "constant": "TRAPINCH",
@@ -6731,7 +9211,15 @@
   },
   "bodyType": 4,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   45,
+   100,
+   45,
+   10,
+   45,
+   45
+  ]
  },
  "333": {
   "constant": "VIBRAVA",
@@ -6752,7 +9240,15 @@
   },
   "bodyType": 4,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   70,
+   50,
+   70,
+   50,
+   50
+  ]
  },
  "334": {
   "constant": "FLYGON",
@@ -6773,7 +9269,15 @@
   },
   "bodyType": 4,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   80,
+   100,
+   80,
+   100,
+   80,
+   80
+  ]
  },
  "335": {
   "constant": "MAKUHITA",
@@ -6793,7 +9297,15 @@
   },
   "bodyType": 1,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   72,
+   60,
+   30,
+   25,
+   20,
+   30
+  ]
  },
  "336": {
   "constant": "HARIYAMA",
@@ -6813,7 +9325,15 @@
   },
   "bodyType": 1,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   144,
+   120,
+   60,
+   50,
+   40,
+   60
+  ]
  },
  "337": {
   "constant": "ELECTRIKE",
@@ -6833,7 +9353,15 @@
   },
   "bodyType": 13,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   40,
+   45,
+   40,
+   65,
+   65,
+   40
+  ]
  },
  "338": {
   "constant": "MANECTRIC",
@@ -6853,7 +9381,15 @@
   },
   "bodyType": 13,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   70,
+   75,
+   60,
+   105,
+   105,
+   60
+  ]
  },
  "339": {
   "constant": "NUMEL",
@@ -6874,7 +9410,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   60,
+   40,
+   35,
+   65,
+   45
+  ]
  },
  "340": {
   "constant": "CAMERUPT",
@@ -6895,7 +9439,15 @@
   },
   "bodyType": 10,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   100,
+   70,
+   40,
+   105,
+   75
+  ]
  },
  "341": {
   "constant": "SPHEAL",
@@ -6915,7 +9467,15 @@
   },
   "bodyType": 11,
   "streaks": true,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   45,
+   60,
+   50,
+   85,
+   85
+  ]
  },
  "342": {
   "constant": "SEALEO",
@@ -6936,7 +9496,15 @@
   },
   "bodyType": 15,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   90,
+   60,
+   70,
+   45,
+   75,
+   70
+  ]
  },
  "343": {
   "constant": "WALREIN",
@@ -6957,7 +9525,15 @@
   },
   "bodyType": 15,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   110,
+   80,
+   90,
+   65,
+   95,
+   90
+  ]
  },
  "344": {
   "constant": "CACNEA",
@@ -6977,7 +9553,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   85,
+   40,
+   35,
+   85,
+   40
+  ]
  },
  "345": {
   "constant": "CACTURNE",
@@ -6998,7 +9582,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   70,
+   115,
+   60,
+   55,
+   115,
+   60
+  ]
  },
  "346": {
   "constant": "SNORUNT",
@@ -7018,7 +9610,15 @@
   },
   "bodyType": 15,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   50,
+   50,
+   50,
+   50,
+   50,
+   50
+  ]
  },
  "347": {
   "constant": "GLALIE",
@@ -7038,7 +9638,15 @@
   },
   "bodyType": 15,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   80,
+   80,
+   80,
+   80,
+   80,
+   80
+  ]
  },
  "348": {
   "constant": "LUNATONE",
@@ -7059,7 +9667,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   70,
+   55,
+   65,
+   70,
+   95,
+   85
+  ]
  },
  "349": {
   "constant": "SOLROCK",
@@ -7080,7 +9696,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   70,
+   95,
+   85,
+   70,
+   55,
+   65
+  ]
  },
  "350": {
   "constant": "AZURILL",
@@ -7100,7 +9724,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   50,
+   20,
+   40,
+   20,
+   20,
+   40
+  ]
  },
  "351": {
   "constant": "SPOINK",
@@ -7120,7 +9752,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   60,
+   25,
+   35,
+   60,
+   70,
+   80
+  ]
  },
  "352": {
   "constant": "GRUMPIG",
@@ -7140,7 +9780,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   80,
+   45,
+   65,
+   80,
+   90,
+   110
+  ]
  },
  "353": {
   "constant": "PLUSLE",
@@ -7160,7 +9808,15 @@
   },
   "bodyType": 13,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   50,
+   40,
+   95,
+   85,
+   75
+  ]
  },
  "354": {
   "constant": "MINUN",
@@ -7180,7 +9836,15 @@
   },
   "bodyType": 13,
   "streaks": false,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   40,
+   50,
+   95,
+   75,
+   85
+  ]
  },
  "355": {
   "constant": "MAWILE",
@@ -7200,7 +9864,15 @@
   },
   "bodyType": 8,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   50,
+   85,
+   85,
+   50,
+   55,
+   55
+  ]
  },
  "356": {
   "constant": "MEDITITE",
@@ -7221,7 +9893,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   30,
+   40,
+   55,
+   60,
+   40,
+   55
+  ]
  },
  "357": {
   "constant": "MEDICHAM",
@@ -7242,7 +9922,15 @@
   },
   "bodyType": 1,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   60,
+   60,
+   75,
+   80,
+   60,
+   75
+  ]
  },
  "358": {
   "constant": "SWABLU",
@@ -7263,7 +9951,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   45,
+   40,
+   60,
+   50,
+   40,
+   75
+  ]
  },
  "359": {
   "constant": "ALTARIA",
@@ -7284,7 +9980,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   75,
+   70,
+   90,
+   80,
+   70,
+   105
+  ]
  },
  "360": {
   "constant": "WYNAUT",
@@ -7304,7 +10008,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   95,
+   23,
+   48,
+   23,
+   23,
+   48
+  ]
  },
  "361": {
   "constant": "DUSKULL",
@@ -7324,7 +10036,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   20,
+   40,
+   90,
+   25,
+   30,
+   90
+  ]
  },
  "362": {
   "constant": "DUSCLOPS",
@@ -7344,7 +10064,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   40,
+   70,
+   130,
+   25,
+   60,
+   130
+  ]
  },
  "363": {
   "constant": "ROSELIA",
@@ -7365,7 +10093,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   50,
+   60,
+   45,
+   65,
+   100,
+   80
+  ]
  },
  "364": {
   "constant": "SLAKOTH",
@@ -7385,7 +10121,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   60,
+   60,
+   60,
+   30,
+   35,
+   35
+  ]
  },
  "365": {
   "constant": "VIGOROTH",
@@ -7405,7 +10149,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   80,
+   80,
+   90,
+   55,
+   55
+  ]
  },
  "366": {
   "constant": "SLAKING",
@@ -7425,7 +10177,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   150,
+   160,
+   100,
+   100,
+   95,
+   65
+  ]
  },
  "367": {
   "constant": "GULPIN",
@@ -7445,7 +10205,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   70,
+   43,
+   53,
+   40,
+   43,
+   53
+  ]
  },
  "368": {
   "constant": "SWALOT",
@@ -7465,7 +10233,15 @@
   },
   "bodyType": 3,
   "streaks": true,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   100,
+   73,
+   83,
+   55,
+   73,
+   83
+  ]
  },
  "369": {
   "constant": "TROPIUS",
@@ -7486,7 +10262,15 @@
   },
   "bodyType": 12,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   99,
+   68,
+   83,
+   51,
+   72,
+   87
+  ]
  },
  "370": {
   "constant": "WHISMUR",
@@ -7506,7 +10290,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   64,
+   51,
+   23,
+   28,
+   51,
+   23
+  ]
  },
  "371": {
   "constant": "LOUDRED",
@@ -7526,7 +10318,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   84,
+   71,
+   43,
+   48,
+   71,
+   43
+  ]
  },
  "372": {
   "constant": "EXPLOUD",
@@ -7546,7 +10346,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   104,
+   91,
+   63,
+   68,
+   91,
+   63
+  ]
  },
  "373": {
   "constant": "CLAMPERL",
@@ -7566,7 +10374,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   35,
+   64,
+   85,
+   32,
+   74,
+   55
+  ]
  },
  "374": {
   "constant": "HUNTAIL",
@@ -7586,7 +10402,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   55,
+   104,
+   105,
+   52,
+   94,
+   75
+  ]
  },
  "375": {
   "constant": "GOREBYSS",
@@ -7606,7 +10430,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   55,
+   84,
+   105,
+   52,
+   114,
+   75
+  ]
  },
  "376": {
   "constant": "ABSOL",
@@ -7626,7 +10458,15 @@
   },
   "bodyType": 17,
   "streaks": false,
-  "growth": 3
+  "growth": 3,
+  "base": [
+   65,
+   130,
+   60,
+   75,
+   75,
+   60
+  ]
  },
  "377": {
   "constant": "SHUPPET",
@@ -7646,7 +10486,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   44,
+   75,
+   35,
+   45,
+   63,
+   33
+  ]
  },
  "378": {
   "constant": "BANETTE",
@@ -7666,7 +10514,15 @@
   },
   "bodyType": 7,
   "streaks": true,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   64,
+   115,
+   65,
+   65,
+   83,
+   63
+  ]
  },
  "379": {
   "constant": "SEVIPER",
@@ -7686,7 +10542,15 @@
   },
   "bodyType": 3,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   73,
+   100,
+   60,
+   65,
+   100,
+   60
+  ]
  },
  "380": {
   "constant": "ZANGOOSE",
@@ -7706,7 +10570,15 @@
   },
   "bodyType": 0,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   73,
+   115,
+   60,
+   90,
+   60,
+   60
+  ]
  },
  "381": {
   "constant": "RELICANTH",
@@ -7727,7 +10599,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   90,
+   130,
+   55,
+   45,
+   65
+  ]
  },
  "382": {
   "constant": "ARON",
@@ -7748,7 +10628,15 @@
   },
   "bodyType": 8,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   50,
+   70,
+   100,
+   30,
+   40,
+   40
+  ]
  },
  "383": {
   "constant": "LAIRON",
@@ -7769,7 +10657,15 @@
   },
   "bodyType": 8,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   60,
+   90,
+   140,
+   40,
+   50,
+   50
+  ]
  },
  "384": {
   "constant": "AGGRON",
@@ -7790,7 +10686,15 @@
   },
   "bodyType": 8,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   70,
+   110,
+   180,
+   50,
+   60,
+   60
+  ]
  },
  "385": {
   "constant": "CASTFORM",
@@ -7810,7 +10714,15 @@
   },
   "bodyType": 0,
   "streaks": true,
-  "growth": 0
+  "growth": 0,
+  "base": [
+   70,
+   70,
+   70,
+   70,
+   70,
+   70
+  ]
  },
  "386": {
   "constant": "VOLBEAT",
@@ -7830,7 +10742,15 @@
   },
   "bodyType": 6,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   65,
+   73,
+   55,
+   85,
+   47,
+   75
+  ]
  },
  "387": {
   "constant": "ILLUMISE",
@@ -7850,7 +10770,15 @@
   },
   "bodyType": 6,
   "streaks": false,
-  "growth": 2
+  "growth": 2,
+  "base": [
+   65,
+   47,
+   55,
+   85,
+   73,
+   75
+  ]
  },
  "388": {
   "constant": "LILEEP",
@@ -7871,7 +10799,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   66,
+   41,
+   77,
+   23,
+   61,
+   87
+  ]
  },
  "389": {
   "constant": "CRADILY",
@@ -7892,7 +10828,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   86,
+   81,
+   97,
+   43,
+   81,
+   107
+  ]
  },
  "390": {
   "constant": "ANORITH",
@@ -7913,7 +10857,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   45,
+   95,
+   50,
+   75,
+   40,
+   50
+  ]
  },
  "391": {
   "constant": "ARMALDO",
@@ -7934,7 +10886,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 1
+  "growth": 1,
+  "base": [
+   75,
+   125,
+   100,
+   45,
+   70,
+   80
+  ]
  },
  "392": {
   "constant": "RALTS",
@@ -7954,7 +10914,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   28,
+   25,
+   25,
+   40,
+   45,
+   35
+  ]
  },
  "393": {
   "constant": "KIRLIA",
@@ -7974,7 +10942,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   38,
+   35,
+   35,
+   50,
+   65,
+   55
+  ]
  },
  "394": {
   "constant": "GARDEVOIR",
@@ -7994,7 +10970,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   68,
+   65,
+   65,
+   80,
+   125,
+   115
+  ]
  },
  "395": {
   "constant": "BAGON",
@@ -8014,7 +10998,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   45,
+   75,
+   60,
+   50,
+   40,
+   30
+  ]
  },
  "396": {
   "constant": "SHELGON",
@@ -8034,7 +11026,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   65,
+   95,
+   100,
+   50,
+   60,
+   50
+  ]
  },
  "397": {
   "constant": "SALAMENCE",
@@ -8055,7 +11055,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   95,
+   135,
+   80,
+   100,
+   110,
+   80
+  ]
  },
  "398": {
   "constant": "BELDUM",
@@ -8076,7 +11084,15 @@
   },
   "bodyType": 8,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   40,
+   55,
+   80,
+   30,
+   35,
+   60
+  ]
  },
  "399": {
   "constant": "METANG",
@@ -8097,7 +11113,15 @@
   },
   "bodyType": 8,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   60,
+   75,
+   100,
+   50,
+   55,
+   80
+  ]
  },
  "400": {
   "constant": "METAGROSS",
@@ -8118,7 +11142,15 @@
   },
   "bodyType": 8,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   135,
+   130,
+   70,
+   95,
+   90
+  ]
  },
  "401": {
   "constant": "REGIROCK",
@@ -8138,7 +11170,15 @@
   },
   "bodyType": 5,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   100,
+   200,
+   50,
+   50,
+   100
+  ]
  },
  "402": {
   "constant": "REGICE",
@@ -8158,7 +11198,15 @@
   },
   "bodyType": 15,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   50,
+   100,
+   50,
+   100,
+   200
+  ]
  },
  "403": {
   "constant": "REGISTEEL",
@@ -8178,7 +11226,15 @@
   },
   "bodyType": 8,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   75,
+   150,
+   50,
+   75,
+   150
+  ]
  },
  "404": {
   "constant": "KYOGRE",
@@ -8198,7 +11254,15 @@
   },
   "bodyType": 11,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   100,
+   90,
+   90,
+   150,
+   140
+  ]
  },
  "405": {
   "constant": "GROUDON",
@@ -8218,7 +11282,15 @@
   },
   "bodyType": 4,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   150,
+   140,
+   90,
+   100,
+   90
+  ]
  },
  "406": {
   "constant": "RAYQUAZA",
@@ -8239,7 +11311,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   105,
+   150,
+   90,
+   95,
+   150,
+   90
+  ]
  },
  "407": {
   "constant": "LATIAS",
@@ -8260,7 +11340,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   80,
+   90,
+   110,
+   110,
+   130
+  ]
  },
  "408": {
   "constant": "LATIOS",
@@ -8281,7 +11369,15 @@
   },
   "bodyType": 16,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   80,
+   90,
+   80,
+   110,
+   130,
+   110
+  ]
  },
  "409": {
   "constant": "JIRACHI",
@@ -8302,7 +11398,15 @@
   },
   "bodyType": 8,
   "streaks": false,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
  },
  "410": {
   "constant": "DEOXYS",
@@ -8322,7 +11426,15 @@
   },
   "bodyType": 14,
   "streaks": true,
-  "growth": 5
+  "growth": 5,
+  "base": [
+   50,
+   150,
+   50,
+   150,
+   150,
+   50
+  ]
  },
  "411": {
   "constant": "CHIMECHO",
@@ -8342,6 +11454,14 @@
   },
   "bodyType": 14,
   "streaks": false,
-  "growth": 4
+  "growth": 4,
+  "base": [
+   65,
+   50,
+   70,
+   65,
+   95,
+   80
+  ]
  }
 }

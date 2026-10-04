@@ -42,6 +42,12 @@ export class Store {
     return this.db.prepare("SELECT at, kind, detail FROM interactions WHERE at >= ? ORDER BY id").all(since.toISOString()) as any;
   }
 
+  // C-45: the experience a daemon gained on the device and not yet written into the save (by its personality)
+  expAfter(personality: number, id: number): { id: number; gain: number }[] {
+    return (this.db.prepare("SELECT id, detail FROM interactions WHERE kind = 'exp' AND id > ? AND detail LIKE ? ORDER BY id")
+      .all(id, `${personality} %`) as { id: number; detail: string }[]).map((r) => ({ id: r.id, gain: Number(r.detail.split(" ")[1]) || 0 }));
+  }
+
   // C-15: the meetings not yet written into the save (after the last one a SYNC wrote)
   meetingsAfter(id: number): { id: number; at: string; detail: string | null }[] {
     return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = 'met' AND id > ? ORDER BY id").all(id) as any;

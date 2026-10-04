@@ -118,7 +118,8 @@ type Settings = { savePath: string | null; dir: string | null; exists: boolean; 
 
 // C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
 type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
-              trained: boolean; tired: string; quietDays: number; cue: string | null };
+              trained: boolean; tired: string; quietDays: number; cue: string | null;
+              level: number | null; grown: { exp: number; level: number } | null };
 
 function LifeCard({ ink, name }: { ink: string; name: string }) {
   const [l, setL] = useState<Life | null>(null);
@@ -132,6 +133,9 @@ function LifeCard({ ink, name }: { ink: string; name: string }) {
       <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
+      {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)
+        ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
+        : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}
       <XStack gap={8} flexWrap="wrap" marginTop={4}>
         <Action label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
         <Action label="Water" onPress={() => care("water", "Drunk.")} ink={ink} />
@@ -157,7 +161,8 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   // game shows SEND), and settles a daemon brought home without the app. Close the game first.
   const doSync = async () => {
     const r = await api<{ sameGame: boolean; firstSave: boolean; married: { name: string }; received: string[];
-                          returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean }>("/api/sync", {});
+                          returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
+                          grew: { nickname: string; exp: number; from: number; to: number } | null }>("/api/sync", {});
     const said: string[] = [];
     if (!r.sameGame) said.push(`This save belongs to a different game. Your companion carries daemons for ${r.married.name}'s.`);
     if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");
@@ -165,6 +170,8 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
     r.returned.forEach((n) => said.push(`${n} is home.`));
     r.refused.forEach((n) => said.push(`${n} waits: one daemon at a time.`));
     if (r.recalledSeen) said.push("The daemon you brought home in the game is settled here too.");
+    if (r.grew) said.push(r.grew.to > r.grew.from ? `${r.grew.nickname} came home grown: level ${r.grew.from} to ${r.grew.to}.`
+                                                  : `${r.grew.nickname} came home with ${r.grew.exp} more experience.`);   // C-45
     setNote(said.length ? said.join(" ") : "Synced. Nothing was waiting.");
     load();
   };

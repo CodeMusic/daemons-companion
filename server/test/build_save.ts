@@ -17,7 +17,7 @@ export function encodeText(s: string, len: number): Uint8Array {
 
 export interface DaemonSpec { personality: number; otId: number; species: number; nickname: string; level: number;
                               friendship?: number; away?: boolean; asked?: boolean; held?: number;
-                              metLevel?: number; exp?: number }
+                              metLevel?: number; exp?: number; hp?: number; maxHP?: number }
 
 export function buildDaemon(d: DaemonSpec): Uint8Array {
   const rec = new Uint8Array(l.pokemon_size);
@@ -42,6 +42,7 @@ export function buildDaemon(d: DaemonSpec): Uint8Array {
   const key = (d.personality ^ d.otId) >>> 0;
   for (let i = 0; i < 48; i += 4) v.setUint32(32 + i, (sv.getUint32(i, true) ^ key) >>> 0, true);
   rec[l.level_offset] = d.level;
+  if (rec.length >= 90) { v.setUint16(86, d.hp ?? 0, true); v.setUint16(88, d.maxHP ?? 0, true); }
   return rec;
 }
 

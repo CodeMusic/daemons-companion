@@ -80,3 +80,15 @@ describe("the day's date (found live, 2026-10-03)", () => {
     expect(t.day.day).toBe("Saturday");
   });
 });
+
+describe("a step finished grows the daemon you carry (C-44, C-45)", () => {
+  it("feeds it, and gives it experience shown as what it has grown", async () => {
+    const before = (await get("/api/device/state")).daemon.grown.exp;
+    await post("/api/goals", { title: "Water the plants", breakdown: true });
+    const s = await get("/api/device/state");
+    await post("/api/device/ticks", { steps: [s.step.id] });
+    const after = await get("/api/device/state");
+    expect(after.daemon.grown.exp).toBeGreaterThan(before);
+    expect(after.daemon.life.fed.today).toBeGreaterThan(0);
+  });
+});

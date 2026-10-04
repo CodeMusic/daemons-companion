@@ -12,14 +12,22 @@
 // (C-22), writes the companion's two flags in SaveBlock2 (DAEMONS T-370): LINKED, which shows SEND in the game, set;
 // and RECALLED, the game's note that a daemon came home without the app, read and cleared.
 import P from "../../data/profile_layout.json" with { type: "json" };
+import speciesJson from "../../data/species.json" with { type: "json" };
+import { expFor, levelFromExp } from "./growth.js";
+import { calcStats, unpackIVs } from "./stats.js";
+
+const SPECIES = speciesJson as unknown as Record<string, any>;
 import { LAYOUT, type Layout, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize } from "./reader.js";
 
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }
 export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
-                              changed: boolean; newlySeen: number[]; friendship: { nickname: string; from: number; to: number } | null }
+                              changed: boolean; newlySeen: number[]; friendship: { nickname: string; from: number; to: number } | null;
+                              grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
+// C-45: the experience a daemon gained on the device, for it by its personality, written when it is home
+export interface Growth { personality: number; exp: number }
 
 
 const FOOTER_ID = 0xff4, FOOTER_CHECKSUM = 0xff6;
@@ -29,7 +37,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
   return { save: r.save, answered: r.answered };
 }
 
-export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings }, l: Layout = LAYOUT): SyncResult {
+export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -48,7 +56,7 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
   const answered: Answer[] = [];
   const refused: string[] = [];
   const touched = new Set<number>();
-  const party = [];
+  const party: { i: number; recStart: number; d: ReturnType<typeof readDaemon> }[] = [];
   for (let i = 0; i < count; i++) {
     const recStart = l.party_offset + i * l.pokemon_size;
     const rec = new Uint8Array(l.pokemon_size);
@@ -111,10 +119,50 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
       }
     }
   }
+  // C-45: the experience it gained on the device, written once it is HOME (answered home now, or brought home by the
+  // game's emergency way) -- and where that is past a level, its level and stats as CalculateMonStats would give them.
+  let grew: SyncResult["grew"] = null;
+  const g = opts.grow;
+  const awayAfter = (p: (typeof party)[number]) => {               // where it is once this SYNC's answers are written
+    const a = answered.find((x) => x.slot === p.i);
+    return a ? a.now === "away" : !!p.d?.away;
+  };
+  const home = g && party.find((p) => p.d && p.d.personality === g.personality && !awayAfter(p));
+  if (g && g.exp > 0 && home && home.d) {
+    const rec = new Uint8Array(l.pokemon_size);
+    for (let k = 0; k < l.pokemon_size; k++) rec[k] = out[at(home.recStart + k).byte];
+    const v = new DataView(rec.buffer);
+    const key = (g.personality ^ v.getUint32(4, true)) >>> 0;
+    const plain = new DataView(new ArrayBuffer(48));
+    for (let k = 0; k < 48; k += 4) plain.setUint32(k, (v.getUint32(32 + k, true) ^ key) >>> 0, true);
+    const order = ORDERS[g.personality % 24];
+    const growth = order.indexOf("G") * 12, evAt = order.indexOf("E") * 12, misc = order.indexOf("M") * 12;
+    const row = SPECIES[String(home.d.species)];
+    const curve = row?.growth ?? 0;
+    const was = plain.getUint32(growth + 4, true), from = rec[l.level_offset];
+    // no base stats known (a species a macro hides): grow only up to its next level, never past what can be recomputed
+    const ceiling = row?.base ? expFor(curve, 100) : Math.max(was, expFor(curve, from + 1) - 1);
+    const exp = Math.min(ceiling, was + g.exp), to = Math.max(from, levelFromExp(curve, exp));
+    plain.setUint32(growth + 4, exp, true);
+    let sum = 0;
+    for (let k = 0; k < 48; k += 2) sum = (sum + plain.getUint16(k, true)) & 0xffff;
+    v.setUint16(28, sum, true);
+    if (to !== from && row?.base) {
+      const evs = [0, 1, 2, 3, 4, 5].map((k) => plain.getUint8(evAt + k));
+      const s = calcStats(row.base, to, unpackIVs(plain.getUint32(misc + 4, true)), evs, g.personality);
+      const oldMax = v.getUint16(88, true), hp = v.getUint16(86, true);
+      rec[l.level_offset] = to;
+      v.setUint16(86, hp === 0 ? 0 : Math.min(s.maxHP, Math.max(1, hp + s.maxHP - oldMax)), true);   // its damage kept
+      [s.maxHP, s.atk, s.def, s.speed, s.spAtk, s.spDef].forEach((n, k) => v.setUint16(88 + 2 * k, n, true));
+    }
+    for (let k = 0; k < 48; k += 4) v.setUint32(32 + k, (plain.getUint32(k, true) ^ key) >>> 0, true);
+    for (let k = 28; k < l.pokemon_size; k++) { const b = at(home.recStart + k); if (out[b.byte] !== rec[k]) { out[b.byte] = rec[k]; touched.add(b.id); } }
+    grew = { nickname: home.d.nickname, personality: g.personality, exp: exp - was, from, to };
+  }
   for (const id of touched) {
     const off = where.get(id)!;
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew };
 }

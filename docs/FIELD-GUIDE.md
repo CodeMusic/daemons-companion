@@ -98,6 +98,9 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   Turn the dial. **See and hear:** it wakes at home, to the first notes of the title theme; the turn did nothing else.
 - **Care:** at home, **see** its mood, meals and water; **press** for CARE and FEED it. **See and hear:** it hops, a
   glad little phrase, "Eaten.", and fed goes up by one. The site's DAEMON tab shows the same.
+- **Grown on the device:** finish a few steps (GOALS, or press on TODAY). **See:** fed goes up, and home's level
+  reads "L9 > 10" once it has grown past one. Bring it home in the game, SYNC. **See:** "PIP came home grown: level
+  9 to 10." -- and in the game, its new level and stats.
 - **A routine:** run any. **Hear and see:** its own short tune, the ring dancing to it, before it runs.
 - **DAEMON:** **See:** the daemon you carry, **drawn as the game draws it** (its streaks too), twice its size, with its
   level, friendship and what it holds. **Press:** its **INDEX entry**, in your edition's voice. **Top button:** back.

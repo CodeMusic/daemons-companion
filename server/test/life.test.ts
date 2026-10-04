@@ -25,6 +25,12 @@ describe("the daemon's life (C-13, PLAN 7)", () => {
     expect(life([at(4, 10, "step")], noon(4)).mood).toBeGreaterThan(life([], noon(4)).mood);
   });
 
+  it("is fed by the steps you finish -- your goals nourish it (C-44)", () => {
+    const l = life([at(4, 9, "step"), at(4, 11, "step")], noon(4));
+    expect(l.fed).toEqual({ today: 2, due: 2 });
+    expect(l.cue).toBeNull();                                   // fed for lunch already: no cue
+  });
+
   it("costs only a little for a missed meal", () => {
     const missed = life([at(4, 7, "water")], new Date(2026, 9, 4, 20, 0));   // three meal times, none eaten
     expect(life([at(4, 7, "water")], new Date(2026, 9, 4, 9, 0)).mood - missed.mood).toBeLessThanOrEqual(10);

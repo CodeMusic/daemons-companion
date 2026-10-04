@@ -41,6 +41,7 @@ import { season } from "./seasons.js";
 import { deviceArt, repaint, streakColours } from "./art.js";
 import { deviceDay } from "./days.js";
 import { life } from "./life.js";
+import { expFor, levelFromExp } from "./save/growth.js";
 import { DeviceHub, type Via } from "./device.js";
 import { networkInterfaces } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -100,7 +101,7 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
   const sameGame = married.name === game.name && married.trainerId === game.trainerId && married.secretId === game.secretId;
   if (!sameGame)
     return { sameGame, firstSave, married, received: [], returned: [], refused: [], firstLink: false, recalledSeen: false, backup: null,
-             met: { companions: 0, newlySeen: 0, friendship: null } };
+             met: { companions: 0, newlySeen: 0, friendship: null }, grew: null };
   // C-15: what was met nearby since the last SYNC -- each species seen; +1 friendship for each companion met in a day
   // (the beacon's id changes hourly, so it is counted per hour seen), at most +5 a day. Small, as everything is (PLAN 7).
   const applied = Number(store.getSetting("met.applied") ?? 0);
@@ -116,8 +117,13 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
     perDay.get(day)!.add(peer ?? m.at);
   }
   const friendshipGain = [...perDay.values()].reduce((n, peers) => n + Math.min(5, peers.size), 0);
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain } });
-  if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
+  // C-45: the experience a daemon gained here, written when it is home -- for whichever party daemon has some waiting
+  let grow: { personality: number; exp: number } | undefined, growLast = 0;
+  for (const d of readSave(file).party) {
+    const p = pendingExp(store, d.personality);
+    if (p.exp > 0) { grow = { personality: d.personality, exp: p.exp }; growLast = p.last; break; }
+  }
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow });
   let backup: string | null = null;
   if (r.changed) {
     const dir = join(dirname(cfg.savePath), "companion-backups");
@@ -126,11 +132,15 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
     copyFileSync(cfg.savePath, backup);
     writeFileSync(cfg.savePath, r.save);
   }
+  // only once the save holds them: what was met, and what was grown, are written
+  if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
+  if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast));
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
-           met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship } };
+           met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship },
+           grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null };
 }
 
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
@@ -166,9 +176,37 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
 }
 
+// C-45: experience gained on the device. Each step finished gives the carried daemon a twentieth of what its next level
+// costs on its own growth curve -- reckoned from the level it has already reached here -- so twenty steps are a level.
+// Kept by its personality until it is home, when SYNC writes it into the save.
+const STEPS_PER_LEVEL = 20;
+function pendingExp(store: Store, personality: number) {
+  const rows = store.expAfter(personality, Number(store.getSetting(`exp.applied.${personality}`) ?? 0));
+  return { exp: rows.reduce((n, r) => n + r.gain, 0), last: rows.length ? rows[rows.length - 1].id : 0 };
+}
+function carriedDaemon(cfg: Config) {
+  if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
+  try { return readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away) ?? null; } catch { return null; }
+}
+export function growFromStep(cfg: Config, store: Store) {
+  const d = carriedDaemon(cfg);
+  if (!d) return;
+  const curve = SPECIES[String(d.species)]?.growth ?? 0;
+  const level = levelFromExp(curve, d.exp + pendingExp(store, d.personality).exp);
+  if (level >= 100) return;
+  const gain = Math.ceil((expFor(curve, level + 1) - expFor(curve, level)) / STEPS_PER_LEVEL);
+  store.logInteraction("exp", `${d.personality} ${gain}`);
+}
+
 // C-13: the carried daemon's life, read from two weeks of what was done together.
 export function daemonLife(store: Store, now = new Date()) {
   return life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000)), now);
+}
+
+// C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
+function grown(d: { species: number; exp: number; level: number; personality: number }, store: Store) {
+  const exp = pendingExp(store, d.personality).exp;
+  return { exp, level: Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp + exp)) };
 }
 
 export function deviceState(cfg: Config, store: Store, now = new Date()) {
@@ -182,7 +220,8 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
     if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[cfg.edition] ?? "",
-                      artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now) };
+                      artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
+                      grown: grown(d, store) };
   }
   const dd = deviceDay(t.day.day);
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
@@ -318,14 +357,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))
           return send(res, 400, { error: "steps must be a list of step ids" });
         const done = b.steps.filter((id: number) => store.completeStep(id));
-        for (const id of done) store.logInteraction("step", `device ${id}`);         // C-13: a step finished with it
+        for (const id of done) { store.logInteraction("step", `device ${id}`); growFromStep(ecfg, store); }   // C-13, C-45
         return send(res, 200, { done, state: deviceState(ecfg, store) });
       }
       // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
       // C-13: the site's own care -- feed, water, train -- kept as the device's are
       const care = path.match(/^\/api\/daemon\/(feed|water|train)$/);
-      if (req.method === "POST" && care) { store.logInteraction(care[1], "site"); return send(res, 200, daemonLife(store)); }
-      if (req.method === "GET" && path === "/api/daemon/life") return send(res, 200, daemonLife(store));
+      const lifeNow = () => { const d = carriedDaemon(ecfg); return { ...daemonLife(store), grown: d ? grown(d, store) : null,
+                                                                       level: d?.level ?? null }; };
+      if (req.method === "POST" && care) { store.logInteraction(care[1], "site"); return send(res, 200, lifeNow()); }
+      if (req.method === "GET" && path === "/api/daemon/life") return send(res, 200, lifeNow());
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
@@ -383,7 +424,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const step = path.match(/^\/api\/steps\/(\d+)\/done$/);
       if (req.method === "POST" && step) {
         const ok = store.completeStep(Number(step[1]));
-        if (ok) store.logInteraction("step", `site ${step[1]}`);                 // C-13: a step finished with it
+        if (ok) { store.logInteraction("step", `site ${step[1]}`); growFromStep(ecfg, store); }   // C-13, C-45
         return ok ? send(res, 200, { next: store.nextStep() }) : send(res, 404, { error: "no such step" });
       }
       if (req.method === "GET" && path === "/api/profile") {

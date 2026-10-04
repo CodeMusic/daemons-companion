@@ -40,7 +40,8 @@ TFT_eSPI tft;
 TFT_eSprite canvas(&tft);   // drawn whole, then pushed, so nothing flickers
 
 struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0;
-                String word, cue; int fed = 0, watered = 0, due = 0; };          // C-13: its life, as the server reads it
+                String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
+                int grownTo = 0; };                                               // C-45: the level it has grown to here
 struct State {
   bool have = false;
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue;
@@ -175,6 +176,7 @@ bool takeState(const String &json) {
     st.daemon.artKey = doc["daemon"]["artKey"] | "";
     JsonVariant lf = doc["daemon"]["life"];
     st.daemon.word = lf["word"] | ""; st.daemon.cue = lf["cue"] | "";
+    st.daemon.grownTo = doc["daemon"]["grown"]["level"] | 0;
     st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
     st.daemon.types = "";
     for (JsonVariant t : doc["daemon"]["types"].as<JsonArray>())
@@ -392,7 +394,8 @@ void draw() {
       canvas.drawString(st.daemon.nickname, x, 40);
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
       // its species beside its level -- unless its nickname already is the species
-      canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + "L" + String(st.daemon.level), x, 72);
+      String lv = "L" + String(st.daemon.level) + (st.daemon.grownTo > st.daemon.level ? " > " + String(st.daemon.grownTo) : "");   // C-45
+      canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + lv, x, 72);
       // C-13: how it is, and its day -- never more than this, and never a nag
       if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
       canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);

@@ -2,7 +2,7 @@
 // the interactions kept since C-13 began (feeding, watering, training, a routine run, a step finished) -- and the
 // clock. Nothing is stored that runs down on its own, so nothing can nag: the daemon only ever says how it is.
 //
-//   fed, watered  three a day each, against the meal times that have begun (breakfast 6-10, lunch 11-14, dinner 17-21);
+//   fed, watered  three a day each (a step finished toward your goals feeds it too, C-44), against the meal times that have begun (breakfast 6-10, lunch 11-14, dinner 17-21);
 //                 a meal time is the cue to eat, for you as much as for it
 //   trained       TRAIN, a routine run, or a step finished, today
 //   mood          content to start; a little happier with each thing done together today; a missed meal costs a little;
@@ -38,7 +38,8 @@ export function life(events: Interaction[], now = new Date()): Life {
   const count = (kind: string) => todays.filter((e) => e.kind === kind).length;
   const hour = now.getHours() + now.getMinutes() / 60;
   const due = MEALS.filter(([from]) => hour >= from).length;           // meal times begun so far today
-  const fed = Math.min(3, count("feed")), watered = Math.min(3, count("water"));
+  // C-44 (the user, 2026-10-04): your goals nourish it -- a step finished counts as a meal
+  const fed = Math.min(3, count("feed") + count("step")), watered = Math.min(3, count("water"));
   const together = todays.filter((e) => TOGETHER.includes(e.kind)).length;
   const trained = todays.some((e) => ["train", "routine", "step", "tick"].includes(e.kind));
 

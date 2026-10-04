@@ -80,7 +80,9 @@ you turn the dial or press anything (that touch only wakes it).
 
 **Home is the daemon you carry** -- large, breathing, drifting, now and then hopping -- and **how it is**: its mood in
 a word, how it has eaten and drunk today, and at a meal time one quiet line. **Press** for CARE: feed it, water it,
-train it, or read its INDEX entry. It never nags (PLAN 7): small effects, happier for time together, a little lower for
+train it, or read its INDEX entry. **Your goals nourish it**: each step you finish counts as a meal, and gives it
+experience -- twenty steps a level, on its own growth curve -- which it takes home: the next SYNC after it comes home
+writes its experience, and its level and stats where it grew past one, into your save. It never nags (PLAN 7): small effects, happier for time together, a little lower for
 each day with nothing at all, and back at once when you return. The site's DAEMON tab shows and does the same. Any menu left alone goes to sleep
 (two minutes, by default), and waking always lands back at home, to a few notes of the title theme.
 

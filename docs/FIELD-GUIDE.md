@@ -88,7 +88,12 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 ```
 
 - **See:** the day's band at the top with **USB** in the corner; **TODAY** shows the one step.
-- **Turn** the encoder: TODAY, DAEMON (the daemon you carry, and what it holds), **ROUTINES**.
+- **See:** the band at the top in the day's own colour (Sunday red, Monday orange, ... Saturday violet), and the
+  **ring of lights** glowing it, dimly. Leave the board a minute: the ring goes out. Touch anything: it comes back.
+- **Turn** the dial: TODAY, DAEMON, **ROUTINES**. **See:** a white light runs once round the ring -- clockwise when you
+  turn right, anticlockwise when you turn left. **Press:** the ring flashes white. **Top button:** it goes dark a moment.
+- **DAEMON:** **See:** the daemon you carry, **drawn as the game draws it** (its streaks too), twice its size, with its
+  level, friendship and what it holds. **Press:** its **INDEX entry**, in your edition's voice. **Top button:** back.
 - **Press** on ROUTINES, then **turn** through FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE
   (Sub-GHz), UPLINK (Wi-Fi). **Press** to open one; the **side key** goes back.
 - **Try each radio** (choose it, press to run, press again to run again; the side key gives up a wait):

@@ -70,6 +70,14 @@ def main():
                     print("usb_bridge: step %d ticked off on the device" % step, flush=True)
                 except Exception as e:
                     print("usb_bridge: could not tick step %d (%s)" % (step, e), flush=True)
+            elif msg == "ART?":
+                # C-36: the device asks for its daemon's art when the state names art it does not have
+                try:
+                    art = server_json(a.server, "/api/device/art")
+                    dev.write(("ART " + json.dumps(art, separators=(",", ":")) + "\n").encode())
+                    print("usb_bridge: art -> device (%d bytes)" % len(art["pixels"]), flush=True)
+                except Exception as e:
+                    print("usb_bridge: no art for the device (%s)" % e, flush=True)
             elif msg.startswith("UNREAD "):
                 print("usb_bridge: the device could not read the state it was sent (%s bytes arrived)" % msg.split()[1],
                       flush=True)

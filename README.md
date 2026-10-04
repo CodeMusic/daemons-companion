@@ -42,7 +42,7 @@ beside it.*
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
 | `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself first, an iPhone and iPad app from the same code later | **running as a site, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). Five screens: **TODAY** (the day's colour, note and virtue, the season, and the one thing to do), **GOALS** (add one, see its steps, tick them off), **DAEMON** (your party; **SYNC** brings a daemon across or home, and shows what it holds), **PROFILE** (the save's trainer, play time, INDEX, MARKS and progress), **SETTINGS** (your save's path) |
-| `firmware/esp32/` | **the handheld** -- the **LilyGO T-Embed CC1101** (ESP32-S3), PlatformIO + Arduino, grown from RoverCodeBase | **running on the board.** The day, the one step (press to tick it off), the daemon you carry and what it holds, and **ROUTINES**: the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz, not wired yet), UPLINK (Wi-Fi). Over the USB cable or Wi-Fi. See [Flash the handheld](#flash-the-handheld) |
+| `firmware/esp32/` | **the handheld** -- the **LilyGO T-Embed CC1101** (ESP32-S3), PlatformIO + Arduino, grown from RoverCodeBase | **running on the board.** The day in its colour (a rainbow week, and the ring of lights glowing it), the one step (press to tick it off), the daemon you carry -- **drawn as the game draws it**, what it holds, and **its INDEX entry** a press away -- and **ROUTINES**: the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz, not wired yet), UPLINK (Wi-Fi). Over the USB cable or Wi-Fi. See [Flash the handheld](#flash-the-handheld) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
 **Local first, one person.** Everything runs on your own machine; accounts, many users and hosting come later.
@@ -74,7 +74,14 @@ The bridge finds the board's port, hands it the server's state every five second
 (`./bindCompanion.sh` or `./bindCompanion.sh server`).
 
 **On the board:** **turn** the dial to choose, **press** the front button to open or confirm, and the **top button**
-goes back (and gives up a routine that is waiting). The pages are TODAY, DAEMON and ROUTINES.
+goes back (and gives up a routine that is waiting). The pages are TODAY, DAEMON (press: its INDEX entry) and ROUTINES.
+
+**The ring of lights** glows the day's colour at a third, and goes out after a minute unused; touching anything brings
+it back. Turning the dial runs a white light once round the ring (clockwise for right), select flashes it white, and
+back darkens it for a moment.
+
+**To see the board's screen on the computer** (stop the bridge first; it holds the port):
+`python3 firmware/esp32/shot.py screen.png` saves it as a PNG.
 
 [`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode if an upload cannot connect,
 Wi-Fi instead of the cable, watching it talk, putting the factory firmware back, and what each routine does.
@@ -156,7 +163,8 @@ JSON in, JSON out, on this machine only.
 | `POST /api/settings` | `{savePath}` -- set it (kept by the server; overrides `config.json`) |
 | `POST /api/settings/pick` | a native file picker, on Mac |
 | `POST /api/settings/reveal` | open the save's folder in Finder |
-| `GET /api/device/state` | what a device shows: the day, the season, the one next step, its daemon and what it holds |
+| `GET /api/device/state` | what a device shows: the day (and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry |
+| `GET /api/device/art` | the carried daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels |
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |
 | `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |
 

@@ -14,6 +14,8 @@
 #include <TFT_eSPI.h>
 #include <WiFi.h>           // always: UPLINK's scan works over USB too, without joining a network
 #include "radios.h"
+#include "leds.h"
+#include <mbedtls/base64.h>
 
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -31,10 +33,10 @@ static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000;
 TFT_eSPI tft;
 TFT_eSprite canvas(&tft);   // drawn whole, then pushed, so nothing flickers
 
-struct Daemon { String name, nickname, holding; int level = 0, friendship = 0; };
+struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0; };
 struct State {
   bool have = false;
-  String date, edition, season, day, colour = "#5b6b8c", note, virtue;
+  String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue;
   long step = -1; String stepText, goal;
   bool carrying = false; Daemon daemon;
 } st;
@@ -43,7 +45,7 @@ struct State {
 // HOME turns between TODAY, DAEMON and ROUTINES with the encoder. ROUTINES opens a list of routine TYPES, a type opens
 // its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the side key goes back.
 enum Page { TODAY, DAEMON, ROUTINES_PAGE };
-enum Screen { HOME, TYPES, LIST, RUN };
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY };   // INDEX_ENTRY: the carried daemon's (C-36)
 Page page = TODAY;
 Screen screen = HOME;
 int typeAt = 0, routineAt = 0;
@@ -99,6 +101,9 @@ bool takeState(const String &json) {
   st.date = doc["date"] | ""; st.edition = doc["edition"] | ""; st.season = doc["season"] | "";
   st.day = doc["day"]["name"] | ""; st.colour = doc["day"]["colour"] | "#5b6b8c";
   st.note = doc["day"]["note"] | ""; st.virtue = doc["day"]["virtue"] | "";
+  st.menu = doc["day"]["menu"] | st.colour.c_str();     // C-37: the tamed rainbow week, else the game's trim
+  st.led = doc["day"]["led"] | st.menu.c_str();
+  ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));
   if (doc["step"].isNull()) { st.step = -1; st.stepText = ""; st.goal = ""; }
   else { st.step = doc["step"]["id"] | -1; st.stepText = doc["step"]["text"] | ""; st.goal = doc["step"]["goal"] | ""; }
   st.carrying = !doc["daemon"].isNull();
@@ -106,9 +111,44 @@ bool takeState(const String &json) {
     st.daemon.name = doc["daemon"]["name"] | ""; st.daemon.nickname = doc["daemon"]["nickname"] | "";
     st.daemon.level = doc["daemon"]["level"] | 0; st.daemon.friendship = doc["daemon"]["friendship"] | 0;
     st.daemon.holding = doc["daemon"]["holding"] | "";   // what it held when it was sent (T-374)
+    st.daemon.category = doc["daemon"]["category"] | ""; st.daemon.entry = doc["daemon"]["entry"] | "";
+    st.daemon.artKey = doc["daemon"]["artKey"] | "";
+    st.daemon.types = "";
+    for (JsonVariant t : doc["daemon"]["types"].as<JsonArray>())
+      st.daemon.types += (st.daemon.types.length() ? " / " : "") + String((const char *)(t | ""));
   }
   dirty = true;
   return true;
+}
+
+// ---- C-36: the carried daemon's art, as the server sends it: sixteen RGB565 colours, 4-bit pixels, 64x64 ----------
+uint16_t artPal[16];
+uint8_t artPix[2048];
+String artKeyHave;                 // whose art is in artPix; the device asks again when the state's artKey differs
+uint32_t artAskedAt = 0;
+
+bool takeArt(const String &json) {
+  JsonDocument doc;
+  if (deserializeJson(doc, json) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
+  JsonArray pal = doc["palette"].as<JsonArray>();
+  for (int i = 0; i < 16; i++) artPal[i] = i < (int)pal.size() ? (uint16_t)(pal[i] | 0) : 0;
+  const char *b64 = doc["pixels"] | "";
+  size_t got = 0;
+  if (mbedtls_base64_decode(artPix, sizeof artPix, &got, (const unsigned char *)b64, strlen(b64)) || got != sizeof artPix)
+    return false;
+  artKeyHave = st.daemon.artKey;
+  dirty = true;
+  return true;
+}
+
+// Index 0 is transparent, as in the game.
+void drawArt(int x, int y, int scale) {
+  if (!artKeyHave.length() || artKeyHave != st.daemon.artKey) return;
+  for (int j = 0; j < 64; j++)
+    for (int i = 0; i < 64; i++) {
+      uint8_t b = artPix[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
+      if (c) canvas.fillRect(x + i * scale, y + j * scale, scale, scale, artPal[c]);
+    }
 }
 
 // ---- drawing --------------------------------------------------------------------------------------------------------
@@ -156,7 +196,7 @@ void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink) {
 }
 
 void drawRoutines(uint16_t day) {
-  uint16_t ink = lightColour(st.colour) ? INK : PAPER;
+  uint16_t ink = lightColour(st.menu) ? INK : PAPER;
   const RoutineType &t = TYPES_LIST[typeAt];
   canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
   if (screen == TYPES) {
@@ -181,7 +221,7 @@ void drawRoutines(uint16_t day) {
 }
 
 void draw() {
-  uint16_t day = hex565(st.colour), ink = lightColour(st.colour) ? INK : PAPER;
+  uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
   canvas.fillSprite(INK);
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
@@ -190,7 +230,16 @@ void draw() {
   canvas.setTextDatum(MR_DATUM);
   canvas.drawString(linkName(), W - 8, 13);
 
-  if (screen != HOME) {
+  if (screen == INDEX_ENTRY) {                                // C-36: its INDEX entry, in the edition's voice
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
+    canvas.setTextColor(QUIET);
+    canvas.drawString(upper(st.daemon.category) + "  " + st.daemon.types, 10, 50);
+    drawArt(W - 70, 30, 1);
+    wrap(st.daemon.entry, 10, 72, W - 92, 2, 16, 5, PAPER);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("top button: back", 10, H - 4);
+  } else if (screen != HOME) {
     drawRoutines(day);
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
@@ -218,11 +267,14 @@ void draw() {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
     if (st.carrying) {
+      drawArt(W - 134, 30, 2);                                  // C-36: as the game draws it, twice its size
       canvas.setTextFont(4); canvas.setTextColor(PAPER); canvas.drawString(st.daemon.nickname, 10, 58);
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
       canvas.drawString(st.daemon.name + "  L" + String(st.daemon.level), 10, 92);
       canvas.drawString("friendship " + String(st.daemon.friendship), 10, 112);
       if (st.daemon.holding.length()) canvas.drawString("holding " + st.daemon.holding, 10, 132);
+      canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
+      canvas.drawString("press: its INDEX entry", 10, H - 4);
     } else {
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
     }
@@ -266,6 +318,20 @@ void tick() {
   say("No link");
 }
 
+// SHOT: the screen as it is, down the cable -- so the layout can be checked without looking at the board
+// (shot.py on the computer makes it a PNG). The sprite's own 16-bit pixels, as stored, base64 in lines.
+void shot() {
+  const uint8_t *px = (const uint8_t *)canvas.getPointer();
+  Serial.printf("SHOT %d %d\n", W, H);
+  static unsigned char line[1025];
+  for (size_t at = 0; at < (size_t)W * H * 2; at += 768) {
+    size_t n = min((size_t)768, (size_t)W * H * 2 - at), got = 0;
+    mbedtls_base64_encode(line, sizeof line, &got, px + at, n);
+    Serial.write(line, got); Serial.write('\n');
+  }
+  Serial.println("SHOT END");
+}
+
 void readUsb() {
   while (Serial.available()) {
     char c = Serial.read();
@@ -275,9 +341,11 @@ void readUsb() {
         if (takeState(lineIn.substring(6))) usbSeen = millis();
         else Serial.printf("UNREAD %u\n", lineIn.length());   // the bridge says so, rather than the corner silently not changing
       }
+      else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
+      else if (lineIn == "SHOT") shot();
       else if (lineIn == "PING") { usbSeen = millis(); Serial.println("PONG"); }
       lineIn = "";
-    } else if (lineIn.length() < 4096) lineIn += c;
+    } else if (lineIn.length() < 6000) lineIn += c;   // an ART line is ~3 KB
   }
 }
 
@@ -291,6 +359,7 @@ void readEncoder() {
   if (encSum >= 4 || encSum <= -4) {
     int step = encSum > 0 ? 1 : -1;
     encSum = 0;
+    ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
     if (screen == HOME) page = (Page)((page + 3 + step) % 3);
     else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
     else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
@@ -332,18 +401,22 @@ void runRoutine() {
 
 // The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
 void press() {
+  ledsFlash();                                                  // C-38
   if (screen == HOME) {
     if (page == TODAY) tick();
+    else if (page == DAEMON && st.carrying) screen = INDEX_ENTRY;     // C-36
     else if (page == ROUTINES_PAGE) { screen = TYPES; typeAt = 0; }
   } else if (screen == TYPES) { screen = LIST; routineAt = 0; }
   else if (screen == LIST) { if (TYPES_LIST[typeAt].count > 0) runRoutine(); }
-  else runRoutine();
+  else if (screen == RUN) runRoutine();
   dirty = true;
 }
 
 // The side key: back one step.
 void back() {
-  if (screen == RUN) screen = LIST;
+  ledsDark();                                                   // C-38
+  if (screen == INDEX_ENTRY) { screen = HOME; page = DAEMON; }
+  else if (screen == RUN) screen = LIST;
   else if (screen == LIST) screen = TYPES;
   else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
   dirty = true;
@@ -390,7 +463,25 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(COMPANION_WIFI_SSID, COMPANION_WIFI_PASSWORD);
 #endif
+  ledsBegin();
   draw();
+}
+
+// C-36: the device asks for its daemon's art when the state names art it does not have -- through the bridge (ART?),
+// or over Wi-Fi itself. At most every five seconds, so a missing server is not asked in a loop.
+void askForArt() {
+  if (!st.carrying || !st.daemon.artKey.length() || st.daemon.artKey == artKeyHave) return;
+  if (artAskedAt && millis() - artAskedAt < 5000) return;
+  artAskedAt = millis();
+  if (usbLive()) { Serial.println("ART?"); return; }
+#if COMPANION_HAS_WIFI
+  if (WiFi.status() != WL_CONNECTED) return;
+  HTTPClient http;
+  http.setTimeout(4000);
+  http.begin(String(COMPANION_SERVER) + "/api/device/art");
+  if (http.GET() == 200) takeArt(http.getString());
+  http.end();
+#endif
 }
 
 void loop() {
@@ -406,6 +497,8 @@ void loop() {
   }
 #endif
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
+  askForArt();
+  ledsLoop();
   if (dirty) draw();
   delay(1);
 }

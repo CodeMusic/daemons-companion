@@ -12,9 +12,19 @@ The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's c
 | **the side key** | back one step |
 
 **ROUTINES** opens the routine types: **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC), **LONGWAVE**
-(Sub-GHz), **UPLINK** (Wi-Fi). They are wired one radio at a time, each tried on the board before the next; a type
-with nothing wired yet opens on "No routines yet". Today: **UPLINK / NETWORKS IN RANGE** lists the Wi-Fi networks
-around you (it joins nothing). Every routine you run is told to the server as tending your daemon (C-13).
+(Sub-GHz), **UPLINK** (Wi-Fi). Each is a test that the radio works, on your own gear (`CONTEXT.md`):
+
+| type | routine | what it does |
+|---|---|---|
+| FLARE | LEARN MY REMOTE | point your TV's remote at the board, press POWER once; it remembers that code (across power-offs) |
+| FLARE | SEND TO MY TV | sends the learned code from the board's IR end |
+| WHISPER | OPEN TO MY PHONE | your phone connects ("DAEMONS companion", in nRF Connect or LightBlue); the board says hello, and a word you write back appears |
+| TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
+| LONGWAVE | -- | not wired yet: it is tried with the board in hand first |
+| UPLINK | NETWORKS IN RANGE | the Wi-Fi networks around you, by strength. Joins nothing |
+
+A routine that waits (for a remote, a tag, a phone) says so on the screen; **the side key gives up**. Every routine
+you run is told to the server as tending your daemon (C-13).
 
 ## What you need
 

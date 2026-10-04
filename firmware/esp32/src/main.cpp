@@ -13,6 +13,7 @@
 #include <ArduinoJson.h>
 #include <TFT_eSPI.h>
 #include <WiFi.h>           // always: UPLINK's scan works over USB too, without joining a network
+#include "radios.h"
 
 #if __has_include("secrets.h")
 #include "secrets.h"
@@ -50,23 +51,27 @@ String runResult;
 uint32_t usbSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
 String flash, lineIn;
 bool dirty = true;
+bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 
 // ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
 // The user chose the names (2026-10-04): FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz), and
-// UPLINK (Wi-Fi). Each routine runs on the author's own gear only (CONTEXT.md). They are wired ONE RADIO AT A TIME, each
-// verified on the board before the next; a type with nothing wired yet opens on an empty list, which is fine.
+// UPLINK (Wi-Fi). Each routine runs on the author's own gear only (CONTEXT.md); the radio ones are in radios.cpp. A type
+// with nothing wired yet opens on an empty list, which is fine (LONGWAVE, until it is tried with the board in hand).
 typedef String (*RoutineFn)();
 struct Routine { const char *name; RoutineFn run; };
 struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
 
 String runNetworksInRange();
-static const Routine UPLINK_ROUTINES[] = { { "NETWORKS IN RANGE", runNetworksInRange } };
+static const Routine FLARE_ROUTINES[]      = { { "LEARN MY REMOTE", runLearnMyRemote }, { "SEND TO MY TV", runSendToMyTv } };
+static const Routine WHISPER_ROUTINES[]    = { { "OPEN TO MY PHONE", runOpenToMyPhone } };
+static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
+static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange } };
 static const RoutineType TYPES_LIST[] = {
-  { "FLARE",      "IR",        nullptr,         0 },
-  { "WHISPER",    "Bluetooth", nullptr,         0 },
-  { "TOUCHSTONE", "NFC",       nullptr,         0 },
-  { "LONGWAVE",   "Sub-GHz",   nullptr,         0 },
-  { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES, 1 },
+  { "FLARE",      "IR",        FLARE_ROUTINES,      2 },
+  { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    1 },
+  { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 },
+  { "LONGWAVE",   "Sub-GHz",   nullptr,             0 },
+  { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     1 },
 };
 static const int TYPE_COUNT = sizeof(TYPES_LIST) / sizeof(TYPES_LIST[0]);
 
@@ -306,12 +311,17 @@ void report(const String &kind, const String &detail) {
 #endif
 }
 
+void progress(const String &text) { runResult = text; draw(); }
+bool giveUp() { return !digitalRead(PIN_SIDE_KEY); }
+
 void runRoutine() {
   const RoutineType &t = TYPES_LIST[typeAt];
   runResult = "Running...";
   screen = RUN;
   draw();
   runResult = t.routines[routineAt].run();
+  while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
+  sideWas = true;
   report("routine", String(t.name) + "/" + t.routines[routineAt].name);
   dirty = true;
 }
@@ -335,7 +345,6 @@ void back() {
   dirty = true;
 }
 
-bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 void readKey() {
   bool up = digitalRead(PIN_ENC_KEY);
   if (up != keyWas && millis() - keyAt > 30) { keyAt = millis(); keyWas = up; if (!up) press(); }

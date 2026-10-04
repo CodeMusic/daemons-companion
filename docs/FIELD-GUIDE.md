@@ -93,11 +93,17 @@ pio run -t upload
 - **Turn** the encoder: TODAY, DAEMON (the daemon you carry, and what it holds), **ROUTINES**.
 - **Press** on ROUTINES, then **turn** through FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE
   (Sub-GHz), UPLINK (Wi-Fi). **Press** to open one; the **side key** goes back.
-- **UPLINK -> NETWORKS IN RANGE -> press:** the Wi-Fi networks around you, by name and strength.
-  - **See (in the bridge's window):** "the device ran UPLINK/NETWORKS IN RANGE" -- told to the server as tending your
-    daemon.
-- The other four open on "No routines yet": they are wired one radio at a time, each tried on your board before the
-  next (PLAN §10).
+- **Try each radio** (choose it, press to run, press again to run again; the side key gives up a wait):
+  - **TOUCHSTONE -> READ MY TAG:** hold your NTAG or MIFARE card to the board. **See:** its kind and its ID.
+  - **FLARE -> LEARN MY REMOTE:** point your TV remote at the board, press POWER. **See:** "Learned it: <protocol>".
+    Then **SEND TO MY TV** with the board's end toward the TV. **See:** the TV turns off (or on).
+  - **WHISPER -> OPEN TO MY PHONE:** on your phone, open nRF Connect (free), connect to **DAEMONS companion**.
+    **See:** "Your phone is here"; on the phone, the TX line shows "Hello from your daemon." Write a word to the RX
+    line as text. **See:** "Both ways work", and your word.
+  - **UPLINK -> NETWORKS IN RANGE:** **See:** the Wi-Fi networks around you, by name and strength.
+  - **LONGWAVE** opens on "No routines yet" -- tried with the board in hand first (PLAN §10).
+  - **See (in the bridge's window), after each:** "the device ran <TYPE>/<ROUTINE>" -- told to the server as tending
+    your daemon.
 
 ## What to tell me
 

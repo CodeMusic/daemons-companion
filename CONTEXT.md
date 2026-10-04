@@ -32,7 +32,7 @@ chose them, 2026-10-04): **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE**
 **UPLINK** (Wi-Fi). Each starts with one test routine, run **only against equipment the author owns**, to confirm
 the board works:
 
-- **FLARE (IR)**: send a power code to the author's own TV.
+- **FLARE (IR)**: learn the power button from the author's own TV remote, then send that one code to their TV.
 - **WHISPER (Bluetooth)**: offer a connection the author's own phone can open, and pass a message each way.
 - **TOUCHSTONE (NFC)**: read the **identifier** and type of the author's own tags (a MIFARE Classic card, an NTAG card
   or sticker) — confirming the reader works, nothing more.

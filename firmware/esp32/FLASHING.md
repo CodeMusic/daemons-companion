@@ -25,7 +25,7 @@ The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's c
 | LONGWAVE | -- | not wired yet: it is tried with the board in hand first |
 | UPLINK | NETWORKS IN RANGE | the Wi-Fi networks around you, by strength. Joins nothing |
 
-A routine that waits (for a remote, a tag, a phone) says so on the screen; **the side key gives up**. Every routine
+A routine that waits (for a remote, a tag, a phone) says so on the screen; **the top button gives up**. Every routine
 you run is told to the server as tending your daemon (C-13).
 
 ## What you need

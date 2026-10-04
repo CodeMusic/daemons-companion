@@ -1,7 +1,7 @@
 // C-28: the ROUTINES that use the board's own radios -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC).
 // Each is a test that the radio works, run against the author's own gear only (CONTEXT.md): their remote and TV,
 // their phone, their tags. A routine may wait for something (a tag, a remote's button, a phone); while it waits it
-// says so on the screen, and the side key gives up.
+// says so on the screen, and the top button gives up.
 #include <Arduino.h>
 #include <Wire.h>
 #include <Preferences.h>
@@ -15,7 +15,7 @@
 // LilyGO's pin map (examples/utilities.h): IR out and in, the PN532 on I2C with its IRQ and reset.
 static const int PIN_IR_TX = 2, PIN_IR_RX = 1, PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 17, PIN_NFC_RST = 45;
 
-// Waits up to `ms`, a little at a time; false if the side key gave up first.
+// Waits up to `ms`, a little at a time; false if the top button gave up first.
 static bool waitALittle(uint32_t ms) {
   uint32_t until = millis() + ms;
   while (millis() < until) { if (giveUp()) return false; delay(10); }
@@ -35,12 +35,12 @@ String runReadMyTag() {
     nfc.SAMConfig();
     nfcReady = true;
   }
-  progress("Hold your tag to the back of the board.\n\nside key: give up");
+  progress("Hold your tag to the back of the board.\n\ntop button: give up");
   uint8_t uid[7], len = 0;
   uint32_t until = millis() + 15000;
   while (millis() < until) {
     if (giveUp()) return "Given up.";
-    // a short wait each time, so the side key is heard
+    // a short wait each time, so the top button is heard
     if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &len, 150)) {
       String id;
       for (int i = 0; i < len; i++) { char b[4]; snprintf(b, sizeof b, i ? ":%02X" : "%02X", uid[i]); id += b; }
@@ -59,7 +59,7 @@ static Preferences flareMemory;
 
 String runLearnMyRemote() {
   irIn.enableIRIn();
-  progress("Point your TV's remote at the board and press its POWER button once.\n\nside key: give up");
+  progress("Point your TV's remote at the board and press its POWER button once.\n\ntop button: give up");
   decode_results got;
   uint32_t until = millis() + 15000;
   bool heard = false;
@@ -153,7 +153,7 @@ String runOpenToMyPhone() {
   }
   phoneSaid = "";
   NimBLEDevice::getAdvertising()->start();
-  progress("Open \"DAEMONS companion\" from your phone's Bluetooth app (nRF Connect).\n\nside key: give up");
+  progress("Open \"DAEMONS companion\" from your phone's Bluetooth app (nRF Connect).\n\ntop button: give up");
   uint32_t until = millis() + 60000;
   while (!phoneHere) {
     if (millis() > until) { NimBLEDevice::getAdvertising()->stop(); return "No phone in a minute.\nPress to try again."; }
@@ -164,7 +164,7 @@ String runOpenToMyPhone() {
   String hello = "Hello from your daemon.";
   whisperTx->setValue(hello.c_str());
   whisperTx->notify();
-  progress("Your phone is here. The board said hello.\n\nNow write a word to it from the phone (the RX line, as text).\n\nside key: done");
+  progress("Your phone is here. The board said hello.\n\nNow write a word to it from the phone (the RX line, as text).\n\ntop button: done");
   until = millis() + 60000;
   while (phoneHere && !phoneSaid.length() && millis() < until)
     if (!waitALittle(100)) break;

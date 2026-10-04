@@ -8,7 +8,7 @@
 //             bridge answers with STATE lines. No network password needed; this is how it is first tried.
 // If both are there, a bridge that has spoken in the last 15 seconds wins.
 //
-// Turn the encoder: TODAY, DAEMON, ROUTINES. Press it: the step is done (TODAY), or open ROUTINES. The side key: back.
+// Turn the encoder: TODAY, DAEMON, ROUTINES. Press it: the step is done (TODAY), or open ROUTINES. The top button: back.
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <TFT_eSPI.h>
@@ -25,7 +25,7 @@
 #define COMPANION_HAS_WIFI 0
 #endif
 
-// LilyGO's own pin map (examples/utilities.h): the peripherals' power, the encoder, and the side key (BOARD_USER_KEY).
+// LilyGO's own pin map (examples/utilities.h): the peripherals' power, the encoder, and the top button (BOARD_USER_KEY).
 static const int PIN_PWR_EN = 15, PIN_ENC_A = 4, PIN_ENC_B = 5, PIN_ENC_KEY = 0, PIN_SIDE_KEY = 6;
 static const int W = 320, H = 170;                       // landscape
 static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000;
@@ -43,7 +43,7 @@ struct State {
 
 // ---- where you are -------------------------------------------------------------------------------------------------
 // HOME turns between TODAY, DAEMON and ROUTINES with the encoder. ROUTINES opens a list of routine TYPES, a type opens
-// its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the side key goes back.
+// its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the top button goes back.
 enum Page { TODAY, DAEMON, ROUTINES_PAGE };
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY };   // INDEX_ENTRY: the carried daemon's (C-36)
 Page page = TODAY;
@@ -188,7 +188,7 @@ const char *linkName() {
 }
 
 // The ROUTINES screens: a list with the day's colour behind the chosen row (TYPES, LIST), or what a routine found
-// (RUN). Turn to choose, press to open or run, the side key to go back.
+// (RUN). Turn to choose, press to open or run, the top button to go back.
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink) {
   int y = 52 + i * 19;
   if (i == at) canvas.fillRect(6, y - 2, W - 12, 18, day);
@@ -218,7 +218,7 @@ void drawRoutines(uint16_t day) {
     wrap(runResult, 12, 54, W - 24, 2, 17, 6, PAPER);
   }
   canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-  canvas.drawString(screen == RUN ? "press: run again    side key: back" : "turn: choose    press: open    side key: back",
+  canvas.drawString(screen == RUN ? "press: run again    top button: back" : "turn: choose    press: open    top button: back",
                     10, H - 4);
 }
 
@@ -423,7 +423,7 @@ void press() {
   dirty = true;
 }
 
-// The side key: back one step.
+// The top button: back one step.
 void back() {
   ledsDark();                                                   // C-38
   if (screen == INDEX_ENTRY) { screen = HOME; page = DAEMON; }

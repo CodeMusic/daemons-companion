@@ -9,4 +9,4 @@ String runSonyTvPower();     // FLARE (IR): no remote needed
 String runOpenToMyPhone();   // WHISPER (Bluetooth)
 
 void progress(const String &text);   // says what a routine is waiting for, on the RUN screen
-bool giveUp();                       // the side key, pressed while a routine waits
+bool giveUp();                       // the top button, pressed while a routine waits

@@ -97,8 +97,8 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 - **DAEMON:** **See:** the daemon you carry, **drawn as the game draws it** (its streaks too), twice its size, with its
   level, friendship and what it holds. **Press:** its **INDEX entry**, in your edition's voice. **Top button:** back.
 - **Press** on ROUTINES, then **turn** through FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE
-  (Sub-GHz), UPLINK (Wi-Fi). **Press** to open one; the **side key** goes back.
-- **Try each radio** (choose it, press to run, press again to run again; the side key gives up a wait):
+  (Sub-GHz), UPLINK (Wi-Fi). **Press** to open one; the **top button** goes back.
+- **Try each radio** (choose it, press to run, press again to run again; the top button gives up a wait):
   - **TOUCHSTONE -> READ MY TAG:** hold your NTAG or MIFARE card to the board. **See:** its kind and its ID.
   - **FLARE -> LEARN MY REMOTE:** point your TV remote at the board, press POWER. **See:** "Learned it: <protocol>".
     Then **SEND TO MY TV** with the board's end toward the TV. **See:** the TV turns off (or on).

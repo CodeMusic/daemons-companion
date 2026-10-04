@@ -54,6 +54,7 @@ uint32_t usbSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
 String flash, lineIn;
 bool dirty = true;
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
+bool wake();                              // C-39, below
 
 // ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
 // The user chose the names (2026-10-04): FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz), and
@@ -349,6 +350,7 @@ void readUsb() {
         String to = lineIn.substring(3);
         screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
         page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : TODAY;
+        wake();
         draw();
       }
       else if (lineIn == "PING") { usbSeen = millis(); Serial.println("PONG"); }
@@ -367,6 +369,7 @@ void readEncoder() {
   if (encSum >= 4 || encSum <= -4) {
     int step = encSum > 0 ? 1 : -1;
     encSum = 0;
+    if (wake()) return;                   // C-39: a turn that wakes the board does nothing else
     ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
     if (screen == HOME) page = (Page)((page + 3 + step) % 3);
     else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
@@ -430,11 +433,47 @@ void back() {
   dirty = true;
 }
 
+// ---- C-39: sleep. Hold the top button and press the front one: the screen, its light and the ring go dark. Turning
+// the dial or pressing either button wakes it to the page it was on, and the wake does nothing else. The link keeps
+// running underneath (readUsb, the Wi-Fi poll), so it wakes current.
+bool asleep = false, chorded = false;
+
+void sleepNow() {
+  asleep = true;
+  canvas.fillSprite(TFT_BLACK); canvas.pushSprite(0, 0);
+  digitalWrite(TFT_BL, LOW);
+  ledsSleep(true);
+}
+
+// True if this input was spent waking the board.
+bool wake() {
+  if (!asleep) return false;
+  asleep = false;
+  digitalWrite(TFT_BL, HIGH);
+  ledsSleep(false);
+  dirty = true;
+  return true;
+}
+
+// The front button acts on press. The top button acts on RELEASE -- going back -- unless the front was pressed while it
+// was held (the sleep chord), so holding it to start the chord never goes back a page.
 void readKey() {
   bool up = digitalRead(PIN_ENC_KEY);
-  if (up != keyWas && millis() - keyAt > 30) { keyAt = millis(); keyWas = up; if (!up) press(); }
+  if (up != keyWas && millis() - keyAt > 30) {
+    keyAt = millis(); keyWas = up;
+    if (!up) {
+      if (wake()) {}
+      else if (!sideWas) { chorded = true; sleepNow(); }       // top held: the chord
+      else press();
+    }
+  }
   bool sideUp = digitalRead(PIN_SIDE_KEY);
-  if (sideUp != sideWas && millis() - sideAt > 30) { sideAt = millis(); sideWas = sideUp; if (!sideUp) back(); }
+  if (sideUp != sideWas && millis() - sideAt > 30) {
+    sideAt = millis(); sideWas = sideUp;
+    if (!sideUp) { if (wake()) chorded = true; }               // pressed: a wake spends this whole press
+    else if (chorded) chorded = false;                         // released after the chord (or a wake): nothing more
+    else back();
+  }
 }
 
 // ---- UPLINK (Wi-Fi): the networks in range, by name and strength. Lists only; joins nothing. --------------------
@@ -507,6 +546,6 @@ void loop() {
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
   askForArt();
   ledsLoop();
-  if (dirty) draw();
+  if (dirty && !asleep) draw();
   delay(1);
 }

@@ -74,7 +74,9 @@ The bridge finds the board's port, hands it the server's state every five second
 (`./bindCompanion.sh` or `./bindCompanion.sh server`).
 
 **On the board:** **turn** the dial to choose, **press** the front button to open or confirm, and the **top button**
-goes back (and gives up a routine that is waiting). The pages are TODAY, DAEMON (press: its INDEX entry) and ROUTINES.
+goes back when you let it go (and gives up a routine that is waiting). The pages are TODAY, DAEMON (press: its INDEX
+entry) and ROUTINES. **Sleep:** hold the top button and press the front one -- the screen and the lights go dark until
+you turn the dial or press anything (that touch only wakes it).
 
 **The ring of lights** glows the day's colour at a third, and goes out after a minute unused; touching anything brings
 it back. Turning the dial runs a white light once round the ring (clockwise for right), select flashes it white, and

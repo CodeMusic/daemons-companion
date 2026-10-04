@@ -9,7 +9,8 @@ The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's c
 |---|---|
 | **turn the encoder** | TODAY, DAEMON, ROUTINES -- or move the choice in a list |
 | **press the encoder** | on TODAY, the step is done; on ROUTINES, open it; in a list, open or run what is chosen |
-| **the side key** | back one step |
+| **the top button** | back one step, when you let it go |
+| **hold the top button, press the front** | sleep: screen and lights dark until you touch anything (which only wakes it) |
 
 **ROUTINES** opens the routine types: **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC), **LONGWAVE**
 (Sub-GHz), **UPLINK** (Wi-Fi). Each is a test that the radio works, on your own gear (`CONTEXT.md`):

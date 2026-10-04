@@ -30,13 +30,19 @@ void ledsSpin(int dir) {
   if (effect == SPIN && dir == spinDir) return;      // a turn that keeps going lets the light finish its round
   effect = SPIN; spinDir = dir; effectAt = millis();
 }
+static bool sleeping = false;
+void ledsSleep(bool on) { sleeping = on; effect = NONE; touch(); }
+
 void ledsFlash() { touch(); effect = FLASH; effectAt = millis(); }
 void ledsDark()  { touch(); effect = DARK;  effectAt = millis(); }
 
 void ledsLoop() {
   uint32_t now = millis(), t = now - effectAt;
   int frame;                                         // what the ring should show, as one number, to skip repeats
-  if (effect == SPIN && t < SPIN_MS) {
+  if (sleeping) {
+    frame = 0;
+    if (frame != shown) fill(0);
+  } else if (effect == SPIN && t < SPIN_MS) {
     int step = (int)(t * N / SPIN_MS);
     int at = ((spinFrom + spinDir * CLOCKWISE * step) % N + N) % N;
     frame = 100 + at;

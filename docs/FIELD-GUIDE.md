@@ -92,6 +92,8 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   **ring of lights** glowing it, dimly. Leave the board a minute: the ring goes out. Touch anything: it comes back.
 - **Turn** the dial: TODAY, DAEMON, **ROUTINES**. **See:** a white light runs once round the ring -- clockwise when you
   turn right, anticlockwise when you turn left. **Press:** the ring flashes white. **Top button:** it goes dark a moment.
+- **Sleep:** hold the top button and press the front one. **See:** the screen and the ring go dark. Turn the dial.
+  **See:** it wakes on the page it was on, and the turn did nothing else.
 - **DAEMON:** **See:** the daemon you carry, **drawn as the game draws it** (its streaks too), twice its size, with its
   level, friendship and what it holds. **Press:** its **INDEX entry**, in your edition's voice. **Top button:** back.
 - **Press** on ROUTINES, then **turn** through FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE

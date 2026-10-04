@@ -80,11 +80,21 @@ def main():
             if msg.startswith("TICK "):
                 step = int(msg.split()[1])
                 try:
-                    state = server_json(a.server, "/api/device/ticks", {"steps": [step]})["state"]
-                    dev.write(("STATE " + json.dumps(state, separators=(",", ":")) + "\n").encode())
-                    print("usb_bridge: step %d ticked off on the device" % step, flush=True)
+                    r = server_json(a.server, "/api/device/ticks", {"steps": [step]})
+                    if r.get("celebrate"):              # C-50: a step, a milestone or the whole goal -- the board plays it
+                        dev.write(("CELEBRATE %s\n" % r["celebrate"]).encode())
+                    dev.write(("STATE " + json.dumps(r["state"], separators=(",", ":")) + "\n").encode())
+                    print("usb_bridge: step %d done on the device%s" % (step, " -- " + r["celebrate"] if r.get("celebrate") else ""), flush=True)
                 except Exception as e:
                     print("usb_bridge: could not tick step %d (%s)" % (step, e), flush=True)
+            elif msg.startswith("UNTICK "):             # C-49: undone on the device
+                step = int(msg.split()[1])
+                try:
+                    r = server_json(a.server, "/api/device/untick", {"step": step})
+                    dev.write(("STATE " + json.dumps(r["state"], separators=(",", ":")) + "\n").encode())
+                    print("usb_bridge: step %d undone on the device" % step, flush=True)
+                except Exception as e:
+                    print("usb_bridge: could not undo step %d (%s)" % (step, e), flush=True)
             elif msg == "ART?":
                 # C-36: the device asks for its daemon's art when the state names art it does not have
                 try:

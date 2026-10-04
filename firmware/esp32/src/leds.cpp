@@ -63,6 +63,15 @@ void ledsDance(int kind, int step, int steps) {
       ring.setPixelColor(at, share(day, 100)); ring.setPixelColor((at + 1) % N, share(day, 50));
       break;
     }
+    case DANCE_RAINBOW:                                // C-50, a milestone: every colour, chasing round once, quickly
+      for (int i = 0; i < N; i++) ring.setPixelColor(i, ring.gamma32(ring.ColorHSV((uint16_t)((i + step * 2) * 65536 / N), 255, 140)));
+      break;
+    case DANCE_BLOOM: {                                // C-50, the goal: the ring opening into full colour, turning
+      int lit = min(N, 1 + step * N / max(1, steps - 4));
+      for (int i = 0; i < lit; i++)
+        ring.setPixelColor((i * 3 + step) % N, ring.gamma32(ring.ColorHSV((uint16_t)((i * 8192 + step * 3000) & 0xffff), 230, 170)));
+      break;
+    }
     default: {                                         // a sweep: one white light, a trail of the day behind it
       int at = steps ? step * N / steps : 0;
       ring.setPixelColor(at % N, white);

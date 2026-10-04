@@ -12,3 +12,5 @@ void soundBack();                          // the day's note an octave down, sof
 void soundRoutine(const char *type);       // a routine starting: its tune, the ring dancing to it
 void soundWake();                          // waking from sleep: the title theme's opening, quickened
 void soundCare(int what);                  // C-13: fed (0), watered (1), trained (2) -- a little glad phrase
+void soundAccomplish(int kind, int species, int day);   // C-50: 0 a step, 1 a milestone, 2 the whole goal
+void soundUndo(int species, int day);                   // C-50: a step undone -- its tune reversed

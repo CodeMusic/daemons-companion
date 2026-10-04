@@ -39,13 +39,13 @@ static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000;
 TFT_eSPI tft;
 TFT_eSprite canvas(&tft);   // drawn whole, then pushed, so nothing flickers
 
-struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0;
+struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0, species = 0;
                 String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
                 int grownTo = 0; };                                               // C-45: the level it has grown to here
 struct State {
   bool have = false;
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue;
-  long step = -1; String stepText, goal;
+  long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
   bool carrying = false; Daemon daemon;
 } st;
 
@@ -77,6 +77,9 @@ struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = tru
 uint32_t lastInput = 0;                   // C-42: any touch; left alone `sleepAfter` seconds, it sleeps
 void turn(int step); void press(); void back();
 bool asleep = false;                      // C-39, below
+long lastDone = -1; String lastDoneText; uint32_t lastDoneAt = 0;   // C-49: the step just done, for its undo
+static const uint32_t UNDO_MS = 15000;
+bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 String wifiSsid, wifiPass, serverUrl;     // C-33, below
 
 // ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
@@ -165,7 +168,11 @@ bool takeState(const String &json) {
   st.led = doc["day"]["led"] | st.menu.c_str();
   ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));
   if (doc["step"].isNull()) { st.step = -1; st.stepText = ""; st.goal = ""; }
-  else { st.step = doc["step"]["id"] | -1; st.stepText = doc["step"]["text"] | ""; st.goal = doc["step"]["goal"] | ""; }
+  else {
+    st.step = doc["step"]["id"] | -1; st.stepText = doc["step"]["text"] | ""; st.goal = doc["step"]["goal"] | "";
+    st.milestone = doc["step"]["milestone"]["title"] | ""; st.msAt = doc["step"]["milestone"]["at"] | 0;
+    st.msOf = doc["step"]["milestone"]["of"] | 0;
+  }
   st.carrying = !doc["daemon"].isNull();
   if (st.carrying) {
     st.daemon.name = doc["daemon"]["name"] | ""; st.daemon.nickname = doc["daemon"]["nickname"] | "";
@@ -174,6 +181,7 @@ bool takeState(const String &json) {
     st.daemon.category = doc["daemon"]["category"] | ""; st.daemon.entry = doc["daemon"]["entry"] | "";
     st.daemon.entry.replace("\n", " ");     // the game's line breaks are for its own window; this screen wraps its own
     st.daemon.artKey = doc["daemon"]["artKey"] | "";
+    st.daemon.species = doc["daemon"]["species"] | 0;
     JsonVariant lf = doc["daemon"]["life"];
     st.daemon.word = lf["word"] | ""; st.daemon.cue = lf["cue"] | "";
     st.daemon.grownTo = doc["daemon"]["grown"]["level"] | 0;
@@ -368,15 +376,17 @@ void draw() {
          10, 100, W - 20, 2, 18, 3, QUIET);
   } else if (page == TODAY) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
-    canvas.drawString("THE ONE THING", 10, 34);
+    // C-49: the step, and -- subtly -- the milestone it belongs to
+    canvas.drawString(st.milestone.length() ? upper(st.milestone) + "  " + String(st.msAt) + "/" + String(st.msOf) : "THE ONE THING", 10, 34);
     if (st.step >= 0) {
       int n = wrap(st.stepText, 10, 54, W - 20, 4, 27, 3, PAPER);
       wrap(st.goal, 10, 58 + min(n, 3) * 27, W - 20, 2, 16, 1, QUIET);
     } else {
-      wrap("Nothing to do yet. Add a goal in the app.", 10, 54, W - 20, 4, 27, 3, PAPER);
+      wrap(lastDone >= 0 ? "All done. Set a new goal in the app." : "Nothing to do yet. Set a goal in the app.", 10, 54, W - 20, 4, 27, 3, PAPER);
     }
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    canvas.drawString(st.virtue, 10, H - 6);
+    if (undoable()) canvas.drawString("done: " + lastDoneText.substring(0, 30) + "   top button: undo", 10, H - 6);
+    else canvas.drawString(st.step >= 0 ? "press: done    " + st.virtue : st.virtue, 10, H - 6);
   } else {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     if (st.carrying) {
@@ -444,12 +454,44 @@ bool httpState(const char *method, const String &path, const String &body) {
 
 bool usbLive() { return usbSeen && millis() - usbSeen < USB_FRESH_MS; }
 
+// ---- C-49: doing a step is one press; undoing it, the top button, for a little while after --------------------------
+
+int dayIndex() {                                  // C-50: the day, Sunday 0, for its tunes
+  static const char *D[] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+  for (int i = 0; i < 7; i++) if (st.day == D[i]) return i;
+  return 0;
+}
+
+// C-50: what the server says the tick finished -- a step, a milestone, the whole goal -- heard and seen
+void celebrate(const String &what) {
+  int kind = what == "goal" ? 2 : what == "milestone" ? 1 : what == "step" ? 0 : -1;
+  if (kind < 0) return;
+  say(kind == 2 ? "Done! All of it." : kind == 1 ? "Milestone!" : "Done.");
+  draw();
+  soundAccomplish(kind, st.daemon.species, dayIndex());
+}
+
 void tick() {
   if (!st.have || st.step < 0) { say("Nothing yet"); return; }
   long id = st.step;
-  if (usbLive()) { Serial.printf("TICK %ld\n", id); say("Done."); return; }
-  if (httpState("POST", "/api/device/ticks", "{\"steps\":[" + String(id) + "]}")) { say("Done."); return; }
+  lastDone = id; lastDoneText = st.stepText; lastDoneAt = millis();
+  if (usbLive()) { Serial.printf("TICK %ld\n", id); return; }       // the bridge answers CELEBRATE, then STATE
+  bool ok;
+  String got = http("POST", "/api/device/ticks", "{\"steps\":[" + String(id) + "]}", &ok);
+  JsonDocument d;
+  if (ok && !deserializeJson(d, got)) { takeState(got); celebrate(d["celebrate"] | ""); return; }
+  lastDone = -1;
   say("No link");
+}
+
+void untick() {
+  long id = lastDone;
+  lastDone = -1;
+  say("Undone.");
+  draw();
+  soundUndo(st.daemon.species, dayIndex());
+  if (usbLive()) { Serial.printf("UNTICK %ld\n", id); return; }
+  httpState("POST", "/api/device/untick", "{\"step\":" + String(id) + "}");
 }
 
 // ---- C-32: the site and the device, linked. The site's COMMANDS arrive down the cable (CMD lines, from the bridge) or
@@ -548,6 +590,7 @@ void readUsb() {
         else Serial.printf("UNREAD %u\n", lineIn.length());   // the bridge says so, rather than the corner silently not changing
       }
       else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
+      else if (lineIn.startsWith("CELEBRATE ")) celebrate(lineIn.substring(10));   // C-50, from the bridge
       else if (lineIn == "SHOT") shot();
       else if (lineIn == "LIST") Serial.println("ROUTINES " + routinesJson());
       else if (lineIn.startsWith("KEY ")) {         // the controls, from the computer, for a check with SHOT
@@ -671,6 +714,7 @@ void back() {
   lastInput = millis();
   ledsDark();                                                   // C-38
   soundBack();                                                  // C-40
+  if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
   if (screen == INDEX_ENTRY) { screen = CARE; careAt = 3; }
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
@@ -809,6 +853,8 @@ void loop() {
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
   askForArt();
   ledsLoop();
+  static bool wasUndoable = false;
+  if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }
   // C-42: any menu, left alone, goes to sleep; waking lands at home
   if (!asleep && cfg.sleepAfter > 0 && now - lastInput > (uint32_t)cfg.sleepAfter * 1000) sleepNow();
   // the daemon at home is alive: redraw it a few times a second

@@ -18,6 +18,7 @@ static bool ready = false, enabled = true;
 static int amplitude = 5000;                 // 0..~16000; the site's volume sets it
 static int root = 60 + 12;                   // the day's note, as MIDI (C5 by default)
 static uint32_t lastTurn = 0;
+static float duty = 0.5f;                    // C-50: a daemon's own voice -- the share of each wave that is high
 
 void soundBegin() {
   i2s_config_t cfg = {};
@@ -63,7 +64,7 @@ static void tone(int midi, int ms, float level = 1.0f) {
     int n = min(256, total - done);
     for (int i = 0; i < n; i++, done++) {
       float env = done < rise ? (float)done / rise : done > total - fall ? (float)(total - done) / fall : 1.0f;
-      buf[i] = (int16_t)((phase < period / 2 ? amp : -amp) * env);
+      buf[i] = (int16_t)((phase < period * duty ? amp : -amp) * env);
       if ((phase += 1) >= period) phase -= period;
     }
     size_t wrote;
@@ -125,6 +126,51 @@ static const Note CARE_TUNES[3][3] = { { {0, 70}, {4, 70}, {7, 150} },      // f
                                        { {7, 60}, {12, 60}, {9, 140} },     // watered: a splash and a sip
                                        { {0, 60}, {7, 60}, {12, 150} } };   // trained: up, and up
 void soundCare(int what) { play(CARE_TUNES[constrain(what, 0, 2)], 3, root, DANCE_PULSE, 0.8f); }
+
+// ---- C-50: accomplishment. Each daemon's tunes are its own: GENERATED from its species number and the day of the week
+// (the user, 2026-10-04), in a pentatonic scale on the day's note -- so no two notes ever clash -- with a voice (the
+// wave's duty) of its own. A step: five notes, rising overall. Undoing it: the same five, reversed. A milestone: seven,
+// ending an octave and a fifth up, the ring a quick rainbow (there is more to do). The whole goal: a longer phrase that climbs and
+// blooms, the ring swirling into full colour -- things coming to life.
+static const int8_t PENTA[] = {0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24};
+static uint32_t seedOf(int species, int day, int kind) { return (uint32_t)species * 2654435761u ^ (uint32_t)(day * 97 + kind * 13 + 1); }
+static int nextRand(uint32_t &s) { s = s * 1103515245u + 12345u; return (s >> 16) & 0x7fff; }
+
+static int buildTune(Note *out, int n, int species, int day, int kind) {
+  uint32_t s = seedOf(species, day, kind);
+  int at = nextRand(s) % 3;                                  // start low in the scale
+  for (int i = 0; i < n; i++) {
+    bool last = i == n - 1;
+    if (last) at = kind == 0 ? 5 : kind == 1 ? 8 : 10;   // a step lands on the octave, a milestone higher, the goal highest
+    out[i].semis = PENTA[constrain(at, 0, 10)];
+    out[i].ms = last ? (kind == 2 ? 360 : 200) : (kind == 2 ? 95 : 80) + (nextRand(s) % 3) * 20;
+    at += 1 + nextRand(s) % 2 - (nextRand(s) % 5 == 0 ? 2 : 0);          // mostly up, now and then a step back
+  }
+  return n;
+}
+
+static void voiceOf(int species, int day) {
+  static const float DUTIES[] = {0.125f, 0.25f, 0.5f};
+  duty = DUTIES[(species + day) % 3];
+}
+
+void soundAccomplish(int kind, int species, int day) {     // 0 a step, 1 a milestone, 2 the whole goal
+  Note tune[14];
+  int n = buildTune(tune, kind == 0 ? 5 : kind == 1 ? 7 : 12, species, day, kind);
+  voiceOf(species, day);
+  play(tune, n, root, kind == 0 ? DANCE_PULSE : kind == 1 ? DANCE_RAINBOW : DANCE_BLOOM, 0.85f);
+  if (kind == 2) { for (int i = 0; i < 8; i++) { ledsDance(DANCE_BLOOM, 12 + i, 20); delay(90); } ledsDance(-1, 0, 0); }
+  duty = 0.5f;
+}
+
+void soundUndo(int species, int day) {                      // the step's own tune, backwards
+  Note tune[5], back[5];
+  buildTune(tune, 5, species, day, 0);
+  for (int i = 0; i < 5; i++) back[i] = tune[4 - i];
+  voiceOf(species, day);
+  play(back, 5, root, DANCE_PULSE, 0.7f);
+  duty = 0.5f;
+}
 
 // C-41: the title theme's opening phrase (mus_title.mid, its first track: C#4 held, up to G#4, then F#-D#-F#, onto a
 // long F), quickened to a second and a half and an octave up -- in the title's own C#, whatever the day.

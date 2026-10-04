@@ -86,9 +86,12 @@ if [[ $mode == phone ]]; then
   team="$(python3 -c "import json; print(json.load(open('app.json'))['expo']['ios']['appleTeamId'])")"
   echo "bindCompanion: building for the iPhone $phone_id (team $team)"
   xcodebuild -workspace ios/DAEMONScompanion.xcworkspace -scheme DAEMONScompanion -configuration Release \
-    -destination "id=$phone_id" -derivedDataPath ios/build -allowProvisioningUpdates \
+    -destination "generic/platform=iOS" -derivedDataPath ios/build -allowProvisioningUpdates \
     DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic build | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
-  xcrun devicectl device install app --device "$phone_id" ios/build/Build/Products/Release-iphoneos/DAEMONScompanion.app
+  # built for any iPhone, so a locked phone does not stop the build; installing needs it unlocked
+  until xcrun devicectl device install app --device "$phone_id" ios/build/Build/Products/Release-iphoneos/DAEMONScompanion.app; do
+    echo "bindCompanion: unlock the iPhone to install -- trying again in 10 seconds (Ctrl-C to stop)"; sleep 10
+  done
   echo "bindCompanion: installed. Open DAEMONS companion on the phone and pair it (the site: SETTINGS, PAIR A PHONE)."
   exit 0
 fi

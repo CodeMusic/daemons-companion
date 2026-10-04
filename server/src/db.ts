@@ -42,6 +42,11 @@ export class Store {
     return this.db.prepare("SELECT at, kind, detail FROM interactions WHERE at >= ? ORDER BY id").all(since.toISOString()) as any;
   }
 
+  // C-15: the meetings not yet written into the save (after the last one a SYNC wrote)
+  meetingsAfter(id: number): { id: number; at: string; detail: string | null }[] {
+    return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = 'met' AND id > ? ORDER BY id").all(id) as any;
+  }
+
   lastInteraction(): { at: string; kind: string; detail: string | null } | null {
     return (this.db.prepare("SELECT at, kind, detail FROM interactions ORDER BY id DESC LIMIT 1").get() as
       { at: string; kind: string; detail: string | null } | undefined) ?? null;

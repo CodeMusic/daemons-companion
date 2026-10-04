@@ -99,8 +99,25 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
   if (!married) { store.marry(game); married = game; }
   const sameGame = married.name === game.name && married.trainerId === game.trainerId && married.secretId === game.secretId;
   if (!sameGame)
-    return { sameGame, firstSave, married, received: [], returned: [], refused: [], firstLink: false, recalledSeen: false, backup: null };
-  const r = syncSave(file, { link: true });
+    return { sameGame, firstSave, married, received: [], returned: [], refused: [], firstLink: false, recalledSeen: false, backup: null,
+             met: { companions: 0, newlySeen: 0, friendship: null } };
+  // C-15: what was met nearby since the last SYNC -- each species seen; +1 friendship for each companion met in a day
+  // (the beacon's id changes hourly, so it is counted per hour seen), at most +5 a day. Small, as everything is (PLAN 7).
+  const applied = Number(store.getSetting("met.applied") ?? 0);
+  const meetings = store.meetingsAfter(applied);
+  const perDay = new Map<string, Set<string>>();
+  const seen: number[] = [];
+  for (const m of meetings) {
+    const [species, peer] = (m.detail ?? "").split(" ");
+    const nat = SPECIES[species]?.national;
+    if (nat) seen.push(nat);
+    const day = m.at.slice(0, 10);
+    if (!perDay.has(day)) perDay.set(day, new Set());
+    perDay.get(day)!.add(peer ?? m.at);
+  }
+  const friendshipGain = [...perDay.values()].reduce((n, peers) => n + Math.min(5, peers.size), 0);
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain } });
+  if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
   let backup: string | null = null;
   if (r.changed) {
     const dir = join(dirname(cfg.savePath), "companion-backups");
@@ -112,7 +129,8 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
-           refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup };
+           refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
+           met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship } };
 }
 
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
@@ -161,7 +179,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
     const row = d && SPECIES[String(d.species)];
     // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
     // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
-    if (d) daemon = { slot: d.slot, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
+    if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[cfg.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now) };

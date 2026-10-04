@@ -100,7 +100,7 @@ export function decodeText(bytes: Uint8Array): string {
 }
 
 // The four 12-byte substructs come in one of 24 orders, chosen by personality % 24 (G growth, A attacks, E EVs, M misc).
-const ORDERS = ["GAEM", "GAME", "GEAM", "GEMA", "GMAE", "GMEA", "AGEM", "AGME", "AEGM", "AEMG", "AMGE", "AMEG",
+export const ORDERS = ["GAEM", "GAME", "GEAM", "GEMA", "GMAE", "GMEA", "AGEM", "AGME", "AEGM", "AEMG", "AMGE", "AMEG",
                 "EGAM", "EGMA", "EAGM", "EAMG", "EMGA", "EMAG", "MGAE", "MGEA", "MAGE", "MAEG", "MEGA", "MEAG"];
 
 // One daemon's record: null for an empty slot, an error for a record whose own checksum fails (a bad egg).

@@ -112,6 +112,7 @@ bool takeState(const String &json) {
     st.daemon.level = doc["daemon"]["level"] | 0; st.daemon.friendship = doc["daemon"]["friendship"] | 0;
     st.daemon.holding = doc["daemon"]["holding"] | "";   // what it held when it was sent (T-374)
     st.daemon.category = doc["daemon"]["category"] | ""; st.daemon.entry = doc["daemon"]["entry"] | "";
+    st.daemon.entry.replace("\n", " ");     // the game's line breaks are for its own window; this screen wraps its own
     st.daemon.artKey = doc["daemon"]["artKey"] | "";
     st.daemon.types = "";
     for (JsonVariant t : doc["daemon"]["types"].as<JsonArray>())
@@ -235,8 +236,8 @@ void draw() {
     canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.daemon.category) + "  " + st.daemon.types, 10, 50);
-    drawArt(W - 70, 30, 1);
-    wrap(st.daemon.entry, 10, 72, W - 92, 2, 16, 5, PAPER);
+    drawArt(W - 68, 30, 1);
+    wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, 5, PAPER);   // clear of the sprite (seen with SHOT, 2026-10-04)
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     canvas.drawString("top button: back", 10, H - 4);
   } else if (screen != HOME) {
@@ -270,7 +271,8 @@ void draw() {
       drawArt(W - 134, 30, 2);                                  // C-36: as the game draws it, twice its size
       canvas.setTextFont(4); canvas.setTextColor(PAPER); canvas.drawString(st.daemon.nickname, 10, 58);
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
-      canvas.drawString(st.daemon.name + "  L" + String(st.daemon.level), 10, 92);
+      // its species beside its level -- unless its nickname already is the species
+      canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + "L" + String(st.daemon.level), 10, 92);
       canvas.drawString("friendship " + String(st.daemon.friendship), 10, 112);
       if (st.daemon.holding.length()) canvas.drawString("holding " + st.daemon.holding, 10, 132);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
@@ -343,6 +345,12 @@ void readUsb() {
       }
       else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
       else if (lineIn == "SHOT") shot();
+      else if (lineIn.startsWith("GO ")) {          // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
+        String to = lineIn.substring(3);
+        screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
+        page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : TODAY;
+        draw();
+      }
       else if (lineIn == "PING") { usbSeen = millis(); Serial.println("PONG"); }
       lineIn = "";
     } else if (lineIn.length() < 6000) lineIn += c;   // an ART line is ~3 KB

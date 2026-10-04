@@ -69,6 +69,17 @@ The bridge finds the device's port and hands it the server's state every five se
 3. `pio run -t upload` again. The corner says **WIFI** once it has joined, and the device asks the server itself
    every 30 seconds.
 
+## See its screen on the computer
+
+With the bridge stopped (it holds the port), from `firmware/esp32/`:
+
+```sh
+python3 shot.py screen.png
+```
+
+The board answers `SHOT` with its screen buffer, and `shot.py` saves it as a PNG. `GO TODAY`, `GO DAEMON`, `GO INDEX`
+and `GO ROUTINES` sent down the cable turn to a page first, so every screen can be checked without the dial.
+
 ## Watch it
 
 ```sh

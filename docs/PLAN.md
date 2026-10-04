@@ -196,13 +196,13 @@ radios are SIGNAL's family, each a *routine type*. In the menu:
 | **Wi-Fi** | `UPLINK` *(Wi-Fi)* | the known network link home |
 
 *(Alternatives if any jar: IR `GLIMMER`/`PILOT`; Bluetooth `TETHER`/`HANDSHAKE`; NFC `IMPRINT`/`CONTACT`;
-sub-GHz `CARRIER`/`AETHER`; Wi-Fi `GRID`. `MESH` is held for the LoRa future, C-16.)*
+sub-GHz `CARRIER`/`AETHER`; Wi-Fi `GRID`. `MESH` is held for the LoRa future, C-16.)* ***Confirmed by the user 2026-10-04: FLARE, WHISPER, TOUCHSTONE, LONGWAVE; UPLINK stands.***
 
 **One test routine per type first (C-28), each against the author's own gear, to confirm the radio works:**
 
 - **FLARE (IR)** -- send a power code to the author's own TV and see it turn off.
 - **WHISPER (Bluetooth)** -- a request to the author's own phone.
-- **TOUCHSTONE (NFC)** -- read the **identifier** of the author's own tag (a MIFARE Classic card, a JTAG card): just
+- **TOUCHSTONE (NFC)** -- read the **identifier** of the author's own tag (a MIFARE Classic card, an NTAG card or sticker): just
   the ID, to confirm the reader. (The board has no 125 kHz RFID, so door fobs are out of scope.)
 - **LONGWAVE (sub-GHz)** -- listen for the author's own sub-GHz device, show basic info, and echo a signal back, to
   confirm both receive and send.

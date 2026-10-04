@@ -17,7 +17,8 @@ export class Store {
         title TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);
       CREATE TABLE IF NOT EXISTS steps (id INTEGER PRIMARY KEY, subitem INTEGER NOT NULL REFERENCES subitems(id),
         text TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);
-      CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
+      CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS interactions (id INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT);`);
   }
 
   // C-22: the save the app is married to -- the game it carries daemons for. Unset until the first SYNC.
@@ -28,6 +29,17 @@ export class Store {
 
   marry(game: { name: string; trainerId: number; secretId: number }) {
     this.db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('married', ?)").run(JSON.stringify(game));
+  }
+
+  // C-13 (the user, 2026-10-04): using the companion at all -- a radio ROUTINE included -- is tending the daemon.
+  // Each use is kept; the daemon's life (C-13, still to build) reads from here.
+  logInteraction(kind: string, detail: string | null, at = new Date()) {
+    this.db.prepare("INSERT INTO interactions (at, kind, detail) VALUES (?, ?, ?)").run(at.toISOString(), kind, detail);
+  }
+
+  lastInteraction(): { at: string; kind: string; detail: string | null } | null {
+    return (this.db.prepare("SELECT at, kind, detail FROM interactions ORDER BY id DESC LIMIT 1").get() as
+      { at: string; kind: string; detail: string | null } | undefined) ?? null;
   }
 
   // C-29: a plain string setting. The save path the user chose lives here, overriding config.json, so it survives

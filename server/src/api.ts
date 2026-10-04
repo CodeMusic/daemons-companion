@@ -14,10 +14,12 @@
 //   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
 //   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
 //   POST /api/device/ticks       C-09: {steps: [ids]} -- the steps a device ticked off; answers with the new state
+//   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
+//   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { platform } from "node:os";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
@@ -111,7 +113,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
   if (cfg.savePath && existsSync(cfg.savePath)) {
     const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away);
     if (d) daemon = { slot: d.slot, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
-                      art: `/art/party/${d.slot}.png`, mood: null };
+                      holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null };
   }
   return { date: t.date, edition: t.edition, season: t.season,
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue },
@@ -123,22 +125,23 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
 function settingsView(cfg: Config, store: Store) {
   const set = store.getSetting("savePath");
   const savePath = set ?? cfg.savePath ?? null;
-  return { savePath, dir: savePath ? dirname(savePath) : null, exists: !!(savePath && existsSync(savePath)),
+  const exists = !!(savePath && existsSync(savePath));
+  // A file is only a save if one of its two slots checks out -- so a wrong pick is said at once, not at SYNC.
+  let valid = false;
+  if (exists) { try { readSave(new Uint8Array(readFileSync(savePath!))); valid = true; } catch { valid = false; } }
+  return { savePath, dir: savePath ? dirname(savePath) : null, exists, valid,
            source: set ? "settings" : cfg.savePath ? "config.json" : "none", edition: cfg.edition,
            canPick: platform() === "darwin" };
 }
 
 // A native "choose file" dialog on the user's own Mac, so they get a real path (a browser file picker hides it). Only
 // local, only on request. Returns null if the user cancels or this is not a Mac.
+// Asynchronous, so the server keeps answering the device and the app while the dialog waits on the user.
 function pickSaveFile(): Promise<string | null> {
   if (platform() !== "darwin") return Promise.resolve(null);
-  try {
-    const script = 'try\nPOSIX path of (choose file with prompt "Choose your DAEMONS .sav" of type {"sav","public.data"})\nend try';
-    const out = execFileSync("osascript", ["-e", script], { encoding: "utf-8" }).trim();
-    return Promise.resolve(out || null);
-  } catch {
-    return Promise.resolve(null);
-  }
+  const script = 'try\nPOSIX path of (choose file with prompt "Choose your DAEMONS save (.sav)")\nend try';
+  return new Promise((resolve) =>
+    execFile("osascript", ["-e", script], { encoding: "utf-8" }, (err, out) => resolve(err ? null : out.trim() || null)));
 }
 
 function revealInFinder(p: string | null) {
@@ -149,6 +152,14 @@ function revealInFinder(p: string | null) {
   } catch { /* best effort */ }
 }
 
+const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
+const DEVICE_DOOR = [
+  (m: string, p: string) => m === "GET" && p === "/api/device/state",
+  (m: string, p: string) => m === "POST" && (p === "/api/device/ticks" || p === "/api/device/interact"),
+  (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
+  (m: string) => m === "OPTIONS",
+];
+
 export function makeServer(cfg: Config, store = new Store(cfg.database)): Server {
   return createServer(async (req, res) => {
     try {
@@ -157,6 +168,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
       // C-29: the save path the user set in Settings (stored in the db) overrides config.json; everything that reads
       // or writes a save uses `ecfg`, so the user never edits a file by hand.
       const ecfg: Config = { ...cfg, savePath: store.getSetting("savePath") ?? cfg.savePath };
+      // With "host": "0.0.0.0" the server is on the local network for a device -- and only the device's own door
+      // answers it there. Settings, SYNC, the save and the goals stay this machine's, so nothing else on the network
+      // can change the save path, write the save, or open a dialog on the Mac.
+      if (!isLoopback(req.socket.remoteAddress) && !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
+        return send(res, 403, { error: "only the device's endpoints answer the network" });
       if (req.method === "OPTIONS") {
         res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-methods": "GET,POST",
                              "access-control-allow-headers": "content-type" });
@@ -172,6 +188,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
           return send(res, 400, { error: "steps must be a list of step ids" });
         const done = b.steps.filter((id: number) => store.completeStep(id));
         return send(res, 200, { done, state: deviceState(ecfg, store) });
+      }
+      // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
+      if (req.method === "POST" && path === "/api/device/interact") {
+        const b = await body(req);
+        const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
+        if (!kind) return send(res, 400, { error: "an interaction needs a kind" });
+        store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
+        return send(res, 200, { last: store.lastInteraction() });
       }
       // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.
       if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store));

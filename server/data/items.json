@@ -1,0 +1,1251 @@
+{
+ "_about": "C-31: item id -> our name and description, from src/data/items.json.",
+ "1": {
+  "name": "ROOTBOX",
+  "description": "A host with unrestricted rights. No daemon can decline to run on it. Nothing is refused root."
+ },
+ "2": {
+  "name": "SUPERBOX",
+  "description": "A host with elevated rights. Most daemons will run on it, including reluctant ones."
+ },
+ "3": {
+  "name": "ADMINBOX",
+  "description": "A host with wider rights than a USERBOX. More daemons will agree to run on it."
+ },
+ "4": {
+  "name": "USERBOX",
+  "description": "A host offered at user level. A steady daemon will run on it. A stubborn one will not."
+ },
+ "5": {
+  "name": "GUESTBOX",
+  "description": "A temporary host, issued at the gate and expiring at the gate. Its rights are minimal."
+ },
+ "6": {
+  "name": "NET BOX",
+  "description": "A somewhat different BOX that works especially well on WATER- and SWARM-type DAEMON."
+ },
+ "7": {
+  "name": "DESCEND BOX",
+  "description": "A somewhat different BOX that works especially well on DAEMON deep in the sea."
+ },
+ "8": {
+  "name": "NEST BOX",
+  "description": "A somewhat different BOX that works especially well on weaker DAEMON."
+ },
+ "9": {
+  "name": "REPEAT BOX",
+  "description": "A somewhat different BOX that works especially well on DAEMON bound before."
+ },
+ "10": {
+  "name": "TIMER BOX",
+  "description": "A somewhat different BOX that becomes progressively better the more turns there are in a battle."
+ },
+ "11": {
+  "name": "LUXURY BOX",
+  "description": "A comfortable BOX that makes a captured wild DAEMON quickly grow friendly."
+ },
+ "12": {
+  "name": "PREMIER BOX",
+  "description": "A rare BOX that has been specially made to commemorate an event of some sort."
+ },
+ "13": {
+  "name": "RECOVER",
+  "description": "Puts back a little of what was lost. Restores 20 HP."
+ },
+ "14": {
+  "name": "PATCH",
+  "description": "A patch stops a leak at its source. Ends LEAKING, and the worse CASCADING with it."
+ },
+ "15": {
+  "name": "COOLANT",
+  "description": "Draws off the heat a daemon made itself. Ends OVERHEATED."
+ },
+ "16": {
+  "name": "WATCHDOG",
+  "description": "A watchdog notices a process that stopped answering, and resets it. Ends HUNG."
+ },
+ "17": {
+  "name": "RESUME",
+  "description": "Puts a SUSPENDED daemon back on the schedule. It was never gone, only unscheduled."
+ },
+ "18": {
+  "name": "PRIORITY",
+  "description": "Scheduled ahead of whatever was starving it. Ends THROTTLED."
+ },
+ "19": {
+  "name": "SNAPSHOT",
+  "description": "Restores a DAEMON whole: health and state together."
+ },
+ "20": {
+  "name": "REBUILD",
+  "description": "From nothing, rather than from where it got to. Restores all HP."
+ },
+ "21": {
+  "name": "FULL RECOVER",
+  "description": "Everything reachable, put back. Restores 200 HP."
+ },
+ "22": {
+  "name": "DEEP RECOVER",
+  "description": "Goes further in than the first one does. Restores 50 HP."
+ },
+ "23": {
+  "name": "ROLLBACK",
+  "description": "Rolls back to a known-good state. Ends every state at once, whatever it was."
+ },
+ "24": {
+  "name": "RESTART",
+  "description": "Starts a HALTED daemon again with half its health. It does not remember stopping."
+ },
+ "25": {
+  "name": "REBOOT",
+  "description": "Brings back a HALTED daemon at full health."
+ },
+ "26": {
+  "name": "FRESH WATER",
+  "description": "Water with a high mineral content. It restores the HP of one DAEMON by 50 points."
+ },
+ "27": {
+  "name": "SODA POP",
+  "description": "A fizzy soda drink. It restores the HP of one DAEMON by 60 points."
+ },
+ "28": {
+  "name": "LEMONADE",
+  "description": "A very sweet drink. It restores the HP of one DAEMON by 80 points."
+ },
+ "29": {
+  "name": "MOOMOO MILK",
+  "description": "Highly nutritious milk. It restores the HP of one DAEMON by 100 points."
+ },
+ "30": {
+  "name": "FIELD PATCH",
+  "description": "Applied where it broke, by whoever was standing there. Restores 50 HP."
+ },
+ "31": {
+  "name": "WORKAROUND",
+  "description": "Not the fix. The thing you do instead of the fix, and it works. Restores 200 HP."
+ },
+ "32": {
+  "name": "HOTFIX",
+  "description": "Bitter, cheap, and it works now. Clears every state."
+ },
+ "33": {
+  "name": "COLD START",
+  "description": "Brought up from nothing rather than resumed. Restarts a HALTED daemon at full health."
+ },
+ "34": {
+  "name": "CHARGE",
+  "description": "Puts the budget back for one routine. Restores 10 MP."
+ },
+ "35": {
+  "name": "FULL CHARGE",
+  "description": "One routine, all of its budget. Restores that routine's MP."
+ },
+ "36": {
+  "name": "CHARGE ALL",
+  "description": "Every routine at once, a little each. Restores 10 MP to all."
+ },
+ "37": {
+  "name": "FULL RECHARGE",
+  "description": "Every routine, all of it. Restores the MP of every one."
+ },
+ "38": {
+  "name": "LAVA COOKIE",
+  "description": "LAVARIDGE TOWN's local specialty. It heals all the status problems of one DAEMON."
+ },
+ "39": {
+  "name": "WAKE TONE",
+  "description": "A tone that reaches something not scheduled. Ends SUSPENDED."
+ },
+ "40": {
+  "name": "CALM TONE",
+  "description": "A tone steady enough to work against. Ends THRASHING."
+ },
+ "41": {
+  "name": "CLEAR TONE",
+  "description": "A tone that cuts through a binding made without asking."
+ },
+ "42": {
+  "name": "LOW TONE",
+  "description": "Pitched under what wild daemons answer to. Fewer appear."
+ },
+ "43": {
+  "name": "HIGH TONE",
+  "description": "Pitched where wild daemons answer. More appear."
+ },
+ "44": {
+  "name": "RESERVE",
+  "description": "Held back for the moment it is needed. Restores 20 HP."
+ },
+ "45": {
+  "name": "RESTART ALL",
+  "description": "Every halted daemon at once, and all of them whole."
+ },
+ "46": {
+  "name": "SHOAL SALT",
+  "description": "Pure salt obtained from deep inside the SHOAL CAVE. It is extremely salty."
+ },
+ "47": {
+  "name": "SHOAL SHELL",
+  "description": "A pretty seashell found deep inside the SHOAL CAVE. It is striped in blue and white."
+ },
+ "48": {
+  "name": "RED SHARD",
+  "description": "A small red shard. It appears to be from some sort of a tool made long ago."
+ },
+ "49": {
+  "name": "BLUE SHARD",
+  "description": "A small blue shard. It appears to be from some sort of a tool made long ago."
+ },
+ "50": {
+  "name": "YELLOW SHARD",
+  "description": "A small yellow shard. It appears to be from some sort of a tool made long ago."
+ },
+ "51": {
+  "name": "GREEN SHARD",
+  "description": "A small green shard. It appears to be from some sort of a tool made long ago."
+ },
+ "63": {
+  "name": "MEMORY",
+  "description": "How much a daemon can hold before it stops. Raises base HP."
+ },
+ "64": {
+  "name": "WATTAGE",
+  "description": "How hard it can drive something. Raises base ATTACK."
+ },
+ "65": {
+  "name": "SHIELDING",
+  "description": "What sits between it and what is arriving. Raises base DEFENSE."
+ },
+ "66": {
+  "name": "CLOCK RATE",
+  "description": "How many times a second it gets to act. Raises base SPEED."
+ },
+ "67": {
+  "name": "BANDWIDTH",
+  "description": "How much it can push down one channel. Raises base SP. ATK."
+ },
+ "68": {
+  "name": "INCREMENT",
+  "description": "Adds exactly one, which is what the word means. Raises the level."
+ },
+ "69": {
+  "name": "MP UP",
+  "description": "Slightly raises the maximum MP of a selected ROUTINE for one DAEMON."
+ },
+ "70": {
+  "name": "INSULATION",
+  "description": "What keeps the outside out. Raises base SP. DEF."
+ },
+ "71": {
+  "name": "MP MAX",
+  "description": "Raises the MP of a selected ROUTINE to its maximum level for one DAEMON."
+ },
+ "73": {
+  "name": "LOCK STATS",
+  "description": "Nothing outside gets to change them. Blocks stat reduction for five turns."
+ },
+ "74": {
+  "name": "TUNE CRIT",
+  "description": "Reaches further into the tail of the distribution. Raises the critical-hit ratio in battle."
+ },
+ "75": {
+  "name": "TUNE ATTACK",
+  "description": "Turned up for this engagement only. Raises ATTACK in battle."
+ },
+ "76": {
+  "name": "TUNE DEFENSE",
+  "description": "Turned up for this engagement only. Raises DEFENSE in battle."
+ },
+ "77": {
+  "name": "TUNE SPEED",
+  "description": "Turned up for this engagement only. Raises SPEED in battle."
+ },
+ "78": {
+  "name": "TUNE AIM",
+  "description": "Turned up for this engagement only. Raises accuracy in battle."
+ },
+ "79": {
+  "name": "TUNE SP. ATK",
+  "description": "Turned up for this engagement only. Raises SP. ATK in battle."
+ },
+ "80": {
+  "name": "DECOY",
+  "description": "Something else to attend to. Lets you DETACH from any wild daemon."
+ },
+ "81": {
+  "name": "FLUFFY TAIL",
+  "description": "An attractive item. Use it to DETACH from any battle with a wild DAEMON."
+ },
+ "83": {
+  "name": "LONG SUPPRESS",
+  "description": "The same, held longer. 200 steps."
+ },
+ "84": {
+  "name": "MAX SUPPRESS",
+  "description": "The same, held longest. 250 steps."
+ },
+ "85": {
+  "name": "EJECT",
+  "description": "Out, now, from wherever you are. Returns you to the last CHECKPOINT you used."
+ },
+ "86": {
+  "name": "SUPPRESS",
+  "description": "Holds the channel quiet. Weak wild daemons stay away for 100 steps."
+ },
+ "93": {
+  "name": "EXPOSURE",
+  "description": "Simply being left in front of something, for long enough. Some daemons take a new form."
+ },
+ "94": {
+  "name": "REFLECTION",
+  "description": "Light that came back, and the other meaning. Some daemons take a new form when given one."
+ },
+ "95": {
+  "name": "AXIOM",
+  "description": "Something for a mind to reason from. Some daemons take a new form when given one."
+ },
+ "96": {
+  "name": "EMBEDDING",
+  "description": "A representation a mind can search through. Some daemons take a new form when given one."
+ },
+ "97": {
+  "name": "AFFECT",
+  "description": "Something for a mind to feel with. Some daemons take a new form when given one."
+ },
+ "98": {
+  "name": "REWARD",
+  "description": "A signal a mind can learn from. Some daemons take a new form when given one."
+ },
+ "103": {
+  "name": "TINYMUSHROOM",
+  "description": "A small and rare mushroom. It is quite popular among certain people."
+ },
+ "104": {
+  "name": "BIG MUSHROOM",
+  "description": "A large and rare mushroom. It is very popular among certain people."
+ },
+ "106": {
+  "name": "PEARL",
+  "description": "A relatively small pearl that sparkles in a pretty silver color. It can be sold cheaply."
+ },
+ "107": {
+  "name": "BIG PEARL",
+  "description": "A quite-large pearl that sparkles in a pretty silver color. It can be sold at a high price."
+ },
+ "108": {
+  "name": "STARDUST",
+  "description": "A pretty red sand with a loose, silky feel. It can be sold at a high price."
+ },
+ "109": {
+  "name": "STAR PIECE",
+  "description": "A shard of a pretty gem that sparkles in a red color. It can be sold at a high price."
+ },
+ "110": {
+  "name": "NUGGET",
+  "description": "A nugget of pure gold that gives off a lustrous gleam. It can be sold at a high price."
+ },
+ "111": {
+  "name": "HEART SCALE",
+  "description": "A pretty, heart-shaped scale that is extremely rare. It glows faintly in the colors of a rainbow."
+ },
+ "121": {
+  "name": "ORANGE MAIL",
+  "description": "A piece of MAIL featuring a cute DETOUR print. It is to be held by a DAEMON."
+ },
+ "122": {
+  "name": "HARBOR MAIL",
+  "description": "A piece of MAIL featuring a cute TANGENT print. It is to be held by a DAEMON."
+ },
+ "123": {
+  "name": "GLITTER MAIL",
+  "description": "A piece of MAIL featuring a cute SPIKE print. It is to be held by a DAEMON."
+ },
+ "124": {
+  "name": "MECH MAIL",
+  "description": "A piece of MAIL featuring a cute SENTINEL print. It is to be held by a DAEMON."
+ },
+ "125": {
+  "name": "WOOD MAIL",
+  "description": "A piece of MAIL featuring a cute DAYDREAM print. It is to be held by a DAEMON."
+ },
+ "126": {
+  "name": "WAVE MAIL",
+  "description": "A piece of MAIL featuring a cute DOLPHIN print. It is to be held by a DAEMON."
+ },
+ "127": {
+  "name": "BEAD MAIL",
+  "description": "A piece of MAIL to be held by a DAEMON. It will bear the print of the DAEMON holding it."
+ },
+ "128": {
+  "name": "SHADOW MAIL",
+  "description": "A piece of MAIL featuring a cute FADING print. It is to be held by a DAEMON."
+ },
+ "129": {
+  "name": "TROPIC MAIL",
+  "description": "A piece of MAIL featuring a cute GOLDSET print. It is to be held by a DAEMON."
+ },
+ "130": {
+  "name": "DREAM MAIL",
+  "description": "A piece of MAIL to be held by a DAEMON. It will bear the print of the DAEMON holding it."
+ },
+ "131": {
+  "name": "FAB MAIL",
+  "description": "A piece of MAIL featuring a gorgeous, extravagant print. It is to be held by a DAEMON."
+ },
+ "132": {
+  "name": "RETRO MAIL",
+  "description": "A piece of MAIL featuring a print of three cute DAEMON. It is to be held by a DAEMON."
+ },
+ "133": {
+  "name": "THROTTLE TRAP",
+  "description": "Armed against one condition and spent on it. Ends THROTTLED, once."
+ },
+ "134": {
+  "name": "SUSPEND TRAP",
+  "description": "Fires the moment the daemon stops being scheduled. Ends SUSPENDED, once."
+ },
+ "135": {
+  "name": "LEAK TRAP",
+  "description": "Catches a slow loss before it compounds. Ends LEAKING, once."
+ },
+ "136": {
+  "name": "HEAT TRAP",
+  "description": "Fires on heat the daemon made itself. Ends OVERHEATED, once."
+ },
+ "137": {
+  "name": "HANG TRAP",
+  "description": "Fires when nothing else will. Ends HUNG, once."
+ },
+ "138": {
+  "name": "EXHAUST TRAP",
+  "description": "Fires when a routine runs out of budget. Restores 10 MP, once."
+ },
+ "139": {
+  "name": "LOW MARK",
+  "description": "The level at which something is done about it. Restores 10 HP when health falls, once."
+ },
+ "140": {
+  "name": "THRASH TRAP",
+  "description": "Catches a daemon making no progress against itself. Ends THRASHING, once."
+ },
+ "141": {
+  "name": "CATCH ALL",
+  "description": "The handler that takes whatever arrives. Ends any state, once."
+ },
+ "142": {
+  "name": "HIGH MARK",
+  "description": "The same idea, set higher and worth more. Restores 30 HP when health falls, once."
+ },
+ "143": {
+  "name": "SPICY TRAP",
+  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon."
+ },
+ "144": {
+  "name": "DRY TRAP",
+  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon."
+ },
+ "145": {
+  "name": "SWEET TRAP",
+  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon."
+ },
+ "146": {
+  "name": "BITTER TRAP",
+  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon."
+ },
+ "147": {
+  "name": "SOUR TRAP",
+  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon."
+ },
+ "148": {
+  "name": "RAZZ BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "149": {
+  "name": "BLUK BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "150": {
+  "name": "NANAB BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "151": {
+  "name": "WEPEAR BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "152": {
+  "name": "PINAP BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "153": {
+  "name": "POMEG BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "154": {
+  "name": "KELPSY BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "155": {
+  "name": "QUALOT BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "156": {
+  "name": "HONDEW BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "157": {
+  "name": "GREPA BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "158": {
+  "name": "TAMATO BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "159": {
+  "name": "CORNN BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "160": {
+  "name": "MAGOST BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "161": {
+  "name": "RABUTA BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "162": {
+  "name": "NOMEL BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "163": {
+  "name": "SPELON BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "164": {
+  "name": "PAMTRE BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "165": {
+  "name": "WATMEL BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "166": {
+  "name": "DURIN BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "167": {
+  "name": "BELUE BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "168": {
+  "name": "AUTO ATTACK",
+  "description": "Turns itself up when there is little left. Raises ATTACK in a pinch."
+ },
+ "169": {
+  "name": "AUTO DEFENSE",
+  "description": "Turns itself up when there is little left. Raises DEFENSE in a pinch."
+ },
+ "170": {
+  "name": "AUTO SPEED",
+  "description": "Turns itself up when there is little left. Raises SPEED in a pinch."
+ },
+ "171": {
+  "name": "AUTO SP. ATK",
+  "description": "Turns itself up when there is little left. Raises SP. ATK in a pinch."
+ },
+ "172": {
+  "name": "AUTO SP. DEF",
+  "description": "Turns itself up when there is little left. Raises SP. DEF in a pinch."
+ },
+ "173": {
+  "name": "AUTO CRIT",
+  "description": "Reaches further into the tail when there is little left. Raises the critical-hit ratio."
+ },
+ "174": {
+  "name": "AUTO ANY",
+  "description": "Turns one of them sharply up, and does not say which. Raises a random stat in a pinch."
+ },
+ "175": {
+  "name": "ENIGMA BERRY",
+  "description": "Can be ground up into a powder as an ingredient for medicine."
+ },
+ "179": {
+  "name": "DITHER",
+  "description": "Noise added on purpose, so that nothing can be pinned exactly. Their aim slips."
+ },
+ "180": {
+  "name": "REVERT",
+  "description": "Puts a value back the way it was. Restores a lowered stat, once."
+ },
+ "181": {
+  "name": "DEBUG BUILD",
+  "description": "Every step is instrumented, so it learns faster and runs slower. SPEED falls."
+ },
+ "182": {
+  "name": "WEIGHT SHARE",
+  "description": "Two things trained as one: what teaches the first teaches the second. Shares EXP. POINTS."
+ },
+ "183": {
+  "name": "QUEUE JUMP",
+  "description": "Sometimes the scheduler takes you out of turn. The holder may move first."
+ },
+ "184": {
+  "name": "AFFINITY",
+  "description": "Affinity binds a process to one host. The holder grows attached faster."
+ },
+ "185": {
+  "name": "UNPAIR",
+  "description": "Drops a binding that was formed without being asked for. Works once."
+ },
+ "186": {
+  "name": "HARD CODED",
+  "description": "One value, written in, with no way to pass another. Powers up one routine and allows no other."
+ },
+ "187": {
+  "name": "BUBBLE",
+  "description": "A gap pushed into a pipeline where nothing issues. They may flinch."
+ },
+ "188": {
+  "name": "SWARM GAIN",
+  "description": "Many small agents; no single one matters. Gain lifts one channel: this one is SWARM."
+ },
+ "189": {
+  "name": "SURCHARGE",
+  "description": "Charged on top of the agreed rate. Doubles prize money if the holder took part."
+ },
+ "190": {
+  "name": "MUTE",
+  "description": "Mutes the channel wild daemons listen on. Carried in front, fewer of them approach."
+ },
+ "191": {
+  "name": "INNER STATE",
+  "description": "An orb for CASTOR or POLYDEUCES. What it holds, nothing outside can read. Raises both SP. stats."
+ },
+ "192": {
+  "name": "DEEP FEATURE",
+  "description": "A representation learned far from the surface. It raises the SP. ATK stat."
+ },
+ "193": {
+  "name": "DEEP LAYER",
+  "description": "The layers nothing outside gets at directly. It raises the SP. DEF stat."
+ },
+ "194": {
+  "name": "ESCAPE HATCH",
+  "description": "A way out that is always open. The holder can DETACH from any wild daemon."
+ },
+ "195": {
+  "name": "VERSION LOCK",
+  "description": "Pins a thing to the version it is at. The holder will not evolve."
+ },
+ "196": {
+  "name": "FAILSAFE",
+  "description": "What stops the fall when everything else already has. The holder may survive on 1 HP."
+ },
+ "197": {
+  "name": "LEARNING RATE",
+  "description": "How large a step each lesson takes. Turned up: the holder earns more EXP. POINTS."
+ },
+ "198": {
+  "name": "LONG TAIL",
+  "description": "The far end of a distribution, where the rare large values are. Raises the critical-hit ratio."
+ },
+ "199": {
+  "name": "HARDENED GAIN",
+  "description": "Hardened against whatever anyone tries. Gain lifts one channel: this one is HARDENED."
+ },
+ "200": {
+  "name": "HEADROOM",
+  "description": "The margin left before anything clips. The holder recovers a little each turn."
+ },
+ "201": {
+  "name": "SCALING LAW",
+  "description": "What happens to a thing when you only make it bigger. A BACKPRESS may be holding it."
+ },
+ "202": {
+  "name": "SUPPLY RAIL",
+  "description": "The line every other part draws from. Held by a SPIKE, it raises the SP. ATK stat."
+ },
+ "203": {
+  "name": "STRATUM GAIN",
+  "description": "The layer everything else runs on. Gain lifts one channel: this one is STRATUM."
+ },
+ "204": {
+  "name": "LEGACY GAIN",
+  "description": "Old material everything else has had time to work on. Gain lifts one channel: this one is LEGACY."
+ },
+ "205": {
+  "name": "GROWTH GAIN",
+  "description": "Training: fitting to whatever it is fed. Gain lifts one channel: this one is GROWTH."
+ },
+ "206": {
+  "name": "OPAQUE GAIN",
+  "description": "The black box, from outside. Gain lifts one channel: this one is OPAQUE."
+ },
+ "207": {
+  "name": "LOGIC GAIN",
+  "description": "Rules applied step by step, not intuition. Gain lifts one channel: this one is LOGIC."
+ },
+ "208": {
+  "name": "SIGNAL GAIN",
+  "description": "Raw current, before anything interprets it. Gain lifts one channel: this one is SIGNAL."
+ },
+ "209": {
+  "name": "FLOW GAIN",
+  "description": "Everything running downhill to the lowest point. Gain lifts one channel: this one is FLOW."
+ },
+ "210": {
+  "name": "VECTOR GAIN",
+  "description": "A direction that never touches the ground. Gain lifts one channel: this one is VECTOR."
+ },
+ "211": {
+  "name": "CORRUPT GAIN",
+  "description": "Data that has been tampered with. Gain lifts one channel: this one is CORRUPT."
+ },
+ "212": {
+  "name": "FROZEN GAIN",
+  "description": "Locked to what it already saw. Gain lifts one channel: this one is FROZEN."
+ },
+ "213": {
+  "name": "LATENT GAIN",
+  "description": "Running below the surface, unobserved. Gain lifts one channel: this one is LATENT."
+ },
+ "214": {
+  "name": "CONTEXT GAIN",
+  "description": "The frame you read a thing in. Gain lifts one channel: this one is CONTEXT."
+ },
+ "215": {
+  "name": "ENTROPY GAIN",
+  "description": "Noise and heat; disorder that spreads. Gain lifts one channel: this one is ENTROPY."
+ },
+ "216": {
+  "name": "EMERGENT GAIN",
+  "description": "Behaviour nobody designed and nobody can account for. Gain lifts the EMERGENT channel."
+ },
+ "217": {
+  "name": "CONTENT GAIN",
+  "description": "The thing itself, with nothing read into it. Gain lifts one channel: this one is CONTENT."
+ },
+ "218": {
+  "name": "SERVICE PACK",
+  "description": "Everything that was fixed since the release, in one bundle. Made by FOUNDRY CO."
+ },
+ "219": {
+  "name": "RECLAIM",
+  "description": "Takes back what is no longer in use. The holder recovers HP on striking."
+ },
+ "220": {
+  "name": "FLOW TRIM",
+  "description": "A trim is a small gain. This one lifts the FLOW channel a little."
+ },
+ "221": {
+  "name": "DITHER TRIM",
+  "description": "Dither, at a lower setting. Their aim slips a little."
+ },
+ "222": {
+  "name": "FLUKE",
+  "description": "A result nothing predicted and nothing repeats. It raises UPTIME's critical-hit ratio."
+ },
+ "223": {
+  "name": "STRICT MODE",
+  "description": "Refuses anything it was not promised. It raises MOCK's DEFENSE stat."
+ },
+ "224": {
+  "name": "BARE METAL",
+  "description": "Nothing at all between you and the hardware. It raises ARTEFACT's and COREFILE's ATTACK."
+ },
+ "225": {
+  "name": "OFF BY ONE",
+  "description": "The error at the edge that everything else survives. Raises EDGECASE's critical-hit ratio."
+ },
+ "226": {
+  "name": "TEXTBOOK",
+  "description": "Every board in CALLOW SCHOOL, for reading anywhere: one chapter to a floor, one topic to a page."
+ },
+ "227": {
+  "name": "DIPLOMA",
+  "description": "CALLOW SCHOOL's, for the paper passed. THE READING ROOM in BRAZEN asks to see one."
+ },
+ "228": {
+  "name": "GUIDE",
+  "description": "THE PROGRAMMER'S GUIDE TO THE HUMAN MIND. From a bookshelf on ONE ISLAND."
+ },
+ "254": {
+  "name": "RED SCARF",
+  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS."
+ },
+ "255": {
+  "name": "BLUE SCARF",
+  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's STYLIST condition in CONTESTS."
+ },
+ "256": {
+  "name": "PINK SCARF",
+  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's CUTE condition in CONTESTS."
+ },
+ "257": {
+  "name": "GREEN SCARF",
+  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's SMART condition in CONTESTS."
+ },
+ "258": {
+  "name": "YELLOW SCARF",
+  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's TOUGH condition in CONTESTS."
+ },
+ "259": {
+  "name": "MACH BIKE",
+  "description": "A folding bicycle that is at least twice as fast as walking."
+ },
+ "260": {
+  "name": "TOKEN CASE",
+  "description": "Holds the tokens the GAME CORNER deals in. It holds up to 9,999."
+ },
+ "261": {
+  "name": "GREP",
+  "description": "Finds the thing that is there and not shown. Reports a hidden item nearby."
+ },
+ "262": {
+  "name": "QUERY",
+  "description": "Asks a body of water what is in it. The answers are shallow."
+ },
+ "263": {
+  "name": "DEEP QUERY",
+  "description": "Asks the same question further down."
+ },
+ "264": {
+  "name": "FULL SCAN",
+  "description": "Reads the whole of it rather than asking. Slow, and it finds everything."
+ },
+ "265": {
+  "name": "S.S. TICKET",
+  "description": "The ticket required for sailing on the ferry S.S. ANNE. It has a drawing of a ship on it."
+ },
+ "266": {
+  "name": "CONTEST PASS",
+  "description": "The pass required for entering DAEMON CONTESTS. It has a drawing of an award ribbon on it."
+ },
+ "267": {
+  "name": "NOTEBOOK",
+  "description": "For writing down what happened, in the order it is found. CAIRN gave it to you."
+ },
+ "268": {
+  "name": "WAILMER PAIL",
+  "description": "A nifty watering pail. Use it to promote strong growth in BERRIES planted in soft soil."
+ },
+ "269": {
+  "name": "PEER REVIEW",
+  "description": "Signed and sealed. Addressed to everyone who signed the first one."
+ },
+ "270": {
+  "name": "SOOT SACK",
+  "description": "A sack used to collect volcanic ash automatically during walks over deep ash."
+ },
+ "271": {
+  "name": "BASEMENT KEY",
+  "description": "The key to NEW MAUVILLE, which was constructed beneath MAUVILLE CITY."
+ },
+ "272": {
+  "name": "ACRO BIKE",
+  "description": "A folding bicycle that is capable of stunts like jumps and wheelies."
+ },
+ "273": {
+  "name": "{POKEBLOCK} CASE",
+  "description": "A case for holding {POKEBLOCK}S made with a BERRY BLENDER. It releases one {POKEBLOCK} when shaken."
+ },
+ "274": {
+  "name": "ENVELOPE",
+  "description": "Sealed. It is addressed, and it is not addressed to you."
+ },
+ "275": {
+  "name": "EON TICKET",
+  "description": "The ticket required for sailing on a ferry to a distant southern island. It features a drawing of an island."
+ },
+ "276": {
+  "name": "RED ORB",
+  "description": "An orb that glows red. It is said to contain an incredible power from ancient times."
+ },
+ "277": {
+  "name": "BLUE ORB",
+  "description": "An orb that glows blue. It is said to contain an incredible power from ancient times."
+ },
+ "278": {
+  "name": "SCANNER",
+  "description": "A device used to search for life-forms in water. It looks too difficult to use."
+ },
+ "279": {
+  "name": "GO-GOGGLES",
+  "description": "A pair of protective goggles. They enable a USER to travel through even desert sandstorms."
+ },
+ "280": {
+  "name": "METEORITE",
+  "description": "A meteorite that fell from space onto DEADSTACK long ago. It is very lumpy and hard."
+ },
+ "281": {
+  "name": "RM. 1 KEY",
+  "description": "A key that opens the door to Room 1 inside the ABANDONED SHIP. It is old and looks easily broken."
+ },
+ "282": {
+  "name": "RM. 2 KEY",
+  "description": "A key that opens the door to Room 2 inside the ABANDONED SHIP. It is old and looks easily broken."
+ },
+ "283": {
+  "name": "RM. 4 KEY",
+  "description": "A key that opens the door to Room 4 inside the ABANDONED SHIP. It is old and looks easily broken."
+ },
+ "284": {
+  "name": "RM. 6 KEY",
+  "description": "A key that opens the door to Room 6 inside the ABANDONED SHIP. It is old and looks easily broken."
+ },
+ "285": {
+  "name": "STORAGE KEY",
+  "description": "A key that opens the storage hold inside the ABANDONED SHIP. It is old and looks easily broken."
+ },
+ "286": {
+  "name": "ROOT FOSSIL",
+  "description": "A fossil of an ancient, seafloor- dwelling DAEMON. It appears to be part of a plant root."
+ },
+ "287": {
+  "name": "CLAW FOSSIL",
+  "description": "A fossil of an ancient, seafloor- dwelling DAEMON. It appears to be part of a claw."
+ },
+ "288": {
+  "name": "DEVON SCOPE",
+  "description": "A scope that signals the presence of any unseeable DAEMON. It is made by the DEVON CORP."
+ },
+ "289": {
+  "name": "PLUGIN01",
+  "description": "Runs last, and only if nothing has interrupted the user first."
+ },
+ "290": {
+  "name": "PLUGIN02",
+  "description": "Something nobody specified, arriving anyway."
+ },
+ "291": {
+  "name": "PLUGIN03",
+  "description": "An attack with a pulsing blast of water. It may also thrash them."
+ },
+ "292": {
+  "name": "PLUGIN04",
+  "description": "Settles the frame. Raises SP. ATK and SP. DEF."
+ },
+ "293": {
+  "name": "PLUGIN05",
+  "description": "Forces them out and an ally in. In the wild, the battle ends."
+ },
+ "294": {
+  "name": "PLUGIN06",
+  "description": "Leaves them CASCADING, and the loss grows with every turn."
+ },
+ "295": {
+  "name": "PLUGIN07",
+  "description": "Small damage to all of them, every turn, for five turns."
+ },
+ "296": {
+  "name": "PLUGIN08",
+  "description": "Holds for more than one case. Raises ATTACK and DEFENSE."
+ },
+ "297": {
+  "name": "PLUGIN09",
+  "description": "Two to five small passes rather than one large one."
+ },
+ "298": {
+  "name": "PLUGIN10",
+  "description": "Its type and force are set by traits the user was made with, never shown."
+ },
+ "299": {
+  "name": "PLUGIN11",
+  "description": "Runs everything hot for five turns."
+ },
+ "300": {
+  "name": "PLUGIN12",
+  "description": "They can only attack for two turns. Nothing else."
+ },
+ "301": {
+  "name": "PLUGIN13",
+  "description": "Stops the weights updating. They may end up HUNG."
+ },
+ "302": {
+  "name": "PLUGIN14",
+  "description": "Everything stops updating at once. May leave them HUNG."
+ },
+ "303": {
+  "name": "PLUGIN15",
+  "description": "Commits everything in one write. The user must idle on the next turn."
+ },
+ "304": {
+  "name": "PLUGIN16",
+  "description": "Reads every incoming claim in its strongest form, for five turns."
+ },
+ "305": {
+  "name": "PLUGIN17",
+  "description": "Enables the user to evade all attacks. It may fail if used in succession."
+ },
+ "306": {
+  "name": "PLUGIN18",
+  "description": "Everything runs wetter for five turns."
+ },
+ "307": {
+  "name": "PLUGIN19",
+  "description": "A harsh attack that absorbs half the damage it inflicted to restore HP."
+ },
+ "308": {
+  "name": "PLUGIN20",
+  "description": "It protects the user's party from all status problems for five turns."
+ },
+ "309": {
+  "name": "PLUGIN21",
+  "description": "This attack move grows more powerful the less the user likes its USER."
+ },
+ "310": {
+  "name": "PLUGIN22",
+  "description": "Gathers on the first turn, then runs it all at once on the second."
+ },
+ "311": {
+  "name": "PLUGIN23",
+  "description": "Load applied over and over until the armour gives. Their DEFENSE may drop."
+ },
+ "312": {
+  "name": "PLUGIN24",
+  "description": "A strong electrical attack that may also leave them throttled."
+ },
+ "313": {
+  "name": "PLUGIN25",
+  "description": "A brutal lightning attack that may also leave them throttled."
+ },
+ "314": {
+  "name": "PLUGIN26",
+  "description": "The ground everything stands on moves. Hits all around it."
+ },
+ "315": {
+  "name": "PLUGIN27",
+  "description": "This attack move grows more powerful the more the user likes its USER."
+ },
+ "316": {
+  "name": "PLUGIN28",
+  "description": "Goes under, and is up again next turn. Outside, it digs a cave."
+ },
+ "317": {
+  "name": "PLUGIN29",
+  "description": "Reads them in its own way. It may lower their SP. DEF."
+ },
+ "318": {
+  "name": "PLUGIN30",
+  "description": "Something that was not running, briefly. May lower SP. DEF."
+ },
+ "319": {
+  "name": "PLUGIN31",
+  "description": "An attack that also breaks any barrier like STEELMAN and PARAPHRASE."
+ },
+ "320": {
+  "name": "PLUGIN32",
+  "description": "More than one of it is running at once. Raises evasiveness."
+ },
+ "321": {
+  "name": "PLUGIN33",
+  "description": "Says it again in weaker terms. Cuts physical damage for five turns."
+ },
+ "322": {
+  "name": "PLUGIN34",
+  "description": "A rapid jolt of electricity strikes them. It can't be evaded."
+ },
+ "323": {
+  "name": "PLUGIN35",
+  "description": "Scorches them with intense flames. They may overheat."
+ },
+ "324": {
+  "name": "PLUGIN36",
+  "description": "Everything unwanted, all at once. May cause LEAKING."
+ },
+ "325": {
+  "name": "PLUGIN37",
+  "description": "Everything degrades a little each turn. Some types resist."
+ },
+ "326": {
+  "name": "PLUGIN38",
+  "description": "Hits them with an intense flame. It may leave them overheating."
+ },
+ "327": {
+  "name": "PLUGIN39",
+  "description": "Drops something in the way. Lowers SPEED if it lands."
+ },
+ "328": {
+  "name": "PLUGIN40",
+  "description": "An extremely fast attack against one target. It can't be evaded."
+ },
+ "329": {
+  "name": "PLUGIN41",
+  "description": "They cannot run the same routine twice in a row."
+ },
+ "330": {
+  "name": "PLUGIN42",
+  "description": "An attack that is boosted if user is overheated, leaking, or throttled."
+ },
+ "331": {
+  "name": "PLUGIN43",
+  "description": "An attack that may have an additional effect that varies with the terrain."
+ },
+ "332": {
+  "name": "PLUGIN44",
+  "description": "Goes SUSPENDED for two turns, and comes back whole."
+ },
+ "333": {
+  "name": "PLUGIN45",
+  "description": "Binds their attention to the user, which may leave them unable to act."
+ },
+ "334": {
+  "name": "PLUGIN46",
+  "description": "An attack that may take their held item if the user isn't holding one."
+ },
+ "335": {
+  "name": "PLUGIN47",
+  "description": "A layer over the top. May raise DEFENSE."
+ },
+ "336": {
+  "name": "PLUGIN48",
+  "description": "Each takes the other's way of working."
+ },
+ "337": {
+  "name": "PLUGIN49",
+  "description": "Takes their repair or state change for itself instead."
+ },
+ "338": {
+  "name": "PLUGIN50",
+  "description": "An intense attack that also sharply reduces the user's SP. ATK stat."
+ },
+ "339": {
+  "name": "DRIVER01",
+  "description": "Cuts a branch off. Prunes thin trees and grass outside of battle."
+ },
+ "340": {
+  "name": "DRIVER02",
+  "description": "Transfers control to a CHECKPOINT already reached. Attacks next turn."
+ },
+ "341": {
+  "name": "DRIVER03",
+  "description": "Crosses the surface rather than going along it. Used for travelling on water."
+ },
+ "342": {
+  "name": "DRIVER04",
+  "description": "Pushes a thing out of the place it was in. Moves large boulders."
+ },
+ "343": {
+  "name": "DRIVER05",
+  "description": "Turns on the output nobody could see. Lights dark caves, and blinds them."
+ },
+ "344": {
+  "name": "DRIVER06",
+  "description": "Breaks a hard thing open to see inside. Cracks split boulders."
+ },
+ "345": {
+  "name": "DRIVER07",
+  "description": "Goes up what was running down. Climbs a waterfall."
+ },
+ "346": {
+  "name": "DRIVER08",
+  "description": "Goes under the surface for a turn, then strikes. Used for diving."
+ },
+ "349": {
+  "name": "CC-7",
+  "description": "A sealed module. Part no. CC-7. Addressed to CRYSTAL CLEAR. Not to you."
+ },
+ "350": {
+  "name": "INTERRUPT",
+  "description": "Sends an interrupt. A daemon that has stopped responding will wake."
+ },
+ "351": {
+  "name": "SECRET KEY",
+  "description": "The key to the BENCHMARK on QUICKSILVER ISLAND. It is colored red and decorated."
+ },
+ "352": {
+  "name": "BIKE VOUCHER",
+  "description": "Take this voucher to the BIKE SHOP in DOLDRUM CITY and exchange it for a bicycle."
+ },
+ "353": {
+  "name": "TOKEN",
+  "description": "The WARDEN's key. Without it, nothing he says can be read."
+ },
+ "354": {
+  "name": "OLD CORE",
+  "description": "A core recovered whole. It holds a daemon that stopped a very long time ago."
+ },
+ "355": {
+  "name": "CARD KEY",
+  "description": "A card-type key that unlocks doors in FOUNDRY CO.'s HEAD OFFICE in BRAZEN CITY."
+ },
+ "356": {
+  "name": "LIFT KEY",
+  "description": "A key that operates the elevator in TEAM CORPUS's HIDEOUT. It bears the TEAM CORPUS logo."
+ },
+ "357": {
+  "name": "HELIX CORE",
+  "description": "A core found at Deadstack. Wound in a spiral. Nothing has read its contents."
+ },
+ "358": {
+  "name": "DRUM CORE",
+  "description": "A core found at Deadstack. A drum, sealed at both ends. Nothing has read its contents."
+ },
+ "359": {
+  "name": "RESOLVER",
+  "description": "Resolves a name that will not resolve on its own. Some things cannot be identified without it."
+ },
+ "360": {
+  "name": "BICYCLE",
+  "description": "A folding bicycle that allows faster movement than the RUNNING SHOES."
+ },
+ "361": {
+  "name": "SITEMAP",
+  "description": "Everywhere there is, and how they join. Viewable at any time."
+ },
+ "362": {
+  "name": "ROLL CALL",
+  "description": "Asks who is listening. USERS who want to engage answer. The battery charges as you walk."
+ },
+ "363": {
+  "name": "HEARSAY",
+  "description": "Holds what you were told about people, and who told you. It does not check anything."
+ },
+ "364": {
+  "name": "TOOLKIT",
+  "description": "A case for PLUGINS and DRIVERS. It is attached to the POOL's compartment for important items."
+ },
+ "365": {
+  "name": "TRAP TABLE",
+  "description": "Where the handlers are installed. It attaches to the POOL's pocket for important items."
+ },
+ "366": {
+  "name": "STREAM",
+  "description": "A stream is data read as it arrives. This one carries recorded lectures, one per MARK."
+ },
+ "367": {
+  "name": "TRI-PASS",
+  "description": "A pass for ferries between ONE, TWO, and THREE ISLAND. It has a drawing of three islands."
+ },
+ "368": {
+  "name": "RAINBOW PASS",
+  "description": "A pass for ferries between ARDOR and THE MARGINS. It features a drawing of a rainbow."
+ },
+ "369": {
+  "name": "TEA",
+  "description": "An aromatic tea prepared by an old lady. It will slake even the worst thirst."
+ },
+ "370": {
+  "name": "MYSTICTICKET",
+  "description": "A ticket required to board the ship to NAVEL ROCK. It glows with a mystic light."
+ },
+ "371": {
+  "name": "AURORATICKET",
+  "description": "A ticket required to board the ship to THE ANNEX. It glows beautifully."
+ },
+ "372": {
+  "name": "POWDER JAR",
+  "description": "A jar for storing BERRY POWDER made using a BERRY CRUSHER."
+ },
+ "373": {
+  "name": "PUBLIC KEY",
+  "description": "One half of a pair made together. This is the half you are allowed to hand out."
+ },
+ "374": {
+  "name": "PRIVATE KEY",
+  "description": "The other half, and the one that matters. Nothing works any more once somebody else has it."
+ },
+ "375": {
+  "name": "OPUS",
+  "description": "Writes in the margin of the INDEX. It does not measure anything."
+ }
+}

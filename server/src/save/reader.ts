@@ -7,6 +7,7 @@
 import layoutJson from "../../data/save_layout.json" with { type: "json" };
 import speciesJson from "../../data/species.json" with { type: "json" };
 import charmapJson from "../../data/charmap.json" with { type: "json" };
+import itemsJson from "../../data/items.json" with { type: "json" };
 
 export type Layout = typeof layoutJson;
 export const LAYOUT: Layout = layoutJson;
@@ -14,6 +15,7 @@ export const LAYOUT: Layout = layoutJson;
 type SpeciesRow = { constant: string; national: number | null; name: string; types: string[]; category: string | null };
 const SPECIES = speciesJson as unknown as Record<string, SpeciesRow>;
 const CHARS = (charmapJson as { bytes: Record<string, string> }).bytes;
+const ITEMS = itemsJson as unknown as Record<string, { name: string; description: string }>;
 
 export interface PartyDaemon {
   slot: number;            // 0-5 in the party
@@ -25,6 +27,8 @@ export interface PartyDaemon {
   level: number;
   friendship: number;
   moves: number[];         // its four routines' move ids, 0 for an empty slot (C-18: the streaks)
+  heldItem: number;        // C-31: the item it holds, 0 for none -- it goes with it to the device
+  holding: string | null;  // that item's name, as the game names it
   away: boolean;           // on the companion's device (T-358)
   asked: boolean;          // the game's half of a send or return, waiting for the app
 }
@@ -112,6 +116,7 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
   if (sum !== v.getUint16(28, true)) throw new Error(`party slot ${slot}: the record's checksum fails`);
   const growth = ORDERS[personality % 24].indexOf("G") * 12;
   const species = sv.getUint16(growth, true);
+  const heldItem = sv.getUint16(growth + 2, true);
   const attacks = ORDERS[personality % 24].indexOf("A") * 12;
   const moves = [0, 1, 2, 3].map((k) => sv.getUint16(attacks + 2 * k, true));
   return {
@@ -121,6 +126,8 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
     level: rec.length > l.level_offset ? rec[l.level_offset] : 0,
     friendship: sv.getUint8(growth + 9),
     moves,
+    heldItem,
+    holding: heldItem ? ITEMS[String(heldItem)]?.name ?? `item #${heldItem}` : null,
     away: !!(flags & (1 << l.away_bit)),
     asked: !!(flags & (1 << l.asked_bit)),
   };

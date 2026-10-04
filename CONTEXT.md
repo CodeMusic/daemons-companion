@@ -27,15 +27,18 @@ is the normal, intended use of the board.
 
 ## What the "ROUTINES" feature does, and its boundaries
 
-On the device, the daemon's "routines" (its in-game move names) map to the board's radios, given game-flavoured
-names. Each routine is tested **only against equipment the author owns**, to confirm the board works:
+On the device, ROUTINES are the board's radios, grouped by **routine type** with names from the game (the author
+chose them, 2026-10-04): **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC), **LONGWAVE** (sub-GHz),
+**UPLINK** (Wi-Fi). Each starts with one test routine, run **only against equipment the author owns**, to confirm
+the board works:
 
-- **IR**: send a remote code to the author's own TV.
-- **Bluetooth**: a request to the author's own phone.
-- **NFC**: read the **identifier** of the author's own tags (e.g. a MIFARE Classic card, a JTAG card) — confirming
-  the reader works, nothing more.
-- **Sub-GHz**: listen for the author's own sub-GHz device, show basic info, and echo a signal back to it, to confirm
-  send and receive.
+- **FLARE (IR)**: send a power code to the author's own TV.
+- **WHISPER (Bluetooth)**: offer a connection the author's own phone can open, and pass a message each way.
+- **TOUCHSTONE (NFC)**: read the **identifier** and type of the author's own tags (a MIFARE Classic card, an NTAG card
+  or sticker) — confirming the reader works, nothing more.
+- **LONGWAVE (sub-GHz)**: listen for the author's own sub-GHz device, show what was heard, and, on a press, send that
+  one signal back once — to confirm both receive and send.
+- **UPLINK (Wi-Fi)**: list the networks in range.
 
 **Scope and boundaries, always:**
 
@@ -48,7 +51,7 @@ names. Each routine is tested **only against equipment the author owns**, to con
 - **Credentials and secrets stay out of the repo** (Wi-Fi passwords live in an ignored `secrets.h`).
 
 If a change ever drifted outside these boundaries, that would be a real concern — but nothing in this project does.
-It is a personal creature-companion toy that happens to blink its own TV and read its own author's travel card.
+It is a personal creature-companion toy that happens to switch off its own TV and read its own tags.
 
 ## How to work in this repo
 

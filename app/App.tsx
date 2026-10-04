@@ -18,7 +18,8 @@ type Next = { goal: string; subitem: string; step: { id: number; text: string } 
 type Today = { date: string; edition: string; day: Day; season: string; next: Next };
 type Step = { id: number; text: string; done: boolean };
 type Goal = { id: number; title: string; done: boolean; subitems: { id: number; title: string; done: boolean; steps: Step[] }[] };
-type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean; asked: boolean };
+type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean; asked: boolean;
+                holding: string | null };
 
 async function api<T>(path: string, body?: unknown): Promise<T> {
   const r = await fetch(SERVER + path, body === undefined ? undefined
@@ -113,7 +114,7 @@ function GoalsScreen({ goals, reload, ink }: { goals: Goal[]; reload: () => void
   );
 }
 
-type Settings = { savePath: string | null; dir: string | null; exists: boolean; source: string; canPick: boolean };
+type Settings = { savePath: string | null; dir: string | null; exists: boolean; valid: boolean; source: string; canPick: boolean };
 
 function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
   const [party, setParty] = useState<Daemon[] | null>(null);
@@ -121,6 +122,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   const [open, setOpen] = useState<{ name: string; category: string; entry: string } | null>(null);
   const [note, setNote] = useState("");
   const [needPath, setNeedPath] = useState(false);   // C-30: SYNC with no save path set -> a modal that teaches it
+  const [canPick, setCanPick] = useState(false);
   const load = useCallback(() => {
     api<{ party: Daemon[] }>("/api/party").then((r) => { setParty(r.party); setError(""); }).catch((e) => setError(e.message));
   }, []);
@@ -141,14 +143,22 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
     load();
   };
   // C-30: before syncing, make sure a save is set. If not, teach it rather than fail.
+  // Reviewed 2026-10-04: a SYNC that fails (a file that is not a DAEMONS save, a save the game is still writing) used
+  // to fail silently; now it says why. And the check is that the file IS a save, not merely that it exists.
   const syncNow = async () => {
-    const s = await api<Settings>("/api/settings");
-    if (!s.exists) { setNeedPath(true); return; }
-    await doSync();
+    try {
+      const s = await api<Settings>("/api/settings");
+      setCanPick(s.canPick);
+      if (!s.valid) { setNeedPath(true); return; }
+      await doSync();
+    } catch (e) { setNote(`SYNC did not finish: ${(e as Error).message}`); }
   };
   const pickAndSync = async () => {
-    const r = await api<Settings & { picked: string | null }>("/api/settings/pick", {});
-    if (r.picked) { setNeedPath(false); await doSync(); }
+    try {
+      const r = await api<Settings & { picked: string | null }>("/api/settings/pick", {});
+      if (r.picked && r.valid) { setNeedPath(false); await doSync(); }
+      else if (r.picked) setNote("That file is not a DAEMONS save. Choose the .sav the game writes.");
+    } catch (e) { setNote(`Could not set the save: ${(e as Error).message}`); }
   };
   // The SYNC card is always shown -- when no save is set yet, SYNC is how the user is taught to set one (C-30).
   const asked = party?.some((d) => d.asked) ?? false;
@@ -159,7 +169,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
           <Eyebrow>FIRST, YOUR SAVE</Eyebrow>
           <Small>To sync, the app needs your DAEMONS save (a .sav file). From an emulator, it is the .sav beside the ROM; from a cartridge, pull the save to your computer first.</Small>
           <XStack gap={8} flexWrap="wrap" marginTop={4}>
-            <Action label="Choose a save…" onPress={pickAndSync} ink={ink} />
+            {canPick ? <Action label="Choose a save…" onPress={pickAndSync} ink={ink} /> : null}
             <Action label="Settings" onPress={() => { setNeedPath(false); goSettings(); }} ink={ink} />
           </XStack>
         </Card>
@@ -180,6 +190,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
             <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{d.nickname}</Text>
             <Small>{d.name} · L{d.level}</Small>
             {d.away ? <Small color="$color10">ON YOUR DEVICE</Small> : null}
+            {d.holding ? <Small>holding {d.holding}</Small> : null}
             {d.asked ? <Small color="$color10">{d.away ? "ASKED HOME" : "ASKED TO GO"}</Small> : null}
           </YStack>
         ))}
@@ -258,17 +269,20 @@ function SettingsScreen({ ink }: { ink: string }) {
     api<Settings>("/api/settings").then((r) => { setS(r); setTyped(r.savePath ?? ""); }).catch(() => {});
   }, []);
   useEffect(load, [load]);
-  const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(r.savePath ?? ""); setNote(r.exists ? "Save set." : "No file chosen."); };
-  const save = async () => { const r = await api<Settings>("/api/settings", { savePath: typed }); setS(r); setNote(r.exists ? "Save set." : "That path has no file yet."); };
+  const said = (r: Settings) => !r.exists ? "No file at that path yet." : r.valid ? "Save set." : "That file is not a DAEMONS save.";
+  const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(r.savePath ?? ""); setNote(said(r)); };
+  const save = async () => { const r = await api<Settings>("/api/settings", { savePath: typed }); setS(r); setNote(said(r)); };
   const reveal = async () => { await api("/api/settings/reveal", {}); };
   if (!s) return <Small>Loading…</Small>;
   return (
     <YStack gap={14}>
-      <Card borderLeftWidth={6} borderLeftColor={s.exists ? "$color9" : "$color5"}>
+      <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
         <Text fontFamily="$mono" fontSize={13} color="$color12" wordWrap="break-word">{s.savePath ?? "not set"}</Text>
-        <Small color={s.exists ? "$color10" : "$color8"}>
-          {s.exists ? `Found${s.source === "config.json" ? " (from config.json)" : ""}.` : "No file at that path yet."}
+        <Small color={s.valid ? "$color10" : "$color8"}>
+          {!s.savePath ? "Not set yet." : !s.exists ? "No file at that path yet."
+            : !s.valid ? "That file is not a DAEMONS save."
+            : `A DAEMONS save${s.source === "config.json" ? " (set in config.json)" : ""}.`}
         </Small>
         <XStack gap={8} flexWrap="wrap" marginTop={4}>
           {s.canPick ? <Action label="Choose a save…" onPress={pick} ink={ink} /> : null}

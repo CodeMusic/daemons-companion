@@ -87,8 +87,12 @@ python3 ../DAEMONS/tools/companion_export.py --write   # write server/data/
 
 ## Settings
 
-The server runs on safe defaults with no settings at all: **it reads no save and calls no model.** To change that,
-copy `server/config.example.json` to `server/config.json` (never committed) and edit it:
+**The save path is easiest set in the app**: open the **SETTINGS** tab, click *Choose a save…* (a native file picker
+on Mac) or type the path, and *Open the folder* shows where to put one. What you set there overrides `config.json` and
+is kept by the server, so SYNC just works. (If you SYNC before setting one, the app walks you through it.)
+
+Everything else is in `server/config.json` (copy `server/config.example.json`; never committed). The server runs on
+safe defaults with no config at all: **it reads no save and calls no model.**
 
 | | |
 |---|---|
@@ -118,6 +122,8 @@ JSON in, JSON out, on this machine only.
 
 ## Read next
 
+- [**CONTEXT.md**](CONTEXT.md) -- what this project is and who it is for (read first).
+- [**docs/FIELD-GUIDE.md**](docs/FIELD-GUIDE.md) -- a walk through everything, to try it.
 - [**docs/vision.md**](docs/vision.md) -- what it is for and what it should feel like.
 - [**docs/PLAN.md**](docs/PLAN.md) -- how each piece is built, and the questions still open.
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio, RoverCub and their kin already did.

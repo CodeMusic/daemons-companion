@@ -172,14 +172,55 @@ the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's s
   be in the mesh though out of radio range. The T-Embed also carries a CC1101 (sub-GHz), which RadioLib can drive;
   it is kept for that later work.
 
-## 10. Later, by design
+## 10. The device's ROUTINES -- its radios, in the game's words (the user, 2026-10-04)
+
+The handheld is a maker board with several radios (IR, Bluetooth, NFC, sub-GHz, Wi-Fi; `CONTEXT.md`). On the device,
+the daemon's **ROUTINES** drive them -- and **using a routine at all keeps the daemon happy** (C-13), because tending
+your companion and using it are the same act.
+
+**How it reads, in the game's frame.** The game's own **SIGNAL** type is "a carrier" (DAEMONS vision 2.2) -- so the
+radios are SIGNAL's family, each a *routine type*. In the menu:
+
+1. **Routine type** -- one of the board's radios, a game name with the raw name in brackets, e.g. `WHISPER (Bluetooth)`.
+2. **A routine under it** -- a named action. The list grows over time; **empty is fine**, with a **back** button.
+3. **Run it.**
+
+**The proposed names (the user to confirm -- grounded in the game; the raw name always in brackets):**
+
+| radio | proposed name | why |
+|---|---|---|
+| **IR** | `FLARE` *(IR)* | infrared is invisible light, thrown in a line -- a flare is a directed burst of it |
+| **Bluetooth** | `WHISPER` *(Bluetooth)* | the short-range, person-to-person link: a word said close |
+| **NFC** | `TOUCHSTONE` *(NFC)* | you touch a tag to it; a touchstone is a thing you press against to read what it is |
+| **sub-GHz** | `LONGWAVE` *(sub-GHz)* | the one that reaches furthest, heard on the open air |
+| **Wi-Fi** | `UPLINK` *(Wi-Fi)* | the known network link home |
+
+*(Alternatives if any jar: IR `GLIMMER`/`PILOT`; Bluetooth `TETHER`/`HANDSHAKE`; NFC `IMPRINT`/`CONTACT`;
+sub-GHz `CARRIER`/`AETHER`; Wi-Fi `GRID`. `MESH` is held for the LoRa future, C-16.)*
+
+**One test routine per type first (C-28), each against the author's own gear, to confirm the radio works:**
+
+- **FLARE (IR)** -- send a power code to the author's own TV and see it turn off.
+- **WHISPER (Bluetooth)** -- a request to the author's own phone.
+- **TOUCHSTONE (NFC)** -- read the **identifier** of the author's own tag (a MIFARE Classic card, a JTAG card): just
+  the ID, to confirm the reader. (The board has no 125 kHz RFID, so door fobs are out of scope.)
+- **LONGWAVE (sub-GHz)** -- listen for the author's own sub-GHz device, show basic info, and echo a signal back, to
+  confirm both receive and send.
+
+**Boundaries (see `CONTEXT.md`):** every test is against the author's own equipment, to answer "does my board's radio
+work", never to reach anyone else's devices and never to defeat a lock, credential, or payment system.
+
+**Build order:** the names are confirmed by the user first; then the firmware, with the board present, one radio at a
+time, each verified on the author's own gear before the next.
+
+## 11. Later, by design
 
 - **The LoRa epic**: every unit a node in a **mesh**, and the AI-powered daemons on them **talking to each other**.
 - **Trading** between devices: complicated -- it means editing two saves, and returning means more. Back burner.
 - **Battling** between devices: back burner; the core comes first.
 - **Many users**, accounts, hosting (C-11).
 
-## 11. What comes from where
+## 12. What comes from where
 
 | Source | Taken |
 |---|---|
@@ -189,7 +230,7 @@ the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's s
 | Musai | the three-pass AI |
 | DAEMONS | the daemon art (`gfx/daemons/`), names and species table (exported), the week's table, the save format |
 
-## 12. Phases
+## 13. Phases
 
 1. **Foundations (the anniversary sprint)**: this plan, the repo, the save reader on copies, the server and app
    skeletons talking to each other, the week's table exported from DAEMONS.

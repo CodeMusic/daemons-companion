@@ -1,0 +1,87 @@
+# Field guide: the companion app
+
+A path to walk through everything new, in order. Each step says **what to do** and **what you should see**. Tell me
+wherever it does not match.
+
+Prereqs: Node 24, and a **copy** of a DAEMONS save (never your only copy). An emulator save (the `.sav` beside the
+ROM) is easiest.
+
+---
+
+## 1. Start it
+
+```sh
+cd daemons-companion
+./bindCompanion.sh
+```
+
+- **See:** the site opens at <http://localhost:8081>, five tabs across the top: **TODAY · GOALS · DAEMON · PROFILE ·
+  SETTINGS**. The whole page wears the day's colour (Sunday is a deep red).
+
+## 2. Set your save (this is the part that confused you)
+
+Go to **SETTINGS**.
+
+- **See:** "YOUR DAEMONS SAVE" with a path and where it came from. If it says **(from config.json)**, that is why
+  SYNC "just worked" earlier — a path was already set in `server/config.json`. If it is unset, it says so.
+- **Do:** click **Choose a save…** and pick your save copy (a native file dialog on your Mac). Or paste the path in
+  **OR TYPE THE PATH** and click Save.
+- **Do:** click **Open the folder** — Finder opens at the save's folder, so you always know where to put one.
+- **Tip for the emulator:** point the emulator and the app at the **same `.sav` file**, and the round trip below just
+  works. For a cartridge, pull the save to your computer, set that path, and re-pull after you play.
+
+**Learn-the-system check:** in SETTINGS, type a path that does not exist and Save; go to **DAEMON** and click **SYNC**.
+
+- **See:** a card — "FIRST, YOUR SAVE" — explaining what a save is, with **Choose a save…** right there. (Set your
+  real save back afterwards.)
+
+## 3. The day, and a goal
+
+- **TODAY:** the day's colour, note and virtue; the season; **THE ONE THING** — the single next step. Click **Done**
+  and it advances.
+- **GOALS:** type a goal, click **Break it down**. (The AI is off by default, so you get a marked example plan —
+  that's expected.) Tick steps off.
+
+## 4. Your party, and the PROFILE
+
+- **DAEMON:** your party, drawn as the game draws them (type colours, streak markers). Click one to read its INDEX
+  entry in your edition's voice.
+- **PROFILE:** your trainer name and ID No., play time, INDEX counts, the eight MARKS, DIPLOMA, OPUS, and where you
+  last saved. It also says whether this is **your companion's game** (the first save you SYNC becomes it).
+
+## 5. The AWAY round trip (the heart of it)
+
+You need the game and the app pointed at the same save file; **close the game before each SYNC** (a running emulator
+writes its own copy back).
+
+1. **First SYNC links the save.** In the app, **DAEMON → SYNC**.
+   - **See:** "Linked. Your game now offers SEND…" (the first time).
+2. **In the game**, open a party daemon's menu.
+   - **See:** a **SEND** option (it only appears once the save is linked). Choose it; the game saves.
+3. **Close the game. SYNC in the app.**
+   - **See:** "<name> is with your device now." In the app's party, that daemon is **washed out / ON YOUR DEVICE**.
+4. **Bring it home:** in the game, the same daemon's menu now offers **CALL HOME**. Choose it, save, close, **SYNC**.
+   - **See:** "<name> is home."
+5. **One at a time:** with one daemon AWAY, try to SEND a second.
+   - **See (in game):** "One at a time: <name> is with your device now."
+6. **The emergency way (no app):** with a daemon AWAY, choose **CALL HOME** and answer **NO**.
+   - **See:** a warning, then "Bring <name> home without the app?" — yes brings it home; the game tells you to SYNC
+     before sending another. Next **SYNC** settles it.
+7. **Married to one save:** SYNC a *different* game's save.
+   - **See:** "This save belongs to a different game…"; PROFILE says whose game the companion carries for. It is shown
+     but never written.
+
+## 6. The handheld (optional, if the board is set up)
+
+See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short: `pio run -t upload`, then either
+`usb_bridge.py` over the cable or Wi-Fi via `include/secrets.h`. The screen shows the day, the one step, and the
+daemon you carry; the encoder turns pages and its press ticks the step off.
+
+*(The radio ROUTINES — IR, Bluetooth, NFC, sub-GHz — are designed but not built yet; the names are waiting on your
+confirmation. See PLAN §10.)*
+
+## What to tell me
+
+- Anywhere the screen did not match "See".
+- Wording that feels off (it is all draft).
+- Anything that felt confusing to reach.

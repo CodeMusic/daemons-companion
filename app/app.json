@@ -7,7 +7,16 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.codemusic.daemonscompanion",
+      "appleTeamId": "DR37K85CJL",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        },
+        "NSLocalNetworkUsageDescription": "To reach your DAEMONS companion on your computer, at home.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,6 +29,17 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Your steps today count toward your walking goal, and your daemon is glad of the walk.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
+        }
+      ]
+    ]
   }
 }

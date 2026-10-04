@@ -388,6 +388,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, store.phones());
       }
       // the server listens on the network (for the phone and the board) -- kept here, read at the next start
+      if (req.method === "GET" && path === "/api/settings/network")
+        return send(res, 200, { open: store.getSetting("host") === "0.0.0.0", now: cfg.host === "0.0.0.0", address: lanAddress(), port: cfg.port });
       if (req.method === "POST" && path === "/api/settings/network") {
         const b = await body(req);
         store.setSetting("host", b.open ? "0.0.0.0" : "127.0.0.1");

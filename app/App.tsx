@@ -8,9 +8,20 @@ import { useCallback, useEffect, useState } from "react";
 import { Image, Platform } from "react-native";
 import { Button, Input, ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import config, { DAYS, WEEK_COLOURS } from "./tamagui.config";
+import * as SecureStore from "expo-secure-store";
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
-const SERVER = process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
+// C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
+// phone's secure storage; on the site, the server is this machine and needs no key.
+let SERVER = process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
+let TOKEN: string | null = null;
+const ON_PHONE = Platform.OS !== "web";
+async function loadConnection(): Promise<boolean> {
+  if (!ON_PHONE) return true;
+  const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
+  if (server && token) { SERVER = server; TOKEN = token; return true; }
+  return false;
+}
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string };
@@ -22,8 +33,9 @@ type Daemon = { slot: number; species: number; name: string; nickname: string; l
                 holding: string | null };
 
 async function api<T>(path: string, body?: unknown): Promise<T> {
-  const r = await fetch(SERVER + path, body === undefined ? undefined
-    : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  const auth: Record<string, string> = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
+  const r = await fetch(SERVER + path, body === undefined ? { headers: auth }
+    : { method: "POST", headers: { "content-type": "application/json", ...auth }, body: JSON.stringify(body) });
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? `the server answered ${r.status}`);
   return j as T;
@@ -666,6 +678,97 @@ function DeviceScreen({ ink }: { ink: string }) {
   );
 }
 
+// ---- C-53: pairing this phone with the companion -- the address the site shows, and its code, once ----
+function PairScreen({ onPaired }: { onPaired: () => void }) {
+  const [server, setServer] = useState(""), [code, setCode] = useState(""), [name, setName] = useState("my phone");
+  const [error, setError] = useState("");
+  const pair = async () => {
+    try {
+      setError("");
+      const base = server.trim().replace(/\/$/, "").replace(/^(?!https?:\/\/)/, "http://");
+      const r = await fetch(base + "/api/pair", { method: "POST", headers: { "content-type": "application/json" },
+                                                  body: JSON.stringify({ code: code.trim(), name: name.trim() }) });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error ?? `the companion answered ${r.status}`);
+      await SecureStore.setItemAsync("server", base);
+      await SecureStore.setItemAsync("token", j.token);
+      SERVER = base; TOKEN = j.token;
+      onPaired();
+    } catch (e) { setError(`${(e as Error).message}. Is the companion running, and is it open to your network (Settings on the site)?`); }
+  };
+  return (
+    <YStack flex={1} backgroundColor="$color2" padding={24} paddingTop={80} gap={14}>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+      <Text fontSize={24} fontWeight="700" color="$color12">Pair this phone</Text>
+      <Small>On your computer, open the companion's site, then SETTINGS, PAIR A PHONE, and Show a code. Type its address and the code here.</Small>
+      <Input value={server} onChangeText={setServer} placeholder="http://10.0.0.100:4730" autoCapitalize="none" autoCorrect={false}
+             keyboardType="url" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+      <Input value={code} onChangeText={setCode} placeholder="six-digit code" keyboardType="number-pad" maxLength={6}
+             backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+      <Input value={name} onChangeText={setName} placeholder="this phone's name" maxLength={40}
+             backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+      <Action label="Pair" onPress={pair} ink="#fbfaf6" />
+      {error ? <Small color="$color9">{error}</Small> : null}
+    </YStack>
+  );
+}
+
+// ---- C-27, C-48: on the phone, today's steps from Apple Health go to the walking goal ----
+async function sendTodaysSteps(): Promise<number | null> {
+  if (Platform.OS !== "ios") return null;
+  const HK = require("@kingstinct/react-native-healthkit");
+  if (!HK.isHealthDataAvailable()) return null;
+  await HK.requestAuthorization({ toRead: ["HKQuantityTypeIdentifierStepCount"] });
+  const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+  const r = await HK.queryStatisticsForQuantity("HKQuantityTypeIdentifierStepCount", ["cumulativeSum"],
+                                                { filter: { date: { startDate: midnight, endDate: new Date() } }, unit: "count" });
+  const steps = Math.round(r?.sumQuantity?.quantity ?? 0);
+  await api("/api/walk", { steps });
+  return steps;
+}
+
+// ---- C-53, on the site: open the companion to the network, show a code, see and forget paired phones ----
+function PairCard({ ink }: { ink: string }) {
+  const [net, setNet] = useState<{ open: boolean; now: boolean; address: string | null; port: number } | null>(null);
+  const [code, setCode] = useState<string | null>(null);
+  const [phones, setPhones] = useState<{ name: string; paired: string; seen: string | null }[]>([]);
+  const load = useCallback(() => {
+    api<typeof net>("/api/settings/network").then(setNet).catch(() => {});
+    api<typeof phones>("/api/pair/phones").then(setPhones).catch(() => {});
+  }, []);
+  useEffect(load, [load]);
+  if (!net) return null;
+  const address = net.address ? `http://${net.address}:${net.port}` : "(no network address)";
+  return (
+    <Card>
+      <Eyebrow>PAIR A PHONE</Eyebrow>
+      <Small>The companion app on your phone talks to this computer once it is paired. It needs the companion open to your network.</Small>
+      <XStack gap={8} flexWrap="wrap" alignItems="center">
+        <Action label={net.open ? "Open to my network: yes" : "Open to my network: no"} ink={ink}
+                onPress={async () => { await api("/api/settings/network", { open: !net.open }); load(); }} />
+      </XStack>
+      {net.open !== net.now ? <Small color="$color9">Restart the companion for this to take effect (Ctrl-C, then ./bindCompanion.sh).</Small> : null}
+      {net.now ? (
+        <>
+          <Action label="Show a code" ink={ink} onPress={async () => setCode((await api<{ code: string }>("/api/pair/code", {})).code)} />
+          {code ? (
+            <YStack gap={2} marginTop={4}>
+              <Text fontFamily="$mono" fontSize={28} letterSpacing={6} fontWeight="700" color="$color12">{code}</Text>
+              <Small>{`On the phone, type the address ${address} and this code. It works once, for ten minutes.`}</Small>
+            </YStack>
+          ) : null}
+        </>
+      ) : null}
+      {phones.map((p) => (
+        <XStack key={p.name} alignItems="center" gap={8} paddingVertical={2}>
+          <Text flex={1} fontSize={15} color="$color12">{`${p.name}${p.seen ? "" : "  (not seen yet)"}`}</Text>
+          <Action label="Forget" ink={ink} onPress={async () => setPhones(await api("/api/pair/forget", { name: p.name }))} />
+        </XStack>
+      ))}
+    </Card>
+  );
+}
+
 const TABS = ["today", "goals", "daemon", "index", "device", "profile", "settings"] as const;
 
 function Shell() {
@@ -678,6 +781,8 @@ function Shell() {
     api<Goal[]>("/api/goals").then(setGoals).catch(() => {});
   }, []);
   useEffect(reload, [reload]);
+  // C-27, C-48: on the phone, today's steps from Apple Health, each time the app opens
+  useEffect(() => { if (ON_PHONE) sendTodaysSteps().then(() => reload()).catch(() => {}); }, [reload]);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's
   // theme, to look at all seven without waiting a week.
   const asked = Platform.OS === "web" ? new URLSearchParams(globalThis.location?.search ?? "").get("day")?.toLowerCase() : null;
@@ -687,8 +792,9 @@ function Shell() {
 
   const page = (
     <YStack flex={1} backgroundColor="$color2">
-      <YStack paddingTop={24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
+      <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
         <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <XStack gap={20} marginTop={12} role="tablist">
           {TABS.map((t) => (
             <YStack key={t} paddingVertical={10} borderBottomWidth={3} cursor="pointer" role="tab"
@@ -699,6 +805,7 @@ function Shell() {
             </YStack>
           ))}
         </XStack>
+        </ScrollView>
       </YStack>
       <ScrollView contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
         {error ? <Small>{error}</Small> : null}
@@ -709,6 +816,7 @@ function Shell() {
         {tab === "device" ? <DeviceScreen ink={ink} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
+        {tab === "settings" && !ON_PHONE ? <YStack marginTop={14}><PairCard ink={ink} /></YStack> : null}
       </ScrollView>
       <StatusBar style="dark" />
     </YStack>
@@ -717,9 +825,12 @@ function Shell() {
 }
 
 export default function App() {
+  // C-53: on the phone, pair first; on the site, the server is this machine
+  const [paired, setPaired] = useState<boolean | null>(ON_PHONE ? null : true);
+  useEffect(() => { loadConnection().then(setPaired); }, []);
   return (
     <TamaguiProvider config={config} defaultTheme="light">
-      <Shell />
+      {paired === null ? null : paired ? <Shell /> : <PairScreen onPaired={() => setPaired(true)} />}
     </TamaguiProvider>
   );
 }

@@ -1,8 +1,20 @@
 # The T-Embed CC1101: flashing and trying it
 
-The companion's first firmware (C-26) for the **LilyGO T-Embed CC1101**. It shows the day's colour, note and virtue,
-the season, **the one next step**, and the daemon you carry. **Turn the encoder** to go between TODAY and DAEMON.
-**Press it** and the step is done.
+The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's colour, note and virtue, the season,
+**the one next step**, the daemon you carry, and its **ROUTINES** -- the board's radios, in the game's words.
+
+**Controls:**
+
+| | |
+|---|---|
+| **turn the encoder** | TODAY, DAEMON, ROUTINES -- or move the choice in a list |
+| **press the encoder** | on TODAY, the step is done; on ROUTINES, open it; in a list, open or run what is chosen |
+| **the side key** | back one step |
+
+**ROUTINES** opens the routine types: **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC), **LONGWAVE**
+(Sub-GHz), **UPLINK** (Wi-Fi). They are wired one radio at a time, each tried on the board before the next; a type
+with nothing wired yet opens on "No routines yet". Today: **UPLINK / NETWORKS IN RANGE** lists the Wi-Fi networks
+around you (it joins nothing). Every routine you run is told to the server as tending your daemon (C-13).
 
 ## What you need
 

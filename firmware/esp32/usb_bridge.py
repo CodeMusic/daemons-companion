@@ -70,6 +70,14 @@ def main():
                     print("usb_bridge: step %d ticked off on the device" % step, flush=True)
                 except Exception as e:
                     print("usb_bridge: could not tick step %d (%s)" % (step, e), flush=True)
+            elif msg.startswith("INTERACT "):
+                # C-13: a routine was run on the device -- tending the daemon. Passed on as the device would over Wi-Fi.
+                parts = msg.split(" ", 2)
+                try:
+                    server_json(a.server, "/api/device/interact", {"kind": parts[1], "detail": parts[2] if len(parts) > 2 else ""})
+                    print("usb_bridge: the device ran %s" % (parts[2] if len(parts) > 2 else parts[1]), flush=True)
+                except Exception as e:
+                    print("usb_bridge: could not pass on an interaction (%s)" % e, flush=True)
             elif msg and not msg.startswith("HELLO"):
                 print("device: " + msg, flush=True)
 

@@ -8,22 +8,22 @@
 //             bridge answers with STATE lines. No network password needed; this is how it is first tried.
 // If both are there, a bridge that has spoken in the last 15 seconds wins.
 //
-// Turn the encoder: TODAY <-> DAEMON. Press it: the step is done.
+// Turn the encoder: TODAY, DAEMON, ROUTINES. Press it: the step is done (TODAY), or open ROUTINES. The side key: back.
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <TFT_eSPI.h>
+#include <WiFi.h>           // always: UPLINK's scan works over USB too, without joining a network
 
 #if __has_include("secrets.h")
 #include "secrets.h"
 #include <HTTPClient.h>
-#include <WiFi.h>
 #define COMPANION_HAS_WIFI 1
 #else
 #define COMPANION_HAS_WIFI 0
 #endif
 
-// LilyGO's own pin map (examples/utilities.h): the peripherals' power, and the encoder.
-static const int PIN_PWR_EN = 15, PIN_ENC_A = 4, PIN_ENC_B = 5, PIN_ENC_KEY = 0;
+// LilyGO's own pin map (examples/utilities.h): the peripherals' power, the encoder, and the side key (BOARD_USER_KEY).
+static const int PIN_PWR_EN = 15, PIN_ENC_A = 4, PIN_ENC_B = 5, PIN_ENC_KEY = 0, PIN_SIDE_KEY = 6;
 static const int W = 320, H = 170;                       // landscape
 static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000;
 
@@ -38,10 +38,37 @@ struct State {
   bool carrying = false; Daemon daemon;
 } st;
 
-enum Page { TODAY, DAEMON } page = TODAY;
+// ---- where you are -------------------------------------------------------------------------------------------------
+// HOME turns between TODAY, DAEMON and ROUTINES with the encoder. ROUTINES opens a list of routine TYPES, a type opens
+// its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the side key goes back.
+enum Page { TODAY, DAEMON, ROUTINES_PAGE };
+enum Screen { HOME, TYPES, LIST, RUN };
+Page page = TODAY;
+Screen screen = HOME;
+int typeAt = 0, routineAt = 0;
+String runResult;
 uint32_t usbSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
 String flash, lineIn;
 bool dirty = true;
+
+// ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
+// The user chose the names (2026-10-04): FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz), and
+// UPLINK (Wi-Fi). Each routine runs on the author's own gear only (CONTEXT.md). They are wired ONE RADIO AT A TIME, each
+// verified on the board before the next; a type with nothing wired yet opens on an empty list, which is fine.
+typedef String (*RoutineFn)();
+struct Routine { const char *name; RoutineFn run; };
+struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
+
+String runNetworksInRange();
+static const Routine UPLINK_ROUTINES[] = { { "NETWORKS IN RANGE", runNetworksInRange } };
+static const RoutineType TYPES_LIST[] = {
+  { "FLARE",      "IR",        nullptr,         0 },
+  { "WHISPER",    "Bluetooth", nullptr,         0 },
+  { "TOUCHSTONE", "NFC",       nullptr,         0 },
+  { "LONGWAVE",   "Sub-GHz",   nullptr,         0 },
+  { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES, 1 },
+};
+static const int TYPE_COUNT = sizeof(TYPES_LIST) / sizeof(TYPES_LIST[0]);
 
 // ---- colours: the day's colour, and words that can be read on it ------------------------------------------------
 static const uint16_t INK = 0x18E4, PAPER = 0xFFDE, QUIET = 0x8C51;
@@ -84,6 +111,11 @@ int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLi
   auto flush = [&]() { if (lines < maxLines) canvas.drawString(line, x, y + lines * lineH); lines++; line = ""; };
   for (unsigned i = 0; i <= text.length(); i++) {
     char c = i < text.length() ? text[i] : ' ';
+    if (c == '\n') {                         // a line of its own: finish the word and the line
+      if (word.length()) { line = line.length() ? line + " " + word : word; word = ""; }
+      flush();
+      continue;
+    }
     if (c != ' ') { word += c; continue; }
     if (!word.length()) continue;
     String tryLine = line.length() ? line + " " + word : word;
@@ -106,6 +138,41 @@ const char *linkName() {
 #endif
 }
 
+// The ROUTINES screens: a list with the day's colour behind the chosen row (TYPES, LIST), or what a routine found
+// (RUN). Turn to choose, press to open or run, the side key to go back.
+void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink) {
+  int y = 52 + i * 19;
+  if (i == at) canvas.fillRect(6, y - 2, W - 12, 18, day);
+  canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM);
+  canvas.setTextColor(i == at ? ink : PAPER);
+  canvas.drawString(text, 12, y);
+}
+
+void drawRoutines(uint16_t day) {
+  uint16_t ink = lightColour(st.colour) ? INK : PAPER;
+  const RoutineType &t = TYPES_LIST[typeAt];
+  canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+  if (screen == TYPES) {
+    canvas.drawString("ROUTINE TYPE", 10, 32);
+    for (int i = 0; i < TYPE_COUNT; i++)
+      listRow(i, typeAt, String(TYPES_LIST[i].name) + "  (" + TYPES_LIST[i].radio + ")", day, ink);
+  } else if (screen == LIST) {
+    canvas.drawString(String(t.name) + "  (" + t.radio + ")", 10, 32);
+    if (t.count == 0) {
+      wrap("No routines yet.", 12, 58, W - 24, 4, 27, 1, PAPER);
+      wrap("They arrive as each radio is wired and tried on the board.", 12, 92, W - 24, 2, 18, 3, QUIET);
+    } else {
+      for (int i = 0; i < t.count; i++) listRow(i, routineAt, t.routines[i].name, day, ink);
+    }
+  } else {   // RUN
+    canvas.drawString(String(t.name) + " / " + t.routines[routineAt].name, 10, 32);
+    wrap(runResult, 12, 54, W - 24, 2, 17, 6, PAPER);
+  }
+  canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+  canvas.drawString(screen == RUN ? "press: run again    side key: back" : "turn: choose    press: open    side key: back",
+                    10, H - 4);
+}
+
 void draw() {
   uint16_t day = hex565(st.colour), ink = lightColour(st.colour) ? INK : PAPER;
   canvas.fillSprite(INK);
@@ -116,7 +183,15 @@ void draw() {
   canvas.setTextDatum(MR_DATUM);
   canvas.drawString(linkName(), W - 8, 13);
 
-  if (!st.have) {
+  if (screen != HOME) {
+    drawRoutines(day);
+  } else if (page == ROUTINES_PAGE) {
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("ROUTINES", 10, 34);
+    wrap("The radios your daemon can use. Press to open.", 10, 58, W - 20, 4, 27, 3, PAPER);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("FLARE  WHISPER  TOUCHSTONE  LONGWAVE  UPLINK", 10, H - 6);
+  } else if (!st.have) {
     wrap("Looking for the companion.", 10, 40, W - 20, 4, 28, 2, PAPER);
     wrap(COMPANION_HAS_WIFI ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"
                             : "Run usb_bridge.py on the computer, or add include/secrets.h for Wi-Fi.",
@@ -202,19 +277,92 @@ void readEncoder() {
   int8_t now = (digitalRead(PIN_ENC_A) << 1) | digitalRead(PIN_ENC_B);
   encSum += table[(encLast << 2) | now];
   encLast = now;
-  if (encSum >= 4 || encSum <= -4) { page = page == TODAY ? DAEMON : TODAY; encSum = 0; dirty = true; }
+  if (encSum >= 4 || encSum <= -4) {
+    int step = encSum > 0 ? 1 : -1;
+    encSum = 0;
+    if (screen == HOME) page = (Page)((page + 3 + step) % 3);
+    else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
+    else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
+      routineAt = (routineAt + TYPES_LIST[typeAt].count + step) % TYPES_LIST[typeAt].count;
+    dirty = true;
+  }
 }
 
-bool keyWas = true; uint32_t keyAt = 0;
+// C-13: using the device is tending the daemon. Each routine run is told to the server -- over the cable through the
+// bridge (an INTERACT line), or over Wi-Fi -- where the daemon's life will read it.
+void report(const String &kind, const String &detail) {
+  if (usbLive()) { Serial.printf("INTERACT %s %s\n", kind.c_str(), detail.c_str()); return; }
+#if COMPANION_HAS_WIFI
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.setTimeout(3000);
+    http.begin(String(COMPANION_SERVER) + "/api/device/interact");
+    http.addHeader("content-type", "application/json");
+    http.POST("{\"kind\":\"" + kind + "\",\"detail\":\"" + detail + "\"}");
+    http.end();
+  }
+#endif
+}
+
+void runRoutine() {
+  const RoutineType &t = TYPES_LIST[typeAt];
+  runResult = "Running...";
+  screen = RUN;
+  draw();
+  runResult = t.routines[routineAt].run();
+  report("routine", String(t.name) + "/" + t.routines[routineAt].name);
+  dirty = true;
+}
+
+// The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
+void press() {
+  if (screen == HOME) {
+    if (page == TODAY) tick();
+    else if (page == ROUTINES_PAGE) { screen = TYPES; typeAt = 0; }
+  } else if (screen == TYPES) { screen = LIST; routineAt = 0; }
+  else if (screen == LIST) { if (TYPES_LIST[typeAt].count > 0) runRoutine(); }
+  else runRoutine();
+  dirty = true;
+}
+
+// The side key: back one step.
+void back() {
+  if (screen == RUN) screen = LIST;
+  else if (screen == LIST) screen = TYPES;
+  else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
+  dirty = true;
+}
+
+bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 void readKey() {
   bool up = digitalRead(PIN_ENC_KEY);
-  if (up != keyWas && millis() - keyAt > 30) { keyAt = millis(); keyWas = up; if (!up) tick(); }
+  if (up != keyWas && millis() - keyAt > 30) { keyAt = millis(); keyWas = up; if (!up) press(); }
+  bool sideUp = digitalRead(PIN_SIDE_KEY);
+  if (sideUp != sideWas && millis() - sideAt > 30) { sideAt = millis(); sideWas = sideUp; if (!sideUp) back(); }
+}
+
+// ---- UPLINK (Wi-Fi): the networks in range, by name and strength. Lists only; joins nothing. --------------------
+String runNetworksInRange() {
+#if !COMPANION_HAS_WIFI
+  WiFi.mode(WIFI_STA);           // over USB the radio is idle; it only listens for the length of the scan
+#endif
+  int n = WiFi.scanNetworks();
+  if (n <= 0) return n == 0 ? "No networks in range." : "The scan did not finish. Press to try again.";
+  String out = String(n) + (n == 1 ? " network in range:" : " networks in range:");
+  for (int i = 0; i < n && i < 6; i++) {
+    String name = WiFi.SSID(i);
+    if (!name.length()) name = "(hidden)";
+    out += "\n" + name + "  " + String(WiFi.RSSI(i)) + " dBm";
+  }
+  WiFi.scanDelete();
+  return out;
 }
 
 void setup() {
   pinMode(PIN_PWR_EN, OUTPUT); digitalWrite(PIN_PWR_EN, HIGH);
   Serial.begin(115200);
   pinMode(PIN_ENC_A, INPUT_PULLUP); pinMode(PIN_ENC_B, INPUT_PULLUP); pinMode(PIN_ENC_KEY, INPUT_PULLUP);
+  pinMode(PIN_SIDE_KEY, INPUT_PULLUP);
   encLast = (digitalRead(PIN_ENC_A) << 1) | digitalRead(PIN_ENC_B);
   tft.init(); tft.setRotation(3); tft.fillScreen(INK);
   pinMode(TFT_BL, OUTPUT); digitalWrite(TFT_BL, HIGH);

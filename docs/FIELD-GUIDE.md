@@ -73,12 +73,23 @@ writes its own copy back).
 
 ## 6. The handheld (optional, if the board is set up)
 
-See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short: `pio run -t upload`, then either
-`usb_bridge.py` over the cable or Wi-Fi via `include/secrets.h`. The screen shows the day, the one step, and the
-daemon you carry; the encoder turns pages and its press ticks the step off.
+See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, with the board plugged in:
 
-*(The radio ROUTINES — IR, Bluetooth, NFC, sub-GHz — are designed but not built yet; the names are waiting on your
-confirmation. See PLAN §10.)*
+```sh
+cd firmware/esp32
+pio run -t upload
+~/.platformio/penv/bin/python usb_bridge.py
+```
+
+- **See:** the day's band at the top with **USB** in the corner; **TODAY** shows the one step.
+- **Turn** the encoder: TODAY, DAEMON (the daemon you carry, and what it holds), **ROUTINES**.
+- **Press** on ROUTINES, then **turn** through FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE
+  (Sub-GHz), UPLINK (Wi-Fi). **Press** to open one; the **side key** goes back.
+- **UPLINK -> NETWORKS IN RANGE -> press:** the Wi-Fi networks around you, by name and strength.
+  - **See (in the bridge's window):** "the device ran UPLINK/NETWORKS IN RANGE" -- told to the server as tending your
+    daemon.
+- The other four open on "No routines yet": they are wired one radio at a time, each tried on your board before the
+  next (PLAN §10).
 
 ## What to tell me
 

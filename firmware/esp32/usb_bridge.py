@@ -30,11 +30,14 @@ def server_json(base, path, body=None):
         return json.loads(r.read())
 
 
-def find_port():
-    ports = sorted(glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/ttyACM*"))
-    if not ports:
-        sys.exit("usb_bridge: no device found -- is the T-Embed plugged in? Name its port if it is elsewhere.")
-    return ports[0]
+def find_port(wait=False):
+    while True:
+        ports = sorted(glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/ttyACM*"))
+        if ports:
+            return ports[0]
+        if not wait:
+            sys.exit("usb_bridge: no device found -- is the T-Embed plugged in? Name its port if it is elsewhere.")
+        time.sleep(2)
 
 
 def main():
@@ -43,7 +46,17 @@ def main():
     ap.add_argument("--server", default="http://127.0.0.1:4730")
     ap.add_argument("--every", type=float, default=5.0, help="seconds between state updates")
     a = ap.parse_args()
-    port = a.port or find_port()
+    # The board can be unplugged at any time: say so, wait for it, and carry on when it is back.
+    while True:
+        port = a.port or find_port(wait=True)
+        try:
+            bridge(a, port)
+        except serial.SerialException:
+            print("usb_bridge: the board was unplugged -- waiting for it to come back (Ctrl-C to stop)", flush=True)
+            time.sleep(2)
+
+
+def bridge(a, port):
     dev = serial.Serial(port, 115200, timeout=0.2)
     print("usb_bridge: %s <-> %s" % (port, a.server), flush=True)
     last, sent, listed, polled = 0.0, None, 0.0, 0.0

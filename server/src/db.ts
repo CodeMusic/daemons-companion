@@ -18,7 +18,8 @@ export class Store {
       CREATE TABLE IF NOT EXISTS steps (id INTEGER PRIMARY KEY, subitem INTEGER NOT NULL REFERENCES subitems(id),
         text TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);
       CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS interactions (id INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT);`);
+      CREATE TABLE IF NOT EXISTS interactions (id INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT);
+      CREATE TABLE IF NOT EXISTS phones (token TEXT PRIMARY KEY, name TEXT NOT NULL, paired TEXT NOT NULL, seen TEXT);`);
   }
 
   // C-22: the save the app is married to -- the game it carries daemons for. Unset until the first SYNC.
@@ -47,6 +48,18 @@ export class Store {
     return (this.db.prepare("SELECT id, detail FROM interactions WHERE kind = 'exp' AND id > ? AND detail LIKE ? ORDER BY id")
       .all(id, `${personality} %`) as { id: number; detail: string }[]).map((r) => ({ id: r.id, gain: Number(r.detail.split(" ")[1]) || 0 }));
   }
+
+  // C-53: phones paired with this companion, each with its own key
+  addPhone(token: string, name: string) { this.db.prepare("INSERT INTO phones (token, name, paired) VALUES (?, ?, ?)").run(token, name, new Date().toISOString()); }
+  phoneFor(token: string): { name: string } | null {
+    const r = this.db.prepare("SELECT name FROM phones WHERE token = ?").get(token) as { name: string } | undefined;
+    if (r) this.db.prepare("UPDATE phones SET seen = ? WHERE token = ?").run(new Date().toISOString(), token);
+    return r ?? null;
+  }
+  phones(): { name: string; paired: string; seen: string | null }[] {
+    return this.db.prepare("SELECT name, paired, seen FROM phones ORDER BY paired").all() as any;
+  }
+  forgetPhone(name: string) { this.db.prepare("DELETE FROM phones WHERE name = ?").run(name); }
 
   // C-15: the meetings not yet written into the save (after the last one a SYNC wrote)
   meetingsAfter(id: number): { id: number; at: string; detail: string | null }[] {

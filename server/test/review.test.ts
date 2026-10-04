@@ -65,4 +65,18 @@ describe("on the network, only the device's door answers", () => {
     expect((await from("/api/settings/pick", {})).status).toBe(403);
     expect((await from("/api/device/state")).status).toBe(200);
   });
+
+  it.skipIf(!lan)("answers a paired phone everywhere but what only the Mac may do (C-53)", async () => {
+    const { code } = await local("/api/pair/code", {});
+    const from = (p: string, b?: unknown, token?: string) => fetch(`http://${lan}:${port}${p}`, {
+      method: b === undefined ? "GET" : "POST",
+      headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      body: b === undefined ? undefined : JSON.stringify(b) });
+    const { token } = await (await from("/api/pair", { code, name: "test phone" })).json();
+    expect((await from("/api/settings", undefined, token)).status).toBe(200);
+    expect((await from("/api/goal", undefined, token)).status).toBe(200);
+    expect((await from("/api/settings/pick", {}, token)).status).toBe(403);
+    expect((await from("/api/pair/code", {}, token)).status).toBe(403);
+    expect((await from("/api/settings", undefined, "not-a-key")).status).toBe(403);
+  });
 });

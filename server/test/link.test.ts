@@ -117,3 +117,22 @@ describe("the board's settings, set on the site (C-43)", () => {
     expect((await get("/api/device/state")).settings.sound).toBe(false);
   });
 });
+
+describe("pairing a phone (C-53)", () => {
+  it("gives a key for the code shown on this machine, once", async () => {
+    const { code } = (await post("/api/pair/code", {})).json;
+    expect(code).toMatch(/^\d{6}$/);
+    expect((await post("/api/pair", { code: "000000" === code ? "111111" : "000000", name: "x" })).status).toBe(403);
+    const r = await post("/api/pair", { code, name: "CodeMusicai" });
+    expect(r.json.token.length).toBeGreaterThan(20);
+    expect((await post("/api/pair", { code, name: "again" })).status).toBe(403);      // used once
+    expect((await get("/api/pair/phones")).map((p: any) => p.name)).toContain("CodeMusicai");
+  });
+
+  it("retires a code after five wrong guesses", async () => {
+    const { code } = (await post("/api/pair/code", {})).json;
+    const wrong = code === "123456" ? "654321" : "123456";
+    for (let i = 0; i < 5; i++) await post("/api/pair", { code: wrong });
+    expect((await post("/api/pair", { code })).status).toBe(403);
+  });
+});

@@ -47,6 +47,7 @@ import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
 import { DeviceHub, type Via } from "./device.js";
 import { networkInterfaces } from "node:os";
+import { randomBytes, randomInt } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
@@ -305,6 +306,10 @@ function revealInFinder(p: string | null) {
 }
 
 const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
+// C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
+// network, or open a dialog or a Finder window on the Mac
+const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
+                    "/api/settings/pick", "/api/settings/reveal"];
 const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
@@ -321,7 +326,22 @@ export function lanAddress(): string | null {
   return null;
 }
 
-export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub()): Server {
+// ---- C-53: pairing a phone. The site asks for a code (this machine only); the phone sends it back once, with a name,
+// and is given its own key. With the key, the whole API answers it across the network -- without one, only the board's
+// routes do. A code lasts ten minutes, is used once, and is retired after five wrong guesses.
+const PAIR_MS = 10 * 60 * 1000;
+class Pairing {
+  code: string | null = null; until = 0; misses = 0;
+  start(now = Date.now()) { this.code = String(randomInt(0, 1000000)).padStart(6, "0"); this.until = now + PAIR_MS; this.misses = 0; return this.code; }
+  take(code: unknown, now = Date.now()): boolean {
+    if (!this.code || now > this.until) return false;
+    if (String(code) !== this.code) { if (++this.misses >= 5) this.code = null; return false; }
+    this.code = null;
+    return true;
+  }
+}
+
+export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -335,12 +355,43 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // With "host": "0.0.0.0" the server is on the local network for a device -- and only the device's own door
       // answers it there. Settings, SYNC, the save and the goals stay this machine's, so nothing else on the network
       // can change the save path, write the save, or open a dialog on the Mac.
-      if (!isLoopback(req.socket.remoteAddress) && !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
-        return send(res, 403, { error: "only the device's endpoints answer the network" });
+      const bearer = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""))?.[1];
+      const phone = bearer ? store.phoneFor(bearer) : null;              // C-53: a paired phone has the whole API
+      if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
+          !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
+        return send(res, 403, { error: "only the device's endpoints answer the network -- pair this phone first" });
+      if (!isLoopback(req.socket.remoteAddress) && LOCAL_ONLY.includes(path))
+        return send(res, 403, { error: "that is done on the computer the companion runs on" });
       if (req.method === "OPTIONS") {
         res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-methods": "GET,POST",
-                             "access-control-allow-headers": "content-type" });
+                             "access-control-allow-headers": "content-type, authorization" });
         return res.end();
+      }
+      // ---- C-53: pairing ----
+      if (req.method === "POST" && path === "/api/pair/code") {         // this machine only (the door above)
+        const code = pairing.start();
+        return send(res, 200, { code, minutes: PAIR_MS / 60000, lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" } });
+      }
+      if (req.method === "POST" && path === "/api/pair") {
+        const b = await body(req);
+        const name = typeof b.name === "string" && b.name.trim() ? b.name.trim().slice(0, 40) : "a phone";
+        if (!pairing.take(b.code)) return send(res, 403, { error: "that code is not right, or has run out -- show a new one on the site" });
+        const token = randomBytes(24).toString("base64url");
+        store.addPhone(token, name);
+        return send(res, 200, { token, name });
+      }
+      if (req.method === "GET" && path === "/api/pair/phones") return send(res, 200, store.phones());
+      if (req.method === "POST" && path === "/api/pair/forget") {
+        const b = await body(req);
+        if (typeof b.name !== "string") return send(res, 400, { error: "forget {name}" });
+        store.forgetPhone(b.name);
+        return send(res, 200, store.phones());
+      }
+      // the server listens on the network (for the phone and the board) -- kept here, read at the next start
+      if (req.method === "POST" && path === "/api/settings/network") {
+        const b = await body(req);
+        store.setSetting("host", b.open ? "0.0.0.0" : "127.0.0.1");
+        return send(res, 200, { open: b.open === true, now: cfg.host === "0.0.0.0", restart: (b.open === true) !== (cfg.host === "0.0.0.0") });
       }
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(ecfg, store));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));

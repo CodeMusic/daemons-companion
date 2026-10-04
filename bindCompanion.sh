@@ -8,6 +8,7 @@
 #   ./bindCompanion.sh app [web|ios|android]
 #                                     only the app, against a server you started yourself
 #   ./bindCompanion.sh test           the server's type check and its tests
+#   ./bindCompanion.sh phone          build the app for your iPhone (plugged in or on the same Wi-Fi) and install it
 #   ./bindCompanion.sh --help
 #
 # ONE TERMINAL. The server runs in the background and writes to .logs/server.log; the app runs in the foreground,
@@ -30,7 +31,7 @@ PORT=4730
 LOGS="$HERE/.logs"
 SERVER_LOG="$LOGS/server.log"
 
-usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; }
 
 mode=web target=web
 case "${1:-web}" in
@@ -38,6 +39,7 @@ case "${1:-web}" in
   server)          mode=server ;;
   app)             mode=app target="${2:-web}" ;;
   test)            mode=test ;;
+  phone)           mode=phone ;;
   -h|--help|help)  usage; exit 0 ;;
   *) echo "bindCompanion: unknown '$1' (try --help)" >&2; exit 64 ;;
 esac
@@ -69,6 +71,27 @@ for part in server app; do
 done
 
 answering() { curl -fsS -o /dev/null --max-time 1 "http://127.0.0.1:$PORT/api/today" 2>/dev/null; }
+
+# -- phone: the app, built for a real iPhone and installed (C-27) -------------------------------------------------------
+# The native project is generated from app.json (expo prebuild) and is not committed. Signed by the team in app.json
+# (automatic signing registers the bundle id); a Release build carries its own JavaScript, so it runs without this Mac.
+if [[ $mode == phone ]]; then
+  export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8          # CocoaPods fails on a non-UTF-8 locale
+  cd "$HERE/app"
+  [[ -d node_modules ]] || npm install --no-fund --no-audit
+  [[ -d ios ]] || CI=1 npx expo prebuild --platform ios --no-install
+  (cd ios && pod install)
+  phone_id="$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && $0 !~ /simulated/ { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }')"
+  [[ -n "$phone_id" ]] || { echo "bindCompanion: no iPhone found -- plug it in (and trust this Mac), or put it on the same Wi-Fi with developer mode on." >&2; exit 1; }
+  team="$(python3 -c "import json; print(json.load(open('app.json'))['expo']['ios']['appleTeamId'])")"
+  echo "bindCompanion: building for the iPhone $phone_id (team $team)"
+  xcodebuild -workspace ios/DAEMONScompanion.xcworkspace -scheme DAEMONScompanion -configuration Release \
+    -destination "id=$phone_id" -derivedDataPath ios/build -allowProvisioningUpdates \
+    DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic build | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+  xcrun devicectl device install app --device "$phone_id" ios/build/Build/Products/Release-iphoneos/DAEMONScompanion.app
+  echo "bindCompanion: installed. Open DAEMONS companion on the phone and pair it (the site: SETTINGS, PAIR A PHONE)."
+  exit 0
+fi
 
 # -- test -------------------------------------------------------------------------------------------------------------
 if [[ $mode == test ]]; then

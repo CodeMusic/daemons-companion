@@ -25,6 +25,7 @@ background, and opens the app at <http://localhost:8081>. **Ctrl-C stops both.**
 | `./bindCompanion.sh server` | **only the server**, in this terminal |
 | `./bindCompanion.sh app [web\|ios\|android]` | **only the app**, against a server you started yourself |
 | `./bindCompanion.sh test` | the server's **type check and tests** |
+| `./bindCompanion.sh phone` | **build the app for your iPhone** and install it ([below](#on-your-iphone)) |
 | `./updateCompanion.sh` | **flash the handheld** with the newest firmware ([below](#flash-the-handheld)) |
 | `./linkCompanion.sh` | **link the handheld** to the server over its cable |
 
@@ -105,6 +106,24 @@ back darkens it for a moment.
 
 [`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode if an upload cannot connect,
 Wi-Fi instead of the cable, watching it talk, putting the factory firmware back, and what each routine does.
+
+## On your iPhone
+
+The same app, built for your phone (iOS first; `com.codemusic.daemonscompanion`). Plug the iPhone in (or have it on
+the same Wi-Fi with developer mode on), and:
+
+```sh
+./bindCompanion.sh phone      # generate the iOS project, build it signed by your team, install it
+```
+
+Then **pair it** -- on the site, SETTINGS, PAIR A PHONE: open the companion to your network (and restart it once),
+**Show a code**, and type the address and the code into the app. The phone is given its own key; the whole app answers
+it across your network, and nothing else does. **Your steps** come from Apple Health (it asks once) and count toward
+the walking goal each time you open the app.
+
+A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
+on it. Reaching the companion away from home is next (C-54). For the App Store, archive in Xcode and upload with
+Transporter as usual.
 
 ## Each part on its own
 

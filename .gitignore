@@ -9,3 +9,4 @@ __pycache__/
 .venv/
 config.json
 .logs/
+.DS_Store

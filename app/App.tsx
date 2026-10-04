@@ -166,7 +166,57 @@ function DaemonScreen({ ink }: { ink: string }) {
   );
 }
 
-const TABS = ["today", "goals", "daemon"] as const;
+// C-23: the PROFILE -- whichever save was synced: who it belongs to and how far it has gone, as the trainer card says.
+type Profile = { name: string; trainerId: number; playTime: { hours: number; minutes: number }; edition: string;
+                 index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
+                 gameClear: boolean; savedIn: { place: string } | null };
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <XStack justifyContent="space-between" alignItems="baseline" gap={12} paddingVertical={6}
+            borderBottomWidth={1} borderBottomColor="$color4">
+      <Eyebrow>{label}</Eyebrow>
+      <Text fontSize={16} color="$color12" fontVariant={["tabular-nums"]}>{children}</Text>
+    </XStack>
+  );
+}
+
+function ProfileScreen() {
+  const [p, setP] = useState<Profile | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => { api<Profile>("/api/profile").then(setP).catch((e) => setError(e.message)); }, []);
+  if (error) return <Small>{error}</Small>;
+  if (!p) return <Small>Reading your save…</Small>;
+  const earned = p.marks.filter(Boolean).length;
+  const id = String(p.trainerId).padStart(5, "0");
+  return (
+    <YStack gap={14}>
+      <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
+        <Eyebrow>{p.edition} · ID No. {id}</Eyebrow>
+        <Text fontFamily="$mono" fontSize={28} fontWeight="700" letterSpacing={2} color="$color12">{p.name}</Text>
+        <Small>{p.savedIn?.place ? `Last saved in ${p.savedIn.place}` : "Last saved somewhere the map does not name"}</Small>
+      </Card>
+      <Card>
+        <Fact label="PLAY TIME">{p.playTime.hours}:{String(p.playTime.minutes).padStart(2, "0")}</Fact>
+        <Fact label="INDEX">{p.index.held ? `${p.index.bound} bound · ${p.index.seen} seen` : "not yet held"}</Fact>
+        <YStack paddingVertical={8} gap={8}>
+          <XStack justifyContent="space-between"><Eyebrow>MARKS</Eyebrow><Text fontSize={16} color="$color12">{earned} of 8</Text></XStack>
+          <XStack gap={8}>
+            {p.marks.map((m, i) => (
+              <YStack key={i} width={22} height={22} borderRadius={3} borderWidth={2} borderColor="$color9"
+                      backgroundColor={m ? "$color9" : "transparent"} aria-label={`MARK ${i + 1}${m ? ", earned" : ""}`} />
+            ))}
+          </XStack>
+        </YStack>
+        <Fact label="DIPLOMA">{p.diploma ? "earned" : "not yet"}</Fact>
+        <Fact label="OPUS">{p.opus ? "carried" : "not carried"}</Fact>
+        {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
+      </Card>
+    </YStack>
+  );
+}
+
+const TABS = ["today", "goals", "daemon", "profile"] as const;
 
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
@@ -205,6 +255,7 @@ function Shell() {
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen goals={goals} reload={reload} ink={ink} /> : null}
         {tab === "daemon" ? <DaemonScreen ink={ink} /> : null}
+        {tab === "profile" ? <ProfileScreen /> : null}
       </ScrollView>
       <StatusBar style="dark" />
     </YStack>

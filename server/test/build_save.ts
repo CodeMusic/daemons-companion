@@ -41,7 +41,8 @@ export function buildDaemon(d: DaemonSpec): Uint8Array {
 }
 
 // A whole save: both slots written, slot A with counterA and slot B with counterB, each holding its own party.
-export function buildSave(opts: { player: string; trainerId: number; slots: { counter: number; party: DaemonSpec[] }[] }): Uint8Array {
+export function buildSave(opts: { player: string; trainerId: number; slots: { counter: number; party: DaemonSpec[] }[];
+                                  edit?: (sb2: Uint8Array, sb1: Uint8Array) => void }): Uint8Array {
   const save = new Uint8Array(0x20000);
   opts.slots.forEach((slot, index) => {
     const sb2 = new Uint8Array(l.saveblock2_size);
@@ -50,6 +51,7 @@ export function buildSave(opts: { player: string; trainerId: number; slots: { co
     const sb1 = new Uint8Array(l.saveblock1_size);
     sb1[l.party_count_offset] = slot.party.length;
     slot.party.forEach((d, i) => sb1.set(buildDaemon(d), l.party_offset + i * l.pokemon_size));
+    opts.edit?.(sb2, sb1);
     for (let id = 0; id < l.sectors_per_slot; id++) {
       const data = new Uint8Array(l.sector_size);
       const size = sectionSize(id);

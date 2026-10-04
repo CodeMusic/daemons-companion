@@ -6,6 +6,7 @@ import type { Edition } from "./seasons.js";
 
 export interface Config {
   port: number;
+  host: string;                     // 127.0.0.1: this machine only. 0.0.0.0: the local network too, for a device (C-26)
   database: string;                 // a SQLite file, or ":memory:"
   edition: Edition;                 // which edition's voice and season the daemon keeps
   savePath: string | null;          // a COPY of the DAEMONS save to read -- never the one the game is using
@@ -15,6 +16,7 @@ export interface Config {
 
 export const DEFAULTS: Config = {
   port: 4730,
+  host: "127.0.0.1",
   database: fileURLToPath(new URL("../companion.sqlite", import.meta.url)),
   edition: "CONTENT",
   savePath: null,

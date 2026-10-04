@@ -3,5 +3,6 @@ import { loadConfig } from "./config.js";
 import { makeServer } from "./api.js";
 
 const cfg = loadConfig();
-makeServer(cfg).listen(cfg.port, "127.0.0.1", () =>
-  console.log(`daemons-companion server on http://127.0.0.1:${cfg.port}  (edition ${cfg.edition}, AI ${cfg.ai.enabled ? "on" : "off"})`));
+makeServer(cfg).listen(cfg.port, cfg.host, () =>
+  console.log(`daemons-companion server on http://${cfg.host}:${cfg.port}  (edition ${cfg.edition}, AI ${cfg.ai.enabled ? "on" : "off"})` +
+              (cfg.host === "127.0.0.1" ? "" : "  -- listening on the local network: no secrets go over it")));

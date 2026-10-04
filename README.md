@@ -39,7 +39,7 @@ beside it.*
 | | | |
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself first, an iPhone and iPad app from the same code later | **running as a site, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). Three screens: **TODAY** (the day's colour, note and virtue, the season, and the one thing to do), **GOALS** (add one, see its steps, tick them off), **DAEMON** (your party, and answering the game when it asks to send a daemon) |
+| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself first, an iPhone and iPad app from the same code later | **running as a site, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). Four screens: **TODAY** (the day's colour, note and virtue, the season, and the one thing to do), **GOALS** (add one, see its steps, tick them off), **DAEMON** (your party, and answering the game when it asks to send a daemon), **PROFILE** (the save's trainer, play time, INDEX, MARKS and progress) |
 | `firmware/esp32/` | **the handheld** -- ESP32-S3, PlatformIO + Arduino, grown from RoverCodeBase | not started: waits on which board (TODO C-07) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
@@ -92,6 +92,7 @@ copy `server/config.example.json` to `server/config.json` (never committed) and 
 
 | | |
 |---|---|
+| `host` | `127.0.0.1` (the default) serves this machine only; `0.0.0.0` serves the local network too, so a device can reach it. Nothing secret goes over it |
 | `edition` | `CONTENT` or `CONTEXT` -- whose voice the daemon keeps, and whose season: CONTENT keeps the northern year, CONTEXT the southern |
 | `savePath` | a **copy** of your DAEMONS save (`daemonsContent.sav` or `daemonsContext.sav`) -- **never the one the game is using**. When you answer the game from the DAEMON screen, the server writes to this file, and keeps a backup beside it in `companion-backups/` first. Close the game before answering: a running emulator writes its own copy back over yours |
 | `ai` | off by default. `enabled`, a `baseUrl` that speaks the OpenAI chat API (DAEMONS' LiteLLM config, a local model, or any other), the `model`, and `apiKeyEnv`: the *name* of an environment variable holding the key, never the key itself. **Off, the breakdown answers with a built-in example**, so everything works without a model |
@@ -107,6 +108,7 @@ JSON in, JSON out, on this machine only.
 | `POST /api/goals` | `{title, breakdown?: true}` -- a goal, broken down when asked |
 | `POST /api/steps/:id/done` | tick a step off |
 | `GET /api/party` | the party of the configured save copy |
+| `GET /api/profile` | the save's trainer, play time, INDEX counts, MARKS, DIPLOMA, OPUS, and where it was saved |
 | `GET /api/species/:id` | one daemon's name, types, category and its edition's INDEX entry |
 | `POST /api/away/answer` | answer the game's requests to send or bring home a daemon, after a backup |
 | `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |

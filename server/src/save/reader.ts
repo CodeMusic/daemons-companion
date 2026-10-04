@@ -126,15 +126,21 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
   };
 }
 
-export function readSave(save: Uint8Array, l: Layout = LAYOUT): SaveRead {
+// The save as the game would load it: the newer valid slot, SaveBlock2 (section 0) and SaveBlock1 (sections 1-4, end
+// to end). The party reader and the PROFILE (save/profile.ts) both read from here.
+export function blocks(save: Uint8Array, l: Layout = LAYOUT) {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
-  const useA = a && (!b || newer(a, b));
+  const useA = !!a && (!b || newer(a, b));
   const slot = (useA ? a : b)!;
   const sb2 = slot.sections.get(0)!;
-  // SaveBlock1 is sections 1-4 end to end.
   const sb1 = new Uint8Array(l.saveblock1_size);
   for (let id = 1; id <= 4; id++) sb1.set(slot.sections.get(id)!.subarray(0, sectionSize(id, l)), (id - 1) * l.sector_data_size);
+  return { useA, slot, sb1, sb2 };
+}
+
+export function readSave(save: Uint8Array, l: Layout = LAYOUT): SaveRead {
+  const { useA, slot, sb1, sb2 } = blocks(save, l);
   const count = Math.min(sb1[l.party_count_offset], 6);
   const party: PartyDaemon[] = [];
   for (let i = 0; i < count; i++) {

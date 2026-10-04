@@ -5,6 +5,7 @@
 //   POST /api/goals              {title, breakdown?: true} -- a goal, broken down (C-06) when asked
 //   POST /api/steps/:id/done     tick a step off
 //   GET  /api/party              the party of the configured save COPY (C-02)
+//   GET  /api/profile            C-23: the save's trainer, play time, INDEX counts, MARKS, progress and where it was saved
 //   GET  /api/species/:id        one daemon's name, types, category and its edition's INDEX entry
 //   POST /api/away/answer        answer the game's AWAY requests in the configured save (C-10), after a backup
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
@@ -20,6 +21,7 @@ import { breakdown } from "./ai/breakdown.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
+import { readProfile } from "./save/profile.js";
 import { answerRequests } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { repaint, streakColours } from "./art.js";
@@ -126,6 +128,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
       if (req.method === "POST" && step) {
         return store.completeStep(Number(step[1])) ? send(res, 200, { next: store.nextStep() })
                                                    : send(res, 404, { error: "no such step" });
+      }
+      if (req.method === "GET" && path === "/api/profile") {
+        if (!cfg.savePath || !existsSync(cfg.savePath)) return send(res, 404, { error: "no save named -- set savePath to a COPY of your save" });
+        return send(res, 200, { ...readProfile(new Uint8Array(readFileSync(cfg.savePath))), edition: cfg.edition });
       }
       if (req.method === "GET" && path === "/api/party") {
         if (!cfg.savePath) return send(res, 404, { error: "no save named -- set savePath to a COPY of your save" });

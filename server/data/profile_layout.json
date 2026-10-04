@@ -1,0 +1,34 @@
+{
+ "_about": "C-23: offsets into SaveBlock2 (section 0) and SaveBlock1 (sections 1-4, end to end), read from global.h's own struct comments; flag numbers resolved from flags.h. A flag below daemons_flags_start is a bit in SaveBlock1's flags, one at or above it a bit in SaveBlock2's daemonsFlags. INDEX flags are by national number minus one. Money is stored XOR the encryption key.",
+ "sb2": {
+  "player_name": 0,
+  "player_gender": 8,
+  "trainer_id": 10,
+  "play_time_hours": 14,
+  "play_time_minutes": 16,
+  "play_time_seconds": 17,
+  "index_bound": 40,
+  "index_seen": 92,
+  "index_bytes": 52,
+  "daemons_flags": 3744,
+  "encryption_key": 3872
+ },
+ "sb1": {
+  "location": 4,
+  "flags": 3808,
+  "money": 656,
+  "key_items": 952,
+  "key_items_count": 30
+ },
+ "flags": {
+  "marks_first": 2080,
+  "marks_last": 2087,
+  "index": 2089,
+  "game_clear": 2092,
+  "diploma": 788,
+  "daemons_flags_start": 2304
+ },
+ "items": {
+  "opus": 375
+ }
+}

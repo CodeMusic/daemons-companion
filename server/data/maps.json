@@ -1,0 +1,1787 @@
+{
+ "_about": "C-23: map group.number -> the map and its place's name (region_map_sections.json, our names).",
+ "0.0": {
+  "map": "BattleColosseum_2P",
+  "place": "VERDIGRIS DEPT."
+ },
+ "0.1": {
+  "map": "TradeCenter",
+  "place": "VERDIGRIS DEPT."
+ },
+ "0.2": {
+  "map": "RecordCorner",
+  "place": "VERDIGRIS DEPT."
+ },
+ "0.3": {
+  "map": "BattleColosseum_4P",
+  "place": "VERDIGRIS DEPT."
+ },
+ "0.4": {
+  "map": "UnionRoom",
+  "place": "VERDIGRIS DEPT."
+ },
+ "1.0": {
+  "map": "ViridianForest",
+  "place": "THE UNDERTONE"
+ },
+ "1.1": {
+  "map": "MtMoon_1F",
+  "place": "DEADSTACK"
+ },
+ "1.2": {
+  "map": "MtMoon_B1F",
+  "place": "DEADSTACK"
+ },
+ "1.3": {
+  "map": "MtMoon_B2F",
+  "place": "DEADSTACK"
+ },
+ "1.4": {
+  "map": "SSAnne_Exterior",
+  "place": "S.S. ANNE"
+ },
+ "1.5": {
+  "map": "SSAnne_1F_Corridor",
+  "place": "S.S. ANNE"
+ },
+ "1.6": {
+  "map": "SSAnne_2F_Corridor",
+  "place": "S.S. ANNE"
+ },
+ "1.7": {
+  "map": "SSAnne_3F_Corridor",
+  "place": "S.S. ANNE"
+ },
+ "1.8": {
+  "map": "SSAnne_B1F_Corridor",
+  "place": "S.S. ANNE"
+ },
+ "1.9": {
+  "map": "SSAnne_Deck",
+  "place": "S.S. ANNE"
+ },
+ "1.10": {
+  "map": "SSAnne_Kitchen",
+  "place": "S.S. ANNE"
+ },
+ "1.11": {
+  "map": "SSAnne_CaptainsOffice",
+  "place": "S.S. ANNE"
+ },
+ "1.12": {
+  "map": "SSAnne_1F_Room1",
+  "place": "S.S. ANNE"
+ },
+ "1.13": {
+  "map": "SSAnne_1F_Room2",
+  "place": "S.S. ANNE"
+ },
+ "1.14": {
+  "map": "SSAnne_1F_Room3",
+  "place": "S.S. ANNE"
+ },
+ "1.15": {
+  "map": "SSAnne_1F_Room4",
+  "place": "S.S. ANNE"
+ },
+ "1.16": {
+  "map": "SSAnne_1F_Room5",
+  "place": "S.S. ANNE"
+ },
+ "1.17": {
+  "map": "SSAnne_1F_Room7",
+  "place": "S.S. ANNE"
+ },
+ "1.18": {
+  "map": "SSAnne_2F_Room1",
+  "place": "S.S. ANNE"
+ },
+ "1.19": {
+  "map": "SSAnne_2F_Room2",
+  "place": "S.S. ANNE"
+ },
+ "1.20": {
+  "map": "SSAnne_2F_Room3",
+  "place": "S.S. ANNE"
+ },
+ "1.21": {
+  "map": "SSAnne_2F_Room4",
+  "place": "S.S. ANNE"
+ },
+ "1.22": {
+  "map": "SSAnne_2F_Room5",
+  "place": "S.S. ANNE"
+ },
+ "1.23": {
+  "map": "SSAnne_2F_Room6",
+  "place": "S.S. ANNE"
+ },
+ "1.24": {
+  "map": "SSAnne_B1F_Room1",
+  "place": "S.S. ANNE"
+ },
+ "1.25": {
+  "map": "SSAnne_B1F_Room2",
+  "place": "S.S. ANNE"
+ },
+ "1.26": {
+  "map": "SSAnne_B1F_Room3",
+  "place": "S.S. ANNE"
+ },
+ "1.27": {
+  "map": "SSAnne_B1F_Room4",
+  "place": "S.S. ANNE"
+ },
+ "1.28": {
+  "map": "SSAnne_B1F_Room5",
+  "place": "S.S. ANNE"
+ },
+ "1.29": {
+  "map": "SSAnne_1F_Room6",
+  "place": "S.S. ANNE"
+ },
+ "1.30": {
+  "map": "UndergroundPath_NorthEntrance",
+  "place": "UNDERGROUND PATH"
+ },
+ "1.31": {
+  "map": "UndergroundPath_NorthSouthTunnel",
+  "place": "UNDERGROUND PATH"
+ },
+ "1.32": {
+  "map": "UndergroundPath_SouthEntrance",
+  "place": "UNDERGROUND PATH"
+ },
+ "1.33": {
+  "map": "UndergroundPath_WestEntrance",
+  "place": "UNDERGROUND PATH"
+ },
+ "1.34": {
+  "map": "UndergroundPath_EastWestTunnel",
+  "place": "UNDERGROUND PATH"
+ },
+ "1.35": {
+  "map": "UndergroundPath_EastEntrance",
+  "place": "UNDERGROUND PATH"
+ },
+ "1.36": {
+  "map": "DiglettsCave_NorthEntrance",
+  "place": "TAPPOINT'S CAVE"
+ },
+ "1.37": {
+  "map": "DiglettsCave_B1F",
+  "place": "TAPPOINT'S CAVE"
+ },
+ "1.38": {
+  "map": "DiglettsCave_SouthEntrance",
+  "place": "TAPPOINT'S CAVE"
+ },
+ "1.39": {
+  "map": "VictoryRoad_1F",
+  "place": "UMBRAL ASCENT"
+ },
+ "1.40": {
+  "map": "VictoryRoad_2F",
+  "place": "UMBRAL ASCENT"
+ },
+ "1.41": {
+  "map": "VictoryRoad_3F",
+  "place": "UMBRAL ASCENT"
+ },
+ "1.42": {
+  "map": "RocketHideout_B1F",
+  "place": "CORPUS HIDEOUT"
+ },
+ "1.43": {
+  "map": "RocketHideout_B2F",
+  "place": "CORPUS HIDEOUT"
+ },
+ "1.44": {
+  "map": "RocketHideout_B3F",
+  "place": "CORPUS HIDEOUT"
+ },
+ "1.45": {
+  "map": "RocketHideout_B4F",
+  "place": "CORPUS HIDEOUT"
+ },
+ "1.46": {
+  "map": "RocketHideout_Elevator",
+  "place": "CORPUS HIDEOUT"
+ },
+ "1.47": {
+  "map": "SilphCo_1F",
+  "place": "FOUNDRY CO."
+ },
+ "1.48": {
+  "map": "SilphCo_2F",
+  "place": "FOUNDRY CO."
+ },
+ "1.49": {
+  "map": "SilphCo_3F",
+  "place": "FOUNDRY CO."
+ },
+ "1.50": {
+  "map": "SilphCo_4F",
+  "place": "FOUNDRY CO."
+ },
+ "1.51": {
+  "map": "SilphCo_5F",
+  "place": "FOUNDRY CO."
+ },
+ "1.52": {
+  "map": "SilphCo_6F",
+  "place": "FOUNDRY CO."
+ },
+ "1.53": {
+  "map": "SilphCo_7F",
+  "place": "FOUNDRY CO."
+ },
+ "1.54": {
+  "map": "SilphCo_8F",
+  "place": "FOUNDRY CO."
+ },
+ "1.55": {
+  "map": "SilphCo_9F",
+  "place": "FOUNDRY CO."
+ },
+ "1.56": {
+  "map": "SilphCo_10F",
+  "place": "FOUNDRY CO."
+ },
+ "1.57": {
+  "map": "SilphCo_11F",
+  "place": "FOUNDRY CO."
+ },
+ "1.58": {
+  "map": "SilphCo_Elevator",
+  "place": "FOUNDRY CO."
+ },
+ "1.59": {
+  "map": "PokemonMansion_1F",
+  "place": "DAEMON MANSION"
+ },
+ "1.60": {
+  "map": "PokemonMansion_2F",
+  "place": "DAEMON MANSION"
+ },
+ "1.61": {
+  "map": "PokemonMansion_3F",
+  "place": "DAEMON MANSION"
+ },
+ "1.62": {
+  "map": "PokemonMansion_B1F",
+  "place": "DAEMON MANSION"
+ },
+ "1.63": {
+  "map": "SafariZone_Center",
+  "place": "SAFARI ZONE"
+ },
+ "1.64": {
+  "map": "SafariZone_East",
+  "place": "SAFARI ZONE"
+ },
+ "1.65": {
+  "map": "SafariZone_North",
+  "place": "SAFARI ZONE"
+ },
+ "1.66": {
+  "map": "SafariZone_West",
+  "place": "SAFARI ZONE"
+ },
+ "1.67": {
+  "map": "SafariZone_Center_RestHouse",
+  "place": "SAFARI ZONE"
+ },
+ "1.68": {
+  "map": "SafariZone_East_RestHouse",
+  "place": "SAFARI ZONE"
+ },
+ "1.69": {
+  "map": "SafariZone_North_RestHouse",
+  "place": "SAFARI ZONE"
+ },
+ "1.70": {
+  "map": "SafariZone_West_RestHouse",
+  "place": "SAFARI ZONE"
+ },
+ "1.71": {
+  "map": "SafariZone_SecretHouse",
+  "place": "SAFARI ZONE"
+ },
+ "1.72": {
+  "map": "CeruleanCave_1F",
+  "place": "DOLDRUM CAVE"
+ },
+ "1.73": {
+  "map": "CeruleanCave_2F",
+  "place": "DOLDRUM CAVE"
+ },
+ "1.74": {
+  "map": "CeruleanCave_B1F",
+  "place": "DOLDRUM CAVE"
+ },
+ "1.75": {
+  "map": "PokemonLeague_LoreleisRoom",
+  "place": "DAEMON LEAGUE"
+ },
+ "1.76": {
+  "map": "PokemonLeague_BrunosRoom",
+  "place": "DAEMON LEAGUE"
+ },
+ "1.77": {
+  "map": "PokemonLeague_AgathasRoom",
+  "place": "DAEMON LEAGUE"
+ },
+ "1.78": {
+  "map": "PokemonLeague_LancesRoom",
+  "place": "DAEMON LEAGUE"
+ },
+ "1.79": {
+  "map": "PokemonLeague_ChampionsRoom",
+  "place": "DAEMON LEAGUE"
+ },
+ "1.80": {
+  "map": "PokemonLeague_HallOfFame",
+  "place": "DAEMON LEAGUE"
+ },
+ "1.81": {
+  "map": "RockTunnel_1F",
+  "place": "THE BLACKOUT"
+ },
+ "1.82": {
+  "map": "RockTunnel_B1F",
+  "place": "THE BLACKOUT"
+ },
+ "1.83": {
+  "map": "SeafoamIslands_1F",
+  "place": "GLAUCOUS ISLES"
+ },
+ "1.84": {
+  "map": "SeafoamIslands_B1F",
+  "place": "GLAUCOUS ISLES"
+ },
+ "1.85": {
+  "map": "SeafoamIslands_B2F",
+  "place": "GLAUCOUS ISLES"
+ },
+ "1.86": {
+  "map": "SeafoamIslands_B3F",
+  "place": "GLAUCOUS ISLES"
+ },
+ "1.87": {
+  "map": "SeafoamIslands_B4F",
+  "place": "GLAUCOUS ISLES"
+ },
+ "1.88": {
+  "map": "PokemonTower_1F",
+  "place": "DAEMON TOWER"
+ },
+ "1.89": {
+  "map": "PokemonTower_2F",
+  "place": "DAEMON TOWER"
+ },
+ "1.90": {
+  "map": "PokemonTower_3F",
+  "place": "DAEMON TOWER"
+ },
+ "1.91": {
+  "map": "PokemonTower_4F",
+  "place": "DAEMON TOWER"
+ },
+ "1.92": {
+  "map": "PokemonTower_5F",
+  "place": "DAEMON TOWER"
+ },
+ "1.93": {
+  "map": "PokemonTower_6F",
+  "place": "DAEMON TOWER"
+ },
+ "1.94": {
+  "map": "PokemonTower_7F",
+  "place": "DAEMON TOWER"
+ },
+ "1.95": {
+  "map": "PowerPlant",
+  "place": "KEEPALIVE PLANT"
+ },
+ "1.96": {
+  "map": "MtEmber_RubyPath_B4F",
+  "place": "MT. SMOULDER"
+ },
+ "1.97": {
+  "map": "MtEmber_Exterior",
+  "place": "MT. SMOULDER"
+ },
+ "1.98": {
+  "map": "MtEmber_SummitPath_1F",
+  "place": "MT. SMOULDER"
+ },
+ "1.99": {
+  "map": "MtEmber_SummitPath_2F",
+  "place": "MT. SMOULDER"
+ },
+ "1.100": {
+  "map": "MtEmber_SummitPath_3F",
+  "place": "MT. SMOULDER"
+ },
+ "1.101": {
+  "map": "MtEmber_Summit",
+  "place": "MT. SMOULDER"
+ },
+ "1.102": {
+  "map": "MtEmber_RubyPath_B5F",
+  "place": "MT. SMOULDER"
+ },
+ "1.103": {
+  "map": "MtEmber_RubyPath_1F",
+  "place": "MT. SMOULDER"
+ },
+ "1.104": {
+  "map": "MtEmber_RubyPath_B1F",
+  "place": "MT. SMOULDER"
+ },
+ "1.105": {
+  "map": "MtEmber_RubyPath_B2F",
+  "place": "MT. SMOULDER"
+ },
+ "1.106": {
+  "map": "MtEmber_RubyPath_B3F",
+  "place": "MT. SMOULDER"
+ },
+ "1.107": {
+  "map": "MtEmber_RubyPath_B1F_Stairs",
+  "place": "MT. SMOULDER"
+ },
+ "1.108": {
+  "map": "MtEmber_RubyPath_B2F_Stairs",
+  "place": "MT. SMOULDER"
+ },
+ "1.109": {
+  "map": "ThreeIsland_BerryForest",
+  "place": "DENSE WOOD"
+ },
+ "1.110": {
+  "map": "FourIsland_IcefallCave_Entrance",
+  "place": "STILLFALL CAVE"
+ },
+ "1.111": {
+  "map": "FourIsland_IcefallCave_1F",
+  "place": "STILLFALL CAVE"
+ },
+ "1.112": {
+  "map": "FourIsland_IcefallCave_B1F",
+  "place": "STILLFALL CAVE"
+ },
+ "1.113": {
+  "map": "FourIsland_IcefallCave_Back",
+  "place": "STILLFALL CAVE"
+ },
+ "1.114": {
+  "map": "FiveIsland_RocketWarehouse",
+  "place": "CORPUS WAREHOUSE"
+ },
+ "1.115": {
+  "map": "SixIsland_DottedHole_1F",
+  "place": "THE DOTS"
+ },
+ "1.116": {
+  "map": "SixIsland_DottedHole_B1F",
+  "place": "THE DOTS"
+ },
+ "1.117": {
+  "map": "SixIsland_DottedHole_B2F",
+  "place": "THE DOTS"
+ },
+ "1.118": {
+  "map": "SixIsland_DottedHole_B3F",
+  "place": "THE DOTS"
+ },
+ "1.119": {
+  "map": "SixIsland_DottedHole_B4F",
+  "place": "THE DOTS"
+ },
+ "1.120": {
+  "map": "SixIsland_DottedHole_SapphireRoom",
+  "place": "THE DOTS"
+ },
+ "1.121": {
+  "map": "SixIsland_PatternBush",
+  "place": "THE SAME BUSH"
+ },
+ "1.122": {
+  "map": "SixIsland_AlteringCave",
+  "place": "OTHER CAVE"
+ },
+ "1.123": {
+  "map": "Route21_North_Station",
+  "place": "ROUTE 21"
+ },
+ "1.124": {
+  "map": "ViridianForest_Grove",
+  "place": "THE UNDERTONE"
+ },
+ "1.125": {
+  "map": "ThreeIsland_BerryForest_Grove",
+  "place": "DENSE WOOD"
+ },
+ "2.0": {
+  "map": "NavelRock_Exterior",
+  "place": "NAVEL ROCK"
+ },
+ "2.1": {
+  "map": "TrainerTower_1F",
+  "place": "USER TOWER"
+ },
+ "2.2": {
+  "map": "TrainerTower_2F",
+  "place": "USER TOWER"
+ },
+ "2.3": {
+  "map": "TrainerTower_3F",
+  "place": "USER TOWER"
+ },
+ "2.4": {
+  "map": "TrainerTower_4F",
+  "place": "USER TOWER"
+ },
+ "2.5": {
+  "map": "TrainerTower_5F",
+  "place": "USER TOWER"
+ },
+ "2.6": {
+  "map": "TrainerTower_6F",
+  "place": "USER TOWER"
+ },
+ "2.7": {
+  "map": "TrainerTower_7F",
+  "place": "USER TOWER"
+ },
+ "2.8": {
+  "map": "TrainerTower_8F",
+  "place": "USER TOWER"
+ },
+ "2.9": {
+  "map": "TrainerTower_Roof",
+  "place": "USER TOWER"
+ },
+ "2.10": {
+  "map": "TrainerTower_Lobby",
+  "place": "USER TOWER"
+ },
+ "2.11": {
+  "map": "TrainerTower_Elevator",
+  "place": "USER TOWER"
+ },
+ "2.12": {
+  "map": "FiveIsland_LostCave_Entrance",
+  "place": "THE WRONG WAY"
+ },
+ "2.13": {
+  "map": "FiveIsland_LostCave_Room1",
+  "place": "THE WRONG WAY"
+ },
+ "2.14": {
+  "map": "FiveIsland_LostCave_Room2",
+  "place": "THE WRONG WAY"
+ },
+ "2.15": {
+  "map": "FiveIsland_LostCave_Room3",
+  "place": "THE WRONG WAY"
+ },
+ "2.16": {
+  "map": "FiveIsland_LostCave_Room4",
+  "place": "THE WRONG WAY"
+ },
+ "2.17": {
+  "map": "FiveIsland_LostCave_Room5",
+  "place": "THE WRONG WAY"
+ },
+ "2.18": {
+  "map": "FiveIsland_LostCave_Room6",
+  "place": "THE WRONG WAY"
+ },
+ "2.19": {
+  "map": "FiveIsland_LostCave_Room7",
+  "place": "THE WRONG WAY"
+ },
+ "2.20": {
+  "map": "FiveIsland_LostCave_Room8",
+  "place": "THE WRONG WAY"
+ },
+ "2.21": {
+  "map": "FiveIsland_LostCave_Room9",
+  "place": "THE WRONG WAY"
+ },
+ "2.22": {
+  "map": "FiveIsland_LostCave_Room10",
+  "place": "THE WRONG WAY"
+ },
+ "2.23": {
+  "map": "FiveIsland_LostCave_Room11",
+  "place": "THE WRONG WAY"
+ },
+ "2.24": {
+  "map": "FiveIsland_LostCave_Room12",
+  "place": "THE WRONG WAY"
+ },
+ "2.25": {
+  "map": "FiveIsland_LostCave_Room13",
+  "place": "THE WRONG WAY"
+ },
+ "2.26": {
+  "map": "FiveIsland_LostCave_Room14",
+  "place": "THE WRONG WAY"
+ },
+ "2.27": {
+  "map": "SevenIsland_TanobyRuins_MoneanChamber",
+  "place": "MONEAN CHAMBER"
+ },
+ "2.28": {
+  "map": "SevenIsland_TanobyRuins_LiptooChamber",
+  "place": "LIPTOO CHAMBER"
+ },
+ "2.29": {
+  "map": "SevenIsland_TanobyRuins_WeepthChamber",
+  "place": "WEEPTH CHAMBER"
+ },
+ "2.30": {
+  "map": "SevenIsland_TanobyRuins_DilfordChamber",
+  "place": "DILFORD CHAMBER"
+ },
+ "2.31": {
+  "map": "SevenIsland_TanobyRuins_ScufibChamber",
+  "place": "SCUFIB CHAMBER"
+ },
+ "2.32": {
+  "map": "SevenIsland_TanobyRuins_RixyChamber",
+  "place": "RIXY CHAMBER"
+ },
+ "2.33": {
+  "map": "SevenIsland_TanobyRuins_ViapoisChamber",
+  "place": "VIAPOIS CHAMBER"
+ },
+ "2.34": {
+  "map": "ThreeIsland_DunsparceTunnel",
+  "place": "THREE ISLE PATH"
+ },
+ "2.35": {
+  "map": "SevenIsland_SevaultCanyon_TanobyKey",
+  "place": "TANOBY KEY"
+ },
+ "2.36": {
+  "map": "NavelRock_1F",
+  "place": "NAVEL ROCK"
+ },
+ "2.37": {
+  "map": "NavelRock_Summit",
+  "place": "NAVEL ROCK"
+ },
+ "2.38": {
+  "map": "NavelRock_Base",
+  "place": "NAVEL ROCK"
+ },
+ "2.39": {
+  "map": "NavelRock_SummitPath_2F",
+  "place": "NAVEL ROCK"
+ },
+ "2.40": {
+  "map": "NavelRock_SummitPath_3F",
+  "place": "NAVEL ROCK"
+ },
+ "2.41": {
+  "map": "NavelRock_SummitPath_4F",
+  "place": "NAVEL ROCK"
+ },
+ "2.42": {
+  "map": "NavelRock_SummitPath_5F",
+  "place": "NAVEL ROCK"
+ },
+ "2.43": {
+  "map": "NavelRock_BasePath_B1F",
+  "place": "NAVEL ROCK"
+ },
+ "2.44": {
+  "map": "NavelRock_BasePath_B2F",
+  "place": "NAVEL ROCK"
+ },
+ "2.45": {
+  "map": "NavelRock_BasePath_B3F",
+  "place": "NAVEL ROCK"
+ },
+ "2.46": {
+  "map": "NavelRock_BasePath_B4F",
+  "place": "NAVEL ROCK"
+ },
+ "2.47": {
+  "map": "NavelRock_BasePath_B5F",
+  "place": "NAVEL ROCK"
+ },
+ "2.48": {
+  "map": "NavelRock_BasePath_B6F",
+  "place": "NAVEL ROCK"
+ },
+ "2.49": {
+  "map": "NavelRock_BasePath_B7F",
+  "place": "NAVEL ROCK"
+ },
+ "2.50": {
+  "map": "NavelRock_BasePath_B8F",
+  "place": "NAVEL ROCK"
+ },
+ "2.51": {
+  "map": "NavelRock_BasePath_B9F",
+  "place": "NAVEL ROCK"
+ },
+ "2.52": {
+  "map": "NavelRock_BasePath_B10F",
+  "place": "NAVEL ROCK"
+ },
+ "2.53": {
+  "map": "NavelRock_BasePath_B11F",
+  "place": "NAVEL ROCK"
+ },
+ "2.54": {
+  "map": "NavelRock_B1F",
+  "place": "NAVEL ROCK"
+ },
+ "2.55": {
+  "map": "NavelRock_Fork",
+  "place": "NAVEL ROCK"
+ },
+ "2.56": {
+  "map": "BirthIsland_Exterior",
+  "place": "THE ANNEX"
+ },
+ "2.57": {
+  "map": "OneIsland_KindleRoad_EmberSpa",
+  "place": "KETTLE SPRING"
+ },
+ "2.58": {
+  "map": "BirthIsland_Harbor",
+  "place": "THE ANNEX"
+ },
+ "2.59": {
+  "map": "NavelRock_Harbor",
+  "place": "NAVEL ROCK"
+ },
+ "3.0": {
+  "map": "PalletTown",
+  "place": "BLANCHE TOWN"
+ },
+ "3.1": {
+  "map": "ViridianCity",
+  "place": "CALLOW CITY"
+ },
+ "3.2": {
+  "map": "PewterCity",
+  "place": "SLATE CITY"
+ },
+ "3.3": {
+  "map": "CeruleanCity",
+  "place": "DOLDRUM CITY"
+ },
+ "3.4": {
+  "map": "LavenderTown",
+  "place": "HALFTONE TOWN"
+ },
+ "3.5": {
+  "map": "VermilionCity",
+  "place": "ARDOR CITY"
+ },
+ "3.6": {
+  "map": "CeladonCity",
+  "place": "VERDIGRIS CITY"
+ },
+ "3.7": {
+  "map": "FuchsiaCity",
+  "place": "LURID CITY"
+ },
+ "3.8": {
+  "map": "CinnabarIsland",
+  "place": "QUICKSILVER IS."
+ },
+ "3.9": {
+  "map": "IndigoPlateau_Exterior",
+  "place": "UMBRA PLATEAU"
+ },
+ "3.10": {
+  "map": "SaffronCity",
+  "place": "BRAZEN CITY"
+ },
+ "3.11": {
+  "map": "SaffronCity_Connection",
+  "place": "BRAZEN CITY"
+ },
+ "3.12": {
+  "map": "OneIsland",
+  "place": "ONE ISLAND"
+ },
+ "3.13": {
+  "map": "TwoIsland",
+  "place": "TWO ISLAND"
+ },
+ "3.14": {
+  "map": "ThreeIsland",
+  "place": "THREE ISLAND"
+ },
+ "3.15": {
+  "map": "FourIsland",
+  "place": "FOUR ISLAND"
+ },
+ "3.16": {
+  "map": "FiveIsland",
+  "place": "FIVE ISLAND"
+ },
+ "3.17": {
+  "map": "SevenIsland",
+  "place": "SEVEN ISLAND"
+ },
+ "3.18": {
+  "map": "SixIsland",
+  "place": "SIX ISLAND"
+ },
+ "3.19": {
+  "map": "Route1",
+  "place": "ROUTE 1"
+ },
+ "3.20": {
+  "map": "Route2",
+  "place": "ROUTE 2"
+ },
+ "3.21": {
+  "map": "Route3",
+  "place": "ROUTE 3"
+ },
+ "3.22": {
+  "map": "Route4",
+  "place": "ROUTE 4"
+ },
+ "3.23": {
+  "map": "Route5",
+  "place": "ROUTE 5"
+ },
+ "3.24": {
+  "map": "Route6",
+  "place": "ROUTE 6"
+ },
+ "3.25": {
+  "map": "Route7",
+  "place": "ROUTE 7"
+ },
+ "3.26": {
+  "map": "Route8",
+  "place": "ROUTE 8"
+ },
+ "3.27": {
+  "map": "Route9",
+  "place": "ROUTE 9"
+ },
+ "3.28": {
+  "map": "Route10",
+  "place": "ROUTE 10"
+ },
+ "3.29": {
+  "map": "Route11",
+  "place": "ROUTE 11"
+ },
+ "3.30": {
+  "map": "Route12",
+  "place": "ROUTE 12"
+ },
+ "3.31": {
+  "map": "Route13",
+  "place": "ROUTE 13"
+ },
+ "3.32": {
+  "map": "Route14",
+  "place": "ROUTE 14"
+ },
+ "3.33": {
+  "map": "Route15",
+  "place": "ROUTE 15"
+ },
+ "3.34": {
+  "map": "Route16",
+  "place": "ROUTE 16"
+ },
+ "3.35": {
+  "map": "Route17",
+  "place": "ROUTE 17"
+ },
+ "3.36": {
+  "map": "Route18",
+  "place": "ROUTE 18"
+ },
+ "3.37": {
+  "map": "Route19",
+  "place": "ROUTE 19"
+ },
+ "3.38": {
+  "map": "Route20",
+  "place": "ROUTE 20"
+ },
+ "3.39": {
+  "map": "Route21_North",
+  "place": "ROUTE 21"
+ },
+ "3.40": {
+  "map": "Route21_South",
+  "place": "ROUTE 21"
+ },
+ "3.41": {
+  "map": "Route22",
+  "place": "ROUTE 22"
+ },
+ "3.42": {
+  "map": "Route23",
+  "place": "ROUTE 23"
+ },
+ "3.43": {
+  "map": "Route24",
+  "place": "ROUTE 24"
+ },
+ "3.44": {
+  "map": "Route25",
+  "place": "ROUTE 25"
+ },
+ "3.45": {
+  "map": "OneIsland_KindleRoad",
+  "place": "SMOKE ROAD"
+ },
+ "3.46": {
+  "map": "OneIsland_TreasureBeach",
+  "place": "FINDERS BEACH"
+ },
+ "3.47": {
+  "map": "TwoIsland_CapeBrink",
+  "place": "THE OVERLOOK"
+ },
+ "3.48": {
+  "map": "ThreeIsland_BondBridge",
+  "place": "LONGCROSS"
+ },
+ "3.49": {
+  "map": "ThreeIsland_Port",
+  "place": "THREE ISLE PORT"
+ },
+ "3.50": {
+  "map": "Prototype_SeviiIsle_6",
+  "place": "MARGIN ISLE 6"
+ },
+ "3.51": {
+  "map": "Prototype_SeviiIsle_7",
+  "place": "MARGIN ISLE 7"
+ },
+ "3.52": {
+  "map": "Prototype_SeviiIsle_8",
+  "place": "MARGIN ISLE 8"
+ },
+ "3.53": {
+  "map": "Prototype_SeviiIsle_9",
+  "place": "MARGIN ISLE 9"
+ },
+ "3.54": {
+  "map": "FiveIsland_ResortGorgeous",
+  "place": "RESORT SUBLIME"
+ },
+ "3.55": {
+  "map": "FiveIsland_WaterLabyrinth",
+  "place": "TANGLEWATER"
+ },
+ "3.56": {
+  "map": "FiveIsland_Meadow",
+  "place": "FIVE ISLE MEADOW"
+ },
+ "3.57": {
+  "map": "FiveIsland_MemorialPillar",
+  "place": "SOMEONE'S STONE"
+ },
+ "3.58": {
+  "map": "SixIsland_OutcastIsland",
+  "place": "NOBODY'S ISLE"
+ },
+ "3.59": {
+  "map": "SixIsland_GreenPath",
+  "place": "SLOW WALK"
+ },
+ "3.60": {
+  "map": "SixIsland_WaterPath",
+  "place": "LONG WADE"
+ },
+ "3.61": {
+  "map": "SixIsland_RuinValley",
+  "place": "WHAT REMAINS"
+ },
+ "3.62": {
+  "map": "SevenIsland_TrainerTower",
+  "place": "USER TOWER"
+ },
+ "3.63": {
+  "map": "SevenIsland_SevaultCanyon_Entrance",
+  "place": "THE WAY IN"
+ },
+ "3.64": {
+  "map": "SevenIsland_SevaultCanyon",
+  "place": "LONG DROP"
+ },
+ "3.65": {
+  "map": "SevenIsland_TanobyRuins",
+  "place": "TANOBY RUINS"
+ },
+ "3.66": {
+  "map": "Route25_Grove",
+  "place": "ROUTE 25"
+ },
+ "3.67": {
+  "map": "Route1_Grove",
+  "place": "ROUTE 1"
+ },
+ "3.68": {
+  "map": "Route24_Grove",
+  "place": "ROUTE 24"
+ },
+ "3.69": {
+  "map": "Route8_Grove",
+  "place": "ROUTE 8"
+ },
+ "3.70": {
+  "map": "Route11_Grove",
+  "place": "ROUTE 11"
+ },
+ "3.71": {
+  "map": "Route13_Grove",
+  "place": "ROUTE 13"
+ },
+ "3.72": {
+  "map": "FiveIsland_Meadow_Grove",
+  "place": "FIVE ISLE MEADOW"
+ },
+ "3.73": {
+  "map": "SixIsland_WaterPath_Grove",
+  "place": "LONG WADE"
+ },
+ "3.74": {
+  "map": "OneIsland_Grove",
+  "place": "ONE ISLAND"
+ },
+ "3.75": {
+  "map": "TwoIsland_Grove",
+  "place": "TWO ISLAND"
+ },
+ "3.76": {
+  "map": "FourIsland_Grove",
+  "place": "FOUR ISLAND"
+ },
+ "3.77": {
+  "map": "SevenIsland_Grove",
+  "place": "SEVEN ISLAND"
+ },
+ "4.0": {
+  "map": "PalletTown_PlayersHouse_1F",
+  "place": "BLANCHE TOWN"
+ },
+ "4.1": {
+  "map": "PalletTown_PlayersHouse_2F",
+  "place": "BLANCHE TOWN"
+ },
+ "4.2": {
+  "map": "PalletTown_RivalsHouse",
+  "place": "BLANCHE TOWN"
+ },
+ "4.3": {
+  "map": "PalletTown_ProfessorOaksLab",
+  "place": "BLANCHE TOWN"
+ },
+ "5.0": {
+  "map": "ViridianCity_House",
+  "place": "CALLOW CITY"
+ },
+ "5.1": {
+  "map": "ViridianCity_Gym",
+  "place": "CALLOW CITY"
+ },
+ "5.2": {
+  "map": "ViridianCity_School",
+  "place": "CALLOW CITY"
+ },
+ "5.3": {
+  "map": "ViridianCity_Mart",
+  "place": "CALLOW CITY"
+ },
+ "5.4": {
+  "map": "ViridianCity_PokemonCenter_1F",
+  "place": "CALLOW CITY"
+ },
+ "5.5": {
+  "map": "ViridianCity_PokemonCenter_2F",
+  "place": "CALLOW CITY"
+ },
+ "5.6": {
+  "map": "ViridianCity_School_2F",
+  "place": "CALLOW CITY"
+ },
+ "5.7": {
+  "map": "ViridianCity_School_3F",
+  "place": "CALLOW CITY"
+ },
+ "5.8": {
+  "map": "ViridianCity_School_4F",
+  "place": "CALLOW CITY"
+ },
+ "5.9": {
+  "map": "ViridianCity_School_5F",
+  "place": "CALLOW CITY"
+ },
+ "5.10": {
+  "map": "ViridianCity_School_6F",
+  "place": "CALLOW CITY"
+ },
+ "5.11": {
+  "map": "ViridianCity_School_7F",
+  "place": "CALLOW CITY"
+ },
+ "6.0": {
+  "map": "PewterCity_Museum_1F",
+  "place": "SLATE CITY"
+ },
+ "6.1": {
+  "map": "PewterCity_Museum_2F",
+  "place": "SLATE CITY"
+ },
+ "6.2": {
+  "map": "PewterCity_Gym",
+  "place": "SLATE CITY"
+ },
+ "6.3": {
+  "map": "PewterCity_Mart",
+  "place": "SLATE CITY"
+ },
+ "6.4": {
+  "map": "PewterCity_House1",
+  "place": "SLATE CITY"
+ },
+ "6.5": {
+  "map": "PewterCity_PokemonCenter_1F",
+  "place": "SLATE CITY"
+ },
+ "6.6": {
+  "map": "PewterCity_PokemonCenter_2F",
+  "place": "SLATE CITY"
+ },
+ "6.7": {
+  "map": "PewterCity_House2",
+  "place": "SLATE CITY"
+ },
+ "7.0": {
+  "map": "CeruleanCity_House1",
+  "place": "DOLDRUM CITY"
+ },
+ "7.1": {
+  "map": "CeruleanCity_House2",
+  "place": "DOLDRUM CITY"
+ },
+ "7.2": {
+  "map": "CeruleanCity_House3",
+  "place": "DOLDRUM CITY"
+ },
+ "7.3": {
+  "map": "CeruleanCity_PokemonCenter_1F",
+  "place": "DOLDRUM CITY"
+ },
+ "7.4": {
+  "map": "CeruleanCity_PokemonCenter_2F",
+  "place": "DOLDRUM CITY"
+ },
+ "7.5": {
+  "map": "CeruleanCity_Gym",
+  "place": "DOLDRUM CITY"
+ },
+ "7.6": {
+  "map": "CeruleanCity_BikeShop",
+  "place": "DOLDRUM CITY"
+ },
+ "7.7": {
+  "map": "CeruleanCity_Mart",
+  "place": "DOLDRUM CITY"
+ },
+ "7.8": {
+  "map": "CeruleanCity_House4",
+  "place": "DOLDRUM CITY"
+ },
+ "7.9": {
+  "map": "CeruleanCity_House5",
+  "place": "DOLDRUM CITY"
+ },
+ "8.0": {
+  "map": "LavenderTown_PokemonCenter_1F",
+  "place": "HALFTONE TOWN"
+ },
+ "8.1": {
+  "map": "LavenderTown_PokemonCenter_2F",
+  "place": "HALFTONE TOWN"
+ },
+ "8.2": {
+  "map": "LavenderTown_VolunteerPokemonHouse",
+  "place": "HALFTONE TOWN"
+ },
+ "8.3": {
+  "map": "LavenderTown_House1",
+  "place": "HALFTONE TOWN"
+ },
+ "8.4": {
+  "map": "LavenderTown_House2",
+  "place": "HALFTONE TOWN"
+ },
+ "8.5": {
+  "map": "LavenderTown_Mart",
+  "place": "HALFTONE TOWN"
+ },
+ "9.0": {
+  "map": "VermilionCity_House1",
+  "place": "ARDOR CITY"
+ },
+ "9.1": {
+  "map": "VermilionCity_PokemonCenter_1F",
+  "place": "ARDOR CITY"
+ },
+ "9.2": {
+  "map": "VermilionCity_PokemonCenter_2F",
+  "place": "ARDOR CITY"
+ },
+ "9.3": {
+  "map": "VermilionCity_PokemonFanClub",
+  "place": "ARDOR CITY"
+ },
+ "9.4": {
+  "map": "VermilionCity_House2",
+  "place": "ARDOR CITY"
+ },
+ "9.5": {
+  "map": "VermilionCity_Mart",
+  "place": "ARDOR CITY"
+ },
+ "9.6": {
+  "map": "VermilionCity_Gym",
+  "place": "ARDOR CITY"
+ },
+ "9.7": {
+  "map": "VermilionCity_House3",
+  "place": "ARDOR CITY"
+ },
+ "10.0": {
+  "map": "CeladonCity_DepartmentStore_1F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.1": {
+  "map": "CeladonCity_DepartmentStore_2F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.2": {
+  "map": "CeladonCity_DepartmentStore_3F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.3": {
+  "map": "CeladonCity_DepartmentStore_4F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.4": {
+  "map": "CeladonCity_DepartmentStore_5F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.5": {
+  "map": "CeladonCity_DepartmentStore_Roof",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.6": {
+  "map": "CeladonCity_DepartmentStore_Elevator",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.7": {
+  "map": "CeladonCity_Condominiums_1F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.8": {
+  "map": "CeladonCity_Condominiums_2F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.9": {
+  "map": "CeladonCity_Condominiums_3F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.10": {
+  "map": "CeladonCity_Condominiums_Roof",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.11": {
+  "map": "CeladonCity_Condominiums_RoofRoom",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.12": {
+  "map": "CeladonCity_PokemonCenter_1F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.13": {
+  "map": "CeladonCity_PokemonCenter_2F",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.14": {
+  "map": "CeladonCity_GameCorner",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.15": {
+  "map": "CeladonCity_GameCorner_PrizeRoom",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.16": {
+  "map": "CeladonCity_Gym",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.17": {
+  "map": "CeladonCity_Restaurant",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.18": {
+  "map": "CeladonCity_House1",
+  "place": "VERDIGRIS CITY"
+ },
+ "10.19": {
+  "map": "CeladonCity_Hotel",
+  "place": "VERDIGRIS CITY"
+ },
+ "11.0": {
+  "map": "FuchsiaCity_SafariZone_Entrance",
+  "place": "LURID CITY"
+ },
+ "11.1": {
+  "map": "FuchsiaCity_Mart",
+  "place": "LURID CITY"
+ },
+ "11.2": {
+  "map": "FuchsiaCity_SafariZone_Office",
+  "place": "LURID CITY"
+ },
+ "11.3": {
+  "map": "FuchsiaCity_Gym",
+  "place": "LURID CITY"
+ },
+ "11.4": {
+  "map": "FuchsiaCity_House1",
+  "place": "LURID CITY"
+ },
+ "11.5": {
+  "map": "FuchsiaCity_PokemonCenter_1F",
+  "place": "LURID CITY"
+ },
+ "11.6": {
+  "map": "FuchsiaCity_PokemonCenter_2F",
+  "place": "LURID CITY"
+ },
+ "11.7": {
+  "map": "FuchsiaCity_WardensHouse",
+  "place": "LURID CITY"
+ },
+ "11.8": {
+  "map": "FuchsiaCity_House2",
+  "place": "LURID CITY"
+ },
+ "11.9": {
+  "map": "FuchsiaCity_House3",
+  "place": "LURID CITY"
+ },
+ "12.0": {
+  "map": "CinnabarIsland_Gym",
+  "place": "QUICKSILVER IS."
+ },
+ "12.1": {
+  "map": "CinnabarIsland_PokemonLab_Entrance",
+  "place": "QUICKSILVER IS."
+ },
+ "12.2": {
+  "map": "CinnabarIsland_PokemonLab_Lounge",
+  "place": "QUICKSILVER IS."
+ },
+ "12.3": {
+  "map": "CinnabarIsland_PokemonLab_ResearchRoom",
+  "place": "QUICKSILVER IS."
+ },
+ "12.4": {
+  "map": "CinnabarIsland_PokemonLab_ExperimentRoom",
+  "place": "QUICKSILVER IS."
+ },
+ "12.5": {
+  "map": "CinnabarIsland_PokemonCenter_1F",
+  "place": "QUICKSILVER IS."
+ },
+ "12.6": {
+  "map": "CinnabarIsland_PokemonCenter_2F",
+  "place": "QUICKSILVER IS."
+ },
+ "12.7": {
+  "map": "CinnabarIsland_Mart",
+  "place": "QUICKSILVER IS."
+ },
+ "13.0": {
+  "map": "IndigoPlateau_PokemonCenter_1F",
+  "place": "UMBRA PLATEAU"
+ },
+ "13.1": {
+  "map": "IndigoPlateau_PokemonCenter_2F",
+  "place": "UMBRA PLATEAU"
+ },
+ "14.0": {
+  "map": "SaffronCity_CopycatsHouse_1F",
+  "place": "BRAZEN CITY"
+ },
+ "14.1": {
+  "map": "SaffronCity_CopycatsHouse_2F",
+  "place": "BRAZEN CITY"
+ },
+ "14.2": {
+  "map": "SaffronCity_Dojo",
+  "place": "BRAZEN CITY"
+ },
+ "14.3": {
+  "map": "SaffronCity_Gym",
+  "place": "BRAZEN CITY"
+ },
+ "14.4": {
+  "map": "SaffronCity_House",
+  "place": "BRAZEN CITY"
+ },
+ "14.5": {
+  "map": "SaffronCity_Mart",
+  "place": "BRAZEN CITY"
+ },
+ "14.6": {
+  "map": "SaffronCity_PokemonCenter_1F",
+  "place": "BRAZEN CITY"
+ },
+ "14.7": {
+  "map": "SaffronCity_PokemonCenter_2F",
+  "place": "BRAZEN CITY"
+ },
+ "14.8": {
+  "map": "SaffronCity_MrPsychicsHouse",
+  "place": "BRAZEN CITY"
+ },
+ "14.9": {
+  "map": "SaffronCity_PokemonTrainerFanClub",
+  "place": "BRAZEN CITY"
+ },
+ "15.0": {
+  "map": "Route2_ViridianForest_SouthEntrance",
+  "place": "ROUTE 2"
+ },
+ "15.1": {
+  "map": "Route2_House",
+  "place": "ROUTE 2"
+ },
+ "15.2": {
+  "map": "Route2_EastBuilding",
+  "place": "ROUTE 2"
+ },
+ "15.3": {
+  "map": "Route2_ViridianForest_NorthEntrance",
+  "place": "ROUTE 2"
+ },
+ "16.0": {
+  "map": "Route4_PokemonCenter_1F",
+  "place": "ROUTE 4"
+ },
+ "16.1": {
+  "map": "Route4_PokemonCenter_2F",
+  "place": "ROUTE 4"
+ },
+ "17.0": {
+  "map": "Route5_PokemonDayCare",
+  "place": "ROUTE 5"
+ },
+ "17.1": {
+  "map": "Route5_SouthEntrance",
+  "place": "ROUTE 5"
+ },
+ "18.0": {
+  "map": "Route6_NorthEntrance",
+  "place": "ROUTE 6"
+ },
+ "18.1": {
+  "map": "Route6_UnusedHouse",
+  "place": "ROUTE 6"
+ },
+ "19.0": {
+  "map": "Route7_EastEntrance",
+  "place": "ROUTE 7"
+ },
+ "20.0": {
+  "map": "Route8_WestEntrance",
+  "place": "ROUTE 8"
+ },
+ "21.0": {
+  "map": "Route10_PokemonCenter_1F",
+  "place": "ROUTE 10"
+ },
+ "21.1": {
+  "map": "Route10_PokemonCenter_2F",
+  "place": "ROUTE 10"
+ },
+ "22.0": {
+  "map": "Route11_EastEntrance_1F",
+  "place": "ROUTE 11"
+ },
+ "22.1": {
+  "map": "Route11_EastEntrance_2F",
+  "place": "ROUTE 11"
+ },
+ "23.0": {
+  "map": "Route12_NorthEntrance_1F",
+  "place": "ROUTE 12"
+ },
+ "23.1": {
+  "map": "Route12_NorthEntrance_2F",
+  "place": "ROUTE 12"
+ },
+ "23.2": {
+  "map": "Route12_FishingHouse",
+  "place": "ROUTE 12"
+ },
+ "24.0": {
+  "map": "Route15_WestEntrance_1F",
+  "place": "ROUTE 15"
+ },
+ "24.1": {
+  "map": "Route15_WestEntrance_2F",
+  "place": "ROUTE 15"
+ },
+ "25.0": {
+  "map": "Route16_House",
+  "place": "ROUTE 16"
+ },
+ "25.1": {
+  "map": "Route16_NorthEntrance_1F",
+  "place": "ROUTE 16"
+ },
+ "25.2": {
+  "map": "Route16_NorthEntrance_2F",
+  "place": "ROUTE 16"
+ },
+ "26.0": {
+  "map": "Route18_EastEntrance_1F",
+  "place": "ROUTE 18"
+ },
+ "26.1": {
+  "map": "Route18_EastEntrance_2F",
+  "place": "ROUTE 18"
+ },
+ "27.0": {
+  "map": "Route19_UnusedHouse",
+  "place": "ROUTE 19"
+ },
+ "28.0": {
+  "map": "Route22_NorthEntrance",
+  "place": "ROUTE 22"
+ },
+ "29.0": {
+  "map": "Route23_UnusedHouse",
+  "place": "ROUTE 23"
+ },
+ "30.0": {
+  "map": "Route25_SeaCottage",
+  "place": "ROUTE 25"
+ },
+ "31.0": {
+  "map": "SevenIsland_House_Room1",
+  "place": "SEVEN ISLAND"
+ },
+ "31.1": {
+  "map": "SevenIsland_House_Room2",
+  "place": "SEVEN ISLAND"
+ },
+ "31.2": {
+  "map": "SevenIsland_Mart",
+  "place": "SEVEN ISLAND"
+ },
+ "31.3": {
+  "map": "SevenIsland_PokemonCenter_1F",
+  "place": "SEVEN ISLAND"
+ },
+ "31.4": {
+  "map": "SevenIsland_PokemonCenter_2F",
+  "place": "SEVEN ISLAND"
+ },
+ "31.5": {
+  "map": "SevenIsland_UnusedHouse",
+  "place": "SEVEN ISLAND"
+ },
+ "31.6": {
+  "map": "SevenIsland_Harbor",
+  "place": "SEVEN ISLAND"
+ },
+ "32.0": {
+  "map": "OneIsland_PokemonCenter_1F",
+  "place": "ONE ISLAND"
+ },
+ "32.1": {
+  "map": "OneIsland_PokemonCenter_2F",
+  "place": "ONE ISLAND"
+ },
+ "32.2": {
+  "map": "OneIsland_House1",
+  "place": "ONE ISLAND"
+ },
+ "32.3": {
+  "map": "OneIsland_House2",
+  "place": "ONE ISLAND"
+ },
+ "32.4": {
+  "map": "OneIsland_Harbor",
+  "place": "ONE ISLAND"
+ },
+ "33.0": {
+  "map": "TwoIsland_JoyfulGameCorner",
+  "place": "TWO ISLAND"
+ },
+ "33.1": {
+  "map": "TwoIsland_House",
+  "place": "TWO ISLAND"
+ },
+ "33.2": {
+  "map": "TwoIsland_PokemonCenter_1F",
+  "place": "TWO ISLAND"
+ },
+ "33.3": {
+  "map": "TwoIsland_PokemonCenter_2F",
+  "place": "TWO ISLAND"
+ },
+ "33.4": {
+  "map": "TwoIsland_Harbor",
+  "place": "TWO ISLAND"
+ },
+ "34.0": {
+  "map": "ThreeIsland_House1",
+  "place": "THREE ISLAND"
+ },
+ "34.1": {
+  "map": "ThreeIsland_PokemonCenter_1F",
+  "place": "THREE ISLAND"
+ },
+ "34.2": {
+  "map": "ThreeIsland_PokemonCenter_2F",
+  "place": "THREE ISLAND"
+ },
+ "34.3": {
+  "map": "ThreeIsland_Mart",
+  "place": "THREE ISLAND"
+ },
+ "34.4": {
+  "map": "ThreeIsland_House2",
+  "place": "THREE ISLAND"
+ },
+ "34.5": {
+  "map": "ThreeIsland_House3",
+  "place": "THREE ISLAND"
+ },
+ "34.6": {
+  "map": "ThreeIsland_House4",
+  "place": "THREE ISLAND"
+ },
+ "34.7": {
+  "map": "ThreeIsland_House5",
+  "place": "THREE ISLAND"
+ },
+ "35.0": {
+  "map": "FourIsland_PokemonDayCare",
+  "place": "FOUR ISLAND"
+ },
+ "35.1": {
+  "map": "FourIsland_PokemonCenter_1F",
+  "place": "FOUR ISLAND"
+ },
+ "35.2": {
+  "map": "FourIsland_PokemonCenter_2F",
+  "place": "FOUR ISLAND"
+ },
+ "35.3": {
+  "map": "FourIsland_House1",
+  "place": "FOUR ISLAND"
+ },
+ "35.4": {
+  "map": "FourIsland_LoreleisHouse",
+  "place": "FOUR ISLAND"
+ },
+ "35.5": {
+  "map": "FourIsland_Harbor",
+  "place": "FOUR ISLAND"
+ },
+ "35.6": {
+  "map": "FourIsland_House2",
+  "place": "FOUR ISLAND"
+ },
+ "35.7": {
+  "map": "FourIsland_Mart",
+  "place": "FOUR ISLAND"
+ },
+ "36.0": {
+  "map": "FiveIsland_PokemonCenter_1F",
+  "place": "FIVE ISLAND"
+ },
+ "36.1": {
+  "map": "FiveIsland_PokemonCenter_2F",
+  "place": "FIVE ISLAND"
+ },
+ "36.2": {
+  "map": "FiveIsland_Harbor",
+  "place": "FIVE ISLAND"
+ },
+ "36.3": {
+  "map": "FiveIsland_House1",
+  "place": "FIVE ISLAND"
+ },
+ "36.4": {
+  "map": "FiveIsland_House2",
+  "place": "FIVE ISLAND"
+ },
+ "37.0": {
+  "map": "SixIsland_PokemonCenter_1F",
+  "place": "SIX ISLAND"
+ },
+ "37.1": {
+  "map": "SixIsland_PokemonCenter_2F",
+  "place": "SIX ISLAND"
+ },
+ "37.2": {
+  "map": "SixIsland_Harbor",
+  "place": "SIX ISLAND"
+ },
+ "37.3": {
+  "map": "SixIsland_House",
+  "place": "SIX ISLAND"
+ },
+ "37.4": {
+  "map": "SixIsland_Mart",
+  "place": "SIX ISLAND"
+ },
+ "38.0": {
+  "map": "ThreeIsland_Harbor",
+  "place": "THREE ISLE PORT"
+ },
+ "39.0": {
+  "map": "FiveIsland_ResortGorgeous_House",
+  "place": "RESORT SUBLIME"
+ },
+ "40.0": {
+  "map": "TwoIsland_CapeBrink_House",
+  "place": "THE OVERLOOK"
+ },
+ "41.0": {
+  "map": "SixIsland_WaterPath_House1",
+  "place": "LONG WADE"
+ },
+ "41.1": {
+  "map": "SixIsland_WaterPath_House2",
+  "place": "LONG WADE"
+ },
+ "42.0": {
+  "map": "SevenIsland_SevaultCanyon_House",
+  "place": "LONG DROP"
+ }
+}

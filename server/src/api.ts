@@ -9,6 +9,8 @@
 //   POST /api/away/answer        answer the game's AWAY requests in the configured save (C-10), after a backup
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
 //   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
+//   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
+//   POST /api/device/ticks       C-09: {steps: [ids]} -- the steps a device ticked off; answers with the new state
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
@@ -40,7 +42,9 @@ function send(res: ServerResponse, status: number, data: unknown) {
 
 export function today(cfg: Config, store: Store, now = new Date()) {
   const day = weekJson.days[now.getDay()];               // Sunday first, as the game keeps it
-  return { date: now.toISOString().slice(0, 10), edition: cfg.edition, day, season: season(cfg.edition, now),
+  // the LOCAL date, as the day and the season are read: toISOString() is UTC, and west of Greenwich it names tomorrow by evening
+  const date = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((n, i) => String(n).padStart(i ? 2 : 4, "0")).join("-");
+  return { date, edition: cfg.edition, day, season: season(cfg.edition, now),
            next: store.nextStep() };
 }
 
@@ -61,6 +65,23 @@ export function answerAway(cfg: Config, now = new Date()) {
   return { answered, backup };
 }
 
+// C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
+// one document and pushes the steps ticked off on it. Its daemon is the party's AWAY one -- sending a daemon in the game
+// is what puts it on the device. Its mood is C-13's, whose rules are open, so it is null until they are written. This
+// is on the local network only and carries no secret; accounts are C-11's.
+export function deviceState(cfg: Config, store: Store, now = new Date()) {
+  const t = today(cfg, store, now);
+  let daemon = null;
+  if (cfg.savePath && existsSync(cfg.savePath)) {
+    const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away);
+    if (d) daemon = { slot: d.slot, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
+                      art: `/art/party/${d.slot}.png`, mood: null };
+  }
+  return { date: t.date, edition: t.edition, season: t.season,
+           day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue },
+           step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal } : null, daemon };
+}
+
 export function makeServer(cfg: Config, store = new Store(cfg.database)): Server {
   return createServer(async (req, res) => {
     try {
@@ -73,6 +94,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
       }
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(cfg, store));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(cfg));
+      if (req.method === "GET" && path === "/api/device/state") return send(res, 200, deviceState(cfg, store));
+      if (req.method === "POST" && path === "/api/device/ticks") {
+        const b = await body(req);
+        if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))
+          return send(res, 400, { error: "steps must be a list of step ids" });
+        const done = b.steps.filter((id: number) => store.completeStep(id));
+        return send(res, 200, { done, state: deviceState(cfg, store) });
+      }
       const partyArt = path.match(/^\/art\/party\/(\d)\.png$/);
       if (req.method === "GET" && partyArt) {
         if (!cfg.savePath || !existsSync(cfg.savePath)) return send(res, 404, { error: "no save is configured" });

@@ -1,4 +1,4 @@
-// C-02: reading a DAEMONS save. Read only -- writing (AWAY, C-10) comes later, behind a backup.
+// C-02: reading a DAEMONS save. Read only -- writing (AWAY, C-10) is save/writer.ts, behind a backup.
 //
 // A Gen 3 save holds two slots of 14 sectors; each sector is 4 KiB: 3968 bytes of data and a footer (its section id,
 // its checksum, a signature, and the save counter). The game writes the two slots in turn, so the newer slot whose
@@ -55,9 +55,9 @@ export function sectionChecksum(data: Uint8Array, size: number): number {
   return ((sum >>> 16) + sum) & 0xffff;
 }
 
-interface Slot { counter: number; sections: Map<number, Uint8Array> }
+export interface Slot { counter: number; sections: Map<number, Uint8Array> }
 
-function readSlot(save: Uint8Array, index: 0 | 1, l: Layout): Slot | null {
+export function readSlot(save: Uint8Array, index: 0 | 1, l: Layout = LAYOUT): Slot | null {
   const sections = new Map<number, Uint8Array>();
   let counter = -1;
   for (let s = 0; s < l.sectors_per_slot; s++) {
@@ -77,7 +77,7 @@ function readSlot(save: Uint8Array, index: 0 | 1, l: Layout): Slot | null {
 }
 
 // The newer of two valid slots; a counter that wrapped (0xFFFFFFFF then 0) still reads as newer.
-function newer(a: Slot, b: Slot): boolean {
+export function newer(a: Slot, b: Slot): boolean {
   if (a.counter === 0xffffffff && b.counter === 0) return false;
   if (b.counter === 0xffffffff && a.counter === 0) return true;
   return a.counter >= b.counter;

@@ -14,7 +14,7 @@ type Next = { goal: string; subitem: string; step: { id: number; text: string } 
 type Today = { date: string; edition: string; day: Day; season: string; next: Next };
 type Step = { id: number; text: string; done: boolean };
 type Goal = { id: number; title: string; done: boolean; subitems: { id: number; title: string; done: boolean; steps: Step[] }[] };
-type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean };
+type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean; asked: boolean };
 
 async function api<T>(path: string, body?: unknown): Promise<T> {
   const r = await fetch(SERVER + path, body === undefined ? undefined
@@ -92,11 +92,33 @@ function DaemonScreen({ accent }: { accent: string }) {
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<{ name: string; category: string; entry: string } | null>(null);
-  useEffect(() => { api<{ party: Daemon[] }>("/api/party").then((r) => setParty(r.party)).catch((e) => setError(e.message)); }, []);
+  const [note, setNote] = useState("");
+  const load = useCallback(() => {
+    api<{ party: Daemon[] }>("/api/party").then((r) => setParty(r.party)).catch((e) => setError(e.message));
+  }, []);
+  useEffect(load, [load]);
+  // C-10: the game asks (its party menu's SEND or CALL HOME, then a save); this answers, with the game closed.
+  const answer = async () => {
+    const r = await api<{ answered: { nickname: string; now: string }[] }>("/api/away/answer", {});
+    setNote(r.answered.length
+      ? r.answered.map((a) => a.now === "away" ? `${a.nickname} is on your device now.` : `${a.nickname} is home.`).join(" ")
+      : "Nothing was asked. In the game, choose SEND or CALL HOME and let it save first.");
+    load();
+  };
   if (error) return <Text style={s.small}>{error}</Text>;
   if (!party) return <Text style={s.small}>Reading your save…</Text>;
+  const asked = party.some((d) => d.asked);
   return (
     <View style={s.stack}>
+      {asked ? (
+        <View style={[s.card, { borderColor: accent }]}>
+          <Text style={s.small}>The game is asking. Close it first, then answer here.</Text>
+          <Pressable style={[s.button, { backgroundColor: accent }]} onPress={answer} accessibilityRole="button">
+            <Text style={s.buttonText}>Answer the game</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {note ? <Text style={s.small}>{note}</Text> : null}
       <View style={s.grid}>
         {party.map((d) => (
           <Pressable key={d.slot} style={[s.daemon, d.away && s.away]} accessibilityRole="button"
@@ -105,6 +127,7 @@ function DaemonScreen({ accent }: { accent: string }) {
             <Text style={s.daemonName}>{d.nickname}</Text>
             <Text style={s.small}>{d.name} · L{d.level}</Text>
             {d.away ? <Text style={[s.small, { color: accent }]}>ON YOUR DEVICE</Text> : null}
+            {d.asked ? <Text style={[s.small, { color: accent }]}>{d.away ? "ASKED HOME" : "ASKED TO GO"}</Text> : null}
           </Pressable>
         ))}
       </View>

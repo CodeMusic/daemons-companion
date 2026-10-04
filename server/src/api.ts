@@ -6,16 +6,18 @@
 //   POST /api/steps/:id/done     tick a step off
 //   GET  /api/party              the party of the configured save COPY (C-02)
 //   GET  /api/species/:id        one daemon's name, types, category and its edition's INDEX entry
+//   POST /api/away/answer        answer the game's AWAY requests in the configured save (C-10), after a backup
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
+import { answerRequests } from "./save/writer.js";
 import { season } from "./seasons.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -37,6 +39,23 @@ export function today(cfg: Config, store: Store, now = new Date()) {
            next: store.nextStep() };
 }
 
+// C-10: answer the game's requests in the configured save. The game must be closed first -- an emulator that is still
+// running writes its own copy back over this one. A backup of the whole file goes beside it every time, and the file is
+// written only when something was asked.
+export function answerAway(cfg: Config, now = new Date()) {
+  if (!cfg.savePath || !existsSync(cfg.savePath)) throw new Error("no save is configured (savePath in config.json)");
+  const { save, answered } = answerRequests(new Uint8Array(readFileSync(cfg.savePath)));
+  let backup: string | null = null;
+  if (answered.length) {
+    const dir = join(dirname(cfg.savePath), "companion-backups");
+    mkdirSync(dir, { recursive: true });
+    backup = join(dir, `${basename(cfg.savePath)}.${now.toISOString().replace(/[:.]/g, "-")}`);
+    copyFileSync(cfg.savePath, backup);
+    writeFileSync(cfg.savePath, save);
+  }
+  return { answered, backup };
+}
+
 export function makeServer(cfg: Config, store = new Store(cfg.database)): Server {
   return createServer(async (req, res) => {
     try {
@@ -48,6 +67,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database)): Server
         return res.end();
       }
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(cfg, store));
+      if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(cfg));
       if (req.method === "GET" && path === "/api/goals") return send(res, 200, store.goals());
       if (req.method === "POST" && path === "/api/goals") {
         const b = await body(req);

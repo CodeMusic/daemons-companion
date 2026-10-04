@@ -79,7 +79,8 @@ python3 shot.py screen.png
 ```
 
 The board answers `SHOT` with its screen buffer, and `shot.py` saves it as a PNG. `GO TODAY`, `GO DAEMON`, `GO INDEX`
-and `GO ROUTINES` sent down the cable turn to a page first, so every screen can be checked without the dial.
+and `GO ROUTINES` sent down the cable turn to a page first, and `KEY RIGHT`, `KEY LEFT`, `KEY PRESS` and `KEY BACK` work
+the controls -- so every screen can be reached and checked without touching the board.
 
 ## Watch it
 

@@ -57,7 +57,8 @@ Screen screen = HOME;
 int typeAt = 0, routineAt = 0;
 // C-33: joining a network on the board -- the networks in range, then the password on a letter wheel. WHEEL[0] is OK.
 String nets[12]; int netRssi[12], netCount = 0, netAt = 0, wheelAt = 1; String typed; bool joinNext = false;
-static const char WHEEL[] = "\x01abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
+// ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
+static const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
 static const int WHEEL_N = sizeof(WHEEL) - 1;
 String runResult;
 uint32_t usbSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
@@ -65,6 +66,8 @@ String flash, lineIn;
 bool dirty = true;
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 bool wake();                              // C-39, below
+void turn(int step); void press(); void back();
+bool asleep = false;                      // C-39, below
 String wifiSsid, wifiPass, serverUrl;     // C-33, below
 
 // ---- C-28: the device's ROUTINES -- the board's radios, named in the game's words ----------------------------------
@@ -252,8 +255,8 @@ void drawRoutines(uint16_t day) {
     }
   } else if (screen == PICK_NET) {
     canvas.drawString("JOIN A NETWORK", 10, 32);
-    int from = max(0, netAt - 5);
-    for (int i = from; i < netCount && i < from + 6; i++)
+    int from = max(0, netAt - 4);                // five rows, clear of the footer
+    for (int i = from; i < netCount && i < from + 5; i++)
       listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
   } else if (screen == TYPE_PASS) {
     canvas.drawString("JOIN  " + nets[netAt], 10, 32);
@@ -278,7 +281,7 @@ void drawRoutines(uint16_t day) {
   }
   canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
   canvas.drawString(screen == RUN ? "press: run again    top button: back"
-                    : screen == TYPE_PASS ? "turn: letter    press: add it (OK: join)    top: delete"
+                    : screen == TYPE_PASS ? "turn: letter  press: add (OK: join)  top: delete"
                     : "turn: choose    press: open    top button: back", 10, H - 4);
 }
 
@@ -484,6 +487,13 @@ void readUsb() {
       else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
       else if (lineIn == "SHOT") shot();
       else if (lineIn == "LIST") Serial.println("ROUTINES " + routinesJson());
+      else if (lineIn.startsWith("KEY ")) {         // the controls, from the computer, for a check with SHOT
+        String k = lineIn.substring(4);
+        if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
+        else if (k == "PRESS") { if (!wake()) press(); }
+        else if (k == "BACK") { if (!wake()) back(); }
+        if (!asleep) draw();
+      }
       else if (lineIn.startsWith("CMD ")) {
         JsonDocument d;
         if (deserializeJson(d, lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length());
@@ -504,6 +514,19 @@ void readUsb() {
 
 // ---- the encoder: a quadrature state table, read every pass of the loop -------------------------------------------
 int8_t encLast = 0, encSum = 0;
+// One step of the dial: +1 right, -1 left -- from the dial itself, or KEY RIGHT / KEY LEFT down the cable.
+void turn(int step) {
+  if (wake()) return;                   // C-39: a turn that wakes the board does nothing else
+  ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
+  if (screen == HOME) page = (Page)((page + 3 + step) % 3);
+  else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
+  else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
+  else if (screen == TYPE_PASS) wheelAt = (wheelAt + WHEEL_N + step) % WHEEL_N;
+  else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
+    routineAt = (routineAt + TYPES_LIST[typeAt].count + step) % TYPES_LIST[typeAt].count;
+  dirty = true;
+}
+
 void readEncoder() {
   static const int8_t table[16] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
   int8_t now = (digitalRead(PIN_ENC_A) << 1) | digitalRead(PIN_ENC_B);
@@ -512,15 +535,7 @@ void readEncoder() {
   if (encSum >= 4 || encSum <= -4) {
     int step = encSum > 0 ? 1 : -1;
     encSum = 0;
-    if (wake()) return;                   // C-39: a turn that wakes the board does nothing else
-    ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
-    if (screen == HOME) page = (Page)((page + 3 + step) % 3);
-    else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
-    else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
-    else if (screen == TYPE_PASS) wheelAt = (wheelAt + WHEEL_N + step) % WHEEL_N;
-    else if (screen == LIST && TYPES_LIST[typeAt].count > 0)
-      routineAt = (routineAt + TYPES_LIST[typeAt].count + step) % TYPES_LIST[typeAt].count;
-    dirty = true;
+    turn(step);
   }
 }
 
@@ -587,7 +602,7 @@ void back() {
 // ---- C-39: sleep. Hold the top button and press the front one: the screen, its light and the ring go dark. Turning
 // the dial or pressing either button wakes it to the page it was on, and the wake does nothing else. The link keeps
 // running underneath (readUsb, the Wi-Fi poll), so it wakes current.
-bool asleep = false, chorded = false;
+bool chorded = false;
 
 void sleepNow() {
   asleep = true;

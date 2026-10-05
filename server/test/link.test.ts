@@ -136,3 +136,18 @@ describe("pairing a phone (C-53)", () => {
     expect((await post("/api/pair", { code })).status).toBe(403);
   });
 });
+
+describe("the phone carries the board's link over Bluetooth (C-55)", () => {
+  it("is linked by the phone only with a paired phone's key, and never hands it a Wi-Fi password", async () => {
+    const { code } = (await post("/api/pair/code", {})).json;
+    const { token } = (await post("/api/pair", { code, name: "carrier" })).json;
+    const auth = { authorization: `Bearer ${token}` };
+    await fetch(base + "/api/device/state?via=phone");                                   // no key: not the phone
+    expect((await get("/api/device/link")).via).not.toBe("phone");
+    await fetch(base + "/api/device/state?via=phone", { headers: auth });
+    expect((await get("/api/device/link")).via).toBe("phone");
+    await post("/api/device/wifi", { ssid: "home", password: "secret" });
+    const { commands } = await fetch(base + "/api/device/commands?via=phone", { headers: auth }).then((r) => r.json());
+    expect(commands.some((c: any) => c.type === "wifi")).toBe(false);
+  });
+});

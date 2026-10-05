@@ -22,6 +22,9 @@ async function loadConnection(): Promise<boolean> {
   if (server && token) { SERVER = server; TOKEN = token; return true; }
   return false;
 }
+// C-55: the handheld's link over Bluetooth, carried by the phone (handheld.ts) -- only on the phone; the site has the cable.
+const HANDHELD: typeof import("./handheld").handheld | null = ON_PHONE ? require("./handheld").handheld : null;
+type HandheldNow = import("./handheld").Handheld;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string };
@@ -491,7 +494,7 @@ function IndexScreen() {
 
 // ---- C-32: the site and the device, linked. The server is the hub: this screen asks it what the link is, sends the
 // board commands through it, and shows what the board answered. C-33 (its Wi-Fi) and C-34 (FLARE's search) live here.
-type Link = { linked: boolean; via: "usb" | "wifi" | null; lastSeen: string | null; firmware: string;
+type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: string | null; firmware: string;
               routines: { name: string; radio: string; routines: string[] }[];
               pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
               remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string;
@@ -581,10 +584,11 @@ function DeviceScreen({ ink }: { ink: string }) {
   const sendWifi = async () => setWifiSent((await api<{ id: number }>("/api/device/wifi", { ssid, password: pass })).id);
   return (
     <YStack gap={14}>
+      {HANDHELD ? <HandheldCard ink={ink} /> : null}
       <Card borderLeftWidth={6} borderLeftColor={link.linked ? "$color9" : "$color5"}>
         <Eyebrow>THE HANDHELD</Eyebrow>
         <Text fontSize={20} fontWeight="600" color="$color12">
-          {link.linked ? `Linked, by ${link.via === "usb" ? "its cable" : "Wi-Fi"}` : "Not linked"}
+          {link.linked ? `Linked, by ${link.via === "usb" ? "its cable" : link.via === "phone" ? "a phone (Bluetooth)" : "Wi-Fi"}` : "Not linked"}
         </Text>
         <Small>{link.linked ? link.firmware
           : "Plug it in and run ./linkCompanion.sh, or let it join your Wi-Fi (below)."}</Small>
@@ -679,6 +683,30 @@ function DeviceScreen({ ink }: { ink: string }) {
 }
 
 // ---- C-53: pairing this phone with the companion -- the address the site shows, and its code, once ----
+// ---- C-55, on the phone: the handheld over Bluetooth -- pair it once, and the phone carries its link from then on ----
+function HandheldCard({ ink }: { ink: string }) {
+  const [h, setH] = useState<HandheldNow | null>(null);
+  useEffect(() => HANDHELD!.watch(setH), []);
+  if (!h) return null;
+  const head = h.phase === "linked" ? `Linked to ${h.name}` : h.phase === "lost" ? "Out of range"
+    : h.phase === "looking" ? "Looking…" : h.phase === "pairing" ? "Pairing…" : "Not paired";
+  return (
+    <Card borderLeftWidth={6} borderLeftColor={h.phase === "linked" ? "$color9" : "$color5"}>
+      <Eyebrow>THE HANDHELD, ON THIS PHONE</Eyebrow>
+      <Text fontSize={20} fontWeight="600" color="$color12">{head}</Text>
+      <Small>{h.phase === "linked"
+        ? (h.companion ? "This phone carries its link: its goal, its daemon and its routines, wherever you both go."
+                       : "The companion is out of reach. The handheld keeps going, and what it does waits here.")
+        : h.note || "Pair it once: on the handheld, ROUTINES, WHISPER, PAIR MY PHONE. Then press Pair below and type the code it shows."}</Small>
+      {h.waiting ? <Small>{`${h.waiting} waiting for the companion`}</Small> : null}
+      <XStack gap={8} flexWrap="wrap">
+        {h.phase === "none" || h.phase === "lost" ? <Action label="Pair the handheld" ink={ink} onPress={() => HANDHELD!.pair()} /> : null}
+        {h.phase !== "none" ? <Action label="Forget it" ink={ink} onPress={() => HANDHELD!.forget()} /> : null}
+      </XStack>
+    </Card>
+  );
+}
+
 function PairScreen({ onPaired }: { onPaired: () => void }) {
   const [server, setServer] = useState(""), [code, setCode] = useState(""), [name, setName] = useState("my phone");
   const [error, setError] = useState("");
@@ -781,6 +809,8 @@ function Shell() {
     api<Goal[]>("/api/goals").then(setGoals).catch(() => {});
   }, []);
   useEffect(reload, [reload]);
+  // C-55: back to the handheld this phone paired with, if any
+  useEffect(() => { HANDHELD?.start(api); }, []);
   // C-27, C-48: on the phone, today's steps from Apple Health -- when the app opens, and each time it comes back
   useEffect(() => {
     if (!ON_PHONE) return;

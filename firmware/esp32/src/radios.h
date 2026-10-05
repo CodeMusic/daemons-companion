@@ -3,7 +3,9 @@
 #include <Arduino.h>
 
 String runReadMyTag();       // TOUCHSTONE (NFC)
-String runOpenToMyPhone();   // WHISPER (Bluetooth)
+String runOpenToMyPhone();   // WHISPER (Bluetooth): a word each way with any Bluetooth app
+String runPairMyPhone();     // C-55: the companion app pairs, with a code the board shows
+String runForgetPhones();
 
 // FLARE (IR), C-51: the daemon learns your remotes -- three buttons each, up to six kept, one chosen
 void flareBegin();           // once at start: an older single learned code becomes the first remote

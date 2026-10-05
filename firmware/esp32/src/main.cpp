@@ -16,6 +16,7 @@
 #include "radios.h"
 #include "leds.h"
 #include "sound.h"
+#include "link.h"
 #include <mbedtls/base64.h>
 
 #include <HTTPClient.h>
@@ -68,7 +69,7 @@ String nets[12]; int netRssi[12], netCount = 0, netAt = 0, wheelAt = 1; String t
 static const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
 static const int WHEEL_N = sizeof(WHEEL) - 1;
 String runResult;
-uint32_t usbSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
+uint32_t usbSeen = 0, phoneSeen = 0, lastPoll = 0, lastHello = 0, flashUntil = 0;
 String flash, lineIn;
 bool dirty = true;
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
@@ -98,13 +99,14 @@ String runChooseRemote();
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "CHOOSE A REMOTE", runChooseRemote } };
-static const Routine WHISPER_ROUTINES[]    = { { "OPEN TO MY PHONE", runOpenToMyPhone } };
+static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
+                                               { "FORGET MY PHONES", runForgetPhones } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
 String runJoinNetwork();
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork } };
 static const RoutineType TYPES_LIST[] = {
   { "FLARE",      "IR",        FLARE_ROUTINES,      5 },
-  { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    1 },
+  { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 },
   { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 },
   { "LONGWAVE",   "Sub-GHz",   nullptr,             0 },
   { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     2 },
@@ -342,6 +344,7 @@ String networksJson() {
 
 const char *linkName() {
   if (millis() - usbSeen < USB_FRESH_MS && usbSeen) return "USB";
+  if (millis() - phoneSeen < USB_FRESH_MS && phoneSeen && linkPhoneHere()) return "PHONE";   // C-55
   if (!wifiSet()) return "NO LINK";
   return WiFi.status() == WL_CONNECTED ? "WIFI" : "WIFI...";
 }
@@ -527,6 +530,11 @@ bool httpState(const char *method, const String &path, const String &body) {
 }
 
 bool usbLive() { return usbSeen && millis() - usbSeen < USB_FRESH_MS; }
+// C-55: the phone, over Bluetooth, is a bridge as the cable is -- the same lines, both ways. The cable wins when both
+// are here, so nothing is ever said twice.
+bool phoneLive() { return phoneSeen && millis() - phoneSeen < USB_FRESH_MS && linkPhoneHere(); }
+bool bridgeLive() { return usbLive() || phoneLive(); }
+void bridge(const String &line) { if (usbLive()) Serial.println(line); else linkSend(line); }
 
 // ---- C-49: doing a step is one press; undoing it, the top button, for a little while after --------------------------
 
@@ -549,7 +557,7 @@ void tick() {
   if (!st.have || st.step < 0) { say("Nothing yet"); return; }
   long id = st.step;
   lastDone = id; lastDoneText = st.stepText; lastDoneAt = millis();
-  if (usbLive()) { Serial.printf("TICK %ld\n", id); return; }       // the bridge answers CELEBRATE, then STATE
+  if (bridgeLive()) { bridge("TICK " + String(id)); return; }       // the bridge answers CELEBRATE, then STATE
   bool ok;
   String got = http("POST", "/api/device/ticks", "{\"steps\":[" + String(id) + "]}", &ok);
   JsonDocument d;
@@ -564,7 +572,7 @@ void untick() {
   say("Undone.");
   draw();
   soundUndo(st.daemon.species, dayIndex());
-  if (usbLive()) { Serial.printf("UNTICK %ld\n", id); return; }
+  if (bridgeLive()) { bridge("UNTICK " + String(id)); return; }
   httpState("POST", "/api/device/untick", "{\"step\":" + String(id) + "}");
 }
 
@@ -588,7 +596,7 @@ String routinesJson() {
 void sendResult(long id, bool ok, const String &text) {
   JsonDocument d; d["id"] = id; d["ok"] = ok; d["text"] = text;
   String out; serializeJson(d, out);
-  if (usbLive()) Serial.println("RESULT " + out);
+  if (bridgeLive()) bridge("RESULT " + out);
   else http("POST", "/api/device/results", out);
 }
 
@@ -656,11 +664,11 @@ void handleCommand(JsonVariant c) {
 
 // C-51, C-52: the board's remotes and networks, for the site -- down the cable, or over Wi-Fi
 void reportRemotes() {
-  if (usbLive()) Serial.println("REMOTES " + flareRemotesJson());
+  if (bridgeLive()) bridge("REMOTES " + flareRemotesJson());
   else http("POST", "/api/device/remotes", flareRemotesJson());
 }
 void reportNetworks() {
-  if (usbLive()) Serial.println("NETWORKS " + networksJson());
+  if (bridgeLive()) bridge("NETWORKS " + networksJson());
   else http("POST", "/api/device/networks", networksJson());
 }
 
@@ -695,43 +703,54 @@ void shot() {
   Serial.println("SHOT END");
 }
 
+// One line from a bridge -- the cable's (usb_bridge.py) or the phone's (C-55, over Bluetooth) -- answered the way it came.
+void handleLine(String line, bool fromPhone) {
+  auto reply = [&](const String &out) { if (fromPhone) linkSend(out); else Serial.println(out); };
+  uint32_t &seen = fromPhone ? phoneSeen : usbSeen;
+  line.trim();
+  if (line.startsWith("STATE ")) {
+    if (takeState(line.substring(6))) seen = millis();
+    else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing
+  }
+  else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
+  else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
+  else if (line == "SHOT" && !fromPhone) shot();
+  else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
+                             reply("NETWORKS " + networksJson()); }
+  else if (line.startsWith("KEY ") && !fromPhone) {   // the controls, from the computer, for a check with SHOT
+    String k = line.substring(4);
+    if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
+    else if (k == "PRESS") { if (!wake()) press(); }
+    else if (k == "BACK") { if (!wake()) back(); }
+    if (!asleep) draw();
+  }
+  else if (line.startsWith("CMD ")) {
+    JsonDocument d;
+    if (deserializeJson(d, line.substring(4))) reply("UNREAD " + String(line.length()));
+    else if (fromPhone && String(d["type"] | "") == "wifi") reply("UNREAD wifi");   // C-33: a password only down the cable
+    else handleCommand(d.as<JsonVariant>());
+  }
+  else if (line.startsWith("GO ") && !fromPhone) {   // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
+    String to = line.substring(3);
+    wake();
+    screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
+    page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : TODAY;
+    draw();
+  }
+  else if (line == "PING") { seen = millis(); reply("PONG"); }
+}
+
 void readUsb() {
   while (Serial.available()) {
     char c = Serial.read();
-    if (c == '\n') {
-      lineIn.trim();
-      if (lineIn.startsWith("STATE ")) {
-        if (takeState(lineIn.substring(6))) usbSeen = millis();
-        else Serial.printf("UNREAD %u\n", lineIn.length());   // the bridge says so, rather than the corner silently not changing
-      }
-      else if (lineIn.startsWith("ART ")) { if (!takeArt(lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length()); }
-      else if (lineIn.startsWith("CELEBRATE ")) celebrate(lineIn.substring(10));   // C-50, from the bridge
-      else if (lineIn == "SHOT") shot();
-      else if (lineIn == "LIST") { Serial.println("ROUTINES " + routinesJson()); Serial.println("REMOTES " + flareRemotesJson());
-                                   Serial.println("NETWORKS " + networksJson()); }
-      else if (lineIn.startsWith("KEY ")) {         // the controls, from the computer, for a check with SHOT
-        String k = lineIn.substring(4);
-        if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
-        else if (k == "PRESS") { if (!wake()) press(); }
-        else if (k == "BACK") { if (!wake()) back(); }
-        if (!asleep) draw();
-      }
-      else if (lineIn.startsWith("CMD ")) {
-        JsonDocument d;
-        if (deserializeJson(d, lineIn.substring(4))) Serial.printf("UNREAD %u\n", lineIn.length());
-        else handleCommand(d.as<JsonVariant>());
-      }
-      else if (lineIn.startsWith("GO ")) {          // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
-        String to = lineIn.substring(3);
-        wake();
-        screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
-        page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : TODAY;
-        draw();
-      }
-      else if (lineIn == "PING") { usbSeen = millis(); Serial.println("PONG"); }
-      lineIn = "";
-    } else if (lineIn.length() < 6000) lineIn += c;   // an ART line is ~3 KB
+    if (c == '\n') { handleLine(lineIn, false); lineIn = ""; }
+    else if (lineIn.length() < 6000) lineIn += c;   // an ART line is ~3 KB
   }
+}
+
+void readPhone() {                                  // C-55
+  String line;
+  for (int i = 0; i < 4 && linkTake(line); i++) handleLine(line, true);
 }
 
 // ---- the encoder: a quadrature state table, read every pass of the loop -------------------------------------------
@@ -767,7 +786,7 @@ void readEncoder() {
 // C-13: using the device is tending the daemon. Each routine run is told to the server -- over the cable through the
 // bridge (an INTERACT line), or over Wi-Fi -- where the daemon's life will read it.
 void report(const String &kind, const String &detail) {
-  if (usbLive()) { Serial.printf("INTERACT %s %s\n", kind.c_str(), detail.c_str()); return; }
+  if (bridgeLive()) { bridge("INTERACT " + kind + " " + detail); return; }
   JsonDocument d; d["kind"] = kind; d["detail"] = detail;
   String body; serializeJson(d, body);
   if (http("POST", "/api/device/interact", body).length()) httpState("GET", "/api/device/state", "");   // its new life
@@ -962,6 +981,7 @@ void setup() {
   soundBegin();
   flareBegin();                               // C-51: an older single learned code becomes the first remote
   loadSettings();
+  linkBegin();                                // C-55: Bluetooth, for the phone
   lastInput = millis();
   page = cfg.home == "today" ? TODAY : DAEMON;   // C-42: it starts at home
   draw();
@@ -973,7 +993,7 @@ void askForArt() {
   if (!st.carrying || !st.daemon.artKey.length() || st.daemon.artKey == artKeyHave) return;
   if (artAskedAt && millis() - artAskedAt < 5000) return;
   artAskedAt = millis();
-  if (usbLive()) { Serial.println("ART?"); return; }
+  if (bridgeLive()) { bridge("ART?"); return; }
   bool ok;
   String got = http("GET", "/api/device/art", "", &ok);
   if (ok) takeArt(got);
@@ -981,17 +1001,19 @@ void askForArt() {
 
 void loop() {
   readUsb();
+  readPhone();
   readEncoder();
   readKey();
   uint32_t now = millis();
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println("HELLO daemons-companion t-embed-cc1101 1"); dirty = true; }
-  if (!usbLive() && online()) {
+  if (!bridgeLive() && online()) {
     if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
     pollCommands(now);                        // C-32: what the site sent, over Wi-Fi
   }
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
   askForArt();
   uplinkLoop(now);
+  linkLoop(now);                            // C-55
   ledsLoop();
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }

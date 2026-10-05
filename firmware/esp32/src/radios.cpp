@@ -9,7 +9,7 @@
 #include <IRrecv.h>
 #include <IRsend.h>
 #include <IRutils.h>
-#include <NimBLEDevice.h>
+#include "link.h"
 #include "radios.h"
 #include "sound.h"
 
@@ -231,56 +231,50 @@ String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint1
   return daemonName() + " sent " + protocol + " " + uint64ToString(value, 16) + ".";
 }
 
-// ---- WHISPER (Bluetooth): your phone opens it, and a word goes each way. -----------------------------------------
+// ---- WHISPER (Bluetooth) ---------------------------------------------------------------------------------------------
+// C-55: PAIR MY PHONE -- the board shows a code and the companion app's pairing asks for it once; after that the phone
+// carries the board's link wherever both go (link.cpp). FORGET MY PHONES undoes every pairing.
+String runPairMyPhone() {
+  uint32_t code = linkPairStart();
+  char shown[8]; snprintf(shown, sizeof shown, "%03lu %03lu", (unsigned long)(code / 1000), (unsigned long)(code % 1000));
+  // six lines at most on the RUN screen: two of asking, the code on its own, and the way out
+  progress(String("In the companion app: DEVICE, Pair the handheld. When iOS asks, type:\n\n") + shown + "\n\ntop button: give up");
+  uint32_t until = millis() + 120000;
+  bool paired = false;
+  while (!(paired = linkPairedNow())) {
+    if (millis() > until) { linkPairStop(); return "No phone paired in two minutes.\nPress to try again."; }
+    if (!waitALittle(100)) { linkPairStop(); return "Given up."; }
+  }
+  linkPairStop();
+  return "Paired.\n\n" + daemonName() + " talks to your phone whenever it is near, at home or away.";
+}
+
+String runForgetPhones() {
+  int n = linkBonds();
+  if (!n) return "No phone is paired.";
+  linkForget();
+  return daemonName() + " forgot " + String(n) + (n == 1 ? " phone." : " phones.") + "\nPair again with PAIR MY PHONE.";
+}
+
 // The Nordic UART service, which a general Bluetooth app on the phone (nRF Connect, or LightBlue) already knows:
 // the board says hello on TX, and whatever the phone writes to RX comes back on the screen.
-static const char *UART_SERVICE = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
-static const char *UART_RX      = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";   // the phone writes here
-static const char *UART_TX      = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";   // the board notifies here
-static NimBLEServer *whisperServer = nullptr;
-static NimBLECharacteristic *whisperTx = nullptr;
-static volatile bool phoneHere = false;
-static String phoneSaid;
-
-class WhisperLink : public NimBLEServerCallbacks {
-  void onConnect(NimBLEServer *) override { phoneHere = true; }
-  void onDisconnect(NimBLEServer *) override { phoneHere = false; }
-};
-class WhisperHeard : public NimBLECharacteristicCallbacks {
-  void onWrite(NimBLECharacteristic *c) override { phoneSaid = String(c->getValue().c_str()); }
-};
-
 String runOpenToMyPhone() {
-  if (!whisperServer) {
-    NimBLEDevice::init("DAEMONS companion");
-    whisperServer = NimBLEDevice::createServer();
-    whisperServer->setCallbacks(new WhisperLink());
-    NimBLEService *uart = whisperServer->createService(UART_SERVICE);
-    whisperTx = uart->createCharacteristic(UART_TX, NIMBLE_PROPERTY::NOTIFY);
-    uart->createCharacteristic(UART_RX, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR)
-        ->setCallbacks(new WhisperHeard());
-    uart->start();
-    NimBLEDevice::getAdvertising()->addServiceUUID(UART_SERVICE);
-  }
-  phoneSaid = "";
-  NimBLEDevice::getAdvertising()->start();
-  progress("Open \"DAEMONS companion\" from your phone's Bluetooth app (nRF Connect).\n\ntop button: give up");
+  whisperClear();
+  progress("Open \"DAEMONS companion\" from your phone's Bluetooth app (nRF Connect), and listen on its TX.\n\ntop button: give up");
   uint32_t until = millis() + 60000;
-  while (!phoneHere) {
-    if (millis() > until) { NimBLEDevice::getAdvertising()->stop(); return "No phone in a minute.\nPress to try again."; }
-    if (!waitALittle(100)) { NimBLEDevice::getAdvertising()->stop(); return "Given up."; }
+  while (!whisperHere()) {
+    if (millis() > until) return "No phone in a minute.\nPress to try again.";
+    if (!waitALittle(100)) return "Given up.";
   }
-  NimBLEDevice::getAdvertising()->stop();
-  waitALittle(1500);                                   // let the phone find the service and ask for its notes
+  waitALittle(500);
   String hello = "Hello from your daemon.";
-  whisperTx->setValue(hello.c_str());
-  whisperTx->notify();
+  whisperSay(hello);
   progress("Your phone is here. The board said hello.\n\nNow write a word to it from the phone (the RX line, as text).\n\ntop button: done");
   until = millis() + 60000;
-  while (phoneHere && !phoneSaid.length() && millis() < until)
+  while (whisperHere() && !whisperHeard().length() && millis() < until)
     if (!waitALittle(100)) break;
-  String said = phoneSaid;
-  if (phoneHere) whisperServer->disconnect(whisperServer->getPeerInfo(0).getConnHandle());
+  String said = whisperHeard();
+  whisperDrop();
   if (said.length()) return "Both ways work.\n\nSent: " + hello + "\nHeard: " + said;
   return "Your phone connected and the hello went out, but no word came back.\nPress to try again.";
 }

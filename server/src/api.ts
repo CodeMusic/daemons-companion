@@ -348,7 +348,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const path = url.pathname;
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
-      const via: Via = url.searchParams.get("via") === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : "wifi";
+
       // C-29: the save path the user set in Settings (stored in the db) overrides config.json; everything that reads
       // or writes a save uses `ecfg`, so the user never edits a file by hand.
       const ecfg: Config = { ...cfg, savePath: store.getSetting("savePath") ?? cfg.savePath };
@@ -357,6 +357,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // can change the save path, write the save, or open a dialog on the Mac.
       const bearer = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""))?.[1];
       const phone = bearer ? store.phoneFor(bearer) : null;              // C-53: a paired phone has the whole API
+      // C-55: "phone" is the companion app carrying the device's link over Bluetooth -- a paired phone speaking for it.
+      const asked = url.searchParams.get("via");
+      const via: Via = asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone" : "wifi";
       if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
           !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
         return send(res, 403, { error: "only the device's endpoints answer the network -- pair this phone first" });

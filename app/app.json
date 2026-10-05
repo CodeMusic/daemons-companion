@@ -39,6 +39,16 @@
           "NSHealthUpdateUsageDescription": false,
           "background": false
         }
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": [
+            "central"
+          ],
+          "bluetoothAlwaysPermission": "To carry your handheld's link: its goal, its daemon and its routines, at home or away."
+        }
       ]
     ],
     "splash": {

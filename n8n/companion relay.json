@@ -1,0 +1,205 @@
+{
+  "name": "DAEMONS companion -- relay (C-56)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "companion",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c1",
+      "name": "Phone",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "daemons-companion-relay"
+    },
+    {
+      "parameters": {
+        "jsCode": "// C-56: only a phone's request reaches the companion -- a Bearer key, GET or POST, and a path under /api/.\n// The companion itself decides whether the key is a paired phone's; this only keeps everything else out.\nconst req = $input.first().json;\nconst auth = String((req.headers || {}).authorization || '');\nconst env = req.body || {};\nconst method = String(env.method || 'GET').toUpperCase();\nconst path = String(env.path || '');\nconst ok = /^Bearer [A-Za-z0-9_-]{16,}$/.test(auth) && (method === 'GET' || method === 'POST') &&\n           /^\\/api\\/[A-Za-z0-9\\/_-]*(\\?[A-Za-z0-9=&._-]*)?$/.test(path) && !path.includes('..');\nreturn [{ json: { ok, method, path, body: env.body ?? {}, auth } }];"
+      },
+      "id": "c2",
+      "name": "Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c3",
+      "name": "Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ 'http://COMPUTER:4730' + $json.path }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "authorization",
+              "value": "={{ $json.auth }}"
+            },
+            {
+              "name": "x-companion-relay",
+              "value": "={{ $env.COMPANION_RELAY_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": "={{ $json.method === 'POST' }}",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "c4",
+      "name": "Forward to the companion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -100
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.statusCode ? $json.body : { error: 'the companion is not answering -- is the computer awake?' }) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 502 }}"
+        }
+      },
+      "id": "c5",
+      "name": "Answer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ error: 'not a request the companion takes' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "c6",
+      "name": "Refuse",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        100
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Phone": {
+      "main": [
+        [
+          {
+            "node": "Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check": {
+      "main": [
+        [
+          {
+            "node": "Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Allowed?": {
+      "main": [
+        [
+          {
+            "node": "Forward to the companion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Refuse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forward to the companion": {
+      "main": [
+        [
+          {
+            "node": "Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": false
+  },
+  "meta": {
+    "instanceId": ""
+  },
+  "tags": []
+}

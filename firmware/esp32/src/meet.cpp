@@ -28,17 +28,23 @@ static String ours;                                        // our other companio
 static portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;
 static std::deque<std::pair<int, uint32_t>> heard;         // from the radio task, for the main loop
 static std::deque<std::pair<uint32_t, uint32_t>> recent;   // tag -> when, for once an hour
+// each listen, told to the server, so the radio can be checked from the companion (devices heard, beacons among them)
+static volatile int listenDevices = 0, listenBeacons = 0;
+static volatile bool listenDone = false, listenStarted = false;
+static void listenEnded(NimBLEScanResults) { listenDone = true; }
 
 static String hex8(uint32_t v) { char b[9]; snprintf(b, sizeof b, "%08lx", (unsigned long)v); return b; }
 
 class Heard : public NimBLEAdvertisedDeviceCallbacks {
   void onResult(NimBLEAdvertisedDevice *d) override {
+    listenDevices++;
     for (int i = 0; i < (int)d->getServiceUUIDCount(); i++) {
       std::string u = d->getServiceUUID(i).toString();
       for (auto &c : u) c = tolower(c);
       if (u.size() != 36 || u.compare(0, 19, PREFIX) != 0) continue;
       int species = strtol(u.substr(19, 4).c_str(), nullptr, 16);
       uint32_t tag = strtoul(u.substr(24, 8).c_str(), nullptr, 16);
+      listenBeacons++;
       if (!species || tag == peer) continue;
       portENTER_CRITICAL(&lock);
       if (heard.size() < 16) heard.push_back({ species, tag });
@@ -69,8 +75,17 @@ void meetLoop(uint32_t now, bool on, int species) {
   }
   if ((!listenedAt || now - listenedAt > LISTEN_EVERY_MS) && !scan->isScanning()) {
     listenedAt = now;
-    scan->start(LISTEN_S, nullptr, false);                 // in the background; the loop carries on
+    listenDevices = 0; listenBeacons = 0;
+    listenStarted = scan->start(LISTEN_S, listenEnded, false);   // in the background; the loop carries on
+    if (!listenStarted) listenDone = true;
   }
+}
+
+bool meetTakeListen(String &line) {
+  if (!listenDone) return false;
+  listenDone = false;
+  line = "LISTEN " + String(listenStarted ? 1 : 0) + " " + String(listenDevices) + " " + String(listenBeacons);
+  return true;
 }
 
 String meetOwnPeer() { return beaconSpecies >= 0 ? hex8(peer) : ""; }

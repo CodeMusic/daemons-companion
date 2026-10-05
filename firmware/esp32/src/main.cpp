@@ -773,6 +773,15 @@ void meetReport() {
   }
   bool link = bridgeLive() || online();
   if (!link) return;
+  String listen;
+  if (meetTakeListen(listen)) {
+    if (bridgeLive()) bridge(listen);
+    else {
+      int a = listen.indexOf(' ', 7), b = listen.indexOf(' ', a + 1);
+      http("POST", "/api/device/listen", "{\"started\":" + listen.substring(7, a) + ",\"devices\":" + listen.substring(a + 1, b) +
+           ",\"beacons\":" + listen.substring(b + 1) + "}");
+    }
+  }
   String own = meetOwnPeer();
   if (own.length() && own != beaconTold) {
     if (bridgeLive()) bridge("BEACON " + own);

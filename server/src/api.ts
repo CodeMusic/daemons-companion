@@ -338,7 +338,7 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
-     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met"].includes(p),
+     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
@@ -580,7 +580,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { meet: deviceSettings(store).meet, species: carried?.species ?? null,
                                 ours: ownBeacons(store).map((b) => b.peer),
                                 beacons: ownBeacons(store),                    // with who sent each, for the check
-                                heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null") });
+                                heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
+                                lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
+      }
+      if (req.method === "POST" && path === "/api/device/listen") {   // C-15: the board's last listen, for the check
+        const b = await body(req);
+        store.setSetting("beacons.lastListen", JSON.stringify({ at: new Date().toISOString(), started: !!b.started,
+                                                               devices: Number(b.devices) || 0, beacons: Number(b.beacons) || 0 }));
+        return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/device/met") {
         const b = await body(req);

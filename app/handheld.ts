@@ -232,6 +232,9 @@ class Link {
       const [kind, ...detail] = rest.split(" ");
       try { await this.flush(); await this.ask("/api/device/interact", { kind, detail: detail.join(" ") }); await this.sendState(); }
       catch { await this.later("/api/device/interact", { kind, detail: detail.join(" ") }); }
+    } else if (word === "LISTEN") {                         // C-15: one listen of the board's meeting radio
+      const [started, devices, beacons] = rest.split(" ").map(Number);
+      await this.ask("/api/device/listen", { started, devices, beacons }).catch(() => {});
     } else if (word === "MET") {                            // C-15: a companion the board heard nearby
       const [species, peer] = rest.split(" ");
       try { await this.ask("/api/device/met", { species, peer }); } catch { await this.later("/api/device/met", { species, peer }); }

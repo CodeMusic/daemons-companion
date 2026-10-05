@@ -47,7 +47,7 @@ import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
 import { DeviceHub, type Via } from "./device.js";
 import { networkInterfaces } from "node:os";
-import { randomBytes, randomInt } from "node:crypto";
+import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
@@ -309,7 +309,17 @@ const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a =
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
-                    "/api/settings/pick", "/api/settings/reveal"];
+                    "/api/settings/pick", "/api/settings/reveal", "/api/settings/relay"];
+// C-56: the user's n8n carries a phone's requests here from anywhere, marking each with the relay's secret. A relayed
+// request is an INTERNET request: a paired phone's key for everything (the device's own door included), no pairing,
+// nothing that is this machine's alone.
+const RELAY_HEADER = "x-companion-relay";
+const same = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
+export function relaySecret(store: Store): string {
+  let s = store.getSetting("relay.secret");
+  if (!s) { s = randomBytes(24).toString("base64url"); store.setSetting("relay.secret", s); }
+  return s;
+}
 const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
@@ -357,6 +367,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // can change the save path, write the save, or open a dialog on the Mac.
       const bearer = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""))?.[1];
       const phone = bearer ? store.phoneFor(bearer) : null;              // C-53: a paired phone has the whole API
+      if (req.headers[RELAY_HEADER] !== undefined) {                     // C-56
+        if (!same(String(req.headers[RELAY_HEADER]), relaySecret(store)))
+          return send(res, 403, { error: "that is not the companion's relay" });
+        if (!phone) return send(res, 401, { error: "away from home, only a paired phone -- pair it at home first" });
+        if (LOCAL_ONLY.includes(path) || path.startsWith("/api/pair"))
+          return send(res, 403, { error: "that is done at home, on the computer the companion runs on" });
+      }
       // C-55: "phone" is the companion app carrying the device's link over Bluetooth -- a paired phone speaking for it.
       const asked = url.searchParams.get("via");
       const via: Via = asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone" : "wifi";
@@ -381,7 +398,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!pairing.take(b.code)) return send(res, 403, { error: "that code is not right, or has run out -- show a new one on the site" });
         const token = randomBytes(24).toString("base64url");
         store.addPhone(token, name);
-        return send(res, 200, { token, name });
+        return send(res, 200, { token, name, away: store.getSetting("relay.url") });   // C-56: the way back from anywhere
       }
       if (req.method === "GET" && path === "/api/pair/phones") return send(res, 200, store.phones());
       if (req.method === "POST" && path === "/api/pair/forget") {
@@ -390,6 +407,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         store.forgetPhone(b.name);
         return send(res, 200, store.phones());
       }
+      // C-56: the relay -- its public address (for the phones) and the secret n8n marks each request with (this machine only)
+      if (req.method === "GET" && path === "/api/settings/relay")
+        return send(res, 200, { url: store.getSetting("relay.url"), secret: relaySecret(store) });
+      if (req.method === "POST" && path === "/api/settings/relay") {
+        const b = await body(req);
+        if (b.url !== undefined) {
+          const url = typeof b.url === "string" ? b.url.trim() : "";
+          if (url && !/^https:\/\/[^\s]+$/.test(url)) return send(res, 400, { error: "the relay's address starts with https://" });
+          store.setSetting("relay.url", url || null);
+        }
+        if (b.renew === true) store.setSetting("relay.secret", null);
+        return send(res, 200, { url: store.getSetting("relay.url"), secret: relaySecret(store) });
+      }
+      // C-56: where a paired phone goes when home does not answer
+      if (req.method === "GET" && path === "/api/settings/away") return send(res, 200, { url: store.getSetting("relay.url") });
       // the server listens on the network (for the phone and the board) -- kept here, read at the next start
       if (req.method === "GET" && path === "/api/settings/network")
         return send(res, 200, { open: store.getSetting("host") === "0.0.0.0", now: cfg.host === "0.0.0.0", address: lanAddress(), port: cfg.port });

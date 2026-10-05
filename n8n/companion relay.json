@@ -75,7 +75,7 @@
             },
             {
               "name": "x-companion-relay",
-              "value": "={{ $env.COMPANION_RELAY_SECRET }}"
+              "value": "RELAY_SECRET"
             }
           ]
         },

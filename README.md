@@ -129,8 +129,10 @@ companion, what the handheld does waits on the phone and goes up when the compan
 the handheld, undoes every pairing.
 
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
-on it. Reaching the companion away from home is planned through the user's n8n ([docs/REMOTE.md](docs/REMOTE.md),
-C-56). For the App Store, archive in Xcode and upload with Transporter as usual.
+on it. **Away from home** it reaches the companion through an n8n workflow that relays into your home network
+([docs/REMOTE.md](docs/REMOTE.md), C-56): import `n8n/companion relay.json` into your n8n, put this computer's address
+and the secret from the site's SETTINGS (AWAY FROM HOME) in it, and save the webhook's address there too. The phone
+learns it the next time it opens at home, and from then on tries home first and the relay after. For the App Store, archive in Xcode and upload with Transporter as usual.
 
 ## Each part on its own
 

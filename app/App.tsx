@@ -15,10 +15,16 @@ import * as SecureStore from "expo-secure-store";
 // phone's secure storage; on the site, the server is this machine and needs no key.
 let SERVER = process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
 let TOKEN: string | null = null;
+// C-56: away from home, the phone reaches the companion through the user's n8n (docs/REMOTE.md). Home is tried first,
+// briefly; whichever way answered is kept for a minute, so a walk does not pay the wait on every request.
+let AWAY: string | null = null;
+let route = { away: false, until: 0 };
+const isAway = () => route.away;
 const ON_PHONE = Platform.OS !== "web";
 async function loadConnection(): Promise<boolean> {
   if (!ON_PHONE) return true;
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
+  AWAY = await SecureStore.getItemAsync("away");
   if (server && token) { SERVER = server; TOKEN = token; return true; }
   return false;
 }
@@ -37,8 +43,24 @@ type Daemon = { slot: number; species: number; name: string; nickname: string; l
 
 async function api<T>(path: string, body?: unknown): Promise<T> {
   const auth: Record<string, string> = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
-  const r = await fetch(SERVER + path, body === undefined ? { headers: auth }
-    : { method: "POST", headers: { "content-type": "application/json", ...auth }, body: JSON.stringify(body) });
+  const init: RequestInit = body === undefined ? { headers: auth }
+    : { method: "POST", headers: { "content-type": "application/json", ...auth }, body: JSON.stringify(body) };
+  let r: Response | undefined;
+  if (!ON_PHONE || !AWAY) r = await fetch(SERVER + path, init);
+  else {
+    const home = async () => {
+      const stop = new AbortController(), t = setTimeout(() => stop.abort(), 2500);
+      try { return await fetch(SERVER + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
+    };
+    const away = () => fetch(AWAY!, { method: "POST", headers: { "content-type": "application/json", ...auth },
+                                      body: JSON.stringify({ method: body === undefined ? "GET" : "POST", path, body }) });
+    const ways = route.away && Date.now() < route.until ? [away, home] : [home, away];
+    let failed: unknown;
+    for (const way of ways) {
+      try { r = await way(); route = { away: way === away, until: Date.now() + 60000 }; break; } catch (e) { failed = e; }
+    }
+    if (!r) throw failed instanceof Error ? failed : new Error("neither home nor away answered");
+  }
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? `the server answered ${r.status}`);
   return j as T;
@@ -720,6 +742,7 @@ function PairScreen({ onPaired }: { onPaired: () => void }) {
       if (!r.ok) throw new Error(j.error ?? `the companion answered ${r.status}`);
       await SecureStore.setItemAsync("server", base);
       await SecureStore.setItemAsync("token", j.token);
+      if (j.away) { await SecureStore.setItemAsync("away", j.away); AWAY = j.away; }   // C-56
       SERVER = base; TOKEN = j.token;
       onPaired();
     } catch (e) { setError(`${(e as Error).message}. Is the companion running, and is it open to your network (Settings on the site)?`); }
@@ -797,6 +820,33 @@ function PairCard({ ink }: { ink: string }) {
   );
 }
 
+// ---- C-56, on the site: the way back from anywhere -- the relay on the user's n8n, and the secret it marks requests with ----
+function RelayCard({ ink }: { ink: string }) {
+  const [r, setR] = useState<{ url: string | null; secret: string } | null>(null);
+  const [url, setUrl] = useState(""), [said, setSaid] = useState("");
+  useEffect(() => { api<NonNullable<typeof r>>("/api/settings/relay").then((x) => { setR(x); setUrl(x.url ?? ""); }).catch(() => {}); }, []);
+  if (!r) return null;
+  const save = async (b: object) => {
+    try { const x = await api<NonNullable<typeof r>>("/api/settings/relay", b); setR(x); setSaid("Saved. Paired phones learn it the next time they open at home."); }
+    catch (e) { setSaid((e as Error).message); }
+  };
+  return (
+    <Card>
+      <Eyebrow>AWAY FROM HOME</Eyebrow>
+      <Small>Your n8n carries the phone's requests here from anywhere (docs/REMOTE.md). Its webhook's address:</Small>
+      <Input value={url} onChangeText={setUrl} placeholder="https://your-n8n/webhook/companion" autoCapitalize="none" autoCorrect={false}
+             backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+      <XStack gap={8} flexWrap="wrap">
+        <Action label="Save" ink={ink} onPress={() => save({ url })} />
+        <Action label="New secret" ink={ink} onPress={() => save({ renew: true })} />
+      </XStack>
+      <Small>The relay's secret (n8n sends it as x-companion-relay):</Small>
+      <Text fontFamily="$mono" fontSize={13} color="$color12" selectable>{r.secret}</Text>
+      {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
 const TABS = ["today", "goals", "daemon", "index", "device", "profile", "settings"] as const;
 
 function Shell() {
@@ -810,7 +860,15 @@ function Shell() {
   }, []);
   useEffect(reload, [reload]);
   // C-55: back to the handheld this phone paired with, if any
-  useEffect(() => { HANDHELD?.start(api); }, []);
+  useEffect(() => { HANDHELD?.start(api, isAway); }, []);
+  // C-56: the way back from anywhere, learned at home and kept on the phone
+  useEffect(() => {
+    if (!ON_PHONE) return;
+    api<{ url: string | null }>("/api/settings/away").then(async ({ url }) => {
+      AWAY = url;
+      if (url) await SecureStore.setItemAsync("away", url); else await SecureStore.deleteItemAsync("away");
+    }).catch(() => {});
+  }, []);
   // C-27, C-48: on the phone, today's steps from Apple Health -- when the app opens, and each time it comes back
   useEffect(() => {
     if (!ON_PHONE) return;
@@ -852,7 +910,7 @@ function Shell() {
         {tab === "device" ? <DeviceScreen ink={ink} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
-        {tab === "settings" && !ON_PHONE ? <YStack marginTop={14}><PairCard ink={ink} /></YStack> : null}
+        {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /></YStack> : null}
       </ScrollView>
       <StatusBar style="dark" />
     </YStack>

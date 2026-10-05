@@ -8,7 +8,7 @@
 //
 // Away from the companion, nothing is lost: the board's last state is handed back to it so it stays linked, and what
 // it did (a step ticked, a routine run) waits on the phone and goes up, in order, when the companion answers again.
-import { BleManager, Device, Subscription } from "react-native-ble-plx";
+import { BleManager, Device, State, Subscription } from "react-native-ble-plx";
 import * as SecureStore from "expo-secure-store";
 
 const SERVICE = "DAE00001-5C0D-4E5A-8C0D-E0C0DEC0DE00";
@@ -40,6 +40,8 @@ class Link {
   private queue: { path: string; body: unknown }[] = [];
   private api: Api | null = null;
   private id: string | null = null;
+  private away: () => boolean = () => false;              // C-56: reaching the companion through n8n
+  private stateAt = 0; private commandsAt = 0;
   private listeners = new Set<(h: Handheld) => void>();
   now: Handheld = { phase: "none", name: "", companion: true, waiting: 0, note: "" };
 
@@ -47,9 +49,26 @@ class Link {
   private set(p: Partial<Handheld>) { this.now = { ...this.now, ...p }; this.listeners.forEach((fn) => fn(this.now)); }
   private manager() { return (this.ble ??= new BleManager()); }
 
+  // iOS says what state Bluetooth is in a moment after the app first asks (it starts "unknown"), and asks the user's
+  // permission the first time: wait for it to be on before scanning or connecting.
+  private ready(): Promise<BleManager> {
+    const ble = this.manager();
+    return new Promise((ok, fail) => {
+      const give = setTimeout(() => { sub.remove(); fail(new Error("Bluetooth did not start. Try again in a moment.")); }, 15000);
+      const sub = ble.onStateChange((s) => {
+        const why = s === State.PoweredOff ? "Bluetooth is off. Turn it on in Control Center, then try again."
+          : s === State.Unauthorized ? "The app may not use Bluetooth. Allow it in Settings, DAEMONS companion, Bluetooth."
+          : s === State.Unsupported ? "This phone has no Bluetooth the app can use." : null;
+        if (s === State.PoweredOn) { clearTimeout(give); sub.remove(); ok(ble); }
+        else if (why) { clearTimeout(give); sub.remove(); fail(new Error(why)); }
+      }, true);
+    });
+  }
+
   // When the app opens: back to the handheld it paired with, if there is one.
-  async start(api: Api) {
+  async start(api: Api, away?: () => boolean) {
     this.api = api;
+    if (away) this.away = away;
     const saved = await SecureStore.getItemAsync("handheld");
     const waiting = await SecureStore.getItemAsync("handheld-waiting");
     if (waiting) { this.queue = JSON.parse(waiting); this.set({ waiting: this.queue.length }); }
@@ -59,7 +78,8 @@ class Link {
   // PAIR THE HANDHELD: find a board showing the link's service, connect, and listen -- which makes iOS ask for the code.
   async pair() {
     await this.forget(false);
-    const ble = this.manager();
+    let ble: BleManager;
+    try { ble = await this.ready(); } catch (e) { return this.set({ phase: "none", note: (e as Error).message }); }
     this.set({ phase: "looking", note: "Looking for the handheld. On it, open ROUTINES, WHISPER, PAIR MY PHONE." });
     await new Promise<void>((done) => {
       const stop = setTimeout(() => { ble.stopDeviceScan(); this.set({ phase: "none", note: "No handheld nearby. Is PAIR MY PHONE open on it?" }); done(); }, 60000);
@@ -82,8 +102,8 @@ class Link {
   private drop() { this.subs.forEach((s) => s.remove()); this.subs = []; this.timers.forEach(clearInterval); this.timers = []; this.heard = ""; }
 
   private async connect(id: string, pairing: boolean) {
-    const ble = this.manager();
     try {
+      const ble = await this.ready();
       this.set({ phase: pairing ? "pairing" : "lost", note: pairing ? "When iOS asks, type the code the handheld shows." : "Waiting for the handheld to come into range." });
       // no timeout: iOS keeps the connection pending until the board is near again
       const d = await ble.connectToDevice(id, { requestMTU: 247 });
@@ -139,12 +159,17 @@ class Link {
   }
 
   private async sendState() {
+    // away, n8n runs once a request: the state every half minute rather than every five seconds (docs/REMOTE.md)
+    if (this.away() && Date.now() - this.stateAt < 30000) { if (this.lastState) this.say("STATE " + this.lastState); return; }
+    this.stateAt = Date.now();
     try { this.lastState = JSON.stringify(await this.ask("/api/device/state?via=phone")); await this.flush(); }
     catch { /* away from the companion: the board keeps the last state it was given */ }
     if (this.lastState) this.say("STATE " + this.lastState);
   }
 
   private async sendCommands() {
+    if (this.away() && Date.now() - this.commandsAt < 10000) return;
+    this.commandsAt = Date.now();
     try {
       const { commands } = await this.ask<{ commands: object[] }>("/api/device/commands?via=phone");
       commands.forEach((c) => this.say("CMD " + JSON.stringify(c)));

@@ -151,3 +151,27 @@ describe("the phone carries the board's link over Bluetooth (C-55)", () => {
     expect(commands.some((c: any) => c.type === "wifi")).toBe(false);
   });
 });
+
+describe("the companion from anywhere, through the user's n8n (C-56)", () => {
+  it("answers a relayed request only with the relay's secret and a paired phone's key", async () => {
+    const { secret } = await get("/api/settings/relay");
+    const { code } = (await post("/api/pair/code", {})).json;
+    const { token } = (await post("/api/pair", { code, name: "far away" })).json;
+    const relay = (p: string, h: Record<string, string>, b?: unknown) => fetch(base + p, b === undefined ? { headers: h }
+      : { method: "POST", headers: { "content-type": "application/json", ...h }, body: JSON.stringify(b) }).then((r) => r.status);
+    expect(await relay("/api/today", { "x-companion-relay": "guess", authorization: `Bearer ${token}` })).toBe(403);
+    expect(await relay("/api/device/state", { "x-companion-relay": secret })).toBe(401);        // not even the device's door
+    expect(await relay("/api/today", { "x-companion-relay": secret, authorization: `Bearer ${token}` })).toBe(200);
+    expect(await relay("/api/settings/relay", { "x-companion-relay": secret, authorization: `Bearer ${token}` })).toBe(403);
+    expect(await relay("/api/pair", { "x-companion-relay": secret }, { code: "123456" })).toBe(401);
+  });
+
+  it("keeps the relay's address for the phones, and only an https one", async () => {
+    expect((await post("/api/settings/relay", { url: "http://plain.example" })).status).toBe(400);
+    expect((await post("/api/settings/relay", { url: "https://n8n.example/webhook/companion" })).json.url)
+      .toBe("https://n8n.example/webhook/companion");
+    expect((await get("/api/settings/away")).url).toBe("https://n8n.example/webhook/companion");
+    const before = (await get("/api/settings/relay")).secret;
+    expect((await post("/api/settings/relay", { renew: true })).json.secret).not.toBe(before);
+  });
+});

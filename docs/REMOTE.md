@@ -1,6 +1,6 @@
 # The companion from anywhere (C-56)
 
-*A plan, 2026-10-04. Nothing here is built yet.*
+*Planned and built 2026-10-04 (the user: "yes to your plan"). The user imports the workflow (below); the rest is in the code.*
 
 At home, the phone reaches the companion on the computer directly, and since C-55 it carries the handheld's link over
 Bluetooth. Away from home, the phone needs a way back to the computer. The user already runs a public n8n, and it
@@ -64,7 +64,7 @@ the relay itself over a phone's hotspot, but nothing needs that yet.
 ## What the user does
 
 1. **Give the computer a fixed address** on the router (a DHCP reservation), so the workflow always finds it.
-2. **Import `n8n/companion relay.json`** (drafted) into the public n8n, put the computer's address where it says `COMPUTER`, set `COMPANION_RELAY_SECRET` in n8n's environment, and activate it.
+2. **Import `n8n/companion relay.json`** (drafted) into the public n8n, put the computer's address where it says `COMPUTER` and the secret the site's SETTINGS shows (AWAY FROM HOME) where it says `RELAY_SECRET`, and activate it.
 3. Paste the relay's address into the site's SETTINGS.
 
 ## Why not the alternatives

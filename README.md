@@ -125,7 +125,9 @@ the walking goal each time you open the app.
 in the app, DEVICE, **Pair the handheld**. When iOS asks, type the code the handheld shows. From then on the phone
 carries the handheld's link wherever you both go, the way the cable does at the desk: its goal, its daemon and its
 routines. The link comes back by itself when the handheld is near again, and its corner says PHONE. Away from the
-companion, what the handheld does waits on the phone and goes up when the companion answers. **FORGET MY PHONES**, on
+companion, what the handheld does waits on the phone and goes up when the companion answers. The app only has to be open
+or in the background (home screen, phone locked: fine); an app swiped away in the app switcher is cut off from
+Bluetooth by iOS until it is opened again, and then it links again by itself. **FORGET MY PHONES**, on
 the handheld, undoes every pairing.
 
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion

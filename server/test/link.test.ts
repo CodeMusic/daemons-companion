@@ -175,3 +175,23 @@ describe("the companion from anywhere, through the user's n8n (C-56)", () => {
     expect((await post("/api/settings/relay", { renew: true })).json.secret).not.toBe(before);
   });
 });
+
+describe("the pictures, as JSON, so they cross the relay (C-59)", () => {
+  it("gives every species the INDEX draws in one answer, and one by itself", async () => {
+    const { species } = await get("/api/art?all=species");
+    const ids = Object.keys(species);
+    expect(ids.length).toBeGreaterThan(300);
+    expect(species[ids[0]].startsWith("iVBOR")).toBe(true);                    // a PNG, base64
+    expect((await get(`/api/art?species=${ids[0]}`)).png).toBe(species[ids[0]]);
+    expect((await fetch(base + "/api/art")).status).toBe(400);
+  });
+});
+
+describe("renaming a remote (C-59)", () => {
+  it("sends the board a plain name of at most sixteen letters, and refuses an empty one", async () => {
+    const { id } = (await post("/api/device/remote", { op: "rename", index: 0, name: "  Living room TV, the big one\u0007 " })).json;
+    const { commands } = await get("/api/device/commands?via=usb");
+    expect(commands.find((c: any) => c.id === id)).toMatchObject({ type: "remote", op: "rename", index: 0, name: "Living room TV," });
+    expect((await post("/api/device/remote", { op: "rename", index: 0, name: "\u0007" })).status).toBe(400);
+  });
+});

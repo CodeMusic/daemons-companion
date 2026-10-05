@@ -51,6 +51,18 @@ import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
+// C-24: a species as the INDEX draws it, in its type's colours (no routines to paint: the streak slots take the body's
+// mid tone) -- or null when the species has no art
+const speciesPngCache = new Map<string, Buffer | null>();
+function speciesPng(species: string): Buffer | null {
+  if (speciesPngCache.has(species)) return speciesPngCache.get(species)!;
+  const row = SPECIES[species];
+  const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
+  const png = file && existsSync(file) ? readFileSync(file) : null;
+  const body = png && row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;
+  speciesPngCache.set(species, body);
+  return body;
+}
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -498,6 +510,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (!Number.isInteger(b.index)) return send(res, 400, { error: "which remote: {index}" });
           return send(res, 200, { id: hub.send({ type: "remote", op: b.op, index: b.index }) });
         }
+        if (b.op === "rename") {                   // C-59: the user's own name for it, as the board's font can draw it
+          const name = typeof b.name === "string" ? b.name.replace(/[^\x20-\x7e]/g, "").trim().slice(0, 16).trim() : "";
+          if (!Number.isInteger(b.index) || !name) return send(res, 400, { error: "rename {index, name}: a name of 1-16 plain letters" });
+          return send(res, 200, { id: hub.send({ type: "remote", op: "rename", index: b.index, name }) });
+        }
         if (b.op === "add") {                      // a brand's whole remote, from the code table
           const set = irCodesJson.brands.find((x) => x.brand === b.brand)?.sets.find((x) => x.label === b.label);
           if (!set) return send(res, 400, { error: "no such remote in the table" });
@@ -505,7 +522,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return send(res, 200, { id: hub.send({ type: "remote", op: "add", name: set.label,
                                                  buttons: [button(set.power), button(set.volumeUp), button(set.volumeDown)] }) });
         }
-        return send(res, 400, { error: "op is activate, remove or add" });
+        return send(res, 400, { error: "op is activate, remove, rename or add" });
       }
       if (req.method === "POST" && path === "/api/device/ir") {     // C-34: one IR code, sent (and kept if asked)
         const b = await body(req);
@@ -561,6 +578,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         revealInFinder(ecfg.savePath);
         return send(res, 200, { ok: true });
       }
+      // C-59: the same pictures as JSON, so they cross the user's n8n relay (which carries /api/ and JSON only) -- one
+      // party daemon, one species, or every species the INDEX draws in a single request, so a phone away from home
+      // runs the relay once for the whole INDEX rather than once a picture.
+      if (req.method === "GET" && path === "/api/art") {
+        const q = url.searchParams, b64 = (b: Buffer | null) => b?.toString("base64");
+        if (q.has("party")) {
+          const png = b64(partyPng(ecfg, (p) => p.slot === Number(q.get("party"))));
+          return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that slot" });
+        }
+        if (q.has("species")) {
+          const png = b64(speciesPng(String(q.get("species"))));
+          return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that species" });
+        }
+        if (q.get("all") === "species") {
+          const all: Record<string, string> = {};
+          for (const n of Object.keys(SPECIES)) { const png = b64(speciesPng(n)); if (png) all[n] = png; }
+          return send(res, 200, { species: all });
+        }
+        return send(res, 400, { error: "art for ?party=<slot>, ?species=<id> or ?all=species" });
+      }
       const partyArt = path.match(/^\/art\/party\/(\d)\.png$/);
       if (req.method === "GET" && partyArt) {
         const body = partyPng(ecfg, (p) => p.slot === Number(partyArt[1]));
@@ -570,11 +607,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       const speciesArt = path.match(/^\/art\/species\/(\d+)\.png$/);   // C-24: as the INDEX draws it, in its type's colours
       if (req.method === "GET" && speciesArt) {
-        const row = SPECIES[speciesArt[1]];
-        const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
-        if (!file || !existsSync(file)) return send(res, 404, { error: "no art for that species" });
-        const png = readFileSync(file);   // no routines to paint: the streak slots take the body's mid tone
-        const body = row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;
+        const body = speciesPng(speciesArt[1]);
+        if (!body) return send(res, 404, { error: "no art for that species" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(body);
       }

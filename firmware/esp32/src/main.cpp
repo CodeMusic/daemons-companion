@@ -645,6 +645,7 @@ void handleCommand(JsonVariant c) {
     int index = c["index"] | -1;
     if (op == "activate") { flareSetActive(index); out = daemonName() + " uses " + flareName(flareActive()) + " now."; }
     else if (op == "remove") out = flareRemove(index);
+    else if (op == "rename") out = flareRename(index, c["name"] | "");          // C-59
     else if (op == "add") {
       String proto[3]; uint64_t value[3]; uint16_t bits[3], repeat[3];
       JsonArray b = c["buttons"].as<JsonArray>();

@@ -95,6 +95,16 @@ static void moveRemote(int from, int to) {
   saveRemote(to, flareName(from), b3);
 }
 
+// C-59: a remote renamed on the site or the phone (the user, 2026-10-05: "it helps personalize it")
+String flareRename(int r, const String &name) {
+  if (r < 0 || r >= flareCount()) return "No such remote.";
+  String was = flareName(r);
+  remotes.begin("remotes", false);
+  remotes.putString(key("n", r).c_str(), name);
+  remotes.end();
+  return was + " is " + name + " now.";
+}
+
 String flareRemove(int r) {
   int n = flareCount();
   if (r < 0 || r >= n) return "No such remote.";

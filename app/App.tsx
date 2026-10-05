@@ -78,6 +78,36 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   return j as T;
 }
 
+// C-59: a daemon's picture. At home it loads straight from the companion; away, the relay carries only /api/ and
+// JSON, so it comes as JSON instead -- and the INDEX's pictures all in one request, kept for the session, so a phone
+// away from home runs the relay once for the whole INDEX rather than once a picture.
+const ART = new Map<string, string>();
+let everySpecies: Promise<void> | null = null;
+async function artByJson(path: string): Promise<string> {
+  const m = /^\/art\/(party|species)\/(\d+)\.png$/.exec(path);
+  if (!m) throw new Error("no such picture");
+  if (m[1] === "species") {
+    everySpecies ??= api<{ species: Record<string, string> }>("/api/art?all=species").then(({ species }) => {
+      for (const [n, png] of Object.entries(species)) ART.set(`/art/species/${n}.png`, `data:image/png;base64,${png}`);
+    }).catch((e) => { everySpecies = null; throw e; });
+    await everySpecies;
+  } else {
+    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}`);
+    ART.set(path, `data:image/png;base64,${png}`);
+  }
+  const uri = ART.get(path);
+  if (!uri) throw new Error("no such picture");
+  return uri;
+}
+function Art({ path, size }: { path: string; size: number }) {
+  const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && isAway() ? null : SERVER + path));
+  const viaJson = useCallback(() => { artByJson(path).then(setUri).catch(() => {}); }, [path]);
+  useEffect(() => { if (!uri) viaJson(); }, [uri, viaJson]);
+  const style = [{ width: size, height: size }, PIXELATED as any];
+  if (!uri) return <YStack width={size} height={size} />;
+  return <Image source={{ uri }} style={style} onError={() => { if (uri.startsWith("http") && ON_PHONE) viaJson(); }} />;
+}
+
 // Words on the day's colour: ink on the light days (Tuesday's yellow), paper on the dark ones.
 function onColour(hex: string) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -360,7 +390,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
                   borderColor="$color5" borderRadius={4} padding={10} gap={2} opacity={d.away ? 0.45 : 1}
                   cursor="pointer" hoverStyle={{ borderColor: "$color9" }} role="button"
                   onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ name: x.name, category: x.category, entry: x.entry }))}>
-            <Image source={{ uri: `${SERVER}/art/party/${d.slot}.png` }} style={[{ width: 128, height: 128 }, PIXELATED]} />
+            <Art path={`/art/party/${d.slot}.png`} size={128} />
             <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{d.nickname}</Text>
             <Small>{d.name} · L{d.level}</Small>
             {d.away ? <Small color="$color10">ON YOUR DEVICE</Small> : null}
@@ -502,7 +532,7 @@ function IndexScreen() {
         <Card key={e.national} padding={12} cursor={e.bound ? "pointer" : "default"}
               onPress={() => e.bound && setOpen(open === e.national ? null : e.national)}>
           <XStack gap={12} alignItems="center">
-            {e.art ? <Image source={{ uri: SERVER + e.art }} style={[{ width: 64, height: 64 }, PIXELATED as any]} /> : null}
+            {e.art ? <Art path={e.art} size={64} /> : null}
             <YStack flex={1}>
               <Text fontFamily="$mono" fontSize={11} color="$color10">{`No. ${String(e.national).padStart(3, "0")}`}</Text>
               <Text fontSize={16} fontWeight="600" color="$color12">{e.name}</Text>
@@ -597,6 +627,7 @@ function DeviceScreen({ ink }: { ink: string }) {
   const [brands, setBrands] = useState<Brand[]>([]), [brand, setBrand] = useState<string>(""), [at, setAt] = useState(0);
   const [tried, setTried] = useState<number | null>(null), [kept, setKept] = useState<number | null>(null);
   const [managed, setManaged] = useState<number | null>(null), [forgot, setForgot] = useState<number | null>(null);
+  const [renaming, setRenaming] = useState<number | null>(null), [newName, setNewName] = useState("");   // C-59
   useEffect(() => {
     const poll = () => api<Link>("/api/device/link").then((l) => { setLink(l); setError(""); }).catch((e) => setError(e.message));
     poll();
@@ -615,6 +646,10 @@ function DeviceScreen({ ink }: { ink: string }) {
   const keepRemote = async () => setKept((await api<{ id: number }>("/api/device/remote", { op: "add", brand, label: set.label })).id);
   const manage = async (op: "activate" | "remove", index: number) =>
     setManaged((await api<{ id: number }>("/api/device/remote", { op, index })).id);
+  const rename = async (index: number) => {   // C-59: the user's own name for a remote
+    setManaged((await api<{ id: number }>("/api/device/remote", { op: "rename", index, name: newName })).id);
+    setRenaming(null);
+  };
   const sendWifi = async () => setWifiSent((await api<{ id: number }>("/api/device/wifi", { ssid, password: pass })).id);
   return (
     <YStack gap={14}>
@@ -658,7 +693,16 @@ function DeviceScreen({ ink }: { ink: string }) {
             <Text fontFamily="$mono" fontSize={11} color="$color10">
               {["POWER", "VOL +", "VOL -"].map((b, k) => r.buttons[k] ? b : `no ${b}`).join(" · ")}</Text>
             {i !== link.remotes.active ? <Action label="Use it" onPress={() => manage("activate", i)} ink={ink} /> : null}
+            <Action label="Rename" onPress={() => { setRenaming(i); setNewName(r.name); }} ink={ink} />
             <Action label="Remove" onPress={() => manage("remove", i)} ink={ink} />
+            {renaming === i ? (
+              <XStack width="100%" gap={8} alignItems="center" flexWrap="wrap">
+                <Input flex={1} minWidth={160} value={newName} onChangeText={setNewName} maxLength={16} autoFocus
+                       placeholder="a name, up to 16 letters" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+                <Action label="Save" onPress={() => rename(i)} ink={ink} />
+                <Action label="Cancel" onPress={() => setRenaming(null)} ink={ink} />
+              </XStack>
+            ) : null}
           </XStack>
         ))}
         <Result link={link} id={managed} />

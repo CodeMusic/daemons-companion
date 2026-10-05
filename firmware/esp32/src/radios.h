@@ -18,6 +18,7 @@ int flareActive();
 String flareName(int r);
 void flareSetActive(int r);
 String flareRemove(int r);
+String flareRename(int r, const String &name);   // C-59
 String flareAdd(const String &name, const String protocol[3], const uint64_t value[3], const uint16_t bits[3], const uint16_t repeat[3]);
 String flareRemotesJson();
 // C-34: one code from the site's search

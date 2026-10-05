@@ -96,16 +96,17 @@ struct RoutineType { const char *name; const char *radio; const Routine *routine
 
 String runNetworksInRange();
 String runChooseRemote();
+String runTheaterMode();
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
-                                               { "CHOOSE A REMOTE", runChooseRemote } };
+                                               { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote } };
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
 String runJoinNetwork();
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork } };
 static const RoutineType TYPES_LIST[] = {
-  { "FLARE",      "IR",        FLARE_ROUTINES,      5 },
+  { "FLARE",      "IR",        FLARE_ROUTINES,      6 },
   { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 },
   { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 },
   { "LONGWAVE",   "Sub-GHz",   nullptr,             0 },
@@ -615,6 +616,8 @@ void handleCommand(JsonVariant c) {
     for (int i = 0; i < TYPE_COUNT; i++)
       for (int k = 0; k < TYPES_LIST[i].count; k++)
         if (want == String(TYPES_LIST[i].name) + "/" + TYPES_LIST[i].routines[k].name) {
+          if (TYPES_LIST[i].routines[k].run == runTheaterMode)   // it holds the board's controls until the top button
+            return sendResult(id, false, "THEATER MODE is run on the board itself: it makes the dial and the button the remote.");
           typeAt = i; routineAt = k;
           runRoutine();
           return sendResult(id, true, runResult);
@@ -934,6 +937,40 @@ void readKey() {
 }
 
 // ---- UPLINK (Wi-Fi): the networks in range, by name and strength. Lists only; joins nothing. --------------------
+// C-58: THEATER MODE -- the board becomes the remote (the user, 2026-10-05): the front button is POWER, the dial
+// clockwise VOLUME UP and counter-clockwise VOLUME DOWN, one press of the remote for each click of the dial, until the
+// top button. It holds the controls, so the site cannot start it.
+String runTheaterMode() {
+  if (!flareCount()) return daemonName() + " knows no remote yet.\nChoose TEACH A REMOTE, or add one by brand on the site.";
+  String head = "THEATER MODE  (" + flareName(flareActive()) + ")\npress: POWER\nright: VOLUME UP    left: VOLUME DOWN\ntop button: done";
+  progress(head);
+  int8_t last = (digitalRead(PIN_ENC_A) << 1) | digitalRead(PIN_ENC_B), sum = 0;
+  static const int8_t table[16] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
+  bool keyWas = digitalRead(PIN_ENC_KEY);
+  uint32_t keyAt = 0;
+  while (!giveUp()) {
+    int8_t now = (digitalRead(PIN_ENC_A) << 1) | digitalRead(PIN_ENC_B);
+    sum += table[(last << 2) | now];
+    last = now;
+    String sent;
+    if (sum >= 4 || sum <= -4) {
+      int step = sum > 0 ? 1 : -1;
+      sum = 0;
+      ledsSpin(step);
+      sent = step > 0 ? runVolumeUp() : runVolumeDown();
+    }
+    bool key = digitalRead(PIN_ENC_KEY);
+    if (!key && keyWas && millis() - keyAt > 150) { keyAt = millis(); ledsFlash(); sent = runPower(); }
+    keyWas = key;
+    if (sent.length()) progress(head + "\n\n" + sent.substring(0, sent.indexOf('\n')));   // what went, in its first line
+    ledsLoop();
+    delay(1);
+  }
+  lastInput = millis();
+  encLast = last; encSum = 0;               // the main loop's dial picks up from here, not from before
+  return "THEATER MODE: done.";
+}
+
 String runNetworksInRange() {
   if (!wifiSet()) WiFi.mode(WIFI_STA);   // with no network set the radio is idle; it listens for the scan
   int n = WiFi.scanNetworks();
@@ -944,7 +981,8 @@ String runNetworksInRange() {
     bool known = false;
     for (int k = 0; k < knownCount; k++) if (knownSsid[k] == name) known = true;
     if (!name.length()) name = "(hidden)";
-    out += "\n" + String(known ? "* " : "  ") + name + "  " + String(WiFi.RSSI(i)) + " dBm";
+    bool on = WiFi.status() == WL_CONNECTED && WiFi.SSID() == WiFi.SSID(i);   // C-52: the one it has joined
+    out += "\n" + String(on ? "> " : known ? "* " : "  ") + name + "  " + String(WiFi.RSSI(i)) + " dBm" + (on ? "  joined" : "");
   }
   WiFi.scanDelete();
   return out;
@@ -1017,6 +1055,8 @@ void loop() {
   askForArt();
   uplinkLoop(now);
   linkLoop(now);                            // C-55
+  static bool wifiWas = false;              // C-52: the site hears at once when the board joins or leaves a network
+  if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
   static bool wasUndoable = false;

@@ -161,7 +161,7 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
 
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
-export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33 };
+export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true };   // meet: C-15
 export type DeviceSettings = typeof DEVICE_SETTINGS;
 export function deviceSettings(store: Store): DeviceSettings {
   try { return { ...DEVICE_SETTINGS, ...JSON.parse(store.getSetting("device") ?? "{}") }; }
@@ -174,7 +174,8 @@ function checkSettings(b: any): DeviceSettings | string {
   if (typeof s.sound !== "boolean") return "sound is on or off";
   if (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100) return "volume is 0 to 100";
   if (!Number.isInteger(s.ring) || s.ring < 0 || s.ring > 100) return "ring is 0 to 100";
-  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring };
+  if (typeof s.meet !== "boolean") return "meet is on or off";
+  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet };
 }
 
 // C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
@@ -281,6 +282,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
   return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
            settings: deviceSettings(store),
+           beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue, menu: dd.menu, led: dd.led },
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon };
 }
@@ -336,7 +338,7 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
-     "/api/device/remotes", "/api/device/networks"].includes(p),
+     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
@@ -346,6 +348,12 @@ export function lanAddress(): string | null {
   for (const list of Object.values(networkInterfaces()))
     for (const a of list ?? []) if (a.family === "IPv4" && !a.internal) return a.address;
   return null;
+}
+
+// C-15: the beacon tags our own companions have used lately -- never a meeting
+const OWN_KEEP_MS = 48 * 3600000;
+function ownBeacons(store: Store): { peer: string; at: number }[] {
+  try { return JSON.parse(store.getSetting("beacons.own") ?? "[]"); } catch { return []; }
 }
 
 // ---- C-53: pairing a phone. The site asks for a code (this machine only); the phone sends it back once, with a name,
@@ -554,6 +562,34 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                                                        level: d?.level ?? null }; };
       if (req.method === "POST" && care) { store.logInteraction(care[1], "site"); return send(res, 200, lifeNow()); }
       if (req.method === "GET" && path === "/api/daemon/life") return send(res, 200, lifeNow());
+      // ---- C-15: meeting others nearby. A companion's beacon carries only its daemon's species and a tag of four random
+      // bytes that changes every hour (firmware/esp32/src/meet.cpp, app/beacon.ts). Each of OUR companions says which tag
+      // is its own (beacon), so the board and the phone, which hear each other all day, never count as a meeting. A
+      // meeting is then kept once per tag (so once an hour per companion), and the next SYNC writes it into the save.
+      if (req.method === "POST" && path === "/api/device/beacon") {
+        const b = await body(req);
+        if (typeof b.peer !== "string" || !/^[0-9a-f]{8}$/.test(b.peer)) return send(res, 400, { error: "beacon {peer}: eight hex digits" });
+        const own = ownBeacons(store).filter((x) => Date.now() - x.at < OWN_KEEP_MS && x.peer !== b.peer);
+        store.setSetting("beacons.own", JSON.stringify([...own, { peer: b.peer, at: Date.now() }].slice(-24)));
+        return send(res, 200, { ok: true });
+      }
+      // C-15: what the phone needs for its own beacon -- the carried daemon's species, our companions' tags, the setting
+      if (req.method === "GET" && path === "/api/beacons") {
+        const carried = carriedDaemon(ecfg);
+        return send(res, 200, { meet: deviceSettings(store).meet, species: carried?.species ?? null,
+                                ours: ownBeacons(store).map((b) => b.peer) });
+      }
+      if (req.method === "POST" && path === "/api/device/met") {
+        const b = await body(req);
+        const species = String(b.species ?? ""), peer = String(b.peer ?? "");
+        if (!SPECIES[species] || !/^[0-9a-f]{8}$/.test(peer)) return send(res, 400, { error: "met {species, peer}" });
+        if (ownBeacons(store).some((x) => x.peer === peer)) return send(res, 200, { counted: false, why: "one of yours" });
+        const hour = new Date(Date.now() - 3600000);
+        if (store.interactionsSince(hour).some((i) => i.kind === "met" && i.detail?.endsWith(" " + peer)))
+          return send(res, 200, { counted: false, why: "already met this hour" });
+        store.logInteraction("met", `${species} ${peer}`);
+        return send(res, 200, { counted: true, name: SPECIES[species].name });
+      }
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";

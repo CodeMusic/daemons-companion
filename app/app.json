@@ -45,7 +45,8 @@
         {
           "isBackgroundEnabled": true,
           "modes": [
-            "central"
+            "central",
+            "peripheral"
           ],
           "bluetoothAlwaysPermission": "To carry your handheld's link: its goal, its daemon and its routines, at home or away."
         }

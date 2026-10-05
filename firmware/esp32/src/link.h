@@ -9,6 +9,7 @@ void linkLoop(uint32_t now);         // drops a stranger who never paired; adver
 bool linkPhoneHere();                // a paired phone is connected and listening
 void linkSend(const String &line);   // one line to the phone, in pieces the radio can carry
 bool linkTake(String &line);         // the next whole line the phone sent, if there is one
+void linkSetBeacon(const char *uuid);   // C-15: the meeting beacon in the scan response (meet.cpp), or none
 
 uint32_t linkPairStart();            // pairing: the six-digit code to show, good until linkPairStop
 void linkPairStop();

@@ -143,6 +143,18 @@ def bridge(a, port):
                     server_json(a.server, "/api/device/" + kind.lower(), json.loads(rest))
                 except Exception as e:
                     print("usb_bridge: could not pass on the %s (%s)" % (kind.lower(), e), flush=True)
+            elif msg.startswith("MET ") or msg.startswith("BEACON "):   # C-15: a companion heard nearby; this board's tag
+                word, _, rest = msg.partition(" ")
+                try:
+                    if word == "MET":
+                        species, tag = rest.split()
+                        r = server_json(a.server, "/api/device/met", {"species": species, "peer": tag})
+                        print("usb_bridge: met a companion nearby (species %s): %s" % (species,
+                              "counted" if r.get("counted") else r.get("why", "not counted")), flush=True)
+                    else:
+                        server_json(a.server, "/api/device/beacon", {"peer": rest.strip()})
+                except Exception as e:
+                    print("usb_bridge: could not pass on %s (%s)" % (word, e), flush=True)
             elif msg.startswith("ROUTINES "):
                 try:
                     server_json(a.server, "/api/device/routines", json.loads(msg[9:]))

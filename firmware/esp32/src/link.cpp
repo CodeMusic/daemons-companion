@@ -32,6 +32,7 @@ static volatile uint16_t mtu = 23;
 static volatile bool pairing = false, pairedNow = false;
 static volatile int stranger = -1; static volatile uint32_t strangerAt = 0;
 static volatile bool uartHere = false;
+static bool beaconOn = false;                        // C-15: advertise even with the phone here, so others hear us
 static String uartSaid;
 
 static uint32_t secretCode() {                       // never 123456: NimBLE reads that one as "ask the callback"
@@ -116,8 +117,9 @@ void linkBegin() {
 void linkLoop(uint32_t now) {
   if (stranger >= 0 && !uartHere && now - strangerAt > STRANGER_MS)   // WHISPER's test app is let stay
   { server->disconnect(stranger); stranger = -1; }
-  // a connection stops advertising; keep it going while no paired phone is here, so the phone can come back
-  if (phone < 0 && server->getConnectedCount() < 2 && !NimBLEDevice::getAdvertising()->isAdvertising())
+  // a connection stops advertising; keep it going while no paired phone is here, so the phone can come back -- and
+  // while the meeting beacon is on, always (C-15), so others nearby hear the board with the phone linked
+  if ((phone < 0 || beaconOn) && server->getConnectedCount() < 2 && !NimBLEDevice::getAdvertising()->isAdvertising())
     NimBLEDevice::getAdvertising()->start();
 }
 
@@ -133,6 +135,18 @@ void linkSend(const String &line) {
     tx->notify();
     if (at + n < all.length()) delay(8);                       // the radio's buffers are few: let them drain
   }
+}
+
+void linkSetBeacon(const char *uuid) {
+  NimBLEAdvertising *adv = NimBLEDevice::getAdvertising();
+  NimBLEAdvertisementData sr;
+  if (uuid) sr.setCompleteServices(NimBLEUUID(uuid));
+  else sr.setName("DAEMONS companion");
+  bool was = adv->isAdvertising();
+  if (was) adv->stop();
+  adv->setScanResponseData(sr);
+  beaconOn = uuid != nullptr;
+  if (was || beaconOn) adv->start();
 }
 
 bool linkTake(String &line) {

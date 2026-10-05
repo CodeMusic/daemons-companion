@@ -43,6 +43,8 @@ async function loadConnection(): Promise<boolean> {
 // C-55: the handheld's link over Bluetooth, carried by the phone (handheld.ts) -- only on the phone; the site has the cable.
 const HANDHELD: typeof import("./handheld").handheld | null = ON_PHONE ? require("./handheld").handheld : null;
 type HandheldNow = import("./handheld").Handheld;
+// C-15: the phone meets others nearby (beacon.ts) -- only on the phone, which can advertise and listen
+const MEETING: typeof import("./beacon").meeting | null = ON_PHONE ? require("./beacon").meeting : null;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string };
@@ -567,7 +569,7 @@ type RemoteSet = { label: string; protocol: string; bits: number; repeat: number
 type Brand = { brand: string; sets: RemoteSet[] };
 
 // C-43: the board's settings live here, not on the board: it picks them up whenever it is linked.
-type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number };
+type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number; meet: boolean };
 
 function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
   return (
@@ -607,6 +609,9 @@ function DeviceSettingsCard({ ink }: { ink: string }) {
       </Row>
       <Row label="THE RING AT REST">
         <Choice value={s.ring} options={[[0, "Off"], [15, "Dim"], [33, "A third"], [60, "Bright"]]} onPick={(ring) => set({ ring })} ink={ink} />
+        </Row>
+        <Row label="MEET OTHERS NEARBY">
+          <Choice value={s.meet} options={[[true, "On"], [false, "Off"]]} onPick={(meet) => set({ meet })} ink={ink} />
       </Row>
     </Card>
   );
@@ -916,7 +921,7 @@ function Shell() {
   }, []);
   useEffect(reload, [reload]);
   // C-55: back to the handheld this phone paired with, if any
-  useEffect(() => { HANDHELD?.start(api, isAway); }, []);
+  useEffect(() => { HANDHELD?.start(api, isAway); MEETING?.start(api, () => HANDHELD!.bluetooth()); }, []);
   // C-56: the way back from anywhere, learned at home and kept on the phone
   useEffect(() => {
     if (!ON_PHONE) return;
@@ -930,7 +935,7 @@ function Shell() {
     if (!ON_PHONE) return;
     const sync = () => sendTodaysSteps().then(() => reload()).catch(() => {});
     sync();
-    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); HANDHELD?.nudge(); } });
+    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); HANDHELD?.nudge(); MEETING?.nudge(); } });
     return () => sub.remove();
   }, [reload]);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's

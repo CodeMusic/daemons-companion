@@ -130,6 +130,11 @@ or in the background (home screen, phone locked: fine); an app swiped away in th
 Bluetooth by iOS until it is opened again, and then it links again by itself. **FORGET MY PHONES**, on
 the handheld, undoes every pairing.
 
+**Meeting others nearby (C-15).** The handheld and the phone each send a small beacon -- the daemon's species and a
+random tag that changes every hour -- and listen for others every few minutes. Passing someone else's companion is a
+meeting: at the next SYNC your INDEX sees their daemon and yours grows a little friendlier. Your own handheld and
+phone never count as meeting each other. Off in DEVICE, ITS SETTINGS, MEET OTHERS NEARBY.
+
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
 on it. **Away from home** it reaches the companion through an n8n workflow that relays into your home network
 ([docs/REMOTE.md](docs/REMOTE.md), C-56): import `n8n/companion relay.json` into your n8n, put this computer's address

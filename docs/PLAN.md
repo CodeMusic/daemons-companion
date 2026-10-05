@@ -168,6 +168,10 @@ the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's s
 - **Bluetooth first** (the user, 2026-10-04): the T-Embed's ESP32-S3, the Pi Zero 2 W and every phone all speak
   Bluetooth Low Energy, so it is the one radio that lets every kind of companion find every other. A short, slow
   advertising beacon and an occasional scan keep it light on power.
+- **The beacon** (C-15, built 2026-10-05): one 128-bit service UUID, `dae0beac-0015-4d45-SSSS-PPPPPPPP0001` -- the
+  carried daemon's species and four random bytes that change every hour, so nobody can be followed by it. A service
+  UUID is the one thing an iPhone app may advertise, so the board and the phone send the same beacon. Each listens a
+  few seconds every three minutes; the server keeps a meeting once an hour per tag and never counts our own companions.
 - **LoRa and the mesh are later** (C-16): a mesh would pass messages through every unit, so a daemon could be known to
   be in the mesh though out of radio range. The T-Embed also carries a CC1101 (sub-GHz), which RadioLib can drive;
   it is kept for that later work.

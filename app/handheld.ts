@@ -65,6 +65,12 @@ class Link {
 
   // iOS says what state Bluetooth is in a moment after the app first asks (it starts "unknown"), and asks the user's
   // permission the first time: wait for it to be on before scanning or connecting.
+  // C-15: the meeting listen (beacon.ts) uses the same Bluetooth -- never while a pairing is scanning
+  bluetooth(): Promise<BleManager> {
+    if (this.now.phase === "looking") return Promise.reject(new Error("pairing is scanning"));
+    return this.ready();
+  }
+
   private ready(): Promise<BleManager> {
     const ble = this.manager();
     return new Promise((ok, fail) => {
@@ -226,6 +232,11 @@ class Link {
       const [kind, ...detail] = rest.split(" ");
       try { await this.flush(); await this.ask("/api/device/interact", { kind, detail: detail.join(" ") }); await this.sendState(); }
       catch { await this.later("/api/device/interact", { kind, detail: detail.join(" ") }); }
+    } else if (word === "MET") {                            // C-15: a companion the board heard nearby
+      const [species, peer] = rest.split(" ");
+      try { await this.ask("/api/device/met", { species, peer }); } catch { await this.later("/api/device/met", { species, peer }); }
+    } else if (word === "BEACON") {                         // C-15: the board's own tag, so it is never a meeting
+      try { await this.ask("/api/device/beacon", { peer: rest }); } catch { await this.later("/api/device/beacon", { peer: rest }); }
     } else if (word === "RESULT") {
       await this.ask("/api/device/results", JSON.parse(rest)).catch(() => {});
     } else if (word === "ROUTINES" || word === "REMOTES" || word === "NETWORKS") {

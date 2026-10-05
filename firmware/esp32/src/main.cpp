@@ -17,6 +17,7 @@
 #include "leds.h"
 #include "sound.h"
 #include "link.h"
+#include "meet.h"
 #include <mbedtls/base64.h>
 
 #include <HTTPClient.h>
@@ -75,7 +76,8 @@ bool dirty = true;
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 bool wake();                              // C-39, below
 // ---- C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked ----
-struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33; } cfg;
+struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
+                  bool meet = true; } cfg;                    // meet: C-15, meeting others nearby
 uint32_t lastInput = 0;                   // C-42: any touch; left alone `sleepAfter` seconds, it sleeps
 void turn(int step); void press(); void back(); void reportRemotes(); void reportNetworks();
 bool asleep = false;                      // C-39, below
@@ -135,6 +137,7 @@ void loadSettings() {
   Preferences p; p.begin("settings", true);
   cfg.home = p.getString("home", cfg.home); cfg.sleepAfter = p.getInt("sleep", cfg.sleepAfter);
   cfg.sound = p.getBool("sound", cfg.sound); cfg.volume = p.getInt("volume", cfg.volume); cfg.ring = p.getInt("ring", cfg.ring);
+  cfg.meet = p.getBool("meet", cfg.meet);
   p.end();
   applySettings();
 }
@@ -143,12 +146,13 @@ void takeSettings(JsonVariant s) {
   Settings got;
   got.home = s["home"] | cfg.home.c_str(); got.sleepAfter = s["sleepAfter"] | cfg.sleepAfter;
   got.sound = s["sound"] | cfg.sound; got.volume = s["volume"] | cfg.volume; got.ring = s["ring"] | cfg.ring;
+  got.meet = s["meet"] | cfg.meet;
   if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
-      got.ring == cfg.ring) return;
+      got.ring == cfg.ring && got.meet == cfg.meet) return;
   cfg = got;
   Preferences p; p.begin("settings", false);
   p.putString("home", cfg.home); p.putInt("sleep", cfg.sleepAfter); p.putBool("sound", cfg.sound);
-  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring);
+  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring); p.putBool("meet", cfg.meet);
   p.end();
   applySettings();
 }
@@ -172,6 +176,7 @@ bool takeState(const String &json) {
   }
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   if (!doc["settings"].isNull()) takeSettings(doc["settings"]);
+  meetSetOurs(doc["beacons"] | "");          // C-15: our other companions (the phone) are never a meeting
   st.menu = doc["day"]["menu"] | st.colour.c_str();     // C-37: the tamed rainbow week, else the game's trim
   st.led = doc["day"]["led"] | st.menu.c_str();
   ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));
@@ -755,6 +760,37 @@ void readUsb() {
   }
 }
 
+// C-15: what the meeting radio heard, and this board's own tag, told to the server -- through a bridge (MET, BEACON
+// lines) or over Wi-Fi; kept a while when there is neither. A meeting is a small event: a flash and a word, never a
+// sound and never on a sleeping board (it must never pester).
+std::vector<String> metWaiting;
+String beaconTold;
+void meetReport() {
+  int species; String tag;
+  while (meetTakeHeard(species, tag)) {
+    if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag);
+    if (!asleep) { ledsFlash(); say("A daemon nearby"); }
+  }
+  bool link = bridgeLive() || online();
+  if (!link) return;
+  String own = meetOwnPeer();
+  if (own.length() && own != beaconTold) {
+    if (bridgeLive()) bridge("BEACON " + own);
+    else if (http("POST", "/api/device/beacon", "{\"peer\":\"" + own + "\"}").isEmpty()) return;
+    beaconTold = own;
+  }
+  while (!metWaiting.empty()) {
+    String m = metWaiting.front();
+    if (bridgeLive()) bridge("MET " + m);
+    else {
+      int sp = m.indexOf(' ');
+      String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + m.substring(sp + 1) + "\"}";
+      if (http("POST", "/api/device/met", body).isEmpty()) return;
+    }
+    metWaiting.erase(metWaiting.begin());
+  }
+}
+
 void readPhone() {                                  // C-55
   String line;
   for (int i = 0; i < 4 && linkTake(line); i++) handleLine(line, true);
@@ -1056,6 +1092,8 @@ void loop() {
   askForArt();
   uplinkLoop(now);
   linkLoop(now);                            // C-55
+  meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-15
+  meetReport();
   static bool wifiWas = false;              // C-52: the site hears at once when the board joins or leaves a network
   if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again

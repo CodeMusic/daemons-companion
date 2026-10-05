@@ -106,7 +106,7 @@ describe("the networks the board has learned (C-52)", () => {
 describe("the board's settings, set on the site (C-43)", () => {
   it("starts at the daemon, sleeps after two minutes, and carries them in the state", async () => {
     const s = await get("/api/device/settings");
-    expect(s).toEqual({ home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33 });
+    expect(s).toEqual({ home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true });   // meet: C-15
     expect((await get("/api/device/state")).settings).toEqual(s);
   });
 
@@ -193,5 +193,16 @@ describe("renaming a remote (C-59)", () => {
     const { commands } = await get("/api/device/commands?via=usb");
     expect(commands.find((c: any) => c.id === id)).toMatchObject({ type: "remote", op: "rename", index: 0, name: "Living room TV," });
     expect((await post("/api/device/remote", { op: "rename", index: 0, name: "\u0007" })).status).toBe(400);
+  });
+});
+
+describe("meeting others nearby (C-15)", () => {
+  it("keeps a meeting once an hour per tag, never one of our own, and SYNC is what writes it", async () => {
+    expect((await post("/api/device/beacon", { peer: "0badf00d" })).status).toBe(200);          // the board's own tag
+    expect((await post("/api/device/met", { species: "25", peer: "0badf00d" })).json).toMatchObject({ counted: false, why: "one of yours" });
+    expect((await post("/api/device/met", { species: "25", peer: "12345678" })).json).toMatchObject({ counted: true });
+    expect((await post("/api/device/met", { species: "25", peer: "12345678" })).json).toMatchObject({ counted: false });
+    expect((await post("/api/device/met", { species: "99999", peer: "abcdef01" })).status).toBe(400);
+    expect((await post("/api/device/met", { species: "25", peer: "not-hex!" })).status).toBe(400);
   });
 });

@@ -35,7 +35,10 @@ static void listenEnded(NimBLEScanResults) { listenDone = true; }
 
 static String hex8(uint32_t v) { char b[9]; snprintf(b, sizeof b, "%08lx", (unsigned long)v); return b; }
 
-class Heard : public NimBLEAdvertisedDeviceCallbacks {
+// Its own name, inside its own namespace: link.cpp also had a class called Heard, and two classes of one name in one
+// program share ONE vtable at link time -- the scan called the link's callback, and heard nothing for an hour (C-15).
+namespace {
+class MeetListener : public NimBLEAdvertisedDeviceCallbacks {
   void onResult(NimBLEAdvertisedDevice *d) override {
     listenDevices++;
     for (int i = 0; i < (int)d->getServiceUUIDCount(); i++) {
@@ -52,6 +55,7 @@ class Heard : public NimBLEAdvertisedDeviceCallbacks {
     }
   }
 };
+}  // namespace
 
 void meetLoop(uint32_t now, bool on, int species) {
   if (!on || species <= 0) {
@@ -68,7 +72,7 @@ void meetLoop(uint32_t now, bool on, int species) {
   NimBLEScan *scan = NimBLEDevice::getScan();
   static bool ready = false;
   if (!ready) {
-    scan->setAdvertisedDeviceCallbacks(new Heard(), false);
+    scan->setAdvertisedDeviceCallbacks(new MeetListener(), false);
     scan->setActiveScan(true);                             // the beacon is in the scan response
     scan->setInterval(97); scan->setWindow(37);            // a light listen: about a third of the time
     ready = true;

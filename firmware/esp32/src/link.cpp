@@ -41,6 +41,7 @@ static uint32_t secretCode() {                       // never 123456: NimBLE rea
   return c;
 }
 
+namespace {                                          // file-local: these names must never meet another file's
 class Link : public NimBLEServerCallbacks {
   void onConnect(NimBLEServer *, ble_gap_conn_desc *d) override {
     stranger = d->conn_handle; strangerAt = millis();          // until it proves it is a paired phone
@@ -82,6 +83,7 @@ class UartHeard : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic *c) override { uartSaid = String(c->getValue().c_str()); }
   void onSubscribe(NimBLECharacteristic *, ble_gap_conn_desc *, uint16_t sub) override { uartHere = sub != 0; }
 };
+}  // namespace
 
 void linkBegin() {
   NimBLEDevice::init("DAEMONS companion");

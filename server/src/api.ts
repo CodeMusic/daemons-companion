@@ -586,7 +586,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/device/listen") {   // C-15: the board's last listen, for the check
         const b = await body(req);
         store.setSetting("beacons.lastListen", JSON.stringify({ at: new Date().toISOString(), started: !!b.started,
-                                                               devices: Number(b.devices) || 0, beacons: Number(b.beacons) || 0 }));
+                                                               devices: Number(b.devices) || 0, beacons: Number(b.beacons) || 0,
+                                                               mode: Number(b.mode) || 0 }));
+        const log = JSON.parse(store.getSetting("beacons.listens") ?? "[]");
+        store.setSetting("beacons.listens", JSON.stringify([...log, { at: new Date().toISOString(), started: !!b.started,
+          devices: Number(b.devices) || 0, beacons: Number(b.beacons) || 0, mode: Number(b.mode) || 0 }].slice(-12)));
         return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/device/met") {

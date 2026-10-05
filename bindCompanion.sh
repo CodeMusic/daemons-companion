@@ -79,7 +79,13 @@ if [[ $mode == phone ]]; then
   export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8          # CocoaPods fails on a non-UTF-8 locale
   cd "$HERE/app"
   [[ -d node_modules ]] || npm install --no-fund --no-audit
-  [[ -d ios ]] || CI=1 npx expo prebuild --platform ios --no-install
+  # Generate the native project again whenever app.json or the dependencies changed since it was made: a plugin added
+  # later (C-55's Bluetooth permission) otherwise never reaches it, and iOS closes an app that touches Bluetooth
+  # without its permission line -- the user's first PAIR crashed on exactly that.
+  if [[ ! -d ios || app.json -nt ios/.prebuilt || package.json -nt ios/.prebuilt ]]; then
+    CI=1 npx expo prebuild --platform ios --no-install
+    touch ios/.prebuilt
+  fi
   (cd ios && pod install)
   phone_id="$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && $0 !~ /simulated/ { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }')"
   [[ -n "$phone_id" ]] || { echo "bindCompanion: no iPhone found -- plug it in (and trust this Mac), or put it on the same Wi-Fi with developer mode on." >&2; exit 1; }

@@ -570,7 +570,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         if (typeof b.peer !== "string" || !/^[0-9a-f]{8}$/.test(b.peer)) return send(res, 400, { error: "beacon {peer}: eight hex digits" });
         const own = ownBeacons(store).filter((x) => Date.now() - x.at < OWN_KEEP_MS && x.peer !== b.peer);
-        store.setSetting("beacons.own", JSON.stringify([...own, { peer: b.peer, at: Date.now() }].slice(-24)));
+        // who it is: a paired phone carries its key; the board comes through a bridge or over Wi-Fi without one
+        store.setSetting("beacons.own", JSON.stringify([...own, { peer: b.peer, at: Date.now(), by: phone ? "phone" : "board" }].slice(-24)));
         return send(res, 200, { ok: true });
       }
       // C-15: what the phone needs for its own beacon -- the carried daemon's species, our companions' tags, the setting
@@ -578,6 +579,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const carried = carriedDaemon(ecfg);
         return send(res, 200, { meet: deviceSettings(store).meet, species: carried?.species ?? null,
                                 ours: ownBeacons(store).map((b) => b.peer),
+                                beacons: ownBeacons(store),                    // with who sent each, for the check
                                 heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null") });
       }
       if (req.method === "POST" && path === "/api/device/met") {
@@ -585,7 +587,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const species = String(b.species ?? ""), peer = String(b.peer ?? "");
         if (!SPECIES[species] || !/^[0-9a-f]{8}$/.test(peer)) return send(res, 400, { error: "met {species, peer}" });
         if (ownBeacons(store).some((x) => x.peer === peer)) {     // never counted; noted, as proof both radios work
-          store.setSetting("beacons.heardOurs", JSON.stringify({ at: new Date().toISOString(), peer }));
+          const whose = ownBeacons(store).find((x) => x.peer === peer) as { by?: string } | undefined;
+          store.setSetting("beacons.heardOurs", JSON.stringify({ at: new Date().toISOString(), peer, heard: whose?.by ?? "?",
+                                                                 by: phone ? "phone" : "board" }));
           return send(res, 200, { counted: false, why: "one of yours" });
         }
         const hour = new Date(Date.now() - 3600000);

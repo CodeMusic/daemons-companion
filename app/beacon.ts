@@ -2,7 +2,7 @@
 // (firmware/esp32/src/meet.cpp): one service UUID, dae0beac-0015-4d45-SSSS-PPPPPPPP0001, the carried daemon's species
 // and a random tag that changes every hour. While the app is open it listens for a few seconds every three minutes;
 // what it hears goes to the companion (POST /api/device/met), which keeps it once an hour per tag and never counts our
-// own board. iOS hears another iPhone's beacon only while that iPhone has the app open; a board, always.
+// own board (it notes that our companions heard each other: the proof the radios work). iOS hears another iPhone's beacon only while that iPhone has the app open; a board, always.
 import type { BleManager } from "react-native-ble-plx";
 import Beacon from "./modules/daemons-beacon";
 
@@ -58,7 +58,7 @@ class Meeting {
         const u = raw.toLowerCase();
         if (u.length !== 36 || !u.startsWith(PREFIX)) continue;
         const species = parseInt(u.slice(19, 23), 16), peer = u.slice(24, 32);
-        if (!species || peer === this.tag || this.ours.has(peer)) continue;
+        if (!species || peer === this.tag) continue;          // our board too: the server notes it, never counts it
         if (Date.now() - (this.heard.get(peer) ?? 0) < ROTATE_MS) continue;
         this.heard.set(peer, Date.now());
         found.push({ species: String(species), peer });

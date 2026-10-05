@@ -11,7 +11,8 @@
 // noise. It rides in the scan response (the advertisement proper carries the link's UUID, link.cpp).
 //
 // THE LISTEN: four seconds every three minutes, which costs little. A tag already heard this hour is not heard again,
-// and the tags of our OWN other companions (the phone, which the server names in the state) are never heard at all.
+// and the tags of our OWN other companions (the phone, which the server names in the state) are told but never
+// celebrated -- the server never counts them, and notes that our companions heard each other, which proves the radios.
 #include "meet.h"
 #include "link.h"
 #include <NimBLEDevice.h>
@@ -75,7 +76,7 @@ void meetLoop(uint32_t now, bool on, int species) {
 String meetOwnPeer() { return beaconSpecies >= 0 ? hex8(peer) : ""; }
 void meetSetOurs(const String &peersCsv) { ours = peersCsv; }
 
-bool meetTakeHeard(int &species, String &tag) {
+bool meetTakeHeard(int &species, String &tag, bool &mine) {
   while (true) {
     std::pair<int, uint32_t> h;
     portENTER_CRITICAL(&lock);
@@ -88,7 +89,8 @@ bool meetTakeHeard(int &species, String &tag) {
     bool again = false;
     for (auto &r : recent) if (r.first == h.second) again = true;
     String t = hex8(h.second);
-    if (again || ours.indexOf(t) >= 0) continue;
+    if (again) continue;
+    mine = ours.indexOf(t) >= 0;                           // our phone: told (it proves the radios), never celebrated
     recent.push_back({ h.second, now });
     if (recent.size() > 64) recent.pop_front();
     species = h.first; tag = t;

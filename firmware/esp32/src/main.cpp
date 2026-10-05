@@ -766,10 +766,10 @@ void readUsb() {
 std::vector<String> metWaiting;
 String beaconTold;
 void meetReport() {
-  int species; String tag;
-  while (meetTakeHeard(species, tag)) {
+  int species; String tag; bool mine;
+  while (meetTakeHeard(species, tag, mine)) {
     if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag);
-    if (!asleep) { ledsFlash(); say("A daemon nearby"); }
+    if (!mine && !asleep) { ledsFlash(); say("A daemon nearby"); }
   }
   bool link = bridgeLive() || online();
   if (!link) return;

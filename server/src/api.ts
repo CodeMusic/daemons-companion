@@ -577,13 +577,17 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/beacons") {
         const carried = carriedDaemon(ecfg);
         return send(res, 200, { meet: deviceSettings(store).meet, species: carried?.species ?? null,
-                                ours: ownBeacons(store).map((b) => b.peer) });
+                                ours: ownBeacons(store).map((b) => b.peer),
+                                heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null") });
       }
       if (req.method === "POST" && path === "/api/device/met") {
         const b = await body(req);
         const species = String(b.species ?? ""), peer = String(b.peer ?? "");
         if (!SPECIES[species] || !/^[0-9a-f]{8}$/.test(peer)) return send(res, 400, { error: "met {species, peer}" });
-        if (ownBeacons(store).some((x) => x.peer === peer)) return send(res, 200, { counted: false, why: "one of yours" });
+        if (ownBeacons(store).some((x) => x.peer === peer)) {     // never counted; noted, as proof both radios work
+          store.setSetting("beacons.heardOurs", JSON.stringify({ at: new Date().toISOString(), peer }));
+          return send(res, 200, { counted: false, why: "one of yours" });
+        }
         const hour = new Date(Date.now() - 3600000);
         if (store.interactionsSince(hour).some((i) => i.kind === "met" && i.detail?.endsWith(" " + peer)))
           return send(res, 200, { counted: false, why: "already met this hour" });

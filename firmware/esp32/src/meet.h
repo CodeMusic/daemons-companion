@@ -7,4 +7,4 @@
 void meetLoop(uint32_t now, bool on, int species);
 String meetOwnPeer();                                      // this board's tag now, eight hex digits ("" when off)
 void meetSetOurs(const String &peersCsv);                  // our other companions' tags (the phone's), from the state
-bool meetTakeHeard(int &species, String &peer);            // a companion heard, once per tag per hour
+bool meetTakeHeard(int &species, String &peer, bool &ours);   // a companion heard, once per tag per hour (ours: our phone)

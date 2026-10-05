@@ -21,8 +21,20 @@ let AWAY: string | null = null;
 let route = { away: false, until: 0 };
 const isAway = () => route.away;
 const ON_PHONE = Platform.OS !== "web";
+// C-57: readable after the phone's first unlock, not only while it is unlocked -- iOS may open the app in a locked
+// pocket when the handheld has something to say, and the app needs its key and the handheld's id then.
+const KEEP = { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK };
+async function keepAfterFirstUnlock() {
+  if (await SecureStore.getItemAsync("keychain-after-first-unlock")) return;
+  for (const k of ["server", "token", "away", "handheld", "handheld-waiting"]) {
+    const v = await SecureStore.getItemAsync(k);
+    if (v !== null) { await SecureStore.deleteItemAsync(k); await SecureStore.setItemAsync(k, v, KEEP); }
+  }
+  await SecureStore.setItemAsync("keychain-after-first-unlock", "1", KEEP);
+}
 async function loadConnection(): Promise<boolean> {
   if (!ON_PHONE) return true;
+  await keepAfterFirstUnlock().catch(() => {});
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
   AWAY = await SecureStore.getItemAsync("away");
   if (server && token) { SERVER = server; TOKEN = token; return true; }
@@ -740,9 +752,9 @@ function PairScreen({ onPaired }: { onPaired: () => void }) {
                                                   body: JSON.stringify({ code: code.trim(), name: name.trim() }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? `the companion answered ${r.status}`);
-      await SecureStore.setItemAsync("server", base);
-      await SecureStore.setItemAsync("token", j.token);
-      if (j.away) { await SecureStore.setItemAsync("away", j.away); AWAY = j.away; }   // C-56
+      await SecureStore.setItemAsync("server", base, KEEP);
+      await SecureStore.setItemAsync("token", j.token, KEEP);
+      if (j.away) { await SecureStore.setItemAsync("away", j.away, KEEP); AWAY = j.away; }   // C-56
       SERVER = base; TOKEN = j.token;
       onPaired();
     } catch (e) { setError(`${(e as Error).message}. Is the companion running, and is it open to your network (Settings on the site)?`); }
@@ -866,7 +878,7 @@ function Shell() {
     if (!ON_PHONE) return;
     api<{ url: string | null }>("/api/settings/away").then(async ({ url }) => {
       AWAY = url;
-      if (url) await SecureStore.setItemAsync("away", url); else await SecureStore.deleteItemAsync("away");
+      if (url) await SecureStore.setItemAsync("away", url, KEEP); else await SecureStore.deleteItemAsync("away");
     }).catch(() => {});
   }, []);
   // C-27, C-48: on the phone, today's steps from Apple Health -- when the app opens, and each time it comes back
@@ -874,7 +886,7 @@ function Shell() {
     if (!ON_PHONE) return;
     const sync = () => sendTodaysSteps().then(() => reload()).catch(() => {});
     sync();
-    const sub = AppState.addEventListener("change", (s) => { if (s === "active") sync(); });
+    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); HANDHELD?.nudge(); } });
     return () => sub.remove();
   }, [reload]);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's

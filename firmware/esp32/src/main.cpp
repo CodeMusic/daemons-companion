@@ -344,7 +344,7 @@ String networksJson() {
 
 const char *linkName() {
   if (millis() - usbSeen < USB_FRESH_MS && usbSeen) return "USB";
-  if (millis() - phoneSeen < USB_FRESH_MS && phoneSeen && linkPhoneHere()) return "PHONE";   // C-55
+  if (phoneSeen && linkPhoneHere()) return "PHONE";   // C-55, C-57
   if (!wifiSet()) return "NO LINK";
   return WiFi.status() == WL_CONNECTED ? "WIFI" : "WIFI...";
 }
@@ -532,7 +532,10 @@ bool httpState(const char *method, const String &path, const String &body) {
 bool usbLive() { return usbSeen && millis() - usbSeen < USB_FRESH_MS; }
 // C-55: the phone, over Bluetooth, is a bridge as the cable is -- the same lines, both ways. The cable wins when both
 // are here, so nothing is ever said twice.
-bool phoneLive() { return phoneSeen && millis() - phoneSeen < USB_FRESH_MS && linkPhoneHere(); }
+// C-57: no freshness for the phone. A cable can sit plugged in with no bridge behind it, so USB must be heard from;
+// a paired phone that is connected and listening IS the app (iOS wakes it for each line, even in a pocket), and it
+// goes quiet in the background because iOS pauses its timers, not because it has gone.
+bool phoneLive() { return phoneSeen && linkPhoneHere(); }
 bool bridgeLive() { return usbLive() || phoneLive(); }
 void bridge(const String &line) { if (usbLive()) Serial.println(line); else linkSend(line); }
 
@@ -1014,6 +1017,7 @@ void loop() {
   askForArt();
   uplinkLoop(now);
   linkLoop(now);                            // C-55
+  if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }

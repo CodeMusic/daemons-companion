@@ -11,6 +11,8 @@
 import { BleManager, Device, State, Subscription } from "react-native-ble-plx";
 import * as SecureStore from "expo-secure-store";
 
+const KEEP = { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK };   // C-57: readable in a locked pocket
+
 const SERVICE = "DAE00001-5C0D-4E5A-8C0D-E0C0DEC0DE00";
 const RX = "DAE00002-5C0D-4E5A-8C0D-E0C0DEC0DE00";   // the phone writes here
 const TX = "DAE00003-5C0D-4E5A-8C0D-E0C0DEC0DE00";   // the board notifies here
@@ -47,7 +49,19 @@ class Link {
 
   watch(fn: (h: Handheld) => void) { this.listeners.add(fn); fn(this.now); return () => { this.listeners.delete(fn); }; }
   private set(p: Partial<Handheld>) { this.now = { ...this.now, ...p }; this.listeners.forEach((fn) => fn(this.now)); }
-  private manager() { return (this.ble ??= new BleManager()); }
+  // C-57: with a restore identifier, iOS keeps the handheld's connection when it closes the app in the background,
+  // and opens the app again (in the background) when the board has something to say. The app then goes back to
+  // the same handheld: start() reconnects to it, which iOS answers at once because it is already connected.
+  private manager() {
+    return (this.ble ??= new BleManager({ restoreStateIdentifier: "daemons-companion-handheld", restoreStateFunction: () => {} }));
+  }
+
+  // C-57: back at the front -- iOS paused the timers in the background, so catch up at once rather than in five seconds
+  nudge() {
+    if (this.now.phase !== "linked") return;
+    this.stateAt = 0; this.commandsAt = 0;
+    this.sendState(); this.sendCommands();
+  }
 
   // iOS says what state Bluetooth is in a moment after the app first asks (it starts "unknown"), and asks the user's
   // permission the first time: wait for it to be on before scanning or connecting.
@@ -141,7 +155,7 @@ class Link {
 
   private hear(chunk: string) {
     if (this.now.phase !== "linked" && this.id) {         // the board answered: paired, and kept
-      SecureStore.setItemAsync("handheld", this.id).catch(() => {});
+      SecureStore.setItemAsync("handheld", this.id, KEEP).catch(() => {});
       this.set({ phase: "linked", note: "" });
     }
     this.heard += chunk;
@@ -179,14 +193,14 @@ class Link {
   // What the board did, kept on the phone until the companion answers.
   private async later(path: string, body: unknown) {
     this.queue.push({ path, body });
-    await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue));
+    await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue), KEEP);
     this.set({ waiting: this.queue.length });
   }
   private async flush() {
     while (this.queue.length) {
       await this.ask(this.queue[0].path, this.queue[0].body);
       this.queue.shift();
-      await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue));
+      await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue), KEEP);
       this.set({ waiting: this.queue.length });
     }
   }

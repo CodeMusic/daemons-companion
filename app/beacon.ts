@@ -17,6 +17,7 @@ class Meeting {
   private tagAt = 0;
   private species = 0;
   private on = false;
+  private busy = false;                                          // one check at a time: opening the app runs two
   private ours = new Set<string>();
   private heard = new Map<string, number>();                     // tag -> when, for once an hour
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -31,6 +32,8 @@ class Meeting {
   nudge() { this.tick(); }
 
   private async tick() {
+    if (this.busy) return;
+    this.busy = true;
     try {
       const b = await this.api!<{ meet: boolean; species: number | null; ours: string[] }>("/api/beacons");
       this.ours = new Set(b.ours);
@@ -45,6 +48,7 @@ class Meeting {
       }
       await this.listen();
     } catch { /* the companion is out of reach: try again next time */ }
+    finally { this.busy = false; }
   }
 
   private stop() { if (this.on) { Beacon.stop(); this.on = false; } }

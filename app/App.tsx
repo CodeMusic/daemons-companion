@@ -20,6 +20,13 @@ let TOKEN: string | null = null;
 let AWAY: string | null = null;
 let route = { away: false, until: 0 };
 const isAway = () => route.away;
+// C-61: pairing again -- the stored address and key are dropped and the app goes back to PAIR THIS PHONE.
+let unpaired: () => void = () => {};
+async function pairAgain() {
+  for (const k of ["server", "token", "away"]) await SecureStore.deleteItemAsync(k, KEEP).catch(() => {});
+  TOKEN = null; AWAY = null; route = { away: false, until: 0 };
+  unpaired();
+}
 const ON_PHONE = Platform.OS !== "web";
 // C-57: readable after the phone's first unlock, not only while it is unlocked -- iOS may open the app in a locked
 // pocket when the handheld has something to say, and the app needs its key and the handheld's id then.
@@ -60,12 +67,19 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   const init: RequestInit = body === undefined ? { headers: auth }
     : { method: "POST", headers: { "content-type": "application/json", ...auth }, body: JSON.stringify(body) };
   let r: Response | undefined;
-  if (!ON_PHONE || !AWAY) r = await fetch(SERVER + path, init);
+  // C-61: home is always asked with a time limit on the phone. Without one, a phone off the home network (or holding
+  // an old address for it) waited on iOS's own timeout and every screen said "Loading..." for good (2026-10-06).
+  const homeWithin = (ms: number) => async () => {
+    const stop = new AbortController(), t = setTimeout(() => stop.abort(), ms);
+    try { return await fetch(SERVER + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
+  };
+  if (!ON_PHONE) r = await fetch(SERVER + path, init);
+  else if (!AWAY) {
+    try { r = await homeWithin(8000)(); }
+    catch { throw new Error(`The companion at ${SERVER} did not answer. Is this phone on the home Wi-Fi, and the companion running?`); }
+  }
   else {
-    const home = async () => {
-      const stop = new AbortController(), t = setTimeout(() => stop.abort(), 2500);
-      try { return await fetch(SERVER + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
-    };
+    const home = homeWithin(2500);
     const away = () => fetch(AWAY!, { method: "POST", headers: { "content-type": "application/json", ...auth },
                                       body: JSON.stringify({ method: body === undefined ? "GET" : "POST", path, body }) });
     const ways = route.away && Date.now() < route.until ? [away, home] : [home, away];
@@ -73,7 +87,7 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
     for (const way of ways) {
       try { r = await way(); route = { away: way === away, until: Date.now() + 60000 }; break; } catch (e) { failed = e; }
     }
-    if (!r) throw failed instanceof Error ? failed : new Error("neither home nor away answered");
+    if (!r) throw new Error(`Neither the companion at ${SERVER} nor the way from away answered.`);
   }
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? `the server answered ${r.status}`);
@@ -124,6 +138,17 @@ const Small = (p: { children: React.ReactNode; struck?: boolean; color?: string 
         textDecorationLine={p.struck ? "line-through" : "none"}>{p.children}</Text>;
 const Card = (p: React.ComponentProps<typeof YStack>) =>
   <YStack backgroundColor="$color1" borderWidth={1} borderColor="$color5" borderRadius={4} padding={16} gap={6} {...p} />;
+
+// C-61: what a screen shows when the companion did not answer -- the reason, and on the phone a way to pair again
+function Stuck({ error, ink }: { error: string; ink: string }) {
+  return (
+    <YStack gap={4}>
+      <Small>{error}</Small>
+      {ON_PHONE ? <Small>Paired with {SERVER}. If the companion has moved, pair again from its site: SETTINGS, PAIR A PHONE.</Small> : null}
+      {ON_PHONE ? <Action label="Pair again" ink={ink} onPress={() => { pairAgain(); }} /> : null}
+    </YStack>
+  );
+}
 
 function Action({ label, onPress, ink }: { label: string; onPress: () => void; ink: string }) {
   return (
@@ -509,14 +534,14 @@ function SettingsScreen({ ink }: { ink: string }) {
   const [typed, setTyped] = useState("");
   const [note, setNote] = useState("");
   const load = useCallback(() => {
-    api<Settings>("/api/settings").then((r) => { setS(r); setTyped(r.savePath ?? ""); }).catch(() => {});
+    api<Settings>("/api/settings").then((r) => { setS(r); setTyped(r.savePath ?? ""); }).catch((e) => setNote(e.message));
   }, []);
   useEffect(load, [load]);
   const said = (r: Settings) => !r.exists ? "No file at that path yet." : r.valid ? "Save set." : "That file is not a DAEMONS save.";
   const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(r.savePath ?? ""); setNote(said(r)); };
   const save = async () => { const r = await api<Settings>("/api/settings", { savePath: typed }); setS(r); setNote(said(r)); };
   const reveal = async () => { await api("/api/settings/reveal", {}); };
-  if (!s) return <Small>Loading…</Small>;
+  if (!s) return note ? <Stuck error={note} ink={ink} /> : <Small>Loading…</Small>;
   return (
     <YStack gap={14}>
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
@@ -1000,7 +1025,7 @@ function Shell() {
         </ScrollView>
       </YStack>
       <ScrollView contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
-        {error ? <Small>{error}</Small> : null}
+        {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
         {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
@@ -1019,7 +1044,7 @@ function Shell() {
 export default function App() {
   // C-53: on the phone, pair first; on the site, the server is this machine
   const [paired, setPaired] = useState<boolean | null>(ON_PHONE ? null : true);
-  useEffect(() => { loadConnection().then(setPaired); }, []);
+  useEffect(() => { unpaired = () => setPaired(false); loadConnection().then(setPaired); }, []);
   return (
     <TamaguiProvider config={config} defaultTheme="light">
       {paired === null ? null : paired ? <Shell /> : <PairScreen onPaired={() => setPaired(true)} />}

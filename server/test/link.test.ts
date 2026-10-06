@@ -205,4 +205,14 @@ describe("meeting others nearby (C-15)", () => {
     expect((await post("/api/device/met", { species: "99999", peer: "abcdef01" })).status).toBe(400);
     expect((await post("/api/device/met", { species: "25", peer: "not-hex!" })).status).toBe(400);
   });
+
+  it("shows who was met, newest first, not yet written until a SYNC writes it, and never our own (C-60)", async () => {
+    const m = await get("/api/meetings");
+    expect(m.meetings).toHaveLength(1);
+    expect(m.meetings[0]).toMatchObject({ species: 25, written: false });
+    expect(typeof m.meetings[0].name).toBe("string");
+    expect(m.heardOurs).toMatchObject({ peer: "0badf00d" });
+    await post("/api/device/listen", { started: true, devices: 57, beacons: 1 });
+    expect((await get("/api/meetings")).lastListen).toMatchObject({ started: true, devices: 57, beacons: 1 });
+  });
 });

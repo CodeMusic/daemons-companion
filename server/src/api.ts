@@ -14,6 +14,7 @@
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
 //   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
 //   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
+//   GET  /api/meetings           C-60: who the daemon met nearby, and whether a SYNC has written it in
 //   GET  /api/device/art         C-36: the carried daemon's front sprite, as sixteen colours and four bits a pixel
 //   GET  /api/device/commands    C-32: the device takes what the site sent it; POST /api/device/results answers each,
 //                                POST /api/device/routines says what routines it has
@@ -580,6 +581,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { meet: deviceSettings(store).meet, species: carried?.species ?? null,
                                 ours: ownBeacons(store).map((b) => b.peer),
                                 beacons: ownBeacons(store),                    // with who sent each, for the check
+                                heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
+                                lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
+      }
+      // C-60: who the daemon has met nearby -- the species, when, and whether a SYNC has written it into the save yet;
+      // and, for the user's own check, the last listen and when our two companions last heard each other.
+      if (req.method === "GET" && path === "/api/meetings") {
+        const applied = Number(store.getSetting("met.applied") ?? 0);
+        const meetings = store.meetings().map((m) => {
+          const species = (m.detail ?? "").split(" ")[0], row = SPECIES[species];
+          return { at: m.at, species: Number(species), name: row?.name ?? "?",
+                   art: row?.art?.front ? `/art/species/${species}.png` : null, written: m.id <= applied };
+        });
+        return send(res, 200, { meetings,
                                 heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
                                 lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
       }

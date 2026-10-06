@@ -66,6 +66,11 @@ export class Store {
     return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = 'met' AND id > ? ORDER BY id").all(id) as any;
   }
 
+  // C-60: the latest meetings, newest first, for the DAEMON tab
+  meetings(limit = 20): { id: number; at: string; detail: string | null }[] {
+    return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = 'met' ORDER BY id DESC LIMIT ?").all(limit) as any;
+  }
+
   lastInteraction(): { at: string; kind: string; detail: string | null } | null {
     return (this.db.prepare("SELECT at, kind, detail FROM interactions ORDER BY id DESC LIMIT 1").get() as
       { at: string; kind: string; detail: string | null } | undefined) ?? null;

@@ -407,7 +407,44 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
           <Text fontSize={16} lineHeight={24} color="$color12">{open.entry}</Text>
         </Card>
       ) : null}
+      <MeetingsCard />
     </YStack>
+  );
+}
+
+// C-60: who the daemon has met nearby (C-15). Each meeting: the species as the INDEX draws it, when, and whether a SYNC
+// has written it into the save yet. Below, quietly, the user's own check that the radios listen: the board's last
+// listen, and when the phone and the board last heard each other -- never counted as a meeting.
+type Meeting = { at: string; species: number; name: string; art: string | null; written: boolean };
+type Listen = { at: string; started: boolean; devices: number; beacons: number } | null;
+const whenSaid = (iso: string) => {
+  const t = new Date(iso), today = new Date().toDateString() === t.toDateString();
+  const hm = t.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return today ? `today, ${hm}` : `${t.toLocaleDateString([], { month: "short", day: "numeric" })}, ${hm}`;
+};
+function MeetingsCard() {
+  const [m, setM] = useState<{ meetings: Meeting[]; heardOurs: { at: string } | null; lastListen: Listen } | null>(null);
+  useEffect(() => { api<any>("/api/meetings").then(setM).catch(() => {}); }, []);
+  if (!m) return null;
+  return (
+    <Card borderColor="$color5">
+      <Eyebrow>MET NEARBY</Eyebrow>
+      {m.meetings.length ? m.meetings.map((x, i) => (
+        <XStack key={i} gap={10} alignItems="center">
+          {x.art ? <Art path={x.art} size={48} /> : <YStack width={48} height={48} />}
+          <YStack flex={1}>
+            <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{x.name}</Text>
+            <Small>{whenSaid(x.at)} · {x.written ? "in your INDEX" : "in your INDEX after the next SYNC"}</Small>
+          </YStack>
+        </XStack>
+      )) : <Small>No one yet. A meeting needs another companion nearby: someone else's handheld, or the app on someone else's phone.</Small>}
+      {m.lastListen || m.heardOurs ? (
+        <Small color="$color8">
+          {m.lastListen ? `Last listen ${whenSaid(m.lastListen.at)}: ${m.lastListen.started ? `${m.lastListen.devices} devices heard` : "the radio was busy"}.` : ""}
+          {m.heardOurs ? ` Your phone and handheld last heard each other ${whenSaid(m.heardOurs.at)}.` : ""}
+        </Small>
+      ) : null}
+    </Card>
   );
 }
 

@@ -131,6 +131,47 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   - **See (in the bridge's window), after each:** "the device ran <TYPE>/<ROUTINE>" -- told to the server as tending
     your daemon.
 
+## 7. The phone and the handheld together (C-55, C-57)
+
+- **Pair once.** On the handheld: ROUTINES, WHISPER, **PAIR MY PHONE**. **See:** a six-digit code. On the phone, in
+  the app's PROFILE, THE HANDHELD, ON THIS PHONE: **Pair the handheld**. iOS asks for a code: type the board's.
+  **See:** on the board, "<daemon> knows your phone"; in the app, linked. A second pairing later asks for no code.
+- **In a pocket.** Unplug the board's USB. **See:** the corner says **PHONE** instead of USB, and a step done on the
+  board reaches the app. Lock the phone, or switch to another app: **it still arrives**. *Swipe the app away and iOS
+  cuts it off; open it again and it reconnects.*
+- **Forget.** WHISPER, **FORGET MY PHONES** undoes every pairing; the app's **Forget it** undoes its own.
+
+## 8. Away from home (C-56)
+
+*Set up once, on the computer: [`REMOTE.md`](REMOTE.md) (the n8n workflow, and the relay secret in SETTINGS).*
+
+- On the computer, the site's SETTINGS, **AWAY FROM HOME**: your n8n webhook's address, **Save**, and the relay
+  secret it shows goes into the workflow. **Open the app once on the home Wi-Fi**: it learns the address and keeps it.
+- **Leave the Wi-Fi** (LTE). **See:** TODAY, GOALS and the DAEMON tab still load, the pictures too (C-59). The app
+  says it is reaching home through the relay.
+- **What it will not do from outside:** pair a new phone, or anything the computer keeps to itself. *A request with no
+  key is turned away; so is pairing.*
+
+## 9. Meeting others nearby (C-15)
+
+*A meeting needs a second companion: someone else's board, or the app on someone else's phone.*
+
+- SETTINGS, **MEET OTHERS NEARBY**: on (it is on for the board by default). The board and the phone each send one
+  small beacon -- the species you carry, and a tag that changes every hour, nothing about you -- and listen a few
+  seconds every three minutes.
+- **With a second companion near:** **See:** on the next SYNC, its daemon in your INDEX as seen, and your daemon's
+  friendship a little higher. A tag is met once an hour, never more.
+- **Your own two** (your phone and your board) hear each other and are **never counted**; the DAEMON tab says they
+  heard each other, which proves the radios.
+
+## 10. THEATER MODE, and naming your remotes (C-58, C-59)
+
+- ROUTINES, FLARE, **THEATER MODE**: the board becomes the remote. **Press** the front button: POWER. **Turn right**
+  (clockwise): VOLUME UP; **left**: VOLUME DOWN. **Top button**: done. The head shows which remote it is using
+  (**CHOOSE A REMOTE** picks it).
+- **Rename a remote:** the site's or the app's DEVICE tab, ITS REMOTES, **Rename** beside it. **See:** the board's
+  CHOOSE A REMOTE and THEATER MODE use the new name.
+
 ## What to tell me
 
 - Anywhere the screen did not match "See".

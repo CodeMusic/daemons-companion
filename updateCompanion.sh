@@ -49,7 +49,34 @@ fi
 
 echo "updateCompanion: flashing $port"
 "$PIO" run -t upload --upload-port "$port"
-echo "updateCompanion: done -- the board restarts on the new firmware."
+
+# The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and says
+# nothing (2026-10-06). The firmware says HELLO every three seconds, so wait for one, and reset it ourselves if it is
+# silent. The port comes and goes while it restarts.
+python3 - "$port" <<'PY' || echo "updateCompanion: no HELLO yet -- press the board's RST button once." >&2
+import serial, sys, time
+port = sys.argv[1]
+def hello(wait):
+    end = time.time() + wait
+    while time.time() < end:
+        try:
+            with serial.Serial(port, 115200, timeout=0.5) as s:
+                got = b""
+                while time.time() < end:
+                    got += s.read(512)
+                    if b"HELLO daemons-companion" in got:
+                        return True
+        except (serial.SerialException, OSError):
+            time.sleep(0.5)
+    return False
+if hello(10):
+    sys.exit(0)
+print("updateCompanion: the board is silent after the upload -- resetting it")
+with serial.Serial(port, 115200) as s:
+    s.dtr = False; s.rts = True; time.sleep(0.2); s.rts = False
+sys.exit(0 if hello(20) else 1)
+PY
+echo "updateCompanion: done -- the board is running the new firmware."
 
 if [[ $link == 1 ]]; then exec "$HERE/linkCompanion.sh"; fi
 echo "updateCompanion: to link it to the server: ./linkCompanion.sh"

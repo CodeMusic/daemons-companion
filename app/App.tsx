@@ -9,6 +9,7 @@ import { AppState, Image, Platform } from "react-native";
 import { Button, Input, ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import config, { DAYS, WEEK_COLOURS } from "./tamagui.config";
 import * as SecureStore from "expo-secure-store";
+import { File, Paths } from "expo-file-system";
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
@@ -27,6 +28,38 @@ async function pairAgain() {
   TOKEN = null; AWAY = null; route = { away: false, until: 0 };
   unpaired();
 }
+
+// C-62: everything the companion has shown, kept on the phone -- every answer to a GET and every daemon's picture --
+// so the app opens on what it last saw when the companion cannot be reached, says so, and holds a ticked step until
+// the companion answers again. Each time the app opens and reaches the companion it fetches all of it at once.
+type Kept = { at: string | null; paths: Record<string, unknown>; art: Record<string, string>;
+              queue: { path: string; body: unknown }[] };
+let KEPT: Kept = { at: null, paths: {}, art: {}, queue: [] };
+let OFFLINE: string | null = null;                  // when what is on screen was kept, while the companion is away
+const offlineHeard = new Set<() => void>();
+const keptFile = () => new File(Paths.document, "kept.json");
+async function loadKept() {
+  if (!ON_PHONE) return;
+  try {
+    const f = keptFile();
+    if (f.exists) KEPT = { ...KEPT, ...JSON.parse(await f.text()) };
+  } catch { /* a damaged file is only a cache: start again */ }
+}
+let keepTimer: ReturnType<typeof setTimeout> | null = null;
+function saveKept() {
+  if (!ON_PHONE) return;
+  if (keepTimer) clearTimeout(keepTimer);
+  keepTimer = setTimeout(() => {
+    try { const f = keptFile(); if (!f.exists) f.create(); f.write(JSON.stringify(KEPT)); } catch { /* next time */ }
+  }, 800);
+}
+function setOffline(at: string | null) {
+  if (OFFLINE === at) return;
+  OFFLINE = at;
+  offlineHeard.forEach((f) => f());
+}
+class Unreachable extends Error {}
+const HELD = /^\/api\/(steps\/\d+\/(done|undo)|walk)$/;    // what a phone may do away from the companion, and send later
 const ON_PHONE = Platform.OS !== "web";
 // C-57: readable after the phone's first unlock, not only while it is unlocked -- iOS may open the app in a locked
 // pocket when the handheld has something to say, and the app needs its key and the handheld's id then.
@@ -42,6 +75,8 @@ async function keepAfterFirstUnlock() {
 async function loadConnection(): Promise<boolean> {
   if (!ON_PHONE) return true;
   await keepAfterFirstUnlock().catch(() => {});
+  await loadKept();
+  for (const [p, uri] of Object.entries(KEPT.art)) ART.set(p, uri);
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
   AWAY = await SecureStore.getItemAsync("away");
   if (server && token) { SERVER = server; TOKEN = token; return true; }
@@ -62,7 +97,7 @@ type Goal = { id: number; title: string; done: boolean; subitems: { id: number; 
 type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean; asked: boolean;
                 holding: string | null };
 
-async function api<T>(path: string, body?: unknown): Promise<T> {
+async function apiLive<T>(path: string, body?: unknown): Promise<T> {
   const auth: Record<string, string> = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
   const init: RequestInit = body === undefined ? { headers: auth }
     : { method: "POST", headers: { "content-type": "application/json", ...auth }, body: JSON.stringify(body) };
@@ -76,7 +111,7 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   if (!ON_PHONE) r = await fetch(SERVER + path, init);
   else if (!AWAY) {
     try { r = await homeWithin(8000)(); }
-    catch { throw new Error(`The companion at ${SERVER} did not answer. Is this phone on the home Wi-Fi, and the companion running?`); }
+    catch { throw new Unreachable(`The companion at ${SERVER} did not answer. Is this phone on the home Wi-Fi, and the companion running?`); }
   }
   else {
     const home = homeWithin(2500);
@@ -87,11 +122,52 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
     for (const way of ways) {
       try { r = await way(); route = { away: way === away, until: Date.now() + 60000 }; break; } catch (e) { failed = e; }
     }
-    if (!r) throw new Error(`Neither the companion at ${SERVER} nor the way from away answered.`);
+    if (!r) throw new Unreachable(`Neither the companion at ${SERVER} nor the way from away answered.`);
   }
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? `the server answered ${r.status}`);
   return j as T;
+}
+
+// C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
+async function api<T>(path: string, body?: unknown): Promise<T> {
+  try {
+    const j = await apiLive<T>(path, body);
+    if (ON_PHONE) {
+      if (body === undefined && !path.startsWith("/api/art")) { KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept(); }
+      setOffline(null);
+      if (KEPT.queue.length) sendHeld();
+    }
+    return j;
+  } catch (e) {
+    if (!ON_PHONE || !(e instanceof Unreachable)) throw e;           // the companion answered "no": that is not offline
+    if (body === undefined && path in KEPT.paths) { setOffline(KEPT.at); return KEPT.paths[path] as T; }
+    if (body !== undefined && HELD.test(path)) {
+      KEPT.queue.push({ path, body }); saveKept(); setOffline(KEPT.at);
+      throw new Error("Kept on this phone. It goes to the companion the next time it answers.");
+    }
+    throw e;
+  }
+}
+let sending = false;
+async function sendHeld() {
+  if (sending) return;
+  sending = true;
+  try {
+    while (KEPT.queue.length) {
+      await apiLive(KEPT.queue[0].path, KEPT.queue[0].body);
+      KEPT.queue.shift(); saveKept();
+    }
+  } catch { /* still away: keep the rest */ } finally { sending = false; }
+}
+async function keepEverything() {
+  if (!ON_PHONE) return;
+  for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk"])
+    await api(p).catch(() => {});
+  if (OFFLINE) return;
+  await artByJson("/art/species/1.png").catch(() => {});                // the whole INDEX's pictures, in one request
+  const party = (KEPT.paths["/api/party"] as { party?: { slot: number }[] } | undefined)?.party ?? [];
+  for (const d of party) await artByJson(`/art/party/${d.slot}.png`).catch(() => {});
 }
 
 // C-59: a daemon's picture. At home it loads straight from the companion; away, the relay carries only /api/ and
@@ -99,17 +175,21 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
 // away from home runs the relay once for the whole INDEX rather than once a picture.
 const ART = new Map<string, string>();
 let everySpecies: Promise<void> | null = null;
+function keepArt(path: string, uri: string) {
+  ART.set(path, uri);
+  if (ON_PHONE) { KEPT.art[path] = uri; saveKept(); }
+}
 async function artByJson(path: string): Promise<string> {
   const m = /^\/art\/(party|species)\/(\d+)\.png$/.exec(path);
   if (!m) throw new Error("no such picture");
   if (m[1] === "species") {
     everySpecies ??= api<{ species: Record<string, string> }>("/api/art?all=species").then(({ species }) => {
-      for (const [n, png] of Object.entries(species)) ART.set(`/art/species/${n}.png`, `data:image/png;base64,${png}`);
+      for (const [n, png] of Object.entries(species)) keepArt(`/art/species/${n}.png`, `data:image/png;base64,${png}`);
     }).catch((e) => { everySpecies = null; throw e; });
     await everySpecies;
   } else {
     const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}`);
-    ART.set(path, `data:image/png;base64,${png}`);
+    keepArt(path, `data:image/png;base64,${png}`);
   }
   const uri = ART.get(path);
   if (!uri) throw new Error("no such picture");
@@ -982,6 +1062,14 @@ function Shell() {
     api<Goal[]>("/api/goals").then(setGoals).catch(() => {});
   }, []);
   useEffect(reload, [reload]);
+  // C-62: keep everything on the phone each time the app opens and reaches the companion; redraw when it goes away
+  const [, heard] = useState(0);
+  useEffect(() => {
+    const f = () => heard((n) => n + 1);
+    offlineHeard.add(f);
+    keepEverything().then(f);
+    return () => { offlineHeard.delete(f); };
+  }, []);
   // C-55: back to the handheld this phone paired with, if any
   useEffect(() => { HANDHELD?.start(api, isAway); MEETING?.start(api, () => HANDHELD!.bluetooth()); }, []);
   // C-56: the way back from anywhere, learned at home and kept on the phone
@@ -1025,6 +1113,7 @@ function Shell() {
         </ScrollView>
       </YStack>
       <ScrollView contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
+        {OFFLINE ? <Small>Away from the companion: this is what the phone kept on {new Date(OFFLINE).toLocaleString()}.{KEPT.queue.length ? ` ${KEPT.queue.length} kept to send.` : ""}</Small> : null}
         {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}

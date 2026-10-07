@@ -838,7 +838,8 @@ void readPhone() {                                  // C-55
 int8_t encLast = 0, encSum = 0;
 // One step of the dial: +1 right, -1 left -- from the dial itself, or KEY RIGHT / KEY LEFT down the cable.
 void turn(int step) {
-  if (wake()) return;                   // C-39: a turn that wakes the board does nothing else
+  if (asleep) return;                   // C-79: asleep, the dial does nothing -- it turns in a pocket
+  wake();                               // (awake, this only marks the input)
   ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
   soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) page = (Page)((page + 4 + step) % 4);
@@ -963,9 +964,9 @@ void back() {
   dirty = true;
 }
 
-// ---- C-39: sleep. Hold the top button and press the front one: the screen, its light and the ring go dark. Turning
-// the dial or pressing either button wakes it to the page it was on, and the wake does nothing else. The link keeps
-// running underneath (readUsb, the Wi-Fi poll), so it wakes current.
+// ---- C-39: sleep. Hold the top button and press the front one: the screen, its light and the ring go dark. ONLY THE
+// TOP BUTTON wakes it (C-79, the user 2026-10-07: the dial and the front button woke it in a pocket), and the wake does
+// nothing else. The link keeps running underneath (readUsb, the Wi-Fi poll), so it wakes current.
 bool chorded = false;
 
 void sleepNow() {
@@ -997,9 +998,9 @@ void readKey() {
   bool up = digitalRead(PIN_ENC_KEY);
   if (up != keyWas && millis() - keyAt > 30) {
     keyAt = millis(); keyWas = up;
-    if (!up) {
-      if (wake()) {}
-      else if (!sideWas) { chorded = true; sleepNow(); }       // top held: the chord
+    if (!up && !asleep) {                                      // C-79: asleep, the front button does nothing
+      wake();
+      if (!sideWas) { chorded = true; sleepNow(); }            // top held: the chord
       else press();
     }
   }

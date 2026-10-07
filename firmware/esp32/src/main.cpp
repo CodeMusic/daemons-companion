@@ -7,24 +7,32 @@
 #include "link.h"
 #include "meet.h"
 
+// Each step says so down the cable as it starts ("boot: ..."), so a board that stops part-way says where.
+static void step(const char *what) { Serial.printf("boot: %s\n", what); Serial.flush(); }
+
 void setup() {
-  boardBegin();                               // C-67: which board this is, its peripherals switched on
   // The bridge's STATE line is ~300 bytes and the USB receive buffer defaults to 256: while the screen is being drawn
   // the rest was dropped, the JSON arrived cut short, and the corner said NO LINK with the bridge plainly connected.
   Serial.setRxBufferSize(4096);
   Serial.begin(115200);
+  for (uint32_t t0 = millis(); !Serial && millis() - t0 < 4000; ) delay(10);   // a listener, if one is coming
+  step("start");
+  boardBegin();                               // C-67: which board this is, its peripherals switched on
+  Serial.printf("boot: board %s\n", board.id);
   inputBegin();                               // the dial and the buttons this board has
-  displayBegin();
-  loadWifi();                                 // C-52: uplinkLoop joins the strongest known network in range
-  ledsBegin();
-  soundBegin();
+  step("display"); displayBegin();
+  watchBegin();                               // C-71: the watch's clock, steps, touch and crown (nothing elsewhere)
+  step("wifi");    loadWifi();                // C-52: uplinkLoop joins the strongest known network in range
+  step("lights");  ledsBegin();
+  step("sound");   soundBegin();
   routinesBegin();                            // C-67: the routine types this board has
   if (board.ir) flareBegin();                 // C-51: an older single learned code becomes the first remote
-  loadSettings();
-  linkBegin();                                // C-55: Bluetooth, for the phone
+  step("settings"); loadSettings();
+  step("bluetooth"); linkBegin();             // C-55: Bluetooth, for the phone
   lastInput = millis();
-  page = cfg.home == "today" ? TODAY : DAEMON;   // C-42: it starts at home
+  page = homePage();                          // C-42: it starts at home
   draw();
+  step("ready");
 }
 
 void loop() {
@@ -33,6 +41,7 @@ void loop() {
   readEncoder();
   readKey();
   uint32_t now = millis();
+  watchLoop(now);                           // C-71
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3"); dirty = true; }
   batteryLoop(now);                         // C-63
   if (!bridgeLive() && online()) {

@@ -73,6 +73,20 @@ static void tone(int midi, int ms, float level = 1.0f) {
   }
 }
 
+// C-66: a voice, as 16 kHz samples, at the volume set. It plays even with the board's sounds off: it was asked for.
+void soundPcm(const int16_t *samples, size_t n) {
+  if (!ready) return;
+  static int16_t buf[256];
+  float scale = (amplitude ? amplitude : 40 * 120) / 12000.0f;
+  for (size_t done = 0; done < n;) {
+    size_t k = min((size_t)256, n - done);
+    for (size_t i = 0; i < k; i++) buf[i] = (int16_t)constrain((int)(samples[done + i] * scale), -32768, 32767);
+    size_t wrote;
+    i2s_write(PORT, buf, k * sizeof(int16_t), &wrote, portMAX_DELAY);
+    done += k;
+  }
+}
+
 static void rest(int ms) {
   if (!ready || !enabled) { delay(ms); return; }
   static int16_t zero[256] = {0};
@@ -120,6 +134,29 @@ void soundRoutine(const char *type) {
   else if (!strcmp(type, "TOUCHSTONE")) { t = TOUCHSTONE; dance = DANCE_PULSE; }
   else if (!strcmp(type, "LONGWAVE"))   { t = LONGWAVE;   dance = DANCE_WAVE; }
   play(t, 6, root, dance, 0.8f);
+}
+
+// C-68: a routine from the game, played as a game would: a short phrase of its own, GENERATED from its name (so PUSH
+// always sounds like PUSH) in the day's pentatonic key, its type choosing the ring's dance and the voice, the ring lit
+// the colour of its streak on this daemon. No words: the sound and the light are the routine.
+static const int8_t GAME_PENTA[] = {0, 2, 4, 7, 9, 12, 14, 16, 19};
+void soundGameRoutine(const String &name, const String &type, uint32_t rgb) {
+  uint32_t s = 2166136261u;
+  for (char c : name) s = (s ^ (uint8_t)c) * 16777619u;           // FNV-1a: the name's own seed
+  uint32_t ts = 0; for (char c : type) ts = ts * 31 + (uint8_t)c;
+  static const int DANCES[] = { DANCE_SPARKLE, DANCE_GLIMMER, DANCE_PULSE, DANCE_WAVE, DANCE_SWEEP };
+  float was = duty; static const float DUTIES[] = {0.125f, 0.25f, 0.5f}; duty = DUTIES[ts % 3];
+  Note tune[6]; int at = s % 3;
+  for (int i = 0; i < 6; i++) {
+    s = s * 1103515245u + 12345u;
+    bool last = i == 5;
+    tune[i].semis = GAME_PENTA[constrain(last ? (int)((s >> 16) % 2) * 3 + 5 : at, 0, 8)];
+    tune[i].ms = last ? 220 : 60 + ((s >> 20) % 3) * 25;
+    at = constrain(at + (int)((s >> 18) % 4) - 1, 0, 7);           // wandering upward
+  }
+  ledsTint(rgb);
+  play(tune, 6, root, DANCES[ts % 5], 0.85f);
+  duty = was;
 }
 
 // C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them

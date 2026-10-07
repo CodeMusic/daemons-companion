@@ -39,6 +39,8 @@ done
 PIO="$(command -v pio || true)"
 [[ -n "$PIO" ]] || { [[ -x "$HOME/.platformio/penv/bin/pio" ]] && PIO="$HOME/.platformio/penv/bin/pio"; }
 [[ -n "$PIO" ]] || { echo "updateCompanion: needs PlatformIO (pip install platformio)." >&2; exit 1; }
+# The serial checks need pyserial: PlatformIO's own Python always has it (the system's may not).
+PY="$(dirname "$PIO")/python"; [[ -x "$PY" ]] || PY=python3
 
 cd "$FW"
 if [[ $build_only == 1 ]]; then exec "$PIO" run; fi
@@ -68,7 +70,7 @@ fi
 
 # Ask a port what it is: its HELLO names the board ("" when it says nothing within five seconds).
 ask() {
-  python3 - "$1" <<'PY' 2>/dev/null || true
+  "$PY" - "$1" <<'PY' 2>/dev/null || true
 import re, serial, sys, time
 end = time.time() + 5
 got = b""
@@ -118,7 +120,7 @@ for i in "${chosen[@]}"; do
   # The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and
   # says nothing (2026-10-06). The firmware says HELLO every three seconds, so wait for one, and reset it ourselves if
   # it is silent. The port comes and goes while it restarts.
-  python3 - "$port" <<'PY' || echo "updateCompanion: no HELLO yet from $port -- press the board's RST button once." >&2
+  "$PY" - "$port" <<'PY' || echo "updateCompanion: no HELLO yet from $port -- press the board's RST button once." >&2
 import serial, sys, time
 port = sys.argv[1]
 def hello(wait):

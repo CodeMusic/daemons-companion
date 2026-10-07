@@ -28,7 +28,7 @@ static const uint32_t SLEEP_MS = 60000, SPIN_MS = 360, FLASH_MS = 140, DARK_MS =
 static const int CLOCKWISE = 1;
 
 static Ring ring;
-static uint32_t dayRgb = 0x4060FF, touchedAt = 0, effectAt = 0;
+static uint32_t dayRgb = 0x4060FF, touchedAt = 0, effectAt = 0, tint = 0;
 static enum { NONE, SPIN, FLASH, DARK } effect = NONE;
 static int spinDir = 1, spinFrom = 0, shown = -2;
 static bool sleeping = false;   // `shown` avoids rewriting the ring when nothing changed
@@ -45,6 +45,7 @@ static void fill(uint32_t c) { for (int i = 0; i < N; i++) ring.setPixelColor(i,
 static void touch() { touchedAt = millis(); shown = -2; }
 
 void ledsBegin() { N = max(1, board.ledCount); ring.begin(); ring.clear(); ring.show(); touch(); }
+void ledsTint(uint32_t rgb) { tint = rgb; }
 void ledsDay(uint32_t rgb) { if (rgb != dayRgb) { dayRgb = rgb; shown = -2; } }
 
 void ledsSpin(int dir) {
@@ -61,8 +62,8 @@ void ledsDark()  { touch(); effect = DARK;  effectAt = millis(); }
 void ledsDance(int kind, int step, int steps) {
   if (sleeping) return;
   touch();
-  if (kind < 0) { effect = NONE; shown = -2; ledsLoop(); return; }
-  uint32_t day = dayRgb, dim = share(dayRgb, 12), white = ring.Color(170, 170, 170);
+  if (kind < 0) { effect = NONE; shown = -2; tint = 0; ledsLoop(); return; }
+  uint32_t day = tint ? tint : dayRgb, dim = share(dayRgb, 12), white = ring.Color(170, 170, 170);
   fill(dim);
   switch (kind) {
     case DANCE_SPARKLE:                                // a few bright points, a different few each note

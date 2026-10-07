@@ -30,7 +30,23 @@ void routinesBegin() {
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 };
   if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   nullptr,             0 };
+  if (!partyFirst()) types[typeCount++] = { "PARTY",      "the game",  nullptr,             0 };   // C-68, DRAFT
   types[typeCount++] =                     { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     2 };
+}
+
+// C-68: GAME ROUTINES. A board with no radios of its own (the plain T-Embed; the SI4732 until its own types, C-69) opens
+// the party from ROUTINES, with its Bluetooth and Wi-Fi a row below; the CC1101 reaches the same screen as its PARTY type.
+bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc; }
+bool isPartyType(int i) { return i >= 0 && i < typeCount && !strcmp(types[i].name, "PARTY"); }
+int partyRows() { return st.partyN + (partyFirst() ? 1 : 0); }
+
+void playGameRoutine() {
+  const Member &m = st.party[partyAt];
+  if (moveAt >= m.n) return;
+  flash = m.name + " used " + m.routine[moveAt] + "!"; flashUntil = millis() + 2500;   // DRAFT -- the game's own line
+  draw();
+  soundGameRoutine(m.routine[moveAt], m.type[moveAt], m.colour[moveAt]);
+  dirty = true;
 }
 
 String runChooseRemote() {

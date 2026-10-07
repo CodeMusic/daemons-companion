@@ -1,5 +1,6 @@
 // The dial and the buttons, doing a step, and sleep (C-67: from main.cpp).
 #include "app.h"
+#include "talk.h"
 #include "radios.h"
 #include "leds.h"
 #include "sound.h"
@@ -52,8 +53,15 @@ void turn(int step) {
   wake();                               // (awake, this only marks the input)
   ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
   soundTurn(step);                      // C-40: rising for right, falling for left
-  if (screen == HOME) page = (Page)((page + 4 + step) % 4);
+  if (screen == HOME) {                 // C-71: the watch has its face first
+    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE };
+    const Page *order = board.touch ? WATCH : EMBED; int n = board.touch ? 5 : 4, at = 0;
+    for (int i = 0; i < n; i++) if (order[i] == page) at = i;
+    page = order[(at + n + step) % n];
+  }
   else if (screen == TYPES) typeAt = (typeAt + typeCount + step) % typeCount;
+  else if (screen == PARTY && partyRows()) partyAt = (partyAt + partyRows() + step) % partyRows();     // C-68
+  else if (screen == MOVES && st.party[partyAt].n) moveAt = (moveAt + st.party[partyAt].n + step) % st.party[partyAt].n;
   else if (screen == CARE) careAt = (careAt + 4 + step) % 4;
   else if (screen == PICK_REMOTE && flareCount()) remoteAt = (remoteAt + flareCount() + step) % flareCount();
   else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
@@ -89,12 +97,23 @@ void press() {
     else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
-      if (!st.carrying) say("Needs a daemon");                     // C-51: the routines are the daemon's
+      if (partyFirst()) { screen = PARTY; partyAt = 0; }            // C-68: the party's routines, on a board with no radios
+      else if (!st.carrying) say("Needs a daemon");                // C-51: the radio routines are the carried daemon's
       else { screen = TYPES; typeAt = 0; }
     }
-  } else if (screen == TYPES) { screen = LIST; routineAt = 0; }
+  } else if (screen == TYPES) {
+    if (isPartyType(typeAt)) { screen = PARTY; partyAt = 0; }     // C-68: the CC1101's way in
+    else { screen = LIST; routineAt = 0; }
+  }
+  else if (screen == PARTY) {
+    if (partyAt >= st.partyN) { if (partyFirst()) { screen = TYPES; typeAt = 0; } }   // the radios' row
+    else if (!st.party[partyAt].n) say("No routines yet");                         // DRAFT
+    else { screen = MOVES; moveAt = 0; }
+  }
+  else if (screen == MOVES) playGameRoutine();
   else if (screen == LIST) { if (types[typeAt].count > 0) runRoutine(); }
   else if (screen == RUN) runRoutine();
+  else if (screen == INDEX_ENTRY && talkCan()) talkReadEntry();   // C-65: its entry, aloud
   else if (screen == PICK_REMOTE) {
     flareSetActive(remoteAt);
     runResult = daemonName() + " uses " + flareName(remoteAt) + " now.";
@@ -132,12 +151,19 @@ void back() {
   ledsDark();                                                   // C-38
   soundBack();                                                  // C-40
   if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
-  if (screen == INDEX_ENTRY) { screen = CARE; careAt = 3; }
+  if (screen == TALK) { screen = HOME; }                         // C-66
+  else if (screen == INDEX_ENTRY) { screen = CARE; careAt = 3; }
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
   else if (screen == PICK_NET || screen == PICK_REMOTE) screen = LIST;
   else if (screen == RUN) screen = LIST;
   else if (screen == LIST) screen = TYPES;
+  else if (screen == MOVES) screen = PARTY;                                   // C-68
+  else if (screen == PARTY) {
+    if (partyFirst()) { screen = HOME; page = ROUTINES_PAGE; }
+    else { screen = TYPES; for (int i = 0; i < typeCount; i++) if (isPartyType(i)) typeAt = i; }
+  }
+  else if (screen == TYPES && partyFirst()) { screen = PARTY; partyAt = st.partyN; }   // back to the radios' row
   else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
   dirty = true;
 }
@@ -156,12 +182,14 @@ void sleepNow() {
 
 // True if this input was spent waking the board.
 // Waking lands on home -- the daemon, by default (C-42) -- whatever menu it fell asleep in, to the title's jingle (C-41).
+Page homePage() { return board.touch ? FACE_PAGE : cfg.home == "today" ? TODAY : DAEMON; }
+
 bool wake() {
   lastInput = millis();
   if (!asleep) return false;
   asleep = false;
   screen = HOME;
-  page = cfg.home == "today" ? TODAY : DAEMON;
+  page = homePage();
   draw();
   backlight(true);
   ledsSleep(false);
@@ -173,16 +201,25 @@ bool wake() {
 // The front button acts on press. The top button acts on RELEASE -- going back -- unless the front was pressed while it
 // was held (the sleep chord), so holding it to start the chord never goes back a page.
 void readKeyAlone();
+// C-66: the front button presses on RELEASE now, so that held it can mean talk -- held 0.45 s at home, the board
+// listens until it is let go (talk.cpp). A press is still a press; the chord still sleeps at once.
+static const uint32_t TALK_HOLD_MS = 450;
 void readKey() {
   if (!board.hasSideKey()) { readKeyAlone(); return; }
+  static bool pending = false;
   bool up = digitalRead(board.encKey);
   if (up != keyWas && millis() - keyAt > 30) {
     keyAt = millis(); keyWas = up;
     if (!up && !asleep) {                                      // C-79: asleep, the front button does nothing
       wake();
       if (!sideWas) { chorded = true; sleepNow(); }            // top held: the chord
-      else press();
-    }
+      else pending = true;
+    } else if (up && pending) { pending = false; press(); }    // let go before it became a talk: a press
+  }
+  if (pending && !up && millis() - keyAt > TALK_HOLD_MS && (screen == HOME || screen == TALK) && talkCan()) {
+    pending = false;
+    talkHold();
+    keyWas = true; keyAt = millis(); dirty = true;
   }
   bool sideUp = digitalRead(board.sideKey);
   if (sideUp != sideWas && millis() - sideAt > 30) {

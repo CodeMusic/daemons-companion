@@ -17,6 +17,7 @@
 #include "board.h"
 #include "display.h"
 #include "battery.h"
+#include "watch.h"
 
 static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000, UNDO_MS = 15000;
 static const int MAX_NETS = 8;            // C-52: the networks the board has learned
@@ -26,11 +27,14 @@ static const uint16_t INK = 0x18E4, PAPER = 0xFFDE, QUIET = 0x8C51;
 struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0, species = 0;
                 String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
                 int grownTo = 0; };                                               // C-45: the level it has grown to here
+// C-68: a party daemon, and its routines as the game names them, each with the colour its streak takes on this body
+struct Member { String name, types; int level = 0, n = 0; String routine[4], type[4]; uint32_t colour[4] = {}; };
 struct State {
   bool have = false;
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue, chakra, theme;
   long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
   bool carrying = false; Daemon daemon;
+  Member party[6]; int partyN = 0;          // C-68
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
@@ -52,12 +56,14 @@ String daemonName();                      // C-51: the routines speak in its nam
 // ---- where you are (ui.cpp, input.cpp) ------------------------------------------------------------------------------
 // HOME turns between TODAY, DAEMON, ROUTINES and the DAY. ROUTINES opens a list of routine TYPES, a type its ROUTINES, a
 // routine RUNs. INDEX_ENTRY: the carried daemon's (C-36). PICK_NET, TYPE_PASS: joining a network on the board (C-33).
-// CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51.
-enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE };   // C-73: the Xenith day, last
-enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE };
+// CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51. PARTY, MOVES: GAME ROUTINES (C-68) -- the
+// party, then a daemon's routines; picking one plays it, the ring lit its colour.
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE };   // C-73: the Xenith day; C-71: the watch's face
+Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK };   // TALK: C-66
 extern Page page;
 extern Screen screen;
-extern int careAt, remoteAt, typeAt, routineAt;
+extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;
 extern uint32_t hopUntil;
 extern bool pickRemoteNext, joinNext;
 extern String nets[12]; extern int netRssi[12], netCount, netAt, wheelAt; extern String typed;
@@ -127,6 +133,10 @@ struct RoutineType { const char *name; const char *radio; const Routine *routine
 extern RoutineType types[8];
 extern int typeCount;
 void routinesBegin();                     // the types this board can run
+bool partyFirst();                        // C-68: ROUTINES opens the party (a board with no radios of its own)
+bool isPartyType(int i);                  // C-68: the CC1101's PARTY type, which opens the same screen
+int partyRows();                          // the party, and on a party-first board one more row: its radios
+void playGameRoutine();                   // C-68: the chosen routine -- its tune, the ring its colour
 String runTheaterMode();                  // C-58: run on the board itself, never from the site
 void runRoutine();
 String routinesJson();

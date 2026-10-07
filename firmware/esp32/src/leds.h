@@ -11,5 +11,6 @@ void ledsSleep(bool on);   // C-39: dark until woken, whatever else is asked
 // C-40: the ring dancing to a routine's tune, one call a note. kind -1 returns the ring to rest.
 enum { DANCE_SPARKLE, DANCE_GLIMMER, DANCE_PULSE, DANCE_WAVE, DANCE_SWEEP, DANCE_RAINBOW, DANCE_BLOOM };   // C-50: the last two celebrate
 void ledsDance(int kind, int step, int steps);
+void ledsTint(uint32_t rgb);  // C-68: the next dance in this colour, not the day's (until it ends)
 void ledsBrightness(int percent);   // C-43: the ring at rest, a share of the day's colour (33 by default)
 void ledsLoop();              // every pass of the loop: animations, and going out when unused

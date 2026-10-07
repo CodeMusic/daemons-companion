@@ -58,6 +58,7 @@ bool takeState(const String &json) {
     serverUrl = lan;
     Preferences p; p.begin("uplink", false); p.putString("server", serverUrl); p.end();
   }
+  if (!doc["clock"].isNull()) watchSetClock(doc["clock"]["epoch"] | 0, doc["clock"]["offset"] | 0);   // C-71
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   if (!doc["settings"].isNull()) takeSettings(doc["settings"]);
   meetSetOurs(doc["beacons"] | "");          // C-15: our other companions (the phone) are never a meeting
@@ -70,6 +71,20 @@ bool takeState(const String &json) {
     st.milestone = doc["step"]["milestone"]["title"] | ""; st.msAt = doc["step"]["milestone"]["at"] | 0;
     st.msOf = doc["step"]["milestone"]["of"] | 0;
   }
+  st.partyN = 0;                             // C-68: the party and its routines
+  for (JsonVariant p : doc["party"].as<JsonArray>()) {
+    if (st.partyN >= 6) break;
+    Member &m = st.party[st.partyN++];
+    m.name = p["name"] | ""; m.level = p["level"] | 0; m.types = ""; m.n = 0;
+    for (JsonVariant t : p["types"].as<JsonArray>()) m.types += (m.types.length() ? " / " : "") + String((const char *)(t | ""));
+    for (JsonVariant r : p["routines"].as<JsonArray>()) {
+      if (m.n >= 4) break;
+      m.routine[m.n] = r["name"] | "?"; m.type[m.n] = r["type"] | "";
+      const char *c = r["colour"] | "#ffffff"; m.colour[m.n++] = strtol(c + 1, nullptr, 16);
+    }
+  }
+  if (partyAt >= partyRows()) partyAt = 0;   // the party changed under the screen
+  if (screen == MOVES && (partyAt >= st.partyN || moveAt >= st.party[partyAt].n)) { screen = PARTY; moveAt = 0; }
   st.carrying = !doc["daemon"].isNull();
   if (st.carrying) {
     st.daemon.name = doc["daemon"]["name"] | ""; st.daemon.nickname = doc["daemon"]["nickname"] | "";

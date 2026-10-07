@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include "battery.h"
 #include "board.h"
+#include "watch.h"
 
 // C-63. Registers from TI's datasheets (and LilyGO's own examples for this board): the gauge's StateOfCharge (0x2C,
 // percent) and Voltage (0x08, mV), little-endian words; the charger's REG0B -- VBUS_STAT in bits 7-5, CHRG_STAT in
@@ -43,7 +44,8 @@ bool batteryRead(Battery &b) {
     b.usb = mv > 4300; b.charging = b.usb && mv < 4400; b.full = false;   // a cell on the charger reads above 4.2 V
     return b.present;
   }
-  if (board.power != Power::GaugeBQ27220) { b.present = false; return false; }   // the watch's PMU: its own build
+  if (board.power == Power::PmuAXP2101) return watchBattery(b);              // C-71: the watch's PMU (watch.cpp)
+  if (board.power != Power::GaugeBQ27220) { b.present = false; return false; }
   batteryWire();
   uint8_t w[2];
   if (!readBytes(GAUGE, 0x2C, w, 2)) { b.present = false; return false; }

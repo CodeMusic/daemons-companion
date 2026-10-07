@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include "board.h"
+#include "watch.h"
 
 // C-67. Pins are LilyGO's own: T-Embed-CC1101 examples/utilities.h and its V1.0 schematic; T-Embed
 // examples/factory/pin_config.h and schematic/T-Embed-SI4732.pdf; TTGO_TWatch_Library (t-watch-s3) src/utilities.h.
@@ -19,6 +20,7 @@ void boardBegin() {
   board.mic = Mic::Pdm; board.micData = 47; board.micClk = 44;
   board.power = Power::PmuAXP2101;
   board.ir = true; board.lora = true; board.touch = true;
+  watchPower();                                      // the PMU switches every rail: on before anything else starts
 }
 
 #else

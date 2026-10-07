@@ -1,6 +1,7 @@
 // The screens (C-67: from main.cpp). Drawn whole into the sprite, then pushed.
 #include <WiFi.h>
 #include "app.h"
+#include "talk.h"
 #include "radios.h"
 #include "link.h"
 #include "sound.h"
@@ -12,7 +13,7 @@ const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 const int WHEEL_N = sizeof(WHEEL) - 1;
 Page page = TODAY;
 Screen screen = HOME;
-int careAt = 0, remoteAt = 0, typeAt = 0, routineAt = 0;
+int careAt = 0, remoteAt = 0, typeAt = 0, routineAt = 0, partyAt = 0, moveAt = 0;
 uint32_t hopUntil = 0;
 bool pickRemoteNext = false, joinNext = false;
 String nets[12]; int netRssi[12], netCount = 0, netAt = 0, wheelAt = 1; String typed;
@@ -84,7 +85,26 @@ void drawRoutines(uint16_t day) {
   uint16_t ink = lightColour(st.menu) ? INK : PAPER;
   const RoutineType &t = types[typeAt];
   canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
-  if (screen == TYPES) {
+  if (screen == PARTY) {                     // C-68: GAME ROUTINES -- the party, five rows at a time
+    canvas.drawString("WHOSE ROUTINE?", 10, 32);                                  // DRAFT
+    int rows = partyRows(), from = max(0, partyAt - 4);
+    if (!st.partyN) wrap("The party is empty, or the save is not read yet.", 12, 58, W - 24, 2, 18, 3, QUIET);
+    for (int i = from; i < rows && i < from + 5; i++) {
+      if (i < st.partyN) {
+        const Member &m = st.party[i];
+        listRow(i - from, partyAt - from, m.name + "  Lv" + m.level + "  " + m.types, day, ink);
+      } else listRow(i - from, partyAt - from, "RADIOS  (Bluetooth, Wi-Fi)", day, ink);   // DRAFT
+    }
+  } else if (screen == MOVES) {
+    const Member &m = st.party[partyAt];
+    canvas.drawString(m.name + "'S ROUTINES", 10, 32);                            // DRAFT
+    for (int i = 0; i < m.n; i++) {
+      listRow(i, moveAt, m.routine[i], day, ink, W - 12);
+      uint32_t c = m.colour[i];                                                   // its streak's colour, and its type
+      canvas.fillRoundRect(W - 112, 52 + i * 19, 10, 14, 2, canvas.color565(c >> 16, (c >> 8) & 255, c & 255));
+      canvas.setTextColor(i == moveAt ? ink : QUIET); canvas.drawString(m.type[i], W - 96, 52 + i * 19);
+    }
+  } else if (screen == TYPES) {
     canvas.drawString("ROUTINE TYPE", 10, 32);
     for (int i = 0; i < typeCount; i++)
       listRow(i, typeAt, String(types[i].name) + "  (" + types[i].radio + ")", day, ink);
@@ -128,8 +148,38 @@ void drawRoutines(uint16_t day) {
   }
   canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
   canvas.drawString(screen == RUN ? "press: run again    top button: back"
+                    : screen == MOVES ? "turn: choose    press: use it    top button: back"   // DRAFT
                     : screen == TYPE_PASS ? "turn: letter  press: add (OK: join)  top: delete"
                     : "turn: choose    press: open    top button: back", 10, H - 4);
+}
+
+// C-71: the watch's face -- the time, the day's theme, its virtue over its vice, its chakra and note, today's steps,
+// and TALK, held to talk (C-66). The day's colour rings the face.
+static void drawFace(uint16_t day, uint16_t ink) {
+  canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
+  canvas.drawCircle(W / 2, H / 2, W / 2 - 2, day); canvas.drawCircle(W / 2, H / 2, W / 2 - 3, day);
+  canvas.drawCircle(W / 2, H / 2, W / 2 - 4, day);
+  canvas.setTextDatum(MC_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(day);
+  canvas.drawString(upper(st.theme.length() ? st.theme : st.day), W / 2, 38);
+  struct tm t; char hm[6] = "--:--";
+  if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
+  canvas.setTextFont(7); canvas.setTextColor(PAPER);
+  canvas.drawString(hm, W / 2, 84);
+  canvas.setTextFont(2); canvas.setTextColor(PAPER);
+  canvas.drawString(upper(st.virtue), W / 2, 124);
+  canvas.setTextColor(QUIET);
+  canvas.drawString(upper(st.chakra) + (st.note.length() ? "  -  " + st.note : ""), W / 2, 144);
+  long steps = watchSteps();
+  canvas.setTextFont(1);
+  if (steps >= 0) canvas.drawString(String(steps) + " STEPS", W / 2, 164);   // DRAFT
+  if (bat.present) canvas.drawString(String(bat.percent) + "%" + (bat.charging ? " +" : ""), W / 2, 176);
+  bool talking = watchTalking();                             // TALK: a button in the day's colour, full while held
+  int cx = W / 2, cy = H - 34;
+  if (talking) canvas.fillCircle(cx, cy, 26, day); else canvas.drawCircle(cx, cy, 26, day);
+  canvas.setTextFont(2); canvas.setTextColor(talking ? ink : day);
+  canvas.drawString(talking ? "..." : "TALK", cx, cy);       // DRAFT
+  canvas.setTextDatum(TL_DATUM);
 }
 
 void draw() {
@@ -168,14 +218,25 @@ void draw() {
     drawArt(W - 68, 30, 1);
     wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, 5, PAPER);   // clear of the sprite (seen with SHOT, 2026-10-04)
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    canvas.drawString("top button: back", 10, H - 4);
+    canvas.drawString(String(talkCan() ? "press: read aloud    " : "") + "top button: back", 10, H - 4);   // C-65, DRAFT
+  } else if (screen == TALK) {                               // C-66: what was heard, and the daemon's answer
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString(upper(st.carrying ? st.daemon.nickname : String("your daemon")), 10, 32);
+    int y = 52;
+    if (talkHeard.length()) y += min(2, wrap("\"" + talkHeard + "\"", 10, y, W - 20, 2, 16, 2, QUIET)) * 16 + 4;
+    if (talkAnswer.length()) wrap(talkAnswer, 10, y, W - 20, 2, 16, (H - 20 - y) / 16, PAPER);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString(talkStatus.length() ? talkStatus : String("hold the dial: talk again    top button: back"), 10, H - 4);
   } else if (screen != HOME) {
     drawRoutines(day);
+  } else if (page == FACE_PAGE) {
+    drawFace(day, ink);
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
-    wrap(st.carrying ? "The radios " + daemonName() + " can use. Press to open."
-                     : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, 4, 27, 3, PAPER);
+    wrap(partyFirst() ? String("Your party's routines, as the game plays them. Press to open.")     // C-68, DRAFT
+         : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
+                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, 4, 27, 3, PAPER);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     String names;                                            // C-67: this board's own types
     for (int i = 0; i < typeCount; i++) names += String(i ? "  " : "") + types[i].name;

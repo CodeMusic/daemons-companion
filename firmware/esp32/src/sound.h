@@ -10,6 +10,8 @@ void soundTurn(int dir);                   // the dial: right an ascending pair,
 void soundSelect();                        // one tone, the day's own
 void soundBack();                          // the day's note an octave down, softly
 void soundRoutine(const char *type);       // a routine starting: its tune, the ring dancing to it
+void soundGameRoutine(const String &name, const String &type, uint32_t rgb);   // C-68: a game routine, the ring its colour
+void soundPcm(const int16_t *samples, size_t n);   // C-66: a voice, 16 kHz mono, streamed in
 void soundWake();                          // waking from sleep: the title theme's opening, quickened
 void soundCare(int what);                  // C-13: fed (0), watered (1), trained (2) -- a little glad phrase
 void soundAccomplish(int kind, int species, int day);   // C-50: 0 a step, 1 a milestone, 2 the whole goal

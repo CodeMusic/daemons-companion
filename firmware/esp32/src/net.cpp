@@ -3,6 +3,7 @@
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <mbedtls/base64.h>
+#include <esp_sleep.h>
 #include <vector>
 #include "app.h"
 #include "radios.h"
@@ -304,10 +305,10 @@ void handleLine(String line, bool fromPhone) {
     else if (fromPhone && String(d["type"] | "") == "wifi") reply("UNREAD wifi");   // C-33: a password only down the cable
     else handleCommand(d.as<JsonVariant>());
   }
-  else if (line.startsWith("GO ") && !fromPhone) {   // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
+  else if (line.startsWith("GO ") && !fromPhone) {   // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES|DAY|PARTY
     String to = line.substring(3);
     wake();
-    screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
+    screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : to == "PARTY" ? PARTY : HOME;   // C-68: GO PARTY
     page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : TODAY;
     draw();
   }
@@ -393,12 +394,30 @@ void askForArt() {
 // cable and the phone carry it later).
 static uint32_t batAt = 0, batToldAt = 0;
 static int batToldPct = -100; static bool batToldCharging = false;
+static bool batWarned = false; static int batEmptyReads = 0;
+
+// C-63, the user's rule: warn at 15%, sleep at 5%. The sleep is the chip's deep sleep, so the cell is not run flat: only
+// the top button wakes it (the board starts again), and a board still empty shows the word and sleeps again.
+static void batteryRules() {
+  if (!bat.present || bat.percent < 0 || bat.usb) { batWarned = false; batEmptyReads = 0; return; }
+  if (bat.percent > 17) batWarned = false;
+  if (bat.percent <= 15 && !batWarned) { batWarned = true; say("BATTERY LOW"); }    // DRAFT
+  batEmptyReads = bat.percent <= 5 ? batEmptyReads + 1 : 0;                       // twice, so one bad read cannot
+  if (batEmptyReads < 2) return;
+  say("CHARGE ME"); draw(); delay(2000);                                           // DRAFT
+  ledsSleep(true); backlight(false);
+  int wakePin = board.sideKey >= 0 ? board.sideKey : board.encKey;                 // the top button (C-79)
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)wakePin, 0);
+  esp_deep_sleep_start();
+}
+
 void batteryLoop(uint32_t now) {
   if (batAt == 0 || now - batAt > 20000) {                   // C-63: the battery, and the server told when it matters
     batAt = now;
     Battery was = bat;
     batteryRead(bat);
     if (bat.percent != was.percent || bat.charging != was.charging || bat.usb != was.usb) dirty = true;
+    batteryRules();
     bool tell = bat.present && (abs(bat.percent - batToldPct) >= 5 || bat.charging != batToldCharging || now - batToldAt > 600000);
     if (tell && online()) {                                    // over Wi-Fi; the cable and the phone carry it later
       batToldAt = now; batToldPct = bat.percent; batToldCharging = bat.charging;

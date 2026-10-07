@@ -127,6 +127,7 @@ void reportNetworks();
 void meetReport();
 void askForArt();
 void batteryLoop(uint32_t now);           // C-63
+void batteryFake(int pct);                // C-63: BATTEST <pct> down the cable -- 30 s of a pretend charge, never a sleep
 
 // ---- the daemon's routines (routines.cpp) ---------------------------------------------------------------------------
 typedef String (*RoutineFn)();

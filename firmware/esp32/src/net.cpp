@@ -323,6 +323,7 @@ void handleLine(String line, bool fromPhone) {
           " | heard: " + talkHeard + " | answer: " + talkAnswer.substring(0, 160));
     draw();
   }
+  else if (line.startsWith("BATTEST ") && !fromPhone) { batteryFake(line.substring(8).toInt()); reply("BATTEST ok"); }
   else if (line.startsWith("BRAIN") && !fromPhone) {  // C-76: the offline brain's link -- BRAIN tcp host[:port] | uart | off
     if (line.length() > 6 && !brainSet(line.substring(6))) reply("BRAIN? tcp <host>[:port] | uart | off");
     else reply("BRAIN " + brainDescribe());
@@ -410,6 +411,8 @@ void askForArt() {
 static uint32_t batAt = 0, batToldAt = 0;
 static int batToldPct = -100; static bool batToldCharging = false;
 static bool batWarned = false; static int batEmptyReads = 0;
+static int batFakePct = -1; static uint32_t batFakeUntil = 0;     // BATTEST <pct>: a check from the computer, 30 s
+void batteryFake(int pct) { batFakePct = pct; batFakeUntil = millis() + 30000; batAt = 0; }
 
 // C-63, the user's rule: warn at 15%, sleep at 5%. The sleep is the chip's deep sleep, so the cell is not run flat: only
 // the top button wakes it (the board starts again), and a board still empty shows the word and sleeps again.
@@ -419,6 +422,7 @@ static void batteryRules() {
   if (bat.percent <= 15 && !batWarned) { batWarned = true; say("BATTERY LOW"); }    // DRAFT
   batEmptyReads = bat.percent <= 5 ? batEmptyReads + 1 : 0;                       // twice, so one bad read cannot
   if (batEmptyReads < 2) return;
+  if (batFakeUntil) { say("WOULD SLEEP NOW"); Serial.println("BATTEST would sleep now"); return; }   // a check never sleeps it
   say("CHARGE ME"); draw(); delay(2000);                                           // DRAFT
   ledsSleep(true); backlight(false);
   int wakePin = board.sideKey >= 0 ? board.sideKey : board.encKey;                 // the top button (C-79)
@@ -431,6 +435,8 @@ void batteryLoop(uint32_t now) {
     batAt = now;
     Battery was = bat;
     batteryRead(bat);
+    if (batFakeUntil && now > batFakeUntil) { batFakeUntil = 0; batWarned = false; batEmptyReads = 0; }
+    if (batFakeUntil) { bat.present = true; bat.percent = batFakePct; bat.usb = false; bat.charging = false; }
     if (bat.percent != was.percent || bat.charging != was.charging || bat.usb != was.usb) dirty = true;
     batteryRules();
     bool tell = bat.present && (abs(bat.percent - batToldPct) >= 5 || bat.charging != batToldCharging || now - batToldAt > 600000);

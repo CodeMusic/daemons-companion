@@ -179,7 +179,7 @@ come from a model on your own machine (or OpenRouter when that one is busy), and
 
 | where | how | state |
 |---|---|---|
-| the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | built; needs the parts below. **Over Wi-Fi only** for now |
+| the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the USB cable; away from both, **through the paired phone** (the phone says the answer; needs a new phone build) |
 | the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
 | an INDEX entry | press on it (the board), or **Read aloud** (the phone) | runs |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
-import { Conversations, DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
+import { asWav, Conversations, DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
 
 // A second of a 440 Hz tone as a WAV, at a rate the handheld does not play (the voice server's is 24 kHz).
 function wav(rate: number, seconds = 1): Buffer {
@@ -47,4 +47,36 @@ describe("the daemon remembers the last few things said (C-66)", () => {
     expect(talks.history("board", 0)).toHaveLength(6);
     expect(talks.history("board", 2001)).toEqual([]);                // fifteen quiet minutes, here one second
   });
+});
+
+// The handheld's recording over Bluetooth (C-82): 8 kHz G.711 mu-law, as firmware talk.cpp encodes it.
+function mulawWav(seconds = 1): Buffer {
+  const SEG = [0x3f, 0x7f, 0xff, 0x1ff, 0x3ff, 0x7ff, 0xfff, 0x1fff];
+  const enc = (pcm: number) => {
+    let v = pcm >> 2, mask = 0xff;
+    if (v < 0) { v = -v; mask = 0x7f; }
+    v = Math.min(v, 8159) + 0x21;
+    let seg = 0; while (seg < 8 && v > SEG[seg]) seg++;
+    return seg >= 8 ? 0x7f ^ mask : ((seg << 4) | ((v >> (seg + 1)) & 0xf)) ^ mask;
+  };
+  const n = 8000 * seconds, out = Buffer.alloc(44 + n);
+  out.write("RIFF", 0, "latin1"); out.writeUInt32LE(36 + n, 4); out.write("WAVEfmt ", 8, "latin1");
+  out.writeUInt32LE(16, 16); out.writeUInt16LE(7, 20); out.writeUInt16LE(1, 22); out.writeUInt32LE(8000, 24);
+  out.writeUInt32LE(8000, 28); out.writeUInt16LE(1, 32); out.writeUInt16LE(8, 34);
+  out.write("data", 36, "latin1"); out.writeUInt32LE(n, 40);
+  for (let i = 0; i < n; i++) out[44 + i] = enc(Math.round(8000 * Math.sin(2 * Math.PI * 440 * i / 8000)));
+  return out;
+}
+
+describe("a recording over Bluetooth (C-82)", () => {
+  it.skipIf(!existsSync("/opt/homebrew/bin/ffmpeg") && !existsSync("/usr/bin/afconvert"))(
+    "reaches speech to text as a 16 kHz WAV of the same length, and sounds like itself", async () => {
+      const w = await asWav(mulawWav(1));
+      expect(w?.mime).toBe("audio/wav");
+      const pcm = pcmOfWav(w!.audio)!;
+      expect(Math.abs(pcm.length / 2 - DEVICE_RATE)).toBeLessThan(DEVICE_RATE * 0.02);
+      let peak = 0; for (let i = 0; i < pcm.length; i += 2) peak = Math.max(peak, Math.abs(pcm.readInt16LE(i)));
+      expect(peak).toBeGreaterThan(6000);                       // the 8000-high tone came through, not silence
+      expect(peak).toBeLessThan(10000);
+    });
 });

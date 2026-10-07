@@ -10,6 +10,8 @@
 // it did (a step ticked, a routine run) waits on the phone and goes up, in order, when the companion answers again.
 import { BleManager, Device, State, Subscription } from "react-native-ble-plx";
 import * as SecureStore from "expo-secure-store";
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
+import { File, Paths } from "expo-file-system";
 
 const KEEP = { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK };   // C-57: readable in a locked pocket
 
@@ -26,6 +28,17 @@ export type Handheld = {
   waiting: number;         // things the board did that wait for the companion
   note: string;
 };
+
+// C-82: the daemon's answer to a talk the board carried here, said on the phone's own speaker (the board shows the words).
+let voice: AudioPlayer | null = null;
+async function sayOnPhone(mp3Base64: string) {
+  const f = new File(Paths.cache, `handheld-voice-${Date.now()}.mp3`);
+  f.create(); f.write(mp3Base64, { encoding: "base64" });
+  await setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+  voice?.remove();
+  voice = createAudioPlayer({ uri: f.uri });
+  voice.play();
+}
 
 const utf8 = new TextEncoder(), text = new TextDecoder();
 const toB64 = (s: string) => { let b = ""; for (const c of utf8.encode(s)) b += String.fromCharCode(c); return btoa(b); };
@@ -175,6 +188,7 @@ class Link {
 
   // C-80: the board's own name, from its HELLO, carried on every request as ?device= (the relay passes the query on)
   private deviceId: string | null = null;
+  private talkParts: string[] | null = null;     // C-82: a recording arriving from the board, in base64 lines
   private async ask<T>(path: string, body?: unknown): Promise<T> {
     if (this.deviceId) path += (path.includes("?") ? "&" : "?") + "device=" + encodeURIComponent(this.deviceId);
     try { const r = await this.api!<T>(path, body); this.set({ companion: true }); return r; }
@@ -216,6 +230,18 @@ class Link {
 
   private async handle(line: string) {
     const [word] = line.split(" ", 1), rest = line.slice(word.length + 1);
+    if (word === "TALKWAV") { this.talkParts = []; return; }
+    if (word === "TW") { this.talkParts?.push(rest); return; }
+    if (word === "TALKEND") {                             // C-82: the board talked away from Wi-Fi; the phone carries it
+      const parts = this.talkParts; this.talkParts = null;
+      if (!parts) return;
+      let r: { answer?: string | null; heard?: string | null; error?: string | null; audioBase64?: string | null };
+      try { r = await this.ask("/api/ai/talk", { audioBase64: parts.join(""), audioMime: "audio/wav" }); }
+      catch { r = { error: "The companion did not answer." }; }
+      this.say("TALKED " + JSON.stringify({ answer: r.answer ?? null, heard: r.heard ?? null, error: r.error ?? null, audio: false }));
+      if (r.audioBase64) await sayOnPhone(r.audioBase64).catch(() => {});
+      return;
+    }
     if (word === "HELLO") {
       const id = rest.split(" ")[3];
       if (id && /^[a-z0-9][a-z0-9-]{2,47}$/.test(id)) this.deviceId = id;

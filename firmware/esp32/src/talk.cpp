@@ -4,6 +4,7 @@
 #include <es7210.h>
 #include "app.h"
 #include "talk.h"
+#include "link.h"
 #include "brain.h"
 #include "leds.h"
 #include "sound.h"
@@ -170,6 +171,62 @@ static void overCable(uint8_t *rec, size_t n) {
   lastInput = millis();
 }
 
+// G.711 mu-law: a 16-bit sample in eight bits, as telephones have always sent speech. Sun's reference g711.c, checked
+// against Python's audioop.lin2ulaw over all 65,536 values (2026-10-07: identical).
+static uint8_t mulaw(int16_t pcm) {
+  static const int SEG[8] = { 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF, 0x7FF, 0xFFF, 0x1FFF };
+  int v = pcm >> 2, mask = 0xFF;
+  if (v < 0) { v = -v; mask = 0x7F; }
+  if (v > 8159) v = 8159;
+  v += 0x21;
+  int seg = 0;
+  while (seg < 8 && v > SEG[seg]) seg++;
+  if (seg >= 8) return 0x7F ^ mask;
+  return ((seg << 4) | ((v >> (seg + 1)) & 0xF)) ^ mask;
+}
+
+// C-82: away from Wi-Fi and the cable, the phone is the way out. Bluetooth is slow, so the recording goes as 8 kHz
+// mu-law (a quarter of the size: three seconds are 24 KB), in the cable's lines; the phone posts it, answers TALKED with
+// the words, and says the answer in the INDEX voice on its own speaker. Frees the recording.
+static void overPhone(uint8_t *rec, size_t n) {
+  const int16_t *pcm = (const int16_t *)(rec + 44);
+  size_t m = n / 2;                                            // 16 kHz -> 8 kHz: each pair averaged
+  uint8_t *wav = (uint8_t *)ps_malloc(44 + m);
+  if (!wav) { free(rec); talkStatus = "Out of memory."; screen = TALK; draw(); return; }   // DRAFT
+  for (size_t i = 0; i < m; i++) wav[44 + i] = mulaw((int16_t)(((int)pcm[2 * i] + pcm[2 * i + 1]) / 2));
+  free(rec);
+  uint32_t v; uint16_t s;                                      // the header: format 7 (mu-law), one channel, 8 kHz
+  memcpy(wav, "RIFF", 4); v = 36 + m; memcpy(wav + 4, &v, 4); memcpy(wav + 8, "WAVEfmt ", 8);
+  v = 16; memcpy(wav + 16, &v, 4); s = 7; memcpy(wav + 20, &s, 2); s = 1; memcpy(wav + 22, &s, 2);
+  v = 8000; memcpy(wav + 24, &v, 4); memcpy(wav + 28, &v, 4); s = 1; memcpy(wav + 32, &s, 2); s = 8; memcpy(wav + 34, &s, 2);
+  memcpy(wav + 36, "data", 4); v = m; memcpy(wav + 40, &v, 4);
+  size_t bytes = 44 + m;
+  static unsigned char b64[4100];
+  linkSend("TALKWAV " + String((unsigned)bytes));
+  for (size_t at = 0; at < bytes && linkPhoneHere(); at += 3072) {
+    size_t olen = 0;
+    mbedtls_base64_encode(b64, sizeof b64, &olen, wav + at, min((size_t)3072, bytes - at));
+    b64[olen] = 0;
+    linkSend("TW " + String((const char *)b64));
+  }
+  linkSend("TALKEND");
+  free(wav);
+  String line;
+  uint32_t until = millis() + 150000;
+  bool got = false;
+  while (millis() < until && linkPhoneHere() && !got) {
+    while (linkTake(line)) if (line.startsWith("TALKED ")) { got = true; break; }
+    if (!got) delay(20);
+  }
+  screen = TALK;
+  if (!got) { talkStatus = "The phone did not answer."; draw(); return; }                   // DRAFT
+  JsonDocument d;
+  deserializeJson(d, line.substring(7));
+  talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | ""); talkStatus = d["error"] | "";
+  draw();
+  lastInput = millis();
+}
+
 // C-76: the turn offline, through the LLM630 (brain.cpp). Frees the recording.
 static void offline(uint8_t *rec, size_t n) {
   String heard, said, error;
@@ -183,7 +240,7 @@ static void offline(uint8_t *rec, size_t n) {
 
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
-  if (!online() && !usbLive() && !brainConfigured()) { say("TALK NEEDS WI-FI"); return; }   // DRAFT: Wi-Fi, the cable, or the LLM630
+  if (!online() && !usbLive() && !linkPhoneHere() && !brainConfigured()) { say("TALK NEEDS WI-FI"); return; }   // DRAFT
   const size_t most = RATE * MOST_S;
   uint8_t *rec = (uint8_t *)ps_malloc(44 + most * 2);
   if (!rec || !micOn()) { free(rec); say("NO MICROPHONE"); return; }          // DRAFT
@@ -210,6 +267,7 @@ void talkHold(uint32_t forMs) {
   wavHeader(rec, n);
   talkStatus = "Thinking..."; draw();                                         // DRAFT
   if ((!online() || talkByCable) && usbLive()) { overCable(rec, n); return; } // C-66: the cable's bridge carries it
+  if (!online() && linkPhoneHere() && !brainConfigured()) { overPhone(rec, n); return; }   // C-82: the phone carries it
   if (!online()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
   h.setTimeout(120000);                                                       // a local model's first turn loads it

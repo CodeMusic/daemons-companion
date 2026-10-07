@@ -12,6 +12,9 @@ export interface Config {
   savePath: string | null;          // a COPY of the DAEMONS save to read -- never the one the game is using
   artDir: string;                   // DAEMONS' own art (gfx/daemons/), served at /art/
   ai: { enabled: boolean; baseUrl: string; model: string; apiKeyEnv: string | null };
+  // C-64: the user's n8n, where daemon/talk and daemon/voice run (DAEMONS ai/n8n). At home, the internal one; the
+  // shared secret from the environment variable named here, or `secret` itself in config.json (never committed).
+  talk: { url: string | null; secretEnv: string; secret?: string };
 }
 
 export const DEFAULTS: Config = {
@@ -22,10 +25,11 @@ export const DEFAULTS: Config = {
   savePath: null,
   artDir: fileURLToPath(new URL("../../../DAEMONS/gfx/daemons", import.meta.url)),   // ~/Projects/DAEMONS beside this repo
   ai: { enabled: false, baseUrl: "http://localhost:4000/v1", model: "", apiKeyEnv: null },
+  talk: { url: null, secretEnv: "DEX_SHARED_SECRET" },
 };
 
 export function loadConfig(path = fileURLToPath(new URL("../config.json", import.meta.url))): Config {
   if (!existsSync(path)) return DEFAULTS;
   const local = JSON.parse(readFileSync(path, "utf-8"));
-  return { ...DEFAULTS, ...local, ai: { ...DEFAULTS.ai, ...(local.ai ?? {}) } };
+  return { ...DEFAULTS, ...local, ai: { ...DEFAULTS.ai, ...(local.ai ?? {}) }, talk: { ...DEFAULTS.talk, ...(local.talk ?? {}) } };
 }

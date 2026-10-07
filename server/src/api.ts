@@ -73,6 +73,21 @@ async function body(req: IncomingMessage): Promise<any> {
   return s ? JSON.parse(s) : {};
 }
 
+// C-64, C-65, C-66: the daemon's voice and its answers come from the user's n8n (DAEMONS ai/n8n: daemon/talk, and
+// daemon/voice for the INDEX entry read aloud). The server calls it, never a device: the secret stays here, and the
+// server knows which daemon is carried and what day it is.
+async function n8n(cfg: Config, hook: string, payload: unknown): Promise<Record<string, unknown>> {
+  if (!cfg.talk.url) return { error: "no voice server set: add \"talk\": {\"url\": \"http://<n8n>:5678/webhook\"} to server/config.json" };
+  const secret = cfg.talk.secret ?? process.env[cfg.talk.secretEnv] ?? "";
+  const stop = new AbortController(), t = setTimeout(() => stop.abort(), 180000);
+  try {
+    const r = await fetch(`${cfg.talk.url.replace(/\/$/, "")}/${hook}`, { method: "POST", signal: stop.signal,
+      headers: { "content-type": "application/json", "x-dex-secret": secret }, body: JSON.stringify(payload) });
+    const j = await r.json().catch(() => ({ error: `the voice server answered ${r.status}` }));
+    return j as Record<string, unknown>;
+  } catch { return { error: "the voice server did not answer" }; } finally { clearTimeout(t); }
+}
+
 function send(res: ServerResponse, status: number, data: unknown) {
   res.writeHead(status, { "content-type": "application/json", "access-control-allow-origin": "*" });
   res.end(JSON.stringify(data));
@@ -342,7 +357,7 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen",
-     "/api/device/battery"].includes(p),
+     "/api/device/battery", "/api/ai/talk", "/api/ai/speak"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
@@ -600,6 +615,27 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { meetings,
                                 heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
                                 lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
+      }
+      if (req.method === "POST" && path === "/api/ai/talk") {        // C-66: push to talk -- text or audio in, an answer and its voice out
+        const b = await body(req);
+        const st = deviceState(ecfg, store), d = st.daemon;
+        return send(res, 200, await n8n(ecfg, "daemon/talk", {
+          text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
+          audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
+          history: Array.isArray(b.history) ? b.history.slice(-6) : [],
+          provider: b.provider ?? store.getSetting("talk.provider") ?? "auto", speak: b.speak !== false, voice: "index",
+          daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry }
+                    : { nickname: "your daemon" },
+          day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
+        }));
+      }
+      if (req.method === "POST" && path === "/api/ai/speak") {       // C-65: an INDEX entry (or a line) in the INDEX voice
+        const b = await body(req);
+        const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
+        const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store).daemon : null;
+        const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
+        if (!text) return send(res, 400, { error: "speak {species} or {text}, or carry a daemon" });
+        return send(res, 200, await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }));
       }
       if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes
         const b = await body(req);

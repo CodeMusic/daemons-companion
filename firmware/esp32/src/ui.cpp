@@ -188,7 +188,8 @@ void draw() {
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
   canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(ML_DATUM);
-  canvas.drawString(st.have ? upper(st.day) + "  " + st.note + "  " + upper(st.season) : "DAEMONS COMPANION", 8, 13);
+  canvas.drawString(st.have ? upper(st.day) + "  " + st.note + (W >= 300 ? "  " + upper(st.season) : String(""))   // the watch: no room
+                            : String(W >= 300 ? "DAEMONS COMPANION" : "DAEMONS"), 8, 13);
   canvas.setTextDatum(MR_DATUM);
   canvas.drawString(linkName(), W - 8, 13);
   if (bat.present) {                                          // C-63: a small battery, filled to its charge

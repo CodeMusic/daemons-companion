@@ -8,6 +8,7 @@
 #include <Preferences.h>
 #include <Adafruit_PN532.h>
 #include <IRrecv.h>
+#include "leds.h"
 #include <IRsend.h>
 #include <IRutils.h>
 #include "link.h"
@@ -201,6 +202,37 @@ static bool listenFor(Button &out, int which) {
     delete[] raw;
   }
   return true;
+}
+
+// WHAT REMOTE IS THIS: point any of your remotes at the board and press its buttons -- each press is named: its
+// protocol (for most, the maker: SAMSUNG, SONY, LG ...), its bits and its code. It only listens, for a minute.
+String runWhatRemote() {
+  irIn.enableIRIn();
+  decode_results got;
+  String heard[3]; int n = 0;
+  uint32_t t0 = millis(), shown = 0;
+  while (millis() - t0 < 60000 && !giveUp()) {
+    if (irIn.decode(&got)) {
+      if (!got.repeat && !(got.decode_type == UNKNOWN && got.rawlen < 12)) {
+        String what = got.decode_type == UNKNOWN ? String("an unknown kind, ") + got.rawlen + " pulses"
+                    : typeToString(got.decode_type, false) + "  " + String(got.bits) + " bits  0x" + uint64ToString(got.value, 16);
+        heard[2] = heard[1]; heard[1] = heard[0]; heard[0] = what; n++;
+        ledsFlash();
+        shown = 0;
+      }
+      irIn.resume();
+    }
+    if (millis() - shown > 500) {
+      shown = millis();
+      progress(n ? "Heard " + String(n) + (n == 1 ? " press" : " presses") + ":\n" + heard[0] + "\n" + heard[1] + "\n" + heard[2]
+                 : "Point a remote at " + daemonName() + " and press any button.");                       // DRAFT
+    }
+    ledsLoop();
+    delay(5);
+  }
+  irIn.disableIRIn();
+  return n ? daemonName() + " heard " + String(n) + (n == 1 ? " press" : " presses") + "; the last: " + heard[0] + "."
+           : daemonName() + " heard no remote.";                                                          // DRAFT
 }
 
 // TEACH A REMOTE: three buttons, one after another, then kept as a remote and chosen.

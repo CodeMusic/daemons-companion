@@ -106,15 +106,17 @@ void drawRoutines(uint16_t day) {
     }
   } else if (screen == TYPES) {
     canvas.drawString("ROUTINE TYPE", 10, 32);
-    for (int i = 0; i < typeCount; i++)
-      listRow(i, typeAt, String(types[i].name) + "  (" + types[i].radio + ")", day, ink);
+    int from = max(0, typeAt - 4);               // the CC1101 has six types: five rows at a time
+    for (int i = from; i < typeCount && i < from + 5; i++)
+      listRow(i - from, typeAt - from, String(types[i].name) + "  (" + types[i].radio + ")", day, ink);
   } else if (screen == LIST) {
     canvas.drawString(String(t.name) + "  (" + t.radio + ")", 10, 32);
     if (t.count == 0) {
       wrap("No routines yet.", 12, 58, W - 24, 4, 27, 1, PAPER);
       wrap("They arrive as each radio is wired and tried on the board.", 12, 92, W - 24, 2, 18, 3, QUIET);
     } else {
-      for (int i = 0; i < t.count; i++) listRow(i, routineAt, t.routines[i].name, day, ink);
+      int from = max(0, routineAt - 4);          // five rows, clear of the footer; the list scrolls past them
+      for (int i = from; i < t.count && i < from + 5; i++) listRow(i - from, routineAt - from, t.routines[i].name, day, ink);
     }
   } else if (screen == PICK_REMOTE) {
     canvas.drawString("WHICH REMOTE " + upper(daemonName()) + " USES", 10, 32);

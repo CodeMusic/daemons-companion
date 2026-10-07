@@ -217,6 +217,12 @@ talks over **Wi-Fi**, so it must have joined a network.
   the ring pulses. Stand still: they fall. **Top button** stops it; it ends by itself after 45 seconds and says how much
   of the time something moved.
 
+## 15b. WHAT REMOTE IS THIS (the CC1101)
+
+- ROUTINES, FLARE, **WHAT REMOTE IS THIS** (the list scrolls now: turn past CHOOSE A REMOTE). Point a remote at the board
+  and press a few buttons. **See:** each press -- its protocol (SAMSUNG, SONY, NEC ...), its bits and its code -- the
+  last three listed; the ring flashes. **Tell me** what it named for each of your remotes.
+
 ## 16. LONGWAVE: what is on the air (the CC1101)
 
 - ROUTINES, LONGWAVE, **WHAT'S ON THE AIR**. **See:** five seconds learning each band's quiet, then four rows -- 315,

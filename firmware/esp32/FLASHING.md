@@ -29,6 +29,7 @@ first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test th
 | FLARE | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn; kept, and chosen |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
 | FLARE | THEATER MODE | the routine the site cannot send: run on the board itself |
+| FLARE | WHAT REMOTE IS THIS | point any of your remotes at it and press: each press named -- its protocol (for most, the maker), bits and code. Listening only, for a minute |
 | FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; the site can add one by brand |
 | WHISPER | PAIR MY PHONE, OPEN TO MY PHONE, FORGET MY PHONES | the phone app's link over Bluetooth (C-55) |
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |

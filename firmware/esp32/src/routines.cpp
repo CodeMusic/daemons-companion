@@ -15,10 +15,12 @@ String runTheaterMode();
 String runJoinNetwork();
 String runWifiMotion();                   // C-70: experiments.cpp
 String runWhatsOnTheAir(); String runFindIt();   // LONGWAVE: longwave.cpp
+String runWhatRemote();                   // FLARE: radios.cpp
 String runListenFm(); String runStaticSynth(); String runListenAm(); String runLightning();   // C-69, C-70: radio.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
-                                               { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote } };
+                                               { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
+                                               { "WHAT REMOTE IS THIS", runWhatRemote } };   // listening only, DRAFT
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
@@ -33,7 +35,7 @@ RoutineType types[8];
 int typeCount = 0;
 void routinesBegin() {
   typeCount = 0;
-  if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      6 };
+  if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      7 };
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 };
   if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   LONGWAVE_ROUTINES,   2 };

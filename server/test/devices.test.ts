@@ -44,3 +44,16 @@ describe("every device by its own name (C-80)", () => {
     expect(r.devices.map((d: any) => d.id)).toEqual(["t-embed-cc1101-36f484"]);
   });
 });
+
+describe("who answers when you talk (C-66)", () => {
+  it("is auto until chosen, takes local or openrouter, and refuses anything else", async () => {
+    const get = () => fetch(base + "/api/talk/settings").then((r) => r.json());
+    const set = (provider: string) => fetch(base + "/api/talk/settings", { method: "POST", headers: { "content-type": "application/json" },
+                                                                          body: JSON.stringify({ provider }) });
+    expect((await get()).provider).toBe("auto");
+    expect((await set("local")).status).toBe(200);
+    expect((await get()).provider).toBe("local");
+    expect((await set("somewhere")).status).toBe(400);
+    expect((await get()).provider).toBe("local");
+  });
+});

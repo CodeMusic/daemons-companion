@@ -538,6 +538,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { id: hub.send({ type: "wifi", ssid: b.ssid, password: b.password,
                                                server: addr ? `http://${addr}:${cfg.port}` : "" }) });
       }
+      // C-66: who answers when you talk -- "auto" (this computer's model, OpenRouter when it is busy), "local" only (the
+      // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
+      if (req.method === "GET" && path === "/api/talk/settings")
+        return send(res, 200, { provider: store.getSetting("talk.provider") ?? "auto", connected: !!ecfg.talk.url });
+      if (req.method === "POST" && path === "/api/talk/settings") {
+        const b = await body(req);
+        if (!["auto", "local", "openrouter"].includes(b.provider)) return send(res, 400, { error: "provider is auto, local or openrouter" });
+        store.setSetting("talk.provider", b.provider);
+        return send(res, 200, { provider: b.provider, connected: !!ecfg.talk.url });
+      }
       if (req.method === "GET" && path === "/api/device/settings") return send(res, 200, deviceSettings(store));   // C-43
       if (req.method === "POST" && path === "/api/device/settings") {
         const s = checkSettings({ ...deviceSettings(store), ...(await body(req)) });

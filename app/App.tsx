@@ -714,7 +714,27 @@ function SettingsScreen({ ink }: { ink: string }) {
         </XStack>
         {note ? <Small>{note}</Small> : null}
       </Card>
+      <TalkSettingsCard ink={ink} />
     </YStack>
+  );
+}
+
+// C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly.
+function TalkSettingsCard({ ink }: { ink: string }) {
+  const [t, setT] = useState<{ provider: "auto" | "local" | "openrouter"; connected: boolean } | null>(null);
+  useEffect(() => { api<typeof t>("/api/talk/settings").then(setT).catch(() => {}); }, []);
+  if (!t) return null;
+  const pick = async (provider: "auto" | "local" | "openrouter") => setT(await api<typeof t>("/api/talk/settings", { provider }));
+  return (
+    <Card>
+      <Eyebrow>WHO ANSWERS WHEN YOU TALK</Eyebrow>
+      <Choice value={t.provider} options={[["auto", "Mine, then OpenRouter"], ["local", "Only mine"], ["openrouter", "OpenRouter"]]}
+              onPick={pick} ink={ink} />
+      <Small>{t.provider === "local" ? "Your words stay on your own machines. If your model is busy or off, the daemon says it cannot answer."
+        : t.provider === "openrouter" ? "The words heard go to OpenRouter to be answered. The recording itself never leaves home."
+        : "Your own model answers; when it is busy, the words heard go to OpenRouter so nobody waits. The recording never leaves home."}</Small>
+      {!t.connected ? <Small color="$color8">Talking is not set up yet: add "talk" to server/config.json (README, Talk to your daemon).</Small> : null}
+    </Card>
   );
 }
 

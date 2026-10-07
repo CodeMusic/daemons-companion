@@ -1,9 +1,10 @@
 # daemons-companion
 
 **A goal companion that carries a daemon.** You carry a daemon from your game of
-[**DAEMONS**](https://github.com/CodeMusic/DAEMONS) on a little device. You feed it, train it, spend time with it --
-and it helps you: tell it what you want to get done, and it turns that into **one next step** and walks you through
-the day. As you get things done, it thrives. Pass someone else carrying one, and your INDEX sees their daemon.
+[**DAEMONS**](https://github.com/CodeMusic/DAEMONS) on a little device -- a LilyGO T-Embed (the CC1101, the plain one or
+the SI4732), a T-Watch S3, or your phone. You feed it, train it, spend time with it, **talk with it** -- and it helps
+you: tell it what you want to get done, and it turns that into **one next step** and walks you through the day. As you
+get things done, it thrives. Pass someone else carrying one, and your INDEX sees their daemon.
 
 It is the successor to **RoverRadio** (in [CodeMusic/RoverByte](https://github.com/CodeMusic/RoverByte)) and
 [**RoverCub**](https://github.com/CodeMusic/RoverCub), joined to the game.
@@ -26,8 +27,8 @@ background, and opens the app at <http://localhost:8081>. **Ctrl-C stops both.**
 | `./bindCompanion.sh app [web\|ios\|android]` | **only the app**, against a server you started yourself |
 | `./bindCompanion.sh test` | the server's **type check and tests** |
 | `./bindCompanion.sh phone` | **build the app for your iPhone** and install it ([below](#on-your-iphone)) |
-| `./updateCompanion.sh` | **flash the handheld** with the newest firmware ([below](#flash-the-handheld)) |
-| `./linkCompanion.sh` | **link the handheld** to the server over its cable |
+| `./updateCompanion.sh` | **flash the handhelds** plugged in -- it asks each which board it is ([below](#the-handhelds)) |
+| `./linkCompanion.sh` | **link a handheld** to the server over its cable |
 
 **The app runs in the foreground, so Expo's own keys work in the same terminal**: `w` opens the site, `i` the iOS
 Simulator, `a` the Android emulator, `r` reloads. A session started as a site can reach the others without starting
@@ -42,70 +43,99 @@ beside it.*
 | | | |
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself first, an iPhone and iPad app from the same code later | **running as a site, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). Five screens: **TODAY** (the day's colour, note and virtue, the season, and the one thing to do), **GOALS** (add one, see its steps, tick them off), **DAEMON** (your party; **SYNC** brings a daemon across or home, and shows what it holds), **PROFILE** (the save's trainer, play time, INDEX, MARKS and progress), **SETTINGS** (your save's path) |
-| `firmware/esp32/` | **the handheld** -- the **LilyGO T-Embed CC1101** (ESP32-S3), PlatformIO + Arduino, grown from RoverCodeBase | **running on the board.** The day in its colour (a rainbow week, and the ring of lights glowing it), the one step (press to tick it off), the daemon you carry -- **drawn as the game draws it**, what it holds, and **its INDEX entry** a press away -- and **ROUTINES**: the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LONGWAVE (Sub-GHz, not wired yet), UPLINK (Wi-Fi). Over the USB cable or Wi-Fi. See [Flash the handheld](#flash-the-handheld) |
+| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry and an INDEX entry **read aloud**), **INDEX**, **DEVICE** (the handheld, its battery, its routines), **PROFILE**, **SETTINGS** |
+| `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start) and its own build for the **T-Watch S3**; ESP32-S3, PlatformIO + Arduino, grown from RoverCodeBase | **running on the CC1101**; the other boards are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, and the first radio experiment. See [The handhelds](#the-handhelds) |
+| `server/src/ai/`, DAEMONS `ai/` | **the daemon's voice and words** -- n8n workflows on your own machine (DAEMONS `ai/n8n/`), speech to text (`ai/stt/`), a local model or OpenRouter, and the INDEX voice | **running**: a spoken question in, the daemon's answer in the INDEX voice out. See [Talk to your daemon](#talk-to-your-daemon) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
-**Local first, one person.** Everything runs on your own machine; accounts, many users and hosting come later.
+**Local first, one person.** Everything runs on your own machine; accounts, many users and hosting come later. **One
+daemon goes out at a time today**, to whichever device is linked; a daemon per device, and every device always
+connected, are designed in [docs/DEVICES.md](docs/DEVICES.md) (C-80, C-82).
 
-## Flash the handheld
+## The handhelds
 
-With the T-Embed CC1101 plugged in by a USB-C cable that carries data, and
-[PlatformIO](https://platformio.org) installed (`pip install platformio`):
+| board | screen | controls | listens | lights | its own radios | battery | state |
+|---|---|---|---|---|---|---|---|
+| **T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC, Sub-GHz | gauge and charger | **runs** |
+| **T-Embed** (plain) | 320x170 | dial and its press | not yet | ring of 7 | -- | voltage | built, not yet run |
+| **T-Embed SI4732** | 320x170 | dial and its press | not yet | ring of 7 | AM/FM (C-69) | voltage | built, not yet run |
+| **T-Watch S3** | 240x240 touch | touch, the crown | not yet | -- | LoRa, IR | power chip | built, not yet run |
+
+The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
+is. The watch has its own build. Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
+
+### Flash them
+
+Plug the boards in by USB-C cables that carry data, with [PlatformIO](https://platformio.org) installed
+(`pip install platformio`), and:
 
 ```sh
-./updateCompanion.sh          # build the firmware and flash it to the board
-./linkCompanion.sh            # link it to the server over the cable (starts the server if none is running)
-./updateCompanion.sh --link   # both, one after the other
+./updateCompanion.sh          # every board plugged in: asks each what it is, and flashes the right build
+./linkCompanion.sh            # link one to the server over its cable (starts the server if none is running)
 ```
 
 | | |
 |---|---|
-| `./updateCompanion.sh` | build and **flash** the board; stops a running bridge first (it holds the port) |
+| `./updateCompanion.sh` | asks each board on USB for its HELLO, flashes `t-embed` or `t-watch-s3`; with several plugged in it asks which (numbers, or `a` for all) |
+| `./updateCompanion.sh --all` | every board found, without asking |
+| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask) |
+| `./updateCompanion.sh --port PORT` | only that one |
 | `./updateCompanion.sh --link` | flash, then link |
-| `./updateCompanion.sh --build` | only build, to check it compiles (no board needed) |
+| `./updateCompanion.sh --build` | only build both, to check they compile (no board needed) |
 | `./linkCompanion.sh` | the **bridge**, in this terminal; starts the server in the background if none is answering, and Ctrl-C stops both |
 | `./linkCompanion.sh --port PORT` | a particular serial port |
 
-With the site open too, run `./bindCompanion.sh` in one terminal and `./linkCompanion.sh` in another: the link uses
-the site's server. By hand, the same is `pio run -t upload` and `python usb_bridge.py` in `firmware/esp32/`.
+After flashing, the script waits for the board to say HELLO. **A board can stay in its bootloader after an upload and
+look dead** (the S3's own USB, and its battery keeps it powered when unplugged): **press RST once**. If an upload cannot
+connect at all, hold BOOT, press and release RST, let go of BOOT, and run it again.
 
-The bridge finds the board's port, hands it the server's state every five seconds, and passes back what you do on it
-(a step ticked off, a routine run). The corner of the screen says **USB** while it is linked. Start the server first
-(`./bindCompanion.sh` or `./bindCompanion.sh server`).
+The bridge hands the board the server's state every five seconds and passes back what you do on it; the corner of the
+screen says **USB**. A board that has learned a network (UPLINK, TEACH A NETWORK) asks the server itself over **WIFI**,
+and a paired phone carries it over Bluetooth (**PHONE**). Start the server first (`./bindCompanion.sh` or
+`./bindCompanion.sh server`).
 
-**On the board:** **turn** the dial to choose, **press** the front button to open or confirm, and the **top button**
-goes back when you let it go (and gives up a routine that is waiting). The pages are TODAY, DAEMON (press: its INDEX
-entry) and ROUTINES. **Sleep:** hold the top button and press the front one -- the screen and the lights go dark until
-you turn the dial or press anything (that touch only wakes it).
+### On the board
+
+**The CC1101:** **turn** the dial to choose, **press** to open or confirm (it acts when you let go), and the **top
+button** goes back. **Hold the dial** half a second on any home page to **talk** ([below](#talk-to-your-daemon)).
+**Sleep:** hold the top button and press the front one; **only the top button wakes it**, so a pocket cannot.
+
+**The plain T-Embed and the SI4732** have one button, the dial's press: a tap presses, held half a second it goes back,
+held two seconds it sleeps (and only a hold wakes it).
+
+**The T-Watch S3:** its home is **the face** -- the time, the day's theme, its virtue over its vice, chakra and note,
+today's steps, the battery and a TALK button. Swipe to turn between the pages, tap to press, hold to go back; the crown
+wakes it or goes back, and held, it sleeps.
+
+**The pages** are TODAY (the one step: press to tick it off; back undoes it for fifteen seconds), DAEMON, ROUTINES and
+the DAY (its theme, virtue over vice, chakra and note; press for its note).
 
 **Home is the daemon you carry** -- large, breathing, drifting, now and then hopping -- and **how it is**: its mood in
 a word, how it has eaten and drunk today, and at a meal time one quiet line. **Press** for CARE: feed it, water it,
-train it, or read its INDEX entry. **Your goals nourish it**: each step you finish counts as a meal, and gives it
-experience -- twenty steps a level, on its own growth curve -- which it takes home: the next SYNC after it comes home
-writes its experience, and its level and stats where it grew past one, into your save. It never nags (PLAN 7): small effects, happier for time together, a little lower for
-each day with nothing at all, and back at once when you return. The site's DAEMON tab shows and does the same. Any menu left alone goes to sleep
-(two minutes, by default), and waking always lands back at home, to a few notes of the title theme.
+train it, or read its INDEX entry (press there to hear it **read aloud**). **Your goals nourish it**: each step you
+finish counts as a meal, and gives it experience, which it takes home at the next SYNC. It never nags (PLAN 7). Any
+menu left alone goes to sleep (two minutes, by default), and waking lands back at home, to a few notes of the title theme.
 
-**It sounds in the day's key** (Sunday C ... Saturday B): turning the dial right rises, left falls, select is the day's
-note, and each routine has its own short tune, with the ring dancing to it -- the daemon running it.
+**ROUTINES** are the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC),
+LONGWAVE (Sub-GHz, not wired yet), UPLINK (Wi-Fi) -- and **GAME ROUTINES**: your party, and each daemon's own routines
+from the game, in their streak colours; using one plays its own short phrase with the ring lit its colour. On the CC1101
+it is the PARTY type; on a board with no radios of its own (the plain T-Embed, the SI4732 for now) ROUTINES opens it
+first. UPLINK's **WI-FI MOTION** is the first radio experiment (C-70): it watches the Wi-Fi channel for movement in
+the room.
 
-**It learns remotes and networks**, as your daemon would: FLARE's TEACH A REMOTE takes POWER, VOLUME UP and VOLUME
-DOWN from your remote (or the site adds a remote by its TV's brand), and UPLINK's TEACH A NETWORK learns a Wi-Fi network
-(it joins any it knows). The site's DEVICE tab shows what it has learned, and can choose, add or forget.
+**The battery** shows in the top bar (red when low and unplugged). At 15% it says so; at 5% it goes into deep sleep,
+and the top button wakes it.
 
-**Its settings are set on the site** (DEVICE tab): home (the daemon or today's step), how soon it sleeps, sound and
-volume, and how bright the ring rests. A linked board picks them up and keeps them.
+**It sounds in the day's key** (Sunday C ... Saturday B): the dial rises and falls, select is the day's note, and each
+routine has its own tune, the ring dancing to it. **The ring** glows the day's colour, goes out after a minute unused,
+and follows the dial. **It learns remotes and networks**, as your daemon would: FLARE's TEACH A REMOTE, UPLINK's TEACH
+A NETWORK. **Its settings are set on the site** (DEVICE tab): home, sleep, sound and volume, the ring.
 
-**The ring of lights** glows the day's colour at a third, and goes out after a minute unused; touching anything brings
-it back. Turning the dial runs a white light once round the ring (clockwise for right), select flashes it white, and
-back darkens it for a moment.
+**To see a board's screen on the computer** (stop the bridge first; it holds the port):
+`python3 firmware/esp32/shot.py screen.png`.
 
-**To see the board's screen on the computer** (stop the bridge first; it holds the port):
-`python3 firmware/esp32/shot.py screen.png` saves it as a PNG.
-
-[`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode if an upload cannot connect,
-Wi-Fi instead of the cable, watching it talk, putting the factory firmware back, and what each routine does.
+[`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode, Wi-Fi instead of the cable,
+watching it talk, putting the factory firmware back, and every routine.
 
 ## On your iPhone
 
@@ -140,6 +170,34 @@ on it. **Away from home** it reaches the companion through an n8n workflow that 
 ([docs/REMOTE.md](docs/REMOTE.md), C-56): import `n8n/companion relay.json` into your n8n, put this computer's address
 and the secret from the site's SETTINGS (AWAY FROM HOME) in it, and save the webhook's address there too. The phone
 learns it the next time it opens at home, and from then on tries home first and the relay after. For the App Store, archive in Xcode and upload with Transporter as usual.
+
+## Talk to your daemon
+
+**Hold to talk, let go, and the daemon you carry answers** -- in its own words, as itself, in the INDEX voice. The words
+come from a model on your own machine (or OpenRouter when that one is busy), and nothing goes anywhere you did not set up.
+
+| where | how | state |
+|---|---|---|
+| the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | built; needs the parts below. **Over Wi-Fi only** for now |
+| the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
+| an INDEX entry | press on it (the board), or **Read aloud** (the phone) | runs |
+| the plain T-Embed, the SI4732, the watch | -- | not yet: their microphones are next (C-66) |
+| no network at all | an LLM630 riding behind a T-Embed | researched: [docs/LLM630.md](docs/LLM630.md) (C-76) |
+
+**What it takes**, all on your own machines:
+
+1. **n8n** with DAEMONS' workflows (`DAEMONS/ai/n8n/`: `daemon/talk` and `daemon/voice`; its README says how to import
+   them and what each needs).
+2. **Speech to text** on the machine n8n runs on: `DAEMONS/ai/stt/` -- MLX Whisper on port 8770; its README has the
+   install and the launch agent that keeps it running. Without it the daemon still answers, but has not heard you.
+3. **A model**: LM Studio on that machine (asked for by name, `google/gemma-3-4b`), and an OpenRouter key in n8n for when
+   it is busy or down.
+4. **The voice**: the INDEX voice on your Chatterbox server, which `daemon/voice` calls.
+5. **The companion pointed at it**, in `server/config.json`: `"talk": { "url": "http://<n8n>:5678/webhook" }`, with the
+   shared secret in the `DEX_SHARED_SECRET` environment variable (or `"secret"` in the file, which is never committed).
+
+The server sends every recording on as a 16 kHz WAV, and hands a handheld the answer's voice as 16 kHz samples it
+streams straight into its speaker (`server/src/ai/voice.ts`; needs `ffmpeg`, or macOS's own `afconvert`).
 
 ## Each part on its own
 
@@ -195,6 +253,7 @@ safe defaults with no config at all: **it reads no save and calls no model.**
 | `host` | `127.0.0.1` (the default) serves this machine only; `0.0.0.0` serves the local network too, so a device can reach it. Nothing secret goes over it |
 | `edition` | `CONTENT` or `CONTEXT` -- whose voice the daemon keeps, and whose season: CONTENT keeps the northern year, CONTEXT the southern |
 | `savePath` | a **copy** of your DAEMONS save (`daemonsContent.sav` or `daemonsContext.sav`) -- **never the one the game is using**. When you answer the game from the DAEMON screen, the server writes to this file, and keeps a backup beside it in `companion-backups/` first. Close the game before answering: a running emulator writes its own copy back over yours |
+| `talk` | the daemon's voice and words: `url` (your n8n's webhook base, `http://<n8n>:5678/webhook`), `secretEnv` (the *name* of the variable holding the shared secret, `DEX_SHARED_SECRET` by default) and optionally `localModel`. Off until `url` is set |
 | `ai` | off by default. `enabled`, a `baseUrl` that speaks the OpenAI chat API (DAEMONS' LiteLLM config, a local model, or any other), the `model`, and `apiKeyEnv`: the *name* of an environment variable holding the key, never the key itself. **Off, the breakdown answers with a built-in example**, so everything works without a model |
 
 ## The server's API
@@ -218,7 +277,13 @@ JSON in, JSON out, on this machine only.
 | `POST /api/settings` | `{savePath}` -- set it (kept by the server; overrides `config.json`) |
 | `POST /api/settings/pick` | a native file picker, on Mac |
 | `POST /api/settings/reveal` | open the save's folder in Finder |
-| `GET /api/device/state` | what a device shows: the day (and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry |
+| `GET /api/device/state` | what a device shows: the day (its theme, virtue over vice, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, **the party and their routines** (GAME ROUTINES), and **the clock** (for the watch) |
+| `POST /api/device/battery` | `{percent, mv, charging, full, usb}` -- the handheld's charge, when it changes; shown on the DEVICE tab |
+| `POST /api/device/talk` | a handheld's recording (a WAV, raw): the daemon's answer, and a link to its voice |
+| `POST /api/device/speak` | the carried daemon's INDEX entry, aloud: a link to its voice |
+| `GET /api/device/voice/:id` | that voice, as 16 kHz 16-bit mono samples, for a handheld to stream (kept ten minutes) |
+| `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
+| `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |
 | `GET /api/device/art` | the carried daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels |
 | `GET /api/device/link` | (this machine) the board: linked or not and how, its routines, their results |
 | `POST /api/device/run` | `{routine}` -- run one of the board's routines |
@@ -233,7 +298,7 @@ JSON in, JSON out, on this machine only.
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |
 | `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |
 
-**Only the device routes (`/api/device/*`) and the art answer from another machine** on your network, when `host` is
+**Only the device routes (`/api/device/*`), the two voice routes (`/api/ai/talk`, `/api/ai/speak`) and the art answer from another machine** on your network, when `host` is
 `0.0.0.0`; everything else answers this machine only.
 
 ## Read next
@@ -243,6 +308,9 @@ JSON in, JSON out, on this machine only.
 - [**docs/vision.md**](docs/vision.md) -- what it is for and what it should feel like.
 - [**docs/PLAN.md**](docs/PLAN.md) -- how each piece is built, and the questions still open.
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio, RoverCub and their kin already did.
+- [**docs/HARDWARE.md**](docs/HARDWARE.md) -- every board's pins and parts, with sources.
+- [**docs/DEVICES.md**](docs/DEVICES.md) -- a daemon per device, and always connected: the design and its open questions.
+- [**docs/LLM630.md**](docs/LLM630.md) -- the offline brain behind a T-Embed: what M5's code says it can do.
 - [**TODO.md**](TODO.md) -- the work, decided and not done.
 
 ## The DAEMONS family

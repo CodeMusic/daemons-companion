@@ -1,32 +1,44 @@
-# The T-Embed CC1101: flashing and trying it
+# The handhelds: flashing and trying them
 
-The companion's firmware for the **LilyGO T-Embed CC1101**. It shows the day's colour, note and virtue, the season,
-**the one next step**, the daemon you carry, and its **ROUTINES** -- the board's radios, in the game's words.
+The companion's firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (one build, `env:t-embed`: each
+board knows which it is at start) and the **T-Watch S3** (its own build, `env:t-watch-s3`). It shows the day -- its
+theme, virtue over vice, chakra and note -- the season, **the one next step**, the daemon you carry, and its
+**ROUTINES**: the board's radios in the game's words, and your party's own routines from the game.
 
 **Controls:**
 
-| | |
-|---|---|
-| **turn the encoder** | TODAY, DAEMON, ROUTINES -- or move the choice in a list |
-| **press the encoder** | on TODAY, the step is done; on ROUTINES, open it; in a list, open or run what is chosen |
-| **the top button** | back one step, when you let it go |
-| **hold the top button, press the front** | sleep: screen and lights dark until you touch anything (which only wakes it) |
+| | the CC1101 | the plain T-Embed, the SI4732 | the T-Watch S3 |
+|---|---|---|---|
+| choose | turn the dial | turn the dial | swipe |
+| open, confirm | press the dial (acts when let go) | tap the dial | tap |
+| back | the top button | hold the dial half a second | hold, or the crown |
+| **talk** | **hold the dial** half a second at home | not yet | not yet (the TALK button is drawn) |
+| sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown |
+| wake | **the top button only** | hold the dial | the crown |
 
-**ROUTINES** opens the routine types: **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC), **LONGWAVE**
-(Sub-GHz), **UPLINK** (Wi-Fi). Each is a test that the radio works, on your own gear (`CONTEXT.md`):
+The pages: TODAY (press: the step is done; back undoes it for fifteen seconds), DAEMON (press: CARE, and its INDEX
+entry, read aloud on a press), ROUTINES and the DAY; the watch's face comes first.
+
+**ROUTINES** opens the routine types this board has: **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC),
+**LONGWAVE** (Sub-GHz), **PARTY** (the game), **UPLINK** (Wi-Fi). A board with no radios of its own opens the party
+first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test that the radio works, on your own gear
+(`CONTEXT.md`):
 
 | type | routine | what it does |
 |---|---|---|
 | FLARE | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn; kept, and chosen |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
+| FLARE | THEATER MODE | the routine the site cannot send: run on the board itself |
 | FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; the site can add one by brand |
-| WHISPER | OPEN TO MY PHONE | your phone connects ("DAEMONS companion", in nRF Connect or LightBlue); the board says hello, and a word you write back appears |
+| WHISPER | PAIR MY PHONE, OPEN TO MY PHONE, FORGET MY PHONES | the phone app's link over Bluetooth (C-55) |
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
 | LONGWAVE | -- | later |
+| PARTY | your party, then a daemon's routines | the game's own routines, in their streak colours: one used plays its phrase, the ring lit its colour (C-68) |
 | UPLINK | NETWORKS IN RANGE | the Wi-Fi networks it hears, those it knows marked * |
 | UPLINK | TEACH A NETWORK | your daemon learns a network: choose one, spell its password on the wheel; it joins any it knows when near |
+| UPLINK | WI-FI MOTION | the first radio experiment (C-70): five seconds learning the still room from the access point's channel state, then movement as a multiple of it, for 45 seconds. It senses movement near the line to the access point, not who moved |
 
-Routines are the daemon's: they need one on the board, and speak in its name.
+The radio routines are the carried daemon's: they need one on the board, and speak in its name. The party's do not.
 
 A routine that waits (for a remote, a tag, a phone) says so on the screen; **the top button gives up**. Every routine
 you run is told to the server as tending your daemon (C-13).
@@ -43,8 +55,15 @@ you run is told to the server as tending your daemon (C-13).
 From the repo root:
 
 ```sh
-./updateCompanion.sh          # or, from firmware/esp32/: pio run -e t-embed -t upload
+./updateCompanion.sh                        # asks each board what it is, and flashes the right build
+./updateCompanion.sh --board t-watch-s3     # a board with no companion firmware yet says nothing: say what it is
 ```
+
+By hand, from `firmware/esp32/`: `pio run -e t-embed -t upload` or `pio run -e t-watch-s3 -t upload`.
+
+**After an upload the board can stay in its bootloader and look dead** -- the screen dark, nothing on the cable. The
+S3's own USB cannot always restart it, and its battery keeps it powered when unplugged, so unplugging does not either:
+**press RST once.** The script waits for the board's HELLO and says so if it does not come.
 
 The ESP32-S3 has its own USB, so it usually goes into download mode by itself. **If the upload cannot connect**:
 
@@ -81,8 +100,8 @@ With the bridge stopped (it holds the port), from `firmware/esp32/`:
 python3 shot.py screen.png
 ```
 
-The board answers `SHOT` with its screen buffer, and `shot.py` saves it as a PNG. `GO TODAY`, `GO DAEMON`, `GO INDEX`
-and `GO ROUTINES` sent down the cable turn to a page first, and `KEY RIGHT`, `KEY LEFT`, `KEY PRESS` and `KEY BACK` work
+The board answers `SHOT` with its screen buffer, and `shot.py` saves it as a PNG. `GO TODAY`, `GO DAEMON`, `GO INDEX`,
+`GO ROUTINES`, `GO DAY` and `GO PARTY` sent down the cable turn to a page first, and `KEY RIGHT`, `KEY LEFT`, `KEY PRESS` and `KEY BACK` work
 the controls -- so every screen can be reached and checked without touching the board.
 
 ## Watch it
@@ -91,8 +110,9 @@ the controls -- so every screen can be reached and checked without touching the 
 pio device monitor
 ```
 
-It prints `HELLO daemons-companion <board> 3` (the board: t-embed-cc1101, t-embed, t-embed-si4732 or t-watch-s3) every few seconds, and `TICK <id>` when the encoder is pressed
-over USB.
+At start it says each step as it takes it (`boot: start`, `boot: board t-embed-cc1101`, `boot: display` ... `boot:
+ready`), so a board that stops part-way says where. Then it prints `HELLO daemons-companion <board> 3` (the board:
+t-embed-cc1101, t-embed, t-embed-si4732 or t-watch-s3) every three seconds, and `TICK <id>` when a step is ticked over USB.
 
 ## Putting the factory firmware back
 
@@ -108,6 +128,6 @@ LilyGO also publishes its factory firmware in
 
 ## Where the pins come from
 
-From LilyGO's own repository, not from memory: `examples/utilities.h` (the encoder on 4 and 5 with its key on 0, the
-peripherals' power on 15) and its TFT_eSPI `Setup214_LilyGo_T_Embed_PN532.h` (the ST7789 on CS 41, DC 16, MOSI 9,
-SCLK 11, backlight 21, colours inverted). They are set in `platformio.ini`.
+From LilyGO's own repositories and schematics, not from memory: `src/board.cpp` sets each board's pins at start, and
+[`docs/HARDWARE.md`](../../docs/HARDWARE.md) has the table and the sources. The screen is LovyanGFX, configured from
+`board` at run time (`src/display.cpp`), which is what lets one build drive three T-Embeds.

@@ -68,6 +68,22 @@ export function pcmOfWav(wav: Buffer): Buffer | null {
   return null;
 }
 
+// C-66: what was said lately, per device, so the daemon remembers the last few things -- six exchanges, forgotten after
+// fifteen quiet minutes (a conversation, not a diary; nothing is written down).
+export class Conversations {
+  private talks = new Map<string, { turns: { text: string; answer: string }[]; at: number }>();
+  constructor(private quietMs = 15 * 60 * 1000, private most = 6) {}
+  history(who: string, now = Date.now()) {
+    const t = this.talks.get(who);
+    return t && now - t.at <= this.quietMs ? t.turns : [];
+  }
+  add(who: string, text: string, answer: string, now = Date.now()) {
+    if (!text || !answer) return;
+    const turns = [...this.history(who, now), { text, answer }].slice(-this.most);
+    this.talks.set(who, { turns, at: now });
+  }
+}
+
 // A few answers, kept long enough for a board to fetch them, then gone.
 export class VoiceShelf {
   private items = new Map<string, { pcm: Buffer; at: number }>();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
-import { DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
+import { Conversations, DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
 
 // A second of a 440 Hz tone as a WAV, at a rate the handheld does not play (the voice server's is 24 kHz).
 function wav(rate: number, seconds = 1): Buffer {
@@ -34,5 +34,17 @@ describe("the daemon's voice, for a handheld (C-66)", () => {
     expect(shelf.get(a, 0)).toBeNull();                 // the oldest made room
     expect(shelf.get(b, 0)![0]).toBe(2);
     expect(shelf.get(c, 2000)).toBeNull();              // and none outlives its time
+  });
+});
+
+describe("the daemon remembers the last few things said (C-66)", () => {
+  it("keeps six exchanges a device, each device its own, and forgets after a quiet while", () => {
+    const talks = new Conversations(1000, 6);
+    for (let i = 0; i < 8; i++) talks.add("board", `q${i}`, `a${i}`, 0);
+    expect(talks.history("board", 0).map((t) => t.text)).toEqual(["q2", "q3", "q4", "q5", "q6", "q7"]);
+    expect(talks.history("watch", 0)).toEqual([]);
+    talks.add("board", "", "nothing heard", 0);                      // a turn with nothing heard is not kept
+    expect(talks.history("board", 0)).toHaveLength(6);
+    expect(talks.history("board", 2001)).toEqual([]);                // fifteen quiet minutes, here one second
   });
 });

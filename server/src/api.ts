@@ -35,7 +35,7 @@ import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
+import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
@@ -407,7 +407,8 @@ class Pairing {
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
-  const voices = new VoiceShelf();                              // C-66: answers a handheld streams (ai/voice.ts)
+  const voices = new VoiceShelf();
+  const talks = new Conversations();                           // C-66: the last few things said, per device                              // C-66: answers a handheld streams (ai/voice.ts)
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -653,13 +654,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return {
           text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
-          history: Array.isArray(b.history) ? b.history.slice(-6) : [],
+          history: Array.isArray(b.history) ? b.history.slice(-6) : talks.history(who),
           provider: b.provider ?? store.getSetting("talk.provider") ?? "auto", speak: b.speak !== false, voice: "index",
           localModel: ecfg.talk.localModel,
           daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry }
                     : { nickname: "your daemon" },
           day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
+          goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
         };
+      };
+      // who is talking: the device by its own name (C-80), else the phone, else this machine
+      const who = validDeviceId(deviceId) ? deviceId : phone ? "phone" : "here";
+      const remember = (b: Record<string, any>, r: Record<string, unknown>) => {
+        const said = typeof r.heard === "string" && r.heard ? r.heard : typeof b.text === "string" ? b.text : "";
+        if (typeof r.answer === "string") talks.add(who, said, r.answer);
+        return r;
       };
       // A handheld's answer: the words, and its voice as a link to 16 kHz PCM it streams into its speaker (ai/voice.ts).
       const forDevice = async (r: Record<string, unknown>) => {
@@ -679,13 +688,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         if (typeof b.audioBase64 === "string" && b.audioBase64)
           Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
-        return send(res, 200, await n8n(ecfg, "daemon/talk", talkPayload(b)));
+        return send(res, 200, remember(b, await n8n(ecfg, "daemon/talk", talkPayload(b))));
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
         const audio = await rawBody(req);
         if (!audio || audio.length < 44) return send(res, 400, { error: "talk takes a recording (up to 2 MB)" });
-        return send(res, 200, await forDevice(await n8n(ecfg, "daemon/talk",
-          talkPayload(await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav"))))));
+        return send(res, 200, await forDevice(remember({}, await n8n(ecfg, "daemon/talk",
+          talkPayload(await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav")))))));
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         const d = deviceState(ecfg, store).daemon;

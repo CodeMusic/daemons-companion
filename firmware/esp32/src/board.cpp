@@ -7,6 +7,16 @@
 // docs/HARDWARE.md has the table and the sources.
 Board board;
 
+const String &deviceId() {
+  static String id;
+  if (!id.length()) {
+    uint64_t mac = ESP.getEfuseMac();                      // the factory MAC, low byte first
+    char tail[7]; snprintf(tail, sizeof tail, "%02x%02x%02x", (uint8_t)(mac >> 24), (uint8_t)(mac >> 32), (uint8_t)(mac >> 40));
+    id = String(board.id) + "-" + tail;
+  }
+  return id;
+}
+
 #ifdef BOARD_TWATCH_S3
 
 void boardBegin() {

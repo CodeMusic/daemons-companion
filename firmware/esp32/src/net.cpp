@@ -124,6 +124,7 @@ String http(const char *method, const String &path, const String &body, bool *ok
   HTTPClient h;
   h.setTimeout(4000);
   h.begin(serverUrl + path);
+  h.addHeader("x-device", deviceId());                // C-80: which device is asking
   int code;
   if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body); }
   else code = h.GET();

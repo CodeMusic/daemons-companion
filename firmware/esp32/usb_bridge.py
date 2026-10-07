@@ -23,9 +23,15 @@ except ImportError:
     sys.exit("usb_bridge: needs pyserial -- run it with ~/.platformio/penv/bin/python, or pip install pyserial")
 
 
+DEVICE = {"id": None}     # C-80: the board's own name, from its HELLO, passed on as x-device
+
+
 def server_json(base, path, body=None):
+    headers = {"content-type": "application/json"}
+    if DEVICE["id"]:
+        headers["x-device"] = DEVICE["id"]
     req = urllib.request.Request(base + path, data=None if body is None else json.dumps(body).encode(),
-                                 headers={"content-type": "application/json"}, method="GET" if body is None else "POST")
+                                 headers=headers, method="GET" if body is None else "POST")
     with urllib.request.urlopen(req, timeout=4) as r:
         return json.loads(r.read())
 
@@ -167,7 +173,12 @@ def bridge(a, port):
                     server_json(a.server, "/api/device/routines", json.loads(msg[9:]))
                 except Exception as e:
                     print("usb_bridge: could not pass on the routines (%s)" % e, flush=True)
-            elif msg and not msg.startswith("HELLO"):
+            elif msg.startswith("HELLO "):
+                words = msg.split()
+                if len(words) >= 5 and words[4] != DEVICE["id"]:
+                    DEVICE["id"] = words[4]
+                    print("usb_bridge: the board is %s" % DEVICE["id"], flush=True)
+            elif msg:
                 print("device: " + msg, flush=True)
 
 

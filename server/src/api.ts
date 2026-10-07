@@ -48,6 +48,7 @@ import { deviceDay } from "./days.js";
 import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
 import { DeviceHub, type Via } from "./device.js";
+import { Devices, validDeviceId } from "./devices.js";
 import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -405,6 +406,7 @@ class Pairing {
 }
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
+  const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
   const voices = new VoiceShelf();                              // C-66: answers a handheld streams (ai/voice.ts)
   return createServer(async (req, res) => {
     try {
@@ -431,6 +433,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-55: "phone" is the companion app carrying the device's link over Bluetooth -- a paired phone speaking for it.
       const asked = url.searchParams.get("via");
       const via: Via = asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone" : "wifi";
+      // C-80: which device is asking -- its x-device header (a bridge passes on the board's), or ?device= for the phone's
+      const deviceId = String(req.headers["x-device"] ?? url.searchParams.get("device") ?? "");
+      // Seen, and how: a bridge says ?via= on the requests that carry the link; another request from this machine is
+      // the same bridge passing something on, and must not turn a cable into Wi-Fi.
+      if (validDeviceId(deviceId) && (path.startsWith("/api/device/") || path.startsWith("/api/ai/")) &&
+          (asked || !isLoopback(req.socket.remoteAddress))) devices.seen(deviceId, via);
       if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
           !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
         return send(res, 403, { error: "only the device's endpoints answer the network -- pair this phone first" });
@@ -501,12 +509,20 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         hub.routines = b.types.map((t: any) => ({ name: String(t.name), radio: String(t.radio),
                                                    routines: (t.routines ?? []).map(String) }));
         hub.firmware = String(b.firmware ?? "");
+        if (validDeviceId(deviceId) && b.firmware) devices.note(deviceId, { firmware: String(b.firmware) });
         return send(res, 200, { ok: true });
       }
       // ---- the site's side (this machine only): what the link is, and the commands it sends ----
       if (req.method === "GET" && path === "/api/device/link")
         return send(res, 200, { ...hub.link(), lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" },
-                                battery: JSON.parse(store.getSetting("device.battery") ?? "null") });   // C-63
+                                battery: JSON.parse(store.getSetting("device.battery") ?? "null"),   // C-63
+                                devices: devices.list() });                                            // C-80
+      if (req.method === "GET" && path === "/api/devices") return send(res, 200, { devices: devices.list() });   // C-80
+      if (req.method === "POST" && path === "/api/devices/forget") {
+        const b = await body(req);
+        if (!validDeviceId(b.id)) return send(res, 400, { error: "forget {id}" });
+        devices.forget(b.id); return send(res, 200, { devices: devices.list() });
+      }
       if (req.method === "POST" && path === "/api/device/run") {
         const b = await body(req);
         if (typeof b.routine !== "string" || !hub.hasRoutine(b.routine))
@@ -696,8 +712,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         const pct = Number(b.percent);
         if (!Number.isFinite(pct) || pct < 0 || pct > 100) return send(res, 400, { error: "battery {percent 0-100}" });
-        store.setSetting("device.battery", JSON.stringify({ percent: Math.round(pct), mv: Number(b.mv) || null,
-          charging: !!b.charging, full: !!b.full, usb: !!b.usb, at: new Date().toISOString() }));
+        const battery = { percent: Math.round(pct), mv: Number(b.mv) || null,
+                          charging: !!b.charging, full: !!b.full, usb: !!b.usb, at: new Date().toISOString() };
+        store.setSetting("device.battery", JSON.stringify(battery));
+        if (validDeviceId(deviceId)) devices.note(deviceId, { battery });                   // C-80: and the device's own
         return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/device/listen") {   // C-15: the board's last listen, for the check

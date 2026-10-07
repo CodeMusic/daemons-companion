@@ -101,6 +101,7 @@ void talkHold(uint32_t forMs) {
   HTTPClient h;
   h.setTimeout(120000);                                                       // a local model's first turn loads it
   h.begin(serverUrl + "/api/device/talk");
+  h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "audio/wav");
   int code = h.POST(rec, 44 + n * 2);
   String body = code == 200 ? h.getString() : "";
@@ -116,6 +117,7 @@ void talkReadEntry() {
   HTTPClient h;
   h.setTimeout(90000);
   h.begin(serverUrl + "/api/device/speak");
+  h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "application/json");
   int code = h.POST("{}");
   String body = code == 200 ? h.getString() : "";

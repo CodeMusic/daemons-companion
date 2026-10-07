@@ -173,7 +173,10 @@ class Link {
     }
   }
 
+  // C-80: the board's own name, from its HELLO, carried on every request as ?device= (the relay passes the query on)
+  private deviceId: string | null = null;
   private async ask<T>(path: string, body?: unknown): Promise<T> {
+    if (this.deviceId) path += (path.includes("?") ? "&" : "?") + "device=" + encodeURIComponent(this.deviceId);
     try { const r = await this.api!<T>(path, body); this.set({ companion: true }); return r; }
     catch (e) { this.set({ companion: false }); throw e; }
   }
@@ -213,7 +216,10 @@ class Link {
 
   private async handle(line: string) {
     const [word] = line.split(" ", 1), rest = line.slice(word.length + 1);
-    if (word === "TICK" || word === "UNTICK") {
+    if (word === "HELLO") {
+      const id = rest.split(" ")[3];
+      if (id && /^[a-z0-9][a-z0-9-]{2,47}$/.test(id)) this.deviceId = id;
+    } else if (word === "TICK" || word === "UNTICK") {
       const step = Number(rest);
       const [path, body] = word === "TICK" ? ["/api/device/ticks", { steps: [step] }] : ["/api/device/untick", { step }];
       try {

@@ -774,7 +774,12 @@ type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: s
               pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
               remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string;
               battery?: { percent: number; charging: boolean; full: boolean; usb: boolean; at: string } | null;   // C-63
-              lan: { address: string | null; port: number; open: boolean } };
+              lan: { address: string | null; port: number; open: boolean };
+              devices?: DeviceRow[] };                                                                  // C-80
+type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | null; lastSeen: string; here: boolean;
+                   firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null };
+const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
+                                             "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3" };
 type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
 type Brand = { brand: string; sets: RemoteSet[] };
 
@@ -880,6 +885,22 @@ function DeviceScreen({ ink }: { ink: string }) {
           {`Battery ${link.battery.percent}%${link.battery.charging ? ", charging" : link.battery.full ? ", full" : link.battery.usb ? ", plugged in" : ""}`}
           {` (as of ${new Date(link.battery.at).toLocaleTimeString()})`}</Small> : null}
       </Card>
+
+      {link.devices && link.devices.length ? (                // C-80: every device the companion has heard, by its own name
+        <Card>
+          <Eyebrow>YOUR DEVICES</Eyebrow>
+          {link.devices.map((d) => (
+            <YStack key={d.id} gap={0} marginTop={4}>
+              <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
+                {`${KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
+              <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone" : "Wi-Fi"}`
+                                : `last heard ${new Date(d.lastSeen).toLocaleString()}`,
+                       d.battery ? `battery ${d.battery.percent}%${d.battery.charging ? ", charging" : ""}` : null,
+                       d.id].filter(Boolean).join(" · ")}</Small>
+            </YStack>
+          ))}
+        </Card>
+      ) : null}
 
       {link.linked ? (
         <Card>

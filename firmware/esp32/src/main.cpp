@@ -42,7 +42,12 @@ void loop() {
   readKey();
   uint32_t now = millis();
   watchLoop(now);                           // C-71
-  if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3"); dirty = true; }
+  if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); dirty = true; }   // C-80: its own name
+  static uint32_t phoneHelloAt = 0;          // C-80: the phone carries the board's name on, so it hears it now and then
+  if (linkPhoneHere() && (phoneHelloAt == 0 || now - phoneHelloAt > 30000)) {
+    phoneHelloAt = now; linkSend(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId());
+  }
+  if (!linkPhoneHere()) phoneHelloAt = 0;
   batteryLoop(now);                         // C-63
   if (!bridgeLive() && online()) {
     if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }

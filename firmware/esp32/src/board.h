@@ -37,3 +37,4 @@ struct Board {
 
 extern Board board;
 void boardBegin();   // first thing in setup(): find the board and switch on its peripherals
+const String &deviceId();   // C-80: this board's own name, its kind and the end of its MAC ("t-embed-cc1101-36f484")

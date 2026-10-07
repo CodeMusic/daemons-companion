@@ -71,18 +71,21 @@ void turn(int step) {
   dirty = true;
 }
 
-void readEncoder() {
-  if (board.encA < 0) return;                    // the watch: touch instead (its own screens)
+// One detent of the dial, read and spent: +1, -1 or 0. A routine that runs the dial itself (a radio's tuning) reads it
+// here, so its turns tune rather than turn pages.
+int dialStep() {
+  if (board.encA < 0) return 0;                  // the watch: touch instead (its own screens)
   static const int8_t table[16] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
   int8_t now = (digitalRead(board.encA) << 1) | digitalRead(board.encB);
   encSum += table[(encLast << 2) | now];
   encLast = now;
-  if (encSum >= 4 || encSum <= -4) {
-    int step = encSum > 0 ? 1 : -1;
-    encSum = 0;
-    turn(step);
-  }
+  if (encSum < 4 && encSum > -4) return 0;
+  int step = encSum > 0 ? 1 : -1;
+  encSum = 0;
+  return step;
 }
+
+void readEncoder() { int step = dialStep(); if (step) turn(step); }
 
 // The top button, pressed while a routine waits -- or, on a board without one, the dial held (C-67).
 bool giveUp() { return board.hasSideKey() ? !digitalRead(board.sideKey) : !digitalRead(board.encKey); }

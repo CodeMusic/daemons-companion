@@ -73,6 +73,8 @@ static void tone(int midi, int ms, float level = 1.0f) {
   }
 }
 
+void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); }
+
 // C-66: a voice, as 16 kHz samples, at the volume set. It plays even with the board's sounds off: it was asked for.
 void soundPcm(const int16_t *samples, size_t n) {
   if (!ready) return;

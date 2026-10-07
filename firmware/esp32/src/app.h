@@ -90,6 +90,7 @@ extern int8_t encLast, encSum;
 extern bool sideWas;
 void inputBegin();
 void readEncoder();
+int dialStep();                           // one detent, read and spent (a routine tuning a radio)
 void readKey();
 void turn(int step);
 void press();

@@ -50,6 +50,12 @@
           ],
           "bluetoothAlwaysPermission": "To carry your handheld's link: its goal, its daemon and its routines, at home or away."
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Hold TALK to speak with your daemon. What you say is turned into words on your own companion server."
+        }
       ]
     ],
     "splash": {

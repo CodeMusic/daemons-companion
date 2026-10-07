@@ -10,6 +10,7 @@ import { Button, Input, ScrollView, TamaguiProvider, Text, Theme, XStack, YStack
 import config, { DAYS, WEEK_COLOURS } from "./tamagui.config";
 import * as SecureStore from "expo-secure-store";
 import { File, Paths } from "expo-file-system";
+import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
@@ -425,10 +426,71 @@ function LifeCard({ ink, name }: { ink: string; name: string }) {
   );
 }
 
+// C-66, C-65: the daemon's voice on the phone. Its answer (and an INDEX entry read aloud) comes back as mp3 in base64 --
+// through the relay too, which carries only JSON -- so it is written to the cache and played from there.
+type Spoken = { answer?: string | null; heard?: string | null; provider?: string | null; error?: string | null; audioBase64?: string | null };
+function useVoice() {
+  const player = useAudioPlayer(null);
+  return (b64?: string | null) => {
+    if (!b64) return;
+    const f = new File(Paths.cache, `voice-${Date.now()}.mp3`);
+    f.create(); f.write(b64, { encoding: "base64" });
+    player.replace({ uri: f.uri }); player.play();
+  };
+}
+
+// C-66: push to talk -- hold TALK, say something, let go. The companion hears it (speech to text on the user's own
+// server), the daemon answers as itself, and the INDEX voice says it.
+function TalkCard({ ink, name }: { ink: string; name: string }) {
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const speak = useVoice();
+  const [state, setState] = useState<"" | "listening" | "thinking">("");
+  const [said, setSaid] = useState<Spoken | null>(null);
+  const start = async () => {
+    const ok = await requestRecordingPermissionsAsync();
+    if (!ok.granted) { setSaid({ error: "The microphone is off for this app (Settings, then DAEMONS)." }); return; }
+    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+    await recorder.prepareToRecordAsync(); recorder.record(); setState("listening");
+  };
+  const stop = async () => {
+    if (state !== "listening") return;
+    await recorder.stop();
+    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
+    if (!recorder.uri) { setState(""); return; }
+    setState("thinking");
+    try {
+      const audioBase64 = await new File(recorder.uri).base64();
+      const r = await api<Spoken>("/api/ai/talk", { audioBase64, audioMime: "audio/mp4" });
+      setSaid(r); speak(r.audioBase64);
+    } catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
+  };
+  return (
+    <Card borderLeftWidth={6} borderLeftColor="$color9">
+      <Eyebrow>{`TALK WITH ${name}`}</Eyebrow>
+      <Button onPressIn={start} onPressOut={stop} backgroundColor={state === "listening" ? "$color9" : "$color3"}
+              borderColor="$color9" disabled={state === "thinking"}>
+        <Text color={state === "listening" ? ink : "$color12"} fontFamily="$mono" letterSpacing={1.5}>
+          {state === "listening" ? "LISTENING…" : state === "thinking" ? "THINKING…" : "HOLD TO TALK"}
+        </Text>
+      </Button>
+      {said?.heard ? <Small color="$color10">{`“${said.heard}”`}</Small> : null}
+      {said?.answer ? <Text fontSize={16} lineHeight={24} color="$color12">{said.answer}</Text> : null}
+      {said?.error ? <Small color="$color8">{said.error}</Small> : null}
+    </Card>
+  );
+}
+
 function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
-  const [open, setOpen] = useState<{ name: string; category: string; entry: string } | null>(null);
+  const [open, setOpen] = useState<{ species: number; name: string; category: string; entry: string } | null>(null);
+  const speak = useVoice();
+  const [reading, setReading] = useState(false);
+  const readAloud = async (species: number) => {           // C-65: the INDEX entry, in the INDEX voice
+    setReading(true);
+    try { speak((await api<Spoken>("/api/ai/speak", { species })).audioBase64); } catch { /* the card says nothing new */ }
+    finally { setReading(false); }
+  };
   const [note, setNote] = useState("");
   const [needPath, setNeedPath] = useState(false);   // C-30: SYNC with no save path set -> a modal that teaches it
   const [canPick, setCanPick] = useState(false);
@@ -478,6 +540,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   return (
     <YStack gap={14}>
       {away ? <LifeCard ink={ink} name={away.nickname} /> : null}
+      {away && ON_PHONE ? <TalkCard ink={ink} name={away.nickname} /> : null}
       {needPath ? (
         <Card borderColor="$color9" borderLeftWidth={6} borderLeftColor="$color9">
           <Eyebrow>FIRST, YOUR SAVE</Eyebrow>
@@ -499,7 +562,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
           <YStack key={d.slot} width={150} alignItems="center" backgroundColor="$color1" borderWidth={1}
                   borderColor="$color5" borderRadius={4} padding={10} gap={2} opacity={d.away ? 0.45 : 1}
                   cursor="pointer" hoverStyle={{ borderColor: "$color9" }} role="button"
-                  onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ name: x.name, category: x.category, entry: x.entry }))}>
+                  onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ species: d.species, name: x.name, category: x.category, entry: x.entry }))}>
             <Art path={`/art/party/${d.slot}.png`} size={128} />
             <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{d.nickname}</Text>
             <Small>{d.name} · L{d.level}</Small>
@@ -513,6 +576,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
         <Card borderColor="$color9">
           <Eyebrow>{open.name} · {open.category} DAEMON</Eyebrow>
           <Text fontSize={16} lineHeight={24} color="$color12">{open.entry}</Text>
+          {ON_PHONE ? <Action label={reading ? "Reading…" : "Read aloud"} onPress={() => readAloud(open.species)} ink={ink} /> : null}
         </Card>
       ) : null}
       <MeetingsCard />

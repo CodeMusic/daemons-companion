@@ -217,6 +217,27 @@ talks over **Wi-Fi**, so it must have joined a network.
   the ring pulses. Stand still: they fall. **Top button** stops it; it ends by itself after 45 seconds and says how much
   of the time something moved.
 
+## 16. LONGWAVE: what is on the air (the CC1101)
+
+- ROUTINES, LONGWAVE, **WHAT'S ON THE AIR**. **See:** five seconds learning each band's quiet, then four rows -- 315,
+  433, 868 and 915 MHz -- each with its level and a bar, and a count of bursts. Press a doorbell, a car key or a remote
+  of your own near it. **See:** that band's bar jump and its count go up; the ring flashes. It only listens.
+
+## 17. The SI4732's radio (LATENT and CONTEXT)
+
+- On the T-Embed SI4732: ROUTINES, **CONTEXT** (FM), **LISTEN**. **Turn** to tune, **tap** to seek the next station,
+  **hold** to stop. **See:** the frequency, the signal, and on most stations its name and text (RDS). **Hear:** the station.
+- **LATENT** (AM), **LIGHTNING**: twenty seconds learning the quiet, then crashes counted for up to five minutes. A storm
+  within a few hundred kilometres shows; so does a light switch near the board.
+- CONTEXT, **STATIC SYNTH**: the static between stations turned into notes in the day's key, with how many of its bits
+  were ones (an even coin is 50%).
+
+## 18. The daemon remembers (C-66)
+
+- Talk twice in a row: tell it something (your favourite colour), then ask about it. **Hear:** it remembers -- for
+  fifteen quiet minutes, on that device, and nothing is written down.
+- Ask "what should I do next?" **Hear:** your goal's one next step. Otherwise it does not bring your goal up.
+
 ## What to tell me
 
 - Anywhere the screen did not match "See".

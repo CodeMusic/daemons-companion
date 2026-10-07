@@ -7,6 +7,7 @@
 #include <vector>
 #include "app.h"
 #include "talk.h"
+#include "brain.h"
 #include "radios.h"
 #include "link.h"
 #include "meet.h"
@@ -318,6 +319,10 @@ void handleLine(String line, bool fromPhone) {
     wake(); talkHold(constrain(line.substring(5).toInt(), 500, 8000));
     reply("TALKED " + String(talkStatus.length() ? talkStatus : String("ok")) + " | heard: " + talkHeard + " | answer: " + talkAnswer.substring(0, 160));
     draw();
+  }
+  else if (line.startsWith("BRAIN") && !fromPhone) {  // C-76: the offline brain's link -- BRAIN tcp host[:port] | uart | off
+    if (line.length() > 6 && !brainSet(line.substring(6))) reply("BRAIN? tcp <host>[:port] | uart | off");
+    else reply("BRAIN " + brainDescribe());
   }
   else if (line == "PING") { seen = millis(); reply("PONG"); }
 }

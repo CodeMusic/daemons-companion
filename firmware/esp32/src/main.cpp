@@ -1,6 +1,7 @@
 // The companion on a handheld: setup and the loop. What each part does is in app.h.
 #include <WiFi.h>
 #include "app.h"
+#include "brain.h"
 #include "radios.h"
 #include "leds.h"
 #include "sound.h"
@@ -27,7 +28,7 @@ void setup() {
   step("sound");   soundBegin();
   routinesBegin();                            // C-67: the routine types this board has
   if (board.ir) flareBegin();                 // C-51: an older single learned code becomes the first remote
-  step("settings"); loadSettings();
+  step("settings"); loadSettings(); brainLoad();   // C-76: the offline brain's link, if one was set
   step("bluetooth"); linkBegin();             // C-55: Bluetooth, for the phone
   lastInput = millis();
   page = homePage();                          // C-42: it starts at home

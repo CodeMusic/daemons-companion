@@ -2,6 +2,7 @@
 #include <driver/i2s.h>
 #include "app.h"
 #include "talk.h"
+#include "brain.h"
 #include "leds.h"
 #include "sound.h"
 
@@ -73,9 +74,20 @@ static void answer(int code, const String &body) {
   if (strlen(audio)) playVoice(audio);
 }
 
+// C-76: the turn offline, through the LLM630 (brain.cpp). Frees the recording.
+static void offline(uint8_t *rec, size_t n) {
+  String heard, said, error;
+  talkStatus = "Thinking, offline..."; draw();                                 // DRAFT
+  bool ok = brainTurn(rec, 44 + n * 2, heard, said, error);
+  free(rec);
+  talkHeard = heard; talkAnswer = said; talkStatus = ok ? "" : error;
+  screen = TALK; draw();
+  lastInput = millis();
+}
+
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
-  if (!online()) { say("TALK NEEDS WI-FI"); return; }                          // DRAFT -- the cable carries lines, not voices
+  if (!online() && !brainConfigured()) { say("TALK NEEDS WI-FI"); return; }   // DRAFT -- the cable carries lines, not voices
   const size_t most = RATE * MOST_S;
   uint8_t *rec = (uint8_t *)ps_malloc(44 + most * 2);
   if (!rec || !micOn()) { free(rec); say("NO MICROPHONE"); return; }          // DRAFT
@@ -98,6 +110,7 @@ void talkHold(uint32_t forMs) {
   if (n < RATE / 3) { free(rec); screen = HOME; say("Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
   wavHeader(rec, n);
   talkStatus = "Thinking..."; draw();                                         // DRAFT
+  if (!online()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
   h.setTimeout(120000);                                                       // a local model's first turn loads it
   h.begin(serverUrl + "/api/device/talk");
@@ -106,6 +119,7 @@ void talkHold(uint32_t forMs) {
   int code = h.POST(rec, 44 + n * 2);
   String body = code == 200 ? h.getString() : "";
   h.end();
+  if (code != 200 && brainConfigured()) { offline(rec, n); return; }        // the server did not answer: the LLM630
   free(rec);
   answer(code, body);
   lastInput = millis();

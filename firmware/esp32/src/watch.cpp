@@ -1,5 +1,6 @@
 #include "watch.h"
 #include "app.h"
+#include "talk.h"
 
 #ifndef BOARD_TWATCH_S3
 
@@ -11,6 +12,7 @@ void watchSetClock(time_t, int) {}
 bool watchLocalTime(struct tm &) { return false; }
 long watchSteps() { return -1; }
 bool watchTalking() { return false; }
+bool watchTouchDown() { return false; }
 
 #else
 
@@ -131,6 +133,7 @@ static bool down = false, talking = false;
 static int16_t xFrom, yFrom, xNow, yNow;
 static uint32_t downAt = 0;
 bool watchTalking() { return talking; }
+bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchPanel.getPoint(x, y, 1) > 0; }
 
 static bool onTalk(int x, int y) { int dx = x - W / 2, dy = y - (H - 34); return dx * dx + dy * dy <= 30 * 30; }
 
@@ -143,7 +146,11 @@ static void touchLoop(uint32_t now) {
     if (!down) {
       down = true; downAt = now; xFrom = x; yFrom = y;
       if (asleep) return;
-      if (screen == HOME && page == FACE_PAGE && onTalk(x, y)) { talking = true; lastInput = now; dirty = true; }
+      if (screen == HOME && page == FACE_PAGE && onTalk(x, y) && talkCan()) {   // C-66: held, it listens (talk.cpp)
+        talking = true; draw();
+        talkHold();                                            // returns once the finger lifts and the answer is said
+        talking = false; down = false; lastInput = millis(); dirty = true;
+      }
     }
     xNow = x; yNow = y;
     return;

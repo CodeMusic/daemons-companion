@@ -14,3 +14,4 @@ void watchSetClock(time_t epoch, int offsetMinutes);   // from the server's stat
 bool watchLocalTime(struct tm &out);      // the local time, if the clock has been set
 long watchSteps();                        // today's steps, -1 without a step counter
 bool watchTalking();                      // push to talk held on the face (C-66 listens)
+bool watchTouchDown();                    // a finger on the screen now (talk.cpp listens while it stays)

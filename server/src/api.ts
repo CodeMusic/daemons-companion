@@ -301,6 +301,8 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
   return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
+           // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
+           clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
            settings: deviceSettings(store),
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme

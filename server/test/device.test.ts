@@ -30,8 +30,9 @@ describe("the sync protocol's server side (C-09)", () => {
   it("gives a device its day, season, next step and the party's AWAY daemon", async () => {
     await post("/api/goals", { title: "Tidy the garage", breakdown: true });
     const s = await get("/api/device/state");
-    expect(Object.keys(s).sort()).toEqual(["beacons", "daemon", "date", "day", "edition", "party", "season", "server", "settings", "step"]);
+    expect(Object.keys(s).sort()).toEqual(["beacons", "clock", "daemon", "date", "day", "edition", "party", "season", "server", "settings", "step"]);
     expect(s.daemon).toMatchObject({ nickname: "LABEL", slot: 1, art: "/art/party/1.png", mood: null });
+    expect(s.clock.epoch).toBeGreaterThan(1.7e9);                          // C-71: the watch sets its clock by it
     // C-68: the party and their routines, named as the game names them, each with its streak's colour
     expect(s.party.length).toBeGreaterThan(1);
     for (const p of s.party) for (const r of p.routines) expect(r).toMatchObject({ name: expect.any(String), colour: expect.stringMatching(/^#[0-9a-f]{6}$/) });

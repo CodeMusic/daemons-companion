@@ -234,7 +234,7 @@ void draw() {
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
-    wrap(partyFirst() ? String("Your party's routines, as the game plays them. Press to open.")     // C-68, DRAFT
+    wrap(partyFirst() || !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
          : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
                        : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, 4, 27, 3, PAPER);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
@@ -303,8 +303,11 @@ void draw() {
     }
   }
   if (millis() < flashUntil) {               // a word that something happened
-    canvas.fillRoundRect(W / 2 - 70, H / 2 - 22, 140, 44, 6, day);
-    canvas.setTextFont(4); canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM);
+    canvas.setTextFont(4);                     // the box fits the word (seen with SHOT 2026-10-07: it overflowed)
+    if (canvas.textWidth(flash) > W - 40) canvas.setTextFont(2);
+    int bw = min(W - 16, max(140, (int)canvas.textWidth(flash) + 32));
+    canvas.fillRoundRect(W / 2 - bw / 2, H / 2 - 22, bw, 44, 6, day);
+    canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM);
     canvas.drawString(flash, W / 2, H / 2);
   }
   canvas.pushSprite(0, 0);

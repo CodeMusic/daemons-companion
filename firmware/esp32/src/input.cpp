@@ -98,7 +98,7 @@ void press() {
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
       if (partyFirst()) { screen = PARTY; partyAt = 0; }            // C-68: the party's routines, on a board with no radios
-      else if (!st.carrying) say("Needs a daemon");                // C-51: the radio routines are the carried daemon's
+      else if (!st.carrying) { screen = PARTY; partyAt = 0; }       // C-51: the radios are the carried daemon's; the party's routines are not
       else { screen = TYPES; typeAt = 0; }
     }
   } else if (screen == TYPES) {
@@ -160,7 +160,7 @@ void back() {
   else if (screen == LIST) screen = TYPES;
   else if (screen == MOVES) screen = PARTY;                                   // C-68
   else if (screen == PARTY) {
-    if (partyFirst()) { screen = HOME; page = ROUTINES_PAGE; }
+    if (partyFirst() || !st.carrying) { screen = HOME; page = ROUTINES_PAGE; }
     else { screen = TYPES; for (int i = 0; i < typeCount; i++) if (isPartyType(i)) typeAt = i; }
   }
   else if (screen == TYPES && partyFirst()) { screen = PARTY; partyAt = st.partyN; }   // back to the radios' row

@@ -15,7 +15,7 @@ and passes each down as "CMD {...}"; the device's "RESULT {...}" goes back to PO
 "ROUTINES {...}" (asked with LIST when the bridge starts, and every minute) to POST /api/device/routines. Needs pyserial (PlatformIO's own Python has it:
 ~/.platformio/penv/bin/python usb_bridge.py). Ctrl-C stops it.
 """
-import argparse, glob, json, sys, time, urllib.request
+import argparse, base64, glob, json, sys, time, urllib.request
 
 try:
     import serial
@@ -34,6 +34,35 @@ def server_json(base, path, body=None):
                                  headers=headers, method="GET" if body is None else "POST")
     with urllib.request.urlopen(req, timeout=4) as r:
         return json.loads(r.read())
+
+
+def talk_over_cable(a, dev, wav):
+    """C-66: the board has no Wi-Fi, so its recording came down the cable. Post it as the board would, answer with the
+    words (TALKED {...}), then stream the voice back as 16 kHz samples in base64 lines (PCM ...) and PCMEND."""
+    headers = {"content-type": "audio/wav"}
+    if DEVICE["id"]:
+        headers["x-device"] = DEVICE["id"]
+    print("usb_bridge: the board talks (%d KB) ..." % (len(wav) // 1024), flush=True)
+    try:
+        req = urllib.request.Request(a.server + "/api/device/talk?via=usb", data=wav, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=180) as r:
+            said = json.loads(r.read())
+    except Exception as e:
+        said = {"error": "the server did not answer (%s)" % e}
+    reply = {k: said.get(k) for k in ("answer", "heard", "error", "ms")}
+    reply["audio"] = bool(said.get("audio"))
+    dev.write(("TALKED " + json.dumps(reply, separators=(",", ":")) + "\n").encode())
+    print("usb_bridge: heard %r, answered %r" % (said.get("heard"), (said.get("answer") or "")[:60]), flush=True)
+    if not said.get("audio"):
+        return
+    try:
+        with urllib.request.urlopen(a.server + said["audio"], timeout=30) as r:
+            pcm = r.read()
+        for i in range(0, len(pcm), 3072):          # 3,072 bytes -> 4,096 characters a line; the board plays as it reads
+            dev.write(("PCM " + base64.b64encode(pcm[i:i + 3072]).decode() + "\n").encode())
+    except Exception as e:
+        print("usb_bridge: the voice did not come (%s)" % e, flush=True)
+    dev.write(b"PCMEND\n")
 
 
 def find_port(wait=False):
@@ -67,6 +96,7 @@ def bridge(a, port):
     print("usb_bridge: %s <-> %s" % (port, a.server), flush=True)
     last, sent, listed, polled = 0.0, None, 0.0, 0.0
     buf = b""
+    talk = None                                     # C-66: a recording arriving from the board, in base64 lines
     while True:
         now = time.time()
         if now - listed > 60:                       # C-32: what routines the device has, for the site
@@ -96,6 +126,16 @@ def bridge(a, port):
         while b"\n" in buf:
             raw, buf = buf.split(b"\n", 1)
             msg = raw.decode(errors="replace").strip()
+            if talk is not None and msg.startswith("TW "):
+                talk.append(msg[3:])
+                continue
+            if msg.startswith("TALKWAV "):
+                talk = []
+                continue
+            if msg == "TALKEND" and talk is not None:
+                talk_over_cable(a, dev, base64.b64decode("".join(talk)))
+                talk = None
+                continue
             if msg.startswith("TICK "):
                 step = int(msg.split()[1])
                 try:

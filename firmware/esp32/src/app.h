@@ -116,6 +116,7 @@ const char *linkName();
 String http(const char *method, const String &path, const String &body, bool *ok = nullptr);
 bool httpState(const char *method, const String &path, const String &body);
 bool bridgeLive();
+bool usbLive();                           // the cable's bridge has spoken lately
 void bridge(const String &line);
 void readUsb();
 void readPhone();

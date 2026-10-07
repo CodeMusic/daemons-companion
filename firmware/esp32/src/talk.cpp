@@ -1,4 +1,5 @@
 #include <HTTPClient.h>
+#include <mbedtls/base64.h>
 #include <driver/i2s.h>
 #include <es7210.h>
 #include "app.h"
@@ -12,6 +13,15 @@
 static const i2s_port_t MIC = I2S_NUM_0;
 static const int RATE = 16000, MOST_S = 8;            // eight seconds is plenty to say a thing to a daemon
 String talkHeard, talkAnswer, talkStatus;
+
+// The models write curly quotes, dashes and ellipses the board's fonts do not have: plain ones instead.
+static String plain(String s) {
+  static const char *FROM[] = { "\xE2\x80\x98", "\xE2\x80\x99", "\xE2\x80\x9C", "\xE2\x80\x9D", "\xE2\x80\x93",
+                                "\xE2\x80\x94", "\xE2\x80\xA6", "\xC2\xA0" };
+  static const char *TO[] = { "'", "'", "\"", "\"", "-", " - ", "...", " " };
+  for (int i = 0; i < 8; i++) s.replace(FROM[i], TO[i]);
+  return s;
+}
 
 bool talkCan() { return board.mic != Mic::None && board.micData >= 0; }
 
@@ -101,12 +111,61 @@ static void answer(int code, const String &body) {
   if (code != 200 || deserializeJson(d, body)) {
     talkStatus = "The server did not answer."; talkAnswer = ""; draw(); return;   // DRAFT
   }
-  talkHeard = d["heard"] | ""; talkAnswer = d["answer"] | "";
+  talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | "");
   const char *err = d["error"] | "";
   talkStatus = strlen(err) ? String(err) : "";
   draw();
   const char *audio = d["audio"] | "";
   if (strlen(audio)) playVoice(audio);
+}
+
+// A line from the cable, read directly while a talk turn waits (the loop is not running, so nothing else reads it).
+static bool cableLine(String &out, uint32_t waitMs) {
+  out = ""; uint32_t until = millis() + waitMs;
+  while (millis() < until) {
+    while (Serial.available()) {
+      char c = Serial.read();
+      if (c == '\n') { out.trim(); return true; }
+      if (c != '\r' && out.length() < 6000) out += c;
+    }
+    delay(1);
+  }
+  return false;
+}
+
+// C-66: no Wi-Fi, but the cable's bridge is there (usb_bridge.py): the recording goes down the cable in base64 lines,
+// the bridge posts it and answers TALKED {...}, then streams the voice back as PCM lines to play as they come. Frees it.
+static void overCable(uint8_t *rec, size_t n) {
+  size_t bytes = 44 + n * 2;
+  static unsigned char b64[4100];
+  Serial.printf("TALKWAV %u\n", (unsigned)bytes);
+  for (size_t at = 0; at < bytes; at += 3072) {
+    size_t olen = 0;
+    mbedtls_base64_encode(b64, sizeof b64, &olen, rec + at, min((size_t)3072, bytes - at));
+    b64[olen] = 0;
+    Serial.print("TW "); Serial.println((const char *)b64);
+  }
+  Serial.println("TALKEND"); Serial.flush();
+  free(rec);
+  String line;
+  uint32_t until = millis() + 150000;                                          // a local model's first turn loads it
+  while (millis() < until && cableLine(line, 1000)) if (line.startsWith("TALKED ")) break;
+  if (!line.startsWith("TALKED ")) { talkStatus = "The cable's bridge did not answer."; screen = TALK; draw(); return; }   // DRAFT
+  JsonDocument d;
+  deserializeJson(d, line.substring(7));
+  talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | ""); talkStatus = d["error"] | "";
+  screen = TALK; draw();
+  if (!(d["audio"] | false)) { lastInput = millis(); return; }
+  static uint8_t pcm[3100];
+  bool stopped = false;
+  while (cableLine(line, 10000) && line != "PCMEND") {
+    if (!line.startsWith("PCM ") || stopped) continue;                          // stopped: let the rest go by
+    size_t olen = 0;
+    if (!mbedtls_base64_decode(pcm, sizeof pcm, &olen, (const unsigned char *)line.c_str() + 4, line.length() - 4))
+      soundPcm((const int16_t *)pcm, olen / 2);
+    if (giveUp()) stopped = true;
+  }
+  lastInput = millis();
 }
 
 // C-76: the turn offline, through the LLM630 (brain.cpp). Frees the recording.
@@ -115,14 +174,14 @@ static void offline(uint8_t *rec, size_t n) {
   talkStatus = "Thinking, offline..."; draw();                                 // DRAFT
   bool ok = brainTurn(rec, 44 + n * 2, heard, said, error);
   free(rec);
-  talkHeard = heard; talkAnswer = said; talkStatus = ok ? "" : error;
+  talkHeard = plain(heard); talkAnswer = plain(said); talkStatus = ok ? "" : error;
   screen = TALK; draw();
   lastInput = millis();
 }
 
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
-  if (!online() && !brainConfigured()) { say("TALK NEEDS WI-FI"); return; }   // DRAFT -- the cable carries lines, not voices
+  if (!online() && !usbLive() && !brainConfigured()) { say("TALK NEEDS WI-FI"); return; }   // DRAFT: Wi-Fi, the cable, or the LLM630
   const size_t most = RATE * MOST_S;
   uint8_t *rec = (uint8_t *)ps_malloc(44 + most * 2);
   if (!rec || !micOn()) { free(rec); say("NO MICROPHONE"); return; }          // DRAFT
@@ -145,6 +204,7 @@ void talkHold(uint32_t forMs) {
   if (n < RATE / 3) { free(rec); screen = HOME; say("Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
   wavHeader(rec, n);
   talkStatus = "Thinking..."; draw();                                         // DRAFT
+  if (!online() && usbLive()) { overCable(rec, n); return; }                  // C-66: the cable's bridge carries it
   if (!online()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
   h.setTimeout(120000);                                                       // a local model's first turn loads it

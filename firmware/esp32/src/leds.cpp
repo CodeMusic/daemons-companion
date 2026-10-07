@@ -1,15 +1,33 @@
-// C-38: the T-Embed CC1101's ring -- eight WS2812s on pin 14 (LilyGO's utilities.h, driven as in its own ws2812 test).
+// C-38: the ring of lights (C-67: whichever the board has -- board.cpp).
 // At rest it glows the day's colour at a third. Unused for a minute it goes out, and anything done on the board brings
 // it back. A turn of the dial runs one white light once round the ring; select flashes it white; back darkens it.
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_DotStar.h>
 #include "leds.h"
+#include "board.h"
 
-static const int PIN = 14, N = 8;
+// C-67: the ring is the board's -- eight WS2812s on the CC1101, seven APA102s on the plain T-Embed and the SI4732, none
+// on the watch. One small facade over Adafruit's two drivers (they share an interface), so nothing below changes.
+struct Ring {
+  Adafruit_NeoPixel *neo = nullptr; Adafruit_DotStar *dot = nullptr;
+  void begin() {
+    if (board.lights == Lights::WS2812) { neo = new Adafruit_NeoPixel(board.ledCount, board.ledData, NEO_GRB + NEO_KHZ800); neo->begin(); }
+    if (board.lights == Lights::APA102) { dot = new Adafruit_DotStar(board.ledCount, board.ledData, board.ledClk, DOTSTAR_BGR); dot->begin(); }
+  }
+  void setPixelColor(int i, uint32_t c) { if (neo) neo->setPixelColor(i, c); if (dot) dot->setPixelColor(i, c); }
+  void show() { if (neo) neo->show(); if (dot) dot->show(); }
+  void clear() { if (neo) neo->clear(); if (dot) dot->clear(); }
+  static uint32_t Color(uint8_t r, uint8_t g, uint8_t b) { return Adafruit_NeoPixel::Color(r, g, b); }
+  static uint32_t ColorHSV(uint16_t h, uint8_t s, uint8_t v) { return Adafruit_NeoPixel::ColorHSV(h, s, v); }
+  static uint32_t gamma32(uint32_t c) { return Adafruit_NeoPixel::gamma32(c); }
+};
+
+static int N = 8;
 static const uint32_t SLEEP_MS = 60000, SPIN_MS = 360, FLASH_MS = 140, DARK_MS = 220;
 // If the light runs the wrong way round on the board, flip this: which way the LEDs are numbered around the ring.
 static const int CLOCKWISE = 1;
 
-static Adafruit_NeoPixel ring(N, PIN, NEO_GRB + NEO_KHZ800);
+static Ring ring;
 static uint32_t dayRgb = 0x4060FF, touchedAt = 0, effectAt = 0;
 static enum { NONE, SPIN, FLASH, DARK } effect = NONE;
 static int spinDir = 1, spinFrom = 0, shown = -2;
@@ -26,7 +44,7 @@ static void fill(uint32_t c) { for (int i = 0; i < N; i++) ring.setPixelColor(i,
 
 static void touch() { touchedAt = millis(); shown = -2; }
 
-void ledsBegin() { ring.begin(); ring.clear(); ring.show(); touch(); }
+void ledsBegin() { N = max(1, board.ledCount); ring.begin(); ring.clear(); ring.show(); touch(); }
 void ledsDay(uint32_t rgb) { if (rgb != dayRgb) { dayRgb = rgb; shown = -2; } }
 
 void ledsSpin(int dir) {

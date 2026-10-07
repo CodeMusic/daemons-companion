@@ -43,7 +43,7 @@ you run is told to the server as tending your daemon (C-13).
 From the repo root:
 
 ```sh
-./updateCompanion.sh          # or, from firmware/esp32/: pio run -t upload
+./updateCompanion.sh          # or, from firmware/esp32/: pio run -e t-embed -t upload
 ```
 
 The ESP32-S3 has its own USB, so it usually goes into download mode by itself. **If the upload cannot connect**:
@@ -70,7 +70,7 @@ The bridge finds the device's port and hands it the server's state every five se
    computer's address on your network. **`secrets.h` is never committed** (it is in `.gitignore`).
 2. Let the server listen on your network: in `server/config.json`, `"host": "0.0.0.0"`. Nothing secret goes over
    it, but it is reachable by anything on that network while it runs.
-3. `pio run -t upload` again. The corner says **WIFI** once it has joined, and the device asks the server itself
+3. `pio run -e t-embed -t upload` again. The corner says **WIFI** once it has joined, and the device asks the server itself
    every 30 seconds.
 
 ## See its screen on the computer
@@ -91,7 +91,7 @@ the controls -- so every screen can be reached and checked without touching the 
 pio device monitor
 ```
 
-It prints `HELLO daemons-companion t-embed-cc1101 1` every few seconds, and `TICK <id>` when the encoder is pressed
+It prints `HELLO daemons-companion <board> 3` (the board: t-embed-cc1101, t-embed, t-embed-si4732 or t-watch-s3) every few seconds, and `TICK <id>` when the encoder is pressed
 over USB.
 
 ## Putting the factory firmware back

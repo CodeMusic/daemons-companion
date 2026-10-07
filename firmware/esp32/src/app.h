@@ -1,0 +1,132 @@
+#pragma once
+// The companion on a handheld (C-26; one base for every board since C-67). It shows what GET /api/device/state says --
+// the Xenith day, the season, the ONE next step, and the daemon you carry -- and ticks the step off when the dial is
+// pressed (POST /api/device/ticks).
+//
+// Three ways to the server, one protocol:
+//   Wi-Fi  -- the board joins a network it has learned and asks the server itself (net.cpp).
+//   USB    -- usb_bridge.py on the computer relays it over the cable: HELLO and TICK lines one way, STATE lines back.
+//   Phone  -- the companion app carries the same lines over Bluetooth (link.cpp, C-55).
+// A bridge (USB or phone) that has spoken lately wins over Wi-Fi.
+//
+// The parts: state.cpp (what the server said, and the settings), net.cpp (Wi-Fi, the server, the bridges, the site's
+// commands), ui.cpp (the screens), input.cpp (the dial and buttons, sleep), routines.cpp (the daemon's routines),
+// main.cpp (setup and loop). board.cpp and display.cpp are the hardware.
+#include <Arduino.h>
+#include <ArduinoJson.h>
+#include "board.h"
+#include "display.h"
+#include "battery.h"
+
+static const uint32_t POLL_MS = 30000, USB_FRESH_MS = 15000, HELLO_MS = 3000, UNDO_MS = 15000;
+static const int MAX_NETS = 8;            // C-52: the networks the board has learned
+static const uint16_t INK = 0x18E4, PAPER = 0xFFDE, QUIET = 0x8C51;
+
+// ---- what the server says (state.cpp) -------------------------------------------------------------------------------
+struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0, species = 0;
+                String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
+                int grownTo = 0; };                                               // C-45: the level it has grown to here
+struct State {
+  bool have = false;
+  String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue, chakra, theme;
+  long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
+  bool carrying = false; Daemon daemon;
+};
+// C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
+struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
+                  bool meet = true; };                         // meet: C-15, meeting others nearby
+extern State st;
+extern Settings cfg;
+extern bool dirty;
+extern uint16_t artPal[16];
+extern uint8_t artPix[2048];
+extern String artKeyHave;
+extern uint32_t artAskedAt;
+void loadSettings();
+void takeSettings(JsonVariant s);
+bool takeState(const String &json);
+bool takeArt(const String &json);
+int dayIndex();                           // C-50: Sunday 0, for its tunes
+String daemonName();                      // C-51: the routines speak in its name
+
+// ---- where you are (ui.cpp, input.cpp) ------------------------------------------------------------------------------
+// HOME turns between TODAY, DAEMON, ROUTINES and the DAY. ROUTINES opens a list of routine TYPES, a type its ROUTINES, a
+// routine RUNs. INDEX_ENTRY: the carried daemon's (C-36). PICK_NET, TYPE_PASS: joining a network on the board (C-33).
+// CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51.
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE };   // C-73: the Xenith day, last
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE };
+extern Page page;
+extern Screen screen;
+extern int careAt, remoteAt, typeAt, routineAt;
+extern uint32_t hopUntil;
+extern bool pickRemoteNext, joinNext;
+extern String nets[12]; extern int netRssi[12], netCount, netAt, wheelAt; extern String typed;
+extern const char WHEEL[]; extern const int WHEEL_N;
+extern String runResult;
+extern String flash; extern uint32_t flashUntil;
+extern bool asleep;
+extern uint32_t lastInput;
+extern long lastDone; extern String lastDoneText; extern uint32_t lastDoneAt;
+bool undoable();
+extern Battery bat;                       // C-63
+
+void draw();
+void say(const String &word);
+void celebrate(const String &what);
+void progress(const String &text);        // what a routine is waiting for, on the RUN screen
+String upper(String s);
+int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour);
+uint16_t hex565(const String &h);
+bool lightColour(const String &h);
+
+// ---- input (input.cpp) ------------------------------------------------------------------------------------------------
+extern int8_t encLast, encSum;
+extern bool sideWas;
+void inputBegin();
+void readEncoder();
+void readKey();
+void turn(int step);
+void press();
+void back();
+bool wake();
+void sleepNow();
+void tick();
+void untick();
+bool giveUp();                            // the top button (or the held dial) while a routine waits
+
+// ---- the server, the bridges, the site (net.cpp) --------------------------------------------------------------------
+extern String serverUrl;
+extern String knownSsid[MAX_NETS], knownPass[MAX_NETS]; extern int knownCount;
+extern uint32_t usbSeen, phoneSeen, lastPoll, lastHello;
+bool wifiSet();
+bool online();
+void loadWifi();
+void learnNetwork(const String &ssid, const String &pass, const String &server);
+void forgetNetwork(int i);
+void uplinkLoop(uint32_t now);
+String networksJson();
+const char *linkName();
+String http(const char *method, const String &path, const String &body, bool *ok = nullptr);
+bool httpState(const char *method, const String &path, const String &body);
+bool bridgeLive();
+void bridge(const String &line);
+void readUsb();
+void readPhone();
+void pollCommands(uint32_t now);
+void report(const String &kind, const String &detail);
+void reportRemotes();
+void reportNetworks();
+void meetReport();
+void askForArt();
+void batteryLoop(uint32_t now);           // C-63
+
+// ---- the daemon's routines (routines.cpp) ---------------------------------------------------------------------------
+typedef String (*RoutineFn)();
+struct Routine { const char *name; RoutineFn run; };
+struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
+extern RoutineType types[8];
+extern int typeCount;
+void routinesBegin();                     // the types this board can run
+String runTheaterMode();                  // C-58: run on the board itself, never from the site
+void runRoutine();
+String routinesJson();

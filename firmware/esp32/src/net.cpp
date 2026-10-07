@@ -1,0 +1,410 @@
+// Wi-Fi, the server, the bridges (USB and phone), and the site's commands (C-67: from main.cpp).
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Preferences.h>
+#include <mbedtls/base64.h>
+#include <vector>
+#include "app.h"
+#include "radios.h"
+#include "link.h"
+#include "meet.h"
+#include "leds.h"
+#include "sound.h"
+// C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) --
+// and kept in the board's own flash. A secrets.h, if there is one, is only the default for a board that has none yet.
+#if __has_include("secrets.h")
+#include "secrets.h"
+#endif
+#ifndef COMPANION_WIFI_SSID
+#define COMPANION_WIFI_SSID ""
+#define COMPANION_WIFI_PASSWORD ""
+#define COMPANION_SERVER ""
+#endif
+
+String serverUrl;
+String knownSsid[MAX_NETS], knownPass[MAX_NETS]; int knownCount = 0;
+uint32_t usbSeen = 0, phoneSeen = 0, lastPoll = 0, lastHello = 0;
+static String lineIn;
+void runRoutineByName(long id, const String &want);
+
+// ---- C-33: the board's own Wi-Fi ----------------------------------------------------------------------------------------
+// C-52: SEVERAL networks are kept -- what the board has learned, which the daemons share -- and it joins whichever known
+// one is in range, the strongest, at start and whenever it loses the one it was on. Their passwords never leave it.
+bool wifiSet() { return knownCount > 0; }
+bool online() { return wifiSet() && serverUrl.length() && WiFi.status() == WL_CONNECTED; }
+
+void saveNetworks() {
+  Preferences p; p.begin("uplink", false);
+  p.putUChar("count", knownCount);
+  for (int i = 0; i < MAX_NETS; i++) {
+    String k = String(i);
+    if (i < knownCount) { p.putString(("s" + k).c_str(), knownSsid[i]); p.putString(("p" + k).c_str(), knownPass[i]); }
+    else { p.remove(("s" + k).c_str()); p.remove(("p" + k).c_str()); }
+  }
+  p.putString("server", serverUrl);
+  p.end();
+}
+
+void loadWifi() {
+  Preferences p; p.begin("uplink", true);
+  knownCount = min((int)p.getUChar("count", 0), MAX_NETS);
+  for (int i = 0; i < knownCount; i++) { knownSsid[i] = p.getString(("s" + String(i)).c_str(), ""); knownPass[i] = p.getString(("p" + String(i)).c_str(), ""); }
+  String oldSsid = p.getString("ssid", COMPANION_WIFI_SSID), oldPass = p.getString("pass", COMPANION_WIFI_PASSWORD);
+  serverUrl = p.getString("server", COMPANION_SERVER);
+  p.end();
+  if (!knownCount && oldSsid.length()) {     // the one network kept before there were several becomes the first
+    knownSsid[0] = oldSsid; knownPass[0] = oldPass; knownCount = 1;
+    saveNetworks();
+    Preferences q; q.begin("uplink", false); q.remove("ssid"); q.remove("pass"); q.end();
+  }
+}
+
+// Learn a network (or its new password) and join it now.
+void learnNetwork(const String &ssid, const String &pass, const String &server) {
+  int at = -1;
+  for (int i = 0; i < knownCount; i++) if (knownSsid[i] == ssid) at = i;
+  if (at < 0) {
+    if (knownCount == MAX_NETS) { for (int i = 1; i < MAX_NETS; i++) { knownSsid[i - 1] = knownSsid[i]; knownPass[i - 1] = knownPass[i]; } knownCount--; }
+    at = knownCount++;
+  }
+  knownSsid[at] = ssid; knownPass[at] = pass;
+  if (server.length()) serverUrl = server;
+  saveNetworks();
+  WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid.c_str(), pass.c_str());
+}
+
+void forgetNetwork(int i) {
+  if (i < 0 || i >= knownCount) return;
+  for (int k = i + 1; k < knownCount; k++) { knownSsid[k - 1] = knownSsid[k]; knownPass[k - 1] = knownPass[k]; }
+  knownCount--;
+  saveNetworks();
+}
+
+// Join the strongest known network in range: a scan in the background, then WiFi.begin.
+uint32_t wifiTriedAt = 0; bool wifiScanning = false;
+void uplinkLoop(uint32_t now) {
+  if (!wifiSet() || WiFi.status() == WL_CONNECTED) return;
+  if (!wifiScanning) {
+    if (wifiTriedAt && now - wifiTriedAt < 20000) return;   // give a join time before looking again
+    WiFi.mode(WIFI_STA);
+    WiFi.scanNetworks(true);
+    wifiScanning = true; wifiTriedAt = now;
+    return;
+  }
+  int n = WiFi.scanComplete();
+  if (n == WIFI_SCAN_RUNNING) return;
+  wifiScanning = false;
+  int best = -1, bestRssi = -1000;
+  for (int i = 0; i < max(n, 0); i++)
+    for (int k = 0; k < knownCount; k++)
+      if (WiFi.SSID(i) == knownSsid[k] && WiFi.RSSI(i) > bestRssi) { best = k; bestRssi = WiFi.RSSI(i); }
+  WiFi.scanDelete();
+  if (best >= 0) WiFi.begin(knownSsid[best].c_str(), knownPass[best].c_str());
+  wifiTriedAt = now;
+}
+
+String networksJson() {
+  JsonDocument d;
+  JsonArray a = d["networks"].to<JsonArray>();
+  for (int i = 0; i < knownCount; i++) a.add(knownSsid[i]);                        // names only: never a password
+  d["current"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : "";
+  String out; serializeJson(d, out);
+  return out;
+}
+
+// ---- the server ------------------------------------------------------------------------------------------------------
+// One request to the server over Wi-Fi; the answer's body, or "" with *ok false.
+String http(const char *method, const String &path, const String &body, bool *ok) {
+  if (ok) *ok = false;
+  if (!online()) return "";
+  HTTPClient h;
+  h.setTimeout(4000);
+  h.begin(serverUrl + path);
+  int code;
+  if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body); }
+  else code = h.GET();
+  String out = code == 200 ? h.getString() : "";
+  h.end();
+  if (ok) *ok = code == 200;
+  return out;
+}
+
+bool httpState(const char *method, const String &path, const String &body) {
+  bool ok;
+  String got = http(method, path, body, &ok);
+  return ok && takeState(got);
+}
+
+bool usbLive() { return usbSeen && millis() - usbSeen < USB_FRESH_MS; }
+// C-55: the phone, over Bluetooth, is a bridge as the cable is -- the same lines, both ways. The cable wins when both
+// are here, so nothing is ever said twice.
+// C-57: no freshness for the phone. A cable can sit plugged in with no bridge behind it, so USB must be heard from;
+// a paired phone that is connected and listening IS the app (iOS wakes it for each line, even in a pocket), and it
+// goes quiet in the background because iOS pauses its timers, not because it has gone.
+bool phoneLive() { return phoneSeen && linkPhoneHere(); }
+bool bridgeLive() { return usbLive() || phoneLive(); }
+void bridge(const String &line) { if (usbLive()) Serial.println(line); else linkSend(line); }
+
+// ---- C-32: the site and the device, linked. The site's COMMANDS arrive down the cable (CMD lines, from the bridge) or
+// over Wi-Fi (GET /api/device/commands); each is answered with a RESULT the same way. LIST asks what routines this
+// board has, so the site's list is the board's own.
+String routinesJson() {
+  JsonDocument d;
+  d["firmware"] = String(board.id) + " 3";
+  JsonArray list = d["types"].to<JsonArray>();
+  for (int i = 0; i < typeCount; i++) {
+    JsonObject t = list.add<JsonObject>();
+    t["name"] = types[i].name; t["radio"] = types[i].radio;
+    JsonArray r = t["routines"].to<JsonArray>();
+    for (int k = 0; k < types[i].count; k++) r.add(types[i].routines[k].name);
+  }
+  String out; serializeJson(d, out);
+  return out;
+}
+
+void sendResult(long id, bool ok, const String &text) {
+  JsonDocument d; d["id"] = id; d["ok"] = ok; d["text"] = text;
+  String out; serializeJson(d, out);
+  if (bridgeLive()) bridge("RESULT " + out);
+  else http("POST", "/api/device/results", out);
+}
+
+void runRoutine();
+void report(const String &kind, const String &detail);
+void handleCommand(JsonVariant c) {
+  long id = c["id"] | -1;
+  String type = c["type"] | "";
+  wake();
+  if (type == "run") {
+    String want = c["routine"] | "";
+    if (!st.carrying) return sendResult(id, false, "Routines are a daemon's: send one to the board from the game first.");
+    for (int i = 0; i < typeCount; i++)
+      for (int k = 0; k < types[i].count; k++)
+        if (want == String(types[i].name) + "/" + types[i].routines[k].name) {
+          if (types[i].routines[k].run == runTheaterMode)   // it holds the board's controls until the top button
+            return sendResult(id, false, "THEATER MODE is run on the board itself: it makes the dial and the button the remote.");
+          typeAt = i; routineAt = k;
+          runRoutine();
+          return sendResult(id, true, runResult);
+        }
+    return sendResult(id, false, "This board has no routine " + want + ".");
+  }
+  if (type == "ir") {                         // C-34: one IR code from the site's search
+    String code = c["code"] | "0";
+    String out = runFlareCode(c["protocol"] | "", strtoull(code.c_str(), nullptr, 0), c["bits"] | 0, c["repeat"] | 0,
+                              c["keep"] | false);
+    for (int i = 0; i < typeCount; i++) if (!strcmp(types[i].name, "FLARE")) typeAt = i;
+    runResult = out; screen = RUN; dirty = true;
+    report("routine", "FLARE/" + String((const char *)(c["label"] | "A CODE FROM THE SITE")));
+    return sendResult(id, !out.startsWith("Could not"), out);
+  }
+  if (type == "network") {                    // C-52: the site forgets a network
+    int index = c["index"] | -1;
+    String gone = index >= 0 && index < knownCount ? knownSsid[index] : "";
+    forgetNetwork(index);
+    reportNetworks();
+    return sendResult(id, gone.length() > 0, gone.length() ? "Forgot " + gone + "." : "No such network.");
+  }
+  if (type == "remote") {                     // C-51: the site manages the remotes
+    String op = c["op"] | "", out;
+    int index = c["index"] | -1;
+    if (op == "activate") { flareSetActive(index); out = daemonName() + " uses " + flareName(flareActive()) + " now."; }
+    else if (op == "remove") out = flareRemove(index);
+    else if (op == "rename") out = flareRename(index, c["name"] | "");          // C-59
+    else if (op == "add") {
+      String proto[3]; uint64_t value[3]; uint16_t bits[3], repeat[3];
+      JsonArray b = c["buttons"].as<JsonArray>();
+      if (b.size() != 3) return sendResult(id, false, "A remote is three buttons: power, volume up, volume down.");
+      for (int i = 0; i < 3; i++) {
+        proto[i] = b[i]["protocol"] | ""; String code = b[i]["code"] | "0";
+        value[i] = strtoull(code.c_str(), nullptr, 0); bits[i] = b[i]["bits"] | 0; repeat[i] = b[i]["repeat"] | 0;
+      }
+      out = flareAdd(c["name"] | "A REMOTE", proto, value, bits, repeat);
+    } else return sendResult(id, false, "No such remote operation.");
+    reportRemotes();
+    return sendResult(id, true, out);
+  }
+  if (type == "wifi") {                       // C-33: only ever arrives down the cable
+    String ssid = c["ssid"] | "";
+    learnNetwork(ssid, c["password"] | "", c["server"] | "");
+    say("Learned it");
+    reportNetworks();
+    return sendResult(id, true, daemonName() + " learned " + ssid + ", and joins it whenever it is near.");
+  }
+  sendResult(id, false, "This board does not know the command " + type + ".");
+}
+
+// C-51, C-52: the board's remotes and networks, for the site -- down the cable, or over Wi-Fi
+void reportRemotes() {
+  if (bridgeLive()) bridge("REMOTES " + flareRemotesJson());
+  else http("POST", "/api/device/remotes", flareRemotesJson());
+}
+void reportNetworks() {
+  if (bridgeLive()) bridge("NETWORKS " + networksJson());
+  else http("POST", "/api/device/networks", networksJson());
+}
+
+bool routinesPosted = false;
+uint32_t commandsAt = 0;
+void pollCommands(uint32_t now) {
+  if (!routinesPosted) {
+    routinesPosted = !http("POST", "/api/device/routines", routinesJson()).isEmpty();
+    if (routinesPosted) { reportRemotes(); reportNetworks(); }
+  }
+  if (now - commandsAt < 2000) return;
+  commandsAt = now;
+  bool ok;
+  String got = http("GET", "/api/device/commands", "", &ok);
+  if (!ok) return;
+  JsonDocument d;
+  if (deserializeJson(d, got)) return;
+  for (JsonVariant c : d["commands"].as<JsonArray>()) handleCommand(c);
+}
+
+// SHOT: the screen as it is, down the cable -- so the layout can be checked without looking at the board
+// (shot.py on the computer makes it a PNG). The sprite's own 16-bit pixels, as stored, base64 in lines.
+void shot() {
+  const uint8_t *px = (const uint8_t *)canvas.getBuffer();
+  Serial.printf("SHOT %d %d\n", W, H);
+  static unsigned char line[1025];
+  for (size_t at = 0; at < (size_t)W * H * 2; at += 768) {
+    size_t n = min((size_t)768, (size_t)W * H * 2 - at), got = 0;
+    mbedtls_base64_encode(line, sizeof line, &got, px + at, n);
+    Serial.write(line, got); Serial.write('\n');
+  }
+  Serial.println("SHOT END");
+}
+
+// One line from a bridge -- the cable's (usb_bridge.py) or the phone's (C-55, over Bluetooth) -- answered the way it came.
+void handleLine(String line, bool fromPhone) {
+  auto reply = [&](const String &out) { if (fromPhone) linkSend(out); else Serial.println(out); };
+  uint32_t &seen = fromPhone ? phoneSeen : usbSeen;
+  line.trim();
+  if (line.startsWith("STATE ")) {
+    if (takeState(line.substring(6))) seen = millis();
+    else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing
+  }
+  else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
+  else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
+  else if (line == "SHOT" && !fromPhone) shot();
+  else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
+                             reply("NETWORKS " + networksJson()); }
+  else if (line.startsWith("KEY ") && !fromPhone) {   // the controls, from the computer, for a check with SHOT
+    String k = line.substring(4);
+    if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
+    else if (k == "PRESS") { if (!wake()) press(); }
+    else if (k == "BACK") { if (!wake()) back(); }
+    if (!asleep) draw();
+  }
+  else if (line.startsWith("CMD ")) {
+    JsonDocument d;
+    if (deserializeJson(d, line.substring(4))) reply("UNREAD " + String(line.length()));
+    else if (fromPhone && String(d["type"] | "") == "wifi") reply("UNREAD wifi");   // C-33: a password only down the cable
+    else handleCommand(d.as<JsonVariant>());
+  }
+  else if (line.startsWith("GO ") && !fromPhone) {   // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES
+    String to = line.substring(3);
+    wake();
+    screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
+    page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : TODAY;
+    draw();
+  }
+  else if (line == "PING") { seen = millis(); reply("PONG"); }
+}
+
+void readUsb() {
+  while (Serial.available()) {
+    char c = Serial.read();
+    if (c == '\n') { handleLine(lineIn, false); lineIn = ""; }
+    else if (lineIn.length() < 6000) lineIn += c;   // an ART line is ~3 KB
+  }
+}
+
+// C-15: what the meeting radio heard, and this board's own tag, told to the server -- through a bridge (MET, BEACON
+// lines) or over Wi-Fi; kept a while when there is neither. A meeting is a small event: a flash and a word, never a
+// sound and never on a sleeping board (it must never pester).
+std::vector<String> metWaiting;
+String beaconTold;
+void meetReport() {
+  int species; String tag; bool mine;
+  while (meetTakeHeard(species, tag, mine)) {
+    if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag);
+    if (!mine && !asleep) { ledsFlash(); say("A daemon nearby"); }
+  }
+  bool link = bridgeLive() || online();
+  if (!link) return;
+  String listen;
+  if (meetTakeListen(listen)) {
+    if (bridgeLive()) bridge(listen);
+    else {
+      int a = listen.indexOf(' ', 7), b = listen.indexOf(' ', a + 1);
+      http("POST", "/api/device/listen", "{\"started\":" + listen.substring(7, a) + ",\"devices\":" + listen.substring(a + 1, b) +
+           ",\"beacons\":" + listen.substring(b + 1) + "}");
+    }
+  }
+  String own = meetOwnPeer();
+  if (own.length() && own != beaconTold) {
+    if (bridgeLive()) bridge("BEACON " + own);
+    else if (http("POST", "/api/device/beacon", "{\"peer\":\"" + own + "\"}").isEmpty()) return;
+    beaconTold = own;
+  }
+  while (!metWaiting.empty()) {
+    String m = metWaiting.front();
+    if (bridgeLive()) bridge("MET " + m);
+    else {
+      int sp = m.indexOf(' ');
+      String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + m.substring(sp + 1) + "\"}";
+      if (http("POST", "/api/device/met", body).isEmpty()) return;
+    }
+    metWaiting.erase(metWaiting.begin());
+  }
+}
+
+void readPhone() {                                  // C-55
+  String line;
+  for (int i = 0; i < 4 && linkTake(line); i++) handleLine(line, true);
+}
+
+// C-13: using the device is tending the daemon. Each routine run is told to the server -- over the cable through the
+// bridge (an INTERACT line), or over Wi-Fi -- where the daemon's life will read it.
+void report(const String &kind, const String &detail) {
+  if (bridgeLive()) { bridge("INTERACT " + kind + " " + detail); return; }
+  JsonDocument d; d["kind"] = kind; d["detail"] = detail;
+  String body; serializeJson(d, body);
+  if (http("POST", "/api/device/interact", body).length()) httpState("GET", "/api/device/state", "");   // its new life
+}
+
+// C-36: the device asks for its daemon's art when the state names art it does not have -- through the bridge (ART?),
+// or over Wi-Fi itself. At most every five seconds, so a missing server is not asked in a loop.
+void askForArt() {
+  if (!st.carrying || !st.daemon.artKey.length() || st.daemon.artKey == artKeyHave) return;
+  if (artAskedAt && millis() - artAskedAt < 5000) return;
+  artAskedAt = millis();
+  if (bridgeLive()) { bridge("ART?"); return; }
+  bool ok;
+  String got = http("GET", "/api/device/art", "", &ok);
+  if (ok) takeArt(got);
+}
+
+
+// C-63: the battery, read every 20 s; the server hears about it when it changes enough to matter (over Wi-Fi -- the
+// cable and the phone carry it later).
+static uint32_t batAt = 0, batToldAt = 0;
+static int batToldPct = -100; static bool batToldCharging = false;
+void batteryLoop(uint32_t now) {
+  if (batAt == 0 || now - batAt > 20000) {                   // C-63: the battery, and the server told when it matters
+    batAt = now;
+    Battery was = bat;
+    batteryRead(bat);
+    if (bat.percent != was.percent || bat.charging != was.charging || bat.usb != was.usb) dirty = true;
+    bool tell = bat.present && (abs(bat.percent - batToldPct) >= 5 || bat.charging != batToldCharging || now - batToldAt > 600000);
+    if (tell && online()) {                                    // over Wi-Fi; the cable and the phone carry it later
+      batToldAt = now; batToldPct = bat.percent; batToldCharging = bat.charging;
+      http("POST", "/api/device/battery", String("{\"percent\":") + bat.percent + ",\"mv\":" + bat.mv +
+           ",\"charging\":" + (bat.charging ? "true" : "false") + ",\"full\":" + (bat.full ? "true" : "false") +
+           ",\"usb\":" + (bat.usb ? "true" : "false") + "}");
+    }
+  }
+}

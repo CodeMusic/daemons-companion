@@ -1,0 +1,264 @@
+// The screens (C-67: from main.cpp). Drawn whole into the sprite, then pushed.
+#include <WiFi.h>
+#include "app.h"
+#include "radios.h"
+#include "link.h"
+#include "sound.h"
+#include "leds.h"
+
+static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "ITS INDEX ENTRY" };
+// ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
+const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
+const int WHEEL_N = sizeof(WHEEL) - 1;
+Page page = TODAY;
+Screen screen = HOME;
+int careAt = 0, remoteAt = 0, typeAt = 0, routineAt = 0;
+uint32_t hopUntil = 0;
+bool pickRemoteNext = false, joinNext = false;
+String nets[12]; int netRssi[12], netCount = 0, netAt = 0, wheelAt = 1; String typed;
+String runResult;
+String flash; uint32_t flashUntil = 0;
+
+// ---- colours: the day's colour, and words that can be read on it ------------------------------------------------
+uint16_t hex565(const String &h) {
+  long v = strtol(h.c_str() + 1, nullptr, 16);
+  return tft.color565((v >> 16) & 255, (v >> 8) & 255, v & 255);
+}
+bool lightColour(const String &h) {           // as the app decides (App.tsx onColour)
+  long v = strtol(h.c_str() + 1, nullptr, 16);
+  auto lin = [](double c) { c /= 255.0; return c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4); };
+  return 0.2126 * lin((v >> 16) & 255) + 0.7152 * lin((v >> 8) & 255) + 0.0722 * lin(v & 255) > 0.3;
+}
+
+void drawArt(int x, int y, int scale) {
+  if (!artKeyHave.length() || artKeyHave != st.daemon.artKey) return;
+  for (int j = 0; j < 64; j++)
+    for (int i = 0; i < 64; i++) {
+      uint8_t b = artPix[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
+      if (c) canvas.fillRect(x + i * scale, y + j * scale, scale, scale, artPal[c]);
+    }
+}
+
+// ---- drawing --------------------------------------------------------------------------------------------------------
+int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour) {
+  canvas.setTextFont(font); canvas.setTextColor(colour); canvas.setTextDatum(TL_DATUM);
+  String line, word; int lines = 0;
+  auto flush = [&]() { if (lines < maxLines) canvas.drawString(line, x, y + lines * lineH); lines++; line = ""; };
+  for (unsigned i = 0; i <= text.length(); i++) {
+    char c = i < text.length() ? text[i] : ' ';
+    if (c == '\n') {                         // a line of its own: finish the word and the line
+      if (word.length()) { line = line.length() ? line + " " + word : word; word = ""; }
+      flush();
+      continue;
+    }
+    if (c != ' ') { word += c; continue; }
+    if (!word.length()) continue;
+    String tryLine = line.length() ? line + " " + word : word;
+    if (canvas.textWidth(tryLine) > w && line.length()) { flush(); line = word; } else line = tryLine;
+    word = "";
+  }
+  if (line.length()) flush();
+  return lines;
+}
+
+String upper(String s) { s.toUpperCase(); return s; }
+
+const char *linkName() {
+  if (millis() - usbSeen < USB_FRESH_MS && usbSeen) return "USB";
+  if (phoneSeen && linkPhoneHere()) return "PHONE";   // C-55, C-57
+  if (!wifiSet()) return "NO LINK";
+  return WiFi.status() == WL_CONNECTED ? "WIFI" : "WIFI...";
+}
+
+// The ROUTINES screens: a list with the day's colour behind the chosen row (TYPES, LIST), or what a routine found
+// (RUN). Turn to choose, press to open or run, the top button to go back.
+void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width = W - 12) {
+  int y = 52 + i * 19;
+  if (i == at) canvas.fillRect(6, y - 2, width, 18, day);
+  canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM);
+  canvas.setTextColor(i == at ? ink : PAPER);
+  canvas.drawString(text, 12, y);
+}
+
+void drawRoutines(uint16_t day) {
+  uint16_t ink = lightColour(st.menu) ? INK : PAPER;
+  const RoutineType &t = types[typeAt];
+  canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+  if (screen == TYPES) {
+    canvas.drawString("ROUTINE TYPE", 10, 32);
+    for (int i = 0; i < typeCount; i++)
+      listRow(i, typeAt, String(types[i].name) + "  (" + types[i].radio + ")", day, ink);
+  } else if (screen == LIST) {
+    canvas.drawString(String(t.name) + "  (" + t.radio + ")", 10, 32);
+    if (t.count == 0) {
+      wrap("No routines yet.", 12, 58, W - 24, 4, 27, 1, PAPER);
+      wrap("They arrive as each radio is wired and tried on the board.", 12, 92, W - 24, 2, 18, 3, QUIET);
+    } else {
+      for (int i = 0; i < t.count; i++) listRow(i, routineAt, t.routines[i].name, day, ink);
+    }
+  } else if (screen == PICK_REMOTE) {
+    canvas.drawString("WHICH REMOTE " + upper(daemonName()) + " USES", 10, 32);
+    int n = flareCount(), a = flareActive();
+    for (int i = 0; i < n; i++) listRow(i, remoteAt, (i == a ? "* " : "  ") + flareName(i), day, ink);
+  } else if (screen == PICK_NET) {
+    canvas.drawString("WHICH NETWORK SHOULD " + upper(daemonName()) + " LEARN?", 10, 32);
+    int from = max(0, netAt - 4);                // five rows, clear of the footer
+    for (int i = from; i < netCount && i < from + 5; i++)
+      listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
+  } else if (screen == TYPE_PASS) {
+    canvas.drawString("TEACH " + upper(daemonName()) + "  " + nets[netAt], 10, 32);
+    canvas.setTextColor(QUIET); canvas.drawString("PASSWORD", 10, 52);
+    String shown = typed.length() > 34 ? "..." + typed.substring(typed.length() - 31) : typed;
+    canvas.setTextColor(PAPER); canvas.drawString(shown + "_", 10, 68);
+    for (int k = -4; k <= 4; k++) {           // the wheel: the letter chosen in the middle, its neighbours either side
+      int at = (wheelAt + k + WHEEL_N) % WHEEL_N;
+      String ch = at == 0 ? "OK" : String(WHEEL[at]) == " " ? "SPC" : String(WHEEL[at]);
+      int x = W / 2 + k * 32;
+      if (k == 0) {
+        canvas.fillRoundRect(x - 22, 98, 44, 36, 4, day);
+        canvas.setTextFont(4); canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM); canvas.drawString(ch, x, 117);
+      } else {
+        canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(MC_DATUM); canvas.drawString(ch, x, 117);
+      }
+    }
+    canvas.setTextDatum(TL_DATUM);
+  } else {   // RUN
+    canvas.drawString(String(t.name) + " / " + t.routines[routineAt].name, 10, 32);
+    wrap(runResult, 12, 54, W - 24, 2, 17, 6, PAPER);
+  }
+  canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+  canvas.drawString(screen == RUN ? "press: run again    top button: back"
+                    : screen == TYPE_PASS ? "turn: letter  press: add (OK: join)  top: delete"
+                    : "turn: choose    press: open    top button: back", 10, H - 4);
+}
+
+void draw() {
+  uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
+  canvas.fillSprite(INK);
+  // the day's band
+  canvas.fillRect(0, 0, W, 26, day);
+  canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(ML_DATUM);
+  canvas.drawString(st.have ? upper(st.day) + "  " + st.note + "  " + upper(st.season) : "DAEMONS COMPANION", 8, 13);
+  canvas.setTextDatum(MR_DATUM);
+  canvas.drawString(linkName(), W - 8, 13);
+  if (bat.present) {                                          // C-63: a small battery, filled to its charge
+    int x = W - 8 - canvas.textWidth(linkName()) - 52, y = 7;
+    uint16_t fill = bat.percent <= 15 && !bat.usb ? 0xF800 : ink;      // red when low and not plugged in
+    canvas.drawRect(x, y, 20, 12, ink); canvas.fillRect(x + 20, y + 3, 2, 6, ink);
+    canvas.fillRect(x + 2, y + 2, max(1, 16 * bat.percent / 100), 8, fill);
+    if (bat.charging) { canvas.drawLine(x + 11, y + 1, x + 7, y + 6, day); canvas.drawLine(x + 7, y + 6, x + 12, y + 6, day);
+                        canvas.drawLine(x + 12, y + 6, x + 8, y + 11, day); }       // a bolt, in the day's colour
+    canvas.setTextDatum(ML_DATUM); canvas.setTextFont(1);
+    canvas.drawString(String(bat.percent) + "%", x + 24, 13);
+    canvas.setTextFont(2);
+  }
+
+  if (screen == CARE) {                                      // C-13
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);
+    for (int i = 0; i < 4; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
+    drawArt(W - 70, 34, 1);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("turn: choose    press: do it    top button: back", 10, H - 4);
+  } else if (screen == INDEX_ENTRY) {                         // C-36: its INDEX entry, in the edition's voice
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
+    canvas.setTextColor(QUIET);
+    canvas.drawString(upper(st.daemon.category) + "  " + st.daemon.types, 10, 50);
+    drawArt(W - 68, 30, 1);
+    wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, 5, PAPER);   // clear of the sprite (seen with SHOT, 2026-10-04)
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("top button: back", 10, H - 4);
+  } else if (screen != HOME) {
+    drawRoutines(day);
+  } else if (page == ROUTINES_PAGE) {
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("ROUTINES", 10, 34);
+    wrap(st.carrying ? "The radios " + daemonName() + " can use. Press to open."
+                     : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, 4, 27, 3, PAPER);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    String names;                                            // C-67: this board's own types
+    for (int i = 0; i < typeCount; i++) names += String(i ? "  " : "") + types[i].name;
+    canvas.drawString(names, 10, H - 6);
+  } else if (!st.have) {
+    wrap("Looking for the companion.", 10, 40, W - 20, 4, 28, 2, PAPER);
+    wrap(wifiSet() ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"
+                   : "Run ./linkCompanion.sh on the computer, or join a network: ROUTINES, UPLINK.",
+         10, 100, W - 20, 2, 18, 3, QUIET);
+  } else if (page == DAY_PAGE) {
+    // C-73: the Xenith day -- its theme, its virtue over its shadow, its chakra and its note. Press: the day's note.
+    canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("TODAY IS", 10, 32);
+    canvas.setTextFont(4); canvas.setTextColor(day);
+    canvas.drawString(upper(st.theme.length() ? st.theme : st.day), 10, 50);
+    canvas.setTextFont(2); canvas.setTextColor(PAPER);
+    canvas.drawString(upper(st.virtue), 10, 86);
+    canvas.setTextColor(QUIET);
+    canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
+    canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("press: the day's note", 10, H - 6);
+  } else if (page == TODAY) {
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    // C-49: the step, and -- subtly -- the milestone it belongs to
+    canvas.drawString(st.milestone.length() ? upper(st.milestone) + "  " + String(st.msAt) + "/" + String(st.msOf) : "THE ONE THING", 10, 34);
+    if (st.step >= 0) {
+      int n = wrap(st.stepText, 10, 54, W - 20, 4, 27, 3, PAPER);
+      wrap(st.goal, 10, 58 + min(n, 3) * 27, W - 20, 2, 16, 1, QUIET);
+    } else {
+      wrap(lastDone >= 0 ? "All done. Set a new goal in the app." : "Nothing to do yet. Set a goal in the app.", 10, 54, W - 20, 4, 27, 3, PAPER);
+    }
+    canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+    if (undoable()) canvas.drawString("done: " + lastDoneText.substring(0, 30) + "   top button: undo", 10, H - 6);
+    else canvas.drawString(st.step >= 0 ? "press: done    " + st.virtue : st.virtue, 10, H - 6);
+  } else {
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    if (st.carrying) {
+      // C-42: the board's home -- the daemon, large, and alive: it bobs as it breathes, drifts a little either way,
+      // and now and then hops. (Device-only animated sprites come later; a daemon sent here comes more to life.)
+      uint32_t t = millis();
+      int bob = (int)roundf(3 * sinf(t / 420.0f));
+      int drift = (int)roundf(10 * sinf(t / 2900.0f));
+      int hop = (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
+      if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
+      drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
+      int x = 168;
+      canvas.setTextDatum(TL_DATUM);
+      canvas.setTextFont(st.daemon.nickname.length() <= 8 ? 4 : 2); canvas.setTextColor(PAPER);
+      canvas.drawString(st.daemon.nickname, x, 40);
+      canvas.setTextFont(2); canvas.setTextColor(QUIET);
+      // its species beside its level -- unless its nickname already is the species
+      String lv = "L" + String(st.daemon.level) + (st.daemon.grownTo > st.daemon.level ? " > " + String(st.daemon.grownTo) : "");   // C-45
+      canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + lv, x, 72);
+      // C-13: how it is, and its day -- never more than this, and never a nag
+      if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
+      canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
+      if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 126, W - x - 6, 1, 11, 2, QUIET);
+      else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 126, W - x - 6, 1, 11, 2, QUIET);
+      canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+      canvas.drawString("press: care for it", x, H - 4);
+    } else {
+      canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
+      wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
+    }
+  }
+  if (millis() < flashUntil) {               // a word that something happened
+    canvas.fillRoundRect(W / 2 - 70, H / 2 - 22, 140, 44, 6, day);
+    canvas.setTextFont(4); canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM);
+    canvas.drawString(flash, W / 2, H / 2);
+  }
+  canvas.pushSprite(0, 0);
+  dirty = false;
+}
+
+void say(const String &word) { flash = word; flashUntil = millis() + 1500; dirty = true; }
+
+// C-50: what the server says the tick finished -- a step, a milestone, the whole goal -- heard and seen
+void celebrate(const String &what) {
+  int kind = what == "goal" ? 2 : what == "milestone" ? 1 : what == "step" ? 0 : -1;
+  if (kind < 0) return;
+  say(kind == 2 ? "Done! All of it." : kind == 1 ? "Milestone!" : "Done.");
+  draw();
+  soundAccomplish(kind, st.daemon.species, dayIndex());
+}
+
+void progress(const String &text) { runResult = text; draw(); }

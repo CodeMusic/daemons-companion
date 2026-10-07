@@ -1,29 +1,38 @@
 #!/usr/bin/env bash
-# Put the newest firmware on the handheld (the LilyGO T-Embed CC1101), over its USB cable.
+# Put the newest firmware on the companion's devices, over their USB cables -- knowing which board each one is.
 #
-#   ./updateCompanion.sh              build the firmware and flash it to the board
-#   ./updateCompanion.sh --link       ... then link it to the server (./linkCompanion.sh)
-#   ./updateCompanion.sh --build      only build it, to check it compiles (no board needed)
+#   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
+#   ./updateCompanion.sh --all            ... every board found, without asking which
+#   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet)
+#   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
+#   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
+#   ./updateCompanion.sh --build          only build both, to check they compile (no board needed)
 #   ./updateCompanion.sh --help
 #
-# A running bridge holds the board's port and would make the upload fail, so it is stopped first.
-# If the upload cannot connect: hold BOOT, press and release RST, let go of BOOT, and run this again
-# (firmware/esp32/FLASHING.md). It needs PlatformIO: pip install platformio.
+# C-81: every board running the companion says "HELLO daemons-companion <board> <version>" every three seconds, so the
+# script asks each port what it is: the T-Embeds (CC1101, plain, SI4732) all take the one build env:t-embed (they tell
+# themselves apart at start, C-67), the watch takes env:t-watch-s3. A board that says nothing -- new, or not running the
+# companion -- is asked about. A running bridge holds a board's port, so it is stopped first. If an upload cannot
+# connect: hold BOOT, press and release RST, let go of BOOT, and run this again (firmware/esp32/FLASHING.md).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 FW="$HERE/firmware/esp32"
 
-usage() { sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; }
 
-link=0 build_only=0
-for arg in "$@"; do
-  case "$arg" in
+link=0 build_only=0 all=0 want_board="" want_port=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     --link)         link=1 ;;
     --build)        build_only=1 ;;
+    --all)          all=1 ;;
+    --board)        want_board="${2:-}"; shift ;;
+    --port)         want_port="${2:-}"; shift ;;
     -h|--help|help) usage; exit 0 ;;
-    *) echo "updateCompanion: unknown '$arg' (try --help)" >&2; exit 64 ;;
+    *) echo "updateCompanion: unknown '$1' (try --help)" >&2; exit 64 ;;
   esac
+  shift
 done
 
 # -- PlatformIO ---------------------------------------------------------------------------------------------------
@@ -34,26 +43,82 @@ PIO="$(command -v pio || true)"
 cd "$FW"
 if [[ $build_only == 1 ]]; then exec "$PIO" run; fi
 
-# -- the board ------------------------------------------------------------------------------------------------------
-port="$(ls /dev/cu.usbmodem* 2>/dev/null | head -1 || true)"
-if [[ -z "$port" ]]; then
-  echo "updateCompanion: no board on USB. Plug it in with a cable that carries data (not only power), then run this again." >&2
-  exit 1
-fi
+env_for() {                     # a board's id -> its build
+  case "$1" in
+    t-embed*)   echo t-embed ;;
+    t-watch-s3) echo t-watch-s3 ;;
+    *)          echo "" ;;
+  esac
+}
 
+# -- the boards -----------------------------------------------------------------------------------------------------
 if pgrep -f usb_bridge.py >/dev/null 2>&1; then
   echo "updateCompanion: stopping the bridge (it holds the board's port)"
   pkill -f usb_bridge.py || true
   sleep 1
 fi
 
-echo "updateCompanion: flashing $port"
-"$PIO" run -t upload --upload-port "$port"
+ports=()
+if [[ -n "$want_port" ]]; then ports=("$want_port")
+else for p in /dev/cu.usbmodem*; do [[ -e "$p" ]] && ports+=("$p"); done; fi
+if [[ ${#ports[@]} -eq 0 ]]; then
+  echo "updateCompanion: no board on USB. Plug it in with a cable that carries data (not only power), then run this again." >&2
+  exit 1
+fi
 
-# The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and says
-# nothing (2026-10-06). The firmware says HELLO every three seconds, so wait for one, and reset it ourselves if it is
-# silent. The port comes and goes while it restarts.
-python3 - "$port" <<'PY' || echo "updateCompanion: no HELLO yet -- press the board's RST button once." >&2
+# Ask a port what it is: its HELLO names the board ("" when it says nothing within five seconds).
+ask() {
+  python3 - "$1" <<'PY' 2>/dev/null || true
+import re, serial, sys, time
+end = time.time() + 5
+got = b""
+try:
+    with serial.Serial(sys.argv[1], 115200, timeout=0.3) as s:
+        while time.time() < end:
+            got += s.read(512)
+            m = re.search(rb"HELLO daemons-companion (\S+)", got)
+            if m:
+                print(m.group(1).decode()); break
+except Exception:
+    pass
+PY
+}
+
+ids=(); envs=()
+for p in "${ports[@]}"; do
+  id="$(ask "$p")"
+  ids+=("${id:-unknown}")
+  envs+=("$(env_for "${want_board:-$id}")")
+  echo "updateCompanion: $p  ${id:-says nothing (no companion firmware yet?)}"
+done
+
+chosen=()
+if [[ ${#ports[@]} -eq 1 || $all == 1 || -n "$want_port" ]]; then
+  for i in "${!ports[@]}"; do chosen+=("$i"); done
+else
+  echo "updateCompanion: ${#ports[@]} boards plugged in. Which to flash? (numbers, or a for all)"
+  for i in "${!ports[@]}"; do echo "  $((i + 1))) ${ports[$i]}  ${ids[$i]}"; done
+  [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --all or --port." >&2; exit 64; }
+  read -r answer
+  if [[ "$answer" == a* ]]; then for i in "${!ports[@]}"; do chosen+=("$i"); done
+  else for n in $answer; do chosen+=("$((n - 1))"); done; fi
+fi
+
+for i in "${chosen[@]}"; do
+  port="${ports[$i]}" env="${envs[$i]}"
+  if [[ -z "$env" ]]; then
+    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3"
+    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed or --board t-watch-s3." >&2; exit 64; }
+    read -r answer
+    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+  fi
+  echo "updateCompanion: flashing $port with $env"
+  "$PIO" run -e "$env" -t upload --upload-port "$port"
+
+  # The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and
+  # says nothing (2026-10-06). The firmware says HELLO every three seconds, so wait for one, and reset it ourselves if
+  # it is silent. The port comes and goes while it restarts.
+  python3 - "$port" <<'PY' || echo "updateCompanion: no HELLO yet from $port -- press the board's RST button once." >&2
 import serial, sys, time
 port = sys.argv[1]
 def hello(wait):
@@ -65,6 +130,7 @@ def hello(wait):
                 while time.time() < end:
                     got += s.read(512)
                     if b"HELLO daemons-companion" in got:
+                        print("updateCompanion: " + port + " says " + got.split(b"HELLO daemons-companion ")[1].split(b"\n")[0].decode().strip())
                         return True
         except (serial.SerialException, OSError):
             time.sleep(0.5)
@@ -76,7 +142,8 @@ with serial.Serial(port, 115200) as s:
     s.dtr = False; s.rts = True; time.sleep(0.2); s.rts = False
 sys.exit(0 if hello(20) else 1)
 PY
-echo "updateCompanion: done -- the board is running the new firmware."
+done
+echo "updateCompanion: done."
 
 if [[ $link == 1 ]]; then exec "$HERE/linkCompanion.sh"; fi
-echo "updateCompanion: to link it to the server: ./linkCompanion.sh"
+echo "updateCompanion: to link a board to the server: ./linkCompanion.sh"

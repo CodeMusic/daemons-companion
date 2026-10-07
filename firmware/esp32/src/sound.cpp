@@ -1,4 +1,4 @@
-// C-40, C-41: the board's sounds. The T-Embed CC1101's speaker is I2S on BCLK 46, LRCLK 40, DIN 7 (LilyGO's
+// C-40, C-41: the board's sounds. The speaker is I2S on the board's pins (C-67; on the CC1101 BCLK 46, LRCLK 40, DIN 7: LilyGO's
 // utilities.h, driven as its own mic-and-speaker test drives it: 16 kHz, 16-bit, the left channel, I2S_NUM_1).
 //
 // The voice is a square wave with a short rise and fall -- the game's own chip voice, and no clicks. Just enough tones
@@ -10,10 +10,11 @@
 // screen is in C# (vision 7.14g, "a semitone above everywhere you will go").
 #include <driver/i2s.h>
 #include "sound.h"
+#include "board.h"
 #include "leds.h"
 
 static const i2s_port_t PORT = I2S_NUM_1;
-static const int RATE = 16000, PIN_BCLK = 46, PIN_LRCLK = 40, PIN_DIN = 7;
+static const int RATE = 16000;   // C-67: the pins are the board's
 static bool ready = false, enabled = true;
 static int amplitude = 5000;                 // 0..~16000; the site's volume sets it
 static int root = 60 + 12;                   // the day's note, as MIDI (C5 by default)
@@ -33,7 +34,7 @@ void soundBegin() {
   cfg.tx_desc_auto_clear = true;              // silence, not the last buffer again, when nothing is playing
   i2s_pin_config_t pins = {};
   pins.mck_io_num = I2S_PIN_NO_CHANGE;
-  pins.bck_io_num = PIN_BCLK; pins.ws_io_num = PIN_LRCLK; pins.data_out_num = PIN_DIN; pins.data_in_num = I2S_PIN_NO_CHANGE;
+  pins.bck_io_num = board.i2sBclk; pins.ws_io_num = board.i2sLrclk; pins.data_out_num = board.i2sDout; pins.data_in_num = I2S_PIN_NO_CHANGE;
   if (i2s_driver_install(PORT, &cfg, 0, nullptr) != ESP_OK) return;
   if (i2s_set_pin(PORT, &pins) != ESP_OK) { i2s_driver_uninstall(PORT); return; }
   i2s_zero_dma_buffer(PORT);

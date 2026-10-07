@@ -42,7 +42,7 @@ import { readProfile } from "./save/profile.js";
 import { readIndex } from "./save/index.js";
 import { answerRequests, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
-import { deviceArt, repaint, streakColours } from "./art.js";
+import { deviceArt, gameRoutines, repaint, streakColours } from "./art.js";
 import { deviceDay } from "./days.js";
 import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
@@ -281,9 +281,13 @@ function grown(d: { species: number; exp: number; level: number; personality: nu
 
 export function deviceState(cfg: Config, store: Store, now = new Date()) {
   const t = today(cfg, store, now);
-  let daemon = null;
+  let daemon = null, party: unknown[] = [];
   if (cfg.savePath && existsSync(cfg.savePath)) {
-    const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away);
+    const save = readSave(new Uint8Array(readFileSync(cfg.savePath)));
+    const d = save.party.find((p) => p.away);
+    // C-68: the party and their routines, for GAME ROUTINES
+    party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
+                                     routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
     const row = d && SPECIES[String(d.species)];
     // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
     // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
@@ -302,7 +306,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },
-           step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon };
+           step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon, party };
 }
 
 // C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else

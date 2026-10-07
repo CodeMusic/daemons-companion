@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
-import { decodeIndexedPng, deviceArt, repaint, streakColours } from "../src/art.js";
+import { decodeIndexedPng, deviceArt, gameRoutines, repaint, streakColours } from "../src/art.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 import streaksJson from "../data/streaks.json" with { type: "json" };
 
@@ -60,5 +60,16 @@ describe("a sprite as a device draws it (C-36)", () => {
     const { px } = decodeIndexedPng(png);
     const packed = Buffer.from(deviceArt(png).pixels, "base64");
     for (let i = 0; i < px.length; i += 2) expect(packed[i >> 1]).toBe((px[i] << 4) | px[i + 1]);
+  });
+});
+
+describe("a daemon's routines as GAME ROUTINES shows them (C-68)", () => {
+  it("names each routine as the game does, with its type and its streak's colour on this body", () => {
+    const body = 12;                                            // a GROWTH body (ROVERSEER's)
+    const got = gameRoutines(body, [1, 0, 0, 0]);               // move 1 alone: the empty slots are left out
+    expect(got).toHaveLength(1);
+    expect(got[0]).toMatchObject({ name: "PUSH", type: "CONTENT" });
+    const [r, g, b] = (streaksJson as any).colours[body][0];
+    expect(got[0].colour).toBe("#" + [r, g, b].map((c: number) => c.toString(16).padStart(2, "0")).join(""));
   });
 });

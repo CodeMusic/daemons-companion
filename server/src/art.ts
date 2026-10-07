@@ -6,9 +6,11 @@
 import { crc32, inflateSync } from "node:zlib";
 import streaksJson from "../data/streaks.json" with { type: "json" };
 import movesJson from "../data/moves.json" with { type: "json" };
+import routinesJson from "../data/routines.json" with { type: "json" };
 
 const STREAKS = streaksJson as { colours: (number[] | null)[][]; blank: number[]; first_index: number; body_mid_index: number };
 const MOVE_TYPE = movesJson as Record<string, number>;
+const ROUTINES = routinesJson as { types: string[]; moves: Record<string, string> };
 
 export function streakColours(palette: number[][], bodyType: number | null, moves: number[]): number[][] {
   return moves.map((m) => {
@@ -16,6 +18,17 @@ export function streakColours(palette: number[][], bodyType: number | null, move
     const t = MOVE_TYPE[String(m)];
     if (bodyType == null || t == null) return STREAKS.blank;
     return STREAKS.colours[bodyType][t] ?? STREAKS.blank;
+  });
+}
+
+// C-68: a daemon's routines as GAME ROUTINES shows them -- each one's name, its type, and the colour its streak takes on
+// this daemon's body (the colour the handheld's ring lights), as #rrggbb.
+export function gameRoutines(bodyType: number | null, moves: number[]) {
+  return moves.filter(Boolean).map((m) => {
+    const t = MOVE_TYPE[String(m)];
+    const rgb = t == null ? STREAKS.blank : (STREAKS.colours[bodyType ?? t]?.[t] ?? STREAKS.colours[t]?.[t] ?? STREAKS.blank);
+    return { name: ROUTINES.moves[String(m)] ?? "?", type: t == null ? "" : ROUTINES.types[t],
+             colour: "#" + rgb.map((c) => c.toString(16).padStart(2, "0")).join("") };
   });
 }
 

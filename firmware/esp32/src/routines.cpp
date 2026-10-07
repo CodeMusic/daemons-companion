@@ -13,13 +13,15 @@ String runNetworksInRange();
 String runChooseRemote();
 String runTheaterMode();
 String runJoinNetwork();
+String runWifiMotion();                   // C-70: experiments.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote } };
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
-static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork } };
+static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
+                                               { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
 // C-67: the types this board can run -- the CC1101's radios only where they are; Bluetooth and Wi-Fi everywhere.
 RoutineType types[8];
@@ -31,7 +33,7 @@ void routinesBegin() {
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 };
   if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   nullptr,             0 };
   if (!partyFirst()) types[typeCount++] = { "PARTY",      "the game",  nullptr,             0 };   // C-68, DRAFT
-  types[typeCount++] =                     { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     2 };
+  types[typeCount++] =                     { "UPLINK",     "Wi-Fi",     UPLINK_ROUTINES,     3 };
 }
 
 // C-68: GAME ROUTINES. A board with no radios of its own (the plain T-Embed; the SI4732 until its own types, C-69) opens

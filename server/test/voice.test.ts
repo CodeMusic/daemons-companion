@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
-import { DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf } from "../src/ai/voice.js";
+import { DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
 
 // A second of a 440 Hz tone as a WAV, at a rate the handheld does not play (the voice server's is 24 kHz).
 function wav(rate: number, seconds = 1): Buffer {
@@ -17,6 +17,8 @@ describe("the daemon's voice, for a handheld (C-66)", () => {
   it("finds a WAV's samples", () => {
     expect(pcmOfWav(wav(16000))!.length).toBe(32000);
     expect(pcmOfWav(Buffer.from("not a wav"))).toBeNull();
+    const pcm = Buffer.from([1, 2, 3, 4]);
+    expect(pcmOfWav(wavOf(pcm))!.equals(pcm)).toBe(true);          // and makes one the speech server takes
   });
 
   it.skipIf(!existsSync("/opt/homebrew/bin/ffmpeg") && !existsSync("/usr/bin/afconvert"))(

@@ -40,6 +40,23 @@ export async function toDevicePcm(audio: Buffer): Promise<Buffer | null> {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
+// 16 kHz samples as a WAV -- what the speech-to-text server is sent, whatever the device recorded (C-66: the phone
+// records AAC, the handheld a WAV already).
+export function wavOf(pcm: Buffer, rate = DEVICE_RATE): Buffer {
+  const h = Buffer.alloc(44);
+  h.write("RIFF", 0, "latin1"); h.writeUInt32LE(36 + pcm.length, 4); h.write("WAVEfmt ", 8, "latin1");
+  h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22); h.writeUInt32LE(rate, 24);
+  h.writeUInt32LE(rate * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34);
+  h.write("data", 36, "latin1"); h.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([h, pcm]);
+}
+
+// Any recording as a 16 kHz WAV, or as it came when it could not be converted.
+export async function asWav(audio: Buffer): Promise<{ audio: Buffer; mime: string } | null> {
+  const pcm = await toDevicePcm(audio);
+  return pcm && pcm.length ? { audio: wavOf(pcm), mime: "audio/wav" } : null;
+}
+
 // The samples of a PCM WAV: its "data" chunk.
 export function pcmOfWav(wav: Buffer): Buffer | null {
   if (wav.length < 12 || wav.toString("latin1", 0, 4) !== "RIFF" || wav.toString("latin1", 8, 12) !== "WAVE") return null;

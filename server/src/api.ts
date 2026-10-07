@@ -35,7 +35,7 @@ import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
-import { toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
+import { asWav, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
@@ -654,13 +654,22 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         return { answer: r.answer ?? null, heard: r.heard ?? null, provider: r.provider ?? null, error: r.error ?? null, audio, ms };
       };
-      if (req.method === "POST" && path === "/api/ai/talk")
-        return send(res, 200, await n8n(ecfg, "daemon/talk", talkPayload(await body(req))));
-      if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, as a WAV, raw
-        const wav = await rawBody(req);
-        if (!wav || wav.length < 44) return send(res, 400, { error: "talk takes a WAV recording (up to 2 MB)" });
+      // Whatever was recorded (the phone's AAC, the handheld's WAV) goes on as a 16 kHz WAV, so speech to text is sent one kind.
+      const heardAs = async (audio: Buffer, mime: string) => {
+        const w = await asWav(audio);
+        return w ? { audioBase64: w.audio.toString("base64"), audioMime: w.mime } : { audioBase64: audio.toString("base64"), audioMime: mime };
+      };
+      if (req.method === "POST" && path === "/api/ai/talk") {
+        const b = await body(req);
+        if (typeof b.audioBase64 === "string" && b.audioBase64)
+          Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
+        return send(res, 200, await n8n(ecfg, "daemon/talk", talkPayload(b)));
+      }
+      if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
+        const audio = await rawBody(req);
+        if (!audio || audio.length < 44) return send(res, 400, { error: "talk takes a recording (up to 2 MB)" });
         return send(res, 200, await forDevice(await n8n(ecfg, "daemon/talk",
-          talkPayload({ audioBase64: wav.toString("base64"), audioMime: "audio/wav" }))));
+          talkPayload(await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav"))))));
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         const d = deviceState(ecfg, store).daemon;

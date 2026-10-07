@@ -13,6 +13,8 @@
 static const i2s_port_t MIC = I2S_NUM_0;
 static const int RATE = 16000, MOST_S = 8;            // eight seconds is plenty to say a thing to a daemon
 String talkHeard, talkAnswer, talkStatus;
+int talkPeak = 0, talkRms = 0;
+bool talkByCable = false;
 
 // The models write curly quotes, dashes and ellipses the board's fonts do not have: plain ones instead.
 static String plain(String s) {
@@ -149,7 +151,7 @@ static void overCable(uint8_t *rec, size_t n) {
   free(rec);
   String line;
   uint32_t until = millis() + 150000;                                          // a local model's first turn loads it
-  while (millis() < until && cableLine(line, 1000)) if (line.startsWith("TALKED ")) break;
+  while (millis() < until) if (cableLine(line, 1000) && line.startsWith("TALKED ")) break;   // a quiet second is not an end
   if (!line.startsWith("TALKED ")) { talkStatus = "The cable's bridge did not answer."; screen = TALK; draw(); return; }   // DRAFT
   JsonDocument d;
   deserializeJson(d, line.substring(7));
@@ -201,10 +203,13 @@ void talkHold(uint32_t forMs) {
   i2s_driver_uninstall(MIC);
   while (!forMs && (board.touch ? watchTouchDown() : !digitalRead(board.encKey))) delay(5);   // a long talk ran out: wait for the let-go
   lastInput = millis();
+  { long long sq = 0; int peak = 0;                                           // how loud it was, for the check
+    for (size_t i = 0; i < n; i++) { int v = abs((int)pcm[i]); peak = max(peak, v); sq += (long long)v * v; }
+    talkPeak = peak; talkRms = n ? (int)sqrt((double)sq / n) : 0; }
   if (n < RATE / 3) { free(rec); screen = HOME; say("Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
   wavHeader(rec, n);
   talkStatus = "Thinking..."; draw();                                         // DRAFT
-  if (!online() && usbLive()) { overCable(rec, n); return; }                  // C-66: the cable's bridge carries it
+  if ((!online() || talkByCable) && usbLive()) { overCable(rec, n); return; } // C-66: the cable's bridge carries it
   if (!online()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
   h.setTimeout(120000);                                                       // a local model's first turn loads it

@@ -316,8 +316,11 @@ void handleLine(String line, bool fromPhone) {
     draw();
   }
   else if (line.startsWith("TALK ") && !fromPhone) {   // C-66: a check from the computer -- listen this many ms, then answer
-    wake(); talkHold(constrain(line.substring(5).toInt(), 500, 8000));
-    reply("TALKED " + String(talkStatus.length() ? talkStatus : String("ok")) + " | heard: " + talkHeard + " | answer: " + talkAnswer.substring(0, 160));
+    wake(); talkByCable = line.endsWith(" cable");
+    talkHold(constrain(line.substring(5).toInt(), 500, 8000));
+    talkByCable = false;
+    reply("TALKDONE " + String(talkStatus.length() ? talkStatus : String("ok")) + " | peak " + talkPeak + " rms " + talkRms +
+          " | heard: " + talkHeard + " | answer: " + talkAnswer.substring(0, 160));
     draw();
   }
   else if (line.startsWith("BRAIN") && !fromPhone) {  // C-76: the offline brain's link -- BRAIN tcp host[:port] | uart | off

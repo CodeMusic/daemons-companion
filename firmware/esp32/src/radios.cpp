@@ -4,6 +4,7 @@
 // says so on the screen, and the top button gives up.
 #include <Arduino.h>
 #include <Wire.h>
+#include "battery.h"
 #include <Preferences.h>
 #include <Adafruit_PN532.h>
 #include <IRrecv.h>
@@ -29,7 +30,7 @@ static bool nfcReady = false;
 
 String runReadMyTag() {
   if (!nfcReady) {
-    Wire.begin(PIN_SDA, PIN_SCL);
+    batteryWire();                     // C-63: the bus is shared with the battery's gauge and charger
     nfc.begin();
     uint32_t version = nfc.getFirmwareVersion();
     if (!version) return "The NFC reader did not answer.\nIs the board's power on? Press to try again.";

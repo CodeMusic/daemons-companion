@@ -14,6 +14,7 @@
 #include <TFT_eSPI.h>
 #include <WiFi.h>           // always: UPLINK's scan works over USB too, without joining a network
 #include "radios.h"
+#include "battery.h"
 #include "leds.h"
 #include "sound.h"
 #include "link.h"
@@ -62,6 +63,10 @@ static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "ITS INDEX ENTRY" 
 int careAt = 0; uint32_t hopUntil = 0;
 int remoteAt = 0; bool pickRemoteNext = false;   // C-51: CHOOSE A REMOTE
 Page page = TODAY;
+// C-63: the battery, read every 20 s; the server hears about it when it changes enough to matter
+Battery bat;
+uint32_t batAt = 0, batToldAt = 0;
+int batToldPct = -100; bool batToldCharging = false;
 Screen screen = HOME;
 int typeAt = 0, routineAt = 0;
 // C-33: joining a network on the board -- the networks in range, then the password on a letter wheel. WHEEL[0] is OK.
@@ -427,6 +432,17 @@ void draw() {
   canvas.drawString(st.have ? upper(st.day) + "  " + st.note + "  " + upper(st.season) : "DAEMONS COMPANION", 8, 13);
   canvas.setTextDatum(MR_DATUM);
   canvas.drawString(linkName(), W - 8, 13);
+  if (bat.present) {                                          // C-63: a small battery, filled to its charge
+    int x = W - 8 - canvas.textWidth(linkName()) - 52, y = 7;
+    uint16_t fill = bat.percent <= 15 && !bat.usb ? 0xF800 : ink;      // red when low and not plugged in
+    canvas.drawRect(x, y, 20, 12, ink); canvas.fillRect(x + 20, y + 3, 2, 6, ink);
+    canvas.fillRect(x + 2, y + 2, max(1, 16 * bat.percent / 100), 8, fill);
+    if (bat.charging) { canvas.drawLine(x + 11, y + 1, x + 7, y + 6, day); canvas.drawLine(x + 7, y + 6, x + 12, y + 6, day);
+                        canvas.drawLine(x + 12, y + 6, x + 8, y + 11, day); }       // a bolt, in the day's colour
+    canvas.setTextDatum(ML_DATUM); canvas.setTextFont(1);
+    canvas.drawString(String(bat.percent) + "%", x + 24, 13);
+    canvas.setTextFont(2);
+  }
 
   if (screen == CARE) {                                      // C-13
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
@@ -1107,6 +1123,19 @@ void loop() {
   readKey();
   uint32_t now = millis();
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println("HELLO daemons-companion t-embed-cc1101 1"); dirty = true; }
+  if (batAt == 0 || now - batAt > 20000) {                   // C-63: the battery, and the server told when it matters
+    batAt = now;
+    Battery was = bat;
+    batteryRead(bat);
+    if (bat.percent != was.percent || bat.charging != was.charging || bat.usb != was.usb) dirty = true;
+    bool tell = bat.present && (abs(bat.percent - batToldPct) >= 5 || bat.charging != batToldCharging || now - batToldAt > 600000);
+    if (tell && online()) {                                    // over Wi-Fi; the cable and the phone carry it later
+      batToldAt = now; batToldPct = bat.percent; batToldCharging = bat.charging;
+      http("POST", "/api/device/battery", String("{\"percent\":") + bat.percent + ",\"mv\":" + bat.mv +
+           ",\"charging\":" + (bat.charging ? "true" : "false") + ",\"full\":" + (bat.full ? "true" : "false") +
+           ",\"usb\":" + (bat.usb ? "true" : "false") + "}");
+    }
+  }
   if (!bridgeLive() && online()) {
     if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
     pollCommands(now);                        // C-32: what the site sent, over Wi-Fi

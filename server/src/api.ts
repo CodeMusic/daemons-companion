@@ -341,7 +341,8 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
-     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen"].includes(p),
+     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen",
+     "/api/device/battery"].includes(p),
   (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
   (m: string) => m === "OPTIONS",
 ];
@@ -474,7 +475,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // ---- the site's side (this machine only): what the link is, and the commands it sends ----
       if (req.method === "GET" && path === "/api/device/link")
-        return send(res, 200, { ...hub.link(), lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" } });
+        return send(res, 200, { ...hub.link(), lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" },
+                                battery: JSON.parse(store.getSetting("device.battery") ?? "null") });   // C-63
       if (req.method === "POST" && path === "/api/device/run") {
         const b = await body(req);
         if (typeof b.routine !== "string" || !hub.hasRoutine(b.routine))
@@ -598,6 +600,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { meetings,
                                 heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
                                 lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
+      }
+      if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes
+        const b = await body(req);
+        const pct = Number(b.percent);
+        if (!Number.isFinite(pct) || pct < 0 || pct > 100) return send(res, 400, { error: "battery {percent 0-100}" });
+        store.setSetting("device.battery", JSON.stringify({ percent: Math.round(pct), mv: Number(b.mv) || null,
+          charging: !!b.charging, full: !!b.full, usb: !!b.usb, at: new Date().toISOString() }));
+        return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/device/listen") {   // C-15: the board's last listen, for the check
         const b = await body(req);

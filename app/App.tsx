@@ -709,6 +709,7 @@ type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: s
               routines: { name: string; radio: string; routines: string[] }[];
               pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
               remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string;
+              battery?: { percent: number; charging: boolean; full: boolean; usb: boolean; at: string } | null;   // C-63
               lan: { address: string | null; port: number; open: boolean } };
 type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
 type Brand = { brand: string; sets: RemoteSet[] };
@@ -811,6 +812,9 @@ function DeviceScreen({ ink }: { ink: string }) {
         </Text>
         <Small>{link.linked ? link.firmware
           : "Plug it in and run ./linkCompanion.sh, or let it join your Wi-Fi (below)."}</Small>
+        {link.battery ? <Small color={link.battery.percent <= 15 && !link.battery.usb ? "$red10" : undefined}>
+          {`Battery ${link.battery.percent}%${link.battery.charging ? ", charging" : link.battery.full ? ", full" : link.battery.usb ? ", plugged in" : ""}`}
+          {` (as of ${new Date(link.battery.at).toLocaleTimeString()})`}</Small> : null}
       </Card>
 
       {link.linked ? (

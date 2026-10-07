@@ -118,7 +118,7 @@ finish counts as a meal, and gives it experience, which it takes home at the nex
 menu left alone goes to sleep (two minutes, by default), and waking lands back at home, to a few notes of the title theme.
 
 **ROUTINES** are the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC),
-LONGWAVE (Sub-GHz, not wired yet), UPLINK (Wi-Fi) -- and **GAME ROUTINES**: your party, and each daemon's own routines
+LONGWAVE (Sub-GHz: WHAT'S ON THE AIR, listening only), UPLINK (Wi-Fi) -- and **GAME ROUTINES**: your party, and each daemon's own routines
 from the game, in their streak colours; using one plays its own short phrase with the ring lit its colour. On the CC1101
 it is the PARTY type; on a board with no radios of its own (the plain T-Embed, the SI4732 for now) ROUTINES opens it
 first. UPLINK's **WI-FI MOTION** is the first radio experiment (C-70): it watches the Wi-Fi channel for movement in

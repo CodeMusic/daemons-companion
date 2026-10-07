@@ -32,7 +32,7 @@ first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test th
 | FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; the site can add one by brand |
 | WHISPER | PAIR MY PHONE, OPEN TO MY PHONE, FORGET MY PHONES | the phone app's link over Bluetooth (C-55) |
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
-| LONGWAVE | -- | later |
+| LONGWAVE | WHAT'S ON THE AIR | listens (never sends) at 315, 433.92, 868.35 and 915 MHz -- weather stations, doorbells, meters: each band's level against its learnt quiet, and the bursts counted, for 90 seconds |
 | PARTY | your party, then a daemon's routines | the game's own routines, in their streak colours: one used plays its phrase, the ring lit its colour (C-68) |
 | UPLINK | NETWORKS IN RANGE | the Wi-Fi networks it hears, those it knows marked * |
 | UPLINK | TEACH A NETWORK | your daemon learns a network: choose one, spell its password on the wheel; it joins any it knows when near |

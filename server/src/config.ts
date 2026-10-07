@@ -14,7 +14,7 @@ export interface Config {
   ai: { enabled: boolean; baseUrl: string; model: string; apiKeyEnv: string | null };
   // C-64: the user's n8n, where daemon/talk and daemon/voice run (DAEMONS ai/n8n). At home, the internal one; the
   // shared secret from the environment variable named here, or `secret` itself in config.json (never committed).
-  talk: { url: string | null; secretEnv: string; secret?: string };
+  talk: { url: string | null; secretEnv: string; secret?: string; localModel?: string };   // localModel: LM Studio's name for it
 }
 
 export const DEFAULTS: Config = {

@@ -624,6 +624,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
           history: Array.isArray(b.history) ? b.history.slice(-6) : [],
           provider: b.provider ?? store.getSetting("talk.provider") ?? "auto", speak: b.speak !== false, voice: "index",
+          localModel: ecfg.talk.localModel,
           daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry }
                     : { nickname: "your daemon" },
           day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },

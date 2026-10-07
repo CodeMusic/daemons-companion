@@ -82,13 +82,17 @@ writes its own copy back).
    - **See:** "This save belongs to a different game…"; PROFILE says whose game the companion carries for. It is shown
      but never written.
 
-## 6. The handheld (optional, if the board is set up)
+## 6. A handheld (optional, if a board is set up)
 
 See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, with the board plugged in:
 
 ```sh
 ./updateCompanion.sh --link   # flash the board, then link it (or ./linkCompanion.sh alone, to link without flashing)
 ```
+
+- **See:** the script names each board it finds (`t-embed-cc1101`, `t-embed`, `t-embed-si4732`, `t-watch-s3`) and
+  flashes the right build. With several plugged in it asks which. **If the screen stays dark after flashing, press
+  RST once** -- the board waited in its bootloader.
 
 - **See:** the day's band at the top with **USB** in the corner; **TODAY** shows the one step.
 - **See:** the band at the top in the day's own colour (Sunday red, Monday orange, ... Saturday violet), and the
@@ -171,6 +175,47 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   (**CHOOSE A REMOTE** picks it).
 - **Rename a remote:** the site's or the app's DEVICE tab, ITS REMOTES, **Rename** beside it. **See:** the board's
   CHOOSE A REMOTE and THEATER MODE use the new name.
+
+## 11. The DAY, and the battery (C-73, C-63)
+
+- **Turn** past ROUTINES to the **DAY**. **See:** TODAY IS and the day's theme large (Wednesday: GROWTH), its virtue
+  over its vice (DILIGENCE CURES SLOTH), its chakra and its note. **Press:** the day's note.
+- **See:** a small battery in the top band, with its percent; a bolt while it charges, red when low and unplugged.
+  At 15% the board says BATTERY LOW; at 5% it says CHARGE ME and sleeps -- **only the top button wakes it**.
+
+## 12. GAME ROUTINES (C-68)
+
+- ROUTINES, then **PARTY** (on the CC1101 it is a type beside FLARE and UPLINK; on a board with no radios of its own,
+  ROUTINES opens it first). **See:** WHOSE ROUTINE? and your party, each with its level and types.
+- **Press** on one. **See:** its four routines, each with a swatch in its streak's colour and its type.
+- **Press** on a routine. **See:** "<daemon> used <routine>!" **Hear:** its own short phrase (the same every time for
+  that routine). **See:** the ring dancing in that colour.
+
+## 13. Talk to your daemon (C-66, C-65)
+
+Needs the server's `talk` setting, your n8n and the speech-to-text server (README, Talk to your daemon). The board
+talks over **Wi-Fi**, so it must have joined a network.
+
+- On the CC1101, at home: **hold the dial** half a second. **See:** Listening..., the ring glimmering white. Say
+  something short, and **let go**. **See:** Thinking..., then what it heard in quotes and its answer. **Hear:** the
+  answer in the INDEX voice. **Top button** stops the voice.
+- DAEMON, press for CARE, choose its INDEX entry, **press**. **Hear:** the entry read aloud.
+- On the phone (a new build): the DAEMON tab, **HOLD TO TALK** while a daemon is on your device; an entry's
+  **Read aloud**.
+
+## 14. The T-Watch S3 (C-71)
+
+- `./updateCompanion.sh --board t-watch-s3` the first time. **See:** the face -- the time, the day's theme, its virtue
+  over its vice, chakra and note, today's steps, the battery and a TALK button, ringed in the day's colour.
+- **Swipe** left and right through the pages; **tap** to press; **hold** to go back. The **crown** wakes it or goes
+  back; held, it sleeps. **Tell me** if a swipe goes the wrong way -- the touch's direction is a guess.
+
+## 15. WI-FI MOTION (C-70)
+
+- ROUTINES, UPLINK, **WI-FI MOTION**, with the board on your Wi-Fi. **See:** five seconds of "Learning the room" --
+  stand back and keep still. Then walk between the board and your router. **See:** SOMETHING MOVED and the bars rise;
+  the ring pulses. Stand still: they fall. **Top button** stops it; it ends by itself after 45 seconds and says how much
+  of the time something moved.
 
 ## What to tell me
 

@@ -90,6 +90,11 @@ only keep the list, it walks beside you through it. Three pieces and a game:
   starts clean for the S3, keeping RoverCodeBase's brain-region layout where it helps: first the day, the step and
   the daemon on screen over Wi-Fi, then ticking a step off with the encoder. *Whether it can count steps (an
   accelerometer) is to be checked on the board.*
+- **More handhelds, one firmware** (the user, 2026-10-07; C-67): the **plain T-Embed** and the **T-Embed SI4732** run
+  the same build as the CC1101 and tell themselves apart at start by what answers on I2C; the **T-Watch S3** is its own
+  build of the same code, with a touch face (C-71). Each board's pins and parts: `docs/HARDWARE.md`. A daemon per
+  device and every device always connected: `docs/DEVICES.md` (C-80, C-82). M5Stack boards (C-74, C-75) and an
+  **LLM630** behind a T-Embed as its offline brain (C-76, `docs/LLM630.md`) are next.
 - **The Pi Zero device: a Pi Zero 2 W** (the user, 2026-10-04). *OPEN: which screen* (RoverRevival used a Waveshare
   1.44" 128x128 LCD with a joystick). Python means the save reader and the step logic can be shared code.
 - **A phone can be the device too** (the user, 2026-10-04): the app on iOS and Android carries the daemon and finds

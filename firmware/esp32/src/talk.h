@@ -5,6 +5,7 @@
 #include <Arduino.h>
 
 bool talkCan();                 // a microphone this firmware can read (the CC1101's PDM microphone, for now)
-void talkHold();                // the dial is held: listen until it is let go, then answer
+void talkHold(uint32_t forMs = 0);   // the dial is held: listen until it is let go (or forMs, for a check from the
+                                      // computer: TALK <ms> down the cable), then answer
 void talkReadEntry();           // C-65: the carried daemon's INDEX entry, aloud
 extern String talkHeard, talkAnswer, talkStatus;   // what the TALK screen shows

@@ -73,7 +73,7 @@ static void answer(int code, const String &body) {
   if (strlen(audio)) playVoice(audio);
 }
 
-void talkHold() {
+void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
   if (!online()) { say("TALK NEEDS WI-FI"); return; }                          // DRAFT -- the cable carries lines, not voices
   const size_t most = RATE * MOST_S;
@@ -83,7 +83,9 @@ void talkHold() {
   ledsTint(0xFFFFFF);
   int16_t *pcm = (int16_t *)(rec + 44);
   size_t n = 0; int step = 0;
-  while (!digitalRead(board.encKey) && n < most) {                           // until the dial is let go
+  uint32_t t0 = millis();
+  auto held = [&]() { return forMs ? millis() - t0 < forMs : !digitalRead(board.encKey); };
+  while (held() && n < most) {                                               // until the dial is let go
     size_t got = 0;
     i2s_read(MIC, pcm + n, min((size_t)512, most - n) * 2, &got, 100 / portTICK_PERIOD_MS);
     n += got / 2;
@@ -91,7 +93,7 @@ void talkHold() {
   }
   ledsDance(-1, 0, 0);
   i2s_driver_uninstall(MIC);
-  while (!digitalRead(board.encKey)) delay(5);                               // a long talk ran out: wait for the let-go
+  while (!forMs && !digitalRead(board.encKey)) delay(5);                     // a long talk ran out: wait for the let-go
   lastInput = millis();
   if (n < RATE / 3) { free(rec); screen = HOME; say("Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
   wavHeader(rec, n);

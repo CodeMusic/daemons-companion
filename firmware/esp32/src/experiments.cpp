@@ -58,7 +58,7 @@ String runWifiMotion() {
     return "This board's Wi-Fi would not share its channel state.";                                   // DRAFT
   esp_ping_handle_t ping = startPings();
   // The first five seconds learn the room still; after that, a score well above the still room is movement.
-  float still = 0, peak = 0; int stillN = 0, moved = 0, seconds = 0;
+  float still = 0, peak = 0; int stillN = 0, moved = 0, seconds = 0; long packets = 0;
   uint32_t t0 = millis(), shown = 0;
   while (millis() - t0 < 45000 && !giveUp()) {
     delay(100);
@@ -67,7 +67,7 @@ String runWifiMotion() {
     float score; int n;
     portENTER_CRITICAL(&csiLock); score = motionCount ? motionSum / motionCount : 0; n = motionCount; motionSum = 0; motionCount = 0;
     portEXIT_CRITICAL(&csiLock);
-    seconds = (millis() - t0) / 1000;
+    seconds = (millis() - t0) / 1000; packets += n;
     if (seconds < 5) { if (n) { still += score; stillN++; }
       progress("Learning the room while it is still... " + String(5 - seconds) + "\n\nStand back, and keep still.");   // DRAFT
       continue; }
@@ -84,5 +84,5 @@ String runWifiMotion() {
   if (ping) { esp_ping_stop(ping); esp_ping_delete_session(ping); }
   esp_wifi_set_csi(false);
   return daemonName() + " watched the air for " + String(seconds) + " s. Movement " + String(moved / 2) +
-         " s of it; the most, " + String(peak, 1) + " times the still room.";                          // DRAFT
+         " s of it; the most, " + String(peak, 1) + " times the still room.\n\n" + String(packets) + " packets read.";   // DRAFT
 }

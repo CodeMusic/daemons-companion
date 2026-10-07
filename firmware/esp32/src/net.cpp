@@ -6,6 +6,7 @@
 #include <esp_sleep.h>
 #include <vector>
 #include "app.h"
+#include "talk.h"
 #include "radios.h"
 #include "link.h"
 #include "meet.h"
@@ -310,6 +311,11 @@ void handleLine(String line, bool fromPhone) {
     wake();
     screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : to == "PARTY" ? PARTY : HOME;   // C-68: GO PARTY
     page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : TODAY;
+    draw();
+  }
+  else if (line.startsWith("TALK ") && !fromPhone) {   // C-66: a check from the computer -- listen this many ms, then answer
+    wake(); talkHold(constrain(line.substring(5).toInt(), 500, 8000));
+    reply("TALKED " + String(talkStatus.length() ? talkStatus : String("ok")) + " | heard: " + talkHeard + " | answer: " + talkAnswer.substring(0, 160));
     draw();
   }
   else if (line == "PING") { seen = millis(); reply("PONG"); }

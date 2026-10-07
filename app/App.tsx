@@ -89,7 +89,9 @@ type HandheldNow = import("./handheld").Handheld;
 const MEETING: typeof import("./beacon").meeting | null = ON_PHONE ? require("./beacon").meeting : null;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
-type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string };
+// C-73: the Xenith day -- the virtue over its shadow (cue), the chakra, the theme word
+type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string; shadow?: string;
+             cue?: string; theme?: string };
 type Next = { goal: string; subitem: string; step: { id: number; text: string } } | null;
 type Today = { date: string; edition: string; day: Day; season: string; next: Next };
 type Step = { id: number; text: string; done: boolean };
@@ -245,7 +247,8 @@ function TodayScreen({ today, reload, ink }: { today: Today; reload: () => void;
     <YStack gap={14}>
       <Card>
         <Eyebrow>{today.day.day.toUpperCase()} · {today.day.note} · {today.season.toUpperCase()}</Eyebrow>
-        <Text fontSize={24} fontWeight="600" color="$color12">{today.day.virtue}</Text>
+        <Text fontSize={24} fontWeight="600" color="$color12">{today.day.theme ?? today.day.virtue}</Text>
+        <Text fontSize={16} color="$color11">{today.day.cue ?? today.day.virtue}</Text>
         <Small>{today.day.chakra} · {today.day.hue} · {today.edition}</Small>
       </Card>
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>

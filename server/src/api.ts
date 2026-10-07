@@ -284,7 +284,9 @@ export function deviceState(cfg: Config, store: Store, now = new Date()) {
   return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
            settings: deviceSettings(store),
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
-           day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.virtue, menu: dd.menu, led: dd.led },
+           // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
+           day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
+                  theme: t.day.theme, menu: dd.menu, led: dd.led },
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon };
 }
 

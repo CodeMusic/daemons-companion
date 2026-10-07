@@ -1,5 +1,5 @@
 {
- "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21); its hue, chakra and virtue are RoverRadio's day table (companion docs/INHERITANCE.md).",
+ "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21); its hue, chakra, virtue over its shadow, and theme are the Xenith week (the Guide's Chapters 8-9, and the user's theme words, companion C-73).",
  "days": [
   {
    "day": "Sunday",
@@ -7,7 +7,10 @@
    "hue": "red",
    "note": "C",
    "chakra": "Root",
-   "virtue": "Chastity cures Lust"
+   "virtue": "Diligence",
+   "shadow": "Sloth",
+   "cue": "Diligence over Sloth",
+   "theme": "Passion"
   },
   {
    "day": "Monday",
@@ -15,7 +18,10 @@
    "hue": "orange",
    "note": "D",
    "chakra": "Sacral",
-   "virtue": "Temperance cures Gluttony"
+   "virtue": "Chastity",
+   "shadow": "Lust",
+   "cue": "Chastity over Lust",
+   "theme": "Development"
   },
   {
    "day": "Tuesday",
@@ -23,7 +29,10 @@
    "hue": "yellow",
    "note": "E",
    "chakra": "Solar Plexus",
-   "virtue": "Charity cures Greed"
+   "virtue": "Charity",
+   "shadow": "Greed",
+   "cue": "Charity over Greed",
+   "theme": "Connection"
   },
   {
    "day": "Wednesday",
@@ -31,7 +40,10 @@
    "hue": "green",
    "note": "F",
    "chakra": "Heart",
-   "virtue": "Diligence cures Sloth"
+   "virtue": "Kindness",
+   "shadow": "Envy",
+   "cue": "Kindness over Envy",
+   "theme": "Growth"
   },
   {
    "day": "Thursday",
@@ -39,7 +51,10 @@
    "hue": "blue",
    "note": "G",
    "chakra": "Throat",
-   "virtue": "Forgiveness cures Wrath"
+   "virtue": "Temperance",
+   "shadow": "Gluttony",
+   "cue": "Temperance over Gluttony",
+   "theme": "Calm"
   },
   {
    "day": "Friday",
@@ -47,7 +62,10 @@
    "hue": "indigo",
    "note": "A",
    "chakra": "Third Eye",
-   "virtue": "Kindness cures Envy"
+   "virtue": "Patience",
+   "shadow": "Wrath",
+   "cue": "Patience over Wrath",
+   "theme": "Intuition"
   },
   {
    "day": "Saturday",
@@ -55,7 +73,10 @@
    "hue": "violet",
    "note": "B",
    "chakra": "Crown",
-   "virtue": "Humility cures Pride"
+   "virtue": "Humility",
+   "shadow": "Pride",
+   "cue": "Humility over Pride",
+   "theme": "Flow"
   }
  ]
 }

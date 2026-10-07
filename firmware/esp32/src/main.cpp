@@ -46,7 +46,7 @@ struct Daemon { String name, nickname, holding, category, entry, types, artKey; 
                 int grownTo = 0; };                                               // C-45: the level it has grown to here
 struct State {
   bool have = false;
-  String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue;
+  String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue, chakra, theme;
   long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
   bool carrying = false; Daemon daemon;
 } st;
@@ -54,7 +54,7 @@ struct State {
 // ---- where you are -------------------------------------------------------------------------------------------------
 // HOME turns between TODAY, DAEMON and ROUTINES with the encoder. ROUTINES opens a list of routine TYPES, a type opens
 // its ROUTINES, a routine RUNs. The encoder's press goes in (or ticks the step, on TODAY); the top button goes back.
-enum Page { TODAY, DAEMON, ROUTINES_PAGE };
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE };   // C-73: the Xenith day, last
 // INDEX_ENTRY: the carried daemon's (C-36). PICK_NET and TYPE_PASS: joining a network on the board (C-33).
 // CARE: what you can do for the carried daemon (C-13) -- feed, water, train, or read its INDEX entry.
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE };   // PICK_REMOTE: C-51
@@ -168,6 +168,7 @@ bool takeState(const String &json) {
   st.date = doc["date"] | ""; st.edition = doc["edition"] | ""; st.season = doc["season"] | "";
   st.day = doc["day"]["name"] | ""; st.colour = doc["day"]["colour"] | "#5b6b8c";
   st.note = doc["day"]["note"] | ""; st.virtue = doc["day"]["virtue"] | "";
+  st.chakra = doc["day"]["chakra"] | ""; st.theme = doc["day"]["theme"] | "";   // C-73
   // C-33: where the server is on the Wi-Fi, when it says (it listens on the network) -- kept for when the cable is out
   const char *lan = doc["server"] | "";
   if (strlen(lan) && serverUrl != lan) {
@@ -457,6 +458,18 @@ void draw() {
     wrap(wifiSet() ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"
                    : "Run ./linkCompanion.sh on the computer, or join a network: ROUTINES, UPLINK.",
          10, 100, W - 20, 2, 18, 3, QUIET);
+  } else if (page == DAY_PAGE) {
+    // C-73: the Xenith day -- its theme, its virtue over its shadow, its chakra and its note. Press: the day's note.
+    canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("TODAY IS", 10, 32);
+    canvas.setTextFont(4); canvas.setTextColor(day);
+    canvas.drawString(upper(st.theme.length() ? st.theme : st.day), 10, 50);
+    canvas.setTextFont(2); canvas.setTextColor(PAPER);
+    canvas.drawString(upper(st.virtue), 10, 86);
+    canvas.setTextColor(QUIET);
+    canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
+    canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
+    canvas.drawString("press: the day's note", 10, H - 6);
   } else if (page == TODAY) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     // C-49: the step, and -- subtly -- the milestone it belongs to
@@ -746,7 +759,7 @@ void handleLine(String line, bool fromPhone) {
     String to = line.substring(3);
     wake();
     screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : HOME;
-    page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : TODAY;
+    page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : TODAY;
     draw();
   }
   else if (line == "PING") { seen = millis(); reply("PONG"); }
@@ -812,7 +825,7 @@ void turn(int step) {
   if (wake()) return;                   // C-39: a turn that wakes the board does nothing else
   ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
   soundTurn(step);                      // C-40: rising for right, falling for left
-  if (screen == HOME) page = (Page)((page + 3 + step) % 3);
+  if (screen == HOME) page = (Page)((page + 4 + step) % 4);
   else if (screen == TYPES) typeAt = (typeAt + TYPE_COUNT + step) % TYPE_COUNT;
   else if (screen == CARE) careAt = (careAt + 4 + step) % 4;
   else if (screen == PICK_REMOTE && flareCount()) remoteAt = (remoteAt + flareCount() + step) % flareCount();
@@ -878,6 +891,7 @@ void press() {
   soundSelect();                                                // C-40
   if (screen == HOME) {
     if (page == TODAY) tick();
+    else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
       if (!st.carrying) say("Needs a daemon");                     // C-51: the routines are the daemon's

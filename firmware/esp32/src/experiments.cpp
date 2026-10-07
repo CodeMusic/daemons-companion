@@ -78,7 +78,7 @@ String runWifiMotion() {
     int bars = constrain((int)(ratio * 4), 0, 24);
     ledsDance(DANCE_PULSE, moving ? 0 : 1, 2);
     progress(String(moving ? "SOMETHING MOVED" : "still") + "   " + String(ratio, 1) + "x\n" +
-             String("||||||||||||||||||||||||").substring(0, bars) + "\n\n" + String(n) + " packets a half-second.  Top button: stop.");   // DRAFT
+             String("||||||||||||||||||||||||").substring(0, bars) + "\n\n" + String(n) + " packets a half-second.");   // DRAFT
   }
   ledsDance(-1, 0, 0);
   if (ping) { esp_ping_stop(ping); esp_ping_delete_session(ping); }

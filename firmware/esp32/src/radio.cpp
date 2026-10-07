@@ -80,7 +80,7 @@ static String listen(bool fm) {
       rx.getCurrentReceivedSignalQuality();
       progress(freqText() + "    signal " + String(rx.getCurrentRSSI()) + " dBuV, " + String(rx.getCurrentSNR()) + " dB" +
                (name.length() ? "\n" + name : "") + (text.length() ? "\n" + text : "") +
-               "\n\nturn: tune   tap: seek   hold: stop");                                                // DRAFT
+               "\n\nturn: tune   tap: seek");                                                // DRAFT
     }
     delay(15);
   }
@@ -117,7 +117,7 @@ String runLightning() {
       progress(now - t0 < 20000 ? "Learning the quiet at " + freqText() + "... " + String(20 - (now - t0) / 1000)
                                 : freqText() + "   " + String(crashes) + (crashes == 1 ? " crash" : " crashes") +
                                   "\nquiet " + String(learnt ? quiet / learnt : 0, 0) + " dBuV, now " + String(rssi) +
-                                  "\n\nturn: another frequency   hold: stop");                             // DRAFT
+                                  "\n\nturn: another frequency");                             // DRAFT
     }
     ledsLoop();
     delay(20);
@@ -156,7 +156,7 @@ String runStaticSynth() {
     if (millis() - shown > 500) {
       shown = millis();
       progress(freqText() + "   " + String(made) + " random bits, " + String(made ? 100 * ones / made : 0) + "% ones\n" + last +
-               "\n\nturn: another frequency   hold: stop");                                                  // DRAFT
+               "\n\nturn: another frequency");                                                  // DRAFT
     }
   }
   rx.setAudioMute(false);

@@ -88,7 +88,9 @@ int dialStep() {
 void readEncoder() { int step = dialStep(); if (step) turn(step); }
 
 // The top button, pressed while a routine waits -- or, on a board without one, the dial held (C-67).
-bool giveUp() { return board.hasSideKey() ? !digitalRead(board.sideKey) : !digitalRead(board.encKey); }
+bool giveUp() {                        // the watch: a touch anywhere
+  return board.touch ? watchTouchDown() : board.hasSideKey() ? !digitalRead(board.sideKey) : !digitalRead(board.encKey);
+}
 
 // The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
 void press() {

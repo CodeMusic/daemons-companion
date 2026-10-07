@@ -222,6 +222,8 @@ talks over **Wi-Fi**, so it must have joined a network.
 - ROUTINES, LONGWAVE, **WHAT'S ON THE AIR**. **See:** five seconds learning each band's quiet, then four rows -- 315,
   433, 868 and 915 MHz -- each with its level and a bar, and a count of bursts. Press a doorbell, a car key or a remote
   of your own near it. **See:** that band's bar jump and its count go up; the ring flashes. It only listens.
+- LONGWAVE, **FIND IT**: turn to the band your gadget used, then hold its button down (or wait for your weather station)
+  and walk. **See:** the level and "warmer" or "colder". **Hear:** ticks that quicken as you get close.
 
 ## 17. The SI4732's radio (LATENT and CONTEXT)
 

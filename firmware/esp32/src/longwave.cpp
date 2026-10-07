@@ -10,6 +10,7 @@
 #include <SPI.h>
 #include "app.h"
 #include "leds.h"
+#include "sound.h"
 
 static SPIClass radioSpi(HSPI);
 static CC1101 *radio = nullptr;
@@ -80,7 +81,7 @@ String runWhatsOnTheAir() {
              (learning ? "" : "  " + String(bursts[b])) + "\n";
       }
       tft.waitDMA();
-      progress(s + "top button: stop");                                                                     // DRAFT
+      progress(s);
     }
   }
   radioOff();
@@ -88,4 +89,38 @@ String runWhatsOnTheAir() {
   return daemonName() + " listened for " + String((millis() - t0) / 1000) + " s and heard " + String(total) +
          (total == 1 ? " burst" : " bursts") + ": 315 MHz " + String(bursts[0]) + ", 433 " + String(bursts[1]) +
          ", 868 " + String(bursts[2]) + ", 915 " + String(bursts[3]) + ".";                                 // DRAFT
+}
+
+// FIND IT: a hot-and-cold finder for one of your own transmitters (a doorbell button, a weather station, a remote):
+// turn to choose its band, then walk -- the bar, a word and the ticks follow the strongest signal heard. Listening only.
+String runFindIt() {
+  if (!board.cc1101) return "This needs the T-Embed CC1101.";                                              // DRAFT
+  static const float BAND_MHZ[] = { 315.0f, 433.92f, 868.35f, 915.0f };
+  int at = 1;
+  if (!radioOn(BAND_MHZ[at])) return "The Sub-GHz radio did not answer.";                                 // DRAFT
+  tune(BAND_MHZ[at]);
+  float smooth = -110, best = -130, was = -110;
+  uint32_t t0 = millis(), shown = 0, ticked = 0;
+  while (millis() - t0 < 180000 && !giveUp()) {
+    if (int step = dialStep()) { at = (at + 4 + step) % 4; tune(BAND_MHZ[at]); best = -130; smooth = -110; }
+    float loud = -130;
+    for (uint32_t d = millis(); millis() - d < 40; ) { loud = max(loud, radio->getRSSI()); delayMicroseconds(800); }
+    smooth = smooth * 0.7f + loud * 0.3f;
+    best = max(best, loud);
+    // the ticks quicken as it gets louder: from one a second at -100 dBm to ten a second at -40
+    int every = constrain((int)map((long)smooth, -100, -40, 1000, 100), 100, 1000);
+    if (smooth > -100 && millis() - ticked > (uint32_t)every) { ticked = millis(); tft.waitDMA(); playNoteSemis(19, 6); }
+    if (millis() - shown > 300) {
+      shown = millis();
+      int bars = constrain((int)((smooth + 110) / 3), 0, 24);
+      const char *word = smooth > was + 3 ? "warmer" : smooth < was - 3 ? "colder" : "";
+      was = smooth;
+      tft.waitDMA();
+      progress(String(BAND_MHZ[at], 2) + " MHz   " + String((int)smooth) + " dBm  " + word + "\n" +
+               String("########################").substring(0, bars) + "\nthe loudest yet: " + String((int)best) +
+               " dBm\n\nturn: another band");                                              // DRAFT
+    }
+  }
+  radioOff();
+  return daemonName() + " followed " + String(BAND_MHZ[at], 2) + " MHz; the loudest it heard was " + String((int)best) + " dBm.";   // DRAFT
 }

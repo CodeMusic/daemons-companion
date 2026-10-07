@@ -79,7 +79,9 @@ extern Battery bat;                       // C-63
 void draw();
 void say(const String &word);
 void celebrate(const String &what);
-void progress(const String &text);        // what a routine is waiting for, on the RUN screen
+void progress(const String &text);        // what a routine is waiting for, on the RUN screen (it answers SHOT too)
+void shot();                              // the screen, down the cable
+extern bool routineRunning;               // a routine is at work (the RUN screen's footer says so)
 String upper(String s);
 int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour);
 uint16_t hex565(const String &h);

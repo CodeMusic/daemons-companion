@@ -14,7 +14,7 @@ String runChooseRemote();
 String runTheaterMode();
 String runJoinNetwork();
 String runWifiMotion();                   // C-70: experiments.cpp
-String runWhatsOnTheAir();                // LONGWAVE: longwave.cpp
+String runWhatsOnTheAir(); String runFindIt();   // LONGWAVE: longwave.cpp
 String runListenFm(); String runStaticSynth(); String runListenAm(); String runLightning();   // C-69, C-70: radio.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
@@ -24,7 +24,7 @@ static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
 static const Routine CONTEXT_ROUTINES[]    = { { "LISTEN", runListenFm }, { "STATIC SYNTH", runStaticSynth } };   // C-69: FM, DRAFT
 static const Routine LATENT_ROUTINES[]     = { { "LISTEN", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
-static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir } };   // receive only, DRAFT
+static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
@@ -36,7 +36,7 @@ void routinesBegin() {
   if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      6 };
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 };
-  if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   LONGWAVE_ROUTINES,   1 };
+  if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   LONGWAVE_ROUTINES,   2 };
   if (board.si4732) types[typeCount++] = { "LATENT",     "AM",        LATENT_ROUTINES,     2 };   // C-69: the user's names
   if (board.si4732) types[typeCount++] = { "CONTEXT",    "FM",        CONTEXT_ROUTINES,    2 };
   if (!partyFirst()) types[typeCount++] = { "PARTY",      "the game",  nullptr,             0 };   // C-68, DRAFT
@@ -69,7 +69,9 @@ void runRoutine() {
   screen = RUN;
   draw();
   soundRoutine(t.name);                 // C-40: its tune, the ring dancing -- the daemon starting the routine
+  routineRunning = true;
   runResult = t.routines[routineAt].run();
+  routineRunning = false; lastInput = millis();
   if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
   if (pickRemoteNext) { pickRemoteNext = false; screen = PICK_REMOTE; }    // C-51: CHOOSE A REMOTE, a list
   if (!strcmp(t.name, "FLARE") && routineAt == 0) reportRemotes();         // a remote taught: the site hears of it

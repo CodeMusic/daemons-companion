@@ -147,7 +147,9 @@ void drawRoutines(uint16_t day) {
     wrap(runResult, 12, 54, W - 24, 2, 17, 6, PAPER);
   }
   canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-  canvas.drawString(screen == RUN ? "press: run again    top button: back"
+  canvas.drawString(screen == RUN && routineRunning ? (board.touch ? "running...    touch: stop" : board.hasSideKey() ? "running...    top button: stop"
+                                                                       : "running...    hold the dial: stop")   // DRAFT
+                    : screen == RUN ? "press: run again    top button: back"
                     : screen == MOVES ? "turn: choose    press: use it    top button: back"   // DRAFT
                     : screen == TYPE_PASS ? "turn: letter  press: add (OK: join)  top: delete"
                     : "turn: choose    press: open    top button: back", 10, H - 4);
@@ -326,4 +328,18 @@ void celebrate(const String &what) {
   soundAccomplish(kind, st.daemon.species, dayIndex());
 }
 
-void progress(const String &text) { runResult = text; draw(); }
+// While a routine runs the loop does not, so nothing reads the cable: a SHOT asked for then is answered here, so a
+// routine's live screen can be checked too. Any other line waiting is let go (the bridge sends its state again).
+bool routineRunning = false;
+void progress(const String &text) {
+  runResult = text; lastInput = millis();                   // a routine at work is the board in use: no sleeping after it
+  draw();
+  static String in;
+  while (Serial.available()) {
+    char c = Serial.read();
+    if (c != '\n') { if (in.length() < 64) in += c; continue; }
+    in.trim();
+    if (in == "SHOT") shot();
+    in = "";
+  }
+}

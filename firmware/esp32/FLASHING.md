@@ -12,7 +12,7 @@ theme, virtue over vice, chakra and note -- the season, **the one next step**, t
 | choose | turn the dial | turn the dial | swipe |
 | open, confirm | press the dial (acts when let go) | tap the dial | tap |
 | back | the top button | hold the dial half a second | hold, or the crown |
-| **talk** | **hold the dial** half a second at home | not yet | not yet (the TALK button is drawn) |
+| **talk** | **hold the dial** half a second at home | **hold the dial** at home (just after ticking a step, the hold undoes it instead) | **hold TALK** on the face |
 | sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown |
 | wake | **the top button only** | hold the dial | the crown |
 

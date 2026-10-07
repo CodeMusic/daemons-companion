@@ -57,9 +57,9 @@ connected, are designed in [docs/DEVICES.md](docs/DEVICES.md) (C-80, C-82).
 | board | screen | controls | listens | lights | its own radios | battery | state |
 |---|---|---|---|---|---|---|---|
 | **T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC, Sub-GHz | gauge and charger | **runs** |
-| **T-Embed** (plain) | 320x170 | dial and its press | not yet | ring of 7 | -- | voltage | built, not yet run |
-| **T-Embed SI4732** | 320x170 | dial and its press | not yet | ring of 7 | AM/FM (C-69) | voltage | built, not yet run |
-| **T-Watch S3** | 240x240 touch | touch, the crown | not yet | -- | LoRa, IR | power chip | built, not yet run |
+| **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | built, not yet run |
+| **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7 | AM/FM: LATENT and CONTEXT | voltage | built, not yet run |
+| **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa, IR | power chip | built, not yet run |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
 is. The watch has its own build. Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
@@ -100,8 +100,9 @@ and a paired phone carries it over Bluetooth (**PHONE**). Start the server first
 button** goes back. **Hold the dial** half a second on any home page to **talk** ([below](#talk-to-your-daemon)).
 **Sleep:** hold the top button and press the front one; **only the top button wakes it**, so a pocket cannot.
 
-**The plain T-Embed and the SI4732** have one button, the dial's press: a tap presses, held half a second it goes back,
-held two seconds it sleeps (and only a hold wakes it).
+**The plain T-Embed and the SI4732** have one button, the dial's press: a tap presses, held half a second it goes back
+(at home it **talks** instead), held two seconds it sleeps (and only a hold wakes it). The SI4732's radio is two routine
+types: **LATENT** (AM: LISTEN, and LIGHTNING) and **CONTEXT** (FM: LISTEN with the station's RDS, and STATIC SYNTH).
 
 **The T-Watch S3:** its home is **the face** -- the time, the day's theme, its virtue over its vice, chakra and note,
 today's steps, the battery and a TALK button. Swipe to turn between the pages, tap to press, hold to go back; the crown
@@ -181,8 +182,9 @@ come from a model on your own machine (or OpenRouter when that one is busy), and
 | the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | built; needs the parts below. **Over Wi-Fi only** for now |
 | the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
 | an INDEX entry | press on it (the board), or **Read aloud** (the phone) | runs |
-| the plain T-Embed, the SI4732, the watch | -- | not yet: their microphones are next (C-66) |
-| no network at all | an LLM630 riding behind a T-Embed | researched: [docs/LLM630.md](docs/LLM630.md) (C-76) |
+| the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
+| the watch | **hold TALK** on the face | built, not yet run |
+| no network at all | an LLM630 riding behind a T-Embed, chosen with `BRAIN` down the cable | client built, not yet run: [docs/LLM630.md](docs/LLM630.md) (C-76) |
 
 **What it takes**, all on your own machines:
 

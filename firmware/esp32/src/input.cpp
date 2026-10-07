@@ -241,6 +241,13 @@ void readKeyAlone() {
   bool pressed = !digitalRead(board.encKey);
   uint32_t now = millis();
   if (pressed && !down && now - keyAt > 30) { down = true; at = now; keyAt = now; }
+  // C-66: at home, held 0.45 s it talks (it listens until let go) -- unless TODAY's step was just ticked, when the hold
+  // still undoes it. Away from home a hold goes back, and two seconds sleeps, as before.
+  else if (pressed && down && !asleep && now - at >= 450 && screen == HOME && talkCan() && !(page == TODAY && undoable())) {
+    talkHold();
+    down = false; keyAt = millis(); dirty = true;
+    while (!digitalRead(board.encKey)) delay(5);
+  }
   else if (!pressed && down && now - keyAt > 30) {
     down = false; keyAt = now;
     uint32_t held = now - at;

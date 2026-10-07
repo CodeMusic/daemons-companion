@@ -1,5 +1,6 @@
 #include <HTTPClient.h>
 #include <driver/i2s.h>
+#include <es7210.h>
 #include "app.h"
 #include "talk.h"
 #include "brain.h"
@@ -12,9 +13,43 @@ static const i2s_port_t MIC = I2S_NUM_0;
 static const int RATE = 16000, MOST_S = 8;            // eight seconds is plenty to say a thing to a daemon
 String talkHeard, talkAnswer, talkStatus;
 
-bool talkCan() { return board.mic == Mic::Pdm && board.micData >= 0; }
+bool talkCan() { return board.mic != Mic::None && board.micData >= 0; }
+
+// C-66: the plain T-Embed and the SI4732 hear through an ES7210 (I2C 0x40), set up as LilyGO's own mic example sets it:
+// 16 kHz 16-bit, the ESP32 the I2S master giving the clocks (MCLK x256), two TDM slots, the first two microphones at 0 dB.
+static bool es7210On() {
+  static bool codecUp = false;
+  if (!codecUp) {
+    audio_hal_codec_config_t c = {};
+    c.adc_input = AUDIO_HAL_ADC_INPUT_ALL; c.codec_mode = AUDIO_HAL_CODEC_MODE_ENCODE;
+    c.i2s_iface.mode = AUDIO_HAL_MODE_SLAVE; c.i2s_iface.fmt = AUDIO_HAL_I2S_NORMAL;
+    c.i2s_iface.samples = AUDIO_HAL_16K_SAMPLES; c.i2s_iface.bits = AUDIO_HAL_BIT_LENGTH_16BITS;
+    uint32_t bad = es7210_adc_init(&Wire, &c);
+    bad |= es7210_adc_config_i2s(c.codec_mode, &c.i2s_iface);
+    bad |= es7210_adc_set_gain((es7210_input_mics_t)(ES7210_INPUT_MIC1 | ES7210_INPUT_MIC2), (es7210_gain_value_t)GAIN_0DB);
+    bad |= es7210_adc_set_gain((es7210_input_mics_t)(ES7210_INPUT_MIC3 | ES7210_INPUT_MIC4), (es7210_gain_value_t)GAIN_37_5DB);
+    bad |= es7210_adc_ctrl_state(c.codec_mode, AUDIO_HAL_CTRL_START);
+    if (bad) return false;
+    codecUp = true;
+  }
+  i2s_config_t cfg = {};
+  cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX);
+  cfg.sample_rate = RATE; cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
+  cfg.channel_format = I2S_CHANNEL_FMT_ALL_LEFT; cfg.communication_format = I2S_COMM_FORMAT_STAND_I2S;
+  cfg.dma_buf_count = 8; cfg.dma_buf_len = 256;
+  cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256; cfg.bits_per_chan = I2S_BITS_PER_CHAN_16BIT;
+  cfg.chan_mask = (i2s_channel_t)(I2S_TDM_ACTIVE_CH0 | I2S_TDM_ACTIVE_CH1);
+  i2s_pin_config_t pins = {};
+  pins.mck_io_num = board.micMclk; pins.bck_io_num = board.micBclk; pins.ws_io_num = board.micClk;
+  pins.data_out_num = I2S_PIN_NO_CHANGE; pins.data_in_num = board.micData;
+  if (i2s_driver_install(MIC, &cfg, 0, nullptr) != ESP_OK) return false;
+  if (i2s_set_pin(MIC, &pins) != ESP_OK) { i2s_driver_uninstall(MIC); return false; }
+  i2s_zero_dma_buffer(MIC);
+  return true;
+}
 
 static bool micOn() {
+  if (board.mic == Mic::Es7210) return es7210On();
   i2s_config_t cfg = {};
   cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM);
   cfg.sample_rate = RATE;

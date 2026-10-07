@@ -66,6 +66,7 @@ static void tEmbed(bool si4732) {
   board.pwrEn = 46; board.sda = 18; board.scl = 8;
   board.i2sBclk = 7; board.i2sLrclk = 5; board.i2sDout = 6;
   board.mic = Mic::Es7210;                            // two microphones through an ES7210 (I2C 0x40)
+  board.micBclk = 47; board.micClk = 21; board.micData = 14; board.micMclk = 48;   // LilyGO's examples/mic/pin_config.h
   board.lights = Lights::APA102; board.ledData = 42; board.ledClk = 45; board.ledCount = 7;
   board.power = Power::AdcDivider; board.battAdc = 4;
   board.si4732 = si4732;

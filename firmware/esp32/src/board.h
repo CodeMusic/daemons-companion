@@ -25,7 +25,7 @@ struct Board {
   int pwrEn = -1, sda = -1, scl = -1;
   // sound out (I2S) and the microphone
   int i2sBclk = -1, i2sLrclk = -1, i2sDout = -1;
-  Mic mic = Mic::None; int micData = -1, micClk = -1;
+  Mic mic = Mic::None; int micData = -1, micClk = -1, micBclk = -1, micMclk = -1;   // micClk: PDM's clock, or I2S's LRCK
   // the ring of lights
   Lights lights = Lights::None; int ledData = -1, ledClk = -1, ledCount = 0;
   // the battery: a fuel gauge, a voltage divider on an ADC pin, or the watch's power chip

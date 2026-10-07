@@ -35,6 +35,7 @@ import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
+import { toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readSave } from "./save/reader.js";
@@ -71,6 +72,13 @@ async function body(req: IncomingMessage): Promise<any> {
   let s = "";
   for await (const chunk of req) s += chunk;
   return s ? JSON.parse(s) : {};
+}
+
+// The bytes of a request, up to a limit (a handheld's recording: C-66). null when it was larger.
+async function rawBody(req: IncomingMessage, most = 2 * 1024 * 1024): Promise<Buffer | null> {
+  const parts: Buffer[] = []; let n = 0;
+  for await (const chunk of req) { n += chunk.length; if (n > most) return null; parts.push(chunk as Buffer); }
+  return Buffer.concat(parts);
 }
 
 // C-64, C-65, C-66: the daemon's voice and its answers come from the user's n8n (DAEMONS ai/n8n: daemon/talk, and
@@ -363,8 +371,8 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen",
-     "/api/device/battery", "/api/ai/talk", "/api/ai/speak"].includes(p),
-  (m: string, p: string) => m === "GET" && p.startsWith("/art/"),
+     "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak"].includes(p),
+  (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/")),
   (m: string) => m === "OPTIONS",
 ];
 
@@ -397,6 +405,7 @@ class Pairing {
 }
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
+  const voices = new VoiceShelf();                              // C-66: answers a handheld streams (ai/voice.ts)
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -622,10 +631,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                 heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
                                 lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
       }
-      if (req.method === "POST" && path === "/api/ai/talk") {        // C-66: push to talk -- text or audio in, an answer and its voice out
-        const b = await body(req);
+      // C-66: push to talk -- text or audio in, an answer and its voice out. The daemon carried and the day go with it.
+      const talkPayload = (b: Record<string, any>) => {
         const st = deviceState(ecfg, store), d = st.daemon;
-        return send(res, 200, await n8n(ecfg, "daemon/talk", {
+        return {
           text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
           history: Array.isArray(b.history) ? b.history.slice(-6) : [],
@@ -634,7 +643,37 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry }
                     : { nickname: "your daemon" },
           day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
-        }));
+        };
+      };
+      // A handheld's answer: the words, and its voice as a link to 16 kHz PCM it streams into its speaker (ai/voice.ts).
+      const forDevice = async (r: Record<string, unknown>) => {
+        let audio: string | null = null, ms = 0;
+        if (typeof r.audioBase64 === "string" && r.audioBase64) {
+          const pcm = await toDevicePcm(Buffer.from(r.audioBase64, "base64"));
+          if (pcm) { audio = `/api/device/voice/${voices.put(pcm)}`; ms = Math.round(pcm.length / 2 / DEVICE_RATE * 1000); }
+        }
+        return { answer: r.answer ?? null, heard: r.heard ?? null, provider: r.provider ?? null, error: r.error ?? null, audio, ms };
+      };
+      if (req.method === "POST" && path === "/api/ai/talk")
+        return send(res, 200, await n8n(ecfg, "daemon/talk", talkPayload(await body(req))));
+      if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, as a WAV, raw
+        const wav = await rawBody(req);
+        if (!wav || wav.length < 44) return send(res, 400, { error: "talk takes a WAV recording (up to 2 MB)" });
+        return send(res, 200, await forDevice(await n8n(ecfg, "daemon/talk",
+          talkPayload({ audioBase64: wav.toString("base64"), audioMime: "audio/wav" }))));
+      }
+      if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
+        const d = deviceState(ecfg, store).daemon;
+        if (!d?.entry) return send(res, 400, { error: "carry a daemon to hear its entry" });
+        const r = await n8n(ecfg, "daemon/voice", { text: String(d.entry).replace(/\n/g, " ").slice(0, 600), voice: "index" });
+        return send(res, 200, await forDevice({ ...r, answer: d.entry }));
+      }
+      if (req.method === "GET" && path.startsWith("/api/device/voice/")) {
+        const pcm = voices.get(path.slice("/api/device/voice/".length));
+        if (!pcm) return send(res, 404, { error: "that voice is gone; ask again" });
+        res.writeHead(200, { "content-type": "application/octet-stream", "content-length": pcm.length,
+                             "x-sample-rate": String(DEVICE_RATE) });
+        return res.end(pcm);
       }
       if (req.method === "POST" && path === "/api/ai/speak") {       // C-65: an INDEX entry (or a line) in the INDEX voice
         const b = await body(req);

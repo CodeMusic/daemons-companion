@@ -275,7 +275,10 @@ void draw() {
     }
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     if (undoable()) canvas.drawString("done: " + lastDoneText.substring(0, 30) + "   top button: undo", 10, H - 6);
-    else canvas.drawString(st.step >= 0 ? "press: done    " + st.virtue : st.virtue, 10, H - 6);
+    else {                                       // C-73: wherever the virtue shows, its chakra shows too
+      String day = st.virtue + (st.chakra.length() ? "  -  " + st.chakra : String(""));
+      canvas.drawString(st.step >= 0 ? "press: done    " + day : day, 10, H - 6);
+    }
   } else {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     if (st.carrying) {

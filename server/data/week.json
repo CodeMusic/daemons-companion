@@ -1,5 +1,5 @@
 {
- "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21); its hue, chakra, virtue over its shadow, and theme are the Xenith week (the Guide's Chapters 8-9, and the user's theme words, companion C-73).",
+ "_about": "Sunday first; each day's colour is the CHECKPOINT's trim (day_trims.h) and its note C to B (vision 9.21); its hue, chakra, the virtue and the vice it cures, and the theme are the user's Xenith week (companion C-73).",
  "days": [
   {
    "day": "Sunday",
@@ -7,9 +7,9 @@
    "hue": "red",
    "note": "C",
    "chakra": "Root",
-   "virtue": "Diligence",
-   "shadow": "Sloth",
-   "cue": "Diligence over Sloth",
+   "virtue": "Chastity",
+   "shadow": "Lust",
+   "cue": "Chastity cures Lust",
    "theme": "Passion"
   },
   {
@@ -18,9 +18,9 @@
    "hue": "orange",
    "note": "D",
    "chakra": "Sacral",
-   "virtue": "Chastity",
-   "shadow": "Lust",
-   "cue": "Chastity over Lust",
+   "virtue": "Temperance",
+   "shadow": "Gluttony",
+   "cue": "Temperance cures Gluttony",
    "theme": "Development"
   },
   {
@@ -31,7 +31,7 @@
    "chakra": "Solar Plexus",
    "virtue": "Charity",
    "shadow": "Greed",
-   "cue": "Charity over Greed",
+   "cue": "Charity cures Greed",
    "theme": "Connection"
   },
   {
@@ -40,9 +40,9 @@
    "hue": "green",
    "note": "F",
    "chakra": "Heart",
-   "virtue": "Kindness",
-   "shadow": "Envy",
-   "cue": "Kindness over Envy",
+   "virtue": "Diligence",
+   "shadow": "Sloth",
+   "cue": "Diligence cures Sloth",
    "theme": "Growth"
   },
   {
@@ -51,9 +51,9 @@
    "hue": "blue",
    "note": "G",
    "chakra": "Throat",
-   "virtue": "Temperance",
-   "shadow": "Gluttony",
-   "cue": "Temperance over Gluttony",
+   "virtue": "Forgiveness",
+   "shadow": "Wrath",
+   "cue": "Forgiveness cures Wrath",
    "theme": "Calm"
   },
   {
@@ -62,9 +62,9 @@
    "hue": "indigo",
    "note": "A",
    "chakra": "Third Eye",
-   "virtue": "Patience",
-   "shadow": "Wrath",
-   "cue": "Patience over Wrath",
+   "virtue": "Kindness",
+   "shadow": "Envy",
+   "cue": "Kindness cures Envy",
    "theme": "Intuition"
   },
   {
@@ -75,7 +75,7 @@
    "chakra": "Crown",
    "virtue": "Humility",
    "shadow": "Pride",
-   "cue": "Humility over Pride",
+   "cue": "Humility cures Pride",
    "theme": "Flow"
   }
  ]

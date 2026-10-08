@@ -926,7 +926,7 @@
  },
  "293": {
   "name": "PLUGIN05",
-  "description": "Forces them out and an ally in. In the wild, the battle ends."
+  "description": "Says the same thing every time: damage equal to its level."
  },
  "294": {
   "name": "PLUGIN06",
@@ -946,7 +946,7 @@
  },
  "298": {
   "name": "PLUGIN10",
-  "description": "Its type and force are set by traits the user was made with, never shown."
+  "description": "Waits where the water is calm. Twice as hard if it was hit first."
  },
  "299": {
   "name": "PLUGIN11",
@@ -990,7 +990,7 @@
  },
  "309": {
   "name": "PLUGIN21",
-  "description": "This attack move grows more powerful the less the user likes its USER."
+  "description": "Reaches out again where the line went dead. It never misses."
  },
  "310": {
   "name": "PLUGIN22",
@@ -1034,7 +1034,7 @@
  },
  "320": {
   "name": "PLUGIN32",
-  "description": "More than one of it is running at once. Raises evasiveness."
+  "description": "Does what it read, and grows by doing it. Raises its ATTACK."
  },
  "321": {
   "name": "PLUGIN33",
@@ -1054,7 +1054,7 @@
  },
  "325": {
   "name": "PLUGIN37",
-  "description": "Everything degrades a little each turn. Some types resist."
+  "description": "Ignores the highest and the lowest. Cuts their HP to the middle."
  },
  "326": {
   "name": "PLUGIN38",
@@ -1078,7 +1078,7 @@
  },
  "331": {
   "name": "PLUGIN43",
-  "description": "An attack that may have an additional effect that varies with the terrain."
+  "description": "Takes in all around the frame. Hits both of them; never misses."
  },
  "332": {
   "name": "PLUGIN44",
@@ -1086,7 +1086,7 @@
  },
  "333": {
   "name": "PLUGIN45",
-  "description": "Binds their attention to the user, which may leave them unable to act."
+  "description": "Builds on its last strike: twice as hard each turn in a row."
  },
  "334": {
   "name": "PLUGIN46",

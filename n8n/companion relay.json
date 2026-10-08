@@ -89,7 +89,7 @@
               "neverError": true
             }
           },
-          "timeout": 10000
+          "timeout": 60000
         }
       },
       "id": "c4",

@@ -122,18 +122,54 @@ async function apiLive<T>(path: string, body?: unknown): Promise<T> {
                                       body: JSON.stringify({ method: body === undefined ? "GET" : "POST", path, body }) });
     const ways = route.away && Date.now() < route.until ? [away, home] : [home, away];
     let failed: unknown;
+    let viaAway = false;
     for (const way of ways) {
-      try { r = await way(); route = { away: way === away, until: Date.now() + 60000 }; break; } catch (e) { failed = e; }
+      try { r = await way(); viaAway = way === away; route = { away: viaAway, until: Date.now() + 60000 }; break; } catch (e) { failed = e; }
     }
     if (!r) throw new Unreachable(`Neither the companion at ${SERVER} nor the way from away answered.`);
+    // C-86: the relay answered, but for the companion -- "not answering", a gateway timeout -- so the companion is
+    // out of reach (asleep, or still making a voice): that is being away, and the phone shows what it kept.
+    if (viaAway && [502, 503, 504].includes(r.status)) {
+      const why = await r.json().catch(() => ({}));
+      throw new Unreachable(why.error ?? "the companion did not answer the relay");
+    }
   }
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? `the server answered ${r.status}`);
   return j as T;
 }
 
+// C-86 (the user, 2026-10-08: away, the app was blank): what the phone already holds is shown first. A GET it has
+// kept answers from the phone if the companion has not answered within KEPT_FIRST_MS, and the live answer, when it
+// comes, is kept and -- if it differs -- tells the app to draw the screen again (freshHeard).
+const KEPT_FIRST_MS = 1200;
+const freshHeard = new Set<() => void>();
+async function liveAndKeep<T>(path: string): Promise<T> {
+  const j = await apiLive<T>(path);
+  const changed = JSON.stringify(KEPT.paths[path]) !== JSON.stringify(j);
+  KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept();
+  setOffline(null);
+  if (KEPT.queue.length) sendHeld();
+  if (changed) freshSoon();
+  return j;
+}
+let freshTimer: ReturnType<typeof setTimeout> | null = null;
+function freshSoon() {                     // many answers at once (keepEverything) redraw the screen once, not each
+  if (freshTimer) clearTimeout(freshTimer);
+  freshTimer = setTimeout(() => { freshTimer = null; freshHeard.forEach((f) => f()); }, 600);
+}
+
 // C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
 async function api<T>(path: string, body?: unknown): Promise<T> {
+  if (ON_PHONE && body === undefined && !path.startsWith("/api/art") && path in KEPT.paths) {
+    const live = liveAndKeep<T>(path).catch((e) => {
+      if (!(e instanceof Unreachable)) throw e;                     // the companion answered "no"
+      setOffline(KEPT.at);
+      return KEPT.paths[path] as T;
+    });
+    const kept = new Promise<T>((res) => setTimeout(() => res(KEPT.paths[path] as T), KEPT_FIRST_MS));
+    return Promise.race([live, kept]);
+  }
   try {
     const j = await apiLive<T>(path, body);
     if (ON_PHONE) {
@@ -166,8 +202,11 @@ async function sendHeld() {
 async function keepEverything() {
   if (!ON_PHONE) return;
   for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk"])
-    await api(p).catch(() => {});
+    await liveAndKeep(p).catch(() => {});
   if (OFFLINE) return;
+  // C-86: each party daemon's INDEX entry too, so opening one away from home needs nothing from home
+  const carried = (KEPT.paths["/api/party"] as { party?: { species: number }[] } | undefined)?.party ?? [];
+  for (const d of carried) await liveAndKeep(`/api/species/${d.species}`).catch(() => {});
   await artByJson("/art/species/1.png").catch(() => {});                // the whole INDEX's pictures, in one request
   const party = (KEPT.paths["/api/party"] as { party?: { slot: number }[] } | undefined)?.party ?? [];
   for (const d of party) await artByJson(`/art/party/${d.slot}.png`).catch(() => {});
@@ -1255,12 +1294,15 @@ function Shell() {
   useEffect(reload, [reload]);
   // C-62: keep everything on the phone each time the app opens and reaches the companion; redraw when it goes away
   const [, heard] = useState(0);
+  // C-86: a screen first drawn from what the phone kept is drawn again when the companion's fresher answer arrives
+  const [fresh, setFresh] = useState(0);
   useEffect(() => {
     const f = () => heard((n) => n + 1);
-    offlineHeard.add(f);
+    const g = () => { setFresh((n) => n + 1); reload(); };
+    offlineHeard.add(f); freshHeard.add(g);
     keepEverything().then(f);
-    return () => { offlineHeard.delete(f); };
-  }, []);
+    return () => { offlineHeard.delete(f); freshHeard.delete(g); };
+  }, [reload]);
   // C-55: back to the handheld this phone paired with, if any
   useEffect(() => { HANDHELD?.start(api, isAway); MEETING?.start(api, () => HANDHELD!.bluetooth()); }, []);
   // C-56: the way back from anywhere, learned at home and kept on the phone
@@ -1303,7 +1345,7 @@ function Shell() {
         </XStack>
         </ScrollView>
       </YStack>
-      <ScrollView contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
+      <ScrollView key={fresh} contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
         {OFFLINE ? <Small>Away from the companion: this is what the phone kept on {new Date(OFFLINE).toLocaleString()}.{KEPT.queue.length ? ` ${KEPT.queue.length} kept to send.` : ""}</Small> : null}
         {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}

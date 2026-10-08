@@ -27,6 +27,8 @@ background, and opens the app at <http://localhost:8081>. **Ctrl-C stops both.**
 | `./bindCompanion.sh app [web\|ios\|android]` | **only the app**, against a server you started yourself |
 | `./bindCompanion.sh test` | the server's **type check and tests** |
 | `./bindCompanion.sh phone` | **build the app for your iPhone** and install it ([below](#on-your-iphone)) |
+| `./bindCompanion.sh always` | **keep the server running**: at login, restarted if it stops, the Mac awake on power -- so your phone reaches it from anywhere ([below](#from-anywhere)) |
+| `./bindCompanion.sh never` | stop doing that |
 | `./updateCompanion.sh` | **flash the handhelds** plugged in -- it asks each which board it is ([below](#the-handhelds)) |
 | `./linkCompanion.sh` | **link a handheld** to the server over its cable |
 
@@ -43,12 +45,14 @@ beside it.*
 | | | |
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry and an INDEX entry **read aloud**), **INDEX**, **DEVICE** (the handheld, its battery, its routines), **PROFILE**, **SETTINGS** |
+| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (the handheld, its battery, its routines), **PROFILE**, **SETTINGS** |
 | `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start) and its own build for the **T-Watch S3**; ESP32-S3, PlatformIO + Arduino, grown from RoverCodeBase | **running on the CC1101**; the other boards are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, and the first radio experiment. See [The handhelds](#the-handhelds) |
 | `server/src/ai/`, DAEMONS `ai/` | **the daemon's voice and words** -- n8n workflows on your own machine (DAEMONS `ai/n8n/`), speech to text (`ai/stt/`), a local model or OpenRouter, and the INDEX voice | **running**: a spoken question in, the daemon's answer in the INDEX voice out. See [Talk to your daemon](#talk-to-your-daemon) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
-**Local first, one person.** Everything runs on your own machine; accounts, many users and hosting come later. **One
+**Local first, one person, from anywhere.** Everything runs on your own machine, and your paired phone reaches it from
+anywhere through your own n8n -- **the site stays on this machine, with no logins**; the phone is the remote
+([From anywhere](#from-anywhere)). Accounts, many users and hosting come later. **One
 daemon goes out at a time today**, to whichever device is linked; a daemon per device, and every device always
 connected, are designed in [docs/DEVICES.md](docs/DEVICES.md) (C-80, C-82).
 
@@ -167,10 +171,28 @@ meeting: at the next SYNC your INDEX sees their daemon and yours grows a little 
 phone never count as meeting each other. Off in DEVICE, ITS SETTINGS, MEET OTHERS NEARBY.
 
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
-on it. **Away from home** it reaches the companion through an n8n workflow that relays into your home network
-([docs/REMOTE.md](docs/REMOTE.md), C-56): import `n8n/companion relay.json` into your n8n, put this computer's address
-and the secret from the site's SETTINGS (AWAY FROM HOME) in it, and save the webhook's address there too. The phone
-learns it the next time it opens at home, and from then on tries home first and the relay after. For the App Store, archive in Xcode and upload with Transporter as usual.
+on it. For the App Store, archive in Xcode and upload with Transporter as usual.
+
+### From anywhere
+
+**The phone app is the site** -- the same screens, the same server -- so away from home it does what the site does at
+home ([docs/REMOTE.md](docs/REMOTE.md), C-56, C-86, C-87). It reaches the companion through an n8n workflow that relays
+into your home network: import `n8n/companion relay.json` into your n8n, put this computer's address and the secret from
+the site's SETTINGS (AWAY FROM HOME) in it, and save the webhook's address there too. The phone learns it the next time
+it opens at home, and from then on tries home first and the relay after.
+
+- **Only what is this machine's own stays at home**: pairing a phone (and listing or forgetting phones), opening the
+  server to the network, the Mac's dialogs for the save, the relay's settings -- and the cable and flashing. So the site
+  is needed once per phone, to pair it, and stays on this machine with no logins.
+- **The phone holds everything, and syncs.** It opens on what it last saw (at once, whether or not home answers) and
+  brings it up to date when home does, and each time it comes back to the front.
+- **Nothing is lost.** Anything you change away -- goals, steps, care, the walk, settings -- is kept on the phone and sent
+  in order when the companion answers; so is everything the handheld reports through the phone. Only what needs an
+  answer at once (talking, a voice, SYNC, telling the handheld to act now) waits for a connection.
+- **Read aloud and talk work away** -- the relay waits up to a minute for a voice.
+- **Keep it reachable**: the phone reaches the companion only while the server runs and the Mac is awake.
+  `./bindCompanion.sh always` makes both true (on power; on battery the Mac sleeps as usual, and the phone works from
+  what it holds until it is back). Later, the server can move to a machine that never sleeps (C-82).
 
 ## Talk to your daemon
 
@@ -181,7 +203,7 @@ come from a model on your own machine (or OpenRouter when that one is busy), and
 |---|---|---|
 | the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the USB cable; away from both, **through the paired phone** (the phone says the answer; needs a new phone build) |
 | the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
-| an INDEX entry | press on it (the board), or **Read aloud** (the phone) | runs |
+| an INDEX entry | press on it (the board), or **LISTEN** on any entry in the INDEX tab (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks) | runs on the site; the phone needs a new build |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
 | the watch | **hold TALK** on the face | built, not yet run |
 | no network at all | an LLM630 riding behind a T-Embed, chosen with `BRAIN` down the cable | client built, not yet run: [docs/LLM630.md](docs/LLM630.md) (C-76) |

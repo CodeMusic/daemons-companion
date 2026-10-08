@@ -33,6 +33,49 @@ void boardBegin() {
   watchPower();                                      // the PMU switches every rail: on before anything else starts
 }
 
+#elif defined(BOARD_STICKS3)
+
+// C-74: the M5Stack StickS3 -- docs.m5stack.com/en/core/StickS3 for the pins (screen MOSI 39, SCK 40, CS 41, DC 45,
+// RST 21, backlight 38; KEY1 11, KEY2 12; I2C SDA 47, SCL 48; I2S MCLK 18, BCLK 17, LRCK 15, DOUT 14, DIN 16; IR TX 46,
+// RX 42), M5GFX's autodetect for the panel (ST7789, 135x240, offsets 52/40, inverted) and for switching the screen's
+// power on through the M5PM1 before it is touched, and M5Unified for the M5PM1's registers and the ES8311's.
+static const uint8_t PM1 = 0x6E;
+static void pm1Write(uint8_t reg, uint8_t v) { Wire.beginTransmission(PM1); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
+static uint8_t pm1Read(uint8_t reg) {
+  Wire.beginTransmission(PM1); Wire.write(reg);
+  if (Wire.endTransmission(false) != 0 || Wire.requestFrom(PM1, (uint8_t)1) != 1) return 0;
+  return Wire.read();
+}
+static void pm1Bits(uint8_t reg, uint8_t mask, bool on) { uint8_t v = pm1Read(reg); pm1Write(reg, on ? v | mask : v & ~mask); }
+
+// M5PM1 GPIO n as a push-pull output (0x16 function, 0x10 direction, 0x13 drive), then 0x11 its level.
+void pm1Gpio(uint8_t pin, bool high) {
+  uint8_t bit = 1 << pin;
+  pm1Bits(0x16, bit, false);
+  pm1Bits(0x10, bit, true);
+  pm1Bits(0x13, bit, false);
+  pm1Bits(0x11, bit, high);
+}
+
+void boardBegin() {
+  board.kind = BoardKind::M5StickS3; board.id = "m5-sticks3"; board.name = "M5StickS3";
+  board.width = 240; board.height = 135; board.rotation = 1;              // on its side: the companion's screens are wide
+  board.lcdCs = 41; board.lcdDc = 45; board.lcdSclk = 40; board.lcdMosi = 39; board.lcdRst = 21; board.lcdBl = 38;
+  board.lcdPanelW = 135; board.lcdPanelH = 240; board.lcdOffsetX = 52; board.lcdOffsetY = 40;
+  board.encKey = 11; board.sideKey = 12;                                  // KEY1, the face; KEY2, the side
+  board.sda = 47; board.scl = 48;
+  board.i2sMclk = 18; board.i2sBclk = 17; board.i2sLrclk = 15; board.i2sDout = 14;
+  board.mic = Mic::Es8311; board.micData = 16;                            // the ES8311's microphone shares the speaker's clocks
+  board.power = Power::PmuM5PM1;
+  board.ir = true;
+  Wire.begin(board.sda, board.scl);
+  pm1Write(0x09, 0x00);                // the M5PM1's I2C idle sleep off (it is always powered, and keeps what was set)
+  pm1Write(0x0A, 0x00);                // and its watchdog
+  pm1Gpio(2, true);                    // the screen's power on
+  pm1Gpio(3, false);                   // the speaker's amplifier off until a sound plays (sound.cpp)
+  delay(100);
+}
+
 #else
 
 // Does anything answer at this address with the bus on these pins? (The CC1101 board's SDA/SCL are the T-Embed's
@@ -85,4 +128,8 @@ void boardBegin() {
   Wire.begin(board.sda, board.scl);                                          // the shared bus, from here on
 }
 
+#endif
+
+#ifndef BOARD_STICKS3
+void pm1Gpio(uint8_t, bool) {}         // C-74: only the StickS3 has an M5PM1
 #endif

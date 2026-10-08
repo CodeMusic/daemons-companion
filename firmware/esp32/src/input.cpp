@@ -206,10 +206,12 @@ bool wake() {
 // The front button acts on press. The top button acts on RELEASE -- going back -- unless the front was pressed while it
 // was held (the sleep chord), so holding it to start the chord never goes back a page.
 void readKeyAlone();
+void readKeyStick();
 // C-66: the front button presses on RELEASE now, so that held it can mean talk -- held 0.45 s at home, the board
 // listens until it is let go (talk.cpp). A press is still a press; the chord still sleeps at once.
 static const uint32_t TALK_HOLD_MS = 450;
 void readKey() {
+  if (board.noDial()) { readKeyStick(); return; }                // C-74: the StickS3's two buttons
   if (!board.hasSideKey()) { readKeyAlone(); return; }
   static bool pending = false;
   bool up = digitalRead(board.encKey);
@@ -232,6 +234,39 @@ void readKey() {
     if (!sideUp) { if (wake()) chorded = true; }               // pressed: a wake spends this whole press
     else if (chorded) chorded = false;                         // released after the chord (or a wake): nothing more
     else back();
+  }
+}
+
+// C-74: two buttons and no dial (the StickS3). The face button (KEY1) is the dial's press: a tap presses, and held
+// 0.45 s at home it talks. The side button (KEY2) is the dial: a tap turns to the next, held half a second goes back,
+// held two seconds sleeps -- and asleep, only a hold on it wakes the board (C-79: nothing wakes it in a pocket). Each
+// acts on release, so a hold is never also a press.
+void readKeyStick() {
+  static bool faceDown = false, sideDown = false; static uint32_t faceAt = 0, sideAt2 = 0;
+  uint32_t now = millis();
+  bool face = !digitalRead(board.encKey), side = !digitalRead(board.sideKey);
+  if (face && !faceDown && now - faceAt > 30) { faceDown = true; faceAt = now; }
+  else if (face && faceDown && !asleep && now - faceAt >= TALK_HOLD_MS && (screen == HOME || screen == TALK) && talkCan()
+           && !(page == TODAY && undoable())) {
+    talkHold();
+    faceDown = false; faceAt = millis(); dirty = true;
+    while (!digitalRead(board.encKey)) delay(5);
+  }
+  else if (!face && faceDown && now - faceAt > 30) {
+    faceDown = false;
+    if (!asleep) { wake(); press(); }
+    faceAt = now;
+  }
+  if (side && !sideDown && now - sideAt2 > 30) { sideDown = true; sideAt2 = now; }
+  else if (!side && sideDown && now - sideAt2 > 30) {
+    sideDown = false;
+    uint32_t held = now - sideAt2;
+    sideAt2 = now;
+    if (asleep) { if (held >= 500) wake(); return; }
+    wake();
+    if (held >= 2000) sleepNow();
+    else if (held >= 500) back();
+    else turn(1);
   }
 }
 

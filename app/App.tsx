@@ -931,7 +931,8 @@ type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: s
 type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | null; lastSeen: string; here: boolean;
                    firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null };
 const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
-                                             "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3" };
+                                             "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3",
+                                             "m5-sticks3": "M5StickS3" };                                   // C-74
 type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
 type Brand = { brand: string; sets: RemoteSet[] };
 

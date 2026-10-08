@@ -6,7 +6,7 @@
 #   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet)
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
-#   ./updateCompanion.sh --build          only build both, to check they compile (no board needed)
+#   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)
 #   ./updateCompanion.sh --help
 #
 # C-81: every board running the companion says "HELLO daemons-companion <board> <version>" every three seconds, so the
@@ -49,6 +49,7 @@ env_for() {                     # a board's id -> its build
   case "$1" in
     t-embed*)   echo t-embed ;;
     t-watch-s3) echo t-watch-s3 ;;
+    m5-sticks3) echo m5-sticks3 ;;
     *)          echo "" ;;
   esac
 }
@@ -109,10 +110,10 @@ fi
 for i in "${chosen[@]}"; do
   port="${ports[$i]}" env="${envs[$i]}"
   if [[ -z "$env" ]]; then
-    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3"
-    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed or --board t-watch-s3." >&2; exit 64; }
+    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3"
+    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3 or m5-sticks3." >&2; exit 64; }
     read -r answer
-    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
   fi
   echo "updateCompanion: flashing $port with $env"
   "$PIO" run -e "$env" -t upload --upload-port "$port"

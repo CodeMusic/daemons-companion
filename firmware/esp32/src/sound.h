@@ -4,6 +4,9 @@
 #include <Arduino.h>
 
 void soundBegin();
+void soundPause();    // C-74: the StickS3 lends its codec to the microphone
+void soundResume();
+void es8311Mic();
 void soundSettings(bool on, int volume);   // C-43: from the site
 void soundDay(const String &note);         // the day's note: "C" (Sunday) .. "B" (Saturday)
 void soundTurn(int dir);                   // the dial: right an ascending pair, left a descending one

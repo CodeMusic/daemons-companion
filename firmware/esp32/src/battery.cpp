@@ -45,6 +45,16 @@ bool batteryRead(Battery &b) {
     return b.present;
   }
   if (board.power == Power::PmuAXP2101) return watchBattery(b);              // C-71: the watch's PMU (watch.cpp)
+  if (board.power == Power::PmuM5PM1) {          // C-74: the StickS3's M5PM1 -- the cell's mV (0x22) and USB's (0x24)
+    uint8_t w[2];
+    if (!readBytes(0x6E, 0x22, w, 2)) { b.present = false; return false; }
+    int mv = w[0] | (w[1] << 8);
+    int vin = readBytes(0x6E, 0x24, w, 2) ? (w[0] | (w[1] << 8)) : 0;
+    b.present = mv > 2600 && mv < 4450;          // M5Unified's own test: no cell reads low, or a USB sawtooth above a cell
+    b.mv = mv; b.percent = percentFromMv(mv);
+    b.usb = vin > 4300; b.charging = b.usb && mv < 4150; b.full = b.usb && mv >= 4150;
+    return b.present;
+  }
   if (board.power != Power::GaugeBQ27220) { b.present = false; return false; }
   batteryWire();
   uint8_t w[2];

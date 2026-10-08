@@ -6,10 +6,10 @@
 // The T-Watch S3 is its own build (env:t-watch-s3, BOARD_TWATCH_S3): its power, screen and input are different.
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3 };
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3 };
 enum class Lights { None, WS2812, APA102 };
-enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101 };
-enum class Mic { None, Pdm, Es7210 };
+enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1 };
+enum class Mic { None, Pdm, Es7210, Es8311 };
 
 struct Board {
   BoardKind kind = BoardKind::TEmbedCC1101;
@@ -24,7 +24,7 @@ struct Board {
   // the peripherals' power switch, and the shared I2C bus
   int pwrEn = -1, sda = -1, scl = -1;
   // sound out (I2S) and the microphone
-  int i2sBclk = -1, i2sLrclk = -1, i2sDout = -1;
+  int i2sBclk = -1, i2sLrclk = -1, i2sDout = -1, i2sMclk = -1;   // MCLK: the StickS3's ES8311 codec
   Mic mic = Mic::None; int micData = -1, micClk = -1, micBclk = -1, micMclk = -1;   // micClk: PDM's clock, or I2S's LRCK
   // the ring of lights
   Lights lights = Lights::None; int ledData = -1, ledClk = -1, ledCount = 0;
@@ -33,8 +33,12 @@ struct Board {
   // radios beyond Wi-Fi and Bluetooth, and the rest
   bool ir = false, nfc = false, cc1101 = false, si4732 = false, lora = false, touch = false;
   bool hasSideKey() const { return sideKey >= 0; }
+  bool noDial() const { return encA < 0 && !touch; }   // C-74: two buttons and no dial (the StickS3)
 };
 
 extern Board board;
 void boardBegin();   // first thing in setup(): find the board and switch on its peripherals
-const String &deviceId();   // C-80: this board's own name, its kind and the end of its MAC ("t-embed-cc1101-36f484")
+const String &deviceId();
+// C-74: the StickS3's power chip (the M5PM1, I2C 0x6E) drives the screen's power (its GPIO 2) and the speaker's
+// amplifier (its GPIO 3) -- switched here, as M5Stack's own libraries switch them.
+void pm1Gpio(uint8_t pin, bool high);   // C-80: this board's own name, its kind and the end of its MAC ("t-embed-cc1101-36f484")

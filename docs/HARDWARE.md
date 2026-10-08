@@ -63,6 +63,27 @@ and a clock -- but it shares everything above the hardware layer.
 *Sources: github.com/Xinyuan-LilyGO/TTGO_TWatch_Library (t-watch-s3 branch, src/utilities.h);
 github.com/Xinyuan-LilyGO/LilyGoLib (docs/hardware); lilygo.cc.*
 
+## The M5Stack StickS3 (C-74)
+
+ESP32-S3-PICO-1-N8R8: **8 MB flash, 8 MB octal PSRAM**. **ST7789P3, 135x240** (MOSI 39, SCK 40, CS 41, DC 45, RST 21,
+backlight 38; the panel at offset 52/40, inverted), used on its side as 240x135. **Two buttons, no dial**: KEY1 11 (the
+face) and KEY2 12 (the side). I2C SDA 47, SCL 48: **M5PM1 power chip (0x6E)**, **ES8311 codec (0x18)**, BMI270 IMU
+(0x68). The codec is both the **speaker** (an AW8737 amplifier and a 1 W speaker) and the **microphone**, on one set of
+clocks: MCLK 18, BCLK 17, LRCK 15, DOUT 14 (to the codec), DIN 16 (from it). IR TX 46, RX 42. 250 mAh.
+
+**The M5PM1 does what pins do elsewhere**: its GPIO 2 switches the screen's power on (before the screen is touched), its
+GPIO 3 the speaker's amplifier; the cell's voltage is its register 0x22 and USB's 0x24 (mV, little-endian). Each of its
+GPIOs is made an output by clearing 0x16 (function), setting 0x10 (direction) and clearing 0x13 (push-pull); 0x11 is
+the level. Its I2C idle sleep (0x09) and watchdog (0x0A) are switched off first.
+
+**Its own build** (`env:m5-sticks3`, `BOARD_STICKS3`): the face button is the dial's press (held at home it talks), the
+side button the dial (a tap turns to the next, held half a second goes back, two seconds sleeps; asleep, only a hold
+on it wakes). The speaker lets go of the codec's clocks while the microphone listens. **Built, not yet run.**
+
+*Sources: docs.m5stack.com/en/core/StickS3 (the pins); github.com/m5stack/M5GFX src/M5GFX.cpp (the panel and the
+screen's power through the M5PM1); github.com/m5stack/M5Unified src/M5Unified.inl (the amplifier and the ES8311's
+speaker and microphone writes) and src/utility/power/M5PM1_Class.inl (its registers).*
+
 ## The AX630C boards (on-device AI, C-75 / C-76)
 
 **LLM630 Compute Kit**: AX630C (two A53 cores at 1.2 GHz; NPU 3.2 TOPS INT8), 4 GB RAM (2 for the NPU), 32 GB eMMC,

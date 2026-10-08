@@ -64,9 +64,10 @@ connected, are designed in [docs/DEVICES.md](docs/DEVICES.md) (C-80, C-82).
 | **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | built, not yet run |
 | **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7 | AM/FM: LATENT and CONTEXT | voltage | built, not yet run |
 | **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa, IR | power chip | built, not yet run |
+| **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
-is. The watch has its own build. Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
+is. The watch and the StickS3 each have their own build (`./updateCompanion.sh --board m5-sticks3` the first time). Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
 
 ### Flash them
 

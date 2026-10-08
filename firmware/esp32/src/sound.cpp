@@ -9,6 +9,7 @@
 // and always like itself. The wake jingle is the one thing NOT in the day's key: it is the front door, and the title
 // screen is in C# (vision 7.14g, "a semitone above everywhere you will go").
 #include <driver/i2s.h>
+#include <Wire.h>
 #include "sound.h"
 #include "board.h"
 #include "leds.h"
@@ -20,6 +21,22 @@ static int amplitude = 5000;                 // 0..~16000; the site's volume set
 static int root = 60 + 12;                   // the day's note, as MIDI (C5 by default)
 static uint32_t lastTurn = 0;
 static float duty = 0.5f;                    // C-50: a daemon's own voice -- the share of each wave that is high
+
+// C-74: the StickS3's speaker is an ES8311 codec (I2C 0x18) and an amplifier the M5PM1 switches. These are M5Unified's
+// own writes for its speaker: reset, the codec clocked from BCLK, the DAC up at 0 dB, its equaliser bypassed.
+static void es8311Write(const uint8_t (*regs)[2], int n) {
+  for (int i = 0; i < n; i++) { Wire.beginTransmission(0x18); Wire.write(regs[i][0]); Wire.write(regs[i][1]); Wire.endTransmission(); }
+}
+static void es8311Speaker() {
+  static const uint8_t R[][2] = { {0x00, 0x80}, {0x01, 0xB5}, {0x02, 0x18}, {0x0D, 0x01}, {0x12, 0x00}, {0x13, 0x10},
+                                  {0x32, 0xBF}, {0x37, 0x08} };
+  es8311Write(R, sizeof R / sizeof R[0]);
+}
+void es8311Mic() {                          // talk.cpp: the same codec, listening (M5Unified's microphone writes)
+  static const uint8_t R[][2] = { {0x00, 0x80}, {0x01, 0xBA}, {0x02, 0x18}, {0x0D, 0x01}, {0x0E, 0x02}, {0x14, 0x10},
+                                  {0x17, 0xFF}, {0x1C, 0x6A} };
+  es8311Write(R, sizeof R / sizeof R[0]);
+}
 
 void soundBegin() {
   i2s_config_t cfg = {};
@@ -33,12 +50,27 @@ void soundBegin() {
   cfg.dma_buf_len = 256;
   cfg.tx_desc_auto_clear = true;              // silence, not the last buffer again, when nothing is playing
   i2s_pin_config_t pins = {};
-  pins.mck_io_num = I2S_PIN_NO_CHANGE;
+  pins.mck_io_num = board.i2sMclk >= 0 ? board.i2sMclk : I2S_PIN_NO_CHANGE;
+  if (board.i2sMclk >= 0) cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
   pins.bck_io_num = board.i2sBclk; pins.ws_io_num = board.i2sLrclk; pins.data_out_num = board.i2sDout; pins.data_in_num = I2S_PIN_NO_CHANGE;
   if (i2s_driver_install(PORT, &cfg, 0, nullptr) != ESP_OK) return;
   if (i2s_set_pin(PORT, &pins) != ESP_OK) { i2s_driver_uninstall(PORT); return; }
   i2s_zero_dma_buffer(PORT);
+  if (board.kind == BoardKind::M5StickS3) { es8311Speaker(); pm1Gpio(3, true); }   // C-74: the codec, then its amplifier
   ready = true;
+}
+
+// C-74: on the StickS3 the microphone and the speaker share one codec and its clocks, so while it listens the speaker's
+// I2S lets go of them (talk.cpp), and takes them back after.
+void soundPause() {
+  if (!ready || board.mic != Mic::Es8311) return;
+  pm1Gpio(3, false);
+  i2s_driver_uninstall(PORT);
+  ready = false;
+}
+void soundResume() {
+  if (ready || board.mic != Mic::Es8311) return;
+  soundBegin();
 }
 
 void soundSettings(bool on, int volume) {

@@ -437,22 +437,28 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // can change the save path, write the save, or open a dialog on the Mac.
       const bearer = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""))?.[1];
       const phone = bearer ? store.phoneFor(bearer) : null;              // C-53: a paired phone has the whole API
-      if (req.headers[RELAY_HEADER] !== undefined) {                     // C-56
+      const board = !phone && bearer ? devices.deviceFor(bearer) : null;  // C-82: a board's own key: its own door only
+      const relayed = req.headers[RELAY_HEADER] !== undefined;
+      if (relayed) {                                                     // C-56
         if (!same(String(req.headers[RELAY_HEADER]), relaySecret(store)))
           return send(res, 403, { error: "that is not the companion's relay" });
-        if (!phone) return send(res, 401, { error: "away from home, only a paired phone -- pair it at home first" });
+        if (board && !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
+          return send(res, 403, { error: "a board's key opens the device's own door, nothing else" });
+        if (!phone && !board) return send(res, 401, { error: "away from home, only a paired phone or a linked board -- link it at home first" });
         if (LOCAL_ONLY.includes(path) || path.startsWith("/api/pair"))
           return send(res, 403, { error: "that is done at home, on the computer the companion runs on" });
       }
       // C-55: "phone" is the companion app carrying the device's link over Bluetooth -- a paired phone speaking for it.
       const asked = url.searchParams.get("via");
-      const via: Via = asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone" : "wifi";
-      // C-80: which device is asking -- its x-device header (a bridge passes on the board's), or ?device= for the phone's
-      const deviceId = String(req.headers["x-device"] ?? url.searchParams.get("device") ?? "");
+      const via: Via = board && relayed ? "relay"
+                     : asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone" : "wifi";
+      // C-80: which device is asking -- its x-device header (a bridge passes on the board's), or ?device= for the phone's;
+      // C-82: a board through the relay is known by its key, whatever it says
+      const deviceId = board ?? String(req.headers["x-device"] ?? url.searchParams.get("device") ?? "");
       // Seen, and how: a bridge says ?via= on the requests that carry the link; another request from this machine is
       // the same bridge passing something on, and must not turn a cable into Wi-Fi.
       if (validDeviceId(deviceId) && (path.startsWith("/api/device/") || path.startsWith("/api/ai/")) &&
-          (asked || !isLoopback(req.socket.remoteAddress))) devices.seen(deviceId, via);
+          (asked || relayed || !isLoopback(req.socket.remoteAddress))) devices.seen(deviceId, via);
       if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
           !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
         return send(res, 403, { error: "only the device's endpoints answer the network -- pair this phone first" });
@@ -509,7 +515,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(ecfg, store));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
       if (req.method === "POST" && path === "/api/sync") return send(res, 200, sync(ecfg, store));
-      if (req.method === "GET" && path === "/api/device/state") { hub.seen(via); return send(res, 200, deviceState(ecfg, store, new Date(), deviceId)); }
+      if (req.method === "GET" && path === "/api/device/state") {
+        hub.seen(via);
+        const st = deviceState(ecfg, store, new Date(), deviceId);
+        // C-82: down the cable only, the relay's address and the board's own key, for when it is away on its own Wi-Fi
+        const relay = store.getSetting("relay.url");
+        if (via === "usb" && relay && validDeviceId(deviceId)) return send(res, 200, { ...st, away: { url: relay, key: devices.keyFor(deviceId) } });
+        return send(res, 200, st);
+      }
       // ---- C-32: the link. The device's side: its commands, its results, its routines. ----
       if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via) }); }
       if (req.method === "POST" && path === "/api/device/results") {

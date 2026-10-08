@@ -58,6 +58,8 @@ bool takeState(const String &json) {
     serverUrl = lan;
     Preferences p; p.begin("uplink", false); p.putString("server", serverUrl); p.end();
   }
+  // C-82: the relay's address and this board's own key -- only ever in the state the cable's bridge carries
+  if (!doc["away"].isNull()) takeAway(doc["away"]["url"] | "", doc["away"]["key"] | "");
   if (!doc["clock"].isNull()) watchSetClock(doc["clock"]["epoch"] | 0, doc["clock"]["offset"] | 0);   // C-71
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   if (!doc["settings"].isNull()) takeSettings(doc["settings"]);

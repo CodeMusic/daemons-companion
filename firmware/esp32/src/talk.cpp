@@ -261,7 +261,8 @@ static void offline(uint8_t *rec, size_t n) {
 
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
-  if (!online() && !usbLive() && !linkPhoneHere() && !brainConfigured()) { say("TALK NEEDS WI-FI"); return; }   // DRAFT
+  // C-82: talk sends a recording and streams a voice back, which the relay (JSON only) does not carry: home, or a bridge
+  if (!atHome() && !usbLive() && !linkPhoneHere() && !brainConfigured()) { say(online() ? "TALK NEEDS HOME OR PHONE" : "TALK NEEDS WI-FI"); return; }   // DRAFT
   const size_t most = RATE * MOST_S;
   uint8_t *rec = (uint8_t *)ps_malloc(44 + most * 2);
   if (!rec || !micOn()) { free(rec); say("NO MICROPHONE"); return; }          // DRAFT
@@ -288,9 +289,9 @@ void talkHold(uint32_t forMs) {
   if (n < RATE / 3) { free(rec); screen = HOME; say("Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
   wavHeader(rec, n);
   talkStatus = "Thinking..."; draw();                                         // DRAFT
-  if ((!online() || talkByCable) && usbLive()) { overCable(rec, n); return; } // C-66: the cable's bridge carries it
-  if (!online() && linkPhoneHere() && !brainConfigured()) { overPhone(rec, n); return; }   // C-82: the phone carries it
-  if (!online()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
+  if ((!atHome() || talkByCable) && usbLive()) { overCable(rec, n); return; } // C-66: the cable's bridge carries it
+  if (!atHome() && linkPhoneHere() && !brainConfigured()) { overPhone(rec, n); return; }   // C-82: the phone carries it
+  if (!atHome()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
   h.setTimeout(65535);           // a local model's first turn loads it. HTTPClient's timeout is 16 bits: 120000 was 54 s
   h.begin(serverUrl + "/api/device/talk");
@@ -306,7 +307,7 @@ void talkHold(uint32_t forMs) {
 }
 
 void talkReadEntry() {
-  if (!online()) { say("NEEDS WI-FI"); return; }                               // DRAFT
+  if (!atHome()) { say(online() ? "NEEDS HOME" : "NEEDS WI-FI"); return; }      // DRAFT -- C-82: a voice is not JSON
   screen = TALK; talkHeard = ""; talkAnswer = st.daemon.entry; talkStatus = "Reading..."; draw();   // DRAFT
   HTTPClient h;
   h.setTimeout(65535);           // the most HTTPClient holds (16 bits): 90000 was 24 s, with the INDEX voice taking ~15

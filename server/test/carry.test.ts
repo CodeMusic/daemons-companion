@@ -88,3 +88,46 @@ describe("a daemon in each device, through the API (C-80)", () => {
     expect((await post({ id: CC, personality: null })).status).toBe(200);
   });
 });
+
+describe("a board away from home, through the relay with its own key (C-82)", () => {
+  const save = buildSave({ player: "ROVER", trainerId: 0x00ab1234,
+    slots: [{ counter: 1, party: [PIP, LABEL] }, { counter: 2, party: [PIP, LABEL] }] });
+  const path = join(mkdtempSync(join(tmpdir(), "relay-")), "copy.sav");
+  writeFileSync(path, save);
+  const store = new Store(":memory:");
+  const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: path }, store);
+  let base = "", secret = "";
+  beforeAll(async () => {
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    store.setSetting("relay.url", "https://relay.example/webhook/companion");
+    secret = (await fetch(base + "/api/settings/relay").then((r) => r.json())).secret;
+  });
+  afterAll(() => server.close());
+  const relayed = (key: string, p: string) => fetch(base + p, { headers: { authorization: `Bearer ${key}`, "x-companion-relay": secret } });
+
+  it("hands a board its key down the cable, and never over the Wi-Fi", async () => {
+    const wifi = await fetch(base + "/api/device/state?via=wifi", { headers: { "x-device": CC } }).then((r) => r.json());
+    expect(wifi.away).toBeUndefined();
+    const usb = await fetch(base + "/api/device/state?via=usb", { headers: { "x-device": CC } }).then((r) => r.json());
+    expect(usb.away.url).toBe("https://relay.example/webhook/companion");
+    expect(usb.away.key.length).toBeGreaterThanOrEqual(16);
+  });
+
+  it("knows the board by its key through the relay, and opens the device's door only", async () => {
+    const { away } = await fetch(base + "/api/device/state?via=usb", { headers: { "x-device": WATCH } }).then((r) => r.json());
+    const st = await relayed(away.key, "/api/device/state").then((r) => r.json());
+    expect(st.daemon.nickname).toBe("LABEL");                                // the watch's own (PIP went to the CC1101)
+    const devs = await fetch(base + "/api/devices").then((r) => r.json());
+    expect(devs.devices.find((d: any) => d.id === WATCH).via).toBe("relay");
+    expect((await relayed(away.key, "/api/goals")).status).toBe(403);        // not the device's door
+    expect((await relayed("not-a-key-at-all-000000", "/api/device/state")).status).toBe(401);
+  });
+
+  it("stops a forgotten board's key", async () => {
+    const { away } = await fetch(base + "/api/device/state?via=usb", { headers: { "x-device": STICK } }).then((r) => r.json());
+    expect((await relayed(away.key, "/api/device/state")).status).toBe(200);
+    await fetch(base + "/api/devices/forget", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: STICK }) });
+    expect((await relayed(away.key, "/api/device/state")).status).toBe(401);
+  });
+});

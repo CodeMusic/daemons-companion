@@ -1,6 +1,7 @@
 // Wi-Fi, the server, the bridges (USB and phone), and the site's commands (C-67: from main.cpp).
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <Preferences.h>
 #include <mbedtls/base64.h>
 #include <esp_sleep.h>
@@ -13,6 +14,7 @@
 #include "meet.h"
 #include "leds.h"
 #include "sound.h"
+#include "relay_ca.h"
 // C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) --
 // and kept in the board's own flash. A secrets.h, if there is one, is only the default for a board that has none yet.
 #if __has_include("secrets.h")
@@ -34,7 +36,8 @@ void runRoutineByName(long id, const String &want);
 // C-52: SEVERAL networks are kept -- what the board has learned, which the daemons share -- and it joins whichever known
 // one is in range, the strongest, at start and whenever it loses the one it was on. Their passwords never leave it.
 bool wifiSet() { return knownCount > 0; }
-bool online() { return wifiSet() && serverUrl.length() && WiFi.status() == WL_CONNECTED; }
+bool online() { return wifiSet() && (serverUrl.length() || relaySet()) && WiFi.status() == WL_CONNECTED; }
+bool atHome() { return online() && serverUrl.length() && !viaRelay(); }   // C-82: home answered last (talk needs it)
 
 void saveNetworks() {
   Preferences p; p.begin("uplink", false);
@@ -55,6 +58,7 @@ void loadWifi() {
   String oldSsid = p.getString("ssid", COMPANION_WIFI_SSID), oldPass = p.getString("pass", COMPANION_WIFI_PASSWORD);
   serverUrl = p.getString("server", COMPANION_SERVER);
   p.end();
+  loadAway();                                // C-82
   if (!knownCount && oldSsid.length()) {     // the one network kept before there were several becomes the first
     knownSsid[0] = oldSsid; knownPass[0] = oldPass; knownCount = 1;
     saveNetworks();
@@ -117,20 +121,63 @@ String networksJson() {
   return out;
 }
 
+// ---- C-82: away from home, on its own Wi-Fi (a phone's hotspot, a cafe) -------------------------------------------------
+// The relay (the user's public n8n, docs/REMOTE.md) carries a board's requests as it carries the phone's: an envelope,
+// {method, path, body}, with the board's OWN key as its Bearer -- the server knows the board by it, and lets it reach the
+// device's own door and nothing else. The relay's address and the key come only down the cable, in the state the
+// bridge carries (as a Wi-Fi password does, C-33), and are kept in flash. Over HTTPS, checked against RELAY_CA.
+String relayUrl, relayKey;
+static uint32_t awayAt = 0;                            // when home last failed to answer and the relay was asked instead
+static const uint32_t AWAY_MS = 60000;                 // ... and for a minute after, the relay first (home is tried again)
+bool relaySet() { return relayUrl.startsWith("https://") && relayKey.length() >= 16; }
+bool viaRelay() { return awayAt && millis() - awayAt < AWAY_MS; }
+
+void loadAway() { Preferences p; p.begin("away", true); relayUrl = p.getString("url", ""); relayKey = p.getString("key", ""); p.end(); }
+void takeAway(const String &url, const String &key) {
+  if (url == relayUrl && key == relayKey) return;
+  relayUrl = url; relayKey = key;
+  Preferences p; p.begin("away", false); p.putString("url", url); p.putString("key", key); p.end();
+}
+
+static String relayHttp(const char *method, const String &path, const String &body, int *code) {
+  WiFiClientSecure tls;
+  tls.setCACert(RELAY_CA);
+  HTTPClient h;
+  h.setTimeout(15000);                                 // n8n, then home, then back
+  *code = -1;
+  if (!h.begin(tls, relayUrl)) return "";
+  h.addHeader("authorization", "Bearer " + relayKey);
+  h.addHeader("content-type", "application/json");
+  String env = String("{\"method\":\"") + method + "\",\"path\":\"" + path + "\"";
+  if (!strcmp(method, "POST")) env += ",\"body\":" + (body.length() ? body : String("{}"));
+  *code = h.POST(env + "}");
+  String out = *code == 200 ? h.getString() : "";
+  h.end();
+  return out;
+}
+
 // ---- the server ------------------------------------------------------------------------------------------------------
-// One request to the server over Wi-Fi; the answer's body, or "" with *ok false.
+// One request to the server over Wi-Fi -- home, or away through the relay (C-82); the answer's body, or "" with *ok false.
 String http(const char *method, const String &path, const String &body, bool *ok) {
   if (ok) *ok = false;
   if (!online()) return "";
-  HTTPClient h;
-  h.setTimeout(4000);
-  h.begin(serverUrl + path);
-  h.addHeader("x-device", deviceId());                // C-80: which device is asking
-  int code;
-  if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body); }
-  else code = h.GET();
-  String out = code == 200 ? h.getString() : "";
-  h.end();
+  int code = -1;
+  String out;
+  if (serverUrl.length() && !viaRelay()) {
+    HTTPClient h;
+    h.setConnectTimeout(relaySet() ? 1500 : 4000);     // away, home's address answers nothing: give up on it quickly
+    h.setTimeout(4000);
+    h.begin(serverUrl + path);
+    h.addHeader("x-device", deviceId());               // C-80: which device is asking
+    if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body); }
+    else code = h.GET();
+    out = code == 200 ? h.getString() : "";
+    h.end();
+  }
+  if (code < 0 && relaySet()) {                        // home did not answer at all (a refusal is an answer): the relay
+    out = relayHttp(method, path, body, &code);
+    awayAt = code > 0 ? millis() : 0;                  // the relay answered (even "home is asleep"): away, for a while
+  } else if (code > 0) awayAt = 0;
   if (ok) *ok = code == 200;
   return out;
 }
@@ -257,7 +304,7 @@ void pollCommands(uint32_t now) {
     routinesPosted = !http("POST", "/api/device/routines", routinesJson()).isEmpty();
     if (routinesPosted) { reportRemotes(); reportNetworks(); }
   }
-  if (now - commandsAt < 2000) return;
+  if (now - commandsAt < (viaRelay() ? 20000u : 2000u)) return;   // C-82: each one through the relay is an n8n run
   commandsAt = now;
   bool ok;
   String got = http("GET", "/api/device/commands", "", &ok);

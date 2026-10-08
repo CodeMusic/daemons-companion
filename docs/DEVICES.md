@@ -1,7 +1,7 @@
 # The devices: one daemon each, and always connected (C-80, C-82)
 
-*A design, 2026-10-07. Built since: every device by its own name (C-80 step 1) and a daemon in each (step 2,
-2026-10-08: `server/src/carry.ts`). The questions and their answers are at the end.*
+*A design, 2026-10-07. Built since: every device by its own name (C-80 step 1), a daemon in each (step 2,
+2026-10-08: `server/src/carry.ts`), and a board through the relay with a key of its own (C-82, 2026-10-08; docs/REMOTE.md 4). The questions and their answers are at the end.*
 
 ## The devices
 

@@ -109,6 +109,9 @@ extern String knownSsid[MAX_NETS], knownPass[MAX_NETS]; extern int knownCount;
 extern uint32_t usbSeen, phoneSeen, lastPoll, lastHello;
 bool wifiSet();
 bool online();
+bool atHome();                                     // C-82: home answered last (not the relay)
+bool relaySet(); bool viaRelay();                  // C-82: the relay's address and this board's key are kept; in use now
+void loadAway(); void takeAway(const String &url, const String &key);
 void loadWifi();
 void learnNetwork(const String &ssid, const String &pass, const String &server);
 void forgetNetwork(int i);

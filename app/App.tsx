@@ -930,7 +930,7 @@ type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: s
               devices?: DeviceRow[]; away?: Carried[] };                                              // C-80
 // C-80: a daemon in each device -- what each carries, and every daemon away (SENT in the game) to choose from
 type Carried = { personality: number; slot: number; species: number; nickname: string; name: string; level: number };
-type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | null; lastSeen: string; here: boolean;
+type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "relay" | null; lastSeen: string; here: boolean;
                    firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null;
                    daemon?: Carried | null };
 const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
@@ -1053,7 +1053,8 @@ function DeviceScreen({ ink }: { ink: string }) {
             <YStack key={d.id} gap={4} marginTop={8}>
               <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
                 {`${KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
-              <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone" : "Wi-Fi"}`
+              <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone"
+                                           : d.via === "relay" ? "its own Wi-Fi, away" : "Wi-Fi"}`
                                 : `last heard ${new Date(d.lastSeen).toLocaleString()}`,
                        d.battery ? `battery ${d.battery.percent}%${d.battery.charging ? ", charging" : ""}` : null,
                        d.id].filter(Boolean).join(" · ")}</Small>

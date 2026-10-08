@@ -52,9 +52,9 @@ beside it.*
 
 **Local first, one person, from anywhere.** Everything runs on your own machine, and your paired phone reaches it from
 anywhere through your own n8n -- **the site stays on this machine, with no logins**; the phone is the remote
-([From anywhere](#from-anywhere)). Accounts, many users and hosting come later. **One
-daemon goes out at a time today**, to whichever device is linked; a daemon per device, and every device always
-connected, are designed in [docs/DEVICES.md](docs/DEVICES.md) (C-80, C-82).
+([From anywhere](#from-anywhere)). Accounts, many users and hosting come later. **A daemon
+in each device**: SEND as many as you like from the party in the game, SYNC, and choose on the DEVICE tab which device
+carries which -- with one device there is nothing to choose ([docs/DEVICES.md](docs/DEVICES.md), C-80).
 
 ## The handhelds
 
@@ -193,6 +193,11 @@ it opens at home, and from then on tries home first and the relay after.
   in order when the companion answers; so is everything the handheld reports through the phone. Only what needs an
   answer at once (talking, a voice, SYNC, telling the handheld to act now) waits for a connection.
 - **Read aloud and talk work away** -- the relay waits up to a minute for a voice.
+- **A handheld away needs only the phone, or Wi-Fi of its own.** Paired with the phone, it goes out through it. On a
+  hotspot or a cafe's Wi-Fi it asks the relay itself, with a key of its own (checked against Let's Encrypt's roots) that
+  it is given only down its cable at home -- so link each board by cable once after the relay is set. A board's key
+  opens the device's own door and nothing else, and forgetting the board on the DEVICE tab stops it. Talking and read
+  aloud need home or the phone (a recording and a voice are not what the relay carries); everything else works.
 - **Keep it reachable**: the phone reaches the companion only while the server runs and the Mac is awake.
   `./bindCompanion.sh always` makes both true (on power; on battery the Mac sleeps as usual, and the phone works from
   what it holds until it is back). Later, the server can move to a machine that never sleeps (C-82).

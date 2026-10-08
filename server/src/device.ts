@@ -5,7 +5,7 @@
 //
 // It lives in memory: a link is a now, not a record. What a routine did is kept as tending the daemon elsewhere (C-13).
 
-export type Via = "usb" | "wifi" | "phone";   // C-55: the companion app, carrying the link over Bluetooth
+export type Via = "usb" | "wifi" | "phone" | "relay";   // C-55: the app over Bluetooth; C-82: a board through the relay
 export type Command = { id: number; type: "run" | "wifi" | "ir" | "remote" | "network"; [k: string]: unknown };
 export type Result = { id: number; ok: boolean; text: string; at: string };
 export type RoutineType = { name: string; radio: string; routines: string[] };

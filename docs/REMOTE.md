@@ -58,8 +58,15 @@ commands every 10, instead of every 5 and 1.5.
 
 ## 4. The handheld
 
-The handheld needs no change: away from home it reaches the companion through the phone (C-55). It could later post to
-the relay itself over a phone's hotspot, but nothing needs that yet.
+Away from home it reaches the companion through the phone (C-55) -- and since C-82 (2026-10-08, the user: "they should
+only need to be paired with the phone, or even just have their own Wi-Fi connected") through the relay itself, on any
+Wi-Fi it knows. The same envelope, over HTTPS checked against ISRG Root X1 and X2 (`firmware/esp32/src/relay_ca.h`), with
+**the board's own key** as its Bearer: the server makes one per board, hands it (with the relay's address) only in the
+state the USB bridge carries, and knows the board by it -- the relay passes only `authorization`, so no `x-device`
+is needed. A board's key opens `DEVICE_DOOR` and nothing else; forgetting the board stops it. The board tries home
+first, and when home does not answer at all it asks the relay, and keeps to the relay for a minute (the corner says
+AWAY), asking for commands every 20 s instead of every 2. Talk and read aloud stay home-or-phone: the relay carries
+JSON, not a recording or a voice. **Built, not yet run on a board.**
 
 ## What the user does
 

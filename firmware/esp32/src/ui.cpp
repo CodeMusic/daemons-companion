@@ -78,6 +78,7 @@ const char *linkName() {
   if (millis() - usbSeen < USB_FRESH_MS && usbSeen) return "USB";
   if (phoneSeen && linkPhoneHere()) return "PHONE";   // C-55, C-57
   if (!wifiSet()) return "NO LINK";
+  if (WiFi.status() == WL_CONNECTED && viaRelay()) return "AWAY";   // C-82: on its own Wi-Fi, through the relay
   return WiFi.status() == WL_CONNECTED ? "WIFI" : "WIFI...";
 }
 

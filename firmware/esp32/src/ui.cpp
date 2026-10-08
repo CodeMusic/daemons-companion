@@ -171,8 +171,9 @@ void drawRoutines(uint16_t day) {
 // and TALK, held to talk (C-66). The day's colour rings the face.
 static void drawFace(uint16_t day, uint16_t ink) {
   canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
-  canvas.drawCircle(W / 2, H / 2, W / 2 - 2, day); canvas.drawCircle(W / 2, H / 2, W / 2 - 3, day);
-  canvas.drawCircle(W / 2, H / 2, W / 2 - 4, day);
+  int r = min(W, H) / 2;                                     // C-75: round on the watch, and inside the CoreS3's 320x240
+  canvas.drawCircle(W / 2, H / 2, r - 2, day); canvas.drawCircle(W / 2, H / 2, r - 3, day);
+  canvas.drawCircle(W / 2, H / 2, r - 4, day);
   canvas.setTextDatum(MC_DATUM);
   canvas.setTextFont(2); canvas.setTextColor(day);
   canvas.drawString(upper(st.theme.length() ? st.theme : st.day), W / 2, 38);

@@ -50,6 +50,7 @@ env_for() {                     # a board's id -> its build
     t-embed*)   echo t-embed ;;
     t-watch-s3) echo t-watch-s3 ;;
     m5-sticks3) echo m5-sticks3 ;;
+    m5-cores3)  echo m5-cores3 ;;
     *)          echo "" ;;
   esac
 }
@@ -110,10 +111,10 @@ fi
 for i in "${chosen[@]}"; do
   port="${ports[$i]}" env="${envs[$i]}"
   if [[ -z "$env" ]]; then
-    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3"
-    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3 or m5-sticks3." >&2; exit 64; }
+    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3"
+    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3 or m5-cores3." >&2; exit 64; }
     read -r answer
-    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
   fi
   echo "updateCompanion: flashing $port with $env"
   "$PIO" run -e "$env" -t upload --upload-port "$port"

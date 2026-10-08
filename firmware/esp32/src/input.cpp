@@ -16,7 +16,7 @@ void inputBegin() {
     pinMode(board.encA, INPUT_PULLUP); pinMode(board.encB, INPUT_PULLUP);
     encLast = (digitalRead(board.encA) << 1) | digitalRead(board.encB);
   }
-  pinMode(board.encKey, INPUT_PULLUP);
+  if (board.encKey >= 0) pinMode(board.encKey, INPUT_PULLUP);   // C-75: the CoreS3 has no key -- only its touch
   if (board.hasSideKey()) pinMode(board.sideKey, INPUT_PULLUP);
 }
 
@@ -211,6 +211,7 @@ void readKeyStick();
 // listens until it is let go (talk.cpp). A press is still a press; the chord still sleeps at once.
 static const uint32_t TALK_HOLD_MS = 450;
 void readKey() {
+  if (board.encKey < 0) return;                                  // C-75: the CoreS3 -- touch and its power key (watch.cpp)
   if (board.noDial()) { readKeyStick(); return; }                // C-74: the StickS3's two buttons
   if (!board.hasSideKey()) { readKeyAlone(); return; }
   static bool pending = false;

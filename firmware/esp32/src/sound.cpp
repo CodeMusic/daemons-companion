@@ -57,19 +57,21 @@ void soundBegin() {
   if (i2s_set_pin(PORT, &pins) != ESP_OK) { i2s_driver_uninstall(PORT); return; }
   i2s_zero_dma_buffer(PORT);
   if (board.kind == BoardKind::M5StickS3) { es8311Speaker(); pm1Gpio(3, true); }   // C-74: the codec, then its amplifier
+  if (board.kind == BoardKind::M5CoreS3) coreS3Speaker(true, RATE);                  // C-75: the AW88298
   ready = true;
 }
 
-// C-74: on the StickS3 the microphone and the speaker share one codec and its clocks, so while it listens the speaker's
-// I2S lets go of them (talk.cpp), and takes them back after.
+// C-74, C-75: on the StickS3 the microphone and the speaker share one codec, and on the CoreS3 the speaker and the
+// microphones share BCLK and LRCK, so while it listens the speaker's I2S lets go of them (talk.cpp), and takes them back.
 void soundPause() {
-  if (!ready || board.mic != Mic::Es8311) return;
-  pm1Gpio(3, false);
+  if (!ready || !board.sharedClocks()) return;
+  if (board.kind == BoardKind::M5StickS3) pm1Gpio(3, false);
+  else coreS3Speaker(false, 0);
   i2s_driver_uninstall(PORT);
   ready = false;
 }
 void soundResume() {
-  if (ready || board.mic != Mic::Es8311) return;
+  if (ready || !board.sharedClocks()) return;
   soundBegin();
 }
 

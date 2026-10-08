@@ -84,6 +84,37 @@ on it wakes). The speaker lets go of the codec's clocks while the microphone lis
 screen's power through the M5PM1); github.com/m5stack/M5Unified src/M5Unified.inl (the amplifier and the ES8311's
 speaker and microphone writes) and src/utility/power/M5PM1_Class.inl (its registers).*
 
+## The M5Stack CoreS3 (C-75)
+
+ESP32-S3: **16 MB flash, 8 MB quad PSRAM** (PlatformIO's own `m5stack-cores3` board; not the octal PSRAM of the
+T-Embeds). **ILI9342, 320x240**, touch over it (FT6336, I2C 0x38): SPI MOSI 37, SCK 36, CS 3, and **GPIO 35 both the
+screen's D/C and the SD card's MISO** -- M5GFX swaps the pin's role on every chip select; this firmware never reads
+the screen or the card, so 35 is only D/C. The panel turns 3 before the app's rotation 1. **Later boards carry an
+ILI9342E**, which needs its own start-up (M5GFX tells the two apart by reading the panel back through that shared pin):
+this firmware starts the C, and **`PANEL E` down the cable** stores the E and restarts (`PANEL C` goes back).
+
+One I2C bus, SDA 12 / SCL 11: **AXP2101 power chip (0x34)**, **AW9523 expander (0x58)**, **AW88298 amplifier (0x36)**,
+**ES7210 microphones (0x40)**, BM8563 clock (0x51), BMI270 IMU (0x69), the touch, and the GC0308 camera (0x21; not on
+the SE). **The AW9523 does what pins do elsewhere**: P0_0 the touch's reset, P0_1 the bus's 5 V out (left off), P0_2 the
+amplifier's reset, P1_1 the screen's reset, P1_7 the boost converter. **The AXP2101's LDOs are the rails**: ALDO1 1.8 V
+the amplifier, ALDO2 3.3 V the microphones, ALDO3 the camera, ALDO4 the SD card, and **DLDO1 the backlight** -- its
+voltage is the brightness (0x99; M5GFX's full is 28). **The power key reaches only the AXP2101** and its interrupt pin is
+shared with the clock's and not wired to the ESP32, so the key is read by asking the AXP ten times a second.
+
+**Sound**: the speaker (AW88298, 16-bit registers, big-endian) and the microphones (ES7210) **share BCLK 34 and LRCK
+33**; the speaker's data is 13, the microphones' 14, their MCLK **GPIO 0** -- so the BOOT pin is not a button here.
+
+**Its own build** (`env:m5-cores3`, `BOARD_CORES3`): it shares the watch's code for the AXP2101, the clock and the touch
+(`src/watch.cpp`) -- the face first, swipe to turn, tap to press, hold to go back, TALK held on the face; the power key
+wakes it or goes back, held a second it sleeps; at 5% it switches itself off through the AXP2101 and the power key
+starts it again. No step counter (its IMU is a BMI270). The speaker lets go of the shared clocks while the microphones
+listen. **Built, not yet run**: the touch's way round is a guess to check, as the watch's was.
+
+*Sources: github.com/m5stack/M5GFX src/M5GFX.cpp (the autodetect: the AW9523's start-up, the panel, its backlight and
+touch) and src/lgfx/v1/panel/Panel_ILI9342.hpp (the E's start-up); github.com/m5stack/M5Unified src/M5Unified.inl (the
+pin tables, the AW88298's and the ES7210's writes) and src/utility/Power_Class.inl (the AXP2101's rails, the power
+key, and why only touch can wake it from deep sleep); PlatformIO's boards/m5stack-cores3.json.*
+
 ## The AX630C boards (on-device AI, C-75 / C-76)
 
 **LLM630 Compute Kit**: AX630C (two A53 cores at 1.2 GHz; NPU 3.2 TOPS INT8), 4 GB RAM (2 for the NPU), 32 GB eMMC,

@@ -63,16 +63,17 @@ static bool es7210On() {
 
 // C-74: the StickS3's ES8311 -- the speaker's codec, listening: the speaker lets go of the clocks, the codec is set to
 // record (M5Unified's writes), and the ESP32 is the master on MCLK 18, BCLK 17, LRCK 15, reading DIN 16.
-static bool es8311On() {
+// C-75: the CoreS3's ES7210 the same way, on the speaker's BCLK 34 and LRCK 33 with its own MCLK 0, reading DIN 14.
+static bool sharedMicOn() {
   soundPause();
-  es8311Mic();
+  if (board.mic == Mic::Es8311) es8311Mic(); else coreS3Mic();
   i2s_config_t cfg = {};
   cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX);
   cfg.sample_rate = RATE; cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
   cfg.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT; cfg.communication_format = I2S_COMM_FORMAT_STAND_I2S;
   cfg.dma_buf_count = 8; cfg.dma_buf_len = 256; cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
   i2s_pin_config_t pins = {};
-  pins.mck_io_num = board.i2sMclk; pins.bck_io_num = board.i2sBclk; pins.ws_io_num = board.i2sLrclk;
+  pins.mck_io_num = board.micMclk >= 0 ? board.micMclk : board.i2sMclk; pins.bck_io_num = board.i2sBclk; pins.ws_io_num = board.i2sLrclk;
   pins.data_out_num = I2S_PIN_NO_CHANGE; pins.data_in_num = board.micData;
   if (i2s_driver_install(MIC, &cfg, 0, nullptr) != ESP_OK) { soundResume(); return false; }
   if (i2s_set_pin(MIC, &pins) != ESP_OK) { i2s_driver_uninstall(MIC); soundResume(); return false; }
@@ -82,7 +83,7 @@ static bool es8311On() {
 
 static bool micOn() {
   if (board.mic == Mic::Es7210) return es7210On();
-  if (board.mic == Mic::Es8311) return es8311On();
+  if (board.sharedClocks()) return sharedMicOn();
   i2s_config_t cfg = {};
   cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM);
   cfg.sample_rate = RATE;
@@ -278,7 +279,7 @@ void talkHold(uint32_t forMs) {
   }
   ledsDance(-1, 0, 0);
   i2s_driver_uninstall(MIC);
-  soundResume();                                                              // C-74: the StickS3's speaker back
+  soundResume();                                                              // C-74, C-75: the shared speaker back
   while (!forMs && (board.touch ? watchTouchDown() : !digitalRead(board.encKey))) delay(5);   // a long talk ran out: wait for the let-go
   lastInput = millis();
   { long long sq = 0; int peak = 0;                                           // how loud it was, for the check
@@ -291,7 +292,7 @@ void talkHold(uint32_t forMs) {
   if (!online() && linkPhoneHere() && !brainConfigured()) { overPhone(rec, n); return; }   // C-82: the phone carries it
   if (!online()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
-  h.setTimeout(120000);                                                       // a local model's first turn loads it
+  h.setTimeout(65535);           // a local model's first turn loads it. HTTPClient's timeout is 16 bits: 120000 was 54 s
   h.begin(serverUrl + "/api/device/talk");
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "audio/wav");
@@ -308,7 +309,7 @@ void talkReadEntry() {
   if (!online()) { say("NEEDS WI-FI"); return; }                               // DRAFT
   screen = TALK; talkHeard = ""; talkAnswer = st.daemon.entry; talkStatus = "Reading..."; draw();   // DRAFT
   HTTPClient h;
-  h.setTimeout(90000);
+  h.setTimeout(65535);           // the most HTTPClient holds (16 bits): 90000 was 24 s, with the INDEX voice taking ~15
   h.begin(serverUrl + "/api/device/speak");
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "application/json");

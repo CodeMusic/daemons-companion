@@ -4,8 +4,16 @@
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
 
+// C-75: the later CoreS3s' ILI9342E takes a different start-up (M5GFX's Panel_ILI9342E; LovyanGFX 1.1.16 has only the C).
+struct Panel_ILI9342E : public lgfx::Panel_ILI9342 {
+ protected:
+  const uint8_t *getInitCommands(uint8_t listno) const override;
+};
+
 class Display : public lgfx::LGFX_Device {
-  lgfx::Panel_ST7789 panel;
+  lgfx::Panel_ST7789 st7789;
+  lgfx::Panel_ILI9342 ili9342c;     // C-75: the CoreS3
+  Panel_ILI9342E ili9342e;
   lgfx::Bus_SPI bus;
  public:
   void configure();   // from `board`, before init()

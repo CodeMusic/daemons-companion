@@ -328,6 +328,10 @@ void handleLine(String line, bool fromPhone) {
     if (line.length() > 6 && !brainSet(line.substring(6))) reply("BRAIN? tcp <host>[:port] | uart | off");
     else reply("BRAIN " + brainDescribe());
   }
+  else if (line.startsWith("PANEL ") && !fromPhone && board.kind == BoardKind::M5CoreS3) {   // C-75: PANEL C | E, then it restarts
+    Preferences p; p.begin("board", false); p.putString("panel", line.substring(6) == "E" ? "E" : "C"); p.end();
+    reply("PANEL " + String(line.substring(6) == "E" ? "E" : "C") + " -- restarting"); Serial.flush(); delay(100); ESP.restart();
+  }
   else if (line == "PING") { seen = millis(); reply("PONG"); }
 }
 
@@ -425,6 +429,7 @@ static void batteryRules() {
   if (batFakeUntil) { say("WOULD SLEEP NOW"); Serial.println("BATTEST would sleep now"); return; }   // a check never sleeps it
   say("CHARGE ME"); draw(); delay(2000);                                           // DRAFT
   ledsSleep(true); backlight(false);
+  if (boardPowerOff()) return;                                                     // C-75: the CoreS3 switches itself off
   int wakePin = board.sideKey >= 0 ? board.sideKey : board.encKey;                 // the top button (C-79)
   esp_sleep_enable_ext0_wakeup((gpio_num_t)wakePin, 0);
   esp_deep_sleep_start();

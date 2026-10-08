@@ -932,7 +932,7 @@ type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | nul
                    firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null };
 const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
                                              "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3",
-                                             "m5-sticks3": "M5StickS3" };                                   // C-74
+                                             "m5-sticks3": "M5StickS3", "m5-cores3": "M5Stack CoreS3" };   // C-74, C-75
 type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
 type Brand = { brand: string; sets: RemoteSet[] };
 

@@ -2,7 +2,7 @@
 #include "app.h"
 #include "talk.h"
 
-#ifndef BOARD_TWATCH_S3
+#if !defined(BOARD_TWATCH_S3) && !defined(BOARD_CORES3)
 
 void watchPower() {}
 void watchBegin() {}
@@ -26,7 +26,15 @@ bool watchTouchDown() { return false; }
 #include <TouchDrvFT6X36.hpp>
 
 // Pins and rails from LilyGO's TTGO_TWatch_Library (t-watch-s3 branch, src/utilities.h); docs/HARDWARE.md.
+// C-75: the CoreS3 shares all of this but the rails, the steps and the touch's bus: its touch is on the main bus, the
+// right way round, and its power chip's interrupt does not reach the ESP32, so the power key is read by asking.
+#ifdef BOARD_CORES3
+static const int PMU_IRQ = -1;
+static TwoWire &touchWire = Wire;
+#else
 static const int PMU_IRQ = 21, TOUCH_SDA = 39, TOUCH_SCL = 40;
+static TwoWire &touchWire = Wire1;
+#endif
 
 static XPowersAXP2101 pmu;
 static SensorPCF8563 rtc;
@@ -40,17 +48,18 @@ static bool clockSet = false;
 void watchPower() {
   havePmu = pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, board.sda, board.scl);
   if (!havePmu) return;
+#ifndef BOARD_CORES3                              // the CoreS3's rails are set in boardBegin(), as M5Unified sets them
   pmu.setALDO1Voltage(3300); pmu.enableALDO1();   // the clock's backup
   pmu.setALDO2Voltage(3300); pmu.enableALDO2();   // the backlight
   pmu.setALDO3Voltage(3300); pmu.enableALDO3();   // the screen and the touch
   pmu.setALDO4Voltage(3300); pmu.enableALDO4();   // the LoRa radio (C-72)
   pmu.setBLDO2Voltage(3300); pmu.enableBLDO2();   // the vibration motor
+#endif
   pmu.enableBattDetection(); pmu.enableBattVoltageMeasure(); pmu.enableVbusVoltageMeasure();
   pmu.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
   pmu.clearIrqStatus();
   pmu.enableIRQ(XPOWERS_AXP2101_PKEY_SHORT_IRQ | XPOWERS_AXP2101_PKEY_LONG_IRQ);
-  pinMode(PMU_IRQ, INPUT_PULLUP);
-  attachInterrupt(PMU_IRQ, [] { pmuIrq = true; }, FALLING);
+  if (PMU_IRQ >= 0) { pinMode(PMU_IRQ, INPUT_PULLUP); attachInterrupt(PMU_IRQ, [] { pmuIrq = true; }, FALLING); }
   delay(20);
 }
 
@@ -67,10 +76,14 @@ void watchBegin() {
       clockSet = true;
     }
   }
+#ifdef BOARD_CORES3
+  haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, board.sda, board.scl);   // no step counter: a BMI270
+#else
   haveAccel = accel.begin(Wire, BMA423_I2C_ADDR_SECONDARY, board.sda, board.scl);
   if (haveAccel) { accel.configAccelerometer(); accel.enableAccelerometer(); accel.enablePedometer(); }
   Wire1.begin(TOUCH_SDA, TOUCH_SCL);
-  haveTouch = touchPanel.begin(Wire1, FT6X36_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL);
+  haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL);
+#endif
   Serial.printf("watch: pmu %d clock %d steps %d touch %d\n", havePmu, haveRtc, haveAccel, haveTouch);
 }
 
@@ -128,7 +141,8 @@ long watchSteps() {
 }
 
 // ---- touch: a swipe turns between the pages, a tap presses, a long hold goes back; on the face, the TALK button is
-// held to talk (C-66). The panel's corner is the screen's opposite one (the screen is turned half round, rotation 2).
+// held to talk (C-66). The watch's panel's corner is the screen's opposite one (the screen is turned half round,
+// rotation 2); the CoreS3's is the screen's own (a guess, as the watch's was, to check on the board).
 static bool down = false, talking = false;
 static int16_t xFrom, yFrom, xNow, yNow;
 static uint32_t downAt = 0;
@@ -142,7 +156,11 @@ static void touchLoop(uint32_t now) {
   int16_t xs[1], ys[1];
   bool pressed = touchPanel.getPoint(xs, ys, 1) > 0;
   if (pressed) {
+#ifdef BOARD_CORES3
+    int x = xs[0], y = ys[0];
+#else
     int x = W - 1 - xs[0], y = H - 1 - ys[0];
+#endif
     if (!down) {
       down = true; downAt = now; xFrom = x; yFrom = y;
       if (asleep) return;
@@ -167,9 +185,11 @@ static void touchLoop(uint32_t now) {
 }
 
 // ---- the crown: a short press wakes the watch, or goes back; a long one, asleep (the PMU powers off on a longer hold)
-static void crownLoop() {
-  if (!havePmu || !pmuIrq) return;
-  pmuIrq = false;
+static void crownLoop(uint32_t now) {
+  static uint32_t askedAt = 0;
+  if (!havePmu) return;
+  if (PMU_IRQ >= 0 ? !pmuIrq : now - askedAt < 100) return;   // C-75: no interrupt pin -- ask ten times a second
+  askedAt = now; pmuIrq = false;
   pmu.getIrqStatus();
   bool shortPress = pmu.isPekeyShortPressIrq(), longPress = pmu.isPekeyLongPressIrq();
   pmu.clearIrqStatus();
@@ -179,7 +199,7 @@ static void crownLoop() {
 
 void watchLoop(uint32_t now) {
   touchLoop(now);
-  crownLoop();
+  crownLoop(now);
   static uint32_t tickAt = 0;                                   // the face's clock and steps: once a second is enough
   if (!asleep && screen == HOME && page == FACE_PAGE && now - tickAt > 1000) { tickAt = now; dirty = true; }
 }

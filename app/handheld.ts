@@ -214,14 +214,19 @@ class Link {
   }
 
   // What the board did, kept on the phone until the companion answers.
+  // C-87: what the board reports as its whole current state (its routines, remotes, networks, battery) is kept once --
+  // the latest; what it did (ticks, meetings, results) is kept every time, in order.
   private async later(path: string, body: unknown) {
+    if (/\/api\/device\/(routines|remotes|networks|battery|listen)$/.test(path)) this.queue = this.queue.filter((q) => q.path !== path);
     this.queue.push({ path, body });
     await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue), KEEP);
     this.set({ waiting: this.queue.length });
   }
   private async flush() {
     while (this.queue.length) {
-      await this.ask(this.queue[0].path, this.queue[0].body);
+      // C-87: a report the companion answers NO to is done with; only being out of reach keeps it (and the rest)
+      try { await this.ask(this.queue[0].path, this.queue[0].body); }
+      catch (e) { if ((e as Error)?.name === "Unreachable") throw e; }
       this.queue.shift();
       await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue), KEEP);
       this.set({ waiting: this.queue.length });
@@ -266,16 +271,16 @@ class Link {
       catch { await this.later("/api/device/interact", { kind, detail: detail.join(" ") }); }
     } else if (word === "LISTEN") {                         // C-15: one listen of the board's meeting radio
       const [started, devices, beacons] = rest.split(" ").map(Number);
-      await this.ask("/api/device/listen", { started, devices, beacons }).catch(() => {});
+      await this.ask("/api/device/listen", { started, devices, beacons }).catch(() => this.later("/api/device/listen", { started, devices, beacons }));
     } else if (word === "MET") {                            // C-15: a companion the board heard nearby
       const [species, peer] = rest.split(" ");
       try { await this.ask("/api/device/met", { species, peer }); } catch { await this.later("/api/device/met", { species, peer }); }
     } else if (word === "BEACON") {                         // C-15: the board's own tag, so it is never a meeting
       try { await this.ask("/api/device/beacon", { peer: rest }); } catch { await this.later("/api/device/beacon", { peer: rest }); }
     } else if (word === "RESULT") {
-      await this.ask("/api/device/results", JSON.parse(rest)).catch(() => {});
+      await this.ask("/api/device/results", JSON.parse(rest)).catch(() => this.later("/api/device/results", JSON.parse(rest)));
     } else if (word === "ROUTINES" || word === "REMOTES" || word === "NETWORKS") {
-      await this.ask("/api/device/" + word.toLowerCase(), JSON.parse(rest)).catch(() => {});
+      await this.ask("/api/device/" + word.toLowerCase(), JSON.parse(rest)).catch(() => this.later("/api/device/" + word.toLowerCase(), JSON.parse(rest)));
     }
   }
 }

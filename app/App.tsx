@@ -59,8 +59,16 @@ function setOffline(at: string | null) {
   OFFLINE = at;
   offlineHeard.forEach((f) => f());
 }
-class Unreachable extends Error {}
-const HELD = /^\/api\/(steps\/\d+\/(done|undo)|walk)$/;    // what a phone may do away from the companion, and send later
+class Unreachable extends Error { name = "Unreachable"; }     // by name too: handheld.ts tells it from a NO
+// C-87 (the user, 2026-10-08: "the phone doesn't lose any data"): every write that can wait is kept on the phone when
+// the companion cannot be reached, and sent in order when it answers. Only what needs an answer NOW is not kept --
+// talking, a voice, a SYNC of the save, the Mac's own dialogs, pairing, and the handheld told to do something this
+// moment (run a routine, send a remote, join a network). A setting is kept once: only the latest of each is sent.
+const NOT_KEPT = /^\/api\/(ai\/|sync|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network))/;
+const LATEST_ONLY = /^\/api\/(settings|talk\/settings|device\/settings|profile)$/;
+// The handheld's own reports through this phone are kept by its bridge (handheld.ts, in order, with the board's id), so
+// they are not kept here as well -- or a tick made away from home would arrive twice.
+const keepable = (path: string) => !NOT_KEPT.test(path) && (!path.startsWith("/api/device/") || path === "/api/device/settings");
 const ON_PHONE = Platform.OS !== "web";
 // C-57: readable after the phone's first unlock, not only while it is unlocked -- iOS may open the app in a locked
 // pocket when the handheld has something to say, and the app needs its key and the handheld's id then.
@@ -181,7 +189,8 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   } catch (e) {
     if (!ON_PHONE || !(e instanceof Unreachable)) throw e;           // the companion answered "no": that is not offline
     if (body === undefined && path in KEPT.paths) { setOffline(KEPT.at); return KEPT.paths[path] as T; }
-    if (body !== undefined && HELD.test(path)) {
+    if (body !== undefined && keepable(path)) {
+      if (LATEST_ONLY.test(path)) KEPT.queue = KEPT.queue.filter((q) => q.path !== path);
       KEPT.queue.push({ path, body }); saveKept(); setOffline(KEPT.at);
       throw new Error("Kept on this phone. It goes to the companion the next time it answers.");
     }
@@ -194,7 +203,12 @@ async function sendHeld() {
   sending = true;
   try {
     while (KEPT.queue.length) {
-      await apiLive(KEPT.queue[0].path, KEPT.queue[0].body);
+      try { await apiLive(KEPT.queue[0].path, KEPT.queue[0].body); }
+      catch (e) {
+        if (e instanceof Unreachable) throw e;                          // still away: keep it and the rest
+        // C-87: the companion answered NO (a step since deleted, a goal already finished) -- that one is done with, and
+        // must not hold back everything kept after it
+      }
       KEPT.queue.shift(); saveKept();
     }
   } catch { /* still away: keep the rest */ } finally { sending = false; }
@@ -1318,7 +1332,9 @@ function Shell() {
     if (!ON_PHONE) return;
     const sync = () => sendTodaysSteps().then(() => reload()).catch(() => {});
     sync();
-    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); HANDHELD?.nudge(); MEETING?.nudge(); } });
+    // C-87: each time the app comes back to the front, what the phone holds is brought up to date (and anything kept
+    // on it is sent), so a phone opened away from home shows the freshest it could get
+    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); keepEverything().catch(() => {}); HANDHELD?.nudge(); MEETING?.nudge(); } });
     return () => sub.remove();
   }, [reload]);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's

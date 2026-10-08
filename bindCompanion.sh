@@ -8,6 +8,9 @@
 #   ./bindCompanion.sh app [web|ios|android]
 #                                     only the app, against a server you started yourself
 #   ./bindCompanion.sh test           the server's type check and its tests
+#   ./bindCompanion.sh always         keep the server running: started at login, restarted if it stops, and the Mac
+#                                     kept awake while on power -- so the phone reaches it from anywhere (C-87)
+#   ./bindCompanion.sh never          stop doing that
 #   ./bindCompanion.sh phone          build the app for your iPhone (plugged in or on the same Wi-Fi) and install it
 #   ./bindCompanion.sh --help
 #
@@ -40,6 +43,7 @@ case "${1:-web}" in
   app)             mode=app target="${2:-web}" ;;
   test)            mode=test ;;
   phone)           mode=phone ;;
+  always|never)    mode="$1" ;;
   -h|--help|help)  usage; exit 0 ;;
   *) echo "bindCompanion: unknown '$1' (try --help)" >&2; exit 64 ;;
 esac
@@ -99,6 +103,48 @@ if [[ $mode == phone ]]; then
     echo "bindCompanion: unlock the iPhone to install -- trying again in 10 seconds (Ctrl-C to stop)"; sleep 10
   done
   echo "bindCompanion: installed. Open DAEMONS companion on the phone and pair it (the site: SETTINGS, PAIR A PHONE)."
+  exit 0
+fi
+
+# -- always / never (C-87): the server as a login agent ------------------------------------------------------------------
+# Away from home the phone reaches the companion through the relay, but only while the server runs and the Mac is
+# awake. This makes both true: launchd starts it at login and again if it stops, and caffeinate -s keeps the Mac from
+# sleeping while it is on power (on battery it sleeps as usual). The server's log goes to .logs/server-always.log.
+AGENT="$HOME/Library/LaunchAgents/ca.codemusic.daemons-companion.plist"
+if [[ $mode == always ]]; then
+  mkdir -p "$LOGS" "$(dirname "$AGENT")"
+  cat > "$AGENT" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>ca.codemusic.daemons-companion</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string><string>-s</string>
+    <string>/bin/bash</string><string>$HERE/bindCompanion.sh</string><string>server</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>$LOGS/server-always.log</string>
+  <key>StandardErrorPath</key><string>$LOGS/server-always.log</string>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/opt/node@24/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+</dict>
+</plist>
+PLIST
+  launchctl bootout "gui/$(id -u)" "$AGENT" 2>/dev/null || true
+  launchctl bootstrap "gui/$(id -u)" "$AGENT"
+  echo "bindCompanion: the server now runs whenever you are logged in, and keeps the Mac awake on power."
+  echo "               If a server was already running in a terminal, stop that one: this takes over within 30 seconds."
+  echo "               Log: .logs/server-always.log   Undo: ./bindCompanion.sh never"
+  exit 0
+fi
+if [[ $mode == never ]]; then
+  launchctl bootout "gui/$(id -u)" "$AGENT" 2>/dev/null || true
+  rm -f "$AGENT"
+  echo "bindCompanion: the server no longer starts by itself. Start it with ./bindCompanion.sh when you want it."
   exit 0
 fi
 

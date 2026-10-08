@@ -75,3 +75,49 @@ the relay itself over a phone's hotspot, but nothing needs that yet.
 - **The relay** reuses what already runs.
 
 C-54 stays open in case the companion ever outgrows the relay.
+
+# Everything from anywhere (C-87, 2026-10-08)
+
+*The user: "the phone doesn't lose any data... the tts working remotely... what needs to be done for me to publish the
+server so anything I can do at home I can do remotely... I'd keep the site local (not worry about auth)."*
+
+## The decision: the site stays local; the phone is the remote; the relay is the door
+
+The phone app **is** the site -- the same screens on the same server -- so nothing needs publishing for the phone to
+do away what the site does at home. Through the relay the server refuses only what belongs to the machine it runs on
+(`LOCAL_ONLY`): making a pairing code and listing or forgetting phones, opening the server to the network, the Mac's
+own dialogs for the save, the relay's settings. Add what is physical -- the USB cable, flashing -- and that is the
+whole list. Publishing the server or the site would mean logins, certificates and a door on the router to defend,
+for nothing the relay (HTTPS, a key per phone, the relay's secret) does not already do. **So the site stays on this
+machine, with no logins, and is needed only to pair a phone.**
+
+## What was missing, and is now done
+
+1. **Nothing is lost away from home.** Every write that can wait is kept on the phone when the companion cannot be
+   reached and sent in order when it can -- goals, steps, care, the walk, settings (only the latest of each). Only
+   what needs an answer now is not kept: talking, a voice, a SYNC, pairing, the Mac's dialogs, and telling the
+   handheld to do something this moment. A kept write the companion refuses (a step deleted since) is set aside
+   rather than holding back the rest.
+2. **The handheld's reports are kept too**: its routines, remotes, networks, battery (the latest of each) and its
+   results and listens (every one), with the ticks, meetings and interactions it already kept.
+3. **The phone opens on what it holds** (C-86) and brings it up to date each time it comes back to the front.
+4. **Read aloud and talk away from home**: the relay now waits 60 seconds for the companion (it waited 10, and a
+   voice takes about 15), and a relay that answers for a sleeping companion counts as away, not as an error.
+
+## What only the user can do: keep the server reachable
+
+Away from home the phone reaches the companion only while it **runs** and the Mac is **awake**. One command makes
+both true, and one undoes it:
+
+    ./bindCompanion.sh always     # the server at login, restarted if it stops, the Mac awake while on power
+    ./bindCompanion.sh never
+
+On battery the Mac still sleeps as usual; then the phone works from what it holds and sends what it kept when the
+Mac is back.
+
+## Later: a server that never sleeps (C-82)
+
+The last step is moving the server to roverbyteseer, which is always on. The one open question is the save: the
+companion reads and writes the DAEMONS save (SYNC, AWAY), and today that file is on this Mac. Two ways it could work:
+the save in a synced folder both machines see (Delta's own Dropbox sync, or iCloud Drive), or the server on
+roverbyteseer asking this Mac for the save when it is awake. Until then, `always` above is the cheap version.

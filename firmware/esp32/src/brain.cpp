@@ -14,7 +14,7 @@ static Stream *wire = nullptr;
 static String workWhisper, workLlm, workTts;        // the units' instance ids, once set up
 static int nextId = 1;
 
-void brainLoad() { Preferences p; p.begin("brain", true); how = p.getString("how", ""); p.end(); }
+void brainLoad() { Preferences p; p.begin("brain", false); how = p.isKey("how") ? p.getString("how", "") : ""; p.end(); }
 bool brainConfigured() { return how.length() > 0; }
 String brainDescribe() { return how.length() ? how : String("off"); }
 

@@ -17,7 +17,11 @@ void setup() {
   Serial.setRxBufferSize(4096);
   Serial.begin(115200);
   for (uint32_t t0 = millis(); !Serial && millis() - t0 < 4000; ) delay(10);   // a listener, if one is coming
-  step("start");
+  // why it started: a crash (PANIC), a watchdog (TASK_WDT, INT_WDT), a deep sleep's wake (DEEPSLEEP), RST (POWERON) ...
+  static const char *WHY[] = { "UNKNOWN", "POWERON", "EXT", "SW", "PANIC", "INT_WDT", "TASK_WDT", "WDT", "DEEPSLEEP",
+                               "BROWNOUT", "SDIO" };
+  int why = (int)esp_reset_reason();
+  Serial.printf("boot: start (reset: %s)\n", why >= 0 && why < 11 ? WHY[why] : "?"); Serial.flush();
   boardBegin();                               // C-67: which board this is, its peripherals switched on
   Serial.printf("boot: board %s\n", board.id);
   inputBegin();                               // the dial and the buttons this board has

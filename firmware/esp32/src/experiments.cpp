@@ -18,7 +18,8 @@ static int motionCount = 0;
 static bool havePrev = false;
 static uint8_t apMac[6];
 
-static void IRAM_ATTR onCsi(void *, wifi_csi_info_t *info) {
+// The Wi-Fi task calls this, not an interrupt, so it needs no IRAM -- and the original ESP32 (C-75) has none to spare.
+static void onCsi(void *, wifi_csi_info_t *info) {
   if (!info || !info->buf || memcmp(info->mac, apMac, 6)) return;   // the access point's packets only
   int n = min(SUB, (int)info->len / 2);
   float amp[SUB], diff = 0, base = 0;

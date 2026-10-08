@@ -37,7 +37,7 @@ if [[ ! -x "$PY" ]]; then
 fi
 
 # -- the board ------------------------------------------------------------------------------------------------------
-if [[ ${#bridge_args[@]} -eq 0 ]] && ! ls /dev/cu.usbmodem* >/dev/null 2>&1; then
+if [[ ${#bridge_args[@]} -eq 0 ]] && [[ -z "$("$PY" -c "import sys; sys.path.insert(0, '$HERE/firmware/esp32'); import boardport; print(*boardport.ports())")" ]]; then   # C-75: USB-serial too
   echo "linkCompanion: no board on USB. Plug it in with a cable that carries data, then run this again." >&2
   exit 1
 fi

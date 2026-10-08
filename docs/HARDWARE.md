@@ -115,6 +115,38 @@ touch) and src/lgfx/v1/panel/Panel_ILI9342.hpp (the E's start-up); github.com/m5
 pin tables, the AW88298's and the ES7210's writes) and src/utility/Power_Class.inl (the AXP2101's rails, the power
 key, and why only touch can wake it from deep sleep); PlatformIO's boards/m5stack-cores3.json.*
 
+## The M5GO and the M5Stack Fire (C-75)
+
+**The original ESP32, not an S3** -- so a platform of its own in the build. The Fire has 16 MB of flash and 4 MB of PSRAM;
+the M5GO's Core has none, which the firmware takes as how to tell them apart (`m5-fire` / `m5go`). One build for both
+(`env:m5-core`): 4 MB of flash laid out as `huge_app` (no OTA), PSRAM on for the Fire as PlatformIO's own
+`m5stack-fire` board has it. **USB is a USB-serial chip** (CP2104, or CH9102 on later Cores): `/dev/cu.usbserial*` or
+`wchusbserial*`, whose DTR and RTS reset the chip -- `firmware/esp32/boardport.py` finds them and opens them with both
+held off, so the bridge does not restart the board.
+
+**ILI9342C, 320x240** on SPI MOSI 23, MISO 19 (shared with the SD card), SCK 18, CS 14, D/C 27, RST 33, backlight 32;
+the panel turns 3 before the app's rotation 1, and **whether it is inverted is read off RST** (driven low, then read with
+a pull-down -- M5GFX's own test; the boards differ). **Buttons A 39, B 38, C 37** (pulled up on the board): A and C turn,
+B presses and held at home talks, held A goes back (and undoes), C held two seconds sleeps; asleep only a held B wakes.
+
+I2C SDA 21 / SCL 22: **IP5306 power chip (0x75)** -- set up as M5Unified sets it, but with its boost kept on under a light
+load, or it switches a sleeping companion off; the charge only in quarters (0x78), charging and full from 0x70 and 0x71.
+**The speaker is the ESP32's own DAC on GPIO 25** (I2S_NUM_0 in built-in DAC mode: unsigned samples, each doubled into
+both halves of the frame). **The M5GO base** adds the **microphone, analog on GPIO 34** (read with the ADC at 16 kHz,
+its resting level learnt as it listens) and **ten SK6812 lights on GPIO 15**; on a bare Core there are none.
+
+**Its instruction RAM is nearly full** (about 400 bytes left): this SDK puts the Bluetooth controller (30 KB), libc's time
+and stdio, and the drivers there. To fit: `strptime` is a stub on this chip (only HTTPClient's unused cookie jar calls
+it, `src/esp32_classic.cpp`), the lights go out over SPI instead of Adafruit's RMT driver (`src/leds.cpp`), the IR
+receiver is a stub (there is none, `src/radios.cpp`), and the Wi-Fi motion callback is not IRAM. Without PSRAM the M5GO
+draws in 256 colours (a 16-bit screen will not fit beside Wi-Fi and Bluetooth) and records as long a talk as the heap
+allows, down to two seconds. **Built, not yet run.**
+
+*Sources: github.com/m5stack/M5GFX src/M5GFX.cpp (the M5Stack autodetect: the bus, the panel, its invert test, the
+backlight); github.com/m5stack/M5Unified src/M5Unified.inl (the pin tables, the DAC speaker and the M5GO base's
+microphone) and src/utility/Power_Class.inl, power/IP5306_Class.inl (the IP5306); PlatformIO's boards
+m5stack-core-esp32.json and m5stack-fire.json.*
+
 ## The AX630C boards (on-device AI, C-75 / C-76)
 
 **LLM630 Compute Kit**: AX630C (two A53 cores at 1.2 GHz; NPU 3.2 TOPS INT8), 4 GB RAM (2 for the NPU), 32 GB eMMC,

@@ -50,8 +50,11 @@ static bool es7210On() {
   cfg.sample_rate = RATE; cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
   cfg.channel_format = I2S_CHANNEL_FMT_ALL_LEFT; cfg.communication_format = I2S_COMM_FORMAT_STAND_I2S;
   cfg.dma_buf_count = 8; cfg.dma_buf_len = 256;
-  cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256; cfg.bits_per_chan = I2S_BITS_PER_CHAN_16BIT;
+  cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
+#if SOC_I2S_SUPPORTS_TDM                       // the S3's; C-75: the original ESP32 (the M5GO, the Fire) has none
+  cfg.bits_per_chan = I2S_BITS_PER_CHAN_16BIT;
   cfg.chan_mask = (i2s_channel_t)(I2S_TDM_ACTIVE_CH0 | I2S_TDM_ACTIVE_CH1);
+#endif
   i2s_pin_config_t pins = {};
   pins.mck_io_num = board.micMclk; pins.bck_io_num = board.micBclk; pins.ws_io_num = board.micClk;
   pins.data_out_num = I2S_PIN_NO_CHANGE; pins.data_in_num = board.micData;
@@ -81,7 +84,14 @@ static bool sharedMicOn() {
   return true;
 }
 
+// C-75: memory for a recording -- PSRAM where there is some; on the M5GO, which has none, the ordinary heap.
+static void *bigAlloc(size_t n) {
+  void *p = psramFound() ? ps_malloc(n) : nullptr;
+  return p ? p : malloc(n);
+}
+
 static bool micOn() {
+  if (board.mic == Mic::Analog) { analogReadResolution(12); analogSetPinAttenuation(board.micData, ADC_11db); return true; }   // C-75
   if (board.mic == Mic::Es7210) return es7210On();
   if (board.sharedClocks()) return sharedMicOn();
   i2s_config_t cfg = {};
@@ -212,7 +222,7 @@ static uint8_t mulaw(int16_t pcm) {
 static void overPhone(uint8_t *rec, size_t n) {
   const int16_t *pcm = (const int16_t *)(rec + 44);
   size_t m = n / 2;                                            // 16 kHz -> 8 kHz: each pair averaged
-  uint8_t *wav = (uint8_t *)ps_malloc(44 + m);
+  uint8_t *wav = (uint8_t *)bigAlloc(44 + m);
   if (!wav) { free(rec); talkStatus = "Out of memory."; screen = TALK; draw(); return; }   // DRAFT
   for (size_t i = 0; i < m; i++) wav[44 + i] = mulaw((int16_t)(((int)pcm[2 * i] + pcm[2 * i + 1]) / 2));
   free(rec);
@@ -263,8 +273,10 @@ void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
   // C-82: talk sends a recording and streams a voice back, which the relay (JSON only) does not carry: home, or a bridge
   if (!atHome() && !usbLive() && !linkPhoneHere() && !brainConfigured()) { say(online() ? "TALK NEEDS HOME OR PHONE" : "TALK NEEDS WI-FI"); return; }   // DRAFT
-  const size_t most = RATE * MOST_S;
-  uint8_t *rec = (uint8_t *)ps_malloc(44 + most * 2);
+  // C-75: eight seconds where there is PSRAM; on the M5GO as much as the heap will give, down to two
+  size_t most = RATE * MOST_S;
+  uint8_t *rec = (uint8_t *)bigAlloc(44 + most * 2);
+  while (!rec && most > RATE * 2) { most -= RATE; rec = (uint8_t *)malloc(44 + most * 2); }
   if (!rec || !micOn()) { free(rec); say("NO MICROPHONE"); return; }          // DRAFT
   screen = TALK; talkHeard = talkAnswer = ""; talkStatus = "Listening..."; draw();   // DRAFT
   ledsTint(0xFFFFFF);
@@ -272,14 +284,26 @@ void talkHold(uint32_t forMs) {
   size_t n = 0; int step = 0;
   uint32_t t0 = millis();
   auto held = [&]() { return forMs ? millis() - t0 < forMs : board.touch ? watchTouchDown() : !digitalRead(board.encKey); };
+  int32_t mean = 2048 << 8;                                                    // C-75: the analog mic's resting level, learnt
+  uint32_t next = micros();
   while (held() && n < most) {                                               // until the dial is let go
-    size_t got = 0;
-    i2s_read(MIC, pcm + n, min((size_t)512, most - n) * 2, &got, 100 / portTICK_PERIOD_MS);
-    n += got / 2;
+    if (board.mic == Mic::Analog) {                                          // C-75: the M5GO base's, 16 kHz by the clock
+      for (size_t k = 0; k < 256 && n < most; k++, n++) {
+        while ((int32_t)(micros() - next) < 0) {}
+        next += 1000000 / RATE;
+        int v = analogRead(board.micData);
+        mean += ((v << 8) - mean) >> 10;                                     // a slow average: the DC the mic sits on
+        pcm[n] = (int16_t)constrain((v - (mean >> 8)) * 16, -32768, 32767);
+      }
+    } else {
+      size_t got = 0;
+      i2s_read(MIC, pcm + n, min((size_t)512, most - n) * 2, &got, 100 / portTICK_PERIOD_MS);
+      n += got / 2;
+    }
     if ((n / 2000) != (size_t)step) { step = n / 2000; ledsDance(DANCE_GLIMMER, step, 0); }
   }
   ledsDance(-1, 0, 0);
-  i2s_driver_uninstall(MIC);
+  if (board.mic != Mic::Analog) i2s_driver_uninstall(MIC);
   soundResume();                                                              // C-74, C-75: the shared speaker back
   while (!forMs && (board.touch ? watchTouchDown() : !digitalRead(board.encKey))) delay(5);   // a long talk ran out: wait for the let-go
   lastInput = millis();

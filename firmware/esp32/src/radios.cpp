@@ -59,7 +59,14 @@ String runReadMyTag() {
 // A REMOTE is three buttons -- POWER, VOLUME UP, VOLUME DOWN -- taught together ("press POWER: ARTSAI is listening"),
 // or added from the site by brand (a brand's three codes are known once its POWER is). Up to six are kept in the
 // board's flash; one is chosen, and FLARE's buttons send from it. They belong to the board -- the daemons share them.
+#ifdef BOARD_M5CORE
+// C-75: the M5GO and Fire have no IR receiver (board.ir is false, so nothing here runs on them), and IRrecv's interrupt
+// handler is instruction RAM the original ESP32 has none of to spare.
+struct NoIrIn { void enableIRIn() {} void disableIRIn() {} bool decode(decode_results *) { return false; } void resume() {} };
+static NoIrIn irIn;
+#else
 static IRrecv irIn(PIN_IR_RX, 1024, 50, true);
+#endif
 static IRsend irOut(PIN_IR_TX);
 static Preferences remotes;
 static const int MAX_REMOTES = 6;

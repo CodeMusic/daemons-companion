@@ -18,6 +18,7 @@ void inputBegin() {
   }
   if (board.encKey >= 0) pinMode(board.encKey, INPUT_PULLUP);   // C-75: the CoreS3 has no key -- only its touch
   if (board.hasSideKey()) pinMode(board.sideKey, INPUT_PULLUP);
+  if (board.threeKeys()) { pinMode(board.keyLeft, INPUT); pinMode(board.keyRight, INPUT); }   // C-75: pulled up on the board
 }
 
 // ---- C-49: doing a step is one press; undoing it, the top button, for a little while after --------------------------
@@ -89,6 +90,7 @@ void readEncoder() { int step = dialStep(); if (step) turn(step); }
 
 // The top button, pressed while a routine waits -- or, on a board without one, the dial held (C-67).
 bool giveUp() {                        // the watch: a touch anywhere
+  if (board.threeKeys()) return !digitalRead(board.keyLeft);             // C-75: A, which goes back
   return board.touch ? watchTouchDown() : board.hasSideKey() ? !digitalRead(board.sideKey) : !digitalRead(board.encKey);
 }
 
@@ -207,11 +209,13 @@ bool wake() {
 // was held (the sleep chord), so holding it to start the chord never goes back a page.
 void readKeyAlone();
 void readKeyStick();
+void readKeyCore();
 // C-66: the front button presses on RELEASE now, so that held it can mean talk -- held 0.45 s at home, the board
 // listens until it is let go (talk.cpp). A press is still a press; the chord still sleeps at once.
 static const uint32_t TALK_HOLD_MS = 450;
 void readKey() {
   if (board.encKey < 0) return;                                  // C-75: the CoreS3 -- touch and its power key (watch.cpp)
+  if (board.threeKeys()) { readKeyCore(); return; }              // C-75: the M5GO and Fire's A, B and C
   if (board.noDial()) { readKeyStick(); return; }                // C-74: the StickS3's two buttons
   if (!board.hasSideKey()) { readKeyAlone(); return; }
   static bool pending = false;
@@ -268,6 +272,36 @@ void readKeyStick() {
     if (held >= 2000) sleepNow();
     else if (held >= 500) back();
     else turn(1);
+  }
+}
+
+// C-75: three buttons and no dial (the M5GO and the Fire). A and C are the dial, left and right: a tap turns. B is its
+// press: a tap presses, and held 0.45 s at home it talks. Held, A goes back (and undoes a step just ticked) and C, two
+// seconds, sleeps -- and asleep, only a hold on B wakes it. Each acts on release, so a hold is never also a tap.
+void readKeyCore() {
+  static bool down[3] = { false, false, false }; static uint32_t at[3] = { 0, 0, 0 };
+  const int pins[3] = { board.keyLeft, board.encKey, board.keyRight };
+  uint32_t now = millis();
+  for (int k = 0; k < 3; k++) {
+    bool pressed = !digitalRead(pins[k]);
+    if (pressed && !down[k] && now - at[k] > 30) { down[k] = true; at[k] = now; continue; }
+    if (pressed && down[k] && k == 1 && !asleep && now - at[k] >= TALK_HOLD_MS && (screen == HOME || screen == TALK) &&
+        talkCan() && !(page == TODAY && undoable())) {
+      talkHold();                                                // listens until B is let go
+      down[k] = false; at[k] = millis(); dirty = true;
+      while (!digitalRead(pins[k])) delay(5);
+      continue;
+    }
+    if (!pressed && down[k] && now - at[k] > 30) {
+      down[k] = false;
+      uint32_t held = now - at[k];
+      at[k] = now;
+      if (asleep) { if (k == 1 && held >= 500) wake(); continue; }
+      wake();
+      if (k == 0) { if (held >= 500) back(); else turn(-1); }
+      else if (k == 2) { if (held >= 2000) sleepNow(); else turn(1); }
+      else press();
+    }
   }
 }
 

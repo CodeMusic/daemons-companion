@@ -7,10 +7,11 @@
 // the M5StickS3 (env:m5-sticks3, C-74) and the M5Stack CoreS3 (env:m5-cores3, C-75), which shares the watch's watch.cpp.
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3 };
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core };   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
-enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1 };
-enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared };   // Shared: the CoreS3's, on the speaker's clocks
+enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306 };
+enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
+                                                                     // Analog: the M5GO base's, read by the ADC
 enum class Panel { ST7789, ILI9342C, ILI9342E };               // C-75: the CoreS3 has shipped with either ILI9342
 
 struct Board {
@@ -22,12 +23,15 @@ struct Board {
   int lcdCs = -1, lcdDc = -1, lcdSclk = -1, lcdMosi = -1, lcdMiso = -1, lcdRst = -1, lcdBl = -1;
   int lcdPanelW = 170, lcdPanelH = 320, lcdOffsetX = 35, lcdOffsetY = 0;
   Panel panel = Panel::ST7789; bool pmuBacklight = false;   // C-75: the CoreS3's backlight is its power chip's DLDO1
+  bool lcdInvert = true;                                    // C-75: the M5GO and Fire's panels differ, and say so on RST
   // input: a dial and its press, and a second button where there is one (the CC1101's top button)
   int encA = -1, encB = -1, encKey = -1, sideKey = -1;
+  int keyLeft = -1, keyRight = -1;   // C-75: the M5GO and Fire's buttons A and C either side of B (encKey), for a dial
   // the peripherals' power switch, and the shared I2C bus
   int pwrEn = -1, sda = -1, scl = -1;
   // sound out (I2S) and the microphone
   int i2sBclk = -1, i2sLrclk = -1, i2sDout = -1, i2sMclk = -1;   // MCLK: the StickS3's ES8311 codec
+  bool dacSpeaker = false;   // C-75: the M5GO and Fire's speaker is the ESP32's own DAC (GPIO 25), not an I2S amplifier
   Mic mic = Mic::None; int micData = -1, micClk = -1, micBclk = -1, micMclk = -1;   // micClk: PDM's clock, or I2S's LRCK
   // the ring of lights
   Lights lights = Lights::None; int ledData = -1, ledClk = -1, ledCount = 0;
@@ -38,7 +42,8 @@ struct Board {
   // C-74, C-75: the speaker and the microphone share one set of clocks, so the speaker lets go while it listens
   bool sharedClocks() const { return mic == Mic::Es8311 || mic == Mic::Es7210Shared; }
   bool hasSideKey() const { return sideKey >= 0; }
-  bool noDial() const { return encA < 0 && !touch; }   // C-74: two buttons and no dial (the StickS3)
+  bool noDial() const { return encA < 0 && !touch; }   // C-74: buttons and no dial (the StickS3; C-75 the M5GO and Fire)
+  bool threeKeys() const { return keyLeft >= 0; }      // C-75: A, B and C
 };
 
 extern Board board;

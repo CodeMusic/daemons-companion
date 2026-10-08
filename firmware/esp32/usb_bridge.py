@@ -21,6 +21,7 @@ try:
     import serial
 except ImportError:
     sys.exit("usb_bridge: needs pyserial -- run it with ~/.platformio/penv/bin/python, or pip install pyserial")
+import boardport  # noqa: E402  (beside this file: where boards appear, and opening one without a reset -- C-75)
 
 
 DEVICE = {"id": None}     # C-80: the board's own name, from its HELLO, passed on as x-device
@@ -67,7 +68,7 @@ def talk_over_cable(a, dev, wav):
 
 def find_port(wait=False):
     while True:
-        ports = sorted(glob.glob("/dev/cu.usbmodem*") + glob.glob("/dev/ttyACM*"))
+        ports = boardport.ports()                  # C-75: the M5GO and Fire are behind a USB-serial chip
         if ports:
             return ports[0]
         if not wait:
@@ -92,7 +93,7 @@ def main():
 
 
 def bridge(a, port):
-    dev = serial.Serial(port, 115200, timeout=0.2)
+    dev = boardport.open_port(port, timeout=0.2)   # C-75: without restarting an M5GO or Fire
     print("usb_bridge: %s <-> %s" % (port, a.server), flush=True)
     last, sent, listed, polled = 0.0, None, 0.0, 0.0
     buf = b""

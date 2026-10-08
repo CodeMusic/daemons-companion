@@ -57,7 +57,7 @@ void Display::configure() {
     cfg.offset_x = board.lcdOffsetX;
     cfg.offset_y = board.lcdOffsetY;
     cfg.offset_rotation = ili ? 3 : 0;  // C-75: M5GFX's turn for the CoreS3's panel
-    cfg.invert = true;
+    cfg.invert = board.lcdInvert;        // C-75: the M5GO and Fire's panels differ (board.cpp reads which)
     cfg.readable = false;
     cfg.bus_shared = true;               // the CC1101 shares this bus with its radio and SD card
     panel.config(cfg);
@@ -77,7 +77,10 @@ void displayBegin() {
   tft.setRotation(board.rotation);
   tft.fillScreen(0x18E4);                // INK, so it does not flash white
   backlight(true);
-  canvas.setColorDepth(16);
-  canvas.setPsram(true);
+  // C-75: the M5GO has no PSRAM, and a whole 320x240 screen at 16 bits (150 KB) will not fit beside Wi-Fi and Bluetooth:
+  // there it draws in 256 colours (75 KB). Every other board has PSRAM.
+  bool psram = psramFound();
+  canvas.setColorDepth(psram ? 16 : 8);
+  canvas.setPsram(psram);
   canvas.createSprite(W, H);
 }

@@ -6,12 +6,41 @@
 #include "leds.h"
 #include "board.h"
 
+#ifdef BOARD_M5CORE
+#include <esp32-hal-spi.h>
+// C-75: the M5GO base's ten SK6812s, sent by the SPI bus rather than Adafruit's RMT driver, whose 1.5 KB of instruction
+// RAM the original ESP32 does not have to spare. Each of the light's bits is four of SPI's at 3.2 MHz: 1000 a nought
+// (0.31 us high), 1100 a one (0.63 us) -- inside the SK6812's timing. Only the data pin is attached: SPI's own default
+// clock pin on this bus would be GPIO 14, the screen's chip select.
+struct SpiPixels {
+  spi_t *bus = nullptr; uint32_t px[16] = {}; int n, pin;
+  SpiPixels(int count, int dataPin, int) : n(min(count, 16)), pin(dataPin) {}
+  void begin() { bus = spiStartBus(HSPI, spiFrequencyToClockDiv(3200000), SPI_MODE0, SPI_MSBFIRST); if (bus) spiAttachMOSI(bus, pin); }
+  void setPixelColor(int i, uint32_t c) { if (i >= 0 && i < n) px[i] = c; }
+  void clear() { memset(px, 0, sizeof px); }
+  void show() {
+    if (!bus) return;
+    uint8_t out[16 * 12]; int k = 0;
+    for (int i = 0; i < n; i++) {
+      uint32_t grb = ((px[i] >> 8) & 0xFF) << 16 | ((px[i] >> 16) & 0xFF) << 8 | (px[i] & 0xFF);   // the light wants G, R, B
+      for (int b = 22; b >= 0; b -= 2)
+        out[k++] = ((grb >> (b + 1)) & 1 ? 0xC0 : 0x80) | ((grb >> b) & 1 ? 0x0C : 0x08);
+    }
+    spiWriteNL(bus, out, k);
+  }
+};
+using NeoDriver = SpiPixels;
+#else
+using NeoDriver = Adafruit_NeoPixel;
+#endif
+
 // C-67: the ring is the board's -- eight WS2812s on the CC1101, seven APA102s on the plain T-Embed and the SI4732, none
-// on the watch. One small facade over Adafruit's two drivers (they share an interface), so nothing below changes.
+// on the watch, ten on the M5GO base (C-75). One small facade over the drivers (they share an interface), so nothing
+// below changes.
 struct Ring {
-  Adafruit_NeoPixel *neo = nullptr; Adafruit_DotStar *dot = nullptr;
+  NeoDriver *neo = nullptr; Adafruit_DotStar *dot = nullptr;
   void begin() {
-    if (board.lights == Lights::WS2812) { neo = new Adafruit_NeoPixel(board.ledCount, board.ledData, NEO_GRB + NEO_KHZ800); neo->begin(); }
+    if (board.lights == Lights::WS2812) { neo = new NeoDriver(board.ledCount, board.ledData, NEO_GRB + NEO_KHZ800); neo->begin(); }
     if (board.lights == Lights::APA102) { dot = new Adafruit_DotStar(board.ledCount, board.ledData, board.ledClk, DOTSTAR_BGR); dot->begin(); }
   }
   void setPixelColor(int i, uint32_t c) { if (neo) neo->setPixelColor(i, c); if (dot) dot->setPixelColor(i, c); }

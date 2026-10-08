@@ -14,7 +14,7 @@
 #include "board.h"
 #include "leds.h"
 
-static const i2s_port_t PORT = I2S_NUM_1;
+static i2s_port_t PORT = I2S_NUM_1;          // C-75: I2S_NUM_0 for the ESP32's own DAC, which only it drives
 static const int RATE = 16000;   // C-67: the pins are the board's
 static bool ready = false, enabled = true;
 static int amplitude = 5000;                 // 0..~16000; the site's volume sets it
@@ -38,7 +38,44 @@ void es8311Mic() {                          // talk.cpp: the same codec, listeni
   es8311Write(R, sizeof R / sizeof R[0]);
 }
 
+// Every sample goes out through here. C-75: the ESP32's DAC takes unsigned samples, and a pair for each frame: each one
+// is offset and doubled, so whichever half of the frame GPIO 25 plays, it plays the sound.
+static void play(const int16_t *buf, size_t n) {
+  size_t wrote;
+  if (!board.dacSpeaker) { i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY); return; }
+  static uint16_t pair[512];
+  for (size_t at = 0; at < n; at += 256) {
+    size_t k = min((size_t)256, n - at);
+    for (size_t i = 0; i < k; i++) pair[2 * i] = pair[2 * i + 1] = (uint16_t)(buf[at + i] + 0x8000);
+    i2s_write(PORT, pair, k * 2 * sizeof(uint16_t), &wrote, portMAX_DELAY);
+  }
+}
+
+#if SOC_I2S_SUPPORTS_DAC
+// C-75: the M5GO and Fire's speaker, on the ESP32's own DAC (GPIO 25, its channel 1) -- I2S_NUM_0 drives it.
+static bool dacBegin() {
+  PORT = I2S_NUM_0;
+  i2s_config_t cfg = {};
+  cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN);
+  cfg.sample_rate = RATE;
+  cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
+  cfg.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
+  cfg.communication_format = I2S_COMM_FORMAT_STAND_MSB;
+  cfg.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
+  cfg.dma_buf_count = 8; cfg.dma_buf_len = 256;
+  cfg.tx_desc_auto_clear = true;
+  if (i2s_driver_install(PORT, &cfg, 0, nullptr) != ESP_OK) return false;
+  i2s_set_pin(PORT, nullptr);
+  i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN);
+  i2s_zero_dma_buffer(PORT);
+  return true;
+}
+#else
+static bool dacBegin() { return false; }
+#endif
+
 void soundBegin() {
+  if (board.dacSpeaker) { ready = dacBegin(); return; }
   i2s_config_t cfg = {};
   cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
   cfg.sample_rate = RATE;
@@ -102,8 +139,7 @@ static void tone(int midi, int ms, float level = 1.0f) {
       buf[i] = (int16_t)((phase < period * duty ? amp : -amp) * env);
       if ((phase += 1) >= period) phase -= period;
     }
-    size_t wrote;
-    i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY);
+    play(buf, n);
   }
 }
 
@@ -117,8 +153,7 @@ void soundPcm(const int16_t *samples, size_t n) {
   for (size_t done = 0; done < n;) {
     size_t k = min((size_t)256, n - done);
     for (size_t i = 0; i < k; i++) buf[i] = (int16_t)constrain((int)(samples[done + i] * scale), -32768, 32767);
-    size_t wrote;
-    i2s_write(PORT, buf, k * sizeof(int16_t), &wrote, portMAX_DELAY);
+    play(buf, k);
     done += k;
   }
 }
@@ -127,8 +162,7 @@ static void rest(int ms) {
   if (!ready || !enabled) { delay(ms); return; }
   static int16_t zero[256] = {0};
   for (int total = RATE * ms / 1000; total > 0; total -= 256) {
-    size_t wrote;
-    i2s_write(PORT, zero, min(256, total) * sizeof(int16_t), &wrote, portMAX_DELAY);
+    play(zero, min(256, total));
   }
 }
 

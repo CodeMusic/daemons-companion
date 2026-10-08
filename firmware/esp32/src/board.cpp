@@ -161,6 +161,42 @@ void coreS3Mic() {
 // The AXP2101 switches everything off (M5Unified's powerOff); the power key starts the board again.
 bool boardPowerOff() { i2cBits(AXP, 0x10, 0x01, true); delay(100); return true; }
 
+#elif defined(BOARD_M5CORE)
+
+// C-75: the M5Stack M5GO and Fire -- the first Cores, on the ORIGINAL ESP32 (not an S3): one build for both, told apart
+// by the Fire's PSRAM. From M5Stack's own sources (docs/HARDWARE.md): M5GFX's autodetect for the screen (an ILI9342C on
+// SPI MOSI 23, MISO 19 (the SD card's too), SCK 18, CS 14, D/C 27, RST 33, backlight 32 -- and whether the panel is
+// inverted is read off its RST line, as M5GFX reads it); M5Unified for the buttons (A 39, B 38, C 37), the IP5306 power
+// chip (I2C 0x75, SDA 21 / SCL 22), the speaker (the ESP32's DAC on GPIO 25) and the M5GO base's microphone (analog,
+// GPIO 34) and its ten SK6812 lights (GPIO 15).
+static const uint8_t IP5306 = 0x75;
+static void ipWrite(uint8_t reg, uint8_t v) { Wire.beginTransmission(IP5306); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
+
+void boardBegin() {
+  bool fire = psramFound();
+  board.kind = BoardKind::M5Core; board.id = fire ? "m5-fire" : "m5go"; board.name = fire ? "M5Stack Fire" : "M5GO";
+  board.width = 320; board.height = 240; board.rotation = 1;
+  board.panel = Panel::ILI9342C;
+  board.lcdCs = 14; board.lcdDc = 27; board.lcdSclk = 18; board.lcdMosi = 23; board.lcdRst = 33; board.lcdBl = 32;
+  board.lcdPanelW = 320; board.lcdPanelH = 240; board.lcdOffsetX = 0; board.lcdOffsetY = 0;
+  // M5GFX's test: RST driven low, then read with a pull-down -- a board whose panel wants inverting holds it high
+  pinMode(33, OUTPUT); digitalWrite(33, LOW); pinMode(33, INPUT_PULLDOWN); delayMicroseconds(50);
+  board.lcdInvert = digitalRead(33); pinMode(33, OUTPUT); digitalWrite(33, HIGH);
+  board.keyLeft = 39; board.encKey = 38; board.keyRight = 37;   // A, B, C: they have their own pull-ups
+  board.sda = 21; board.scl = 22;
+  board.dacSpeaker = true; board.i2sDout = 25;
+  board.mic = Mic::Analog; board.micData = 34;
+  board.lights = Lights::WS2812; board.ledData = 15; board.ledCount = 10;   // the M5GO base's: on a bare Core, nothing
+  board.power = Power::PmuIP5306;
+  Wire.begin(board.sda, board.scl);
+  // The IP5306 as M5Unified starts it (boost and charging on, a load switches it on, the button switches it off, off at
+  // 3.0 V; the charger at 4.2 V, 150 mA from VIN) -- with one change: its boost kept on under a light load (0x00 bit 1),
+  // or a sleeping companion's few milliamps would let it switch the board off (M5Unified's own note, for deep sleep).
+  static const uint8_t R[][2] = { {0x00, 0b00110011}, {0x01, 0b00011101}, {0x02, 0b01101100}, {0x20, 0b00000000},
+                                  {0x21, 0b00001001}, {0x22, 0b00000010}, {0x23, 0b10101110}, {0x24, 0b11000001} };
+  for (auto &w : R) ipWrite(w[0], w[1]);
+}
+
 #else
 
 // Does anything answer at this address with the bus on these pins? (The CC1101 board's SDA/SCL are the T-Embed's

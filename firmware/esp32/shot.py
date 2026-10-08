@@ -8,13 +8,14 @@ and Pillow. The buffer is TFT_eSPI's sprite: RGB565, high byte first.
 """
 import base64, glob, sys, time
 import serial
+import boardport  # noqa: E402  (beside this file)
 from PIL import Image
 
 out = sys.argv[1] if len(sys.argv) > 1 else "shot.png"
-port = sys.argv[2] if len(sys.argv) > 2 else (sorted(glob.glob("/dev/cu.usbmodem*")) or [None])[0]
+port = sys.argv[2] if len(sys.argv) > 2 else (boardport.ports() or [None])[0]
 if not port:
     sys.exit("shot: no board on USB")
-dev = serial.Serial(port, 115200, timeout=2)
+dev = boardport.open_port(port, timeout=2)
 time.sleep(0.3)
 dev.reset_input_buffer()
 dev.write(b"SHOT\n")

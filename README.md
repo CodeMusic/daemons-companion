@@ -66,10 +66,11 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa, IR | power chip | built, not yet run |
 | **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
 | **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | built, not yet run |
+| **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | built, not yet run |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
-is. The watch, the StickS3 and the CoreS3 each have their own build (`./updateCompanion.sh --board m5-sticks3` or
-`--board m5-cores3` the first time). Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
+is. The watch, the StickS3, the CoreS3, and the M5GO and Fire (one build between them, on the original ESP32) each have
+their own (`./updateCompanion.sh --board m5-sticks3`, `m5-cores3` or `m5-core` the first time). Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
 
 ### Flash them
 

@@ -55,6 +55,19 @@ bool batteryRead(Battery &b) {
     b.usb = vin > 4300; b.charging = b.usb && mv < 4150; b.full = b.usb && mv >= 4150;
     return b.present;
   }
+  if (board.power == Power::PmuIP5306) {         // C-75: the M5GO and Fire's IP5306 (0x75), read as M5Unified reads it
+    uint8_t r78, r70, r71;
+    if (!readBytes(0x75, 0x78, &r78, 1)) { b.present = false; return false; }
+    switch (r78 >> 4) {                          // it knows the charge only in quarters
+      case 0x00: b.percent = 100; break; case 0x08: b.percent = 75; break;
+      case 0x0C: b.percent = 50; break;  case 0x0E: b.percent = 25; break; default: b.percent = 0;
+    }
+    b.present = true; b.mv = 0;                  // no voltage from it: the server keeps none (0 is null there)
+    bool supply = readBytes(0x75, 0x70, &r70, 1) && (r70 & 0x08);           // charging on, and a supply present
+    bool full = supply && readBytes(0x75, 0x71, &r71, 1) && (r71 & 0x08);
+    b.usb = supply; b.charging = supply && !full; b.full = full;
+    return true;
+  }
   if (board.power != Power::GaugeBQ27220) { b.present = false; return false; }
   batteryWire();
   uint8_t w[2];

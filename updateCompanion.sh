@@ -3,7 +3,8 @@
 #
 #   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
 #   ./updateCompanion.sh --all            ... every board found, without asking which
-#   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet)
+#   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet):
+#                                             t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core (M5GO, Fire)
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
 #   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)
@@ -51,6 +52,7 @@ env_for() {                     # a board's id -> its build
     t-watch-s3) echo t-watch-s3 ;;
     m5-sticks3) echo m5-sticks3 ;;
     m5-cores3)  echo m5-cores3 ;;
+    m5-core|m5-fire|m5go) echo m5-core ;;   # C-75: one build, the original ESP32
     *)          echo "" ;;
   esac
 }
@@ -64,7 +66,7 @@ fi
 
 ports=()
 if [[ -n "$want_port" ]]; then ports=("$want_port")
-else for p in /dev/cu.usbmodem*; do [[ -e "$p" ]] && ports+=("$p"); done; fi
+else while IFS= read -r p; do [[ -n "$p" ]] && ports+=("$p"); done < <("$PY" -c "import sys; sys.path.insert(0, '$FW'); import boardport; print('\n'.join(boardport.ports()))"); fi   # C-75: USB-serial too
 if [[ ${#ports[@]} -eq 0 ]]; then
   echo "updateCompanion: no board on USB. Plug it in with a cable that carries data (not only power), then run this again." >&2
   exit 1
@@ -72,12 +74,13 @@ fi
 
 # Ask a port what it is: its HELLO names the board ("" when it says nothing within five seconds).
 ask() {
-  "$PY" - "$1" <<'PY' 2>/dev/null || true
+  "$PY" - "$1" "$FW" <<'PY' 2>/dev/null || true
 import re, serial, sys, time
+sys.path.insert(0, sys.argv[2]); import boardport
 end = time.time() + 5
 got = b""
 try:
-    with serial.Serial(sys.argv[1], 115200, timeout=0.3) as s:
+    with boardport.open_port(sys.argv[1], timeout=0.3) as s:
         while time.time() < end:
             got += s.read(512)
             m = re.search(rb"HELLO daemons-companion (\S+)", got)
@@ -111,10 +114,10 @@ fi
 for i in "${chosen[@]}"; do
   port="${ports[$i]}" env="${envs[$i]}"
   if [[ -z "$env" ]]; then
-    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3"
-    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3 or m5-cores3." >&2; exit 64; }
+    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3  5) an M5GO or Fire"
+    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3, m5-cores3 or m5-core." >&2; exit 64; }
     read -r answer
-    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; 5*) env=m5-core ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
   fi
   echo "updateCompanion: flashing $port with $env"
   "$PIO" run -e "$env" -t upload --upload-port "$port"
@@ -122,14 +125,15 @@ for i in "${chosen[@]}"; do
   # The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and
   # says nothing (2026-10-06). The firmware says HELLO every three seconds, so wait for one, and reset it ourselves if
   # it is silent. The port comes and goes while it restarts.
-  "$PY" - "$port" <<'PY' || echo "updateCompanion: no HELLO yet from $port -- press the board's RST button once." >&2
+  "$PY" - "$port" "$FW" <<'PY' || echo "updateCompanion: no HELLO yet from $port -- press the board's RST button once." >&2
 import serial, sys, time
 port = sys.argv[1]
+sys.path.insert(0, sys.argv[2]); import boardport
 def hello(wait):
     end = time.time() + wait
     while time.time() < end:
         try:
-            with serial.Serial(port, 115200, timeout=0.5) as s:
+            with boardport.open_port(port, timeout=0.5) as s:
                 got = b""
                 while time.time() < end:
                     got += s.read(512)
@@ -142,7 +146,7 @@ def hello(wait):
 if hello(10):
     sys.exit(0)
 print("updateCompanion: the board is silent after the upload -- resetting it")
-with serial.Serial(port, 115200) as s:
+with boardport.open_port(port) as s:
     s.dtr = False; s.rts = True; time.sleep(0.2); s.rts = False
 sys.exit(0 if hello(20) else 1)
 PY

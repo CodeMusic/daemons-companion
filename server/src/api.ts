@@ -49,6 +49,7 @@ import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
+import { assign, carriedFor, carryView } from "./carry.js";
 import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -128,7 +129,7 @@ export function answerAway(cfg: Config, now = new Date()) {
 }
 
 // C-21 / C-22: the one SYNC. The first save synced is the app's game (its trainer's name and full ID, which never
-// change). On that save: answer the requests (one daemon at a time), set LINKED so the game shows SEND, and settle an
+// change). On that save: answer the requests (any number away, C-80), set LINKED so the game shows SEND, and settle an
 // emergency return -- written only if something changed, after a backup, with the game closed. On any other save:
 // nothing is written; the app shows it, and says it belongs to a different game.
 export function sync(cfg: Config, store: Store, now = new Date()) {
@@ -158,11 +159,12 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
     perDay.get(day)!.add(peer ?? m.at);
   }
   const friendshipGain = [...perDay.values()].reduce((n, peers) => n + Math.min(5, peers.size), 0);
-  // C-45: the experience a daemon gained here, written when it is home -- for whichever party daemon has some waiting
-  let grow: { personality: number; exp: number } | undefined, growLast = 0;
+  // C-45: the experience a daemon gained here, written when it is home -- every party daemon with some waiting is
+  // offered, and the first of them home is written (C-80: with a daemon in each device, the first waiting may still be out)
+  const grow: { personality: number; exp: number }[] = [], growLast = new Map<number, number>();
   for (const d of readSave(file).party) {
     const p = pendingExp(store, d.personality);
-    if (p.exp > 0) { grow = { personality: d.personality, exp: p.exp }; growLast = p.last; break; }
+    if (p.exp > 0) { grow.push({ personality: d.personality, exp: p.exp }); growLast.set(d.personality, p.last); }
   }
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow });
   let backup: string | null = null;
@@ -175,7 +177,7 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
   }
   // only once the save holds them: what was met, and what was grown, are written
   if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
-  if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast));
+  if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
@@ -241,7 +243,7 @@ function setWalk(cfg: Config, store: Store, b: { goal?: unknown; steps?: unknown
   const after = walk(cfg, store);
   if (after.reached && !store.interactionsSince(new Date(Date.now() - 86400000)).some((e) => e.kind === "walk" && e.detail === after.date)) {
     store.logInteraction("walk", after.date);
-    const d = carriedDaemon(cfg);
+    const d = carriedDaemon(cfg, store);
     if (d) store.logInteraction("exp", `${d.personality} ${EXP_PER_WALK} walk ${after.date}`);
   }
   return after;
@@ -252,9 +254,9 @@ export const ENTRY_LIMIT = 40;
 const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim().length <= ENTRY_LIMIT ? v.trim() : null;
 
 // A step done, from the site or the board: kept as time together (C-13), a meal (C-44), and experience (C-47).
-export function doStep(cfg: Config, store: Store, id: number, from: "site" | "device") {
+export function doStep(cfg: Config, store: Store, id: number, from: "site" | "device", deviceId = "") {
   const r = store.completeStep(id);
-  if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(cfg, store, id); }
+  if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(cfg, store, id, deviceId); }
   return r;
 }
 
@@ -265,12 +267,15 @@ function pendingExp(store: Store, personality: number) {
   const rows = store.expAfter(personality, Number(store.getSetting(`exp.applied.${personality}`) ?? 0));
   return { exp: rows.reduce((n, r) => n + r.gain, 0), last: rows.length ? rows[rows.length - 1].id : 0 };
 }
-function carriedDaemon(cfg: Config) {
-  if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
-  try { return readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find((p) => p.away) ?? null; } catch { return null; }
+// C-80: the daemon a device carries (carry.ts); with no device named, the first away, as before. A step ticked on a
+// device grows that device's daemon; one done in the app or on the site, the first away (LIMITED LEVELING: one each).
+function awayNow(cfg: Config) {
+  if (!cfg.savePath || !existsSync(cfg.savePath)) return [];
+  try { return readSave(new Uint8Array(readFileSync(cfg.savePath))).party.filter((p) => p.away); } catch { return []; }
 }
-export function growFromStep(cfg: Config, store: Store, stepId: number) {
-  const d = carriedDaemon(cfg);
+function carriedDaemon(cfg: Config, store: Store, deviceId = "") { return carriedFor(store, awayNow(cfg), deviceId); }
+export function growFromStep(cfg: Config, store: Store, stepId: number, deviceId = "") {
+  const d = carriedDaemon(cfg, store, deviceId);
   if (!d) return;
   const curve = SPECIES[String(d.species)]?.growth ?? 0;
   if (levelFromExp(curve, d.exp + pendingExp(store, d.personality).exp) >= 100) return;
@@ -288,12 +293,12 @@ function grown(d: { species: number; exp: number; level: number; personality: nu
   return { exp, level: Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp + exp)) };
 }
 
-export function deviceState(cfg: Config, store: Store, now = new Date()) {
+export function deviceState(cfg: Config, store: Store, now = new Date(), deviceId = "") {
   const t = today(cfg, store, now);
   let daemon = null, party: unknown[] = [];
   if (cfg.savePath && existsSync(cfg.savePath)) {
     const save = readSave(new Uint8Array(readFileSync(cfg.savePath)));
-    const d = save.party.find((p) => p.away);
+    const d = carriedFor(store, save.party.filter((p) => p.away), deviceId);   // C-80: this device's own
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
@@ -407,8 +412,8 @@ class Pairing {
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
-  const voices = new VoiceShelf();
-  const talks = new Conversations();                           // C-66: the last few things said, per device                              // C-66: answers a handheld streams (ai/voice.ts)
+  const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
+  const talks = new Conversations();                           // C-66: the last few things said, per device
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -419,6 +424,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-29: the save path the user set in Settings (stored in the db) overrides config.json; everything that reads
       // or writes a save uses `ecfg`, so the user never edits a file by hand.
       const ecfg: Config = { ...cfg, savePath: store.getSetting("savePath") ?? cfg.savePath };
+      // C-80: every device heard, each with the daemon it carries; every daemon away; and those away in no device yet
+      const devicesView = () => {
+        const away = awayNow(ecfg), { byDevice, unplaced } = carryView(store, away);
+        const brief = (d: (typeof away)[number]) => ({ personality: d.personality, slot: d.slot, species: d.species,
+          nickname: d.nickname, name: d.name, level: d.level, art: `/art/party/${d.slot}.png` });
+        return { devices: devices.list().map((r) => ({ ...r, daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
+                 away: away.map(brief), unplaced: unplaced.map(brief) };
+      };
       // With "host": "0.0.0.0" the server is on the local network for a device -- and only the device's own door
       // answers it there. Settings, SYNC, the save and the goals stay this machine's, so nothing else on the network
       // can change the save path, write the save, or open a dialog on the Mac.
@@ -496,7 +509,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/today") return send(res, 200, today(ecfg, store));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
       if (req.method === "POST" && path === "/api/sync") return send(res, 200, sync(ecfg, store));
-      if (req.method === "GET" && path === "/api/device/state") { hub.seen(via); return send(res, 200, deviceState(ecfg, store)); }
+      if (req.method === "GET" && path === "/api/device/state") { hub.seen(via); return send(res, 200, deviceState(ecfg, store, new Date(), deviceId)); }
       // ---- C-32: the link. The device's side: its commands, its results, its routines. ----
       if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via) }); }
       if (req.method === "POST" && path === "/api/device/results") {
@@ -514,15 +527,25 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { ok: true });
       }
       // ---- the site's side (this machine only): what the link is, and the commands it sends ----
-      if (req.method === "GET" && path === "/api/device/link")
+      if (req.method === "GET" && path === "/api/device/link") {
+        const v = devicesView();                                                                     // C-80
         return send(res, 200, { ...hub.link(), lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" },
                                 battery: JSON.parse(store.getSetting("device.battery") ?? "null"),   // C-63
-                                devices: devices.list() });                                            // C-80
-      if (req.method === "GET" && path === "/api/devices") return send(res, 200, { devices: devices.list() });   // C-80
+                                devices: v.devices, away: v.away });
+      }
+      if (req.method === "GET" && path === "/api/devices") return send(res, 200, devicesView());   // C-80
+      if (req.method === "POST" && path === "/api/devices/carry") {     // C-80: put this daemon in that device (null: none)
+        const b = await body(req);
+        const p = b.personality === null ? null : Number(b.personality);
+        if (!validDeviceId(b.id) || (p !== null && !awayNow(ecfg).some((d) => d.personality === p)))
+          return send(res, 400, { error: "carry {id, personality}: a device, and a daemon that is away (SEND it in the game, then SYNC)" });
+        assign(store, b.id, p);
+        return send(res, 200, devicesView());
+      }
       if (req.method === "POST" && path === "/api/devices/forget") {
         const b = await body(req);
         if (!validDeviceId(b.id)) return send(res, 400, { error: "forget {id}" });
-        devices.forget(b.id); return send(res, 200, { devices: devices.list() });
+        devices.forget(b.id); assign(store, b.id, null); return send(res, 200, devicesView());
       }
       if (req.method === "POST" && path === "/api/device/run") {
         const b = await body(req);
@@ -604,23 +627,23 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/device/untick") {   // C-49: a step ticked on the board by accident
         const b = await body(req);
         if (!Number.isInteger(b.step) || !store.undoStep(b.step)) return send(res, 404, { error: "no such step" });
-        return send(res, 200, { undone: b.step, state: deviceState(ecfg, store) });
+        return send(res, 200, { undone: b.step, state: deviceState(ecfg, store, new Date(), deviceId) });
       }
       if (req.method === "POST" && path === "/api/device/ticks") {
         const b = await body(req);
         if (!Array.isArray(b.steps) || !b.steps.every((n: unknown) => Number.isInteger(n)))
           return send(res, 400, { error: "steps must be a list of step ids" });
-        const results = b.steps.map((id: number) => ({ id, ...doStep(ecfg, store, id, "device") }));
+        const results = b.steps.map((id: number) => ({ id, ...doStep(ecfg, store, id, "device", deviceId) }));
         const done = results.filter((r: any) => r.ok).map((r: any) => r.id);
         // C-50: what the board celebrates -- the biggest thing these ticks finished
         const celebrate = results.some((r: any) => r.goal) ? "goal" : results.some((r: any) => r.milestone) ? "milestone"
                         : results.some((r: any) => r.fresh) ? "step" : null;
-        return send(res, 200, { done, celebrate, state: deviceState(ecfg, store) });
+        return send(res, 200, { done, celebrate, state: deviceState(ecfg, store, new Date(), deviceId) });
       }
       // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
       // C-13: the site's own care -- feed, water, train -- kept as the device's are
       const care = path.match(/^\/api\/daemon\/(feed|water|train)$/);
-      const lifeNow = () => { const d = carriedDaemon(ecfg); return { ...daemonLife(store), grown: d ? grown(d, store) : null,
+      const lifeNow = () => { const d = carriedDaemon(ecfg, store, deviceId); return { ...daemonLife(store), grown: d ? grown(d, store) : null,
                                                                        level: d?.level ?? null }; };
       if (req.method === "POST" && care) { store.logInteraction(care[1], "site"); return send(res, 200, lifeNow()); }
       if (req.method === "GET" && path === "/api/daemon/life") return send(res, 200, lifeNow());
@@ -638,7 +661,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-15: what the phone needs for its own beacon -- the carried daemon's species, our companions' tags, the setting
       if (req.method === "GET" && path === "/api/beacons") {
-        const carried = carriedDaemon(ecfg);
+        const carried = carriedDaemon(ecfg, store, deviceId);
         return send(res, 200, { meet: deviceSettings(store).meet, species: carried?.species ?? null,
                                 ours: ownBeacons(store).map((b) => b.peer),
                                 beacons: ownBeacons(store),                    // with who sent each, for the check
@@ -660,7 +683,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-66: push to talk -- text or audio in, an answer and its voice out. The daemon carried and the day go with it.
       const talkPayload = (b: Record<string, any>) => {
-        const st = deviceState(ecfg, store), d = st.daemon;
+        const st = deviceState(ecfg, store, new Date(), deviceId), d = st.daemon;
         return {
           text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
@@ -707,7 +730,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           talkPayload(await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav")))))));
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
-        const d = deviceState(ecfg, store).daemon;
+        const d = deviceState(ecfg, store, new Date(), deviceId).daemon;
         if (!d?.entry) return send(res, 400, { error: "carry a daemon to hear its entry" });
         const r = await n8n(ecfg, "daemon/voice", { text: String(d.entry).replace(/\n/g, " ").slice(0, 600), voice: "index" });
         return send(res, 200, await forDevice({ ...r, answer: d.entry }));
@@ -722,7 +745,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/ai/speak") {       // C-65: an INDEX entry (or a line) in the INDEX voice
         const b = await body(req);
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
-        const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store).daemon : null;
+        const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
         if (!text) return send(res, 400, { error: "speak {species} or {text}, or carry a daemon" });
         return send(res, 200, await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }));
@@ -822,7 +845,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return res.end(body);
       }
       if (req.method === "GET" && path === "/api/device/art") {   // C-36: the carried daemon, as a device draws it
-        const body = partyPng(ecfg, (p) => p.away);
+        const mine = carriedDaemon(ecfg, store, deviceId);                  // C-80: this device's own
+        const body = mine && partyPng(ecfg, (p) => p.away && p.personality === mine.personality);
         if (!body) return send(res, 404, { error: "no daemon is on the device" });
         return send(res, 200, deviceArt(body));
       }

@@ -927,9 +927,12 @@ type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: s
               remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string;
               battery?: { percent: number; charging: boolean; full: boolean; usb: boolean; at: string } | null;   // C-63
               lan: { address: string | null; port: number; open: boolean };
-              devices?: DeviceRow[] };                                                                  // C-80
+              devices?: DeviceRow[]; away?: Carried[] };                                              // C-80
+// C-80: a daemon in each device -- what each carries, and every daemon away (SENT in the game) to choose from
+type Carried = { personality: number; slot: number; species: number; nickname: string; name: string; level: number };
 type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | null; lastSeen: string; here: boolean;
-                   firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null };
+                   firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null;
+                   daemon?: Carried | null };
 const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
                                              "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3",
                                              "m5-sticks3": "M5StickS3", "m5-cores3": "M5Stack CoreS3" };   // C-74, C-75
@@ -1042,14 +1045,28 @@ function DeviceScreen({ ink }: { ink: string }) {
       {link.devices && link.devices.length ? (                // C-80: every device the companion has heard, by its own name
         <Card>
           <Eyebrow>YOUR DEVICES</Eyebrow>
+          {/* C-80: a daemon in each -- SEND them in the game, SYNC, then choose here which device carries which (DRAFT) */}
+          <Small>{(link.away ?? []).length > 1 || link.devices.length > 1
+            ? "Each device carries a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where."
+            : "SEND a daemon from the party in the game and SYNC: it goes to your device."}</Small>
           {link.devices.map((d) => (
-            <YStack key={d.id} gap={0} marginTop={4}>
+            <YStack key={d.id} gap={4} marginTop={8}>
               <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
                 {`${KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
               <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone" : "Wi-Fi"}`
                                 : `last heard ${new Date(d.lastSeen).toLocaleString()}`,
                        d.battery ? `battery ${d.battery.percent}%${d.battery.charging ? ", charging" : ""}` : null,
                        d.id].filter(Boolean).join(" · ")}</Small>
+              <Text fontSize={14} color="$color12">
+                {d.daemon ? `Carries ${d.daemon.nickname || d.daemon.name}, Lv. ${d.daemon.level}` : "Carries no daemon"}</Text>
+              {(link.away ?? []).length ? (
+                <Choice<number | null> value={d.daemon?.personality ?? null}
+                  options={[...(link.away ?? []).map((a): [number | null, string] => [a.personality, a.nickname || a.name]), [null, "None"]]}
+                  onPick={async (personality) => {
+                    const v = await api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices/carry", { id: d.id, personality });
+                    setLink((l) => l && { ...l, devices: v.devices, away: v.away });
+                  }} ink={ink} />
+              ) : null}
             </YStack>
           ))}
         </Card>

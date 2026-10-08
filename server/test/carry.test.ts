@@ -1,0 +1,90 @@
+// C-80: a daemon in each device -- which device carries which daemon, kept by personality, chosen in the app and the
+// site. On synthetic saves built as the game builds them; never the user's own.
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { AddressInfo } from "node:net";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { makeServer } from "../src/api.js";
+import { assign, carriedFor, carryView } from "../src/carry.js";
+import { DEFAULTS } from "../src/config.js";
+import { Store } from "../src/db.js";
+import { buildSave } from "./build_save.js";
+
+const PIP = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, away: true };
+const LABEL = { personality: 0x0000002f, otId: 0x00ab1234, species: 4, nickname: "LABEL", level: 9, away: true };
+const HOME = { personality: 0x00000777, otId: 0x00ab1234, species: 7, nickname: "STAY", level: 5 };
+const CC = "t-embed-cc1101-36f484", WATCH = "t-watch-s3-a1b2c3", STICK = "m5-sticks3-0a0b0c";
+
+describe("which device carries which daemon (carry.ts)", () => {
+  const away = [{ personality: 1 }, { personality: 2 }];
+  it("gives a device that asks the first daemon no other device has, and keeps it", () => {
+    const store = new Store(":memory:");
+    expect(carriedFor(store, away, CC)?.personality).toBe(1);
+    expect(carriedFor(store, away, WATCH)?.personality).toBe(2);
+    expect(carriedFor(store, away, STICK)).toBeNull();                       // two away, three devices: one goes without
+    expect(carriedFor(store, away, CC)?.personality).toBe(1);               // and it stays
+  });
+  it("with no device named, answers with the first away, as before", () => {
+    expect(carriedFor(new Store(":memory:"), away, "")?.personality).toBe(1);
+  });
+  it("moves a daemon to the device chosen, leaving the one that had it", () => {
+    const store = new Store(":memory:");
+    carriedFor(store, away, CC); carriedFor(store, away, WATCH);
+    assign(store, WATCH, 1);
+    expect(carryView(store, away).byDevice[WATCH].personality).toBe(1);
+    expect(carryView(store, away).byDevice[CC]).toBeUndefined();
+    expect(carryView(store, away).unplaced.map((d) => d.personality)).toEqual([2]);
+    expect(carriedFor(store, away, CC)?.personality).toBe(2);               // CC asks again: the one left
+  });
+  it("lets a device go empty, and forgets a daemon that came home", () => {
+    const store = new Store(":memory:");
+    carriedFor(store, away, CC);
+    assign(store, CC, null);
+    expect(carryView(store, away).byDevice[CC]).toBeUndefined();
+    assign(store, CC, 2);
+    expect(carryView(store, [{ personality: 1 }]).byDevice[CC]).toBeUndefined();   // 2 is home now
+  });
+});
+
+describe("a daemon in each device, through the API (C-80)", () => {
+  const save = buildSave({ player: "ROVER", trainerId: 0x00ab1234,
+    slots: [{ counter: 1, party: [PIP, LABEL, HOME] }, { counter: 2, party: [PIP, LABEL, HOME] }] });
+  const path = join(mkdtempSync(join(tmpdir(), "carry-")), "copy.sav");
+  writeFileSync(path, save);
+  const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: path });
+  let base = "";
+  beforeAll(async () => {
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+  afterAll(() => server.close());
+  const as = (id: string) => ({ "content-type": "application/json", "x-device": id });
+  const stateOf = (id: string) => fetch(base + "/api/device/state?via=wifi", { headers: as(id) }).then((r) => r.json());
+
+  it("answers each device with its own daemon", async () => {
+    expect((await stateOf(CC)).daemon.nickname).toBe("PIP");
+    expect((await stateOf(WATCH)).daemon.nickname).toBe("LABEL");
+    expect((await stateOf(STICK)).daemon).toBeNull();                       // STAY is home: nothing for a third
+  });
+
+  it("lists the devices with what each carries, and puts a daemon where the site says", async () => {
+    let v = await fetch(base + "/api/devices").then((r) => r.json());
+    const carries = (id: string) => v.devices.find((d: any) => d.id === id)?.daemon?.nickname ?? null;
+    expect([carries(CC), carries(WATCH), carries(STICK)]).toEqual(["PIP", "LABEL", null]);
+    expect(v.away.map((d: any) => d.nickname)).toEqual(["PIP", "LABEL"]);
+    v = await fetch(base + "/api/devices/carry", { method: "POST", headers: { "content-type": "application/json" },
+                                                   body: JSON.stringify({ id: STICK, personality: PIP.personality }) }).then((r) => r.json());
+    expect([carries(CC), carries(STICK)]).toEqual([null, "PIP"]);
+    expect((await stateOf(STICK)).daemon.nickname).toBe("PIP");
+    expect((await stateOf(CC)).daemon).toBeNull();                          // LABEL is the watch's; nothing is free
+  });
+
+  it("refuses a daemon that is not away, or a name that is not a device", async () => {
+    const post = (b: unknown) => fetch(base + "/api/devices/carry", { method: "POST", headers: { "content-type": "application/json" },
+                                                                    body: JSON.stringify(b) });
+    expect((await post({ id: CC, personality: HOME.personality })).status).toBe(400);
+    expect((await post({ id: "../x", personality: PIP.personality })).status).toBe(400);
+    expect((await post({ id: CC, personality: null })).status).toBe(200);
+  });
+});

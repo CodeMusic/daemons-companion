@@ -7,8 +7,9 @@
 // C-15: meeting other companions nearby is written here too -- the INDEX sees their daemons, and the carried daemon's
 // friendship grows a little (`met`).
 //
-// C-21 (the user, 2026-10-04): it is now one SYNC. syncSave answers the requests -- ONE DAEMON AT A TIME: a request to
-// send while another party daemon is already AWAY is left asked, and said so -- and, on the save the app is married to
+// C-21 (the user, 2026-10-04): it is now one SYNC. syncSave answers the requests -- every one: C-80 (the user,
+// 2026-10-08) put a daemon in each device, so any number may be AWAY; the game itself keeps the last one able to battle
+// at home. `refused` is kept, empty now, so the app reading it still reads -- and, on the save the app is married to
 // (C-22), writes the companion's two flags in SaveBlock2 (DAEMONS T-370): LINKED, which shows SEND in the game, set;
 // and RECALLED, the game's note that a daemon came home without the app, read and cleared.
 import P from "../../data/profile_layout.json" with { type: "json" };
@@ -37,7 +38,8 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
   return { save: r.save, answered: r.answered };
 }
 
-export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth }, l: Layout = LAYOUT): SyncResult {
+// grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
+export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[] }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -63,11 +65,8 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     for (let k = 0; k < l.pokemon_size; k++) rec[k] = out[at(recStart + k).byte];
     party.push({ i, recStart, d: readDaemon(rec, i, l) });   // checks each record is whole before anything is written
   }
-  let away = party.filter((p) => p.d && p.d.away && !p.d.asked).length;   // carried, and staying carried
   for (const { i, recStart, d } of party) {
     if (!d || !d.asked) continue;
-    if (!d.away && away > 0) { refused.push(d.nickname); continue; }      // one at a time: this one stays asked
-    if (!d.away) away++;
     const f = at(recStart + l.flags_byte);
     let flags = out[f.byte] ^ (1 << l.away_bit);         // there if it was here, here if it was there
     flags &= ~(1 << l.asked_bit) & 0xff;
@@ -122,11 +121,12 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
   // C-45: the experience it gained on the device, written once it is HOME (answered home now, or brought home by the
   // game's emergency way) -- and where that is past a level, its level and stats as CalculateMonStats would give them.
   let grew: SyncResult["grew"] = null;
-  const g = opts.grow;
   const awayAfter = (p: (typeof party)[number]) => {               // where it is once this SYNC's answers are written
     const a = answered.find((x) => x.slot === p.i);
     return a ? a.now === "away" : !!p.d?.away;
   };
+  const grows = opts.grow === undefined ? [] : Array.isArray(opts.grow) ? opts.grow : [opts.grow];
+  const g = grows.find((x) => x.exp > 0 && party.some((p) => p.d && p.d.personality === x.personality && !awayAfter(p)));
   const home = g && party.find((p) => p.d && p.d.personality === g.personality && !awayAfter(p));
   if (g && g.exp > 0 && home && home.d) {
     const rec = new Uint8Array(l.pokemon_size);

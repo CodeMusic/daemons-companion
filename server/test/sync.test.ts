@@ -56,12 +56,13 @@ describe("SYNC (C-21) and the married save (C-22)", () => {
       .toEqual([["PIP", true, false], ["LABEL", false, false]]);
   });
 
-  it("takes one daemon at a time: a second request waits, still asked", () => {
+  it("sends a second daemon while one is away: a daemon in each device (C-80)", () => {
     const { path, cfg } = saveFile([{ ...PIP, away: true }, { ...LABEL, asked: true }]);
     const r = sync(cfg, new Store(":memory:"));
-    expect(r.received).toEqual([]);
-    expect(r.refused).toEqual(["LABEL"]);
-    expect(readSave(new Uint8Array(readFileSync(path))).party.find((d) => d.nickname === "LABEL")!.asked).toBe(true);
+    expect(r.received).toEqual(["LABEL"]);
+    expect(r.refused).toEqual([]);
+    const party = readSave(new Uint8Array(readFileSync(path))).party;
+    expect(party.map((d) => [d.nickname, d.away, d.asked])).toEqual([["PIP", true, false], ["LABEL", true, false]]);
   });
 
   it("settles a daemon brought home without the app", () => {

@@ -1,6 +1,7 @@
 # The devices: one daemon each, and always connected (C-80, C-82)
 
-*A design, 2026-10-07. Nothing here is built yet except where it says so. The open questions are at the end.*
+*A design, 2026-10-07. Built since: every device by its own name (C-80 step 1) and a daemon in each (step 2,
+2026-10-08: `server/src/carry.ts`). The questions and their answers are at the end.*
 
 ## The devices
 
@@ -58,7 +59,20 @@ The order a device tries, and what it keeps:
 **The server itself must always be on**: roverbyteseer rather than this Mac. What has to move with it is the open
 question below -- the save.
 
-## Open questions for the user
+## Answered (the user, 2026-10-08)
+
+*"Most people will have one device, but others like myself would like to put different daemons in each device from my
+party. And they should only need to be paired with the phone, or even just have their own Wi-Fi connected, to
+function away from home."*
+
+- **Q2, choosing**: in the app and the site -- each device in DEVICES has a choice of party daemon; SYNC writes it.
+- **Q3, the phone**: not a device of its own. It is the remote and the boards' way out, and shows every device's daemon.
+- **Q4, the relay for boards**: yes -- a board away from home on its own Wi-Fi asks the relay, with its own key; a
+  board paired with the phone goes out through the phone.
+- Q1 (where the save lives, if the server moves) is still open, and does not block this: the server stays on the Mac
+  (`./bindCompanion.sh always`) and the relay is the way in.
+
+## Open questions for the user (as asked, 2026-10-07)
 
 1. **The save**: the game's save lives beside the emulator. If the server moves to roverbyteseer, how does the save get
    there -- the app sends it at SYNC, a shared folder, or the server stays on the Mac and only the relay is always on?

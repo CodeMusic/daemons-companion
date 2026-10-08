@@ -2,7 +2,8 @@
 
 **A goal companion that carries a daemon.** You carry a daemon from your game of
 [**DAEMONS**](https://github.com/CodeMusic/DAEMONS) on a little device -- a LilyGO T-Embed (the CC1101, the plain one or
-the SI4732), a T-Watch S3, or your phone. You feed it, train it, spend time with it, **talk with it** -- and it helps
+the SI4732), a T-Watch S3, an M5Stack (the StickS3, the CoreS3, the M5GO or the Fire), or your phone -- and with more than
+one device, a different daemon from your party in each. You feed it, train it, spend time with it, **talk with it** -- and it helps
 you: tell it what you want to get done, and it turns that into **one next step** and walks you through the day. As you
 get things done, it thrives. Pass someone else carrying one, and your INDEX sees their daemon.
 
@@ -45,8 +46,8 @@ beside it.*
 | | | |
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (the handheld, its battery, its routines), **PROFILE**, **SETTINGS** |
-| `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start) and its own build for the **T-Watch S3**; ESP32-S3, PlatformIO + Arduino, grown from RoverCodeBase | **running on the CC1101**; the other boards are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, and the first radio experiment. See [The handhelds](#the-handhelds) |
+| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (your devices, which daemon each carries, their batteries and routines), **PROFILE**, **SETTINGS** |
+| `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start), and builds of their own for the **T-Watch S3**, the **M5StickS3**, the **M5Stack CoreS3**, and the **M5GO and Fire** (the original ESP32; the rest are ESP32-S3); PlatformIO + Arduino, grown from RoverCodeBase | **running on the CC1101**; the other boards are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, and the first radio experiment. See [The handhelds](#the-handhelds) |
 | `server/src/ai/`, DAEMONS `ai/` | **the daemon's voice and words** -- n8n workflows on your own machine (DAEMONS `ai/n8n/`), speech to text (`ai/stt/`), a local model or OpenRouter, and the INDEX voice | **running**: a spoken question in, the daemon's answer in the INDEX voice out. See [Talk to your daemon](#talk-to-your-daemon) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
@@ -84,22 +85,25 @@ Plug the boards in by USB-C cables that carry data, with [PlatformIO](https://pl
 
 | | |
 |---|---|
-| `./updateCompanion.sh` | asks each board on USB for its HELLO, flashes `t-embed` or `t-watch-s3`; with several plugged in it asks which (numbers, or `a` for all) |
+| `./updateCompanion.sh` | asks each board on USB for its HELLO and flashes its build; with several plugged in it asks which (numbers, or `a` for all) |
 | `./updateCompanion.sh --all` | every board found, without asking |
-| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask) |
+| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `m5-sticks3`, `m5-cores3`, or `m5-core` for the M5GO and Fire |
 | `./updateCompanion.sh --port PORT` | only that one |
 | `./updateCompanion.sh --link` | flash, then link |
-| `./updateCompanion.sh --build` | only build both, to check they compile (no board needed) |
+| `./updateCompanion.sh --build` | only build every board's firmware, to check it compiles (no board needed) |
 | `./linkCompanion.sh` | the **bridge**, in this terminal; starts the server in the background if none is answering, and Ctrl-C stops both |
 | `./linkCompanion.sh --port PORT` | a particular serial port |
 
 After flashing, the script waits for the board to say HELLO. **A board can stay in its bootloader after an upload and
-look dead** (the S3's own USB, and its battery keeps it powered when unplugged): **press RST once**. If an upload cannot
+look dead** (the S3's own USB, and its battery keeps it powered when unplugged): **press RST once**. The M5GO and Fire
+come up as a USB-serial port (`usbserial` or `wchusbserial`); the scripts find those too, and open them without
+restarting the board. If an upload cannot
 connect at all, hold BOOT, press and release RST, let go of BOOT, and run it again.
 
 The bridge hands the board the server's state every five seconds and passes back what you do on it; the corner of the
 screen says **USB**. A board that has learned a network (UPLINK, TEACH A NETWORK) asks the server itself over **WIFI**,
-and a paired phone carries it over Bluetooth (**PHONE**). Start the server first (`./bindCompanion.sh` or
+and a paired phone carries it over Bluetooth (**PHONE**). Away from home on a Wi-Fi it knows, it asks your relay itself
+(**AWAY**, [From anywhere](#from-anywhere)). Start the server first (`./bindCompanion.sh` or
 `./bindCompanion.sh server`).
 
 ### On the board
@@ -115,6 +119,16 @@ types: **LATENT** (AM: LISTEN, and LIGHTNING) and **CONTEXT** (FM: LISTEN with t
 **The T-Watch S3:** its home is **the face** -- the time, the day's theme, its virtue over its vice, chakra and note,
 today's steps, the battery and a TALK button. Swipe to turn between the pages, tap to press, hold to go back; the crown
 wakes it or goes back, and held, it sleeps.
+
+**The M5StickS3:** the face button presses (held at home, it **talks**); the side button turns to the next page, held
+half a second goes back, two seconds sleeps -- and asleep, only a hold on it wakes it.
+
+**The M5Stack CoreS3:** a touch screen, used as the watch's is -- the face first, swipe to turn, tap to press, hold to go
+back, TALK held on the face. Its power key wakes it or goes back, and held a second, sleeps.
+
+**The M5GO and the Fire:** **A** and **C** turn left and right, **B** presses (held at home, it **talks**); held, A goes
+back and C, two seconds, sleeps -- asleep, only a held B wakes it. The M5GO base gives it its microphone and ten lights.
+Without the Fire's extra memory, the M5GO draws in 256 colours.
 
 **The pages** are TODAY (the one step: press to tick it off; back undoes it for fifteen seconds), DAEMON, ROUTINES and
 the DAY (its theme, virtue over vice, chakra and note; press for its note).
@@ -133,7 +147,7 @@ first. UPLINK's **WI-FI MOTION** is the first radio experiment (C-70): it watche
 the room.
 
 **The battery** shows in the top bar (red when low and unplugged). At 15% it says so; at 5% it goes into deep sleep,
-and the top button wakes it.
+and the top button wakes it (the CoreS3 switches itself off; its power key starts it again).
 
 **It sounds in the day's key** (Sunday C ... Saturday B): the dial rises and falls, select is the day's note, and each
 routine has its own tune, the ring dancing to it. **The ring** glows the day's colour, goes out after a minute unused,
@@ -214,7 +228,9 @@ come from a model on your own machine (or OpenRouter when that one is busy), and
 | the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
 | an INDEX entry | press on it (the board), or **LISTEN** on any entry in the INDEX tab (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks) | runs on the site; the phone needs a new build |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
-| the watch | **hold TALK** on the face | built, not yet run |
+| the watch, the CoreS3 | **hold TALK** on the face | built, not yet run |
+| the StickS3, the M5GO, the Fire | **hold the face button** (the StickS3) or **B** (the M5GO and Fire, with the M5GO base) at home | built, not yet run |
+| away from home | talking and read aloud need home or the paired phone: the relay carries words, not a recording or a voice | |
 | no network at all | an LLM630 riding behind a T-Embed, chosen with `BRAIN` down the cable | client built, not yet run: [docs/LLM630.md](docs/LLM630.md) (C-76) |
 
 **What it takes**, all on your own machines:
@@ -310,7 +326,7 @@ JSON in, JSON out, on this machine only.
 | `POST /api/settings` | `{savePath}` -- set it (kept by the server; overrides `config.json`) |
 | `POST /api/settings/pick` | a native file picker, on Mac |
 | `POST /api/settings/reveal` | open the save's folder in Finder |
-| `GET /api/device/state` | what a device shows: the day (its theme, virtue over vice, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, **the party and their routines** (GAME ROUTINES), and **the clock** (for the watch) |
+| `GET /api/device/state` | what a device shows -- **for the device asking** (its `x-device`, or its key through the relay): the day (its theme, virtue over vice, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, **the party and their routines** (GAME ROUTINES), and **the clock** (for the watch) |
 | `POST /api/device/battery` | `{percent, mv, charging, full, usb}` -- the handheld's charge, when it changes; shown on the DEVICE tab |
 | `POST /api/device/talk` | a handheld's recording (a WAV, raw): the daemon's answer, and a link to its voice |
 | `POST /api/device/speak` | the carried daemon's INDEX entry, aloud: a link to its voice |
@@ -318,7 +334,10 @@ JSON in, JSON out, on this machine only.
 | `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
 | `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |
 | `GET /api/device/art` | the carried daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels |
-| `GET /api/device/link` | (this machine) the board: linked or not and how, its routines, their results |
+| `GET /api/device/link` | (this machine) the board: linked or not and how, its routines, their results, and every device with its daemon |
+| `GET /api/devices` | every device heard -- when, how, its firmware and battery, and **which daemon it carries** -- and every daemon away |
+| `POST /api/devices/carry` | `{id, personality}` -- put a daemon that is away in that device (`null`: none); it leaves the device that had it |
+| `POST /api/devices/forget` | `{id}` -- forget a device; its key stops working |
 | `POST /api/device/run` | `{routine}` -- run one of the board's routines |
 | `POST /api/device/wifi` | `{ssid, password}` -- the board's Wi-Fi, sent down its cable only |
 | `POST /api/device/ir` | `{protocol, code, bits, keep?}` -- one IR code, tried (and kept for SEND TO MY TV) |
@@ -332,7 +351,8 @@ JSON in, JSON out, on this machine only.
 | `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |
 
 **Only the device routes (`/api/device/*`), the two voice routes (`/api/ai/talk`, `/api/ai/speak`) and the art answer from another machine** on your network, when `host` is
-`0.0.0.0`; everything else answers this machine only.
+`0.0.0.0`; everything else answers this machine only. **Through the relay**, a paired phone reaches everything but
+what is this machine's own, and a board reaches only the device routes, with the key it was given down its cable.
 
 ## Read next
 
@@ -342,7 +362,8 @@ JSON in, JSON out, on this machine only.
 - [**docs/PLAN.md**](docs/PLAN.md) -- how each piece is built, and the questions still open.
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio, RoverCub and their kin already did.
 - [**docs/HARDWARE.md**](docs/HARDWARE.md) -- every board's pins and parts, with sources.
-- [**docs/DEVICES.md**](docs/DEVICES.md) -- a daemon per device, and always connected: the design and its open questions.
+- [**docs/DEVICES.md**](docs/DEVICES.md) -- a daemon per device, and always connected: the design, your answers, and what is built.
+- [**docs/REMOTE.md**](docs/REMOTE.md) -- the companion from anywhere: the relay, the phone, and a board on its own Wi-Fi.
 - [**docs/LLM630.md**](docs/LLM630.md) -- the offline brain behind a T-Embed: what M5's code says it can do.
 - [**TODO.md**](TODO.md) -- the work, decided and not done.
 

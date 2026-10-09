@@ -2102,6 +2102,54 @@
    "neglected": "Asleep at the bottom of something. Still\nthere.",
    "instinctCarried": "It listened to everything. You said more\nthan you meant to.",
    "instinctNeglected": "Everything else got out. It is still here."
+  },
+  "253": {
+   "carried": "You have looked into the mirror it\ncarries. You looked for a long time.",
+   "neglected": "It is still holding the mirror out. Nobody\nhas taken it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "254": {
+   "carried": "You have walked a long way by its light.\nYou have not once looked lost.",
+   "neglected": "It is still shining where it was left.\nSomebody, somewhere, is walking toward it.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "255": {
+   "carried": "It has stayed close to you a long while\nnow. That is not like it.",
+   "neglected": "It has gone round again. It will be back.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "256": {
+   "carried": "You saw it in time.",
+   "neglected": "It came all this way. You put it away.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "257": {
+   "carried": "You did not walk away from this one.",
+   "neglected": "You walked away. It understands. Its\nlight is still on.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "258": {
+   "carried": "You stayed until it was all light.",
+   "neglected": "Even put away, it is not dark in there.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "259": {
+   "carried": "It follows you from room to room now.",
+   "neglected": "It is waiting by the door.",
+   "instinctCarried": null,
+   "instinctNeglected": null
+  },
+  "260": {
+   "carried": "You have made more since you started\ncarrying it.",
+   "neglected": "It is sitting very still. It is waiting for\nyou to begin.",
+   "instinctCarried": null,
+   "instinctNeglected": null
   }
  }
 }

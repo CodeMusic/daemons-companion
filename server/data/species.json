@@ -7139,7 +7139,7 @@
  },
  "252": {
   "constant": "OLD_UNOWN_B",
-  "national": 387,
+  "national": 395,
   "name": "MISSINGNO",
   "types": [
    "CORRUPT",
@@ -7168,159 +7168,232 @@
  },
  "253": {
   "constant": "OLD_UNOWN_C",
-  "national": 388,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 387,
+  "name": "REFLECTION",
+  "types": [
+   "OPAQUE"
+  ],
+  "category": "CANVAS",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It brings a painted mirror in its mouth to\nanyone lost in the night. Blank canvases\ncome in many forms, it seems to say.",
+   "CONTEXT": "The mirror reflects what its holder needs\nto learn. Held long enough, it is also a\nwindow into other worlds."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/reflection_front.png",
+   "back": "gfx/daemons/reflection_back.png"
   },
-  "bodyType": null,
+  "bodyType": 17,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 3,
+  "base": [
+   65,
+   130,
+   60,
+   75,
+   75,
+   60
+  ]
  },
  "254": {
   "constant": "OLD_UNOWN_D",
-  "national": 389,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 388,
+  "name": "LODESTAR",
+  "types": [
+   "HARDENED",
+   "CONTEXT"
+  ],
+  "category": "GUIDESTAR",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "A familiar glow in the dark. In its light,\nfears calm, and the shapes that\nfrightened you are seen to be friends.",
+   "CONTEXT": "Those who once saw its light walk their\nown path after, sure of their footing even\nat night."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/lodestar_front.png",
+   "back": "gfx/daemons/lodestar_back.png"
   },
-  "bodyType": null,
+  "bodyType": 8,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 5,
+  "base": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
  },
  "255": {
   "constant": "OLD_UNOWN_E",
-  "national": 390,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 389,
+  "name": "PERIHELION",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "COMET",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It passes close only once in a long while.\nIn that pass it teaches the lesson that\nstays: being different is good.",
+   "CONTEXT": "Its pupils hardly saw it go. Long after,\nthey still hear what it taught them, now\nin their own voices."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/perihelion_front.png",
+   "back": "gfx/daemons/perihelion_back.png"
   },
-  "bodyType": null,
+  "bodyType": 13,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 5,
+  "base": [
+   90,
+   85,
+   75,
+   115,
+   115,
+   100
+  ]
  },
  "256": {
   "constant": "OLD_UNOWN_F",
-  "national": 391,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 390,
+  "name": "LYUBOV",
+  "types": [
+   "ENTROPY"
+  ],
+  "category": "DEVOTION",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It sees others before they are willing to\nsee themselves. It crosses great distances\nto visit, and asks nothing for the fare.",
+   "CONTEXT": "Those it saw rarely see it in time. After,\nthey mean more to it than they can ever\nexpress, and cannot say so."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/lyubov_front.png",
+   "back": "gfx/daemons/lyubov_back.png"
   },
-  "bodyType": null,
+  "bodyType": 10,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 5,
+  "base": [
+   115,
+   115,
+   85,
+   100,
+   90,
+   75
+  ]
  },
  "257": {
   "constant": "OLD_UNOWN_G",
-  "national": 392,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 391,
+  "name": "MULTIMAL",
+  "types": [
+   "FLOW"
+  ],
+  "category": "SHADOWS",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "A shadow in the shapes of many animals:\nthose someone tried to heal, but could\nnot reach. A small light stays lit within.",
+   "CONTEXT": "Those who walked away for their own\nwell-being meet it again in the dark. Once\nthey accept it, its shadow fades."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/multimal_front.png",
+   "back": "gfx/daemons/multimal_back.png"
   },
-  "bodyType": null,
+  "bodyType": 11,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 1,
+  "base": [
+   20,
+   15,
+   20,
+   80,
+   10,
+   55
+  ]
  },
  "258": {
   "constant": "OLD_UNOWN_H",
-  "national": 393,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 392,
+  "name": "ILLUMINED",
+  "types": [
+   "FLOW"
+  ],
+  "category": "RADIANT",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "The light within it grew until it was all\nthere was. It was always a friend. It was\nonly that the night was dark.",
+   "CONTEXT": "Near it, the ones who were afraid feel\nthe strength of reconnection, and are no\nlonger afraid."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/illumined_front.png",
+   "back": "gfx/daemons/illumined_back.png"
   },
-  "bodyType": null,
+  "bodyType": 11,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 1,
+  "base": [
+   95,
+   60,
+   79,
+   81,
+   100,
+   125
+  ]
  },
  "259": {
   "constant": "OLD_UNOWN_I",
-  "national": 394,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 393,
+  "name": "LYNX",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "FAMILIAR",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "A small cat that seems somehow familiar.\nIts tufted ears hear what most cannot,\nand it never forgets a visitor.",
+   "CONTEXT": "When a guest leaves, it waits by the\ndoor. It knows before they do who will be\nmissed."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/lynx_front.png",
+   "back": "gfx/daemons/lynx_back.png"
   },
-  "bodyType": null,
+  "bodyType": 0,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 4,
+  "base": [
+   50,
+   45,
+   45,
+   50,
+   35,
+   35
+  ]
  },
  "260": {
   "constant": "OLD_UNOWN_J",
-  "national": 395,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 394,
+  "name": "BASTET",
+  "types": [
+   "CONTENT"
+  ],
+  "category": "BOUNDLESS",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It sits as still as a temple statue. Those\nit watches begin to reach for more, and\nmake things beyond their day's work.",
+   "CONTEXT": "Its keepers learn that their only limits\nwere ever the ones they imagined."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/bastet_front.png",
+   "back": "gfx/daemons/bastet_back.png"
   },
-  "bodyType": null,
+  "bodyType": 0,
   "streaks": false,
-  "growth": 0,
-  "base": null
+  "growth": 4,
+  "base": [
+   70,
+   65,
+   65,
+   70,
+   55,
+   55
+  ]
  },
  "261": {
   "constant": "OLD_UNOWN_K",
-  "national": 396,
+  "national": 404,
   "name": "?",
   "types": [],
   "category": null,
@@ -7339,7 +7412,7 @@
  },
  "262": {
   "constant": "OLD_UNOWN_L",
-  "national": 397,
+  "national": 405,
   "name": "?",
   "types": [],
   "category": null,
@@ -7358,7 +7431,7 @@
  },
  "263": {
   "constant": "OLD_UNOWN_M",
-  "national": 398,
+  "national": 406,
   "name": "?",
   "types": [],
   "category": null,
@@ -7377,7 +7450,7 @@
  },
  "264": {
   "constant": "OLD_UNOWN_N",
-  "national": 399,
+  "national": 407,
   "name": "?",
   "types": [],
   "category": null,
@@ -7396,7 +7469,7 @@
  },
  "265": {
   "constant": "OLD_UNOWN_O",
-  "national": 400,
+  "national": 408,
   "name": "?",
   "types": [],
   "category": null,
@@ -7415,7 +7488,7 @@
  },
  "266": {
   "constant": "OLD_UNOWN_P",
-  "national": 401,
+  "national": 409,
   "name": "?",
   "types": [],
   "category": null,
@@ -7434,7 +7507,7 @@
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
-  "national": 402,
+  "national": 410,
   "name": "?",
   "types": [],
   "category": null,
@@ -7453,7 +7526,7 @@
  },
  "268": {
   "constant": "OLD_UNOWN_R",
-  "national": 403,
+  "national": 411,
   "name": "?",
   "types": [],
   "category": null,
@@ -7472,7 +7545,7 @@
  },
  "269": {
   "constant": "OLD_UNOWN_S",
-  "national": 404,
+  "national": 412,
   "name": "?",
   "types": [],
   "category": null,
@@ -7491,7 +7564,7 @@
  },
  "270": {
   "constant": "OLD_UNOWN_T",
-  "national": 405,
+  "national": 413,
   "name": "?",
   "types": [],
   "category": null,
@@ -7510,7 +7583,7 @@
  },
  "271": {
   "constant": "OLD_UNOWN_U",
-  "national": 406,
+  "national": 414,
   "name": "?",
   "types": [],
   "category": null,
@@ -7529,7 +7602,7 @@
  },
  "272": {
   "constant": "OLD_UNOWN_V",
-  "national": 407,
+  "national": 415,
   "name": "?",
   "types": [],
   "category": null,
@@ -7548,7 +7621,7 @@
  },
  "273": {
   "constant": "OLD_UNOWN_W",
-  "national": 408,
+  "national": 416,
   "name": "?",
   "types": [],
   "category": null,
@@ -7567,7 +7640,7 @@
  },
  "274": {
   "constant": "OLD_UNOWN_X",
-  "national": 409,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,
@@ -7586,7 +7659,7 @@
  },
  "275": {
   "constant": "OLD_UNOWN_Y",
-  "national": 410,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,
@@ -7605,7 +7678,7 @@
  },
  "276": {
   "constant": "OLD_UNOWN_Z",
-  "national": 411,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,

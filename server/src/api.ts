@@ -51,6 +51,7 @@ import { createConnection } from "node:net";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
 import { assign, carriedFor, carryView } from "./carry.js";
+import { SharedNetworks } from "./networks.js";
 import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -351,6 +352,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date(), deviceI
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
            settings: deviceSettings(store),
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
+           netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },
@@ -445,6 +447,7 @@ class Pairing {
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
+  const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
   return createServer(async (req, res) => {
@@ -583,7 +586,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // ---- the site's side (this machine only): what the link is, and the commands it sends ----
       if (req.method === "GET" && path === "/api/device/link") {
         const v = devicesView();                                                                     // C-80
-        return send(res, 200, { ...hub.link(), lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" },
+        return send(res, 200, { ...hub.link(), shared: nets.names().networks, lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" },
                                 battery: JSON.parse(store.getSetting("device.battery") ?? "null"),   // C-63
                                 devices: v.devices, away: v.away });
       }
@@ -617,6 +620,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (typeof b.ssid !== "string" || !b.ssid || typeof b.password !== "string")
           return send(res, 400, { error: "Wi-Fi needs a network name and its password" });
         const addr = lanAddress();
+        nets.learn(b.ssid, b.password);                           // C-93: and every other device, when next in touch
         return send(res, 200, { id: hub.send({ type: "wifi", ssid: b.ssid, password: b.password,
                                                server: addr ? `http://${addr}:${cfg.port}` : "" }) });
       }
@@ -644,17 +648,37 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         hub.remotes = { active: Number(b.active ?? 0), remotes: Array.isArray(b.remotes) ? b.remotes : [] };
         return send(res, 200, { ok: true });
       }
-      // C-52: the networks the board has learned (names only), and forgetting one
+      // C-52: the networks the board has learned (names), and forgetting one. C-93: a device that has proved itself --
+      // down the cable (the bridge, on this machine), by a board's own key, or a paired key (the Tab5) -- also reports
+      // what it knows with the passwords, and what it forgot, and is handed back the whole shared list to learn. Over the
+      // phone's Bluetooth, or from a device with no key, names only, both ways.
       if (req.method === "POST" && path === "/api/device/networks") {
         const b = await body(req);
         hub.networks = Array.isArray(b.networks) ? b.networks.map(String) : [];
         hub.currentNetwork = typeof b.current === "string" ? b.current : "";
-        return send(res, 200, { ok: true });
+        const proved = via !== "phone" && ((isLoopback(req.socket.remoteAddress) && !relayed) || !!board || !!phone);
+        if (!proved) return send(res, 200, { ok: true, rev: nets.rev() });
+        nets.merge(Array.isArray(b.known) ? b.known : [], Array.isArray(b.forgot) ? b.forgot.map(String) : []);
+        return send(res, 200, { ok: true, ...nets.full() });
       }
       if (req.method === "POST" && path === "/api/device/network") {
         const b = await body(req);
-        if (b.op !== "forget" || !Number.isInteger(b.index)) return send(res, 400, { error: "forget a network: {op: forget, index}" });
+        if (b.op === "forget" && typeof b.ssid === "string" && b.ssid) {   // C-93: forgotten everywhere
+          nets.forget(b.ssid);
+          return send(res, 200, { id: hub.send({ type: "network", op: "forget", ssid: b.ssid }) });
+        }
+        if (b.op !== "forget" || !Number.isInteger(b.index)) return send(res, 400, { error: "forget a network: {op: forget, ssid}" });
         return send(res, 200, { id: hub.send({ type: "network", op: "forget", index: b.index }) });
+      }
+      // C-93: the shared list, for the site and the app -- names only -- and a network added to it for every device
+      if (req.method === "GET" && path === "/api/networks") return send(res, 200, { ...nets.names(), current: hub.currentNetwork });
+      if (req.method === "POST" && path === "/api/networks") {
+        const b = await body(req);
+        if (b.op === "forget") return send(res, nets.forget(String(b.ssid ?? "")) ? 200 : 404, nets.names());
+        if (typeof b.ssid !== "string" || !b.ssid.trim() || typeof b.password !== "string")
+          return send(res, 400, { error: "a network needs its name and its password" });
+        nets.learn(b.ssid.trim(), b.password);
+        return send(res, 200, nets.names());
       }
       if (req.method === "POST" && path === "/api/device/remote") {
         const b = await body(req);

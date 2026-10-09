@@ -72,7 +72,7 @@ class Unreachable extends Error { name = "Unreachable"; }     // by name too: ha
 // the companion cannot be reached, and sent in order when it answers. Only what needs an answer NOW is not kept --
 // talking, a voice, a SYNC of the save, the Mac's own dialogs, pairing, and the handheld told to do something this
 // moment (run a routine, send a remote, join a network). A setting is kept once: only the latest of each is sent.
-const NOT_KEPT = /^\/api\/(ai\/|sync|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network))/;
+const NOT_KEPT = /^\/api\/(ai\/|sync|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
 const LATEST_ONLY = /^\/api\/(settings|talk\/settings|device\/settings|profile)$/;
 // The handheld's own reports through this phone are kept by its bridge (handheld.ts, in order, with the board's id), so
 // they are not kept here as well -- or a tick made away from home would arrive twice.
@@ -960,7 +960,7 @@ function IndexScreen({ ink }: { ink: string }) {
 type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: string | null; firmware: string;
               routines: { name: string; radio: string; routines: string[] }[];
               pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
-              remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string;
+              remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string; shared?: string[];
               battery?: { percent: number; charging: boolean; full: boolean; usb: boolean; at: string } | null;   // C-63
               lan: { address: string | null; port: number; open: boolean };
               devices?: DeviceRow[]; away?: Carried[] };                                              // C-80
@@ -1080,7 +1080,8 @@ function DeviceScreen({ ink }: { ink: string }) {
     setManaged((await api<{ id: number }>("/api/device/remote", { op: "rename", index, name: newName })).id);
     setRenaming(null);
   };
-  const sendWifi = async () => setWifiSent((await api<{ id: number }>("/api/device/wifi", { ssid, password: pass })).id);
+  // C-93: added to the list every device shares -- each learns it the next time it is in touch
+  const sendWifi = async () => { await api("/api/networks", { ssid, password: pass }); setSsid(""); setPass(""); setWifiSent(-1); };
   return (
     <YStack gap={14}>
       {HANDHELD ? <HandheldCard ink={ink} /> : null}
@@ -1197,15 +1198,15 @@ function DeviceScreen({ ink }: { ink: string }) {
       </Card>
 
       <Card>
-        <Eyebrow>ITS NETWORKS</Eyebrow>
-        <Small>The networks the board has learned. It joins whichever one it is near. Teach it one here (sent down its
-          cable only, never over the network) or on the board itself: ROUTINES, UPLINK, TEACH A NETWORK.</Small>
-        {link.networks.length === 0 ? <Small color="$color10">None learned yet.</Small> : null}
-        {link.networks.map((n, i) => (
+        <Eyebrow>EVERY DEVICE'S NETWORKS</Eyebrow>
+        <Small>One list for all your devices (DRAFT): a network learned on any of them, or added here, is learned by every
+          one the next time it is in touch, and one forgotten is forgotten by all. Each joins whichever it is near.</Small>
+        {(link.shared ?? link.networks).length === 0 ? <Small color="$color10">None learned yet.</Small> : null}
+        {(link.shared ?? link.networks).map((n) => (
           <XStack key={n} alignItems="center" gap={8} paddingVertical={2}>
             <Text flex={1} fontSize={15} fontWeight={n === link.currentNetwork ? "700" : "400"} color="$color12">
               {`${n}${n === link.currentNetwork ? "  (on it now)" : ""}`}</Text>
-            <Action label="Forget" onPress={async () => setForgot((await api<{ id: number }>("/api/device/network", { op: "forget", index: i })).id)} ink={ink} />
+            <Action label="Forget everywhere" onPress={async () => setForgot((await api<{ id: number }>("/api/device/network", { op: "forget", ssid: n })).id)} ink={ink} />
           </XStack>
         ))}
         <Result link={link} id={forgot} />
@@ -1216,10 +1217,11 @@ function DeviceScreen({ ink }: { ink: string }) {
                  backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} />
           <Input flexGrow={1} minWidth={160} value={pass} onChangeText={setPass} placeholder="password" secureTextEntry
                  backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} />
-          <Action label="Teach it this one" onPress={sendWifi} ink={ink} />
+          <Action label="Add for every device" onPress={sendWifi} ink={ink} />
         </XStack>
-        {link.via !== "usb" ? <Small>Link it by its cable first (./linkCompanion.sh): that is the only way this is sent.</Small> : null}
-        <Result link={link} id={wifiSent} />
+        {wifiSent === -1 ? <Small>Added. Each device learns it when it is next in touch.</Small> : null}
+        <Small color="$color10">A password goes only to a device that proves itself: down its cable, or over Wi-Fi with its
+          own key (a board gets one the first time it is linked by cable). Never over the phone's Bluetooth.</Small>
       </Card>
     </YStack>
   );

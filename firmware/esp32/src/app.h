@@ -116,7 +116,10 @@ void loadWifi();
 void learnNetwork(const String &ssid, const String &pass, const String &server);
 void forgetNetwork(int i);
 void uplinkLoop(uint32_t now);
-String networksJson();
+String networksJson(bool secrets = false);    // C-93: with the passwords only for a channel that proves itself
+bool takeShared(const String &json);
+void netsRevSeen(long rev);
+extern bool netsDue;
 const char *linkName();
 String http(const char *method, const String &path, const String &body, bool *ok = nullptr);
 bool httpState(const char *method, const String &path, const String &body);

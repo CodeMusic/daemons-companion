@@ -14,6 +14,9 @@ String netNetworks[16]; int netNetworkCount = 0;
 
 static String server, token, relay, ssids[5], passes[5];
 static int known = 0;
+// C-93: the networks every device shares -- what this Tab5 learned that the companion has not heard yet ('\n' between
+// names), and the shared list's revision it last took
+static String freshNets; static long netsRev = -1; static bool netsDue = false;
 static uint32_t awayAt = 0;                       // the relay answered when home did not: keep to it a minute
 static const uint32_t AWAY_MS = 60000;
 
@@ -47,13 +50,14 @@ static void load() {
   Preferences p; p.begin("tab5", true);
   server = p.getString("server", ""); token = p.getString("token", ""); relay = p.getString("relay", "");
   known = min((int)p.getUChar("known", 0), 5);
+  freshNets = p.getString("fresh", ""); netsRev = p.getLong("netsRev", -1);
   for (int i = 0; i < known; i++) { ssids[i] = p.getString(("s" + String(i)).c_str(), ""); passes[i] = p.getString(("p" + String(i)).c_str(), ""); }
   p.end();
 }
 static void save() {
   Preferences p; p.begin("tab5", false);
   p.putString("server", server); p.putString("token", token); p.putString("relay", relay);
-  p.putUChar("known", known);
+  p.putUChar("known", known); p.putString("fresh", freshNets); p.putLong("netsRev", netsRev);
   for (int i = 0; i < known; i++) { p.putString(("s" + String(i)).c_str(), ssids[i]); p.putString(("p" + String(i)).c_str(), passes[i]); }
   p.end();
 }
@@ -130,7 +134,11 @@ static bool fetchKeep(const char *path, const char *name) {
   int code; String got = request("GET", path, "", code);
   if (code != 200) return false;
   keep(name, got);
-  if (!strcmp(name, "state")) takeClock(got);
+  if (!strcmp(name, "state")) {
+    takeClock(got);
+    JsonDocument d = newDoc();                       // C-93: another device learned or forgot a network
+    if (!deserializeJson(d, got) && (d["netsRev"] | -1L) >= 0 && (d["netsRev"] | -1L) != netsRev) netsDue = true;
+  }
   keptChanged++;
   return true;
 }
@@ -173,6 +181,41 @@ static void fetchPartyArt() {
   keptChanged++;
 }
 
+// C-93: tell the companion every network this Tab5 knows (it is paired, so with the passwords) and take back the list
+// every device shares: new ones kept (joined when near), new passwords taken, the forgotten dropped.
+static void keepOne(const String &s, const String &p) {
+  int at = -1;
+  for (int i = 0; i < known; i++) if (ssids[i] == s) at = i;
+  if (at < 0) { if (known == 5) { for (int i = 1; i < 5; i++) { ssids[i - 1] = ssids[i]; passes[i - 1] = passes[i]; } known--; } at = known++; }
+  ssids[at] = s; passes[at] = p;
+}
+static void shareNetworks() {
+  netsDue = false;
+  JsonDocument d = newDoc();
+  JsonArray names = d["networks"].to<JsonArray>(), k = d["known"].to<JsonArray>();
+  for (int i = 0; i < known; i++) {
+    names.add(ssids[i]);
+    JsonObject n = k.add<JsonObject>();
+    n["ssid"] = ssids[i]; n["password"] = passes[i];
+    n["fresh"] = ("\n" + freshNets + "\n").indexOf("\n" + ssids[i] + "\n") >= 0;
+  }
+  d["current"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : "";
+  String body; serializeJson(d, body);
+  int code; String got = request("POST", "/api/device/networks", body, code);
+  JsonDocument r = newDoc();
+  if (code != 200 || deserializeJson(r, got) || !r["shared"].is<JsonArray>()) return;
+  for (JsonVariant f : r["forget"].as<JsonArray>()) {
+    String gone = f | "";
+    for (int i = 0; i < known; i++) if (ssids[i] == gone) {
+      for (int k2 = i + 1; k2 < known; k2++) { ssids[k2 - 1] = ssids[k2]; passes[k2 - 1] = passes[k2]; }
+      known--; break;
+    }
+  }
+  for (JsonVariant n : r["shared"].as<JsonArray>()) keepOne(n["ssid"] | "", n["password"] | "");
+  freshNets = ""; netsRev = r["rev"] | -1L;
+  save(); keptChanged++;
+}
+
 static void keepEverything(bool withArt) {
   net.syncing = true;
   bool ok = fetchKeep("/api/today", "today");
@@ -182,6 +225,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/devices", "devices");
     fetchKeep("/api/device/state", "state");          // this Tab5's own daemon (C-80)
+    shareNetworks();                                  // C-93: every device's networks
     { int c; request("POST", "/api/device/hello", String("{\"firmware\":\"m5-tab5 3 ") + COMPANION_BUILD + "\"}", c); }   // C-91: its build, for the site
     fetchKeep("/api/index", "index");
     if (withArt) fetchArt();
@@ -215,7 +259,9 @@ static void join(const String &s, const String &p) {
   int at = -1;
   for (int i = 0; i < known; i++) if (ssids[i] == s) at = i;
   if (at < 0) { if (known == 5) { for (int i = 1; i < 5; i++) { ssids[i - 1] = ssids[i]; passes[i - 1] = passes[i]; } known--; } at = known++; }
-  ssids[at] = s; passes[at] = p; save();
+  ssids[at] = s; passes[at] = p;
+  if (("\n" + freshNets + "\n").indexOf("\n" + s + "\n") < 0) freshNets += (freshNets.length() ? "\n" : "") + s;   // C-93
+  netsDue = true; save();
   WiFi.disconnect(); WiFi.begin(s.c_str(), p.c_str());
   for (int i = 0; i < 60 && WiFi.status() != WL_CONNECTED; i++) delay(250);
   net.message = WiFi.status() == WL_CONNECTED ? "Joined " + s + "." : "Could not join " + s + ".";   // DRAFT
@@ -295,6 +341,7 @@ static void netTask(void *) {
         lastToday = now;
         if (outboxCount()) flushOutbox();
         fetchKeep("/api/today", "today"); fetchKeep("/api/device/state", "state");
+        if (netsDue) shareNetworks();                       // C-93
       }
     }
     delay(200);

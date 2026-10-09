@@ -66,6 +66,8 @@ void loop() {
   meetReport();
   static bool wifiWas = false;              // C-52: the site hears at once when the board joins or leaves a network
   if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }
+  static uint32_t netsAt = 0;               // C-93: the shared networks moved on -- at most every ten seconds
+  if (netsDue && (usbLive() || online()) && now - netsAt > 10000) { netsAt = now; reportNetworks(); }
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
   soundIdle();                              // C-75: the M5GO and Fire let their DAC go between sounds

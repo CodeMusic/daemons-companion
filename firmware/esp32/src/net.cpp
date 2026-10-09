@@ -34,10 +34,36 @@ void runRoutineByName(long id, const String &want);
 
 // ---- C-33: the board's own Wi-Fi ----------------------------------------------------------------------------------------
 // C-52: SEVERAL networks are kept -- what the board has learned, which the daemons share -- and it joins whichever known
-// one is in range, the strongest, at start and whenever it loses the one it was on. Their passwords never leave it.
+// one is in range, the strongest, at start and whenever it loses the one it was on. C-93: and every device shares them:
+// what this board learns or forgets is told to the server, and what another device learned comes back -- with the
+// passwords only down the cable or over Wi-Fi with this board's own key, never over the phone's Bluetooth.
 bool wifiSet() { return knownCount > 0; }
 bool online() { return wifiSet() && (serverUrl.length() || relaySet()) && WiFi.status() == WL_CONNECTED; }
 bool atHome() { return online() && serverUrl.length() && !viaRelay(); }   // C-82: home answered last (talk needs it)
+
+// C-93: what this board learned or forgot that the server has not heard yet ('\n' between names), and the shared list's
+// revision it last took -- kept in flash, so a board switched off before it was in touch still tells it
+static String freshNets, forgotNets;
+static long netsRevHave = -1;
+bool netsDue = false;
+static bool inList(const String &list, const String &s) { return ("\n" + list + "\n").indexOf("\n" + s + "\n") >= 0; }
+static String addTo(const String &list, const String &s) { return inList(list, s) ? list : list.length() ? list + "\n" + s : s; }
+static String dropFrom(const String &list, const String &s) {
+  String out;
+  int from = 0;
+  while (from <= (int)list.length()) {
+    int nl = list.indexOf('\n', from); if (nl < 0) nl = list.length();
+    String one = list.substring(from, nl);
+    if (one.length() && one != s) out = addTo(out, one);
+    from = nl + 1;
+  }
+  return out;
+}
+static void saveSync() {
+  Preferences p; p.begin("uplink", false);
+  p.putString("fresh", freshNets); p.putString("forgot", forgotNets); p.putLong("rev", netsRevHave);
+  p.end();
+}
 
 void saveNetworks() {
   Preferences p; p.begin("uplink", false);
@@ -51,12 +77,24 @@ void saveNetworks() {
   p.end();
 }
 
+// Keep a network (or its new password) without joining it: the strongest known one in range is joined by uplinkLoop.
+static void keepNetwork(const String &ssid, const String &pass) {
+  int at = -1;
+  for (int i = 0; i < knownCount; i++) if (knownSsid[i] == ssid) at = i;
+  if (at < 0) {
+    if (knownCount == MAX_NETS) { for (int i = 1; i < MAX_NETS; i++) { knownSsid[i - 1] = knownSsid[i]; knownPass[i - 1] = knownPass[i]; } knownCount--; }
+    at = knownCount++;
+  }
+  knownSsid[at] = ssid; knownPass[at] = pass;
+}
+
 void loadWifi() {
   Preferences p; p.begin("uplink", true);
   knownCount = min((int)p.getUChar("count", 0), MAX_NETS);
   for (int i = 0; i < knownCount; i++) { knownSsid[i] = p.getString(("s" + String(i)).c_str(), ""); knownPass[i] = p.getString(("p" + String(i)).c_str(), ""); }
   String oldSsid = p.getString("ssid", COMPANION_WIFI_SSID), oldPass = p.getString("pass", COMPANION_WIFI_PASSWORD);
   serverUrl = p.getString("server", COMPANION_SERVER);
+  freshNets = p.getString("fresh", ""); forgotNets = p.getString("forgot", ""); netsRevHave = p.getLong("rev", -1);   // C-93
   p.end();
   loadAway();                                // C-82
   if (!knownCount && oldSsid.length()) {     // the one network kept before there were several becomes the first
@@ -68,26 +106,48 @@ void loadWifi() {
 
 // Learn a network (or its new password) and join it now.
 void learnNetwork(const String &ssid, const String &pass, const String &server) {
-  int at = -1;
-  for (int i = 0; i < knownCount; i++) if (knownSsid[i] == ssid) at = i;
-  if (at < 0) {
-    if (knownCount == MAX_NETS) { for (int i = 1; i < MAX_NETS; i++) { knownSsid[i - 1] = knownSsid[i]; knownPass[i - 1] = knownPass[i]; } knownCount--; }
-    at = knownCount++;
-  }
-  knownSsid[at] = ssid; knownPass[at] = pass;
+  keepNetwork(ssid, pass);
   if (server.length()) serverUrl = server;
   saveNetworks();
+  freshNets = addTo(freshNets, ssid); forgotNets = dropFrom(forgotNets, ssid); saveSync();   // C-93: for every device
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), pass.c_str());
 }
 
-void forgetNetwork(int i) {
-  if (i < 0 || i >= knownCount) return;
+static void dropNetwork(int i) {
   for (int k = i + 1; k < knownCount; k++) { knownSsid[k - 1] = knownSsid[k]; knownPass[k - 1] = knownPass[k]; }
   knownCount--;
-  saveNetworks();
 }
+void forgetNetwork(int i) {
+  if (i < 0 || i >= knownCount) return;
+  String gone = knownSsid[i];
+  dropNetwork(i);
+  saveNetworks();
+  forgotNets = addTo(forgotNets, gone); freshNets = dropFrom(freshNets, gone); saveSync();   // C-93: and on every device
+}
+int networkIndex(const String &ssid) { for (int i = 0; i < knownCount; i++) if (knownSsid[i] == ssid) return i; return -1; }
+
+// C-93: the shared list, as the server hands it to a board that proved itself -- learned (not joined), new passwords
+// taken, the forgotten dropped. The server has merged what this board told it, so nothing here is fresh any more.
+bool takeShared(const String &json) {
+  JsonDocument d;
+  if (deserializeJson(d, json) || !d["shared"].is<JsonArray>()) return false;
+  for (JsonVariant f : d["forget"].as<JsonArray>()) {
+    int at = networkIndex(f | "");
+    if (at >= 0) dropNetwork(at);
+  }
+  for (JsonVariant n : d["shared"].as<JsonArray>()) {
+    String ssid = n["ssid"] | "", pass = n["password"] | "";
+    int at = networkIndex(ssid);
+    if (ssid.length() && (at < 0 || knownPass[at] != pass)) keepNetwork(ssid, pass);
+  }
+  saveNetworks();
+  freshNets = ""; forgotNets = ""; netsRevHave = d["rev"] | -1L; saveSync();
+  return true;
+}
+// The state names the shared list's revision: a board behind it reports, and takes the list back.
+void netsRevSeen(long rev) { if (rev >= 0 && rev != netsRevHave) netsDue = true; }
 
 // Join the strongest known network in range: a scan in the background, then WiFi.begin.
 uint32_t wifiTriedAt = 0; bool wifiScanning = false;
@@ -112,11 +172,27 @@ void uplinkLoop(uint32_t now) {
   wifiTriedAt = now;
 }
 
-String networksJson() {
+// Names for the site, always; with `secrets`, every network with its password and whether it was learned here since the
+// server last heard, and what was forgotten here.
+String networksJson(bool secrets) {
   JsonDocument d;
   JsonArray a = d["networks"].to<JsonArray>();
-  for (int i = 0; i < knownCount; i++) a.add(knownSsid[i]);                        // names only: never a password
+  for (int i = 0; i < knownCount; i++) a.add(knownSsid[i]);
   d["current"] = WiFi.status() == WL_CONNECTED ? WiFi.SSID() : "";
+  if (secrets) {
+    JsonArray k = d["known"].to<JsonArray>();
+    for (int i = 0; i < knownCount; i++) {
+      JsonObject n = k.add<JsonObject>();
+      n["ssid"] = knownSsid[i]; n["password"] = knownPass[i]; n["fresh"] = inList(freshNets, knownSsid[i]);
+    }
+    JsonArray f = d["forgot"].to<JsonArray>();
+    int from = 0;
+    while (from < (int)forgotNets.length()) {
+      int nl = forgotNets.indexOf('\n', from); if (nl < 0) nl = forgotNets.length();
+      if (nl > from) f.add(forgotNets.substring(from, nl));
+      from = nl + 1;
+    }
+  }
   String out; serializeJson(d, out);
   return out;
 }
@@ -169,6 +245,7 @@ String http(const char *method, const String &path, const String &body, bool *ok
     h.setTimeout(4000);
     h.begin(serverUrl + path);
     h.addHeader("x-device", deviceId());               // C-80: which device is asking
+    if (relayKey.length() >= 16) h.addHeader("authorization", "Bearer " + relayKey);   // C-93: its own key, at home too
     if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body); }
     else code = h.GET();
     out = code == 200 ? h.getString() : "";
@@ -251,8 +328,8 @@ void handleCommand(JsonVariant c) {
     report("routine", "FLARE/" + String((const char *)(c["label"] | "A CODE FROM THE SITE")));
     return sendResult(id, !out.startsWith("Could not"), out);
   }
-  if (type == "network") {                    // C-52: the site forgets a network
-    int index = c["index"] | -1;
+  if (type == "network") {                    // C-52: the site forgets a network (C-93: by name, everywhere)
+    int index = c["ssid"].is<const char *>() ? networkIndex(c["ssid"] | "") : (c["index"] | -1);
     String gone = index >= 0 && index < knownCount ? knownSsid[index] : "";
     forgetNetwork(index);
     reportNetworks();
@@ -292,9 +369,15 @@ void reportRemotes() {
   if (bridgeLive()) bridge("REMOTES " + flareRemotesJson());
   else http("POST", "/api/device/remotes", flareRemotesJson());
 }
+// C-93: down the cable, with the passwords (the bridge, on the server's own machine, hands back the shared list as NETS);
+// over the phone's Bluetooth, names only; over Wi-Fi, with them only when this board has its own key to prove itself.
 void reportNetworks() {
-  if (bridgeLive()) bridge("NETWORKS " + networksJson());
-  else http("POST", "/api/device/networks", networksJson());
+  netsDue = false;
+  if (usbLive()) { Serial.println("NETWORKS " + networksJson(true)); return; }
+  if (phoneLive()) { linkSend("NETWORKS " + networksJson(false)); return; }
+  bool ok;
+  String got = http("POST", "/api/device/networks", networksJson(relayKey.length() >= 16), &ok);
+  if (ok) takeShared(got);
 }
 
 bool routinesPosted = false;
@@ -341,7 +424,8 @@ void handleLine(String line, bool fromPhone) {
   else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
   else if (line == "SHOT" && !fromPhone) shot();
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
-                             reply("NETWORKS " + networksJson()); }
+                             reply("NETWORKS " + networksJson(!fromPhone)); }
+  else if (line.startsWith("NETS ") && !fromPhone) takeShared(line.substring(5));   // C-93: the shared list, by cable only
   else if (line.startsWith("KEY ") && !fromPhone) {   // the controls, from the computer, for a check with SHOT
     String k = line.substring(4);
     if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);

@@ -59,6 +59,25 @@ The order a device tries, and what it keeps:
 **The server itself must always be on**: roverbyteseer rather than this Mac. What has to move with it is the open
 question below -- the save.
 
+## One list of networks for every device (C-93)
+
+*The user, 2026-10-09: "saved networks should be available to all connected devices -- like if i save it on one they
+all get it."*
+
+- **The server keeps the list** (`server/src/networks.ts`): every network's name and password, the newest eight (a
+  board's MAX_NETS). Learned anywhere -- on a board (UPLINK, TEACH A NETWORK), on the Tab5, or added on the site or the
+  app -- it is learned by every device the next time each is in touch. Forgotten anywhere, it is forgotten by all.
+- **A forget is remembered** by name, so a board that has not heard yet cannot bring the network back by reporting it;
+  only a device that learned it again itself (`fresh`) can.
+- **The state carries `netsRev`.** A device behind it reports what it knows (`POST /api/device/networks`) and is handed
+  the whole list back -- a board over the cable as a `NETS` line from the bridge, over Wi-Fi in the answer.
+- **A password goes only to a device that proves itself**: down the cable (the bridge, on the server's own machine),
+  over Wi-Fi with the board's own key (C-82's; it is now sent at home too), or the Tab5's paired key. **Never over the
+  phone's Bluetooth** (C-33 still holds there), never to a device with no key, never to the site or the app, which see
+  names only. At home the key travels over plain HTTP on the home Wi-Fi (the network's own encryption covers it); away,
+  over the relay's HTTPS.
+- A board never linked by cable has no key, so it shares names only until it is linked once.
+
 ## Answered (the user, 2026-10-08)
 
 *"Most people will have one device, but others like myself would like to put different daemons in each device from my

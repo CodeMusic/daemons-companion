@@ -64,6 +64,7 @@ bool takeState(const String &json) {
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   if (!doc["settings"].isNull()) takeSettings(doc["settings"]);
   meetSetOurs(doc["beacons"] | "");          // C-15: our other companions (the phone) are never a meeting
+  netsRevSeen(doc["netsRev"] | -1L);         // C-93: another device learned or forgot a network
   st.menu = doc["day"]["menu"] | st.colour.c_str();     // C-37: the tamed rainbow week, else the game's trim
   st.led = doc["day"]["led"] | st.menu.c_str();
   ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));

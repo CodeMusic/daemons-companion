@@ -68,10 +68,13 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
 | **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | built, not yet run |
 | **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | built, not yet run |
+| **M5Stack Tab5** | 1280x720 touch | **the control center**: the app's screens, its own Wi-Fi, everything kept on it ([docs/TAB5.md](docs/TAB5.md)) | next | -- | -- | power chip | built, not yet run |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
 is. The watch, the StickS3, the CoreS3, and the M5GO and Fire (one build between them, on the original ESP32) each have
-their own (`./updateCompanion.sh --board m5-sticks3`, `m5-cores3` or `m5-core` the first time). Pins and sources: [docs/HARDWARE.md](docs/HARDWARE.md).
+their own (`./updateCompanion.sh --board m5-sticks3`, `m5-cores3` or `m5-core` the first time). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
+its own PlatformIO: `firmware/tab5/pio.sh`); `./updateCompanion.sh --board m5-tab5` flashes it. Pins and sources:
+[docs/HARDWARE.md](docs/HARDWARE.md).
 
 ### Flash them
 
@@ -363,6 +366,7 @@ what is this machine's own, and a board reaches only the device routes, with the
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio, RoverCub and their kin already did.
 - [**docs/HARDWARE.md**](docs/HARDWARE.md) -- every board's pins and parts, with sources.
 - [**docs/DEVICES.md**](docs/DEVICES.md) -- a daemon per device, and always connected: the design, your answers, and what is built.
+- [**docs/TAB5.md**](docs/TAB5.md) -- the Tab5 as the control center: the plan, and what is built.
 - [**docs/REMOTE.md**](docs/REMOTE.md) -- the companion from anywhere: the relay, the phone, and a board on its own Wi-Fi.
 - [**docs/LLM630.md**](docs/LLM630.md) -- the offline brain behind a T-Embed: what M5's code says it can do.
 - [**TODO.md**](TODO.md) -- the work, decided and not done.

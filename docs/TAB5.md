@@ -44,19 +44,38 @@ phone but with the screen it will be a control center ... ideally we also downlo
 
 ## Steps
 
-1. **Bring-up**: the board, LVGL on its screen and touch. *(Written; waits on the toolchain -- see below.)*
-2. **Wi-Fi and pairing** on its screen; the store; everything downloaded and kept.
-3. **The screens**: TODAY, GOALS, DAEMON, INDEX (art grid, entry, LISTEN), DEVICES, PROFILE, SETTINGS.
+1. **Bring-up**: the board, LVGL on its screen and touch. ***Built 2026-10-08.***
+2. **Wi-Fi and pairing** on its screen; the store; everything downloaded and kept. ***Built 2026-10-08***: SETTINGS looks
+   for networks and joins one (the password on the keyboard), pairs with the site's code, and downloads everything --
+   the day, goals, party, profile, devices, its own daemon, the INDEX and all 386 pictures (700 KB, one request) and the
+   party's -- into LittleFS, again every ten minutes and after every change; the day and its daemon every 30 s (two
+   minutes away). Writes go to an outbox and are sent in order; SYNC with the game is never kept for later (it writes
+   the save). The clock comes from the companion's state.
+3. **The screens**: TODAY, GOALS, DAEMON, INDEX (art grid, entry, LISTEN), DEVICES, PROFILE, SETTINGS. ***Built
+   2026-10-08, but LISTEN and PROFILE***: TODAY (the theme, virtue over vice, the next step and DONE), GOALS (each goal,
+   its steps ticked or unticked with a tap, + NEW GOAL on the keyboard, broken down by the companion), DAEMON (this
+   Tab5's daemon large, its entry; the party; SYNC WITH THE GAME), INDEX (pages of eighteen, a tap opens the entry with
+   its picture six times over), DEVICES (each device and its daemon, chosen with a tap), SETTINGS. A status bar: the
+   day, HOME / AWAY / KEPT, changes waiting, the battery.
 4. **The device half**: its daemon at home, push to talk, battery, meeting.
 5. **The phone link** over Bluetooth.
 
 Each step is built, then run on a Tab5 on the cable.
 
+## The toolchain, and the disk
+
+The first install unpacks about 7 GB: Arduino's libraries for every ESP32 chip, and the RISC-V compiler twice (an
+unpacking copy and the one used). On 2026-10-08 that filled the Mac's disk twice. `pio.sh` now trims what the Tab5 never
+uses after every run -- the other chips' libraries, the unpacking copy, the downloaded archives -- leaving 3.4 GB, and a
+clean rebuild after that reinstalls nothing. **Do not run pioarduino's platform from the handhelds' PlatformIO**: it
+needs Core 6.2, and the handhelds' is 6.1.
+
 ## Waiting on
 
-- **Disk space** (2026-10-08): the P4 toolchain is about 5 GB unpacked (Arduino's libraries for every ESP32 chip and a
-  RISC-V compiler), and the Mac had 4.4 GB free.
-- **A Tab5 on the cable** to run each step.
+- **A Tab5 on the cable** to run it: `./updateCompanion.sh --board m5-tab5` (or `firmware/tab5/pio.sh run -t upload`).
+  Not yet run: which panel and touch M5GFX finds, the touch's way round, Wi-Fi through the C6, LVGL's speed at
+  1280 x 720.
+- Steps 4 and 5: the device half (push to talk, LISTEN, meeting) and the phone over Bluetooth.
 
 *Sources: pioarduino/platform-espressif32 (boards/m5stack-tab5-p4.json, release 55.03.312, which needs PlatformIO
 Core >= 6.2.0); espressif/arduino-esp32 PR #11804 (BLE for the ESP32-P4 through esp-hosted, merged 2025-09-11);

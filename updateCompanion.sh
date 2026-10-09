@@ -4,7 +4,7 @@
 #   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
 #   ./updateCompanion.sh --all            ... every board found, without asking which
 #   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet):
-#                                             t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core (M5GO, Fire)
+#                                             t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core (M5GO, Fire), m5-tab5
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
 #   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)
@@ -44,7 +44,7 @@ PIO="$(command -v pio || true)"
 PY="$(dirname "$PIO")/python"; [[ -x "$PY" ]] || PY=python3
 
 cd "$FW"
-if [[ $build_only == 1 ]]; then exec "$PIO" run; fi
+if [[ $build_only == 1 ]]; then "$PIO" run && exec "$HERE/firmware/tab5/pio.sh" run; exit 1; fi   # C-77: and the Tab5
 
 env_for() {                     # a board's id -> its build
   case "$1" in
@@ -53,6 +53,7 @@ env_for() {                     # a board's id -> its build
     m5-sticks3) echo m5-sticks3 ;;
     m5-cores3)  echo m5-cores3 ;;
     m5-core|m5-fire|m5go) echo m5-core ;;   # C-75: one build, the original ESP32
+    m5-tab5*)   echo m5-tab5 ;;       # C-77: its own project, firmware/tab5, with its own PlatformIO
     *)          echo "" ;;
   esac
 }
@@ -114,13 +115,14 @@ fi
 for i in "${chosen[@]}"; do
   port="${ports[$i]}" env="${envs[$i]}"
   if [[ -z "$env" ]]; then
-    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3  5) an M5GO or Fire"
-    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3, m5-cores3 or m5-core." >&2; exit 64; }
+    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3  5) an M5GO or Fire  6) the M5Stack Tab5"
+    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core or m5-tab5." >&2; exit 64; }
     read -r answer
-    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; 5*) env=m5-core ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; 5*) env=m5-core ;; 6*) env=m5-tab5 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
   fi
   echo "updateCompanion: flashing $port with $env"
-  "$PIO" run -e "$env" -t upload --upload-port "$port"
+  if [[ "$env" == m5-tab5 ]]; then "$HERE/firmware/tab5/pio.sh" run -t upload --upload-port "$port"   # C-77
+  else "$PIO" run -e "$env" -t upload --upload-port "$port"; fi
 
   # The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and
   # says nothing (2026-10-06). The firmware says HELLO every three seconds, so wait for one, and reset it ourselves if

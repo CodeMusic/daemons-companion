@@ -450,8 +450,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-55: "phone" is the companion app carrying the device's link over Bluetooth -- a paired phone speaking for it.
       const asked = url.searchParams.get("via");
-      const via: Via = board && relayed ? "relay"
-                     : asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone" : "wifi";
+      // C-77: a device away through the relay -- a board by its key, or the Tab5 by its paired key -- is "relay"; a phone
+      // carrying a board's link says ?via=phone and stays that
+      const via: Via = asked === "usb" && isLoopback(req.socket.remoteAddress) ? "usb" : asked === "phone" && phone ? "phone"
+                     : relayed ? "relay" : "wifi";
       // C-80: which device is asking -- its x-device header (a bridge passes on the board's), or ?device= for the phone's;
       // C-82: a board through the relay is known by its key, whatever it says
       const deviceId = board ?? String(req.headers["x-device"] ?? url.searchParams.get("device") ?? "");

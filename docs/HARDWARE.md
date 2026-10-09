@@ -147,6 +147,18 @@ backlight); github.com/m5stack/M5Unified src/M5Unified.inl (the pin tables, the 
 microphone) and src/utility/Power_Class.inl, power/IP5306_Class.inl (the IP5306); PlatformIO's boards
 m5stack-core-esp32.json and m5stack-fire.json.*
 
+## The M5Stack Tab5 (C-77)
+
+**ESP32-P4** (RISC-V, 360 MHz, 32 MB PSRAM, 16 MB flash) with an **ESP32-C6** beside it for Wi-Fi 6 and Bluetooth 5,
+reached through ESP-Hosted over SDIO. A 5-inch **1280x720** MIPI-DSI screen -- an ILI9881C, ST7121 or ST7123 by when it
+was made -- with GT911 or ST touch; **ES8388** speaker codec and **ES7210** microphones; a battery; microSD; a camera.
+**M5Stack's own libraries drive all of it** (M5GFX finds the panel and touch at start, M5Unified the sound, microphones
+and power), so the firmware names no pins. Its own project: `firmware/tab5/` -- **docs/TAB5.md** has the build, the
+toolchain and what is done.
+
+*Sources: docs.m5stack.com/en/core/Tab5; M5GFX src/M5GFX.cpp (its panels and touch); M5Unified src/M5Unified.inl;
+pioarduino's boards/m5stack-tab5-p4.json.*
+
 ## The AX630C boards (on-device AI, C-75 / C-76)
 
 **LLM630 Compute Kit**: AX630C (two A53 cores at 1.2 GHz; NPU 3.2 TOPS INT8), 4 GB RAM (2 for the NPU), 32 GB eMMC,

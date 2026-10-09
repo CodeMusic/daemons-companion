@@ -1,7 +1,11 @@
 // C-77: LVGL for the Tab5 -- only what the control center uses. Memory from the C library (PSRAM on the Tab5: 32 MB).
 #ifndef LV_CONF_H
 #define LV_CONF_H
+#ifndef __ASSEMBLY__            // LVGL's assembly files include this too: C only beyond the defines
 #include <stdint.h>
+#endif
+
+#define LV_USE_DRAW_SW_ASM LV_DRAW_SW_ASM_NONE   // its blending assembly is ARM's (NEON, Helium); the P4 is RISC-V
 
 #define LV_COLOR_DEPTH 16
 #define LV_USE_STDLIB_MALLOC    LV_STDLIB_CLIB
@@ -41,6 +45,8 @@
 
 // the daemons' art comes as PNG (the server's /art/ routes)
 #define LV_USE_LODEPNG 1
+#define LV_CACHE_DEF_SIZE (16 * 1024 * 1024)       // decoded pictures kept (PSRAM), so a page of the INDEX decodes once
+#define LV_IMAGE_HEADER_CACHE_DEF_CNT 64
 
 #define LV_USE_THEME_DEFAULT 1
 #define LV_THEME_DEFAULT_DARK 0

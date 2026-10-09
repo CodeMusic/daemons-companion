@@ -124,6 +124,16 @@ describe("a board away from home, through the relay with its own key (C-82)", ()
     expect((await relayed("not-a-key-at-all-000000", "/api/device/state")).status).toBe(401);
   });
 
+  it("knows the Tab5 through the relay by its paired key and ?device=, and answers with its own daemon (C-77)", async () => {
+    store.addPhone("tab5-key-0123456789abcdef", "Tab5 a1b2c3");
+    const TAB5 = "m5-tab5-a1b2c3";
+    const st = await relayed("tab5-key-0123456789abcdef", `/api/device/state?device=${TAB5}`).then((r) => r.json());
+    expect(st.daemon).toBeNull();                                            // PIP and LABEL are the other two's
+    const devs = await fetch(base + "/api/devices").then((r) => r.json());
+    expect(devs.devices.find((d: any) => d.id === TAB5)).toMatchObject({ kind: "m5-tab5", via: "relay" });
+    expect((await relayed("tab5-key-0123456789abcdef", "/api/goals")).status).toBe(200);   // a paired key: the whole API
+  });
+
   it("stops a forgotten board's key", async () => {
     const { away } = await fetch(base + "/api/device/state?via=usb", { headers: { "x-device": STICK } }).then((r) => r.json());
     expect((await relayed(away.key, "/api/device/state")).status).toBe(200);

@@ -44,7 +44,7 @@ import { readIndex } from "./save/index.js";
 import { answerRequests, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { deviceArt, gameRoutines, repaint, streakColours } from "./art.js";
-import { deviceDay } from "./days.js";
+import { deviceDay, PALETTES, type Palette } from "./days.js";
 import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
 import { createConnection } from "node:net";
@@ -116,6 +116,16 @@ async function n8n(cfg: Config, hook: string, payload: unknown): Promise<Record<
     const j = await r.json().catch(() => ({ error: `the voice server answered ${r.status}` }));
     return j as Record<string, unknown>;
   } catch { return { error: "the voice server did not answer" }; } finally { clearTimeout(t); }
+}
+
+// C-91: the companion's own commit, read once at start, and whether app/ has changed since a given commit (a phone's
+// build) -- so the phone can say plainly that a newer app is ready. Null when git cannot say (no repo, an unknown commit).
+const REPO = fileURLToPath(new URL("../..", import.meta.url));
+const git = (...args: string[]) => execFileSync("git", ["-C", REPO, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+const REPO_COMMIT = (() => { try { return git("rev-parse", "--short", "HEAD"); } catch { return null; } })();
+function appChangedSince(build: string): boolean | null {
+  try { execFileSync("git", ["-C", REPO, "diff", "--quiet", build, "HEAD", "--", "app"], { stdio: "ignore" }); return false; }
+  catch (e: any) { return e?.status === 1 ? true : null; }
 }
 
 function send(res: ServerResponse, status: number, data: unknown) {
@@ -208,7 +218,8 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
 
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
-export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true };   // meet: C-15
+export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
+                                 palette: "checkpoint" as Palette };                                              // C-90
 export type DeviceSettings = typeof DEVICE_SETTINGS;
 export function deviceSettings(store: Store): DeviceSettings {
   try { return { ...DEVICE_SETTINGS, ...JSON.parse(store.getSetting("device") ?? "{}") }; }
@@ -222,7 +233,8 @@ function checkSettings(b: any): DeviceSettings | string {
   if (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100) return "volume is 0 to 100";
   if (!Number.isInteger(s.ring) || s.ring < 0 || s.ring > 100) return "ring is 0 to 100";
   if (typeof s.meet !== "boolean") return "meet is on or off";
-  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet };
+  if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
+  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette };
 }
 
 // C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
@@ -331,7 +343,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date(), deviceI
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
                       grown: grown(d, store) };
   }
-  const dd = deviceDay(t.day.day);
+  const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
   return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
@@ -397,7 +409,8 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen",
-     "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak"].includes(p),
+     "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
+     "/api/device/hello"].includes(p),
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/")),
   (m: string) => m === "OPTIONS",
 ];
@@ -552,6 +565,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         for (const r of Array.isArray(b.results) ? b.results : [b]) if (r && r.id != null) hub.answer(r);
         return send(res, 200, { ok: true });
       }
+      if (req.method === "POST" && path === "/api/device/hello") {      // C-91: a device's build, without routines (the Tab5)
+        const b = await body(req);
+        if (!validDeviceId(deviceId) || typeof b.firmware !== "string") return send(res, 400, { error: "hello {firmware}, from a device" });
+        devices.note(deviceId, { firmware: b.firmware.slice(0, 60) });
+        return send(res, 200, { ok: true });
+      }
       if (req.method === "POST" && path === "/api/device/routines") {
         const b = await body(req);
         if (!Array.isArray(b.types)) return send(res, 400, { error: "routines need {types: [...]}" });
@@ -569,6 +588,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                 devices: v.devices, away: v.away });
       }
       if (req.method === "GET" && path === "/api/devices") return send(res, 200, devicesView());   // C-80
+      // C-91: which build the companion is, and -- given the phone's build -- whether the app has changed since it
+      if (req.method === "GET" && path === "/api/version") {
+        const build = url.searchParams.get("build") ?? "";
+        return send(res, 200, { server: REPO_COMMIT, appChanged: /^[0-9a-f]{7,40}$/.test(build) ? appChangedSince(build) : null });
+      }
       if (req.method === "POST" && path === "/api/devices/carry") {     // C-80: put this daemon in that device (null: none)
         const b = await body(req);
         const p = b.personality === null ? null : Number(b.personality);

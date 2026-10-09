@@ -69,11 +69,17 @@ describe("the daemon on the handheld (C-36) and the day's colours (C-37, C-38)",
     expect(a.palette.every((c: number) => c >= 0 && c <= 0xffff)).toBe(true);
   });
 
-  it("gives the day a menu colour and a light colour of its own, not the CHECKPOINT's trim", async () => {
+  it("wears the site's colour by default, the rainbow when asked, and keeps the ring's pure hue (C-90)", async () => {
     const s = await get("/api/device/state");
-    expect(s.day.menu).toMatch(/^#[0-9A-F]{6}$/);
+    expect(s.day.menu).toBe(s.day.colour);                        // the site's palette, the CHECKPOINT's trim
     expect(s.day.led).toMatch(/^#[0-9A-F]{6}$/);
-    expect(s.day.menu).not.toBe(s.day.colour);
+    expect(s.day.led).not.toBe(s.day.colour);                     // the ring keeps its rainbow hue
+    await fetch(base + "/api/device/settings", { method: "POST", headers: { "content-type": "application/json" },
+                                                 body: JSON.stringify({ palette: "rainbow" }) });
+    const r = await get("/api/device/state");
+    expect(r.day.menu).not.toBe(r.day.colour);
+    await fetch(base + "/api/device/settings", { method: "POST", headers: { "content-type": "application/json" },
+                                                 body: JSON.stringify({ palette: "checkpoint" }) });
   });
 });
 

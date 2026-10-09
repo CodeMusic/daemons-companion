@@ -391,7 +391,7 @@ static void drawSettings(lv_obj_t *p) {
   int waiting = outboxCount();
   if (waiting) label(k, String(waiting) + " change" + (waiting == 1 ? "" : "s") + " waiting to be sent", &lv_font_montserrat_20, DAY);
   button(k, "DOWNLOAD EVERYTHING AGAIN", tapSyncNow, nullptr, false);
-  label(k, "This Tab5 is " + deviceId(), &lv_font_montserrat_16, QUIET);
+  label(k, "This Tab5 is " + deviceId() + ", build " + COMPANION_BUILD, &lv_font_montserrat_16, QUIET);   // C-91
   if (net.message.length()) label(p, net.message, &lv_font_montserrat_28, DAY, 1000);
 }
 
@@ -400,9 +400,12 @@ typedef void (*Draw)(lv_obj_t *);
 static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawSettings };
 
 static void takeDayColour() {
+  // C-90: the colour every device wears -- the palette the user chose, in this Tab5's own state -- else the site's
   JsonDocument t = newDoc();
-  if (!kept("today", t)) return;
-  const char *hex = t["day"]["colour"] | "#315A62";
+  const char *hex = nullptr;
+  JsonDocument st = newDoc();
+  if (kept("state", st)) hex = st["day"]["menu"] | (const char *)nullptr;
+  if (!hex) { if (!kept("today", t)) return; hex = t["day"]["colour"] | "#315A62"; }
   uint32_t v = strtoul(hex + 1, nullptr, 16);
   if (v == dayHex) return;
   dayHex = v; DAY = lv_color_hex(v);

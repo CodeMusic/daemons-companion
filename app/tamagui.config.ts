@@ -8,6 +8,7 @@ import { createSystemFont, createV5Theme } from "@tamagui/config/v5";
 import { Platform } from "react-native";
 import { createTamagui } from "tamagui";
 import week from "../server/data/week.json";
+import palettes from "../server/data/palettes.json";
 
 type RGB = [number, number, number];
 const hex = (h: string): RGB => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)) as RGB;
@@ -32,12 +33,16 @@ function scale(name: string, colour: string, dark: boolean) {
 
 export const DAYS = week.days.map((d) => d.day.toLowerCase());
 export const WEEK_COLOURS: Record<string, string> = Object.fromEntries(week.days.map((d) => [d.day.toLowerCase(), d.colour]));
-const childrenThemes = Object.fromEntries(
-  week.days.map((d) => {
+// C-90: the rainbow week (the handhelds' old palette), a theme of its own for each day -- "sundayrainbow" ...
+export const RAINBOW_COLOURS: Record<string, string> = Object.fromEntries(
+  Object.entries(palettes.rainbow).map(([day, c]) => [day.toLowerCase(), (c as { menu: string }).menu]));
+const childrenThemes = Object.fromEntries([
+  ...week.days.map((d) => {
     const n = d.day.toLowerCase();
     return [n, { light: scale(n, d.colour, false), dark: scale(n, d.colour, true) }];
-  })
-);
+  }),
+  ...Object.entries(RAINBOW_COLOURS).map(([n, c]) => [`${n}rainbow`, { light: scale(`${n}rainbow`, c, false), dark: scale(`${n}rainbow`, c, true) }]),
+]);
 
 // The paper, light to ink: the page, the cards, the rules between them, the quiet words, the words.
 const lightPalette = ["#fbfaf6", "#f6f4ee", "#f3f1ea", "#ece9df", "#e3dfd2", "#dcd8cc", "#cfcabc", "#b3afa3",

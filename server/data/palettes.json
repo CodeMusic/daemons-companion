@@ -1,0 +1,12 @@
+{
+  "_": "C-90 (the user, 2026-10-09): the day's colours. The site's -- the CHECKPOINT's trim, week.json's `colour` -- is every screen's by default; `rainbow` is the handhelds' old week (C-37: RoverRadio's red ... violet, softened to sit behind text), chosen with the palette setting. `led` is the pure hue the ring of lights dims to a third, whichever palette the screens wear.",
+  "rainbow": {
+    "Sunday":    { "menu": "#B8443E", "led": "#FF0000" },
+    "Monday":    { "menu": "#C9702E", "led": "#FF5A00" },
+    "Tuesday":   { "menu": "#CFAE34", "led": "#FFC800" },
+    "Wednesday": { "menu": "#3F9A55", "led": "#00FF20" },
+    "Thursday":  { "menu": "#3474B0", "led": "#0050FF" },
+    "Friday":    { "menu": "#4D4BAE", "led": "#2800FF" },
+    "Saturday":  { "menu": "#8A4CAE", "led": "#B000FF" }
+  }
+}

@@ -280,7 +280,10 @@ void draw() {
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
-    canvas.drawString("press: the day's note", 10, H - 6);
+    canvas.drawString(hint("press: the day's note"), 10, H - 6);
+    canvas.setTextDatum(BR_DATUM);                             // C-91: which build this is, quietly
+    canvas.drawString(COMPANION_BUILD, W - 8, H - 6);
+    canvas.setTextDatum(BL_DATUM);
   } else if (page == TODAY) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     // C-49: the step, and -- subtly -- the milestone it belongs to

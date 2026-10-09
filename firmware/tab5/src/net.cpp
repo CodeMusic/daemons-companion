@@ -182,6 +182,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/devices", "devices");
     fetchKeep("/api/device/state", "state");          // this Tab5's own daemon (C-80)
+    { int c; request("POST", "/api/device/hello", String("{\"firmware\":\"m5-tab5 3 ") + COMPANION_BUILD + "\"}", c); }   // C-91: its build, for the site
     fetchKeep("/api/index", "index");
     if (withArt) fetchArt();
     fetchPartyArt();

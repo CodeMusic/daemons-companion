@@ -1,15 +1,16 @@
-// C-37, C-38: the device's colours for the day. The week DAEMONS exports gives each day the CHECKPOINT's trim, which is
-// the game's -- a dark red on Sunday that reads as brown behind a menu. The handheld takes a rainbow week instead
-// (RoverRadio's: red, orange, yellow, green, blue, indigo, violet, Sunday first): `menu`, softened to sit behind
-// text, and `led`, the pure hue the ring of lights dims to a third.
-const DAYS: Record<string, { menu: string; led: string }> = {
-  Sunday:    { menu: "#B8443E", led: "#FF0000" },
-  Monday:    { menu: "#C9702E", led: "#FF5A00" },
-  Tuesday:   { menu: "#CFAE34", led: "#FFC800" },
-  Wednesday: { menu: "#3F9A55", led: "#00FF20" },
-  Thursday:  { menu: "#3474B0", led: "#0050FF" },
-  Friday:    { menu: "#4D4BAE", led: "#2800FF" },
-  Saturday:  { menu: "#8A4CAE", led: "#B000FF" },
-};
+// C-37, C-38, C-90: the device's colours for the day. `menu` is what a screen wears: the site's palette -- the
+// CHECKPOINT's trim the week DAEMONS exports -- by default, or the rainbow week (data/palettes.json) when the palette
+// setting says so (the user, 2026-10-09: one palette everywhere, the site's by default, a toggle for the other).
+// `led` is always the rainbow's pure hue: the ring of lights dims it to a third, and a CHECKPOINT red reads brown on an LED.
+import week from "../data/week.json" with { type: "json" };
+import palettes from "../data/palettes.json" with { type: "json" };
 
-export const deviceDay = (day: string) => DAYS[day] ?? { menu: "#5B6B8C", led: "#4060FF" };
+export type Palette = "checkpoint" | "rainbow";
+export const PALETTES: Palette[] = ["checkpoint", "rainbow"];
+const RAINBOW = palettes.rainbow as Record<string, { menu: string; led: string }>;
+
+export function deviceDay(day: string, palette: Palette = "checkpoint") {
+  const rainbow = RAINBOW[day] ?? { menu: "#5B6B8C", led: "#4060FF" };
+  const site = week.days.find((d) => d.day === day)?.colour;
+  return { menu: palette === "rainbow" || !site ? rainbow.menu : site, led: rainbow.led };
+}

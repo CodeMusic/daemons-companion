@@ -94,7 +94,11 @@ if [[ $mode == phone ]]; then
   phone_id="$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && $0 !~ /simulated/ { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }')"
   [[ -n "$phone_id" ]] || { echo "bindCompanion: no iPhone found -- plug it in (and trust this Mac), or put it on the same Wi-Fi with developer mode on." >&2; exit 1; }
   team="$(python3 -c "import json; print(json.load(open('app.json'))['expo']['ios']['appleTeamId'])")"
-  echo "bindCompanion: building for the iPhone $phone_id (team $team)"
+  # C-91: a build anyone can read -- the commit it was made from and when (SETTINGS shows it, and whether the app has
+  # changed since), and the commit count as iOS's own build number, where every build used to say 1
+  export EXPO_PUBLIC_BUILD="$(git -C "$HERE" rev-parse --short HEAD) $(date '+%Y-%m-%d %H:%M')"
+  plutil -replace CFBundleVersion -string "$(git -C "$HERE" rev-list --count HEAD)" ios/DAEMONScompanion/Info.plist
+  echo "bindCompanion: building for the iPhone $phone_id (team $team), build $EXPO_PUBLIC_BUILD"
   xcodebuild -workspace ios/DAEMONScompanion.xcworkspace -scheme DAEMONScompanion -configuration Release \
     -destination "generic/platform=iOS" -derivedDataPath ios/build -allowProvisioningUpdates \
     DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic build | grep -E "error:|BUILD (SUCCEEDED|FAILED)"

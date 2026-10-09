@@ -7,7 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Image, Platform, View } from "react-native";
 import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
-import config, { DAYS, WEEK_COLOURS } from "./tamagui.config";
+import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import * as SecureStore from "expo-secure-store";
 import { File, Paths } from "expo-file-system";
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder } from "expo-audio";
@@ -38,6 +38,14 @@ type Kept = { at: string | null; paths: Record<string, unknown>; art: Record<str
 let KEPT: Kept = { at: null, paths: {}, art: {}, queue: [] };
 let OFFLINE: string | null = null;                  // when what is on screen was kept, while the companion is away
 const offlineHeard = new Set<() => void>();
+// C-90: which palette the day wears -- the site's (the default) or the rainbow week -- from the companion's settings,
+// so the site, the phone and every device agree. Changing it redraws the whole app.
+let PALETTE: "checkpoint" | "rainbow" = "checkpoint";
+const paletteHeard = new Set<() => void>();
+function setPalette(p: unknown) {
+  const next = p === "rainbow" ? "rainbow" : "checkpoint";
+  if (next !== PALETTE) { PALETTE = next; paletteHeard.forEach((f) => f()); }
+}
 const keptFile = () => new File(Paths.document, "kept.json");
 async function loadKept() {
   if (!ON_PHONE) return;
@@ -215,7 +223,8 @@ async function sendHeld() {
 }
 async function keepEverything() {
   if (!ON_PHONE) return;
-  for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk"])
+  for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk",
+                   "/api/settings", "/api/talk/settings", "/api/device/settings"])   // C-92: SETTINGS opens away too
     await liveAndKeep(p).catch(() => {});
   if (OFFLINE) return;
   // C-86: each party daemon's INDEX entry too, so opening one away from home needs nothing from home
@@ -741,9 +750,17 @@ function SettingsScreen({ ink }: { ink: string }) {
   const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(r.savePath ?? ""); setNote(said(r)); };
   const save = async () => { const r = await api<Settings>("/api/settings", { savePath: typed }); setS(r); setNote(said(r)); };
   const reveal = async () => { await api("/api/settings/reveal", {}); };
-  if (!s) return note ? <Stuck error={note} ink={ink} /> : <Small>Loading…</Small>;
+  // C-92: away, the companion's own settings may not be kept yet -- say so and show the rest, not an error
+  if (!s) return (
+    <YStack gap={14}>
+      <VersionCard />
+      {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
+      <TalkSettingsCard ink={ink} />
+    </YStack>
+  );
   return (
     <YStack gap={14}>
+      <VersionCard />
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
         <Text fontFamily="$mono" fontSize={13} color="$color12" wordWrap="break-word">{s.savePath ?? "not set"}</Text>
@@ -769,6 +786,25 @@ function SettingsScreen({ ink }: { ink: string }) {
       </Card>
       <TalkSettingsCard ink={ink} />
     </YStack>
+  );
+}
+
+// C-91: which build this is -- the commit it was made from and when -- and, asked of the companion, whether the app has
+// changed since. On the site, the companion's own commit (the site is always the newest).
+const BUILD = process.env.EXPO_PUBLIC_BUILD ?? "";
+function VersionCard() {
+  const [v, setV] = useState<{ server: string | null; appChanged: boolean | null } | null>(null);
+  const commit = BUILD.split(" ")[0];
+  useEffect(() => { api<typeof v>(`/api/version${commit ? `?build=${commit}` : ""}`).then(setV).catch(() => {}); }, [commit]);
+  return (
+    <Card>
+      <Eyebrow>THIS APP</Eyebrow>
+      <Text fontFamily="$mono" fontSize={13} color="$color12">
+        {ON_PHONE ? (BUILD ? `build ${BUILD}` : "a development build") : `the site, with the companion at ${v?.server ?? "..."}`}
+      </Text>
+      {ON_PHONE && v?.appChanged ? <Small color="$color11">A newer app is ready. On the computer: ./bindCompanion.sh phone</Small>   // DRAFT
+        : ON_PHONE && v?.appChanged === false ? <Small>Up to date.</Small> : null}
+    </Card>
   );
 }
 
@@ -941,7 +977,8 @@ type RemoteSet = { label: string; protocol: string; bits: number; repeat: number
 type Brand = { brand: string; sets: RemoteSet[] };
 
 // C-43: the board's settings live here, not on the board: it picks them up whenever it is linked.
-type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number; meet: boolean };
+type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number; meet: boolean;
+                        palette: "checkpoint" | "rainbow" };   // C-90
 
 function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
   return (
@@ -961,7 +998,10 @@ function DeviceSettingsCard({ ink }: { ink: string }) {
   const [s, setS] = useState<DeviceSettings | null>(null);
   useEffect(() => { api<DeviceSettings>("/api/device/settings").then(setS).catch(() => {}); }, []);
   if (!s) return null;
-  const set = async (patch: Partial<DeviceSettings>) => setS(await api<DeviceSettings>("/api/device/settings", patch));
+  const set = async (patch: Partial<DeviceSettings>) => {
+    const r = await api<DeviceSettings>("/api/device/settings", patch);
+    setS(r); setPalette(r.palette);                                 // C-90: the app wears it at once
+  };
   const Row = (p: { label: string; children: React.ReactNode }) =>
     <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
   return (
@@ -981,6 +1021,10 @@ function DeviceSettingsCard({ ink }: { ink: string }) {
       </Row>
       <Row label="THE RING AT REST">
         <Choice value={s.ring} options={[[0, "Off"], [15, "Dim"], [33, "A third"], [60, "Bright"]]} onPick={(ring) => set({ ring })} ink={ink} />
+        </Row>
+        <Row label="THE DAY'S COLOURS -- EVERY SCREEN">
+          <Choice<DeviceSettings["palette"]> value={s.palette ?? "checkpoint"} options={[["checkpoint", "The site's"], ["rainbow", "Rainbow"]]}
+                  onPick={(palette) => set({ palette })} ink={ink} />
         </Row>
         <Row label="MEET OTHERS NEARBY">
           <Choice value={s.meet} options={[[true, "On"], [false, "Off"]]} onPick={(meet) => set({ meet })} ink={ink} />
@@ -1067,6 +1111,7 @@ function DeviceScreen({ ink }: { ink: string }) {
                                            : d.via === "relay" ? "its own Wi-Fi, away" : "Wi-Fi"}`
                                 : `last heard ${new Date(d.lastSeen).toLocaleString()}`,
                        d.battery ? `battery ${d.battery.percent}%${d.battery.charging ? ", charging" : ""}` : null,
+                       d.firmware ? `firmware ${d.firmware}` : null,                               // C-91
                        d.id].filter(Boolean).join(" · ")}</Small>
               <Text fontSize={14} color="$color12">
                 {d.daemon ? `Carries ${d.daemon.nickname || d.daemon.name}, Lv. ${d.daemon.level}` : "Carries no daemon"}</Text>
@@ -1342,10 +1387,13 @@ function Shell() {
   useEffect(() => {
     const f = () => heard((n) => n + 1);
     const g = () => { setFresh((n) => n + 1); reload(); };
-    offlineHeard.add(f); freshHeard.add(g);
+    offlineHeard.add(f); freshHeard.add(g); paletteHeard.add(f);
     keepEverything().then(f);
-    return () => { offlineHeard.delete(f); freshHeard.delete(g); };
+    api<{ palette?: string }>("/api/device/settings").then((s) => setPalette(s.palette)).catch(() => {});   // C-90
+    return () => { offlineHeard.delete(f); freshHeard.delete(g); paletteHeard.delete(f); };
   }, [reload]);
+  // C-92: away from the companion, a toast once -- dismissed, a small AWAY in the title bar, which brings it back
+  const [toastGone, setToastGone] = useState<string | null>(null);
   // C-55: back to the handheld this phone paired with, if any
   useEffect(() => { HANDHELD?.start(api, isAway); MEETING?.start(api, () => HANDHELD!.bluetooth()); }, []);
   // C-56: the way back from anywhere, learned at home and kept on the phone
@@ -1371,12 +1419,23 @@ function Shell() {
   const asked = Platform.OS === "web" ? new URLSearchParams(globalThis.location?.search ?? "").get("day")?.toLowerCase() : null;
   const day = asked && DAYS.includes(asked) ? asked
     : today && DAYS.includes(today.day.day.toLowerCase()) ? today.day.day.toLowerCase() : null;
-  const ink = onColour(day ? WEEK_COLOURS[day] : "#5b6b8c");
+  const rainbow = PALETTE === "rainbow";                                      // C-90
+  const ink = onColour(day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c");
+  const showToast = !!OFFLINE && toastGone !== OFFLINE;
 
   const page = (
     <YStack flex={1} backgroundColor="$color2">
       <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
-        <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+        <XStack alignItems="center">
+          <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+          {OFFLINE && !showToast ? (
+            <YStack marginLeft="auto" role="button" cursor="pointer" onPress={() => setToastGone(null)}
+                    paddingHorizontal={10} paddingVertical={2} borderRadius={999} borderWidth={1.5}
+                    borderColor="$color11" backgroundColor="$color3">
+              <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
+            </YStack>
+          ) : null}
+        </XStack>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <XStack gap={20} marginTop={12} role="tablist">
           {TABS.map((t) => (
@@ -1391,7 +1450,6 @@ function Shell() {
         </ScrollView>
       </YStack>
       <ScrollView key={fresh} contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
-        {OFFLINE ? <Small>Away from the companion: this is what the phone kept on {new Date(OFFLINE).toLocaleString()}.{KEPT.queue.length ? ` ${KEPT.queue.length} kept to send.` : ""}</Small> : null}
         {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
@@ -1402,10 +1460,21 @@ function Shell() {
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
         {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /></YStack> : null}
       </ScrollView>
+      {showToast ? (
+        <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}
+                padding={14} borderRadius={10} backgroundColor="$color12" maxWidth={720} alignSelf="center">
+          <Text flex={1} fontSize={13} color="$color1">
+            {`Away from the companion: this is what the phone kept on ${new Date(OFFLINE!).toLocaleString()}.${KEPT.queue.length ? ` ${KEPT.queue.length} kept to send.` : ""}`}
+          </Text>
+          <YStack role="button" cursor="pointer" padding={6} onPress={() => setToastGone(OFFLINE)}>
+            <Text fontSize={16} fontWeight="700" color="$color1">✕</Text>
+          </YStack>
+        </XStack>
+      ) : null}
       <StatusBar style="dark" />
     </YStack>
   );
-  return day ? <Theme name={day as any}>{page}</Theme> : page;
+  return day ? <Theme name={(rainbow ? `${day}rainbow` : day) as any}>{page}</Theme> : page;
 }
 
 export default function App() {

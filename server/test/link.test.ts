@@ -106,7 +106,8 @@ describe("the networks the board has learned (C-52)", () => {
 describe("the board's settings, set on the site (C-43)", () => {
   it("starts at the daemon, sleeps after two minutes, and carries them in the state", async () => {
     const s = await get("/api/device/settings");
-    expect(s).toEqual({ home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true });   // meet: C-15
+    expect(s).toEqual({ home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
+                        palette: "checkpoint" });                                                       // C-90
     expect((await get("/api/device/state")).settings).toEqual(s);
   });
 

@@ -148,8 +148,14 @@ def hello(wait):
 if hello(10):
     sys.exit(0)
 print("updateCompanion: the board is silent after the upload -- resetting it")
-with boardport.open_port(port) as s:
-    s.dtr = False; s.rts = True; time.sleep(0.2); s.rts = False
+if boardport.native(port):
+    # C-89: an S3 on its own USB can be left in download mode by the upload's RTS reset (the CoreS3 was): clear the flag
+    # and restart it with its watchdog, as esptool 5 does (s3reset.py)
+    import subprocess
+    subprocess.call([sys.executable, sys.argv[2] + "/s3reset.py", port])
+else:
+    with boardport.open_port(port) as s:
+        s.dtr = False; s.rts = True; time.sleep(0.2); s.rts = False
 sys.exit(0 if hello(20) else 1)
 PY
 done

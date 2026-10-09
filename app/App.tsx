@@ -1364,7 +1364,8 @@ function RelayCard({ ink }: { ink: string }) {
         <Action label="New secret" ink={ink} onPress={() => save({ renew: true })} />
       </XStack>
       <Small>The relay's secret (n8n sends it as x-companion-relay):</Small>
-      <Text fontFamily="$mono" fontSize={13} color="$color12" selectable>{r.secret}</Text>
+      {/* selectable is the phone's; on the web it reached the DOM as an unknown attribute, so the web gets user-select */}
+      <Text fontFamily="$mono" fontSize={13} color="$color12" {...(Platform.OS === "web" ? { userSelect: "text" } : { selectable: true })}>{r.secret}</Text>
       {said ? <Small>{said}</Small> : null}
     </Card>
   );

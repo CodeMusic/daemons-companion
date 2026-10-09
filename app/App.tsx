@@ -27,6 +27,7 @@ let unpaired: () => void = () => {};
 async function pairAgain() {
   for (const k of ["server", "token", "away"]) await SecureStore.deleteItemAsync(k, KEEP).catch(() => {});
   TOKEN = null; AWAY = null; route = { away: false, until: 0 };
+  WIDGET?.shareWithWidget(null);
   unpaired();
 }
 
@@ -96,7 +97,7 @@ async function loadConnection(): Promise<boolean> {
   for (const [p, uri] of Object.entries(KEPT.art)) ART.set(p, uri);
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
   AWAY = await SecureStore.getItemAsync("away");
-  if (server && token) { SERVER = server; TOKEN = token; return true; }
+  if (server && token) { SERVER = server; TOKEN = token; WIDGET?.shareWithWidget({ server, token, away: AWAY }); return true; }
   return false;
 }
 // C-55: the handheld's link over Bluetooth, carried by the phone (handheld.ts) -- only on the phone; the site has the cable.
@@ -104,6 +105,8 @@ const HANDHELD: typeof import("./handheld").handheld | null = ON_PHONE ? require
 type HandheldNow = import("./handheld").Handheld;
 // C-15: the phone meets others nearby (beacon.ts) -- only on the phone, which can advertise and listen
 const MEETING: typeof import("./beacon").meeting | null = ON_PHONE ? require("./beacon").meeting : null;
+// C-100: the daemon on the home screen (widget.ts, targets/widget) -- an iOS widget, so only on the iPhone
+const WIDGET: typeof import("./widget") | null = Platform.OS === "ios" ? require("./widget") : null;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 // C-73: the Xenith day -- the virtue over its shadow (cue), the chakra, the theme word
@@ -972,7 +975,8 @@ type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "re
 const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
                                              "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3",
                                              "m5-sticks3": "M5StickS3", "m5-cores3": "M5Stack CoreS3",
-                                             "m5-fire": "M5Stack Fire", "m5go": "M5GO", "m5-tab5": "M5Stack Tab5" };   // C-74, C-75, C-77
+                                             "m5-fire": "M5Stack Fire", "m5go": "M5GO", "m5-tab5": "M5Stack Tab5",
+                                             "iphone-widget": "This phone's widget" };   // C-74, C-75, C-77, C-100
 type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
 type Brand = { brand: string; sets: RemoteSet[] };
 
@@ -1104,6 +1108,8 @@ function DeviceScreen({ ink }: { ink: string }) {
           <Small>{(link.away ?? []).length > 1 || link.devices.length > 1
             ? "Each device carries a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where."
             : "SEND a daemon from the party in the game and SYNC: it goes to your device."}</Small>
+          {/* C-100 (DRAFT) */}
+          {WIDGET ? <Small>{"Your phone can carry one too: add the DAEMONS widget to your home screen, and it appears here as THIS PHONE'S WIDGET."}</Small> : null}
           {link.devices.map((d) => (
             <YStack key={d.id} gap={4} marginTop={8}>
               <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
@@ -1122,6 +1128,7 @@ function DeviceScreen({ ink }: { ink: string }) {
                   onPick={async (personality) => {
                     const v = await api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices/carry", { id: d.id, personality });
                     setLink((l) => l && { ...l, devices: v.devices, away: v.away });
+                    WIDGET?.redrawWidget();                                          // C-100
                   }} ink={ink} />
               ) : null}
             </YStack>
@@ -1267,6 +1274,7 @@ function PairScreen({ onPaired }: { onPaired: () => void }) {
       await SecureStore.setItemAsync("token", j.token, KEEP);
       if (j.away) { await SecureStore.setItemAsync("away", j.away, KEEP); AWAY = j.away; }   // C-56
       SERVER = base; TOKEN = j.token;
+      WIDGET?.shareWithWidget({ server: base, token: j.token, away: AWAY });   // C-100
       onPaired();
     } catch (e) { setError(`${(e as Error).message}. Is the companion running, and is it open to your network (Settings on the site)?`); }
   };
@@ -1405,16 +1413,19 @@ function Shell() {
     api<{ url: string | null }>("/api/settings/away").then(async ({ url }) => {
       AWAY = url;
       if (url) await SecureStore.setItemAsync("away", url, KEEP); else await SecureStore.deleteItemAsync("away");
+      if (TOKEN) WIDGET?.shareWithWidget({ server: SERVER, token: TOKEN, away: url });   // C-100
     }).catch(() => {});
   }, []);
   // C-27, C-48: on the phone, today's steps from Apple Health -- when the app opens, and each time it comes back
   useEffect(() => {
     if (!ON_PHONE) return;
     const sync = () => sendTodaysSteps().then(() => reload()).catch(() => {});
-    sync();
+    // C-100: what the widget kept while out of reach is sent, and the widget drawn again with what the app now knows
+    const widget = () => { WIDGET?.sendWidgetKept(api).catch(() => {}); WIDGET?.redrawWidget(); };
+    sync(); widget();
     // C-87: each time the app comes back to the front, what the phone holds is brought up to date (and anything kept
     // on it is sent), so a phone opened away from home shows the freshest it could get
-    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); keepEverything().catch(() => {}); HANDHELD?.nudge(); MEETING?.nudge(); } });
+    const sub = AppState.addEventListener("change", (s) => { if (s === "active") { sync(); widget(); keepEverything().catch(() => {}); HANDHELD?.nudge(); MEETING?.nudge(); } });
     return () => sub.remove();
   }, [reload]);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's

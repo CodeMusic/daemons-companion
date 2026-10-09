@@ -16,6 +16,11 @@
         },
         "NSLocalNetworkUsageDescription": "To reach your DAEMONS companion on your computer, at home.",
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.codemusic.daemonscompanion"
+        ]
       }
     },
     "android": {
@@ -56,7 +61,8 @@
         {
           "microphonePermission": "Hold TALK to speak with your daemon. What you say is turned into words on your own companion server."
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "splash": {
       "image": "./assets/splash-icon.png",

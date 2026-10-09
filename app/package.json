@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@bacons/apple-targets": "^5.0.0",
     "@expo/metro-runtime": "~57.0.16",
     "@kingstinct/react-native-healthkit": "^16.0.0",
     "@tamagui/config": "^2.7.7",

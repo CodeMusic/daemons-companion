@@ -47,6 +47,7 @@ import { deviceArt, gameRoutines, repaint, streakColours } from "./art.js";
 import { deviceDay } from "./days.js";
 import { life } from "./life.js";
 import { levelFromExp } from "./save/growth.js";
+import { createConnection } from "node:net";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
 import { assign, carriedFor, carryView } from "./carry.js";
@@ -86,8 +87,27 @@ async function rawBody(req: IncomingMessage, most = 2 * 1024 * 1024): Promise<Bu
 // C-64, C-65, C-66: the daemon's voice and its answers come from the user's n8n (DAEMONS ai/n8n: daemon/talk, and
 // daemon/voice for the INDEX entry read aloud). The server calls it, never a device: the secret stays here, and the
 // server knows which daemon is carried and what day it is.
+// Whether the voice server can be reached at all, asked with a bare connection (three seconds), kept twenty: a fetch to
+// a host that is not there waits for the system's own connect timeout -- longer than the relay's minute -- so a phone
+// away from home heard nothing, not even why (2026-10-08: the Mac was off the home network, the voice server on it).
+const reach = new Map<string, { at: number; ok: boolean }>();
+function reachable(base: string): Promise<boolean> {
+  const u = new URL(base), key = `${u.hostname}:${u.port || (u.protocol === "https:" ? 443 : 80)}`;
+  const was = reach.get(key);
+  if (was && Date.now() - was.at < 20000) return Promise.resolve(was.ok);
+  return new Promise((done) => {
+    const sock = createConnection({ host: u.hostname, port: Number(u.port || (u.protocol === "https:" ? 443 : 80)) });
+    const end = (ok: boolean) => { sock.destroy(); reach.set(key, { at: Date.now(), ok }); done(ok); };
+    sock.setTimeout(3000, () => end(false));
+    sock.once("connect", () => end(true));
+    sock.once("error", () => end(false));
+  });
+}
+
 async function n8n(cfg: Config, hook: string, payload: unknown): Promise<Record<string, unknown>> {
   if (!cfg.talk.url) return { error: "no voice server set: add \"talk\": {\"url\": \"http://<n8n>:5678/webhook\"} to server/config.json" };
+  if (!(await reachable(cfg.talk.url)))
+    return { error: `the voice server (${new URL(cfg.talk.url).host}) cannot be reached from the companion` };
   const secret = cfg.talk.secret ?? process.env[cfg.talk.secretEnv] ?? "";
   const stop = new AbortController(), t = setTimeout(() => stop.abort(), 180000);
   try {

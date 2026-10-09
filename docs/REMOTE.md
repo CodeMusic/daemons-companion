@@ -128,3 +128,33 @@ The last step is moving the server to roverbyteseer, which is always on. The one
 companion reads and writes the DAEMONS save (SYNC, AWAY), and today that file is on this Mac. Two ways it could work:
 the save in a synced folder both machines see (Delta's own Dropbox sync, or iCloud Drive), or the server on
 roverbyteseer asking this Mac for the save when it is awake. Until then, `always` above is the cheap version.
+
+# Why read aloud failed away (2026-10-08, the user: "tts was called only in the morning ... it is something else")
+
+**It was not the voice.** The public *daemon/talk relay* workflow is not on the companion's path at all -- the companion
+calls the internal `daemon/voice` itself, from the Mac -- so its few runs were only the checks of 7 October. What failed
+was the **companion relay** reaching the Mac. Its last 2,000 runs, read through n8n's API:
+
+| when | what the relay got | why |
+|---|---|---|
+| 5-6 Oct | 200, 1,182 times | working |
+| 8 Oct, the day | `connect ECONNREFUSED 10.0.0.100:4730`, 624 times | something at the relay's address for the Mac refused port 4730: the Mac not at that address, or the server not listening on the network |
+| 8 Oct, the evening | the relay's 60 s timeout, every time | the Mac was off the home network (192.168.1.x): nothing at 10.0.0.100 to answer |
+
+And from the Mac away, the voice server was out of reach too: `talk.url` named roverbyteseer by its home address.
+
+**Changed**: `talk.url` is `http://roverbyteseer:5678/webhook` -- its Tailscale name -- so talk and read aloud reach the
+voice server from wherever the Mac is (checked away: a voice in 6.9 s). The server asks with a bare connection first and
+says "cannot be reached" in seconds instead of outwaiting the relay (`server/test/reach.test.ts`). The DEVICE tab asked
+for the link every 1.5 s even away (most of the 624): now every 15 s away, never two at once, and not at all while the
+companion is away altogether.
+
+**Still open (C-88)**: the relay reaches the Mac only at **10.0.0.100 on the home network**. Two ways to make it reach
+the Mac anywhere, both the user's to do:
+
+1. **Tailscale on the machine the public n8n runs on** (10.0.0.150; not on the tailnet today -- only the Mac and
+   roverbyteseer are), then the relay's Forward node to `http://christophers-m2-pro-macbook-pro:4730` -- the Mac's
+   Tailscale name, which follows it everywhere.
+2. **The server on roverbyteseer**, which stays home (C-82), once the save's home is decided.
+
+At home, until then: give the Mac 10.0.0.100 by a DHCP reservation, and keep the server open to the network (SETTINGS).

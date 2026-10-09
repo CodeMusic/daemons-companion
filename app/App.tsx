@@ -1006,9 +1006,18 @@ function DeviceScreen({ ink }: { ink: string }) {
   const [managed, setManaged] = useState<number | null>(null), [forgot, setForgot] = useState<number | null>(null);
   const [renaming, setRenaming] = useState<number | null>(null), [newName, setNewName] = useState("");   // C-59
   useEffect(() => {
-    const poll = () => api<Link>("/api/device/link").then((l) => { setLink(l); setError(""); }).catch((e) => setError(e.message));
+    // While this tab is open: every 1.5 s at home. Away, every 15 s, and never a second ask while one is out -- each is a
+    // run of the relay, and a companion that cannot be reached holds each for the relay's whole minute (2026-10-08: 624
+    // runs in a day, all failing). While the companion is away altogether, what was kept is shown and nothing is asked.
+    let busy = false, last = 0;
+    const poll = () => {
+      if (busy || OFFLINE && Date.now() - last < 60000 || isAway() && Date.now() - last < 15000) return;
+      busy = true; last = Date.now();
+      api<Link>("/api/device/link").then((l) => { setLink(l); setError(""); }).catch((e) => setError(e.message))
+        .finally(() => { busy = false; });
+    };
     poll();
-    const t = setInterval(poll, 1500);                        // while this tab is open
+    const t = setInterval(poll, 1500);
     api<Brand[]>("/api/ir/brands").then(setBrands).catch(() => {});
     return () => clearInterval(t);
   }, []);

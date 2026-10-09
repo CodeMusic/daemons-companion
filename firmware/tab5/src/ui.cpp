@@ -9,6 +9,8 @@
 #include "net.h"
 #include "store.h"
 #include "sound.h"
+#include "display.h"
+#include <Preferences.h>
 
 // ---- the look: paper, ink, and the day's colour (the app's, from /api/today) ------------------------------------------
 static lv_color_t PAPER = lv_color_hex(0xF3F1EA), INK = lv_color_hex(0x1D232B), QUIET = lv_color_hex(0x6B7178);
@@ -167,7 +169,7 @@ static void tapDone(lv_event_t *e) {
 
 static void drawToday(lv_obj_t *p) {
   JsonDocument t = newDoc();
-  if (!kept("today", t)) { label(p, "Nothing kept yet. Join a network and pair in SETTINGS.", &lv_font_montserrat_28, QUIET, 900); return; }
+  if (!kept("today", t)) { label(p, "Nothing kept yet. Join a network and pair in SETTINGS.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }
   JsonObject day = t["day"];
   label(p, String((const char *)(day["theme"] | "")).length() ? String((const char *)day["theme"]) : String((const char *)(day["day"] | "")),
         &lv_font_montserrat_48, DAY);
@@ -175,16 +177,16 @@ static void drawToday(lv_obj_t *p) {
   label(p, day["cue"] | "", &lv_font_montserrat_28, INK);
   label(p, String((const char *)(day["chakra"] | "")) + "  -  " + (const char *)(day["note"] | "") + "  -  " + (const char *)(t["season"] | ""),
         &lv_font_montserrat_20, QUIET);
-  lv_obj_t *c = card(p, 900);
+  lv_obj_t *c = card(p);
   JsonObject next = t["next"];
   if (next.isNull() || next["step"].isNull()) {
-    label(c, "Nothing to do yet. Set a goal on GOALS.", &lv_font_montserrat_28, INK, 840);
+    label(c, "Nothing to do yet. Set a goal on GOALS.", &lv_font_montserrat_28, INK, LV_PCT(100));
     return;
   }
   label(c, String((const char *)(next["goal"] | "")) + "  >  " + (const char *)(next["milestone"]["title"] | "") +
            "  (" + String((int)(next["milestone"]["at"] | 0)) + " of " + String((int)(next["milestone"]["of"] | 0)) + ")",
-        &lv_font_montserrat_20, QUIET, 840);
-  label(c, next["step"]["text"] | "", &lv_font_montserrat_40, INK, 840);
+        &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  label(c, next["step"]["text"] | "", &lv_font_montserrat_40, INK, LV_PCT(100));
   button(c, "DONE", tapDone, (void *)(long)(next["step"]["id"] | 0));
 }
 
@@ -215,13 +217,13 @@ static void drawGoals(lv_obj_t *p) {
   for (JsonObject goal : goals) { button(names, goal["title"] | "", tapGoal, (void *)(long)i, i == goalAt); i++; }
   JsonObject goal = goals[goalAt];
   for (JsonObject sub : goal["subitems"].as<JsonArray>()) {
-    lv_obj_t *c = card(p, 1000);
+    lv_obj_t *c = card(p);
     label(c, sub["title"] | "", &lv_font_montserrat_28, (sub["done"] | false) ? QUIET : INK);
     for (JsonObject st : sub["steps"].as<JsonArray>()) {
       bool done = st["done"] | false;
       long id = st["id"] | 0;
       lv_obj_t *b = button(c, String(done ? LV_SYMBOL_OK "  " : "      ") + (const char *)(st["text"] | ""), tapStep, (void *)(done ? -id : id), false);
-      lv_obj_set_width(b, 940);
+      lv_obj_set_width(b, LV_PCT(100));
       if (done) lv_obj_set_style_opa(b, LV_OPA_60, 0);
     }
   }
@@ -231,22 +233,24 @@ static void drawGoals(lv_obj_t *p) {
 static void tapSyncGame(lv_event_t *) { netGameSync(); }
 
 static void drawDaemon(lv_obj_t *p) {
-  lv_obj_set_flex_flow(p, LV_FLEX_FLOW_ROW);
-  lv_obj_t *left = column(p, 520), *right = column(p, 520);
+  lv_obj_set_flex_flow(p, LV_FLEX_FLOW_ROW_WRAP);          // C-96: side by side in landscape, one above the other in portrait
+  lv_obj_set_style_pad_column(p, 16, 0);
+  int half = displayPortrait() ? LV_PCT(100) : LV_PCT(48);
+  lv_obj_t *left = column(p, half), *right = column(p, half);
   JsonDocument st = newDoc();
   JsonObject d;
   if (kept("state", st)) d = st["daemon"];
   if (!d.isNull()) {
-    lv_obj_t *c = card(left, 500);
+    lv_obj_t *c = card(left);
     picture(c, "p" + String((int)(d["slot"] | 0)), 256 * 5);
     label(c, d["nickname"] | "", &lv_font_montserrat_40, INK);
     label(c, "Lv. " + String((int)(d["level"] | 0)) + "   " + (const char *)(d["category"] | ""), &lv_font_montserrat_20, QUIET);
     String types; for (JsonVariant t : d["types"].as<JsonArray>()) types += (types.length() ? " / " : "") + String((const char *)t);
     label(c, types, &lv_font_montserrat_20, DAY);
-    label(c, d["entry"] | "", &lv_font_montserrat_20, INK, 460);
+    label(c, d["entry"] | "", &lv_font_montserrat_20, INK, LV_PCT(100));
   } else {
     label(left, "This Tab5 carries no daemon. SEND one from the party in the game, SYNC, and choose it on DEVICES.",
-          &lv_font_montserrat_28, QUIET, 500);
+          &lv_font_montserrat_28, QUIET, LV_PCT(100));
   }
   JsonDocument party = newDoc();
   label(right, "THE PARTY", &lv_font_montserrat_20, QUIET);
@@ -259,8 +263,8 @@ static void drawDaemon(lv_obj_t *p) {
     }
   }
   button(right, "SYNC WITH THE GAME", tapSyncGame);
-  label(right, "Close the game first: SYNC writes the save.", &lv_font_montserrat_16, QUIET, 500);
-  if (net.message.length()) label(right, net.message, &lv_font_montserrat_20, DAY, 500);
+  label(right, "Close the game first: SYNC writes the save.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
+  if (net.message.length()) label(right, net.message, &lv_font_montserrat_20, DAY, LV_PCT(100));
 }
 
 // ---- INDEX ------------------------------------------------------------------------------------------------------------
@@ -273,14 +277,14 @@ static void tapEntry(lv_event_t *e) {
   if (!kept("index", ix)) return;
   JsonObject en = ix["entries"][at];
   lv_obj_t *o = openOverlay();
-  lv_obj_set_flex_flow(o, LV_FLEX_FLOW_ROW);
-  lv_obj_t *left = column(o, 420), *right = column(o, 700);
+  lv_obj_set_flex_flow(o, displayPortrait() ? LV_FLEX_FLOW_COLUMN : LV_FLEX_FLOW_ROW);   // C-96
+  lv_obj_t *left = column(o, displayPortrait() ? LV_PCT(100) : 420), *right = column(o, displayPortrait() ? LV_PCT(100) : 700);
   picture(left, "s" + String((int)(en["species"] | 0)), 256 * 6);
   label(right, "No. " + String((int)(en["national"] | 0)) + "   " + (const char *)(en["name"] | ""), &lv_font_montserrat_40, INK);
   String types; for (JsonVariant t : en["types"].as<JsonArray>()) types += (types.length() ? " / " : "") + String((const char *)t);
   label(right, String((const char *)(en["category"] | "")) + "   " + types, &lv_font_montserrat_20, DAY);
   String text = en["entry"] | ""; text.replace("\n", " ");
-  label(right, text, &lv_font_montserrat_28, INK, 680);
+  label(right, text, &lv_font_montserrat_28, INK, LV_PCT(100));
   button(right, "CLOSE", closeOverlay, nullptr, false);
 }
 
@@ -332,11 +336,11 @@ static void drawDevices(lv_obj_t *p) {
   JsonDocument dv = newDoc();
   if (!kept("devices", dv)) { label(p, "Your devices show here once the Tab5 is paired.", &lv_font_montserrat_28, QUIET); return; }
   label(p, "Each device carries a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where.",
-        &lv_font_montserrat_20, QUIET, 1000);
+        &lv_font_montserrat_20, QUIET, LV_PCT(100));
   carryN = 0;
   JsonArray away = dv["away"];
   for (JsonObject d : dv["devices"].as<JsonArray>()) {
-    lv_obj_t *c = card(p, 1000);
+    lv_obj_t *c = card(p);
     String id = d["id"] | "";
     label(c, kindName(d["kind"] | "") + (id == deviceId() ? "  (this one)" : "") + ((d["here"] | false) ? "" : "  (away)"), &lv_font_montserrat_28, INK);
     String said = String((d["here"] | false) ? "here, by " : "last heard ") + ((d["here"] | false) ? (const char *)(d["via"] | "") : (const char *)(d["lastSeen"] | ""));
@@ -375,20 +379,64 @@ static void tapPair(lv_event_t *) {
 }
 static void tapSyncNow(lv_event_t *) { netSyncNow(); }
 
+// ---- C-96: which way up. AUTO follows the Tab5's motion sensor (once it has held a new way up for a moment); PORTRAIT
+// and LANDSCAPE stay put. Kept on the Tab5. Portrait is the panel's own way up, so it is also the quicker to draw.
+enum Orient { O_AUTO, O_PORTRAIT, O_LANDSCAPE };
+static int orient = O_PORTRAIT;
+static const char *ORIENT_NAMES[] = { "AUTO", "PORTRAIT", "LANDSCAPE" };
+static void loadOrient() { Preferences p; p.begin("tab5ui", true); orient = p.getUChar("orient", O_PORTRAIT); p.end(); if (orient > 2) orient = O_PORTRAIT; }
+static void saveOrient() { Preferences p; p.begin("tab5ui", false); p.putUChar("orient", orient); p.end(); }
+int uiStartRotation() { loadOrient(); return orient == O_LANDSCAPE ? 1 : 0; }
+
+// The way up the sensor says, or -1 when it cannot tell (lying flat, or between two). Which sign is which way is the
+// Tab5's own and was set without one in hand: if AUTO turns the screen upside down, these four are what to swap.
+static int sensedRotation() {
+  if (!M5.Imu.isEnabled()) return -1;
+  float ax, ay, az;
+  if (!M5.Imu.getAccel(&ax, &ay, &az)) return -1;
+  if (fabsf(az) > 0.8f) return -1;                                 // flat on a table: leave it as it is
+  if (fabsf(ay) > fabsf(ax) + 0.3f) return ay < 0 ? 0 : 2;        // held upright: portrait
+  if (fabsf(ax) > fabsf(ay) + 0.3f) return ax > 0 ? 1 : 3;        // on its side: landscape
+  return -1;
+}
+
+static void buildFrame();
+static void turnTo(int r) {                                        // the whole frame, built again the new way up
+  if (r == displayRotation()) return;
+  int at = tabs ? lv_tabview_get_tab_active(tabs) : 0;
+  closeOverlay();
+  lv_obj_clean(lv_screen_active());
+  displayRotate(r);
+  buildFrame();
+  lv_tabview_set_active(tabs, at, LV_ANIM_OFF);
+}
+static void tapOrient(lv_event_t *e) {
+  orient = (int)(long)lv_event_get_user_data(e); saveOrient();
+  if (orient == O_PORTRAIT) turnTo(0); else if (orient == O_LANDSCAPE) turnTo(1);
+  else { int r = sensedRotation(); if (r >= 0) turnTo(r); }
+  drawnAt[P_SETTINGS] = 0;
+}
+
 static void drawSettings(lv_obj_t *p) {
-  lv_obj_t *w = card(p, 1000);
+  lv_obj_t *o = card(p);                           // C-96
+  label(o, "THIS SCREEN", &lv_font_montserrat_20, QUIET);
+  lv_obj_t *ro = row(o);
+  for (int i = 0; i < 3; i++) button(ro, ORIENT_NAMES[i], tapOrient, (void *)(long)i, i == orient);
+  label(o, orient == O_AUTO ? (M5.Imu.isEnabled() ? "Turns with the Tab5." : "This Tab5's motion sensor did not answer, so AUTO stays as it is.")
+                            : "Stays this way up.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
+  lv_obj_t *w = card(p);
   label(w, "WI-FI", &lv_font_montserrat_20, QUIET);
   label(w, net.wifi ? "Joined " + net.network : "Not on a network", &lv_font_montserrat_28, INK);
   button(w, "LOOK FOR NETWORKS", tapScan, nullptr, false);
   lv_obj_t *r = row(w);
   for (int i = 0; i < netNetworkCount; i++) button(r, netNetworks[i], tapNetwork, (void *)(long)i, false);
-  lv_obj_t *c = card(p, 1000);
+  lv_obj_t *c = card(p);
   label(c, "THE COMPANION", &lv_font_montserrat_20, QUIET);
   label(c, net.paired ? "Paired with " + serverAddress() : "Not paired yet", &lv_font_montserrat_28, INK);
   label(c, relayAddress().length() ? "Away from home, through " + relayAddress() : "No relay yet: it reaches the companion only at home.",
-        &lv_font_montserrat_16, QUIET, 940);
+        &lv_font_montserrat_16, QUIET, LV_PCT(100));
   button(c, net.paired ? "PAIR AGAIN" : "PAIR THIS TAB5", tapPair);
-  lv_obj_t *k = card(p, 1000);
+  lv_obj_t *k = card(p);
   label(k, "KEPT ON THIS TAB5", &lv_font_montserrat_20, QUIET);
   String at = keptAt();
   label(k, at.length() ? "Everything, as of " + at : "Nothing yet", &lv_font_montserrat_20, INK);
@@ -396,7 +444,7 @@ static void drawSettings(lv_obj_t *p) {
   if (waiting) label(k, String(waiting) + " change" + (waiting == 1 ? "" : "s") + " waiting to be sent", &lv_font_montserrat_20, DAY);
   button(k, "DOWNLOAD EVERYTHING AGAIN", tapSyncNow, nullptr, false);
   label(k, "This Tab5 is " + deviceId() + ", build " + COMPANION_BUILD, &lv_font_montserrat_16, QUIET);   // C-91
-  if (net.message.length()) label(p, net.message, &lv_font_montserrat_28, DAY, 1000);
+  if (net.message.length()) label(p, net.message, &lv_font_montserrat_28, DAY, LV_PCT(100));
 }
 
 // ---- the frame: a status bar and the tabs down the side --------------------------------------------------------------
@@ -419,15 +467,22 @@ static void takeDayColour() {
 }
 
 static void redraw(int i) {
+  int32_t y = lv_obj_get_scroll_y(pages[i]);       // C-96: drawn again where it was, not back at the top
   lv_obj_clean(pages[i]);
   lv_obj_set_flex_flow(pages[i], LV_FLEX_FLOW_COLUMN);
   DRAW[i](pages[i]);
+  if (y > 0) { lv_obj_update_layout(pages[i]); lv_obj_scroll_to_y(pages[i], y, LV_ANIM_OFF); }
   drawnAt[i] = keptChanged + 1;                    // +1: never 0, which means "draw me"
 }
 
 static void tabChanged(lv_event_t *) { drawnAt[lv_tabview_get_tab_active(tabs)] = 0; soundSelect(); }   // C-94
 
-void uiBegin() {
+void uiBegin() { buildFrame(); }
+
+static String barLeft, barRight;                   // C-96: what the status bar says, so it is set only when it changes
+static void buildFrame() {
+  barLeft = barRight = "";
+  for (int i = 0; i < 6; i++) drawnAt[i] = 0;
   lv_obj_t *scr = lv_screen_active();
   lv_obj_set_style_bg_color(scr, PAPER, 0);
   lv_obj_t *bar = lv_obj_create(scr);
@@ -441,29 +496,41 @@ void uiBegin() {
   statusRight = label(bar, "", &lv_font_montserrat_20, lv_color_white());
   lv_obj_align(statusRight, LV_ALIGN_RIGHT_MID, 0, 0);
   tabs = lv_tabview_create(scr);
-  lv_tabview_set_tab_bar_position(tabs, LV_DIR_LEFT);
-  lv_tabview_set_tab_bar_size(tabs, 190);
+  bool portrait = displayPortrait();               // C-96: the tabs along the foot in portrait, down the side in landscape
+  lv_tabview_set_tab_bar_position(tabs, portrait ? LV_DIR_BOTTOM : LV_DIR_LEFT);
+  lv_tabview_set_tab_bar_size(tabs, portrait ? 84 : 190);
   lv_obj_set_size(tabs, LV_PCT(100), M5.Display.height() - 48);
   lv_obj_align(tabs, LV_ALIGN_BOTTOM_MID, 0, 0);
   lv_obj_set_style_bg_color(tabs, PAPER, 0);
   lv_obj_t *tb = lv_tabview_get_tab_bar(tabs);
   lv_obj_set_style_bg_color(tb, DAY, 0);
   lv_obj_set_style_text_color(tb, lv_color_white(), 0);
-  lv_obj_set_style_text_font(tb, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_font(tb, portrait ? &lv_font_montserrat_16 : &lv_font_montserrat_20, 0);
   for (int i = 0; i < 6; i++) {
     pages[i] = lv_tabview_add_tab(tabs, TAB_NAMES[i]);
     lv_obj_set_style_pad_all(pages[i], 24, 0);
     lv_obj_set_style_pad_row(pages[i], 14, 0);
   }
   lv_obj_add_event_cb(tabs, tabChanged, LV_EVENT_VALUE_CHANGED, nullptr);
-  takeDayColour();
+  dayHex = 0; takeDayColour();
 }
 
+static String todayLine;
 void uiLoop() {
+  static uint32_t imuAt = 0, heldSince = 0; static int heldWay = -1;   // C-96: AUTO, once a new way up has held 0.8 s
+  if (orient == O_AUTO && !overlay && millis() - imuAt > 150) {
+    imuAt = millis();
+    M5.Imu.update();
+    int r = sensedRotation();
+    if (r != heldWay) { heldWay = r; heldSince = millis(); }
+    else if (r >= 0 && r != displayRotation() && millis() - heldSince > 800) turnTo(r);
+  }
   static uint32_t seenChange = 0, barAt = 0, artWas = 0;
   if (seenChange != keptChanged) {
     seenChange = keptChanged;
     takeDayColour();
+    JsonDocument t = newDoc();
+    todayLine = kept("today", t) ? "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "") : "";
     soundFromState();                                    // C-94: the volume and the day's key, as the state says
     if (net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal) { artWas = net.artTotal; resetArt(); }
   }
@@ -471,17 +538,15 @@ void uiLoop() {
   if (!overlay && drawnAt[at] != keptChanged + 1) redraw(at);
   if (millis() - barAt > 1000) {
     barAt = millis();
-    JsonDocument t = newDoc();
-    String left = "DAEMONS  companion";
-    if (kept("today", t)) left += "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "");
-    lv_label_set_text(statusLeft, left.c_str());
+    String left = "DAEMONS  companion" + todayLine;   // read when what is kept changes, not from flash every second
+    if (left != barLeft) { barLeft = left; lv_label_set_text(statusLeft, left.c_str()); }
     String right = net.syncing ? "syncing...   " : "";
     int waiting = outboxCount();
     if (waiting) right += String(waiting) + " waiting   ";
     right += !net.wifi ? "NO WI-FI" : !net.paired ? "NOT PAIRED" : net.home ? "HOME" : net.away ? "AWAY" : "KEPT";
     int bat = M5.Power.getBatteryLevel();
     if (bat >= 0) right += "   " + String(bat) + "%";
-    lv_label_set_text(statusRight, right.c_str());
+    if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); }
     if (at == P_SETTINGS && !overlay) { static String said; if (said != net.message) { said = net.message; drawnAt[P_SETTINGS] = 0; } }
   }
 }

@@ -13,7 +13,7 @@ void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
   if (!storeBegin()) Serial.println("tab5: the store did not start");
-  displayBegin();
+  displayBegin(uiStartRotation());             // C-96: portrait, unless set otherwise
   uiBegin();
   soundBegin();                                // C-94: the same sounds as every device
   soundWake();

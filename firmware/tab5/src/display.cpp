@@ -13,14 +13,25 @@ static void readTouch(lv_indev_t *, lv_indev_data_t *data) {
   data->point.x = t.x; data->point.y = t.y;
 }
 
-void displayBegin() {
-  M5.Display.setRotation(1);                       // landscape
+static lv_display_t *disp = nullptr;
+static int rot = 0;
+int displayRotation() { return rot; }
+bool displayPortrait() { return (rot & 1) == 0; }
+void displayRotate(int r) {
+  rot = r & 3;
+  M5.Display.setRotation(rot);
+  if (disp) lv_display_set_resolution(disp, M5.Display.width(), M5.Display.height());
+}
+
+void displayBegin(int rotation) {
+  displayRotate(rotation);
   M5.Display.setSwapBytes(true);                   // LVGL's RGB565 as the panel takes it
   lv_init();
   lv_tick_set_cb([]() -> uint32_t { return millis(); });
   int w = M5.Display.width(), h = M5.Display.height();
-  lv_display_t *disp = lv_display_create(w, h);
-  size_t bytes = w * 120 * 2;                      // a band of the screen at a time, two of them, in PSRAM
+  disp = lv_display_create(w, h);
+  size_t bytes = 1280 * 120 * 2;                   // a band of the screen at a time, two of them, in PSRAM -- as wide
+                                                   // as the screen is either way up
   void *a = heap_caps_malloc(bytes, MALLOC_CAP_SPIRAM), *b = heap_caps_malloc(bytes, MALLOC_CAP_SPIRAM);
   lv_display_set_buffers(disp, a, b, bytes, LV_DISPLAY_RENDER_MODE_PARTIAL);
   lv_display_set_flush_cb(disp, flush);

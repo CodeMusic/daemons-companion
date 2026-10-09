@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <map>
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
 #include <Preferences.h>
@@ -133,9 +134,19 @@ bool localTime(struct tm &out) {
 static bool fetchKeep(const char *path, const char *name) {
   int code; String got = request("GET", path, "", code);
   if (code != 200) return false;
+  // C-96: the same answer as last time changes nothing -- no write to flash, and no page drawn again (which flickered
+  // the screen and threw away its scroll every half minute)
+  // The state's clock moves on every time; it is taken, and left out of the comparison.
+  bool state = !strcmp(name, "state");
+  if (state) takeClock(got);
+  int c0 = state ? got.indexOf("\"clock\":{") : -1, c1 = c0 >= 0 ? got.indexOf('}', c0) : -1;
+  static std::map<String, uint32_t> sums;
+  uint32_t sum = 2166136261u;
+  for (int i = 0; i < (int)got.length(); i++) if (i < c0 || i > c1) sum = (sum ^ (uint8_t)got[i]) * 16777619u;
+  if (sums[name] == sum) return true;
+  sums[name] = sum;
   keep(name, got);
-  if (!strcmp(name, "state")) {
-    takeClock(got);
+  if (state) {
     JsonDocument d = newDoc();                       // C-93: another device learned or forgot a network
     if (!deserializeJson(d, got) && (d["netsRev"] | -1L) >= 0 && (d["netsRev"] | -1L) != netsRev) netsDue = true;
   }

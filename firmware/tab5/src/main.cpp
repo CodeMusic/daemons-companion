@@ -6,6 +6,7 @@
 #include "store.h"
 #include "net.h"
 #include "ui.h"
+#include "sound.h"
 
 void setup() {
   Serial.begin(115200);
@@ -14,6 +15,8 @@ void setup() {
   if (!storeBegin()) Serial.println("tab5: the store did not start");
   displayBegin();
   uiBegin();
+  soundBegin();                                // C-94: the same sounds as every device
+  soundWake();
   netBegin();
   Serial.printf("tab5: ready, %s\n", deviceId().c_str());
 }

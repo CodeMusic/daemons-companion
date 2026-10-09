@@ -13,6 +13,7 @@
 #include "sound.h"
 #include "board.h"
 #include "leds.h"
+#include "../../common/tunes.h"              // C-94: the same notes as every device
 
 static i2s_port_t PORT = I2S_NUM_1;          // C-75: I2S_NUM_0 for the ESP32's own DAC, which only it drives
 static const int RATE = 16000;   // C-67: the pins are the board's
@@ -143,13 +144,9 @@ void soundSettings(bool on, int volume) {
   amplitude = constrain(volume, 0, 100) * 120;   // 100 is 12000, LilyGO's own test tone level
 }
 
-void soundDay(const String &note) {
-  static const char *NAMES = "C D EF G A B";   // C=0 D=2 E=4 F=5 G=7 A=9 B=11
-  const char *at = strchr(NAMES, note.length() ? note[0] : 'C');
-  root = 72 + (at ? (int)(at - NAMES) : 0);
-}
+void soundDay(const String &note) { root = dayRoot(note.length() ? note[0] : 'C'); }
 
-static float hz(int midi) { return 440.0f * powf(2.0f, (midi - 69) / 12.0f); }
+static float hz(int midi) { return noteHz(midi); }
 
 // One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself).
 static void tone(int midi, int ms, float level = 1.0f) {
@@ -205,13 +202,6 @@ void soundSelect() { tone(root + 12, 55); }
 void soundBack()   { tone(root - 12, 45, 0.7f); }
 
 // ---- a routine's tune: about six notes, its own shape in the day's key, the ring dancing in step --------------------
-struct Note { int8_t semis; uint16_t ms; };          // semis from the day's root; 127 is a rest
-static const Note FLARE[]      = { {0, 60}, {4, 60}, {7, 60}, {12, 60}, {16, 60}, {19, 140} };   // a flare going up
-static const Note WHISPER[]    = { {12, 110}, {7, 110}, {9, 110}, {4, 110}, {7, 110}, {0, 200} }; // said softly, settling
-static const Note TOUCHSTONE[] = { {0, 70}, {127, 50}, {0, 70}, {7, 90}, {127, 40}, {12, 160} }; // a knock, and an answer
-static const Note LONGWAVE[]   = { {0, 120}, {-5, 120}, {0, 120}, {-5, 120}, {0, 120}, {7, 200} }; // a long slow wave
-static const Note UPLINK[]     = { {0, 70}, {7, 70}, {12, 70}, {7, 70}, {14, 70}, {12, 160} };   // looking, finding
-static const Note WAKE[]       = { {0, 190}, {7, 330}, {5, 50}, {2, 140}, {5, 190}, {4, 470} };  // the title's opening
 
 static void play(const Note *notes, int n, int base, int dance, float level) {
   for (int i = 0; i < n; i++) {
@@ -224,73 +214,41 @@ static void play(const Note *notes, int n, int base, int dance, float level) {
 }
 
 void soundRoutine(const char *type) {
-  const Note *t = UPLINK; int dance = DANCE_SWEEP;
-  if (!strcmp(type, "FLARE"))           { t = FLARE;      dance = DANCE_SPARKLE; }
-  else if (!strcmp(type, "WHISPER"))    { t = WHISPER;    dance = DANCE_GLIMMER; }
-  else if (!strcmp(type, "TOUCHSTONE")) { t = TOUCHSTONE; dance = DANCE_PULSE; }
-  else if (!strcmp(type, "LONGWAVE"))   { t = LONGWAVE;   dance = DANCE_WAVE; }
+  const Note *t = TUNE_UPLINK; int dance = DANCE_SWEEP;
+  if (!strcmp(type, "FLARE"))           { t = TUNE_FLARE;      dance = DANCE_SPARKLE; }
+  else if (!strcmp(type, "WHISPER"))    { t = TUNE_WHISPER;    dance = DANCE_GLIMMER; }
+  else if (!strcmp(type, "TOUCHSTONE")) { t = TUNE_TOUCHSTONE; dance = DANCE_PULSE; }
+  else if (!strcmp(type, "LONGWAVE"))   { t = TUNE_LONGWAVE;   dance = DANCE_WAVE; }
   play(t, 6, root, dance, 0.8f);
 }
 
 // C-68: a routine from the game, played as a game would: a short phrase of its own, GENERATED from its name (so PUSH
 // always sounds like PUSH) in the day's pentatonic key, its type choosing the ring's dance and the voice, the ring lit
 // the colour of its streak on this daemon. No words: the sound and the light are the routine.
-static const int8_t GAME_PENTA[] = {0, 2, 4, 7, 9, 12, 14, 16, 19};
 void soundGameRoutine(const String &name, const String &type, uint32_t rgb) {
-  uint32_t s = 2166136261u;
-  for (char c : name) s = (s ^ (uint8_t)c) * 16777619u;           // FNV-1a: the name's own seed
-  uint32_t ts = 0; for (char c : type) ts = ts * 31 + (uint8_t)c;
   static const int DANCES[] = { DANCE_SPARKLE, DANCE_GLIMMER, DANCE_PULSE, DANCE_WAVE, DANCE_SWEEP };
-  float was = duty; static const float DUTIES[] = {0.125f, 0.25f, 0.5f}; duty = DUTIES[ts % 3];
-  Note tune[6]; int at = s % 3;
-  for (int i = 0; i < 6; i++) {
-    s = s * 1103515245u + 12345u;
-    bool last = i == 5;
-    tune[i].semis = GAME_PENTA[constrain(last ? (int)((s >> 16) % 2) * 3 + 5 : at, 0, 8)];
-    tune[i].ms = last ? 220 : 60 + ((s >> 20) % 3) * 25;
-    at = constrain(at + (int)((s >> 18) % 4) - 1, 0, 7);           // wandering upward
-  }
+  float was = duty; int d;
+  Note tune[6];
+  gameTune(tune, name.c_str(), type.c_str(), duty, d);
+  int ts = d;
   ledsTint(rgb);
-  play(tune, 6, root, DANCES[ts % 5], 0.85f);
+  play(tune, 6, root, DANCES[ts], 0.85f);
   duty = was;
 }
 
 // C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them
-static const Note CARE_TUNES[3][3] = { { {0, 70}, {4, 70}, {7, 150} },      // fed: a full chord, settling
-                                       { {7, 60}, {12, 60}, {9, 140} },     // watered: a splash and a sip
-                                       { {0, 60}, {7, 60}, {12, 150} } };   // trained: up, and up
-void soundCare(int what) { play(CARE_TUNES[constrain(what, 0, 2)], 3, root, DANCE_PULSE, 0.8f); }
+void soundCare(int what) { play(TUNE_CARE[constrain(what, 0, 2)], 3, root, DANCE_PULSE, 0.8f); }
 
 // ---- C-50: accomplishment. Each daemon's tunes are its own: GENERATED from its species number and the day of the week
 // (the user, 2026-10-04), in a pentatonic scale on the day's note -- so no two notes ever clash -- with a voice (the
 // wave's duty) of its own. A step: five notes, rising overall. Undoing it: the same five, reversed. A milestone: seven,
 // ending an octave and a fifth up, the ring a quick rainbow (there is more to do). The whole goal: a longer phrase that climbs and
 // blooms, the ring swirling into full colour -- things coming to life.
-static const int8_t PENTA[] = {0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24};
-static uint32_t seedOf(int species, int day, int kind) { return (uint32_t)species * 2654435761u ^ (uint32_t)(day * 97 + kind * 13 + 1); }
-static int nextRand(uint32_t &s) { s = s * 1103515245u + 12345u; return (s >> 16) & 0x7fff; }
-
-static int buildTune(Note *out, int n, int species, int day, int kind) {
-  uint32_t s = seedOf(species, day, kind);
-  int at = nextRand(s) % 3;                                  // start low in the scale
-  for (int i = 0; i < n; i++) {
-    bool last = i == n - 1;
-    if (last) at = kind == 0 ? 5 : kind == 1 ? 8 : 10;   // a step lands on the octave, a milestone higher, the goal highest
-    out[i].semis = PENTA[constrain(at, 0, 10)];
-    out[i].ms = last ? (kind == 2 ? 360 : 200) : (kind == 2 ? 95 : 80) + (nextRand(s) % 3) * 20;
-    at += 1 + nextRand(s) % 2 - (nextRand(s) % 5 == 0 ? 2 : 0);          // mostly up, now and then a step back
-  }
-  return n;
-}
-
-static void voiceOf(int species, int day) {
-  static const float DUTIES[] = {0.125f, 0.25f, 0.5f};
-  duty = DUTIES[(species + day) % 3];
-}
+static void voiceOf(int species, int day) { duty = voiceDuty(species, day); }
 
 void soundAccomplish(int kind, int species, int day) {     // 0 a step, 1 a milestone, 2 the whole goal
   Note tune[14];
-  int n = buildTune(tune, kind == 0 ? 5 : kind == 1 ? 7 : 12, species, day, kind);
+  int n = accomplishTune(tune, kind, species, day);
   voiceOf(species, day);
   play(tune, n, root, kind == 0 ? DANCE_PULSE : kind == 1 ? DANCE_RAINBOW : DANCE_BLOOM, 0.85f);
   if (kind == 2) { for (int i = 0; i < 8; i++) { ledsDance(DANCE_BLOOM, 12 + i, 20); delay(90); } ledsDance(-1, 0, 0); }
@@ -299,7 +257,7 @@ void soundAccomplish(int kind, int species, int day) {     // 0 a step, 1 a mile
 
 void soundUndo(int species, int day) {                      // the step's own tune, backwards
   Note tune[5], back[5];
-  buildTune(tune, 5, species, day, 0);
+  accomplishTune(tune, 0, species, day);
   for (int i = 0; i < 5; i++) back[i] = tune[4 - i];
   voiceOf(species, day);
   play(back, 5, root, DANCE_PULSE, 0.7f);
@@ -308,4 +266,4 @@ void soundUndo(int species, int day) {                      // the step's own tu
 
 // C-41: the title theme's opening phrase (mus_title.mid, its first track: C#4 held, up to G#4, then F#-D#-F#, onto a
 // long F), quickened to a second and a half and an octave up -- in the title's own C#, whatever the day.
-void soundWake() { play(WAKE, 6, 61 + 12, DANCE_SWEEP, 0.8f); }
+void soundWake() { play(TUNE_WAKE, 6, WAKE_BASE, DANCE_SWEEP, 0.8f); }

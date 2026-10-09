@@ -37,6 +37,7 @@ void setup() {
   lastInput = millis();
   page = homePage();                          // C-42: it starts at home
   draw();
+  soundWake();                                // C-94: the title's opening at every start, as on waking
   step("ready");
 }
 

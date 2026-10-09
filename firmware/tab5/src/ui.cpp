@@ -8,6 +8,7 @@
 #include "ui.h"
 #include "net.h"
 #include "store.h"
+#include "sound.h"
 
 // ---- the look: paper, ink, and the day's colour (the app's, from /api/today) ------------------------------------------
 static lv_color_t PAPER = lv_color_hex(0xF3F1EA), INK = lv_color_hex(0x1D232B), QUIET = lv_color_hex(0x6B7178);
@@ -64,6 +65,7 @@ static lv_obj_t *button(lv_obj_t *parent, const String &text, Tap tap, void *dat
   lv_obj_set_style_pad_hor(b, 22, 0); lv_obj_set_style_pad_ver(b, 14, 0);
   lv_obj_t *l = label(b, text, &lv_font_montserrat_20, filled ? lv_color_white() : DAY);
   lv_obj_center(l);
+  lv_obj_add_event_cb(b, [](lv_event_t *) { soundSelect(); }, LV_EVENT_CLICKED, nullptr);   // C-94: every tap, as a press
   if (tap) lv_obj_add_event_cb(b, tap, LV_EVENT_CLICKED, data);
   return b;
 }
@@ -159,6 +161,7 @@ static void askText(const String &title, const String &initial, bool secret, boo
 // ---- TODAY ------------------------------------------------------------------------------------------------------------
 static void tapDone(lv_event_t *e) {
   long id = (long)lv_event_get_user_data(e);
+  soundStep(false);                                      // C-94: the step's own tune, as on the handhelds
   netSend("POST", "/api/steps/" + String(id) + "/done", "{}");
 }
 
@@ -189,6 +192,7 @@ static void drawToday(lv_obj_t *p) {
 static void tapGoal(lv_event_t *e) { goalAt = (int)(long)lv_event_get_user_data(e); drawnAt[P_GOALS] = 0; }
 static void tapStep(lv_event_t *e) {
   long v = (long)lv_event_get_user_data(e);              // the step's id, negative when it is done (a tap undoes it)
+  soundStep(v < 0);                                      // C-94
   netSend("POST", "/api/steps/" + String(labs(v)) + (v < 0 ? "/undo" : "/done"), "{}");
 }
 static void newGoal(const String &title) {
@@ -421,7 +425,7 @@ static void redraw(int i) {
   drawnAt[i] = keptChanged + 1;                    // +1: never 0, which means "draw me"
 }
 
-static void tabChanged(lv_event_t *) { drawnAt[lv_tabview_get_tab_active(tabs)] = 0; }
+static void tabChanged(lv_event_t *) { drawnAt[lv_tabview_get_tab_active(tabs)] = 0; soundSelect(); }   // C-94
 
 void uiBegin() {
   lv_obj_t *scr = lv_screen_active();
@@ -460,6 +464,7 @@ void uiLoop() {
   if (seenChange != keptChanged) {
     seenChange = keptChanged;
     takeDayColour();
+    soundFromState();                                    // C-94: the volume and the day's key, as the state says
     if (net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal) { artWas = net.artTotal; resetArt(); }
   }
   int at = lv_tabview_get_tab_active(tabs);

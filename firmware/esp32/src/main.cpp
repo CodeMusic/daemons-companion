@@ -9,7 +9,7 @@
 #include "meet.h"
 
 // Each step says so down the cable as it starts ("boot: ..."), so a board that stops part-way says where.
-static void step(const char *what) { Serial.printf("boot: %s\n", what); Serial.flush(); }
+static void step(const char *what) { Serial.printf("boot: %s (heap %u, largest %u)\n", what, ESP.getFreeHeap(), ESP.getMaxAllocHeap()); Serial.flush(); }   // C-97: the heap at each step
 
 void setup() {
   // The bridge's STATE line is ~300 bytes and the USB receive buffer defaults to 256: while the screen is being drawn

@@ -20,6 +20,7 @@ time.sleep(0.3)
 dev.reset_input_buffer()
 dev.write(b"SHOT\n")
 w = h = 0
+bits = 16
 data = bytearray()
 deadline = time.time() + 15
 while time.time() < deadline:
@@ -27,15 +28,21 @@ while time.time() < deadline:
     if line.startswith("SHOT END"):
         break
     if line.startswith("SHOT "):
-        w, h = map(int, line.split()[1:3])
+        parts = line.split()
+        w, h = int(parts[1]), int(parts[2])
+        bits = int(parts[3]) if len(parts) > 3 else 16   # the M5GO says 8: RGB332, a byte a pixel
         data = bytearray()
     elif w and line and not line.startswith(("HELLO", "ART?", "INTERACT", "TICK", "UNREAD", "PONG")):
         data += base64.b64decode(line)
-if not w or len(data) != w * h * 2:
-    sys.exit("shot: got %d of %d bytes" % (len(data), w * h * 2))
+step = 2 if not w or bits == 16 else 1
+if not w or len(data) != w * h * step:
+    sys.exit("shot: got %d of %d bytes" % (len(data), w * h * step))
 img = Image.new("RGB", (w, h))
 px = []
-for i in range(0, len(data), 2):
+if step == 1:
+    for v in data:
+        px.append((((v >> 5) & 7) * 255 // 7, ((v >> 2) & 7) * 255 // 7, (v & 3) * 255 // 3))
+for i in range(0, len(data) if step == 2 else 0, 2):
     v = (data[i] << 8) | data[i + 1]
     px.append((((v >> 11) & 31) * 255 // 31, ((v >> 5) & 63) * 255 // 63, (v & 31) * 255 // 31))
 img.putdata(px)

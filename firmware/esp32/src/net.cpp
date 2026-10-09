@@ -380,6 +380,7 @@ void reportNetworks() {
   if (ok) takeShared(got);
 }
 
+String artTold = "not asked";               // C-97: how the last fetch of the daemon's picture went
 bool routinesPosted = false;
 uint32_t commandsAt = 0;
 void pollCommands(uint32_t now) {
@@ -401,10 +402,11 @@ void pollCommands(uint32_t now) {
 // (shot.py on the computer makes it a PNG). The sprite's own 16-bit pixels, as stored, base64 in lines.
 void shot() {
   const uint8_t *px = (const uint8_t *)canvas.getBuffer();
-  Serial.printf("SHOT %d %d\n", W, H);
+  int bpp = canvas.getColorDepth() > 8 ? 2 : 1;           // C-97: the M5GO draws in 256 colours (RGB332), one byte each
+  Serial.printf("SHOT %d %d %d\n", W, H, bpp * 8);
   static unsigned char line[1025];
-  for (size_t at = 0; at < (size_t)W * H * 2; at += 768) {
-    size_t n = min((size_t)768, (size_t)W * H * 2 - at), got = 0;
+  for (size_t at = 0; at < (size_t)W * H * bpp; at += 768) {
+    size_t n = min((size_t)768, (size_t)W * H * bpp - at), got = 0;
     mbedtls_base64_encode(line, sizeof line, &got, px + at, n);
     Serial.write(line, got); Serial.write('\n');
   }
@@ -465,6 +467,9 @@ void handleLine(String line, bool fromPhone) {
   }
   else if (line.startsWith("RATETEST ") && !fromPhone) { soundDacRate(line.substring(9).toInt()); reply("RATETEST " + String(soundRateTest()) + " ms for 2000 at " + line.substring(9)); }
   else if (line == "RATETEST" && !fromPhone) reply("RATETEST " + String(soundRateTest()) + " ms for 2000");   // C-95
+  else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
+    reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
+          " want " + st.daemon.artKey + " | last " + artTold);
   else if (line == "PING") { seen = millis(); reply("PONG"); }
 }
 
@@ -539,7 +544,7 @@ void askForArt() {
   if (bridgeLive()) { bridge("ART?"); return; }
   bool ok;
   String got = http("GET", "/api/device/art", "", &ok);
-  if (ok) takeArt(got);
+  artTold = !ok ? "fetch failed (" + String(got.length()) + " bytes)" : takeArt(got) ? "taken" : "unread (" + String(got.length()) + " bytes)";
 }
 
 

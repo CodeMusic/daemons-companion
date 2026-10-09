@@ -571,7 +571,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
     if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");
     r.received.forEach((n) => said.push(`${n} is with your device now.`));
     r.returned.forEach((n) => said.push(`${n} is home.`));
-    r.refused.forEach((n) => said.push(`${n} waits: one daemon at a time.`));
+    r.refused.forEach((n) => said.push(n));                     // T-397: the server says why, whole
     if (r.recalledSeen) said.push("The daemon you brought home in the game is settled here too.");
     if (r.grew) said.push(r.grew.to > r.grew.from ? `${r.grew.nickname} came home grown: level ${r.grew.from} to ${r.grew.to}.`
                                                   : `${r.grew.nickname} came home with ${r.grew.exp} more experience.`);   // C-45

@@ -33,6 +33,7 @@ function flags(path: string) {
 
 const PIP = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12 };
 const LABEL = { personality: 0x0000002f, otId: 0x00ab1234, species: 4, nickname: "LABEL", level: 9 };
+const HUNCH = { personality: 0x00000a11, otId: 0x00ab1234, species: 7, nickname: "HUNCH", level: 8 };
 
 describe("SYNC (C-21) and the married save (C-22)", () => {
   it("marries the first save and links it, so the game shows SEND", () => {
@@ -57,12 +58,21 @@ describe("SYNC (C-21) and the married save (C-22)", () => {
   });
 
   it("sends a second daemon while one is away: a daemon in each device (C-80)", () => {
-    const { path, cfg } = saveFile([{ ...PIP, away: true }, { ...LABEL, asked: true }]);
+    const { path, cfg } = saveFile([{ ...PIP, away: true }, { ...LABEL, asked: true }, HUNCH]);
     const r = sync(cfg, new Store(":memory:"));
     expect(r.received).toEqual(["LABEL"]);
     expect(r.refused).toEqual([]);
     const party = readSave(new Uint8Array(readFileSync(path))).party;
-    expect(party.map((d) => [d.nickname, d.away, d.asked])).toEqual([["PIP", true, false], ["LABEL", true, false]]);
+    expect(party.map((d) => [d.nickname, d.away, d.asked])).toEqual([["PIP", true, false], ["LABEL", true, false], ["HUNCH", false, false]]);
+  });
+
+  it("never sends the last one home: one always stays in the party (T-397)", () => {
+    const { path, cfg } = saveFile([{ ...PIP, away: true }, { ...LABEL, asked: true }, { ...HUNCH, asked: true }]);
+    const r = sync(cfg, new Store(":memory:"));
+    expect(r.received).toEqual(["LABEL"]);
+    expect(r.refused).toEqual(["HUNCH stays: one daemon always stays in the party."]);
+    const party = readSave(new Uint8Array(readFileSync(path))).party;
+    expect(party.map((d) => [d.nickname, d.away, d.asked])).toEqual([["PIP", true, false], ["LABEL", true, false], ["HUNCH", false, true]]);
   });
 
   it("settles a daemon brought home without the app", () => {

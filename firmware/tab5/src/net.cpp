@@ -317,6 +317,7 @@ static void gameSync() {
   String said;
   for (JsonVariant n : d["received"].as<JsonArray>()) said += String((const char *)n) + " came across. ";
   for (JsonVariant n : d["returned"].as<JsonArray>()) said += String((const char *)n) + " went home. ";
+  for (JsonVariant n : d["refused"].as<JsonArray>()) said += String((const char *)n) + " ";   // T-397
   if (!(d["sameGame"] | true)) said = "That save is another game's: nothing was written. ";
   net.message = said.length() ? said : "SYNC: nothing to answer.";   // DRAFT
   keepEverything(false);

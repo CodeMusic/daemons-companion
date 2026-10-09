@@ -9,7 +9,7 @@
 //
 // C-21 (the user, 2026-10-04): it is now one SYNC. syncSave answers the requests -- every one: C-80 (the user,
 // 2026-10-08) put a daemon in each device, so any number may be AWAY; the game itself keeps the last one able to battle
-// at home. `refused` is kept, empty now, so the app reading it still reads -- and, on the save the app is married to
+// at home. `refused` holds the one exception: a SYNC that would leave nobody home keeps the last one there (T-397) -- and, on the save the app is married to
 // (C-22), writes the companion's two flags in SaveBlock2 (DAEMONS T-370): LINKED, which shows SEND in the game, set;
 // and RECALLED, the game's note that a daemon came home without the app, read and cleared.
 import P from "../../data/profile_layout.json" with { type: "json" };
@@ -65,8 +65,14 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     for (let k = 0; k < l.pokemon_size; k++) rec[k] = out[at(recStart + k).byte];
     party.push({ i, recStart, d: readDaemon(rec, i, l) });   // checks each record is whole before anything is written
   }
+  // T-397 (the user, 2026-10-09: "you always need one in your party for game purposes"): the game refuses to ask for the
+  // last one here (DAEMONS T-358, T-396), and this is the same rule kept on this side -- a save edited elsewhere, or one
+  // the game's checks missed, still never leaves the party empty. The last one asked stays asked, and is said so.
+  const homeAfter = party.filter(({ d }) => d && (d.asked ? d.away : !d.away)).length;
+  const keepHome = homeAfter === 0 ? [...party].reverse().find(({ d }) => d && d.asked && !d.away) : undefined;
+  if (keepHome?.d) refused.push(`${keepHome.d.nickname || keepHome.d.name} stays: one daemon always stays in the party.`);   // DRAFT
   for (const { i, recStart, d } of party) {
-    if (!d || !d.asked) continue;
+    if (!d || !d.asked || keepHome?.i === i) continue;
     const f = at(recStart + l.flags_byte);
     let flags = out[f.byte] ^ (1 << l.away_bit);         // there if it was here, here if it was there
     flags &= ~(1 << l.asked_bit) & 0xff;

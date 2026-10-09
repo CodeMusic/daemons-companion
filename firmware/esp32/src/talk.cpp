@@ -1,3 +1,4 @@
+#include <memory>
 #include <HTTPClient.h>
 #include <mbedtls/base64.h>
 #include <driver/i2s.h>
@@ -171,11 +172,13 @@ static bool cableLine(String &out, uint32_t waitMs) {
 // the bridge posts it and answers TALKED {...}, then streams the voice back as PCM lines to play as they come. Frees it.
 static void overCable(uint8_t *rec, size_t n) {
   size_t bytes = 44 + n * 2;
-  static unsigned char b64[4100];
+  std::unique_ptr<unsigned char, void (*)(void *)> b64Held((unsigned char *)malloc(4100), free);   // C-97: borrowed while in use, not kept
+  unsigned char *b64 = b64Held.get();
+  if (!b64) { free(rec); talkStatus = "Not enough memory to send it."; screen = TALK; draw(); return; }   // DRAFT
   Serial.printf("TALKWAV %u\n", (unsigned)bytes);
   for (size_t at = 0; at < bytes; at += 3072) {
     size_t olen = 0;
-    mbedtls_base64_encode(b64, sizeof b64, &olen, rec + at, min((size_t)3072, bytes - at));
+    mbedtls_base64_encode(b64, 4100, &olen, rec + at, min((size_t)3072, bytes - at));
     b64[olen] = 0;
     Serial.print("TW "); Serial.println((const char *)b64);
   }
@@ -190,12 +193,15 @@ static void overCable(uint8_t *rec, size_t n) {
   talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | ""); talkStatus = d["error"] | "";
   screen = TALK; draw();
   if (!(d["audio"] | false)) { lastInput = millis(); return; }
-  static uint8_t pcm[3100];
+  b64Held.reset();                                                               // C-97: given back before the voice
+  std::unique_ptr<uint8_t, void (*)(void *)> pcmHeld((uint8_t *)malloc(3100), free);   // C-97: borrowed while in use, not kept
+  uint8_t *pcm = pcmHeld.get();
+  if (!pcm) { lastInput = millis(); return; }
   bool stopped = false;
   while (cableLine(line, 10000) && line != "PCMEND") {
     if (!line.startsWith("PCM ") || stopped) continue;                          // stopped: let the rest go by
     size_t olen = 0;
-    if (!mbedtls_base64_decode(pcm, sizeof pcm, &olen, (const unsigned char *)line.c_str() + 4, line.length() - 4))
+    if (!mbedtls_base64_decode(pcm, 3100, &olen, (const unsigned char *)line.c_str() + 4, line.length() - 4))
       soundPcm((const int16_t *)pcm, olen / 2);
     if (giveUp()) stopped = true;
   }
@@ -232,11 +238,13 @@ static void overPhone(uint8_t *rec, size_t n) {
   v = 8000; memcpy(wav + 24, &v, 4); memcpy(wav + 28, &v, 4); s = 1; memcpy(wav + 32, &s, 2); s = 8; memcpy(wav + 34, &s, 2);
   memcpy(wav + 36, "data", 4); v = m; memcpy(wav + 40, &v, 4);
   size_t bytes = 44 + m;
-  static unsigned char b64[4100];
+  std::unique_ptr<unsigned char, void (*)(void *)> b64Held((unsigned char *)malloc(4100), free);   // C-97: borrowed while in use, not kept
+  unsigned char *b64 = b64Held.get();
+  if (!b64) { free(wav); talkStatus = "Not enough memory to send it."; screen = TALK; draw(); return; }   // DRAFT
   linkSend("TALKWAV " + String((unsigned)bytes));
   for (size_t at = 0; at < bytes && linkPhoneHere(); at += 3072) {
     size_t olen = 0;
-    mbedtls_base64_encode(b64, sizeof b64, &olen, wav + at, min((size_t)3072, bytes - at));
+    mbedtls_base64_encode(b64, 4100, &olen, wav + at, min((size_t)3072, bytes - at));
     b64[olen] = 0;
     linkSend("TW " + String((const char *)b64));
   }

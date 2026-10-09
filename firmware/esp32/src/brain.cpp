@@ -1,6 +1,7 @@
 // C-76: StackFlow's protocol, as M5Stack's own code speaks it (docs/LLM630.md, read in code and NOT yet run on an
 // LLM630): one JSON object per message, {request_id, work_id, action, object, data}; `setup` answers with the unit's
 // instance id; `inference` sends data, whole or in pieces ({delta, index, finish}); answers come back the same way.
+#include <memory>
 #include <WiFi.h>
 #include <Preferences.h>
 #include <mbedtls/base64.h>
@@ -123,11 +124,13 @@ bool brainTurn(const uint8_t *wav, size_t bytes, String &heard, String &answer, 
 
   // 1. the recording to whisper, in base64 pieces of 4,096 characters, as M5's own plugin sends it
   static const size_t RAW = 3072;                    // 3,072 bytes -> 4,096 base64 characters
-  static unsigned char b64[4100];
+  std::unique_ptr<unsigned char, void (*)(void *)> b64Held((unsigned char *)malloc(4100), free);   // C-97: borrowed while in use, not kept
+  unsigned char *b64 = b64Held.get();
+  if (!b64) { error = "Not enough memory for the recording."; return false; }   // DRAFT
   int index = 0;
   for (size_t at = 0; at < bytes; at += RAW, index++) {
     size_t n = min(RAW, bytes - at), olen = 0;
-    mbedtls_base64_encode(b64, sizeof b64, &olen, wav + at, n);
+    mbedtls_base64_encode(b64, 4100, &olen, wav + at, n);
     b64[olen] = 0;
     JsonDocument q;
     q["request_id"] = String("w") + nextId; q["work_id"] = workWhisper; q["action"] = "inference";

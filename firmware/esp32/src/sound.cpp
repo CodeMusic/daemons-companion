@@ -43,17 +43,27 @@ void es8311Mic() {                          // talk.cpp: the same codec, listeni
 // is offset and doubled, so whichever half of the frame GPIO 25 plays, it plays the sound.
 static bool dacStart();
 static uint32_t playedAt = 0;
+// C-95 (the user, 2026-10-09: on the Fire "the tempo is off -- it goes really quick"): in the ESP32's built-in DAC mode
+// the frames go out about 5.53 times faster than the rate asked for -- measured on the Fire with RATETEST down the cable:
+// asked 16000, 88,600 a second; 8000, 44,260; 4000, 22,110; below that it stops being in proportion. So the DAC is asked
+// for DAC_ASK and really plays DAC_OUT_HZ, and play() holds each 16 kHz sample for its share of those frames.
+static const int DAC_ASK = 8000, DAC_OUT_HZ = 44260;
 static void play(const int16_t *buf, size_t n) {
   size_t wrote;
   playedAt = millis();
   if (board.dacSpeaker && !dacStart()) return;
   if (!board.dacSpeaker) { i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY); return; }
+  // C-95: the DAC plays at DAC_OUT_HZ, not RATE (below), so each sample is held for as many of its frames as it lasts
   static uint16_t pair[512];
-  for (size_t at = 0; at < n; at += 256) {
-    size_t k = min((size_t)256, n - at);
-    for (size_t i = 0; i < k; i++) pair[2 * i] = pair[2 * i + 1] = (uint16_t)(buf[at + i] + 0x8000);
-    i2s_write(PORT, pair, k * 2 * sizeof(uint16_t), &wrote, portMAX_DELAY);
+  static float pos = 0;                       // where in the samples the next frame falls, carried from call to call
+  const float step = (float)RATE / DAC_OUT_HZ;
+  int k = 0;
+  for (size_t src; (src = (size_t)pos) < n; pos += step) {
+    pair[2 * k] = pair[2 * k + 1] = (uint16_t)(buf[src] + 0x8000);
+    if (++k == 256) { i2s_write(PORT, pair, sizeof pair, &wrote, portMAX_DELAY); k = 0; }
   }
+  pos -= n;
+  if (k) i2s_write(PORT, pair, k * 2 * sizeof(uint16_t), &wrote, portMAX_DELAY);
 }
 
 #if SOC_I2S_SUPPORTS_DAC
@@ -74,11 +84,13 @@ void soundIdle() {
   dacOn = false;
   dacQuiet();
 }
+static int dacRate = DAC_ASK;
+void soundDacRate(int hz) { if (dacOn) { i2s_driver_uninstall(PORT); dacOn = false; } dacRate = hz; }
 static bool dacBegin() {
   PORT = I2S_NUM_0;
   i2s_config_t cfg = {};
   cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN);
-  cfg.sample_rate = RATE;
+  cfg.sample_rate = dacRate;
   cfg.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
   cfg.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
   cfg.communication_format = I2S_COMM_FORMAT_STAND_MSB;
@@ -93,6 +105,7 @@ static bool dacBegin() {
 }
 #else
 static bool dacStart() { return false; }
+void soundDacRate(int) {}
 void soundIdle() {}
 #endif
 
@@ -169,6 +182,17 @@ static void tone(int midi, int ms, float level = 1.0f) {
 void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); }
 
 // C-66: a voice, as 16 kHz samples, at the volume set. It plays even with the board's sounds off: it was asked for.
+// C-95: a check from the computer (RATETEST down the cable) -- how long the speaker takes to play two seconds of
+// silence at RATE, so a board whose sounds run fast or slow can be measured rather than guessed at
+uint32_t soundRateTest() {
+  if (!ready) return 0;
+  static int16_t zero[256] = {0};
+  for (int i = 0; i < 16; i++) play(zero, 256);                 // fill the DMA first, so the timing is steady state
+  uint32_t t0 = millis();
+  for (int total = RATE * 2; total > 0; total -= 256) play(zero, 256);
+  return millis() - t0;
+}
+
 void soundPcm(const int16_t *samples, size_t n) {
   if (!ready) return;
   static int16_t buf[256];

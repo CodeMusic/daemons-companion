@@ -17,6 +17,8 @@ void soundRoutine(const char *type);       // a routine starting: its tune, the 
 void soundGameRoutine(const String &name, const String &type, uint32_t rgb);   // C-68: a game routine, the ring its colour
 void soundPcm(const int16_t *samples, size_t n);
 void playNoteSemis(int semis, int ms);     // C-70: one note, this many semitones over the day's note   // C-66: a voice, 16 kHz mono, streamed in
+uint32_t soundRateTest();
+void soundDacRate(int hz);                  // C-95: the check only                  // C-95: ms to play 2 s of samples (RATETEST down the cable)
 void soundWake();                          // waking from sleep: the title theme's opening, quickened
 void soundCare(int what);                  // C-13: fed (0), watered (1), trained (2) -- a little glad phrase
 void soundAccomplish(int kind, int species, int day);   // C-50: 0 a step, 1 a milestone, 2 the whole goal

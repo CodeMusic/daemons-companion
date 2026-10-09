@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 void soundBegin();
+void soundIdle();     // every pass of the loop: the M5GO and Fire let their DAC go once nothing has played a moment
 void soundPause();    // C-74: the StickS3 lends its codec to the microphone
 void soundResume();
 void es8311Mic();

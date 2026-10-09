@@ -258,5 +258,5 @@ void pm1Gpio(uint8_t, bool) {}         // C-74: only the StickS3 has an M5PM1
 void coreS3Speaker(bool, int) {}       // C-75: only the CoreS3 has these
 void coreS3Mic() {}
 void pmuBacklight(bool) {}
-bool boardPowerOff() { return false; }
+bool boardPowerOff() { return watchPowerOff(); }   // the watch: its PMU (watch.cpp); elsewhere false, and a deep sleep
 #endif

@@ -68,6 +68,7 @@ void loop() {
   if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
+  soundIdle();                              // C-75: the M5GO and Fire let their DAC go between sounds
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }
   // C-42: any menu, left alone, goes to sleep; waking lands at home

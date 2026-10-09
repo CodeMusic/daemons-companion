@@ -13,6 +13,7 @@ bool watchLocalTime(struct tm &) { return false; }
 long watchSteps() { return -1; }
 bool watchTalking() { return false; }
 bool watchTouchDown() { return false; }
+bool watchPowerOff() { return false; }
 
 #else
 
@@ -147,6 +148,9 @@ static bool down = false, talking = false;
 static int16_t xFrom, yFrom, xNow, yNow;
 static uint32_t downAt = 0;
 bool watchTalking() { return talking; }
+// 2026-10-09: at 5% the firmware slept until the BOOT pin -- which the watch has no way to press, so it would have looked
+// dead until its battery was pulled. Off through the PMU instead: the crown starts it again.
+bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; }
 bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchPanel.getPoint(x, y, 1) > 0; }
 
 static bool onTalk(int x, int y) { int dx = x - W / 2, dy = y - (H - 34); return dx * dx + dy * dy <= 30 * 30; }

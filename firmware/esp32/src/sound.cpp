@@ -40,8 +40,12 @@ void es8311Mic() {                          // talk.cpp: the same codec, listeni
 
 // Every sample goes out through here. C-75: the ESP32's DAC takes unsigned samples, and a pair for each frame: each one
 // is offset and doubled, so whichever half of the frame GPIO 25 plays, it plays the sound.
+static bool dacStart();
+static uint32_t playedAt = 0;
 static void play(const int16_t *buf, size_t n) {
   size_t wrote;
+  playedAt = millis();
+  if (board.dacSpeaker && !dacStart()) return;
   if (!board.dacSpeaker) { i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY); return; }
   static uint16_t pair[512];
   for (size_t at = 0; at < n; at += 256) {
@@ -52,7 +56,23 @@ static void play(const int16_t *buf, size_t n) {
 }
 
 #if SOC_I2S_SUPPORTS_DAC
-// C-75: the M5GO and Fire's speaker, on the ESP32's own DAC (GPIO 25, its channel 1) -- I2S_NUM_0 drives it.
+// C-75: the M5GO and Fire's speaker, on the ESP32's own DAC (GPIO 25, its channel 1) -- I2S_NUM_0 drives it. Only while a
+// sound plays (2026-10-09: the Fire whined): between, the DAC is let go and GPIO 25 held low, as M5Unified holds it.
+static bool dacBegin();
+static bool dacOn = false;
+static void dacQuiet() { pinMode(25, OUTPUT); digitalWrite(25, LOW); }
+static bool dacStart() {
+  if (dacOn) return true;
+  if (!dacBegin()) return false;
+  dacOn = true;
+  return true;
+}
+void soundIdle() {
+  if (!dacOn || millis() - playedAt < 400) return;
+  i2s_driver_uninstall(PORT);
+  dacOn = false;
+  dacQuiet();
+}
 static bool dacBegin() {
   PORT = I2S_NUM_0;
   i2s_config_t cfg = {};
@@ -71,11 +91,17 @@ static bool dacBegin() {
   return true;
 }
 #else
-static bool dacBegin() { return false; }
+static bool dacStart() { return false; }
+void soundIdle() {}
 #endif
 
 void soundBegin() {
-  if (board.dacSpeaker) { ready = dacBegin(); return; }
+  if (board.dacSpeaker) {                      // C-75: started by the first sound, not here
+#if SOC_I2S_SUPPORTS_DAC
+    dacQuiet();
+#endif
+    ready = true; return;
+  }
   i2s_config_t cfg = {};
   cfg.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX);
   cfg.sample_rate = RATE;

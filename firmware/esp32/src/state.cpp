@@ -20,7 +20,7 @@ void loadSettings() {
   Preferences p; p.begin("settings", true);
   cfg.home = p.getString("home", cfg.home); cfg.sleepAfter = p.getInt("sleep", cfg.sleepAfter);
   cfg.sound = p.getBool("sound", cfg.sound); cfg.volume = p.getInt("volume", cfg.volume); cfg.ring = p.getInt("ring", cfg.ring);
-  cfg.meet = p.getBool("meet", cfg.meet);
+  cfg.meet = p.getBool("meet", cfg.meet); cfg.band = p.getInt("band", cfg.band);
   p.end();
   applySettings();
 }
@@ -29,13 +29,13 @@ void takeSettings(JsonVariant s) {
   Settings got;
   got.home = s["home"] | cfg.home.c_str(); got.sleepAfter = s["sleepAfter"] | cfg.sleepAfter;
   got.sound = s["sound"] | cfg.sound; got.volume = s["volume"] | cfg.volume; got.ring = s["ring"] | cfg.ring;
-  got.meet = s["meet"] | cfg.meet;
+  got.meet = s["meet"] | cfg.meet; got.band = s["band"] | cfg.band;
   if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
-      got.ring == cfg.ring && got.meet == cfg.meet) return;
+      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band) return;
   cfg = got;
   Preferences p; p.begin("settings", false);
   p.putString("home", cfg.home); p.putInt("sleep", cfg.sleepAfter); p.putBool("sound", cfg.sound);
-  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring); p.putBool("meet", cfg.meet);
+  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring); p.putBool("meet", cfg.meet); p.putInt("band", cfg.band);
   p.end();
   applySettings();
 }

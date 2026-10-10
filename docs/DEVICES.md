@@ -11,6 +11,7 @@
 | **T-Embed** (plain) | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | -- | voltage only | Wi-Fi, USB cable, phone | built (C-67) |
 | **T-Embed SI4732** | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | AM/FM receiver | voltage only | Wi-Fi, USB cable, phone | built (C-67); its radio C-69 |
 | **T-Watch S3** | 240x240 touch | touch, the crown | PDM mic | I2S speaker | -- | LoRa, IR | PMU | Wi-Fi, USB cable, phone; LoRa later | built (C-71) |
+| **T-Deck / T-Deck Plus** | 320x240 (touch, unused) | keyboard, trackball | two mics (ES7210) | I2S speaker | -- | **LoRa**; GPS on the Plus | voltage only | Wi-Fi, USB cable, phone; **LoRa to other boards** | built (C-104) |
 | **the phone** | -- | touch | its mic | its speaker | -- | -- | -- | Wi-Fi at home, the relay away | runs |
 | M5 StickS3, Cores, Tab5 | various | various | yes | yes | -- | -- | PMU | Wi-Fi | C-74, C-75 |
 | **LLM630** (behind a T-Embed) | none | none | none | none | -- | -- | own gauge | UART to its T-Embed | C-76: the offline brain, not a device of its own |

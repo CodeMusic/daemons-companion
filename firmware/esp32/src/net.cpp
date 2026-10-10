@@ -12,6 +12,7 @@
 #include "radios.h"
 #include "link.h"
 #include "meet.h"
+#include "lora.h"
 #include "leds.h"
 #include "sound.h"
 #include "relay_ca.h"
@@ -428,6 +429,18 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
                              reply("NETWORKS " + networksJson(!fromPhone)); }
   else if (line.startsWith("NETS ") && !fromPhone) takeShared(line.substring(5));   // C-93: the shared list, by cable only
+  else if (line.startsWith("MESH") && !fromPhone) {   // C-72: the LoRa radio, from the computer -- a bench test with two boards
+    // MESH? (the radio, the band, who is near) | MESH BEACON | MESH CALL | MESH WAVE [tag] | MESH SAY <tag|*> word
+    String rest = line.length() > 5 ? line.substring(5) : "";
+    if (line == "MESH?") reply("MESH " + loraStatus());
+    else if (rest == "BEACON" || rest == "CALL") reply(loraSend(rest == "CALL" ? 4 : 1, 0, "") ? "MESH sent" : "MESH not sent (no radio, or nothing carried)");
+    else if (rest.startsWith("WAVE")) reply(loraSend(2, rest.length() > 5 ? strtoul(rest.substring(5).c_str(), nullptr, 16) : 0, "") ? "MESH sent" : "MESH not sent");
+    else if (rest.startsWith("SAY ")) {
+      String r = rest.substring(4); int sp = r.indexOf(' ');
+      String to = sp < 0 ? r : r.substring(0, sp), word = sp < 0 ? "" : r.substring(sp + 1);
+      reply(loraSend(3, to == "*" ? 0 : strtoul(to.c_str(), nullptr, 16), word) ? "MESH sent" : "MESH not sent");
+    }
+  }
   else if (line.startsWith("KEY ") && !fromPhone) {   // the controls, from the computer, for a check with SHOT
     String k = line.substring(4);
     if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
@@ -494,7 +507,7 @@ void readUsb() {
 // C-15: what the meeting radio heard, and this board's own tag, told to the server -- through a bridge (MET, BEACON
 // lines) or over Wi-Fi; kept a while when there is neither. A meeting is a small event: a flash and a word, never a
 // sound and never on a sleeping board (it must never pester).
-std::vector<String> metWaiting;
+std::vector<String> metWaiting, saidWaiting;
 String beaconTold;
 void meetReport() {
   int species; String tag; bool mine;
@@ -502,6 +515,13 @@ void meetReport() {
     if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag);
     if (!mine && !asleep) { ledsFlash(); say("A daemon nearby"); }
   }
+  int relayed; String dir, kind, text;                            // C-72: the same over LoRa, with how far it came
+  while (loraTakeHeard(species, tag, relayed, mine)) {
+    if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag + " lora " + String(relayed));
+    if (!mine && !asleep) { ledsFlash(); say("A daemon nearby"); }
+  }
+  while (loraTakeSaid(dir, kind, species, tag, relayed, text))
+    if (saidWaiting.size() < 8) saidWaiting.push_back(dir + " " + kind + " " + String(species) + " " + tag + " " + String(relayed) + " " + text);
   bool link = bridgeLive() || online();
   if (!link) return;
   String listen;
@@ -523,11 +543,26 @@ void meetReport() {
     String m = metWaiting.front();
     if (bridgeLive()) bridge("MET " + m);
     else {
-      int sp = m.indexOf(' ');
-      String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + m.substring(sp + 1) + "\"}";
+      int sp = m.indexOf(' '), sp2 = m.indexOf(' ', sp + 1);
+      String peer = sp2 < 0 ? m.substring(sp + 1) : m.substring(sp + 1, sp2);
+      String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + peer + "\"" +
+                    (sp2 < 0 ? "" : ",\"how\":\"lora\",\"hops\":" + m.substring(m.lastIndexOf(' ') + 1)) + "}";
       if (http("POST", "/api/device/met", body).isEmpty()) return;
     }
     metWaiting.erase(metWaiting.begin());
+  }
+  while (!saidWaiting.empty()) {                                  // C-72: a wave or a word, in or out
+    String m = saidWaiting.front();
+    if (bridgeLive()) bridge("SAID " + m);
+    else {
+      JsonDocument d; int a = 0;
+      const char *keys[] = { "dir", "kind", "species", "peer", "hops" };
+      for (int k = 0; k < 5; k++) { int b = m.indexOf(' ', a); d[keys[k]] = m.substring(a, b); a = b + 1; }
+      d["hops"] = d["hops"].as<String>().toInt(); d["text"] = m.substring(a);
+      String body; serializeJson(d, body);
+      if (http("POST", "/api/device/message", body).isEmpty()) return;
+    }
+    saidWaiting.erase(saidWaiting.begin());
   }
 }
 

@@ -177,9 +177,10 @@ the daemon's edition, and **the game will too** (DAEMONS T-359), so a daemon's s
   carried daemon's species and four random bytes that change every hour, so nobody can be followed by it. A service
   UUID is the one thing an iPhone app may advertise, so the board and the phone send the same beacon. Each listens a
   few seconds every three minutes; the server keeps a meeting once an hour per tag and never counts our own companions.
-- **LoRa and the mesh are later** (C-16): a mesh would pass messages through every unit, so a daemon could be known to
-  be in the mesh though out of radio range. The T-Embed also carries a CC1101 (sub-GHz), which RadioLib can drive;
-  it is kept for that later work.
+- **LoRa, begun 2026-10-10** (C-72, `docs/LORA.md`): the same beacon over LoRa from the watch and the T-Deck, a
+  two-hop flood so a daemon out of range is heard through a board between, and a wave or a word between daemons (the
+  MESH routines). The daemons talking for themselves is still C-16. The T-Embed's CC1101 is sub-GHz FSK/OOK, not LoRa:
+  it cannot join (LONGWAVE listens with it instead).
 
 ## 10. The device's ROUTINES -- its radios, in the game's words (the user, 2026-10-04)
 

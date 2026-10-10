@@ -65,7 +65,8 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC, Sub-GHz | gauge and charger | **runs** |
 | **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | **runs** |
 | **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, speaking along with the radio | AM/FM: LATENT and CONTEXT -- **CHANNEL**, a move it learns | voltage | **runs** |
-| **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa, IR | power chip | built, not yet run |
+| **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa (MESH), IR | power chip | built, not yet run |
+| **T-Deck, T-Deck Plus** | 320x240 | a keyboard and a trackball | yes (two mics) | -- | LoRa (MESH); GPS on the Plus | voltage | built, not yet run (C-104) |
 | **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
 | **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | **runs** |
 | **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | **runs** |
@@ -92,7 +93,7 @@ Plug the boards in by USB-C cables that carry data, with [PlatformIO](https://pl
 |---|---|
 | `./updateCompanion.sh` | asks each board on USB for its HELLO and flashes its build; with several plugged in it asks which (numbers, or `a` for all) |
 | `./updateCompanion.sh --all` | every board found, without asking |
-| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `m5-sticks3`, `m5-cores3`, `m5-dial`, `m5-tab5`, or `m5-core` for the M5GO and Fire |
+| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `t-deck`, `m5-sticks3`, `m5-cores3`, `m5-dial`, `m5-tab5`, or `m5-core` for the M5GO and Fire |
 | `./updateCompanion.sh --port PORT` | only that one |
 | `./updateCompanion.sh --link` | flash, then link |
 | `./updateCompanion.sh --build` | only build every board's firmware, to check it compiles (no board needed) |
@@ -208,6 +209,15 @@ the handheld, undoes every pairing.
 random tag that changes every hour -- and listen for others every few minutes. Passing someone else's companion is a
 meeting: at the next SYNC your INDEX sees their daemon and yours grows a little friendlier. Your own handheld and
 phone never count as meeting each other. Off in DEVICE, ITS SETTINGS, MEET OTHERS NEARBY.
+
+**Over LoRa too, and a word between daemons (C-72).** A board with a LoRa radio (the T-Watch S3, the T-Deck) sends the
+same beacon over LoRa every two minutes -- streets rather than a room -- and listens all the time. Its **MESH** routines:
+**NEARBY** lists the daemons heard in the last ten minutes (name, how loud, how long ago, and whether another board
+passed it on) and sends one of them, or everyone, a **WAVE** or a word -- four set words, or on the T-Deck anything
+typed; **CALL OUT** asks who is there and lists who answers in thirty seconds. A wave or word that arrives flashes on
+the screen; the DAEMON tab keeps them under MET NEARBY. Every board passes on what it hears once (two hops), so a daemon
+out of range is still heard through a board between. The band is set once on the site (DEVICE, ITS SETTINGS, LORA
+BAND: 433, 868 or 915 MHz -- what the boards were bought with). `docs/LORA.md` has the design.
 
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
 on it. For the App Store, archive in Xcode and upload with Transporter as usual.

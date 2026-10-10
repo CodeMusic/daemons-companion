@@ -1,4 +1,5 @@
 // The dial and the buttons, doing a step, and sleep (C-67: from main.cpp).
+#include <Wire.h>
 #include "app.h"
 #include "talk.h"
 #include "radios.h"
@@ -19,6 +20,37 @@ void inputBegin() {
   if (board.encKey >= 0) pinMode(board.encKey, INPUT_PULLUP);   // C-75: the CoreS3 has no key -- only its touch
   if (board.hasSideKey()) pinMode(board.sideKey, INPUT_PULLUP);
   if (board.threeKeys()) { pinMode(board.keyLeft, INPUT); pinMode(board.keyRight, INPUT); }   // C-75: pulled up on the board
+  if (board.tbUp >= 0) for (int p : { board.tbUp, board.tbDown, board.tbLeft, board.tbRight }) pinMode(p, INPUT_PULLUP);   // C-104
+}
+
+// ---- C-104: the T-Deck's trackball and keyboard -------------------------------------------------------------------
+// The trackball is four pins that toggle as the ball rolls (up, down, left, right); three toggles one way make a step
+// of the dial (Meshtastic's threshold), drained by dialStep() -- so a routine tuning a radio reads the ball as it reads
+// the dial. Its press is BOOT, read as the plain T-Embed's dial press (readKeyAlone: a tap presses, held it goes back).
+// The keyboard is its own ESP32-C3 on I2C 0x55: one character a read, 0 when none. Enter presses and Backspace goes
+// back everywhere; on a password screen the letters type; while a routine runs they go to it (deckTakeKey).
+static int tbPending = 0, deckKey = 0;
+int deckTakeKey() { int k = deckKey; deckKey = 0; return k; }
+void readDeck() {
+  if (board.tbUp < 0) return;
+  static bool last[4], first = true; static int sum = 0;
+  const int pins[4] = { board.tbUp, board.tbDown, board.tbLeft, board.tbRight }, dir[4] = { -1, 1, -1, 1 };
+  if (first) { for (int i = 0; i < 4; i++) last[i] = digitalRead(pins[i]); first = false; }
+  for (int i = 0; i < 4; i++) { bool v = digitalRead(pins[i]); if (v != last[i]) { last[i] = v; sum += dir[i]; } }
+  if (sum >= 3 || sum <= -3) { tbPending += sum > 0 ? 1 : -1; sum = 0; }
+  if (!board.keyboard) return;
+  static uint32_t askedAt = 0;
+  if (millis() - askedAt < 40) return;
+  askedAt = millis();
+  Wire.requestFrom((uint8_t)0x55, (uint8_t)1);
+  int c = Wire.available() ? Wire.read() : 0;
+  if (c <= 0 || c == 0xFF) return;
+  if (wake()) return;                                           // a key wakes it, and does nothing else
+  lastInput = millis();
+  if (routineRunning) { deckKey = c; return; }
+  if (screen == TYPE_PASS && c != 13 && c != 10 && c != 8) { if (c >= 32 && c < 127) { typed += (char)c; dirty = true; } return; }
+  if (c == 13 || c == 10) { if (screen == TYPE_PASS) wheelAt = 0; press(); }   // Enter on a password: OK
+  else if (c == 8) back();
 }
 
 // ---- C-49: doing a step is one press; undoing it, the top button, for a little while after --------------------------
@@ -79,7 +111,10 @@ void turn(int step) {
 // One detent of the dial, read and spent: +1, -1 or 0. A routine that runs the dial itself (a radio's tuning) reads it
 // here, so its turns tune rather than turn pages.
 int dialStep() {
-  if (board.encA < 0) return 0;                  // the watch: touch instead (its own screens)
+  if (board.encA < 0) {                          // the watch: touch instead (its own screens); the T-Deck: its trackball
+    if (!tbPending) return 0;
+    int step = tbPending > 0 ? 1 : -1; tbPending -= step; return step;
+  }
   static const int8_t table[16] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
   int8_t now = (digitalRead(board.encA) << 1) | digitalRead(board.encB);
   encSum += table[(encLast << 2) | now];

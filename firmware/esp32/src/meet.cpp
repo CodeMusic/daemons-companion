@@ -93,6 +93,8 @@ bool meetTakeListen(String &line) {
 }
 
 String meetOwnPeer() { return beaconSpecies >= 0 ? hex8(peer) : ""; }
+uint32_t meetTag() { return beaconSpecies >= 0 ? peer : 0; }
+bool meetIsOurs(const String &tag) { return ours.indexOf(tag) >= 0; }
 void meetSetOurs(const String &peersCsv) { ours = peersCsv; }
 
 bool meetTakeHeard(int &species, String &tag, bool &mine) {

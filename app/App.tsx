@@ -652,7 +652,9 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
 // C-60: who the daemon has met nearby (C-15). Each meeting: the species as the INDEX draws it, when, and whether a SYNC
 // has written it into the save yet. Below, quietly, the user's own check that the radios listen: the board's last
 // listen, and when the phone and the board last heard each other -- never counted as a meeting.
-type Meeting = { at: string; species: number; name: string; art: string | null; written: boolean };
+type Meeting = { at: string; species: number; name: string; art: string | null; written: boolean; how?: "ble" | "lora"; hops?: number };
+// C-72: a wave or a word over LoRa, heard from a daemon nearby or sent from one of our boards (to one, or to everyone)
+type Message = { at: string; dir: "in" | "out"; kind: "wave" | "say"; species: number; name: string; peer: string; hops: number; text: string; ours: boolean };
 type Listen = { at: string; started: boolean; devices: number; beacons: number } | null;
 const whenSaid = (iso: string) => {
   const t = new Date(iso), today = new Date().toDateString() === t.toDateString();
@@ -660,7 +662,7 @@ const whenSaid = (iso: string) => {
   return today ? `today, ${hm}` : `${t.toLocaleDateString([], { month: "short", day: "numeric" })}, ${hm}`;
 };
 function MeetingsCard() {
-  const [m, setM] = useState<{ meetings: Meeting[]; heardOurs: { at: string } | null; lastListen: Listen } | null>(null);
+  const [m, setM] = useState<{ meetings: Meeting[]; messages?: Message[]; heardOurs: { at: string } | null; lastListen: Listen } | null>(null);
   useEffect(() => { api<any>("/api/meetings").then(setM).catch(() => {}); }, []);
   if (!m) return null;
   return (
@@ -671,10 +673,22 @@ function MeetingsCard() {
           {x.art ? <Art path={x.art} size={48} /> : <YStack width={48} height={48} />}
           <YStack flex={1}>
             <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{x.name}</Text>
-            <Small>{whenSaid(x.at)} · {x.written ? "in your INDEX" : "in your INDEX after the next SYNC"}</Small>
+            <Small>{whenSaid(x.at)}{x.how === "lora" ? (x.hops ? ` · over LoRa, passed on by ${x.hops === 1 ? "a board" : "two boards"}` : " · over LoRa") : ""} · {x.written ? "in your INDEX" : "in your INDEX after the next SYNC"}</Small>
           </YStack>
         </XStack>
       )) : <Small>No one yet. A meeting needs another companion nearby: someone else's handheld, or the app on someone else's phone.</Small>}
+      {m.messages?.length ? (
+        <YStack gap={4} marginTop={6}>
+          <Eyebrow>WAVES AND WORDS</Eyebrow>
+          {m.messages.map((x, i) => (
+            <Small key={i} color="$color11">
+              {x.dir === "in" ? `${x.name}${x.ours ? " (one of yours)" : ""} ${x.kind === "wave" ? "waved" : `said “${x.text}”`}`
+                              : `${x.name} ${x.kind === "wave" ? "waved at" : `said “${x.text}” to`} ${x.peer === "00000000" ? "everyone nearby" : "a daemon nearby"}`}
+              {" · "}{whenSaid(x.at)}{x.hops ? " · passed on" : ""}
+            </Small>
+          ))}
+        </YStack>
+      ) : null}
       {m.lastListen || m.heardOurs ? (
         <Small color="$color8">
           {m.lastListen ? `Last listen ${whenSaid(m.lastListen.at)}: ${m.lastListen.started ? `${m.lastListen.devices} devices heard` : "the radio was busy"}.` : ""}
@@ -981,7 +995,7 @@ type RemoteSet = { label: string; protocol: string; bits: number; repeat: number
 type Brand = { brand: string; sets: RemoteSet[] };
 
 // C-43: the board's settings live here, not on the board: it picks them up whenever it is linked.
-type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number; meet: boolean;
+type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number; meet: boolean; band?: number;
                         palette: "checkpoint" | "rainbow" };   // C-90
 
 function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
@@ -1032,6 +1046,9 @@ function DeviceSettingsCard({ ink }: { ink: string }) {
         </Row>
         <Row label="MEET OTHERS NEARBY">
           <Choice value={s.meet} options={[[true, "On"], [false, "Off"]]} onPick={(meet) => set({ meet })} ink={ink} />
+      </Row>
+        <Row label="LORA BAND -- THE WATCH AND THE T-DECK, AS BOUGHT">
+          <Choice value={s.band ?? 433} options={[[433, "433 MHz"], [868, "868 MHz"], [915, "915 MHz"]]} onPick={(band) => set({ band })} ink={ink} />
       </Row>
     </Card>
   );

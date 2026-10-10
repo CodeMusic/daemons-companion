@@ -38,7 +38,7 @@ struct State {
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
-                  bool meet = true; };                         // meet: C-15, meeting others nearby
+                  bool meet = true; int band = 433; };         // meet: C-15, meeting others nearby; band: C-72, LoRa
 extern State st;
 extern Settings cfg;
 extern bool dirty;
@@ -105,6 +105,9 @@ void sleepNow();
 void tick();
 void untick();
 bool giveUp();                            // the top button (or the held dial) while a routine waits
+int buttonEvent();                        // a routine running the dial itself: 1 a tap, 2 two taps, -1 held (or the cable's KEY)
+int deckTakeKey();                        // C-104: the T-Deck's keyboard, one character read and spent (0: none)
+void readDeck();                          // C-104: the keyboard and the trackball, every pass of the loop
 
 // ---- the server, the bridges, the site (net.cpp) --------------------------------------------------------------------
 extern String serverUrl;

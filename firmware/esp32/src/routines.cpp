@@ -17,6 +17,7 @@ String runWifiMotion();                   // C-70: experiments.cpp
 String runWhatsOnTheAir(); String runFindIt();   // LONGWAVE: longwave.cpp
 String runWhatRemote();                   // FLARE: radios.cpp
 String runListenFm(); String runStaticSynth(); String runListenAm(); String runLightning();   // C-69, C-70: radio.cpp
+String runNearby(); String runCallOut();   // C-72: MESH (LoRa), lora.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
@@ -27,6 +28,7 @@ static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } }
 static const Routine CONTEXT_ROUTINES[]    = { { "CHANNEL", runListenFm }, { "STATIC SYNTH", runStaticSynth } };   // C-69: FM, DRAFT
 static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
 static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
+static const Routine MESH_ROUTINES[]       = { { "NEARBY", runNearby }, { "CALL OUT", runCallOut } };   // C-72: LoRa, DRAFT (MESH was held for it, PLAN 10)
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
@@ -39,6 +41,7 @@ void routinesBegin() {
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 };
   if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   LONGWAVE_ROUTINES,   2 };
+  if (board.loraChip != LoraChip::None) types[typeCount++] = { "MESH", "LoRa", MESH_ROUTINES, 2 };   // C-72, DRAFT
   if (board.si4732) types[typeCount++] = { "LATENT",     "AM",        LATENT_ROUTINES,     2 };   // C-69: the user's names
   if (board.si4732) types[typeCount++] = { "CONTEXT",    "FM",        CONTEXT_ROUTINES,    2 };
   if (!partyFirst()) types[typeCount++] = { "PARTY",      "the game",  nullptr,             0 };   // C-68, DRAFT
@@ -47,7 +50,7 @@ void routinesBegin() {
 
 // C-68: GAME ROUTINES. A board with no radios of its own (the plain T-Embed; the SI4732 until its own types, C-69) opens
 // the party from ROUTINES, with its Bluetooth and Wi-Fi a row below; the CC1101 reaches the same screen as its PARTY type.
-bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732; }   // the SI4732 has its radio (C-69)
+bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732 && board.loraChip == LoraChip::None; }   // the SI4732 has its radio (C-69); LoRa is a radio too (C-72)
 bool isPartyType(int i) { return i >= 0 && i < typeCount && !strcmp(types[i].name, "PARTY"); }
 int partyRows() { return st.partyN + (partyFirst() ? 1 : 0); }
 

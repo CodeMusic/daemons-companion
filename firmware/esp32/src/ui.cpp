@@ -16,6 +16,10 @@ static String hint(String s) {
     s.replace("hold the dial", "hold B"); s.replace("turn:", "A/C:"); s.replace("press:", "B:");
     return s;
   }
+  if (board.keyboard) {                      // C-104: the T-Deck -- the ball rolls and clicks; Enter and Backspace too
+    s.replace("turn:", "roll:"); s.replace("press:", "click:"); s.replace("hold the dial", "hold the ball");
+    return s;
+  }
   if (!board.noDial()) return s;
   s.replace("top button: back", "hold side: back"); s.replace("top button: stop", "side: stop");
   s.replace("top button: undo", "hold side: undo"); s.replace("top: delete", "hold side: delete");

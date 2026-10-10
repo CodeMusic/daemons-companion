@@ -220,7 +220,8 @@ export function sync(cfg: Config, store: Store, now = new Date()) {
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
 export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
-                                 palette: "checkpoint" as Palette };                                              // C-90
+                                 palette: "checkpoint" as Palette,                                                // C-90
+                                 band: 433 };   // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
 export type DeviceSettings = typeof DEVICE_SETTINGS;
 export function deviceSettings(store: Store): DeviceSettings {
   try { return { ...DEVICE_SETTINGS, ...JSON.parse(store.getSetting("device") ?? "{}") }; }
@@ -235,7 +236,8 @@ function checkSettings(b: any): DeviceSettings | string {
   if (!Number.isInteger(s.ring) || s.ring < 0 || s.ring > 100) return "ring is 0 to 100";
   if (typeof s.meet !== "boolean") return "meet is on or off";
   if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
-  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette };
+  if (![433, 868, 915].includes(s.band)) return "band is 433, 868 or 915";
+  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band };
 }
 
 // C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
@@ -411,7 +413,7 @@ const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
-     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/listen",
+     "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello"].includes(p),
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/")),
@@ -757,11 +759,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/meetings") {
         const applied = Number(store.getSetting("met.applied") ?? 0);
         const meetings = store.meetings().map((m) => {
-          const species = (m.detail ?? "").split(" ")[0], row = SPECIES[species];
+          const t = (m.detail ?? "").split(" "), species = t[0], row = SPECIES[species];
           return { at: m.at, species: Number(species), name: row?.name ?? "?",
-                   art: row?.art?.front ? `/art/species/${species}.png` : null, written: m.id <= applied };
+                   art: row?.art?.front ? `/art/species/${species}.png` : null, written: m.id <= applied,
+                   how: t[2] === "lora" ? "lora" : "ble", hops: Number(t[3]) || 0 };   // C-72
         });
-        return send(res, 200, { meetings,
+        // C-72: the waves and words over LoRa, newest first -- heard, or sent from one of our boards
+        const messages = store.interactionsSince(new Date(Date.now() - 14 * 86400000)).filter((i) => i.kind === "msg").reverse().slice(0, 20)
+          .map((i) => { const m = /^(in|out) (wave|say) (\d+) ([0-9a-f]{8}) (\d) ?(.*)$/.exec(i.detail ?? "");
+                        const row = m ? SPECIES[m[3]] : undefined;
+                        return m ? { at: i.at, dir: m[1], kind: m[2], species: Number(m[3]), name: row?.name ?? "?", peer: m[4],
+                                     hops: Number(m[5]), text: m[6], ours: ownBeacons(store).some((x) => x.peer === m[4]) } : null; })
+          .filter(Boolean);
+        return send(res, 200, { meetings, messages,
                                 heardOurs: JSON.parse(store.getSetting("beacons.heardOurs") ?? "null"),
                                 lastListen: JSON.parse(store.getSetting("beacons.lastListen") ?? "null") });
       }
@@ -868,10 +878,24 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return send(res, 200, { counted: false, why: "one of yours" });
         }
         const hour = new Date(Date.now() - 3600000);
-        if (store.interactionsSince(hour).some((i) => i.kind === "met" && i.detail?.endsWith(" " + peer)))
+        if (store.interactionsSince(hour).some((i) => i.kind === "met" && i.detail?.split(" ")[1] === peer))
           return send(res, 200, { counted: false, why: "already met this hour" });
-        store.logInteraction("met", `${species} ${peer}`);
-        return send(res, 200, { counted: true, name: SPECIES[species].name });
+        // C-72: over LoRa the frame says how many boards passed it on (0: heard directly); Bluetooth is always direct
+        const lora = b.how === "lora", hops = lora ? Math.min(2, Math.max(0, Number(b.hops) || 0)) : 0;
+        store.logInteraction("met", `${species} ${peer}${lora ? ` lora ${hops}` : ""}`);
+        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : "ble", hops });
+      }
+      // C-72: a wave or a word over LoRa -- heard ("in") from a daemon nearby, or sent ("out") to one (or to everyone,
+      // peer 00000000). Kept as the daemon's life is kept, and shown under MET NEARBY. A word is forty letters at most.
+      if (req.method === "POST" && path === "/api/device/message") {
+        const b = await body(req);
+        const dir = b.dir === "out" ? "out" : b.dir === "in" ? "in" : "", kind = b.kind === "wave" ? "wave" : b.kind === "say" ? "say" : "";
+        const species = String(b.species ?? ""), peer = String(b.peer ?? "");
+        if (!dir || !kind || !SPECIES[species] || !/^[0-9a-f]{8}$/.test(peer)) return send(res, 400, { error: "message {dir in|out, kind wave|say, species, peer}" });
+        const hops = Math.min(2, Math.max(0, Number(b.hops) || 0));
+        const text = typeof b.text === "string" ? b.text.replace(/[^\x20-\x7e]/g, "").slice(0, 40) : "";
+        store.logInteraction("msg", `${dir} ${kind} ${species} ${peer} ${hops} ${text}`);
+        return send(res, 200, { ok: true, name: SPECIES[species].name });
       }
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);

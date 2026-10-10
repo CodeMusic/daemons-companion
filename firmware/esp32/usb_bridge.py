@@ -204,14 +204,26 @@ def bridge(a, port):
                 word, _, rest = msg.partition(" ")
                 try:
                     if word == "MET":
-                        species, tag = rest.split()
-                        r = server_json(a.server, "/api/device/met", {"species": species, "peer": tag})
-                        print("usb_bridge: met a companion nearby (species %s): %s" % (species,
+                        parts = rest.split()                    # species tag [lora hops]  (C-72: over LoRa, and how far)
+                        met = {"species": parts[0], "peer": parts[1]}
+                        if len(parts) > 2: met["how"] = parts[2]
+                        if len(parts) > 3: met["hops"] = int(parts[3])
+                        r = server_json(a.server, "/api/device/met", met)
+                        print("usb_bridge: met a companion nearby (species %s%s): %s" % (parts[0], ", over LoRa" if len(parts) > 2 else "",
                               "counted" if r.get("counted") else r.get("why", "not counted")), flush=True)
                     else:
                         server_json(a.server, "/api/device/beacon", {"peer": rest.strip()})
                 except Exception as e:
                     print("usb_bridge: could not pass on %s (%s)" % (word, e), flush=True)
+            elif msg.startswith("SAID "):                   # C-72: a wave or a word over LoRa, in or out
+                try:
+                    d, kind, species, tag, hops, text = (msg[5:].split(" ", 5) + [""] * 6)[:6]
+                    server_json(a.server, "/api/device/message", {"dir": d, "kind": kind, "species": species, "peer": tag,
+                                                                  "hops": int(hops or 0), "text": text})
+                    print("usb_bridge: %s %s%s" % ("heard" if d == "in" else "sent", "a wave" if kind == "wave" else "a word",
+                                                  (": " + text) if text else ""), flush=True)
+                except Exception as e:
+                    print("usb_bridge: could not pass on a message (%s)" % e, flush=True)
             elif msg.startswith("ROUTINES "):
                 try:
                     server_json(a.server, "/api/device/routines", json.loads(msg[9:]))

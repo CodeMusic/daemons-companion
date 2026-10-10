@@ -166,6 +166,42 @@ footers centred, and the DAEMON page and the face laid out for it. **Sound** is 
 *Sources: M5GFX 0.2.32 (`M5GFX.cpp`, its board_M5Dial autodetect), M5Unified 0.2.5 (`M5Unified.cpp`: the I2C pins,
 power hold, button and buzzer), m5stack/M5Dial (`M5Dial.h`: the encoder pins; `MFRC522.h`: 0x28).*
 
+## The T-Deck and T-Deck Plus (C-104)
+
+A hand-sized **ESP32-S3** (16 MB flash, 8 MB octal PSRAM) behind a **2.8" ST7789, 320x240**, with a **QWERTY keyboard**,
+a **trackball**, a **touch screen**, an **SX1262 LoRa radio**, two microphones and a speaker, a microSD, a battery and --
+on the Plus -- a **GPS**. **The Plus is the same circuit board** with the GPS fitted on its Grove UART and a 2000 mAh
+battery in a finished case; one build serves both. Everything the ESP32 drives is switched on by **IO10 HIGH** first.
+
+| | pins | notes |
+|---|---|---|
+| LCD | CS 12, DC 11, SCLK 40, MOSI 41, MISO 38, BL 42; no reset pin | 240x320 memory, turned 1 for landscape, not inverted |
+| **keyboard** | its own **ESP32-C3**, I2C **0x55** on SDA 18 / SCL 8 | **one character a read** (0 when none); its backlight by a write (`0x01`, 0-255); needs half a second after power to start. The six-pin header on the back reaches this chip |
+| **trackball** | up 3, down 15, left 1, right 2 (each toggles as the ball rolls); **its press is BOOT (0)** | Meshtastic's threshold: three toggles make a step |
+| touch | GT911, I2C **0x5D**, INT 16 | not read yet (the keyboard and ball are the controls) |
+| **LoRa** | SX1262 on the screen's SPI bus: **CS 9, RST 17, BUSY 13, DIO1 45**; DIO2 the RF switch; a TCXO at 1.8 V on DIO3 | **433, 868 or 915 MHz by the board bought** -- the same chip, a different antenna match; nothing on the board says which |
+| speaker | MAX98357A: BCLK 7, WS 5, DOUT 6 | the plain T-Embed's |
+| microphones | two through an **ES7210** (0x40): MCLK 48, LRCK 21, SCK 47, DIN 14 | the plain T-Embed's codec and pins |
+| battery | **ADC on IO4**, a 2x divider; a TP4065 charger | the Plus 2000 mAh; the bare T-Deck takes its own cell |
+| microSD | CS 39 on the shared bus | held HIGH, off the bus |
+| **GPS** (the Plus) | a u-blox MIA-M10Q (or an L76K on earlier boards) on **RX 44 / TX 43**, 9600 baud, NMEA | takes the Grove connector, so there is no spare port on the Plus |
+| Wi-Fi, BLE 5 | the ESP32-S3's | |
+
+**What one firmware needs** (and `env:t-deck` has): the T-Embed's screen with new pins and no inversion; the trackball
+feeding the dial's step and BOOT as its press; the keyboard read every 40 ms, Enter a press and Backspace a back, the
+letters typing on a password screen or into a routine; the plain T-Embed's microphone and speaker code unchanged; the
+voltage battery. **Not yet used**: the touch screen, the GPS, the SD card.
+
+**What it is good for here**: it is the one board that can **type** -- a word to another daemon over LoRa (MESH /
+NEARBY, docs/LORA.md), a Wi-Fi password without the wheel -- and, with the watch, one of the two that **hear each other
+at a distance** over LoRa. The GPS could set its clock, or later say where a meeting happened; the touch screen could
+make it the Tab5's smaller sibling.
+
+*Sources: github.com/Xinyuan-LilyGO/T-Deck (examples/UnitTest/utilities.h and UnitTest.ino for every pin, the trackball's
+directions and the GPS's set-up; examples/Keyboard_T_Deck_Master for the keyboard's protocol); meshtastic/firmware
+variants/esp32s3/t-deck/variant.h (the same pins, the GT911's address, the TCXO's voltage, the trackball's threshold);
+wiki.lilygo.cc's T-Deck Plus page and cnx-software's review (the Plus's battery, GPS and case).*
+
 ## The M5Stack Tab5 (C-77)
 
 **ESP32-P4** (RISC-V, 360 MHz, 32 MB PSRAM, 16 MB flash) with an **ESP32-C6** beside it for Wi-Fi 6 and Bluetooth 5,

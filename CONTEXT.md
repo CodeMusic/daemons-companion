@@ -19,6 +19,7 @@ The handhelds are off-the-shelf ESP32-S3 development boards the author bought an
 - **LilyGO T-Embed CC1101** — the first, and the one with the most radios.
 - **LilyGO T-Embed** (plain) and **T-Embed SI4732** — the same shape; the SI4732 adds an AM/FM broadcast receiver.
 - **LilyGO T-Watch S3** — a watch, with a touch screen and a LoRa radio.
+- **LilyGO T-Deck Plus** — a hand-sized board with a keyboard, a trackball, a LoRa radio and a GPS.
 - and **the author's phone**, running the companion's app; M5Stack boards and an LLM630 (an on-device model) are
   planned (`TODO.md`).
 
@@ -29,7 +30,9 @@ Like the boards they are modelled on, they ship with several radios on purpose, 
 - **NFC** (a PN532 module, the CC1101 board) — reads/writes 13.56 MHz tags.
 - **Sub-GHz** (a CC1101) — short-range ISM-band transceiver.
 - **AM/FM** (an SI4732, receive only) — broadcast radio.
-- **LoRa** (an SX1262, the watch) — long-range, low-rate messages between the author's own devices.
+- **LoRa** (an SX1262, the watch and the T-Deck) — long-range, low-rate messages between the author's own devices: a
+  beacon, a wave, a word of forty letters, each passed on at most twice. Our own sync word, so it never joins or
+  disturbs anyone else's LoRa network (Meshtastic's is different), and a tenth of a percent of the air.
 - **A microphone and a speaker**, for push to talk.
 
 These are standard components documented by the vendor, with example firmware published by the vendor. Driving them

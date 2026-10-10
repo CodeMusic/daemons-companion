@@ -8,12 +8,13 @@
 // as the M5Stack Dial does (env:m5-dial, C-102).
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial };   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck };   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
 enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306 };
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
                                                                      // Analog: the M5GO base's, read by the ADC
 enum class Panel { ST7789, ILI9342C, ILI9342E };               // C-75: the CoreS3 has shipped with either ILI9342
+enum class LoraChip { None, SX1262, SX1278 };                  // C-72: the watch's and the T-Deck's, or an M5 LoRa433 module's
 
 struct Board {
   BoardKind kind = BoardKind::TEmbedCC1101;
@@ -43,10 +44,16 @@ struct Board {
   // C-102: a round screen (the Dial's): the screens are drawn in a square inside the circle, at this offset, and the
   // face comes first; and a passive buzzer in place of a speaker (its pin), which plays the tunes but not a voice
   bool round = false; int screenX = 0, screenY = 0; int buzzer = -1;
+  // C-72: the LoRa radio -- its chip and pins. On the watch it has an SPI bus of its own; on the T-Deck it shares the
+  // screen's (loraSck is the screen's SCLK then), as the CC1101 does on the T-Embed.
+  LoraChip loraChip = LoraChip::None; int loraCs = -1, loraRst = -1, loraBusy = -1, loraDio1 = -1, loraSck = -1, loraMiso = -1, loraMosi = -1;
+  // C-104: the T-Deck's keyboard (its own ESP32-C3, I2C 0x55, one character a read), its trackball (four pins that
+  // toggle as the ball rolls, and BOOT as its press), its GPS (the Plus, a UART) and its SD card (held off the bus)
+  bool keyboard = false; int tbUp = -1, tbDown = -1, tbLeft = -1, tbRight = -1, gpsRx = -1, gpsTx = -1, sdCs = -1;
   // C-74, C-75: the speaker and the microphone share one set of clocks, so the speaker lets go while it listens
   bool sharedClocks() const { return mic == Mic::Es8311 || mic == Mic::Es7210Shared; }
   bool hasSideKey() const { return sideKey >= 0; }
-  bool noDial() const { return encA < 0 && !touch; }   // C-74: buttons and no dial (the StickS3; C-75 the M5GO and Fire)
+  bool noDial() const { return encA < 0 && !touch && tbUp < 0; }   // C-74: buttons and no dial (the StickS3; C-75 the M5GO and Fire); C-104: a trackball is a dial
   bool threeKeys() const { return keyLeft >= 0; }      // C-75: A, B and C
 };
 

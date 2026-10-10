@@ -30,7 +30,39 @@ void boardBegin() {
   board.mic = Mic::Pdm; board.micData = 47; board.micClk = 44;
   board.power = Power::PmuAXP2101;
   board.ir = true; board.lora = true; board.touch = true;
+  // C-72: the SX1262 (433, 868 or 915 MHz by the watch bought), on a bus of its own (LilyGO's utilities.h)
+  board.loraChip = LoraChip::SX1262; board.loraCs = 5; board.loraRst = 8; board.loraBusy = 7; board.loraDio1 = 9;
+  board.loraSck = 3; board.loraMiso = 4; board.loraMosi = 1;
   watchPower();                                      // the PMU switches every rail: on before anything else starts
+}
+
+#elif defined(BOARD_TDECK)
+
+// C-104: the LilyGO T-Deck and T-Deck Plus -- an ESP32-S3 (16 MB flash, 8 MB PSRAM) behind a 2.8" ST7789 (320x240),
+// a QWERTY keyboard run by its own ESP32-C3 (I2C 0x55: one character a read), a trackball (four pins that toggle as it
+// rolls; BOOT is its press), a GT911 touch screen (0x5D, INT 16; not read yet), an SX1262 LoRa radio on the screen's
+// SPI bus, an ES7210 with two microphones and a MAX98357A speaker (the plain T-Embed's), a microSD, a 2000 mAh battery
+// read by voltage on IO4 through a 2x divider, and on the Plus a GPS on a UART (RX 44, TX 43). Pins from LilyGO's
+// examples/UnitTest/utilities.h, checked against Meshtastic's variants/esp32s3/t-deck/variant.h (docs/HARDWARE.md).
+void boardBegin() {
+  board.kind = BoardKind::TDeck; board.id = "t-deck"; board.name = "T-Deck";
+  board.width = 320; board.height = 240; board.rotation = 1;
+  board.lcdCs = 12; board.lcdDc = 11; board.lcdSclk = 40; board.lcdMosi = 41; board.lcdMiso = 38; board.lcdBl = 42;
+  board.lcdPanelW = 240; board.lcdPanelH = 320; board.lcdOffsetX = 0; board.lcdOffsetY = 0; board.lcdInvert = false;
+  board.encKey = 0;                                   // the trackball's press; no dial: the ball turns (input.cpp)
+  board.pwrEn = 10; board.sda = 18; board.scl = 8;
+  board.i2sBclk = 7; board.i2sLrclk = 5; board.i2sDout = 6;
+  board.mic = Mic::Es7210; board.micBclk = 47; board.micClk = 21; board.micData = 14; board.micMclk = 48;
+  board.power = Power::AdcDivider; board.battAdc = 4;
+  board.lora = true; board.loraChip = LoraChip::SX1262;
+  board.loraCs = 9; board.loraRst = 17; board.loraBusy = 13; board.loraDio1 = 45;
+  board.loraSck = 40; board.loraMiso = 38; board.loraMosi = 41;   // the screen's bus
+  board.keyboard = true; board.tbUp = 3; board.tbDown = 15; board.tbLeft = 1; board.tbRight = 2;
+  board.gpsRx = 44; board.gpsTx = 43; board.sdCs = 39;
+  pinMode(board.pwrEn, OUTPUT); digitalWrite(board.pwrEn, HIGH);   // the peripherals' power, the keyboard's chip among them
+  pinMode(board.sdCs, OUTPUT); digitalWrite(board.sdCs, HIGH);     // the card off the shared bus
+  delay(500);                                                        // LilyGO: the keyboard needs a moment to start
+  Wire.begin(board.sda, board.scl);
 }
 
 #elif defined(BOARD_STICKS3)

@@ -65,7 +65,7 @@ static String freqText() { uint16_t f = rx.getFrequency(); return freqNumber(f, 
 
 // The button inside a routine that runs the dial itself: a tap (1), two taps close together (2), held half a second to
 // stop (-1), or nothing (0). On the CC1101-style boards the top button also stops.
-static int buttonEvent() {
+int buttonEvent() {   // shared with lora.cpp's NEARBY (C-72)
   static bool down = false; static uint32_t at = 0, tappedAt = 0; static int taps = 0;
   if (cableKey) { int k = cableKey; cableKey = 0; return k; }
   if (board.hasSideKey() && !digitalRead(board.sideKey)) return -1;

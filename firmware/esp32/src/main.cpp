@@ -7,6 +7,7 @@
 #include "sound.h"
 #include "link.h"
 #include "meet.h"
+#include "lora.h"
 
 // Each step says so down the cable as it starts ("boot: ..."), so a board that stops part-way says where.
 static void step(const char *what) { Serial.printf("boot: %s (heap %u, largest %u)\n", what, ESP.getFreeHeap(), ESP.getMaxAllocHeap()); Serial.flush(); }   // C-97: the heap at each step
@@ -34,6 +35,7 @@ void setup() {
   if (board.ir) flareBegin();                 // C-51: an older single learned code becomes the first remote
   step("settings"); loadSettings(); brainLoad();   // C-76: the offline brain's link, if one was set
   step("bluetooth"); linkBegin();             // C-55: Bluetooth, for the phone
+  if (board.loraChip != LoraChip::None) { step("lora"); loraBegin(); }   // C-72: the watch's and the T-Deck's radio
   lastInput = millis();
   page = homePage();                          // C-42: it starts at home
   draw();
@@ -46,6 +48,7 @@ void loop() {
   readPhone();
   readEncoder();
   readKey();
+  readDeck();                               // C-104: the T-Deck's keyboard and trackball
   uint32_t now = millis();
   watchLoop(now);                           // C-71
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); dirty = true; }   // C-80: its own name
@@ -64,6 +67,7 @@ void loop() {
   uplinkLoop(now);
   linkLoop(now);                            // C-55
   meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-15
+  loraLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-72: the same switch, the same tag
   meetReport();
   static bool wifiWas = false;              // C-52: the site hears at once when the board joins or leaves a network
   if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }

@@ -7,14 +7,16 @@ theme, virtue over vice, chakra and note -- the season, **the one next step**, t
 
 **Controls:**
 
-| | the CC1101 | the plain T-Embed, the SI4732 | the T-Watch S3 |
-|---|---|---|---|
-| choose | turn the dial | turn the dial | swipe |
-| open, confirm | press the dial (acts when let go) | tap the dial | tap |
-| back | the top button | hold the dial half a second | hold, or the crown |
-| **talk** | **hold the dial** half a second at home | **hold the dial** at home (just after ticking a step, the hold undoes it instead) | **hold TALK** on the face |
-| sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown |
-| wake | **the top button only** | hold the dial | the crown |
+| | the CC1101 | the plain T-Embed, the SI4732 | the T-Watch S3 | the T-Deck (C-104) |
+|---|---|---|---|---|
+| choose | turn the dial | turn the dial | swipe | roll the trackball |
+| open, confirm | press the dial (acts when let go) | tap the dial | tap | click the ball, or Enter |
+| back | the top button | hold the dial half a second | hold, or the crown | hold the ball half a second, or Backspace |
+| **talk** | **hold the dial** half a second at home | **hold the dial** at home (just after ticking a step, the hold undoes it instead) | **hold TALK** on the face | **hold the ball** at home |
+| sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown | hold the ball two seconds |
+| wake | **the top button only** | hold the dial | the crown | hold the ball, or any key |
+
+On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and a word to a daemon nearby in MESH / NEARBY.
 
 The pages: TODAY (press: the step is done; back undoes it for fifteen seconds), DAEMON (press: CARE, and its INDEX
 entry, read aloud on a press), ROUTINES and the DAY; the watch's face comes first.
@@ -35,6 +37,8 @@ first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test th
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
 | LONGWAVE | WHAT'S ON THE AIR | listens (never sends) at 315, 433.92, 868.35 and 915 MHz -- weather stations, doorbells, meters: each band's level against its learnt quiet, and the bursts counted, for 90 seconds |
 | LONGWAVE | FIND IT | a hot-and-cold finder for one of your own transmitters: turn to choose its band, then walk -- the level, warmer or colder, and ticks that quicken as it gets louder |
+| MESH | NEARBY | the daemons heard over LoRa in the last ten minutes -- name, how loud, how long ago, passed on or not; choose one (or EVERYONE) and send a WAVE, one of four words, or on the T-Deck a word you type. What arrives shows along the bottom (C-72, DRAFT) |
+| MESH | CALL OUT | asks who is there; every board that hears it answers, and the list fills for thirty seconds (C-72, DRAFT) |
 | PARTY | your party, then a daemon's routines | the game's own routines, in their streak colours: one used plays its phrase, the ring lit its colour (C-68) |
 | UPLINK | NETWORKS IN RANGE | the Wi-Fi networks it hears, those it knows marked * |
 | UPLINK | TEACH A NETWORK | your daemon learns a network: choose one, spell its password on the wheel; it joins any it knows when near |

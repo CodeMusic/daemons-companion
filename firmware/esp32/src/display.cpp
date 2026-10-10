@@ -5,6 +5,7 @@ Display tft;
 LGFX_Sprite canvas(&tft);
 int W = 320, H = 170;
 
+#if !BOARD_CORES3 && !BOARD_DIAL
 // M5GFX's list for the ILI9342E (lgfx/v1/panel/Panel_ILI9342.hpp in M5Stack's fork): its own EXTC (DDh), power and
 // gamma registers. The C's list must not be sent to it.
 const uint8_t *Panel_ILI9342E::getInitCommands(uint8_t listno) const {
@@ -64,9 +65,13 @@ void Display::configure() {
   }
   setPanel(&panel);
 }
+#endif
 
 void backlight(bool on) {
   if (board.pmuBacklight) { pmuBacklight(on); return; }   // C-75: the CoreS3's is its power chip's
+#if BOARD_DIAL
+  tft.setBrightness(on ? 160 : 0); return;                // C-102: M5GFX's PWM on GPIO 9
+#endif
   if (board.lcdBl >= 0) { pinMode(board.lcdBl, OUTPUT); digitalWrite(board.lcdBl, on ? HIGH : LOW); }
 }
 
@@ -74,13 +79,24 @@ void displayBegin() {
   W = board.width; H = board.height;
   tft.configure();
   tft.init();
+#if BOARD_CORES3
+  // C-98: M5GFX spoke to the AW9523 and the power chip on its own I2C port, on the same two pins; the touch, the clock
+  // and the power chip are read through Wire, so the pins go back to it
+  Serial.printf("boot: screen %s\n", tft.getBoard() == m5gfx::board_t::board_M5StackCoreS3 ? "CoreS3"
+                                    : tft.getBoard() == m5gfx::board_t::board_M5StackCoreS3SE ? "CoreS3 SE" : "not found");
+  Wire.end(); Wire.begin(board.sda, board.scl);
+#elif BOARD_DIAL
+  // C-102: M5GFX took the touch's pins (11, 12) for its own I2C port; the touch and the clock are read through Wire
+  Serial.printf("boot: screen %s\n", tft.getBoard() == m5gfx::board_t::board_M5Dial ? "Dial" : "not found");
+  Wire.end(); Wire.begin(board.sda, board.scl);
+#endif
   tft.setRotation(board.rotation);
   tft.fillScreen(0x18E4);                // INK, so it does not flash white
   backlight(true);
   // C-75: the M5GO has no PSRAM, and a whole 320x240 screen at 16 bits (150 KB) will not fit beside Wi-Fi and Bluetooth:
   // there it draws in 256 colours (75 KB). Every other board has PSRAM.
   bool psram = psramFound();
-  canvas.setColorDepth(psram ? 16 : 8);
+  canvas.setColorDepth(psram || W * H * 2 <= 96000 ? 16 : 8);   // C-102: the Dial's 200 square fits in 16 bits (80 KB)
   canvas.setPsram(psram);
   canvas.createSprite(W, H);
 }

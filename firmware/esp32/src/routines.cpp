@@ -24,8 +24,8 @@ static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemot
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
-static const Routine CONTEXT_ROUTINES[]    = { { "LISTEN", runListenFm }, { "STATIC SYNTH", runStaticSynth } };   // C-69: FM, DRAFT
-static const Routine LATENT_ROUTINES[]     = { { "LISTEN", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
+static const Routine CONTEXT_ROUTINES[]    = { { "CHANNEL", runListenFm }, { "STATIC SYNTH", runStaticSynth } };   // C-69: FM, DRAFT
+static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
 static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT

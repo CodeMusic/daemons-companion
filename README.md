@@ -2,8 +2,8 @@
 
 **A goal companion that carries a daemon.** You carry a daemon from your game of
 [**DAEMONS**](https://github.com/CodeMusic/DAEMONS) on a little device -- a LilyGO T-Embed (the CC1101, the plain one or
-the SI4732), a T-Watch S3, an M5Stack (the StickS3, the CoreS3, the M5GO or the Fire), or your phone -- and with more than
-one device, a different daemon from your party in each. You feed it, train it, spend time with it, **talk with it** -- and it helps
+the SI4732), a T-Watch S3, an M5Stack (the StickS3, the CoreS3, the M5GO, the Fire or the Dial), the M5Stack Tab5 as a
+control center, or your phone -- and with more than one device, a different daemon from your party in each. You feed it, train it, spend time with it, **talk with it** -- and it helps
 you: tell it what you want to get done, and it turns that into **one next step** and walks you through the day. As you
 get things done, it thrives. Pass someone else carrying one, and your INDEX sees their daemon.
 
@@ -47,7 +47,8 @@ beside it.*
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
 | `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (your devices, which daemon each carries, their batteries and routines), **PROFILE**, **SETTINGS** |
-| `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start), and builds of their own for the **T-Watch S3**, the **M5StickS3**, the **M5Stack CoreS3**, and the **M5GO and Fire** (the original ESP32; the rest are ESP32-S3); PlatformIO + Arduino, grown from RoverCodeBase | **running on the CC1101**; the other boards are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, and the first radio experiment. See [The handhelds](#the-handhelds) |
+| `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start), and builds of their own for the **T-Watch S3**, the **M5StickS3**, the **M5Stack CoreS3**, the **M5Stack Dial**, and the **M5GO and Fire** (the original ESP32; the rest are ESP32-S3); PlatformIO + Arduino, grown from RoverCodeBase | **running on the three T-Embeds, the CoreS3, the M5GO and the Fire**; the watch, the StickS3 and the Dial are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, the radio experiments, and on the SI4732 **CHANNEL**, a radio move the daemon learns. See [The handhelds](#the-handhelds) |
+| `firmware/tab5/` | **the control center** -- the M5Stack Tab5 (ESP32-P4), LVGL: the app's screens, its own Wi-Fi and pairing, everything kept on it | **running**: TODAY, GOALS, DAEMON (SYNC), INDEX (each entry, and **LISTEN** to hear it), DEVICES (which daemon goes where), SETTINGS (portrait, landscape or turning with it). [docs/TAB5.md](docs/TAB5.md) |
 | `server/src/ai/`, DAEMONS `ai/` | **the daemon's voice and words** -- n8n workflows on your own machine (DAEMONS `ai/n8n/`), speech to text (`ai/stt/`), a local model or OpenRouter, and the INDEX voice | **running**: a spoken question in, the daemon's answer in the INDEX voice out. See [Talk to your daemon](#talk-to-your-daemon) |
 | `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
 
@@ -62,17 +63,18 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | board | screen | controls | listens | lights | its own radios | battery | state |
 |---|---|---|---|---|---|---|---|
 | **T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC, Sub-GHz | gauge and charger | **runs** |
-| **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | built, not yet run |
-| **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7 | AM/FM: LATENT and CONTEXT | voltage | built, not yet run |
+| **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | **runs** |
+| **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, speaking along with the radio | AM/FM: LATENT and CONTEXT -- **CHANNEL**, a move it learns | voltage | **runs** |
 | **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa, IR | power chip | built, not yet run |
 | **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
-| **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | built, not yet run |
-| **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | built, not yet run |
-| **M5Stack Tab5** | 1280x720 touch | **the control center**: the app's screens, its own Wi-Fi, everything kept on it ([docs/TAB5.md](docs/TAB5.md)) | next | -- | -- | power chip | built, not yet run |
+| **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | **runs** |
+| **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | **runs** |
+| **M5Stack Dial** | 240 round, touch | the knob and its press; touch | -- (a buzzer: the tunes, not a voice) | -- | RFID (TOUCHSTONE) | -- | built, not yet run |
+| **M5Stack Tab5** | 720x1280 touch | **the control center**: the app's screens, its own Wi-Fi, everything kept on it ([docs/TAB5.md](docs/TAB5.md)) | next | -- | -- | power chip | **runs** |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
-is. The watch, the StickS3, the CoreS3, and the M5GO and Fire (one build between them, on the original ESP32) each have
-their own (`./updateCompanion.sh --board m5-sticks3`, `m5-cores3` or `m5-core` the first time). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
+is. The watch, the StickS3, the CoreS3, the Dial, and the M5GO and Fire (one build between them, on the original ESP32)
+each have their own (`./updateCompanion.sh --board m5-sticks3`, `m5-cores3`, `m5-dial` or `m5-core` the first time). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
 its own PlatformIO: `firmware/tab5/pio.sh`); `./updateCompanion.sh --board m5-tab5` flashes it. Pins and sources:
 [docs/HARDWARE.md](docs/HARDWARE.md).
 
@@ -90,7 +92,7 @@ Plug the boards in by USB-C cables that carry data, with [PlatformIO](https://pl
 |---|---|
 | `./updateCompanion.sh` | asks each board on USB for its HELLO and flashes its build; with several plugged in it asks which (numbers, or `a` for all) |
 | `./updateCompanion.sh --all` | every board found, without asking |
-| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `m5-sticks3`, `m5-cores3`, or `m5-core` for the M5GO and Fire |
+| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `m5-sticks3`, `m5-cores3`, `m5-dial`, `m5-tab5`, or `m5-core` for the M5GO and Fire |
 | `./updateCompanion.sh --port PORT` | only that one |
 | `./updateCompanion.sh --link` | flash, then link |
 | `./updateCompanion.sh --build` | only build every board's firmware, to check it compiles (no board needed) |
@@ -116,8 +118,16 @@ button** goes back. **Hold the dial** half a second on any home page to **talk**
 **Sleep:** hold the top button and press the front one; **only the top button wakes it**, so a pocket cannot.
 
 **The plain T-Embed and the SI4732** have one button, the dial's press: a tap presses, held half a second it goes back
-(at home it **talks** instead), held two seconds it sleeps (and only a hold wakes it). The SI4732's radio is two routine
-types: **LATENT** (AM: LISTEN, and LIGHTNING) and **CONTEXT** (FM: LISTEN with the station's RDS, and STATIC SYNTH).
+(at home it **talks** instead), held two seconds it sleeps (and only a hold wakes it).
+
+**The SI4732's radio** is two routine types: **LATENT** (AM: CHANNEL, and LIGHTNING) and **CONTEXT** (FM: CHANNEL, and
+STATIC SYNTH). **CHANNEL is a psychic move the daemon learns**: turn to tune, tap to seek (the needle runs along the
+band), and hold a clear station a few seconds -- the daemon attunes to it, and has **learned** that frequency: eight a
+band, kept on the board, marked on the dial, and **two taps** away from then on. While a station plays the daemon
+**speaks it** -- the board's own microphones hear the speaker, and the daemon's sprite, its aura and the ring of lights
+move with the voice. The screen shows the frequency large, the signal, the station's name and text (RDS) and the voice
+as a line. LIGHTNING counts crashes on a quiet AM frequency; STATIC SYNTH plays random notes from the static between
+FM stations. The radio plays through its own amplifier, at the volume set on the site.
 
 **The T-Watch S3:** its home is **the face** -- the time, the day's theme, its virtue over its vice, chakra and note,
 today's steps, the battery and a TALK button. Swipe to turn between the pages, tap to press, hold to go back; the crown
@@ -128,6 +138,11 @@ half a second goes back, two seconds sleeps -- and asleep, only a hold on it wak
 
 **The M5Stack CoreS3:** a touch screen, used as the watch's is -- the face first, swipe to turn, tap to press, hold to go
 back, TALK held on the face. Its power key wakes it or goes back, and held a second, sleeps.
+
+**The M5Stack Dial:** turn the knob to choose and press it to open, as a T-Embed's dial (held half a second, back; two
+seconds, sleep) -- or use its touch screen as the watch's (swipe to turn, tap to press, hold to go back). Its home is
+**the face**, round as the screen is; every page is drawn inside the circle. It has no microphone, so it does not
+talk, and its buzzer plays the tunes but not a voice. Its RFID reader is **TOUCHSTONE**: hold a tag to its face.
 
 **The M5GO and the Fire:** **A** and **C** turn left and right, **B** presses (held at home, it **talks**); held, A goes
 back and C, two seconds, sleeps -- asleep, only a held B wakes it. The M5GO base gives it its microphone and ten lights.
@@ -145,8 +160,7 @@ menu left alone goes to sleep (two minutes, by default), and waking lands back a
 **ROUTINES** are the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC),
 LONGWAVE (Sub-GHz: WHAT'S ON THE AIR, listening only), UPLINK (Wi-Fi) -- and **GAME ROUTINES**: your party, and each daemon's own routines
 from the game, in their streak colours; using one plays its own short phrase with the ring lit its colour. On the CC1101
-it is the PARTY type; on a board with no radios of its own (the plain T-Embed, the SI4732 for now) ROUTINES opens it
-first. UPLINK's **WI-FI MOTION** is the first radio experiment (C-70): it watches the Wi-Fi channel for movement in
+it is the PARTY type; on a board with no radios of its own (the plain T-Embed) ROUTINES opens it first. UPLINK's **WI-FI MOTION** is the first radio experiment (C-70): it watches the Wi-Fi channel for movement in
 the room.
 
 **The battery** shows in the top bar (red when low and unplugged). At 15% it says so; at 5% it goes into deep sleep,
@@ -158,7 +172,9 @@ and follows the dial. **It learns remotes and networks**, as your daemon would: 
 A NETWORK. **Its settings are set on the site** (DEVICE tab): home, sleep, sound and volume, the ring.
 
 **To see a board's screen on the computer** (stop the bridge first; it holds the port):
-`python3 firmware/esp32/shot.py screen.png`.
+`python3 firmware/esp32/shot.py screen.png`. **Checks down the cable** (the same port): `RUN <type> <n>` starts a
+routine, `KEY PRESS` / `KEY BACK` press inside it, `MEM` the memory, `WATCH` the touch and clock, `EARTEST` what the
+microphones hear of the speaker and the radio.
 
 [`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode, Wi-Fi instead of the cable,
 watching it talk, putting the factory firmware back, and every routine.
@@ -229,10 +245,11 @@ come from a model on your own machine (or OpenRouter when that one is busy), and
 |---|---|---|
 | the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the USB cable; away from both, **through the paired phone** (the phone says the answer; needs a new phone build) |
 | the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
-| an INDEX entry | press on it (the board), or **LISTEN** on any entry in the INDEX tab (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks) | runs on the site; the phone needs a new build |
+| an INDEX entry | press on it (the board; turn to read the rest), or **LISTEN** on any entry in the INDEX tab (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks) or on the Tab5's INDEX | runs on the site; the phone needs a new build; the Tab5 built |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
 | the watch, the CoreS3 | **hold TALK** on the face | built, not yet run |
 | the StickS3, the M5GO, the Fire | **hold the face button** (the StickS3) or **B** (the M5GO and Fire, with the M5GO base) at home | built, not yet run |
+| the Dial | -- it has no microphone, and a buzzer instead of a speaker | |
 | away from home | talking and read aloud need home or the paired phone: the relay carries words, not a recording or a voice | |
 | no network at all | an LLM630 riding behind a T-Embed, chosen with `BRAIN` down the cable | client built, not yet run: [docs/LLM630.md](docs/LLM630.md) (C-76) |
 
@@ -332,7 +349,7 @@ JSON in, JSON out, on this machine only.
 | `GET /api/device/state` | what a device shows -- **for the device asking** (its `x-device`, or its key through the relay): the day (its theme, virtue over vice, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, **the party and their routines** (GAME ROUTINES), and **the clock** (for the watch) |
 | `POST /api/device/battery` | `{percent, mv, charging, full, usb}` -- the handheld's charge, when it changes; shown on the DEVICE tab |
 | `POST /api/device/talk` | a handheld's recording (a WAV, raw): the daemon's answer, and a link to its voice |
-| `POST /api/device/speak` | the carried daemon's INDEX entry, aloud: a link to its voice |
+| `POST /api/device/speak` | the carried daemon's INDEX entry -- or `{species}`, any entry (the Tab5) -- aloud: a link to its voice |
 | `GET /api/device/voice/:id` | that voice, as 16 kHz 16-bit mono samples, for a handheld to stream (kept ten minutes) |
 | `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
 | `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |

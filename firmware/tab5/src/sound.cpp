@@ -1,12 +1,14 @@
 // C-94: the Tab5 plays the companion's tunes (firmware/common/tunes.h) as the handhelds do: a square voice of the same
 // duty, the same notes, the same day's key -- through M5Unified's speaker, one tune at a time, on a task of its own.
 #include <M5Unified.h>
+#include <esp_heap_caps.h>
 #include "sound.h"
 #include "store.h"
 #include "../../common/tunes.h"
 
 struct Tune { Note notes[14]; uint8_t n; uint8_t base; float level; float duty; };
 static QueueHandle_t queue;
+static SemaphoreHandle_t voiceLock;              // C-99: the network task starts a voice, the screen stops it
 static volatile bool enabled = true;
 static volatile int volume = 60;            // 0..100, the site's setting
 static volatile int root = 72;              // the day's note, as MIDI
@@ -42,6 +44,7 @@ static void send(const Note *notes, int n, int base, float level, float duty = 0
 void soundBegin() {
   M5.Speaker.begin();
   queue = xQueueCreate(4, sizeof(Tune));
+  voiceLock = xSemaphoreCreateMutex();
   xTaskCreatePinnedToCore(player, "sound", 4096, nullptr, 2, nullptr, 1);
   soundFromState();
 }
@@ -58,6 +61,27 @@ void soundFromState() {
   for (int i = 0; i < 7; i++) if (name == D[i]) day = i;
   species = s["daemon"]["species"] | 0;
 }
+
+// C-99: on a channel of its own, so the taps' tones still play over it
+static const int VOICE_CH = 7;
+static int16_t *voicePcm = nullptr;
+static void stopLocked() {
+  M5.Speaker.stop(VOICE_CH);
+  if (voicePcm) { heap_caps_free(voicePcm); voicePcm = nullptr; }
+}
+void soundVoiceStop() { xSemaphoreTake(voiceLock, portMAX_DELAY); stopLocked(); xSemaphoreGive(voiceLock); }
+void soundVoice(int16_t *pcm, size_t samples, int rate) {
+  xSemaphoreTake(voiceLock, portMAX_DELAY);
+  stopLocked();
+  voicePcm = pcm;
+  if (enabled && volume > 0) {
+    M5.Speaker.setVolume((uint8_t)min(255, volume * 2));
+    M5.Speaker.setChannelVolume(VOICE_CH, 255);
+    M5.Speaker.playRaw(pcm, samples, rate, false, 1, VOICE_CH, true);
+  }
+  xSemaphoreGive(voiceLock);
+}
+bool soundVoicePlaying() { return voicePcm && M5.Speaker.isPlaying(VOICE_CH); }
 
 void soundWake()   { send(TUNE_WAKE, 6, WAKE_BASE, 0.8f); }
 void soundSelect() { send(TUNE_SELECT, 1, root, 1.0f); }

@@ -20,7 +20,10 @@ static uint32_t dayHex = 0x315A62;
 static lv_obj_t *tabs, *pages[6], *statusLeft, *statusRight, *overlay = nullptr;
 enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_SETTINGS };
 static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "SETTINGS" };
-static uint32_t drawnAt[6] = { 0 };                  // the keptChanged each page was last drawn at
+static uint32_t drawnAt[6] = { 0 };                  // 0: draw the page again
+// C-98: what each page shows, so a change to anything else leaves it alone (a rebuilt page flickered)
+static const uint32_t NEEDS[6] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | K_MESSAGE, K_INDEX | K_ART, K_DEVICES,
+                                   K_NETS | K_MESSAGE | K_TODAY };
 static int indexPage = 0, goalAt = 0;
 
 static lv_obj_t *label(lv_obj_t *parent, const String &text, const lv_font_t *font = &lv_font_montserrat_20,
@@ -101,6 +104,7 @@ static lv_obj_t *picture(lv_obj_t *parent, const String &key, int scale) {
   lv_obj_set_size(box, 64 * scale / 256 + 8, 64 * scale / 256 + 8);
   lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
   lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);   // C-99: a tap on the picture is a tap on what holds it (an INDEX cell)
   if (dsc) {
     lv_obj_t *img = lv_image_create(box);
     lv_image_set_src(img, dsc);
@@ -120,7 +124,13 @@ static void resetArt() {                          // the pictures were downloade
 }
 
 // ---- overlays: an entry, a keyboard ------------------------------------------------------------------------------------
-static void closeOverlay(lv_event_t * = nullptr) { if (overlay) { lv_obj_delete(overlay); overlay = nullptr; } }
+static lv_obj_t *listenLabel = nullptr, *voiceSaid = nullptr;   // C-99: an entry's LISTEN, while its overlay is open
+static String voiceSaidWas;                        // what the network said when it opened: only what it says after shows
+static void closeOverlay(lv_event_t * = nullptr) {
+  if (!overlay) return;
+  lv_obj_delete(overlay); overlay = nullptr;
+  if (listenLabel) { listenLabel = voiceSaid = nullptr; netHush(); }   // closing an entry stops its voice
+}
 static lv_obj_t *openOverlay() {
   closeOverlay();
   overlay = lv_obj_create(lv_layer_top());
@@ -271,6 +281,10 @@ static void drawDaemon(lv_obj_t *p) {
 static const int PER_PAGE = 18;
 static void tapIndexPage(lv_event_t *e) { indexPage += (int)(long)lv_event_get_user_data(e); drawnAt[P_INDEX] = 0; }
 
+static int listening = 0;                          // the species LISTEN reads
+static const char *listenWord() { return netVoice == V_MAKING ? "MAKING THE VOICE...  STOP" : netVoice == V_SPEAKING ? "HUSH" : LV_SYMBOL_VOLUME_MAX "  LISTEN"; }   // DRAFT
+static void tapListen(lv_event_t *) { if (netVoice == V_QUIET) netSpeak(listening); else netHush(); }
+
 static void tapEntry(lv_event_t *e) {
   int at = (int)(long)lv_event_get_user_data(e);
   JsonDocument ix = newDoc();
@@ -285,7 +299,13 @@ static void tapEntry(lv_event_t *e) {
   label(right, String((const char *)(en["category"] | "")) + "   " + types, &lv_font_montserrat_20, DAY);
   String text = en["entry"] | ""; text.replace("\n", " ");
   label(right, text, &lv_font_montserrat_28, INK, LV_PCT(100));
-  button(right, "CLOSE", closeOverlay, nullptr, false);
+  lv_obj_t *r = row(right);                          // C-99: read aloud, in the INDEX voice, as the phone's LISTEN
+  listening = en["species"] | 0;
+  netHush(); voiceSaidWas = net.message;
+  lv_obj_t *b = button(r, listenWord(), tapListen);
+  listenLabel = lv_obj_get_child(b, 0);
+  button(r, "CLOSE", closeOverlay, nullptr, false);
+  voiceSaid = label(right, "", &lv_font_montserrat_20, DAY, LV_PCT(100));
 }
 
 static void drawIndex(lv_obj_t *p) {
@@ -328,7 +348,7 @@ static void tapCarry(lv_event_t *e) {
 static String kindName(const String &kind) {
   if (kind == "t-embed-cc1101") return "T-Embed CC1101"; if (kind == "t-embed") return "T-Embed"; if (kind == "t-embed-si4732") return "T-Embed SI4732";
   if (kind == "t-watch-s3") return "T-Watch S3"; if (kind == "m5-sticks3") return "M5StickS3"; if (kind == "m5-cores3") return "M5Stack CoreS3";
-  if (kind == "m5-fire") return "M5Stack Fire"; if (kind == "m5go") return "M5GO"; if (kind == "m5-tab5") return "M5Stack Tab5";
+  if (kind == "m5-fire") return "M5Stack Fire"; if (kind == "m5go") return "M5GO"; if (kind == "m5-tab5") return "M5Stack Tab5"; if (kind == "m5-dial") return "M5Stack Dial";
   return kind;
 }
 
@@ -472,7 +492,7 @@ static void redraw(int i) {
   lv_obj_set_flex_flow(pages[i], LV_FLEX_FLOW_COLUMN);
   DRAW[i](pages[i]);
   if (y > 0) { lv_obj_update_layout(pages[i]); lv_obj_scroll_to_y(pages[i], y, LV_ANIM_OFF); }
-  drawnAt[i] = keptChanged + 1;                    // +1: never 0, which means "draw me"
+  drawnAt[i] = 1;                                  // drawn; 0 means "draw me"
 }
 
 static void tabChanged(lv_event_t *) { drawnAt[lv_tabview_get_tab_active(tabs)] = 0; soundSelect(); }   // C-94
@@ -528,6 +548,8 @@ void uiLoop() {
   static uint32_t seenChange = 0, barAt = 0, artWas = 0;
   if (seenChange != keptChanged) {
     seenChange = keptChanged;
+    uint32_t what = keptMask.exchange(0);
+    for (int i = 0; i < 6; i++) if (what & NEEDS[i]) drawnAt[i] = 0;
     takeDayColour();
     JsonDocument t = newDoc();
     todayLine = kept("today", t) ? "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "") : "";
@@ -535,7 +557,13 @@ void uiLoop() {
     if (net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal) { artWas = net.artTotal; resetArt(); }
   }
   int at = lv_tabview_get_tab_active(tabs);
-  if (!overlay && drawnAt[at] != keptChanged + 1) redraw(at);
+  if (!overlay && !drawnAt[at]) redraw(at);
+  if (listenLabel) {                                 // C-99: LISTEN, MAKING..., HUSH, and back when the voice ends
+    if (netVoice == V_SPEAKING && !soundVoicePlaying()) netHush();
+    String now = listenWord(), said = net.message;
+    if (strcmp(lv_label_get_text(listenLabel), now.c_str())) lv_label_set_text(listenLabel, now.c_str());
+    if (said != voiceSaidWas) { voiceSaidWas = said; lv_label_set_text(voiceSaid, said.c_str()); }
+  }
   if (millis() - barAt > 1000) {
     barAt = millis();
     String left = "DAEMONS  companion" + todayLine;   // read when what is kept changes, not from flash every second

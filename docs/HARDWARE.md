@@ -147,6 +147,25 @@ backlight); github.com/m5stack/M5Unified src/M5Unified.inl (the pin tables, the 
 microphone) and src/utility/Power_Class.inl, power/IP5306_Class.inl (the IP5306); PlatformIO's boards
 m5stack-core-esp32.json and m5stack-fire.json.*
 
+## The M5Stack Dial (C-102)
+
+An **M5StampS3** (ESP32-S3FN8: **8 MB flash, no PSRAM**) behind a **round 1.28" GC9A01, 240x240** (SPI: MOSI 5, SCK 6,
+D/C 4, CS 7, RST 8; backlight PWM on 9), with **touch** (an FT3267, FT5x06 registers, 0x38 on SDA 11 / SCL 12, INT 14),
+a **rotary knob** (A 41, B 40) whose press is **the button (42)**, a **clock** (RTC8563, 0x51), an **RFID reader**
+(WS1850S, the MFRC522's registers, 0x28 on the same bus), a **passive buzzer** (3) and **its power held by GPIO 46**
+(on its battery it stays on only while 46 is high; on USB it always is). Port A is SDA 13 / SCL 15, Port B 1 / 2.
+
+**Its own build** (`env:m5-dial`, `BOARD_DIAL`): M5GFX starts the screen (it recognises the Dial by reading the
+panel's id), and gives the touch's pins back to `Wire` after. The clock and the touch go through `watch.cpp` as the
+CoreS3's do (the touch read directly, as C-98's); there is no power chip, so no battery reading. **The round screen**:
+the companion's screens are drawn in a 200x200 square standing inside the 240 circle (at 20, 20), the top band and the
+footers centred, and the DAEMON page and the face laid out for it. **Sound** is the buzzer, one LEDC square wave a note
+(channel 2; M5GFX's backlight has 7): every tune plays, a voice cannot. **RFID** is read with a small MFRC522 driver in
+`radios.cpp` (REQA, anticollision and SELECT at each cascade level) for TOUCHSTONE's READ MY TAG.
+
+*Sources: M5GFX 0.2.32 (`M5GFX.cpp`, its board_M5Dial autodetect), M5Unified 0.2.5 (`M5Unified.cpp`: the I2C pins,
+power hold, button and buzzer), m5stack/M5Dial (`M5Dial.h`: the encoder pins; `MFRC522.h`: 0x28).*
+
 ## The M5Stack Tab5 (C-77)
 
 **ESP32-P4** (RISC-V, 360 MHz, 32 MB PSRAM, 16 MB flash) with an **ESP32-C6** beside it for Wi-Fi 6 and Bluetooth 5,

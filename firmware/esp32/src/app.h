@@ -81,9 +81,12 @@ void say(const String &word);
 void celebrate(const String &what);
 void progress(const String &text);        // what a routine is waiting for, on the RUN screen (it answers SHOT too)
 void shot();                              // the screen, down the cable
+extern String (*runPanel)(uint16_t day, uint16_t ink);   // C-101: set while a routine draws its own screen; returns its footer
+extern int cableKey;                      // C-101: a press sent down the cable while a routine runs (1, 2 taps, -1 stop)
 extern bool routineRunning;               // a routine is at work (the RUN screen's footer says so)
 String upper(String s);
-int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour);
+int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour, int skip = 0);
+extern int entryTop, entryLines;   // C-99: the INDEX entry, scrolled this many lines; how many it has
 uint16_t hex565(const String &h);
 bool lightColour(const String &h);
 

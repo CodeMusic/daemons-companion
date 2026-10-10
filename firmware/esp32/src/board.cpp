@@ -161,6 +161,27 @@ void coreS3Mic() {
 // The AXP2101 switches everything off (M5Unified's powerOff); the power key starts the board again.
 bool boardPowerOff() { i2cBits(AXP, 0x10, 0x01, true); delay(100); return true; }
 
+#elif defined(BOARD_DIAL)
+
+// C-102: the M5Stack Dial. Its pins from M5Stack's own sources: M5GFX's autodetect for the screen (a GC9A01 on SPI:
+// MOSI 5, SCK 6, D/C 4, CS 7, RST 8, the backlight PWM on 9) and the touch (FT5x06-alike at 0x38, SDA 11 / SCL 12,
+// INT 14); M5Unified for the power hold (46), the button (42, the knob's press), the buzzer (3) and the I2C pins; the
+// M5Dial library for the knob (A 41, B 40) and the RFID reader (0x28). The clock (RTC8563, 0x51) shares the bus.
+void boardBegin() {
+  pinMode(46, OUTPUT); digitalWrite(46, HIGH);         // held on: on its battery, the Dial stays on only while this is high
+  board.kind = BoardKind::M5Dial; board.id = "m5-dial"; board.name = "M5Stack Dial";
+  board.width = 200; board.height = 200; board.rotation = 0;
+  board.round = true; board.screenX = 20; board.screenY = 20;   // a 200 square stands inside the 240 circle
+  board.encA = 41; board.encB = 40; board.encKey = 42;
+  board.sda = 11; board.scl = 12;
+  board.buzzer = 3;
+  board.nfc = true;                                    // the WS1850S (radios.cpp reads it as an MFRC522)
+  Wire.begin(board.sda, board.scl);
+  watchPower();                                        // watch.cpp: nothing to switch on here, but kept the same
+}
+
+bool boardPowerOff() { digitalWrite(46, LOW); delay(200); return true; }   // on USB it stays on: false is never said
+
 #elif defined(BOARD_M5CORE)
 
 // C-75: the M5Stack M5GO and Fire -- the first Cores, on the ORIGINAL ESP32 (not an S3): one build for both, told apart
@@ -258,5 +279,7 @@ void pm1Gpio(uint8_t, bool) {}         // C-74: only the StickS3 has an M5PM1
 void coreS3Speaker(bool, int) {}       // C-75: only the CoreS3 has these
 void coreS3Mic() {}
 void pmuBacklight(bool) {}
+#ifndef BOARD_DIAL
 bool boardPowerOff() { return watchPowerOff(); }   // the watch: its PMU (watch.cpp); elsewhere false, and a deep sleep
+#endif
 #endif

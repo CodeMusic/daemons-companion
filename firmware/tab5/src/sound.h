@@ -9,4 +9,8 @@ void soundFromState();                     // the volume, on or off, and the day
 void soundWake();                          // the title's opening, in C#
 void soundSelect();                        // a tap: the day's note, an octave up
 void soundBack();                          // back: the day's note, an octave down, softly
-void soundStep(bool undone);               // a step done (its tune), or undone (reversed) -- the carried daemon's own
+void soundStep(bool undone);
+// C-99: a voice, 16-bit mono PCM; the buffer (PSRAM) is the sound's to free once it is over or stopped
+void soundVoice(int16_t *pcm, size_t samples, int rate);
+void soundVoiceStop();
+bool soundVoicePlaying();               // a step done (its tune), or undone (reversed) -- the carried daemon's own

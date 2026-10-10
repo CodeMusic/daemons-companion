@@ -16,6 +16,10 @@ struct NetStatus {
 };
 extern NetStatus net;
 extern std::atomic<uint32_t> keptChanged;   // bumped whenever a kept answer changes: the screens redraw from it
+// C-98: which answers changed since the screen last looked, so a page is drawn again only when what it shows did
+enum : uint32_t { K_TODAY = 1, K_GOALS = 2, K_PARTY = 4, K_PROFILE = 8, K_DEVICES = 16, K_STATE = 32, K_INDEX = 64,
+                  K_ART = 128, K_NETS = 256, K_MESSAGE = 512, K_VOICE = 1024 };
+extern std::atomic<uint32_t> keptMask;
 
 void netBegin();
 const String &deviceId();            // "m5-tab5-" and the end of its MAC (C-80)
@@ -30,3 +34,8 @@ void netSend(const char *method, const String &path, const String &body);   // a
 String serverAddress();
 bool localTime(struct tm &out);      // the time where the companion is, once it has said (its state carries the clock)
 String relayAddress();
+// C-99: an INDEX entry read aloud in the INDEX voice (the companion makes it; only at home -- the relay carries no voice)
+enum Voice { V_QUIET, V_MAKING, V_SPEAKING };
+extern std::atomic<int> netVoice;    // what the voice is doing
+void netSpeak(int species);          // make it and play it; a second call, or netHush(), stops it
+void netHush();

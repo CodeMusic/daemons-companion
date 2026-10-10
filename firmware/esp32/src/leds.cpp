@@ -58,7 +58,8 @@ static const int CLOCKWISE = 1;
 
 static Ring ring;
 static uint32_t dayRgb = 0x4060FF, touchedAt = 0, effectAt = 0, tint = 0;
-static enum { NONE, SPIN, FLASH, DARK } effect = NONE;
+static enum { NONE, SPIN, FLASH, DARK, VOICE } effect = NONE;
+static int voiceLevel = 0;
 static int spinDir = 1, spinFrom = 0, shown = -2;
 static bool sleeping = false;   // `shown` avoids rewriting the ring when nothing changed
 
@@ -131,6 +132,11 @@ void ledsDance(int kind, int step, int steps) {
   shown = -3;                                          // the next rest frame is redrawn
 }
 
+void ledsVoice(int level) {
+  if (sleeping) return;
+  touch(); voiceLevel = constrain(level, 0, 100); effect = VOICE; effectAt = millis();
+}
+
 void ledsLoop() {
   uint32_t now = millis(), t = now - effectAt;
   int frame;                                         // what the ring should show, as one number, to skip repeats
@@ -145,6 +151,20 @@ void ledsLoop() {
   } else if (effect == FLASH && t < FLASH_MS) {
     frame = 200;
     if (frame != shown) fill(ring.Color(150, 150, 150));
+  } else if (effect == VOICE && t < 400) {          // C-101: from the bottom of the ring outward, as loud as the voice
+    frame = 400 + voiceLevel;
+    if (frame != shown) {
+      uint32_t c = tint ? tint : dayRgb;
+      float lit = voiceLevel * N / 100.0f;
+      for (int k = 0; k < N; k++) {                  // k-th to light: 0, then 1 and N-1, then 2 and N-2 ...
+        int at = (k & 1) ? (k + 1) / 2 : (N - k / 2) % N;
+        float on = constrain(lit - k, 0.0f, 1.0f);
+        int pct = 6 + (int)(on * (40 + voiceLevel * 0.6f));
+        uint32_t px = share(c, min(100, pct));
+        if (on > 0.5f && voiceLevel > 80) px = ring.Color(min(255, (int)((px >> 16) & 255) + 60), min(255, (int)((px >> 8) & 255) + 60), min(255, (int)(px & 255) + 60));
+        ring.setPixelColor(at, px);
+      }
+    }
   } else if (effect == DARK && t < DARK_MS) {
     frame = 300;
     if (frame != shown) fill(0);

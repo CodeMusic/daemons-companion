@@ -445,8 +445,17 @@ void handleLine(String line, bool fromPhone) {
     String to = line.substring(3);
     wake();
     screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : to == "PARTY" ? PARTY : HOME;   // C-68: GO PARTY
+    entryTop = 0;
     page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : TODAY;
     draw();
+  }
+  else if (line == "EARTEST" && !fromPhone) { String radioEarTest(); reply(radioEarTest()); }   // C-101
+  else if (line.startsWith("RUN ") && !fromPhone) {   // C-101: RUN <type> <n> -- a routine started from the computer, for a check
+    String rest = line.substring(4); int sp = rest.indexOf(' ');
+    String name = sp < 0 ? rest : rest.substring(0, sp); int n = sp < 0 ? 0 : rest.substring(sp + 1).toInt();
+    int at = -1; for (int i = 0; i < typeCount; i++) if (name == types[i].name) at = i;
+    if (at < 0 || n < 0 || n >= types[at].count) reply("RUN no such routine");
+    else { wake(); typeAt = at; routineAt = n; screen = LIST; runRoutine(); }
   }
   else if (line.startsWith("TALK ") && !fromPhone) {   // C-66: a check from the computer -- listen this many ms, then answer
     wake(); talkByCable = line.endsWith(" cable");
@@ -470,6 +479,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
     reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
           " want " + st.daemon.artKey + " | last " + artTold);
+  else if (line == "WATCH" && !fromPhone) reply(watchStatus());   // C-98
   else if (line == "PING") { seen = millis(); reply("PONG"); }
 }
 

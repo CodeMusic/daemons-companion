@@ -4,10 +4,11 @@
 //
 // The three T-Embeds are one build: they tell themselves apart at start by what answers on I2C (docs/HARDWARE.md).
 // The T-Watch S3 is its own build (env:t-watch-s3, BOARD_TWATCH_S3): its power, screen and input are different. So are
-// the M5StickS3 (env:m5-sticks3, C-74) and the M5Stack CoreS3 (env:m5-cores3, C-75), which shares the watch's watch.cpp.
+// the M5StickS3 (env:m5-sticks3, C-74) and the M5Stack CoreS3 (env:m5-cores3, C-75), which shares the watch's watch.cpp,
+// as the M5Stack Dial does (env:m5-dial, C-102).
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core };   // M5Core: the M5GO and the Fire (C-75)
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial };   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
 enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306 };
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
@@ -39,6 +40,9 @@ struct Board {
   Power power = Power::None; int battAdc = -1;
   // radios beyond Wi-Fi and Bluetooth, and the rest
   bool ir = false, nfc = false, cc1101 = false, si4732 = false, lora = false, touch = false;
+  // C-102: a round screen (the Dial's): the screens are drawn in a square inside the circle, at this offset, and the
+  // face comes first; and a passive buzzer in place of a speaker (its pin), which plays the tunes but not a voice
+  bool round = false; int screenX = 0, screenY = 0; int buzzer = -1;
   // C-74, C-75: the speaker and the microphone share one set of clocks, so the speaker lets go while it listens
   bool sharedClocks() const { return mic == Mic::Es8311 || mic == Mic::Es7210Shared; }
   bool hasSideKey() const { return sideKey >= 0; }

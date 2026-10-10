@@ -13,6 +13,7 @@
 #include <IRutils.h>
 #include "link.h"
 #include "radios.h"
+#include "board.h"
 #include "sound.h"
 
 // LilyGO's pin map (examples/utilities.h): IR out and in, the PN532 on I2C with its IRQ and reset.
@@ -29,7 +30,91 @@ static bool waitALittle(uint32_t ms) {
 static Adafruit_PN532 nfc(PIN_NFC_IRQ, PIN_NFC_RST, &Wire);
 static bool nfcReady = false;
 
+// C-102: the M5Stack Dial's reader is a WS1850S, which speaks the MFRC522's registers, on I2C at 0x28 (M5Stack's M5Dial
+// library). Enough of it to ask a tag its identifier: REQA, then the anticollision loop and SELECT at each cascade level
+// (ISO 14443-3), as the MFRC522's own datasheet and its common libraries do it.
+namespace rc522 {
+static const uint8_t ADDR = 0x28;
+static void w(uint8_t reg, uint8_t v) { Wire.beginTransmission(ADDR); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
+static uint8_t r(uint8_t reg) {
+  Wire.beginTransmission(ADDR); Wire.write(reg);
+  if (Wire.endTransmission(false) != 0 || Wire.requestFrom(ADDR, (uint8_t)1) != 1) return 0;
+  return Wire.read();
+}
+static void bits(uint8_t reg, uint8_t mask, bool on) { uint8_t v = r(reg); w(reg, on ? v | mask : v & ~mask); }
+static bool begin() {
+  w(0x01, 0x0F); delay(50);                            // SoftReset
+  uint8_t version = r(0x37);
+  if (version == 0x00 || version == 0xFF) return false;
+  w(0x2A, 0x80); w(0x2B, 0xA9); w(0x2C, 0x03); w(0x2D, 0xE8);   // a timer of ~25 ms for every answer
+  w(0x15, 0x40); w(0x11, 0x3D);                        // 100% ASK; CRC preset 6363h
+  bits(0x14, 0x03, true);                              // the antenna on
+  return true;
+}
+// Send, and take the answer. validBits: how many bits of the last byte go (7 for REQA).
+static int transceive(const uint8_t *send, int n, uint8_t *back, int most, uint8_t validBits = 0) {
+  w(0x01, 0x00); w(0x04, 0x7F); bits(0x0A, 0x80, true);         // idle, interrupts cleared, the FIFO emptied
+  for (int i = 0; i < n; i++) w(0x09, send[i]);
+  w(0x0D, validBits); w(0x01, 0x0C); bits(0x0D, 0x80, true);   // Transceive, StartSend
+  uint32_t t0 = millis(); uint8_t irq;
+  do { irq = r(0x04); if (irq & 0x01) return -1; } while (!(irq & 0x30) && millis() - t0 < 40);   // the timer: no tag
+  bits(0x0D, 0x80, false);
+  if (!(irq & 0x30) || (r(0x06) & 0x13)) return -1;              // no answer, or a buffer, parity or protocol error
+  int got = min((int)r(0x0A), most);
+  for (int i = 0; i < got; i++) back[i] = r(0x09);
+  return got;
+}
+static bool crc(const uint8_t *data, int n, uint8_t *out) {
+  w(0x01, 0x00); w(0x05, 0x04); bits(0x0A, 0x80, true);
+  for (int i = 0; i < n; i++) w(0x09, data[i]);
+  w(0x01, 0x03);
+  uint32_t t0 = millis();
+  while (!(r(0x05) & 0x04)) if (millis() - t0 > 20) return false;
+  w(0x01, 0x00); out[0] = r(0x22); out[1] = r(0x21);
+  return true;
+}
+// A tag's identifier (4, 7 or 10 bytes), or 0 when none answered.
+static int readUid(uint8_t *uid) {
+  uint8_t atqa[2], reqa = 0x26;
+  w(0x0E, 0x80);                                       // collisions: keep the bits received after one
+  if (transceive(&reqa, 1, atqa, 2, 7) != 2) return 0;
+  int len = 0;
+  for (uint8_t level : { (uint8_t)0x93, (uint8_t)0x95, (uint8_t)0x97 }) {
+    uint8_t ac[2] = { level, 0x20 }, got[5];
+    if (transceive(ac, 2, got, 5) != 5 || (got[0] ^ got[1] ^ got[2] ^ got[3]) != got[4]) return 0;
+    uint8_t sel[9] = { level, 0x70, got[0], got[1], got[2], got[3], got[4] }, sak[3];
+    if (!crc(sel, 7, sel + 7) || transceive(sel, 9, sak, 3) < 1) return 0;
+    bool more = got[0] == 0x88;                        // the cascade tag: the rest of the identifier is a level down
+    for (int i = more ? 1 : 0; i < 4; i++) uid[len++] = got[i];
+    if (!(sak[0] & 0x04)) break;                       // complete
+  }
+  return len;
+}
+}
+
+static String tagSays(const uint8_t *uid, int len) {
+  String id;
+  for (int i = 0; i < len; i++) { char b[4]; snprintf(b, sizeof b, i ? ":%02X" : "%02X", uid[i]); id += b; }
+  // A 4-byte identifier is a MIFARE Classic card; 7 bytes is an NTAG (or an Ultralight)
+  String kind = len == 4 ? "MIFARE Classic (or alike)" : len == 7 ? "NTAG / Ultralight" : "ISO 14443-A";
+  return "A tag, and it answered.\n\n" + kind + "\nID " + id;
+}
+
 String runReadMyTag() {
+  if (board.kind == BoardKind::M5Dial) {               // C-102
+    static bool up = false;
+    if (!up && !(up = rc522::begin())) return "The RFID reader did not answer.\nPress to try again.";   // DRAFT
+    progress("Hold your tag flat to the Dial's face.\n\nhold the dial: give up");               // DRAFT
+    uint8_t uid[10];
+    uint32_t until = millis() + 15000;
+    while (millis() < until) {
+      if (giveUp()) return "Given up.";
+      int len = rc522::readUid(uid);
+      if (len) { soundSelect(); return tagSays(uid, len); }
+      delay(60);
+    }
+    return "No tag in 15 seconds.\nPress to try again.";
+  }
   if (!nfcReady) {
     batteryWire();                     // C-63: the bus is shared with the battery's gauge and charger
     nfc.begin();
@@ -44,13 +129,7 @@ String runReadMyTag() {
   while (millis() < until) {
     if (giveUp()) return "Given up.";
     // a short wait each time, so the top button is heard
-    if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &len, 150)) {
-      String id;
-      for (int i = 0; i < len; i++) { char b[4]; snprintf(b, sizeof b, i ? ":%02X" : "%02X", uid[i]); id += b; }
-      // A 4-byte identifier is a MIFARE Classic card; 7 bytes is an NTAG (or an Ultralight)
-      String kind = len == 4 ? "MIFARE Classic (or alike)" : len == 7 ? "NTAG / Ultralight" : "ISO 14443-A";
-      return "A tag, and it answered.\n\n" + kind + "\nID " + id;
-    }
+    if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &len, 150)) return tagSays(uid, len);
   }
   return "No tag in 15 seconds.\nPress to try again.";
 }

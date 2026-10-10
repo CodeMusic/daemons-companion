@@ -49,6 +49,8 @@ void untick() {
 // ---- the encoder: a quadrature state table, read every pass of the loop -------------------------------------------
 int8_t encLast = 0, encSum = 0;
 // One step of the dial: +1 right, -1 left -- from the dial itself, or KEY RIGHT / KEY LEFT down the cable.
+int entryTop = 0, entryLines = 0;
+
 void turn(int step) {
   if (asleep) return;                   // C-79: asleep, the dial does nothing -- it turns in a pocket
   wake();                               // (awake, this only marks the input)
@@ -56,7 +58,8 @@ void turn(int step) {
   soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) {                 // C-71: the watch has its face first
     static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE };
-    const Page *order = board.touch ? WATCH : EMBED; int n = board.touch ? 5 : 4, at = 0;
+    bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
+    const Page *order = face ? WATCH : EMBED; int n = face ? 5 : 4, at = 0;
     for (int i = 0; i < n; i++) if (order[i] == page) at = i;
     page = order[(at + n + step) % n];
   }
@@ -64,6 +67,7 @@ void turn(int step) {
   else if (screen == PARTY && partyRows()) partyAt = (partyAt + partyRows() + step) % partyRows();     // C-68
   else if (screen == MOVES && st.party[partyAt].n) moveAt = (moveAt + st.party[partyAt].n + step) % st.party[partyAt].n;
   else if (screen == CARE) careAt = (careAt + 4 + step) % 4;
+  else if (screen == INDEX_ENTRY) entryTop = max(0, entryTop + step);   // C-99: the entry scrolls (the draw keeps it in)
   else if (screen == PICK_REMOTE && flareCount()) remoteAt = (remoteAt + flareCount() + step) % flareCount();
   else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
   else if (screen == TYPE_PASS) wheelAt = (wheelAt + WHEEL_N + step) % WHEEL_N;
@@ -128,7 +132,7 @@ void press() {
     reportRemotes();
   }
   else if (screen == CARE) {
-    if (careAt == 3) screen = INDEX_ENTRY;
+    if (careAt == 3) { screen = INDEX_ENTRY; entryTop = 0; }
     else {
       static const char *KIND[] = { "feed", "water", "train" }, *SAID[] = { "Eaten.", "Drunk.", "Trained." };
       report(KIND[careAt], "device");
@@ -182,14 +186,14 @@ bool chorded = false;
 
 void sleepNow() {
   asleep = true;
-  canvas.fillSprite(TFT_BLACK); canvas.pushSprite(0, 0);
+  canvas.fillSprite(TFT_BLACK); canvas.pushSprite(board.screenX, board.screenY);
   backlight(false);
   ledsSleep(true);
 }
 
 // True if this input was spent waking the board.
 // Waking lands on home -- the daemon, by default (C-42) -- whatever menu it fell asleep in, to the title's jingle (C-41).
-Page homePage() { return board.touch ? FACE_PAGE : cfg.home == "today" ? TODAY : DAEMON; }
+Page homePage() { return board.touch || board.round ? FACE_PAGE : cfg.home == "today" ? TODAY : DAEMON; }
 
 bool wake() {
   lastInput = millis();

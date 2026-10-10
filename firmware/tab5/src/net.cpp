@@ -8,9 +8,22 @@
 #include "net.h"
 #include "store.h"
 #include "relay_ca.h"
+#include "sound.h"
 
 NetStatus net;
 std::atomic<uint32_t> keptChanged{0};
+std::atomic<uint32_t> keptMask{0};
+static void changed(uint32_t what) { keptMask |= what; keptChanged++; }
+static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   // FNV-1a, a range left out
+  uint32_t sum = 2166136261u;
+  for (int i = 0; i < (int)s.length(); i++) if (i < skipFrom || i > skipTo) sum = (sum ^ (uint8_t)s[i]) * 16777619u;
+  return sum;
+}
+static uint32_t bitFor(const char *name) {
+  static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
+  for (int i = 0; i < 7; i++) if (!strcmp(name, N[i])) return 1u << i;
+  return 0;
+}
 String netNetworks[16]; int netNetworkCount = 0;
 
 static String server, token, relay, ssids[5], passes[5];
@@ -22,7 +35,7 @@ static uint32_t awayAt = 0;                       // the relay answered when hom
 static const uint32_t AWAY_MS = 60000;
 
 // ---- what the screen asks for, done on the network task --------------------------------------------------------------
-enum Job { NONE, JOIN, SCAN, PAIR, SYNC, GAME };
+enum Job { NONE, JOIN, SCAN, PAIR, SYNC, GAME, SPEAK };
 static volatile Job job = NONE;
 static String jobA, jobB;
 static SemaphoreHandle_t jobLock;
@@ -34,6 +47,10 @@ void netScan() { ask(SCAN); }
 void netPair(const String &srv, const String &code) { ask(PAIR, srv, code); }
 void netSyncNow() { ask(SYNC); }
 void netGameSync() { ask(GAME); }
+std::atomic<int> netVoice{V_QUIET};
+static std::atomic<uint32_t> voiceGen{0};          // a stop moves it on: a voice made for an older one is dropped
+void netHush() { voiceGen++; soundVoiceStop(); netVoice = V_QUIET; }
+void netSpeak(int species) { netHush(); netVoice = V_MAKING; ask(SPEAK, String(species)); }
 String serverAddress() { return server; }
 String relayAddress() { return relay; }
 
@@ -141,8 +158,7 @@ static bool fetchKeep(const char *path, const char *name) {
   if (state) takeClock(got);
   int c0 = state ? got.indexOf("\"clock\":{") : -1, c1 = c0 >= 0 ? got.indexOf('}', c0) : -1;
   static std::map<String, uint32_t> sums;
-  uint32_t sum = 2166136261u;
-  for (int i = 0; i < (int)got.length(); i++) if (i < c0 || i > c1) sum = (sum ^ (uint8_t)got[i]) * 16777619u;
+  uint32_t sum = sumOf(got, c0, c1);
   if (sums[name] == sum) return true;
   sums[name] = sum;
   keep(name, got);
@@ -150,7 +166,7 @@ static bool fetchKeep(const char *path, const char *name) {
     JsonDocument d = newDoc();                       // C-93: another device learned or forgot a network
     if (!deserializeJson(d, got) && (d["netsRev"] | -1L) >= 0 && (d["netsRev"] | -1L) != netsRev) netsDue = true;
   }
-  keptChanged++;
+  changed(bitFor(name));
   return true;
 }
 
@@ -172,13 +188,15 @@ static bool fetchArt() {
     net.artDone++;
   }
   heap_caps_free(png);
-  keptChanged++;
+  changed(K_ART);
   return true;
 }
 
 static void fetchPartyArt() {
   JsonDocument party = newDoc();
   if (!kept("party", party)) return;
+  static std::map<int, uint32_t> sums;           // C-98: the same pictures again change nothing
+  bool any = false;
   for (JsonObject d : party["party"].as<JsonArray>()) {
     int slot = d["slot"] | -1;
     int code; String got = request("GET", "/api/art?party=" + String(slot), "", code);
@@ -186,10 +204,12 @@ static void fetchPartyArt() {
     JsonDocument a = newDoc();
     if (deserializeJson(a, got)) continue;
     const char *b64 = a["png"] | "";
+    uint32_t sum = sumOf(String(b64));
+    if (sums[slot] == sum && hasArt("p" + String(slot))) continue;
     static uint8_t png[32 * 1024]; size_t n = 0;
-    if (!mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) keepArt("p" + String(slot), png, n);
+    if (!mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) { keepArt("p" + String(slot), png, n); sums[slot] = sum; any = true; }
   }
-  keptChanged++;
+  if (any) changed(K_ART);
 }
 
 // C-93: tell the companion every network this Tab5 knows (it is paired, so with the passwords) and take back the list
@@ -215,6 +235,7 @@ static void shareNetworks() {
   int code; String got = request("POST", "/api/device/networks", body, code);
   JsonDocument r = newDoc();
   if (code != 200 || deserializeJson(r, got) || !r["shared"].is<JsonArray>()) return;
+  String before; for (int i = 0; i < known; i++) before += ssids[i] + "\n" + passes[i] + "\n";
   for (JsonVariant f : r["forget"].as<JsonArray>()) {
     String gone = f | "";
     for (int i = 0; i < known; i++) if (ssids[i] == gone) {
@@ -224,7 +245,9 @@ static void shareNetworks() {
   }
   for (JsonVariant n : r["shared"].as<JsonArray>()) keepOne(n["ssid"] | "", n["password"] | "");
   freshNets = ""; netsRev = r["rev"] | -1L;
-  save(); keptChanged++;
+  save();
+  String after; for (int i = 0; i < known; i++) after += ssids[i] + "\n" + passes[i] + "\n";
+  if (after != before) changed(K_NETS);           // C-98: only when the list really moved
 }
 
 static void keepEverything(bool withArt) {
@@ -308,11 +331,44 @@ static void pair(const String &srvIn, const String &code) {
   } else net.message = c == 403 ? "That code is not right, or has run out." : "The companion did not answer at " + srv + ".";   // DRAFT
 }
 
+// C-99: an INDEX entry aloud. The companion makes the voice (POST /api/device/speak {species}) and keeps it as 16 kHz
+// PCM for a device to fetch -- at home only: the relay answers in JSON and carries no voice.
+static void speak(int species) {
+  uint32_t gen = voiceGen;
+  auto said = [&](const String &m) { if (gen == voiceGen) { net.message = m; netVoice = V_QUIET; changed(K_VOICE); } };
+  if (!net.home && net.away) return said("The voice is made at home: the INDEX is read aloud there.");   // DRAFT
+  int code; String got = request("POST", "/api/device/speak", "{\"species\":" + String(species) + "}", code);
+  JsonDocument d = newDoc();
+  if (code != 200 || deserializeJson(d, got)) return said(code < 0 ? "Nothing answered to make the voice." : "The voice did not come (" + String(code) + ").");   // DRAFT
+  String audio = d["audio"] | "";
+  if (!audio.length()) return said(String((const char *)(d["error"] | "The voice did not come.")));   // DRAFT
+  if (gen != voiceGen || !net.home) return said(net.home ? "" : "The voice is made at home.");        // DRAFT
+  HTTPClient h; h.setTimeout(30000);
+  h.begin(server + withDevice(audio));
+  if (token.length()) h.addHeader("authorization", "Bearer " + token);
+  h.addHeader("x-device", deviceId());
+  const char *keys[] = { "x-sample-rate" }; h.collectHeaders(keys, 1);
+  int c = h.GET(); int len = h.getSize();
+  if (c != 200 || len <= 0 || len > 8 * 1024 * 1024) { h.end(); return said("The voice did not come down."); }   // DRAFT
+  int rate = h.header("x-sample-rate").toInt(); if (rate <= 0) rate = 16000;
+  uint8_t *buf = (uint8_t *)heap_caps_malloc(len, MALLOC_CAP_SPIRAM);
+  if (!buf) { h.end(); return said("No room for the voice."); }   // DRAFT
+  NetworkClient *s = h.getStreamPtr(); int got2 = 0; uint32_t quiet = millis();
+  while (got2 < len && millis() - quiet < 10000 && gen == voiceGen) {
+    int n = s->available() ? s->read(buf + got2, min(len - got2, 8192)) : 0;
+    if (n > 0) { got2 += n; quiet = millis(); } else delay(5);
+  }
+  h.end();
+  if (gen != voiceGen || got2 < len) { heap_caps_free(buf); return said(gen != voiceGen ? "" : "The voice did not all come down."); }   // DRAFT
+  soundVoice((int16_t *)buf, len / 2, rate);
+  if (gen == voiceGen) { net.message = ""; netVoice = V_SPEAKING; changed(K_VOICE); }
+}
+
 // SYNC with the game (C-21): it writes the save, so it is never kept for later -- the companion answers now, or the
 // Tab5 says so.
 static void gameSync() {
   int code; String got = request("POST", "/api/sync", "{}", code);
-  if (code != 200) { net.message = code < 0 ? "SYNC needs the companion: nothing answered." : "SYNC did not work (" + String(code) + ")."; keptChanged++; return; }   // DRAFT
+  if (code != 200) { net.message = code < 0 ? "SYNC needs the companion: nothing answered." : "SYNC did not work (" + String(code) + ")."; changed(K_MESSAGE); return; }   // DRAFT
   JsonDocument d = newDoc(); deserializeJson(d, got);
   String said;
   for (JsonVariant n : d["received"].as<JsonArray>()) said += String((const char *)n) + " came across. ";
@@ -320,6 +376,7 @@ static void gameSync() {
   for (JsonVariant n : d["refused"].as<JsonArray>()) said += String((const char *)n) + " ";   // T-397
   if (!(d["sameGame"] | true)) said = "That save is another game's: nothing was written. ";
   net.message = said.length() ? said : "SYNC: nothing to answer.";   // DRAFT
+  changed(K_MESSAGE);
   keepEverything(false);
 }
 
@@ -338,11 +395,12 @@ static void netTask(void *) {
     else if (j == SCAN) {
       int n = WiFi.scanNetworks(); netNetworkCount = 0;
       for (int i = 0; i < n && netNetworkCount < 16; i++) if (WiFi.SSID(i).length()) netNetworks[netNetworkCount++] = WiFi.SSID(i);
-      WiFi.scanDelete(); keptChanged++;
+      WiFi.scanDelete(); changed(K_NETS);
     }
     else if (j == PAIR) pair(a, b);
     else if (j == SYNC && net.paired) { flushOutbox(); keepEverything(!hasArt("s1")); }
     else if (j == GAME && net.paired) gameSync();
+    else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { net.message = "The voice needs the companion."; netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
     uint32_t now = millis();
     if (!net.wifi && known && now - lastSync > 30000) { lastSync = now; joinKnown(); }
     if (net.wifi && net.paired) {

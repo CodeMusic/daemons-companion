@@ -813,10 +813,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           talkPayload(await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav")))))));
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
-        const d = deviceState(ecfg, store, new Date(), deviceId).daemon;
-        if (!d?.entry) return send(res, 400, { error: "carry a daemon to hear its entry" });
-        const r = await n8n(ecfg, "daemon/voice", { text: String(d.entry).replace(/\n/g, " ").slice(0, 600), voice: "index" });
-        return send(res, 200, await forDevice({ ...r, answer: d.entry }));
+        // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does
+        const b = await body(req);
+        const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
+        const text = row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
+        if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "carry a daemon to hear its entry" });
+        const r = await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" });
+        return send(res, 200, await forDevice({ ...r, answer: text }));
       }
       if (req.method === "GET" && path.startsWith("/api/device/voice/")) {
         const pcm = voices.get(path.slice("/api/device/voice/".length));

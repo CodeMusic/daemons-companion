@@ -2,7 +2,11 @@
 #include "app.h"
 #include "talk.h"
 
-#if !defined(BOARD_TWATCH_S3) && !defined(BOARD_CORES3)
+#if defined(BOARD_CORES3) || defined(BOARD_DIAL)
+#define MAIN_BUS_TOUCH 1                                  // C-102: the Dial reads its touch as the CoreS3 does
+#endif
+
+#if !defined(BOARD_TWATCH_S3) && !defined(MAIN_BUS_TOUCH)
 
 void watchPower() {}
 void watchBegin() {}
@@ -14,6 +18,7 @@ long watchSteps() { return -1; }
 bool watchTalking() { return false; }
 bool watchTouchDown() { return false; }
 bool watchPowerOff() { return false; }
+String watchStatus() { return "WATCH none"; }
 
 #else
 
@@ -29,7 +34,7 @@ bool watchPowerOff() { return false; }
 // Pins and rails from LilyGO's TTGO_TWatch_Library (t-watch-s3 branch, src/utilities.h); docs/HARDWARE.md.
 // C-75: the CoreS3 shares all of this but the rails, the steps and the touch's bus: its touch is on the main bus, the
 // right way round, and its power chip's interrupt does not reach the ESP32, so the power key is read by asking.
-#ifdef BOARD_CORES3
+#ifdef MAIN_BUS_TOUCH
 static const int PMU_IRQ = -1;
 static TwoWire &touchWire = Wire;
 #else
@@ -40,13 +45,36 @@ static TwoWire &touchWire = Wire1;
 static XPowersAXP2101 pmu;
 static SensorPCF8563 rtc;
 static SensorBMA423 accel;
+#ifdef MAIN_BUS_TOUCH
+// C-98: the CoreS3 SE's touch answers with a maker's id SensorLib does not know (0x20, not FocalTech's 0x11) and so was
+// refused, though it speaks the FT5x06 registers as M5GFX reads them (Touch_FT5x06): how many fingers at 0x02, the first
+// finger's X and Y at 0x03-0x06. Read directly.
+struct DirectFT {
+  bool begin(TwoWire &w, uint8_t, int, int) { wire = &w; wire->beginTransmission(0x38); return wire->endTransmission() == 0; }
+  uint8_t getPoint(int16_t *x, int16_t *y, uint8_t) {
+    uint8_t b[5];
+    wire->beginTransmission(0x38); wire->write(0x02);
+    if (wire->endTransmission(false) != 0 || wire->requestFrom((uint8_t)0x38, (uint8_t)5) != 5) return 0;
+    for (int i = 0; i < 5; i++) b[i] = wire->read();
+    if ((b[0] & 0x0F) == 0) return 0;
+    x[0] = ((b[1] & 0x0F) << 8) | b[2]; y[0] = ((b[3] & 0x0F) << 8) | b[4];
+    return 1;
+  }
+  TwoWire *wire = nullptr;
+};
+static DirectFT touchPanel;
+#else
 static TouchDrvFT6X36 touchPanel;
+#endif
 static bool havePmu = false, haveRtc = false, haveAccel = false, haveTouch = false;
 static volatile bool pmuIrq = false;
 static int offsetMin = 0;                 // the local offset from UTC, kept for when the server is away
 static bool clockSet = false;
 
 void watchPower() {
+#ifdef BOARD_DIAL
+  return;                                         // C-102: no power chip -- GPIO 46 holds it on (board.cpp)
+#endif
   havePmu = pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, board.sda, board.scl);
   if (!havePmu) return;
 #ifndef BOARD_CORES3                              // the CoreS3's rails are set in boardBegin(), as M5Unified sets them
@@ -77,7 +105,7 @@ void watchBegin() {
       clockSet = true;
     }
   }
-#ifdef BOARD_CORES3
+#ifdef MAIN_BUS_TOUCH
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, board.sda, board.scl);   // no step counter: a BMI270
 #else
   haveAccel = accel.begin(Wire, BMA423_I2C_ADDR_SECONDARY, board.sda, board.scl);
@@ -153,6 +181,13 @@ bool watchTalking() { return talking; }
 bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; }
 bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchPanel.getPoint(x, y, 1) > 0; }
 
+String watchStatus() {
+  int16_t x[1], y[1];
+  bool on = haveTouch && touchPanel.getPoint(x, y, 1) > 0;
+  return "WATCH pmu " + String(havePmu) + " clock " + String(haveRtc) + " steps " + String(haveAccel) + " touch " +
+         String(haveTouch) + (on ? " finger " + String(x[0]) + "," + String(y[0]) : " no finger");
+}
+
 static bool onTalk(int x, int y) { int dx = x - W / 2, dy = y - (H - 34); return dx * dx + dy * dy <= 30 * 30; }
 
 static void touchLoop(uint32_t now) {
@@ -160,8 +195,8 @@ static void touchLoop(uint32_t now) {
   int16_t xs[1], ys[1];
   bool pressed = touchPanel.getPoint(xs, ys, 1) > 0;
   if (pressed) {
-#ifdef BOARD_CORES3
-    int x = xs[0], y = ys[0];
+#ifdef MAIN_BUS_TOUCH
+    int x = xs[0] - board.screenX, y = ys[0] - board.screenY;   // C-102: the Dial draws in a square inside its circle
 #else
     int x = W - 1 - xs[0], y = H - 1 - ys[0];
 #endif

@@ -4,7 +4,7 @@
 #   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
 #   ./updateCompanion.sh --all            ... every board found, without asking which
 #   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet):
-#                                             t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core (M5GO, Fire), m5-tab5
+#                                             t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
 #   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)
@@ -52,6 +52,7 @@ env_for() {                     # a board's id -> its build
     t-watch-s3) echo t-watch-s3 ;;
     m5-sticks3) echo m5-sticks3 ;;
     m5-cores3)  echo m5-cores3 ;;
+    m5-dial)    echo m5-dial ;;     # C-102
     m5-core|m5-fire|m5go) echo m5-core ;;   # C-75: one build, the original ESP32
     m5-tab5*)   echo m5-tab5 ;;       # C-77: its own project, firmware/tab5, with its own PlatformIO
     *)          echo "" ;;
@@ -115,10 +116,10 @@ fi
 for i in "${chosen[@]}"; do
   port="${ports[$i]}" env="${envs[$i]}"
   if [[ -z "$env" ]]; then
-    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3  5) an M5GO or Fire  6) the M5Stack Tab5"
-    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core or m5-tab5." >&2; exit 64; }
+    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3  5) an M5GO or Fire  6) the M5Stack Tab5  7) the M5Stack Dial"
+    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, m5-sticks3, m5-cores3, m5-core, m5-dial or m5-tab5." >&2; exit 64; }
     read -r answer
-    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; 5*) env=m5-core ;; 6*) env=m5-tab5 ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; 5*) env=m5-core ;; 6*) env=m5-tab5 ;; 7*) env=m5-dial ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
   fi
   echo "updateCompanion: flashing $port with $env"
   if [[ "$env" == m5-tab5 ]]; then "$HERE/firmware/tab5/pio.sh" run -t upload --upload-port "$port"   # C-77

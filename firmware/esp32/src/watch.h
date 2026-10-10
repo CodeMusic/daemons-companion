@@ -18,3 +18,4 @@ long watchSteps();                        // today's steps, -1 without a step co
 bool watchPowerOff();                     // the PMU switches everything off; the crown starts it again
 bool watchTalking();                      // push to talk held on the face (C-66 listens)
 bool watchTouchDown();                    // a finger on the screen now (talk.cpp listens while it stays)
+String watchStatus();                     // C-98: the parts found, and a finger now, for WATCH from the computer

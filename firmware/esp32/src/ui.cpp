@@ -57,10 +57,10 @@ void drawArt(int x, int y, int scale) {
 }
 
 // ---- drawing --------------------------------------------------------------------------------------------------------
-int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour) {
+int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour, int skip) {
   canvas.setTextFont(font); canvas.setTextColor(colour); canvas.setTextDatum(TL_DATUM);
   String line, word; int lines = 0;
-  auto flush = [&]() { if (lines < maxLines) canvas.drawString(line, x, y + lines * lineH); lines++; line = ""; };
+  auto flush = [&]() { if (lines >= skip && lines - skip < maxLines) canvas.drawString(line, x, y + (lines - skip) * lineH); lines++; line = ""; };
   for (unsigned i = 0; i <= text.length(); i++) {
     char c = i < text.length() ? text[i] : ' ';
     if (c == '\n') {                         // a line of its own: finish the word and the line
@@ -80,6 +80,19 @@ int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLi
 
 String upper(String s) { s.toUpperCase(); return s; }
 
+// C-102: the footer. On the Dial's round screen it is centred, and its parts are dropped from the end until it fits
+// the circle's width down there; a single button says hold, not "top button".
+static void footer(String s) {
+  canvas.setTextFont(1); canvas.setTextDatum(board.round ? BC_DATUM : BL_DATUM);
+  if (board.round) {
+    s.replace("top button: back", "hold: back"); s.replace("top button: stop", "hold: stop"); s.replace("hold the dial", "hold");
+    s.replace("running...    ", "");                         // the circle is narrow down there: what to do, not that it runs
+    while (canvas.textWidth(s) > 130 && s.lastIndexOf("    ") > 0) s = s.substring(0, s.lastIndexOf("    "));
+    canvas.drawString(s, W / 2, H - 2);
+  } else canvas.drawString(s, 10, H - 4);
+  canvas.setTextDatum(TL_DATUM);
+}
+
 const char *linkName() {
   if (millis() - usbSeen < USB_FRESH_MS && usbSeen) return "USB";
   if (phoneSeen && linkPhoneHere()) return "PHONE";   // C-55, C-57
@@ -97,6 +110,9 @@ void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int 
   canvas.setTextColor(i == at ? ink : PAPER);
   canvas.drawString(text, 12, y);
 }
+
+String (*runPanel)(uint16_t day, uint16_t ink) = nullptr;
+static String panelHint;
 
 void drawRoutines(uint16_t day) {
   uint16_t ink = lightColour(st.menu) ? INK : PAPER;
@@ -161,17 +177,20 @@ void drawRoutines(uint16_t day) {
       }
     }
     canvas.setTextDatum(TL_DATUM);
+  } else if (runPanel && routineRunning) {   // C-101: a routine that draws its own screen (the radio's)
+    panelHint = runPanel(day, ink);
   } else {   // RUN
     canvas.drawString(String(t.name) + " / " + t.routines[routineAt].name, 10, 32);
     wrap(runResult, 12, 54, W - 24, 2, 17, 6, PAPER);
   }
   canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-  canvas.drawString(hint(screen == RUN && routineRunning ? (board.touch ? "running...    touch: stop" : board.hasSideKey() ? "running...    top button: stop"
+  if (runPanel && routineRunning && screen == RUN && panelHint.length()) { footer(hint(panelHint)); return; }
+  footer(hint(screen == RUN && routineRunning ? (board.touch ? "running...    touch: stop" : board.hasSideKey() ? "running...    top button: stop"
                                                                        : "running...    hold the dial: stop")   // DRAFT
                     : screen == RUN ? "press: run again    top button: back"
                     : screen == MOVES ? "turn: choose    press: use it    top button: back"   // DRAFT
                     : screen == TYPE_PASS ? "turn: letter  press: add (OK: join)  top: delete"
-                    : "turn: choose    press: open    top button: back"), 10, H - 4);
+                    : "turn: choose    press: open    top button: back"));
 }
 
 // C-71: the watch's face -- the time, the day's theme, its virtue over its vice, its chakra and note, today's steps,
@@ -196,6 +215,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.setTextFont(1);
   if (steps >= 0) canvas.drawString(String(steps) + " STEPS", W / 2, 164);   // DRAFT
   if (bat.present) canvas.drawString(String(bat.percent) + "%" + (bat.charging ? " +" : ""), W / 2, 176);
+  if (!talkCan()) { canvas.setTextDatum(TL_DATUM); return; }   // C-102: the Dial has no microphone, so no TALK
   bool talking = watchTalking();                             // TALK: a button in the day's colour, full while held
   int cx = W / 2, cy = H - 34;
   if (talking) canvas.fillCircle(cx, cy, 26, day); else canvas.drawCircle(cx, cy, 26, day);
@@ -209,12 +229,12 @@ void draw() {
   canvas.fillSprite(INK);
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
-  canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(ML_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(board.round ? MC_DATUM : ML_DATUM);
   canvas.drawString(st.have ? upper(st.day) + "  " + st.note + (W >= 300 ? "  " + upper(st.season) : String(""))   // the watch: no room
-                            : String(W >= 300 ? "DAEMONS COMPANION" : "DAEMONS"), 8, 13);
+                            : String(W >= 300 ? "DAEMONS COMPANION" : "DAEMONS"), board.round ? W / 2 : 8, 13);   // C-102: centred in the circle
   canvas.setTextDatum(MR_DATUM);
-  canvas.drawString(linkName(), W - 8, 13);
-  if (bat.present) {                                          // C-63: a small battery, filled to its charge
+  if (!board.round) canvas.drawString(linkName(), W - 8, 13);
+  if (bat.present && !board.round) {                                          // C-63: a small battery, filled to its charge
     int x = W - 8 - canvas.textWidth(linkName()) - 52, y = 7;
     uint16_t fill = bat.percent <= 15 && !bat.usb ? 0xF800 : ink;      // red when low and not plugged in
     canvas.drawRect(x, y, 20, 12, ink); canvas.fillRect(x + 20, y + 3, 2, 6, ink);
@@ -232,16 +252,20 @@ void draw() {
     for (int i = 0; i < 4; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
     drawArt(W - 70, 34, 1);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    canvas.drawString(hint("turn: choose    press: do it    top button: back"), 10, H - 4);
+    footer(hint("turn: choose    press: do it    top button: back"));
   } else if (screen == INDEX_ENTRY) {                         // C-36: its INDEX entry, in the edition's voice
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.daemon.category) + "  " + st.daemon.types, 10, 50);
     drawArt(W - 68, 30, 1);
-    wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, 5, PAPER);   // clear of the sprite (seen with SHOT, 2026-10-04)
+    // C-99: the whole entry -- the room under the sprite, scrolled by the dial (a swipe on a touch screen)
+    int fit = (H - 16 - 72) / 16;
+    entryLines = wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, fit, PAPER, entryTop);   // clear of the sprite (SHOT, 2026-10-04)
+    if (entryTop > max(0, entryLines - fit)) { entryTop = max(0, entryLines - fit); dirty = true; }
+    String more = entryLines > fit ? String(entryTop + fit < entryLines ? "turn: more    " : "turn: back up    ") : String("");   // DRAFT
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    canvas.drawString(hint(String(talkCan() ? "press: read aloud    " : "") + "top button: back"), 10, H - 4);   // C-65, DRAFT
+    footer(hint(more + (talkCan() ? "press: read aloud    " : "") + "top button: back"));   // C-65, DRAFT
   } else if (screen == TALK) {                               // C-66: what was heard, and the daemon's answer
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString(upper(st.carrying ? st.daemon.nickname : String("your daemon")), 10, 32);
@@ -249,7 +273,7 @@ void draw() {
     if (talkHeard.length()) y += min(2, wrap("\"" + talkHeard + "\"", 10, y, W - 20, 2, 16, 2, QUIET)) * 16 + 4;
     if (talkAnswer.length()) wrap(talkAnswer, 10, y, W - 20, 2, 16, (H - 20 - y) / 16, PAPER);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    canvas.drawString(talkStatus.length() ? talkStatus : hint("hold the dial: talk again    top button: back"), 10, H - 4);
+    footer(talkStatus.length() ? talkStatus : hint("hold the dial: talk again    top button: back"));
   } else if (screen != HOME) {
     drawRoutines(day);
   } else if (page == FACE_PAGE) {
@@ -259,11 +283,12 @@ void draw() {
     canvas.drawString("ROUTINES", 10, 34);
     wrap(partyFirst() || !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
          : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
-                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, 4, 27, 3, PAPER);
+                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round ? 2 : 4,
+         board.round ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     String names;                                            // C-67: this board's own types
     for (int i = 0; i < typeCount; i++) names += String(i ? "  " : "") + types[i].name;
-    canvas.drawString(names, 10, H - 6);
+    if (!board.round) canvas.drawString(names, 10, H - 6);   // C-102: no room at the foot of a circle
   } else if (!st.have) {
     wrap("Looking for the companion.", 10, 40, W - 20, 4, 28, 2, PAPER);
     wrap(wifiSet() ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"
@@ -280,9 +305,12 @@ void draw() {
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
+    if (board.round) { canvas.setTextDatum(BC_DATUM); canvas.drawString(COMPANION_BUILD, W / 2, H - 14); footer(hint("press: the day's note")); }   // C-102
+    else {
     canvas.drawString(hint("press: the day's note"), 10, H - 6);
     canvas.setTextDatum(BR_DATUM);                             // C-91: which build this is, quietly
     canvas.drawString(COMPANION_BUILD, W - 8, H - 6);
+    }
     canvas.setTextDatum(BL_DATUM);
   } else if (page == TODAY) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
@@ -295,10 +323,11 @@ void draw() {
       wrap(lastDone >= 0 ? "All done. Set a new goal in the app." : "Nothing to do yet. Set a goal in the app.", 10, 54, W - 20, 4, 27, 3, PAPER);
     }
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    if (undoable()) canvas.drawString(hint("done: " + lastDoneText.substring(0, 30) + "   top button: undo"), 10, H - 6);
+    if (undoable()) { String u = hint("done: " + lastDoneText.substring(0, 30) + "   top button: undo"); if (board.round) footer("hold: undo"); else canvas.drawString(u, 10, H - 6); }
     else {                                       // C-73: wherever the virtue shows, its chakra shows too
       String day = st.virtue + (st.chakra.length() ? "  -  " + st.chakra : String(""));
-      canvas.drawString(st.step >= 0 ? "press: done    " + day : day, 10, H - 6);
+      if (board.round) footer(st.step >= 0 ? "press: done" : day);   // C-102, DRAFT
+      else canvas.drawString(st.step >= 0 ? "press: done    " + day : day, 10, H - 6);
     }
   } else {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
@@ -310,6 +339,14 @@ void draw() {
       int drift = (int)roundf(10 * sinf(t / 2900.0f));
       int hop = (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
       if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
+      if (board.round) {                                       // C-102: the Dial -- large in the middle of the circle
+        drawArt(W / 2 - 64 + drift / 2, 24 + bob + hop, 2);
+        canvas.setTextDatum(MC_DATUM); canvas.setTextFont(2); canvas.setTextColor(PAPER);
+        canvas.drawString(st.daemon.nickname + "  L" + String(st.daemon.level), W / 2, 164);
+        canvas.setTextFont(1); canvas.setTextColor(st.daemon.word.length() ? day : QUIET);
+        canvas.drawString(st.daemon.word.length() ? st.daemon.word : "fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", W / 2, 180);
+        canvas.setTextColor(QUIET); footer("press: care for it");   // DRAFT
+      } else {
       drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
       int x = 168;
       canvas.setTextDatum(TL_DATUM);
@@ -326,6 +363,7 @@ void draw() {
       else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 126, W - x - 6, 1, 11, 2, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
       canvas.drawString("press: care for it", x, H - 4);
+      }
     } else {
       canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
@@ -339,7 +377,7 @@ void draw() {
     canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM);
     canvas.drawString(flash, W / 2, H / 2);
   }
-  canvas.pushSprite(0, 0);
+  canvas.pushSprite(board.screenX, board.screenY);   // C-102: the Dial's square, inside its circle
   dirty = false;
 }
 
@@ -357,6 +395,8 @@ void celebrate(const String &what) {
 // While a routine runs the loop does not, so nothing reads the cable: a SHOT asked for then is answered here, so a
 // routine's live screen can be checked too. Any other line waiting is let go (the bridge sends its state again).
 bool routineRunning = false;
+int cableKey = 0;
+
 void progress(const String &text) {
   runResult = text; lastInput = millis();                   // a routine at work is the board in use: no sleeping after it
   draw();
@@ -366,6 +406,9 @@ void progress(const String &text) {
     if (c != '\n') { if (in.length() < 64) in += c; continue; }
     in.trim();
     if (in == "SHOT") shot();
+    else if (in == "KEY PRESS") cableKey = 1;      // C-101: a routine that runs the dial itself, checked from the computer
+    else if (in == "KEY PRESS2") cableKey = 2;
+    else if (in == "KEY BACK") cableKey = -1;
     in = "";
   }
 }

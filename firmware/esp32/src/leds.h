@@ -13,4 +13,6 @@ enum { DANCE_SPARKLE, DANCE_GLIMMER, DANCE_PULSE, DANCE_WAVE, DANCE_SWEEP, DANCE
 void ledsDance(int kind, int step, int steps);
 void ledsTint(uint32_t rgb);  // C-68: the next dance in this colour, not the day's (until it ends)
 void ledsBrightness(int percent);   // C-43: the ring at rest, a share of the day's colour (33 by default)
+void ledsVoice(int level);    // C-101: the ring speaking along with a voice, 0..100 now (call it each frame; it fades
+                              // back to rest a moment after the last)
 void ledsLoop();              // every pass of the loop: animations, and going out when unused

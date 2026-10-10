@@ -48,7 +48,9 @@ static uint32_t playedAt = 0;
 // asked 16000, 88,600 a second; 8000, 44,260; 4000, 22,110; below that it stops being in proportion. So the DAC is asked
 // for DAC_ASK and really plays DAC_OUT_HZ, and play() holds each 16 kHz sample for its share of those frames.
 static const int DAC_ASK = 8000, DAC_OUT_HZ = 44260;
+static const int BUZZER_CH = 2;               // C-102: the Dial's buzzer, on LEDC (M5GFX has 7 for the backlight)
 static void play(const int16_t *buf, size_t n) {
+  if (board.buzzer >= 0) return;               // C-102: a buzzer plays notes (tone()), never samples
   size_t wrote;
   playedAt = millis();
   if (board.dacSpeaker && !dacStart()) return;
@@ -110,6 +112,12 @@ void soundIdle() {}
 #endif
 
 void soundBegin() {
+  if (board.buzzer >= 0) {                     // C-102: the Dial's passive buzzer -- each note a square wave from LEDC
+    ledcSetup(BUZZER_CH, 2000, 10);
+    ledcAttachPin(board.buzzer, BUZZER_CH);
+    ledcWrite(BUZZER_CH, 0);
+    ready = true; return;
+  }
   if (board.dacSpeaker) {                      // C-75: started by the first sound, not here
 #if SOC_I2S_SUPPORTS_DAC
     dacQuiet();
@@ -164,6 +172,13 @@ static float hz(int midi) { return noteHz(midi); }
 // One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself).
 static void tone(int midi, int ms, float level = 1.0f) {
   if (!ready || !enabled || amplitude == 0) return;
+  if (board.buzzer >= 0) {                     // C-102: the note itself, its loudness the share of each wave that is high
+    ledcWriteTone(BUZZER_CH, (uint32_t)hz(midi));
+    ledcWrite(BUZZER_CH, (uint32_t)(512 * duty * 2 * min(1.0f, amplitude * level / 12000.0f)));
+    delay(ms);
+    ledcWrite(BUZZER_CH, 0);
+    return;
+  }
   static int16_t buf[256];
   int total = RATE * ms / 1000, rise = RATE * 4 / 1000, fall = RATE * 8 / 1000;
   float period = RATE / hz(midi), phase = 0;
@@ -206,7 +221,7 @@ void soundPcm(const int16_t *samples, size_t n) {
 }
 
 static void rest(int ms) {
-  if (!ready || !enabled) { delay(ms); return; }
+  if (!ready || !enabled || board.buzzer >= 0) { delay(ms); return; }
   static int16_t zero[256] = {0};
   for (int total = RATE * ms / 1000; total > 0; total -= 256) {
     play(zero, min(256, total));

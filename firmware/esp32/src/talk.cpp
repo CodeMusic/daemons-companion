@@ -111,6 +111,22 @@ static bool micOn() {
   return true;
 }
 
+bool talkEarOpen() { return talkCan() && board.mic != Mic::Analog && micOn(); }
+int talkEarLevel() {
+  static int16_t buf[512];
+  long long sq = 0; long sum = 0; int n = 0;
+  for (int k = 0; k < 16; k++) {                       // all that is waiting, so it is now and not a moment ago
+    size_t got = 0;
+    if (i2s_read(MIC, buf, sizeof buf, &got, 0) != ESP_OK || !got) break;
+    sum = 0; sq = 0; n = got / 2;                      // only the newest piece counts
+    for (int i = 0; i < n; i++) sum += buf[i];
+    long mean = n ? sum / n : 0;
+    for (int i = 0; i < n; i++) { long v = buf[i] - mean; sq += v * v; }
+  }
+  return n >= 32 ? (int)sqrt((double)sq / n) : -1;
+}
+void talkEarClose() { i2s_driver_uninstall(MIC); soundResume(); }
+
 static void wavHeader(uint8_t *h, uint32_t samples) {
   uint32_t bytes = samples * 2;
   memcpy(h, "RIFF", 4); uint32_t v = 36 + bytes; memcpy(h + 4, &v, 4); memcpy(h + 8, "WAVEfmt ", 8);

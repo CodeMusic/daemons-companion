@@ -103,7 +103,9 @@ After flashing, the script waits for the board to say HELLO. **A board can stay 
 look dead** (the S3's own USB, and its battery keeps it powered when unplugged): **press RST once**. The M5GO and Fire
 come up as a USB-serial port (`usbserial` or `wchusbserial`); the scripts find those too, and open them without
 restarting the board. If an upload cannot
-connect at all, hold BOOT, press and release RST, let go of BOOT, and run it again.
+connect at all, hold BOOT, press and release RST, let go of BOOT, and run it again. **The M5Stack Dial is flashed in
+short pieces** (`firmware/esp32/flash_chunked.py`, which the script uses for it): while it is being flashed nothing holds
+its power on, and one Dial switches itself off about nine seconds into any flashing session.
 
 The bridge hands the board the server's state every five seconds and passes back what you do on it; the corner of the
 screen says **USB**. A board that has learned a network (UPLINK, TEACH A NETWORK) asks the server itself over **WIFI**,

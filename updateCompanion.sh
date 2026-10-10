@@ -123,6 +123,7 @@ for i in "${chosen[@]}"; do
   fi
   echo "updateCompanion: flashing $port with $env"
   if [[ "$env" == m5-tab5 ]]; then "$HERE/firmware/tab5/pio.sh" run -t upload --upload-port "$port"   # C-77
+  elif [[ "$env" == m5-dial ]]; then "$PIO" run -e m5-dial && "$PY" "$FW/flash_chunked.py" m5-dial "$port"   # C-102: in short pieces
   else "$PIO" run -e "$env" -t upload --upload-port "$port"; fi
 
   # The S3's own USB sometimes leaves the board in its bootloader after the upload's "hard reset": it looks dead and

@@ -17,6 +17,8 @@ static String hint(String s) {
     return s;
   }
   if (board.keyboard) {                      // C-104: the T-Deck -- the ball rolls and clicks; Enter and Backspace too
+    s.replace("top button: back", "backspace: back"); s.replace("top button: stop", "backspace: stop");
+    s.replace("top button: undo", "backspace: undo"); s.replace("top: delete", "backspace: delete");
     s.replace("turn:", "roll:"); s.replace("press:", "click:"); s.replace("hold the dial", "hold the ball");
     return s;
   }

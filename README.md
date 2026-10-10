@@ -65,8 +65,8 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC, Sub-GHz | gauge and charger | **runs** |
 | **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | **runs** |
 | **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, speaking along with the radio | AM/FM: LATENT and CONTEXT -- **CHANNEL**, a move it learns | voltage | **runs** |
-| **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa (MESH), IR | power chip | built, not yet run |
-| **T-Deck, T-Deck Plus** | 320x240 | a keyboard and a trackball | yes (two mics) | -- | LoRa (MESH); GPS on the Plus | voltage | built, not yet run (C-104) |
+| **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa (MESH), IR | power chip | built, not yet run (waits on a data cable) |
+| **T-Deck, T-Deck Plus** | 320x240 | a keyboard and a trackball: roll, click, Enter, Backspace -- and it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus | voltage | **runs** (C-104) |
 | **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
 | **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | **runs** |
 | **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | **runs** |
@@ -74,8 +74,9 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **M5Stack Tab5** | 720x1280 touch | **the control center**: the app's screens, its own Wi-Fi, everything kept on it ([docs/TAB5.md](docs/TAB5.md)) | next | -- | -- | power chip | **runs** |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
-is. The watch, the StickS3, the CoreS3, the Dial, and the M5GO and Fire (one build between them, on the original ESP32)
-each have their own (`./updateCompanion.sh --board m5-sticks3`, `m5-cores3`, `m5-dial` or `m5-core` the first time). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
+is. The watch, the T-Deck, the StickS3, the CoreS3, the Dial, and the M5GO and Fire (one build between them, on the original ESP32)
+each have their own (`./updateCompanion.sh --board t-deck`, `m5-sticks3`, `m5-cores3`, `m5-dial` or `m5-core` the first time;
+the T-Deck's factory firmware ignores the reset, so hold its trackball while plugging it in the first time). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
 its own PlatformIO: `firmware/tab5/pio.sh`); `./updateCompanion.sh --board m5-tab5` flashes it. Pins and sources:
 [docs/HARDWARE.md](docs/HARDWARE.md).
 
@@ -217,7 +218,8 @@ passed it on) and sends one of them, or everyone, a **WAVE** or a word -- four s
 typed; **CALL OUT** asks who is there and lists who answers in thirty seconds. A wave or word that arrives flashes on
 the screen; the DAEMON tab keeps them under MET NEARBY. Every board passes on what it hears once (two hops), so a daemon
 out of range is still heard through a board between. The band is set once on the site (DEVICE, ITS SETTINGS, LORA
-BAND: 433, 868 or 915 MHz -- what the boards were bought with). `docs/LORA.md` has the design.
+BAND: 433, 868 or 915 MHz -- what the boards were bought with). [docs/LORA.md](docs/LORA.md) has the design. The T-Deck's
+radio has started at 433; the watch is not yet flashed, so no two boards have heard each other yet.
 
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
 on it. For the App Store, archive in Xcode and upload with Transporter as usual.
@@ -395,6 +397,7 @@ what is this machine's own, and a board reaches only the device routes, with the
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio, RoverCub and their kin already did.
 - [**docs/HARDWARE.md**](docs/HARDWARE.md) -- every board's pins and parts, with sources.
 - [**docs/DEVICES.md**](docs/DEVICES.md) -- a daemon per device, and always connected: the design, your answers, and what is built.
+- [**docs/LORA.md**](docs/LORA.md) -- daemons nearby over LoRa and a word between them: which boards can talk, the frame, the mesh.
 - [**docs/TAB5.md**](docs/TAB5.md) -- the Tab5 as the control center: the plan, and what is built.
 - [**docs/REMOTE.md**](docs/REMOTE.md) -- the companion from anywhere: the relay, the phone, and a board on its own Wi-Fi.
 - [**docs/LLM630.md**](docs/LLM630.md) -- the offline brain behind a T-Embed: what M5's code says it can do.

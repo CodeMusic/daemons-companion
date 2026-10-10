@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <map>
+#include <vector>
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
 #include <Preferences.h>
@@ -197,8 +198,12 @@ static void fetchPartyArt() {
   if (!kept("party", party)) return;
   static std::map<int, uint32_t> sums;           // C-98: the same pictures again change nothing
   bool any = false;
-  for (JsonObject d : party["party"].as<JsonArray>()) {
-    int slot = d["slot"] | -1;
+  std::vector<int> slots;
+  for (JsonObject d : party["party"].as<JsonArray>()) slots.push_back(d["slot"] | -1);
+  JsonDocument st = newDoc();                    // C-103: this Tab5's own daemon may be away in a PC box (slot 100 on)
+  if (kept("state", st) && !st["daemon"].isNull()) slots.push_back(st["daemon"]["slot"] | -1);
+  for (int slot : slots) {
+    if (slot < 0) continue;
     int code; String got = request("GET", "/api/art?party=" + String(slot), "", code);
     if (code != 200) continue;
     JsonDocument a = newDoc();

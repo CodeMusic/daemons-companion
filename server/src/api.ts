@@ -38,7 +38,7 @@ import { breakdown } from "./ai/breakdown.js";
 import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
-import { readSave } from "./save/reader.js";
+import { readAway, readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { readIndex } from "./save/index.js";
 import { answerRequests, syncSave } from "./save/writer.js";
@@ -245,7 +245,8 @@ function checkSettings(b: any): DeviceSettings | string {
 // A party daemon's front sprite as the game draws it, its streaks painted for its routines (C-18); null if none.
 function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
-  const d = readSave(new Uint8Array(readFileSync(cfg.savePath))).party.find(which);
+  const bytes = new Uint8Array(readFileSync(cfg.savePath));
+  const d = [...readSave(bytes).party, ...readAway(bytes)].find(which);   // C-103: a daemon away in a box has its art too
   const row = d && SPECIES[String(d.species)];
   const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
   if (!d || !file || !existsSync(file)) return null;
@@ -304,7 +305,7 @@ function pendingExp(store: Store, personality: number) {
 // device grows that device's daemon; one done in the app or on the site, the first away (LIMITED LEVELING: one each).
 function awayNow(cfg: Config) {
   if (!cfg.savePath || !existsSync(cfg.savePath)) return [];
-  try { return readSave(new Uint8Array(readFileSync(cfg.savePath))).party.filter((p) => p.away); } catch { return []; }
+  try { return readAway(new Uint8Array(readFileSync(cfg.savePath))); } catch { return []; }   // C-103: the boxes' too
 }
 function carriedDaemon(cfg: Config, store: Store, deviceId = "") { return carriedFor(store, awayNow(cfg), deviceId); }
 export function growFromStep(cfg: Config, store: Store, stepId: number, deviceId = "") {
@@ -331,7 +332,7 @@ export function deviceState(cfg: Config, store: Store, now = new Date(), deviceI
   let daemon = null, party: unknown[] = [];
   if (cfg.savePath && existsSync(cfg.savePath)) {
     const save = readSave(new Uint8Array(readFileSync(cfg.savePath)));
-    const d = carriedFor(store, save.party.filter((p) => p.away), deviceId);   // C-80: this device's own
+    const d = carriedFor(store, readAway(new Uint8Array(readFileSync(cfg.savePath))), deviceId);   // C-80: this device's own; C-103: a box's too
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
@@ -916,7 +917,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         return send(res, 400, { error: "art for ?party=<slot>, ?species=<id> or ?all=species" });
       }
-      const partyArt = path.match(/^\/art\/party\/(\d)\.png$/);
+      const partyArt = path.match(/^\/art\/party\/(\d{1,3})\.png$/);   // C-103: a box's away daemon is 100 on
       if (req.method === "GET" && partyArt) {
         const body = partyPng(ecfg, (p) => p.slot === Number(partyArt[1]));
         if (!body) return send(res, 404, { error: "no art for that slot" });

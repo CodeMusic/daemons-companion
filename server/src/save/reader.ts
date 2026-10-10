@@ -8,11 +8,12 @@ import layoutJson from "../../data/save_layout.json" with { type: "json" };
 import speciesJson from "../../data/species.json" with { type: "json" };
 import charmapJson from "../../data/charmap.json" with { type: "json" };
 import itemsJson from "../../data/items.json" with { type: "json" };
+import { levelFromExp } from "./growth.js";
 
 export type Layout = typeof layoutJson;
 export const LAYOUT: Layout = layoutJson;
 
-type SpeciesRow = { constant: string; national: number | null; name: string; types: string[]; category: string | null };
+type SpeciesRow = { constant: string; national: number | null; name: string; types: string[]; category: string | null; growth?: number };
 const SPECIES = speciesJson as unknown as Record<string, SpeciesRow>;
 const CHARS = (charmapJson as { bytes: Record<string, string> }).bytes;
 const ITEMS = itemsJson as unknown as Record<string, { name: string; description: string }>;
@@ -187,4 +188,17 @@ export function readBoxes(save: Uint8Array, l: Layout = LAYOUT): (PartyDaemon & 
     } catch { /* a damaged record */ }
   }
   return out;
+}
+
+// C-103 (the user, 2026-10-10: "any away daemon should be away even if u put it in the pc in the game"): every daemon
+// away, wherever the game keeps it. The away bit is in the record the PC keeps too, and the game never clears it
+// (T-358: only the companion does), so one put in a box while it is away is still away. A boxed daemon has no level in
+// its record -- it is read from its experience -- and its slot is BOX_SLOT on, past any party slot, so its art is found.
+export const BOX_SLOT = 100;
+export function readAway(save: Uint8Array, l: Layout = LAYOUT): PartyDaemon[] {
+  const party = readSave(save, l).party.filter((d) => d.away);
+  const boxed = readBoxes(save, l).filter((d) => d.away && !party.some((p) => p.personality === d.personality))
+    .map(({ box, pos, ...d }) => ({ ...d, slot: BOX_SLOT + box * 30 + pos,
+                                    level: levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp) }));
+  return [...party, ...boxed];
 }

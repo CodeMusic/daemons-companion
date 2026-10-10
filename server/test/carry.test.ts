@@ -141,3 +141,39 @@ describe("a board away from home, through the relay with its own key (C-82)", ()
     expect((await relayed(away.key, "/api/device/state")).status).toBe(401);
   });
 });
+
+describe("a daemon away stays away when the game puts it in the PC (C-103)", () => {
+  // the user, 2026-10-10: five away, put in the PC in the game, more caught and sent -- after SYNC only the new ones
+  // were out. The away bit is in the record the PC keeps, so a boxed daemon is read as away as well.
+  const NEW = { personality: 0x00000101, otId: 0x00ab1234, species: 7, nickname: "NEWBIE", level: 4, away: true };
+  const save = buildSave({ player: "ROVER", trainerId: 0x00ab1234,
+    slots: [{ counter: 1, party: [NEW, HOME] }, { counter: 2, party: [NEW, HOME] }],
+    boxes: [{ ...PIP, exp: 2000 }, { ...HOME, personality: 0x00000999, nickname: "BOXED" }, { ...LABEL, exp: 500 }] });
+  const path = join(mkdtempSync(join(tmpdir(), "boxed-")), "copy.sav");
+  writeFileSync(path, save);
+  const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: path });
+  let base = "";
+  beforeAll(async () => {
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+  afterAll(() => server.close());
+
+  it("lists every daemon away, the party's and the boxes', and not one only put away", async () => {
+    const v = await fetch(base + "/api/devices").then((r) => r.json());
+    expect(v.away.map((d: any) => d.nickname)).toEqual(["NEWBIE", "PIP", "LABEL"]);
+    const pip = v.away.find((d: any) => d.nickname === "PIP");
+    expect(pip.slot).toBeGreaterThanOrEqual(100);                           // a box's, past any party slot
+    expect(pip.level).toBeGreaterThan(1);                                    // read from its experience
+  });
+
+  it("puts a boxed daemon in a device, with its picture", async () => {
+    const r = await fetch(base + "/api/devices/carry", { method: "POST", headers: { "content-type": "application/json" },
+                                                        body: JSON.stringify({ id: CC, personality: PIP.personality }) });
+    expect(r.status).toBe(200);
+    const state = await fetch(base + "/api/device/state?via=wifi", { headers: { "x-device": CC } }).then((r) => r.json());
+    expect(state.daemon.nickname).toBe("PIP");
+    expect((await fetch(base + "/api/device/art", { headers: { "x-device": CC } })).status).toBe(200);
+    expect((await fetch(base + state.daemon.art)).status).toBe(200);
+  });
+});

@@ -1,422 +1,91 @@
-# daemons-companion
+# 🦊 daemons-companion
 
-**A goal companion that carries a daemon.** You carry a daemon from your game of
-[**DAEMONS**](https://github.com/CodeMusic/DAEMONS) on a little device -- a LilyGO T-Embed (the CC1101, the plain one or
-the SI4732), a T-Watch S3, an M5Stack (the StickS3, the CoreS3, the M5GO, the Fire or the Dial), the M5Stack Tab5 as a
-control center, or your phone -- and with more than one device, a different daemon from your party in each. You feed it, train it, spend time with it, **talk with it** -- and it helps
-you: tell it what you want to get done, and it turns that into **one next step** and walks you through the day. As you
-get things done, it thrives. Pass someone else carrying one, and your INDEX sees their daemon.
+**My name is CRYSTAL CLEAR. I study DAEMONS** -- and lately, where they go when they leave the game.
 
-It is the successor to **RoverRadio** (in [CodeMusic/RoverByte](https://github.com/CodeMusic/RoverByte)) and
-[**RoverCub**](https://github.com/CodeMusic/RoverCub), joined to the game.
+You have raised one. It has walked every route with you, learned its routines, slept in your party between towns. It
+does not have to stay in the cartridge.
 
-## Start it
+**SEND it AWAY from your party, and something out here can host it.** Your phone, most likely. A little board on your
+desk, a watch on your wrist, a radio with a dial -- anything with a screen and a bit of patience. Out here it keeps the
+life it had in there: it gets hungry, it gets tired, it learns. And when you **SYNC**, it goes home with everything that
+happened while it was with you.
 
-```sh
-./bindCompanion.sh            # the server, then the app as a site in your browser
-```
+I will not tell you which device it should live in. I never assign a daemon. You will see which one it likes.
 
-That is the whole of it on a Mac with Node 24: the first run installs what each part needs, starts the server in the
-background, and opens the app at <http://localhost:8081>. **Ctrl-C stops both.**
+## The happy path: your phone hosts it
 
-| | |
+Nothing to buy. The phone in your pocket is the first host, and the one I would start with.
+
+1. **Play [DAEMONS](https://github.com/CodeMusic/DAEMONS)**, and in your party, **SEND** a daemon AWAY.
+2. **Start the companion** on your computer and show it a **copy** of your save -- never the only one
+   (`./bindCompanion.sh`, then SETTINGS on the site it opens).
+3. **SYNC.** The daemon steps out of the game.
+4. **Put the app on your iPhone** (`./bindCompanion.sh phone`) and **pair** it (the site's SETTINGS, PAIR A PHONE).
+5. **Add the DAEMONS widget** to your home screen. It hosts a daemon of its own -- choose which under DEVICE, YOUR
+   DEVICES, This phone's widget -- and its **FEED**, **WATER** and **TRAIN** work right there, without opening anything.
+   *Eaten. Drank. Trained.*
+
+Every step, with what you should see: **[Host on your phone](https://github.com/CodeMusic/daemons-companion/wiki/Host-on-your-phone)**.
+
+*One honest note from the lab: today the phone still talks to the companion on a computer of yours, which keeps that
+copy of your save. A phone and a game that need nothing else is what I am working on next (C-111).*
+
+## Any device can host one
+
+The phone is enough. The rest are **companions** -- extra hosts, for the people who like to hold things. **Most LilyGO
+and M5Stack boards are supported**, and with more than one, each can host a different daemon from your party.
+
+| | a daemon hosted here... |
 |---|---|
-| `./bindCompanion.sh` | the server, then the app as a **site** (the default) |
-| `./bindCompanion.sh ios` | the server, then the app in the **iOS Simulator** (needs Xcode) |
-| `./bindCompanion.sh android` | the server, then the app in an **Android emulator** (needs Android Studio) |
-| `./bindCompanion.sh server` | **only the server**, in this terminal |
-| `./bindCompanion.sh app [web\|ios\|android]` | **only the app**, against a server you started yourself |
-| `./bindCompanion.sh test` | the server's **type check and tests** |
-| `./bindCompanion.sh phone` | **build the app for your iPhone** and install it ([below](#on-your-iphone)) |
-| `./bindCompanion.sh always` | **keep the server running**: at login, restarted if it stops, the Mac awake on power -- so your phone reaches it from anywhere ([below](#from-anywhere)) |
-| `./bindCompanion.sh never` | stop doing that |
-| `./updateCompanion.sh` | **flash the handhelds** plugged in -- it asks each which board it is ([below](#the-handhelds)) |
-| `./linkCompanion.sh` | **link a handheld** to the server over its cable |
+| **your phone** -- the app and its home-screen widget | lives on your home screen, and comes along for everything else |
+| **LilyGO T-Embed** (CC1101, plain, SI4732) | answers a dial that hums in the day's key; on the SI4732 it tunes the radio and **learns the stations** it hears |
+| **LilyGO T-Deck / T-Deck Plus** | can be typed to, and calls out over **LoRa** to daemons a street away |
+| **LilyGO T-Watch S3** | wears the day on its face, and keeps your steps |
+| **LilyGO T-Display-S3 Pro** | spreads out across a wide screen |
+| **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads tags held to its face |
+| **M5Stack Tab5** | runs **the control center**: every screen of the app, on a tablet of its own |
 
-**The app runs in the foreground, so Expo's own keys work in the same terminal**: `w` opens the site, `i` the iOS
-Simulator, `a` the Android emulator, `r` reloads. A session started as a site can reach the others without starting
-again. The server writes to `.logs/server.log` (`tail -f .logs/server.log`) and restarts itself when its code changes.
-If a server is already running on the port, the script uses it and leaves it running when you stop.
+A few of these are still on my bench -- built, and waiting for their first run on the real thing. Each board's
+controls, pages, quirks and which ones run today: **[Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards)**.
+Flashing one takes one command: **[Flashing and linking](https://github.com/CodeMusic/daemons-companion/wiki/Flashing-and-linking)**.
 
-*The name is a sibling's: DAEMONS' own `bindDaemons.sh` builds and runs the game; this one runs what you carry
-beside it.*
+## What a hosted daemon does
 
-## What works today
+- **It keeps its day.** Fed, watered, trained; a mood in a word; a quiet line at a meal time. It never nags.
+- **It helps with yours.** Tell it what you want to get done and it finds **one next step**. Each step you finish is a
+  meal, and experience it takes home at the next SYNC.
+- **It talks.** Hold to talk on the phone or a board, and it answers in its INDEX voice
+  ([Talk to your daemon](https://github.com/CodeMusic/daemons-companion/wiki/Talk-to-your-daemon)).
+- **It reads you its INDEX entry** aloud -- or anyone's.
+- **It notices others.** Pass someone hosting a daemon of their own, and your INDEX sees theirs
+  ([Meeting others nearby](https://github.com/CodeMusic/daemons-companion/wiki/Meeting-others-nearby)).
+- **It follows you out.** Away from home your phone reaches it through a relay of your own
+  ([Away from home](https://github.com/CodeMusic/daemons-companion/wiki/Away-from-home)).
 
-| | | |
-|---|---|---|
-| `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (your devices, which daemon each carries, their batteries and routines), **PROFILE**, **SETTINGS**; on the iPhone, **a daemon on the home screen** -- a widget that is a device of its own, with FEED, WATER and TRAIN (C-100) |
-| `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start), and builds of their own for the **T-Watch S3**, the **M5StickS3**, the **M5Stack CoreS3**, the **M5Stack Dial**, and the **M5GO and Fire** (the original ESP32; the rest are ESP32-S3); PlatformIO + Arduino, grown from RoverCodeBase | **running on the three T-Embeds, the CoreS3, the M5GO and the Fire**; the watch, the StickS3 and the Dial are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, the radio experiments, and on the SI4732 **CHANNEL**, a radio move the daemon learns. See [The handhelds](#the-handhelds) |
-| `firmware/tab5/` | **the control center** -- the M5Stack Tab5 (ESP32-P4), LVGL: the app's screens, its own Wi-Fi and pairing, everything kept on it | **running**: TODAY, GOALS, DAEMON (SYNC), INDEX (each entry, and **LISTEN** to hear it), DEVICES (which daemon goes where), SETTINGS (portrait, landscape or turning with it). [docs/TAB5.md](docs/TAB5.md) |
-| `server/src/ai/`, DAEMONS `ai/` | **the daemon's voice and words** -- n8n workflows on your own machine (DAEMONS `ai/n8n/`), speech to text (`ai/stt/`), a local model or OpenRouter, and the INDEX voice | **running**: a spoken question in, the daemon's answer in the INDEX voice out. See [Talk to your daemon](#talk-to-your-daemon) |
-| `firmware/pizero/` | **the Pi Zero device** -- Python, grown from RoverCub and RoverOSpi | not started: waits on which board and screen (C-08) |
+## Starting it
 
-**Local first, one person, from anywhere.** Everything runs on your own machine, and your paired phone reaches it from
-anywhere through your own n8n -- **the site stays on this machine, with no logins**; the phone is the remote
-([From anywhere](#from-anywhere)). Accounts, many users and hosting come later. **A daemon
-in each device**: SEND as many as you like from the party in the game, SYNC, and choose on the DEVICE tab which device
-carries which -- with one device there is nothing to choose ([docs/DEVICES.md](docs/DEVICES.md), C-80).
-
-## The handhelds
-
-| board | screen | controls | listens | lights | its own radios | battery | state |
-|---|---|---|---|---|---|---|---|
-| **T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC, Sub-GHz | gauge and charger | **runs** |
-| **T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | **runs** |
-| **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, speaking along with the radio | AM/FM: LATENT and CONTEXT -- **CHANNEL**, a move it learns | voltage | **runs** |
-| **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa (MESH), IR | power chip | built, not yet run (waits on a data cable) |
-| **T-Deck, T-Deck Plus** | 320x240 | a keyboard and a trackball: roll, click, Enter, Backspace -- and it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus | voltage | **runs** (C-104) |
-| **T-Display-S3 Pro** | 480x222 touch | touch (swipe, tap, hold) and its home key; three buttons: left turns back, right top turns on, right bottom presses | -- (no microphone) | -- | -- | charger (voltage) | built (C-105) |
-| **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
-| **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | **runs** |
-| **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | **runs** |
-| **M5Stack Dial** | 240 round, touch | the knob and its press; touch | -- (a buzzer: the tunes, not a voice) | -- | RFID (TOUCHSTONE) | -- | built, not yet run |
-| **M5Stack Tab5** | 720x1280 touch | **the control center**: the app's screens, its own Wi-Fi, everything kept on it ([docs/TAB5.md](docs/TAB5.md)) | next | -- | -- | power chip | **runs** |
-
-The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
-is. The watch, the T-Deck, the T-Display-S3 Pro, the StickS3, the CoreS3, the Dial, and the M5GO and Fire (one build between them, on the original ESP32)
-each have their own (`./updateCompanion.sh --board t-deck`, `t-display-pro`, `m5-sticks3`, `m5-cores3`, `m5-dial` or `m5-core` the first time;
-the T-Deck's factory firmware ignores the reset, so hold its trackball while plugging it in the first time; the T-Display-S3 Pro's too: hold BOOT, press RESET, let go of BOOT). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
-its own PlatformIO: `firmware/tab5/pio.sh`); `./updateCompanion.sh --board m5-tab5` flashes it. Pins and sources:
-[docs/HARDWARE.md](docs/HARDWARE.md).
-
-### Flash them
-
-Plug the boards in by USB-C cables that carry data, with [PlatformIO](https://platformio.org) installed
-(`pip install platformio`), and:
+On a Mac with Node 24:
 
 ```sh
-./updateCompanion.sh          # every board plugged in: asks each what it is, and flashes the right build
-./linkCompanion.sh            # link one to the server over its cable (starts the server if none is running)
+./bindCompanion.sh            # the companion, and the site that runs it, at http://localhost:8081
+./bindCompanion.sh phone      # the app, built onto your iPhone
+./bindCompanion.sh always     # keep the companion running, so your phone can always reach it
+./updateCompanion.sh          # flash any boards you have plugged in
 ```
 
-| | |
-|---|---|
-| `./updateCompanion.sh` | asks each board on USB for its HELLO and flashes its build; with several plugged in it asks which (numbers, or `a` for all) |
-| `./updateCompanion.sh --all` | every board found, without asking |
-| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `t-deck`, `t-display-pro`, `m5-sticks3`, `m5-cores3`, `m5-dial`, `m5-tab5`, or `m5-core` for the M5GO and Fire |
-| `./updateCompanion.sh --port PORT` | only that one |
-| `./updateCompanion.sh --link` | flash, then link |
-| `./updateCompanion.sh --build` | only build every board's firmware, to check it compiles (no board needed) |
-| `./linkCompanion.sh` | the **bridge**, in this terminal; starts the server in the background if none is answering, and Ctrl-C stops both |
-| `./linkCompanion.sh --port PORT` | a particular serial port |
+Every command and option: **[Running the companion](https://github.com/CodeMusic/daemons-companion/wiki/Running-the-companion)**.
+When something does not answer: **[Troubleshooting](https://github.com/CodeMusic/daemons-companion/wiki/Troubleshooting)**.
 
-After flashing, the script waits for the board to say HELLO. **A board can stay in its bootloader after an upload and
-look dead** (the S3's own USB, and its battery keeps it powered when unplugged): **press RST once**. The M5GO and Fire
-come up as a USB-serial port (`usbserial` or `wchusbserial`); the scripts find those too, and open them without
-restarting the board. If an upload cannot
-connect at all, hold BOOT, press and release RST, let go of BOOT, and run it again. **The M5Stack Dial is flashed in
-short pieces** (`firmware/esp32/flash_chunked.py`, which the script uses for it): while it is being flashed nothing holds
-its power on, and one Dial switches itself off about nine seconds into any flashing session.
+## Read more
 
-The bridge hands the board the server's state every five seconds and passes back what you do on it; the corner of the
-screen says **USB**. A board that has learned a network (UPLINK, TEACH A NETWORK) asks the server itself over **WIFI**,
-and a paired phone carries it over Bluetooth (**PHONE**). Away from home on a Wi-Fi it knows, it asks your relay itself
-(**AWAY**, [From anywhere](#from-anywhere)). Start the server first (`./bindCompanion.sh` or
-`./bindCompanion.sh server`).
-
-### On the board
-
-**The CC1101:** **turn** the dial to choose, **press** to open or confirm (it acts when you let go), and the **top
-button** goes back. **Hold the dial** half a second on any home page to **talk** ([below](#talk-to-your-daemon)).
-**Sleep:** hold the top button and press the front one; **only the top button wakes it**, so a pocket cannot.
-
-**The plain T-Embed and the SI4732** have one button, the dial's press: a tap presses, held half a second it goes back
-(at home it **talks** instead), held two seconds it sleeps (and only a hold wakes it).
-
-**The SI4732's radio** is two routine types: **LATENT** (AM: CHANNEL, and LIGHTNING) and **CONTEXT** (FM: CHANNEL, and
-STATIC SYNTH). **CHANNEL is a psychic move the daemon learns**: turn to tune, tap to seek (the needle runs along the
-band), and hold a clear station a few seconds -- the daemon attunes to it, and has **learned** that frequency: eight a
-band, kept on the board, marked on the dial, and **two taps** away from then on. While a station plays the daemon
-**speaks it** -- the board's own microphones hear the speaker, and the daemon's sprite, its aura and the ring of lights
-move with the voice. The screen shows the frequency large, the signal, the station's name and text (RDS) and the voice
-as a line. LIGHTNING counts crashes on a quiet AM frequency; STATIC SYNTH plays random notes from the static between
-FM stations. The radio plays through its own amplifier, at the volume set on the site.
-
-**The T-Watch S3:** its home is **the face** -- the time, the day's theme, its virtue over its vice, chakra and note,
-today's steps, the battery and a TALK button. Swipe to turn between the pages, tap to press, hold to go back; the crown
-wakes it or goes back, and held, it sleeps.
-
-**The M5StickS3:** the face button presses (held at home, it **talks**); the side button turns to the next page, held
-half a second goes back, two seconds sleeps -- and asleep, only a hold on it wakes it.
-
-**The M5Stack CoreS3:** a touch screen, used as the watch's is -- the face first, swipe to turn, tap to press, hold to go
-back, TALK held on the face. Its power key wakes it or goes back, and held a second, sleeps.
-
-**The M5Stack Dial:** turn the knob to choose and press it to open, as a T-Embed's dial (held half a second, back; two
-seconds, sleep) -- or use its touch screen as the watch's (swipe to turn, tap to press, hold to go back). Its home is
-**the face**, round as the screen is; every page is drawn inside the circle. It has no microphone, so it does not
-talk, and its buzzer plays the tunes but not a voice. Its RFID reader is **TOUCHSTONE**: hold a tag to its face.
-
-**The M5GO and the Fire:** **A** and **C** turn left and right, **B** presses (held at home, it **talks**); held, A goes
-back and C, two seconds, sleeps -- asleep, only a held B wakes it. The M5GO base gives it its microphone and ten lights.
-Without the Fire's extra memory, the M5GO draws in 256 colours.
-
-**The pages** are TODAY (the one step: press to tick it off; back undoes it for fifteen seconds), DAEMON, ROUTINES and
-the DAY (its theme, virtue over vice, chakra and note; press for its note).
-
-**Home is the daemon you carry** -- large, breathing, drifting, now and then hopping -- and **how it is**: its mood in
-a word, how it has eaten and drunk today, and at a meal time one quiet line. **Press** for CARE: feed it, water it,
-train it, or read its INDEX entry (press there to hear it **read aloud**). **Your goals nourish it**: each step you
-finish counts as a meal, and gives it experience, which it takes home at the next SYNC. It never nags (PLAN 7). Any
-menu left alone goes to sleep (two minutes, by default), and waking lands back at home, to a few notes of the title theme.
-
-**ROUTINES** are the board's radios in the game's words -- FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC),
-LONGWAVE (Sub-GHz: WHAT'S ON THE AIR, listening only), UPLINK (Wi-Fi) -- and **GAME ROUTINES**: your party, and each daemon's own routines
-from the game, in their streak colours; using one plays its own short phrase with the ring lit its colour. On the CC1101
-it is the PARTY type; on a board with no radios of its own (the plain T-Embed) ROUTINES opens it first. UPLINK's **WI-FI MOTION** is the first radio experiment (C-70): it watches the Wi-Fi channel for movement in
-the room.
-
-**The battery** shows in the top bar (red when low and unplugged). At 15% it says so; at 5% it goes into deep sleep,
-and the top button wakes it (the CoreS3 switches itself off; its power key starts it again).
-
-**It sounds in the day's key** (Sunday C ... Saturday B): the dial rises and falls, select is the day's note, and each
-routine has its own tune, the ring dancing to it. **The ring** glows the day's colour, goes out after a minute unused,
-and follows the dial. **It learns remotes and networks**, as your daemon would: FLARE's TEACH A REMOTE, UPLINK's TEACH
-A NETWORK. **Its settings are set on the site** (DEVICE tab): home, sleep, sound and volume, the ring.
-
-**To see a board's screen on the computer** (stop the bridge first; it holds the port):
-`python3 firmware/esp32/shot.py screen.png`. **Checks down the cable** (the same port): `RUN <type> <n>` starts a
-routine, `KEY PRESS` / `KEY BACK` press inside it, `MEM` the memory, `WATCH` the touch and clock, `EARTEST` what the
-microphones hear of the speaker and the radio.
-
-[`firmware/esp32/FLASHING.md`](firmware/esp32/FLASHING.md) has the rest: download mode, Wi-Fi instead of the cable,
-watching it talk, putting the factory firmware back, and every routine.
-
-## On your iPhone
-
-The same app, built for your phone (iOS first; `com.codemusic.daemonscompanion`). Plug the iPhone in (or have it on
-the same Wi-Fi with developer mode on), and:
-
-```sh
-./bindCompanion.sh phone      # generate the iOS project, build it signed by your team, install it
-```
-
-Then **pair it** -- on the site, SETTINGS, PAIR A PHONE: open the companion to your network (and restart it once),
-**Show a code**, and type the address and the code into the app. The phone is given its own key; the whole app answers
-it across your network, and nothing else does. **Your steps** come from Apple Health (it asks once) and count toward
-the walking goal each time you open the app.
-
-**The handheld, over Bluetooth (C-55).** Pair them once: on the handheld, ROUTINES, WHISPER, **PAIR MY PHONE**, and
-in the app, DEVICE, **Pair the handheld**. When iOS asks, type the code the handheld shows. From then on the phone
-carries the handheld's link wherever you both go, the way the cable does at the desk: its goal, its daemon and its
-routines. The link comes back by itself when the handheld is near again, and its corner says PHONE. Away from the
-companion, what the handheld does waits on the phone and goes up when the companion answers. The app only has to be open
-or in the background (home screen, phone locked: fine); an app swiped away in the app switcher is cut off from
-Bluetooth by iOS until it is opened again, and then it links again by itself. **FORGET MY PHONES**, on
-the handheld, undoes every pairing.
-
-**Meeting others nearby (C-15).** The handheld and the phone each send a small beacon -- the daemon's species and a
-random tag that changes every hour -- and listen for others every few minutes. Passing someone else's companion is a
-meeting: at the next SYNC your INDEX sees their daemon and yours grows a little friendlier. Your own handheld and
-phone never count as meeting each other. Off in DEVICE, ITS SETTINGS, MEET OTHERS NEARBY.
-
-**Over LoRa too, and a word between daemons (C-72).** A board with a LoRa radio (the T-Watch S3, the T-Deck) sends the
-same beacon over LoRa every two minutes -- streets rather than a room -- and listens all the time. Its **MESH** routines:
-**NEARBY** lists the daemons heard in the last ten minutes (name, how loud, how long ago, and whether another board
-passed it on) and sends one of them, or everyone, a **WAVE** or a word -- four set words, or on the T-Deck anything
-typed; **CALL OUT** asks who is there and lists who answers in thirty seconds. A wave or word that arrives flashes on
-the screen; the DAEMON tab keeps them under MET NEARBY. Every board passes on what it hears once (two hops), so a daemon
-out of range is still heard through a board between. The band is set once on the site (DEVICE, ITS SETTINGS, LORA
-BAND: 433, 868 or 915 MHz -- what the boards were bought with). [docs/LORA.md](docs/LORA.md) has the design. The T-Deck's
-radio has started at 433; the watch is not yet flashed, so no two boards have heard each other yet.
-
-**A daemon on your home screen (C-100).** Long-press the home screen, **Edit**, **Add Widget**, **DAEMONS** (small or
-medium). The widget is a device of its own: it appears under DEVICE, YOUR DEVICES as **THIS PHONE'S WIDGET**, and
-carries whichever daemon you choose for it there. It shows the daemon, its level, its word, fed and watered, and its
-cue, and its **FEED**, **WATER** and **TRAIN** work from the home screen without opening the app -- at home or through
-the relay, like the app; a press made out of reach is kept and sent when the app next opens. It needs no cable and no
-`linkCompanion.sh` (that is for a handheld): open the app once, paired, and it hands the widget the way in. If it stays
-on *Looking for your companion...*, check the app may use the **Local Network** (Settings, Privacy & Security), then
-remove the widget and add it again.
-
-A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
-on it. For the App Store, archive in Xcode and upload with Transporter as usual.
-
-### From anywhere
-
-**The phone app is the site** -- the same screens, the same server -- so away from home it does what the site does at
-home ([docs/REMOTE.md](docs/REMOTE.md), C-56, C-86, C-87). It reaches the companion through an n8n workflow that relays
-into your home network: import `n8n/companion relay.json` into your n8n, put this computer's address and the secret from
-the site's SETTINGS (AWAY FROM HOME) in it, and save the webhook's address there too. The phone learns it the next time
-it opens at home, and from then on tries home first and the relay after.
-
-- **Only what is this machine's own stays at home**: pairing a phone (and listing or forgetting phones), opening the
-  server to the network, the Mac's dialogs for the save, the relay's settings -- and the cable and flashing. So the site
-  is needed once per phone, to pair it, and stays on this machine with no logins.
-- **The phone holds everything, and syncs.** It opens on what it last saw (at once, whether or not home answers) and
-  brings it up to date when home does, and each time it comes back to the front.
-- **Nothing is lost.** Anything you change away -- goals, steps, care, the walk, settings -- is kept on the phone and sent
-  in order when the companion answers; so is everything the handheld reports through the phone. Only what needs an
-  answer at once (talking, a voice, SYNC, telling the handheld to act now) waits for a connection.
-- **Read aloud and talk work away** -- the relay waits up to a minute for a voice.
-- **One request at a time until the relay answers (C-107).** When the companion is out of the relay's reach, the phone
-  sends one request through it, not one per screen, and after a *not answering* leaves the relay alone for 30 s. In
-  n8n's executions a run of *1m 0.0xs* is the relay's timeout -- the companion did not answer -- not a slow success.
-- **The relay reaches this computer at its home address (C-88)**, so with the Mac away from home the phone cannot reach
-  it, even on the same network as the Mac. Tailscale on the machine n8n runs on, and the relay's Forward node pointed at
-  the Mac's Tailscale name, would fix that ([docs/REMOTE.md](docs/REMOTE.md)).
-- **A handheld away needs only the phone, or Wi-Fi of its own.** Paired with the phone, it goes out through it. On a
-  hotspot or a cafe's Wi-Fi it asks the relay itself, with a key of its own (checked against Let's Encrypt's roots) that
-  it is given only down its cable at home -- so link each board by cable once after the relay is set. A board's key
-  opens the device's own door and nothing else, and forgetting the board on the DEVICE tab stops it. Talking and read
-  aloud need home or the phone (a recording and a voice are not what the relay carries); everything else works.
-- **Keep it reachable**: the phone reaches the companion only while the server runs and the Mac is awake.
-  `./bindCompanion.sh always` makes both true (on power; on battery the Mac sleeps as usual, and the phone works from
-  what it holds until it is back). Later, the server can move to a machine that never sleeps (C-82).
-
-## Talk to your daemon
-
-**Hold to talk, let go, and the daemon you carry answers** -- in its own words, as itself, in the INDEX voice. The words
-come from a model on your own machine (or OpenRouter when that one is busy), and nothing goes anywhere you did not set up.
-
-| where | how | state |
-|---|---|---|
-| the CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the USB cable; away from both, **through the paired phone** (the phone says the answer; needs a new phone build) |
-| the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a new build (`./bindCompanion.sh phone`) |
-| an INDEX entry | press on it (the board; turn to read the rest), or **LISTEN** on any entry in the INDEX tab (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks) or on the Tab5's INDEX | runs on the site; the phone needs a new build; the Tab5 built |
-| the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
-| the watch, the CoreS3 | **hold TALK** on the face | built, not yet run |
-| the StickS3, the M5GO, the Fire | **hold the face button** (the StickS3) or **B** (the M5GO and Fire, with the M5GO base) at home | built, not yet run |
-| the Dial | -- it has no microphone, and a buzzer instead of a speaker | |
-| away from home | talking and read aloud need home or the paired phone: the relay carries words, not a recording or a voice | |
-| no network at all | an LLM630 riding behind a T-Embed, chosen with `BRAIN` down the cable | client built, not yet run: [docs/LLM630.md](docs/LLM630.md) (C-76) |
-
-**What it takes**, all on your own machines:
-
-1. **n8n** with DAEMONS' workflows (`DAEMONS/ai/n8n/`: `daemon/talk` and `daemon/voice`; its README says how to import
-   them and what each needs).
-2. **Speech to text** on the machine n8n runs on: `DAEMONS/ai/stt/` -- MLX Whisper on port 8770; its README has the
-   install and the launch agent that keeps it running. Without it the daemon still answers, but has not heard you.
-3. **A model**: LM Studio on that machine (asked for by name, `google/gemma-3-4b`), and an OpenRouter key in n8n for when
-   it is busy or down.
-4. **The voice**: the INDEX voice on your Chatterbox server, which `daemon/voice` calls.
-5. **The companion pointed at it**, in `server/config.json`: `"talk": { "url": "http://<n8n>:5678/webhook" }`, with the
-   shared secret in the `DEX_SHARED_SECRET` environment variable (or `"secret"` in the file, which is never committed).
-
-The server sends every recording on as a 16 kHz WAV, and hands a handheld the answer's voice as 16 kHz samples it
-streams straight into its speaker (`server/src/ai/voice.ts`; needs `ffmpeg`, or macOS's own `afconvert`).
-
-## Each part on its own
-
-You need **Node 24** (`.nvmrc`; `brew install node@24`, or `nvm use`). `bindCompanion.sh` finds Homebrew's node@24 by
-itself; by hand, put it on your PATH first.
-
-**The server** (`server/`), on <http://127.0.0.1:4730>:
-
-```sh
-cd server
-npm install
-npm run dev          # restarts on every change
-npm start            # or once, without watching
-npm test             # vitest
-npm run typecheck    # tsc --noEmit
-```
-
-**The app** (`app/`), on <http://localhost:8081> as a site:
-
-```sh
-cd app
-npm install
-npm run web          # the site
-npm run ios          # the iOS Simulator
-npm run android      # an Android emulator
-```
-
-The app looks for the server at `http://127.0.0.1:4730`, or at `EXPO_PUBLIC_DAEMONS_SERVER` if it is set. **An Android
-emulator reaches your machine at `10.0.2.2`**, so start it with
-`EXPO_PUBLIC_DAEMONS_SERVER=http://10.0.2.2:4730 npm run android` (the script does this for you). The site and the
-iOS Simulator share your machine's network and need nothing.
-
-**What the server knows about the game** (`server/data/`) is exported from DAEMONS, never typed twice: species and
-their INDEX entries in both editions' voices, the text encoding, the week, the seasons, the save's layout, the routines
-and the daemons' art. With [DAEMONS](https://github.com/CodeMusic/DAEMONS) checked out beside this repo:
-
-```sh
-python3 ../DAEMONS/tools/companion_export.py           # what would change
-python3 ../DAEMONS/tools/companion_export.py --write   # write server/data/
-```
-
-## Settings
-
-**The save path is easiest set in the app**: open the **SETTINGS** tab, click *Choose a save…* (a native file picker
-on Mac) or type the path, and *Open the folder* shows where to put one. What you set there overrides `config.json` and
-is kept by the server, so SYNC just works. (If you SYNC before setting one, the app walks you through it.)
-
-Everything else is in `server/config.json` (copy `server/config.example.json`; never committed). The server runs on
-safe defaults with no config at all: **it reads no save and calls no model.**
-
-| | |
-|---|---|
-| `host` | `127.0.0.1` (the default) serves this machine only; `0.0.0.0` serves the local network too, so a device can reach it. Nothing secret goes over it |
-| `edition` | `CONTENT` or `CONTEXT` -- whose voice the daemon keeps, and whose season: CONTENT keeps the northern year, CONTEXT the southern |
-| `savePath` | a **copy** of your DAEMONS save (`daemonsContent.sav` or `daemonsContext.sav`) -- **never the one the game is using**. When you answer the game from the DAEMON screen, the server writes to this file, and keeps a backup beside it in `companion-backups/` first. Close the game before answering: a running emulator writes its own copy back over yours |
-| `talk` | the daemon's voice and words: `url` (your n8n's webhook base, `http://<n8n>:5678/webhook`), `secretEnv` (the *name* of the variable holding the shared secret, `DEX_SHARED_SECRET` by default) and optionally `localModel`. Off until `url` is set |
-| `ai` | off by default. `enabled`, a `baseUrl` that speaks the OpenAI chat API (DAEMONS' LiteLLM config, a local model, or any other), the `model`, and `apiKeyEnv`: the *name* of an environment variable holding the key, never the key itself. **Off, the breakdown answers with a built-in example**, so everything works without a model |
-
-## The server's API
-
-JSON in, JSON out, on this machine only.
-
-| | |
-|---|---|
-| `GET /api/today` | the day (colour, note, virtue), the season of the daemon's edition, and the one next step |
-| `GET /api/goals` | every goal, its sub-items and steps |
-| `POST /api/goals` | `{title, breakdown?: true}` -- a goal, broken down when asked |
-| `POST /api/steps/:id/done` | tick a step off |
-| `GET /api/party` | the party of the configured save copy |
-| `GET /api/profile` | the save's trainer, play time, INDEX counts, MARKS, DIPLOMA, OPUS, and where it was saved |
-| `GET /api/species/:id` | one daemon's name, types, category and its edition's INDEX entry |
-| `POST /api/away/answer` | answer the game's requests to send or bring home a daemon, after a backup |
-| `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |
-| `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines |
-| `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time |
-| `GET /api/settings` | the save path, where it came from, and whether it is a save |
-| `POST /api/settings` | `{savePath}` -- set it (kept by the server; overrides `config.json`) |
-| `POST /api/settings/pick` | a native file picker, on Mac |
-| `POST /api/settings/reveal` | open the save's folder in Finder |
-| `GET /api/device/state` | what a device shows -- **for the device asking** (its `x-device`, or its key through the relay): the day (its theme, virtue over vice, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, **the party and their routines** (GAME ROUTINES), and **the clock** (for the watch) |
-| `POST /api/device/battery` | `{percent, mv, charging, full, usb}` -- the handheld's charge, when it changes; shown on the DEVICE tab |
-| `POST /api/device/talk` | a handheld's recording (a WAV, raw): the daemon's answer, and a link to its voice |
-| `POST /api/device/speak` | the carried daemon's INDEX entry -- or `{species}`, any entry (the Tab5) -- aloud: a link to its voice |
-| `GET /api/device/voice/:id` | that voice, as 16 kHz 16-bit mono samples, for a handheld to stream (kept ten minutes) |
-| `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
-| `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |
-| `GET /api/device/art` | the carried daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels |
-| `GET /api/device/link` | (this machine) the board: linked or not and how, its routines, their results, and every device with its daemon |
-| `GET /api/devices` | every device heard -- when, how, its firmware and battery, and **which daemon it carries** -- and every daemon away |
-| `POST /api/devices/carry` | `{id, personality}` -- put a daemon that is away in that device (`null`: none); it leaves the device that had it |
-| `POST /api/devices/forget` | `{id}` -- forget a device; its key stops working |
-| `POST /api/device/run` | `{routine}` -- run one of the board's routines |
-| `POST /api/device/wifi` | `{ssid, password}` -- the board's Wi-Fi, sent down its cable only |
-| `POST /api/device/ir` | `{protocol, code, bits, keep?}` -- one IR code, tried (and kept for SEND TO MY TV) |
-| `GET`/`POST /api/device/settings` | the board's settings: home, sleep, sound, volume, ring |
-| `GET /api/device/commands` | (the board) what the site sent it; `POST /api/device/results` and `/api/device/routines` answer |
-| `GET /api/index` | the save's INDEX: seen and bound, each entry, and OPUS's margins |
-| `GET /api/daemon/life` | the carried daemon's life: mood, fed, watered, trained, tired, a cue at a meal time |
-| `POST /api/daemon/feed` (`water`, `train`) | tend it from the site |
-| `GET /api/ir/brands` | TV power codes by brand, for FLARE's search |
-| `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |
-| `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run): tending the daemon |
-
-**Only the device routes (`/api/device/*`), the two voice routes (`/api/ai/talk`, `/api/ai/speak`) and the art answer from another machine** on your network, when `host` is
-`0.0.0.0`; everything else answers this machine only. **Through the relay**, a paired phone reaches everything but
-what is this machine's own, and a board reaches only the device routes, with the key it was given down its cable.
-
-## Read next
-
-- [**CONTEXT.md**](CONTEXT.md) -- what this project is and who it is for (read first).
-- [**docs/FIELD-GUIDE.md**](docs/FIELD-GUIDE.md) -- a walk through everything, to try it.
-- [**docs/vision.md**](docs/vision.md) -- what it is for and what it should feel like.
-- [**docs/PLAN.md**](docs/PLAN.md) -- how each piece is built, and the questions still open.
-- [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio, RoverCub and their kin already did.
-- [**docs/HARDWARE.md**](docs/HARDWARE.md) -- every board's pins and parts, with sources.
-- [**docs/DEVICES.md**](docs/DEVICES.md) -- a daemon per device, and always connected: the design, your answers, and what is built.
-- [**docs/LORA.md**](docs/LORA.md) -- daemons nearby over LoRa and a word between them: which boards can talk, the frame, the mesh.
-- [**docs/TAB5.md**](docs/TAB5.md) -- the Tab5 as the control center: the plan, and what is built.
-- [**docs/REMOTE.md**](docs/REMOTE.md) -- the companion from anywhere: the relay, the phone, and a board on its own Wi-Fi.
-- [**docs/LLM630.md**](docs/LLM630.md) -- the offline brain behind a T-Embed: what M5's code says it can do.
+- **[The wiki](https://github.com/CodeMusic/daemons-companion/wiki)** -- how to do everything, page by page.
+- [**docs/FIELD-GUIDE.md**](docs/FIELD-GUIDE.md) -- a walk through every feature, with what you should see.
+- [**CONTEXT.md**](CONTEXT.md) -- what this project is and who it is for.
+- [**docs/vision.md**](docs/vision.md) and [**docs/PLAN.md**](docs/PLAN.md) -- what it is for, and how each piece is built.
+- [**docs/DEVICES.md**](docs/DEVICES.md), [**docs/HARDWARE.md**](docs/HARDWARE.md), [**docs/REMOTE.md**](docs/REMOTE.md),
+  [**docs/LORA.md**](docs/LORA.md), [**docs/TAB5.md**](docs/TAB5.md), [**docs/LLM630.md**](docs/LLM630.md) -- the hosts, their
+  parts, the way home from anywhere, the mesh, the control center, the offline brain.
+- [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio and RoverCub already did; this is their successor.
 - [**TODO.md**](TODO.md) -- the work, decided and not done.
 
 ## The DAEMONS family
@@ -426,7 +95,7 @@ what is this machine's own, and a board reaches only the device routes, with the
 | [**CodeMusic/DAEMONS**](https://github.com/CodeMusic/DAEMONS) | **the game** -- its design bible, its tools, and patches for your own cartridge |
 | [CodeMusic/pokefirered-daemons](https://github.com/CodeMusic/pokefirered-daemons) | the game's engine |
 | [CodeMusic/gpt-play-pokemon-firered-daemons](https://github.com/CodeMusic/gpt-play-pokemon-firered-daemons) | the harness that lets a model play it |
-| **CodeMusic/daemons-companion** | this: the goal companion |
+| **CodeMusic/daemons-companion** | this: where your daemon goes when it leaves the game |
 
 **Nothing of Nintendo's is in here.** The daemon art it shows is DAEMONS' own -- every sprite in
 `DAEMONS/gfx/daemons/` was drawn for the project -- and it reads and writes a DAEMONS save without any of the game's

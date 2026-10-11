@@ -260,7 +260,7 @@ Wi-Fi at home and the relay away.*
   home.
 - **Add it.** Long-press the home screen, **Edit**, **Add Widget**, **DAEMONS**, small or medium. **See:** for a moment
   *Looking for your companion...*, then a daemon -- or *No daemon here* when every daemon AWAY is already carried.
-- **Give it one.** In the app, DEVICE, YOUR DEVICES: **THIS PHONE'S WIDGET** is there like a board. Choose a daemon for
+- **Give it one.** In the app, DEVICE, YOUR DEVICES: **This phone's widget** is there like a board. Choose a daemon for
   it (one carried by a board moves). **See:** the widget shows it, its level, its word, fed and watered, and its cue.
 - **Tend it.** **FEED**, **WATER**, **TRAIN** on the widget. **See:** its answer ("Eaten.") and the counts move, without
   opening the app. *Out of reach, a press is kept on the phone and sent the next time the app opens.*

@@ -167,7 +167,7 @@ companion is away altogether.
 the Mac anywhere, both the user's to do:
 
 1. **Tailscale on the machine the public n8n runs on** (10.0.0.150; not on the tailnet today -- only the Mac and
-   roverbyteseer are), then the relay's Forward node to `http://christophers-m2-pro-macbook-pro:4730` -- the Mac's
+   roverbyteseer are), then the relay's Forward node to `http://<the Mac's Tailscale name>:4730` -- the Mac's
    Tailscale name, which follows it everywhere.
 2. **The server on roverbyteseer**, which stays home (C-82), once the save's home is decided.
 

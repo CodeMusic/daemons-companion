@@ -106,6 +106,9 @@ void tick();
 void untick();
 bool giveUp();                            // the top button (or the held dial) while a routine waits
 int buttonEvent();                        // a routine running the dial itself: 1 a tap, 2 two taps, -1 held (or the cable's KEY)
+bool wide();                              // C-105: a screen wide enough for two columns (the T-Display-S3 Pro's 480)
+void talkSpot(int &x, int &y);            // where the face's TALK button is (drawn there, touched there)
+void cableFlush(uint32_t ms = 60);       // C-105: send what was printed, waiting at most this long for a reader
 int deckTakeKey();                        // C-104: the T-Deck's keyboard, one character read and spent (0: none)
 void readDeck();                          // C-104: the keyboard and the trackball, every pass of the loop
 

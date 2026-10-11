@@ -205,9 +205,58 @@ void drawRoutines(uint16_t day) {
                     : "turn: choose    press: open    top button: back"));
 }
 
+// C-105: a screen wide enough for two columns -- the T-Display-S3 Pro's 480x222. The narrow pages are drawn for 320.
+bool wide() { return W >= 400 && !board.round; }
+void talkSpot(int &x, int &y) { if (wide()) { x = W - 46; y = H - 40; } else { x = W / 2; y = H - 34; } }
+
+// C-105: the face, wide -- the time large on the left, under it the date and the battery; on the right, beyond a line
+// in the day's colour, the day's theme, its virtue over its vice, its chakra and note, and the daemon carried, small.
+static void drawFaceWide(uint16_t day, uint16_t ink) {
+  const int split = 262;
+  canvas.drawFastVLine(split, 40, H - 70, day);
+  struct tm t; char hm[6] = "--:--"; bool timed = watchLocalTime(t);
+  if (timed) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
+  canvas.setTextDatum(TL_DATUM);
+  canvas.setTextFont(7); canvas.setTextSize(1.5f); canvas.setTextColor(PAPER);
+  canvas.drawString(hm, 18, 44);
+  canvas.setTextSize(1);
+  canvas.setTextFont(2); canvas.setTextColor(QUIET);
+  if (timed) {
+    static const char *DOW[] = { "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY" };
+    static const char *MON[] = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+    canvas.drawString(String(DOW[t.tm_wday]) + "  " + t.tm_mday + " " + MON[t.tm_mon], 20, 130);
+  }
+  canvas.setTextFont(1);
+  String under;
+  long steps = watchSteps();
+  if (steps >= 0) under = String(steps) + " STEPS";                                          // DRAFT
+  if (bat.present) under += (under.length() ? "    " : "") + String(bat.percent) + "%" + (bat.charging ? " +" : "");
+  canvas.drawString(under, 20, 154);
+  int x = split + 18, w = W - x - 10;
+  canvas.setTextColor(day);
+  wrap(upper(st.theme.length() ? st.theme : st.day), x, 40, w, 4, 26, 2, day);
+  wrap(upper(st.virtue), x, 96, w, 2, 16, 2, PAPER);
+  canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+  canvas.drawString(upper(st.chakra) + (st.note.length() ? "  -  " + st.note : ""), x, 132);
+  if (st.carrying) {                                           // the daemon you carry, small, in the corner
+    drawArt(x, H - 70, 1);
+    canvas.setTextFont(2); canvas.setTextColor(PAPER);
+    canvas.drawString(st.daemon.nickname, x + 72, H - 56);
+    if (st.daemon.word.length()) { canvas.setTextFont(1); canvas.setTextColor(day); canvas.drawString(st.daemon.word, x + 72, H - 36); }
+  }
+  if (talkCan()) {
+    int cx, cy; talkSpot(cx, cy); bool talking = watchTalking();
+    if (talking) canvas.fillCircle(cx, cy, 26, day); else canvas.drawCircle(cx, cy, 26, day);
+    canvas.setTextDatum(MC_DATUM); canvas.setTextFont(2); canvas.setTextColor(talking ? ink : day);
+    canvas.drawString(talking ? "..." : "TALK", cx, cy);       // DRAFT
+  }
+  canvas.setTextDatum(TL_DATUM);
+}
+
 // C-71: the watch's face -- the time, the day's theme, its virtue over its vice, its chakra and note, today's steps,
 // and TALK, held to talk (C-66). The day's colour rings the face.
 static void drawFace(uint16_t day, uint16_t ink) {
+  if (wide()) { drawFaceWide(day, ink); return; }
   canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
   int r = min(W, H) / 2;                                     // C-75: round on the watch, and inside the CoreS3's 320x240
   canvas.drawCircle(W / 2, H / 2, r - 2, day); canvas.drawCircle(W / 2, H / 2, r - 3, day);
@@ -328,11 +377,27 @@ void draw() {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     // C-49: the step, and -- subtly -- the milestone it belongs to
     canvas.drawString(st.milestone.length() ? upper(st.milestone) + "  " + String(st.msAt) + "/" + String(st.msOf) : "THE ONE THING", 10, 34);
+    int tw = wide() ? W - 200 : W - 20, tl = wide() ? 4 : 3;   // C-105: wide, the step keeps the left and the right is the daemon's
     if (st.step >= 0) {
-      int n = wrap(st.stepText, 10, 54, W - 20, 4, 27, 3, PAPER);
-      wrap(st.goal, 10, 58 + min(n, 3) * 27, W - 20, 2, 16, 1, QUIET);
+      int n = wrap(st.stepText, 10, 54, tw, 4, 27, tl, PAPER);
+      wrap(st.goal, 10, 58 + min(n, tl) * 27, tw, 2, 16, 1, QUIET);
     } else {
-      wrap(lastDone >= 0 ? "All done. Set a new goal in the app." : "Nothing to do yet. Set a goal in the app.", 10, 54, W - 20, 4, 27, 3, PAPER);
+      wrap(lastDone >= 0 ? "All done. Set a new goal in the app." : "Nothing to do yet. Set a goal in the app.", 10, 54, tw, 4, 27, tl, PAPER);
+    }
+    if (wide()) {
+      int x = W - 176;
+      canvas.drawFastVLine(x - 12, 40, H - 76, day);
+      if (st.carrying) {
+        drawArt(x + 16, 34, 2);
+        canvas.setTextDatum(TC_DATUM); canvas.setTextFont(2); canvas.setTextColor(PAPER);
+        canvas.drawString(st.daemon.nickname, x + 80, 166);
+        if (st.daemon.word.length()) { canvas.setTextFont(1); canvas.setTextColor(day); canvas.drawString(st.daemon.word, x + 80, 184); }
+      } else {
+        canvas.setTextDatum(TL_DATUM); canvas.setTextFont(2); canvas.setTextColor(QUIET);
+        canvas.drawString("TODAY IS", x, 40);
+        wrap(upper(st.theme.length() ? st.theme : st.day), x, 58, 166, 4, 26, 2, day);
+        wrap(upper(st.virtue), x, 114, 166, 2, 16, 2, PAPER);
+      }
     }
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     if (undoable()) { String u = hint("done: " + lastDoneText.substring(0, 30) + "   top button: undo"); if (board.round) footer("hold: undo"); else canvas.drawString(u, 10, H - 6); }
@@ -359,8 +424,14 @@ void draw() {
         canvas.drawString(st.daemon.word.length() ? st.daemon.word : "fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", W / 2, 180);
         canvas.setTextColor(QUIET); footer("press: care for it");   // DRAFT
       } else {
-      drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
       int x = 168;
+      if (wide()) {                                            // C-105: three times its size, kept off the top band
+        canvas.setClipRect(0, 26, W, H - 26);
+        drawArt(20 + drift, 30 + bob + hop, 3);
+        canvas.clearClipRect();
+        x = 240;
+      } else
+      drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
       canvas.setTextDatum(TL_DATUM);
       canvas.setTextFont(st.daemon.nickname.length() <= 8 ? 4 : 2); canvas.setTextColor(PAPER);
       canvas.drawString(st.daemon.nickname, x, 40);
@@ -371,10 +442,11 @@ void draw() {
       // C-13: how it is, and its day -- never more than this, and never a nag
       if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
       canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
-      if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 126, W - x - 6, 1, 11, 2, QUIET);
-      else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 126, W - x - 6, 1, 11, 2, QUIET);
+      int cf = wide() ? 2 : 1, ch = wide() ? 16 : 11, cn = wide() ? 4 : 2;   // C-105: wide, the cue in a readable size
+      if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 128, W - x - 6, cf, ch, cn, QUIET);
+      else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 128, W - x - 6, cf, ch, cn, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
-      canvas.drawString("press: care for it", x, H - 4);
+      canvas.drawString(hint("press: care for it"), x, H - 4);
       }
     } else {
       canvas.drawString("THE DAEMON YOU CARRY", 10, 34);

@@ -19,7 +19,8 @@ theme, virtue over vice, chakra and note -- the season, **the one next step**, t
 **The T-Display-S3 Pro** (C-105, `env:t-display-pro`) is a touch screen first: swipe to choose, tap to open, hold to go
 back, and its home key under the glass goes home. Its three buttons do the same (as the M5GO's A, B and C): the left one
 (BOOT) turns back and held goes back, the lower right presses, the upper right turns on and held two seconds sleeps;
-asleep, only the lower right held wakes it. It has no microphone or speaker. The first flash needs its download mode:
+asleep, only the lower right held wakes it. It has no microphone or speaker. Left alone two minutes it sleeps (the site's SLEEP AFTER): hold the lower right button
+half a second to wake it. The first flash needs its download mode:
 hold BOOT, press and release RESET, let go of BOOT.
 
 On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and a word to a daemon nearby in MESH / NEARBY.

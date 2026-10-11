@@ -198,7 +198,7 @@ static void overCable(uint8_t *rec, size_t n) {
     b64[olen] = 0;
     Serial.print("TW "); Serial.println((const char *)b64);
   }
-  Serial.println("TALKEND"); Serial.flush();
+  Serial.println("TALKEND"); cableFlush();
   free(rec);
   String line;
   uint32_t until = millis() + 150000;                                          // a local model's first turn loads it

@@ -204,7 +204,7 @@ String watchStatus() {
          String(haveTouch) + (on ? " finger " + String(x[0]) + "," + String(y[0]) : " no finger");
 }
 
-static bool onTalk(int x, int y) { int dx = x - W / 2, dy = y - (H - 34); return dx * dx + dy * dy <= 30 * 30; }
+static bool onTalk(int x, int y) { int cx, cy; talkSpot(cx, cy); int dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= 30 * 30; }
 
 static void touchLoop(uint32_t now) {
   if (!haveTouch) return;

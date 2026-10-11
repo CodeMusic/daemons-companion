@@ -485,7 +485,7 @@ void handleLine(String line, bool fromPhone) {
   }
   else if (line.startsWith("PANEL ") && !fromPhone && board.kind == BoardKind::M5CoreS3) {   // C-75: PANEL C | E, then it restarts
     Preferences p; p.begin("board", false); p.putString("panel", line.substring(6) == "E" ? "E" : "C"); p.end();
-    reply("PANEL " + String(line.substring(6) == "E" ? "E" : "C") + " -- restarting"); Serial.flush(); delay(100); ESP.restart();
+    reply("PANEL " + String(line.substring(6) == "E" ? "E" : "C") + " -- restarting"); cableFlush(); delay(100); ESP.restart();
   }
   else if (line.startsWith("RATETEST ") && !fromPhone) { soundDacRate(line.substring(9).toInt()); reply("RATETEST " + String(soundRateTest()) + " ms for 2000 at " + line.substring(9)); }
   else if (line == "RATETEST" && !fromPhone) reply("RATETEST " + String(soundRateTest()) + " ms for 2000");   // C-95

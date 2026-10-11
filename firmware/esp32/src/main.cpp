@@ -9,20 +9,34 @@
 #include "meet.h"
 #include "lora.h"
 
+// C-105: what was printed, sent before going on -- but never waiting long. On the S3's own USB, Serial.flush() waits
+// until a program on the computer reads the port, with no limit: plugged into a computer with nothing reading it, a
+// board stopped at its first boot step, before its screen started, and went on only when something opened the port.
+static size_t txRoom = 0;
+void cableFlush(uint32_t ms) {
+#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+  if (!txRoom) txRoom = Serial.availableForWrite();          // the buffer's room with nothing in it (asked before printing)
+  for (uint32_t t0 = millis(); millis() - t0 < ms && (size_t)Serial.availableForWrite() < txRoom; ) delay(1);
+#else
+  Serial.flush();                                            // a USB-serial chip's UART always drains (the M5GO and Fire)
+#endif
+}
+
 // Each step says so down the cable as it starts ("boot: ..."), so a board that stops part-way says where.
-static void step(const char *what) { Serial.printf("boot: %s (heap %u, largest %u)\n", what, ESP.getFreeHeap(), ESP.getMaxAllocHeap()); Serial.flush(); }   // C-97: the heap at each step
+static void step(const char *what) { Serial.printf("boot: %s (heap %u, largest %u)\n", what, ESP.getFreeHeap(), ESP.getMaxAllocHeap()); cableFlush(); }   // C-97: the heap at each step
 
 void setup() {
   // The bridge's STATE line is ~300 bytes and the USB receive buffer defaults to 256: while the screen is being drawn
   // the rest was dropped, the JSON arrived cut short, and the corner said NO LINK with the bridge plainly connected.
   Serial.setRxBufferSize(4096);
   Serial.begin(115200);
+  cableFlush(0);                              // C-105: note the send buffer's room while it is empty
   for (uint32_t t0 = millis(); !Serial && millis() - t0 < 4000; ) delay(10);   // a listener, if one is coming
   // why it started: a crash (PANIC), a watchdog (TASK_WDT, INT_WDT), a deep sleep's wake (DEEPSLEEP), RST (POWERON) ...
   static const char *WHY[] = { "UNKNOWN", "POWERON", "EXT", "SW", "PANIC", "INT_WDT", "TASK_WDT", "WDT", "DEEPSLEEP",
                                "BROWNOUT", "SDIO" };
   int why = (int)esp_reset_reason();
-  Serial.printf("boot: start (reset: %s)\n", why >= 0 && why < 11 ? WHY[why] : "?"); Serial.flush();
+  Serial.printf("boot: start (reset: %s)\n", why >= 0 && why < 11 ? WHY[why] : "?"); cableFlush();
   boardBegin();                               // C-67: which board this is, its peripherals switched on
   Serial.printf("boot: board %s\n", board.id);
   inputBegin();                               // the dial and the buttons this board has

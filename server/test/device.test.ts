@@ -103,3 +103,21 @@ describe("a step finished grows the daemon you carry (C-44, C-45)", () => {
     expect(after.daemon.life.fed.today).toBeGreaterThan(0);
   });
 });
+
+// C-113: a daemon's den is its type's place -- the type's colour and motif, the second type in the floor
+import { den } from "../src/dens.js";
+describe("den", () => {
+  it("is drawn from the first type, with the second in the floor", () => {
+    const flow = den(["FLOW"]), both = den(["FLOW", "ENTROPY"]);
+    expect(flow.motif).toBe("waves");
+    expect(both.motif).toBe("waves");
+    expect(both.wall).toBe(flow.wall);
+    expect(both.floor).not.toBe(flow.floor);
+  });
+  it("falls back to CONTENT's, and lifts OPAQUE out of black", () => {
+    expect(den([]).type).toBe("CONTENT");
+    expect(den(["NOT A TYPE"]).motif).toBe("nest");
+    expect(den(["OPAQUE"]).wall).not.toBe("#000000");
+    expect(den(["OPAQUE"]).motif).toBe("box");
+  });
+});

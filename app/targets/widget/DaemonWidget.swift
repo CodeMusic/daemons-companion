@@ -1,6 +1,8 @@
 // C-100: a daemon on the home screen. The widget is a device of its own (`iphone-widget-xxxxxx`, app/widget.ts): the
-// daemon it carries is chosen under DEVICE > YOUR DEVICES like any board's, and its three buttons tend it from here.
-// Every word on it is DRAFT.
+// daemon it hosts is chosen under DEVICE > YOUR DEVICES like any board's, and its three buttons tend it from here.
+// C-113: it lives in its den (Den.swift), large, and alive as it is on the boards -- it wanders the den through the hour
+// and faces the way it goes, sleeps where it stopped, and answers a button with a hop. The day is pips, not a sentence.
+// Small, medium and large on the home screen; two on the lock screen. Every word on it is DRAFT.
 import AppIntents
 import SwiftUI
 import WidgetKit
@@ -9,32 +11,61 @@ struct Entry: TimelineEntry {
   let date: Date
   let snapshot: Snapshot?
   let paired: Bool
+  var spot: Double = 0.5      // C-113: where in the den it stands, 0 (left) to 1 (right)
+  var facesRight = false      // the game's front sprites face left; facing right is the sprite mirrored
+  var hop = false             // a button was just pressed
+}
+
+// C-113: the hour's wandering, as timeline entries. Each stop is a few minutes long and it turns to face the way it went;
+// asleep, it stays where it is. The walk is seeded by the hour, so a refresh mid-walk does not jump it elsewhere.
+func wander(_ s: Snapshot?, paired: Bool, from start: Date, until end: Date, react: Bool) -> [Entry] {
+  var r = Scatter("\(Int(start.timeIntervalSince1970 / 3600))")
+  var spot = 0.3 + 0.4 * r.next(), entries: [Entry] = []
+  let still = s?.tired == "asleep"
+  if react {   // the answer to a press: up, then down again
+    entries.append(Entry(date: start, snapshot: s, paired: paired, spot: spot, hop: true))
+    entries.append(Entry(date: start.addingTimeInterval(1.2), snapshot: s, paired: paired, spot: spot))
+  } else {
+    entries.append(Entry(date: start, snapshot: s, paired: paired, spot: spot))
+  }
+  var at = start.addingTimeInterval(react ? 90 : 60 * (2 + 4 * r.next()))
+  while !still && at < end {
+    let next = min(0.92, max(0.08, spot + (r.next() - 0.5) * 0.7))
+    entries.append(Entry(date: at, snapshot: s, paired: paired, spot: next, facesRight: next > spot))
+    spot = next
+    at = at.addingTimeInterval(60 * (3 + 5 * r.next()))
+  }
+  return entries
 }
 
 struct Provider: TimelineProvider {
   func placeholder(in context: Context) -> Entry {
-    Entry(date: Date(), snapshot: Snapshot(carries: true, name: "DAEMON", level: 5, word: "Content", fed: 1, watered: 1), paired: true)
+    Entry(date: Date(), snapshot: Snapshot(carries: true, name: "DAEMON", level: 5, word: "Content", fed: 1, watered: 1,
+                                           den: Den(type: "FLOW", motif: "waves", wall: "#24375b", deep: "#152035",
+                                                    floor: "#0f1727", glow: "#adc0e1")), paired: true)
   }
   func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
     completion(context.isPreview ? placeholder(in: context) : Entry(date: Date(), snapshot: Shared.snapshot, paired: Shared.paired))
   }
   func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
     Task {
-      // A button was just pressed: show its answer a minute before asking the companion again.
-      if let s = Shared.snapshot, s.said != nil, Date().timeIntervalSince(s.at) < 60 {
-        return completion(Timeline(entries: [Entry(date: Date(), snapshot: s, paired: Shared.paired)],
-                                   policy: .after(s.at.addingTimeInterval(60))))
+      let now = Date()
+      // A button was just pressed: it answers with a hop, and its words stay a minute before the companion is asked again.
+      if let s = Shared.snapshot, s.said != nil, now.timeIntervalSince(s.at) < 60 {
+        let back = s.at.addingTimeInterval(60)
+        return completion(Timeline(entries: wander(s, paired: Shared.paired, from: now, until: back, react: now.timeIntervalSince(s.at) < 5),
+                                   policy: .after(back)))
       }
       let s = await Companion.refresh()
-      completion(Timeline(entries: [Entry(date: Date(), snapshot: s, paired: Shared.paired)],
-                          policy: .after(Date().addingTimeInterval(30 * 60))))
+      let end = now.addingTimeInterval(30 * 60)
+      completion(Timeline(entries: wander(s, paired: Shared.paired, from: now, until: end, react: false), policy: .after(end)))
     }
   }
 }
 
-let NAVY = Color(red: 0x14 / 255, green: 0x26 / 255, blue: 0x40 / 255)
 let INK = Color.white
-let SOFT = Color.white.opacity(0.65)
+let SOFT = Color.white.opacity(0.72)
+let PLAIN = Den()   // a den for a daemon whose companion has not said where it lives yet: CONTENT's
 
 struct Sprite: View {
   let png: String?
@@ -42,9 +73,77 @@ struct Sprite: View {
   var body: some View {
     if let png, let data = Data(base64Encoded: png), let ui = UIImage(data: data) {
       Image(uiImage: ui).interpolation(.none).resizable().scaledToFit()
-        .opacity(asleep ? 0.55 : 1)
+        .saturation(asleep ? 0.4 : 1).opacity(asleep ? 0.75 : 1)
     } else {
       Image(systemName: "questionmark").font(.title).foregroundStyle(SOFT)
+    }
+  }
+}
+
+// C-113: the den with the daemon in it. It stands on the floor at its spot, faces its way, hops when answered; asleep
+// it lies low with a z or two; the last button's mark floats over it a moment.
+struct Stage: View {
+  let s: Snapshot
+  let entry: Entry
+  var body: some View {
+    GeometryReader { g in
+      let den = s.den ?? PLAIN
+      let side = min(g.size.height * 0.86, g.size.width * 0.62, 192)   // 3x the game's 64, at most: it stays crisp
+      let x = side / 2 + (g.size.width - side) * entry.spot
+      let floor = g.size.height * FLOOR_AT
+      let asleep = s.tired == "asleep"
+      let above = CGPoint(x: min(g.size.width - side * 0.12, x + side * 0.36), y: max(side * 0.14, floor - side * 0.8))
+      ZStack(alignment: .topLeading) {
+        DenView(den: den, light: CGPoint(x: x / max(1, g.size.width), y: (floor - side / 2) / max(1, g.size.height)))
+        Ellipse().fill(Color.black.opacity(0.28))   // its shadow, on the floor
+          .frame(width: side * 0.55, height: side * 0.09)
+          .position(x: x, y: floor + side * 0.02)
+        Sprite(png: s.png, asleep: asleep)
+          .scaleEffect(x: entry.facesRight ? -1 : 1, y: 1)
+          .frame(width: side, height: side)
+          .position(x: x, y: floor - side / 2 + side * 0.06 - (entry.hop ? side * 0.16 : 0))
+        if asleep {
+          Text("z  z").font(.system(size: max(9, side * 0.13), weight: .bold, design: .monospaced))
+            .foregroundStyle(Color(hex: den.glow).opacity(0.8))
+            .position(above)
+        } else if let mark = Mark.symbol(s.did), s.said != nil, entry.date.timeIntervalSince(s.at) < 60 {
+          Image(systemName: mark).font(.system(size: max(10, side * 0.16), weight: .bold))
+            .foregroundStyle(Color(hex: den.glow))
+            .position(above)
+        }
+      }
+      .animation(.smooth(duration: 1.1), value: entry.spot)
+      .animation(.spring(duration: 0.45, bounce: 0.5), value: entry.hop)
+    }
+  }
+}
+
+enum Mark {
+  static func symbol(_ did: String?) -> String? {
+    switch did { case "feed": "heart.fill"; case "water": "drop.fill"; case "train": "bolt.fill"; case "kept": "clock"; default: nil }
+  }
+}
+
+// C-113: the day as pips -- three meals, three drinks, one training.
+struct Pips: View {
+  let s: Snapshot
+  let glow: Color
+  var size: CGFloat = 6
+  var body: some View {
+    HStack(spacing: size * 1.4) {
+      row("fork.knife", s.fed, 3)
+      row("drop.fill", s.watered, 3)
+      row("figure.strengthtraining.traditional", s.trained ? 1 : 0, 1)
+    }
+  }
+  func row(_ symbol: String, _ done: Int, _ of: Int) -> some View {
+    HStack(spacing: size * 0.5) {
+      Image(systemName: symbol).font(.system(size: size * 1.3, weight: .semibold)).foregroundStyle(SOFT)
+      ForEach(0..<of, id: \.self) { i in
+        Circle().fill(i < done ? glow : .clear)
+          .overlay(Circle().stroke(glow.opacity(i < done ? 0 : 0.55), lineWidth: 1))
+          .frame(width: size, height: size)
+      }
     }
   }
 }
@@ -54,28 +153,34 @@ struct CareButton<I: AppIntent>: View {
   let label: String
   let symbol: String
   let compact: Bool
+  let den: Den
+  let done: Bool     // C-113: today's are all done -- it still works, quieter
   var body: some View {
     Button(intent: intent) {
-      if compact {
-        Image(systemName: symbol).font(.system(size: 13, weight: .semibold)).frame(maxWidth: .infinity, minHeight: 26)
-      } else {
-        Label(label, systemImage: symbol).font(.system(size: 12, weight: .semibold)).labelStyle(.titleAndIcon)
-          .frame(maxWidth: .infinity, minHeight: 28)
+      Group {
+        if compact {
+          Image(systemName: symbol).font(.system(size: 13, weight: .semibold))
+        } else {
+          Label(label, systemImage: symbol).font(.system(size: 12, weight: .semibold)).labelStyle(.titleAndIcon)
+        }
       }
+      .frame(maxWidth: .infinity, minHeight: compact ? 26 : 30)
     }
     .buttonStyle(.plain)
-    .foregroundStyle(NAVY)
-    .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.9)))
+    .foregroundStyle(Color(hex: den.deep))
+    .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: den.glow).opacity(done ? 0.45 : 0.95)))
   }
 }
 
 struct Buttons: View {
+  let s: Snapshot
   let compact: Bool
   var body: some View {
+    let den = s.den ?? PLAIN
     HStack(spacing: 6) {
-      CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact)
-      CareButton(intent: WaterIntent(), label: "Water", symbol: "drop.fill", compact: compact)
-      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact)
+      CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3)
+      CareButton(intent: WaterIntent(), label: "Water", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3)
+      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den, done: s.trained)
     }
   }
 }
@@ -90,50 +195,98 @@ struct DaemonWidgetView: View {
   let entry: Entry
 
   var body: some View {
+    let den = entry.snapshot?.den ?? PLAIN
     Group {
       if !entry.paired {
         Said(text: "Open DAEMONS and pair this phone with your companion.")
       } else if let s = entry.snapshot, s.carries {
-        if family == .systemSmall { small(s) } else { medium(s) }
+        switch family {
+        case .systemSmall: small(s)
+        case .systemLarge: large(s)
+        case .accessoryCircular: circular(s)
+        case .accessoryRectangular: rectangular(s)
+        default: medium(s)
+        }
       } else if entry.snapshot != nil {
         Said(text: "No daemon here. SEND one in the game, then choose it for THIS PHONE'S WIDGET under DEVICE in the app.")
       } else {
         Said(text: "Looking for your companion...")
       }
     }
-    .containerBackground(NAVY, for: .widget)
+    .containerBackground(for: .widget) {
+      if family == .accessoryCircular || family == .accessoryRectangular { Color.clear }
+      else { LinearGradient(colors: [Color(hex: den.wall), Color(hex: den.deep)], startPoint: .top, endPoint: .bottom) }
+    }
+  }
+
+  func header(_ s: Snapshot, _ big: CGFloat) -> some View {
+    HStack(alignment: .firstTextBaseline, spacing: 6) {
+      Text(s.name).font(.system(size: big, weight: .bold, design: .monospaced)).foregroundStyle(INK).lineLimit(1)
+      Text("Lv\(s.level)").font(.system(size: big * 0.75, design: .monospaced)).foregroundStyle(SOFT)
+      Spacer(minLength: 2)
+      Text(s.said ?? s.word).font(.system(size: big * 0.8, weight: .semibold)).foregroundStyle(SOFT).lineLimit(1)
+    }
+  }
+
+  func stage(_ s: Snapshot) -> some View {
+    Stage(s: s, entry: entry).clipShape(RoundedRectangle(cornerRadius: 10))
   }
 
   func small(_ s: Snapshot) -> some View {
-    VStack(spacing: 4) {
-      HStack(alignment: .firstTextBaseline) {
-        Text(s.name).font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(INK).lineLimit(1)
-        Spacer(minLength: 2)
-        Text("Lv\(s.level)").font(.system(size: 10, design: .monospaced)).foregroundStyle(SOFT)
-      }
-      Sprite(png: s.png, asleep: s.tired == "asleep").frame(maxHeight: .infinity)
-      Text(s.said ?? s.word).font(.system(size: 11)).foregroundStyle(SOFT).lineLimit(1)
-      Buttons(compact: true)
+    VStack(spacing: 5) {
+      header(s, 11)
+      stage(s).frame(maxHeight: .infinity)
+      Buttons(s: s, compact: true)
     }
   }
 
   func medium(_ s: Snapshot) -> some View {
-    VStack(spacing: 8) {
-      HStack(spacing: 12) {
-        Sprite(png: s.png, asleep: s.tired == "asleep").frame(width: 72, height: 72)
-        VStack(alignment: .leading, spacing: 3) {
-          HStack(alignment: .firstTextBaseline) {
-            Text(s.name).font(.system(size: 15, weight: .bold, design: .monospaced)).foregroundStyle(INK).lineLimit(1)
-            Text("Lv. \(s.level)").font(.system(size: 11, design: .monospaced)).foregroundStyle(SOFT)
-          }
-          Text(s.word).font(.system(size: 15, weight: .semibold)).foregroundStyle(INK).lineLimit(1)
-          Text("fed \(s.fed) of 3 · water \(s.watered) of 3\(s.trained ? " · trained" : "")")
-            .font(.system(size: 11)).foregroundStyle(SOFT).lineLimit(1)
-          if let line = s.said ?? s.cue { Text(line).font(.system(size: 11)).foregroundStyle(SOFT).lineLimit(1) }
+    HStack(spacing: 10) {
+      stage(s).frame(maxWidth: .infinity)
+      VStack(alignment: .leading, spacing: 5) {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
+          Text(s.name).font(.system(size: 14, weight: .bold, design: .monospaced)).foregroundStyle(INK).lineLimit(1)
+          Text("Lv\(s.level)").font(.system(size: 11, design: .monospaced)).foregroundStyle(SOFT)
         }
+        Text(s.said ?? s.word).font(.system(size: 15, weight: .semibold)).foregroundStyle(INK).lineLimit(1)
+        Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 5)
+        if let line = s.cue { Text(line).font(.system(size: 11)).foregroundStyle(SOFT).lineLimit(2) }
         Spacer(minLength: 0)
+        Buttons(s: s, compact: true)
       }
-      Buttons(compact: false)
+      .frame(width: 148)
+    }
+  }
+
+  func large(_ s: Snapshot) -> some View {
+    VStack(alignment: .leading, spacing: 8) {
+      header(s, 15)
+      stage(s).frame(maxHeight: .infinity)
+      Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 7)
+      if let line = s.cue { Text(line).font(.system(size: 12)).foregroundStyle(SOFT).lineLimit(2) }
+      Buttons(s: s, compact: false)
+    }
+  }
+
+  // The lock screen: the system tints it, so no den -- the daemon itself, and the day as one ring.
+  func circular(_ s: Snapshot) -> some View {
+    let done = Double(s.fed + s.watered + (s.trained ? 1 : 0))
+    return Gauge(value: done, in: 0...7) {
+      Sprite(png: s.png, asleep: s.tired == "asleep").padding(6)
+    }
+    .gaugeStyle(.accessoryCircularCapacity)
+    .widgetAccentable()
+  }
+
+  func rectangular(_ s: Snapshot) -> some View {
+    HStack(spacing: 6) {
+      Sprite(png: s.png, asleep: s.tired == "asleep").frame(width: 40, height: 40)
+      VStack(alignment: .leading, spacing: 2) {
+        Text(s.name).font(.system(size: 13, weight: .bold, design: .monospaced)).lineLimit(1).widgetAccentable()
+        Text(s.said ?? s.word).font(.system(size: 12)).lineLimit(1)
+        Text("fed \(s.fed)/3 · water \(s.watered)/3\(s.trained ? " · trained" : "")").font(.system(size: 11)).lineLimit(1)
+      }
+      Spacer(minLength: 0)
     }
   }
 }
@@ -142,8 +295,8 @@ struct DaemonWidget: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: KIND, provider: Provider()) { DaemonWidgetView(entry: $0) }
       .configurationDisplayName("Your daemon")
-      .description("The daemon this phone hosts, and FEED, WATER and TRAIN from the home screen.")
-      .supportedFamilies([.systemSmall, .systemMedium])
+      .description("The daemon this phone hosts, in its den, and FEED, WATER and TRAIN from the home screen.")
+      .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular])
   }
 }
 

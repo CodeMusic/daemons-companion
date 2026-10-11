@@ -13,7 +13,7 @@ func care(_ kind: CareKind) async {
   if Shared.alone {                                  // C-111: the phone alone -- kept here, tended when the app opens
     Shared.keep(kind.rawValue)
     switch kind { case .feed: s.fed = min(3, s.fed + 1); case .water: s.watered = min(3, s.watered + 1); case .train: s.trained = true }
-    s.said = kind.said; s.at = Date(); Shared.snapshot = s
+    s.said = kind.said; s.did = kind.rawValue; s.at = Date(); Shared.snapshot = s
     return
   }
   do {

@@ -1,6 +1,7 @@
 // C-111: the companion's own logic, wherever it runs. Everything here reads and writes through a Store and a SaveFile, so
 // the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/local.ts, over
 // expo-sqlite and the save Delta shared through Files) run the same rules. Nothing here may import Node.
+import { den } from "./dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
@@ -200,6 +201,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
+                      den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store) };
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose

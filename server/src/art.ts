@@ -1,58 +1,11 @@
-// C-18: a party daemon as the game draws it. DAEMONS exports each daemon's front sprite in its type palette as an
-// indexed PNG (data/art/), with the four streak slots, palette 11..14, left the game's blank grey. Here they are painted
-// as the game paints them for THIS daemon: slot k takes the colour of its k-th routine's type on its body
-// (data/streaks.json, the game's own table), and an empty slot takes the body's mid tone. Only the PNG's palette chunk
-// changes, so no image library is needed.
-import { crc32, inflateSync } from "node:zlib";
-import streaksJson from "../data/streaks.json" with { type: "json" };
-import movesJson from "../data/moves.json" with { type: "json" };
-import routinesJson from "../data/routines.json" with { type: "json" };
+// C-18 / C-36: a daemon's art -- painted for this daemon (paint.ts, which a phone runs too) and, for a board, decoded to
+// the GBA's own four bits a pixel.
+import { inflateSync } from "node:zlib";
+import { gameRoutines, repaint as paint, streakColours } from "./paint.js";
 
-const STREAKS = streaksJson as { colours: (number[] | null)[][]; blank: number[]; first_index: number; body_mid_index: number };
-const MOVE_TYPE = movesJson as Record<string, number>;
-const ROUTINES = routinesJson as { types: string[]; moves: Record<string, string> };
-
-export function streakColours(palette: number[][], bodyType: number | null, moves: number[]): number[][] {
-  return moves.map((m) => {
-    if (!m) return palette[STREAKS.body_mid_index];
-    const t = MOVE_TYPE[String(m)];
-    if (bodyType == null || t == null) return STREAKS.blank;
-    return STREAKS.colours[bodyType][t] ?? STREAKS.blank;
-  });
-}
-
-// C-68: a daemon's routines as GAME ROUTINES shows them -- each one's name, its type, and the colour its streak takes on
-// this daemon's body (the colour the handheld's ring lights), as #rrggbb.
-export function gameRoutines(bodyType: number | null, moves: number[]) {
-  return moves.filter(Boolean).map((m) => {
-    const t = MOVE_TYPE[String(m)];
-    const rgb = t == null ? STREAKS.blank : (STREAKS.colours[bodyType ?? t]?.[t] ?? STREAKS.colours[t]?.[t] ?? STREAKS.blank);
-    return { name: ROUTINES.moves[String(m)] ?? "?", type: t == null ? "" : ROUTINES.types[t],
-             colour: "#" + rgb.map((c) => c.toString(16).padStart(2, "0")).join("") };
-  });
-}
-
-// Rewrite an indexed PNG's palette entries first..first+n-1; every other byte is left as it was.
-export function repaint(png: Buffer, colourAt: (palette: number[][]) => number[][], first = STREAKS.first_index): Buffer {
-  const out = Buffer.from(png);
-  let at = 8;
-  while (at < out.length) {
-    const len = out.readUInt32BE(at), type = out.toString("latin1", at + 4, at + 8);
-    if (type === "PLTE") {
-      const data = out.subarray(at + 8, at + 8 + len);
-      const palette: number[][] = [];
-      for (let i = 0; i + 2 < len; i += 3) palette.push([data[i], data[i + 1], data[i + 2]]);
-      colourAt(palette).forEach((c, k) => {
-        const i = (first + k) * 3;
-        if (i + 2 < len) [data[i], data[i + 1], data[i + 2]] = c;
-      });
-      out.writeUInt32BE(crc32(out.subarray(at + 4, at + 8 + len)) >>> 0, at + 8 + len);
-      return out;
-    }
-    at += 12 + len;
-  }
-  return out;
-}
+export { gameRoutines, streakColours };
+export const repaint = (png: Buffer, colourAt: (palette: number[][]) => number[][], first?: number): Buffer =>
+  Buffer.from(paint(png, colourAt, first));
 
 // C-36: the art a device draws. An ESP32 has no PNG decoder worth its flash, and the GBA's own form is the small one:
 // sixteen colours and four bits a pixel. So the indexed PNG is decoded here (zlib and the five scanline filters, no

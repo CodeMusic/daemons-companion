@@ -6,7 +6,7 @@
 // the device's own id. A device that asks and has none takes the first daemon away that no other device has -- so one
 // device and one daemon away, the common case, needs no choosing at all. A daemon is in one device at a time.
 import type { Store } from "./db.js";
-import { validDeviceId } from "./devices.js";
+import { validDeviceId } from "./deviceid.js";
 
 const KEY = "carry";
 type Away = { personality: number };

@@ -55,6 +55,45 @@ import { SharedNetworks } from "./networks.js";
 import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import * as core from "./core.js";
+import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, entry,
+         EXP_PER_STEP, daemonLife, grown, ownBeacons, type Host, type SaveFile } from "./core.js";
+
+export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
+export type { DeviceSettings };
+
+// C-111: the companion's rules live in core.ts; here they read the save on disk. Written only after a copy of the save
+// as it was goes beside it, in companion-backups/ (C-10, C-21).
+function fileSave(path: string | null | undefined): SaveFile {
+  return {
+    read: () => (path && existsSync(path) ? new Uint8Array(readFileSync(path)) : null),
+    write: (bytes, now) => {
+      if (!path) return null;
+      const dir = join(dirname(path), "companion-backups");
+      mkdirSync(dir, { recursive: true });
+      const backup = join(dir, `${basename(path)}.${now.toISOString().replace(/[:.]/g, "-")}`);
+      copyFileSync(path, backup);
+      writeFileSync(path, bytes);
+      return backup;
+    },
+  };
+}
+const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
+export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
+export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
+const walk = (cfg: Config, store: Store, now = new Date()) => core.walk(hostOf(cfg), store, now);
+const setWalk = (cfg: Config, store: Store, b: { goal?: unknown; steps?: unknown }) => core.setWalk(hostOf(cfg), store, b);
+export const doStep = (cfg: Config, store: Store, id: number, from: "site" | "device", deviceId = "") =>
+  core.doStep(hostOf(cfg), store, id, from, deviceId);
+const awayNow = (cfg: Config) => core.awayNow(hostOf(cfg));
+const carriedDaemon = (cfg: Config, store: Store, deviceId = "") => core.carriedDaemon(hostOf(cfg), store, deviceId);
+export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId = "") =>
+  core.growFromStep(hostOf(cfg), store, stepId, deviceId);
+// C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
+export const deviceState = (cfg: Config, store: Store, now = new Date(), deviceId = "") => {
+  const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
+  return core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null);
+};
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
 // C-24: a species as the INDEX draws it, in its type's colours (no routines to paint: the streak slots take the body's
@@ -134,14 +173,6 @@ function send(res: ServerResponse, status: number, data: unknown) {
   res.end(JSON.stringify(data));
 }
 
-export function today(cfg: Config, store: Store, now = new Date()) {
-  const day = weekJson.days[now.getDay()];               // Sunday first, as the game keeps it
-  // the LOCAL date, as the day and the season are read: toISOString() is UTC, and west of Greenwich it names tomorrow by evening
-  const date = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((n, i) => String(n).padStart(i ? 2 : 4, "0")).join("-");
-  return { date, edition: cfg.edition, day, season: season(cfg.edition, now),
-           next: store.nextStep() };
-}
-
 // C-10: answer the game's requests in the configured save. The game must be closed first -- an emulator that is still
 // running writes its own copy back over this one. A backup of the whole file goes beside it every time, and the file is
 // written only when something was asked.
@@ -159,87 +190,6 @@ export function answerAway(cfg: Config, now = new Date()) {
   return { answered, backup };
 }
 
-// C-21 / C-22: the one SYNC. The first save synced is the app's game (its trainer's name and full ID, which never
-// change). On that save: answer the requests (any number away, C-80), set LINKED so the game shows SEND, and settle an
-// emergency return -- written only if something changed, after a backup, with the game closed. On any other save:
-// nothing is written; the app shows it, and says it belongs to a different game.
-export function sync(cfg: Config, store: Store, now = new Date()) {
-  if (!cfg.savePath || !existsSync(cfg.savePath)) throw new Error("no save is configured (savePath in config.json)");
-  const file = new Uint8Array(readFileSync(cfg.savePath));
-  const p = readProfile(file);
-  const game = { name: p.name, trainerId: p.trainerId, secretId: p.secretId };
-  let married = store.married();
-  const firstSave = !married;
-  if (!married) { store.marry(game); married = game; }
-  const sameGame = married.name === game.name && married.trainerId === game.trainerId && married.secretId === game.secretId;
-  if (!sameGame)
-    return { sameGame, firstSave, married, received: [], returned: [], refused: [], firstLink: false, recalledSeen: false, backup: null,
-             met: { companions: 0, newlySeen: 0, friendship: null }, grew: null };
-  // C-15: what was met nearby since the last SYNC -- each species seen; +1 friendship for each companion met in a day
-  // (the beacon's id changes hourly, so it is counted per hour seen), at most +5 a day. Small, as everything is (PLAN 7).
-  const applied = Number(store.getSetting("met.applied") ?? 0);
-  const meetings = store.meetingsAfter(applied);
-  const perDay = new Map<string, Set<string>>();
-  const seen: number[] = [];
-  for (const m of meetings) {
-    const [species, peer] = (m.detail ?? "").split(" ");
-    const nat = SPECIES[species]?.national;
-    if (nat) seen.push(nat);
-    const day = m.at.slice(0, 10);
-    if (!perDay.has(day)) perDay.set(day, new Set());
-    perDay.get(day)!.add(peer ?? m.at);
-  }
-  const friendshipGain = [...perDay.values()].reduce((n, peers) => n + Math.min(5, peers.size), 0);
-  // C-45: the experience a daemon gained here, written when it is home -- every party daemon with some waiting is
-  // offered, and the first of them home is written (C-80: with a daemon in each device, the first waiting may still be out)
-  const grow: { personality: number; exp: number }[] = [], growLast = new Map<number, number>();
-  for (const d of readSave(file).party) {
-    const p = pendingExp(store, d.personality);
-    if (p.exp > 0) { grow.push({ personality: d.personality, exp: p.exp }); growLast.set(d.personality, p.last); }
-  }
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow });
-  let backup: string | null = null;
-  if (r.changed) {
-    const dir = join(dirname(cfg.savePath), "companion-backups");
-    mkdirSync(dir, { recursive: true });
-    backup = join(dir, `${basename(cfg.savePath)}.${now.toISOString().replace(/[:.]/g, "-")}`);
-    copyFileSync(cfg.savePath, backup);
-    writeFileSync(cfg.savePath, r.save);
-  }
-  // only once the save holds them: what was met, and what was grown, are written
-  if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
-  if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
-  return { sameGame, firstSave, married,
-           received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
-           returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
-           refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
-           met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship },
-           grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null };
-}
-
-// C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
-// that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
-export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
-                                 palette: "checkpoint" as Palette,                                                // C-90
-                                 band: 433 };   // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
-export type DeviceSettings = typeof DEVICE_SETTINGS;
-export function deviceSettings(store: Store): DeviceSettings {
-  try { return { ...DEVICE_SETTINGS, ...JSON.parse(store.getSetting("device") ?? "{}") }; }
-  catch { return { ...DEVICE_SETTINGS }; }
-}
-function checkSettings(b: any): DeviceSettings | string {
-  const s = { ...DEVICE_SETTINGS, ...b };
-  if (!["daemon", "today"].includes(s.home)) return "home is daemon or today";
-  if (!Number.isInteger(s.sleepAfter) || s.sleepAfter < 0 || s.sleepAfter > 3600) return "sleepAfter is 0 (never) to 3600 seconds";
-  if (typeof s.sound !== "boolean") return "sound is on or off";
-  if (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100) return "volume is 0 to 100";
-  if (!Number.isInteger(s.ring) || s.ring < 0 || s.ring > 100) return "ring is 0 to 100";
-  if (typeof s.meet !== "boolean") return "meet is on or off";
-  if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
-  if (![433, 868, 915].includes(s.band)) return "band is 433, 868 or 915";
-  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band };
-}
-
 // C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
 // one document and pushes the steps ticked off on it. Its daemon is the party's AWAY one -- sending a daemon in the game
 // is what puts it on the device. Its mood is C-13's, whose rules are open, so it is null until they are written. This
@@ -254,112 +204,6 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   if (!d || !file || !existsSync(file)) return null;
   const png = readFileSync(file);
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
-}
-
-// C-48: a walking goal -- steps a day, 10,000 unless the site says otherwise. The phone will count them (C-27,
-// HealthKit); until then they are typed on the site. Reaching it, once a day, is activity for the daemon (PLAN 7:
-// "satisfies it as training does") and gives it experience.
-export const WALK_GOAL = 10000, EXP_PER_WALK = 1;
-function walk(cfg: Config, store: Store, now = new Date()) {
-  const date = today(cfg, store, now).date;
-  const goal = Number(store.getSetting("walk.goal") ?? WALK_GOAL);
-  const steps = Number(store.getSetting(`walk.${date}`) ?? 0);
-  return { date, goal, steps, reached: steps >= goal };
-}
-function setWalk(cfg: Config, store: Store, b: { goal?: unknown; steps?: unknown }) {
-  if (b.goal !== undefined) {
-    if (!Number.isInteger(b.goal) || (b.goal as number) < 1000 || (b.goal as number) > 50000) return "a walking goal is 1,000 to 50,000 steps";
-    store.setSetting("walk.goal", String(b.goal));
-  }
-  const before = walk(cfg, store);
-  if (b.steps !== undefined) {
-    if (!Number.isInteger(b.steps) || (b.steps as number) < 0 || (b.steps as number) > 200000) return "steps are a whole number";
-    store.setSetting(`walk.${before.date}`, String(b.steps));
-  }
-  const after = walk(cfg, store);
-  if (after.reached && !store.interactionsSince(new Date(Date.now() - 86400000)).some((e) => e.kind === "walk" && e.detail === after.date)) {
-    store.logInteraction("walk", after.date);
-    const d = carriedDaemon(cfg, store);
-    if (d) store.logInteraction("exp", `${d.personality} ${EXP_PER_WALK} walk ${after.date}`);
-  }
-  return after;
-}
-
-// C-46: an entry is short on purpose -- simpler is better (the user) -- and the site says so.
-export const ENTRY_LIMIT = 40;
-const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim().length <= ENTRY_LIMIT ? v.trim() : null;
-
-// A step done, from the site or the board: kept as time together (C-13), a meal (C-44), and experience (C-47).
-export function doStep(cfg: Config, store: Store, id: number, from: "site" | "device", deviceId = "") {
-  const r = store.completeStep(id);
-  if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(cfg, store, id, deviceId); }
-  return r;
-}
-
-// C-45, C-47: experience gained on the device. LIMITED LEVELING (the user, 2026-10-04): one step completed is one
-// experience point -- a variable to tune later. Kept by its personality until it is home, when SYNC writes it.
-export const EXP_PER_STEP = 1;
-function pendingExp(store: Store, personality: number) {
-  const rows = store.expAfter(personality, Number(store.getSetting(`exp.applied.${personality}`) ?? 0));
-  return { exp: rows.reduce((n, r) => n + r.gain, 0), last: rows.length ? rows[rows.length - 1].id : 0 };
-}
-// C-80: the daemon a device carries (carry.ts); with no device named, the first away, as before. A step ticked on a
-// device grows that device's daemon; one done in the app or on the site, the first away (LIMITED LEVELING: one each).
-function awayNow(cfg: Config) {
-  if (!cfg.savePath || !existsSync(cfg.savePath)) return [];
-  try { return readAway(new Uint8Array(readFileSync(cfg.savePath))); } catch { return []; }   // C-103: the boxes' too
-}
-function carriedDaemon(cfg: Config, store: Store, deviceId = "") { return carriedFor(store, awayNow(cfg), deviceId); }
-export function growFromStep(cfg: Config, store: Store, stepId: number, deviceId = "") {
-  const d = carriedDaemon(cfg, store, deviceId);
-  if (!d) return;
-  const curve = SPECIES[String(d.species)]?.growth ?? 0;
-  if (levelFromExp(curve, d.exp + pendingExp(store, d.personality).exp) >= 100) return;
-  store.logInteraction("exp", `${d.personality} ${EXP_PER_STEP} step ${stepId}`);   // the step's id, so an undo takes it back
-}
-
-// C-13: the carried daemon's life, read from two weeks of what was done together.
-export function daemonLife(store: Store, now = new Date()) {
-  return life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000)), now);
-}
-
-// C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
-function grown(d: { species: number; exp: number; level: number; personality: number }, store: Store) {
-  const exp = pendingExp(store, d.personality).exp;
-  return { exp, level: Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp + exp)) };
-}
-
-export function deviceState(cfg: Config, store: Store, now = new Date(), deviceId = "") {
-  const t = today(cfg, store, now);
-  let daemon = null, party: unknown[] = [];
-  if (cfg.savePath && existsSync(cfg.savePath)) {
-    const save = readSave(new Uint8Array(readFileSync(cfg.savePath)));
-    const d = carriedFor(store, readAway(new Uint8Array(readFileSync(cfg.savePath))), deviceId);   // C-80: this device's own; C-103: a box's too
-    // C-68: the party and their routines, for GAME ROUTINES
-    party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
-                                     routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
-    const row = d && SPECIES[String(d.species)];
-    // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
-    // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
-    if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
-                      holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
-                      types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[cfg.edition] ?? "",
-                      artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
-                      grown: grown(d, store) };
-  }
-  const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
-  // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
-  const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
-  return { date: t.date, edition: t.edition, season: t.season, server: addr ? `http://${addr}:${cfg.port}` : null,
-           // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
-           clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
-           settings: deviceSettings(store),
-           beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
-           netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
-           // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
-           day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
-                  theme: t.day.theme, menu: dd.menu, led: dd.led },
-           step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon, party };
 }
 
 // C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else
@@ -429,10 +273,6 @@ export function lanAddress(): string | null {
 
 // C-15: the beacon tags our own companions have used lately -- never a meeting
 const OWN_KEEP_MS = 48 * 3600000;
-function ownBeacons(store: Store): { peer: string; at: number }[] {
-  try { return JSON.parse(store.getSetting("beacons.own") ?? "[]"); } catch { return []; }
-}
-
 // ---- C-53: pairing a phone. The site asks for a code (this machine only); the phone sends it back once, with a name,
 // and is given its own key. With the key, the whole API answers it across the network -- without one, only the board's
 // routes do. A code lasts ten minutes, is used once, and is retired after five wrong guesses.

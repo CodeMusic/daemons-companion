@@ -5,6 +5,8 @@
 // has answered DEVICES.md's questions.
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import type { Store } from "./db.js";
+import { validDeviceId, kindOf } from "./deviceid.js";
+export { validDeviceId, kindOf };
 import type { Via } from "./device.js";
 
 export type Battery = { percent: number; mv: number | null; charging: boolean; full: boolean; usb: boolean; at: string };
@@ -12,13 +14,8 @@ export type DeviceRow = { id: string; kind: string; via: Via | null; firstSeen: 
                           firmware: string | null; battery: Battery | null };
 
 const KEY = "devices", KEYS = "device.keys";
-const ID = /^[a-z0-9][a-z0-9-]{2,47}$/;
 export const FRESH_MS = 60_000;
 
-export function validDeviceId(id: unknown): id is string { return typeof id === "string" && ID.test(id); }
-
-// "t-embed-cc1101-36f484" -> "t-embed-cc1101": the kind is the id without its MAC tail.
-export function kindOf(id: string): string { return id.replace(/-[0-9a-f]{6}$/, ""); }
 
 export class Devices {
   constructor(private store: Store) {}

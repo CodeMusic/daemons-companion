@@ -153,6 +153,9 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   secret it shows goes into the workflow. **Open the app once on the home Wi-Fi**: it learns the address and keeps it.
 - **Leave the Wi-Fi** (LTE). **See:** TODAY, GOALS and the DAEMON tab still load, the pictures too (C-59). The app
   says it is reaching home through the relay.
+- **The companion out of the relay's reach** (the Mac off the home network, C-88): the app asks the relay **one request
+  at a time** until it has answered, and after a *not answering* rests from it for 30 s, showing what it kept (C-107).
+  **See:** one run in n8n's executions per try, not one per screen.
 - **What it will not do from outside:** pair a new phone, or anything the computer keeps to itself. *A request with no
   key is turned away; so is pairing.*
 
@@ -245,6 +248,24 @@ talks over **Wi-Fi**, so it must have joined a network.
 - Talk twice in a row: tell it something (your favourite colour), then ask about it. **Hear:** it remembers -- for
   fifteen quiet minutes, on that device, and nothing is written down.
 - Ask "what should I do next?" **Hear:** your goal's one next step. Otherwise it does not bring your goal up.
+
+## 19. A daemon on your home screen (C-100)
+
+*Needs the app built onto the phone (`./bindCompanion.sh phone`) -- Expo Go has no widgets. No cable and no
+`linkCompanion.sh`: that links a **handheld** over USB. The widget reaches the companion the way the app does, the home
+Wi-Fi at home and the relay away.*
+
+- **Open the app once**, paired: it hands the widget the companion's address and key. If iOS asks for the **Local
+  Network**, allow it (Settings, Privacy & Security, Local Network) -- without it neither the app nor the widget reaches
+  home.
+- **Add it.** Long-press the home screen, **Edit**, **Add Widget**, **DAEMONS**, small or medium. **See:** for a moment
+  *Looking for your companion...*, then a daemon -- or *No daemon here* when every daemon AWAY is already carried.
+- **Give it one.** In the app, DEVICE, YOUR DEVICES: **THIS PHONE'S WIDGET** is there like a board. Choose a daemon for
+  it (one carried by a board moves). **See:** the widget shows it, its level, its word, fed and watered, and its cue.
+- **Tend it.** **FEED**, **WATER**, **TRAIN** on the widget. **See:** its answer ("Eaten.") and the counts move, without
+  opening the app. *Out of reach, a press is kept on the phone and sent the next time the app opens.*
+- **Still *Looking...* after the app has opened?** Remove the widget and add it again: a widget kept from an older build
+  can stay stuck.
 
 ## What to tell me
 

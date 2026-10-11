@@ -53,6 +53,16 @@ The app keeps two addresses: **home** (what it paired with) and **away** (the re
 timeout and falls back to away, and it remembers which one worked for a minute. The away address is set on the site's
 SETTINGS and given to the phone when it pairs, so nothing has to be typed on the phone.
 
+**One request at a time until the relay is proven** (C-107, 2026-10-11). Opening the app away asks for everything at
+once, and each request used to choose the relay for itself: with the companion out of the relay's reach that was six
+runs at once, each waiting the relay's full minute. Now, until the relay has answered for the companion, one request
+goes through it and the rest wait on that answer; a 502/503/504 rests the relay for 30 s, and the app shows what it
+kept. A request that comes back, however slowly (a voice can take a while), proves the relay for a minute.
+
+**Reading n8n's executions**: the Forward node never fails and times out at 60 s, so a run that says *Succeeded in
+1m 0.0xs* is a **timeout** -- the companion did not answer and the phone got a 502. A real answer takes its own time.
+Open the Forward node of such a run to see the error.
+
 Away, the app polls less often: n8n runs once per request. That means the state every 30 seconds and the site's
 commands every 10, instead of every 5 and 1.5.
 

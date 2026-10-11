@@ -46,7 +46,7 @@ beside it.*
 | | | |
 |---|---|---|
 | `server/` | **the local server** -- Node 24 + TypeScript, SQLite | **running.** Goals, their steps and today's one step; the three-pass breakdown (off until you switch it on); the DAEMONS save reader and writer; the daemons drawn as the game draws them; the devices' sync |
-| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (your devices, which daemon each carries, their batteries and routines), **PROFILE**, **SETTINGS** |
+| `app/` | **the app** -- Expo / React Native and **Tamagui**: a site you run yourself, and an iPhone app from the same code | **running as a site and on the iPhone, in the day's colours** (each weekday is a theme, from the week DAEMONS exports; `?day=tuesday` on the site previews another). **TODAY** (the day's theme, its virtue over its vice, chakra and note, the season, and the one thing to do), **GOALS**, **DAEMON** (your party; **SYNC** brings a daemon across or home; on the phone, **HOLD TO TALK** with the daemon you carry), **INDEX** (any entry **read aloud**: LISTEN, a spinner you can stop, HUSH), **DEVICE** (your devices, which daemon each carries, their batteries and routines), **PROFILE**, **SETTINGS**; on the iPhone, **a daemon on the home screen** -- a widget that is a device of its own, with FEED, WATER and TRAIN (C-100) |
 | `firmware/esp32/` | **the handhelds** -- one firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (they tell themselves apart at start), and builds of their own for the **T-Watch S3**, the **M5StickS3**, the **M5Stack CoreS3**, the **M5Stack Dial**, and the **M5GO and Fire** (the original ESP32; the rest are ESP32-S3); PlatformIO + Arduino, grown from RoverCodeBase | **running on the three T-Embeds, the CoreS3, the M5GO and the Fire**; the watch, the StickS3 and the Dial are built and not yet run. The day (its theme, virtue over vice, chakra and note), the one step, the daemon you carry -- **drawn as the game draws it** -- and **ROUTINES**: the board's radios in the game's words, and **GAME ROUTINES**, your party's own routines from the game. **Push to talk** (hold the dial), the battery, the radio experiments, and on the SI4732 **CHANNEL**, a radio move the daemon learns. See [The handhelds](#the-handhelds) |
 | `firmware/tab5/` | **the control center** -- the M5Stack Tab5 (ESP32-P4), LVGL: the app's screens, its own Wi-Fi and pairing, everything kept on it | **running**: TODAY, GOALS, DAEMON (SYNC), INDEX (each entry, and **LISTEN** to hear it), DEVICES (which daemon goes where), SETTINGS (portrait, landscape or turning with it). [docs/TAB5.md](docs/TAB5.md) |
 | `server/src/ai/`, DAEMONS `ai/` | **the daemon's voice and words** -- n8n workflows on your own machine (DAEMONS `ai/n8n/`), speech to text (`ai/stt/`), a local model or OpenRouter, and the INDEX voice | **running**: a spoken question in, the daemon's answer in the INDEX voice out. See [Talk to your daemon](#talk-to-your-daemon) |
@@ -222,6 +222,15 @@ out of range is still heard through a board between. The band is set once on the
 BAND: 433, 868 or 915 MHz -- what the boards were bought with). [docs/LORA.md](docs/LORA.md) has the design. The T-Deck's
 radio has started at 433; the watch is not yet flashed, so no two boards have heard each other yet.
 
+**A daemon on your home screen (C-100).** Long-press the home screen, **Edit**, **Add Widget**, **DAEMONS** (small or
+medium). The widget is a device of its own: it appears under DEVICE, YOUR DEVICES as **THIS PHONE'S WIDGET**, and
+carries whichever daemon you choose for it there. It shows the daemon, its level, its word, fed and watered, and its
+cue, and its **FEED**, **WATER** and **TRAIN** work from the home screen without opening the app -- at home or through
+the relay, like the app; a press made out of reach is kept and sent when the app next opens. It needs no cable and no
+`linkCompanion.sh` (that is for a handheld): open the app once, paired, and it hands the widget the way in. If it stays
+on *Looking for your companion...*, check the app may use the **Local Network** (Settings, Privacy & Security), then
+remove the widget and add it again.
+
 A Release build carries its own JavaScript, so it runs without this Mac in reach -- though it talks to the companion
 on it. For the App Store, archive in Xcode and upload with Transporter as usual.
 
@@ -242,6 +251,12 @@ it opens at home, and from then on tries home first and the relay after.
   in order when the companion answers; so is everything the handheld reports through the phone. Only what needs an
   answer at once (talking, a voice, SYNC, telling the handheld to act now) waits for a connection.
 - **Read aloud and talk work away** -- the relay waits up to a minute for a voice.
+- **One request at a time until the relay answers (C-107).** When the companion is out of the relay's reach, the phone
+  sends one request through it, not one per screen, and after a *not answering* leaves the relay alone for 30 s. In
+  n8n's executions a run of *1m 0.0xs* is the relay's timeout -- the companion did not answer -- not a slow success.
+- **The relay reaches this computer at its home address (C-88)**, so with the Mac away from home the phone cannot reach
+  it, even on the same network as the Mac. Tailscale on the machine n8n runs on, and the relay's Forward node pointed at
+  the Mac's Tailscale name, would fix that ([docs/REMOTE.md](docs/REMOTE.md)).
 - **A handheld away needs only the phone, or Wi-Fi of its own.** Paired with the phone, it goes out through it. On a
   hotspot or a cafe's Wi-Fi it asks the relay itself, with a key of its own (checked against Let's Encrypt's roots) that
   it is given only down its cable at home -- so link each board by cable once after the relay is set. A board's key

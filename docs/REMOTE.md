@@ -168,3 +168,6 @@ the Mac anywhere, both the user's to do:
 2. **The server on roverbyteseer**, which stays home (C-82), once the save's home is decided.
 
 At home, until then: give the Mac 10.0.0.100 by a DHCP reservation, and keep the server open to the network (SETTINGS).
+
+*2026-10-11: the Mac came home as 10.0.0.197 and the relay timed out even at home; its Forward was moved to
+10.0.0.197 as a stopgap. Whatever address the Mac has, the relay's Forward node has to say the same.*

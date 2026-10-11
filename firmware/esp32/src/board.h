@@ -8,12 +8,12 @@
 // as the M5Stack Dial does (env:m5-dial, C-102).
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck };   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro };   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
-enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306 };
+enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306, ChargerSY6970 };   // SY6970: C-105
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
                                                                      // Analog: the M5GO base's, read by the ADC
-enum class Panel { ST7789, ILI9342C, ILI9342E };               // C-75: the CoreS3 has shipped with either ILI9342
+enum class Panel { ST7789, ILI9342C, ILI9342E, ST7796 };       // C-75: the CoreS3 has shipped with either ILI9342; C-105 the T-Display-S3 Pro's ST7796
 enum class LoraChip { None, SX1262, SX1278 };                  // C-72: the watch's and the T-Deck's, or an M5 LoRa433 module's
 
 struct Board {

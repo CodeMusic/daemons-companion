@@ -24,6 +24,7 @@ class Display : public lgfx::LGFX_Device {
   lgfx::Panel_ST7789 st7789;
   lgfx::Panel_ILI9342 ili9342c;     // C-75: the CoreS3
   Panel_ILI9342E ili9342e;
+  lgfx::Panel_ST7796 st7796;        // C-105: the T-Display-S3 Pro
   lgfx::Bus_SPI bus;
  public:
   void configure();   // from `board`, before init()

@@ -2,8 +2,8 @@
 #include "app.h"
 #include "talk.h"
 
-#if defined(BOARD_CORES3) || defined(BOARD_DIAL)
-#define MAIN_BUS_TOUCH 1                                  // C-102: the Dial reads its touch as the CoreS3 does
+#if defined(BOARD_CORES3) || defined(BOARD_DIAL) || defined(BOARD_TDISPLAY_PRO)
+#define MAIN_BUS_TOUCH 1                                  // C-102: the Dial reads its touch as the CoreS3 does; C-105 the T-Display-S3 Pro
 #endif
 
 #if !defined(BOARD_TWATCH_S3) && !defined(MAIN_BUS_TOUCH)
@@ -45,7 +45,14 @@ static TwoWire &touchWire = Wire1;
 static XPowersAXP2101 pmu;
 static SensorPCF8563 rtc;
 static SensorBMA423 accel;
-#ifdef MAIN_BUS_TOUCH
+#if defined(BOARD_TDISPLAY_PRO)
+// C-105: the T-Display-S3 Pro's CST226SE (0x5A, RST 13, INT 21), set up as LilyGO's CapacitiveTouch example sets it for
+// the screen turned to landscape (rotation 1): its coordinates swapped and Y mirrored, so a point is the screen's own.
+// Its home key, under the glass, goes home (homeKey, read in touchLoop).
+#include <TouchDrvCSTXXX.hpp>
+static TouchDrvCSTXXX touchPanel;
+static volatile bool homeKey = false;
+#elif defined(MAIN_BUS_TOUCH)
 // C-98: the CoreS3 SE's touch answers with a maker's id SensorLib does not know (0x20, not FocalTech's 0x11) and so was
 // refused, though it speaks the FT5x06 registers as M5GFX reads them (Touch_FT5x06): how many fingers at 0x02, the first
 // finger's X and Y at 0x03-0x06. Read directly.
@@ -105,7 +112,16 @@ void watchBegin() {
       clockSet = true;
     }
   }
-#ifdef MAIN_BUS_TOUCH
+#if defined(BOARD_TDISPLAY_PRO)
+  touchPanel.setPins(13, 21);
+  haveTouch = touchPanel.begin(touchWire, CST226SE_SLAVE_ADDRESS, board.sda, board.scl);
+  if (haveTouch) {
+    touchPanel.setMaxCoordinates(board.width, board.height);
+    touchPanel.setSwapXY(true);
+    touchPanel.setMirrorXY(false, true);
+    touchPanel.setHomeButtonCallback([](void *) { homeKey = true; });
+  }
+#elif defined(MAIN_BUS_TOUCH)
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, board.sda, board.scl);   // no step counter: a BMI270
 #else
   haveAccel = accel.begin(Wire, BMA423_I2C_ADDR_SECONDARY, board.sda, board.scl);
@@ -194,6 +210,14 @@ static void touchLoop(uint32_t now) {
   if (!haveTouch) return;
   int16_t xs[1], ys[1];
   bool pressed = touchPanel.getPoint(xs, ys, 1) > 0;
+#if defined(BOARD_TDISPLAY_PRO)
+  if (homeKey) {                                               // C-105: the home key under the glass goes home -- but,
+    homeKey = false;                                           // asleep, it does nothing (C-79: no touch wakes it in a pocket)
+    static uint32_t homeAt = 0;
+    if (!asleep && now - homeAt > 400) { homeAt = now; wake(); screen = HOME; page = homePage(); dirty = true; }
+    return;
+  }
+#endif
   if (pressed) {
 #ifdef MAIN_BUS_TOUCH
     int x = xs[0] - board.screenX, y = ys[0] - board.screenY;   // C-102: the Dial draws in a square inside its circle

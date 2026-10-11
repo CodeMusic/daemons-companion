@@ -51,7 +51,41 @@ static bool readBytes(uint8_t addr, uint8_t reg, uint8_t *out, uint8_t n) {
   return true;
 }
 
+#if BOARD_TDISPLAY_PRO
+// C-105: the T-Display-S3 Pro's SY6970 charger (0x6A), set up as LilyGO's PMU_Example sets it -- but charging at 192 mA,
+// under the 200 mA LilyGO recommends for its 470 mAh cell (the chip's own default is far more), to 4.352 V, the cell's
+// full. Its ADC reads the cell; with USB plugged in that reading is the charger's, not the cell's (LilyGO's note), so
+// the percent is rough on the cable and true off it.
+#define XPOWERS_CHIP_SY6970
+#include <XPowersLib.h>
+static PowersSY6970 charger;
+static bool sy6970Read(Battery &b) {
+  static int up = -1;
+  if (up < 0) {
+    up = charger.init(Wire, board.sda, board.scl, SY6970_SLAVE_ADDRESS) ? 1 : 0;
+    if (up) {
+      charger.setInputCurrentLimit(1000);
+      charger.setChargeTargetVoltage(4352);
+      charger.setPrechargeCurr(64);
+      charger.setChargerConstantCurr(192);
+      charger.enableMeasure();
+    }
+  }
+  if (!up) { b.present = false; return false; }
+  int mv = charger.getBattVoltage();
+  b.usb = charger.isVbusIn();
+  b.charging = charger.isCharging();
+  b.full = charger.isChargeDone();
+  b.present = mv > 2500;
+  b.mv = mv; b.percent = b.full ? 100 : percentFromMv(mv);
+  return b.present;
+}
+#else
+static bool sy6970Read(Battery &b) { b.present = false; return false; }
+#endif
+
 bool batteryRead(Battery &b) {
+  if (board.power == Power::ChargerSY6970) return sy6970Read(b);
   if (board.power == Power::AdcDivider) {
     int mv = analogReadMilliVolts(board.battAdc) * 2;
     b.present = mv > 2500;                       // nothing there reads near zero (USB power, no cell)

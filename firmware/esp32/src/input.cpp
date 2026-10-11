@@ -19,7 +19,10 @@ void inputBegin() {
   }
   if (board.encKey >= 0) pinMode(board.encKey, INPUT_PULLUP);   // C-75: the CoreS3 has no key -- only its touch
   if (board.hasSideKey()) pinMode(board.sideKey, INPUT_PULLUP);
-  if (board.threeKeys()) { pinMode(board.keyLeft, INPUT); pinMode(board.keyRight, INPUT); }   // C-75: pulled up on the board
+  if (board.threeKeys()) {                 // C-75: pulled up on the M5GO's board (37-39 have no pull-ups of their own);
+    int mode = board.kind == BoardKind::M5Core ? INPUT : INPUT_PULLUP;   // C-105: the T-Display-S3 Pro's, ours
+    pinMode(board.keyLeft, mode); pinMode(board.keyRight, mode); pinMode(board.encKey, mode);
+  }
   if (board.tbUp >= 0) for (int p : { board.tbUp, board.tbDown, board.tbLeft, board.tbRight }) pinMode(p, INPUT_PULLUP);   // C-104
 }
 
@@ -129,7 +132,7 @@ void readEncoder() { int step = dialStep(); if (step) turn(step); }
 
 // The top button, pressed while a routine waits -- or, on a board without one, the dial held (C-67).
 bool giveUp() {                        // the watch: a touch anywhere
-  if (board.threeKeys()) return !digitalRead(board.keyLeft);             // C-75: A, which goes back
+  if (board.threeKeys()) return !digitalRead(board.keyLeft) || (board.touch && watchTouchDown());   // C-75: A, which goes back; C-105 or a touch
   return board.touch ? watchTouchDown() : board.hasSideKey() ? !digitalRead(board.sideKey) : !digitalRead(board.encKey);
 }
 

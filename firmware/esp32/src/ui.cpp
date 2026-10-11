@@ -10,6 +10,12 @@
 // C-74: the footers name the dial and the top button; on a board with two buttons and no dial (the StickS3) they name
 // its buttons instead -- the side one turns (a tap) and goes back (held), the front one presses.
 static String hint(String s) {
+  if (board.kind == BoardKind::TDisplayPro) {   // C-105: the touch screen first -- its three buttons do the same (DRAFT)
+    s.replace("top button: back", "hold: back"); s.replace("top button: stop", "touch: stop");
+    s.replace("top button: undo", "hold: undo"); s.replace("top: delete", "hold: delete");
+    s.replace("hold the dial", "hold the lower right button"); s.replace("turn:", "swipe:"); s.replace("press:", "tap:");
+    return s;
+  }
   if (board.threeKeys()) {                    // C-75: the M5GO and Fire -- A and C turn, B presses, held A goes back
     s.replace("top button: back", "hold A: back"); s.replace("top button: stop", "A: stop");
     s.replace("top button: undo", "hold A: undo"); s.replace("top: delete", "hold A: delete");

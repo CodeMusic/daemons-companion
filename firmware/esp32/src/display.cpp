@@ -30,8 +30,10 @@ const uint8_t *Panel_ILI9342E::getInitCommands(uint8_t listno) const {
 
 void Display::configure() {
   lgfx::Panel_Device &panel = board.panel == Panel::ILI9342C ? (lgfx::Panel_Device &)ili9342c
-                            : board.panel == Panel::ILI9342E ? (lgfx::Panel_Device &)ili9342e : (lgfx::Panel_Device &)st7789;
-  bool ili = board.panel != Panel::ST7789;
+                            : board.panel == Panel::ILI9342E ? (lgfx::Panel_Device &)ili9342e
+                            : board.panel == Panel::ST7796 ? (lgfx::Panel_Device &)st7796 : (lgfx::Panel_Device &)st7789;
+  bool ili = board.panel == Panel::ILI9342C || board.panel == Panel::ILI9342E;
+  bool st7796Panel = board.panel == Panel::ST7796;   // C-105: 320x480 memory, the 222 columns of glass at 49
   {
     auto cfg = bus.config();
     cfg.spi_host = SPI3_HOST;            // the CC1101 build ran on TFT_eSPI's HSPI, which is SPI3 on the S3
@@ -51,8 +53,8 @@ void Display::configure() {
     cfg.pin_cs = board.lcdCs;
     cfg.pin_rst = board.lcdRst;
     cfg.pin_busy = -1;
-    cfg.memory_width = ili ? 320 : 240;
-    cfg.memory_height = ili ? 240 : 320;
+    cfg.memory_width = ili || st7796Panel ? 320 : 240;
+    cfg.memory_height = ili ? 240 : st7796Panel ? 480 : 320;
     cfg.panel_width = board.lcdPanelW;
     cfg.panel_height = board.lcdPanelH;
     cfg.offset_x = board.lcdOffsetX;

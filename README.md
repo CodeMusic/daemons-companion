@@ -67,6 +67,7 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, speaking along with the radio | AM/FM: LATENT and CONTEXT -- **CHANNEL**, a move it learns | voltage | **runs** |
 | **T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa (MESH), IR | power chip | built, not yet run (waits on a data cable) |
 | **T-Deck, T-Deck Plus** | 320x240 | a keyboard and a trackball: roll, click, Enter, Backspace -- and it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus | voltage | **runs** (C-104) |
+| **T-Display-S3 Pro** | 480x222 touch | touch (swipe, tap, hold) and its home key; three buttons: left turns back, right top turns on, right bottom presses | -- (no microphone) | -- | -- | charger (voltage) | built (C-105) |
 | **M5StickS3** | 240x135 | two buttons: the face presses, the side turns | yes (hold the face) | -- | IR | power chip | built, not yet run |
 | **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | **runs** |
 | **M5GO / M5Stack Fire** | 320x240 | A and C turn, B presses (hold B: talk) | yes, with the M5GO base | 10, on the base | -- | power chip (in quarters) | **runs** |
@@ -74,9 +75,9 @@ carries which -- with one device there is nothing to choose ([docs/DEVICES.md](d
 | **M5Stack Tab5** | 720x1280 touch | **the control center**: the app's screens, its own Wi-Fi, everything kept on it ([docs/TAB5.md](docs/TAB5.md)) | next | -- | -- | power chip | **runs** |
 
 The three T-Embeds run **one firmware**: at start each looks at what answers on its I2C bus and knows which board it
-is. The watch, the T-Deck, the StickS3, the CoreS3, the Dial, and the M5GO and Fire (one build between them, on the original ESP32)
-each have their own (`./updateCompanion.sh --board t-deck`, `m5-sticks3`, `m5-cores3`, `m5-dial` or `m5-core` the first time;
-the T-Deck's factory firmware ignores the reset, so hold its trackball while plugging it in the first time). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
+is. The watch, the T-Deck, the T-Display-S3 Pro, the StickS3, the CoreS3, the Dial, and the M5GO and Fire (one build between them, on the original ESP32)
+each have their own (`./updateCompanion.sh --board t-deck`, `t-display-pro`, `m5-sticks3`, `m5-cores3`, `m5-dial` or `m5-core` the first time;
+the T-Deck's factory firmware ignores the reset, so hold its trackball while plugging it in the first time; the T-Display-S3 Pro's too: hold BOOT, press RESET, let go of BOOT). **The Tab5** is its own project, `firmware/tab5/` (an ESP32-P4, on Arduino 3.3 with
 its own PlatformIO: `firmware/tab5/pio.sh`); `./updateCompanion.sh --board m5-tab5` flashes it. Pins and sources:
 [docs/HARDWARE.md](docs/HARDWARE.md).
 
@@ -94,7 +95,7 @@ Plug the boards in by USB-C cables that carry data, with [PlatformIO](https://pl
 |---|---|
 | `./updateCompanion.sh` | asks each board on USB for its HELLO and flashes its build; with several plugged in it asks which (numbers, or `a` for all) |
 | `./updateCompanion.sh --all` | every board found, without asking |
-| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `t-deck`, `m5-sticks3`, `m5-cores3`, `m5-dial`, `m5-tab5`, or `m5-core` for the M5GO and Fire |
+| `./updateCompanion.sh --board t-watch-s3` | say what it is -- for a board with no companion firmware on it yet (it says nothing, so the script would ask): `t-embed`, `t-watch-s3`, `t-deck`, `t-display-pro`, `m5-sticks3`, `m5-cores3`, `m5-dial`, `m5-tab5`, or `m5-core` for the M5GO and Fire |
 | `./updateCompanion.sh --port PORT` | only that one |
 | `./updateCompanion.sh --link` | flash, then link |
 | `./updateCompanion.sh --build` | only build every board's firmware, to check it compiles (no board needed) |

@@ -202,6 +202,36 @@ directions and the GPS's set-up; examples/Keyboard_T_Deck_Master for the keyboar
 variants/esp32s3/t-deck/variant.h (the same pins, the GT911's address, the TCXO's voltage, the trackball's threshold);
 wiki.lilygo.cc's T-Deck Plus page and cnx-software's review (the Plus's battery, GPS and case).*
 
+## The T-Display-S3 Pro (C-105)
+
+An **ESP32-S3R8** (16 MB flash, 8 MB octal PSRAM) behind a **2.33" ST7796U IPS screen, 222x480** -- its memory is
+320x480 and the glass starts at column 49 -- with a **CST226SE touch screen** (0x5A) that has a **home key** under the
+glass, **three buttons**, an **SY6970 charger** that reads the cell, an **LTR-553ALS** light and proximity sensor
+(missing on the "External" version), a green LED and a microSD. **No speaker and no microphone** on the board itself:
+LilyGO's MVSR shield adds them (and a LoRa shield exists); neither is supported yet.
+
+| | pins | notes |
+|---|---|---|
+| LCD | CS 39, DC 9, SCLK 18, MOSI 17, MISO 8, RST 47, BL 48 | turned 1 for landscape (480x222), inverted (IPS) |
+| backlight | 48 | V1.1: a constant-current driver dimmed in 16 steps by pulses; HIGH is full, LOW is off |
+| touch | CST226SE, I2C 0x5A; RST 13, INT 21 | landscape: X and Y swapped, Y mirrored (LilyGO's own setting) |
+| buttons | **BOOT 0** at the left end (below RESET); **12** and **16** at the right end, top and bottom | |
+| I2C | SDA 5, SCL 6 | the touch, the charger, the light sensor and a camera share it |
+| charger | **SY6970, 0x6A** | charges at 192 mA here (LilyGO: under 200 mA for the 470 mAh cell); with USB in, the cell's reading is the charger's |
+| light sensor | LTR-553ALS, 0x23 | not used yet (it could dim the screen) |
+| green LED | 38 | the camera's light on camera boards; kept off |
+| microSD | CS 14 on the screen's bus | held HIGH, off the bus |
+| QWIIC | left: 44, 43 (UART / I2C / GPIO); right: the I2C bus | |
+
+**Its own build** (`env:t-display-pro`, `BOARD_TDISPLAY_PRO`): the screen through LovyanGFX's ST7796; the touch through
+`watch.cpp` as the CoreS3's (SensorLib's CST226SE driver), with the home key going home; the three buttons read as the
+M5GO's A, B and C (left BOOT, lower right 16, upper right 12); the battery from the SY6970 through XPowersLib. **Not
+yet**: the light sensor, the backlight's 16 steps, the LED, the SD card, the shields.
+
+*Sources: github.com/Xinyuan-LilyGO/T-Display-S3-Pro (README: pins, I2C addresses, buttons, the charger's notes;
+examples/Cellphone/utilities.h; examples/Arduino_GFX_HelloWorld for the panel's size and offset; examples/CapacitiveTouch
+for the touch's orientation; examples/AdjustBacklight; examples/PMU_Example for the SY6970).*
+
 ## The M5Stack Tab5 (C-77)
 
 **ESP32-P4** (RISC-V, 360 MHz, 32 MB PSRAM, 16 MB flash) with an **ESP32-C6** beside it for Wi-Fi 6 and Bluetooth 5,

@@ -36,6 +36,32 @@ void boardBegin() {
   watchPower();                                      // the PMU switches every rail: on before anything else starts
 }
 
+#elif defined(BOARD_TDISPLAY_PRO)
+
+// C-105: the LilyGO T-Display-S3 Pro -- an ESP32-S3R8 (16 MB flash, 8 MB octal PSRAM) behind a 2.33" ST7796U IPS screen,
+// 222x480 (its memory 320x480, the glass at column 49), a CST226SE touch screen (0x5A, RST 13, INT 21) with a home key
+// below the glass, three buttons (BOOT 0 at the left end; 12 and 16 at the right, top and bottom), an SY6970 charger
+// (0x6A) that reads the cell's voltage, an LTR-553ALS light sensor (0x23; not used yet), a green LED on 38 and a
+// microSD (CS 14) on the screen's bus. No speaker and no microphone on the board itself. Pins from LilyGO's
+// T-Display-S3-Pro examples (utilities.h, the Arduino_GFX and CapacitiveTouch examples, README); docs/HARDWARE.md.
+void boardBegin() {
+  board.kind = BoardKind::TDisplayPro; board.id = "t-display-pro"; board.name = "T-Display-S3 Pro";
+  board.width = 480; board.height = 222; board.rotation = 1;      // landscape, as LilyGO's examples turn it
+  board.panel = Panel::ST7796;
+  board.lcdCs = 39; board.lcdDc = 9; board.lcdSclk = 18; board.lcdMosi = 17; board.lcdMiso = 8; board.lcdRst = 47; board.lcdBl = 48;
+  board.lcdPanelW = 222; board.lcdPanelH = 480; board.lcdOffsetX = 49; board.lcdOffsetY = 0; board.lcdInvert = true;
+  // the three buttons, as the M5GO's A, B and C: the left one turns back (held: back), the right-bottom presses (held at
+  // home: talk, where a microphone is), the right-top turns on (held two seconds: sleep). The touch screen too.
+  board.keyLeft = 0; board.encKey = 16; board.keyRight = 12;
+  board.touch = true;
+  board.sda = 5; board.scl = 6;
+  board.power = Power::ChargerSY6970;
+  board.sdCs = 14;
+  pinMode(board.sdCs, OUTPUT); digitalWrite(board.sdCs, HIGH);     // the card off the shared bus
+  pinMode(38, OUTPUT); digitalWrite(38, LOW);                      // the green LED (the camera's light, on camera boards)
+  Wire.begin(board.sda, board.scl);
+}
+
 #elif defined(BOARD_TDECK)
 
 // C-104: the LilyGO T-Deck and T-Deck Plus -- an ESP32-S3 (16 MB flash, 8 MB PSRAM) behind a 2.8" ST7789 (320x240),

@@ -90,7 +90,7 @@ static bool setupUnits() {
     d["input"] = "llm.utf-8"; d["enoutput"] = true; d["max_token_len"] = 128;
     d["prompt"] = "You are " + who + ", a small creature called a daemon" +
                   (st.carrying && st.daemon.types.length() ? " of the " + st.daemon.types + " kind" : String("")) +
-                  ", carried by the person speaking. Answer in one or two short, kind sentences, as yourself.";   // DRAFT
+                  ", hosted on a device of the person speaking. Answer in one or two short, kind sentences, as yourself.";   // DRAFT
     workLlm = setupUnit("llm", d);
   }
   if (!workTts.length()) {

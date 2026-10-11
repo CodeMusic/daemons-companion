@@ -449,7 +449,7 @@ void draw() {
       canvas.drawString(hint("press: care for it"), x, H - 4);
       }
     } else {
-      canvas.drawString("THE DAEMON YOU CARRY", 10, 34);
+      canvas.drawString("A DAEMON TO HOST", 10, 34);
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
     }
   }

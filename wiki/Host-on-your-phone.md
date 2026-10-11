@@ -109,7 +109,7 @@ reaches the companion the way the app does, over your Wi-Fi at home and through 
 ## 7. Choose the daemon it hosts
 
 In the app (or on the site), **DEVICE**, **YOUR DEVICES**. The widget is listed there as **This phone's widget**,
-alongside any boards, each saying which daemon it hosts (on screen: *"Carries …"*). Choose a daemon for it from those
+alongside any boards, each saying which daemon it hosts (*"Hosts …"*). Choose a daemon for it from those
 AWAY. A daemon hosted by another device moves to the widget. The widget shows it, its level, its word for how it is,
 how it has eaten and drunk today, and its cue.
 

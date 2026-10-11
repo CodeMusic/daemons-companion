@@ -593,7 +593,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
                           returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
                           grew: { nickname: string; exp: number; from: number; to: number } | null }>("/api/sync", {});
     const said: string[] = [];
-    if (!r.sameGame) said.push(`This save belongs to a different game. Your companion carries daemons for ${r.married.name}'s.`);
+    if (!r.sameGame) said.push(`This save belongs to a different game. Your companion hosts daemons from ${r.married.name}'s.`);
     if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");
     r.received.forEach((n) => said.push(`${n} is with your device now.`));
     r.returned.forEach((n) => said.push(`${n} is home.`));
@@ -753,7 +753,7 @@ function ProfileScreen() {
         <Small>{p.savedIn?.place ? `Last saved in ${p.savedIn.place}` : "Last saved somewhere the map does not name"}</Small>
         <Small color={p.thisGame === false ? "$color10" : undefined}>
           {p.thisGame === null ? "Not yet synced: the first save you SYNC becomes your companion's game."
-            : p.thisGame ? "Your companion's game." : `A different game: your companion carries daemons for ${p.marriedTo}'s.`}
+            : p.thisGame ? "Your companion's game." : `A different game: your companion hosts daemons from ${p.marriedTo}'s.`}
         </Small>
       </Card>
       <Card>
@@ -1146,10 +1146,10 @@ function DeviceScreen({ ink }: { ink: string }) {
           <Eyebrow>YOUR DEVICES</Eyebrow>
           {/* C-80: a daemon in each -- SEND them in the game, SYNC, then choose here which device carries which (DRAFT) */}
           <Small>{(link.away ?? []).length > 1 || link.devices.length > 1
-            ? "Each device carries a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where."
+            ? "Each device hosts a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where."
             : "SEND a daemon from the party in the game and SYNC: it goes to your device."}</Small>
           {/* C-100 (DRAFT) */}
-          {WIDGET ? <Small>{"Your phone can carry one too: add the DAEMONS widget to your home screen, and it appears here as THIS PHONE'S WIDGET."}</Small> : null}
+          {WIDGET ? <Small>{"Your phone can host one too: add the DAEMONS widget to your home screen, and it appears here as This phone's widget."}</Small> : null}
           {link.devices.map((d) => (
             <YStack key={d.id} gap={4} marginTop={8}>
               <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
@@ -1161,7 +1161,7 @@ function DeviceScreen({ ink }: { ink: string }) {
                        d.firmware ? `firmware ${d.firmware}` : null,                               // C-91
                        d.id].filter(Boolean).join(" · ")}</Small>
               <Text fontSize={14} color="$color12">
-                {d.daemon ? `Carries ${d.daemon.nickname || d.daemon.name}, Lv. ${d.daemon.level}` : "Carries no daemon"}</Text>
+                {d.daemon ? `Hosts ${d.daemon.nickname || d.daemon.name}, Lv. ${d.daemon.level}` : "Hosts no daemon"}</Text>
               {(link.away ?? []).length ? (
                 <Choice<number | null> value={d.daemon?.personality ?? null}
                   options={[...(link.away ?? []).map((a): [number | null, string] => [a.personality, a.nickname || a.name]), [null, "None"]]}

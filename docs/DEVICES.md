@@ -8,11 +8,11 @@
 | device | screen | input | listens | speaks | lights | radios beyond Wi-Fi and Bluetooth | battery | how it reaches the server | state |
 |---|---|---|---|---|---|---|---|---|---|
 | **T-Embed CC1101** | 320x170 | dial, its press, top button | PDM mic | I2S speaker | 8 WS2812 | IR, NFC, Sub-GHz | gauge + charger | Wi-Fi, USB cable, phone | runs (C-26) |
-| **T-Embed** (plain) | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | -- | voltage only | Wi-Fi, USB cable, phone | built (C-67) |
-| **T-Embed SI4732** | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | AM/FM receiver | voltage only | Wi-Fi, USB cable, phone | built (C-67); its radio C-69 |
+| **T-Embed** (plain) | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | -- | voltage only | Wi-Fi, USB cable, phone | runs (C-67) |
+| **T-Embed SI4732** | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | AM/FM receiver | voltage only | Wi-Fi, USB cable, phone | runs (C-67); its radio C-69 |
 | **T-Watch S3** | 240x240 touch | touch, the crown | PDM mic | I2S speaker | -- | LoRa, IR | PMU | Wi-Fi, USB cable, phone; LoRa later | built (C-71) |
-| **T-Deck / T-Deck Plus** | 320x240 (touch, unused) | keyboard, trackball | two mics (ES7210) | I2S speaker | -- | **LoRa**; GPS on the Plus | voltage only | Wi-Fi, USB cable, phone; **LoRa to other boards** | built (C-104) |
-| **T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- | -- | green LED (unused) | -- (light sensor, unused) | charger's voltage | Wi-Fi, USB cable, phone | built (C-105) |
+| **T-Deck / T-Deck Plus** | 320x240 (touch, unused) | keyboard, trackball | two mics (ES7210) | I2S speaker | -- | **LoRa**; GPS on the Plus | voltage only | Wi-Fi, USB cable, phone; **LoRa to other boards** | runs (C-104) |
+| **T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- | -- | green LED (unused) | -- (light sensor, unused) | charger's voltage | Wi-Fi, USB cable, phone | runs (C-105) |
 | **the phone** | -- | touch | its mic | its speaker | -- | -- | -- | Wi-Fi at home, the relay away | runs |
 | **the phone's widget** (`iphone-widget-…`) | home screen, small or medium | FEED, WATER, TRAIN | -- | -- | -- | -- | -- | as the phone: Wi-Fi at home, the relay away | built (C-100) |
 | M5 StickS3, Cores, Tab5 | various | various | yes | yes | -- | -- | PMU | Wi-Fi | C-74, C-75 |
@@ -89,6 +89,8 @@ function away from home."*
 
 - **Q2, choosing**: in the app and the site -- each device in DEVICES has a choice of party daemon; SYNC writes it.
 - **Q3, the phone**: not a device of its own. It is the remote and the boards' way out, and shows every device's daemon.
+  *Since 2026-10-11 (C-100): the phone's **home-screen widget** is a device of its own, hosting a daemon like a board;
+  the app itself is still the remote.*
 - **Q4, the relay for boards**: yes -- a board away from home on its own Wi-Fi asks the relay, with its own key; a
   board paired with the phone goes out through the phone.
 - Q1 (where the save lives, if the server moves) is still open, and does not block this: the server stays on the Mac

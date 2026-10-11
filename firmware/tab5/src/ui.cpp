@@ -259,7 +259,7 @@ static void drawDaemon(lv_obj_t *p) {
     label(c, types, &lv_font_montserrat_20, DAY);
     label(c, d["entry"] | "", &lv_font_montserrat_20, INK, LV_PCT(100));
   } else {
-    label(left, "This Tab5 carries no daemon. SEND one from the party in the game, SYNC, and choose it on DEVICES.",
+    label(left, "This Tab5 hosts no daemon. SEND one from the party in the game, SYNC, and choose it on DEVICES.",
           &lv_font_montserrat_28, QUIET, LV_PCT(100));
   }
   JsonDocument party = newDoc();
@@ -355,7 +355,7 @@ static String kindName(const String &kind) {
 static void drawDevices(lv_obj_t *p) {
   JsonDocument dv = newDoc();
   if (!kept("devices", dv)) { label(p, "Your devices show here once the Tab5 is paired.", &lv_font_montserrat_28, QUIET); return; }
-  label(p, "Each device carries a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where.",
+  label(p, "Each device hosts a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where.",
         &lv_font_montserrat_20, QUIET, LV_PCT(100));
   carryN = 0;
   JsonArray away = dv["away"];
@@ -367,7 +367,7 @@ static void drawDevices(lv_obj_t *p) {
     if (!d["battery"].isNull()) said += "   battery " + String((int)(d["battery"]["percent"] | 0)) + "%";
     label(c, said + "   " + id, &lv_font_montserrat_16, QUIET);
     JsonObject has = d["daemon"];
-    label(c, has.isNull() ? "Carries no daemon" : "Carries " + String((const char *)(has["nickname"] | "")) + ", Lv. " + String((int)(has["level"] | 0)),
+    label(c, has.isNull() ? "Hosts no daemon" : "Hosts " + String((const char *)(has["nickname"] | "")) + ", Lv. " + String((int)(has["level"] | 0)),
           &lv_font_montserrat_20, INK);
     lv_obj_t *r = row(c);
     long long mine = has.isNull() ? -1 : (long long)(has["personality"] | 0LL);

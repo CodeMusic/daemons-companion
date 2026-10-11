@@ -142,7 +142,7 @@ struct DaemonWidget: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: KIND, provider: Provider()) { DaemonWidgetView(entry: $0) }
       .configurationDisplayName("Your daemon")
-      .description("The daemon this phone carries, and FEED, WATER and TRAIN from the home screen.")
+      .description("The daemon this phone hosts, and FEED, WATER and TRAIN from the home screen.")
       .supportedFamilies([.systemSmall, .systemMedium])
   }
 }

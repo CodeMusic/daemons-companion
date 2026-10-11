@@ -1,8 +1,13 @@
 # The handhelds: flashing and trying them
 
+> *This page was written for the T-Embeds and the watch, and goes deeper on them. **Every board since** -- the T-Deck,
+> the T-Display-S3 Pro, the M5Stack StickS3, CoreS3, M5GO, Fire and Dial, and the Tab5 -- is flashed the same way, by
+> `./updateCompanion.sh`: see the wiki's [Flashing and linking](https://github.com/CodeMusic/daemons-companion/wiki/Flashing-and-linking)
+> and [Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards) for each one's build name, controls and quirks.*
+
 The companion's firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (one build, `env:t-embed`: each
 board knows which it is at start) and the **T-Watch S3** (its own build, `env:t-watch-s3`). It shows the day -- its
-theme, virtue over vice, chakra and note -- the season, **the one next step**, the daemon you carry, and its
+theme, virtue over vice, chakra and note -- the season, **the one next step**, the daemon it hosts, and its
 **ROUTINES**: the board's radios in the game's words, and your party's own routines from the game.
 
 **Controls:**

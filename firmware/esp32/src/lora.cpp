@@ -229,7 +229,7 @@ static String drawMesh(uint16_t day, uint16_t ink) {
     canvas.drawString(calledFor ? "WHO ANSWERS " + upper(daemonName()) + "'S CALL   " + String(max(0, calledFor - (int)((millis() - t0) / 1000))) + " s"
                                 : "NEAR " + upper(daemonName()) + "   " + String(bandMhz) + " MHz", 10, 32);   // DRAFT
     if (!rowsN) wrap(calledFor ? "Nothing yet. A board that hears the call beacons back within a moment."
-                               : "No daemon heard in the last ten minutes. Another board on the same band, carrying a daemon, says so every two minutes.", 12, 58, W - 24, 2, 18, 4, QUIET);   // DRAFT
+                               : "No daemon heard in the last ten minutes. Another board on the same band, hosting a daemon, says so every two minutes.", 12, 58, W - 24, 2, 18, 4, QUIET);   // DRAFT
     else {
       int from = max(0, at - 4), rowsAll = rowsN + 1;
       for (int i = from; i < rowsAll && i < from + 5; i++) {
@@ -257,7 +257,7 @@ static String sendChosen(int act) {
   uint32_t to = at == 0 ? 0 : rows[at - 1].tag;
   String who = at == 0 ? "everyone nearby" : rows[at - 1].name;
   bool ok = act == 0 ? loraSend(K_WAVE, to, "") : loraSend(K_SAY, to, act <= WORDS_N ? String(WORDS[act - 1]) : typedWord);
-  if (!ok) return daemonName() + " could not send: the radio is not ready, or nothing is carried.";   // DRAFT
+  if (!ok) return daemonName() + " could not send: the radio is not ready, or no daemon is hosted here.";   // DRAFT
   soundSelect(); ledsFlash();
   return daemonName() + (act == 0 ? " waved at " : " said \"" + (act <= WORDS_N ? String(WORDS[act - 1]) : typedWord) + "\" to ") + who + ".";   // DRAFT
 }

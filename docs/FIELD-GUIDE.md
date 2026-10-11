@@ -138,7 +138,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 ## 7. The phone and the handheld together (C-55, C-57)
 
 - **Pair once.** On the handheld: ROUTINES, WHISPER, **PAIR MY PHONE**. **See:** a six-digit code. On the phone, in
-  the app's PROFILE, THE HANDHELD, ON THIS PHONE: **Pair the handheld**. iOS asks for a code: type the board's.
+  the app's DEVICE tab, THE HANDHELD, ON THIS PHONE: **Pair the handheld**. iOS asks for a code: type the board's.
   **See:** on the board, "<daemon> knows your phone"; in the app, linked. A second pairing later asks for no code.
 - **In a pocket.** Unplug the board's USB. **See:** the corner says **PHONE** instead of USB, and a step done on the
   board reaches the app. Lock the phone, or switch to another app: **it still arrives**. *Swipe the app away and iOS
@@ -163,7 +163,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 
 *A meeting needs a second companion: someone else's board, or the app on someone else's phone.*
 
-- SETTINGS, **MEET OTHERS NEARBY**: on (it is on for the board by default). The board and the phone each send one
+- DEVICE, ITS SETTINGS, **MEET OTHERS NEARBY**: on (it is on for the board by default). The board and the phone each send one
   small beacon -- the species you carry, and a tag that changes every hour, nothing about you -- and listen a few
   seconds every three minutes.
 - **With a second companion near:** **See:** on the next SYNC, its daemon in your INDEX as seen, and your daemon's

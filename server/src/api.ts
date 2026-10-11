@@ -603,7 +603,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         const p = b.personality === null ? null : Number(b.personality);
         if (!validDeviceId(b.id) || (p !== null && !awayNow(ecfg).some((d) => d.personality === p)))
-          return send(res, 400, { error: "carry {id, personality}: a device, and a daemon that is away (SEND it in the game, then SYNC)" });
+          return send(res, 400, { error: "carry {id, personality}: a device to host it, and a daemon that is away (SEND it in the game, then SYNC)" });
         assign(store, b.id, p);
         return send(res, 200, devicesView());
       }
@@ -828,7 +828,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const text = row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
-        if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "carry a daemon to hear its entry" });
+        if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "host a daemon to hear its entry" });
         const r = await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" });
         return send(res, 200, await forDevice({ ...r, answer: text }));
       }
@@ -844,7 +844,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
-        if (!text) return send(res, 400, { error: "speak {species} or {text}, or carry a daemon" });
+        if (!text) return send(res, 400, { error: "speak {species} or {text}, or host a daemon" });
         return send(res, 200, await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }));
       }
       if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes

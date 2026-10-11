@@ -172,7 +172,7 @@ void press() {
   else if (screen == CARE) {
     if (careAt == 3) { screen = INDEX_ENTRY; entryTop = 0; }
     else {
-      static const char *KIND[] = { "feed", "water", "train" }, *SAID[] = { "Eaten.", "Drunk.", "Trained." };
+      static const char *KIND[] = { "feed", "water", "train" }, *SAID[] = { "Eaten.", "Drank.", "Trained." };
       report(KIND[careAt], "device");
       say(SAID[careAt]);
       soundCare(careAt);

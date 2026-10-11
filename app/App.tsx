@@ -506,7 +506,7 @@ function LifeCard({ ink, name }: { ink: string; name: string }) {
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}
       <XStack gap={8} flexWrap="wrap" marginTop={4}>
         <Action label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
-        <Action label="Water" onPress={() => care("water", "Drunk.")} ink={ink} />
+        <Action label="Water" onPress={() => care("water", "Drank.")} ink={ink} />
         <Action label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
       </XStack>
       {said ? <Small>{said}</Small> : null}

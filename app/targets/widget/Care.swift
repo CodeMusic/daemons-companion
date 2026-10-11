@@ -5,7 +5,7 @@ import WidgetKit
 
 enum CareKind: String {
   case feed, water, train
-  var said: String { switch self { case .feed: "Eaten."; case .water: "Drunk."; case .train: "Trained." } }
+  var said: String { switch self { case .feed: "Eaten."; case .water: "Drank."; case .train: "Trained." } }
 }
 
 func care(_ kind: CareKind) async {

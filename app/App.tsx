@@ -22,6 +22,12 @@ let TOKEN: string | null = null;
 let AWAY: string | null = null;
 let route = { away: false, until: 0 };
 const isAway = () => route.away;
+// C-107 (the user, 2026-10-11: six relay runs at once, each a minute long): until the relay has been seen to reach the
+// companion, it is asked one request at a time and the rest wait on that answer; when the companion did not answer it,
+// the relay is not asked again for RELAY_REST_MS -- the phone shows what it kept instead.
+const RELAY_REST_MS = 30000;
+let relayOkUntil = 0, relayDownUntil = 0;
+let relayTrial: Promise<unknown> | null = null;
 // C-61: pairing again -- the stored address and key are dropped and the app goes back to PAIR THIS PHONE.
 let unpaired: () => void = () => {};
 async function pairAgain() {
@@ -137,8 +143,18 @@ async function apiLive<T>(path: string, body?: unknown): Promise<T> {
   }
   else {
     const home = homeWithin(2500);
-    const away = () => fetch(AWAY!, { method: "POST", headers: { "content-type": "application/json", ...auth },
-                                      body: JSON.stringify({ method: body === undefined ? "GET" : "POST", path, body }) });
+    const resting = () => new Unreachable("the companion did not answer the relay a moment ago");
+    const away = async () => {
+      if (Date.now() < relayDownUntil) throw resting();
+      while (relayTrial && Date.now() >= relayOkUntil) await relayTrial.catch(() => {});        // C-107
+      if (Date.now() < relayDownUntil) throw resting();
+      const ask = fetch(AWAY!, { method: "POST", headers: { "content-type": "application/json", ...auth },
+                                 body: JSON.stringify({ method: body === undefined ? "GET" : "POST", path, body }) });
+      const down = () => { relayDownUntil = Date.now() + RELAY_REST_MS; relayOkUntil = 0; route = { away: false, until: 0 }; };
+      const heard = ask.then((r) => { if ([502, 503, 504].includes(r.status)) down(); else relayOkUntil = Date.now() + 60000; }, down);
+      if (Date.now() >= relayOkUntil) relayTrial = heard.finally(() => { relayTrial = null; });
+      return ask;
+    };
     const ways = route.away && Date.now() < route.until ? [away, home] : [home, away];
     let failed: unknown;
     let viaAway = false;
@@ -150,6 +166,7 @@ async function apiLive<T>(path: string, body?: unknown): Promise<T> {
     // out of reach (asleep, or still making a voice): that is being away, and the phone shows what it kept.
     if (viaAway && [502, 503, 504].includes(r.status)) {
       const why = await r.json().catch(() => ({}));
+      route = { away: false, until: 0 };                                                        // C-107
       throw new Unreachable(why.error ?? "the companion did not answer the relay");
     }
   }

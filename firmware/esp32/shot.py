@@ -22,7 +22,7 @@ dev.write(b"SHOT\n")
 w = h = 0
 bits = 16
 data = bytearray()
-deadline = time.time() + 15
+deadline = time.time() + 45   # the CoreS3's 320x240 takes ~25 s (2026-10-11)
 while time.time() < deadline:
     line = dev.readline().decode(errors="replace").strip()
     if line.startswith("SHOT END"):

@@ -56,6 +56,7 @@ import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
+import { handles, route, type Reply } from "./routes.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, entry,
          EXP_PER_STEP, daemonLife, grown, ownBeacons, type Host, type SaveFile } from "./core.js";
 
@@ -168,6 +169,7 @@ function appChangedSince(build: string): boolean | null {
   catch (e: any) { return e?.status === 1 ? true : null; }
 }
 
+const reply = (res: ServerResponse, r: Reply) => send(res, r.status, r.body);
 function send(res: ServerResponse, status: number, data: unknown) {
   res.writeHead(status, { "content-type": "application/json", "access-control-allow-origin": "*" });
   res.end(JSON.stringify(data));
@@ -393,9 +395,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         store.setSetting("host", b.open ? "0.0.0.0" : "127.0.0.1");
         return send(res, 200, { open: b.open === true, now: cfg.host === "0.0.0.0", restart: (b.open === true) !== (cfg.host === "0.0.0.0") });
       }
-      if (req.method === "GET" && path === "/api/today") return send(res, 200, today(ecfg, store));
+      // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
+      if (handles(req.method ?? "", path))
+        return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId,
+                                                       body: req.method === "POST" ? await body(req) : {} }));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
-      if (req.method === "POST" && path === "/api/sync") return send(res, 200, sync(ecfg, store));
       if (req.method === "GET" && path === "/api/device/state") {
         hub.seen(via);
         const st = deviceState(ecfg, store, new Date(), deviceId);
@@ -567,12 +571,6 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { done, celebrate, state: deviceState(ecfg, store, new Date(), deviceId) });
       }
       // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
-      // C-13: the site's own care -- feed, water, train -- kept as the device's are
-      const care = path.match(/^\/api\/daemon\/(feed|water|train)$/);
-      const lifeNow = () => { const d = carriedDaemon(ecfg, store, deviceId); return { ...daemonLife(store), grown: d ? grown(d, store) : null,
-                                                                       level: d?.level ?? null }; };
-      if (req.method === "POST" && care) { store.logInteraction(care[1], "site"); return send(res, 200, lifeNow()); }
-      if (req.method === "GET" && path === "/api/daemon/life") return send(res, 200, lifeNow());
       // ---- C-15: meeting others nearby. A companion's beacon carries only its daemon's species and a tag of four random
       // bytes that changes every hour (firmware/esp32/src/meet.cpp, app/beacon.ts). Each of OUR companions says which tag
       // is its own (beacon), so the board and the phone, which hear each other all day, never count as a meeting. A
@@ -801,75 +799,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!body) return send(res, 404, { error: "no daemon is on the device" });
         return send(res, 200, deviceArt(body));
       }
-      if (req.method === "GET" && path === "/api/goals") return send(res, 200, store.goals());
       if (req.method === "POST" && path === "/api/goals") {
         const b = await body(req);
         if (!b.title || typeof b.title !== "string") return send(res, 400, { error: "a goal needs a title" });
         const bd = b.breakdown ? await breakdown(b.title, cfg) : null;
         const goal = store.addGoal(b.title, bd?.plan);
         return send(res, 201, { goal, breakdown: bd });
-      }
-      const step = path.match(/^\/api\/steps\/(\d+)\/(done|undo)$/);
-      if (req.method === "POST" && step) {
-        if (step[2] === "undo") return store.undoStep(Number(step[1])) ? send(res, 200, { next: store.nextStep() })
-                                                                      : send(res, 404, { error: "no such step" });
-        const r = doStep(ecfg, store, Number(step[1]), "site");
-        return r.ok ? send(res, 200, { ...r, next: store.nextStep() }) : send(res, 404, { error: "no such step" });
-      }
-      if (req.method === "GET" && path === "/api/walk") return send(res, 200, walk(ecfg, store));   // C-48
-      if (req.method === "POST" && path === "/api/walk") {
-        const r = setWalk(ecfg, store, await body(req));
-        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, r);
-      }
-      // ---- C-46: ONE goal, built from milestones and steps, each entry short on purpose ----
-      if (req.method === "GET" && path === "/api/goal") return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });
-      if (req.method === "POST" && path === "/api/goal") {
-        const b = await body(req);
-        const title = entry(b.title);
-        if (!title) return send(res, 400, { error: `a goal is a few words, at most ${ENTRY_LIMIT} letters` });
-        const open = store.currentGoal();
-        if (open && !b.replace) return send(res, 409, { error: "one goal at a time: finish this one, or replace it", goal: open });
-        if (open) store.db.prepare("UPDATE goals SET done = ? WHERE id = ?").run(`set aside ${new Date().toISOString()}`, open.id);
-        const g = store.addGoal(title);
-        return send(res, 201, { goal: g, limit: ENTRY_LIMIT });
-      }
-      if (req.method === "POST" && (path === "/api/goal/step" || path === "/api/goal/milestone")) {
-        const b = await body(req), g = store.currentGoal();
-        if (!g) return send(res, 400, { error: "set a goal first" });
-        const text = entry(b.text ?? b.title);
-        if (!text) return send(res, 400, { error: `keep it short: at most ${ENTRY_LIMIT} letters` });
-        const ok = path.endsWith("milestone") ? store.addMilestone(g.id, text)
-                 : store.addStep(g.id, text, Number.isInteger(b.milestone) ? b.milestone : undefined);
-        if (ok == null) return send(res, 400, { error: "no such milestone in this goal" });
-        return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });
-      }
-      if (req.method === "POST" && path === "/api/goal/remove") {
-        const b = await body(req);
-        if (Number.isInteger(b.step)) store.removeStep(b.step);
-        else if (Number.isInteger(b.milestone)) store.removeMilestone(b.milestone);
-        else return send(res, 400, { error: "remove {step} or {milestone}" });
-        return send(res, 200, { goal: store.currentGoal(), limit: ENTRY_LIMIT });
-      }
-      if (req.method === "GET" && path === "/api/profile") {
-        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });
-        const prof = readProfile(new Uint8Array(readFileSync(ecfg.savePath)));
-        const m = store.married();
-        const thisGame = m ? m.name === prof.name && m.trainerId === prof.trainerId && m.secretId === prof.secretId : null;
-        return send(res, 200, { ...prof, edition: ecfg.edition, thisGame, marriedTo: m ? m.name : null });
-      }
-      if (req.method === "GET" && path === "/api/index") {          // C-24: the save's own INDEX, OPUS's margins with it
-        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });
-        return send(res, 200, readIndex(new Uint8Array(readFileSync(ecfg.savePath)), ecfg.edition));
-      }
-      if (req.method === "GET" && path === "/api/party") {
-        if (!ecfg.savePath || !existsSync(ecfg.savePath)) return send(res, 404, { error: "no save named -- set it in Settings" });
-        return send(res, 200, readSave(new Uint8Array(readFileSync(ecfg.savePath))));
-      }
-      const sp = path.match(/^\/api\/species\/(\d+)$/);
-      if (req.method === "GET" && sp) {
-        const row = SPECIES[sp[1]];
-        if (!row) return send(res, 404, { error: "no such species" });
-        return send(res, 200, { ...row, entry: row.entry[cfg.edition] });
       }
       const art = path.match(/^\/art\/([a-z0-9_]+_(?:front|back)\.png)$/);   // a plain file name, never a path
       if (req.method === "GET" && art) {

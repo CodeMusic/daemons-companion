@@ -4,6 +4,7 @@
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
 #include <Preferences.h>
+#include <M5Unified.h>   // C-104: its battery, for the site
 #include <mbedtls/base64.h>
 #include <esp_heap_caps.h>
 #include "net.h"
@@ -266,6 +267,9 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/device/state", "state");          // this Tab5's own daemon (C-80)
     shareNetworks();                                  // C-93: every device's networks
     { int c; request("POST", "/api/device/hello", String("{\"firmware\":\"m5-tab5 3 ") + COMPANION_BUILD + "\"}", c); }   // C-91: its build, for the site
+    { int pct = M5.Power.getBatteryLevel();          // C-104: its charge on the site too -- it was shown only on its own bar
+      if (pct >= 0) { int c; request("POST", "/api/device/battery", String("{\"percent\":") + pct + ",\"mv\":" + M5.Power.getBatteryVoltage() +
+                                     ",\"charging\":" + (M5.Power.isCharging() == m5::Power_Class::is_charging ? "true" : "false") + "}", c); } }
     fetchKeep("/api/index", "index");
     if (withArt) fetchArt();
     fetchPartyArt();

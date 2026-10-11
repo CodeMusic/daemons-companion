@@ -628,7 +628,10 @@ void batteryLoop(uint32_t now) {
     if (bat.percent != was.percent || bat.charging != was.charging || bat.usb != was.usb) dirty = true;
     batteryRules();
     bool tell = bat.present && (abs(bat.percent - batToldPct) >= 5 || bat.charging != batToldCharging || now - batToldAt > 600000);
-    if (tell && online()) {                                    // over Wi-Fi; the cable and the phone carry it later
+    if (tell && bridgeLive()) {                                // C-104: down the cable or through the phone -- it never was
+      batToldAt = now; batToldPct = bat.percent; batToldCharging = bat.charging;
+      bridge("BATTERY " + String(bat.percent) + " " + String(bat.mv) + " " + (bat.charging ? 1 : 0) + " " + (bat.full ? 1 : 0) + " " + (bat.usb ? 1 : 0));
+    } else if (tell && online()) {                             // over Wi-Fi
       batToldAt = now; batToldPct = bat.percent; batToldCharging = bat.charging;
       http("POST", "/api/device/battery", String("{\"percent\":") + bat.percent + ",\"mv\":" + bat.mv +
            ",\"charging\":" + (bat.charging ? "true" : "false") + ",\"full\":" + (bat.full ? "true" : "false") +

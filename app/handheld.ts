@@ -275,6 +275,10 @@ class Link {
     } else if (word === "MET") {                            // C-15: a companion the board heard nearby
       const [species, peer] = rest.split(" ");
       try { await this.ask("/api/device/met", { species, peer }); } catch { await this.later("/api/device/met", { species, peer }); }
+    } else if (word === "BATTERY") {                        // C-104: the board's charge, through the phone
+      const [percent, mv, ch, full, usb] = rest.split(" ").map(Number);
+      const b = { percent, mv, charging: ch === 1, full: full === 1, usb: usb === 1 };
+      try { await this.ask("/api/device/battery", b); } catch { /* the next one is sent within ten minutes */ }
     } else if (word === "BEACON") {                         // C-15: the board's own tag, so it is never a meeting
       try { await this.ask("/api/device/beacon", { peer: rest }); } catch { await this.later("/api/device/beacon", { peer: rest }); }
     } else if (word === "RESULT") {

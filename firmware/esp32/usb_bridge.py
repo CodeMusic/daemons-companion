@@ -215,6 +215,14 @@ def bridge(a, port):
                         server_json(a.server, "/api/device/beacon", {"peer": rest.strip()})
                 except Exception as e:
                     print("usb_bridge: could not pass on %s (%s)" % (word, e), flush=True)
+            elif msg.startswith("BATTERY "):                # C-104: the board's charge, down the cable (it never was)
+                try:
+                    pct, mv, ch, full, usb = (msg.split()[1:] + ["0"] * 5)[:5]
+                    server_json(a.server, "/api/device/battery", {"percent": int(pct), "mv": int(mv), "charging": ch == "1",
+                                                                  "full": full == "1", "usb": usb == "1"})
+                    print("usb_bridge: battery %s%% %s mV%s%s" % (pct, mv, " charging" if ch == "1" else "", " usb" if usb == "1" else ""), flush=True)
+                except Exception as e:
+                    print("usb_bridge: could not pass on the battery (%s)" % e, flush=True)
             elif msg.startswith("SAID "):                   # C-72: a wave or a word over LoRa, in or out
                 try:
                     d, kind, species, tag, hops, text = (msg[5:].split(" ", 5) + [""] * 6)[:6]

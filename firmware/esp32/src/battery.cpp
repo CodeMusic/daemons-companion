@@ -3,6 +3,21 @@
 #include "battery.h"
 #include "board.h"
 #include "watch.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "soc/usb_serial_jtag_reg.h"
+#endif
+
+// C-104: is a computer on the USB cable? The S3's own USB counts the host's start-of-frame packets, one a millisecond,
+// only while a host is there (HWCDC's own test is not one on this core). A wall charger sends none, so it reads false.
+static bool usbHost() {
+#if CONFIG_IDF_TARGET_ESP32S3 && ARDUINO_USB_MODE
+  uint32_t a = REG_READ(USB_SERIAL_JTAG_FRAM_NUM_REG) & USB_SERIAL_JTAG_SOF_FRAME_INDEX;
+  delay(3);
+  return (REG_READ(USB_SERIAL_JTAG_FRAM_NUM_REG) & USB_SERIAL_JTAG_SOF_FRAME_INDEX) != a;
+#else
+  return false;
+#endif
+}
 
 // C-63. Registers from TI's datasheets (and LilyGO's own examples for this board): the gauge's StateOfCharge (0x2C,
 // percent) and Voltage (0x08, mV), little-endian words; the charger's REG0B -- VBUS_STAT in bits 7-5, CHRG_STAT in
@@ -41,7 +56,15 @@ bool batteryRead(Battery &b) {
     int mv = analogReadMilliVolts(board.battAdc) * 2;
     b.present = mv > 2500;                       // nothing there reads near zero (USB power, no cell)
     b.mv = mv; b.percent = percentFromMv(mv);
-    b.usb = mv > 4300; b.charging = b.usb && mv < 4400; b.full = false;   // a cell on the charger reads above 4.2 V
+    // C-104: the divider reads the cell, which its charger holds at or under 4.2 V -- the old "above 4.3 V means USB"
+    // never came true, so these boards never said they were plugged in. A computer is found by its USB frames; a wall
+    // charger only by a cell above 4.3 V, as before. While it charges, the voltage (and so the percent) reads high.
+    // The T-Deck's divider reads the SUPPLY while USB is in (4.6 V seen), not the cell: then the cell cannot be read at
+    // all, so it says charging and keeps the last charge read on the cell (100 if none yet this start).
+    static int lastCellPct = -1;
+    b.usb = usbHost() || mv > 4300;
+    if (mv > 4300) { b.percent = lastCellPct >= 0 ? lastCellPct : 100; b.charging = true; b.full = false; }
+    else { lastCellPct = b.percent; b.charging = b.usb && mv < 4150; b.full = b.usb && mv >= 4150; }
     return b.present;
   }
   if (board.power == Power::PmuAXP2101) return watchBattery(b);              // C-71: the watch's PMU (watch.cpp)
@@ -60,8 +83,9 @@ bool batteryRead(Battery &b) {
     if (!readBytes(0x75, 0x78, &r78, 1)) { b.present = false; return false; }
     switch (r78 >> 4) {                          // it knows the charge only in quarters
       case 0x00: b.percent = 100; break; case 0x08: b.percent = 75; break;
-      case 0x0C: b.percent = 50; break;  case 0x0E: b.percent = 25; break; default: b.percent = 0;
-    }
+      case 0x0C: b.percent = 50; break;  case 0x0E: b.percent = 25; break; default: b.percent = 10;
+    }   // C-104: below a quarter it cannot say how far -- 10 warns, where 0 put a board still running on its cell to
+        // sleep at a quarter (the 5% rule); the IP5306 switches itself off when the cell is truly empty
     b.present = true; b.mv = 0;                  // no voltage from it: the server keeps none (0 is null there)
     bool supply = readBytes(0x75, 0x70, &r70, 1) && (r70 & 0x08);           // charging on, and a supply present
     bool full = supply && readBytes(0x75, 0x71, &r71, 1) && (r71 & 0x08);
@@ -77,6 +101,10 @@ bool batteryRead(Battery &b) {
   b.present = true;
   b.percent = soc > 100 ? 100 : soc;
   b.mv = w[0] | (w[1] << 8);
+  // C-104: a gauge that has never learnt its cell says what it likes -- the CC1101's said 5% at 4038 mV. When it is
+  // more than 40 points from what the voltage says, the voltage is believed (rough, and high while charging).
+  int byMv = percentFromMv(b.mv);
+  if (b.mv > 2500 && abs(byMv - b.percent) > 40) b.percent = byMv;
   uint8_t st;
   if (readBytes(CHARGER, 0x0B, &st, 1)) {
     int chrg = (st >> 3) & 3;

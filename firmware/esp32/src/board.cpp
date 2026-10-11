@@ -48,7 +48,7 @@ void boardBegin() {
   board.kind = BoardKind::TDeck; board.id = "t-deck"; board.name = "T-Deck";
   board.width = 320; board.height = 240; board.rotation = 1;
   board.lcdCs = 12; board.lcdDc = 11; board.lcdSclk = 40; board.lcdMosi = 41; board.lcdMiso = 38; board.lcdBl = 42;
-  board.lcdPanelW = 240; board.lcdPanelH = 320; board.lcdOffsetX = 0; board.lcdOffsetY = 0; board.lcdInvert = false;
+  board.lcdPanelW = 240; board.lcdPanelH = 320; board.lcdOffsetX = 0; board.lcdOffsetY = 0;   // inverted, as the T-Embeds' (the user's photo, 2026-10-10: every colour flipped with it off)
   board.encKey = 0;                                   // the trackball's press; no dial: the ball turns (input.cpp)
   board.pwrEn = 10; board.sda = 18; board.scl = 8;
   board.i2sBclk = 7; board.i2sLrclk = 5; board.i2sDout = 6;

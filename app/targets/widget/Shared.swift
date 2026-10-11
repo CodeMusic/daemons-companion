@@ -77,6 +77,14 @@ enum Companion {
       return try JSONDecoder().decode(T.self, from: data)
     }
     guard let away = Shared.string("away"), let url = URL(string: away) else { throw Unreachable() }
+    // C-109: at home a slow answer (the .local name looked up) can miss home's short wait, and the relay cannot reach
+    // the companion from there either -- so when the relay fails, home is asked once more, in full
+    func homeAgain() async throws -> T {
+      home.timeoutInterval = 8
+      guard let (data, r) = try? await URLSession.shared.data(for: home), let h = r as? HTTPURLResponse, h.statusCode == 200
+      else { throw Unreachable() }
+      return try JSONDecoder().decode(T.self, from: data)
+    }
     var relay = URLRequest(url: url, timeoutInterval: 20)
     relay.httpMethod = "POST"
     relay.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
@@ -85,7 +93,7 @@ enum Companion {
     if post { body["body"] = [String: Any]() }
     relay.httpBody = try JSONSerialization.data(withJSONObject: body)
     guard let (data, r) = try? await URLSession.shared.data(for: relay), let h = r as? HTTPURLResponse, h.statusCode == 200
-    else { throw Unreachable() }
+    else { return try await homeAgain() }
     return try JSONDecoder().decode(T.self, from: data)
   }
 

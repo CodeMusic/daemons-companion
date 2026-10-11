@@ -59,6 +59,10 @@ runs at once, each waiting the relay's full minute. Now, until the relay has ans
 goes through it and the rest wait on that answer; a 502/503/504 rests the relay for 30 s, and the app shows what it
 kept. A request that comes back, however slowly (a voice can take a while), proves the relay for a minute.
 
+**Home again, in full, when the relay fails** (C-109). Home's first try is short so a phone away does not wait on
+it; at home a slow answer (a `.local` name being looked up) could lose that race while the relay could not reach the
+companion either, and writes were kept as if away. Now a failed relay sends the request home once more with 8 s.
+
 **Reading n8n's executions**: the Forward node never fails and times out at 60 s, so a run that says *Succeeded in
 1m 0.0xs* is a **timeout** -- the companion did not answer and the phone got a 502. A real answer takes its own time.
 Open the Forward node of such a run to see the error.

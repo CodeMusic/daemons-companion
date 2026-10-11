@@ -161,6 +161,12 @@ async function apiLive<T>(path: string, body?: unknown): Promise<T> {
     for (const way of ways) {
       try { r = await way(); viaAway = way === away; route = { away: viaAway, until: Date.now() + 60000 }; break; } catch (e) { failed = e; }
     }
+    // C-109 (the user, 2026-10-11, at home: the widget's FEED was "kept until home answers"): home is asked briefly
+    // first so a phone away does not wait on it -- but at home a slow answer (a .local name looked up) lost that race
+    // and the relay could not reach the companion either. When the relay fails, home is asked once more, in full.
+    if (!r || (viaAway && [502, 503, 504].includes(r.status))) {
+      try { r = await homeWithin(8000)(); viaAway = false; route = { away: false, until: Date.now() + 60000 }; } catch {}
+    }
     if (!r) throw new Unreachable(`Neither the companion at ${SERVER} nor the way from away answered.`);
     // C-86: the relay answered, but for the companion -- "not answering", a gateway timeout -- so the companion is
     // out of reach (asleep, or still making a voice): that is being away, and the phone shows what it kept.

@@ -88,6 +88,15 @@ When something does not answer: **[Troubleshooting](https://github.com/CodeMusic
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio and RoverCub already did; this is their successor.
 - [**TODO.md**](TODO.md) -- the work, decided and not done.
 
+## Back to where it came from
+
+Every daemon out here was compiled in there. If you want to see where -- the towns, the routines, the very lines I say
+when you first walk into my lab -- the game itself runs on **[CodeMusic/pokefirered-daemons](https://github.com/CodeMusic/pokefirered-daemons)**.
+That is the engine, and the place to go when you want to change the world rather than just visit it. Its design, and
+the patches that turn your own cartridge into DAEMONS, are kept in **[CodeMusic/DAEMONS](https://github.com/CodeMusic/DAEMONS)**.
+
+I would go back now and then. A daemon likes to know the way home.
+
 ## The DAEMONS family
 
 | | |

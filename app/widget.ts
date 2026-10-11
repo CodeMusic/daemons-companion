@@ -10,7 +10,7 @@ const ON_IOS = Platform.OS === "ios";
 const shared = new ExtensionStorage("group.com.codemusic.daemonscompanion");
 const KEEP = { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK };
 
-async function widgetId(): Promise<string> {
+export async function widgetId(): Promise<string> {
   let id = await SecureStore.getItemAsync("widget-id");
   if (!id) {
     id = `iphone-widget-${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}`;
@@ -22,6 +22,7 @@ async function widgetId(): Promise<string> {
 // Called whenever the app learns (or loses) its way to the companion; null drops it, and the widget asks to pair.
 export async function shareWithWidget(c: { server: string; token: string; away: string | null } | null) {
   if (!ON_IOS) return;
+  shared.set("alone", undefined); shared.set("aloneSnapshot", undefined);   // C-111: a companion again, not the phone alone
   shared.set("server", c?.server); shared.set("token", c?.token); shared.set("away", c?.away ?? undefined);
   shared.set("device", c ? await widgetId() : undefined);
   if (!c) shared.set("snapshot", undefined);
@@ -39,5 +40,31 @@ export async function sendWidgetKept(api: <T>(path: string, body?: unknown) => P
   if (!kept.length) return;
   shared.remove("queue");
   for (const k of kept) if (/^\/api\/daemon\/(feed|water|train)$/.test(k.path)) await api(k.path, {}).catch(() => {});
+  ExtensionStorage.reloadWidget();
+}
+
+// C-111: the phone hosting on its own. The widget cannot run the companion's rules, so the app draws it: the daemon the
+// widget hosts, its day and its picture, kept in the App Group as one snapshot. Its buttons are kept there too (C-87's
+// queue), counted on top of the snapshot until the app next opens and tends the daemon with them (sendWidgetKept).
+type Reply = { status: number; body: any };
+export async function hostAlone(on: boolean) {
+  if (!ON_IOS) return;
+  shared.set("server", undefined); shared.set("token", undefined); shared.set("away", undefined); shared.set("snapshot", undefined);
+  shared.set("alone", on ? "1" : undefined); shared.set("aloneSnapshot", undefined);
+  shared.set("device", on ? await widgetId() : undefined);
+  ExtensionStorage.reloadWidget();
+}
+const SINCE_2001 = 978307200;   // Swift's Date counts seconds from 2001
+export async function drawAlone(local: (path: string) => Promise<Reply>) {
+  if (!ON_IOS) return;
+  const id = await widgetId();
+  const st = await local(`/api/device/state?device=${id}`);
+  const d = st.status === 200 ? st.body.daemon : null;
+  const art = d ? await local(`/api/art?party=${d.slot}`) : null;
+  const snap = d ? { carries: true, name: d.nickname || d.name, level: d.level, word: d.life.word, fed: d.life.fed.today,
+                     watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired, cue: d.life.cue ?? undefined,
+                     png: art?.status === 200 ? art.body.png : undefined, artKey: d.artKey }
+                 : { carries: false, name: "", level: 0, word: "", fed: 0, watered: 0, trained: false, tired: "awake" };
+  shared.set("aloneSnapshot", JSON.stringify({ ...snap, at: Date.now() / 1000 - SINCE_2001 }));
   ExtensionStorage.reloadWidget();
 }

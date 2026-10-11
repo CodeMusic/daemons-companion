@@ -5,7 +5,7 @@
 // Which device carries which daemon is kept by the daemon's PERSONALITY (it never changes; its party slot does) under
 // the device's own id. A device that asks and has none takes the first daemon away that no other device has -- so one
 // device and one daemon away, the common case, needs no choosing at all. A daemon is in one device at a time.
-import type { Store } from "./db.js";
+import type { Store } from "./store.js";
 import { validDeviceId } from "./deviceid.js";
 
 const KEY = "carry";

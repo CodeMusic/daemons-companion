@@ -10,14 +10,21 @@ enum CareKind: String {
 
 func care(_ kind: CareKind) async {
   guard var s = Shared.snapshot, s.carries else { return }
+  if Shared.alone {                                  // C-111: the phone alone -- kept here, tended when the app opens
+    Shared.keep(kind.rawValue)
+    switch kind { case .feed: s.fed = min(3, s.fed + 1); case .water: s.watered = min(3, s.watered + 1); case .train: s.trained = true }
+    s.said = kind.said; s.at = Date(); Shared.snapshot = s
+    return
+  }
   do {
     let l: Life = try await Companion.call("/api/daemon/\(kind.rawValue)", post: true)
     s.word = l.word; s.fed = l.fed.today; s.watered = l.watered.today; s.trained = l.trained; s.tired = l.tired; s.cue = l.cue
     if let lv = l.level { s.level = lv }
-    s.said = kind.said
+    s.said = kind.said; s.did = kind.rawValue
   } catch {
     Shared.keep(kind.rawValue)                       // C-87: nothing lost -- the app sends it from home
     s.said = "Kept until home answers."              // DRAFT
+    s.did = "kept"
   }
   s.at = Date()
   Shared.snapshot = s

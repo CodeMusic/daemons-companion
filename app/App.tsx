@@ -16,6 +16,8 @@ import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, 
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
 // phone's secure storage; on the site, the server is this machine and needs no key.
 let SERVER = process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
+// C-111: the phone hosting on its own -- no computer; every request is answered on the phone (local.ts)
+let ALONE = false;
 let TOKEN: string | null = null;
 // C-56: away from home, the phone reaches the companion through the user's n8n (docs/REMOTE.md). Home is tried first,
 // briefly; whichever way answered is kept for a minute, so a walk does not pay the wait on every request.
@@ -31,8 +33,8 @@ let relayTrial: Promise<unknown> | null = null;
 // C-61: pairing again -- the stored address and key are dropped and the app goes back to PAIR THIS PHONE.
 let unpaired: () => void = () => {};
 async function pairAgain() {
-  for (const k of ["server", "token", "away"]) await SecureStore.deleteItemAsync(k, KEEP).catch(() => {});
-  TOKEN = null; AWAY = null; route = { away: false, until: 0 };
+  for (const k of ["server", "token", "away", "alone"]) await SecureStore.deleteItemAsync(k, KEEP).catch(() => {});
+  TOKEN = null; AWAY = null; route = { away: false, until: 0 }; ALONE = false;
   WIDGET?.shareWithWidget(null);
   unpaired();
 }
@@ -101,6 +103,7 @@ async function loadConnection(): Promise<boolean> {
   await keepAfterFirstUnlock().catch(() => {});
   await loadKept();
   for (const [p, uri] of Object.entries(KEPT.art)) ART.set(p, uri);
+  if (LOCAL && await SecureStore.getItemAsync("alone") === "1") { await hostAlone(); return true; }   // C-111
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
   AWAY = await SecureStore.getItemAsync("away");
   if (server && token) { SERVER = server; TOKEN = token; WIDGET?.shareWithWidget({ server, token, away: AWAY }); return true; }
@@ -113,6 +116,8 @@ type HandheldNow = import("./handheld").Handheld;
 const MEETING: typeof import("./beacon").meeting | null = ON_PHONE ? require("./beacon").meeting : null;
 // C-100: the daemon on the home screen (widget.ts, targets/widget) -- an iOS widget, so only on the iPhone
 const WIDGET: typeof import("./widget") | null = Platform.OS === "ios" ? require("./widget") : null;
+// C-111: the companion's own rules on the phone, for a phone hosting on its own
+const LOCAL: typeof import("./local") | null = ON_PHONE ? require("./local") : null;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 // C-73: the Xenith day -- the virtue over its shadow (cue), the chakra, the theme word
@@ -126,6 +131,11 @@ type Daemon = { slot: number; species: number; name: string; nickname: string; l
                 holding: string | null };
 
 async function apiLive<T>(path: string, body?: unknown): Promise<T> {
+  if (ALONE && LOCAL) {                                                  // C-111: answered here, by the same rules
+    const r = await LOCAL.localApi(path, body);
+    if (r.status >= 400) throw new Error((r.body as { error?: string })?.error ?? `the phone answered ${r.status}`);
+    return r.body as T;
+  }
   const auth: Record<string, string> = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
   const init: RequestInit = body === undefined ? { headers: auth }
     : { method: "POST", headers: { "content-type": "application/json", ...auth }, body: JSON.stringify(body) };
@@ -273,7 +283,10 @@ function keepArt(path: string, uri: string) {
 async function artByJson(path: string): Promise<string> {
   const m = /^\/art\/(party|species)\/(\d+)\.png$/.exec(path);
   if (!m) throw new Error("no such picture");
-  if (m[1] === "species") {
+  if (m[1] === "species" && ALONE) {                   // C-111: painted on the phone, one at a time as the INDEX asks
+    const { png } = await api<{ png: string }>(`/api/art?species=${m[2]}`);
+    keepArt(path, `data:image/png;base64,${png}`);
+  } else if (m[1] === "species") {
     everySpecies ??= api<{ species: Record<string, string> }>("/api/art?all=species").then(({ species }) => {
       for (const [n, png] of Object.entries(species)) keepArt(`/art/species/${n}.png`, `data:image/png;base64,${png}`);
     }).catch((e) => { everySpecies = null; throw e; });
@@ -287,7 +300,7 @@ async function artByJson(path: string): Promise<string> {
   return uri;
 }
 function Art({ path, size }: { path: string; size: number }) {
-  const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && isAway() ? null : SERVER + path));
+  const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && (isAway() || ALONE) ? null : SERVER + path));
   const viaJson = useCallback(() => { artByJson(path).then(setUri).catch(() => {}); }, [path]);
   useEffect(() => { if (!uri) viaJson(); }, [uri, viaJson]);
   const style = [{ width: size, height: size }, PIXELATED as any];
@@ -494,7 +507,10 @@ function LifeCard({ ink, name }: { ink: string; name: string }) {
   const [said, setSaid] = useState("");
   useEffect(() => { api<Life>("/api/daemon/life").then(setL).catch(() => {}); }, []);
   if (!l) return null;
-  const care = async (what: "feed" | "water" | "train", word: string) => { setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word); };
+  const care = async (what: "feed" | "water" | "train", word: string) => {
+    setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word);
+    if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
+  };
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
@@ -591,7 +607,8 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   const doSync = async () => {
     const r = await api<{ sameGame: boolean; firstSave: boolean; married: { name: string }; received: string[];
                           returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
-                          grew: { nickname: string; exp: number; from: number; to: number } | null }>("/api/sync", {});
+                          grew: { nickname: string; exp: number; from: number; to: number } | null;
+                          backup: string | null }>("/api/sync", {});
     const said: string[] = [];
     if (!r.sameGame) said.push(`This save belongs to a different game. Your companion hosts daemons from ${r.married.name}'s.`);
     if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");
@@ -601,8 +618,12 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
     if (r.recalledSeen) said.push("The daemon you brought home in the game is settled here too.");
     if (r.grew) said.push(r.grew.to > r.grew.from ? `${r.grew.nickname} came home grown: level ${r.grew.from} to ${r.grew.to}.`
                                                   : `${r.grew.nickname} came home with ${r.grew.exp} more experience.`);   // C-45
+    // C-111: on a phone alone the game's save changed here -- it goes back to Delta, or the game never sees it
+    if (ALONE && r.backup) said.push("Now give the save back to Delta: Save to Files, then in Delta, hold the game and Import Save File.");
     setNote(said.length ? said.join(" ") : "Synced. Nothing was waiting.");
     load();
+    if (ALONE) redrawWidgetNow();
+    if (ALONE && r.backup) await LOCAL!.shareSave().catch(() => {});
   };
   // C-30: before syncing, make sure a save is set. If not, teach it rather than fail.
   // Reviewed 2026-10-04: a SYNC that fails (a file that is not a DAEMONS save, a save the game is still writing) used
@@ -628,7 +649,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   return (
     <YStack gap={14}>
       {away ? <LifeCard ink={ink} name={away.nickname} /> : null}
-      {away && ON_PHONE ? <TalkCard ink={ink} name={away.nickname} /> : null}
+      {away && ON_PHONE && !ALONE ? <TalkCard ink={ink} name={away.nickname} /> : null}
       {needPath ? (
         <Card borderColor="$color9" borderLeftWidth={6} borderLeftColor="$color9">
           <Eyebrow>FIRST, YOUR SAVE</Eyebrow>
@@ -779,6 +800,38 @@ function ProfileScreen() {
 // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 function SettingsScreen({ ink }: { ink: string }) {
+  return ALONE ? <AloneSettings ink={ink} /> : <SavePathSettings ink={ink} />;
+}
+// C-111 (DRAFT): a phone hosting on its own keeps a copy of the save Delta shared; it takes a newer one, and gives it back
+function AloneSettings({ ink }: { ink: string }) {
+  const [note, setNote] = useState("");
+  const take = async () => {
+    try { const n = await LOCAL!.importSave(); if (n) { setNote(`Taken: ${n}. SYNC on the DAEMON tab to bring its news across.`); redrawWidgetNow(); } }
+    catch (e) { setNote((e as Error).message); }
+  };
+  const give = async () => { try { await LOCAL!.shareSave(); } catch (e) { setNote((e as Error).message); } };
+  return (
+    <YStack gap={14}>
+      <VersionCard />
+      <Card borderLeftWidth={6} borderLeftColor={LOCAL?.hasSave() ? "$color9" : "$color5"}>
+        <Eyebrow>THIS PHONE HOSTS ON ITS OWN</Eyebrow>
+        <Small>{`Your ${LOCAL?.edition() ?? "DAEMONS"} save is kept on this phone, a copy of Delta's. After you play, bring the newer ` +
+          "one here. After a SYNC, give it back: Save to Files, then in Delta, hold the game and Import Save File."}</Small>
+        <XStack gap={8} flexWrap="wrap" marginTop={4}>
+          <Action label="Take a newer save from Files" onPress={take} ink={ink} />
+          <Action label="Give the save back to Delta" onPress={give} ink={ink} />
+        </XStack>
+        {note ? <Small>{note}</Small> : null}
+      </Card>
+      <Card>
+        <Eyebrow>A COMPANION ON A COMPUTER</Eyebrow>
+        <Small>For a handheld, talking with your daemon, or reaching it from another device, the companion runs on a computer.</Small>
+        <Action label="Pair with a companion instead" onPress={() => { pairAgain(); }} ink={ink} />
+      </Card>
+    </YStack>
+  );
+}
+function SavePathSettings({ ink }: { ink: string }) {
   const [s, setS] = useState<Settings | null>(null);
   const [typed, setTyped] = useState("");
   const [note, setNote] = useState("");
@@ -1128,7 +1181,8 @@ function DeviceScreen({ ink }: { ink: string }) {
   const sendWifi = async () => { await api("/api/networks", { ssid, password: pass }); setSsid(""); setPass(""); setWifiSent(-1); };
   return (
     <YStack gap={14}>
-      {HANDHELD ? <HandheldCard ink={ink} /> : null}
+      {HANDHELD && !ALONE ? <HandheldCard ink={ink} /> : null}
+      {ALONE ? null : (   /* C-111: a handheld links to a companion on a computer */
       <Card borderLeftWidth={6} borderLeftColor={link.linked ? "$color9" : "$color5"}>
         <Eyebrow>THE HANDHELD</Eyebrow>
         <Text fontSize={20} fontWeight="600" color="$color12">
@@ -1140,6 +1194,7 @@ function DeviceScreen({ ink }: { ink: string }) {
           {`Battery ${link.battery.percent}%${link.battery.charging ? ", charging" : link.battery.full ? ", full" : link.battery.usb ? ", plugged in" : ""}`}
           {` (as of ${new Date(link.battery.at).toLocaleTimeString()})`}</Small> : null}
       </Card>
+      )}
 
       {link.devices && link.devices.length ? (                // C-80: every device the companion has heard, by its own name
         <Card>
@@ -1168,7 +1223,7 @@ function DeviceScreen({ ink }: { ink: string }) {
                   onPick={async (personality) => {
                     const v = await api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices/carry", { id: d.id, personality });
                     setLink((l) => l && { ...l, devices: v.devices, away: v.away });
-                    WIDGET?.redrawWidget();                                          // C-100
+                    redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
             </YStack>
@@ -1299,6 +1354,19 @@ function HandheldCard({ ink }: { ink: string }) {
   );
 }
 
+// C-100 / C-111: the widget drawn again -- by the companion it asks, or on a phone alone, by the app
+function redrawWidgetNow() {
+  if (ALONE && WIDGET && LOCAL) WIDGET.drawAlone(LOCAL.localApi).catch(() => {});
+  else WIDGET?.redrawWidget();
+}
+
+// C-111: from now on this phone hosts on its own -- its widget is its device, and every request is answered here
+async function hostAlone() {
+  ALONE = true;
+  await SecureStore.setItemAsync("alone", "1", KEEP);
+  if (WIDGET) { LOCAL?.hereAre([await WIDGET.widgetId()]); await WIDGET.hostAlone(true); }
+}
+
 function PairScreen({ onPaired }: { onPaired: () => void }) {
   const [server, setServer] = useState(""), [code, setCode] = useState(""), [name, setName] = useState("my phone");
   const [error, setError] = useState("");
@@ -1330,6 +1398,31 @@ function PairScreen({ onPaired }: { onPaired: () => void }) {
       <Input value={name} onChangeText={setName} placeholder="this phone's name" maxLength={40}
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
       <Action label="Pair" onPress={pair} ink="#fbfaf6" />
+      {error ? <Small color="$color9">{error}</Small> : null}
+      {LOCAL ? <PhoneAlone onPaired={onPaired} /> : null}
+    </YStack>
+  );
+}
+
+// C-111 (DRAFT): no computer -- the phone hosts the daemon itself, from the save Delta shares through Files
+function PhoneAlone({ onPaired }: { onPaired: () => void }) {
+  const [edition, setEdition] = useState<"CONTENT" | "CONTEXT">("CONTENT"), [error, setError] = useState("");
+  const start = async () => {
+    try {
+      setError("");
+      LOCAL!.setEdition(edition);
+      if (!await LOCAL!.importSave()) return;
+      await hostAlone();
+      onPaired();
+    } catch (e) { setError((e as Error).message); }
+  };
+  return (
+    <YStack gap={10} marginTop={18}>
+      <Text fontSize={20} fontWeight="700" color="$color12">Or host it on this phone alone</Text>
+      <Small>{"No computer needed. Play DAEMONS in Delta on this phone; in Delta, hold the game, choose Export Save File and " +
+        "save it to Files. Then choose it here. Which edition is it?"}</Small>
+      <Choice<"CONTENT" | "CONTEXT"> value={edition} options={[["CONTENT", "CONTENT"], ["CONTEXT", "CONTEXT"]]} onPick={setEdition} ink="#fbfaf6" />
+      <Action label="Choose the save from Files" onPress={start} ink="#fbfaf6" />
       {error ? <Small color="$color9">{error}</Small> : null}
     </YStack>
   );
@@ -1461,7 +1554,11 @@ function Shell() {
     if (!ON_PHONE) return;
     const sync = () => sendTodaysSteps().then(() => reload()).catch(() => {});
     // C-100: what the widget kept while out of reach is sent, and the widget drawn again with what the app now knows
-    const widget = () => { WIDGET?.sendWidgetKept(api).catch(() => {}); WIDGET?.redrawWidget(); };
+    const widget = () => {
+      if (ALONE && WIDGET && LOCAL)                     // C-111: its buttons tended here, then the app draws it
+        WIDGET.sendWidgetKept(api).catch(() => {}).finally(() => WIDGET.drawAlone(LOCAL.localApi).catch(() => {}));
+      else { WIDGET?.sendWidgetKept(api).catch(() => {}); WIDGET?.redrawWidget(); }
+    };
     sync(); widget();
     // C-87: each time the app comes back to the front, what the phone holds is brought up to date (and anything kept
     // on it is sent), so a phone opened away from home shows the freshest it could get

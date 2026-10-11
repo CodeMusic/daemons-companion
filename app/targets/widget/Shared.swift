@@ -21,6 +21,8 @@ struct Snapshot: Codable {
   var png: String? = nil
   var artKey: String? = nil
   var said: String? = nil           // the last button's answer ("Eaten.") -- shown until the next refresh
+  var did: String? = nil            // C-113: which button that was (feed, water, train, or kept), for the daemon to answer
+  var den: Den? = nil               // C-113: where it is drawn (server/src/dens.ts)
   var at: Date = Date()
 }
 
@@ -32,7 +34,8 @@ struct Life: Decodable {
 }
 // The part of GET /api/device/state the widget draws
 struct DeviceState: Decodable {
-  struct Daemon: Decodable { let slot: Int; let name: String; let nickname: String; let level: Int; let artKey: String; let life: Life }
+  struct Daemon: Decodable { let slot: Int; let name: String; let nickname: String; let level: Int; let artKey: String; let life: Life
+                         let den: Den? }
   let daemon: Daemon?
 }
 struct Art: Decodable { let png: String }
@@ -43,11 +46,32 @@ enum Shared {
     guard let v = defaults?.string(forKey: key), !v.isEmpty else { return nil }
     return v
   }
-  static var paired: Bool { string("server") != nil && string("token") != nil && string("device") != nil }
+  static var paired: Bool { alone || (string("server") != nil && string("token") != nil && string("device") != nil) }
+  // C-111: the phone hosting on its own -- no companion to ask; the app draws the widget (app/widget.ts, drawAlone)
+  static var alone: Bool { string("alone") == "1" && string("device") != nil }
 
   static var snapshot: Snapshot? {
     get { defaults?.data(forKey: "snapshot").flatMap { try? JSONDecoder().decode(Snapshot.self, from: $0) } }
     set { defaults?.set(newValue.flatMap { try? JSONEncoder().encode($0) }, forKey: "snapshot") }
+  }
+
+  // C-111: the snapshot the app drew, and every button pressed since, counted on top until the app tends the daemon
+  // with them (the queue below) and draws it again.
+  static var alonePicture: Snapshot? {
+    guard var s = string("aloneSnapshot").flatMap({ try? JSONDecoder().decode(Snapshot.self, from: Data($0.utf8)) }) else { return nil }
+    let iso = ISO8601DateFormatter()
+    for k in kept where (k["at"] as? String).flatMap(iso.date(from:)).map({ $0 > s.at }) ?? true {
+      switch (k["path"] as? String) ?? "" {
+      case "/api/daemon/feed": s.fed = min(3, s.fed + 1)
+      case "/api/daemon/water": s.watered = min(3, s.watered + 1)
+      case "/api/daemon/train": s.trained = true
+      default: break
+      }
+    }
+    return s
+  }
+  static var kept: [[String: Any]] {
+    (string("queue").flatMap { try? JSONSerialization.jsonObject(with: Data($0.utf8)) } as? [[String: Any]]) ?? []
   }
 
   // C-87: a button pressed with the companion out of reach is kept, and the app sends it when it next reaches home.
@@ -100,6 +124,7 @@ enum Companion {
   // The daemon this widget carries, its day and its picture -- the picture fetched again only when its art would change.
   static func refresh() async -> Snapshot? {
     guard Shared.paired else { return nil }
+    if Shared.alone { let s = Shared.alonePicture; Shared.snapshot = s; return s }   // C-111: nothing to ask
     do {
       let st: DeviceState = try await call("/api/device/state")
       guard let d = st.daemon else { let s = Snapshot(carries: false); Shared.snapshot = s; return s }
@@ -108,7 +133,7 @@ enum Companion {
       if png == nil { png = (try? await call("/api/art?party=\(d.slot)") as Art)?.png }
       let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
-                       cue: d.life.cue, png: png, artKey: d.artKey, said: nil, at: Date())
+                       cue: d.life.cue, png: png, artKey: d.artKey, said: nil, den: d.den, at: Date())
       Shared.snapshot = s
       return s
     } catch {

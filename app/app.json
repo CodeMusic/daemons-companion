@@ -62,7 +62,10 @@
           "microphonePermission": "Hold TALK to speak with your daemon. What you say is turned into words on your own companion server."
         }
       ],
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "expo-sqlite",
+      "expo-sharing",
+      "expo-asset"
     ],
     "splash": {
       "image": "./assets/splash-icon.png",

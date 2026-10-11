@@ -7,7 +7,7 @@
 // a board that learned it again itself (`fresh`) can. Passwords are kept on this machine as the boards' keys are, and
 // are handed only to a device that has proved itself -- down the cable, a board's own key, a paired key (api.ts). The
 // site and the app see names only.
-import type { Store } from "./db.js";
+import type { Store } from "./store.js";
 
 const KEY = "networks.shared";
 export type Network = { ssid: string; password: string; at: string };

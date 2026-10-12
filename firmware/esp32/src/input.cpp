@@ -17,15 +17,20 @@ bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 // menu (the pages and everything under them, as before), and close it again. The care kinds keep their own numbers --
 // feed 0, water 1, train 2, sleep 3 -- which the server, the sounds (TUNE_CARE) and the CARE list all read.
 bool menuOpen = false;
-static const char *CARE_KIND[] = { "feed", "water", "train", "sleep" }, *CARE_SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep." };   // DRAFT
+// C-118: and wake, 4 -- only waking it, from any button while it sleeps
+static const char *CARE_KIND[] = { "feed", "water", "train", "sleep", "wake" },
+                  *CARE_SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep.", "Awake." };   // DRAFT
 const int CARE_ORDER[4] = { 1, 0, 2, 3 };       // the CARE list's rows, top down: DRINK, FEED, TRAIN, SLEEP
 void careDo(int kind) {
   if (!st.carrying) { say("No daemon here"); return; }                         // DRAFT
-  report(CARE_KIND[kind], "device");
+  // C-118: seen and heard at once -- the server's answer (and the expression it brings) follows the report
   say(CARE_SAID[kind]);
-  soundCare(kind);
-  hopUntil = millis() + 480;
+  if (kind == 4) soundWake(); else soundCare(kind);
+  if (kind != 3) hopUntil = millis() + 480;
+  st.daemon.tired = kind == 3 ? "asleep" : kind == 4 || st.daemon.tired == "asleep" ? "awake" : st.daemon.tired;
   dirty = true;
+  draw();
+  report(CARE_KIND[kind], "device");
 }
 
 void inputBegin() {
@@ -190,6 +195,7 @@ void press() {
     else {
       careDo(CARE_ORDER[careAt]);                                // C-114; C-117: DRINK first, as the buttons are
       screen = HOME; page = DAEMON;
+      menuOpen = false;                                          // C-118: back to the buttons tending it, not turning pages
     }
   }
   else if (screen == PICK_NET && netCount) { screen = TYPE_PASS; typed = ""; wheelAt = 1; }
@@ -372,8 +378,11 @@ void readKeyCore() {
       if (asleep) { if (k == 1 && held >= 500) wake(); continue; }
       wake();
       bool tend = !menuOpen && screen == HOME;                   // C-117: home, the menu closed -- the buttons tend it
-      if (k == 0) { if (held >= 500) back(); else if (tend) careDo(1); else turn(-1); }
-      else if (k == 2) { if (held >= 2000) sleepNow(); else if (tend) careDo(2); else turn(1); }
+      // C-118: asleep, any button wakes it; at bedtime (drowsy, not yet put to bed) C puts it to bed instead of training
+      bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
+      if (tend && sleeping && held < 500) careDo(4);
+      else if (k == 0) { if (held >= 500) back(); else if (tend) careDo(1); else turn(-1); }
+      else if (k == 2) { if (held >= 2000) sleepNow(); else if (tend) careDo(bed ? 3 : 2); else turn(1); }
       else if (tend) careDo(0);
       else press();
     }

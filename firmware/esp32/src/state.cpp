@@ -2,6 +2,7 @@
 #include <Preferences.h>
 #include <mbedtls/base64.h>
 #include "app.h"
+#include "expression.h"
 #include "sound.h"
 #include "leds.h"
 #include "meet.h"
@@ -102,6 +103,7 @@ bool takeState(const String &json) {
     st.daemon.grownTo = doc["daemon"]["grown"]["level"] | 0;
     st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
     st.daemon.tired = lf["tired"] | "awake";
+    takeExpression(doc["daemon"]["expression"]);         // C-119: how it looks now, decided on the server
     JsonVariant dn = doc["daemon"]["den"];                // C-113: its den (server/src/dens.ts); CONTENT's if none
     st.daemon.den = Den();
     if (!dn.isNull()) {

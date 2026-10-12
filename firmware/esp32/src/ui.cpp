@@ -6,6 +6,7 @@
 #include "link.h"
 #include "sound.h"
 #include "leds.h"
+#include "expression.h"
 
 // C-74: the footers name the dial and the top button; on a board with two buttons and no dial (the StickS3) they name
 // its buttons instead -- the side one turns (a tap) and goes back (held), the front one presses.
@@ -59,13 +60,32 @@ bool lightColour(const String &h) {           // as the app decides (App.tsx onC
   return 0.2126 * lin((v >> 16) & 255) + 0.7152 * lin((v >> 8) & 255) + 0.0722 * lin(v & 255) > 0.3;
 }
 
-void drawArt(int x, int y, int scale, bool mirrored = false) {   // C-113: mirrored, it faces right (the game's face left)
-  if (!artKeyHave.length() || artKeyHave != st.daemon.artKey) return;
-  for (int j = 0; j < 64; j++)
-    for (int i = 0; i < 64; i++) {
-      uint8_t b = artPix[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
-      if (c) canvas.fillRect(x + (mirrored ? 63 - i : i) * scale, y + j * scale, scale, scale, artPal[c]);
-    }
+// C-113: mirrored, it faces right (the game's face left). C-119: in its expression -- shaded, its eyes as it feels
+void drawArt(int x, int y, int scale, bool mirrored = false) { drawSprite(x, y, scale, mirrored); }
+
+// C-118 (the user, 2026-10-12: "for hurrying people there should be a more intuitive approach"): the M5GO and the Fire
+// have their three buttons under the screen, so what each does is written right above it, large. By day DRINK, FEED,
+// TRAIN; at bedtime (it is drowsy, not yet put to bed) the right one becomes SLEEP, lit; asleep, one bar: any button
+// wakes it.
+bool keysUnder() { return board.kind == BoardKind::M5Core && st.carrying; }
+static void keyLabels(uint16_t day, uint16_t ink) {
+  bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
+  canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM);
+  if (sleeping) {
+    canvas.fillRoundRect(4, H - 24, W - 8, 22, 5, day);
+    canvas.setTextColor(ink); canvas.drawString("WAKE", W / 2, H - 13);       // DRAFT
+    return;
+  }
+  const char *word[3] = { "DRINK", "FEED", bed ? "SLEEP" : "TRAIN" };         // DRAFT
+  int bw = W / 3;
+  for (int k = 0; k < 3; k++) {
+    bool lit = k == 2 && bed;
+    int bx = k * bw + 4;
+    if (lit) canvas.fillRoundRect(bx, H - 24, bw - 8, 22, 5, day);
+    else canvas.drawRoundRect(bx, H - 24, bw - 8, 22, 5, QUIET);
+    canvas.setTextColor(lit ? ink : PAPER);
+    canvas.drawString(word[k], bx + (bw - 8) / 2, H - 13);
+  }
 }
 
 // ---- drawing --------------------------------------------------------------------------------------------------------
@@ -412,22 +432,23 @@ void draw() {
       // C-42: the board's home -- the daemon, large, and alive: it bobs as it breathes, and now and then hops.
       // C-113: and it lives in its den (den.cpp), walking it from side to side and facing the way it goes; asleep, it
       // stays where it is with a z. The den is the space left of the words (the whole circle on the Dial).
+      // C-119: how it moves is its expression's pose -- still when it sleeps, a slower breath when low, a shake when cross
       uint32_t t = millis();
-      bool asleep = st.daemon.tired == "asleep";
-      int bob = asleep ? 0 : (int)roundf(3 * sinf(t / 420.0f));
-      float walk = asleep ? 0.5f : 0.5f + 0.5f * sinf(t / 5200.0f);        // 0 the left of the den, 1 the right
-      bool right = !asleep && cosf(t / 5200.0f) > 0;                      // going right: the sprite mirrored
-      int hop = asleep ? 0 : (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
+      bool still = expression.still;
+      int bob = still ? 0 : (int)roundf(3 * expression.bob * sinf(t / 420.0f));
+      float walk = still ? 0.5f : 0.5f + 0.5f * sinf(t / 5200.0f);        // 0 the left of the den, 1 the right
+      bool right = !still && cosf(t / 5200.0f) > 0;                       // going right: the sprite mirrored
+      int hop = still ? 0 : (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
       if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
       // the den at x, y, w, h; the sprite (64 * sc) stands on its floor and walks the room the den leaves it
       auto inDen = [&](int x, int y, int w, int h, int sc, int floorY) {
         drawDen(x, y, w, h, floorY);
         int side = 64 * sc, room = max(0, w - side);
-        int ax = x + (int)(room * walk), ay = floorY - side + 4 * sc + bob + hop;
+        int ax = x + (int)(room * walk) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0), ay = floorY - side + 4 * sc + bob + hop;
         canvas.setClipRect(x, y, w, h);
         canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
         drawArt(ax, ay, sc, right);
-        if (asleep) { canvas.setTextFont(2); canvas.setTextColor(PAPER); canvas.setTextDatum(TL_DATUM); canvas.drawString("z z", ax + side - 18, ay + 6); }
+        drawMark(ax, ay, sc, right);                           // C-119: zz, a heart, a drop ... above its head
         canvas.clearClipRect();
       };
       if (board.round) {                                       // C-102: the Dial -- large in the middle of the circle
@@ -444,6 +465,8 @@ void draw() {
         x = 240;
       } else if (H < 160)                                      // the M5StickS3: the den is short, the daemon as the game draws it
         inDen(4, 28, x - 10, H - 44, 1, H - 22);
+      else if (keysUnder())                                    // C-118: the M5GO and Fire -- room left for the buttons' words
+        inDen(6, 30, x - 12, H - 60, 2, H - 38);
       else
         inDen(6, 30, x - 12, H - 46, 2, H - 24);               // C-36: as the game draws it, twice its size
       canvas.setTextDatum(TL_DATUM);
@@ -454,14 +477,20 @@ void draw() {
       String lv = "L" + String(st.daemon.level) + (st.daemon.grownTo > st.daemon.level ? " > " + String(st.daemon.grownTo) : "");   // C-45
       canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + lv, x, 72);
       // C-13: how it is, and its day -- never more than this, and never a nag
-      if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
+      if (st.daemon.tired == "asleep") {                       // C-118: asleep, said large -- not the small word
+        canvas.setTextFont(4); canvas.setTextColor(day); canvas.drawString("ASLEEP", x, 88); canvas.setTextFont(2); canvas.setTextColor(QUIET);   // DRAFT
+      } else if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
       canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
       int cf = wide() ? 2 : 1, ch = wide() ? 16 : 11, cn = wide() ? 4 : 2;   // C-105: wide, the cue in a readable size
       if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 128, W - x - 6, cf, ch, cn, QUIET);
       else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 128, W - x - 6, cf, ch, cn, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
-      if (board.threeKeys() && !menuOpen) {                   // C-117: what the three buttons do here, and the menu
-        canvas.drawString("A drink  B feed  C train", x, H - 14);   // DRAFT
+      if (keysUnder() && !menuOpen) {                         // C-118: each button's word right above it
+        canvas.drawString("A+C: menu", x, H - 28);              // DRAFT
+        keyLabels(day, ink);
+      } else if (board.threeKeys() && !menuOpen) {            // C-117: the T-Display-S3 Pro's buttons are on its side
+        bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
+        canvas.drawString(sleeping ? "any button: wake" : bed ? "A drink  B feed  C sleep" : "A drink  B feed  C train", x, H - 14);   // DRAFT
         canvas.drawString("A+C: menu", x, H - 4);
       } else canvas.drawString(hint("press: care for it"), x, H - 4);
       }

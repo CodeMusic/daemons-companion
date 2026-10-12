@@ -66,6 +66,7 @@ describe("the daemon's life (C-13, PLAN 7)", () => {
     expect(life(nap, new Date(2026, 9, 4, 14, 0)).tired).toBe("asleep");
     expect(life(nap, new Date(2026, 9, 4, 14, 45)).tired).toBe("awake");
     expect(life([...nap, atm(4, 13, 20, "feed")], new Date(2026, 9, 4, 13, 40)).tired).toBe("awake");   // woken to eat
+    expect(life([...nap, atm(4, 13, 20, "wake")], new Date(2026, 9, 4, 13, 40)).tired).toBe("awake");   // or simply woken (C-118)
   });
 
   it("is rested after a night's sleep, and a night without costs only a little", () => {

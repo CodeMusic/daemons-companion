@@ -14,7 +14,7 @@ const SPECIES = speciesJson as unknown as Record<string, any>;
 export type Ask = { method: string; path: string; body: any; deviceId: string };
 export type Reply = { status: number; body: unknown };
 
-const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep)$/;
+const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/index", "/api/party", "/api/daemon/life"];
 const POSTS = ["/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 

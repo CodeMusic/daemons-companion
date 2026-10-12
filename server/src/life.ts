@@ -21,7 +21,7 @@ export type Interaction = { at: string; kind: string; detail?: string | null };
 export const MEALS: [number, number][] = [[6, 10], [11, 14], [17, 21]];
 const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met", "walk", "sleep"];   // met: nearby (C-15); walk: the day's walking goal (C-48)
 const NIGHT_FROM = 20, MORNING = 6, BEDTIME = 21, NAP_MS = 90 * 60000;
-const WAKES = ["feed", "water", "train", "routine", "step", "tick", "walk"];   // tending it wakes it; a meeting nearby does not
+const WAKES = ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"];   // tending it wakes it -- or WAKE (C-118); a meeting nearby does not
 const MOOD_START = 70, PER_TOGETHER = 4, TOGETHER_MOST = 24, PER_MISSED_MEAL = 3, QUIET_STEP = 3, QUIET_MOST = 30;
 
 const localDay = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;

@@ -39,7 +39,7 @@ export async function sendWidgetKept(api: <T>(path: string, body?: unknown) => P
   try { kept = JSON.parse(shared.get("queue") ?? "[]"); } catch { return; }
   if (!kept.length) return;
   shared.remove("queue");
-  for (const k of kept) if (/^\/api\/daemon\/(feed|water|train)$/.test(k.path)) await api(k.path, {}).catch(() => {});
+  for (const k of kept) if (/^\/api\/daemon\/(feed|water|train|sleep)$/.test(k.path)) await api(k.path, {}).catch(() => {});
   ExtensionStorage.reloadWidget();
 }
 

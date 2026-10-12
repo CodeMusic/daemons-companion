@@ -119,6 +119,8 @@ const MEETING: typeof import("./beacon").meeting | null = ON_PHONE ? require("./
 const WIDGET: typeof import("./widget") | null = Platform.OS === "ios" ? require("./widget") : null;
 // C-111: the companion's own rules on the phone, for a phone hosting on its own
 const LOCAL: typeof import("./local") | null = ON_PHONE ? require("./local") : null;
+// C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
+const { careSound }: typeof import("./careSound") = ON_PHONE ? require("./careSound") : { careSound: () => "" };
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 
 // C-73: the Xenith day -- the virtue over its shadow (cue), the chakra, the theme word
@@ -500,17 +502,26 @@ type Settings = { savePath: string | null; dir: string | null; exists: boolean; 
 
 // C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
 type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
-              trained: boolean; tired: string; quietDays: number; cue: string | null;
+              trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null };
 
 function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Daemon }) {
   const [l, setL] = useState<Life | null>(null);
   const [said, setSaid] = useState("");
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
-  useEffect(() => { api<Life>("/api/daemon/life").then(setL).catch(() => {}); }, []);
+  const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
+  const player = useAudioPlayer(null);
+  useEffect(() => {
+    api<Life>("/api/daemon/life").then(setL).catch(() => {});
+    api<Today>("/api/today").then((t) => setNote(t.day.note)).catch(() => {});
+  }, []);
   if (!l) return null;
-  const care = async (what: "feed" | "water" | "train", word: string) => {
+  const care = async (what: "feed" | "water" | "train" | "sleep", word: string) => {
     setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word); setHop((n) => n + 1);
+    if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
+      try { await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) }); player.play(); }
+      catch { /* quiet is fine */ }
+    }
     if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
   };
   return (
@@ -519,7 +530,7 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
       <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop}   // C-113: in its den, walking it
                 art={<Art path={`/art/party/${daemon.slot}.png`} size={144} />} height={180} />
       <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>
-      <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}`}</Small>
+      <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}${l.rested ? " · slept" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
       {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
@@ -528,6 +539,7 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
         <Action label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
         <Action label="Water" onPress={() => care("water", "Drank.")} ink={ink} />
         <Action label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
+        <Action label="Sleep" onPress={() => care("sleep", "Asleep.")} ink={ink} />{/* C-114, DRAFT */}
       </XStack>
       {said ? <Small>{said}</Small> : null}
     </Card>

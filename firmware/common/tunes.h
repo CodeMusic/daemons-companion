@@ -21,9 +21,15 @@ static const Note TUNE_UPLINK[]     = { {0, 70}, {7, 70}, {12, 70}, {7, 70}, {14
 static const Note TUNE_WAKE[]       = { {0, 190}, {7, 330}, {5, 50}, {2, 140}, {5, 190}, {4, 470} };
 static const int WAKE_BASE = 61 + 12;                // C#5
 
-// C-13: tending it -- fed (a full chord, settling), watered (a splash and a sip), trained (up, and up)
-static const Note TUNE_CARE[3][3] = { { {0, 70}, {4, 70}, {7, 150} }, { {7, 60}, {12, 60}, {9, 140} },
-                                      { {0, 60}, {7, 60}, {12, 150} } };
+// C-13, C-114: tending it -- each care a phrase of DAEMONS' own music, the opening of a track's melody quickened, on
+// the day's note (the user approved the four, 2026-10-11: "they are perfect"). Fed: BLANCHE (mus_pallet, home). Watered:
+// VERDIGRIS (mus_celadon, the garden). Trained: BRAZEN (mus_brazen). Put to bed: HALFTONE (mus_lavender), slowed.
+static const Note TUNE_FED[]     = { {0, 230}, {-3, 115}, {0, 115}, {2, 230}, {0, 115}, {-3, 330} };
+static const Note TUNE_WATERED[] = { {0, 120}, {-2, 120}, {-4, 120}, {-5, 120}, {-4, 120}, {-2, 120}, {0, 300} };
+static const Note TUNE_TRAINED[] = { {0, 140}, {0, 140}, {2, 140}, {4, 140}, {7, 140}, {7, 320} };
+static const Note TUNE_SLEPT[]   = { {0, 360}, {-5, 360}, {-9, 360}, {-5, 360}, {-7, 360}, {-9, 360}, {-10, 800} };
+struct CareTune { const Note *notes; int n; };
+static const CareTune TUNE_CARE[4] = { { TUNE_FED, 6 }, { TUNE_WATERED, 7 }, { TUNE_TRAINED, 6 }, { TUNE_SLEPT, 7 } };
 
 // The day's note as MIDI: "C" (Sunday) .. "B" (Saturday), in the octave above middle C
 inline int dayRoot(char note) {

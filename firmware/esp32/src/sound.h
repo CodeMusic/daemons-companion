@@ -20,6 +20,6 @@ void playNoteSemis(int semis, int ms);     // C-70: one note, this many semitone
 uint32_t soundRateTest();
 void soundDacRate(int hz);                  // C-95: the check only                  // C-95: ms to play 2 s of samples (RATETEST down the cable)
 void soundWake();                          // waking from sleep: the title theme's opening, quickened
-void soundCare(int what);                  // C-13: fed (0), watered (1), trained (2) -- a little glad phrase
+void soundCare(int what);                  // C-13, C-114: fed (0), watered (1), trained (2), put to bed (3) -- a phrase of the game
 void soundAccomplish(int kind, int species, int day);   // C-50: 0 a step, 1 a milestone, 2 the whole goal
 void soundUndo(int species, int day);                   // C-50: a step undone -- its tune reversed

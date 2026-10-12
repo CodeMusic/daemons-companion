@@ -101,7 +101,7 @@ void turn(int step) {
   else if (screen == TYPES) typeAt = (typeAt + typeCount + step) % typeCount;
   else if (screen == PARTY && partyRows()) partyAt = (partyAt + partyRows() + step) % partyRows();     // C-68
   else if (screen == MOVES && st.party[partyAt].n) moveAt = (moveAt + st.party[partyAt].n + step) % st.party[partyAt].n;
-  else if (screen == CARE) careAt = (careAt + 4 + step) % 4;
+  else if (screen == CARE) careAt = (careAt + 5 + step) % 5;        // C-114: FEED WATER TRAIN SLEEP, its INDEX entry
   else if (screen == INDEX_ENTRY) entryTop = max(0, entryTop + step);   // C-99: the entry scrolls (the draw keeps it in)
   else if (screen == PICK_REMOTE && flareCount()) remoteAt = (remoteAt + flareCount() + step) % flareCount();
   else if (screen == PICK_NET && netCount) netAt = (netAt + netCount + step) % netCount;
@@ -170,9 +170,9 @@ void press() {
     reportRemotes();
   }
   else if (screen == CARE) {
-    if (careAt == 3) { screen = INDEX_ENTRY; entryTop = 0; }
+    if (careAt == 4) { screen = INDEX_ENTRY; entryTop = 0; }
     else {
-      static const char *KIND[] = { "feed", "water", "train" }, *SAID[] = { "Eaten.", "Drank.", "Trained." };
+      static const char *KIND[] = { "feed", "water", "train", "sleep" }, *SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep." };   // C-114, DRAFT
       report(KIND[careAt], "device");
       say(SAID[careAt]);
       soundCare(careAt);
@@ -201,7 +201,7 @@ void back() {
   soundBack();                                                  // C-40
   if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
   if (screen == TALK) { screen = HOME; }                         // C-66
-  else if (screen == INDEX_ENTRY) { screen = CARE; careAt = 3; }
+  else if (screen == INDEX_ENTRY) { screen = CARE; careAt = 4; }
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
   else if (screen == PICK_NET || screen == PICK_REMOTE) screen = LIST;

@@ -276,7 +276,7 @@ void soundGameRoutine(const String &name, const String &type, uint32_t rgb) {
 }
 
 // C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them
-void soundCare(int what) { play(TUNE_CARE[constrain(what, 0, 2)], 3, root, DANCE_PULSE, 0.8f); }
+void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; play(t.notes, t.n, root, DANCE_PULSE, 0.8f); }   // C-114
 
 // ---- C-50: accomplishment. Each daemon's tunes are its own: GENERATED from its species number and the day of the week
 // (the user, 2026-10-04), in a pentatonic scale on the day's note -- so no two notes ever clash -- with a voice (the

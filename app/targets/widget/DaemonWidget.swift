@@ -120,7 +120,7 @@ struct Stage: View {
 
 enum Mark {
   static func symbol(_ did: String?) -> String? {
-    switch did { case "feed": "heart.fill"; case "water": "drop.fill"; case "train": "bolt.fill"; case "kept": "clock"; default: nil }
+    switch did { case "feed": "heart.fill"; case "water": "drop.fill"; case "train": "bolt.fill"; case "sleep": "moon.zzz.fill"; case "kept": "clock"; default: nil }
   }
 }
 
@@ -183,6 +183,7 @@ struct Buttons: View {
       CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3, k: k)
       CareButton(intent: WaterIntent(), label: "Water", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k)
       CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den, done: s.trained, k: k)
+      CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: s.tired == "asleep", k: k)   // C-114
     }
   }
 }

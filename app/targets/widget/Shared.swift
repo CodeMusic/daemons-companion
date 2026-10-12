@@ -65,6 +65,7 @@ enum Shared {
       case "/api/daemon/feed": s.fed = min(3, s.fed + 1)
       case "/api/daemon/water": s.watered = min(3, s.watered + 1)
       case "/api/daemon/train": s.trained = true
+      case "/api/daemon/sleep": s.tired = "asleep"                      // C-114
       default: break
       }
     }

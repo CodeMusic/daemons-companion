@@ -614,8 +614,16 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   const [note, setNote] = useState("");
   const [needPath, setNeedPath] = useState(false);   // C-30: SYNC with no save path set -> a modal that teaches it
   const [canPick, setCanPick] = useState(false);
+  // C-116: the daemon this phone tends -- a party daemon AWAY if there is one, else the one its widget hosts, else the
+  // first AWAY anywhere (C-103: most wait in a box, and the card was hidden for all of them)
+  const [hosted, setHosted] = useState<Daemon | null>(null);
   const load = useCallback(() => {
     api<{ party: Daemon[] }>("/api/party").then((r) => { setParty(r.party); setError(""); }).catch((e) => setError(e.message));
+    api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices").then(async (v) => {
+      const mine = WIDGET ? await WIDGET.widgetId() : null;
+      const d = v.devices.find((x) => x.id === mine)?.daemon ?? v.away[0] ?? null;
+      setHosted(d ? { ...d, friendship: 0, away: true, asked: false, holding: null } : null);
+    }).catch(() => {});
   }, []);
   useEffect(load, [load]);
   // C-21: the one SYNC. It reads the save, receives or returns a daemon if the game asked, links the save (so the
@@ -661,7 +669,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   };
   // The SYNC card is always shown -- when no save is set yet, SYNC is how the user is taught to set one (C-30).
   const asked = party?.some((d) => d.asked) ?? false;
-  const away = party?.find((d) => d.away);
+  const away = party?.find((d) => d.away) ?? hosted ?? undefined;
   return (
     <YStack gap={14}>
       {away ? <LifeCard ink={ink} name={away.nickname} daemon={away} /> : null}

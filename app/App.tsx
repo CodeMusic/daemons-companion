@@ -1166,11 +1166,16 @@ function DeviceScreen({ ink }: { ink: string }) {
     // While this tab is open: every 1.5 s at home. Away, every 15 s, and never a second ask while one is out -- each is a
     // run of the relay, and a companion that cannot be reached holds each for the relay's whole minute (2026-10-08: 624
     // runs in a day, all failing). While the companion is away altogether, what was kept is shown and nothing is asked.
-    let busy = false, last = 0;
+    let busy = false, last = 0, shown = "";
     const poll = () => {
       if (busy || OFFLINE && Date.now() - last < 60000 || isAway() && Date.now() - last < 15000) return;
       busy = true; last = Date.now();
-      api<Link>("/api/device/link").then((l) => { setLink(l); setError(""); }).catch((e) => setError(e.message))
+      // only when something changed: a redraw for nothing re-made every row under the finger (the user, 2026-10-11)
+      api<Link>("/api/device/link").then((l) => {
+        const now = JSON.stringify(l);
+        if (now !== shown) { shown = now; setLink(l); }
+        setError("");
+      }).catch((e) => setError(e.message))
         .finally(() => { busy = false; });
     };
     poll();
@@ -1178,8 +1183,8 @@ function DeviceScreen({ ink }: { ink: string }) {
     api<Brand[]>("/api/ir/brands").then(setBrands).catch(() => {});
     return () => clearInterval(t);
   }, []);
-  if (error) return <Small>{error}</Small>;
-  if (!link) return <Small>Loading…</Small>;
+  // a poll that failed keeps what was shown, with a word -- the whole tab swapped for the error and back was the flicker
+  if (!link) return <Small>{error || "Loading…"}</Small>;
   const run = async (routine: string) => setRan((await api<{ id: number }>("/api/device/run", { routine })).id);
   // C-51: a brand's remote -- try its POWER, and keep the whole remote (its volume buttons come with it)
   const sets = brands.find((b) => b.brand === brand)?.sets ?? [];
@@ -1197,6 +1202,7 @@ function DeviceScreen({ ink }: { ink: string }) {
   const sendWifi = async () => { await api("/api/networks", { ssid, password: pass }); setSsid(""); setPass(""); setWifiSent(-1); };
   return (
     <YStack gap={14}>
+      {error ? <Small color="$color10">{`Not updated just now: ${error}`}</Small> : null}
       {HANDHELD && !ALONE ? <HandheldCard ink={ink} /> : null}
       {ALONE ? null : (   /* C-111: a handheld links to a companion on a computer */
       <Card borderLeftWidth={6} borderLeftColor={link.linked ? "$color9" : "$color5"}>

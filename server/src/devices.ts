@@ -44,7 +44,9 @@ export class Devices {
   // Every device heard, the most recent first, each with whether it is here now.
   list(now = Date.now()) {
     return Object.values(this.all())
-      .sort((a, b) => Date.parse(b.lastSeen) - Date.parse(a.lastSeen))
+      // in the order each was first seen, so the list stays put while devices check in (the user, 2026-10-11: the phone's
+      // DEVICE tab reshuffled every few seconds, sorted by lastSeen, and could not be tapped)
+      .sort((a, b) => Date.parse(a.firstSeen) - Date.parse(b.firstSeen) || a.id.localeCompare(b.id))
       .map((d) => ({ ...d, here: now - Date.parse(d.lastSeen) < FRESH_MS }));
   }
 

@@ -7,7 +7,7 @@ import type { Store } from "./store.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { readIndex } from "./save/index.js";
-import { carriedDaemon, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
+import { carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -97,5 +97,6 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
 
 function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const d = carriedDaemon(h, store, deviceId);
-  return ok({ ...daemonLife(store, now), grown: d ? grown(d, store) : null, level: d?.level ?? null });
+  const lf = daemonLife(store, now);
+  return ok({ ...lf, expression: daemonExpression(store, now, lf), grown: d ? grown(d, store) : null, level: d?.level ?? null });   // C-119
 }

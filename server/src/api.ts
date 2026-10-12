@@ -57,6 +57,7 @@ import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { handles, route, type Reply } from "./routes.js";
+import { EXPRESSIONS, SHADED, shadePalette } from "./expressions.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, entry,
          EXP_PER_STEP, daemonLife, grown, ownBeacons, type Host, type SaveFile } from "./core.js";
 
@@ -765,7 +766,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/art") {
         const q = url.searchParams, b64 = (b: Buffer | null) => b?.toString("base64");
         if (q.has("party")) {
-          const png = b64(partyPng(ecfg, (p) => p.slot === Number(q.get("party"))));
+          // C-119: in an expression's shade -- the body's colours only, so it is the same daemon, feeling something
+          const e = EXPRESSIONS[q.get("expression") ?? ""], raw = partyPng(ecfg, (p) => p.slot === Number(q.get("party")));
+          const png = b64(raw && e ? repaint(raw, (pal) => shadePalette(pal, e), SHADED.first) : raw);
           return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that slot" });
         }
         if (q.has("species")) {

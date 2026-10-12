@@ -12,6 +12,8 @@ import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
 import { life } from "./life.js";
+import { feelings } from "./feelings.js";
+import { expressionFor } from "./expressions.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
@@ -178,6 +180,14 @@ export function daemonLife(store: Store, now = new Date()) {
   return life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000)), now);
 }
 
+// C-120 / C-119: how it feels (from the last day), and the expression that shows it -- a description every host draws
+export function daemonFeelings(store: Store, now = new Date()) {
+  return feelings(store.interactionsSince(new Date(now.getTime() - 26 * 3600000)), now);
+}
+export function daemonExpression(store: Store, now = new Date(), lifeNow = daemonLife(store, now)) {
+  return expressionFor(lifeNow, daemonFeelings(store, now));
+}
+
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
 export function grown(d: { species: number; exp: number; level: number; personality: number }, store: Store) {
   const exp = pendingExp(store, d.personality).exp;
@@ -201,6 +211,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
+                      expression: daemonExpression(store, now),                         // C-119: drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store) };
   }

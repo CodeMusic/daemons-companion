@@ -155,16 +155,17 @@ struct CareButton<I: AppIntent>: View {
   let compact: Bool
   let den: Den
   let done: Bool     // C-113: today's are all done -- it still works, quieter
+  var k: CGFloat = 1 // C-113: the widget's scale (DaemonWidgetView.scale), so a smaller iPhone gets a smaller button
   var body: some View {
     Button(intent: intent) {
       Group {
         if compact {
-          Image(systemName: symbol).font(.system(size: 13, weight: .semibold))
+          Image(systemName: symbol).font(.system(size: 13 * k, weight: .semibold))
         } else {
-          Label(label, systemImage: symbol).font(.system(size: 12, weight: .semibold)).labelStyle(.titleAndIcon)
+          Label(label, systemImage: symbol).font(.system(size: 12 * k, weight: .semibold)).labelStyle(.titleAndIcon)
         }
       }
-      .frame(maxWidth: .infinity, minHeight: compact ? 26 : 30)
+      .frame(maxWidth: .infinity, minHeight: (compact ? 26 : 30) * k)
     }
     .buttonStyle(.plain)
     .foregroundStyle(Color(hex: den.deep))
@@ -175,12 +176,13 @@ struct CareButton<I: AppIntent>: View {
 struct Buttons: View {
   let s: Snapshot
   let compact: Bool
+  var k: CGFloat = 1
   var body: some View {
     let den = s.den ?? PLAIN
-    HStack(spacing: 6) {
-      CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3)
-      CareButton(intent: WaterIntent(), label: "Water", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3)
-      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den, done: s.trained)
+    HStack(spacing: 6 * k) {
+      CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3, k: k)
+      CareButton(intent: WaterIntent(), label: "Water", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k)
+      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den, done: s.trained, k: k)
     }
   }
 }
@@ -201,11 +203,19 @@ struct DaemonWidgetView: View {
         Said(text: "Open DAEMONS and pair this phone with your companion.")
       } else if let s = entry.snapshot, s.carries {
         switch family {
-        case .systemSmall: small(s)
-        case .systemLarge: large(s)
         case .accessoryCircular: circular(s)
         case .accessoryRectangular: rectangular(s)
-        default: medium(s)
+        default:
+          // C-113: widgets are not one size -- a small one is 141pt on the smallest iPhone and 170 on the largest -- so the
+          // words, the pips and the buttons are scaled from the room the widget actually has.
+          GeometryReader { g in
+            let k = min(1.1, max(0.78, g.size.width / (family == .systemSmall ? 138 : 332)))
+            switch family {
+            case .systemSmall: small(s, k)
+            case .systemLarge: large(s, k)
+            default: medium(s, k)
+            }
+          }
         }
       } else if entry.snapshot != nil {
         Said(text: "No daemon here. SEND one in the game, then choose it for THIS PHONE'S WIDGET under DEVICE in the app.")
@@ -219,12 +229,21 @@ struct DaemonWidgetView: View {
     }
   }
 
-  func header(_ s: Snapshot, _ big: CGFloat) -> some View {
-    HStack(alignment: .firstTextBaseline, spacing: 6) {
-      Text(s.name).font(.system(size: big, weight: .bold, design: .monospaced)).foregroundStyle(INK).lineLimit(1)
-      Text("Lv\(s.level)").font(.system(size: big * 0.75, design: .monospaced)).foregroundStyle(SOFT)
-      Spacer(minLength: 2)
-      Text(s.said ?? s.word).font(.system(size: big * 0.8, weight: .semibold)).foregroundStyle(SOFT).lineLimit(1)
+  func name(_ s: Snapshot, _ size: CGFloat) -> some View {
+    HStack(alignment: .firstTextBaseline, spacing: size * 0.4) {
+      Text(s.name).font(.system(size: size, weight: .bold, design: .monospaced)).foregroundStyle(INK)
+        .lineLimit(1).minimumScaleFactor(0.7)
+      Text("Lv\(s.level)").font(.system(size: size * 0.75, design: .monospaced)).foregroundStyle(SOFT).fixedSize()
+    }
+  }
+
+  // What it would say now: a button's answer, else the meal-time cue -- on a line of its own, never cut to "Kept un..."
+  func line(_ s: Snapshot, _ size: CGFloat, lines: Int = 2) -> some View {
+    Group {
+      if let l = s.said ?? s.cue {
+        Text(l).font(.system(size: size)).foregroundStyle(SOFT).lineLimit(lines).minimumScaleFactor(0.8)
+          .fixedSize(horizontal: false, vertical: true)
+      }
     }
   }
 
@@ -232,39 +251,41 @@ struct DaemonWidgetView: View {
     Stage(s: s, entry: entry).clipShape(RoundedRectangle(cornerRadius: 10))
   }
 
-  func small(_ s: Snapshot) -> some View {
-    VStack(spacing: 5) {
-      header(s, 11)
+  // Small: the name, the den and the buttons. Its word and its answers are the den's to show (the mark, the z).
+  func small(_ s: Snapshot, _ k: CGFloat) -> some View {
+    VStack(spacing: 5 * k) {
+      HStack { name(s, 11 * k); Spacer(minLength: 0) }
       stage(s).frame(maxHeight: .infinity)
-      Buttons(s: s, compact: true)
+      Buttons(s: s, compact: true, k: k)
     }
   }
 
-  func medium(_ s: Snapshot) -> some View {
-    HStack(spacing: 10) {
+  func medium(_ s: Snapshot, _ k: CGFloat) -> some View {
+    HStack(spacing: 10 * k) {
       stage(s).frame(maxWidth: .infinity)
-      VStack(alignment: .leading, spacing: 5) {
-        HStack(alignment: .firstTextBaseline, spacing: 5) {
-          Text(s.name).font(.system(size: 14, weight: .bold, design: .monospaced)).foregroundStyle(INK).lineLimit(1)
-          Text("Lv\(s.level)").font(.system(size: 11, design: .monospaced)).foregroundStyle(SOFT)
-        }
-        Text(s.said ?? s.word).font(.system(size: 15, weight: .semibold)).foregroundStyle(INK).lineLimit(1)
-        Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 5)
-        if let line = s.cue { Text(line).font(.system(size: 11)).foregroundStyle(SOFT).lineLimit(2) }
+      VStack(alignment: .leading, spacing: 4 * k) {
+        name(s, 14 * k)
+        Text(s.word).font(.system(size: 15 * k, weight: .semibold)).foregroundStyle(INK).lineLimit(1).minimumScaleFactor(0.7)
+        Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 5 * k)
+        line(s, 11 * k)
         Spacer(minLength: 0)
-        Buttons(s: s, compact: true)
+        Buttons(s: s, compact: true, k: k)
       }
-      .frame(width: 148)
+      .frame(width: 148 * k)
     }
   }
 
-  func large(_ s: Snapshot) -> some View {
-    VStack(alignment: .leading, spacing: 8) {
-      header(s, 15)
+  func large(_ s: Snapshot, _ k: CGFloat) -> some View {
+    VStack(alignment: .leading, spacing: 8 * k) {
+      HStack(alignment: .firstTextBaseline) {
+        name(s, 15 * k)
+        Spacer(minLength: 6)
+        Text(s.word).font(.system(size: 13 * k, weight: .semibold)).foregroundStyle(SOFT).lineLimit(1).minimumScaleFactor(0.7)
+      }
       stage(s).frame(maxHeight: .infinity)
-      Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 7)
-      if let line = s.cue { Text(line).font(.system(size: 12)).foregroundStyle(SOFT).lineLimit(2) }
-      Buttons(s: s, compact: false)
+      Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 7 * k)
+      line(s, 12 * k)
+      Buttons(s: s, compact: false, k: k)
     }
   }
 
@@ -282,9 +303,9 @@ struct DaemonWidgetView: View {
     HStack(spacing: 6) {
       Sprite(png: s.png, asleep: s.tired == "asleep").frame(width: 40, height: 40)
       VStack(alignment: .leading, spacing: 2) {
-        Text(s.name).font(.system(size: 13, weight: .bold, design: .monospaced)).lineLimit(1).widgetAccentable()
-        Text(s.said ?? s.word).font(.system(size: 12)).lineLimit(1)
-        Text("fed \(s.fed)/3 · water \(s.watered)/3\(s.trained ? " · trained" : "")").font(.system(size: 11)).lineLimit(1)
+        Text(s.name).font(.system(size: 13, weight: .bold, design: .monospaced)).lineLimit(1).minimumScaleFactor(0.7).widgetAccentable()
+        Text(s.said ?? s.word).font(.system(size: 12)).lineLimit(1).minimumScaleFactor(0.7)
+        Text("fed \(s.fed)/3 · water \(s.watered)/3\(s.trained ? " · trained" : "")").font(.system(size: 11)).lineLimit(1).minimumScaleFactor(0.7)
       }
       Spacer(minLength: 0)
     }

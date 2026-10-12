@@ -113,21 +113,24 @@ alongside any boards, each saying which daemon it hosts (*"Hosts …"*). Choose 
 AWAY. A daemon hosted by another device moves to the widget. The widget shows it, its level, its word for how it is,
 how it has eaten and drunk today, and its cue.
 
-## 8. FEED, WATER, TRAIN
+## 8. DRINK, FEED, TRAIN, SLEEP
 
 Press the buttons on the widget. Each answers at once, without opening the app:
 
 | button | it says |
 |---|---|
+| **DRINK** | *Drank.* |
 | **FEED** | *Eaten.* |
-| **WATER** | *Drank.* |
 | **TRAIN** | *Trained.* |
+| **SLEEP** | *Asleep.* -- put to bed in the evening it sleeps until morning; in the day, a nap |
 
 The counts move with it. A press made when the companion cannot be reached says *Kept until home answers.*: it is kept
 on the phone and sent the next time the app opens and reaches the companion. Nothing is lost.
 
-The app's **DAEMON** tab has the same three buttons, the daemon's day, and **HOLD TO TALK**
-([Talk to your daemon](Talk-to-your-daemon)). Your **goals** feed it too: every step you finish counts as a meal and
+The app's **DAEMON** tab has the same buttons, large, the daemon's day, and **HOLD TO TALK**
+([Talk to your daemon](Talk-to-your-daemon)). At bedtime **SLEEP** is lit; while it sleeps one **WAKE** button wakes it.
+Its face shows how it feels -- glad after a meal, sleepy at night, its eyes closed asleep -- drawn from its own sprite
+([Feelings and expressions](Feelings-and-expressions)). Your **goals** feed it too: every step you finish counts as a meal and
 gives it experience, which it takes home at the next SYNC. It never nags.
 
 ## Next

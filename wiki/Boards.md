@@ -86,8 +86,12 @@ only on its top button, so a pocket cannot wake it.
 - **M5Stack Dial**: turn the knob to choose and press it to open (held half a second, back; two seconds, sleep), or
   use its touch screen as the watch's. Its home is the face, round as the screen is. No microphone, so it does not
   talk; its buzzer plays the tunes. Its RFID reader is **TOUCHSTONE**: hold a tag to its face.
-- **M5GO and Fire**: **A** and **C** turn left and right, **B** presses (held at home, it talks); held, A goes back
-  and C, two seconds, sleeps. Asleep, only a held B wakes it. The M5GO base gives it its microphone and ten lights.
+- **M5GO and Fire**: at home the three buttons tend the daemon, and what each does is written right above it --
+  **A DRINK, B FEED, C TRAIN**. At bedtime (from 8pm, when it is sleepy and not yet put to bed) the right one says
+  **SLEEP**, lit: press it to put it to bed. While it sleeps the screen says **ASLEEP** and one **WAKE** bar runs under
+  all three: any button wakes it. **A and C together** open the menu (where A and C turn, B presses) and close it.
+  Held, B talks; A goes back; C, two seconds, sleeps the board itself -- asleep, only a held B wakes it. The M5GO base
+  gives it its microphone and ten lights.
 - **T-Watch S3**: its home is the face -- the time, the day's theme, its virtue over its vice, chakra and note,
   today's steps, the battery and a TALK button.
 

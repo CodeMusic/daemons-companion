@@ -9,6 +9,7 @@
 - [Flashing and linking](Flashing-and-linking)
 
 **Further**
+- [Feelings and expressions](Feelings-and-expressions)
 - [Away from home](Away-from-home)
 - [Talk to your daemon](Talk-to-your-daemon)
 - [Meeting others nearby](Meeting-others-nearby)

@@ -51,7 +51,10 @@ Flashing one takes one command: **[Flashing and linking](https://github.com/Code
 
 ## What a hosted daemon does
 
-- **It keeps its day.** Fed, watered, trained; a mood in a word; a quiet line at a meal time. It never nags.
+- **It keeps its day.** Fed, watered, trained, put to bed; a quiet line at a meal time, and one at bedtime. It never nags.
+- **It feels -- and you can see it.** Glad after a meal, sleepy at night, its eyes closing when it sleeps. I drew none
+  of that by hand: every host shades and shapes its own sprite, so it works for whichever daemon you bring out
+  ([Feelings and expressions](https://github.com/CodeMusic/daemons-companion/wiki/Feelings-and-expressions)).
 - **It helps with yours.** Tell it what you want to get done and it finds **one next step**. Each step you finish is a
   meal, and experience it takes home at the next SYNC.
 - **It talks.** Hold to talk on the phone or a board, and it answers in its INDEX voice

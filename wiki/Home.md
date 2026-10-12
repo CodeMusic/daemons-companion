@@ -34,6 +34,7 @@ where the phone and the game are enough on their own is planned (C-111).
 | [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, care, routines, sounds, battery |
 | [Flashing and linking](Flashing-and-linking) | `updateCompanion.sh` and `linkCompanion.sh`, and what to do when a board looks dead |
 | [Away from home](Away-from-home) | the relay through your own n8n, reading its executions, and keeping your computer reachable |
+| [Feelings and expressions](Feelings-and-expressions) | how it feels, and how its face shows it on every host -- from its own sprite |
 | [Talk to your daemon](Talk-to-your-daemon) | hold to talk, read aloud, and what it takes on your own machines |
 | [Meeting others nearby](Meeting-others-nearby) | the Bluetooth beacon, and LoRa's MESH on the boards that have it |
 | [Settings](Settings) | the save path and `server/config.json` |

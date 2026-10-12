@@ -53,14 +53,17 @@ The eyes change only for daemons whose eyes have been **checked by a person** --
 box in the 64x64 sprite, the palette colour around it (`fill`) and its own (`line`). A daemon without checked eyes still
 takes everything else.
 
-`tools/faces.ts` suggests eyes for the rest (`server/data/faces.suggested.json`), but it boxes ears and antennae as
-readily as eyes, so its guesses are checked before they move across:
+`tools/faces.ts` suggests eyes for the rest (`server/data/faces.suggested.json`), growing each one it finds to the
+whole socket -- the dark, the glint and the iris -- so that closing it leaves no rim behind. It still boxes ears and
+antennae as readily as eyes, so its guesses are checked before they move across -- and **checked asleep**: a box that
+sits on an eye is not enough if the sleeping face still looks awake. 44 daemons have checked eyes today.
 
 ```sh
 cd server
 npx tsx tools/faces.ts --sheet /tmp/faces          # picture sheets: green checked, yellow a suggestion, red none
 npx tsx tools/faces.ts --write                     # after editing faces.json: its colours filled in
 npx tsx tools/expressions.ts /tmp/look.png caremusai relay   # any daemon in every expression, as the hosts draw it
+npx tsx tools/expressions.ts --only awake,asleep /tmp/check.png NAME...   # the check: do its eyes really close?
 ```
 
 ## Tuning

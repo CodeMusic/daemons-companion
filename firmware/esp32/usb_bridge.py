@@ -25,6 +25,19 @@ import boardport  # noqa: E402  (beside this file: where boards appear, and open
 
 
 DEVICE = {"id": None}     # C-80: the board's own name, from its HELLO, passed on as x-device
+# What only means something filed under the board -- its battery, and the routines that carry its firmware build -- is
+# held until the board has said who it is. Both are said as the link opens, before the first HELLO (every 3 s), and
+# sent without a name the server could only keep them as nobody's: the site showed a linked board's firmware and
+# battery from days before (C-93's run, 2026-10-11).
+HELD = {}
+
+
+def device_json(base, path, body):
+    """server_json for a report that belongs to the board: held, the latest of each kind, until its HELLO names it."""
+    if not DEVICE["id"]:
+        HELD[path] = body
+        return None
+    return server_json(base, path, body)
 
 
 def server_json(base, path, body=None):
@@ -218,7 +231,7 @@ def bridge(a, port):
             elif msg.startswith("BATTERY "):                # C-104: the board's charge, down the cable (it never was)
                 try:
                     pct, mv, ch, full, usb = (msg.split()[1:] + ["0"] * 5)[:5]
-                    server_json(a.server, "/api/device/battery", {"percent": int(pct), "mv": int(mv), "charging": ch == "1",
+                    device_json(a.server, "/api/device/battery", {"percent": int(pct), "mv": int(mv), "charging": ch == "1",
                                                                   "full": full == "1", "usb": usb == "1"})
                     print("usb_bridge: battery %s%% %s mV%s%s" % (pct, mv, " charging" if ch == "1" else "", " usb" if usb == "1" else ""), flush=True)
                 except Exception as e:
@@ -234,7 +247,7 @@ def bridge(a, port):
                     print("usb_bridge: could not pass on a message (%s)" % e, flush=True)
             elif msg.startswith("ROUTINES "):
                 try:
-                    server_json(a.server, "/api/device/routines", json.loads(msg[9:]))
+                    device_json(a.server, "/api/device/routines", json.loads(msg[9:]))
                 except Exception as e:
                     print("usb_bridge: could not pass on the routines (%s)" % e, flush=True)
             elif msg.startswith("HELLO "):
@@ -242,6 +255,13 @@ def bridge(a, port):
                 if len(words) >= 5 and words[4] != DEVICE["id"]:
                     DEVICE["id"] = words[4]
                     print("usb_bridge: the board is %s" % DEVICE["id"], flush=True)
+                    for path, body in list(HELD.items()):     # what it said before it said who it is
+                        HELD.pop(path)
+                        try:
+                            server_json(a.server, path, body)
+                            print("usb_bridge: passed on %s, held until now" % path.rsplit("/", 1)[-1], flush=True)
+                        except Exception as e:
+                            print("usb_bridge: could not pass on %s (%s)" % (path, e), flush=True)
             elif msg:
                 print("device: " + msg, flush=True)
 

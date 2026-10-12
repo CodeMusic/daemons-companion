@@ -17,6 +17,12 @@ struct Stage {
   uint16_t *bg = nullptr, *frame = nullptr;     // the den alone, and the den with the daemon in it
   uint8_t *sprite = nullptr; unsigned sw = 0, sh = 0;   // RGBA, as lodepng gives it
   bool asleep = false;
+  // C-119: its expression (server/src/expressions.ts) -- the picture comes already shaded; the pose, the eyes and the mark
+  // are drawn here. top/bottom/right: the sprite's own extent, for the squash and for where the mark goes.
+  bool still = false, shake = false; float bob = 1, squash = 1; int dy = 0;
+  struct Patch { int x, y, w, h; uint16_t c; } patch[16]; int patches = 0;
+  bool marked = false; uint8_t ink8[8] = {}, white8[8] = {}; uint16_t markC = 0;
+  int top = 0, bottom = 63, right = 63;
   lv_image_dsc_t dsc = {};
   lv_obj_t *img = nullptr;
   lv_timer_t *timer = nullptr;
@@ -122,10 +128,11 @@ void paintDen(Stage &s, JsonObject den) {
 void tick(lv_timer_t *t) {
   Stage &s = *(Stage *)lv_timer_get_user_data(t);
   uint32_t ms = millis();
-  float walk = s.asleep ? 0.5f : 0.5f + 0.5f * sinf(ms / 5200.0f);
-  bool right = !s.asleep && cosf(ms / 5200.0f) > 0;
-  int bob = s.asleep ? 0 : (int)roundf(4 * sinf(ms / 420.0f));
-  int side = 64 * s.scale, ax = (int)((s.w - side) * walk), ay = s.floorY - side + 4 * s.scale + bob;
+  float walk = s.still ? 0.5f : 0.5f + 0.5f * sinf(ms / 5200.0f);
+  bool right = !s.still && cosf(ms / 5200.0f) > 0;
+  int bob = s.still ? 0 : (int)roundf(4 * s.bob * sinf(ms / 420.0f));
+  int side = 64 * s.scale, ax = (int)((s.w - side) * walk) + (s.shake ? ((ms / 70) % 2 ? s.scale : -s.scale) : 0);
+  int ay = s.floorY - side + 4 * s.scale + bob;
   memcpy(s.frame, s.bg, s.w * s.h * 2);
   Pen p{ s.frame, s.w, s.h, s.h };
   p.ellipse(ax + side / 2.f, s.floorY + 3, side / 4.f, s.scale * 2.5f, 0x0000, true);   // its shadow
@@ -135,11 +142,25 @@ void tick(lv_timer_t *t) {
       const uint8_t *q = s.sprite + 4 * (j * s.sw + i);
       if (q[3] < 128) continue;
       uint16_t c = ((q[0] & 0xF8) << 8) | ((q[1] & 0xFC) << 3) | (q[2] >> 3);
-      int x = ax + (right ? (int)(s.sw - 1 - i) : (int)i) * k, y = ay + (int)j * k;
+      for (int n = 0; n < s.patches; n++) {    // C-119: its eyes, as it feels (the later patch wins: the line over the fill)
+        const auto &e = s.patch[n];
+        if ((int)i >= e.x && (int)i < e.x + e.w && (int)j >= e.y && (int)j < e.y + e.h) c = e.c;
+      }
+      int row = s.bottom - (int)roundf((s.bottom - (int)j) * s.squash) + s.dy;   // lowered, squashed toward its feet
+      int x = ax + (right ? (int)(s.sw - 1 - i) : (int)i) * k, y = ay + row * k;
       for (int b = 0; b < k; b++) for (int a = 0; a < k; a++) p.dot(x + a, y + b, c);
     }
   }
-  if (s.asleep) {                              // a z, and a smaller one: drawn, as the board's has no font here
+  if (s.marked) {                              // C-119: its mark above its head, at the back (never mirrored)
+    int px = max(2, (s.scale * 3 + 2) / 4);
+    int mx = right ? ax + (63 - (s.right - 2)) * s.scale - 8 * px : ax + (s.right - 2) * s.scale;
+    int my = ay + (s.top + s.dy) * s.scale - 8 * px - 6;
+    for (int r = 0; r < 8; r++) for (int c = 0; c < 8; c++) {
+      uint16_t col = (s.ink8[r] & (0x80 >> c)) ? s.markC : (s.white8[r] & (0x80 >> c)) ? 0xFFFF : 0;
+      if (!col) continue;
+      for (int b = 0; b < px; b++) for (int a = 0; a < px; a++) p.dot(mx + c * px + a, my + r * px + b, col);
+    }
+  } else if (s.asleep) {                       // a z, and a smaller one: drawn, as the board's has no font here
     for (int n = 0; n < 2; n++) {
       float z = (n ? 10 : 16) * s.scale / 4.0f, zx = ax + side - 30 + n * 26, zy = ay + 10 - n * 22;
       p.line(zx, zy, zx + z, zy, 3, s.ink); p.line(zx + z, zy, zx, zy + z, 3, s.ink); p.line(zx, zy + z, zx + z, zy + z, 3, s.ink);
@@ -147,7 +168,7 @@ void tick(lv_timer_t *t) {
   }
   lv_image_cache_drop(&s.dsc);
   lv_obj_invalidate(s.img);
-  if (s.asleep) lv_timer_pause(t);             // asleep it stays put: one frame is enough
+  if (s.still && !s.shake) lv_timer_pause(t);   // asleep it stays put: one frame is enough
 }
 
 void gone(lv_event_t *e) {
@@ -166,11 +187,39 @@ lv_obj_t *denStage(lv_obj_t *parent, JsonObject d, int w, int h) {
   s->w = w; s->h = h; s->floorY = (int)(h * 0.82f);
   s->scale = max(1, min((h - 30) / 64, (w * 3 / 5) / 64));
   s->asleep = String((const char *)(d["life"]["tired"] | "awake")) == "asleep";
+  s->still = s->asleep;
+  JsonObject e = d["expression"];
+  String look = e.isNull() ? String("awake") : String((const char *)(e["name"] | "awake"));
+  if (!e.isNull()) {                           // C-119
+    s->still = e["pose"]["still"] | false; s->shake = e["pose"]["shake"] | false;
+    s->bob = e["pose"]["bob"] | 1.0f; s->squash = e["pose"]["squash"] | 1.0f; s->dy = e["pose"]["dy"] | 0;
+    for (JsonObject q : e["patch"].as<JsonArray>()) {
+      if (s->patches >= 16) break;
+      uint32_t rgb = ((uint32_t)(q["rgb"][0] | 0) << 16) | ((uint32_t)(q["rgb"][1] | 0) << 8) | (uint32_t)(q["rgb"][2] | 0);
+      s->patch[s->patches++] = { q["x"] | 0, q["y"] | 0, q["w"] | 0, q["h"] | 0, c565(rgb) };
+    }
+    JsonObject m = e["mark"];
+    if (!m.isNull()) {
+      s->marked = true;
+      s->markC = c565(((uint32_t)(m["rgb"][0] | 255) << 16) | ((uint32_t)(m["rgb"][1] | 255) << 8) | (uint32_t)(m["rgb"][2] | 255));
+      for (int r = 0; r < 8; r++) {
+        const char *row = m["rows"][r] | "........";
+        for (int c = 0; c < 8 && row[c]; c++) { if (row[c] == '#') s->ink8[r] |= 0x80 >> c; if (row[c] == 'o') s->white8[r] |= 0x80 >> c; }
+      }
+    }
+  }
   s->bg = (uint16_t *)heap_caps_malloc(w * h * 2, MALLOC_CAP_SPIRAM);
   s->frame = (uint16_t *)heap_caps_malloc(w * h * 2, MALLOC_CAP_SPIRAM);
   size_t n = 0;
-  uint8_t *png = loadArt("p" + String((int)(d["slot"] | 0)), n);
+  String plain = "p" + String((int)(d["slot"] | 0));
+  uint8_t *png = look != "awake" ? loadArt(plain + "-" + look, n) : nullptr;   // C-119: in its shade, once it is kept
+  if (!png) png = loadArt(plain, n);
   if (png) { if (lodepng_decode32(&s->sprite, &s->sw, &s->sh, png, n)) s->sprite = nullptr; heap_caps_free(png); }
+  if (s->sprite) {                             // its own extent: the squash keeps its feet down, the mark sits on its head
+    s->top = (int)s->sh; s->bottom = 0; s->right = 0;
+    for (unsigned j = 0; j < s->sh; j++) for (unsigned i = 0; i < s->sw; i++)
+      if (s->sprite[4 * (j * s->sw + i) + 3] >= 128) { s->top = min(s->top, (int)j); s->bottom = max(s->bottom, (int)j); s->right = max(s->right, (int)i); }
+  }
   paintDen(*s, d["den"]);
   s->dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
   s->dsc.header.cf = LV_COLOR_FORMAT_RGB565;

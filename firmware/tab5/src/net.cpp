@@ -215,6 +215,24 @@ static void fetchPartyArt() {
     static uint8_t png[32 * 1024]; size_t n = 0;
     if (!mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) { keepArt("p" + String(slot), png, n); sums[slot] = sum; any = true; }
   }
+  // C-119: this Tab5's own daemon in its expression's shade, kept beside its plain picture as "p<slot>-<expression>"
+  if (!st["daemon"].isNull()) {
+    int slot = st["daemon"]["slot"] | -1;
+    String look = st["daemon"]["expression"]["name"] | "awake", key = "p" + String(slot) + "-" + look;
+    static std::map<String, uint32_t> shaded;
+    if (slot >= 0 && look != "awake") {
+      int code; String got = request("GET", "/api/art?party=" + String(slot) + "&expression=" + look, "", code);
+      JsonDocument a = newDoc();
+      if (code == 200 && !deserializeJson(a, got)) {
+        const char *b64 = a["png"] | "";
+        uint32_t sum = sumOf(String(b64));
+        static uint8_t png[32 * 1024]; size_t n = 0;
+        if ((shaded[key] != sum || !hasArt(key)) && !mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) {
+          keepArt(key, png, n); shaded[key] = sum; any = true;
+        }
+      }
+    }
+  }
   if (any) changed(K_ART);
 }
 

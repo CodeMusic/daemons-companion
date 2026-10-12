@@ -86,6 +86,7 @@ bool soundVoicePlaying() { return voicePcm && M5.Speaker.isPlaying(VOICE_CH); }
 void soundWake()   { send(TUNE_WAKE, 6, WAKE_BASE, 0.8f); }
 void soundSelect() { send(TUNE_SELECT, 1, root, 1.0f); }
 void soundBack()   { send(TUNE_BACK, 1, root, 0.7f); }
+void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; send(t.notes, t.n, root, 0.85f); }   // C-114, C-118
 void soundStep(bool undone) {
   Note tune[5], back[5];
   accomplishTune(tune, 0, species, day);

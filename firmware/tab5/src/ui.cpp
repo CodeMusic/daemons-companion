@@ -243,6 +243,17 @@ static void drawGoals(lv_obj_t *p) {
 // ---- DAEMON -----------------------------------------------------------------------------------------------------------
 static void tapSyncGame(lv_event_t *) { netGameSync(); }
 
+// C-118: the care, as the app and the boards have it -- answered at once, then sent (kept if nothing answers, C-87)
+static const char *CARE_KIND[] = { "feed", "water", "train", "sleep", "wake" }, *CARE_SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep.", "Awake." };   // DRAFT
+static String careSaid;
+static void tapCare(lv_event_t *e) {
+  int k = (int)(long)lv_event_get_user_data(e);
+  careSaid = CARE_SAID[k];
+  if (k == 4) soundWake(); else soundCare(k);
+  netSend("POST", String("/api/daemon/") + CARE_KIND[k], "{}");
+  drawnAt[P_DAEMON] = 0;
+}
+
 static void drawDaemon(lv_obj_t *p) {
   lv_obj_set_flex_flow(p, LV_FLEX_FLOW_ROW_WRAP);          // C-96: side by side in landscape, one above the other in portrait
   lv_obj_set_style_pad_column(p, 16, 0);
@@ -254,6 +265,17 @@ static void drawDaemon(lv_obj_t *p) {
   if (!d.isNull()) {
     lv_obj_t *c = card(left);
     denStage(c, d, displayPortrait() ? 640 : 540, displayPortrait() ? 380 : 340);   // C-113: in its den, walking it
+    // C-118: how it is, plainly -- asleep said large -- and its care: DRINK FEED TRAIN SLEEP, SLEEP lit at bedtime, WAKE asleep
+    String tired = (const char *)(d["life"]["tired"] | "awake");
+    if (tired == "asleep") label(c, "ASLEEP", &lv_font_montserrat_40, DAY);                        // DRAFT
+    else label(c, d["life"]["word"] | "", &lv_font_montserrat_28, DAY);
+    lv_obj_t *keys = row(c);
+    if (tired == "asleep") button(keys, "WAKE", tapCare, (void *)4L);
+    else {
+      button(keys, "DRINK", tapCare, (void *)1L, false); button(keys, "FEED", tapCare, (void *)0L, false);
+      button(keys, "TRAIN", tapCare, (void *)2L, false); button(keys, "SLEEP", tapCare, (void *)3L, tired == "drowsy");
+    }
+    if (careSaid.length()) label(c, careSaid, &lv_font_montserrat_20, QUIET);
     label(c, d["nickname"] | "", &lv_font_montserrat_40, INK);
     label(c, "Lv. " + String((int)(d["level"] | 0)) + "   " + (const char *)(d["category"] | ""), &lv_font_montserrat_20, QUIET);
     String types; for (JsonVariant t : d["types"].as<JsonArray>()) types += (types.length() ? " / " : "") + String((const char *)t);

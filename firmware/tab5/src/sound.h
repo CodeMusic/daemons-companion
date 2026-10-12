@@ -9,6 +9,7 @@ void soundFromState();                     // the volume, on or off, and the day
 void soundWake();                          // the title's opening, in C#
 void soundSelect();                        // a tap: the day's note, an octave up
 void soundBack();                          // back: the day's note, an octave down, softly
+void soundCare(int what);                  // C-114, C-118: fed 0, watered 1, trained 2, put to bed 3 -- tunes.h's phrases
 void soundStep(bool undone);
 // C-99: a voice, 16-bit mono PCM; the buffer (PSRAM) is the sound's to free once it is over or stopped
 void soundVoice(int16_t *pcm, size_t samples, int rate);

@@ -180,8 +180,9 @@ struct Buttons: View {
   var body: some View {
     let den = s.den ?? PLAIN
     HStack(spacing: 6 * k) {
+      // C-117: the boards' order -- A drink, B feed, C train (then SLEEP)
+      CareButton(intent: WaterIntent(), label: "Drink", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k)
       CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3, k: k)
-      CareButton(intent: WaterIntent(), label: "Water", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k)
       CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den, done: s.trained, k: k)
       CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: s.tired == "asleep", k: k)   // C-114
     }

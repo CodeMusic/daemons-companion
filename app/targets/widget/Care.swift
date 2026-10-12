@@ -40,7 +40,7 @@ struct FeedIntent: AppIntent {
   func perform() async throws -> some IntentResult { await care(.feed); return .result() }
 }
 struct WaterIntent: AppIntent {
-  static var title: LocalizedStringResource = "Water your daemon"
+  static var title: LocalizedStringResource = "Give your daemon a drink"   // C-117, DRAFT
   func perform() async throws -> some IntentResult { await care(.water); return .result() }
 }
 struct TrainIntent: AppIntent {

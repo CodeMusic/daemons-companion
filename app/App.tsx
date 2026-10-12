@@ -536,8 +536,8 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}
       <XStack gap={8} flexWrap="wrap" marginTop={4}>
+        <Action label="Drink" onPress={() => care("water", "Drank.")} ink={ink} />{/* C-117: the boards' order, DRAFT */}
         <Action label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
-        <Action label="Water" onPress={() => care("water", "Drank.")} ink={ink} />
         <Action label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
         <Action label="Sleep" onPress={() => care("sleep", "Asleep.")} ink={ink} />{/* C-114, DRAFT */}
       </XStack>

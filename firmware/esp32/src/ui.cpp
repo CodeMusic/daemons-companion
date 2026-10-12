@@ -35,7 +35,7 @@ static String hint(String s) {
   return s;
 }
 
-static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "SLEEP", "ITS INDEX ENTRY" };   // C-114: SLEEP, DRAFT
+static const char *CARE_ITEMS[] = { "DRINK", "FEED", "TRAIN", "SLEEP", "ITS INDEX ENTRY" };   // C-114: SLEEP; C-117: DRINK first, as the buttons (input.cpp CARE_ORDER), DRAFT
 // ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
 const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
 const int WHEEL_N = sizeof(WHEEL) - 1;
@@ -460,7 +460,10 @@ void draw() {
       if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 128, W - x - 6, cf, ch, cn, QUIET);
       else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 128, W - x - 6, cf, ch, cn, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
-      canvas.drawString(hint("press: care for it"), x, H - 4);
+      if (board.threeKeys() && !menuOpen) {                   // C-117: what the three buttons do here, and the menu
+        canvas.drawString("A drink  B feed  C train", x, H - 14);   // DRAFT
+        canvas.drawString("A+C: menu", x, H - 4);
+      } else canvas.drawString(hint("press: care for it"), x, H - 4);
       }
     } else {
       canvas.drawString("A DAEMON TO HOST", 10, 34);

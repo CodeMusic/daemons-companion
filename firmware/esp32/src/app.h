@@ -68,6 +68,7 @@ extern Page page;
 extern Screen screen;
 extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;
 extern uint32_t hopUntil;
+extern bool menuOpen;                     // C-117: three-button boards -- A and C together open it
 extern bool pickRemoteNext, joinNext;
 extern String nets[12]; extern int netRssi[12], netCount, netAt, wheelAt; extern String typed;
 extern const char WHEEL[]; extern const int WHEEL_N;

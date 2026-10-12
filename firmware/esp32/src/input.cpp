@@ -12,6 +12,22 @@ long lastDone = -1; String lastDoneText; uint32_t lastDoneAt = 0;   // C-49: the
 bool keyWas = true, sideWas = true; uint32_t keyAt = 0, sideAt = 0;
 bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 
+// C-117 (the user, 2026-10-12: "easier to learn"): on a board with three front buttons, home is the daemon and the
+// buttons tend it -- A drink, B feed, C train, as the phone's widget has them -- and A and C pressed together open the
+// menu (the pages and everything under them, as before), and close it again. The care kinds keep their own numbers --
+// feed 0, water 1, train 2, sleep 3 -- which the server, the sounds (TUNE_CARE) and the CARE list all read.
+bool menuOpen = false;
+static const char *CARE_KIND[] = { "feed", "water", "train", "sleep" }, *CARE_SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep." };   // DRAFT
+const int CARE_ORDER[4] = { 1, 0, 2, 3 };       // the CARE list's rows, top down: DRINK, FEED, TRAIN, SLEEP
+void careDo(int kind) {
+  if (!st.carrying) { say("No daemon here"); return; }                         // DRAFT
+  report(CARE_KIND[kind], "device");
+  say(CARE_SAID[kind]);
+  soundCare(kind);
+  hopUntil = millis() + 480;
+  dirty = true;
+}
+
 void inputBegin() {
   if (board.encA >= 0) {
     pinMode(board.encA, INPUT_PULLUP); pinMode(board.encB, INPUT_PULLUP);
@@ -172,11 +188,7 @@ void press() {
   else if (screen == CARE) {
     if (careAt == 4) { screen = INDEX_ENTRY; entryTop = 0; }
     else {
-      static const char *KIND[] = { "feed", "water", "train", "sleep" }, *SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep." };   // C-114, DRAFT
-      report(KIND[careAt], "device");
-      say(SAID[careAt]);
-      soundCare(careAt);
-      hopUntil = millis() + 480;
+      careDo(CARE_ORDER[careAt]);                                // C-114; C-117: DRINK first, as the buttons are
       screen = HOME; page = DAEMON;
     }
   }
@@ -200,6 +212,7 @@ void back() {
   ledsDark();                                                   // C-38
   soundBack();                                                  // C-40
   if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
+  if (screen == HOME && menuOpen) { menuOpen = false; page = homePage(); dirty = true; return; }   // C-117: out of the menu
   if (screen == TALK) { screen = HOME; }                         // C-66
   else if (screen == INDEX_ENTRY) { screen = CARE; careAt = 4; }
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
@@ -231,13 +244,17 @@ void sleepNow() {
 
 // True if this input was spent waking the board.
 // Waking lands on home -- the daemon, by default (C-42) -- whatever menu it fell asleep in, to the title's jingle (C-41).
-Page homePage() { return board.touch || board.round ? FACE_PAGE : cfg.home == "today" ? TODAY : DAEMON; }
+Page homePage() {
+  if (board.threeKeys()) return DAEMON;           // C-117: its buttons tend the daemon, so home is the daemon
+  return board.touch || board.round ? FACE_PAGE : cfg.home == "today" ? TODAY : DAEMON;
+}
 
 bool wake() {
   lastInput = millis();
   if (!asleep) return false;
   asleep = false;
   screen = HOME;
+  menuOpen = false;                               // C-117: it wakes at home, out of the menu
   page = homePage();
   draw();
   backlight(true);
@@ -317,15 +334,29 @@ void readKeyStick() {
   }
 }
 
-// C-75: three buttons and no dial (the M5GO and the Fire). A and C are the dial, left and right: a tap turns. B is its
-// press: a tap presses, and held 0.45 s at home it talks. Held, A goes back (and undoes a step just ticked) and C, two
-// seconds, sleeps -- and asleep, only a hold on B wakes it. Each acts on release, so a hold is never also a tap.
+// C-75: three buttons and no dial (the M5GO and the Fire). C-117: at home (the daemon, the menu closed) a tap tends it
+// -- A drink, B feed, C train; A and C together open the menu, where A and C are the dial, left and right, and B its
+// press, as before; A and C together again, or A held, close it. B held 0.45 s at home talks; A held goes back (and
+// undoes a step just ticked); C held two seconds sleeps -- and asleep, only a hold on B wakes it. Each acts on release,
+// so a hold is never also a tap, and the two of a chord never act alone.
 void readKeyCore() {
   static bool down[3] = { false, false, false }; static uint32_t at[3] = { 0, 0, 0 };
+  static bool chord = false;                                     // C-117: A and C were down together
   const int pins[3] = { board.keyLeft, board.encKey, board.keyRight };
   uint32_t now = millis();
+  if (down[0] && down[2]) chord = true;
+  if (chord && digitalRead(pins[0]) && digitalRead(pins[2])) {    // both let go: the menu, open or closed
+    chord = false; down[0] = down[2] = false; at[0] = at[2] = now;
+    if (asleep) return;
+    wake();
+    if (menuOpen) { menuOpen = false; screen = HOME; page = homePage(); }
+    else { menuOpen = true; screen = HOME; }
+    soundSelect(); dirty = true;
+    return;
+  }
   for (int k = 0; k < 3; k++) {
     bool pressed = !digitalRead(pins[k]);
+    if (chord && k != 1) continue;                               // the chord's own buttons wait for both to be let go
     if (pressed && !down[k] && now - at[k] > 30) { down[k] = true; at[k] = now; continue; }
     if (pressed && down[k] && k == 1 && !asleep && now - at[k] >= TALK_HOLD_MS && (screen == HOME || screen == TALK) &&
         talkCan() && !(page == TODAY && undoable())) {
@@ -340,8 +371,10 @@ void readKeyCore() {
       at[k] = now;
       if (asleep) { if (k == 1 && held >= 500) wake(); continue; }
       wake();
-      if (k == 0) { if (held >= 500) back(); else turn(-1); }
-      else if (k == 2) { if (held >= 2000) sleepNow(); else turn(1); }
+      bool tend = !menuOpen && screen == HOME;                   // C-117: home, the menu closed -- the buttons tend it
+      if (k == 0) { if (held >= 500) back(); else if (tend) careDo(1); else turn(-1); }
+      else if (k == 2) { if (held >= 2000) sleepNow(); else if (tend) careDo(2); else turn(1); }
+      else if (tend) careDo(0);
       else press();
     }
   }

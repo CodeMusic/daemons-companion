@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import speciesJson from "../server/data/species.json";
 import { den as denOf } from "../server/src/dens";
+import type { Drawn } from "../server/src/expressions";
 
 const SPECIES = speciesJson as unknown as Record<string, { types?: string[] }>;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
@@ -79,8 +80,11 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
   }
 }
 
-export function DenStage({ species, art, asleep, hop, height = 180 }:
-  { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number }) {
+// C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
+// squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
+export function DenStage({ species, art, asleep, hop, height = 180, expression }:
+  { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null }) {
+  const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
   const shapes = useMemo(() => (w ? motif(d.motif, w, height) : []), [d.motif, w, height]);
@@ -88,8 +92,9 @@ export function DenStage({ species, art, asleep, hop, height = 180 }:
   const x = useRef(new Animated.Value(0.5)).current, bob = useRef(new Animated.Value(0)).current, up = useRef(new Animated.Value(0)).current;
   const [right, setRight] = useState(false);
 
+  const shake = useRef(new Animated.Value(0)).current;
   useEffect(() => {                                           // it walks: one leg, then back, facing the way it goes
-    if (asleep) { x.setValue(0.5); return; }
+    if (still) { x.setValue(0.5); return; }
     let on = true, to = 1;
     const leg = () => {
       if (!on) return;
@@ -97,12 +102,17 @@ export function DenStage({ species, art, asleep, hop, height = 180 }:
       Animated.timing(x, { toValue: to, duration: 5200, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE }).start(({ finished }) => { if (finished) { to = 1 - to; leg(); } });
     };
     leg();
+    const deep = pose?.bob ?? 1;                              // a glad breath is bigger, a low one smaller and slower
     const breath = Animated.loop(Animated.sequence([
-      Animated.timing(bob, { toValue: -4, duration: 840, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE }),
-      Animated.timing(bob, { toValue: 0, duration: 840, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE })]));
+      Animated.timing(bob, { toValue: -4 * deep, duration: 840 / Math.max(0.5, Math.min(1.4, deep)), easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE }),
+      Animated.timing(bob, { toValue: 0, duration: 840 / Math.max(0.5, Math.min(1.4, deep)), easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE })]));
     breath.start();
-    return () => { on = false; x.stopAnimation(); breath.stop(); };
-  }, [asleep, x, bob]);
+    const tremble = pose?.shake ? Animated.loop(Animated.sequence([
+      Animated.timing(shake, { toValue: 1.5, duration: 70, useNativeDriver: NATIVE }),
+      Animated.timing(shake, { toValue: -1.5, duration: 70, useNativeDriver: NATIVE })])) : null;
+    tremble?.start();
+    return () => { on = false; x.stopAnimation(); breath.stop(); tremble?.stop(); shake.setValue(0); };
+  }, [still, pose?.bob, pose?.shake, x, bob, shake]);
 
   useEffect(() => {                                           // tended: a hop
     if (!hop) return;
@@ -123,12 +133,32 @@ export function DenStage({ species, art, asleep, hop, height = 180 }:
       <View style={{ position: "absolute", left: 0, right: 0, top: fy, bottom: 0, backgroundColor: d.floor, borderTopWidth: 1.5, borderTopColor: mix(d.floor, faintInk, 0.25) }} />
       {w ? (
         <Animated.View style={{ position: "absolute", left: 0, top: fy - side + side * 0.06, width: side, height: side,
-                                transform: [{ translateX: x.interpolate({ inputRange: [0, 1], outputRange: [0, room] }) }, { translateY: Animated.add(bob, up) }] }}>
+                                transform: [{ translateX: Animated.add(x.interpolate({ inputRange: [0, 1], outputRange: [0, room] }), shake) }, { translateY: Animated.add(bob, up) }] }}>
           <View style={{ position: "absolute", left: side * 0.22, top: side * 0.9, width: side * 0.55, height: side * 0.09, borderRadius: side, backgroundColor: "rgba(0,0,0,0.28)" }} />
-          <View style={[{ width: side, height: side, opacity: asleep ? 0.75 : 1, transform: [{ scaleX: right ? -1 : 1 }] }, PIXELATED as any]}>{art}</View>
-          {asleep ? <Text style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
+          <View style={[{ width: side, height: side, transform: [{ translateY: ((pose?.dy ?? 0) * side) / 64 + (side * (1 - (pose?.squash ?? 1))) / 2 },
+                                                                  { scaleY: pose?.squash ?? 1 }, { scaleX: right ? -1 : 1 }] }, PIXELATED as any]}>
+            {art}
+            {(expression?.patch ?? []).map((p, i) => (               // its eyes, as it feels: rectangles of the sprite's own pixels
+              <View key={i} style={{ position: "absolute", left: (p.x * side) / 64, top: (p.y * side) / 64, width: (p.w * side) / 64 + 0.5,
+                                     height: (p.h * side) / 64 + 0.5, backgroundColor: `rgb(${p.rgb.join(",")})` }} />
+            ))}
+          </View>
+          {expression?.mark ? <Mark mark={expression.mark} size={Math.round(side * 0.2)} style={{ position: "absolute", right: side * 0.04, top: side * 0.02 }} />
+            : asleep && !expression ? <Text style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
         </Animated.View>
       ) : null}
+    </View>
+  );
+}
+
+// C-119: the expression's 8x8 mark -- zz, a heart, a drop -- in the game's own pixels; never mirrored
+function Mark({ mark, size, style }: { mark: NonNullable<Drawn["mark"]>; size: number; style: object }) {
+  const px = size / 8;
+  return (
+    <View style={[{ width: size, height: size }, style]}>
+      {mark.rows.flatMap((row, y) => [...row].map((c, x) => c === "." ? null : (
+        <View key={`${x}-${y}`} style={{ position: "absolute", left: x * px, top: y * px, width: px + 0.3, height: px + 0.3,
+                                         backgroundColor: c === "o" ? "#ffffff" : `rgb(${mark.rgb.join(",")})` }} />)))}
     </View>
   );
 }

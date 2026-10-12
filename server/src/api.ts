@@ -784,7 +784,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       const partyArt = path.match(/^\/art\/party\/(\d{1,3})\.png$/);   // C-103: a box's away daemon is 100 on
       if (req.method === "GET" && partyArt) {
-        const body = partyPng(ecfg, (p) => p.slot === Number(partyArt[1]));
+        const raw = partyPng(ecfg, (p) => p.slot === Number(partyArt[1])), e = EXPRESSIONS[url.searchParams.get("expression") ?? ""];
+        const body = raw && e ? repaint(raw, (pal) => shadePalette(pal, e), SHADED.first) : raw;   // C-119: in its shade
         if (!body) return send(res, 404, { error: "no art for that slot" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);

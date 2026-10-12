@@ -15,6 +15,7 @@ import { awayNow, deviceSettings, deviceState, type Edition, type Host, type Sav
 import { assign, carryView } from "../server/src/carry";
 import { kindOf, validDeviceId } from "../server/src/deviceid";
 import { repaint, streakColours } from "../server/src/paint";
+import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../server/src/expressions";
 import { readSave } from "../server/src/save/reader";
 import { SPECIES_ART } from "./speciesArt";
 
@@ -102,7 +103,7 @@ const NO_LINK = { linked: false, via: null, lastSeen: null, firmware: "", routin
 
 // A daemon's picture, painted as the server paints it (paint.ts): its own streaks for a daemon in the save, the body's
 // mid tone for a species in the INDEX.
-async function speciesPng(species: string, moves: number[] | null): Promise<string | null> {
+async function speciesPng(species: string, moves: number[] | null, e: Expression | null = null): Promise<string | null> {
   const row = SPECIES[species];
   const name = row?.art?.front?.split("/").pop()?.replace("_front.png", "");
   const mod = name && SPECIES_ART[name];
@@ -111,6 +112,7 @@ async function speciesPng(species: string, moves: number[] | null): Promise<stri
   if (!asset.localUri) return null;
   let png: Uint8Array = new File(asset.localUri).bytesSync();
   if (row.streaks) png = repaint(png, (pal) => streakColours(pal, row.bodyType, moves ?? [0, 0, 0, 0]));
+  if (e) png = repaint(png, (pal) => shadePalette(pal, e), SHADED.first);         // C-119: in its expression's shade
   return base64(png);
 }
 function base64(bytes: Uint8Array): string {
@@ -145,7 +147,7 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
         const bytes = phoneSave.read();
         const slot = Number(query.get("party"));
         const d = bytes ? [...readSave(bytes).party, ...awayNow(h)].find((p) => p.slot === slot) : null;
-        const png = d ? await speciesPng(String(d.species), d.moves) : null;
+        const png = d ? await speciesPng(String(d.species), d.moves, EXPRESSIONS[query.get("expression") ?? ""] ?? null) : null;
         return png ? ok({ png }) : no(404, "no art for that slot");
       }
       if (query.has("species")) {

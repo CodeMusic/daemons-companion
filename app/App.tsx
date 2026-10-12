@@ -284,7 +284,7 @@ function keepArt(path: string, uri: string) {
   if (ON_PHONE) { KEPT.art[path] = uri; saveKept(); }
 }
 async function artByJson(path: string): Promise<string> {
-  const m = /^\/art\/(party|species)\/(\d+)\.png$/.exec(path);
+  const m = /^\/art\/(party|species)\/(\d+)\.png(?:\?expression=(\w+))?$/.exec(path);   // C-119: in an expression's shade
   if (!m) throw new Error("no such picture");
   if (m[1] === "species" && ALONE) {                   // C-111: painted on the phone, one at a time as the INDEX asks
     const { png } = await api<{ png: string }>(`/api/art?species=${m[2]}`);
@@ -295,7 +295,7 @@ async function artByJson(path: string): Promise<string> {
     }).catch((e) => { everySpecies = null; throw e; });
     await everySpecies;
   } else {
-    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}`);
+    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}${m[3] ? `&expression=${m[3]}` : ""}`);
     keepArt(path, `data:image/png;base64,${png}`);
   }
   const uri = ART.get(path);
@@ -334,6 +334,16 @@ function Stuck({ error, ink }: { error: string; ink: string }) {
       {ON_PHONE ? <Small>Paired with {SERVER}. If the companion has moved, pair again from its site: SETTINGS, PAIR A PHONE.</Small> : null}
       {ON_PHONE ? <Action label="Pair again" ink={ink} onPress={() => { pairAgain(); }} /> : null}
     </YStack>
+  );
+}
+
+// C-118: a care button -- large, all the same width, the one that matters now lit
+function CareKey({ label, onPress, ink, lit = false }: { label: string; onPress: () => void; ink: string; lit?: boolean }) {
+  return (
+    <Button flex={1} height={52} borderRadius={8} backgroundColor={lit ? "$color9" : "$color3"} borderWidth={lit ? 0 : 1.5} borderColor="$color8"
+            pressStyle={{ backgroundColor: "$color10" }} hoverStyle={{ backgroundColor: lit ? "$color10" : "$color4" }} onPress={onPress}>
+      <Text fontSize={16} fontWeight="800" letterSpacing={1} color={lit ? ink : "$color12"}>{label.toUpperCase()}</Text>
+    </Button>
   );
 }
 
@@ -503,7 +513,8 @@ type Settings = { savePath: string | null; dir: string | null; exists: boolean; 
 // C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
 type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
               trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
-              level: number | null; grown: { exp: number; level: number } | null };
+              level: number | null; grown: { exp: number; level: number } | null;
+              expression?: import("../server/src/expressions").Drawn };   // C-119: how it looks now, decided on the server
 
 function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Daemon }) {
   const [l, setL] = useState<Life | null>(null);
@@ -516,10 +527,11 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
     api<Today>("/api/today").then((t) => setNote(t.day.note)).catch(() => {});
   }, []);
   if (!l) return null;
-  const care = async (what: "feed" | "water" | "train" | "sleep", word: string) => {
-    setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word); setHop((n) => n + 1);
+  const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
+    setSaid(word); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
+    setL(await api<Life>(`/api/daemon/${what}`, {}));
     if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
-      try { await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) }); player.play(); }
+      try { if (what !== "wake") { await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) }); player.play(); } }
       catch { /* quiet is fine */ }
     }
     if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
@@ -527,20 +539,28 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop}   // C-113: in its den, walking it
-                art={<Art path={`/art/party/${daemon.slot}.png`} size={144} />} height={180} />
-      <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={l.expression}   // C-113, C-119
+                art={<Art key={l.expression?.name ?? "awake"}
+                          path={`/art/party/${daemon.slot}.png${l.expression && l.expression.name !== "awake" ? `?expression=${l.expression.name}` : ""}`} size={144} />} height={180} />
+      {l.tired === "asleep"                                 // C-118: asleep, said plainly -- not the small word
+        ? <Text fontSize={28} fontWeight="800" letterSpacing={2} color="$color12">ASLEEP</Text>
+        : <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>}
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}${l.rested ? " · slept" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
       {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}
-      <XStack gap={8} flexWrap="wrap" marginTop={4}>
-        <Action label="Drink" onPress={() => care("water", "Drank.")} ink={ink} />{/* C-117: the boards' order, DRAFT */}
-        <Action label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
-        <Action label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
-        <Action label="Sleep" onPress={() => care("sleep", "Asleep.")} ink={ink} />{/* C-114, DRAFT */}
-      </XStack>
+      {/* C-118: big, and as the boards have them: asleep, one WAKE; at bedtime SLEEP lit (DRAFT) */}
+      {l.tired === "asleep" ? (
+        <XStack marginTop={6}><CareKey label="Wake" lit onPress={() => care("wake", "Awake.")} ink={ink} /></XStack>
+      ) : (
+        <XStack gap={8} marginTop={6}>
+          <CareKey label="Drink" onPress={() => care("water", "Drank.")} ink={ink} />{/* C-117: the boards' order */}
+          <CareKey label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
+          <CareKey label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
+          <CareKey label="Sleep" lit={l.tired === "drowsy"} onPress={() => care("sleep", "Asleep.")} ink={ink} />
+        </XStack>
+      )}
       {said ? <Small>{said}</Small> : null}
     </Card>
   );

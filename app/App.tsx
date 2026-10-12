@@ -4,6 +4,7 @@
 // C-20: on Tamagui. The whole app sits in today's theme (tamagui.config.ts): $color9 is the day's colour, $color1 to
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
+import { DenStage } from "./Den";                    // C-113
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Image, Platform, View } from "react-native";
 import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
@@ -502,18 +503,21 @@ type Life = { mood: number; word: string; fed: { today: number; due: number }; w
               trained: boolean; tired: string; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null };
 
-function LifeCard({ ink, name }: { ink: string; name: string }) {
+function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Daemon }) {
   const [l, setL] = useState<Life | null>(null);
   const [said, setSaid] = useState("");
+  const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
   useEffect(() => { api<Life>("/api/daemon/life").then(setL).catch(() => {}); }, []);
   if (!l) return null;
   const care = async (what: "feed" | "water" | "train", word: string) => {
-    setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word);
+    setL(await api<Life>(`/api/daemon/${what}`, {})); setSaid(word); setHop((n) => n + 1);
     if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
   };
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop}   // C-113: in its den, walking it
+                art={<Art path={`/art/party/${daemon.slot}.png`} size={144} />} height={180} />
       <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
@@ -648,7 +652,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   const away = party?.find((d) => d.away);
   return (
     <YStack gap={14}>
-      {away ? <LifeCard ink={ink} name={away.nickname} /> : null}
+      {away ? <LifeCard ink={ink} name={away.nickname} daemon={away} /> : null}
       {away && ON_PHONE && !ALONE ? <TalkCard ink={ink} name={away.nickname} /> : null}
       {needPath ? (
         <Card borderColor="$color9" borderLeftWidth={6} borderLeftColor="$color9">

@@ -60,10 +60,12 @@ export async function drawAlone(local: (path: string) => Promise<Reply>) {
   const id = await widgetId();
   const st = await local(`/api/device/state?device=${id}`);
   const d = st.status === 200 ? st.body.daemon : null;
-  const art = d ? await local(`/api/art?party=${d.slot}`) : null;
+  const look = d?.expression?.name ?? "awake";                       // C-119: its picture in its expression's shade
+  const art = d ? await local(`/api/art?party=${d.slot}${look === "awake" ? "" : `&expression=${look}`}`) : null;
   const snap = d ? { carries: true, name: d.nickname || d.name, level: d.level, word: d.life.word, fed: d.life.fed.today,
                      watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired, cue: d.life.cue ?? undefined,
-                     png: art?.status === 200 ? art.body.png : undefined, artKey: d.artKey, den: d.den }   // C-113: its den
+                     png: art?.status === 200 ? art.body.png : undefined, artKey: `${d.artKey}/${look}`, den: d.den,   // C-113: its den
+                     expr: d.expression }                                                       // C-119: its expression
                  : { carries: false, name: "", level: 0, word: "", fed: 0, watered: 0, trained: false, tired: "awake" };
   shared.set("aloneSnapshot", JSON.stringify({ ...snap, at: Date.now() / 1000 - SINCE_2001 }));
   ExtensionStorage.reloadWidget();

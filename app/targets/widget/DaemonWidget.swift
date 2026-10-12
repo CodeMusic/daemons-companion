@@ -70,10 +70,21 @@ let PLAIN = Den()   // a den for a daemon whose companion has not said where it 
 struct Sprite: View {
   let png: String?
   let asleep: Bool
+  var expr: Expr? = nil             // C-119: shaded already; its eyes drawn over it here, in the sprite's own pixels
   var body: some View {
     if let png, let data = Data(base64Encoded: png), let ui = UIImage(data: data) {
       Image(uiImage: ui).interpolation(.none).resizable().scaledToFit()
-        .saturation(asleep ? 0.4 : 1).opacity(asleep ? 0.75 : 1)
+        .saturation(asleep && expr == nil ? 0.4 : 1).opacity(asleep && expr == nil ? 0.75 : 1)
+        .overlay {
+          if let patch = expr?.patch, !patch.isEmpty {
+            Canvas { c, size in
+              let u = size.width / 64
+              for p in patch {
+                c.fill(Path(CGRect(x: p.x * u, y: p.y * u, width: p.w * u + 0.4, height: p.h * u + 0.4)), with: .color(rgb(p.rgb)))
+              }
+            }
+          }
+        }
     } else {
       Image(systemName: "questionmark").font(.title).foregroundStyle(SOFT)
     }
@@ -98,11 +109,13 @@ struct Stage: View {
         Ellipse().fill(Color.black.opacity(0.28))   // its shadow, on the floor
           .frame(width: side * 0.55, height: side * 0.09)
           .position(x: x, y: floor + side * 0.02)
-        Sprite(png: s.png, asleep: asleep)
-          .scaleEffect(x: entry.facesRight ? -1 : 1, y: 1)
+        Sprite(png: s.png, asleep: asleep, expr: s.expr)
+          .scaleEffect(x: entry.facesRight ? -1 : 1, y: s.expr?.pose.squash ?? 1, anchor: .bottom)   // C-119: squashed toward its feet
           .frame(width: side, height: side)
-          .position(x: x, y: floor - side / 2 + side * 0.06 - (entry.hop ? side * 0.16 : 0))
-        if asleep {
+          .position(x: x, y: floor - side / 2 + side * 0.06 - (entry.hop ? side * 0.16 : 0) + (s.expr?.pose.dy ?? 0) * side / 64)
+        if let mark = s.expr?.mark, !(s.said != nil && entry.date.timeIntervalSince(s.at) < 60) {   // C-119: zz, a heart, a drop
+          PixelMark(mark: mark).frame(width: max(12, side * 0.2), height: max(12, side * 0.2)).position(above)
+        } else if asleep && s.expr == nil {
           Text("z  z").font(.system(size: max(9, side * 0.13), weight: .bold, design: .monospaced))
             .foregroundStyle(Color(hex: den.glow).opacity(0.8))
             .position(above)
@@ -117,6 +130,22 @@ struct Stage: View {
     }
   }
 }
+
+// C-119: the expression's 8x8 mark in the game's own pixels (never mirrored)
+struct PixelMark: View {
+  let mark: Expr.Mark
+  var body: some View {
+    Canvas { c, size in
+      let u = size.width / 8
+      for (y, row) in mark.rows.enumerated() {
+        for (x, ch) in row.enumerated() where ch != "." {
+          c.fill(Path(CGRect(x: Double(x) * u, y: Double(y) * u, width: u + 0.3, height: u + 0.3)), with: .color(ch == "o" ? .white : rgb(mark.rgb)))
+        }
+      }
+    }
+  }
+}
+func rgb(_ c: [Int]) -> Color { Color(red: Double(c[0]) / 255, green: Double(c[1]) / 255, blue: Double(c[2]) / 255) }
 
 enum Mark {
   static func symbol(_ did: String?) -> String? {

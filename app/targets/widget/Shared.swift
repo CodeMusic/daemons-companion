@@ -7,6 +7,15 @@ import WidgetKit
 let GROUP = "group.com.codemusic.daemonscompanion"
 let KIND = "DaemonWidget"
 
+// C-119: how it looks now, as the server describes it (server/src/expressions.ts). The picture comes already in its shade
+// (/api/art?expression=); the widget draws the eye patches and the mark over it, and takes the pose's rest.
+struct Expr: Codable {
+  struct Pose: Codable { let dy: Double; let squash: Double; let still: Bool }
+  struct Mark: Codable { let rows: [String]; let rgb: [Int] }
+  struct Patch: Codable { let x: Double; let y: Double; let w: Double; let h: Double; let rgb: [Int] }
+  let name: String; let pose: Pose; let mark: Mark?; let patch: [Patch]
+}
+
 // What the widget last drew: the carried daemon and its day, and its picture (a PNG, base64, as /api/art gives it).
 struct Snapshot: Codable {
   var carries: Bool                 // false: the companion answered, and this widget carries no daemon
@@ -23,6 +32,7 @@ struct Snapshot: Codable {
   var said: String? = nil           // the last button's answer ("Eaten.") -- shown until the next refresh
   var did: String? = nil            // C-113: which button that was (feed, water, train, or kept), for the daemon to answer
   var den: Den? = nil               // C-113: where it is drawn (server/src/dens.ts)
+  var expr: Expr? = nil             // C-119: its expression
   var at: Date = Date()
 }
 
@@ -35,7 +45,7 @@ struct Life: Decodable {
 // The part of GET /api/device/state the widget draws
 struct DeviceState: Decodable {
   struct Daemon: Decodable { let slot: Int; let name: String; let nickname: String; let level: Int; let artKey: String; let life: Life
-                         let den: Den? }
+                         let den: Den?; let expression: Expr? }
   let daemon: Daemon?
 }
 struct Art: Decodable { let png: String }
@@ -130,11 +140,12 @@ enum Companion {
       let st: DeviceState = try await call("/api/device/state")
       guard let d = st.daemon else { let s = Snapshot(carries: false); Shared.snapshot = s; return s }
       let old = Shared.snapshot
-      var png = old?.artKey == d.artKey ? old?.png : nil
-      if png == nil { png = (try? await call("/api/art?party=\(d.slot)") as Art)?.png }
+      let look = d.expression?.name ?? "awake", key = "\(d.artKey)/\(look)"     // C-119: its picture in its expression's shade
+      var png = old?.artKey == key ? old?.png : nil
+      if png == nil { png = (try? await call("/api/art?party=\(d.slot)" + (look == "awake" ? "" : "&expression=\(look)")) as Art)?.png }
       let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
-                       cue: d.life.cue, png: png, artKey: d.artKey, said: nil, den: d.den, at: Date())
+                       cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date())
       Shared.snapshot = s
       return s
     } catch {

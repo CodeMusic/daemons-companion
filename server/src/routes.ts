@@ -14,7 +14,7 @@ const SPECIES = speciesJson as unknown as Record<string, any>;
 export type Ask = { method: string; path: string; body: any; deviceId: string };
 export type Reply = { status: number; body: unknown };
 
-const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train)$/;
+const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep)$/;
 const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/index", "/api/party", "/api/daemon/life"];
 const POSTS = ["/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
@@ -55,7 +55,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   }
   if (method === "POST") {
     if (path === "/api/sync") return ok(sync(h, store, now));
-    const care = path.match(CARE);                      // C-13: care -- feed, water, train -- kept as the device's are
+    const care = path.match(CARE);                      // C-13: care -- feed, water, train, and SLEEP (C-114) -- kept as the device's are
     if (care) { store.logInteraction(care[1], "site"); return lifeNow(h, store, deviceId, now); }
     const step = path.match(STEP);
     if (step) {

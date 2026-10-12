@@ -45,9 +45,42 @@ describe("the daemon's life (C-13, PLAN 7)", () => {
     expect(life([...last, at(5, 12, "feed")], noon(5)).quietDays).toBe(0);   // one feed today and it is over
   });
 
-  it("is tired by the real hour", () => {
+  // C-114 (the user, 2026-10-11): SLEEP is a care of its own -- it waits to be put to bed
+  const atm = (d: number, h: number, m: number, kind: string): Interaction => ({ at: new Date(2026, 9, d, h, m).toISOString(), kind });
+  it("is drowsy from 8pm and stays so until it is put to bed -- it never falls asleep alone", () => {
     expect(life([], new Date(2026, 9, 4, 21, 0)).tired).toBe("drowsy");
-    expect(life([], new Date(2026, 9, 4, 23, 30)).word).toBe("asleep");
-    expect(life([], new Date(2026, 9, 4, 23, 30)).cue).toBeNull();          // never woken to eat
+    expect(life([], new Date(2026, 9, 4, 23, 30)).word).toBe("sleepy");
+    expect(life([], new Date(2026, 9, 4, 23, 30)).cue).toBe("It would sleep, if you are sleeping.");   // one quiet line
+    expect(life([], new Date(2026, 9, 4, 20, 30)).cue).toBeNull();                                      // not before bedtime
+  });
+
+  it("put to bed at night, sleeps until six -- no cue, never woken to eat", () => {
+    const bed = [atm(4, 22, 15, "sleep")];
+    const night = life(bed, new Date(2026, 9, 5, 2, 0));
+    expect([night.tired, night.word, night.cue]).toEqual(["asleep", "asleep", null]);
+    expect(life(bed, new Date(2026, 9, 5, 7, 0)).tired).toBe("awake");                              // up with the morning
+  });
+
+  it("naps an hour and a half in the day, and wakes when it is tended", () => {
+    const nap = [atm(4, 13, 0, "sleep")];
+    expect(life(nap, new Date(2026, 9, 4, 14, 0)).tired).toBe("asleep");
+    expect(life(nap, new Date(2026, 9, 4, 14, 45)).tired).toBe("awake");
+    expect(life([...nap, atm(4, 13, 20, "feed")], new Date(2026, 9, 4, 13, 40)).tired).toBe("awake");   // woken to eat
+  });
+
+  it("is rested after a night's sleep, and a night without costs only a little", () => {
+    const days = [at(3, 12, "feed")];
+    const slept = life([...days, atm(3, 22, 0, "sleep"), at(4, 8, "feed")], new Date(2026, 9, 4, 9, 0));
+    const not = life([...days, at(4, 8, "feed")], new Date(2026, 9, 4, 9, 0));
+    expect([slept.rested, not.rested]).toEqual([true, false]);
+    expect(slept.mood - not.mood).toBeGreaterThan(0);
+    expect(slept.mood - not.mood).toBeLessThanOrEqual(10);
+  });
+
+  it("is not counted unrested before its first night with you", () => {
+    const nine = new Date(2026, 9, 4, 9, 0);
+    const newcomer = life([at(4, 8, "feed")], nine);                        // nothing before last evening
+    const known = life([atm(3, 17, 0, "met"), at(4, 8, "feed")], nine);     // with you yesterday afternoon, no bed
+    expect(newcomer.mood - known.mood).toBe(3);                             // one missed night: PER_MISSED_MEAL, no more
   });
 });

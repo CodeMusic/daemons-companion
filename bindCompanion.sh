@@ -12,6 +12,7 @@
 #                                     kept awake while on power -- so the phone reaches it from anywhere (C-87)
 #   ./bindCompanion.sh never          stop doing that
 #   ./bindCompanion.sh phone          build the app for your iPhone (plugged in or on the same Wi-Fi) and install it
+#                                     (needs Xcode and about 5 GB free; it installs once the phone is unlocked)
 #   ./bindCompanion.sh --help
 #
 # ONE TERMINAL. The server runs in the background and writes to .logs/server.log; the app runs in the foreground,
@@ -34,7 +35,7 @@ PORT=4730
 LOGS="$HERE/.logs"
 SERVER_LOG="$LOGS/server.log"
 
-usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { awk 'NR >= 2 { if ($0 == "#" && ++blank == 2) exit; print }' "$0" | sed 's/^# \{0,1\}//'; }   # the header's title and its list of commands, all of them
 
 mode=web target=web
 case "${1:-web}" in

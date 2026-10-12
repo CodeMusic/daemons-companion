@@ -35,7 +35,7 @@ static String hint(String s) {
   return s;
 }
 
-static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "ITS INDEX ENTRY" };
+static const char *CARE_ITEMS[] = { "FEED", "WATER", "TRAIN", "SLEEP", "ITS INDEX ENTRY" };   // C-114: SLEEP, DRAFT
 // ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
 const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
 const int WHEEL_N = sizeof(WHEEL) - 1;
@@ -59,12 +59,12 @@ bool lightColour(const String &h) {           // as the app decides (App.tsx onC
   return 0.2126 * lin((v >> 16) & 255) + 0.7152 * lin((v >> 8) & 255) + 0.0722 * lin(v & 255) > 0.3;
 }
 
-void drawArt(int x, int y, int scale) {
+void drawArt(int x, int y, int scale, bool mirrored = false) {   // C-113: mirrored, it faces right (the game's face left)
   if (!artKeyHave.length() || artKeyHave != st.daemon.artKey) return;
   for (int j = 0; j < 64; j++)
     for (int i = 0; i < 64; i++) {
       uint8_t b = artPix[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
-      if (c) canvas.fillRect(x + i * scale, y + j * scale, scale, scale, artPal[c]);
+      if (c) canvas.fillRect(x + (mirrored ? 63 - i : i) * scale, y + j * scale, scale, scale, artPal[c]);
     }
 }
 
@@ -310,7 +310,7 @@ void draw() {
   if (screen == CARE) {                                      // C-13
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);
-    for (int i = 0; i < 4; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
+    for (int i = 0; i < 5; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
     drawArt(W - 70, 34, 1);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     footer(hint("turn: choose    press: do it    top button: back"));
@@ -409,15 +409,29 @@ void draw() {
   } else {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     if (st.carrying) {
-      // C-42: the board's home -- the daemon, large, and alive: it bobs as it breathes, drifts a little either way,
-      // and now and then hops. (Device-only animated sprites come later; a daemon sent here comes more to life.)
+      // C-42: the board's home -- the daemon, large, and alive: it bobs as it breathes, and now and then hops.
+      // C-113: and it lives in its den (den.cpp), walking it from side to side and facing the way it goes; asleep, it
+      // stays where it is with a z. The den is the space left of the words (the whole circle on the Dial).
       uint32_t t = millis();
-      int bob = (int)roundf(3 * sinf(t / 420.0f));
-      int drift = (int)roundf(10 * sinf(t / 2900.0f));
-      int hop = (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
+      bool asleep = st.daemon.tired == "asleep";
+      int bob = asleep ? 0 : (int)roundf(3 * sinf(t / 420.0f));
+      float walk = asleep ? 0.5f : 0.5f + 0.5f * sinf(t / 5200.0f);        // 0 the left of the den, 1 the right
+      bool right = !asleep && cosf(t / 5200.0f) > 0;                      // going right: the sprite mirrored
+      int hop = asleep ? 0 : (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
       if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
+      // the den at x, y, w, h; the sprite (64 * sc) stands on its floor and walks the room the den leaves it
+      auto inDen = [&](int x, int y, int w, int h, int sc, int floorY) {
+        drawDen(x, y, w, h, floorY);
+        int side = 64 * sc, room = max(0, w - side);
+        int ax = x + (int)(room * walk), ay = floorY - side + 4 * sc + bob + hop;
+        canvas.setClipRect(x, y, w, h);
+        canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
+        drawArt(ax, ay, sc, right);
+        if (asleep) { canvas.setTextFont(2); canvas.setTextColor(PAPER); canvas.setTextDatum(TL_DATUM); canvas.drawString("z z", ax + side - 18, ay + 6); }
+        canvas.clearClipRect();
+      };
       if (board.round) {                                       // C-102: the Dial -- large in the middle of the circle
-        drawArt(W / 2 - 64 + drift / 2, 24 + bob + hop, 2);
+        inDen(0, 26, W, H - 26, 2, 156);
         canvas.setTextDatum(MC_DATUM); canvas.setTextFont(2); canvas.setTextColor(PAPER);
         canvas.drawString(st.daemon.nickname + "  L" + String(st.daemon.level), W / 2, 164);
         canvas.setTextFont(1); canvas.setTextColor(st.daemon.word.length() ? day : QUIET);
@@ -426,12 +440,12 @@ void draw() {
       } else {
       int x = 168;
       if (wide()) {                                            // C-105: three times its size, kept off the top band
-        canvas.setClipRect(0, 26, W, H - 26);
-        drawArt(20 + drift, 30 + bob + hop, 3);
-        canvas.clearClipRect();
+        inDen(6, 30, 226, H - 44, 3, H - 22);
         x = 240;
-      } else
-      drawArt(18 + drift, 32 + bob + hop, 2);                  // C-36: as the game draws it, twice its size
+      } else if (H < 160)                                      // the M5StickS3: the den is short, the daemon as the game draws it
+        inDen(4, 28, x - 10, H - 44, 1, H - 22);
+      else
+        inDen(6, 30, x - 12, H - 46, 2, H - 24);               // C-36: as the game draws it, twice its size
       canvas.setTextDatum(TL_DATUM);
       canvas.setTextFont(st.daemon.nickname.length() <= 8 ? 4 : 2); canvas.setTextColor(PAPER);
       canvas.drawString(st.daemon.nickname, x, 40);

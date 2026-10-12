@@ -24,9 +24,11 @@ static const int MAX_NETS = 8;            // C-52: the networks the board has le
 static const uint16_t INK = 0x18E4, PAPER = 0xFFDE, QUIET = 0x8C51;
 
 // ---- what the server says (state.cpp) -------------------------------------------------------------------------------
+struct Den { String motif = "nest", wall = "#67625a", deep = "#3b3832", floor = "#2b2924", glow = "#e4ded3"; };   // C-113
 struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0, species = 0;
                 String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
-                int grownTo = 0; };                                               // C-45: the level it has grown to here
+                int grownTo = 0;                                                  // C-45: the level it has grown to here
+                String tired = "awake"; Den den; };                               // C-113: asleep it stays put; its den
 // C-68: a party daemon, and its routines as the game names them, each with the colour its streak takes on this body
 struct Member { String name, types; int level = 0, n = 0; String routine[4], type[4]; uint32_t colour[4] = {}; };
 struct State {
@@ -50,6 +52,7 @@ void loadSettings();
 void takeSettings(JsonVariant s);
 bool takeState(const String &json);
 bool takeArt(const String &json);
+void drawDen(int x, int y, int w, int h, int floorY);   // C-113, den.cpp
 int dayIndex();                           // C-50: Sunday 0, for its tunes
 String daemonName();                      // C-51: the routines speak in its name
 

@@ -101,6 +101,13 @@ bool takeState(const String &json) {
     st.daemon.word = lf["word"] | ""; st.daemon.cue = lf["cue"] | "";
     st.daemon.grownTo = doc["daemon"]["grown"]["level"] | 0;
     st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
+    st.daemon.tired = lf["tired"] | "awake";
+    JsonVariant dn = doc["daemon"]["den"];                // C-113: its den (server/src/dens.ts); CONTENT's if none
+    st.daemon.den = Den();
+    if (!dn.isNull()) {
+      st.daemon.den.motif = dn["motif"] | "nest"; st.daemon.den.wall = dn["wall"] | "#67625a"; st.daemon.den.deep = dn["deep"] | "#3b3832";
+      st.daemon.den.floor = dn["floor"] | "#2b2924"; st.daemon.den.glow = dn["glow"] | "#e4ded3";
+    }
     st.daemon.types = "";
     for (JsonVariant t : doc["daemon"]["types"].as<JsonArray>())
       st.daemon.types += (st.daemon.types.length() ? " / " : "") + String((const char *)(t | ""));

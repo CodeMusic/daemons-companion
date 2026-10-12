@@ -26,7 +26,7 @@
 #include "sound.h"
 #include "talk.h"
 
-void drawArt(int x, int y, int scale);                        // ui.cpp
+void drawArt(int x, int y, int scale, bool mirrored = false);                        // ui.cpp
 
 static SI4735 rx;
 static bool rxUp = false, rxFm = false;

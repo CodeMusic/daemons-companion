@@ -14,11 +14,21 @@
 // The names are the code's -- a screen never says them (feelings.ts).
 import type { Life } from "./life.js";
 import type { Axis, Feelings } from "./feelings.js";
+import facesJson from "../data/faces.json" with { type: "json" };
 
 export type Shade = { sat: number; val: number; tint: [number, number, number]; mix: number };
 export type Pose = { dy: number; squash: number; bob: number; still: boolean; shake: boolean };
 export type Mark = { rows: string[]; rgb: [number, number, number] };
-export type Expression = { name: string; shade: Shade; pose: Pose; mark: Mark | null; eyes: "closed" | "happy" | "wide" | "low" | null };
+export type Eyes = "closed" | "happy" | "low" | null;
+export type Expression = { name: string; shade: Shade; pose: Pose; mark: Mark | null; eyes: Eyes };
+// What a host paints over the sprite for the eyes: rectangles in the 64x64 sprite's own pixels (mirrored with it when it
+// faces the other way), each one colour, already shaded. A host needs no rule of its own to close an eye.
+export type Patch = { x: number; y: number; w: number; h: number; rgb: [number, number, number] };
+export type Drawn = Expression & { patch: Patch[] };
+// A daemon's eyes, checked by a person (data/faces.json; tools/faces.ts suggests): boxes, and the colours around and of them
+export type Face = { eyes: [number, number, number, number][]; fill: number; line: number; fillRgb?: number[]; lineRgb?: number[] };
+const FACES = facesJson as unknown as Record<string, Face>;
+export const faceOf = (art: string | undefined | null): Face | null => (art ? FACES[art] ?? null : null);
 
 // 8x8 marks: '#' is the mark's colour, 'o' white
 const MARKS: Record<string, Mark> = {
@@ -43,14 +53,14 @@ export const EXPRESSIONS: Record<string, Expression> = {
   glad:     { name: "glad",     shade: { sat: 1.12, val: 1.08, tint: [255, 220, 170], mix: 0.1 },      pose: moving(-2, 1.03, 1.4), mark: MARKS.heart, eyes: "happy" },
   sad:      { name: "sad",      shade: { sat: 0.45, val: 0.85, tint: [90, 110, 160], mix: 0.15 },     pose: moving(2, 0.95, 0.4), mark: MARKS.drop, eyes: "low" },
   mad:      { name: "mad",      shade: { sat: 1.15, val: 1, tint: [220, 60, 40], mix: 0.16 },          pose: { ...moving(), shake: true }, mark: MARKS.vein, eyes: null },
-  afraid:   { name: "afraid",   shade: { sat: 0.5, val: 1.12, tint: [235, 240, 255], mix: 0.22 },     pose: { ...moving(1, 0.94, 0.3), shake: true }, mark: MARKS.bang, eyes: "wide" },
+  afraid:   { name: "afraid",   shade: { sat: 0.5, val: 1.12, tint: [235, 240, 255], mix: 0.22 },     pose: { ...moving(1, 0.94, 0.3), shake: true }, mark: MARKS.bang, eyes: null },
   restless: { name: "restless", shade: { sat: 0.85, val: 0.95, tint: [0, 0, 0], mix: 0 },              pose: moving(0, 1, 1.8), mark: MARKS.dots,  eyes: null },
 };
 
 // A feeling shows once it is past its threshold; the one furthest past it wins (calm counts when it is afraid)
 const SHOWS: [Axis, string, number][] = [["glad", "glad", 25], ["mad", "mad", 25], ["sad", "sad", 25], ["calm", "afraid", -25], ["restless", "restless", 45]];
 
-export function expressionFor(life: Pick<Life, "tired">, f: Feelings | null): Expression {
+function choose(life: Pick<Life, "tired">, f: Feelings | null): Expression {
   if (life.tired === "asleep") return EXPRESSIONS.asleep;
   if (life.tired === "drowsy") return EXPRESSIONS.drowsy;
   if (!f) return EXPRESSIONS.awake;
@@ -60,6 +70,31 @@ export function expressionFor(life: Pick<Life, "tired">, f: Feelings | null): Ex
     if (past >= by) { best = name; by = past; }
   }
   return EXPRESSIONS[best ?? "awake"];
+}
+
+// The expression showing, with what to paint over this daemon's eyes (none when its eyes have not been checked)
+export function expressionFor(life: Pick<Life, "tired">, f: Feelings | null, face: Face | null = null): Drawn {
+  const e = choose(life, f);
+  return { ...e, patch: face ? eyePatch(face, e) : [] };
+}
+
+// Closed: the eye filled with what is around it, and one line of the eye's own colour across it (at least two pixels
+// wide, so a one-pixel eye closes visibly). Low: its upper half lidded. Happy: an upturned arc.
+export function eyePatch(face: Face, e: Expression): Patch[] {
+  if (!e.eyes || !face.fillRgb || !face.lineRgb) return [];
+  const fill = shade(face.fillRgb, e.shade), line = shade(face.lineRgb, e.shade), out: Patch[] = [];
+  for (const [x, y, w, h] of face.eyes) {
+    if (e.eyes === "low") { if (h > 1) out.push({ x, y, w, h: Math.floor(h / 2), rgb: fill }); continue; }
+    out.push({ x, y, w, h, rgb: fill });
+    const lw = Math.max(w, 2), lx = x - Math.floor((lw - w) / 2), mid = y + Math.floor(h / 2);
+    if (e.eyes === "closed") out.push({ x: lx, y: mid, w: lw, h: 1, rgb: line });
+    else {                                          // happy: ^ -- the ends one row lower than the middle
+      const top = Math.max(y, mid - 1);
+      out.push({ x: lx, y: top + 1, w: 1, h: 1, rgb: line }, { x: lx + lw - 1, y: top + 1, w: 1, h: 1, rgb: line });
+      if (lw > 2) out.push({ x: lx + 1, y: top, w: lw - 2, h: 1, rgb: line });
+    }
+  }
+  return out;
 }
 
 // A colour in an expression's shade: saturation and brightness scaled, then mixed toward the tint. The boards do the

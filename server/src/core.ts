@@ -13,7 +13,7 @@ import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
 import { life } from "./life.js";
 import { feelings } from "./feelings.js";
-import { expressionFor } from "./expressions.js";
+import { expressionFor, faceOf } from "./expressions.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
@@ -184,8 +184,9 @@ export function daemonLife(store: Store, now = new Date()) {
 export function daemonFeelings(store: Store, now = new Date()) {
   return feelings(store.interactionsSince(new Date(now.getTime() - 26 * 3600000)), now);
 }
-export function daemonExpression(store: Store, now = new Date(), lifeNow = daemonLife(store, now)) {
-  return expressionFor(lifeNow, daemonFeelings(store, now));
+export const artName = (species: number | string) => (SPECIES[String(species)]?.art?.front as string | undefined)?.split("/").pop()?.replace("_front.png", "");
+export function daemonExpression(store: Store, now = new Date(), lifeNow = daemonLife(store, now), species: number | null = null) {
+  return expressionFor(lifeNow, daemonFeelings(store, now), species === null ? null : faceOf(artName(species)));
 }
 
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
@@ -211,7 +212,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
-                      expression: daemonExpression(store, now),                         // C-119: drawn by every host
+                      expression: daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store) };
   }

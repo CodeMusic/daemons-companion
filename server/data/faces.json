@@ -1,0 +1,11 @@
+{
+  "archiver": {"eyes":[[15,24,1,1],[18,24,1,1]],"sure":1,"fill":1,"line":5,"fillRgb":[198,214,231],"lineRgb":[16,16,16]},
+  "artsai": {"eyes":[[36,22,4,3]],"sure":1,"fill":1,"line":5,"fillRgb":[231,206,231],"lineRgb":[16,16,16]},
+  "caremusai": {"eyes":[[20,28,4,5],[29,28,4,5]],"sure":1,"fill":5,"line":1,"fillRgb":[16,16,16],"lineRgb":[231,206,231]},
+  "codemusai": {"eyes":[[27,25,4,2],[37,25,3,2]],"sure":1,"fill":5,"line":2,"fillRgb":[16,16,16],"lineRgb":[156,173,198]},
+  "deadlock": {"eyes":[[24,15,7,2],[35,15,6,2]],"sure":1,"fill":2,"line":5,"fillRgb":[222,214,206],"lineRgb":[16,16,16]},
+  "emergence": {"eyes":[[16,13,2,2]],"sure":1,"fill":1,"line":5,"fillRgb":[198,222,214],"lineRgb":[16,16,16]},
+  "relay": {"eyes":[[32,18,3,3]],"sure":1,"fill":1,"line":5,"fillRgb":[239,239,231],"lineRgb":[16,16,16]},
+  "rovercub": {"eyes":[[12,16,2,4],[17,16,2,4]],"sure":1,"fill":1,"line":5,"fillRgb":[206,231,206],"lineRgb":[16,16,16]},
+  "seekmusai": {"eyes":[[23,27,3,4],[30,27,4,4]],"sure":1,"fill":4,"line":1,"fillRgb":[107,33,33],"lineRgb":[247,198,198]}
+}

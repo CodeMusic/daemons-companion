@@ -98,5 +98,5 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
 function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const d = carriedDaemon(h, store, deviceId);
   const lf = daemonLife(store, now);
-  return ok({ ...lf, expression: daemonExpression(store, now, lf), grown: d ? grown(d, store) : null, level: d?.level ?? null });   // C-119
+  return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null });   // C-119
 }

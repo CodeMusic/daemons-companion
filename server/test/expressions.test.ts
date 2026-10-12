@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXPRESSIONS, expressionFor, shade, shadePalette } from "../src/expressions.js";
+import { EXPRESSIONS, expressionFor, eyePatch, faceOf, shade, shadePalette } from "../src/expressions.js";
 import type { Feelings } from "../src/feelings.js";
 
 const calmFeelings = (p: Partial<Feelings>): Feelings => ({ glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null, ...p });
@@ -36,5 +36,27 @@ describe("expressions on any sprite (C-119)", () => {
       expect(e.shade.tint).toHaveLength(3);
       if (e.mark) { expect(e.mark.rows).toHaveLength(8); for (const r of e.mark.rows) expect(r).toMatch(/^[.#o]{8}$/); }
     }
+  });
+
+  it("closes the eyes it knows, and paints nothing for a daemon whose eyes no one has checked", () => {
+    const care = faceOf("caremusai")!;
+    const closed = expressionFor({ tired: "asleep" }, null, care).patch;
+    expect(closed.length).toBe(4);                                    // two eyes: each filled, then a line across
+    expect(closed[1]).toMatchObject({ h: 1, w: 4 });                  // the line
+    expect(expressionFor({ tired: "asleep" }, null, null).patch).toEqual([]);
+    expect(expressionFor({ tired: "awake" }, null, care).patch).toEqual([]);   // awake: its own eyes
+  });
+
+  it("closes a one-pixel eye visibly -- the line is at least two pixels wide", () => {
+    const line = eyePatch(faceOf("archiver")!, EXPRESSIONS.asleep).filter((p) => p.h === 1 && p.w >= 2);
+    expect(line).toHaveLength(2);
+  });
+
+  it("lids half the eye when sleepy or sad, and draws an upturned arc when glad", () => {
+    const f = faceOf("caremusai")!;
+    expect(eyePatch(f, EXPRESSIONS.drowsy).every((p) => p.h === 2)).toBe(true);   // the top half of a 5-high eye
+    const glad = eyePatch(f, EXPRESSIONS.glad);
+    const arc = glad.filter((p) => p.h === 1);
+    expect(Math.min(...arc.map((p) => p.y))).toBeLessThan(Math.max(...arc.map((p) => p.y)));   // the middle above the ends
   });
 });

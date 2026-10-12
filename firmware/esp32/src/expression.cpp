@@ -71,8 +71,9 @@ void takeExpression(JsonVariant e) {
 void drawSprite(int x, int y, int scale, bool mirrored) {
   if (!artKeyHave.length() || artKeyHave != st.daemon.artKey) return;
   ready();
+  auto rowOf = [](int j) { return bottom - (int)roundf((bottom - j) * expression.squash) + expression.dy; };
   for (int j = 0; j < 64; j++) {
-    int row = bottom - (int)roundf((bottom - j) * expression.squash) + expression.dy;
+    int row = rowOf(j), tall = max(1, rowOf(j + 1) - row);   // stretched, a row reaches down to the next: no gap
     for (int i = 0; i < 64; i++) {
       uint8_t b = artPix[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
       if (!c) continue;
@@ -81,7 +82,7 @@ void drawSprite(int x, int y, int scale, bool mirrored) {
         const Patch &p = expression.patch[k];
         if (i >= p.x && i < p.x + p.w && j >= p.y && j < p.y + p.h) colour = p.colour;   // the later patch wins (the line)
       }
-      canvas.fillRect(x + (mirrored ? 63 - i : i) * scale, y + row * scale, scale, scale, colour);
+      canvas.fillRect(x + (mirrored ? 63 - i : i) * scale, y + row * scale, scale, scale * tall, colour);
     }
   }
 }

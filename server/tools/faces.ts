@@ -75,7 +75,6 @@ function find(px: Uint8Array, w: number, h: number): Face | null {
     }
   }
   if (!comps.length) return null;
-  const box = (c: Comp): Box => [c.x0, c.y0, c.x1 - c.x0 + 1, c.y1 - c.y0 + 1];
   // the best pair: the same kind, level, a little apart, much the same size
   let best: { eyes: Comp[]; sure: number } | null = null;
   for (let i = 0; i < comps.length; i++) for (let j = i + 1; j < comps.length; j++) {
@@ -92,17 +91,55 @@ function find(px: Uint8Array, w: number, h: number): Face | null {
     if (one.score >= 0.9) best = { eyes: [one], sure: one.score * 0.8 };
   }
   if (!best || best.sure < 0.72) return null;                                 // leave out the doubtful: no eyes beats wrong eyes
-  // the colour the eyes sit in (what a closed eye is drawn over with), and the outline
-  const around = new Map<number, number>();
-  for (const e of best.eyes) for (const [cx, cy] of e.cells)
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const v = at(cx + dx, cy + dy);
-      if (v && !DARK.has(v) && !GLINT.has(v)) around.set(v, (around.get(v) ?? 0) + 1);
+  // An eye is more than the part that was found: grow each to its whole socket -- the dark, the glint and an iris's
+  // colour joined to it -- so closing it covers all of it (a pupil boxed alone left its rim, and read as open). Kept to
+  // one eye's size, and off the outline: a socket that runs on is grown through the dark and glint only, or left.
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const grow = (cells: [number, number][], joins: (v: number) => boolean): [number, number][] | null => {
+    const seen = new Set(cells.map(([x, y]) => y * w + x)), out = [...cells], stack = [...cells];
+    while (stack.length) {
+      const [cx, cy] = stack.pop()!;
+      for (const [dx, dy] of N4) {
+        const nx = cx + dx, ny = cy + dy, v = at(nx, ny);
+        if (!v) return null;                                                      // it reached the clear: the outline
+        if (seen.has(ny * w + nx) || !joins(v)) continue;
+        seen.add(ny * w + nx); out.push([nx, ny]); stack.push([nx, ny]);
+        if (out.length > 64) return null;
+      }
     }
+    const xs = out.map((c) => c[0]), ys = out.map((c) => c[1]);
+    return Math.max(...xs) - Math.min(...xs) < 10 && Math.max(...ys) - Math.min(...ys) < 10 ? out : null;
+  };
+  // A dark eye drawn into its outline cannot be grown without running on: from its glint, rays out through the dark,
+  // five pixels at most each way, and the eye is the box they reach (an eye is round enough for a cross to find it)
+  const rays = (cells: [number, number][]): [number, number][] => {
+    const xs = cells.map((c) => c[0]), ys = cells.map((c) => c[1]);
+    let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const cx = Math.round((x0 + x1) / 2), cy = Math.round((y0 + y1) / 2), dark = (x: number, y: number) => DARK.has(at(x, y));
+    for (let n = 0; n < 5 && dark(x0 - 1, cy); n++) x0--;
+    for (let n = 0; n < 5 && dark(x1 + 1, cy); n++) x1++;
+    for (let n = 0; n < 5 && dark(cx, y0 - 1); n++) y0--;
+    for (let n = 0; n < 5 && dark(cx, y1 + 1); n++) y1++;
+    const out: [number, number][] = [];
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) out.push([x, y]);
+    return out;
+  };
+  const sockets = best.eyes.map((c) => grow(c.cells, (v) => DARK.has(v) || GLINT.has(v) || (v >= 6 && v <= 10))
+                                        ?? grow(c.cells, (v) => DARK.has(v) || GLINT.has(v))
+                                        ?? (c.kind === "glint" ? rays(c.cells) : c.cells));
+  // the colour the sockets sit in is what a closed eye is drawn over with; its line is the outline -- or, in a dark
+  // face (a visor, a mask), the glint
+  const inSocket = new Set(sockets.flat().map(([x, y]) => y * w + x)), around = new Map<number, number>();
+  for (const [cx, cy] of sockets.flat()) for (const [dx, dy] of N4) {
+    const nx = cx + dx, ny = cy + dy, v = at(nx, ny);
+    if (v && !inSocket.has(ny * w + nx)) around.set(v, (around.get(v) ?? 0) + 1);
+  }
   const fill = [...around.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 3;
-  // a glint's eye is the dark around it: grow the box by one so closing it covers the glint and its socket
-  const eyes = best.eyes.map((c) => { const [x, y, bw, bh] = box(c); return (c.kind === "glint" ? [x - 1, y - 1, bw + 2, bh + 2] : [x, y, bw, bh]) as Box; });
-  return { eyes, sure: Math.round(best.sure * 100) / 100, fill: best.eyes[0].kind === "glint" ? 5 : fill, line: 5 };
+  const eyes = sockets.map((cells) => {
+    const xs = cells.map((c) => c[0]), ys = cells.map((c) => c[1]);
+    return [Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs) + 1, Math.max(...ys) - Math.min(...ys) + 1] as Box;
+  });
+  return { eyes, sure: Math.round(best.sure * 100) / 100, fill: DARK.has(fill) ? 5 : fill, line: DARK.has(fill) ? 1 : 5 };
 }
 
 const names = readdirSync(ART).filter((f) => f.endsWith(".png")).map((f) => f.slice(0, -4)).sort();

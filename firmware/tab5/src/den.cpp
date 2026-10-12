@@ -146,9 +146,10 @@ void tick(lv_timer_t *t) {
         const auto &e = s.patch[n];
         if ((int)i >= e.x && (int)i < e.x + e.w && (int)j >= e.y && (int)j < e.y + e.h) c = e.c;
       }
-      int row = s.bottom - (int)roundf((s.bottom - (int)j) * s.squash) + s.dy;   // lowered, squashed toward its feet
+      auto rowOf = [&](int jj) { return s.bottom - (int)roundf((s.bottom - jj) * s.squash) + s.dy; };   // lowered, squashed toward its feet
+      int row = rowOf((int)j), tall = max(1, rowOf((int)j + 1) - row);   // stretched, a row reaches down to the next: no gap
       int x = ax + (right ? (int)(s.sw - 1 - i) : (int)i) * k, y = ay + row * k;
-      for (int b = 0; b < k; b++) for (int a = 0; a < k; a++) p.dot(x + a, y + b, c);
+      for (int b = 0; b < k * tall; b++) for (int a = 0; a < k; a++) p.dot(x + a, y + b, c);
     }
   }
   if (s.marked) {                              // C-119: its mark above its head, at the back (never mirrored)

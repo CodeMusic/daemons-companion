@@ -10,6 +10,7 @@
 #include "store.h"
 #include "sound.h"
 #include "display.h"
+#include "den.h"
 #include <Preferences.h>
 
 // ---- the look: paper, ink, and the day's colour (the app's, from /api/today) ------------------------------------------
@@ -252,7 +253,7 @@ static void drawDaemon(lv_obj_t *p) {
   if (kept("state", st)) d = st["daemon"];
   if (!d.isNull()) {
     lv_obj_t *c = card(left);
-    picture(c, "p" + String((int)(d["slot"] | 0)), 256 * 5);
+    denStage(c, d, displayPortrait() ? 640 : 540, displayPortrait() ? 380 : 340);   // C-113: in its den, walking it
     label(c, d["nickname"] | "", &lv_font_montserrat_40, INK);
     label(c, "Lv. " + String((int)(d["level"] | 0)) + "   " + (const char *)(d["category"] | ""), &lv_font_montserrat_20, QUIET);
     String types; for (JsonVariant t : d["types"].as<JsonArray>()) types += (types.length() ? " / " : "") + String((const char *)t);

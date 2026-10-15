@@ -69,3 +69,4 @@ void coreS3Speaker(bool on, int rate);
 void coreS3Mic();
 void pmuBacklight(bool on);
 bool boardPowerOff();
+void boardIdleOff();   // the M5GO and Fire: the IP5306 let cut the power once the board is idle, before its deep sleep

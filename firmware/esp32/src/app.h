@@ -62,7 +62,7 @@ String daemonName();                      // C-51: the routines speak in its nam
 // routine RUNs. INDEX_ENTRY: the carried daemon's (C-36). PICK_NET, TYPE_PASS: joining a network on the board (C-33).
 // CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51. PARTY, MOVES: GAME ROUTINES (C-68) -- the
 // party, then a daemon's routines; picking one plays it, the ring lit its colour.
-enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE };   // C-73: the Xenith day; C-71: the watch's face
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE };   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK };   // TALK: C-66
 extern Page page;
@@ -150,6 +150,8 @@ void report(const String &kind, const String &detail);
 void reportBegin();   // C-121: the outbox -- what is told to the server goes from a task of its own
 void reportLoop();    // C-121: every pass of the loop -- the state it brought back; what waits, carried by the cable
 bool netBusy();       // C-121: the outbox is sending, or has something to send (the loop's own polls wait for it)
+void switchOff(const String &word);   // the board off: its own off, or the chip's deep sleep woken by its top button (or B)
+const char *startAgain();             // how it is started again, said on the SWITCH OFF page
 String outboxStatus();   // C-121: OUTBOX down the cable -- what waits, and the last send: its answer, time, way and tries
 void reportRemotes();
 void reportNetworks();

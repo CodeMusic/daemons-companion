@@ -734,12 +734,28 @@ static void batteryRules() {
   batEmptyReads = bat.percent <= 5 ? batEmptyReads + 1 : 0;                       // twice, so one bad read cannot
   if (batEmptyReads < 2) return;
   if (batFakeUntil) { say("WOULD SLEEP NOW"); Serial.println("BATTEST would sleep now"); return; }   // a check never sleeps it
-  say("CHARGE ME"); draw(); delay(2000);                                           // DRAFT
+  switchOff("CHARGE ME");                                                          // DRAFT
+}
+
+// The board switched off -- the 5% rule's way (C-63), and now asked for (the user, 2026-10-15: "there is no way to turn
+// it off other than letting the sleep time out"): its own off where it has one (the CoreS3's PMU, the Dial's power
+// hold, the watch's PMU), else the chip's deep sleep woken by its top button (C-79) or B -- the M5GO and Fire's IP5306
+// first let cut the power once it is idle, so on their battery they are off and their power button starts them. On USB
+// a board cannot be off: it sleeps deeply, and that button wakes it.
+const char *startAgain() {
+  if (board.power == Power::PmuIP5306 || board.kind == BoardKind::M5CoreS3) return "Its power button starts it again.";   // DRAFT
+  if (board.sideKey >= 0) return "The top button starts it again.";                // DRAFT
+  if (board.kind == BoardKind::TDisplayPro) return "The bottom-right button starts it again.";   // DRAFT
+  return board.threeKeys() ? "B starts it again." : "Its button starts it again."; // DRAFT
+}
+void switchOff(const String &word) {
+  say(word); draw(); delay(1500);
   ledsSleep(true); backlight(false);
-  if (boardPowerOff()) return;                                                     // C-75: the CoreS3 switches itself off
-  int wakePin = board.sideKey >= 0 ? board.sideKey : board.encKey;                 // the top button (C-79)
+  boardIdleOff();
+  if (boardPowerOff()) delay(500);                                                 // C-75: the CoreS3 switches itself off
+  int wakePin = board.sideKey >= 0 ? board.sideKey : board.encKey;                 // the top button (C-79), or B
   esp_sleep_enable_ext0_wakeup((gpio_num_t)wakePin, 0);
-  esp_deep_sleep_start();
+  esp_deep_sleep_start();                                                          // still here (on USB): asleep, deeply
 }
 
 void batteryLoop(uint32_t now) {

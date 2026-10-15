@@ -400,6 +400,13 @@ void draw() {
     canvas.drawString(COMPANION_BUILD, W - 8, H - 6);
     }
     canvas.setTextDatum(BL_DATUM);
+  } else if (page == OFF_PAGE) {             // the user, 2026-10-15: "there is no way to turn it off"
+    canvas.setTextFont(4); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("SWITCH OFF", 10, 40);                                       // DRAFT
+    wrap(String("Press to switch it off. ") + startAgain(), 10, 76, W - 20, 2, 18, 4, PAPER);   // DRAFT
+    if (board.threeKeys()) wrap("Or hold C for five seconds, anywhere.", 10, 76 + 3 * 18, W - 20, 2, 18, 2, QUIET);   // DRAFT
+    canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+    canvas.drawString(hint("press: switch off"), 10, H - 6);
   } else if (page == TODAY) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     // C-49: the step, and -- subtly -- the milestone it belongs to

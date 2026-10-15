@@ -119,9 +119,10 @@ void turn(int step) {
   ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
   soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) {                 // C-71: the watch has its face first
-    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE };
+    // SWITCH OFF last (the user, 2026-10-15)
+    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, OFF_PAGE };
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
-    const Page *order = face ? WATCH : EMBED; int n = face ? 5 : 4, at = 0;
+    const Page *order = face ? WATCH : EMBED; int n = face ? 6 : 5, at = 0;
     for (int i = 0; i < n; i++) if (order[i] == page) at = i;
     page = order[(at + n + step) % n];
   }
@@ -171,6 +172,7 @@ void press() {
   if (screen == HOME) {
     if (page == TODAY) tick();
     else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
+    else if (page == OFF_PAGE) switchOff("Off.");                                // the user, 2026-10-15; DRAFT
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
       if (partyFirst()) { screen = PARTY; partyAt = st.partyN; }    // C-68: the party's routines, on a board with no radios -- its RADIOS first
@@ -360,6 +362,7 @@ void keyForget() { forced[0] = forced[1] = forced[2] = false; forget = true; }
 
 void readKeyCore() {
   static bool down[3] = { false, false, false }; static uint32_t at[3] = { 0, 0, 0 };
+  static bool offWarned = false;                                 // C held past two seconds: said once
   static bool chord = false;                                     // C-117: A and C were down together
   const int pins[3] = { board.keyLeft, board.encKey, board.keyRight };
   auto up = [&](int k) { return digitalRead(pins[k]) && !forced[k]; };
@@ -381,6 +384,7 @@ void readKeyCore() {
     if (chord && k != 1) continue;                               // the chord's own buttons wait for both to be let go
     if (pressed && !down[k] && now - at[k] > 30) {
       down[k] = true; at[k] = now;
+      if (k == 2) offWarned = false;
       // C-121: the press is felt the moment it lands -- a tick, and its word lit -- whatever it turns out to do on release
       if (!asleep) { keysHeld |= 1 << k; soundTap(); dirty = true; draw(); }
       continue;
@@ -393,12 +397,19 @@ void readKeyCore() {
       while (!digitalRead(pins[k])) delay(5);
       continue;
     }
+    // C held (the user, 2026-10-15, "no way to turn it off"): two seconds, let go, the screen sleeps, as before; held on,
+    // it says so, and at five the board switches off -- at once, not on letting go
+    if (pressed && down[k] && k == 2 && !forced[k] && !asleep) {
+      uint32_t held = now - at[k];
+      if (held >= 5000) { down[k] = false; keysHeld = 0; switchOff("Off."); continue; }   // DRAFT
+      if (held >= 2000 && !offWarned) { offWarned = true; say("Let go: sleep. Hold: off"); draw(); }   // DRAFT
+    }
     if (!pressed && down[k] && now - at[k] > 30) {
       down[k] = false;
       if (keysHeld & (1 << k)) { keysHeld &= ~(1 << k); dirty = true; }
       uint32_t held = now - at[k];
       at[k] = now;
-      if (asleep) { if (k == 1 && held >= 500) wake(); continue; }
+      if (asleep) { wake(); continue; }                          // the user, 2026-10-15: any button wakes it, and only that
       wake();
       bool tend = !menuOpen && screen == HOME;                   // C-117: home, the menu closed -- the buttons tend it
       // C-118: asleep, any button wakes it; at bedtime (drowsy, not yet put to bed) C puts it to bed instead of training

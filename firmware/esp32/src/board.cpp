@@ -276,6 +276,11 @@ void boardBegin() {
   for (auto &w : R) ipWrite(w[0], w[1]);
 }
 
+// Switched off (switchOff): the boost no longer kept on under a light load, and the light load's wait 8 s -- so a board
+// asleep on its battery is switched off by the IP5306 itself, and its power button starts it. On USB it stays asleep.
+// Start-up writes the registers back (above).
+void boardIdleOff() { ipWrite(0x00, 0b00110001); ipWrite(0x02, 0b01100000); }
+
 #else
 
 // Does anything answer at this address with the bus on these pins? (The CC1101 board's SDA/SCL are the T-Embed's
@@ -332,6 +337,9 @@ void boardBegin() {
 
 #ifndef BOARD_STICKS3
 void pm1Gpio(uint8_t, bool) {}         // C-74: only the StickS3 has an M5PM1
+#endif
+#ifndef BOARD_M5CORE
+void boardIdleOff() {}                 // only the M5GO and Fire's IP5306 needs letting go before an off
 #endif
 #ifndef BOARD_CORES3
 void coreS3Speaker(bool, int) {}       // C-75: only the CoreS3 has these

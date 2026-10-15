@@ -17,19 +17,25 @@ bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 // menu (the pages and everything under them, as before), and close it again. The care kinds keep their own numbers --
 // feed 0, water 1, train 2, sleep 3 -- which the server, the sounds (TUNE_CARE) and the CARE list all read.
 bool menuOpen = false;
+uint8_t keysHeld = 0;                     // C-121: the three buttons down right now (bit 0 A, 1 B, 2 C), lit on the screen
 // C-118: and wake, 4 -- only waking it, from any button while it sleeps
 static const char *CARE_KIND[] = { "feed", "water", "train", "sleep", "wake" },
                   *CARE_SAID[] = { "Eaten.", "Drank.", "Trained.", "Asleep.", "Awake." };   // DRAFT
 const int CARE_ORDER[4] = { 1, 0, 2, 3 };       // the CARE list's rows, top down: DRINK, FEED, TRAIN, SLEEP
 void careDo(int kind) {
-  if (!st.carrying) { say("No daemon here"); return; }                         // DRAFT
-  // C-118: seen and heard at once -- the server's answer (and the expression it brings) follows the report
+  if (!st.carrying) { say("No daemon here"); soundBack(); return; }           // DRAFT
+  // C-118: seen and heard at once -- the server's answer (and the expression it brings) follows the report.
+  // C-121 (the user, 2026-10-15: "presume the happy path show the screen feedback and then send to the server"): it is
+  // presumed done -- the word, its day and the hop drawn before anything else, the tune from its own task, and the
+  // server told from the outbox (net.cpp), so nothing here waits on a sound or the network
   say(CARE_SAID[kind]);
-  if (kind == 4) soundWake(); else soundCare(kind);
   if (kind != 3) hopUntil = millis() + 480;
   st.daemon.tired = kind == 3 ? "asleep" : kind == 4 || st.daemon.tired == "asleep" ? "awake" : st.daemon.tired;
+  if (kind == 0) st.daemon.fed = min(3, st.daemon.fed + 1);
+  if (kind == 1) st.daemon.watered = min(3, st.daemon.watered + 1);
   dirty = true;
   draw();
+  if (kind == 4) soundWake(); else soundCare(kind);
   report(CARE_KIND[kind], "device");
 }
 
@@ -353,6 +359,7 @@ void readKeyCore() {
   if (down[0] && down[2]) chord = true;
   if (chord && digitalRead(pins[0]) && digitalRead(pins[2])) {    // both let go: the menu, open or closed
     chord = false; down[0] = down[2] = false; at[0] = at[2] = now;
+    keysHeld &= ~5;
     if (asleep) return;
     wake();
     if (menuOpen) { menuOpen = false; screen = HOME; page = homePage(); }
@@ -363,9 +370,15 @@ void readKeyCore() {
   for (int k = 0; k < 3; k++) {
     bool pressed = !digitalRead(pins[k]);
     if (chord && k != 1) continue;                               // the chord's own buttons wait for both to be let go
-    if (pressed && !down[k] && now - at[k] > 30) { down[k] = true; at[k] = now; continue; }
+    if (pressed && !down[k] && now - at[k] > 30) {
+      down[k] = true; at[k] = now;
+      // C-121: the press is felt the moment it lands -- a tick, and its word lit -- whatever it turns out to do on release
+      if (!asleep) { keysHeld |= 1 << k; soundTap(); dirty = true; draw(); }
+      continue;
+    }
     if (pressed && down[k] && k == 1 && !asleep && now - at[k] >= TALK_HOLD_MS && (screen == HOME || screen == TALK) &&
         talkCan() && !(page == TODAY && undoable())) {
+      keysHeld &= ~(1 << k);
       talkHold();                                                // listens until B is let go
       down[k] = false; at[k] = millis(); dirty = true;
       while (!digitalRead(pins[k])) delay(5);
@@ -373,6 +386,7 @@ void readKeyCore() {
     }
     if (!pressed && down[k] && now - at[k] > 30) {
       down[k] = false;
+      if (keysHeld & (1 << k)) { keysHeld &= ~(1 << k); dirty = true; }
       uint32_t held = now - at[k];
       at[k] = now;
       if (asleep) { if (k == 1 && held >= 500) wake(); continue; }

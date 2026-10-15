@@ -5,6 +5,9 @@
 #include <Preferences.h>
 #include <mbedtls/base64.h>
 #include <esp_sleep.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <freertos/semphr.h>
 #include <vector>
 #include "app.h"
 #include "talk.h"
@@ -234,10 +237,20 @@ static String relayHttp(const char *method, const String &path, const String &bo
 }
 
 // ---- the server ------------------------------------------------------------------------------------------------------
+// C-121: one request on the air at a time -- the loop's, or the outbox's from its task (recursive: the outbox holds it
+// across a report and the state that follows). lastCode is the last answer's status, read by whoever holds it.
+static SemaphoreHandle_t netLock = nullptr;
+static int lastCode = -1;
+struct NetHeld {
+  NetHeld() { if (netLock) xSemaphoreTakeRecursive(netLock, portMAX_DELAY); }
+  ~NetHeld() { if (netLock) xSemaphoreGiveRecursive(netLock); }
+};
+
 // One request to the server over Wi-Fi -- home, or away through the relay (C-82); the answer's body, or "" with *ok false.
 String http(const char *method, const String &path, const String &body, bool *ok) {
   if (ok) *ok = false;
   if (!online()) return "";
+  NetHeld held;
   int code = -1;
   String out;
   if (serverUrl.length() && !viaRelay()) {
@@ -256,6 +269,7 @@ String http(const char *method, const String &path, const String &body, bool *ok
     out = relayHttp(method, path, body, &code);
     awayAt = code > 0 ? millis() : 0;                  // the relay answered (even "home is asleep"): away, for a while
   } else if (code > 0) awayAt = 0;
+  lastCode = code;
   if (ok) *ok = code == 200;
   return out;
 }
@@ -573,11 +587,83 @@ void readPhone() {                                  // C-55
 
 // C-13: using the device is tending the daemon. Each routine run is told to the server -- over the cable through the
 // bridge (an INTERACT line), or over Wi-Fi -- where the daemon's life will read it.
+// C-121 (the user, 2026-10-15: "presume the happy path show the screen feedback and then send to the server"): over
+// Wi-Fi it goes into the OUTBOX, and a task of its own sends it, so the board never waits on the network -- home could
+// take seconds to answer, the relay fifteen, and every press waited with it. Kept in order and sent again until someone
+// answers (a refusal is an answer, and drops it); the cable or the phone, when they come, carry what is still waiting.
+// The state the server answers with comes back to the loop (reportLoop), which alone draws -- and only once nothing is
+// left to send, so an answer to the first of two cares never undoes the second on the screen.
+struct Told { char kind[16]; char detail[48]; };
+static QueueHandle_t outbox = nullptr;
+static volatile bool sending = false;
+static String *stateMail = nullptr;                    // from the task, for the loop
+static portMUX_TYPE mailMux = portMUX_INITIALIZER_UNLOCKED;
+bool netBusy() { return sending || (outbox && uxQueueMessagesWaiting(outbox)); }
+
+static void outboxLoop(void *) {
+  Told t;
+  for (;;) {
+    if (xQueuePeek(outbox, &t, portMAX_DELAY) != pdTRUE) continue;
+    if (bridgeLive() || !online()) { vTaskDelay(pdMS_TO_TICKS(1000)); continue; }   // the cable carries it, or no network yet
+    xSemaphoreTakeRecursive(netLock, portMAX_DELAY);
+    sending = true;
+    bool ok = false; int code = -1;
+    if (xQueuePeek(outbox, &t, 0) == pdTRUE) {           // still here: the cable may have carried it meanwhile
+      JsonDocument d; d["kind"] = t.kind; d["detail"] = t.detail;
+      String body; serializeJson(d, body);
+      http("POST", "/api/device/interact", body, &ok);
+      code = lastCode;
+      if (ok || code > 0) xQueueReceive(outbox, &t, 0);  // told -- or refused, which sending again would not change
+      if (ok && !uxQueueMessagesWaiting(outbox)) {       // the last of them: its new life, for the loop
+        bool got; String s = http("GET", "/api/device/state", "", &got);
+        if (got) {
+          String *m = new String(s);
+          portENTER_CRITICAL(&mailMux); String *old = stateMail; stateMail = m; portEXIT_CRITICAL(&mailMux);
+          delete old;
+        }
+      }
+    }
+    sending = false;
+    xSemaphoreGiveRecursive(netLock);
+    if (!ok && code <= 0) vTaskDelay(pdMS_TO_TICKS(5000));   // no one answered: again in a while
+  }
+}
+
+void reportBegin() {
+  netLock = xSemaphoreCreateRecursiveMutex();
+  outbox = xQueueCreate(16, sizeof(Told));
+  // without its task (no memory), what is told goes out as it always did, from the loop
+  if (!netLock || !outbox || xTaskCreate(outboxLoop, "outbox", 8192, nullptr, 1, nullptr) != pdPASS) {
+    if (outbox) vQueueDelete(outbox);
+    outbox = nullptr;
+  }
+}
+
 void report(const String &kind, const String &detail) {
   if (bridgeLive()) { bridge("INTERACT " + kind + " " + detail); return; }
-  JsonDocument d; d["kind"] = kind; d["detail"] = detail;
-  String body; serializeJson(d, body);
-  if (http("POST", "/api/device/interact", body).length()) httpState("GET", "/api/device/state", "");   // its new life
+  if (!outbox) {
+    JsonDocument d; d["kind"] = kind; d["detail"] = detail;
+    String body; serializeJson(d, body);
+    if (http("POST", "/api/device/interact", body).length()) httpState("GET", "/api/device/state", "");   // its new life
+    return;
+  }
+  Told t;
+  strlcpy(t.kind, kind.c_str(), sizeof t.kind); strlcpy(t.detail, detail.c_str(), sizeof t.detail);
+  xQueueSend(outbox, &t, 0);                             // full (sixteen waiting, long out of touch): this one is not kept
+}
+
+// C-121: every pass of the loop -- the state the outbox brought back, and what is waiting carried by the cable or phone
+void reportLoop() {
+  portENTER_CRITICAL(&mailMux); String *m = stateMail; stateMail = nullptr; portEXIT_CRITICAL(&mailMux);
+  if (m) {
+    if (!netBusy()) { takeState(*m); lastPoll = millis(); dirty = true; }   // more to send: its own answer will come
+    delete m;
+  }
+  if (outbox && uxQueueMessagesWaiting(outbox) && bridgeLive() && xSemaphoreTakeRecursive(netLock, 0) == pdTRUE) {
+    Told t;
+    while (xQueueReceive(outbox, &t, 0) == pdTRUE) bridge(String("INTERACT ") + t.kind + " " + t.detail);
+    xSemaphoreGiveRecursive(netLock);
+  }
 }
 
 // C-36: the device asks for its daemon's art when the state names art it does not have -- through the bridge (ART?),

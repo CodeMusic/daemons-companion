@@ -43,6 +43,7 @@ void setup() {
   step("display"); displayBegin();
   watchBegin();                               // C-71: the watch's clock, steps, touch and crown (nothing elsewhere)
   step("wifi");    loadWifi();                // C-52: uplinkLoop joins the strongest known network in range
+  reportBegin();                              // C-121: the outbox's task
   step("lights");  ledsBegin();
   step("sound");   soundBegin();
   routinesBegin();                            // C-67: the routine types this board has
@@ -72,12 +73,13 @@ void loop() {
   }
   if (!linkPhoneHere()) phoneHelloAt = 0;
   batteryLoop(now);                         // C-63
-  if (!bridgeLive() && online()) {
+  reportLoop();                             // C-121: the outbox's answer, and the cable carrying what waits
+  if (!bridgeLive() && online() && !netBusy()) {   // C-121: not while the outbox sends -- the state comes back with it
     if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
     pollCommands(now);                        // C-32: what the site sent, over Wi-Fi
   }
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
-  askForArt();
+  if (!netBusy()) askForArt();
   uplinkLoop(now);
   linkLoop(now);                            // C-55
   meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-15
@@ -89,7 +91,7 @@ void loop() {
   if (netsDue && (usbLive() || online()) && now - netsAt > 10000) { netsAt = now; reportNetworks(); }
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
-  soundIdle();                              // C-75: the M5GO and Fire let their DAC go between sounds
+  soundLoop();                              // C-121: the tune task's dance shown; C-75: the DAC let go between sounds
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }
   // C-42: any menu, left alone, goes to sleep; waking lands at home

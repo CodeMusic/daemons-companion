@@ -5,6 +5,8 @@
 
 void soundBegin();
 void soundIdle();     // every pass of the loop: the M5GO and Fire let their DAC go once nothing has played a moment
+void soundLoop();     // C-121: every pass of the loop instead -- the tune task's dance shown, then soundIdle()
+void soundTap();      // C-121: a press, heard the moment it lands
 void soundPause();    // C-74: the StickS3 lends its codec to the microphone
 void soundResume();
 void es8311Mic();
@@ -19,7 +21,7 @@ void soundPcm(const int16_t *samples, size_t n);
 void playNoteSemis(int semis, int ms);     // C-70: one note, this many semitones over the day's note   // C-66: a voice, 16 kHz mono, streamed in
 uint32_t soundRateTest();
 void soundDacRate(int hz);                  // C-95: the check only                  // C-95: ms to play 2 s of samples (RATETEST down the cable)
-void soundWake();                          // waking from sleep: the title theme's opening, quickened
-void soundCare(int what);                  // C-13, C-114: fed (0), watered (1), trained (2), put to bed (3) -- a phrase of the game
+void soundWake();                          // waking from sleep: the title theme's opening, quickened (C-121: from its task)
+void soundCare(int what);                  // C-13, C-114: fed (0), watered (1), trained (2), put to bed (3) -- a phrase of the game (C-121: from its task)
 void soundAccomplish(int kind, int species, int day);   // C-50: 0 a step, 1 a milestone, 2 the whole goal
 void soundUndo(int species, int day);                   // C-50: a step undone -- its tune reversed

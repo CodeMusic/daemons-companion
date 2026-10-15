@@ -68,23 +68,28 @@ void drawArt(int x, int y, int scale, bool mirrored = false) { drawSprite(x, y, 
 // TRAIN; at bedtime (it is drowsy, not yet put to bed) the right one becomes SLEEP, lit; asleep, one bar: any button
 // wakes it.
 bool keysUnder() { return board.kind == BoardKind::M5Core && st.carrying; }
+// what each of the three does at home, as it is now -- asleep, any of them wakes it
+static const char *keyWord(int k) {
+  if (st.daemon.tired == "asleep") return "WAKE";                               // DRAFT
+  return k == 0 ? "DRINK" : k == 1 ? "FEED" : st.daemon.tired == "drowsy" ? "SLEEP" : "TRAIN";   // DRAFT
+}
+// C-121: a button held is drawn pressed -- filled white -- the moment it goes down, before it does anything
 static void keyLabels(uint16_t day, uint16_t ink) {
   bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
   canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM);
   if (sleeping) {
-    canvas.fillRoundRect(4, H - 24, W - 8, 22, 5, day);
-    canvas.setTextColor(ink); canvas.drawString("WAKE", W / 2, H - 13);       // DRAFT
+    canvas.fillRoundRect(4, H - 24, W - 8, 22, 5, keysHeld ? PAPER : day);
+    canvas.setTextColor(ink); canvas.drawString(keyWord(0), W / 2, H - 13);
     return;
   }
-  const char *word[3] = { "DRINK", "FEED", bed ? "SLEEP" : "TRAIN" };         // DRAFT
   int bw = W / 3;
   for (int k = 0; k < 3; k++) {
-    bool lit = k == 2 && bed;
+    bool held = keysHeld & (1 << k), lit = k == 2 && bed;
     int bx = k * bw + 4;
-    if (lit) canvas.fillRoundRect(bx, H - 24, bw - 8, 22, 5, day);
+    if (held || lit) canvas.fillRoundRect(bx, H - 24, bw - 8, 22, 5, held ? PAPER : day);
     else canvas.drawRoundRect(bx, H - 24, bw - 8, 22, 5, QUIET);
-    canvas.setTextColor(lit ? ink : PAPER);
-    canvas.drawString(word[k], bx + (bw - 8) / 2, H - 13);
+    canvas.setTextColor(held || lit ? ink : PAPER);
+    canvas.drawString(keyWord(k), bx + (bw - 8) / 2, H - 13);
   }
 }
 
@@ -492,6 +497,13 @@ void draw() {
         bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
         canvas.drawString(sleeping ? "any button: wake" : bed ? "A drink  B feed  C sleep" : "A drink  B feed  C train", x, H - 14);   // DRAFT
         canvas.drawString("A+C: menu", x, H - 4);
+        if (keysHeld) {                                       // C-121: the held button's word, lit, above its footer
+          const char *w = keyWord(keysHeld & 1 ? 0 : keysHeld & 2 ? 1 : 2);
+          canvas.setTextFont(2); canvas.setTextDatum(ML_DATUM);
+          int bw = canvas.textWidth(w) + 16;
+          canvas.fillRoundRect(x - 2, H - 48, bw, 22, 5, PAPER);
+          canvas.setTextColor(ink); canvas.drawString(w, x + 6, H - 37);
+        }
       } else canvas.drawString(hint("press: care for it"), x, H - 4);
       }
     } else {

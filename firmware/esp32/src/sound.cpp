@@ -10,6 +10,10 @@
 // screen is in C# (vision 7.14g, "a semitone above everywhere you will go").
 #include <driver/i2s.h>
 #include <Wire.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <freertos/semphr.h>
+#include <freertos/task.h>
 #include "sound.h"
 #include "board.h"
 #include "leds.h"
@@ -22,6 +26,33 @@ static int amplitude = 5000;                 // 0..~16000; the site's volume set
 static int root = 60 + 12;                   // the day's note, as MIDI (C5 by default)
 static uint32_t lastTurn = 0;
 static float duty = 0.5f;                    // C-50: a daemon's own voice -- the share of each wave that is high
+
+// C-121 (the user, 2026-10-15: "the 3 buttons should make a noise and immediate visual feedback"): a care's tune and the
+// wake jingle play from a task of their own, so the screen is drawn and the buttons heard while they sound -- they took
+// a second or three, and nothing moved until they ended. Any other sound ends them first (the next press's click, a turn
+// of the dial), and a new one replaces the one playing. The task never touches the ring: it says which step of the
+// dance is next, and the loop (soundLoop) shows it, as it alone drives the LEDs.
+struct Tune { const Note *notes; int n; int base; int dance; float level; uint32_t gen; };
+static QueueHandle_t tunes = nullptr;
+static TaskHandle_t tuneTask = nullptr;
+static SemaphoreHandle_t voice = nullptr;    // held by the task while it plays: the loop's sounds wait for it to end
+static volatile uint32_t stopGen = 0;        // moved on by the loop (only): a tune from an older one stops
+static uint32_t playingGen = 0;              // the task's own: the tune it is playing
+static volatile bool tunePlaying = false;
+static bool inTune() { return tuneTask && xTaskGetCurrentTaskHandle() == tuneTask; }
+static bool stopped() { return inTune() && playingGen != stopGen; }
+static void quiet() {                        // the loop is about to sound: the tune playing or waiting ends first
+  if (!tuneTask || inTune()) return;
+  stopGen++;
+  if (tunePlaying && xSemaphoreTake(voice, pdMS_TO_TICKS(80)) == pdTRUE) xSemaphoreGive(voice);
+}
+static portMUX_TYPE danceMux = portMUX_INITIALIZER_UNLOCKED;
+static volatile int danceKind = -1, danceStep = 0, danceSteps = 0;
+static volatile uint32_t danceSeq = 0;
+static void dance(int kind, int step, int steps) {
+  if (!inTune()) { ledsDance(kind, step, steps); return; }
+  portENTER_CRITICAL(&danceMux); danceKind = kind; danceStep = step; danceSteps = steps; danceSeq++; portEXIT_CRITICAL(&danceMux);
+}
 
 // C-74: the StickS3's speaker is an ES8311 codec (I2C 0x18) and an amplifier the M5PM1 switches. These are M5Unified's
 // own writes for its speaker: reset, the codec clocked from BCLK, the DAC up at 0 dB, its equaliser bypassed.
@@ -82,9 +113,11 @@ static bool dacStart() {
 }
 void soundIdle() {
   if (!dacOn || millis() - playedAt < 400) return;
+  if (voice && xSemaphoreTake(voice, 0) != pdTRUE) return;     // C-121: a tune is playing from its task
   i2s_driver_uninstall(PORT);
   dacOn = false;
   dacQuiet();
+  if (voice) xSemaphoreGive(voice);
 }
 static int dacRate = DAC_ASK;
 void soundDacRate(int hz) { if (dacOn) { i2s_driver_uninstall(PORT); dacOn = false; } dacRate = hz; }
@@ -111,7 +144,34 @@ void soundDacRate(int) {}
 void soundIdle() {}
 #endif
 
+static void play(const Note *notes, int n, int base, int dance, float level);
+static void tuneLoop(void *) {
+  Tune t;
+  for (;;) {
+    if (xQueueReceive(tunes, &t, portMAX_DELAY) != pdTRUE || t.gen != stopGen) continue;   // ended before it began
+    xSemaphoreTake(voice, portMAX_DELAY);
+    playingGen = t.gen; tunePlaying = true;
+    play(t.notes, t.n, t.base, t.dance, t.level);
+    tunePlaying = false;
+    xSemaphoreGive(voice);
+  }
+}
+static void tuneTaskBegin() {
+  if (tuneTask) return;
+  voice = xSemaphoreCreateMutex();
+  tunes = xQueueCreate(1, sizeof(Tune));
+  // above the loop's priority, so the speaker is fed while the screen is drawn; without it, tunes play as they did
+  if (!voice || !tunes || xTaskCreate(tuneLoop, "tune", 3072, nullptr, 2, &tuneTask) != pdPASS) tuneTask = nullptr;
+}
+// a tune from the task -- or, if it could not be made, played here as before
+static void tuneLater(const Note *notes, int n, int base, int dance, float level) {
+  if (!tuneTask) { play(notes, n, base, dance, level); return; }
+  Tune t = { notes, n, base, dance, level, ++stopGen };          // the one playing, if any, ends
+  xQueueOverwrite(tunes, &t);
+}
+
 void soundBegin() {
+  tuneTaskBegin();
   if (board.buzzer >= 0) {                     // C-102: the Dial's passive buzzer -- each note a square wave from LEDC
     ledcSetup(BUZZER_CH, 2000, 10);
     ledcAttachPin(board.buzzer, BUZZER_CH);
@@ -150,6 +210,7 @@ void soundBegin() {
 // microphones share BCLK and LRCK, so while it listens the speaker's I2S lets go of them (talk.cpp), and takes them back.
 void soundPause() {
   if (!ready || !board.sharedClocks()) return;
+  quiet();
   if (board.kind == BoardKind::M5StickS3) pm1Gpio(3, false);
   else coreS3Speaker(false, 0);
   i2s_driver_uninstall(PORT);
@@ -172,10 +233,11 @@ static float hz(int midi) { return noteHz(midi); }
 // One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself).
 static void tone(int midi, int ms, float level = 1.0f) {
   if (!ready || !enabled || amplitude == 0) return;
+  quiet();
   if (board.buzzer >= 0) {                     // C-102: the note itself, its loudness the share of each wave that is high
     ledcWriteTone(BUZZER_CH, (uint32_t)hz(midi));
     ledcWrite(BUZZER_CH, (uint32_t)(512 * duty * 2 * min(1.0f, amplitude * level / 12000.0f)));
-    delay(ms);
+    for (int left = ms; left > 0 && !stopped(); left -= 10) delay(min(10, left));
     ledcWrite(BUZZER_CH, 0);
     return;
   }
@@ -183,7 +245,7 @@ static void tone(int midi, int ms, float level = 1.0f) {
   int total = RATE * ms / 1000, rise = RATE * 4 / 1000, fall = RATE * 8 / 1000;
   float period = RATE / hz(midi), phase = 0;
   int amp = (int)(amplitude * level);
-  for (int done = 0; done < total;) {
+  for (int done = 0; done < total && !stopped();) {
     int n = min(256, total - done);
     for (int i = 0; i < n; i++, done++) {
       float env = done < rise ? (float)done / rise : done > total - fall ? (float)(total - done) / fall : 1.0f;
@@ -201,6 +263,7 @@ void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); }
 // silence at RATE, so a board whose sounds run fast or slow can be measured rather than guessed at
 uint32_t soundRateTest() {
   if (!ready) return 0;
+  quiet();
   static int16_t zero[256] = {0};
   for (int i = 0; i < 16; i++) play(zero, 256);                 // fill the DMA first, so the timing is steady state
   uint32_t t0 = millis();
@@ -210,6 +273,7 @@ uint32_t soundRateTest() {
 
 void soundPcm(const int16_t *samples, size_t n) {
   if (!ready) return;
+  quiet();
   static int16_t buf[256];
   float scale = (amplitude ? amplitude : 40 * 120) / 12000.0f;
   for (size_t done = 0; done < n;) {
@@ -221,9 +285,10 @@ void soundPcm(const int16_t *samples, size_t n) {
 }
 
 static void rest(int ms) {
-  if (!ready || !enabled || board.buzzer >= 0) { delay(ms); return; }
+  quiet();
+  if (!ready || !enabled || board.buzzer >= 0) { for (int left = ms; left > 0 && !stopped(); left -= 10) delay(min(10, left)); return; }
   static int16_t zero[256] = {0};
-  for (int total = RATE * ms / 1000; total > 0; total -= 256) {
+  for (int total = RATE * ms / 1000; total > 0 && !stopped(); total -= 256) {
     play(zero, min(256, total));
   }
 }
@@ -242,14 +307,14 @@ void soundBack()   { tone(root - 12, 45, 0.7f); }
 
 // ---- a routine's tune: about six notes, its own shape in the day's key, the ring dancing in step --------------------
 
-static void play(const Note *notes, int n, int base, int dance, float level) {
-  for (int i = 0; i < n; i++) {
-    ledsDance(dance, i, n);
+static void play(const Note *notes, int n, int base, int kind, float level) {
+  for (int i = 0; i < n && !stopped(); i++) {
+    dance(kind, i, n);
     if (notes[i].semis == 127) rest(notes[i].ms);
     else tone(base + notes[i].semis, notes[i].ms, level);
   }
   rest(20);
-  ledsDance(-1, 0, 0);                               // back to the ring at rest
+  dance(-1, 0, 0);                                   // back to the ring at rest
 }
 
 void soundRoutine(const char *type) {
@@ -276,7 +341,7 @@ void soundGameRoutine(const String &name, const String &type, uint32_t rgb) {
 }
 
 // C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them
-void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; play(t.notes, t.n, root, DANCE_PULSE, 0.8f); }   // C-114
+void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; tuneLater(t.notes, t.n, root, DANCE_PULSE, 0.8f); }   // C-114; C-121: from its task
 
 // ---- C-50: accomplishment. Each daemon's tunes are its own: GENERATED from its species number and the day of the week
 // (the user, 2026-10-04), in a pentatonic scale on the day's note -- so no two notes ever clash -- with a voice (the
@@ -305,4 +370,16 @@ void soundUndo(int species, int day) {                      // the step's own tu
 
 // C-41: the title theme's opening phrase (mus_title.mid, its first track: C#4 held, up to G#4, then F#-D#-F#, onto a
 // long F), quickened to a second and a half and an octave up -- in the title's own C#, whatever the day.
-void soundWake() { play(TUNE_WAKE, 6, WAKE_BASE, DANCE_SWEEP, 0.8f); }
+void soundWake() { tuneLater(TUNE_WAKE, 6, WAKE_BASE, DANCE_SWEEP, 0.8f); }   // C-121: from its task
+
+// C-121: a press, heard the moment it lands -- one short tick in the day's key, before anything it does
+void soundTap() { tone(root + 12, 16, 0.5f); }
+
+// C-121: every pass of the loop -- the step of the dance the tune's task asked for, and the DAC let go when it is quiet
+void soundLoop() {
+  static uint32_t shown = 0;
+  int kind, step, steps; uint32_t seq;
+  portENTER_CRITICAL(&danceMux); seq = danceSeq; kind = danceKind; step = danceStep; steps = danceSteps; portEXIT_CRITICAL(&danceMux);
+  if (seq != shown) { shown = seq; ledsDance(kind, step, steps); }
+  soundIdle();
+}

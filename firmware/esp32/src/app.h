@@ -69,6 +69,7 @@ extern Screen screen;
 extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;
 extern uint32_t hopUntil;
 extern bool menuOpen;                     // C-117: three-button boards -- A and C together open it
+extern uint8_t keysHeld;                  // C-121: the three buttons down right now (bit 0 A, 1 B, 2 C), lit on the screen
 extern bool pickRemoteNext, joinNext;
 extern String nets[12]; extern int netRssi[12], netCount, netAt, wheelAt; extern String typed;
 extern const char WHEEL[]; extern const int WHEEL_N;
@@ -143,6 +144,9 @@ void readUsb();
 void readPhone();
 void pollCommands(uint32_t now);
 void report(const String &kind, const String &detail);
+void reportBegin();   // C-121: the outbox -- what is told to the server goes from a task of its own
+void reportLoop();    // C-121: every pass of the loop -- the state it brought back; what waits, carried by the cable
+bool netBusy();       // C-121: the outbox is sending, or has something to send (the loop's own polls wait for it)
 void reportRemotes();
 void reportNetworks();
 void meetReport();

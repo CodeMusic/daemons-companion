@@ -1,5 +1,8 @@
 // C-100: the widget's buttons -- FEED, WATER, TRAIN, and SLEEP (C-114), as the app's LifeCard has them (C-13) -- each an App Intent,
 // so it runs from the home screen without opening the app.
+// C-122: it lives in _shared/, compiled into the app as well as the widget: each button is an AudioPlaybackIntent, which
+// iOS runs in the app's own process (a widget extension may not play sound -- the user, 2026-10-15: "the widget buttons
+// work but no sound"), so the care's phrase is heard. The App Group is shared, so the press reaches the widget the same.
 // C-122: the happy path first (the user, 2026-10-15: "presume the happy path, show the screen feedback and then send to the
 // server"). A press counts at once, the widget is asked to redraw, the care's phrase plays, and only then is the companion
 // asked; its answer quietly corrects the counts. If it cannot be reached the press is kept (C-87) and nothing on screen says so.
@@ -80,10 +83,11 @@ enum CareSound {
     return d
   }
 
-  // Ambient: it mixes with whatever is playing and keeps to the silent switch, as a tap sound should.
+  // Playback, mixed with whatever is playing: the press runs with the app in the background, where an ambient session is
+  // silenced. It is a short phrase, played over (never instead of) the user's own audio.
   static func play(_ kind: CareKind) {
     guard let tune = tunes[kind] else { return }
-    try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
+    try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
     try? AVAudioSession.sharedInstance().setActive(true)
     player = try? AVAudioPlayer(data: wav(tune, root: dayRoot))
     player?.play()
@@ -98,19 +102,23 @@ enum CareSound {
   }
 }
 
-struct FeedIntent: AppIntent {
+@available(iOS 17.0, *)
+struct FeedIntent: AudioPlaybackIntent {
   static var title: LocalizedStringResource = "Feed your daemon"
   func perform() async throws -> some IntentResult { await care(.feed); return .result() }
 }
-struct WaterIntent: AppIntent {
+@available(iOS 17.0, *)
+struct WaterIntent: AudioPlaybackIntent {
   static var title: LocalizedStringResource = "Give your daemon a drink"   // C-117, DRAFT
   func perform() async throws -> some IntentResult { await care(.water); return .result() }
 }
-struct TrainIntent: AppIntent {
+@available(iOS 17.0, *)
+struct TrainIntent: AudioPlaybackIntent {
   static var title: LocalizedStringResource = "Train your daemon"
   func perform() async throws -> some IntentResult { await care(.train); return .result() }
 }
-struct SleepIntent: AppIntent {                     // C-114
+@available(iOS 17.0, *)
+struct SleepIntent: AudioPlaybackIntent {                     // C-114
   static var title: LocalizedStringResource = "Put your daemon to bed"
   func perform() async throws -> some IntentResult { await care(.sleep); return .result() }
 }

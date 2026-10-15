@@ -516,6 +516,18 @@ type Life = { mood: number; word: string; fed: { today: number; due: number }; w
               level: number | null; grown: { exp: number; level: number } | null;
               expression?: import("../server/src/expressions").Drawn };   // C-119: how it looks now, decided on the server
 
+// C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
+function presumed(l: Life, what: "feed" | "water" | "train" | "sleep" | "wake"): Life {
+  const woke = l.tired === "asleep" ? "awake" : l.tired;   // tended, it wakes (C-114)
+  switch (what) {
+    case "feed":  return { ...l, fed: { ...l.fed, today: Math.min(3, l.fed.today + 1) }, tired: woke };
+    case "water": return { ...l, watered: { ...l.watered, today: Math.min(3, l.watered.today + 1) }, tired: woke };
+    case "train": return { ...l, trained: true, tired: woke };
+    case "sleep": return { ...l, tired: "asleep" };
+    case "wake":  return { ...l, tired: "awake" };
+  }
+}
+
 function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Daemon }) {
   const [l, setL] = useState<Life | null>(null);
   const [said, setSaid] = useState("");
@@ -529,11 +541,13 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
   if (!l) return null;
   const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
     setSaid(word); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
-    setL(await api<Life>(`/api/daemon/${what}`, {}));
+    setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
     if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
       try { if (what !== "wake") { await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) }); player.play(); } }
       catch { /* quiet is fine */ }
     }
+    try { setL(await api<Life>(`/api/daemon/${what}`, {})); }   // its answer corrects the counts
+    catch { if (what !== "wake") WIDGET?.keepForLater(what); }  // C-122: out of reach, kept and sent from home (C-87)
     if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
   };
   return (

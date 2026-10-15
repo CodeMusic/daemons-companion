@@ -43,6 +43,16 @@ export async function sendWidgetKept(api: <T>(path: string, body?: unknown) => P
   ExtensionStorage.reloadWidget();
 }
 
+// C-122: a care pressed in the app while the companion was out of reach joins the widget's kept presses, so it is sent
+// with them (sendWidgetKept) the next time the companion answers -- the same queue, in the shape Shared.keep writes.
+export function keepForLater(care: "feed" | "water" | "train" | "sleep") {
+  if (!ON_IOS) return;
+  let q: { path: string; at: string }[] = [];
+  try { q = JSON.parse(shared.get("queue") ?? "[]"); } catch { q = []; }
+  q.push({ path: `/api/daemon/${care}`, at: new Date().toISOString() });
+  shared.set("queue", JSON.stringify(q));
+}
+
 // C-111: the phone hosting on its own. The widget cannot run the companion's rules, so the app draws it: the daemon the
 // widget hosts, its day and its picture, kept in the App Group as one snapshot. Its buttons are kept there too (C-87's
 // queue), counted on top of the snapshot until the app next opens and tends the daemon with them (sendWidgetKept).

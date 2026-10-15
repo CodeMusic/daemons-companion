@@ -71,12 +71,11 @@ enum Shared {
     guard var s = string("aloneSnapshot").flatMap({ try? JSONDecoder().decode(Snapshot.self, from: Data($0.utf8)) }) else { return nil }
     let iso = ISO8601DateFormatter()
     for k in kept where (k["at"] as? String).flatMap(iso.date(from:)).map({ $0 > s.at }) ?? true {
-      switch (k["path"] as? String) ?? "" {
-      case "/api/daemon/feed": s.fed = min(3, s.fed + 1)
-      case "/api/daemon/water": s.watered = min(3, s.watered + 1)
-      case "/api/daemon/train": s.trained = true
-      case "/api/daemon/sleep": s.tired = "asleep"                      // C-114
-      default: break
+      let path = (k["path"] as? String) ?? ""
+      if let kind = CareKind(rawValue: String(path.dropFirst("/api/daemon/".count))), path.hasPrefix("/api/daemon/") {
+        let at = s.at, said = s.said, did = s.did
+        presume(kind, &s)                                    // C-122: the same rule as the press -- tended, it wakes
+        s.at = at; s.said = said; s.did = did
       }
     }
     return s
@@ -132,10 +131,27 @@ enum Companion {
     return try JSONDecoder().decode(T.self, from: data)
   }
 
+  // C-122: presses kept while the companion was out of reach are sent by the widget itself the next time it asks, in
+  // order, so it does not wait for the app to be opened -- the ones that still do not go through stay kept.
+  static func sendKept() async {
+    let q = Shared.kept
+    guard !q.isEmpty else { return }
+    var left: [[String: Any]] = []
+    for (i, k) in q.enumerated() {
+      guard let path = k["path"] as? String, path.hasPrefix("/api/daemon/") else { continue }
+      do { let _: Life = try await call(path, post: true) } catch { left = Array(q[i...]); break }
+    }
+    let now = Shared.kept                                    // a press made meanwhile stays kept as well
+    left += now.dropFirst(q.count)
+    if left.isEmpty { Shared.defaults?.removeObject(forKey: "queue") }
+    else if let d = try? JSONSerialization.data(withJSONObject: left) { Shared.defaults?.set(String(decoding: d, as: UTF8.self), forKey: "queue") }
+  }
+
   // The daemon this widget carries, its day and its picture -- the picture fetched again only when its art would change.
   static func refresh() async -> Snapshot? {
     guard Shared.paired else { return nil }
     if Shared.alone { let s = Shared.alonePicture; Shared.snapshot = s; return s }   // C-111: nothing to ask
+    await sendKept()
     do {
       let st: DeviceState = try await call("/api/device/state")
       guard let d = st.daemon else { let s = Snapshot(carries: false); Shared.snapshot = s; return s }

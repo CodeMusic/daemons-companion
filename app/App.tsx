@@ -340,9 +340,11 @@ function Stuck({ error, ink }: { error: string; ink: string }) {
 // C-118: a care button -- large, all the same width, the one that matters now lit
 function CareKey({ label, onPress, ink, lit = false }: { label: string; onPress: () => void; ink: string; lit?: boolean }) {
   return (
-    <Button flex={1} height={52} borderRadius={8} backgroundColor={lit ? "$color9" : "$color3"} borderWidth={lit ? 0 : 1.5} borderColor="$color8"
+    <Button flex={1} height={52} paddingHorizontal={4} borderRadius={8} backgroundColor={lit ? "$color9" : "$color3"} borderWidth={lit ? 0 : 1.5} borderColor="$color8"
             pressStyle={{ backgroundColor: "$color10" }} hoverStyle={{ backgroundColor: lit ? "$color10" : "$color4" }} onPress={onPress}>
-      <Text fontSize={16} fontWeight="800" letterSpacing={1} color={lit ? ink : "$color12"}>{label.toUpperCase()}</Text>
+      {/* one line, shrunk to fit: on a 402pt-wide iPhone four keys broke DRINK into DRI / NK (seen 2026-10-15) */}
+      <Text fontSize={16} fontWeight="800" letterSpacing={0.5} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}
+            color={lit ? ink : "$color12"}>{label.toUpperCase()}</Text>
     </Button>
   );
 }

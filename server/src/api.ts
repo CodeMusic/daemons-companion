@@ -92,9 +92,9 @@ const carriedDaemon = (cfg: Config, store: Store, deviceId = "") => core.carried
 export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId = "") =>
   core.growFromStep(hostOf(cfg), store, stepId, deviceId);
 // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
-export const deviceState = (cfg: Config, store: Store, now = new Date(), deviceId = "") => {
+export const deviceState = (cfg: Config, store: Store, now = new Date(), deviceId = "", as: string | null = null) => {
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
-  return core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null);
+  return core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null, as);
 };
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
@@ -403,7 +403,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
       if (req.method === "GET" && path === "/api/device/state") {
         hub.seen(via);
-        const st = deviceState(ecfg, store, new Date(), deviceId);
+        const st = deviceState(ecfg, store, new Date(), deviceId, url.searchParams.get("expression"));   // C-121: ?expression= for bench.py
         // C-82: down the cable only, the relay's address and the board's own key, for when it is away on its own Wi-Fi
         const relay = store.getSetting("relay.url");
         if (via === "usb" && relay && validDeviceId(deviceId)) return send(res, 200, { ...st, away: { url: relay, key: devices.keyFor(deviceId) } });

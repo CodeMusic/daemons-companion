@@ -13,7 +13,7 @@ import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
 import { life } from "./life.js";
 import { feelings } from "./feelings.js";
-import { expressionFor, faceOf } from "./expressions.js";
+import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
@@ -195,7 +195,8 @@ export function grown(d: { species: number; exp: number; level: number; personal
   return { exp, level: Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp + exp)) };
 }
 
-export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null) {
+// `as`: an expression to draw it in instead of its own (GET /api/device/state?expression=, for a bench check)
+export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null, as: string | null = null) {
   const t = today(h, store, now);
   let daemon = null, party: unknown[] = [];
   const bytes = h.save.read();
@@ -212,7 +213,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
-                      expression: daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
+                      expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store) };
   }

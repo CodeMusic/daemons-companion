@@ -84,6 +84,7 @@ With the bridge stopped (it holds the port), from `firmware/esp32/`:
 ```sh
 python3 shot.py screen.png    # the board's screen, saved as a PNG
 python3 check_keys.py keys.png   # the three buttons (M5GO, Fire, T-Display-S3 Pro): held, let go, and heard at home
+python3 bench.py bench/       # every board on the cable: at rest, its buttons, its daemon in five expressions -- a sheet each
 pio device monitor            # watch it start: boot: start ... boot: ready, then HELLO every three seconds
 ```
 

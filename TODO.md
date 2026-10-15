@@ -18,9 +18,15 @@ at the first open one. Each names its ticket; the ticket holds the detail.
    boards with C-121 (d172a28); the Tab5 (abdad70); the widget and the app's care card with C-122 (e5400c9, 550e808,
    the other session's). Seen on the devices: goals 3 and 4.*
 3. **Flash and see** -- every board on the cable flashed with C-119's row fix and C-121, and seen (*waits on the user
-   plugging them in*).
+   plugging them in*): `./updateCompanion.sh`, then `python3 firmware/esp32/bench.py OUTDIR` -- one sheet a board (goal 5).
 4. **The Tab5 re-paired** and its den and care seen (C-77, C-119; *waits on the user: the site's SETTINGS, PAIR A
    PHONE*).
+5. ~~**A bench check for every board**~~ -- so the time with the boards on the cable goes on seeing, not setting up.
+   ***Built 2026-10-15***: *`firmware/esp32/bench.py` finds every board on the cable and makes a sheet for each: its
+   screen at rest; on the three-button boards `check_keys.py` (C-121: a button held, let go, and the care heard by the
+   companion through the outbox); its daemon in five expressions (C-119), the companion's state asked for in each
+   (`GET /api/device/state?expression=`, new) and handed down the cable as the bridge does. The presses are the
+   firmware's own (`KEY DOWN|UP A|B|C`, `KEY CANCEL`, new). Tried against a pretend board; the real ones are goal 3.*
 
 | | Ticket | State | See |
 |---|---|---|---|

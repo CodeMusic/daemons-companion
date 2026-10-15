@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXPRESSIONS, expressionFor, eyePatch, faceOf, shade, shadePalette } from "../src/expressions.js";
+import { drawnAs, EXPRESSIONS, expressionFor, eyePatch, faceOf, shade, shadePalette } from "../src/expressions.js";
 import type { Feelings } from "../src/feelings.js";
 
 const calmFeelings = (p: Partial<Feelings>): Feelings => ({ glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null, ...p });
@@ -58,5 +58,12 @@ describe("expressions on any sprite (C-119)", () => {
     const glad = eyePatch(f, EXPRESSIONS.glad);
     const arc = glad.filter((p) => p.h === 1);
     expect(Math.min(...arc.map((p) => p.y))).toBeLessThan(Math.max(...arc.map((p) => p.y)));   // the middle above the ends
+  });
+
+  it("draws any expression by name for a bench check, as a host would receive it, and nothing for a name it lacks", () => {
+    const care = faceOf("caremusai")!;
+    expect(drawnAs("asleep", care)).toEqual(expressionFor({ tired: "asleep" }, null, care));
+    expect(drawnAs("glad", null)?.patch).toEqual([]);
+    expect(drawnAs("sulking", care)).toBeNull();
   });
 });

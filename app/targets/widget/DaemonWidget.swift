@@ -53,7 +53,7 @@ struct Provider: TimelineProvider {
       // A button was just pressed: it answers with a hop, and its words stay a minute before the companion is asked again.
       if let s = Shared.snapshot, s.said != nil, now.timeIntervalSince(s.at) < 60 {
         let back = s.at.addingTimeInterval(60)
-        return completion(Timeline(entries: wander(s, paired: Shared.paired, from: now, until: back, react: now.timeIntervalSince(s.at) < 5),
+        return completion(Timeline(entries: wander(s, paired: Shared.paired, from: now, until: back, react: now.timeIntervalSince(s.at) < 10),
                                    policy: .after(back)))
       }
       let s = await Companion.refresh()
@@ -185,20 +185,27 @@ struct CareButton<I: AppIntent>: View {
   let den: Den
   let done: Bool     // C-113: today's are all done -- it still works, quieter
   var k: CGFloat = 1 // C-113: the widget's scale (DaemonWidgetView.scale), so a smaller iPhone gets a smaller button
+  var pressed = false  // C-122: this was the button just pressed -- lit, ringed, and a check while the daemon hops
+  var hop = false
   var body: some View {
     Button(intent: intent) {
       Group {
         if compact {
-          Image(systemName: symbol).font(.system(size: 13 * k, weight: .semibold))
+          Image(systemName: hop ? "checkmark" : symbol).font(.system(size: 13 * k, weight: .bold))
         } else {
-          Label(label, systemImage: symbol).font(.system(size: 12 * k, weight: .semibold)).labelStyle(.titleAndIcon)
+          Label(hop ? "Done" : label, systemImage: hop ? "checkmark" : symbol).font(.system(size: 12 * k, weight: .semibold))   // DRAFT
+            .labelStyle(.titleAndIcon)
         }
       }
+      .contentTransition(.symbolEffect(.replace))
       .frame(maxWidth: .infinity, minHeight: (compact ? 26 : 30) * k)
     }
     .buttonStyle(.plain)
     .foregroundStyle(Color(hex: den.deep))
-    .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: den.glow).opacity(done ? 0.45 : 0.95)))
+    .background(RoundedRectangle(cornerRadius: 8).fill(pressed ? Color.white : Color(hex: den.glow).opacity(done ? 0.45 : 0.95)))
+    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(hex: den.glow), lineWidth: pressed ? 2 : 0))
+    .scaleEffect(hop ? 1.08 : 1)
+    .animation(.spring(duration: 0.35, bounce: 0.5), value: hop)
   }
 }
 
@@ -206,14 +213,24 @@ struct Buttons: View {
   let s: Snapshot
   let compact: Bool
   var k: CGFloat = 1
+  var entry: Entry? = nil
+  // C-122: the button just pressed stays lit while its words are shown (a minute), and shows a check during the hop
+  func pressed(_ kind: String) -> Bool {
+    guard let e = entry, s.did == kind, s.said != nil else { return false }
+    return e.date.timeIntervalSince(s.at) < 60
+  }
   var body: some View {
-    let den = s.den ?? PLAIN
+    let den = s.den ?? PLAIN, hop = entry?.hop ?? false
     HStack(spacing: 6 * k) {
       // C-117: the boards' order -- A drink, B feed, C train (then SLEEP)
-      CareButton(intent: WaterIntent(), label: "Drink", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k)
-      CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3, k: k)
-      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den, done: s.trained, k: k)
-      CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: s.tired == "asleep", k: k)   // C-114
+      CareButton(intent: WaterIntent(), label: "Drink", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k,
+                 pressed: pressed("water"), hop: hop && pressed("water"))
+      CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3, k: k,
+                 pressed: pressed("feed"), hop: hop && pressed("feed"))
+      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den,
+                 done: s.trained, k: k, pressed: pressed("train"), hop: hop && pressed("train"))
+      CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: s.tired == "asleep", k: k,
+                 pressed: pressed("sleep"), hop: hop && pressed("sleep"))   // C-114
     }
   }
 }
@@ -287,7 +304,7 @@ struct DaemonWidgetView: View {
     VStack(spacing: 5 * k) {
       HStack { name(s, 11 * k); Spacer(minLength: 0) }
       stage(s).frame(maxHeight: .infinity)
-      Buttons(s: s, compact: true, k: k)
+      Buttons(s: s, compact: true, k: k, entry: entry)
     }
   }
 
@@ -300,7 +317,7 @@ struct DaemonWidgetView: View {
         Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 5 * k)
         line(s, 11 * k)
         Spacer(minLength: 0)
-        Buttons(s: s, compact: true, k: k)
+        Buttons(s: s, compact: true, k: k, entry: entry)
       }
       .frame(width: 148 * k)
     }
@@ -316,7 +333,7 @@ struct DaemonWidgetView: View {
       stage(s).frame(maxHeight: .infinity)
       Pips(s: s, glow: Color(hex: (s.den ?? PLAIN).glow), size: 7 * k)
       line(s, 12 * k)
-      Buttons(s: s, compact: false, k: k)
+      Buttons(s: s, compact: false, k: k, entry: entry)
     }
   }
 

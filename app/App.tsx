@@ -889,6 +889,24 @@ function AloneSettings({ ink }: { ink: string }) {
     </YStack>
   );
 }
+// C-111: a phone paired with a companion can leave it -- to host the daemon on this phone alone (Delta's save through
+// Files), or to pair with another. The first tap only asks; nothing on the companion is changed or lost. DRAFT words.
+function LeaveCompanionCard({ ink }: { ink: string }) {
+  const [sure, setSure] = useState(false);
+  if (!ON_PHONE) return null;
+  return (
+    <Card>
+      <Eyebrow>THIS PHONE</Eyebrow>
+      <Small>{`Paired with ${SERVER}. Leave it to host your daemon on this phone alone, or to pair with another companion. ` +
+        "Everything stays on the companion; pairing back needs a new code from its site (SETTINGS, PAIR A PHONE)."}</Small>
+      <XStack marginTop={4}>
+        <Action label={sure ? "Tap again to leave this companion" : "Leave this companion"} ink={ink}
+                onPress={() => { if (sure) pairAgain(); else { setSure(true); setTimeout(() => setSure(false), 5000); } }} />
+      </XStack>
+    </Card>
+  );
+}
+
 function SavePathSettings({ ink }: { ink: string }) {
   const [s, setS] = useState<Settings | null>(null);
   const [typed, setTyped] = useState("");
@@ -907,6 +925,7 @@ function SavePathSettings({ ink }: { ink: string }) {
       <VersionCard />
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
+      <LeaveCompanionCard ink={ink} />
     </YStack>
   );
   return (
@@ -936,6 +955,7 @@ function SavePathSettings({ ink }: { ink: string }) {
         {note ? <Small>{note}</Small> : null}
       </Card>
       <TalkSettingsCard ink={ink} />
+      <LeaveCompanionCard ink={ink} />
     </YStack>
   );
 }

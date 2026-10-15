@@ -199,13 +199,18 @@ async function apiLive<T>(path: string, body?: unknown): Promise<T> {
 // comes, is kept and -- if it differs -- tells the app to draw the screen again (freshHeard).
 const KEPT_FIRST_MS = 1200;
 const freshHeard = new Set<() => void>();
-async function liveAndKeep<T>(path: string): Promise<T> {
+// The flicker (the user, 2026-10-15: "the device one flickers so often u can't use it, settings also flicker and
+// profile"): every changed answer re-made the whole screen (the ScrollView's key), and DEVICE asks every 1.5 s, so it
+// was torn down and built again every few seconds. Now the screen is drawn again only when it was drawn from what was
+// kept -- the live answer came too late (KEPT_FIRST_MS) -- and a screen that polls (POLLED) redraws itself.
+const POLLED = /^\/api\/device\/link$/;
+async function liveAndKeep<T>(path: string, servedKept: () => boolean): Promise<T> {
   const j = await apiLive<T>(path);
   const changed = JSON.stringify(KEPT.paths[path]) !== JSON.stringify(j);
   KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept();
   setOffline(null);
   if (KEPT.queue.length) sendHeld();
-  if (changed) freshSoon();
+  if (changed && servedKept() && !POLLED.test(path)) freshSoon();
   return j;
 }
 let freshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -217,12 +222,13 @@ function freshSoon() {                     // many answers at once (keepEverythi
 // C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
 async function api<T>(path: string, body?: unknown): Promise<T> {
   if (ON_PHONE && body === undefined && !path.startsWith("/api/art") && path in KEPT.paths) {
-    const live = liveAndKeep<T>(path).catch((e) => {
+    let servedKept = false;
+    const live = liveAndKeep<T>(path, () => servedKept).catch((e) => {
       if (!(e instanceof Unreachable)) throw e;                     // the companion answered "no"
       setOffline(KEPT.at);
       return KEPT.paths[path] as T;
     });
-    const kept = new Promise<T>((res) => setTimeout(() => res(KEPT.paths[path] as T), KEPT_FIRST_MS));
+    const kept = new Promise<T>((res) => setTimeout(() => { servedKept = true; res(KEPT.paths[path] as T); }, KEPT_FIRST_MS));
     return Promise.race([live, kept]);
   }
   try {
@@ -262,13 +268,18 @@ async function sendHeld() {
 }
 async function keepEverything() {
   if (!ON_PHONE) return;
+  let moved = false;
   for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk",
-                   "/api/settings", "/api/talk/settings", "/api/device/settings"])   // C-92: SETTINGS opens away too
-    await liveAndKeep(p).catch(() => {});
+                   "/api/settings", "/api/talk/settings", "/api/device/settings"]) {   // C-92: SETTINGS opens away too
+    const before = JSON.stringify(KEPT.paths[p]);
+    await liveAndKeep(p, () => false).catch(() => {});
+    if (JSON.stringify(KEPT.paths[p]) !== before) moved = true;
+  }
+  if (moved) freshSoon();                 // the screen drawn again once if anything moved -- not once per answer
   if (OFFLINE) return;
   // C-86: each party daemon's INDEX entry too, so opening one away from home needs nothing from home
   const carried = (KEPT.paths["/api/party"] as { party?: { species: number }[] } | undefined)?.party ?? [];
-  for (const d of carried) await liveAndKeep(`/api/species/${d.species}`).catch(() => {});
+  for (const d of carried) await liveAndKeep(`/api/species/${d.species}`, () => false).catch(() => {});
   await artByJson("/art/species/1.png").catch(() => {});                // the whole INDEX's pictures, in one request
   const party = (KEPT.paths["/api/party"] as { party?: { slot: number }[] } | undefined)?.party ?? [];
   for (const d of party) await artByJson(`/art/party/${d.slot}.png`).catch(() => {});

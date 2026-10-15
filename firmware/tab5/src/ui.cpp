@@ -249,9 +249,23 @@ static String careSaid;
 static void tapCare(lv_event_t *e) {
   int k = (int)(long)lv_event_get_user_data(e);
   careSaid = CARE_SAID[k];
+  // C-121 (the user, 2026-10-15: "presume the happy path show the screen feedback and then send to the server"): the
+  // kept state takes the care at once -- asleep or awake, the day's meal or drink counted -- so the page is drawn as it
+  // will be (WAKE, or DRINK FEED TRAIN SLEEP) before the companion answers; its answer, when it comes, replaces it
+  JsonDocument st = newDoc();
+  if (kept("state", st) && !st["daemon"].isNull()) {
+    JsonObject life = st["daemon"]["life"];
+    if (life.isNull()) life = st["daemon"]["life"].to<JsonObject>();
+    String tired = (const char *)(life["tired"] | "awake");
+    life["tired"] = String(k == 3 ? "asleep" : k == 4 || tired == "asleep" ? "awake" : tired.c_str());
+    if (k == 0) life["fed"]["today"] = min(3, (int)(life["fed"]["today"] | 0) + 1);
+    if (k == 1) life["watered"]["today"] = min(3, (int)(life["watered"]["today"] | 0) + 1);
+    String json; serializeJson(st, json);
+    keep("state", json);
+  }
+  drawnAt[P_DAEMON] = 0;
   if (k == 4) soundWake(); else soundCare(k);
   netSend("POST", String("/api/daemon/") + CARE_KIND[k], "{}");
-  drawnAt[P_DAEMON] = 0;
 }
 
 static void drawDaemon(lv_obj_t *p) {

@@ -23,12 +23,24 @@ import shot
 EXPRESSIONS = ("awake", "drowsy", "asleep", "glad", "sad")
 
 
+def memory(dev, wait=3):
+    """MEM down the cable: the heap left and its largest block -- C-121 added two tasks (a tune's, the outbox's), and
+    the M5GO has no PSRAM, so a board short of memory shows here before it shows as a relay that cannot connect."""
+    check_keys.send(dev, "MEM")
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        line = dev.readline().decode(errors="replace").strip()
+        if line.startswith("MEM heap"):
+            return " ".join(line.split()[:5])
+    return "MEM: no answer"
+
+
 def bench(port, server, outdir):
     dev = boardport.open_port(port, timeout=1)
     kind, device = check_keys.hello(dev)
     if not device:
         return "%s: no HELLO (is it running, and the bridge stopped?)" % port
-    rows, notes = [], []
+    rows, notes = [], [memory(dev)]
     if kind in check_keys.THREE_KEYS:
         shots, verdict = check_keys.check(dev, device, server)
         rows.append(("%s, the three buttons (C-121)" % kind, shots, verdict))

@@ -29,13 +29,13 @@ void careDo(int kind) {
   // presumed done -- the word, its day and the hop drawn before anything else, the tune from its own task, and the
   // server told from the outbox (net.cpp), so nothing here waits on a sound or the network
   say(CARE_SAID[kind]);
-  if (kind != 3) hopUntil = millis() + 480;
   st.daemon.tired = kind == 3 ? "asleep" : kind == 4 || st.daemon.tired == "asleep" ? "awake" : st.daemon.tired;
   if (kind == 0) st.daemon.fed = min(3, st.daemon.fed + 1);
   if (kind == 1) st.daemon.watered = min(3, st.daemon.watered + 1);
   dirty = true;
   draw();
-  if (kind == 4) soundWake(); else soundCare(kind);
+  if (kind == 4) soundWake(); else soundCare(kind);   // from its task -- or, without PSRAM, played here (sound.cpp)
+  if (kind != 3) { hopUntil = millis() + 480; dirty = true; }   // after it, so where the tune is played here the hop still shows
   report(CARE_KIND[kind], "device");
 }
 

@@ -42,7 +42,10 @@ void takeSettings(JsonVariant s) {
 }
 
 // ---- the state, from the server's JSON ------------------------------------------------------------------------------
-bool takeState(const String &json) {
+bool takeState(const String &json) { return takeState(json.c_str()); }
+// C-121: read where it lies -- a STATE line's own buffer, not a copy of it: on the M5GO (no PSRAM) the copy's 2.6 KB
+// was sometimes the difference between a state taken and one refused
+bool takeState(const char *json) {
   JsonDocument whole;
   if (deserializeJson(whole, json)) return false;
   // GET /api/device/state is the state; POST /api/device/ticks answers {done, state}.

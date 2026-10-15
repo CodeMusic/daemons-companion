@@ -130,7 +130,9 @@ static bool dacBegin() {
   cfg.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
   cfg.communication_format = I2S_COMM_FORMAT_STAND_MSB;
   cfg.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
-  cfg.dma_buf_count = 8; cfg.dma_buf_len = 256;
+  // C-121: 8 KB of DMA while it plays -- 4 KB on a board without PSRAM (the M5GO), whose tunes play in the loop and so
+  // never need the extra time the buffers give a tune playing from its task while the screen is drawn
+  cfg.dma_buf_count = psramFound() ? 8 : 4; cfg.dma_buf_len = 256;
   cfg.tx_desc_auto_clear = true;
   if (i2s_driver_install(PORT, &cfg, 0, nullptr) != ESP_OK) return false;
   i2s_set_pin(PORT, nullptr);
@@ -138,10 +140,12 @@ static bool dacBegin() {
   i2s_zero_dma_buffer(PORT);
   return true;
 }
+bool soundQuiet() { return !dacOn; }       // C-121: the DAC let go, its DMA given back (net.cpp sends only then, without PSRAM)
 #else
 static bool dacStart() { return false; }
 void soundDacRate(int) {}
 void soundIdle() {}
+bool soundQuiet() { return true; }
 #endif
 
 static void play(const Note *notes, int n, int base, int dance, float level);
@@ -157,10 +161,13 @@ static void tuneLoop(void *) {
   }
 }
 static void tuneTaskBegin() {
-  if (tuneTask) return;
+  // not on a board without PSRAM: on the M5GO its stack and the outbox's left too little heap to read a picture
+  // (net.cpp, reportBegin) -- there the tunes play where they are asked for, after the care is drawn
+  if (tuneTask || !psramFound()) return;
   voice = xSemaphoreCreateMutex();
   tunes = xQueueCreate(1, sizeof(Tune));
   // above the loop's priority, so the speaker is fed while the screen is drawn; without it, tunes play as they did
+  // its samples are static (tone()'s buffer), so its stack is small
   if (!voice || !tunes || xTaskCreate(tuneLoop, "tune", 3072, nullptr, 2, &tuneTask) != pdPASS) tuneTask = nullptr;
 }
 // a tune from the task -- or, if it could not be made, played here as before

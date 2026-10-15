@@ -241,6 +241,8 @@ static String relayHttp(const char *method, const String &path, const String &bo
 // across a report and the state that follows). lastCode is the last answer's status, read by whoever holds it.
 static SemaphoreHandle_t netLock = nullptr;
 static int lastCode = -1;
+// The outbox's task -- only on a board with PSRAM (reportBegin) -- which may take the relay as the loop does
+static TaskHandle_t outboxTask = nullptr;
 struct NetHeld {
   NetHeld() { if (netLock) xSemaphoreTakeRecursive(netLock, portMAX_DELAY); }
   ~NetHeld() { if (netLock) xSemaphoreGiveRecursive(netLock); }
@@ -434,7 +436,7 @@ void handleLine(String line, bool fromPhone) {
   uint32_t &seen = fromPhone ? phoneSeen : usbSeen;
   line.trim();
   if (line.startsWith("STATE ")) {
-    if (takeState(line.substring(6))) seen = millis();
+    if (takeState(line.c_str() + 6)) seen = millis();       // C-121: the line's own buffer, no copy
     else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing
   }
   else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
@@ -614,46 +616,56 @@ String outboxStatus() {
          " in " + String(sentMs) + " ms via " + (sentAway ? "relay" : "home") + " after " + String(sentTries) + " tries";
 }
 
+// One try at the oldest waiting: told, or refused (dropped), or no answer (kept). True when no one answered, and the
+// next try should wait. The state the server answers the last of them with is mailed to the loop.
+static int tries = 0;
+static uint32_t sendAfter = 0;                         // a care's drawing and hop come first (the loop's own sending)
+static bool sendOne() {
+  Told t;
+  if (netLock) xSemaphoreTakeRecursive(netLock, portMAX_DELAY);
+  sending = true;
+  bool ok = false; int code = -1;
+  if (xQueuePeek(outbox, &t, 0) == pdTRUE) {             // still here: the cable may have carried it meanwhile
+    JsonDocument d; d["kind"] = t.kind; d["detail"] = t.detail;
+    String body; serializeJson(d, body);
+    uint32_t t0 = millis();
+    http("POST", "/api/device/interact", body, &ok);
+    code = lastCode;
+    sentTries = ++tries; sentCode = code; sentMs = millis() - t0; sentAway = viaRelay();
+    if (ok || code > 0) { xQueueReceive(outbox, &t, 0); tries = 0; }   // told -- or refused, which sending again would not change
+    if (ok && !uxQueueMessagesWaiting(outbox)) {         // the last of them: its new life, for the loop
+      bool got; String s = http("GET", "/api/device/state", "", &got);
+      if (got && !outboxTask) { takeState(s); lastPoll = millis(); dirty = true; }   // this is the loop: taken here, no copy
+      else if (got) {
+        String *m = new String(s);
+        portENTER_CRITICAL(&mailMux); String *old = stateMail; stateMail = m; portEXIT_CRITICAL(&mailMux);
+        delete old;
+      }
+    }
+  }
+  sending = false;
+  if (netLock) xSemaphoreGiveRecursive(netLock);
+  return !ok && code <= 0;
+}
+
 static void outboxLoop(void *) {
   Told t;
-  int tries = 0;
   for (;;) {
     if (xQueuePeek(outbox, &t, portMAX_DELAY) != pdTRUE) continue;
     if (bridgeLive() || !online()) { vTaskDelay(pdMS_TO_TICKS(1000)); continue; }   // the cable carries it, or no network yet
-    xSemaphoreTakeRecursive(netLock, portMAX_DELAY);
-    sending = true;
-    bool ok = false; int code = -1;
-    if (xQueuePeek(outbox, &t, 0) == pdTRUE) {           // still here: the cable may have carried it meanwhile
-      JsonDocument d; d["kind"] = t.kind; d["detail"] = t.detail;
-      String body; serializeJson(d, body);
-      uint32_t t0 = millis();
-      http("POST", "/api/device/interact", body, &ok);
-      code = lastCode;
-      sentTries = ++tries; sentCode = code; sentMs = millis() - t0; sentAway = viaRelay();
-      if (ok || code > 0) { xQueueReceive(outbox, &t, 0); tries = 0; }   // told -- or refused, which sending again would not change
-      if (ok && !uxQueueMessagesWaiting(outbox)) {       // the last of them: its new life, for the loop
-        bool got; String s = http("GET", "/api/device/state", "", &got);
-        if (got) {
-          String *m = new String(s);
-          portENTER_CRITICAL(&mailMux); String *old = stateMail; stateMail = m; portEXIT_CRITICAL(&mailMux);
-          delete old;
-        }
-      }
-    }
-    sending = false;
-    xSemaphoreGiveRecursive(netLock);
-    if (!ok && code <= 0) vTaskDelay(pdMS_TO_TICKS(5000));   // no one answered: again in a while
+    if (sendOne()) vTaskDelay(pdMS_TO_TICKS(5000));       // no one answered: again in a while
   }
 }
 
+// Seen 2026-10-15 on the M5GO, which has no PSRAM: with the outbox's task (even at 4 KB) and the tune's, 11 KB of heap
+// was left and its largest block 5 KB, too small to read its daemon's picture; without them, 18 KB and 14 KB, and it
+// read it. So a board without PSRAM keeps the outbox but not its task: the loop sends (reportLoop), once the care has
+// been drawn and its hop played -- a quarter of a second at home, and a try that is not answered waits ten seconds.
 void reportBegin() {
+  outbox = xQueueCreate(psramFound() ? 16 : 8, sizeof(Told));
+  if (!outbox || !psramFound()) return;
   netLock = xSemaphoreCreateRecursiveMutex();
-  outbox = xQueueCreate(16, sizeof(Told));
-  // without its task (no memory), what is told goes out as it always did, from the loop
-  if (!netLock || !outbox || xTaskCreate(outboxLoop, "outbox", 8192, nullptr, 1, nullptr) != pdPASS) {
-    if (outbox) vQueueDelete(outbox);
-    outbox = nullptr;
-  }
+  if (!netLock || xTaskCreate(outboxLoop, "outbox", 8192, nullptr, 1, &outboxTask) != pdPASS) outboxTask = nullptr;   // the loop sends
 }
 
 void report(const String &kind, const String &detail) {
@@ -666,7 +678,8 @@ void report(const String &kind, const String &detail) {
   }
   Told t;
   strlcpy(t.kind, kind.c_str(), sizeof t.kind); strlcpy(t.detail, detail.c_str(), sizeof t.detail);
-  xQueueSend(outbox, &t, 0);                             // full (sixteen waiting, long out of touch): this one is not kept
+  xQueueSend(outbox, &t, 0);                             // full (long out of touch): this one is not kept
+  sendAfter = millis() + 600;
 }
 
 // C-121: every pass of the loop -- the state the outbox brought back, and what is waiting carried by the cable or phone
@@ -676,11 +689,19 @@ void reportLoop() {
     if (!netBusy()) { takeState(*m); lastPoll = millis(); dirty = true; }   // more to send: its own answer will come
     delete m;
   }
-  if (outbox && uxQueueMessagesWaiting(outbox) && bridgeLive() && xSemaphoreTakeRecursive(netLock, 0) == pdTRUE) {
+  if (outbox && uxQueueMessagesWaiting(outbox) && bridgeLive() && (!netLock || xSemaphoreTakeRecursive(netLock, 0) == pdTRUE)) {
     Told t;
     while (xQueueReceive(outbox, &t, 0) == pdTRUE) bridge(String("INTERACT ") + t.kind + " " + t.detail);
-    xSemaphoreGiveRecursive(netLock);
+    if (netLock) xSemaphoreGiveRecursive(netLock);
   }
+  // no task to send it (a board without PSRAM): the loop does, after the care's drawing and hop -- and once the speaker
+  // has let go of its memory: on the M5GO an HTTP request with the DAC's buffers still held ran out (abort() in operator
+  // new, seen 2026-10-15, a SHOT having held the loop past the moment the DAC is let go)
+  static uint32_t retryAt = 0;
+  uint32_t now = millis();
+  if (outbox && !outboxTask && uxQueueMessagesWaiting(outbox) && !bridgeLive() && online() && soundQuiet() &&
+      (int32_t)(now - sendAfter) > 0 && (int32_t)(now - retryAt) > 0 && sendOne())
+    retryAt = millis() + 10000;
 }
 
 // C-36: the device asks for its daemon's art when the state names art it does not have -- through the bridge (ART?),

@@ -51,6 +51,7 @@ extern uint32_t artAskedAt;
 void loadSettings();
 void takeSettings(JsonVariant s);
 bool takeState(const String &json);
+bool takeState(const char *json);
 bool takeArt(const String &json);
 void drawDen(int x, int y, int w, int h, int floorY);   // C-113, den.cpp
 int dayIndex();                           // C-50: Sunday 0, for its tunes

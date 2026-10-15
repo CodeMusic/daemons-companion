@@ -7,6 +7,7 @@ void soundBegin();
 void soundIdle();     // every pass of the loop: the M5GO and Fire let their DAC go once nothing has played a moment
 void soundLoop();     // C-121: every pass of the loop instead -- the tune task's dance shown, then soundIdle()
 void soundTap();      // C-121: a press, heard the moment it lands
+bool soundQuiet();    // C-121: nothing holding the speaker's memory (the M5GO and Fire's DAC let go)
 void soundPause();    // C-74: the StickS3 lends its codec to the microphone
 void soundResume();
 void es8311Mic();

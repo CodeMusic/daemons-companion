@@ -168,6 +168,8 @@ void routinesBegin();                     // the types this board can run
 bool partyFirst();                        // C-68: ROUTINES opens the party (a board with no radios of its own)
 bool isPartyType(int i);                  // C-68: the CC1101's PARTY type, which opens the same screen
 int partyRows();                          // the party, and on a party-first board one more row: its radios
+int partyRowOf(int at);                   // where partyAt is on the screen: on a party-first board the radios are row 0
+int partyAtRow(int row);                  // ... and back
 void playGameRoutine();                   // C-68: the chosen routine -- its tune, the ring its colour
 String runTheaterMode();                  // C-58: run on the board itself, never from the site
 void runRoutine();

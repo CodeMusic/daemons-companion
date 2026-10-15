@@ -90,8 +90,9 @@ only on its top button, so a pocket cannot wake it.
   **A DRINK, B FEED, C TRAIN**. At bedtime (from 8pm, when it is sleepy and not yet put to bed) the right one says
   **SLEEP**, lit: press it to put it to bed. While it sleeps the screen says **ASLEEP** and one **WAKE** bar runs under
   all three: any button wakes it. **A and C together** open the menu (where A and C turn, B presses) and close it.
-  Held, B talks; A goes back; C, two seconds, sleeps the board itself -- asleep, only a held B wakes it. The M5GO base
-  gives it its microphone and ten lights.
+  Held, B talks; A goes back; C, two seconds, sleeps the board itself -- asleep, only a held B wakes it. In the menu,
+  ROUTINES opens on **RADIOS** -- **WHISPER** (pair your phone) and **UPLINK** (Wi-Fi) -- with your party's routines
+  below it. The M5GO base gives it its microphone and ten lights.
 - **T-Watch S3**: its home is the face -- the time, the day's theme, its virtue over its vice, chakra and note,
   today's steps, the battery and a TALK button.
 

@@ -157,13 +157,14 @@ void drawRoutines(uint16_t day) {
   canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
   if (screen == PARTY) {                     // C-68: GAME ROUTINES -- the party, five rows at a time
     canvas.drawString("WHOSE ROUTINE?", 10, 32);                                  // DRAFT
-    int rows = partyRows(), from = max(0, partyAt - 4);
-    if (!st.partyN) wrap("The party is empty, or the save is not read yet.", 12, 58, W - 24, 2, 18, 3, QUIET);
-    for (int i = from; i < rows && i < from + 5; i++) {
+    int rows = partyRows(), cur = partyRowOf(partyAt), from = max(0, cur - 4);   // the RADIOS first on a party-first board
+    if (!st.partyN) wrap("The party is empty, or the save is not read yet.", 12, partyFirst() ? 80 : 58, W - 24, 2, 18, 3, QUIET);
+    for (int r = from; r < rows && r < from + 5; r++) {
+      int i = partyAtRow(r);
       if (i < st.partyN) {
         const Member &m = st.party[i];
-        listRow(i - from, partyAt - from, m.name + "  Lv" + m.level + "  " + m.types, day, ink);
-      } else listRow(i - from, partyAt - from, "RADIOS  (Bluetooth, Wi-Fi)", day, ink);   // DRAFT
+        listRow(r - from, cur - from, m.name + "  Lv" + m.level + "  " + m.types, day, ink);
+      } else listRow(r - from, cur - from, "RADIOS  (Bluetooth, Wi-Fi)", day, ink);   // DRAFT
     }
   } else if (screen == MOVES) {
     const Member &m = st.party[partyAt];
@@ -367,7 +368,8 @@ void draw() {
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
-    wrap(partyFirst() || !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
+    wrap(partyFirst() ? String("Its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
+         : !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
          : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
                        : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round ? 2 : 4,
          board.round ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits

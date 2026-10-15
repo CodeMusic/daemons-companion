@@ -29,6 +29,10 @@ at the first open one. Each names its ticket; the ticket holds the detail.
    CoreS3, the two Dials, the Tab5 (goal 4).*
 4. **The Tab5 re-paired** and its den and care seen (C-77, C-119; *waits on the user: the site's SETTINGS, PAIR A
    PHONE*).
+6. **WHISPER within reach on the boards with no radios of their own** (C-118; *the user, 2026-10-15, asking how WHISPER
+   is reached on the M5 Cores*: below the whole party, about seven presses from home). ROUTINES now opens on the RADIOS
+   row -- WHISPER, UPLINK -- with the party after it: A+C, C to ROUTINES, B, B. *Built; bench.py photographs it on the
+   next M5GO, Fire or T-Display-S3 Pro on the cable.*
 5. ~~**A bench check for every board**~~ -- so the time with the boards on the cable goes on seeing, not setting up.
    ***Built 2026-10-15***: *`firmware/esp32/bench.py` finds every board on the cable and makes a sheet for each: its
    screen at rest; on the three-button boards `check_keys.py` (C-121: a button held, let go, and the care heard by the

@@ -126,7 +126,7 @@ void turn(int step) {
     page = order[(at + n + step) % n];
   }
   else if (screen == TYPES) typeAt = (typeAt + typeCount + step) % typeCount;
-  else if (screen == PARTY && partyRows()) partyAt = (partyAt + partyRows() + step) % partyRows();     // C-68
+  else if (screen == PARTY && partyRows()) partyAt = partyAtRow((partyRowOf(partyAt) + partyRows() + step) % partyRows());   // C-68
   else if (screen == MOVES && st.party[partyAt].n) moveAt = (moveAt + st.party[partyAt].n + step) % st.party[partyAt].n;
   else if (screen == CARE) careAt = (careAt + 5 + step) % 5;        // C-114: FEED WATER TRAIN SLEEP, its INDEX entry
   else if (screen == INDEX_ENTRY) entryTop = max(0, entryTop + step);   // C-99: the entry scrolls (the draw keeps it in)
@@ -173,7 +173,7 @@ void press() {
     else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
-      if (partyFirst()) { screen = PARTY; partyAt = 0; }            // C-68: the party's routines, on a board with no radios
+      if (partyFirst()) { screen = PARTY; partyAt = st.partyN; }    // C-68: the party's routines, on a board with no radios -- its RADIOS first
       else if (!st.carrying) { screen = PARTY; partyAt = 0; }       // C-51: the radios are the carried daemon's; the party's routines are not
       else { screen = TYPES; typeAt = 0; }
     }

@@ -53,6 +53,11 @@ void routinesBegin() {
 bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732 && board.loraChip == LoraChip::None; }   // the SI4732 has its radio (C-69); LoRa is a radio too (C-72)
 bool isPartyType(int i) { return i >= 0 && i < typeCount && !strcmp(types[i].name, "PARTY"); }
 int partyRows() { return st.partyN + (partyFirst() ? 1 : 0); }
+// The user, 2026-10-15, asking how WHISPER is reached on the M5GO and the Fire: below the whole party, about seven
+// presses from home. On a party-first board the RADIOS row now comes first -- row 0 -- and the party after it.
+// partyAt keeps its meaning (a member's index; partyN the radios), so only the order on the screen moves.
+int partyRowOf(int at) { return partyFirst() ? (at >= st.partyN ? 0 : at + 1) : at; }
+int partyAtRow(int row) { return partyFirst() ? (row == 0 ? st.partyN : row - 1) : row; }
 
 void playGameRoutine() {
   const Member &m = st.party[partyAt];

@@ -13,10 +13,10 @@ at the first open one. Each names its ticket; the ticket holds the detail.
 1. **C-121** -- the three buttons answer at once: a sound and the key lit on the press, the word, the face and the hop
    before anything else, and the server told after, without holding the board. *Built and pushed (d172a28); seeing it
    on the Fire or the M5GO is goal 3.*
-2. **The same promise everywhere a daemon is tended** -- the dial boards' CARE list (the same `careDo`), the Tab5's care
-   buttons, the app's care card and the widget: each answers before it sends. *The dial boards: done with C-121. The
-   Tab5: built (abdad70). The widget: C-122, the other session's. The app's care card: asked of the session editing
-   App.tsx.*
+2. ~~**The same promise everywhere a daemon is tended**~~ -- the dial boards' CARE list (the same `careDo`), the Tab5's
+   care buttons, the app's care card and the widget: each answers before it sends. ***Done 2026-10-15***: *the dial
+   boards with C-121 (d172a28); the Tab5 (abdad70); the widget and the app's care card with C-122 (e5400c9, 550e808,
+   the other session's). Seen on the devices: goals 3 and 4.*
 3. **Flash and see** -- every board on the cable flashed with C-119's row fix and C-121, and seen (*waits on the user
    plugging them in*).
 4. **The Tab5 re-paired** and its den and care seen (C-77, C-119; *waits on the user: the site's SETTINGS, PAIR A

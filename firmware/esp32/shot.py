@@ -30,7 +30,10 @@ def take(dev, timeout=45):
             bits = int(parts[3]) if len(parts) > 3 else 16   # the M5GO says 8: RGB332, a byte a pixel
             data = bytearray()
         elif w and line and not line.startswith(("HELLO", "ART?", "INTERACT", "TICK", "UNREAD", "PONG", "KEY")):
-            data += base64.b64decode(line)
+            try:
+                data += base64.b64decode(line, validate=True)
+            except ValueError:                 # a stray line on the cable mid-screen (a log, noise): not the picture's
+                pass
     step = 2 if not w or bits == 16 else 1
     if not w or len(data) != w * h * step:
         print("shot: got %d of %d bytes" % (len(data), w * h * step), file=sys.stderr)

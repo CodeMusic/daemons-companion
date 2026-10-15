@@ -453,7 +453,7 @@ void draw() {
         canvas.setClipRect(x, y, w, h);
         canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
         drawArt(ax, ay, sc, right);
-        drawMark(ax, ay, sc, right);                           // C-119: zz, a heart, a drop ... above its head
+        drawMark(ax, ay, sc, right, y);                        // C-119: zz, a heart, a drop ... above its head, inside the den
         canvas.clearClipRect();
       };
       if (board.round) {                                       // C-102: the Dial -- large in the middle of the circle

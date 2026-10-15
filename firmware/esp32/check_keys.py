@@ -70,6 +70,7 @@ def check(dev, device, server):
     """The press, the release and the companion hearing it: [(title, image)], and what the companion said."""
     before = life(server, device)
     key, said = ("B", "FEED") if before and before[1] >= 3 and before[0] < 3 else ("A", "DRINK")
+    send(dev, "KEY CANCEL", 0.4)                         # awake: left alone since its flash, its screen may be asleep
     shots = [("at rest", shot.take(dev))]
     send(dev, "KEY DOWN " + key, 0.3)
     shots.append((said + " held", shot.take(dev)))

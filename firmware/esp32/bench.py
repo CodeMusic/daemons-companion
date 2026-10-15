@@ -2,7 +2,7 @@
 """Every board on the cable checked in one go -- what can be seen without a finger -- one sheet per board.
 
     ./updateCompanion.sh                      # flash them first (from the repo root)
-    python3 bench.py OUTDIR [--server=http://localhost:4730]
+    python3 bench.py OUTDIR [PORT] [--server=http://localhost:4730]     every board on the cable, or only the one on PORT
 
 For each board it finds (boardport.py; opened without restarting it):
   - its screen at rest, as it is on its own Wi-Fi;
@@ -56,6 +56,7 @@ def bench(port, server, outdir):
         rows.append(("%s, the three buttons (C-121)" % kind, shots, verdict))
         notes.append(verdict)
     else:
+        check_keys.send(dev, "KEY CANCEL", 0.4)          # awake: left alone since its flash, its screen may be asleep
         rows.append(("%s at rest" % kind, [("its own Wi-Fi", shot.take(dev))], ""))
     own = check_keys.state(server, device)
     if own is None or not own.get("daemon"):
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     server = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--server=")), "http://localhost:4730")
     outdir = args[0] if args else "."
     os.makedirs(outdir, exist_ok=True)
-    ports = boardport.ports()
+    ports = args[1:] or boardport.ports()
     if not ports:
         sys.exit("bench: no board on USB")
     for p in ports:

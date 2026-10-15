@@ -17,4 +17,4 @@ extern Expression expression;
 
 void takeExpression(JsonVariant e);                    // the state's daemon.expression; none: awake
 void drawSprite(int x, int y, int scale, bool mirrored);   // the art, in the expression (ui.cpp's drawArt)
-void drawMark(int x, int y, int scale, bool mirrored);     // above its head, at the back (x, y: where the sprite is)
+void drawMark(int x, int y, int scale, bool mirrored, int minY = 0);   // above its head, at the back (x, y: where the sprite is), never above minY

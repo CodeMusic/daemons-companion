@@ -88,12 +88,14 @@ void drawSprite(int x, int y, int scale, bool mirrored) {
 }
 
 // The mark: above its head, at the back -- the game's sprites face left, so the back is the right (mirrored, the left)
-void drawMark(int x, int y, int scale, bool mirrored) {
+void drawMark(int x, int y, int scale, bool mirrored, int minY) {
   if (!expression.marked) return;
   ready();
   int px = max(2, (scale * 3 + 2) / 4);                     // a mark's pixel: three quarters of a sprite's, at least two
   int mx = mirrored ? x + (63 - (rightmost - 2)) * scale - 8 * px : x + (rightmost - 2) * scale;
-  int my = y + (top + expression.dy) * scale - 8 * px - 4;
+  // C-121's bench: on a short den (the T-Embeds, the T-Display-S3 Pro) a tall daemon's mark rose past the den's top
+  // and was cut off -- glad's heart most, as glad lifts it; it is kept inside, beside the head if it must be
+  int my = max(minY + 2, y + (top + expression.dy) * scale - 8 * px - 4);
   for (int r = 0; r < 8; r++) for (int c = 0; c < 8; c++) {
     int bit = 0x80 >> c;                                       // the mark is never mirrored: "zz" reads the same way round
     if (expression.ink[r] & bit) canvas.fillRect(mx + c * px, my + r * px, px, px, expression.markColour);

@@ -22,8 +22,11 @@ at the first open one. Each names its ticket; the ticket holds the detail.
    *The Fire: flashed and seen 2026-10-15 (77cf695; DAEMONS qa 15Oct2026 C121 4). The M5GO: flashed and seen (faa415e;
    qa 15Oct2026 C121 5) -- it found C-121's two tasks left a board without PSRAM too little memory to read its daemon's
    picture, and a crash (abort() in operator new) when a send ran with the speaker's memory still held: there, now, the
-   loop sends after the drawing, and no task. The Fire wants flashing once more for faa415e (no change it would notice).
-   Still to see: the T-Display-S3 Pro, then the rest when they are plugged in.*
+   loop sends after the drawing, and no task. The Fire flashed again with faa415e. The T-Display-S3 Pro, the T-Embed
+   CC1101 and the SI4732: flashed and seen (401f168; qa 15Oct2026 C121 7, 8) -- all three had the companion's old
+   address, and a STATE line down the cable gave them the new one; glad's heart was cut off by their short dens, now
+   kept inside (the Pro wants one more flash for that). Not yet on the cable today: the plain T-Embed, the T-Deck, the
+   CoreS3, the two Dials, the Tab5 (goal 4).*
 4. **The Tab5 re-paired** and its den and care seen (C-77, C-119; *waits on the user: the site's SETTINGS, PAIR A
    PHONE*).
 5. ~~**A bench check for every board**~~ -- so the time with the boards on the cable goes on seeing, not setting up.

@@ -70,6 +70,8 @@ extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;
 extern uint32_t hopUntil;
 extern bool menuOpen;                     // C-117: three-button boards -- A and C together open it
 extern uint8_t keysHeld;                  // C-121: the three buttons down right now (bit 0 A, 1 B, 2 C), lit on the screen
+void keyForce(int k, bool held);          // C-121: KEY DOWN|UP A|B|C from the computer (0 A, 1 B, 2 C)
+void keyForget();                         // C-121: KEY CANCEL -- what is held forgotten, nothing done
 extern bool pickRemoteNext, joinNext;
 extern String nets[12]; extern int netRssi[12], netCount, netAt, wheelAt; extern String typed;
 extern const char WHEEL[]; extern const int WHEEL_N;

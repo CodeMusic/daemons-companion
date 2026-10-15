@@ -351,13 +351,22 @@ void readKeyStick() {
 // press, as before; A and C together again, or A held, close it. B held 0.45 s at home talks; A held goes back (and
 // undoes a step just ticked); C held two seconds sleeps -- and asleep, only a hold on B wakes it. Each acts on release,
 // so a hold is never also a tap, and the two of a chord never act alone.
+// C-121: KEY DOWN A|B|C, KEY UP A|B|C and KEY CANCEL down the cable (net.cpp) -- a press from the computer, read here
+// as a finger's is, so check_keys.py can hold a button through a SHOT. CANCEL forgets what is held without acting on it:
+// a SHOT takes seconds, and a button held that long would go back, talk or sleep when let go.
+static bool forced[3] = { false, false, false }, forget = false;
+void keyForce(int k, bool held) { if (k >= 0 && k < 3) forced[k] = held; }
+void keyForget() { forced[0] = forced[1] = forced[2] = false; forget = true; }
+
 void readKeyCore() {
   static bool down[3] = { false, false, false }; static uint32_t at[3] = { 0, 0, 0 };
   static bool chord = false;                                     // C-117: A and C were down together
   const int pins[3] = { board.keyLeft, board.encKey, board.keyRight };
+  auto up = [&](int k) { return digitalRead(pins[k]) && !forced[k]; };
   uint32_t now = millis();
+  if (forget) { forget = chord = false; down[0] = down[1] = down[2] = false; keysHeld = 0; dirty = true; return; }
   if (down[0] && down[2]) chord = true;
-  if (chord && digitalRead(pins[0]) && digitalRead(pins[2])) {    // both let go: the menu, open or closed
+  if (chord && up(0) && up(2)) {                                 // both let go: the menu, open or closed
     chord = false; down[0] = down[2] = false; at[0] = at[2] = now;
     keysHeld &= ~5;
     if (asleep) return;
@@ -368,7 +377,7 @@ void readKeyCore() {
     return;
   }
   for (int k = 0; k < 3; k++) {
-    bool pressed = !digitalRead(pins[k]);
+    bool pressed = !up(k);
     if (chord && k != 1) continue;                               // the chord's own buttons wait for both to be let go
     if (pressed && !down[k] && now - at[k] > 30) {
       down[k] = true; at[k] = now;
@@ -376,7 +385,7 @@ void readKeyCore() {
       if (!asleep) { keysHeld |= 1 << k; soundTap(); dirty = true; draw(); }
       continue;
     }
-    if (pressed && down[k] && k == 1 && !asleep && now - at[k] >= TALK_HOLD_MS && (screen == HOME || screen == TALK) &&
+    if (pressed && down[k] && k == 1 && !forced[k] && !asleep && now - at[k] >= TALK_HOLD_MS && (screen == HOME || screen == TALK) &&
         talkCan() && !(page == TODAY && undoable())) {
       keysHeld &= ~(1 << k);
       talkHold();                                                // listens until B is let go

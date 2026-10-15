@@ -460,6 +460,11 @@ void handleLine(String line, bool fromPhone) {
     if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
     else if (k == "PRESS") { if (!wake()) press(); }
     else if (k == "BACK") { if (!wake()) back(); }
+    else if (k.startsWith("DOWN ") || k.startsWith("UP ")) {   // C-121: the three buttons, held and let go (input.cpp)
+      if (!board.threeKeys()) reply("KEY no three buttons here");
+      else keyForce(String("ABC").indexOf(k.substring(k.indexOf(' ') + 1)), k.startsWith("DOWN"));
+    }
+    else if (k == "CANCEL") keyForget();
     if (!asleep) draw();
   }
   else if (line.startsWith("CMD ")) {

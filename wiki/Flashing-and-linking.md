@@ -83,11 +83,13 @@ With the bridge stopped (it holds the port), from `firmware/esp32/`:
 
 ```sh
 python3 shot.py screen.png    # the board's screen, saved as a PNG
+python3 check_keys.py keys.png   # the three buttons (M5GO, Fire, T-Display-S3 Pro): held, let go, and heard at home
 pio device monitor            # watch it start: boot: start ... boot: ready, then HELLO every three seconds
 ```
 
 Commands sent down the cable: `GO TODAY`, `GO DAEMON`, `GO INDEX`, `GO ROUTINES`, `GO DAY`, `GO PARTY` turn to a
-page; `KEY RIGHT`, `KEY LEFT`, `KEY PRESS`, `KEY BACK` work the controls; `RUN <type> <n>` starts a routine; `MEM`
+page; `KEY RIGHT`, `KEY LEFT`, `KEY PRESS`, `KEY BACK` work the controls -- and on the three-button boards
+`KEY DOWN A` and `KEY UP A` (or B, C) hold and let go a button as a finger does, `KEY CANCEL` forgetting one held; `RUN <type> <n>` starts a routine; `MEM`
 reports the memory; `WATCH` the touch and clock; `EARTEST` what the microphones hear.
 
 [firmware/esp32/FLASHING.md](https://github.com/CodeMusic/daemons-companion/blob/main/firmware/esp32/FLASHING.md) has

@@ -15,7 +15,7 @@ OUTDIR/bench-<board>.png for each, and a line per board on what it found. The bu
 has come down the cable the board counts itself bridged for fifteen seconds, and its care would go that way instead.
 Stop linkCompanion.sh's bridge first: it holds the ports.
 """
-import json, os, sys, time
+import json, os, re, sys, time
 import boardport  # beside this file
 import check_keys
 import shot
@@ -23,16 +23,25 @@ import shot
 EXPRESSIONS = ("awake", "drowsy", "asleep", "glad", "sad")
 
 
-def memory(dev, wait=3):
-    """MEM down the cable: the heap left and its largest block -- C-121 added two tasks (a tune's, the outbox's), and
-    the M5GO has no PSRAM, so a board short of memory shows here before it shows as a relay that cannot connect."""
-    check_keys.send(dev, "MEM")
-    deadline = time.time() + wait
+def ready(dev, wait=90):
+    """Asked with MEM until the board has its daemon's picture (art have == want) -- a board just flashed is still
+    joining its Wi-Fi, and a press then finds no daemon. The answer's heap and largest block go in the board's line:
+    C-121 added two tasks (a tune's, the outbox's) and the M5GO has no PSRAM, so a board short of memory shows here
+    before it shows as a relay that cannot connect."""
+    deadline, mem = time.time() + wait, "MEM: no answer"
     while time.time() < deadline:
-        line = dev.readline().decode(errors="replace").strip()
-        if line.startswith("MEM heap"):
-            return " ".join(line.split()[:5])
-    return "MEM: no answer"
+        check_keys.send(dev, "MEM")
+        until = time.time() + 2
+        while time.time() < until:
+            line = dev.readline().decode(errors="replace").strip()
+            if line.startswith("MEM heap"):
+                mem = " ".join(line.split()[:5])
+                m = re.search(r"art have (\S*) want (\S*)", line)
+                if m and m.group(2) and m.group(1) == m.group(2):
+                    return mem, True
+                break
+        time.sleep(2)
+    return mem, False
 
 
 def bench(port, server, outdir):
@@ -40,7 +49,8 @@ def bench(port, server, outdir):
     kind, device = check_keys.hello(dev)
     if not device:
         return "%s: no HELLO (is it running, and the bridge stopped?)" % port
-    rows, notes = [], [memory(dev)]
+    mem, has = ready(dev)
+    rows, notes = [], [mem if has else mem + " -- no daemon's picture after 90 s (hosting none, or not reaching the companion)"]
     if kind in check_keys.THREE_KEYS:
         shots, verdict = check_keys.check(dev, device, server)
         rows.append(("%s, the three buttons (C-121)" % kind, shots, verdict))
@@ -56,6 +66,7 @@ def bench(port, server, outdir):
             st = check_keys.state(server, device, name)
             if st is None:
                 continue
+            check_keys.send(dev, "KEY CANCEL", 0.2)              # awake: a SHOT takes seconds, and left alone it sleeps
             check_keys.send(dev, "STATE " + json.dumps(st, separators=(",", ":")), 0.6)
             looks.append((name, shot.take(dev)))
         check_keys.send(dev, "STATE " + json.dumps(check_keys.state(server, device) or own, separators=(",", ":")), 0.3)

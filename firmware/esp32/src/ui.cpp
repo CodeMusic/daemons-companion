@@ -73,13 +73,13 @@ static const char *keyWord(int k) {
   if (st.daemon.tired == "asleep") return "WAKE";                               // DRAFT
   return k == 0 ? "DRINK" : k == 1 ? "FEED" : st.daemon.tired == "drowsy" ? "SLEEP" : "TRAIN";   // DRAFT
 }
-// C-121: a button held is drawn pressed -- filled white -- the moment it goes down, before it does anything
+// C-121: a button held is drawn pressed -- filled white, its word dark -- the moment it goes down, before it does anything
 static void keyLabels(uint16_t day, uint16_t ink) {
   bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
   canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM);
   if (sleeping) {
     canvas.fillRoundRect(4, H - 24, W - 8, 22, 5, keysHeld ? PAPER : day);
-    canvas.setTextColor(ink); canvas.drawString(keyWord(0), W / 2, H - 13);
+    canvas.setTextColor(keysHeld ? INK : ink); canvas.drawString(keyWord(0), W / 2, H - 13);
     return;
   }
   int bw = W / 3;
@@ -88,7 +88,7 @@ static void keyLabels(uint16_t day, uint16_t ink) {
     int bx = k * bw + 4;
     if (held || lit) canvas.fillRoundRect(bx, H - 24, bw - 8, 22, 5, held ? PAPER : day);
     else canvas.drawRoundRect(bx, H - 24, bw - 8, 22, 5, QUIET);
-    canvas.setTextColor(held || lit ? ink : PAPER);
+    canvas.setTextColor(held ? INK : lit ? ink : PAPER);   // the day's ink is white on a dark day: never on white
     canvas.drawString(keyWord(k), bx + (bw - 8) / 2, H - 13);
   }
 }
@@ -502,7 +502,7 @@ void draw() {
           canvas.setTextFont(2); canvas.setTextDatum(ML_DATUM);
           int bw = canvas.textWidth(w) + 16;
           canvas.fillRoundRect(x - 2, H - 48, bw, 22, 5, PAPER);
-          canvas.setTextColor(ink); canvas.drawString(w, x + 6, H - 37);
+          canvas.setTextColor(INK); canvas.drawString(w, x + 6, H - 37);
         }
       } else canvas.drawString(hint("press: care for it"), x, H - 4);
       }

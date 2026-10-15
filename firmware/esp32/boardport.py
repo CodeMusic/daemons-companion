@@ -15,7 +15,10 @@ GLOBS = ["/dev/cu.usbmodem*", "/dev/ttyACM*",
 
 
 def ports():
-    return sorted({p for g in GLOBS for p in glob.glob(g)})
+    found = sorted({p for g in GLOBS for p in glob.glob(g)})
+    # a CH9102 shows twice with the WCH driver -- cu.usbserial-<serial> and cu.wchusbserial<serial> -- one board: the WCH one
+    wch = {p.split("wchusbserial", 1)[1] for p in found if "wchusbserial" in p}
+    return [p for p in found if not ("usbserial-" in p and p.split("usbserial-", 1)[1] in wch)]
 
 
 def native(port):

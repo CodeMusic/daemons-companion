@@ -149,6 +149,7 @@ void report(const String &kind, const String &detail);
 void reportBegin();   // C-121: the outbox -- what is told to the server goes from a task of its own
 void reportLoop();    // C-121: every pass of the loop -- the state it brought back; what waits, carried by the cable
 bool netBusy();       // C-121: the outbox is sending, or has something to send (the loop's own polls wait for it)
+String outboxStatus();   // C-121: OUTBOX down the cable -- what waits, and the last send: its answer, time, way and tries
 void reportRemotes();
 void reportNetworks();
 void meetReport();

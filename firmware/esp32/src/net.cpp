@@ -439,7 +439,7 @@ void handleLine(String line, bool fromPhone) {
   }
   else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
   else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
-  else if (line == "SHOT" && !fromPhone) shot();
+  else if (line == "SHOT" && !fromPhone) { if (dirty && !asleep) draw(); shot(); }   // C-121: what it shows now, not before the line ahead of it
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
                              reply("NETWORKS " + networksJson(!fromPhone)); }
   else if (line.startsWith("NETS ") && !fromPhone) takeShared(line.substring(5));   // C-93: the shared list, by cable only
@@ -460,11 +460,13 @@ void handleLine(String line, bool fromPhone) {
     if (k == "RIGHT") turn(1); else if (k == "LEFT") turn(-1);
     else if (k == "PRESS") { if (!wake()) press(); }
     else if (k == "BACK") { if (!wake()) back(); }
-    else if (k.startsWith("DOWN ") || k.startsWith("UP ")) {   // C-121: the three buttons, held and let go (input.cpp)
+    // C-121: the three buttons, held and let go (input.cpp) -- read at once, past the debounce, so a SHOT sent right
+    // behind a release sees what it did: left for the loop, a release queued behind a SHOT was read as a long hold
+    else if (k.startsWith("DOWN ") || k.startsWith("UP ")) {
       if (!board.threeKeys()) reply("KEY no three buttons here");
-      else keyForce(String("ABC").indexOf(k.substring(k.indexOf(' ') + 1)), k.startsWith("DOWN"));
+      else { keyForce(String("ABC").indexOf(k.substring(k.indexOf(' ') + 1)), k.startsWith("DOWN")); delay(35); readKey(); }
     }
-    else if (k == "CANCEL") keyForget();
+    else if (k == "CANCEL") { keyForget(); if (board.threeKeys()) readKey(); wake(); }   // and kept awake, for the next SHOT
     if (!asleep) draw();
   }
   else if (line.startsWith("CMD ")) {
@@ -508,6 +510,7 @@ void handleLine(String line, bool fromPhone) {
   }
   else if (line.startsWith("RATETEST ") && !fromPhone) { soundDacRate(line.substring(9).toInt()); reply("RATETEST " + String(soundRateTest()) + " ms for 2000 at " + line.substring(9)); }
   else if (line == "RATETEST" && !fromPhone) reply("RATETEST " + String(soundRateTest()) + " ms for 2000");   // C-95
+  else if (line == "OUTBOX" && !fromPhone) reply(outboxStatus());   // C-121: the last send, for a check (bench.py)
   else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
     reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
           " want " + st.daemon.artKey + " | last " + artTold);
@@ -604,9 +607,16 @@ static volatile bool sending = false;
 static String *stateMail = nullptr;                    // from the task, for the loop
 static portMUX_TYPE mailMux = portMUX_INITIALIZER_UNLOCKED;
 bool netBusy() { return sending || (outbox && uxQueueMessagesWaiting(outbox)); }
+// what OUTBOX down the cable reports: the last send -- its answer, how long it took, which way it went -- and the tries
+static volatile int sentCode = 0, sentTries = 0; static volatile uint32_t sentMs = 0; static volatile bool sentAway = false;
+String outboxStatus() {
+  return "OUTBOX waiting " + String(outbox ? (int)uxQueueMessagesWaiting(outbox) : -1) + " | last " + String(sentCode) +
+         " in " + String(sentMs) + " ms via " + (sentAway ? "relay" : "home") + " after " + String(sentTries) + " tries";
+}
 
 static void outboxLoop(void *) {
   Told t;
+  int tries = 0;
   for (;;) {
     if (xQueuePeek(outbox, &t, portMAX_DELAY) != pdTRUE) continue;
     if (bridgeLive() || !online()) { vTaskDelay(pdMS_TO_TICKS(1000)); continue; }   // the cable carries it, or no network yet
@@ -616,9 +626,11 @@ static void outboxLoop(void *) {
     if (xQueuePeek(outbox, &t, 0) == pdTRUE) {           // still here: the cable may have carried it meanwhile
       JsonDocument d; d["kind"] = t.kind; d["detail"] = t.detail;
       String body; serializeJson(d, body);
+      uint32_t t0 = millis();
       http("POST", "/api/device/interact", body, &ok);
       code = lastCode;
-      if (ok || code > 0) xQueueReceive(outbox, &t, 0);  // told -- or refused, which sending again would not change
+      sentTries = ++tries; sentCode = code; sentMs = millis() - t0; sentAway = viaRelay();
+      if (ok || code > 0) { xQueueReceive(outbox, &t, 0); tries = 0; }   // told -- or refused, which sending again would not change
       if (ok && !uxQueueMessagesWaiting(outbox)) {       // the last of them: its new life, for the loop
         bool got; String s = http("GET", "/api/device/state", "", &got);
         if (got) {

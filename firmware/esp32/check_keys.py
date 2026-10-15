@@ -55,6 +55,17 @@ def send(dev, line, then=0.0):
     time.sleep(then)
 
 
+def ask(dev, line, wait=3):
+    """A question down the cable, and the first line of its answer (which starts with the question's word)."""
+    send(dev, line)
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        got = dev.readline().decode(errors="replace").strip()
+        if got.startswith(line.split()[0]):
+            return got
+    return line + ": no answer"
+
+
 def check(dev, device, server):
     """The press, the release and the companion hearing it: [(title, image)], and what the companion said."""
     before = life(server, device)
@@ -80,9 +91,10 @@ def check(dev, device, server):
     shots.append((said + " let go", shot.take(dev)))
     shots.append(("a moment on", shot.take(dev)))
     ear.join()
+    sent = ask(dev, "OUTBOX")                            # the board's own account: its answer, how long, which way, tries
     if heard:
-        return shots, "the companion heard it %.1f s after the release (fed/watered %s -> %s)" % (heard[0], before, life(server, device))
-    return shots, "the companion's count did not move (%s): at 3/3 already, the board off Wi-Fi, or the outbox not sending" % (before,)
+        return shots, "the companion heard it %.1f s after the release (fed/watered %s -> %s); %s" % (heard[0], before, life(server, device), sent)
+    return shots, "the companion's count did not move (%s): at 3/3 already, the board off Wi-Fi, or the outbox not sending; %s" % (before, sent)
 
 
 def sheet(rows, out, k=2):

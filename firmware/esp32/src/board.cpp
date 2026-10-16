@@ -315,7 +315,18 @@ static void findLora433() {
   Serial.printf("boot: lora433 %s (cs %d, irq %d, rst %d)\n", cs >= 0 && irq >= 0 ? "found" : cs >= 0 ? "answered, no irq" : "none", cs, irq, rst);
   if (cs < 0 || irq < 0) return;
   board.loraChip = LoraChip::SX1278; board.loraCs = cs; board.loraDio1 = irq; board.loraRst = rst;
-  if (rst == 25) { board.dacSpeaker = false; board.i2sDout = -1; }   // the speaker's pin is the radio's reset: silent
+  if (rst == 25) {                                     // the speaker's pin is the radio's reset: silent
+    board.dacSpeaker = false; board.i2sDout = -1;
+    // held high by the pin, the 3.3 V rail's ripple -- every Wi-Fi and radio burst -- went straight into the speaker's
+    // amplifier as tiny beeps (the user, 2026-10-15). The chip's weak pull-up, against the amplifier's input, filters it:
+    // kept if the radio still answers on it, and the pin left to it (RadioLib is given no reset); else driven, as before
+    SPIClass t(VSPI); t.begin(18, 19, 23, -1);
+    pinMode(25, INPUT_PULLUP); delay(20);
+    bool up = sxRw(t, cs, 0x42) == 0x12;
+    t.end();
+    if (up) board.loraRst = -1; else { pinMode(25, OUTPUT); digitalWrite(25, HIGH); }
+    Serial.printf("boot: lora433 reset on the speaker's pin, %s\n", up ? "held by a pull-up" : "driven high");
+  }
   board.loraSck = 18; board.loraMiso = 19; board.loraMosi = 23;
   board.lcdMiso = 19;                                  // the screen's bus told of its MISO, so it leaves it to the radio
 }

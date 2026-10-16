@@ -13,6 +13,8 @@ describe("broadcasts (C-134)", () => {
     const c = takeCast(s, { id: "a1b2c3d40001", kind: "act", act: "BOW", name: "STARR", species: 5 }, "lora");
     expect("cast" in c && c.cast.via).toEqual(["lora", "net"]);
     expect(castsSince(s)).toHaveLength(1);
+    const d = takeCast(s, { id: "a1b2c3d40001", kind: "act", act: "BOW" }, "lora", true);   // its own board says it sent it
+    expect("cast" in d && d.cast.mine).toBe(true);
   });
 
   it("refuses what is not a broadcast", () => {

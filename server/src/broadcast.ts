@@ -27,7 +27,7 @@ export type Cast = {
   at: string;            // when this hub first had it (ISO)
   via: Via[];            // every way it has arrived
   device?: string;       // which of our devices sent it or first heard it
-  mine: boolean;         // sent by one of our own daemons
+  mine: boolean;         // sent by one of our own daemons -- from the app, the site, the Tab5 or one of our boards
 };
 
 const KEY = "casts", KEEP = 60, TEXT_MAX = 80;
@@ -71,7 +71,11 @@ export function takeCast(store: Store, c: Partial<Cast> & { id: string }, via: V
   const casts = load(store);
   const had = casts.find((k) => k.id === id);
   if (had) {
-    if (!had.via.includes(via)) { had.via.push(via); keep(store, casts); }
+    // a board's own broadcast may reach here first as another board's "heard"; when its sender reports it, it is ours
+    const more = !had.via.includes(via), ours = mine && !had.mine;
+    if (more) had.via.push(via);
+    if (ours) had.mine = true;
+    if (more || ours) keep(store, casts);
     return { cast: had, fresh: false };
   }
   const species = Number(c.species) || 0;

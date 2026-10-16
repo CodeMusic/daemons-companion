@@ -3,6 +3,8 @@
 #include <Arduino.h>
 
 String runReadMyTag();       // TOUCHSTONE (NFC)
+String runCard();            // C-124: TOUCHSTONE, HOLD A CARD -- a daemon put on it, taken, or swapped; a stranger's met
+String runCardNote();        // C-124: TOUCHSTONE on a keyboard without a reader (the T-Deck) -- a note for a card
 String runOpenToMyPhone();   // WHISPER (Bluetooth): a word each way with any Bluetooth app
 String runPairMyPhone();     // C-55: the companion app pairs, with a code the board shows
 String runForgetPhones();

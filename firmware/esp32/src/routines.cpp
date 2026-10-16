@@ -24,7 +24,8 @@ static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemot
                                                { "WHAT REMOTE IS THIS", runWhatRemote } };   // listening only, DRAFT
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
-static const Routine TOUCHSTONE_ROUTINES[] = { { "READ MY TAG", runReadMyTag } };
+static const Routine TOUCHSTONE_ROUTINES[] = { { "HOLD A CARD", runCard }, { "READ MY TAG", runReadMyTag } };   // C-124, DRAFT
+static const Routine NOTE_ROUTINES[]       = { { "A NOTE FOR A CARD", runCardNote } };   // C-124: the T-Deck, DRAFT
 static const Routine CONTEXT_ROUTINES[]    = { { "CHANNEL", runListenFm }, { "STATIC SYNTH", runStaticSynth } };   // C-69: FM, DRAFT
 static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
 static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
@@ -39,7 +40,8 @@ void routinesBegin() {
   typeCount = 0;
   if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      7 };
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
-  if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 1 };
+  if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 2 };
+  else if (board.keyboard) types[typeCount++] = { "TOUCHSTONE", "a card, through a reader", NOTE_ROUTINES, 1 };   // C-124
   if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   LONGWAVE_ROUTINES,   2 };
   if (board.loraChip != LoraChip::None) types[typeCount++] = { "MESH", "LoRa", MESH_ROUTINES, 2 };   // C-72, DRAFT
   if (board.si4732) types[typeCount++] = { "LATENT",     "AM",        LATENT_ROUTINES,     2 };   // C-69: the user's names

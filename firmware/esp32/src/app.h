@@ -37,6 +37,7 @@ struct State {
   long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
   bool carrying = false; Daemon daemon;
   Member party[6]; int partyN = 0;          // C-68
+  String companion, cardNote;               // C-124: whose cards are ours; a note waiting for a card
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;

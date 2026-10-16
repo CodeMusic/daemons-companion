@@ -55,6 +55,7 @@ bool takeState(const char *json) {
   st.date = doc["date"] | ""; st.edition = doc["edition"] | ""; st.season = doc["season"] | "";
   st.day = doc["day"]["name"] | ""; st.colour = doc["day"]["colour"] | "#5b6b8c";
   st.note = doc["day"]["note"] | ""; st.virtue = doc["day"]["virtue"] | "";
+  st.companion = doc["companion"] | ""; st.cardNote = doc["cardNote"] | "";   // C-124
   st.chakra = doc["day"]["chakra"] | ""; st.theme = doc["day"]["theme"] | "";   // C-73
   // C-33: where the server is on the Wi-Fi, when it says (it listens on the network) -- kept for when the cable is out
   const char *lan = doc["server"] | "";

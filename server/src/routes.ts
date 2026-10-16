@@ -17,11 +17,11 @@ import { awayNow, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIM
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
-export type Ask = { method: string; path: string; body: any; deviceId: string; query?: Record<string, string> };   // C-131-B: query, for ?since=
+export type Ask = { method: string; path: string; body: any; deviceId: string; query?: Record<string, string> };   // C-134: query, for ?since=
 export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
-import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-131-B
+import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
 const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/marks", "/api/regions", "/api/progress", "/api/index", "/api/party", "/api/daemon/life"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
@@ -39,7 +39,7 @@ const NO_SAVE = "no save named -- set it in Settings";
 export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   const { method, path, body: b, deviceId } = a;
   if (method === "GET") {
-    // C-131-B: broadcasts -- a word or an act to every daemon, and their answers (broadcast.ts)
+    // C-134: broadcasts -- a word or an act to every daemon, and their answers (broadcast.ts)
     if (path === "/api/broadcasts") return ok({ items: castsSince(store, Number(a.query?.since) || 0) });
     if (path === "/api/broadcast/acts") return ok({ acts: ACTS });
     if (path === "/api/today") return ok(today(h, store, now));
@@ -68,12 +68,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/party") return ok(readSave(save));
   }
   if (method === "POST") {
-    // C-131-B: a broadcast from the app, the site or the Tab5, as one of our daemons
+    // C-134: a broadcast from the app, the site or the Tab5, as one of our daemons
     if (path === "/api/broadcast") {
       const r = sendCast(store, awayNow(h), b, now);
       return "error" in r ? no(400, r.error ?? "") : ok({ id: r.cast.id, cast: r.cast });
     }
-    // C-131-B: a board's broadcast -- one it sent ("out"), or one it heard over LoRa or Bluetooth ("in") -- kept once
+    // C-134: a board's broadcast -- one it sent ("out"), or one it heard over LoRa or Bluetooth ("in") -- kept once
     if (path === "/api/device/broadcast") {
       const via: Via = b.via === "lora" || b.via === "ble" ? b.via : "net";
       const r = takeCast(store, b, via, b.dir === "out", deviceId, now);

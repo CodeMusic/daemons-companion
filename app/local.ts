@@ -132,7 +132,7 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
   const method = body === undefined ? "GET" : "POST";
   const deviceId = query.get("device") ?? "";
   const s = store(), h = host();
-  if (handles(method, path)) return route(h, s, { method, path, body: body ?? {}, deviceId });
+  if (handles(method, path)) return route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) });
   if (method === "GET") {
     if (path === "/api/devices") return ok(devicesView());
     if (path === "/api/device/link") return ok({ ...NO_LINK, ...devicesView() });

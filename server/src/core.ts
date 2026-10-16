@@ -11,6 +11,7 @@ import { syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
+import { castsForDevice } from "./broadcast.js";   // C-134
 import { life } from "./life.js";
 import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
@@ -227,6 +228,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            settings: deviceSettings(store),
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
+           casts: castsForDevice(store, now),            // C-134: the last ten minutes' broadcasts; a board drops ids it has
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },

@@ -399,7 +399,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
       if (handles(req.method ?? "", path))
-        return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId,
+        return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),
                                                        body: req.method === "POST" ? await body(req) : {} }));
       if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
       if (req.method === "GET" && path === "/api/device/state") {

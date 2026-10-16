@@ -1,0 +1,64 @@
+{
+ "acts": [
+  {
+   "code": "WAVE",
+   "label": "WAVE",
+   "seen": "waves to everyone",
+   "reply": "waves back"
+  },
+  {
+   "code": "BOW",
+   "label": "BOW",
+   "seen": "bows",
+   "reply": "bows in return"
+  },
+  {
+   "code": "HUM",
+   "label": "HUM A TUNE",
+   "seen": "hums a tune",
+   "reply": "hums along"
+  },
+  {
+   "code": "DANCE",
+   "label": "DANCE",
+   "seen": "dances",
+   "reply": "dances too"
+  },
+  {
+   "code": "BERRY",
+   "label": "SHARE A BERRY",
+   "seen": "shares a berry",
+   "reply": "takes it, and is glad"
+  },
+  {
+   "code": "GLOW",
+   "label": "GLOW",
+   "seen": "glows",
+   "reply": "glows back"
+  },
+  {
+   "code": "CALL",
+   "label": "CALL OUT",
+   "seen": "calls out to every daemon",
+   "reply": "answers the call"
+  },
+  {
+   "code": "REST",
+   "label": "SETTLE TO REST",
+   "seen": "settles down to rest",
+   "reply": "curls up nearby"
+  },
+  {
+   "code": "CHEER",
+   "label": "CHEER",
+   "seen": "cheers",
+   "reply": "cheers with it"
+  },
+  {
+   "code": "PLAY",
+   "label": "INVITE TO PLAY",
+   "seen": "wants to play",
+   "reply": "joins in"
+  }
+ ]
+}

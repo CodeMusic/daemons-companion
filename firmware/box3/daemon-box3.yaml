@@ -148,7 +148,9 @@ light:
     icon: "mdi:television"
     entity_category: config
     output: backlight_output
-    restore_mode: RESTORE_DEFAULT_ON
+    # C-138: on at every start, its brightness kept -- ESPHome's own restores it off too, and a dark screen after a
+    # restart reads as a dead box (seen 2026-10-16, after the flashes)
+    restore_mode: RESTORE_AND_ON
     default_transition_length: 250ms
 
 i2c:

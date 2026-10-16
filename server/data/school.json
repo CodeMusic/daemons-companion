@@ -1,0 +1,1328 @@
+{
+ "_about": "C-129: CALLOW SCHOOL. floors: 1F-7F, each a TEXTBOOK chapter (subject) whose five topics are the floor's board, word for word; a chapter is greyed until its visited_flag is set. paper: the exam's seven sections in order; answer is an index into choices (the save stores 1-4 for A-D, 0 unanswered). The mark is round(correct * 100 / total); pass_mark or better passes, and passing gives the DIPLOMA (flags.diploma). The save keeps no letter: grades turns a mark into it (GradeLetter). vars: u16s at sb1_vars + 2 * (number - vars_start); answers is the first of the vars holding each question's answer, per_var to a var, three bits each, question q in var answers + q // per_var at bit 3 * (q % per_var).",
+ "floors": [
+  {
+   "floor": "1F",
+   "subject": "LANGUAGE",
+   "visited_flag": 778,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_1F",
+   "placard": "1F  LANGUAGE\n\nWhat a word points at, how words\ncome apart, and why their order\nmatters.\n\nEverything else here is taught\nin words, so words come first.\n\nThe syllabus is on the desk.",
+   "syllabus": "COURSE SYLLABUS\n1F  LANGUAGE\n\nTOPICS: NAMES, PIECES, ORDER,\nAMBIGUITY, SPELLING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": "The board is written up neatly,\nin five parts.",
+   "board": [
+    {
+     "topic": "NAMES",
+     "text": "A name is a handle.\n\nIt lets you point at a thing\nwithout having to carry it.\n\nRename a thing and it stays\nexactly what it was.\n\nOnly the handle moved."
+    },
+    {
+     "topic": "PIECES",
+     "text": "Words come apart.\n\nUN-READ-ABLE is three pieces.\nEach one means something alone.\n\nLearn the pieces, and you can read\nwords nobody taught you."
+    },
+    {
+     "topic": "ORDER",
+     "text": "Same words, different order.\n\nUSER READS DAEMON.\nDAEMON READS USER.\n\nNothing was added. Nothing was\ntaken away.\n\nEverything changed."
+    },
+    {
+     "topic": "AMBIGUITY",
+     "text": "One word can carry several\nmeanings.\n\nA BOX holds a daemon.\nA BOX is where you tick a YES.\n\nThe words around it decide\nwhich one you meant."
+    },
+    {
+     "topic": "SPELLING",
+     "text": "Spelling is a rule for turning\na sound into marks.\n\nThe rule is old, and full of\nexceptions.\n\nNobody is under a spell.\n\nIn the corner, in smaller chalk,\nsomeone has added: UNDER A SPELL.\n\nIt is underlined twice."
+    }
+   ]
+  },
+  {
+   "floor": "2F",
+   "subject": "ATTENTION",
+   "visited_flag": 779,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_2F",
+   "placard": "2F  ATTENTION\n\nWhat gets looked at, and what that\ncosts everything else.\n\nYou cannot keep what you never\nnoticed, so this comes before\nMEMORY.\n\nThe syllabus is on the desk.",
+   "syllabus": "COURSE SYLLABUS\n2F  ATTENTION\n\nTOPICS: LIMITS, CUES, SEARCH,\nSWITCHING, MISSED.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": "The board is written up neatly,\nin five parts.",
+   "board": [
+    {
+     "topic": "LIMITS",
+     "text": "There is only so much of it.\n\nMore on one thing is less on\neverything else.\n\nIt is never added. Only moved."
+    },
+    {
+     "topic": "CUES",
+     "text": "A cue says where to look before\nthe thing arrives.\n\nA good cue makes you faster.\n\nA wrong one makes you slower than\nno cue at all."
+    },
+    {
+     "topic": "SEARCH",
+     "text": "The more things there are, the\nlonger the one you want takes...\n\n...unless it is the only thing that\nis different.\n\nThe odd one out finds you."
+    },
+    {
+     "topic": "SWITCHING",
+     "text": "Changing what you attend to costs\ntime, every time.\n\nTwo things at once is nearly always\none thing, then the other, fast."
+    },
+    {
+     "topic": "MISSED",
+     "text": "Watch one thing closely enough and\nsomething unmissable walks past.\n\nNobody who missed it believes\nthey did."
+    }
+   ]
+  },
+  {
+   "floor": "3F",
+   "subject": "MEMORY",
+   "visited_flag": 780,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_3F",
+   "placard": "3F  MEMORY\n\nWhat is kept, what fades, and what\nchanges each time you take it out.\n\nThe syllabus is on the desk.",
+   "syllabus": "COURSE SYLLABUS\n3F  MEMORY\n\nTOPICS: STORING, FADING,\nCROWDING, RECALL, SPACING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": "The board is written up neatly,\nin five parts.",
+   "board": [
+    {
+     "topic": "STORING",
+     "text": "Nothing is kept whole.\n\nWhat is kept is enough to build\nit again."
+    },
+    {
+     "topic": "FADING",
+     "text": "Left alone, it fades.\n\nFastest at first. Then slower.\nNever quite to nothing."
+    },
+    {
+     "topic": "CROWDING",
+     "text": "New things push on old ones, and\nold on new.\n\nThe most alike are the most\neasily confused."
+    },
+    {
+     "topic": "RECALL",
+     "text": "Remembering is not reading a copy.\n\nIt is building one, and the build\nis saved over the old.\n\nRemember it often enough, and\nyou remember the remembering."
+    },
+    {
+     "topic": "SPACING",
+     "text": "Once a day for seven days beats\nseven times in one day.\n\nNobody believes this until they\ntry it."
+    }
+   ]
+  },
+  {
+   "floor": "4F",
+   "subject": "CATEGORIES",
+   "visited_flag": 781,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_4F",
+   "placard": "4F  CATEGORIES\n\nHow things are sorted, and why the\nedges will not hold still.\n\nThe syllabus is on the desk.",
+   "syllabus": "COURSE SYLLABUS\n4F  CATEGORIES\n\nTOPICS: MIDDLES, EDGES, FEATURES,\nLEVELS, OTHER.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": "The board is written up neatly,\nin five parts.",
+   "board": [
+    {
+     "topic": "MIDDLES",
+     "text": "Most kinds have a middle: the best\nexample, the one that comes first.\n\nEverything else is more or less\nlike it."
+    },
+    {
+     "topic": "EDGES",
+     "text": "No kind has a clean edge.\n\nSomewhere there is always a thing\nthat is half in."
+    },
+    {
+     "topic": "FEATURES",
+     "text": "Sorting looks at a handful of\nfeatures.\n\nPick the wrong ones, and two very\ndifferent things share a drawer."
+    },
+    {
+     "topic": "LEVELS",
+     "text": "The same thing sits in several\nkinds at once, at different heights.\n\nA thing. A kind of thing.\nA kind of kind."
+    },
+    {
+     "topic": "OTHER",
+     "text": "Every way of sorting ends up with a\ndrawer called OTHER.\n\nWatch how fast it fills."
+    }
+   ]
+  },
+  {
+   "floor": "5F",
+   "subject": "LEARNING",
+   "visited_flag": 782,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_5F",
+   "placard": "5F  LEARNING\n\nHow a mind changes itself, one\nsmall join at a time.\n\nThe syllabus is on the desk.",
+   "syllabus": "COURSE SYLLABUS\n5F  LEARNING\n\nTOPICS: CONNECTIONS, PRACTICE,\nTHRESHOLD, FEEDBACK, PRUNING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": null,
+   "board": [
+    {
+     "topic": "CONNECTIONS",
+     "text": "A mind is cells joined to cells.\n\nEach join has a strength: how hard\none cell pushes the next when it\nfires."
+    },
+    {
+     "topic": "PRACTICE",
+     "text": "Use a join and it grows stronger.\n\nCells that fire together wire\ntogether, as the saying goes."
+    },
+    {
+     "topic": "THRESHOLD",
+     "text": "A cell fires only when the pushes\non it add up past a line.\n\nSome cells sit close to that line.\nThey fire at almost nothing."
+    },
+    {
+     "topic": "FEEDBACK",
+     "text": "Learning needs to find out how it\nwent.\n\nWithout that, practice only makes\na habit, not a skill."
+    },
+    {
+     "topic": "PRUNING",
+     "text": "Joins that are never used are\ntaken away.\n\nGrowing up is losing most of them,\non purpose."
+    }
+   ]
+  },
+  {
+   "floor": "6F",
+   "subject": "BIAS",
+   "visited_flag": 783,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_6F",
+   "placard": "6F  BIAS\n\nThe ways a mind leans, and the\narguments that only look sound.\n\nThe syllabus is on the desk.",
+   "syllabus": "COURSE SYLLABUS\n6F  BIAS\n\nTOPICS: FRAMING, ANCHORS,\nCONFIRMING, HINDSIGHT, FALLACIES.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": null,
+   "board": [
+    {
+     "topic": "FRAMING",
+     "text": "Ninety in a hundred survive.\nTen in a hundred die.\n\nIt is the same number. People\nchoose differently between them.\n\nThe way a thing is put is doing\nthe choosing."
+    },
+    {
+     "topic": "ANCHORS",
+     "text": "The first number heard pulls every\nguess after it toward itself.\n\nEven when everyone knows it was\npicked at random."
+    },
+    {
+     "topic": "CONFIRMING",
+     "text": "People look for what agrees with\nthem, and find it.\n\nWhat disagrees gets checked twice\nas hard."
+    },
+    {
+     "topic": "HINDSIGHT",
+     "text": "Once you know how it ended, it\nlooks as if it had to end that way.\n\nIt did not."
+    },
+    {
+     "topic": "FALLACIES",
+     "text": "A fallacy is an argument that\nlooks as if it works.\n\nAttacking the speaker. Two choices\nwhere there are more.\n\nEverybody does it, so it is fine."
+    }
+   ]
+  },
+  {
+   "floor": "7F",
+   "subject": "ERROR",
+   "visited_flag": 784,
+   "visited_flag_name": "FLAG_SCHOOL_VISITED_7F",
+   "placard": "7F  ERROR\n\nBeing wrong, and why that is where\nthe change happens.\n\nThe last floor. The syllabus is\non the desk.",
+   "syllabus": "COURSE SYLLABUS\n7F  ERROR\n\nTOPICS: SURPRISE, CORRECTION,\nSTEPS, MISTAKES, CERTAINTY.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "board_intro": null,
+   "board": [
+    {
+     "topic": "SURPRISE",
+     "text": "A mind is always guessing what\ncomes next.\n\nSurprise is the size of the miss."
+    },
+    {
+     "topic": "CORRECTION",
+     "text": "Learning is mostly correcting.\n\nThe bigger the miss, the bigger\nthe correction."
+    },
+    {
+     "topic": "STEPS",
+     "text": "Correct too much at once and you\novershoot.\n\nSmall corrections, many times,\nget closer."
+    },
+    {
+     "topic": "MISTAKES",
+     "text": "A mistake you notice teaches more\nthan an answer you were given."
+    },
+    {
+     "topic": "CERTAINTY",
+     "text": "Being sure is not evidence.\n\nNothing surprises the surest, so\nthey learn the least."
+    }
+   ]
+  }
+ ],
+ "paper": [
+  {
+   "section": "LANGUAGE",
+   "questions": [
+    {
+     "q": 0,
+     "title": "What a name is",
+     "text": "The board calls a name a...",
+     "choices": [
+      "a handle",
+      "a spell",
+      "a picture",
+      "a rule"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 1,
+     "title": "Renaming",
+     "text": "A thing is renamed.\nWhat has changed?",
+     "choices": [
+      "the thing itself",
+      "only the handle",
+      "the thing and its name",
+      "nothing at all"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 2,
+     "title": "Pointing",
+     "text": "A name lets you point at a thing\nwithout having to...",
+     "choices": [
+      "see it",
+      "spell it",
+      "carry it",
+      "trust it"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 3,
+     "title": "How many pieces",
+     "text": "How many pieces are there\nin UN-READ-ABLE?",
+     "choices": [
+      "one",
+      "two",
+      "three",
+      "nine"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 4,
+     "title": "Why learn the pieces",
+     "text": "Learning the pieces lets you...",
+     "choices": [
+      "spell faster",
+      "read words nobody taught you",
+      "forget the old words",
+      "win arguments"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 5,
+     "title": "A piece on its own",
+     "text": "Taken on its own, each piece...",
+     "choices": [
+      "means nothing",
+      "means something",
+      "is a name",
+      "is a spell"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 6,
+     "title": "The same words",
+     "text": "USER READS DAEMON and\nDAEMON READS USER use...",
+     "choices": [
+      "different words",
+      "the same words",
+      "no words",
+      "one word, three times"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 7,
+     "title": "What changed",
+     "text": "Between those two sentences,\nwhat changed?",
+     "choices": [
+      "nothing",
+      "a word was added",
+      "a word was taken away",
+      "everything"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 8,
+     "title": "One word",
+     "text": "One word can carry...",
+     "choices": [
+      "one meaning, only ever",
+      "several meanings",
+      "no meaning at all",
+      "a spell"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 9,
+     "title": "Which BOX",
+     "text": "What decides which BOX\nyou meant?",
+     "choices": [
+      "its spelling",
+      "the words around it",
+      "how long it is",
+      "who said it"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 10,
+     "title": "What spelling is",
+     "text": "Spelling is a rule for turning\na sound into...",
+     "choices": [
+      "marks",
+      "magic",
+      "meaning",
+      "music"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 11,
+     "title": "The corner of the board",
+     "text": "What has someone written in the\ncorner, in smaller chalk?",
+     "choices": [
+      "NOBODY",
+      "SPELLING",
+      "UNDER A SPELL",
+      "PASS MARK"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "section": "ATTENTION",
+   "questions": [
+    {
+     "q": 12,
+     "title": "How much there is",
+     "text": "The board says attention is...",
+     "choices": [
+      "free",
+      "the same as memory",
+      "only so much",
+      "endless"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 13,
+     "title": "More on one thing",
+     "text": "More attention on one thing\nmeans...",
+     "choices": [
+      "a headache",
+      "less on everything else",
+      "more everywhere",
+      "nothing changes"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 14,
+     "title": "Never added",
+     "text": "Attention is never added.\nIt is only...",
+     "choices": [
+      "lost",
+      "spent",
+      "borrowed",
+      "moved"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 15,
+     "title": "What a cue does",
+     "text": "A cue says where to look...",
+     "choices": [
+      "before the thing arrives",
+      "after it has gone",
+      "while you blink",
+      "never"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 16,
+     "title": "A good cue",
+     "text": "A good cue makes you...",
+     "choices": [
+      "slower",
+      "curious",
+      "faster",
+      "certain"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 17,
+     "title": "A wrong cue",
+     "text": "A wrong cue makes you...",
+     "choices": [
+      "faster",
+      "slower than no cue at all",
+      "no different",
+      "certain"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 18,
+     "title": "The odd one out",
+     "text": "In a crowd, what finds you\nquickly?",
+     "choices": [
+      "the nearest thing",
+      "the biggest thing",
+      "nothing",
+      "the only thing that is different"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 19,
+     "title": "A bigger crowd",
+     "text": "More things to search through\nusually means...",
+     "choices": [
+      "a longer search",
+      "no search",
+      "a louder search",
+      "a faster search"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 20,
+     "title": "Switching",
+     "text": "Changing what you attend to\ncosts...",
+     "choices": [
+      "money",
+      "time, only once",
+      "time, every time",
+      "nothing"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 21,
+     "title": "Two things at once",
+     "text": "Two things at once is nearly\nalways...",
+     "choices": [
+      "easier",
+      "one, then the other, fast",
+      "two at once",
+      "impossible"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 22,
+     "title": "Watching closely",
+     "text": "Watch one thing closely enough\nand...",
+     "choices": [
+      "it moves",
+      "you fall asleep",
+      "you see everything",
+      "something walks right past"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 23,
+     "title": "Missing it",
+     "text": "People who missed it believe...",
+     "choices": [
+      "that they did not",
+      "that they did",
+      "nothing",
+      "the board"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  {
+   "section": "MEMORY",
+   "questions": [
+    {
+     "q": 24,
+     "title": "What is kept",
+     "text": "Memory keeps a thing...",
+     "choices": [
+      "not whole",
+      "only by name",
+      "for a day",
+      "whole, forever"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 25,
+     "title": "Enough to...",
+     "text": "What is kept is enough to...",
+     "choices": [
+      "copy it exactly",
+      "prove it",
+      "build it again",
+      "forget it"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 26,
+     "title": "Left alone",
+     "text": "Left alone, a memory...",
+     "choices": [
+      "moves",
+      "fades",
+      "grows",
+      "stays exactly as it was"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 27,
+     "title": "How it fades",
+     "text": "It fades fastest...",
+     "choices": [
+      "never",
+      "on Fridays",
+      "at the end",
+      "at first"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 28,
+     "title": "The last of it",
+     "text": "Fading goes on until...",
+     "choices": [
+      "never quite nothing",
+      "nothing is left",
+      "tomorrow",
+      "it is recalled"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 29,
+     "title": "Old and new",
+     "text": "New things and old things...",
+     "choices": [
+      "never meet",
+      "agree",
+      "push on each other",
+      "swap places"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 30,
+     "title": "Most confused",
+     "text": "The things most easily confused\nare...",
+     "choices": [
+      "the oldest",
+      "the most alike",
+      "the newest",
+      "the longest"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 31,
+     "title": "Recalling",
+     "text": "Remembering is not reading a\ncopy. It is...",
+     "choices": [
+      "lending one",
+      "deleting one",
+      "naming one",
+      "building one"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 32,
+     "title": "Saved over",
+     "text": "The rebuilt memory is saved...",
+     "choices": [
+      "over the old one",
+      "nowhere",
+      "in a box",
+      "beside the old one"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 33,
+     "title": "Often enough",
+     "text": "Remember something often enough\nand you remember...",
+     "choices": [
+      "the future",
+      "a different thing",
+      "the remembering",
+      "nothing"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 34,
+     "title": "Spacing",
+     "text": "Which works better?",
+     "choices": [
+      "never revising",
+      "once a day for seven days",
+      "seven times in one day",
+      "once, very hard"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 35,
+     "title": "Believing it",
+     "text": "Who believes the spacing lesson?",
+     "choices": [
+      "the teacher only",
+      "nobody, ever",
+      "everyone, at once",
+      "those who have tried it"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "section": "CATEGORIES",
+   "questions": [
+    {
+     "q": 36,
+     "title": "The middle",
+     "text": "The middle of a kind is...",
+     "choices": [
+      "its best example",
+      "its oldest member",
+      "its edge",
+      "its name"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 37,
+     "title": "Everything else",
+     "text": "Everything else in a kind is...",
+     "choices": [
+      "exactly the same",
+      "the middle",
+      "more or less like the middle",
+      "not in it"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 38,
+     "title": "A clean edge",
+     "text": "How many kinds have a clean\nedge?",
+     "choices": [
+      "all of them",
+      "none",
+      "most",
+      "exactly three"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 39,
+     "title": "Half in",
+     "text": "Somewhere there is always a thing\nthat is...",
+     "choices": [
+      "on fire",
+      "fully out",
+      "already sorted",
+      "half in"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 40,
+     "title": "What sorting uses",
+     "text": "Sorting looks at...",
+     "choices": [
+      "a handful of features",
+      "nothing",
+      "the name only",
+      "everything at once"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 41,
+     "title": "The wrong handful",
+     "text": "Pick the wrong features, and...",
+     "choices": [
+      "it sorts faster",
+      "the drawer breaks",
+      "different things share a drawer",
+      "nothing happens"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 42,
+     "title": "Several at once",
+     "text": "The same thing can sit in...",
+     "choices": [
+      "the OTHER drawer only",
+      "several kinds at once",
+      "one kind only",
+      "no kind"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 43,
+     "title": "Heights",
+     "text": "A thing, a kind of thing, and...",
+     "choices": [
+      "a drawer",
+      "the end",
+      "a thing of kinds",
+      "a kind of kind"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 44,
+     "title": "The last drawer",
+     "text": "Every way of sorting ends up with\na drawer called...",
+     "choices": [
+      "OTHER",
+      "MISC",
+      "SPARE",
+      "LATER"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 45,
+     "title": "Watching it",
+     "text": "The board says to watch how fast\nOTHER...",
+     "choices": [
+      "empties",
+      "closes",
+      "fills",
+      "moves"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 46,
+     "title": "First to mind",
+     "text": "The example that comes to mind\nfirst is...",
+     "choices": [
+      "the edge",
+      "the middle",
+      "the OTHER drawer",
+      "the last one"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 47,
+     "title": "More or less",
+     "text": "Things in a kind belong to it...",
+     "choices": [
+      "never",
+      "exactly",
+      "alphabetically",
+      "more or less"
+     ],
+     "answer": 3
+    }
+   ]
+  },
+  {
+   "section": "LEARNING",
+   "questions": [
+    {
+     "q": 48,
+     "title": "What a mind is",
+     "text": "The board says a mind is...",
+     "choices": [
+      "one big cell",
+      "cells joined to cells",
+      "a box of words",
+      "a river"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 49,
+     "title": "A join's strength",
+     "text": "A join's strength says how hard\none cell...",
+     "choices": [
+      "sleeps",
+      "remembers",
+      "sings",
+      "pushes the next"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 50,
+     "title": "Using a join",
+     "text": "Use a join, and it...",
+     "choices": [
+      "grows stronger",
+      "moves",
+      "disappears",
+      "wears out"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 51,
+     "title": "The saying",
+     "text": "Cells that fire together...",
+     "choices": [
+      "never meet",
+      "cancel out",
+      "wire together",
+      "tire together"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 52,
+     "title": "When it fires",
+     "text": "A cell fires when the pushes on\nit...",
+     "choices": [
+      "are loud",
+      "add up past a line",
+      "stop",
+      "are equal"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 53,
+     "title": "Near the line",
+     "text": "Cells close to their line fire\nat...",
+     "choices": [
+      "exactly one push",
+      "only at night",
+      "nothing, ever",
+      "almost nothing"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 54,
+     "title": "Finding out",
+     "text": "Learning needs to find out...",
+     "choices": [
+      "how it went",
+      "who is watching",
+      "the time",
+      "nothing"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 55,
+     "title": "Without feedback",
+     "text": "Practice without feedback makes...",
+     "choices": [
+      "a skill, not a habit",
+      "perfect",
+      "a habit, not a skill",
+      "nothing at all"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 56,
+     "title": "Unused joins",
+     "text": "Joins that are never used are...",
+     "choices": [
+      "made stronger",
+      "taken away",
+      "doubled",
+      "kept forever"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 57,
+     "title": "Growing up",
+     "text": "Growing up means losing most\njoins...",
+     "choices": [
+      "never",
+      "by accident",
+      "twice",
+      "on purpose"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 58,
+     "title": "Pushing",
+     "text": "When one cell fires, it...",
+     "choices": [
+      "pushes the next",
+      "sleeps",
+      "forgets",
+      "stops the mind"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 59,
+     "title": "Stronger",
+     "text": "What makes a join stronger?",
+     "choices": [
+      "naming it",
+      "pruning it",
+      "using it",
+      "ignoring it"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "section": "BIAS",
+   "questions": [
+    {
+     "q": 60,
+     "title": "Ninety or ten",
+     "text": "Ninety survive and ten die are...",
+     "choices": [
+      "both too low",
+      "the same number",
+      "different numbers",
+      "both false"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 61,
+     "title": "What chooses",
+     "text": "In FRAMING, what is doing the\nchoosing?",
+     "choices": [
+      "chance",
+      "the chooser alone",
+      "the number",
+      "the way it is put"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 62,
+     "title": "Put two ways",
+     "text": "Put two ways, the same numbers\nmake people...",
+     "choices": [
+      "choose differently",
+      "choose the same",
+      "refuse",
+      "laugh"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 63,
+     "title": "The first number",
+     "text": "The first number heard pulls later\nguesses...",
+     "choices": [
+      "away from itself",
+      "upward only",
+      "toward itself",
+      "nowhere"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 64,
+     "title": "Picked at random",
+     "text": "Does an anchor still pull if it was\npicked at random?",
+     "choices": [
+      "no",
+      "yes",
+      "only on Fridays",
+      "only if large"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 65,
+     "title": "What agrees",
+     "text": "People look for what agrees with\nthem, and...",
+     "choices": [
+      "ignore it",
+      "never find it",
+      "argue",
+      "find it"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 66,
+     "title": "What disagrees",
+     "text": "What disagrees gets checked...",
+     "choices": [
+      "twice as hard",
+      "once",
+      "by someone else",
+      "not at all"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 67,
+     "title": "Knowing the end",
+     "text": "Once you know how it ended, it\nlooks...",
+     "choices": [
+      "unfinished",
+      "wrong",
+      "as if it had to end that way",
+      "surprising"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 68,
+     "title": "Had to?",
+     "text": "Did it have to end that way?",
+     "choices": [
+      "the board does not say",
+      "no",
+      "yes",
+      "always"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 69,
+     "title": "A fallacy",
+     "text": "A fallacy is an argument that...",
+     "choices": [
+      "is true",
+      "is long",
+      "works",
+      "looks as if it works"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 70,
+     "title": "The speaker",
+     "text": "Attacking the speaker instead of\nthe argument is...",
+     "choices": [
+      "a fallacy",
+      "a proof",
+      "polite",
+      "framing"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 71,
+     "title": "More than two",
+     "text": "Offering two choices where there\nare more is...",
+     "choices": [
+      "an anchor",
+      "a cue",
+      "a fallacy",
+      "fair"
+     ],
+     "answer": 2
+    }
+   ]
+  },
+  {
+   "section": "ERROR",
+   "questions": [
+    {
+     "q": 72,
+     "title": "Guessing",
+     "text": "A mind is always guessing...",
+     "choices": [
+      "its own name",
+      "nothing",
+      "what comes next",
+      "the weather"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 73,
+     "title": "Surprise",
+     "text": "Surprise is the size of...",
+     "choices": [
+      "the room",
+      "the miss",
+      "the prize",
+      "the answer"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 74,
+     "title": "Mostly",
+     "text": "Learning is mostly...",
+     "choices": [
+      "waiting",
+      "memorising",
+      "guessing right",
+      "correcting"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 75,
+     "title": "A big miss",
+     "text": "A bigger miss means a bigger...",
+     "choices": [
+      "correction",
+      "prize",
+      "silence",
+      "mistake next time"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 76,
+     "title": "Too much at once",
+     "text": "Correct too much at once and\nyou...",
+     "choices": [
+      "stop",
+      "forget",
+      "overshoot",
+      "get it exactly"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 77,
+     "title": "Getting closer",
+     "text": "What gets closer?",
+     "choices": [
+      "guessing again",
+      "small corrections, many times",
+      "one huge correction",
+      "no correction"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 78,
+     "title": "Many times",
+     "text": "Small corrections should be made...",
+     "choices": [
+      "all at once",
+      "never",
+      "once",
+      "many times"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 79,
+     "title": "Noticed",
+     "text": "A mistake you notice teaches more\nthan...",
+     "choices": [
+      "an answer you were given",
+      "nothing",
+      "a second mistake",
+      "a book"
+     ],
+     "answer": 0
+    },
+    {
+     "q": 80,
+     "title": "Being sure",
+     "text": "Being sure is...",
+     "choices": [
+      "proof",
+      "the answer",
+      "not evidence",
+      "a skill"
+     ],
+     "answer": 2
+    },
+    {
+     "q": 81,
+     "title": "The surest",
+     "text": "The surest people learn...",
+     "choices": [
+      "the most",
+      "the least",
+      "the same",
+      "first"
+     ],
+     "answer": 1
+    },
+    {
+     "q": 82,
+     "title": "Why",
+     "text": "Why do the surest learn least?",
+     "choices": [
+      "they sleep less",
+      "they read more",
+      "the board does not say",
+      "nothing surprises them"
+     ],
+     "answer": 3
+    },
+    {
+     "q": 83,
+     "title": "No miss",
+     "text": "No miss means...",
+     "choices": [
+      "no surprise",
+      "a correction",
+      "a lesson",
+      "a big surprise"
+     ],
+     "answer": 0
+    }
+   ]
+  }
+ ],
+ "pass_mark": 80,
+ "grades": [
+  {
+   "from": 97,
+   "letter": "A+"
+  },
+  {
+   "from": 93,
+   "letter": "A"
+  },
+  {
+   "from": 90,
+   "letter": "A-"
+  },
+  {
+   "from": 87,
+   "letter": "B+"
+  },
+  {
+   "from": 83,
+   "letter": "B"
+  },
+  {
+   "from": 80,
+   "letter": "B-"
+  },
+  {
+   "from": 77,
+   "letter": "C+"
+  },
+  {
+   "from": 73,
+   "letter": "C"
+  },
+  {
+   "from": 70,
+   "letter": "C-"
+  },
+  {
+   "from": 60,
+   "letter": "D"
+  },
+  {
+   "from": 0,
+   "letter": "F"
+  }
+ ],
+ "flags": {
+  "diploma": 788,
+  "textbook": 785,
+  "paper_marked": 2412
+ },
+ "vars": {
+  "best": 16524,
+  "last": 16525,
+  "attempts": 16526,
+  "answers": 16527,
+  "per_var": 5
+ },
+ "sb1_vars": 4096,
+ "vars_start": 16384
+}

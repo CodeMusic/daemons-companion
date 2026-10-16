@@ -1,0 +1,600 @@
+{
+ "_about": "C-128: the GAME EVENTS page of the debug menu, in story order, its sub-pages' rows where each stands (section is the page's heading). held: every flag in all_flags set (bits as profile_layout explains) and, if given, var compared by op to value; a var is a u16 at sb1_vars + 2 * (number - vars_start). held null means the page tests the bag: items lists the item ids (key items, or a DRIVER in the TM case). The debug's own kit, each sub-page's ALL and its LET INSIGHTS ARRIVE AGAIN are left out.",
+ "sb1_vars": 4096,
+ "vars_start": 16384,
+ "events": [
+  {
+   "n": 1,
+   "name": "THE OPENING, OVER",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [],
+    "flag_names": [],
+    "var": {
+     "name": "VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB",
+     "number": 16469,
+     "op": ">=",
+     "value": 6
+    }
+   },
+   "note": "the page only gives this row; held is the lab's scene DaemonsDebug_FinishOpening sets"
+  },
+  {
+   "n": 2,
+   "name": "RUNNING SHOES",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2095
+    ],
+    "flag_names": [
+     "FLAG_SYS_B_DASH"
+    ]
+   }
+  },
+  {
+   "n": 3,
+   "name": "THE INDEX",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2089
+    ],
+    "flag_names": [
+     "FLAG_SYS_POKEDEX_GET"
+    ]
+   }
+  },
+  {
+   "n": 4,
+   "name": "OPUS",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     1193
+    ],
+    "flag_names": [
+     "FLAG_GOT_OPUS"
+    ]
+   }
+  },
+  {
+   "n": 5,
+   "name": "SLATE (CAIRN)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2080
+    ],
+    "flag_names": [
+     "FLAG_BADGE01_GET"
+    ]
+   }
+  },
+  {
+   "n": 6,
+   "name": "SLOPE (BASIN)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2081
+    ],
+    "flag_names": [
+     "FLAG_BADGE02_GET"
+    ]
+   }
+  },
+  {
+   "n": 7,
+   "name": "SENSE (GAUGE)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2082
+    ],
+    "flag_names": [
+     "FLAG_BADGE03_GET"
+    ]
+   }
+  },
+  {
+   "n": 8,
+   "name": "FIT (TRELLIS)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2083
+    ],
+    "flag_names": [
+     "FLAG_BADGE04_GET"
+    ]
+   }
+  },
+  {
+   "n": 9,
+   "name": "SKEW (TILT)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2084
+    ],
+    "flag_names": [
+     "FLAG_BADGE05_GET"
+    ]
+   }
+  },
+  {
+   "n": 10,
+   "name": "FRAME (MATTE)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2085
+    ],
+    "flag_names": [
+     "FLAG_BADGE06_GET"
+    ]
+   }
+  },
+  {
+   "n": 11,
+   "name": "HEAT (ANNEAL)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2086
+    ],
+    "flag_names": [
+     "FLAG_BADGE07_GET"
+    ]
+   }
+  },
+  {
+   "n": 12,
+   "name": "TRUE (SCORN)",
+   "section": "MARKS",
+   "held": {
+    "all_flags": [
+     2087
+    ],
+    "flag_names": [
+     "FLAG_BADGE08_GET"
+    ]
+   }
+  },
+  {
+   "n": 13,
+   "name": "THE NOTEBOOK, EMPTY",
+   "section": "NOTEBOOK",
+   "held": {
+    "all_flags": [
+     770
+    ],
+    "flag_names": [
+     "FLAG_GOT_NOTEBOOK"
+    ]
+   }
+  },
+  {
+   "n": 14,
+   "name": "TEXTBOOK AND DIPLOMA",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     788
+    ],
+    "flag_names": [
+     "FLAG_GOT_DIPLOMA"
+    ]
+   }
+  },
+  {
+   "n": 15,
+   "name": "S.S. ANNE TICKET",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     564
+    ],
+    "flag_names": [
+     "FLAG_GOT_SS_TICKET"
+    ]
+   }
+  },
+  {
+   "n": 16,
+   "name": "THE FIR IN ITS KEY",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2392
+    ],
+    "flag_names": [
+     "FLAG_FIR_IN_KEY"
+    ]
+   }
+  },
+  {
+   "n": 17,
+   "name": "EVERY GROVE FOUND",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2578,
+     2576,
+     2579,
+     2577,
+     2581,
+     2580,
+     2582,
+     2586,
+     2587,
+     2585,
+     2588,
+     2583,
+     2584,
+     2589
+    ],
+    "flag_names": [
+     "FLAG_ROUTE1_GROVE_FOUND",
+     "FLAG_VIRIDIAN_FOREST_GROVE_FOUND",
+     "FLAG_ROUTE24_GROVE_FOUND",
+     "FLAG_ROUTE25_GROVE_FOUND",
+     "FLAG_ROUTE11_GROVE_FOUND",
+     "FLAG_ROUTE8_GROVE_FOUND",
+     "FLAG_ROUTE13_GROVE_FOUND",
+     "FLAG_ONE_ISLAND_GROVE_FOUND",
+     "FLAG_TWO_ISLAND_GROVE_FOUND",
+     "FLAG_THREE_ISLAND_BERRY_FOREST_GROVE_FOUND",
+     "FLAG_FOUR_ISLAND_GROVE_FOUND",
+     "FLAG_FIVE_ISLAND_MEADOW_GROVE_FOUND",
+     "FLAG_SIX_ISLAND_WATER_PATH_GROVE_FOUND",
+     "FLAG_SEVEN_ISLAND_GROVE_FOUND"
+    ]
+   }
+  },
+  {
+   "n": 18,
+   "name": "PRUNE",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01",
+     "id": 339
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 19,
+   "name": "GOTO",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 1",
+     "id": 340
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 20,
+   "name": "TRAVERSE",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 2",
+     "id": 341
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 21,
+   "name": "DISPLACE",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 3",
+     "id": 342
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 22,
+   "name": "VERBOSE",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 4",
+     "id": 343
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 23,
+   "name": "CRACK",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 5",
+     "id": 344
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 24,
+   "name": "ASCEND",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 6",
+     "id": 345
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 25,
+   "name": "DESCEND",
+   "section": "DRIVERS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_HM01 + 7",
+     "id": 346
+    }
+   ],
+   "note": "held: the DRIVER in the bag"
+  },
+  {
+   "n": 26,
+   "name": "TEA, FOR BRAZEN'S GUARDS",
+   "section": "GAME EVENTS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_TEA",
+     "id": 369
+    }
+   ],
+   "note": "held: the item in the bag"
+  },
+  {
+   "n": 27,
+   "name": "BRAZEN'S GATES OPEN",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [],
+    "flag_names": [],
+    "var": {
+     "name": "VAR_MAP_SCENE_ROUTE5_ROUTE6_ROUTE7_ROUTE8_GATES",
+     "number": 16482,
+     "op": "!=",
+     "value": 0
+    }
+   }
+  },
+  {
+   "n": 28,
+   "name": "REVEAL",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     789
+    ],
+    "flag_names": [
+     "FLAG_GOT_REVEAL"
+    ]
+   }
+  },
+  {
+   "n": 29,
+   "name": "RESOLVER (HALFTONE)",
+   "section": "GAME EVENTS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_SILPH_SCOPE",
+     "id": 359
+    }
+   ],
+   "note": "held: the item in the bag"
+  },
+  {
+   "n": 30,
+   "name": "INTERRUPT",
+   "section": "GAME EVENTS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_POKE_FLUTE",
+     "id": 350
+    }
+   ],
+   "note": "held: the item in the bag"
+  },
+  {
+   "n": 31,
+   "name": "EVERY GOTO POINT",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2242
+    ],
+    "flag_names": [
+     "FLAG_WORLD_MAP_BIRTH_ISLAND_EXTERIOR"
+    ]
+   }
+  },
+  {
+   "n": 32,
+   "name": "THE GUIDE",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2400
+    ],
+    "flag_names": [
+     "FLAG_GOT_GUIDE"
+    ]
+   }
+  },
+  {
+   "n": 33,
+   "name": "GLOBAL INDEX",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2112
+    ],
+    "flag_names": [
+     "FLAG_SYS_NATIONAL_DEX"
+    ],
+    "var": {
+     "name": "VAR_NATIONAL_DEX",
+     "number": 16462,
+     "op": "==",
+     "value": 25176
+    },
+    "sb2_byte": {
+     "field": "pokedex.nationalMagic",
+     "offset": 27,
+     "value": 185
+    }
+   },
+   "note": "IsNationalPokedexEnabled: also sb2 pokedex.nationalMagic == 0xB9 (sb2_byte)"
+  },
+  {
+   "n": 34,
+   "name": "FIRST (TANOBY)",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2384
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_FIRST"
+    ]
+   }
+  },
+  {
+   "n": 35,
+   "name": "THE SCHOOL",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2401
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_SCHOOL"
+    ]
+   }
+  },
+  {
+   "n": 36,
+   "name": "THE READING ROOM",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2402
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_READING"
+    ]
+   }
+  },
+  {
+   "n": 37,
+   "name": "THE NOTES",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2403
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_NOTES"
+    ]
+   }
+  },
+  {
+   "n": 38,
+   "name": "SCORN",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2404
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_SCORN"
+    ]
+   }
+  },
+  {
+   "n": 39,
+   "name": "THE RETURN",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2405
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_RETURN"
+    ]
+   }
+  },
+  {
+   "n": 40,
+   "name": "THE GUIDE, READ",
+   "section": "UNDERSTANDINGS",
+   "held": {
+    "all_flags": [
+     2406
+    ],
+    "flag_names": [
+     "FLAG_UNDERSTANDING_GUIDE"
+    ]
+   }
+  },
+  {
+   "n": 41,
+   "name": "STREAM AND HEARSAY",
+   "section": "GAME EVENTS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_TEACHY_TV",
+     "id": 366
+    },
+    {
+     "name": "ITEM_FAME_CHECKER",
+     "id": 363
+    }
+   ],
+   "note": "the page only gives this row (the STREAM and HEARSAY in the bag, every show told)"
+  },
+  {
+   "n": 42,
+   "name": "COMPANION LINKED",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2416
+    ],
+    "flag_names": [
+     "FLAG_COMPANION_LINKED"
+    ]
+   }
+  }
+ ]
+}

@@ -1,5 +1,5 @@
 {
- "_about": "C-123: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here.",
+ "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here.",
  "sections": [
   "SCHOOL NOTES",
   "LOOSE PAGES",

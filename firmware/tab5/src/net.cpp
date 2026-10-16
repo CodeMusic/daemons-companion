@@ -22,6 +22,7 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
   return sum;
 }
 static uint32_t bitFor(const char *name) {
+  if (!strcmp(name, "notebook") || !strcmp(name, "marks")) return K_PROFILE;   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
   for (int i = 0; i < 7; i++) if (!strcmp(name, N[i])) return 1u << i;
   return 0;
@@ -236,6 +237,27 @@ static void fetchPartyArt() {
   if (any) changed(K_ART);
 }
 
+// C-131: the PROFILE's pictures -- the player (REASON and INSTINCT, card and walking frame) and the eight MARK badges.
+// They change only with the game, so each is fetched once and kept ("player_reason", "player_reason_walk", "mark1"..).
+static void fetchProfileArt() {
+  bool any = false;
+  auto one = [&](const String &key, const String &query) {
+    if (hasArt(key)) return;
+    int code; String got = request("GET", "/api/art?" + query, "", code);
+    JsonDocument a = newDoc();
+    if (code != 200 || deserializeJson(a, got)) return;
+    const char *b64 = a["png"] | "";
+    static uint8_t png[16 * 1024]; size_t n = 0;
+    if (!mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) { keepArt(key, png, n); any = true; }
+  };
+  for (const char *who : { "reason", "instinct" }) {
+    one(String("player_") + who, String("player=") + who);
+    one(String("player_") + who + "_walk", String("player=") + who + "&walk=1");
+  }
+  for (int m = 1; m <= 8; m++) one("mark" + String(m), "mark=" + String(m));
+  if (any) changed(K_ART | K_PROFILE);
+}
+
 // C-93: tell the companion every network this Tab5 knows (it is paired, so with the passwords) and take back the list
 // every device shares: new ones kept (joined when near), new passwords taken, the forgotten dropped.
 static void keepOne(const String &s, const String &p) {
@@ -281,6 +303,8 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/goals", "goals");
     fetchKeep("/api/party", "party");
     fetchKeep("/api/profile", "profile");
+    fetchKeep("/api/notebook", "notebook");           // C-131: the PROFILE's NOTEBOOK, as the app reads it
+    fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours
     fetchKeep("/api/devices", "devices");
     fetchKeep("/api/device/state", "state");          // this Tab5's own daemon (C-80)
     shareNetworks();                                  // C-93: every device's networks
@@ -291,6 +315,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/index", "index");
     if (withArt) fetchArt();
     fetchPartyArt();
+    fetchProfileArt();
     struct tm t; char when[24] = "this session";
     if (localTime(t)) strftime(when, sizeof when, "%Y-%m-%d %H:%M", &t);
     keptAtNow(when);

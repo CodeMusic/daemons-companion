@@ -18,13 +18,13 @@ static lv_color_t PAPER = lv_color_hex(0xF3F1EA), INK = lv_color_hex(0x1D232B), 
 static lv_color_t DAY = lv_color_hex(0x315A62);
 static uint32_t dayHex = 0x315A62;
 
-static lv_obj_t *tabs, *pages[6], *statusLeft, *statusRight, *overlay = nullptr;
-enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_SETTINGS };
-static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "SETTINGS" };
-static uint32_t drawnAt[6] = { 0 };                  // 0: draw the page again
+static lv_obj_t *tabs, *pages[7], *statusLeft, *statusRight, *overlay = nullptr;
+enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_PROFILE, P_SETTINGS };   // C-131: PROFILE
+static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "PROFILE", "SETTINGS" };
+static uint32_t drawnAt[7] = { 0 };                  // 0: draw the page again
 // C-98: what each page shows, so a change to anything else leaves it alone (a rebuilt page flickered)
-static const uint32_t NEEDS[6] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | K_MESSAGE, K_INDEX | K_ART, K_DEVICES,
-                                   K_NETS | K_MESSAGE | K_TODAY };
+static const uint32_t NEEDS[7] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | K_MESSAGE, K_INDEX | K_ART, K_DEVICES,
+                                   K_PROFILE | K_ART, K_NETS | K_MESSAGE | K_TODAY };
 static int indexPage = 0, goalAt = 0;
 
 static lv_obj_t *label(lv_obj_t *parent, const String &text, const lv_font_t *font = &lv_font_montserrat_20,
@@ -523,6 +523,124 @@ static void tapOrient(lv_event_t *e) {
   drawnAt[P_SETTINGS] = 0;
 }
 
+// ---- PROFILE (C-131): as the app's -- the player as the game draws them, the save's facts, the MARKS (the trainer card's
+// badges) and ROOTS (each understanding's colour), each opening its words, and the NOTEBOOK by section, a page a tap.
+// Everything comes from what the Tab5 keeps: profile, marks, notebook (net.cpp), and the pictures (fetchProfileArt).
+static String reflowed(String t) {                // the game wraps lines to its box; a page here re-flows them
+  t.replace("\n\n", "\x01"); t.replace("\n", " "); t.replace("\x01", "\n\n");
+  return t;
+}
+static void showWords(const String &head, const String &body, const String &foot) {
+  lv_obj_t *o = openOverlay();
+  button(o, "BACK", closeOverlay, nullptr, false);
+  label(o, head, &lv_font_montserrat_28, DAY, LV_PCT(100));
+  label(o, body, &lv_font_montserrat_20, INK, LV_PCT(100));
+  if (foot.length()) label(o, foot, &lv_font_montserrat_20, QUIET, LV_PCT(100));
+}
+static void tapMark(lv_event_t *e) {
+  int i = (int)(long)lv_event_get_user_data(e);
+  JsonDocument pr = newDoc(), m = newDoc();
+  if (!kept("profile", pr) || !kept("marks", m)) return;
+  JsonObject mk = m["marks"][i];
+  if (!(pr["marks"][i] | false)) { showWords("MARK " + String(i + 1), "Not yet earned.", ""); return; }
+  String body, title = mk["title"] | "";
+  for (JsonVariant part : mk["lesson"].as<JsonArray>()) body += (body.length() ? "\n\n" : "") + reflowed(part.as<String>());
+  if (body.startsWith(title + ".")) body = body.substring(title.length() + 1);   // its first line is its name
+  body.trim();
+  title.toUpperCase();
+  showWords(title, body, "From the BENCHMARK in " + String((const char *)(mk["found"] | "")) + ".");
+}
+static void tapRoot(lv_event_t *e) {
+  int i = (int)(long)lv_event_get_user_data(e);
+  JsonDocument pr = newDoc(), m = newDoc();
+  if (!kept("profile", pr) || !kept("marks", m)) return;
+  JsonObject u = m["understandings"][i];
+  if (!(pr["roots"][i] | false)) { showWords("ROOTS", "Not yet.", ""); return; }
+  showWords(u["name"] | "", u["lesson"].isNull() ? String("Its lesson is still being written.") : String((const char *)u["lesson"]),
+            "Arrived at: " + String((const char *)(u["found"] | "")) + ".");
+}
+static void tapPage(lv_event_t *e) {
+  long v = (long)lv_event_get_user_data(e);
+  JsonDocument nb = newDoc();
+  if (!kept("notebook", nb)) return;
+  JsonObject pg = nb["sections"][(int)(v >> 8)]["pages"][(int)(v & 0xFF)];
+  String text = pg["text"].isNull() ? String("Written by the game from your save each time you open it there.") : reflowed(pg["text"].as<String>());
+  String place = pg["place"] | "";
+  showWords(pg["title"] | "", text, place.length() ? "Found in " + place + "." : String(""));
+}
+static void drawProfile(lv_obj_t *p) {
+  JsonDocument pr = newDoc();
+  if (!kept("profile", pr) || pr["name"].isNull()) { label(p, "Nothing kept yet: the PROFILE comes from your save, after a SYNC.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }
+  bool instinct = String((const char *)(pr["choice"] | "REASON")) == "INSTINCT";
+  String who = instinct ? "instinct" : "reason";
+  lv_obj_t *c = card(p);
+  lv_obj_t *top = row(c);
+  picture(top, "player_" + who, 768);             // the trainer card's picture, 3x
+  picture(top, "player_" + who + "_walk", 768);   // and as they walk
+  lv_obj_t *id = column(top, LV_SIZE_CONTENT);
+  label(id, pr["name"] | "", &lv_font_montserrat_48, INK);
+  char no[8]; snprintf(no, sizeof no, "%05d", (int)(pr["trainerId"] | 0));
+  label(id, String((const char *)(pr["edition"] | "")) + "  -  ID No. " + no, &lv_font_montserrat_20, QUIET);
+  String rival = pr["rival"] | "";
+  label(id, String((const char *)(pr["choice"] | "")) + (rival.length() ? "  -  rival " + rival : String("")), &lv_font_montserrat_20, INK);
+  if (!pr["savedIn"].isNull()) label(id, "Last saved in " + String((const char *)(pr["savedIn"]["place"] | "")), &lv_font_montserrat_20, QUIET);
+  lv_obj_t *f = card(p);
+  JsonObject t = pr["playTime"];
+  char pt[16]; snprintf(pt, sizeof pt, "%d:%02d", (int)(t["hours"] | 0), (int)(t["minutes"] | 0));
+  String shoes = pr["shoes"].isNull() ? String("not yet") : String((const char *)pr["shoes"]) + "'s";
+  label(f, String("PLAY TIME  ") + pt + "      MONEY  " + String((long)(pr["money"] | 0)) + "      SHOES  " + shoes, &lv_font_montserrat_20, INK, LV_PCT(100));
+  JsonObject ix = pr["index"];
+  label(f, (ix["held"] | false) ? "INDEX  " + String((int)(ix["bound"] | 0)) + " bound - " + String((int)(ix["seen"] | 0)) + " seen" : String("INDEX  not yet held"),
+        &lv_font_montserrat_20, INK);
+  label(f, String("DIPLOMA  ") + ((pr["diploma"] | false) ? "earned" : "not yet") + "      OPUS  " + ((pr["opus"] | false) ? "carried" : "not carried"),
+        &lv_font_montserrat_20, INK);
+  // MARKS: the badges, faint until earned; a tap opens the lesson
+  label(f, "MARKS  (tap one)", &lv_font_montserrat_20, QUIET);
+  lv_obj_t *mr = row(f);
+  JsonArray marks = pr["marks"].as<JsonArray>();
+  for (int i = 0; i < 8; i++) {
+    lv_obj_t *b = lv_button_create(mr);
+    lv_obj_set_style_bg_opa(b, LV_OPA_TRANSP, 0); lv_obj_set_style_shadow_width(b, 0, 0); lv_obj_set_style_pad_all(b, 2, 0);
+    lv_obj_t *img = picture(b, "mark" + String(i + 1), 1024);   // 16 px, 4x
+    lv_obj_set_style_opa(img, (marks[i] | false) ? LV_OPA_COVER : LV_OPA_20, 0);
+    lv_obj_add_event_cb(b, [](lv_event_t *) { soundSelect(); }, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_event_cb(b, tapMark, LV_EVENT_CLICKED, (void *)(long)i);
+  }
+  // ROOTS: each understanding in its own colour, filled when held -- never a count
+  JsonDocument m = newDoc(); bool haveMarks = kept("marks", m);
+  label(f, "ROOTS", &lv_font_montserrat_20, QUIET);
+  lv_obj_t *rr = row(f);
+  JsonArray roots = pr["roots"].as<JsonArray>();
+  for (int i = 0; i < (int)roots.size(); i++) {
+    JsonArray rgb = haveMarks ? m["understandings"][i]["rgb"].as<JsonArray>() : JsonArray();
+    lv_color_t col = rgb.size() == 3 ? lv_color_make(rgb[0] | 90, rgb[1] | 107, rgb[2] | 140) : DAY;
+    lv_obj_t *dot = lv_button_create(rr);
+    lv_obj_set_size(dot, 44, 44);
+    lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_shadow_width(dot, 0, 0);
+    lv_obj_set_style_border_width(dot, 4, 0); lv_obj_set_style_border_color(dot, col, 0);
+    bool held = roots[i] | false;
+    lv_obj_set_style_bg_color(dot, col, 0); lv_obj_set_style_bg_opa(dot, held ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+    lv_obj_set_style_opa(dot, held ? LV_OPA_COVER : LV_OPA_50, 0);
+    lv_obj_add_event_cb(dot, [](lv_event_t *) { soundSelect(); }, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_event_cb(dot, tapRoot, LV_EVENT_CLICKED, (void *)(long)i);
+  }
+  // the NOTEBOOK: the game's sections, a page a tap; a page not yet opened in the game is marked
+  lv_obj_t *n = card(p);
+  label(n, "NOTEBOOK", &lv_font_montserrat_20, QUIET);
+  JsonDocument nb = newDoc();
+  if (!kept("notebook", nb) || !(nb["held"] | false)) { label(n, "Not carried yet.", &lv_font_montserrat_20, INK); return; }
+  JsonArray secs = nb["sections"].as<JsonArray>();
+  if (!secs.size()) { label(n, "Nothing filed in it yet.", &lv_font_montserrat_20, INK); return; }
+  for (int s = 0; s < (int)secs.size(); s++) {
+    label(n, secs[s]["name"] | "", &lv_font_montserrat_20, DAY);
+    lv_obj_t *pr2 = row(n);
+    JsonArray pages = secs[s]["pages"].as<JsonArray>();
+    for (int k = 0; k < (int)pages.size() && k < 256; k++)
+      button(pr2, String((pages[k]["unread"] | false) ? "* " : "") + (const char *)(pages[k]["title"] | ""), tapPage, (void *)(long)((s << 8) | k), false);
+  }
+}
+
 static void drawSettings(lv_obj_t *p) {
   lv_obj_t *o = card(p);                           // C-96
   label(o, "THIS SCREEN", &lv_font_montserrat_20, QUIET);
@@ -555,7 +673,7 @@ static void drawSettings(lv_obj_t *p) {
 
 // ---- the frame: a status bar and the tabs down the side --------------------------------------------------------------
 typedef void (*Draw)(lv_obj_t *);
-static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawSettings };
+static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawProfile, drawSettings };
 
 static void takeDayColour() {
   // C-90: the colour every device wears -- the palette the user chose, in this Tab5's own state -- else the site's
@@ -569,7 +687,7 @@ static void takeDayColour() {
   dayHex = v; DAY = lv_color_hex(v);
   lv_obj_t *bar = lv_tabview_get_tab_bar(tabs);
   lv_obj_set_style_bg_color(bar, DAY, 0);
-  for (int i = 0; i < 6; i++) drawnAt[i] = 0;
+  for (int i = 0; i < 7; i++) drawnAt[i] = 0;
 }
 
 static void redraw(int i) {
@@ -588,7 +706,7 @@ void uiBegin() { buildFrame(); }
 static String barLeft, barRight;                   // C-96: what the status bar says, so it is set only when it changes
 static void buildFrame() {
   barLeft = barRight = "";
-  for (int i = 0; i < 6; i++) drawnAt[i] = 0;
+  for (int i = 0; i < 7; i++) drawnAt[i] = 0;
   lv_obj_t *scr = lv_screen_active();
   lv_obj_set_style_bg_color(scr, PAPER, 0);
   lv_obj_t *bar = lv_obj_create(scr);
@@ -612,7 +730,7 @@ static void buildFrame() {
   lv_obj_set_style_bg_color(tb, DAY, 0);
   lv_obj_set_style_text_color(tb, lv_color_white(), 0);
   lv_obj_set_style_text_font(tb, portrait ? &lv_font_montserrat_16 : &lv_font_montserrat_20, 0);
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 7; i++) {
     pages[i] = lv_tabview_add_tab(tabs, TAB_NAMES[i]);
     lv_obj_set_style_pad_all(pages[i], 24, 0);
     lv_obj_set_style_pad_row(pages[i], 14, 0);
@@ -635,7 +753,7 @@ void uiLoop() {
   if (seenChange != keptChanged) {
     seenChange = keptChanged;
     uint32_t what = keptMask.exchange(0);
-    for (int i = 0; i < 6; i++) if (what & NEEDS[i]) drawnAt[i] = 0;
+    for (int i = 0; i < 7; i++) if (what & NEEDS[i]) drawnAt[i] = 0;
     takeDayColour();
     JsonDocument t = newDoc();
     todayLine = kept("today", t) ? "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "") : "";

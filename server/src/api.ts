@@ -798,6 +798,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const png = b64(speciesPng(String(q.get("species"))));
           return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that species" });
         }
+        // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
+        // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
+        if (q.has("player") || q.has("mark")) {
+          const name = q.has("player")
+            ? `player_${q.get("player") === "instinct" ? "instinct" : "reason"}${q.get("walk") ? "_walk" : ""}.png`
+            : `mark_${Math.max(1, Math.min(8, Number(q.get("mark")) || 1))}.png`;
+          const file = join(ART_DIR, name);
+          return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such picture" });
+        }
         if (q.get("all") === "species") {
           const all: Record<string, string> = {};
           for (const n of Object.keys(SPECIES)) { const png = b64(speciesPng(n)); if (png) all[n] = png; }

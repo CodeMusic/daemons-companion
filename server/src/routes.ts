@@ -7,6 +7,8 @@ import type { Store } from "./store.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { readNotebook } from "./save/notebook.js";
+import marksJson from "../data/marks.json" with { type: "json" };
+const MARKS = marksJson;
 import { readIndex } from "./save/index.js";
 import { carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
 
@@ -16,7 +18,7 @@ export type Ask = { method: string; path: string; body: any; deviceId: string };
 export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
-const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/index", "/api/party", "/api/daemon/life"];
+const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/marks", "/api/index", "/api/party", "/api/daemon/life"];
 const POSTS = ["/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -43,6 +45,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const row = SPECIES[sp[1]];
       return row ? ok({ ...row, entry: row.entry[h.edition] }) : no(404, "no such species");
     }
+    if (path === "/api/marks") return ok(MARKS);   // C-131: each MARK's and understanding's words, for the Tab5 (no save needed)
     const save = h.save.read();
     if (!save) return no(404, NO_SAVE);
     if (path === "/api/profile") {

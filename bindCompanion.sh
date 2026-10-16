@@ -82,8 +82,27 @@ answering() { curl -fsS -o /dev/null --max-time 1 "http://127.0.0.1:$PORT/api/to
 # (automatic signing registers the bundle id); a Release build carries its own JavaScript, so it runs without this Mac.
 if [[ $mode == phone ]]; then
   export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8          # CocoaPods fails on a non-UTF-8 locale
+  # Expo's precompiled modules are built by one Swift and refused by the next: Xcode 27.1 (Swift 6.4) could not load
+  # ExpoModulesCore built with 6.3.1 (2026-10-16). From source they build with whatever Xcode is here.
+  export EXPO_USE_PRECOMPILED_MODULES=0
   cd "$HERE/app"
   [[ -d node_modules ]] || npm install --no-fund --no-audit
+  # Swift 6.4 (Xcode 27.1) writes `extension __ObjC::expo` in a .swiftinterface where 6.3 wrote `__ObjC.expo`, and
+  # expo-modules-jsi's build-xcframework.sh strips only the dotted form -- the block left behind fails every importer
+  # ("cannot find type '__ObjC::expo'"; expo/expo#50272, not in 57.x). Strip both, and rebuild its xcframework once.
+  # Nothing to do once Expo's own script does it.
+  jsi=node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh
+  if [[ -f $jsi ]] && python3 - "$jsi" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+old, new = r"/^extension __ObjC\./,/^}/d", r"/^extension __ObjC[.:]/,/^}/d"
+if old not in s: sys.exit(1)                      # already patched, or Expo's script changed
+open(p, "w").write(s.replace(old, new))
+PY
+  then
+    rm -rf node_modules/expo-modules-jsi/apple/Products
+    echo "bindCompanion: patched expo-modules-jsi for Swift 6.4 (__ObjC::); its xcframework is rebuilt"
+  fi
   # Generate the native project again whenever app.json or the dependencies changed since it was made: a plugin added
   # later (C-55's Bluetooth permission) otherwise never reaches it, and iOS closes an app that touches Bluetooth
   # without its permission line -- the user's first PAIR crashed on exactly that.

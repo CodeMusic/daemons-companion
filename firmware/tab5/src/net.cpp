@@ -22,7 +22,7 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
   return sum;
 }
 static uint32_t bitFor(const char *name) {
-  if (!strcmp(name, "notebook") || !strcmp(name, "marks")) return K_PROFILE;   // C-131: both are the PROFILE page's
+  if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions")) return K_PROFILE;   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
   for (int i = 0; i < 7; i++) if (!strcmp(name, N[i])) return 1u << i;
   return 0;
@@ -305,6 +305,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/notebook", "notebook");           // C-131: the PROFILE's NOTEBOOK, as the app reads it
     fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours
+    fetchKeep("/api/regions", "regions");             // the two regions' maps, lit from the profile's visited (C-127)
     fetchKeep("/api/devices", "devices");
     fetchKeep("/api/device/state", "state");          // this Tab5's own daemon (C-80)
     shareNetworks();                                  // C-93: every device's networks

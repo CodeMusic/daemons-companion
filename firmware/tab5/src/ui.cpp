@@ -568,6 +568,65 @@ static void tapPage(lv_event_t *e) {
   String place = pg["place"] | "";
   showWords(pg["title"] | "", text, place.length() ? "Found in " + place + "." : String(""));
 }
+// C-127 on the Tab5: a region as the game's region map draws it, cropped to its cells, a cell a place, lit when the save
+// has visited it -- a place with no flag (a route) when it touches a lit one -- and ??? until the REVIEW BOARD. Each row is
+// drawn as runs of one colour, so a map is a few dozen rectangles, not hundreds.
+static void regionMap(lv_obj_t *parent, JsonObject region, JsonObject pr, int cell) {
+  bool open = region["hidden_until"].isNull() || (pr["gameClear"] | false);
+  std::map<String, bool> visited;
+  for (JsonVariant v : pr["visited"].as<JsonArray>()) visited[v.as<String>()] = true;
+  JsonObject secs = region["sections"];
+  auto flagged = [&](const String &m) { return !secs[m].isNull() && !secs[m]["visited_flag"].isNull(); };
+  lv_obj_t *col = column(parent, LV_SIZE_CONTENT);
+  lv_obj_set_flex_align(col, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  lv_obj_t *maps = row(col);
+  for (JsonObject map : region["maps"].as<JsonArray>()) {
+    JsonArray grid = map["grid"];
+    int H = grid.size(), W = H ? grid[0].size() : 0, x0 = W, y0 = H, x1 = -1, y1 = -1;
+    std::map<String, bool> lit;
+    for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) {
+      String m = grid[y][x].as<String>();
+      if (m == "MAPSEC_NONE") continue;
+      x0 = min(x0, x); y0 = min(y0, y); x1 = max(x1, x); y1 = max(y1, y);
+      if (open && flagged(m) && visited.count(m)) lit[m] = true;
+    }
+    if (x1 < 0) continue;
+    if (open) for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) {      // a route lights when it touches a lit town
+      String m = grid[y][x].as<String>();
+      if (m == "MAPSEC_NONE" || lit.count(m) || flagged(m)) continue;
+      const int d[4][2] = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+      for (auto &k : d) {
+        int nx = x + k[0], ny = y + k[1];
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        String n = grid[ny][nx].as<String>();
+        if (lit.count(n) && flagged(n)) { lit[m] = true; break; }
+      }
+    }
+    lv_obj_t *box = lv_obj_create(maps);
+    lv_obj_set_size(box, (x1 - x0 + 1) * cell, (y1 - y0 + 1) * cell);
+    lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
+    lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE);
+    for (int y = y0; y <= y1; y++) {
+      int x = x0;
+      while (x <= x1) {
+        String m = grid[y][x].as<String>();
+        if (m == "MAPSEC_NONE") { x++; continue; }
+        bool on = lit.count(m) > 0;
+        int run = x;
+        while (run <= x1) { String r = grid[y][run].as<String>(); if (r == "MAPSEC_NONE" || (lit.count(r) > 0) != on) break; run++; }
+        lv_obj_t *r = lv_obj_create(box);
+        lv_obj_set_pos(r, (x - x0) * cell, (y - y0) * cell);
+        lv_obj_set_size(r, (run - x) * cell - 1, cell - 1);
+        lv_obj_set_style_radius(r, 0, 0); lv_obj_set_style_border_width(r, 0, 0); lv_obj_set_style_pad_all(r, 0, 0);
+        lv_obj_set_style_bg_color(r, on ? DAY : lv_color_hex(0xC9D2C4), 0);
+        lv_obj_remove_flag(r, LV_OBJ_FLAG_CLICKABLE);
+        x = run;
+      }
+    }
+  }
+  label(col, open ? String((const char *)(region["name"] | "")) : String("???"), &lv_font_montserrat_20, QUIET);
+}
+
 static void drawProfile(lv_obj_t *p) {
   JsonDocument pr = newDoc();
   if (!kept("profile", pr) || pr["name"].isNull()) { label(p, "Nothing kept yet: the PROFILE comes from your save, after a SYNC.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }
@@ -584,6 +643,9 @@ static void drawProfile(lv_obj_t *p) {
   String rival = pr["rival"] | "";
   label(id, String((const char *)(pr["choice"] | "")) + (rival.length() ? "  -  rival " + rival : String("")), &lv_font_montserrat_20, INK);
   if (!pr["savedIn"].isNull()) label(id, "Last saved in " + String((const char *)(pr["savedIn"]["place"] | "")), &lv_font_montserrat_20, QUIET);
+  JsonDocument rg = newDoc();                       // C-127: the two regions, filling in as they are explored
+  if (kept("regions", rg)) for (JsonObject r : rg["regions"].as<JsonArray>())
+    regionMap(top, r, pr.as<JsonObject>(), r["maps"].size() > 1 ? 6 : 10);
   lv_obj_t *f = card(p);
   JsonObject t = pr["playTime"];
   char pt[16]; snprintf(pt, sizeof pt, "%d:%02d", (int)(t["hours"] | 0), (int)(t["minutes"] | 0));

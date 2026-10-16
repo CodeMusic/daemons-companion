@@ -61,6 +61,42 @@ env_for() {                     # a board's id -> its build
   esac
 }
 
+# -- which board, when it cannot say ----------------------------------------------------------------------------------
+# One line a board, under its maker's name, numbered down the page. Each entry: maker|what it is|its build.
+BOARDS=(
+  "LilyGO|T-Embed (CC1101, plain or SI4732)|t-embed"
+  "LilyGO|T-Watch S3|t-watch-s3"
+  "LilyGO|T-Deck or T-Deck Plus|t-deck"
+  "LilyGO|T-Display-S3 Pro|t-display-pro"
+  "M5Stack|StickS3|m5-sticks3"
+  "M5Stack|CoreS3|m5-cores3"
+  "M5Stack|M5GO or Fire|m5-core"
+  "M5Stack|Dial|m5-dial"
+  "M5Stack|Tab5|m5-tab5"
+)
+picked=""
+pick_board() {                  # ask which board is on $1; its build lands in $picked
+  local port="$1" maker="" n=0 entry brand name
+  echo "updateCompanion: what is the board on $port?"
+  for entry in "${BOARDS[@]}"; do
+    n=$((n + 1)); brand="${entry%%|*}"; name="${entry#*|}"; name="${name%|*}"
+    if [[ "$brand" != "$maker" ]]; then maker="$brand"; echo; echo "  $maker"; fi
+    printf '    %2d) %s\n' "$n" "$name"
+  done
+  echo
+  if [[ ! -t 0 ]]; then
+    local envs="" e
+    for e in "${BOARDS[@]}"; do envs+="${envs:+, }${e##*|}"; done
+    echo "updateCompanion: no one to ask -- run with --board ($envs)." >&2; exit 64
+  fi
+  local answer
+  printf 'number (anything else skips it): '; read -r answer
+  if [[ "$answer" =~ ^[0-9]+$ ]] && (( answer >= 1 && answer <= ${#BOARDS[@]} )); then
+    picked="${BOARDS[$((answer - 1))]##*|}"; return 0
+  fi
+  echo "updateCompanion: skipping $port"; return 1
+}
+
 # -- the boards -----------------------------------------------------------------------------------------------------
 if pgrep -f usb_bridge.py >/dev/null 2>&1; then
   echo "updateCompanion: stopping the bridge (it holds the board's port)"
@@ -118,10 +154,8 @@ fi
 for i in "${chosen[@]}"; do
   port="${ports[$i]}" env="${envs[$i]}"
   if [[ -z "$env" ]]; then
-    echo "updateCompanion: what is the board on $port? 1) a T-Embed (CC1101, plain or SI4732)  2) the T-Watch S3  3) the M5StickS3  4) the M5Stack CoreS3  5) an M5GO or Fire  6) the M5Stack Tab5  7) the M5Stack Dial  8) the T-Deck or T-Deck Plus  9) the T-Display-S3 Pro"
-    [[ -t 0 ]] || { echo "updateCompanion: no one to ask -- run with --board t-embed, t-watch-s3, t-deck, t-display-pro, m5-sticks3, m5-cores3, m5-core, m5-dial or m5-tab5." >&2; exit 64; }
-    read -r answer
-    case "$answer" in 1*) env=t-embed ;; 2*) env=t-watch-s3 ;; 3*) env=m5-sticks3 ;; 4*) env=m5-cores3 ;; 5*) env=m5-core ;; 6*) env=m5-tab5 ;; 7*) env=m5-dial ;; 8*) env=t-deck ;; 9*) env=t-display-pro ;; *) echo "updateCompanion: skipping $port"; continue ;; esac
+    pick_board "$port" || continue
+    env="$picked"
   fi
   echo "updateCompanion: flashing $port with $env"
   if [[ "$env" == m5-tab5 ]]; then "$HERE/firmware/tab5/pio.sh" run -t upload --upload-port "$port"   # C-77

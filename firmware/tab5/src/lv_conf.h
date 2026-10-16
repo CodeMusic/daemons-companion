@@ -19,6 +19,7 @@
 #define LV_USE_ASSERT_MALLOC 1
 
 // the fonts: body, headings, the clock
+#define LV_FONT_MONTSERRAT_14 1                  // the tab names, when nine do not fit at 16
 #define LV_FONT_MONTSERRAT_16 1
 #define LV_FONT_MONTSERRAT_20 1
 #define LV_FONT_MONTSERRAT_28 1

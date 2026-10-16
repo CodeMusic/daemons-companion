@@ -1161,12 +1161,23 @@ static void buildFrame() {
   lv_obj_t *tb = lv_tabview_get_tab_bar(tabs);
   lv_obj_set_style_bg_color(tb, DAY, 0);
   lv_obj_set_style_text_color(tb, lv_color_white(), 0);
-  lv_obj_set_style_text_font(tb, portrait ? &lv_font_montserrat_16 : &lv_font_montserrat_20, 0);
+  // in portrait each name has a ninth of the width: a name that would touch its edges takes the whole bar down a size
+  const lv_font_t *tabFont = portrait ? &lv_font_montserrat_16 : &lv_font_montserrat_20;
+  if (portrait) {
+    int32_t room = M5.Display.width() / P_COUNT - 8;
+    for (int i = 0; i < P_COUNT; i++) {
+      lv_point_t sz; lv_text_get_size(&sz, TAB_NAMES[i], tabFont, 0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+      if (sz.x > room) { tabFont = &lv_font_montserrat_14; break; }
+    }
+  }
+  lv_obj_set_style_text_font(tb, tabFont, 0);
   for (int i = 0; i < P_COUNT; i++) {
     pages[i] = lv_tabview_add_tab(tabs, TAB_NAMES[i]);
     lv_obj_set_style_pad_all(pages[i], 24, 0);
     lv_obj_set_style_pad_row(pages[i], 14, 0);
   }
+  for (uint32_t i = 0; i < lv_obj_get_child_count(tb); i++)   // the theme's button padding would take the room back
+    lv_obj_set_style_pad_hor(lv_obj_get_child(tb, i), 2, 0);
   lv_obj_add_event_cb(tabs, tabChanged, LV_EVENT_VALUE_CHANGED, nullptr);
   dayHex = 0; takeDayColour();
 }

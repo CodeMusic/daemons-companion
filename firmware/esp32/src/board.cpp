@@ -36,6 +36,78 @@ void boardBegin() {
   watchPower();                                      // the PMU switches every rail: on before anything else starts
 }
 
+#elif defined(BOARD_CARDPUTER)
+
+// C-136: the M5Stack Cardputer and Cardputer ADV -- one build: an ESP32-S3FN8 (8 MB flash, no PSRAM) behind an ST7789V2,
+// 135x240 turned to 240x135 (MOSI 35, SCK 36, DC 34, CS 37, RST 33, backlight 38; offsets 52/40, inverted), a keyboard,
+// BOOT (0) as its one button, the battery by voltage on IO10, halved, and a WS2812 on 21. They differ in the keyboard --
+// the original scans a 74HC138 matrix (cardputer.cpp), the ADV asks a TCA8418 (I2C 0x34 on SDA 8 / SCL 9) -- and in
+// sound: the original's NS4168 takes I2S on 41/43/42 as it is, the ADV's ES8311 (0x18) is set up first, as the
+// StickS3's is (sound.cpp). The ADV with the Cap LoRa-1262 has an SX1262 (CS 5, RST 3, BUSY 6, DIO1 4; SCK 40, MISO 39,
+// MOSI 14, shared with the SD card, CS 12) whose antenna switch is a PI4IOE5V6408 (0x43) to switch on. Told apart as
+// M5Stack's own libraries tell them: what answers on 8 / 9 (on the original those are the matrix's address lines, which
+// a probe only wiggles). Pins from docs.m5stack.com, M5GFX, M5Unified, M5Cardputer and Meshtastic (docs/HARDWARE.md).
+static bool i2cHere(uint8_t addr) { Wire.beginTransmission(addr); return Wire.endTransmission() == 0; }
+static void i2cSet(uint8_t addr, uint8_t reg, uint8_t v) { Wire.beginTransmission(addr); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
+void boardBegin() {
+  board.width = 240; board.height = 135; board.rotation = 1;
+  board.lcdCs = 37; board.lcdDc = 34; board.lcdSclk = 36; board.lcdMosi = 35; board.lcdRst = 33; board.lcdBl = 38;
+  board.lcdPanelW = 135; board.lcdPanelH = 240; board.lcdOffsetX = 52; board.lcdOffsetY = 40;
+  board.encKey = 0;                                            // BOOT: a tap presses, held goes back (the keys do more)
+  board.keyboard = true;
+  board.i2sBclk = 41; board.i2sLrclk = 43; board.i2sDout = 42;
+  board.power = Power::AdcDivider; board.battAdc = 10;
+  board.lights = Lights::WS2812; board.ledData = 21; board.ledCount = 1;
+  board.sdCs = 12; pinMode(board.sdCs, OUTPUT); digitalWrite(board.sdCs, HIGH);
+  Wire.begin(8, 9);
+  bool adv = i2cHere(0x34) || i2cHere(0x18);                   // the TCA8418, or the ES8311
+  if (adv) {
+    board.kind = BoardKind::CardputerAdv; board.id = "m5-cardputer-adv"; board.name = "Cardputer ADV";
+    board.sda = 8; board.scl = 9;
+    if (i2cHere(0x43)) {                                        // the Cap LoRa-1262: its antenna switch on (Meshtastic's writes)
+      i2cSet(0x43, 0x03, 0x01); i2cSet(0x43, 0x07, 0x00); i2cSet(0x43, 0x05, 0x01);
+      board.lora = true; board.loraChip = LoraChip::SX1262; board.loraMinMhz = 850;
+      board.loraCs = 5; board.loraRst = 3; board.loraBusy = 6; board.loraDio1 = 4;
+      board.loraSck = 40; board.loraMiso = 39; board.loraMosi = 14;
+      board.gpsRx = 15; board.gpsTx = 13;
+    }
+  } else {
+    Wire.end();                                                // 8 and 9 are the matrix's (cardputer.cpp)
+    board.kind = BoardKind::Cardputer; board.id = "m5-cardputer"; board.name = "Cardputer";
+  }
+}
+
+#elif defined(BOARD_TDISPLAY_AMOLED)
+
+// C-135: the LilyGO T-Display-S3 AMOLED 1.91 -- an ESP32-S3R8 (16 MB flash, 8 MB octal PSRAM) behind an RM67162 AMOLED,
+// 240x536 on a QSPI bus (display.h), turned to 536x240. Its panel's power is GPIO 38 (V2.0; the green LED on V1.0, so
+// driving it high is harmless there). Two buttons: BOOT (0) and IO21 -- unless it is the touch version, whose CST816
+// (I2C 0x15 on SDA 3 / SCL 2, its interrupt on 21) takes 21. The battery by voltage on IO4, halved. No speaker, no
+// microphone. Pins from LilyGO's T-Display-S3-AMOLED and LilyGo-AMOLED-Series (docs/HARDWARE.md).
+#include <Preferences.h>
+static bool answersAt(int sda, int scl, uint8_t addr) {
+  Wire.begin(sda, scl); Wire.beginTransmission(addr); bool ok = Wire.endTransmission() == 0; Wire.end(); return ok;
+}
+void boardBegin() {
+  board.kind = BoardKind::TDisplayAmoled; board.id = "t-display-amoled"; board.name = "T-Display-S3 AMOLED";
+  board.width = 536; board.height = 240; board.rotation = 1;
+  pinMode(38, OUTPUT); digitalWrite(38, HIGH);                 // the panel's power (V2.0)
+  delay(20);
+  board.sda = 3; board.scl = 2;
+  // the touch version: its CST816 sleeps when idle and then does not answer, so it is asked a few times, and once seen
+  // it is remembered (a board does not lose its touch screen)
+  bool seen = false;
+  for (int i = 0; i < 6 && !seen; i++) { seen = answersAt(3, 2, 0x15); if (!seen) delay(15); }
+  Preferences pref; pref.begin("board", false);
+  if (seen && !pref.getBool("touch", false)) pref.putBool("touch", true);
+  board.touch = seen || pref.getBool("touch", false);
+  pref.end();
+  if (board.touch) board.encKey = 0;                           // BOOT alone: a tap presses, held goes back; the screen swipes
+  else { board.encKey = 21; board.sideKey = 0; }               // 21 presses; BOOT turns, held goes back, two seconds sleeps
+  board.power = Power::AdcDivider; board.battAdc = 4;
+  Wire.begin(board.sda, board.scl);
+}
+
 #elif defined(BOARD_TDISPLAY_PRO)
 
 // C-105: the LilyGO T-Display-S3 Pro -- an ESP32-S3R8 (16 MB flash, 8 MB octal PSRAM) behind a 2.33" ST7796U IPS screen,

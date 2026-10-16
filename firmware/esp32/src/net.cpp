@@ -10,6 +10,7 @@
 #include <freertos/semphr.h>
 #include <vector>
 #include "app.h"
+#include "broadcast.h"
 #include "talk.h"
 #include "brain.h"
 #include "radios.h"
@@ -530,6 +531,12 @@ void handleLine(String line, bool fromPhone) {
     reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
           " want " + st.daemon.artKey + " | last " + artTold);
   else if (line == "WATCH" && !fromPhone) reply(watchStatus());   // C-98
+  else if (line == "CASTS?" && !fromPhone) reply(castStatus());    // C-134: the broadcasts this board has, and how each came
+  else if (line.startsWith("CAST ") && !fromPhone) {             // C-134: a bench test -- CAST act WAVE, CAST say hello
+    String r = line.substring(5); int sp = r.indexOf(' ');
+    String k = sp < 0 ? r : r.substring(0, sp), b = sp < 0 ? "" : r.substring(sp + 1);
+    reply(castSend(k == "say" ? CAST_SAY : CAST_ACT, b) ? "CAST sent" : "CAST not sent: no daemon hosted here");
+  }
   else if (line == "PING") { seen = millis(); reply("PONG"); }
 }
 
@@ -561,6 +568,11 @@ void meetReport() {
     if (saidWaiting.size() < 8) saidWaiting.push_back(dir + " " + kind + " " + String(species) + " " + tag + " " + String(relayed) + " " + text);
   bool link = bridgeLive() || online();
   if (!link) return;
+  String cast;                                                    // C-134: a broadcast sent, or heard by radio
+  while (castTakeReport(cast)) {
+    if (bridgeLive()) bridge("CAST " + cast);
+    else if (http("POST", "/api/device/broadcast", cast).isEmpty()) break;   // the companion will have it from another
+  }
   String listen;
   if (meetTakeListen(listen)) {
     if (bridgeLive()) bridge(listen);

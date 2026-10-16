@@ -8,7 +8,7 @@
 // as the M5Stack Dial does (env:m5-dial, C-102).
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro };   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro, TDisplayAmoled, Cardputer, CardputerAdv };   // C-135, C-136   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
 enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306, ChargerSY6970 };   // SY6970: C-105
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
@@ -50,6 +50,9 @@ struct Board {
   // C-104: the T-Deck's keyboard (its own ESP32-C3, I2C 0x55, one character a read), its trackball (four pins that
   // toggle as the ball rolls, and BOOT as its press), its GPS (the Plus, a UART) and its SD card (held off the bus)
   bool keyboard = false; int tbUp = -1, tbDown = -1, tbLeft = -1, tbRight = -1, gpsRx = -1, gpsTx = -1, sdCs = -1;
+  // C-136: the lowest band its LoRa antenna is made for (the Cardputer ADV's Cap LoRa-1262: 868-923 MHz) -- a lower band
+  // chosen on the site is taken as 868 on this board, so a mixed set of boards still hears what it can
+  int loraMinMhz = 0;
   // C-74, C-75: the speaker and the microphone share one set of clocks, so the speaker lets go while it listens
   bool sharedClocks() const { return mic == Mic::Es8311 || mic == Mic::Es7210Shared; }
   bool hasSideKey() const { return sideKey >= 0; }

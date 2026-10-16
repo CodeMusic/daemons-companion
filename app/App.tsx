@@ -271,7 +271,8 @@ async function keepEverything() {
   if (!ON_PHONE) return;
   let moved = false;
   for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk",
-                   "/api/settings", "/api/talk/settings", "/api/device/settings"]) {   // C-92: SETTINGS opens away too
+                   "/api/settings", "/api/talk/settings", "/api/device/settings",   // C-92: SETTINGS opens away too
+                   "/api/notebook", "/api/progress", "/api/broadcasts"]) {   // C-125, C-128/129, C-134: PROFILE, SCHOOL, NEARBY away
     const before = JSON.stringify(KEPT.paths[p]);
     await liveAndKeep(p, () => false).catch(() => {});
     if (JSON.stringify(KEPT.paths[p]) !== before) moved = true;

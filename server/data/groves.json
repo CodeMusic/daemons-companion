@@ -1,0 +1,164 @@
+{
+ "_about": "T-408: the groves as universes, with THE NEXUS's signs; found_flag is set the first time the grove is arrived in (bits as profile_layout explains). THE NEXUS itself is the PAINTEDVERSE.",
+ "nexus": "THE PAINTEDVERSE",
+ "groves": [
+  {
+   "grove": "ViridianForest_Grove",
+   "universe": "THE BACKDROPVERSE",
+   "sign": "Where everyone walks past first,\none tree is not part of the forest.",
+   "door_map": "ViridianForest",
+   "found_flag": 2576,
+   "found_flag_name": "FLAG_VIRIDIAN_FOREST_GROVE_FOUND",
+   "family": [
+    "UNNOTICED"
+   ]
+  },
+  {
+   "grove": "Route25_Grove",
+   "universe": "THE EMPATHVERSE",
+   "sign": "On the long road to the far cottage,\na bush stands where no one asked it.",
+   "door_map": "Route25",
+   "found_flag": 2577,
+   "found_flag_name": "FLAG_ROUTE25_GROVE_FOUND",
+   "family": [
+    "GUESSWORK",
+    "ATTUNE"
+   ]
+  },
+  {
+   "grove": "Route1_Grove",
+   "universe": "THE PULSEVERSE",
+   "sign": "Before you knew the way, your feet\nknew the first road out of town.",
+   "door_map": "Route1",
+   "found_flag": 2578,
+   "found_flag_name": "FLAG_ROUTE1_GROVE_FOUND",
+   "family": [
+    "BREATHING"
+   ]
+  },
+  {
+   "grove": "Route24_Grove",
+   "universe": "THE INWARDVERSE",
+   "sign": "Past the bridge everyone dares,\nthe one who stops to look inside.",
+   "door_map": "Route24",
+   "found_flag": 2579,
+   "found_flag_name": "FLAG_ROUTE24_GROVE_FOUND",
+   "family": [
+    "WITNESS"
+   ]
+  },
+  {
+   "grove": "Route8_Grove",
+   "universe": "THE HAZEVERSE",
+   "sign": "Between two towns, a little before\nthe tower, something is fading.",
+   "door_map": "Route8",
+   "found_flag": 2580,
+   "found_flag_name": "FLAG_ROUTE8_GROVE_FOUND",
+   "family": [
+    "FADING"
+   ]
+  },
+  {
+   "grove": "Route11_Grove",
+   "universe": "THE DRIFTVERSE",
+   "sign": "East of the harbour, a tree is\nresting where the road forgot it.",
+   "door_map": "Route11",
+   "found_flag": 2581,
+   "found_flag_name": "FLAG_ROUTE11_GROVE_FOUND",
+   "family": [
+    "DAYDREAM",
+    "RESTLESS"
+   ]
+  },
+  {
+   "grove": "Route13_Grove",
+   "universe": "THE HUSHVERSE",
+   "sign": "In the copse by the fences, one\ncorner tree has not said a word.",
+   "door_map": "Route13",
+   "found_flag": 2582,
+   "found_flag_name": "FLAG_ROUTE13_GROVE_FOUND",
+   "family": [
+    "UNSPOKEN"
+   ]
+  },
+  {
+   "grove": "FiveIsland_Meadow_Grove",
+   "universe": "THE MECHAVERSE",
+   "sign": "In the fifth island's meadow, four\nminds are learning to be one.",
+   "door_map": "FiveIsland_Meadow",
+   "found_flag": 2583,
+   "found_flag_name": "FLAG_FIVE_ISLAND_MEADOW_GROVE_FOUND",
+   "family": [
+    "SINGLETON",
+    "PAIRWISE"
+   ]
+  },
+  {
+   "grove": "SixIsland_WaterPath_Grove",
+   "universe": "THE COMPASSVERSE",
+   "sign": "Along the sixth island's water,\na rock points the same way always.",
+   "door_map": "SixIsland_WaterPath",
+   "found_flag": 2584,
+   "found_flag_name": "FLAG_SIX_ISLAND_WATER_PATH_GROVE_FOUND",
+   "family": [
+    "GRADIENT"
+   ]
+  },
+  {
+   "grove": "ThreeIsland_BerryForest_Grove",
+   "universe": "THE HUNGERVERSE",
+   "sign": "In the third island's berries,\nsomething has eaten all the paths.",
+   "door_map": "ThreeIsland_BerryForest",
+   "found_flag": 2585,
+   "found_flag_name": "FLAG_THREE_ISLAND_BERRY_FOREST_GROVE_FOUND",
+   "family": [
+    "GREEDY",
+    "BLOATWARE"
+   ]
+  },
+  {
+   "grove": "OneIsland_Grove",
+   "universe": "THE SEEDVERSE",
+   "sign": "On the first island, one bush is\nholding a value nobody can see.",
+   "door_map": "OneIsland",
+   "found_flag": 2586,
+   "found_flag_name": "FLAG_ONE_ISLAND_GROVE_FOUND",
+   "family": []
+  },
+  {
+   "grove": "TwoIsland_Grove",
+   "universe": "THE WEATHERVERSE",
+   "sign": "On the second island, a tree is\nwaiting to see what the sky does.",
+   "door_map": "TwoIsland",
+   "found_flag": 2587,
+   "found_flag_name": "FLAG_TWO_ISLAND_GROVE_FOUND",
+   "family": [
+    "OVERLOADED"
+   ]
+  },
+  {
+   "grove": "FourIsland_Grove",
+   "universe": "THE HUSKVERSE",
+   "sign": "On the cold fourth island, a tree\nhas left its old shell behind.",
+   "door_map": "FourIsland",
+   "found_flag": 2588,
+   "found_flag_name": "FLAG_FOUR_ISLAND_GROVE_FOUND",
+   "family": [
+    "PREFORK",
+    "BURSTMODE"
+   ]
+  },
+  {
+   "grove": "SevenIsland_Grove",
+   "universe": "THE CLAYVERSE",
+   "sign": "At the end of the seventh island,\na bush hides a figure of clay.",
+   "door_map": "SevenIsland",
+   "found_flag": 2589,
+   "found_flag_name": "FLAG_SEVEN_ISLAND_GROVE_FOUND",
+   "family": [
+    "LIKELIHOOD",
+    "POSTERIOR"
+   ]
+  }
+ ]
+}

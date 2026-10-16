@@ -5,6 +5,7 @@
 #include "radios.h"
 #include "leds.h"
 #include "sound.h"
+#include "lora.h"
 
 bool asleep = false;
 uint32_t lastInput = 0;                   // C-42: any touch; left alone `sleepAfter` seconds, it sleeps
@@ -17,6 +18,15 @@ bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 // menu (the pages and everything under them, as before), and close it again. The care kinds keep their own numbers --
 // feed 0, water 1, train 2, sleep 3 -- which the server, the sounds (TUNE_CARE) and the CARE list all read.
 bool menuOpen = false;
+String composing;                         // C-123
+// C-123: the message typed, sent to everyone nearby over LoRa -- or said why not
+static void sendComposed() {
+  String t = composing; t.trim();
+  screen = HOME; composing = ""; dirty = true;
+  if (!t.length()) return;
+  if (!st.carrying) { say("No daemon here to carry it"); return; }                 // DRAFT
+  say(loraSay(t) ? "Sent to everyone nearby" : "The radio did not send it");      // DRAFT
+}
 uint8_t keysHeld = 0;                     // C-121: the three buttons down right now (bit 0 A, 1 B, 2 C), lit on the screen
 // C-118: and wake, 4 -- only waking it, from any button while it sleeps
 static const char *CARE_KIND[] = { "feed", "water", "train", "sleep", "wake" },
@@ -75,9 +85,20 @@ void readDeck() {
   Wire.requestFrom((uint8_t)0x55, (uint8_t)1);
   int c = Wire.available() ? Wire.read() : 0;
   if (c <= 0 || c == 0xFF) return;
+  if (loraMessageRead()) { wake(); return; }                    // C-123: a message heard is read by the next key -- only that
   if (wake()) return;                                           // a key wakes it, and does nothing else
   lastInput = millis();
   if (routineRunning) { deckKey = c; return; }
+  // C-123 (the user, 2026-10-15: "type messages with the keyboard and it would broadcast over lora to all nearby
+  // devices"): at home, typing starts a message to everyone nearby; in it the letters go to it, Enter sends it,
+  // Backspace takes a letter back -- and on an empty message, leaves it
+  if (screen == COMPOSE) {
+    if (c == 13 || c == 10) sendComposed();
+    else if (c == 8) { if (composing.length()) composing.remove(composing.length() - 1); else screen = HOME; }
+    else if (c >= 32 && c < 127 && (int)composing.length() < loraTextMax()) composing += (char)c;
+    dirty = true; return;
+  }
+  if (screen == HOME && c >= 32 && c < 127 && board.loraChip != LoraChip::None) { screen = COMPOSE; composing = String((char)c); dirty = true; return; }
   if (screen == TYPE_PASS && c != 13 && c != 10 && c != 8) { if (c >= 32 && c < 127) { typed += (char)c; dirty = true; } return; }
   if (c == 13 || c == 10) { if (screen == TYPE_PASS) wheelAt = 0; press(); }   // Enter on a password: OK
   else if (c == 8) back();
@@ -166,6 +187,7 @@ bool giveUp() {                        // the watch: a touch anywhere
 
 // The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
 void press() {
+  if (screen == COMPOSE) { sendComposed(); return; }            // C-123: the trackball's press sends it too
   lastInput = millis();
   ledsFlash();                                                  // C-38
   soundSelect();                                                // C-40
@@ -228,6 +250,7 @@ void back() {
   if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
   if (screen == HOME && menuOpen) { menuOpen = false; page = homePage(); dirty = true; return; }   // C-117: out of the menu
   if (screen == TALK) { screen = HOME; }                         // C-66
+  if (screen == COMPOSE) { screen = HOME; composing = ""; dirty = true; return; }   // C-123: not sent
   else if (screen == INDEX_ENTRY) { screen = CARE; careAt = 4; }
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
@@ -265,6 +288,7 @@ Page homePage() {
 
 bool wake() {
   lastInput = millis();
+  loraMessageRead();                              // C-123: any touch reads a message heard (the T-Deck's keys: readDeck)
   if (!asleep) return false;
   asleep = false;
   screen = HOME;

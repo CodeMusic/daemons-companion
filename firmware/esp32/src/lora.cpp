@@ -2,12 +2,13 @@
 //
 // THE FRAME, the same on every board whatever its chip (an SX1262 or an SX1278 hear each other at the same settings):
 //
-//     'D' 'A'  kind  hops  FROM(4)  SPECIES(2)  ID(2)  TO(4)  NAME(10)  TEXT(0..40)
+//     'D' 'A'  kind  hops  FROM(4)  SPECIES(2)  ID(2)  TO(4)  NAME(10)  TEXT(0..80)
 //
 // FROM is the board's hourly tag -- the SAME tag its Bluetooth beacon carries (meet.cpp), so the server tells our own
 // companions from strangers the one way it already does, and a daemon heard on both radios is one meeting. SPECIES and
 // NAME are the carried daemon's, as the game names it, so a board can list who is near without a table of names (it
-// has none). TEXT is a word of up to forty letters. A frame says nothing about who carries the board.
+// has none). TEXT is a word, or a message, of up to eighty letters (C-123; forty before -- a board not yet updated
+// keeps the first forty). A frame says nothing about who carries the board.
 //
 // Kinds: 1 BEACON (I am here; every two minutes or so while a daemon is carried), 2 WAVE, 3 SAY, 4 CALL (who is there?
 // each board that hears it beacons back a moment later). TO is a tag, or 0 for everyone.
@@ -29,7 +30,7 @@
 #include <deque>
 
 static const uint8_t K_BEACON = 1, K_WAVE = 2, K_SAY = 3, K_CALL = 4;
-static const int HOPS = 2, HEAD = 26, TEXT_MAX = 40, NEARBY_MAX = 12;
+static const int HOPS = 2, HEAD = 26, TEXT_MAX = 80, NEARBY_MAX = 12, FRAME_MAX = HEAD + TEXT_MAX;
 static const uint32_t BEACON_EVERY_MS = 120000, NEARBY_FOR_MS = 600000, ROTATE_MS = 3600000;
 
 static Nearby nearby[NEARBY_MAX]; static int nearbyN = 0;
@@ -89,7 +90,9 @@ static bool ready = false; static int bandMhz = 0; static uint32_t triedAt = 0;
 static volatile bool gotFrame = false;
 static void IRAM_ATTR onFrame() { gotFrame = true; }
 static uint32_t beaconAt = 0; static bool beaconOn = false; static int ourSpecies = 0;
-static uint8_t pending[80]; static int pendingN = 0; static uint32_t pendingAt = 0;   // one frame waiting to go out
+static uint8_t pending[FRAME_MAX]; static int pendingN = 0; static uint32_t pendingAt = 0;   // one frame waiting to go out
+// C-123: the last message heard, kept on the screen until it is read (a key or a button), with who sent it
+static String msgFrom, msgText; static bool msgShown = false;
 static uint16_t ourId = 0;
 static std::deque<uint64_t> seen;                                    // FROM<<16 | ID of frames already handled
 
@@ -134,10 +137,17 @@ static void airTime(const uint8_t *b, int n) {
   radio->startReceive();
 }
 
+// C-123: a message to everyone nearby; the one heard, until read
+bool loraCanSay() { return ready && st.carrying && meetTag(); }
+bool loraSay(const String &text) { return loraSend(K_SAY, 0, text); }
+int loraTextMax() { return TEXT_MAX; }
+bool loraMessage(String &from, String &text) { if (!msgShown) return false; from = msgFrom; text = msgText; return true; }
+bool loraMessageRead() { if (!msgShown) return false; msgShown = false; dirty = true; return true; }
+
 bool loraSend(uint8_t kind, uint32_t to, const String &text) {
   uint32_t me = meetTag();
   if (!ready || !me || !st.carrying) return false;
-  uint8_t b[80]; int n = 0;
+  uint8_t b[FRAME_MAX]; int n = 0;
   b[n++] = 'D'; b[n++] = 'A'; b[n++] = kind; b[n++] = HOPS;
   put32(b + n, me); n += 4;
   b[n++] = st.daemon.species >> 8; b[n++] = st.daemon.species;
@@ -170,7 +180,8 @@ static void take(const uint8_t *b, int n, int rssi) {
   if ((kind == K_WAVE || kind == K_SAY) && forMe) {
     saidQ.push_back({ "in", kind == K_WAVE ? "wave" : "say", species, from, relayed, text });
     banner = kind == K_WAVE ? name + " waves" : name + ": " + text; bannerUntil = millis() + 12000;   // DRAFT
-    if (!asleep) { ledsFlash(); say(banner); }                           // a flash and a word, never a sound
+    if (kind == K_SAY) { msgFrom = name; msgText = text; msgShown = true; dirty = true; }   // C-123: kept until read
+    if (!asleep) { ledsFlash(); if (kind == K_WAVE) say(banner); }       // a flash and a word, never a sound
   }
   // the mesh: on it goes, once, a moment later, one hop fewer -- or, for a CALL, our own beacon in answer
   if (hops > 0 && !pendingN && n <= (int)sizeof pending) {
@@ -184,7 +195,7 @@ static void pump() {
   gotFrame = false;
   tft.waitDMA();
   size_t n = radio->getPacketLength();
-  uint8_t b[80];
+  uint8_t b[FRAME_MAX];
   int st = n && n <= sizeof b ? radio->readData(b, n) : -1;
   int rssi = (int)radio->getRSSI();
   radio->startReceive();
@@ -334,6 +345,11 @@ bool loraReady() { return false; }
 void loraBegin() {}
 void loraLoop(uint32_t, bool, int) {}
 bool loraSend(uint8_t, uint32_t, const String &) { return false; }
+bool loraCanSay() { return false; }
+bool loraSay(const String &) { return false; }
+int loraTextMax() { return 0; }
+bool loraMessage(String &, String &) { return false; }
+bool loraMessageRead() { return false; }
 String loraStatus() { return "no radio"; }
 String runNearby() { return "This needs a board with a LoRa radio."; }    // DRAFT
 String runCallOut() { return "This needs a board with a LoRa radio."; }   // DRAFT

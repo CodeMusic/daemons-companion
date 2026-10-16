@@ -1,6 +1,7 @@
 // The screens (C-67: from main.cpp). Drawn whole into the sprite, then pushed.
 #include <WiFi.h>
 #include "app.h"
+#include "lora.h"
 #include "talk.h"
 #include "radios.h"
 #include "link.h"
@@ -198,6 +199,11 @@ void drawRoutines(uint16_t day) {
     int from = max(0, netAt - 4);                // five rows, clear of the footer
     for (int i = from; i < netCount && i < from + 5; i++)
       listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
+  } else if (screen == COMPOSE) {             // C-123: a message to everyone nearby, typed on the keyboard
+    canvas.drawString("A MESSAGE TO EVERYONE NEARBY", 10, 32);                    // DRAFT
+    wrap(composing + "_", 10, 56, W - 20, 2, 18, 5, PAPER);
+    canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString(String(loraTextMax() - (int)composing.length()) + " letters left   from " + daemonName(), 10, H - 34);   // DRAFT
   } else if (screen == TYPE_PASS) {
     canvas.drawString("TEACH " + upper(daemonName()) + "  " + nets[netAt], 10, 32);
     canvas.setTextColor(QUIET); canvas.drawString("PASSWORD", 10, 52);
@@ -228,6 +234,7 @@ void drawRoutines(uint16_t day) {
                     : screen == RUN ? "press: run again    top button: back"
                     : screen == MOVES ? "turn: choose    press: use it    top button: back"   // DRAFT
                     : screen == TYPE_PASS ? "turn: letter  press: add (OK: join)  top: delete"
+                    : screen == COMPOSE ? "enter: send    backspace: delete (empty: leave)"   // DRAFT
                     : "turn: choose    press: open    top button: back"));
 }
 
@@ -513,12 +520,22 @@ void draw() {
           canvas.fillRoundRect(x - 2, H - 48, bw, 22, 5, PAPER);
           canvas.setTextColor(INK); canvas.drawString(w, x + 6, H - 37);
         }
-      } else canvas.drawString(hint("press: care for it"), x, H - 4);
+      } else canvas.drawString(hint(board.keyboard && board.loraChip != LoraChip::None ? "type: a message nearby   press: care" : "press: care for it"), x, H - 4);   // C-123, DRAFT
       }
     } else {
       canvas.drawString("A DAEMON TO HOST", 10, 34);
       wrap("None yet. In the game, choose SEND in a daemon's menu, then SYNC in the app.", 10, 58, W - 20, 2, 18, 4, PAPER);
     }
+  }
+  String mFrom, mText;                         // C-123: a message heard, until it is read
+  if (loraMessage(mFrom, mText)) {
+    int bx = 8, by = H / 2 - 44, bw = W - 16, bh = 92;
+    canvas.fillRoundRect(bx, by, bw, bh, 6, day);
+    canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM); canvas.setTextColor(ink);
+    canvas.drawString("FROM " + upper(mFrom) + ", NEARBY", bx + 8, by + 6);      // DRAFT
+    wrap(mText, bx + 8, by + 26, bw - 16, 2, 16, 3, ink);
+    canvas.setTextFont(1); canvas.setTextDatum(BR_DATUM); canvas.setTextColor(ink);
+    canvas.drawString("any key: read", bx + bw - 8, by + bh - 4);                 // DRAFT
   }
   if (millis() < flashUntil) {               // a word that something happened
     canvas.setTextFont(4);                     // the box fits the word (seen with SHOT 2026-10-07: it overflowed)

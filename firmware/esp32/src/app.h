@@ -64,7 +64,8 @@ String daemonName();                      // C-51: the routines speak in its nam
 // party, then a daemon's routines; picking one plays it, the ring lit its colour.
 enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE };   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
-enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK };   // TALK: C-66
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE };   // TALK: C-66; COMPOSE: C-123
+extern String composing;                  // C-123: the message being typed, to everyone nearby
 extern Page page;
 extern Screen screen;
 extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;

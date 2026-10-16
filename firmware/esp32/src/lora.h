@@ -18,6 +18,14 @@ int loraNearby(Nearby *out, int max);                      // the last ten minut
 // hears it beacons back). `to` is a tag, or 0 for everyone. False when there is no radio or nothing is carried.
 bool loraSend(uint8_t kind, uint32_t to, const String &text);
 
+// C-123: a message -- typed on the T-Deck's keyboard -- to every board nearby; the last one heard, kept on the screen
+// until it is read (loraMessageRead: true if one was showing)
+bool loraCanSay();
+bool loraSay(const String &text);
+int loraTextMax();
+bool loraMessage(String &from, String &text);
+bool loraMessageRead();
+
 // For the server (net.cpp): a daemon heard, once per tag per hour (mine: one of our own companions' tags); and each
 // wave or word, in or out ("in"/"out", "wave"/"say").
 bool loraTakeHeard(int &species, String &tag, int &relayed, bool &mine);

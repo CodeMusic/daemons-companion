@@ -21,7 +21,7 @@ import check_keys
 import shot
 
 EXPRESSIONS = ("awake", "drowsy", "asleep", "glad", "sad")
-PARTY_FIRST = ("m5go", "m5-fire", "t-display-pro", "m5-sticks3", "m5-cores3", "m5-dial")   # no radios of their own
+ROUTINES_CHECK = ("m5go", "m5-fire", "t-display-pro", "m5-sticks3", "m5-cores3", "m5-dial")   # C-118: WHISPER within reach
 
 
 def ready(dev, wait=90):
@@ -59,13 +59,13 @@ def bench(port, server, outdir):
     else:
         check_keys.send(dev, "KEY CANCEL", 0.4)          # awake: left alone since its flash, its screen may be asleep
         rows.append(("%s at rest" % kind, [("its own Wi-Fi", shot.take(dev))], ""))
-    if kind in PARTY_FIRST:                              # ROUTINES opened: its RADIOS first (WHISPER, UPLINK), the party after
+    if kind in ROUTINES_CHECK:                           # ROUTINES opened: RADIOS first where it has none of its own, else its radios
         check_keys.send(dev, "KEY CANCEL", 0.2)
         check_keys.send(dev, "GO ROUTINES", 0.4)
         check_keys.send(dev, "KEY PRESS", 0.4)
         radios = shot.take(dev)
         check_keys.send(dev, "KEY PRESS", 0.4)
-        rows.append(("%s ROUTINES" % kind, [("opened: RADIOS first", radios), ("RADIOS pressed", shot.take(dev))],
+        rows.append(("%s ROUTINES" % kind, [("opened", radios), ("its first row pressed", shot.take(dev))],
                      "GO ROUTINES, then KEY PRESS twice -- as a finger: A+C, C to ROUTINES, B, B"))
         check_keys.send(dev, "GO DAEMON", 0.4)
     own = check_keys.state(server, device)
@@ -83,7 +83,7 @@ def bench(port, server, outdir):
         check_keys.send(dev, "STATE " + json.dumps(check_keys.state(server, device) or own, separators=(",", ":")), 0.3)
         rows.append(("%s in each expression (C-119)" % own["daemon"].get("nickname", "its daemon"), looks,
                      "handed down the cable as the bridge would; its own state given back after"))
-    out = os.path.join(outdir, "bench-%s.png" % kind)
+    out = os.path.join(outdir, "bench-%s.png" % device)          # by the board's own id: two of a kind on one cable
     made = check_keys.sheet(rows, out)
     dev.close()
     return "%s (%s): %s%s" % (kind, device, out if made else "no screen came back", "".join("; " + n for n in notes))

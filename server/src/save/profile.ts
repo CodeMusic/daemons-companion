@@ -3,6 +3,7 @@
 // (global.h's struct comments, flags.h through the preprocessor); the place names from data/maps.json.
 import profileJson from "../../data/profile_layout.json" with { type: "json" };
 import mapsJson from "../../data/maps.json" with { type: "json" };
+import regionsJson from "../../data/regions.json" with { type: "json" };
 import { blocks, decodeText, LAYOUT, type Layout } from "./reader.js";
 
 const P = profileJson;
@@ -28,7 +29,11 @@ export interface Profile {
   shoes: "MOM" | "DAD" | null;     // whose RUNNING SHOES, if any (T-256)
   notebook: boolean;               // CAIRN has handed it over
   roots: boolean[];                // the seven understandings, as the USER card's brain shows them -- never a count
+  visited: string[];               // C-127: every MAPSEC the save keeps a visited flag for and has set (towns, a few places)
 }
+
+const SECTIONS = (regionsJson as unknown as { regions: { sections: Record<string, { visited_flag: number | null }> }[] }).regions
+  .flatMap((r) => Object.entries(r.sections)).filter(([, s]) => s.visited_flag != null) as [string, { visited_flag: number }][];
 
 // A flag below DAEMONS' own start is a bit in SaveBlock1's flags; DAEMONS' flags live in SaveBlock2.
 export function flagReader(sb1: Uint8Array, sb2: Uint8Array) {
@@ -75,5 +80,6 @@ export function readProfile(save: Uint8Array, l: Layout = LAYOUT): Profile {
     shoes: !flag(P.flags.shoes) ? null : flag(P.flags.shoes_from_dad) ? "DAD" : "MOM",
     notebook: flag(P.flags.notebook),
     roots: P.flags.understandings.map(flag),
+    visited: SECTIONS.filter(([, s]) => flag(s.visited_flag)).map(([m]) => m),
   };
 }

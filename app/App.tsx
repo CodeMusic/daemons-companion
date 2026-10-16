@@ -5,7 +5,7 @@
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
 import { DenStage } from "./Den";                    // C-113
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, Image, Linking, Platform, View } from "react-native";
 import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
@@ -819,7 +819,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
                  gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
                  choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
-                 notebook: boolean; roots: boolean[] };
+                 notebook: boolean; roots: boolean[]; visited?: string[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
                                                                    unread?: boolean; place?: string | null; link?: string | null }[] }[] };
 
@@ -828,6 +828,115 @@ const PLAYER_ART = {
   REASON: { card: require("../server/data/art/player_reason.png"), walk: require("../server/data/art/player_reason_walk.png") },
   INSTINCT: { card: require("../server/data/art/player_instinct.png"), walk: require("../server/data/art/player_instinct_walk.png") },
 };
+
+// C-126: the MARKS as the trainer card draws them, and each one's STREAM lesson; the understandings in their colours
+// (the USER card brain's), with where each is arrived at. DAEMONS exports both (marks.json, mark_N.png).
+type MarksData = { marks: { n: number; title: string; lesson: string[]; found: string }[];
+                   understandings: { n: number; name: string; name_is_working: boolean; rgb: number[]; lobe: string;
+                                     found: string; lesson: string | null }[] };
+const MARKS: MarksData = require("../server/data/marks.json");
+const MARK_ART = [require("../server/data/art/mark_1.png"), require("../server/data/art/mark_2.png"), require("../server/data/art/mark_3.png"),
+                  require("../server/data/art/mark_4.png"), require("../server/data/art/mark_5.png"), require("../server/data/art/mark_6.png"),
+                  require("../server/data/art/mark_7.png"), require("../server/data/art/mark_8.png")];
+const reflow = (t: string) => t.split(/\n\n+/).map((par) => par.replace(/\n/g, " ").trim()).filter(Boolean);
+const rgbOf = (c: number[]) => `rgb(${c[0]},${c[1]},${c[2]})`;
+
+function Lesson({ head, lines, foot }: { head: string; lines: string[]; foot?: string }) {
+  return (
+    <YStack backgroundColor="$color2" borderRadius={4} padding={12} gap={6} marginTop={4}>
+      <Text fontFamily="$mono" fontSize={14} fontWeight="700" letterSpacing={1} color="$color12">{head}</Text>
+      {lines.map((l, i) => <Text key={i} fontSize={15} lineHeight={22} color="$color12">{l}</Text>)}
+      {foot ? <Small color="$color10">{foot}</Small> : null}
+    </YStack>
+  );
+}
+
+function MarksRow({ held }: { held: boolean[] }) {
+  const [at, setAt] = useState<number | null>(null);
+  const m = at === null ? null : MARKS.marks[at];
+  return (
+    <YStack paddingVertical={8} gap={8}>
+      <XStack justifyContent="space-between"><Eyebrow>MARKS</Eyebrow><Text fontSize={16} color="$color12">{held.filter(Boolean).length} of 8</Text></XStack>
+      <XStack gap={2} flexWrap="wrap">
+        {held.map((h, i) => (
+          <YStack key={i} onPress={() => setAt(at === i ? null : i)} cursor="pointer" padding={3} borderRadius={4}
+                  borderWidth={2} borderColor={at === i ? "$color9" : "transparent"} aria-label={`MARK ${i + 1}${h ? ", earned" : ""}`}>
+            <Image source={MARK_ART[i]} style={{ width: 28, height: 28, opacity: h ? 1 : 0.18 }} resizeMode="contain" />
+          </YStack>
+        ))}
+      </XStack>
+      {m ? (held[at!]
+        ? <Lesson head={m.title.toUpperCase()} foot={`From the BENCHMARK in ${m.found}.`}
+                  lines={m.lesson.flatMap(reflow).filter((l, i) => !(i === 0 && l.replace(/\.$/, "").toUpperCase() === m.title.toUpperCase()))} />
+        : <Lesson head={`MARK ${at! + 1}`} lines={["Not yet earned."]} />) : null}
+    </YStack>
+  );
+}
+
+function RootsRow({ held }: { held: boolean[] }) {
+  const [at, setAt] = useState<number | null>(null);
+  const u = at === null ? null : MARKS.understandings[at];
+  return (
+    <YStack paddingVertical={8} gap={8}>
+      {/* the USER card's ROOTS -- each in its own colour, lit, never counted */}
+      <Eyebrow>ROOTS</Eyebrow>
+      <XStack gap={10}>
+        {held.map((r, i) => {
+          const c = rgbOf(MARKS.understandings[i]?.rgb ?? [90, 107, 140]);
+          return <YStack key={i} onPress={() => setAt(at === i ? null : i)} cursor="pointer" width={22} height={22} borderRadius={11}
+                         borderWidth={2} borderColor={c} opacity={r ? 1 : 0.35} backgroundColor={r ? c : "transparent"}
+                         outlineWidth={at === i ? 2 : 0} outlineColor="$color12" outlineStyle="solid" />;
+        })}
+      </XStack>
+      {u ? (held[at!]
+        ? <Lesson head={u.name} lines={[u.lesson ?? "Its lesson is still being written."]} foot={`Arrived at: ${u.found}.`} />
+        : <Lesson head="ROOTS" lines={["Not yet."]} />) : null}
+    </YStack>
+  );
+}
+
+// C-127: the mainland and the islands as the game's region map draws them, a cell a place, lit as they are explored. The
+// save keeps a visited flag only for towns and a few places, so a place with no flag lights when it touches one that is
+// lit. The islands are ??? -- their name and their filling in -- until the REVIEW BOARD is beaten.
+type RegionsData = { regions: { key: string; name: string; hidden_until: string | null; maps: { grid: string[][] }[];
+                                 sections: Record<string, { name: string; visited_flag: number | null }> }[] };
+const REGIONS: RegionsData = require("../server/data/regions.json");
+
+function RegionMap({ region, visited, open, cell }: { region: RegionsData["regions"][number]; visited: Set<string>; open: boolean; cell: number }) {
+  const lit = useMemo(() => {
+    const on = new Set<string>();
+    if (!open) return on;
+    for (const [m, sec] of Object.entries(region.sections)) if (sec.visited_flag != null && visited.has(m)) on.add(m);
+    for (const map of region.maps) map.grid.forEach((row, y) => row.forEach((m, x) => {
+      if (m === "MAPSEC_NONE" || on.has(m) || region.sections[m]?.visited_flag != null) return;
+      const near = [[0, 1], [1, 0], [0, -1], [-1, 0]].some(([dx, dy]) => { const n = map.grid[y + dy]?.[x + dx]; return n && on.has(n) && region.sections[n]?.visited_flag != null; });
+      if (near) on.add(m);
+    }));
+    return on;
+  }, [region, visited, open]);
+  return (
+    <YStack gap={3} alignItems="center">
+      <XStack gap={4}>
+        {region.maps.map((map, k) => {
+          // cropped to the cells the region map uses -- the islands sit in mostly empty grids
+          const used = map.grid.flatMap((row, y) => row.map((m, x) => (m === "MAPSEC_NONE" ? null : [x, y]))).filter(Boolean) as number[][];
+          const x0 = Math.min(...used.map((c) => c[0])), y0 = Math.min(...used.map((c) => c[1]));
+          const w = Math.max(...used.map((c) => c[0])) - x0 + 1, h = Math.max(...used.map((c) => c[1])) - y0 + 1;
+          return (
+            <View key={k} style={{ width: w * cell, height: h * cell }}>
+              {used.map(([x, y]) => {
+                const m = map.grid[y][x];
+                return <View key={`${x}-${y}`} style={{ position: "absolute", left: (x - x0) * cell, top: (y - y0) * cell, width: cell - 0.5,
+                                                         height: cell - 0.5, backgroundColor: lit.has(m) ? "#43658B" : "#C9D2C4" }} />;
+              })}
+            </View>
+          );
+        })}
+      </XStack>
+      <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10">{open ? region.name : "???"}</Text>
+    </YStack>
+  );
+}
 
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
@@ -891,17 +1000,21 @@ function ProfileScreen() {
   useEffect(() => { api<Profile>("/api/profile").then(setP).catch((e) => setError(e.message)); }, []);
   if (error) return <Small>{error}</Small>;
   if (!p) return <Small>Reading your save…</Small>;
-  const earned = p.marks.filter(Boolean).length;
   const id = String(p.trainerId).padStart(5, "0");
   return (
     <YStack gap={14}>
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
-        <XStack gap={14} alignItems="flex-end">
+        <XStack gap={14} alignItems="flex-end" flexWrap="wrap">   {/* C-127: on a narrow phone the maps go under the sprites */}
           {/* C-125: as the trainer card draws them, and as they walk */}
           <Image source={PLAYER_ART[p.choice ?? "REASON"].card} style={{ width: 128, height: 128 }} resizeMode="contain"
                  accessibilityLabel={`${p.name}, as the trainer card draws them`} />
           <Image source={PLAYER_ART[p.choice ?? "REASON"].walk} style={{ width: 32, height: 64 }} resizeMode="contain"
                  accessibilityLabel="walking" />
+          {/* C-127: the two regions, filling in as they are explored */}
+          <YStack gap={8} marginLeft="auto" alignItems="flex-end">
+            {REGIONS.regions.map((r) => <RegionMap key={r.key} region={r} visited={new Set(p.visited ?? [])}
+                                                  open={r.hidden_until !== "game_clear" || p.gameClear} cell={r.maps.length > 1 ? 3 : 5} />)}
+          </YStack>
         </XStack>
         <Eyebrow>{p.edition} · ID No. {id}</Eyebrow>
         <Text fontFamily="$mono" fontSize={28} fontWeight="700" letterSpacing={2} color="$color12">{p.name}</Text>
@@ -917,28 +1030,11 @@ function ProfileScreen() {
         {p.money !== undefined ? <Fact label="MONEY">{p.money.toLocaleString()}</Fact> : null}
         {p.shoes !== undefined ? <Fact label="SHOES">{p.shoes ? `${p.shoes}'s` : "not yet"}</Fact> : null}
         <Fact label="INDEX">{p.index.held ? `${p.index.bound} bound · ${p.index.seen} seen` : "not yet held"}</Fact>
-        <YStack paddingVertical={8} gap={8}>
-          <XStack justifyContent="space-between"><Eyebrow>MARKS</Eyebrow><Text fontSize={16} color="$color12">{earned} of 8</Text></XStack>
-          <XStack gap={8}>
-            {p.marks.map((m, i) => (
-              <YStack key={i} width={22} height={22} borderRadius={3} borderWidth={2} borderColor="$color9"
-                      backgroundColor={m ? "$color9" : "transparent"} aria-label={`MARK ${i + 1}${m ? ", earned" : ""}`} />
-            ))}
-          </XStack>
-        </YStack>
+        <MarksRow held={p.marks} />
         <Fact label="DIPLOMA">{p.diploma ? "earned" : "not yet"}</Fact>
         <Fact label="OPUS">{p.opus ? "carried" : "not carried"}</Fact>
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
-        {p.roots ? (
-          <YStack paddingVertical={8} gap={8}>
-            {/* C-125: the USER card's ROOTS -- lit, never counted */}
-            <Eyebrow>ROOTS</Eyebrow>
-            <XStack gap={8}>
-              {p.roots.map((r, i) => <YStack key={i} width={16} height={16} borderRadius={8} borderWidth={2} borderColor="$color9"
-                                            backgroundColor={r ? "$color9" : "transparent"} />)}
-            </XStack>
-          </YStack>
-        ) : null}
+        {p.roots ? <RootsRow held={p.roots} /> : null}
       </Card>
       <NotebookCard />
     </YStack>
@@ -1244,7 +1340,7 @@ type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boo
 
 function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
   return (
-    <XStack gap={6} flexWrap="wrap">
+    <XStack gap={2} flexWrap="wrap">
       {options.map(([v, label]) => (
         <YStack key={String(v)} role="button" cursor="pointer" borderRadius={3} paddingHorizontal={12} paddingVertical={6}
                 borderWidth={1} borderColor={v === value ? "$color9" : "$color6"} backgroundColor={v === value ? "$color9" : "$color1"}

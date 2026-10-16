@@ -25,7 +25,8 @@
    45,
    65,
    65
-  ]
+  ],
+  "native": null
  },
  "2": {
   "constant": "IVYSAUR",
@@ -53,7 +54,8 @@
    60,
    80,
    80
-  ]
+  ],
+  "native": null
  },
  "3": {
   "constant": "VENUSAUR",
@@ -82,7 +84,8 @@
    80,
    100,
    100
-  ]
+  ],
+  "native": null
  },
  "4": {
   "constant": "CHARMANDER",
@@ -110,7 +113,8 @@
    65,
    60,
    50
-  ]
+  ],
+  "native": null
  },
  "5": {
   "constant": "CHARMELEON",
@@ -138,7 +142,8 @@
    80,
    80,
    65
-  ]
+  ],
+  "native": null
  },
  "6": {
   "constant": "CHARIZARD",
@@ -167,7 +172,8 @@
    100,
    109,
    85
-  ]
+  ],
+  "native": null
  },
  "7": {
   "constant": "SQUIRTLE",
@@ -195,7 +201,8 @@
    43,
    50,
    64
-  ]
+  ],
+  "native": null
  },
  "8": {
   "constant": "WARTORTLE",
@@ -223,7 +230,8 @@
    58,
    65,
    80
-  ]
+  ],
+  "native": null
  },
  "9": {
   "constant": "BLASTOISE",
@@ -252,7 +260,8 @@
    78,
    85,
    105
-  ]
+  ],
+  "native": null
  },
  "10": {
   "constant": "CATERPIE",
@@ -280,7 +289,17 @@
    45,
    20,
    20
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "11": {
   "constant": "METAPOD",
@@ -308,7 +327,17 @@
    30,
    25,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "12": {
   "constant": "BUTTERFREE",
@@ -337,7 +366,8 @@
    70,
    80,
    80
-  ]
+  ],
+  "native": null
  },
  "13": {
   "constant": "WEEDLE",
@@ -366,7 +396,17 @@
    50,
    20,
    20
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "14": {
   "constant": "KAKUNA",
@@ -395,7 +435,17 @@
    35,
    25,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "15": {
   "constant": "BEEDRILL",
@@ -424,7 +474,8 @@
    75,
    45,
    80
-  ]
+  ],
+  "native": null
  },
  "16": {
   "constant": "PIDGEY",
@@ -453,7 +504,17 @@
    56,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "17": {
   "constant": "PIDGEOTTO",
@@ -482,7 +543,17 @@
    71,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "18": {
   "constant": "PIDGEOT",
@@ -511,7 +582,8 @@
    91,
    70,
    70
-  ]
+  ],
+  "native": null
  },
  "19": {
   "constant": "RATTATA",
@@ -539,7 +611,16 @@
    72,
    25,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "20": {
   "constant": "RATICATE",
@@ -567,7 +648,16 @@
    97,
    50,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "21": {
   "constant": "SPEAROW",
@@ -596,7 +686,17 @@
    70,
    31,
    31
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "22": {
   "constant": "FEAROW",
@@ -625,7 +725,17 @@
    100,
    61,
    61
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "23": {
   "constant": "EKANS",
@@ -653,7 +763,18 @@
    55,
    40,
    54
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "24": {
   "constant": "ARBOK",
@@ -681,7 +802,18 @@
    80,
    65,
    79
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "25": {
   "constant": "PIKACHU",
@@ -709,7 +841,16 @@
    90,
    50,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "26": {
   "constant": "RAICHU",
@@ -737,7 +878,8 @@
    100,
    90,
    80
-  ]
+  ],
+  "native": null
  },
  "27": {
   "constant": "SANDSHREW",
@@ -765,7 +907,18 @@
    40,
    20,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "28": {
   "constant": "SANDSLASH",
@@ -793,7 +946,18 @@
    65,
    45,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "29": {
   "constant": "NIDORAN_F",
@@ -821,7 +985,16 @@
    41,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "30": {
   "constant": "NIDORINA",
@@ -849,7 +1022,16 @@
    56,
    55,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "31": {
   "constant": "NIDOQUEEN",
@@ -878,7 +1060,8 @@
    76,
    75,
    85
-  ]
+  ],
+  "native": null
  },
  "32": {
   "constant": "NIDORAN_M",
@@ -906,7 +1089,16 @@
    50,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "33": {
   "constant": "NIDORINO",
@@ -934,7 +1126,16 @@
    65,
    55,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "34": {
   "constant": "NIDOKING",
@@ -963,7 +1164,8 @@
    85,
    85,
    75
-  ]
+  ],
+  "native": null
  },
  "35": {
   "constant": "CLEFAIRY",
@@ -991,7 +1193,16 @@
    35,
    60,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "36": {
   "constant": "CLEFABLE",
@@ -1019,7 +1230,8 @@
    60,
    85,
    90
-  ]
+  ],
+  "native": null
  },
  "37": {
   "constant": "VULPIX",
@@ -1047,7 +1259,18 @@
    65,
    50,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "38": {
   "constant": "NINETALES",
@@ -1075,7 +1298,8 @@
    100,
    81,
    100
-  ]
+  ],
+  "native": null
  },
  "39": {
   "constant": "JIGGLYPUFF",
@@ -1103,7 +1327,16 @@
    20,
    45,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "40": {
   "constant": "WIGGLYTUFF",
@@ -1131,7 +1364,8 @@
    45,
    75,
    50
-  ]
+  ],
+  "native": null
  },
  "41": {
   "constant": "ZUBAT",
@@ -1160,7 +1394,17 @@
    55,
    30,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "42": {
   "constant": "GOLBAT",
@@ -1189,7 +1433,17 @@
    90,
    65,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "43": {
   "constant": "ODDISH",
@@ -1218,7 +1472,19 @@
    30,
    75,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "44": {
   "constant": "GLOOM",
@@ -1247,7 +1513,19 @@
    40,
    85,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "45": {
   "constant": "VILEPLUME",
@@ -1276,7 +1554,8 @@
    50,
    100,
    90
-  ]
+  ],
+  "native": null
  },
  "46": {
   "constant": "PARAS",
@@ -1305,7 +1584,16 @@
    25,
    45,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "47": {
   "constant": "PARASECT",
@@ -1334,7 +1622,16 @@
    30,
    60,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "48": {
   "constant": "VENONAT",
@@ -1363,7 +1660,17 @@
    45,
    40,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "49": {
   "constant": "VENOMOTH",
@@ -1392,7 +1699,17 @@
    90,
    90,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "50": {
   "constant": "DIGLETT",
@@ -1420,7 +1737,16 @@
    95,
    35,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "51": {
   "constant": "DUGTRIO",
@@ -1448,7 +1774,16 @@
    120,
    50,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "52": {
   "constant": "MEOWTH",
@@ -1476,7 +1811,17 @@
    90,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "53": {
   "constant": "PERSIAN",
@@ -1504,7 +1849,16 @@
    115,
    65,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "54": {
   "constant": "PSYDUCK",
@@ -1532,7 +1886,19 @@
    55,
    65,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "55": {
   "constant": "GOLDUCK",
@@ -1560,7 +1926,19 @@
    85,
    95,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "56": {
   "constant": "MANKEY",
@@ -1588,7 +1966,16 @@
    70,
    35,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "57": {
   "constant": "PRIMEAPE",
@@ -1616,7 +2003,16 @@
    95,
    60,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "58": {
   "constant": "GROWLITHE",
@@ -1644,7 +2040,18 @@
    60,
    70,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "59": {
   "constant": "ARCANINE",
@@ -1672,7 +2079,8 @@
    95,
    100,
    80
-  ]
+  ],
+  "native": null
  },
  "60": {
   "constant": "POLIWAG",
@@ -1700,7 +2108,17 @@
    90,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "61": {
   "constant": "POLIWHIRL",
@@ -1728,7 +2146,17 @@
    90,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "62": {
   "constant": "POLIWRATH",
@@ -1757,7 +2185,8 @@
    70,
    70,
    90
-  ]
+  ],
+  "native": null
  },
  "63": {
   "constant": "ABRA",
@@ -1785,7 +2214,16 @@
    90,
    105,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "64": {
   "constant": "KADABRA",
@@ -1813,7 +2251,16 @@
    105,
    120,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "65": {
   "constant": "ALAKAZAM",
@@ -1841,7 +2288,8 @@
    120,
    135,
    85
-  ]
+  ],
+  "native": null
  },
  "66": {
   "constant": "MACHOP",
@@ -1869,7 +2317,17 @@
    35,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "67": {
   "constant": "MACHOKE",
@@ -1897,7 +2355,17 @@
    45,
    50,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "68": {
   "constant": "MACHAMP",
@@ -1925,7 +2393,8 @@
    55,
    65,
    85
-  ]
+  ],
+  "native": null
  },
  "69": {
   "constant": "BELLSPROUT",
@@ -1954,7 +2423,19 @@
    40,
    70,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "70": {
   "constant": "WEEPINBELL",
@@ -1983,7 +2464,19 @@
    55,
    85,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "71": {
   "constant": "VICTREEBEL",
@@ -2012,7 +2505,8 @@
    70,
    100,
    60
-  ]
+  ],
+  "native": null
  },
  "72": {
   "constant": "TENTACOOL",
@@ -2041,7 +2535,17 @@
    70,
    50,
    100
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "73": {
   "constant": "TENTACRUEL",
@@ -2070,7 +2574,16 @@
    100,
    80,
    120
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "74": {
   "constant": "GEODUDE",
@@ -2099,7 +2612,17 @@
    20,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "75": {
   "constant": "GRAVELER",
@@ -2128,7 +2651,17 @@
    35,
    45,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "76": {
   "constant": "GOLEM",
@@ -2157,7 +2690,8 @@
    45,
    55,
    65
-  ]
+  ],
+  "native": null
  },
  "77": {
   "constant": "PONYTA",
@@ -2185,7 +2719,16 @@
    90,
    65,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "78": {
   "constant": "RAPIDASH",
@@ -2213,7 +2756,16 @@
    105,
    80,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "79": {
   "constant": "SLOWPOKE",
@@ -2242,7 +2794,19 @@
    15,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "80": {
   "constant": "SLOWBRO",
@@ -2271,7 +2835,19 @@
    30,
    100,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "81": {
   "constant": "MAGNEMITE",
@@ -2300,7 +2876,16 @@
    45,
    5,
    95
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "82": {
   "constant": "MAGNETON",
@@ -2329,7 +2914,16 @@
    70,
    5,
    126
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "83": {
   "constant": "FARFETCHD",
@@ -2358,7 +2952,8 @@
    60,
    58,
    62
-  ]
+  ],
+  "native": null
  },
  "84": {
   "constant": "DODUO",
@@ -2387,7 +2982,16 @@
    75,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "85": {
   "constant": "DODRIO",
@@ -2416,7 +3020,8 @@
    100,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "86": {
   "constant": "SEEL",
@@ -2444,7 +3049,17 @@
    45,
    45,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "87": {
   "constant": "DEWGONG",
@@ -2473,7 +3088,17 @@
    70,
    70,
    95
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "88": {
   "constant": "GRIMER",
@@ -2501,7 +3126,16 @@
    25,
    40,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "89": {
   "constant": "MUK",
@@ -2529,7 +3163,18 @@
    50,
    65,
    100
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "90": {
   "constant": "SHELLDER",
@@ -2557,7 +3202,19 @@
    40,
    45,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "91": {
   "constant": "CLOYSTER",
@@ -2586,7 +3243,8 @@
    70,
    85,
    45
-  ]
+  ],
+  "native": null
  },
  "92": {
   "constant": "GASTLY",
@@ -2615,7 +3273,17 @@
    80,
    100,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "93": {
   "constant": "HAUNTER",
@@ -2644,7 +3312,17 @@
    95,
    115,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "94": {
   "constant": "GENGAR",
@@ -2673,7 +3351,8 @@
    110,
    130,
    75
-  ]
+  ],
+  "native": null
  },
  "95": {
   "constant": "ONIX",
@@ -2702,7 +3381,17 @@
    70,
    30,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "96": {
   "constant": "DROWZEE",
@@ -2730,7 +3419,17 @@
    42,
    43,
    90
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "97": {
   "constant": "HYPNO",
@@ -2758,7 +3457,16 @@
    67,
    73,
    115
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "98": {
   "constant": "KRABBY",
@@ -2786,7 +3494,17 @@
    50,
    25,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "99": {
   "constant": "KINGLER",
@@ -2814,7 +3532,19 @@
    75,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "100": {
   "constant": "VOLTORB",
@@ -2842,7 +3572,16 @@
    100,
    55,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "101": {
   "constant": "ELECTRODE",
@@ -2870,7 +3609,16 @@
    140,
    80,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "102": {
   "constant": "EXEGGCUTE",
@@ -2899,7 +3647,17 @@
    40,
    60,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "103": {
   "constant": "EXEGGUTOR",
@@ -2928,7 +3686,8 @@
    55,
    125,
    65
-  ]
+  ],
+  "native": null
  },
  "104": {
   "constant": "CUBONE",
@@ -2956,7 +3715,17 @@
    35,
    40,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "105": {
   "constant": "MAROWAK",
@@ -2984,7 +3753,17 @@
    45,
    50,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "106": {
   "constant": "HITMONLEE",
@@ -3012,7 +3791,8 @@
    87,
    35,
    110
-  ]
+  ],
+  "native": null
  },
  "107": {
   "constant": "HITMONCHAN",
@@ -3040,7 +3820,8 @@
    76,
    35,
    110
-  ]
+  ],
+  "native": null
  },
  "108": {
   "constant": "LICKITUNG",
@@ -3068,7 +3849,8 @@
    30,
    60,
    75
-  ]
+  ],
+  "native": null
  },
  "109": {
   "constant": "KOFFING",
@@ -3096,7 +3878,16 @@
    35,
    60,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "110": {
   "constant": "WEEZING",
@@ -3124,7 +3915,18 @@
    60,
    85,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "111": {
   "constant": "RHYHORN",
@@ -3153,7 +3955,16 @@
    25,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "112": {
   "constant": "RHYDON",
@@ -3182,7 +3993,8 @@
    40,
    45,
    45
-  ]
+  ],
+  "native": null
  },
  "113": {
   "constant": "CHANSEY",
@@ -3210,7 +4022,16 @@
    50,
    35,
    105
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "114": {
   "constant": "TANGELA",
@@ -3238,7 +4059,17 @@
    60,
    100,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "115": {
   "constant": "KANGASKHAN",
@@ -3266,7 +4097,16 @@
    90,
    40,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "116": {
   "constant": "HORSEA",
@@ -3294,7 +4134,17 @@
    60,
    70,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "117": {
   "constant": "SEADRA",
@@ -3322,7 +4172,19 @@
    85,
    95,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "118": {
   "constant": "GOLDEEN",
@@ -3350,7 +4212,17 @@
    63,
    35,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "119": {
   "constant": "SEAKING",
@@ -3378,7 +4250,17 @@
    68,
    65,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "120": {
   "constant": "STARYU",
@@ -3406,7 +4288,19 @@
    85,
    70,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "121": {
   "constant": "STARMIE",
@@ -3435,7 +4329,8 @@
    115,
    100,
    85
-  ]
+  ],
+  "native": null
  },
  "122": {
   "constant": "MR_MIME",
@@ -3463,7 +4358,8 @@
    90,
    100,
    120
-  ]
+  ],
+  "native": null
  },
  "123": {
   "constant": "SCYTHER",
@@ -3492,7 +4388,18 @@
    105,
    55,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "124": {
   "constant": "JYNX",
@@ -3521,7 +4428,8 @@
    95,
    115,
    95
-  ]
+  ],
+  "native": null
  },
  "125": {
   "constant": "ELECTABUZZ",
@@ -3549,7 +4457,18 @@
    105,
    95,
    85
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "126": {
   "constant": "MAGMAR",
@@ -3577,7 +4496,18 @@
    93,
    100,
    85
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "127": {
   "constant": "PINSIR",
@@ -3605,7 +4535,18 @@
    85,
    55,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "128": {
   "constant": "TAUROS",
@@ -3633,7 +4574,16 @@
    110,
    40,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "129": {
   "constant": "MAGIKARP",
@@ -3661,7 +4611,17 @@
    80,
    15,
    20
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "130": {
   "constant": "GYARADOS",
@@ -3690,7 +4650,17 @@
    81,
    60,
    100
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "131": {
   "constant": "LAPRAS",
@@ -3719,7 +4689,16 @@
    60,
    85,
    95
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "132": {
   "constant": "DITTO",
@@ -3747,7 +4726,16 @@
    48,
    48,
    48
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "133": {
   "constant": "EEVEE",
@@ -3775,7 +4763,8 @@
    55,
    45,
    65
-  ]
+  ],
+  "native": null
  },
  "134": {
   "constant": "VAPOREON",
@@ -3803,7 +4792,8 @@
    65,
    110,
    95
-  ]
+  ],
+  "native": null
  },
  "135": {
   "constant": "JOLTEON",
@@ -3831,7 +4821,8 @@
    130,
    110,
    95
-  ]
+  ],
+  "native": null
  },
  "136": {
   "constant": "FLAREON",
@@ -3859,7 +4850,8 @@
    65,
    95,
    110
-  ]
+  ],
+  "native": null
  },
  "137": {
   "constant": "PORYGON",
@@ -3887,7 +4879,8 @@
    40,
    85,
    75
-  ]
+  ],
+  "native": null
  },
  "138": {
   "constant": "OMANYTE",
@@ -3916,7 +4909,8 @@
    35,
    90,
    55
-  ]
+  ],
+  "native": null
  },
  "139": {
   "constant": "OMASTAR",
@@ -3945,7 +4939,8 @@
    55,
    115,
    70
-  ]
+  ],
+  "native": null
  },
  "140": {
   "constant": "KABUTO",
@@ -3974,7 +4969,8 @@
    55,
    55,
    45
-  ]
+  ],
+  "native": null
  },
  "141": {
   "constant": "KABUTOPS",
@@ -4003,7 +4999,8 @@
    80,
    65,
    70
-  ]
+  ],
+  "native": null
  },
  "142": {
   "constant": "AERODACTYL",
@@ -4032,7 +5029,8 @@
    130,
    60,
    75
-  ]
+  ],
+  "native": null
  },
  "143": {
   "constant": "SNORLAX",
@@ -4060,7 +5058,8 @@
    30,
    65,
    110
-  ]
+  ],
+  "native": null
  },
  "144": {
   "constant": "ARTICUNO",
@@ -4089,7 +5088,8 @@
    85,
    95,
    125
-  ]
+  ],
+  "native": null
  },
  "145": {
   "constant": "ZAPDOS",
@@ -4118,7 +5118,8 @@
    100,
    125,
    90
-  ]
+  ],
+  "native": null
  },
  "146": {
   "constant": "MOLTRES",
@@ -4147,7 +5148,8 @@
    90,
    125,
    85
-  ]
+  ],
+  "native": null
  },
  "147": {
   "constant": "DRATINI",
@@ -4175,7 +5177,16 @@
    50,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "148": {
   "constant": "DRAGONAIR",
@@ -4203,7 +5214,16 @@
    70,
    70,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "149": {
   "constant": "DRAGONITE",
@@ -4232,7 +5252,8 @@
    80,
    100,
    100
-  ]
+  ],
+  "native": null
  },
  "150": {
   "constant": "MEWTWO",
@@ -4261,7 +5282,8 @@
    130,
    154,
    90
-  ]
+  ],
+  "native": null
  },
  "151": {
   "constant": "MEW",
@@ -4289,7 +5311,8 @@
    100,
    100,
    100
-  ]
+  ],
+  "native": null
  },
  "152": {
   "constant": "CHIKORITA",
@@ -4317,7 +5340,8 @@
    45,
    49,
    65
-  ]
+  ],
+  "native": null
  },
  "153": {
   "constant": "BAYLEEF",
@@ -4345,7 +5369,8 @@
    60,
    63,
    80
-  ]
+  ],
+  "native": null
  },
  "154": {
   "constant": "MEGANIUM",
@@ -4373,7 +5398,8 @@
    80,
    83,
    100
-  ]
+  ],
+  "native": null
  },
  "155": {
   "constant": "CYNDAQUIL",
@@ -4401,7 +5427,8 @@
    65,
    60,
    50
-  ]
+  ],
+  "native": null
  },
  "156": {
   "constant": "QUILAVA",
@@ -4429,7 +5456,8 @@
    80,
    80,
    65
-  ]
+  ],
+  "native": null
  },
  "157": {
   "constant": "TYPHLOSION",
@@ -4457,7 +5485,8 @@
    100,
    109,
    85
-  ]
+  ],
+  "native": null
  },
  "158": {
   "constant": "TOTODILE",
@@ -4485,7 +5514,8 @@
    43,
    44,
    48
-  ]
+  ],
+  "native": null
  },
  "159": {
   "constant": "CROCONAW",
@@ -4513,7 +5543,8 @@
    58,
    59,
    63
-  ]
+  ],
+  "native": null
  },
  "160": {
   "constant": "FERALIGATR",
@@ -4541,7 +5572,8 @@
    78,
    79,
    83
-  ]
+  ],
+  "native": null
  },
  "161": {
   "constant": "SENTRET",
@@ -4569,7 +5601,17 @@
    20,
    35,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "162": {
   "constant": "FURRET",
@@ -4597,7 +5639,8 @@
    90,
    45,
    55
-  ]
+  ],
+  "native": null
  },
  "163": {
   "constant": "HOOTHOOT",
@@ -4626,7 +5669,18 @@
    50,
    36,
    56
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "164": {
   "constant": "NOCTOWL",
@@ -4655,7 +5709,8 @@
    70,
    76,
    96
-  ]
+  ],
+  "native": null
  },
  "165": {
   "constant": "LEDYBA",
@@ -4684,7 +5739,17 @@
    55,
    40,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "166": {
   "constant": "LEDIAN",
@@ -4713,7 +5778,8 @@
    85,
    55,
    110
-  ]
+  ],
+  "native": null
  },
  "167": {
   "constant": "SPINARAK",
@@ -4742,7 +5808,17 @@
    30,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "168": {
   "constant": "ARIADOS",
@@ -4771,7 +5847,8 @@
    40,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "169": {
   "constant": "CROBAT",
@@ -4800,7 +5877,8 @@
    130,
    70,
    80
-  ]
+  ],
+  "native": null
  },
  "170": {
   "constant": "CHINCHOU",
@@ -4829,7 +5907,8 @@
    67,
    56,
    56
-  ]
+  ],
+  "native": null
  },
  "171": {
   "constant": "LANTURN",
@@ -4858,7 +5937,8 @@
    67,
    76,
    76
-  ]
+  ],
+  "native": null
  },
  "172": {
   "constant": "PICHU",
@@ -4886,7 +5966,18 @@
    60,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "DAWN"
+   ],
+   "grove": null
+  }
  },
  "173": {
   "constant": "CLEFFA",
@@ -4914,7 +6005,18 @@
    15,
    45,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "174": {
   "constant": "IGGLYBUFF",
@@ -4942,7 +6044,8 @@
    15,
    40,
    20
-  ]
+  ],
+  "native": null
  },
  "175": {
   "constant": "TOGEPI",
@@ -4970,7 +6073,18 @@
    20,
    40,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "176": {
   "constant": "TOGETIC",
@@ -4999,7 +6113,8 @@
    40,
    80,
    105
-  ]
+  ],
+  "native": null
  },
  "177": {
   "constant": "NATU",
@@ -5028,7 +6143,17 @@
    70,
    70,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "178": {
   "constant": "XATU",
@@ -5057,7 +6182,8 @@
    95,
    95,
    70
-  ]
+  ],
+  "native": null
  },
  "179": {
   "constant": "MAREEP",
@@ -5085,7 +6211,17 @@
    35,
    65,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "180": {
   "constant": "FLAAFFY",
@@ -5113,7 +6249,8 @@
    45,
    80,
    60
-  ]
+  ],
+  "native": null
  },
  "181": {
   "constant": "AMPHAROS",
@@ -5141,7 +6278,8 @@
    55,
    115,
    90
-  ]
+  ],
+  "native": null
  },
  "182": {
   "constant": "BELLOSSOM",
@@ -5169,7 +6307,8 @@
    50,
    90,
    100
-  ]
+  ],
+  "native": null
  },
  "183": {
   "constant": "MARILL",
@@ -5197,7 +6336,19 @@
    40,
    20,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "184": {
   "constant": "AZUMARILL",
@@ -5225,7 +6376,8 @@
    50,
    50,
    80
-  ]
+  ],
+  "native": null
  },
  "185": {
   "constant": "SUDOWOODO",
@@ -5253,7 +6405,8 @@
    30,
    30,
    65
-  ]
+  ],
+  "native": null
  },
  "186": {
   "constant": "POLITOED",
@@ -5281,7 +6434,8 @@
    70,
    90,
    100
-  ]
+  ],
+  "native": null
  },
  "187": {
   "constant": "HOPPIP",
@@ -5310,7 +6464,17 @@
    50,
    35,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "188": {
   "constant": "SKIPLOOM",
@@ -5339,7 +6503,8 @@
    80,
    45,
    65
-  ]
+  ],
+  "native": null
  },
  "189": {
   "constant": "JUMPLUFF",
@@ -5368,7 +6533,8 @@
    110,
    55,
    85
-  ]
+  ],
+  "native": null
  },
  "190": {
   "constant": "AIPOM",
@@ -5396,7 +6562,17 @@
    85,
    40,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "191": {
   "constant": "SUNKERN",
@@ -5424,7 +6600,22 @@
    30,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": [
+    "DAY",
+    "DUSK",
+    "DAWN"
+   ],
+   "grove": null
+  }
  },
  "192": {
   "constant": "SUNFLORA",
@@ -5452,7 +6643,8 @@
    30,
    105,
    85
-  ]
+  ],
+  "native": null
  },
  "193": {
   "constant": "YANMA",
@@ -5481,7 +6673,17 @@
    95,
    75,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "194": {
   "constant": "WOOPER",
@@ -5510,7 +6712,19 @@
    15,
    25,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "195": {
   "constant": "QUAGSIRE",
@@ -5539,7 +6753,8 @@
    35,
    65,
    65
-  ]
+  ],
+  "native": null
  },
  "196": {
   "constant": "ESPEON",
@@ -5567,7 +6782,8 @@
    110,
    130,
    95
-  ]
+  ],
+  "native": null
  },
  "197": {
   "constant": "UMBREON",
@@ -5595,7 +6811,8 @@
    65,
    60,
    130
-  ]
+  ],
+  "native": null
  },
  "198": {
   "constant": "MURKROW",
@@ -5624,7 +6841,19 @@
    91,
    85,
    42
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "199": {
   "constant": "SLOWKING",
@@ -5653,7 +6882,8 @@
    30,
    100,
    110
-  ]
+  ],
+  "native": null
  },
  "200": {
   "constant": "MISDREAVUS",
@@ -5681,7 +6911,19 @@
    85,
    85,
    85
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "201": {
   "constant": "UNOWN",
@@ -5709,7 +6951,16 @@
    48,
    72,
    48
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "202": {
   "constant": "WOBBUFFET",
@@ -5737,7 +6988,17 @@
    33,
    33,
    58
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "203": {
   "constant": "GIRAFARIG",
@@ -5766,7 +7027,18 @@
    85,
    90,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "204": {
   "constant": "PINECO",
@@ -5794,7 +7066,17 @@
    15,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "205": {
   "constant": "FORRETRESS",
@@ -5823,7 +7105,8 @@
    40,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "206": {
   "constant": "DUNSPARCE",
@@ -5851,7 +7134,16 @@
    45,
    65,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "207": {
   "constant": "GLIGAR",
@@ -5880,7 +7172,18 @@
    85,
    35,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "208": {
   "constant": "STEELIX",
@@ -5909,7 +7212,8 @@
    30,
    55,
    65
-  ]
+  ],
+  "native": null
  },
  "209": {
   "constant": "SNUBBULL",
@@ -5937,7 +7241,18 @@
    30,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "AUTUMN"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "210": {
   "constant": "GRANBULL",
@@ -5965,7 +7280,8 @@
    45,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "211": {
   "constant": "QWILFISH",
@@ -5994,7 +7310,18 @@
    85,
    55,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "212": {
   "constant": "SCIZOR",
@@ -6023,7 +7350,8 @@
    65,
    55,
    80
-  ]
+  ],
+  "native": null
  },
  "213": {
   "constant": "SHUCKLE",
@@ -6052,7 +7380,17 @@
    5,
    10,
    230
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "214": {
   "constant": "HERACROSS",
@@ -6081,7 +7419,16 @@
    85,
    40,
    95
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "215": {
   "constant": "SNEASEL",
@@ -6110,7 +7457,19 @@
    115,
    35,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "216": {
   "constant": "TEDDIURSA",
@@ -6138,7 +7497,17 @@
    40,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "217": {
   "constant": "URSARING",
@@ -6166,7 +7535,8 @@
    55,
    75,
    75
-  ]
+  ],
+  "native": null
  },
  "218": {
   "constant": "SLUGMA",
@@ -6194,7 +7564,16 @@
    20,
    70,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "219": {
   "constant": "MAGCARGO",
@@ -6223,7 +7602,16 @@
    30,
    80,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "220": {
   "constant": "SWINUB",
@@ -6252,7 +7640,17 @@
    50,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "221": {
   "constant": "PILOSWINE",
@@ -6281,7 +7679,8 @@
    50,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "222": {
   "constant": "CORSOLA",
@@ -6310,7 +7709,8 @@
    35,
    65,
    85
-  ]
+  ],
+  "native": null
  },
  "223": {
   "constant": "REMORAID",
@@ -6338,7 +7738,18 @@
    65,
    65,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "224": {
   "constant": "OCTILLERY",
@@ -6366,7 +7777,8 @@
    45,
    105,
    75
-  ]
+  ],
+  "native": null
  },
  "225": {
   "constant": "DELIBIRD",
@@ -6395,7 +7807,19 @@
    75,
    65,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "226": {
   "constant": "MANTINE",
@@ -6424,7 +7848,18 @@
    70,
    80,
    140
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "227": {
   "constant": "SKARMORY",
@@ -6453,7 +7888,18 @@
    70,
    40,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "228": {
   "constant": "HOUNDOUR",
@@ -6482,7 +7928,17 @@
    65,
    80,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "229": {
   "constant": "HOUNDOOM",
@@ -6511,7 +7967,8 @@
    95,
    110,
    80
-  ]
+  ],
+  "native": null
  },
  "230": {
   "constant": "KINGDRA",
@@ -6540,7 +7997,8 @@
    85,
    95,
    95
-  ]
+  ],
+  "native": null
  },
  "231": {
   "constant": "PHANPY",
@@ -6568,7 +8026,17 @@
    40,
    40,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "232": {
   "constant": "DONPHAN",
@@ -6596,7 +8064,8 @@
    50,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "233": {
   "constant": "PORYGON2",
@@ -6624,7 +8093,8 @@
    60,
    105,
    95
-  ]
+  ],
+  "native": null
  },
  "234": {
   "constant": "STANTLER",
@@ -6652,7 +8122,17 @@
    85,
    85,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT",
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "235": {
   "constant": "SMEARGLE",
@@ -6680,7 +8160,16 @@
    75,
    20,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "236": {
   "constant": "TYROGUE",
@@ -6708,7 +8197,8 @@
    35,
    35,
    35
-  ]
+  ],
+  "native": null
  },
  "237": {
   "constant": "HITMONTOP",
@@ -6736,7 +8226,8 @@
    70,
    35,
    110
-  ]
+  ],
+  "native": null
  },
  "238": {
   "constant": "SMOOCHUM",
@@ -6765,7 +8256,18 @@
    65,
    85,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "WINTER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "239": {
   "constant": "ELEKID",
@@ -6793,7 +8295,8 @@
    95,
    65,
    55
-  ]
+  ],
+  "native": null
  },
  "240": {
   "constant": "MAGBY",
@@ -6821,7 +8324,8 @@
    83,
    70,
    55
-  ]
+  ],
+  "native": null
  },
  "241": {
   "constant": "MILTANK",
@@ -6849,7 +8353,8 @@
    100,
    40,
    70
-  ]
+  ],
+  "native": null
  },
  "242": {
   "constant": "BLISSEY",
@@ -6877,7 +8382,8 @@
    55,
    75,
    135
-  ]
+  ],
+  "native": null
  },
  "243": {
   "constant": "RAIKOU",
@@ -6905,7 +8411,8 @@
    115,
    115,
    100
-  ]
+  ],
+  "native": null
  },
  "244": {
   "constant": "ENTEI",
@@ -6933,7 +8440,8 @@
    100,
    90,
    75
-  ]
+  ],
+  "native": null
  },
  "245": {
   "constant": "SUICUNE",
@@ -6961,7 +8469,8 @@
    85,
    90,
    115
-  ]
+  ],
+  "native": null
  },
  "246": {
   "constant": "LARVITAR",
@@ -6990,7 +8499,16 @@
    41,
    45,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "247": {
   "constant": "PUPITAR",
@@ -7019,7 +8537,8 @@
    51,
    65,
    70
-  ]
+  ],
+  "native": null
  },
  "248": {
   "constant": "TYRANITAR",
@@ -7048,7 +8567,8 @@
    61,
    95,
    100
-  ]
+  ],
+  "native": null
  },
  "249": {
   "constant": "LUGIA",
@@ -7077,7 +8597,8 @@
    110,
    90,
    154
-  ]
+  ],
+  "native": null
  },
  "250": {
   "constant": "HO_OH",
@@ -7106,7 +8627,8 @@
    90,
    110,
    154
-  ]
+  ],
+  "native": null
  },
  "251": {
   "constant": "CELEBI",
@@ -7135,7 +8657,8 @@
    100,
    100,
    100
-  ]
+  ],
+  "native": null
  },
  "252": {
   "constant": "OLD_UNOWN_B",
@@ -7164,7 +8687,16 @@
    29,
    6,
    6
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "253": {
   "constant": "OLD_UNOWN_C",
@@ -7192,7 +8724,8 @@
    75,
    75,
    60
-  ]
+  ],
+  "native": null
  },
  "254": {
   "constant": "OLD_UNOWN_D",
@@ -7221,7 +8754,8 @@
    100,
    100,
    100
-  ]
+  ],
+  "native": null
  },
  "255": {
   "constant": "OLD_UNOWN_E",
@@ -7249,7 +8783,8 @@
    115,
    115,
    100
-  ]
+  ],
+  "native": null
  },
  "256": {
   "constant": "OLD_UNOWN_F",
@@ -7277,7 +8812,8 @@
    100,
    90,
    75
-  ]
+  ],
+  "native": null
  },
  "257": {
   "constant": "OLD_UNOWN_G",
@@ -7305,7 +8841,8 @@
    80,
    10,
    55
-  ]
+  ],
+  "native": null
  },
  "258": {
   "constant": "OLD_UNOWN_H",
@@ -7333,7 +8870,8 @@
    81,
    100,
    125
-  ]
+  ],
+  "native": null
  },
  "259": {
   "constant": "OLD_UNOWN_I",
@@ -7361,7 +8899,8 @@
    50,
    35,
    35
-  ]
+  ],
+  "native": null
  },
  "260": {
   "constant": "OLD_UNOWN_J",
@@ -7389,7 +8928,8 @@
    70,
    55,
    55
-  ]
+  ],
+  "native": null
  },
  "261": {
   "constant": "OLD_UNOWN_K",
@@ -7408,7 +8948,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "262": {
   "constant": "OLD_UNOWN_L",
@@ -7427,7 +8968,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "263": {
   "constant": "OLD_UNOWN_M",
@@ -7446,7 +8988,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "264": {
   "constant": "OLD_UNOWN_N",
@@ -7465,7 +9008,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "265": {
   "constant": "OLD_UNOWN_O",
@@ -7484,7 +9028,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "266": {
   "constant": "OLD_UNOWN_P",
@@ -7503,7 +9048,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
@@ -7522,7 +9068,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "268": {
   "constant": "OLD_UNOWN_R",
@@ -7541,7 +9088,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "269": {
   "constant": "OLD_UNOWN_S",
@@ -7560,7 +9108,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "270": {
   "constant": "OLD_UNOWN_T",
@@ -7579,7 +9128,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "271": {
   "constant": "OLD_UNOWN_U",
@@ -7598,7 +9148,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "272": {
   "constant": "OLD_UNOWN_V",
@@ -7617,7 +9168,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "273": {
   "constant": "OLD_UNOWN_W",
@@ -7636,7 +9188,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "274": {
   "constant": "OLD_UNOWN_X",
@@ -7655,7 +9208,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "275": {
   "constant": "OLD_UNOWN_Y",
@@ -7674,7 +9228,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "276": {
   "constant": "OLD_UNOWN_Z",
@@ -7693,7 +9248,8 @@
   "bodyType": null,
   "streaks": false,
   "growth": 0,
-  "base": null
+  "base": null,
+  "native": null
  },
  "277": {
   "constant": "TREECKO",
@@ -7721,7 +9277,8 @@
    70,
    65,
    55
-  ]
+  ],
+  "native": null
  },
  "278": {
   "constant": "GROVYLE",
@@ -7749,7 +9306,8 @@
    95,
    85,
    65
-  ]
+  ],
+  "native": null
  },
  "279": {
   "constant": "SCEPTILE",
@@ -7777,7 +9335,8 @@
    120,
    105,
    85
-  ]
+  ],
+  "native": null
  },
  "280": {
   "constant": "TORCHIC",
@@ -7805,7 +9364,8 @@
    45,
    70,
    50
-  ]
+  ],
+  "native": null
  },
  "281": {
   "constant": "COMBUSKEN",
@@ -7834,7 +9394,8 @@
    55,
    85,
    60
-  ]
+  ],
+  "native": null
  },
  "282": {
   "constant": "BLAZIKEN",
@@ -7863,7 +9424,8 @@
    80,
    110,
    70
-  ]
+  ],
+  "native": null
  },
  "283": {
   "constant": "MUDKIP",
@@ -7891,7 +9453,8 @@
    40,
    50,
    50
-  ]
+  ],
+  "native": null
  },
  "284": {
   "constant": "MARSHTOMP",
@@ -7920,7 +9483,8 @@
    50,
    60,
    70
-  ]
+  ],
+  "native": null
  },
  "285": {
   "constant": "SWAMPERT",
@@ -7949,7 +9513,8 @@
    60,
    85,
    90
-  ]
+  ],
+  "native": null
  },
  "286": {
   "constant": "POOCHYENA",
@@ -7977,7 +9542,18 @@
    35,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "287": {
   "constant": "MIGHTYENA",
@@ -8005,7 +9581,8 @@
    70,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "288": {
   "constant": "ZIGZAGOON",
@@ -8033,7 +9610,18 @@
    60,
    30,
    41
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "289": {
   "constant": "LINOONE",
@@ -8061,7 +9649,8 @@
    100,
    50,
    61
-  ]
+  ],
+  "native": null
  },
  "290": {
   "constant": "WURMPLE",
@@ -8089,7 +9678,16 @@
    20,
    20,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE SEEDVERSE"
+  }
  },
  "291": {
   "constant": "SILCOON",
@@ -8117,7 +9715,16 @@
    15,
    25,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE SEEDVERSE"
+  }
  },
  "292": {
   "constant": "BEAUTIFLY",
@@ -8146,7 +9753,16 @@
    65,
    90,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE SEEDVERSE"
+  }
  },
  "293": {
   "constant": "CASCOON",
@@ -8174,7 +9790,16 @@
    15,
    25,
    25
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE SEEDVERSE"
+  }
  },
  "294": {
   "constant": "DUSTOX",
@@ -8203,7 +9828,16 @@
    65,
    50,
    90
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE SEEDVERSE"
+  }
  },
  "295": {
   "constant": "LOTAD",
@@ -8232,7 +9866,18 @@
    30,
    40,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "296": {
   "constant": "LOMBRE",
@@ -8261,7 +9906,8 @@
    50,
    60,
    70
-  ]
+  ],
+  "native": null
  },
  "297": {
   "constant": "LUDICOLO",
@@ -8290,7 +9936,8 @@
    70,
    90,
    100
-  ]
+  ],
+  "native": null
  },
  "298": {
   "constant": "SEEDOT",
@@ -8318,7 +9965,18 @@
    30,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "AUTUMN"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "299": {
   "constant": "NUZLEAF",
@@ -8347,7 +10005,8 @@
    60,
    60,
    40
-  ]
+  ],
+  "native": null
  },
  "300": {
   "constant": "SHIFTRY",
@@ -8376,7 +10035,8 @@
    80,
    90,
    60
-  ]
+  ],
+  "native": null
  },
  "301": {
   "constant": "NINCADA",
@@ -8405,7 +10065,16 @@
    40,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE HUSKVERSE"
+  }
  },
  "302": {
   "constant": "NINJASK",
@@ -8434,7 +10103,16 @@
    160,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE HUSKVERSE"
+  }
  },
  "303": {
   "constant": "SHEDINJA",
@@ -8463,7 +10141,8 @@
    40,
    30,
    30
-  ]
+  ],
+  "native": null
  },
  "304": {
   "constant": "TAILLOW",
@@ -8492,7 +10171,22 @@
    85,
    30,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": [
+    "DAY",
+    "DUSK",
+    "DAWN"
+   ],
+   "grove": null
+  }
  },
  "305": {
   "constant": "SWELLOW",
@@ -8521,7 +10215,8 @@
    125,
    50,
    50
-  ]
+  ],
+  "native": null
  },
  "306": {
   "constant": "SHROOMISH",
@@ -8549,7 +10244,18 @@
    35,
    40,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "AUTUMN"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "307": {
   "constant": "BRELOOM",
@@ -8578,7 +10284,8 @@
    70,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "308": {
   "constant": "SPINDA",
@@ -8606,7 +10313,16 @@
    60,
    60,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "309": {
   "constant": "WINGULL",
@@ -8635,7 +10351,20 @@
    85,
    55,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "DAY",
+    "DUSK",
+    "DAWN"
+   ],
+   "grove": null
+  }
  },
  "310": {
   "constant": "PELIPPER",
@@ -8664,7 +10393,8 @@
    65,
    85,
    70
-  ]
+  ],
+  "native": null
  },
  "311": {
   "constant": "SURSKIT",
@@ -8693,7 +10423,18 @@
    65,
    50,
    52
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "312": {
   "constant": "MASQUERAIN",
@@ -8722,7 +10463,8 @@
    60,
    80,
    82
-  ]
+  ],
+  "native": null
  },
  "313": {
   "constant": "WAILMER",
@@ -8751,7 +10493,18 @@
    90,
    50,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "314": {
   "constant": "WAILORD",
@@ -8780,7 +10533,8 @@
    85,
    100,
    85
-  ]
+  ],
+  "native": null
  },
  "315": {
   "constant": "SKITTY",
@@ -8808,7 +10562,18 @@
    50,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "316": {
   "constant": "DELCATTY",
@@ -8836,7 +10601,8 @@
    70,
    55,
    55
-  ]
+  ],
+  "native": null
  },
  "317": {
   "constant": "KECLEON",
@@ -8864,7 +10630,16 @@
    40,
    60,
    120
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE BACKDROPVERSE"
+  }
  },
  "318": {
   "constant": "BALTOY",
@@ -8893,7 +10668,16 @@
    55,
    40,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE CLAYVERSE"
+  }
  },
  "319": {
   "constant": "CLAYDOL",
@@ -8922,7 +10706,16 @@
    75,
    70,
    120
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE CLAYVERSE"
+  }
  },
  "320": {
   "constant": "NOSEPASS",
@@ -8950,7 +10743,16 @@
    30,
    45,
    90
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE COMPASSVERSE"
+  }
  },
  "321": {
   "constant": "TORKOAL",
@@ -8978,7 +10780,18 @@
    20,
    85,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "322": {
   "constant": "SABLEYE",
@@ -9007,7 +10820,18 @@
    50,
    65,
    65
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "323": {
   "constant": "BARBOACH",
@@ -9036,7 +10860,8 @@
    60,
    46,
    41
-  ]
+  ],
+  "native": null
  },
  "324": {
   "constant": "WHISCASH",
@@ -9065,7 +10890,8 @@
    60,
    76,
    71
-  ]
+  ],
+  "native": null
  },
  "325": {
   "constant": "LUVDISC",
@@ -9093,7 +10919,8 @@
    97,
    40,
    65
-  ]
+  ],
+  "native": null
  },
  "326": {
   "constant": "CORPHISH",
@@ -9121,7 +10948,8 @@
    35,
    50,
    35
-  ]
+  ],
+  "native": null
  },
  "327": {
   "constant": "CRAWDAUNT",
@@ -9150,7 +10978,8 @@
    55,
    90,
    55
-  ]
+  ],
+  "native": null
  },
  "328": {
   "constant": "FEEBAS",
@@ -9178,7 +11007,8 @@
    80,
    10,
    55
-  ]
+  ],
+  "native": null
  },
  "329": {
   "constant": "MILOTIC",
@@ -9206,7 +11036,8 @@
    81,
    100,
    125
-  ]
+  ],
+  "native": null
  },
  "330": {
   "constant": "CARVANHA",
@@ -9235,7 +11066,8 @@
    65,
    65,
    20
-  ]
+  ],
+  "native": null
  },
  "331": {
   "constant": "SHARPEDO",
@@ -9264,7 +11096,8 @@
    95,
    95,
    40
-  ]
+  ],
+  "native": null
  },
  "332": {
   "constant": "TRAPINCH",
@@ -9292,7 +11125,18 @@
    10,
    45,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "AUTUMN"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "333": {
   "constant": "VIBRAVA",
@@ -9321,7 +11165,8 @@
    70,
    50,
    50
-  ]
+  ],
+  "native": null
  },
  "334": {
   "constant": "FLYGON",
@@ -9350,7 +11195,8 @@
    100,
    80,
    80
-  ]
+  ],
+  "native": null
  },
  "335": {
   "constant": "MAKUHITA",
@@ -9378,7 +11224,18 @@
    25,
    20,
    30
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "336": {
   "constant": "HARIYAMA",
@@ -9406,7 +11263,8 @@
    50,
    40,
    60
-  ]
+  ],
+  "native": null
  },
  "337": {
   "constant": "ELECTRIKE",
@@ -9434,7 +11292,16 @@
    65,
    65,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "338": {
   "constant": "MANECTRIC",
@@ -9462,7 +11329,8 @@
    105,
    105,
    60
-  ]
+  ],
+  "native": null
  },
  "339": {
   "constant": "NUMEL",
@@ -9491,7 +11359,18 @@
    35,
    65,
    45
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "340": {
   "constant": "CAMERUPT",
@@ -9520,7 +11399,8 @@
    40,
    105,
    75
-  ]
+  ],
+  "native": null
  },
  "341": {
   "constant": "SPHEAL",
@@ -9548,7 +11428,16 @@
    50,
    85,
    85
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "342": {
   "constant": "SEALEO",
@@ -9577,7 +11466,8 @@
    45,
    75,
    70
-  ]
+  ],
+  "native": null
  },
  "343": {
   "constant": "WALREIN",
@@ -9606,7 +11496,8 @@
    65,
    95,
    90
-  ]
+  ],
+  "native": null
  },
  "344": {
   "constant": "CACNEA",
@@ -9634,7 +11525,18 @@
    35,
    85,
    40
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SUMMER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "345": {
   "constant": "CACTURNE",
@@ -9663,7 +11565,8 @@
    55,
    115,
    60
-  ]
+  ],
+  "native": null
  },
  "346": {
   "constant": "SNORUNT",
@@ -9691,7 +11594,18 @@
    50,
    50,
    50
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "WINTER"
+   ],
+   "hours": null,
+   "grove": null
+  }
  },
  "347": {
   "constant": "GLALIE",
@@ -9719,7 +11633,8 @@
    80,
    80,
    80
-  ]
+  ],
+  "native": null
  },
  "348": {
   "constant": "LUNATONE",
@@ -9748,7 +11663,8 @@
    70,
    95,
    85
-  ]
+  ],
+  "native": null
  },
  "349": {
   "constant": "SOLROCK",
@@ -9777,7 +11693,8 @@
    70,
    55,
    65
-  ]
+  ],
+  "native": null
  },
  "350": {
   "constant": "AZURILL",
@@ -9805,7 +11722,8 @@
    20,
    20,
    40
-  ]
+  ],
+  "native": null
  },
  "351": {
   "constant": "SPOINK",
@@ -9833,7 +11751,16 @@
    60,
    70,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE PULSEVERSE"
+  }
  },
  "352": {
   "constant": "GRUMPIG",
@@ -9861,7 +11788,8 @@
    80,
    90,
    110
-  ]
+  ],
+  "native": null
  },
  "353": {
   "constant": "PLUSLE",
@@ -9889,7 +11817,20 @@
    95,
    85,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "354": {
   "constant": "MINUN",
@@ -9917,7 +11858,20 @@
    95,
    75,
    85
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "355": {
   "constant": "MAWILE",
@@ -9945,7 +11899,18 @@
    50,
    55,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "356": {
   "constant": "MEDITITE",
@@ -9974,7 +11939,16 @@
    60,
    40,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE INWARDVERSE"
+  }
  },
  "357": {
   "constant": "MEDICHAM",
@@ -10003,7 +11977,8 @@
    80,
    60,
    75
-  ]
+  ],
+  "native": null
  },
  "358": {
   "constant": "SWABLU",
@@ -10032,7 +12007,16 @@
    50,
    40,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "359": {
   "constant": "ALTARIA",
@@ -10061,7 +12045,8 @@
    80,
    70,
    105
-  ]
+  ],
+  "native": null
  },
  "360": {
   "constant": "WYNAUT",
@@ -10089,7 +12074,8 @@
    23,
    23,
    48
-  ]
+  ],
+  "native": null
  },
  "361": {
   "constant": "DUSKULL",
@@ -10117,7 +12103,16 @@
    25,
    30,
    90
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE HAZEVERSE"
+  }
  },
  "362": {
   "constant": "DUSCLOPS",
@@ -10145,7 +12140,8 @@
    25,
    60,
    130
-  ]
+  ],
+  "native": null
  },
  "363": {
   "constant": "ROSELIA",
@@ -10174,7 +12170,22 @@
    65,
    100,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING"
+   ],
+   "hours": [
+    "DAY",
+    "DUSK",
+    "DAWN"
+   ],
+   "grove": null
+  }
  },
  "364": {
   "constant": "SLAKOTH",
@@ -10202,7 +12213,16 @@
    30,
    35,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE DRIFTVERSE"
+  }
  },
  "365": {
   "constant": "VIGOROTH",
@@ -10230,7 +12250,16 @@
    90,
    55,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE DRIFTVERSE"
+  }
  },
  "366": {
   "constant": "SLAKING",
@@ -10258,7 +12287,8 @@
    100,
    95,
    65
-  ]
+  ],
+  "native": null
  },
  "367": {
   "constant": "GULPIN",
@@ -10286,7 +12316,16 @@
    40,
    43,
    53
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE HUNGERVERSE"
+  }
  },
  "368": {
   "constant": "SWALOT",
@@ -10314,7 +12353,16 @@
    55,
    73,
    83
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE HUNGERVERSE"
+  }
  },
  "369": {
   "constant": "TROPIUS",
@@ -10343,7 +12391,8 @@
    51,
    72,
    87
-  ]
+  ],
+  "native": null
  },
  "370": {
   "constant": "WHISMUR",
@@ -10371,7 +12420,18 @@
    28,
    51,
    23
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "DAWN"
+   ],
+   "grove": null
+  }
  },
  "371": {
   "constant": "LOUDRED",
@@ -10399,7 +12459,8 @@
    48,
    71,
    43
-  ]
+  ],
+  "native": null
  },
  "372": {
   "constant": "EXPLOUD",
@@ -10427,7 +12488,8 @@
    68,
    91,
    63
-  ]
+  ],
+  "native": null
  },
  "373": {
   "constant": "CLAMPERL",
@@ -10455,7 +12517,8 @@
    32,
    74,
    55
-  ]
+  ],
+  "native": null
  },
  "374": {
   "constant": "HUNTAIL",
@@ -10483,7 +12546,8 @@
    52,
    94,
    75
-  ]
+  ],
+  "native": null
  },
  "375": {
   "constant": "GOREBYSS",
@@ -10511,7 +12575,8 @@
    52,
    114,
    75
-  ]
+  ],
+  "native": null
  },
  "376": {
   "constant": "ABSOL",
@@ -10539,7 +12604,18 @@
    75,
    75,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": [
+    "NIGHT"
+   ],
+   "grove": null
+  }
  },
  "377": {
   "constant": "SHUPPET",
@@ -10567,7 +12643,16 @@
    45,
    63,
    33
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE HUSHVERSE"
+  }
  },
  "378": {
   "constant": "BANETTE",
@@ -10595,7 +12680,8 @@
    65,
    83,
    63
-  ]
+  ],
+  "native": null
  },
  "379": {
   "constant": "SEVIPER",
@@ -10623,7 +12709,20 @@
    65,
    100,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "380": {
   "constant": "ZANGOOSE",
@@ -10651,7 +12750,20 @@
    90,
    60,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "381": {
   "constant": "RELICANTH",
@@ -10680,7 +12792,8 @@
    55,
    45,
    65
-  ]
+  ],
+  "native": null
  },
  "382": {
   "constant": "ARON",
@@ -10709,7 +12822,8 @@
    30,
    40,
    40
-  ]
+  ],
+  "native": null
  },
  "383": {
   "constant": "LAIRON",
@@ -10738,7 +12852,8 @@
    40,
    50,
    50
-  ]
+  ],
+  "native": null
  },
  "384": {
   "constant": "AGGRON",
@@ -10767,7 +12882,8 @@
    50,
    60,
    60
-  ]
+  ],
+  "native": null
  },
  "385": {
   "constant": "CASTFORM",
@@ -10795,7 +12911,16 @@
    70,
    70,
    70
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE WEATHERVERSE"
+  }
  },
  "386": {
   "constant": "VOLBEAT",
@@ -10823,7 +12948,20 @@
    85,
    47,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTENT"
+   ],
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "387": {
   "constant": "ILLUMISE",
@@ -10851,7 +12989,20 @@
    85,
    73,
    75
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": [
+    "CONTEXT"
+   ],
+   "seasons": null,
+   "hours": [
+    "DUSK"
+   ],
+   "grove": null
+  }
  },
  "388": {
   "constant": "LILEEP",
@@ -10880,7 +13031,8 @@
    23,
    61,
    87
-  ]
+  ],
+  "native": null
  },
  "389": {
   "constant": "CRADILY",
@@ -10909,7 +13061,8 @@
    43,
    81,
    107
-  ]
+  ],
+  "native": null
  },
  "390": {
   "constant": "ANORITH",
@@ -10938,7 +13091,8 @@
    75,
    40,
    50
-  ]
+  ],
+  "native": null
  },
  "391": {
   "constant": "ARMALDO",
@@ -10967,7 +13121,8 @@
    45,
    70,
    80
-  ]
+  ],
+  "native": null
  },
  "392": {
   "constant": "RALTS",
@@ -10995,7 +13150,16 @@
    40,
    45,
    35
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE EMPATHVERSE"
+  }
  },
  "393": {
   "constant": "KIRLIA",
@@ -11023,7 +13187,16 @@
    50,
    65,
    55
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE EMPATHVERSE"
+  }
  },
  "394": {
   "constant": "GARDEVOIR",
@@ -11051,7 +13224,8 @@
    80,
    125,
    115
-  ]
+  ],
+  "native": null
  },
  "395": {
   "constant": "BAGON",
@@ -11079,7 +13253,8 @@
    50,
    40,
    30
-  ]
+  ],
+  "native": null
  },
  "396": {
   "constant": "SHELGON",
@@ -11107,7 +13282,8 @@
    50,
    60,
    50
-  ]
+  ],
+  "native": null
  },
  "397": {
   "constant": "SALAMENCE",
@@ -11136,7 +13312,8 @@
    100,
    110,
    80
-  ]
+  ],
+  "native": null
  },
  "398": {
   "constant": "BELDUM",
@@ -11165,7 +13342,16 @@
    30,
    35,
    60
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE MECHAVERSE"
+  }
  },
  "399": {
   "constant": "METANG",
@@ -11194,7 +13380,16 @@
    50,
    55,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": "THE MECHAVERSE"
+  }
  },
  "400": {
   "constant": "METAGROSS",
@@ -11223,7 +13418,8 @@
    70,
    95,
    90
-  ]
+  ],
+  "native": null
  },
  "401": {
   "constant": "REGIROCK",
@@ -11251,7 +13447,8 @@
    50,
    50,
    100
-  ]
+  ],
+  "native": null
  },
  "402": {
   "constant": "REGICE",
@@ -11279,7 +13476,8 @@
    50,
    100,
    200
-  ]
+  ],
+  "native": null
  },
  "403": {
   "constant": "REGISTEEL",
@@ -11307,7 +13505,8 @@
    50,
    75,
    150
-  ]
+  ],
+  "native": null
  },
  "404": {
   "constant": "KYOGRE",
@@ -11335,7 +13534,8 @@
    90,
    150,
    140
-  ]
+  ],
+  "native": null
  },
  "405": {
   "constant": "GROUDON",
@@ -11363,7 +13563,8 @@
    90,
    100,
    90
-  ]
+  ],
+  "native": null
  },
  "406": {
   "constant": "RAYQUAZA",
@@ -11392,7 +13593,8 @@
    95,
    150,
    90
-  ]
+  ],
+  "native": null
  },
  "407": {
   "constant": "LATIAS",
@@ -11421,7 +13623,8 @@
    110,
    110,
    130
-  ]
+  ],
+  "native": null
  },
  "408": {
   "constant": "LATIOS",
@@ -11450,7 +13653,8 @@
    110,
    130,
    110
-  ]
+  ],
+  "native": null
  },
  "409": {
   "constant": "JIRACHI",
@@ -11479,7 +13683,8 @@
    100,
    100,
    100
-  ]
+  ],
+  "native": null
  },
  "410": {
   "constant": "DEOXYS",
@@ -11507,7 +13712,8 @@
    150,
    150,
    50
-  ]
+  ],
+  "native": null
  },
  "411": {
   "constant": "CHIMECHO",
@@ -11535,6 +13741,17 @@
    65,
    95,
    80
-  ]
+  ],
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING"
+   ],
+   "hours": null,
+   "grove": null
+  }
  }
 }

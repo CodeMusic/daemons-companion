@@ -797,8 +797,14 @@ function NearbyCard({ ink }: { ink: string }) {
   const [note, setNote] = useState("");
   const load = useCallback(() => { api<{ items: Cast[] }>("/api/broadcasts").then((r) => setItems(r.items)).catch(() => {}); }, []);
   useEffect(() => { load(); const t = setInterval(load, 10000); return () => clearInterval(t); }, [load]);
+  // C-141: while NEARBY is open the phone also listens by Bluetooth, and a send goes out as the boards' pieces too
+  useEffect(() => { MEETING?.listenForCasts(true); return () => { MEETING?.listenForCasts(false); }; }, []);
   const send = async (body: object) => {
-    try { await api("/api/broadcast", body); setNote(""); load(); }
+    try {
+      const r = await api<{ cast?: { id: string; kind: "say" | "act" | "reply"; species: number; name: string; text?: string; act?: string; replyTo?: string } }>("/api/broadcast", body);
+      if (r?.cast) MEETING?.burst(r.cast);
+      setNote(""); load();
+    }
     catch (e) { setNote((e as Error).message); }                 // e.g. no daemon is away to say it
   };
   const answered = (id: string) => items.some((o) => o.replyTo === id && o.mine);

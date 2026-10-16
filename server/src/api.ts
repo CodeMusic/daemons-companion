@@ -58,7 +58,10 @@ import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { handles, route, type Reply } from "./routes.js";
-import { EXPRESSIONS, SHADED, shadePalette } from "./expressions.js";
+import { EXPRESSIONS, SHADED, faceOf, shadePalette } from "./expressions.js";
+import { FRAMES, PHASES, faceRev, renderFace, type Phase } from "./face.js";
+import { den as denOf } from "./dens.js";
+import { Home } from "./home.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, entry,
          EXP_PER_STEP, daemonLife, grown, ownBeacons, type Host, type SaveFile } from "./core.js";
 
@@ -210,6 +213,30 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
 }
 
+// C-138: the face a device that only shows pictures is sent -- this device's daemon (C-80), its expression and its den,
+// and `rev`, which changes when any picture would. `info` is all the board reads; the pictures are drawn on request.
+function boxFace(cfg: Config, store: Store, deviceId: string) {
+  const d = deviceState(cfg, store, new Date(), deviceId).daemon as any;
+  const face = d ? faceOf(core.artName(d.species)) : null;
+  const own = EXPRESSIONS[d?.expression?.name ?? "awake"] ?? EXPRESSIONS.awake;
+  const den = d?.den ?? denOf([]);
+  const rev = faceRev({ artKey: d?.artKey ?? null, expression: own.name, den, mouth: face?.mouth ?? null });
+  return { d, face, own, den, rev,
+           info: { rev, has: !!d, name: d ? String(d.nickname || d.name || "") : "", wall: den.wall, floor: den.floor, glow: den.glow } };
+}
+const facePngs = new Map<string, Buffer>();                      // a revision's pictures, drawn once each
+function facePng(cfg: Config, f: ReturnType<typeof boxFace>, phase: Phase, frame: number): Buffer {
+  const key = `${f.rev}:${f.d?.slot ?? "-"}:${phase}:${frame}`;
+  let png = facePngs.get(key);
+  if (!png) {
+    const sprite = f.d ? partyPng(cfg, (p) => p.slot === f.d.slot) : null;
+    png = renderFace(sprite, f.own, f.face, f.den, phase, frame);
+    if (facePngs.size > 120) facePngs.clear();
+    facePngs.set(key, png);
+  }
+  return png;
+}
+
 // C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else
 // config.json. `source` tells the user which, so "it just worked" never leaves them wondering where it read from.
 function settingsView(cfg: Config, store: Store) {
@@ -246,7 +273,7 @@ const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a =
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
-                    "/api/settings/pick", "/api/settings/reveal", "/api/settings/relay"];
+                    "/api/settings/pick", "/api/settings/reveal", "/api/settings/relay", "/api/settings/home"];
 // C-56: the user's n8n carries a phone's requests here from anywhere, marking each with the relay's secret. A relayed
 // request is an INTERNET request: a paired phone's key for everything (the device's own door included), no pairing,
 // nothing that is this machine's alone.
@@ -258,7 +285,7 @@ export function relaySecret(store: Store): string {
   return s;
 }
 const DEVICE_DOOR = [
-  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands"].includes(p),
+  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
@@ -297,6 +324,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
+  const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -387,6 +415,23 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.renew === true) store.setSetting("relay.secret", null);
         return send(res, 200, { url: store.getSetting("relay.url"), secret: relaySecret(store) });
       }
+      // ---- C-139: HOME -- Home Assistant through this server (home.ts). Its address and token are set on this machine
+      // only (LOCAL_ONLY); a paired phone, the Tab5 and the site see rooms and states, and ask for actions by name. ----
+      if (req.method === "GET" && path === "/api/settings/home") return send(res, 200, { ...home.settings(), ...(await home.check()) });
+      if (req.method === "POST" && path === "/api/settings/home") {
+        const b = await body(req);
+        try { home.set(b.url, b.token); } catch (e) { return send(res, 400, { error: (e as Error).message }); }
+        return send(res, 200, { ...home.settings(), ...(await home.check()) });
+      }
+      if (req.method === "GET" && path === "/api/home") return send(res, 200, await home.view());
+      if (req.method === "POST" && path === "/api/home/act") {
+        const b = await body(req);
+        return send(res, 200, await home.act(String(b.id ?? ""), String(b.action ?? "")));
+      }
+      if (req.method === "POST" && path === "/api/home/ask") {
+        const b = await body(req);
+        return send(res, 200, await home.ask(String(b.text ?? ""), typeof b.conversationId === "string" ? b.conversationId : null));
+      }
       // C-56: where a paired phone goes when home does not answer
       if (req.method === "GET" && path === "/api/settings/away") return send(res, 200, { url: store.getSetting("relay.url") });
       // the server listens on the network (for the phone and the board) -- kept here, read at the next start
@@ -409,6 +454,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const relay = store.getSetting("relay.url");
         if (via === "usb" && relay && validDeviceId(deviceId)) return send(res, 200, { ...st, away: { url: relay, key: devices.keyFor(deviceId) } });
         return send(res, 200, st);
+      }
+      // C-138: a device that shows only pictures (the BOX-3, on ESPHome): its face's revision, and each phase's picture
+      if (req.method === "GET" && path === "/api/device/face") return send(res, 200, boxFace(ecfg, store, deviceId).info);
+      const facePic = path.match(/^\/art\/face\/([a-z]+)-(\d)\.png$/);
+      if (req.method === "GET" && facePic) {
+        const phase = facePic[1] as Phase, frame = Number(facePic[2]);
+        if (!PHASES.includes(phase) || frame >= FRAMES) return send(res, 404, { error: `a face is ${PHASES.join(", ")}, frames 0..${FRAMES - 1}` });
+        res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
+        return res.end(facePng(ecfg, boxFace(ecfg, store, deviceId), phase, frame));
       }
       // ---- C-32: the link. The device's side: its commands, its results, its routines. ----
       if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via) }); }

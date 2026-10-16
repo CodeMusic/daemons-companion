@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <map>
+#include <deque>
 #include <vector>
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
@@ -24,7 +25,8 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
       !strcmp(name, "groves") || !strcmp(name, "school")) return K_PROFILE;
-  if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
+  if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
+  if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
   for (int i = 0; i < 7; i++) if (!strcmp(name, N[i])) return 1u << i;
   return 0;
@@ -136,6 +138,118 @@ static String request(const char *method, const String &rawPath, const String &b
   return out;
 }
 
+// ---- C-139: HOME -- Home Assistant, through the companion (server/src/home.ts) ----------------------------------------
+// A tap waits in RAM for this task, which sends it before anything else -- between any two downloads -- and NEVER keeps it
+// for later: the outbox (C-87) is for the companion's own records, and a light switched or a kettle started hours late is
+// wrong. One that cannot go, or has waited too long behind a download, puts the thing back as it was shown and says so on it.
+struct HomeJob { bool ask; String a, b, before; uint32_t at; };   // a tap (a: the thing's id, b: the action), or an ask (a)
+static std::deque<HomeJob> homeJobs;
+static SemaphoreHandle_t homeLock;
+static std::atomic<bool> homeOpen{false}, homeDue{false};
+static String homeAsked, homeAnswer, homeConversation;
+static uint32_t homeSum = 0;                       // the view last kept; 0 once a tap changed it, so the next is kept anyway
+static const uint32_t HOME_STALE_MS = 20000;       // a tap that has waited longer is not sent
+
+void netHomeWatch(bool open) { if (open && !homeOpen) homeDue = true; homeOpen = open; }
+static void homePush(const HomeJob &j) { xSemaphoreTake(homeLock, portMAX_DELAY); homeJobs.push_back(j); xSemaphoreGive(homeLock); }
+void netHomeAct(const String &id, const String &action, const String &before) { homePush({ false, id, action, before, millis() }); }
+void netHomeAsk(const String &text) {
+  xSemaphoreTake(homeLock, portMAX_DELAY); homeAsked = text; homeAnswer = ""; xSemaphoreGive(homeLock);
+  homePush({ true, text, "", "", millis() });
+}
+void netHomeHeard(String &asked, String &answer) {
+  xSemaphoreTake(homeLock, portMAX_DELAY); asked = homeAsked; answer = homeAnswer; xSemaphoreGive(homeLock);
+}
+
+static String homeError(const String &e) {
+  if (e.indexOf("not set up") >= 0) return "Set up Home Assistant on the companion's SETTINGS, on the computer it runs on.";   // DRAFT
+  return e.length() ? e : String("Home Assistant did not say why.");                                                          // DRAFT
+}
+
+// The kept view with one thing changed: to the companion's answer for it, or back to how it was before the tap, and what
+// to say on it
+static void homeThing(const String &id, JsonVariantConst with, const String &failed, const String &said) {
+  JsonDocument h = newDoc();
+  if (!kept("home", h)) return;
+  for (JsonObject room : h["rooms"].as<JsonArray>())
+    for (JsonObject th : room["things"].as<JsonArray>()) {
+      if (id != (const char *)(th["id"] | "")) continue;
+      if (with.is<JsonObjectConst>()) th.set(with.as<JsonObjectConst>());
+      th.remove("busy");
+      if (failed.length()) th["failed"] = failed;
+      if (said.length()) th["said"] = said;
+    }
+  String json; serializeJson(h, json);
+  keep("home", json);
+  homeSum = 0;
+  changed(K_HOME);
+}
+
+static void sendHome() {
+  for (;;) {
+    HomeJob j; bool any;
+    xSemaphoreTake(homeLock, portMAX_DELAY);
+    any = !homeJobs.empty();
+    if (any) { j = homeJobs.front(); homeJobs.pop_front(); }
+    xSemaphoreGive(homeLock);
+    if (!any) return;
+    bool stale = millis() - j.at > HOME_STALE_MS;
+    JsonDocument b, r = newDoc();
+    String body;
+    if (j.ask) {                                   // asked in words: Home Assistant's conversation agent answers
+      String said;
+      if (stale) said = "Not asked: the Tab5 was busy too long. Ask again.";                                   // DRAFT
+      else {
+        b["text"] = j.a;
+        if (homeConversation.length()) b["conversationId"] = homeConversation;
+        serializeJson(b, body);
+        int code; String got = request("POST", "/api/home/ask", body, code);
+        if (code < 0) said = "Nothing answered: it was not asked.";                                            // DRAFT
+        else if (code != 200 || deserializeJson(r, got)) said = "The companion answered " + String(code) + ".";   // DRAFT
+        else if (!(r["ok"] | false)) said = homeError(r["error"] | "");
+        else { said = r["speech"] | ""; if (!said.length()) said = "Done."; homeConversation = r["conversationId"] | ""; }   // DRAFT
+        homeDue = true;                            // what was asked may have changed the house: look again
+      }
+      xSemaphoreTake(homeLock, portMAX_DELAY); if (homeAsked == j.a) homeAnswer = said; xSemaphoreGive(homeLock);
+      changed(K_HOME);
+      continue;
+    }
+    JsonDocument was = newDoc();                   // the thing as it was shown before the tap
+    if (j.before.length()) deserializeJson(was, j.before);
+    if (stale) { homeThing(j.a, was.as<JsonVariantConst>(), "Not sent: the Tab5 was busy too long. Tap again.", ""); continue; }   // DRAFT
+    b["id"] = j.a; b["action"] = j.b;
+    serializeJson(b, body);
+    int code; String got = request("POST", "/api/home/act", body, code);
+    if (code < 0) homeThing(j.a, was.as<JsonVariantConst>(), "Did not go: nothing answered.", "");                       // DRAFT
+    else if (code != 200 || deserializeJson(r, got))
+      homeThing(j.a, was.as<JsonVariantConst>(), "Did not go: the companion answered " + String(code) + ".", "");         // DRAFT
+    else if (!(r["ok"] | false)) homeThing(j.a, was.as<JsonVariantConst>(), "Did not go: " + homeError(r["error"] | ""), "");   // DRAFT
+    else homeThing(j.a, r["thing"].as<JsonVariantConst>(), "", j.b == "run" ? "Done." : "");                             // DRAFT
+  }
+}
+
+// The view: the rooms and their things as Home Assistant has them now. When it cannot say (not set up, not answering), the
+// rooms last seen stay, under what went wrong.
+static void fetchHome() {
+  int code; String got = request("GET", "/api/home", "", code);
+  if (code < 0) return;                            // nothing answered: the kept view stays (the bar says KEPT)
+  JsonDocument d = newDoc();
+  bool read = code == 200 && !deserializeJson(d, got);
+  if (!read || !(d["ok"] | false)) {
+    String why = read ? homeError(d["error"] | "") : code == 404 ? String("This companion has no HOME yet: it needs updating.")   // DRAFT
+                                                                 : "The companion answered " + String(code) + ".";            // DRAFT
+    JsonDocument was = newDoc();
+    if (kept("home", was) && was["rooms"].is<JsonArray>()) d.set(was); else { d.clear(); d["rooms"].to<JsonArray>(); }
+    d["ok"] = false; d["error"] = why;
+    got = ""; serializeJson(d, got);
+  }
+  uint32_t sum = sumOf(got);
+  if (homeSum == sum) return;                      // C-96: the same view again changes nothing
+  homeSum = sum;
+  keep("home", got);
+  changed(K_HOME);
+}
+
 // ---- keeping everything --------------------------------------------------------------------------------------------
 // The companion's clock, from the state it hands a device (C-71): the Tab5 has no other way to know the time here.
 static int offsetMin = 0; static bool clockSet = false;
@@ -154,6 +268,7 @@ bool localTime(struct tm &out) {
 }
 
 static bool fetchKeep(const char *path, const char *name) {
+  sendHome();                                      // C-139: a HOME tap waits for no download -- it goes between any two
   int code; String got = request("GET", path, "", code);
   if (code != 200) return false;
   // C-96: the same answer as last time changes nothing -- no write to flash, and no page drawn again (which flickered
@@ -442,7 +557,7 @@ static void gameSync() {
 static void netTask(void *) {
   WiFi.mode(WIFI_STA);
   joinKnown();
-  uint32_t lastSync = 0, lastToday = 0;
+  uint32_t lastSync = 0, lastToday = 0, lastHome = 0;
   bool first = true;
   for (;;) {
     net.wifi = WiFi.status() == WL_CONNECTED;
@@ -460,9 +575,11 @@ static void netTask(void *) {
     else if (j == SYNC && net.paired) { flushOutbox(); keepEverything(!hasArt("s1")); }
     else if (j == GAME && net.paired) gameSync();
     else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { net.message = "The voice needs the companion."; netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
+    sendHome();                                               // C-139: HOME's taps, now and before anything else
     uint32_t now = millis();
     if (!net.wifi && known && now - lastSync > 30000) { lastSync = now; joinKnown(); }
     if (net.wifi && net.paired) {
+      if (homeOpen && (homeDue || now - lastHome > 30000)) { homeDue = false; lastHome = now; fetchHome(); }   // C-139: while open
       if (first || now - lastSync > 10 * 60000) {            // everything, now and then (the pictures the first time)
         first = false; lastSync = now; lastToday = now;
         flushOutbox(); keepEverything(!hasArt("s1"));      // the pictures only when none are kept
@@ -480,6 +597,7 @@ static void netTask(void *) {
 
 void netBegin() {
   jobLock = xSemaphoreCreateMutex();
+  homeLock = xSemaphoreCreateMutex();             // C-139
   load();
   net.paired = token.length() > 0;
   xTaskCreatePinnedToCore(netTask, "net", 16384, nullptr, 1, nullptr, 0);

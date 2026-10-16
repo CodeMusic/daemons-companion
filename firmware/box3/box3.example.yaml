@@ -1,0 +1,20 @@
+# C-138: your BOX-3. Copy this to box3.yaml (ignored by git) and secrets.example.yaml to secrets.yaml, fill them in, and
+# build it (README.md). Everything else -- the voice assistant and the daemon's face -- is daemon-box3.yaml.
+substitutions:
+  # Where the companion runs, as the box reaches it: the Mac's name on the network (System Settings > General >
+  # Sharing, "Local hostname") or its address, and the companion's port. The companion must listen on the network
+  # (its SETTINGS: "open to the network").
+  companion_url: http://your-mac.local:4730
+
+packages:
+  daemon: !include daemon-box3.yaml
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# If Home Assistant already knows this box with an encryption key (it was adopted in ESPHome Device Builder), give the
+# same key here and Home Assistant keeps it as it was. Without one, remove these three lines.
+api:
+  encryption:
+    key: !secret api_encryption_key

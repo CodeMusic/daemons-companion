@@ -1,0 +1,923 @@
+---
+# C-138: the ESP32-S3-BOX-3 as Home Assistant's voice assistant, with a daemon for a face.
+#
+# Adapted from ESPHome's own BOX-3 voice assistant, esphome/wake-word-voice-assistants esp32-s3-box-3/esp32-s3-box-3.yaml
+# at a159d9a (2026-07-10), Apache License 2.0. Everything that makes it Home Assistant's voice assistant is theirs and kept
+# as it was: the wake word on the board (micro_wake_word) or in Home Assistant, the voice pipeline, timers, the media
+# player, mute. What changed, and why:
+#
+#   - THE SCREEN IS THE DAEMON THIS BOX CARRIES (DEVICES, C-80). Each voice phase -- idle, listening, thinking,
+#     replying, error, muted, timer -- is a picture the companion draws (server/src/face.ts): the daemon standing in its
+#     den, in its own expression (C-119), with the phase over its eyes or mouth or above its head. Two frames a phase,
+#     alternated here: a blink when idle, the mouth when it speaks. The board holds no rule: it asks the companion for
+#     its face's revision every 20 s (GET /api/device/face) and fetches the fourteen pictures again only when it changes.
+#   - ESPHome's own illustrations (the casita) are kept as each picture's placeholder: until the companion answers, or
+#     when no daemon is carried, the box is the voice assistant it always was.
+#   - What was said is written on the den's floor, two lines, under the daemon; the daemon's name at the top left. The
+#     timer's bar moved to the top edge and its clock to the top right, so neither covers the daemon.
+#   - A tap on the screen asks without the wake word.
+#   - Home Assistant sees two more things: the companion's address (set it there) and which daemon is in the box.
+#
+# This file holds nothing secret. Your own file (box3.example.yaml) adds Wi-Fi, an API key if you use one, and where the
+# companion is; firmware/box3/README.md says how to build and flash it.
+substitutions:
+  name: esp32-s3-box-3
+  friendly_name: ESP32-S3-BOX-3 Daemon
+  # Where the companion server is, as this box reaches it on the home network. Home Assistant can change it afterwards
+  # (the "Companion address" entity); this is only its first value.
+  companion_url: http://companion.local:4730
+
+  loading_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/loading_320_240.png
+  idle_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/idle_320_240.png
+  listening_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/listening_320_240.png
+  thinking_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/thinking_320_240.png
+  replying_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/replying_320_240.png
+  error_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/error_320_240.png
+  timer_finished_illustration_file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/casita/timer_finished_320_240.png
+
+  voice_assist_idle_phase_id: "1"
+  voice_assist_listening_phase_id: "2"
+  voice_assist_thinking_phase_id: "3"
+  voice_assist_replying_phase_id: "4"
+  voice_assist_not_ready_phase_id: "10"
+  voice_assist_error_phase_id: "11"
+  voice_assist_muted_phase_id: "12"
+  voice_assist_timer_finished_phase_id: "20"
+
+  font_glyphsets: "GF_Latin_Core"
+  font_family: Figtree
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2026.9.0           # the image: platforms (file, online_image) this uses
+  name_add_mac_suffix: true          # its id is its kind and the end of its MAC: esp32-s3-box-3-a1b2c3 (C-80)
+  on_boot:
+    priority: 600
+    then:
+      - script.execute: draw_display
+      - delay: 30s
+      - if:
+          condition:
+            lambda: return id(init_in_progress);
+          then:
+            - lambda: id(init_in_progress) = false;
+            - script.execute: draw_display
+
+esp32:
+  board: esp32s3box
+  flash_size: 16MB
+  cpu_frequency: 240MHz
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+api:
+  on_client_connected:
+    - script.execute: draw_display
+  on_client_disconnected:
+    - script.execute: draw_display
+
+ota:
+  - platform: esphome
+    id: ota_esphome
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+wifi:
+  ap:
+  on_connect:
+    - script.execute: draw_display
+    - delay: 3s
+    - script.execute: fetch_face
+  on_disconnect:
+    - script.execute: draw_display
+
+captive_portal:
+
+# C-138: the companion's pictures come over plain HTTP on the home network
+http_request:
+  timeout: 10s
+  verify_ssl: false
+
+button:
+  - platform: factory_reset
+    id: factory_reset_btn
+    internal: true
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      ignore_strapping_warning: true
+      mode: INPUT_PULLUP
+      inverted: true
+    id: left_top_button
+    internal: true
+    on_multi_click:
+      - timing:
+          - ON for at least 50ms
+          - OFF for at least 50ms
+        then:
+          - switch.turn_off: timer_ringing
+      - timing:
+          - ON for at least 10s
+        then:
+          - button.press: factory_reset_btn
+
+output:
+  - platform: ledc
+    pin: GPIO47
+    id: backlight_output
+
+light:
+  - platform: monochromatic
+    id: led
+    name: Screen
+    icon: "mdi:television"
+    entity_category: config
+    output: backlight_output
+    restore_mode: RESTORE_DEFAULT_ON
+    default_transition_length: 250ms
+
+i2c:
+  - id: i2c_adc_dac
+    scl: GPIO18
+    sda: GPIO8
+
+i2s_audio:
+  - id: i2s_audio_bus
+    i2s_lrclk_pin:
+      number: GPIO45
+      ignore_strapping_warning: true
+    i2s_bclk_pin: GPIO17
+    i2s_mclk_pin: GPIO2
+
+audio_adc:
+  - platform: es7210
+    i2c_id: i2c_adc_dac
+    id: es7210_adc
+    bits_per_sample: 16bit
+    sample_rate: 16000
+
+audio_dac:
+  - platform: es8311
+    i2c_id: i2c_adc_dac
+    id: es8311_dac
+    bits_per_sample: 16bit
+    sample_rate: 48000
+
+microphone:
+  - platform: i2s_audio
+    id: box_mic
+    sample_rate: 16000
+    i2s_din_pin: GPIO16
+    bits_per_sample: 16bit
+    adc_type: external
+
+speaker:
+  - platform: i2s_audio
+    id: box_speaker
+    i2s_dout_pin: GPIO15
+    dac_type: external
+    sample_rate: 48000
+    bits_per_sample: 16bit
+    channel: left
+    audio_dac: es8311_dac
+    buffer_duration: 100ms
+
+media_player:
+  - platform: speaker
+    name: None
+    id: speaker_media_player
+    volume_min: 0.5
+    volume_max: 0.8
+    announcement_pipeline:
+      speaker: box_speaker
+      format: FLAC
+      sample_rate: 48000
+      num_channels: 1  # S3 Box only has one output channel
+    files:
+      - id: timer_finished_sound
+        file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/timer_finished.flac
+    on_announcement:
+      # Stop the wake word (mWW or VA) if the mic is capturing
+      - if:
+          condition:
+            - microphone.is_capturing:
+          then:
+            - script.execute: stop_wake_word
+            # Ensure VA stops before moving on
+            - if:
+                condition:
+                  - lambda: return id(wake_word_engine_location).current_option() == "In Home Assistant";
+                then:
+                  - wait_until:
+                      - not:
+                          voice_assistant.is_running:
+      # Since VA isn't running, this is user-intiated media playback. Draw the mute display
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+            - script.execute: draw_display
+    on_idle:
+      # Since VA isn't running, this is the end of user-intiated media playback. Restart the wake word.
+      - if:
+          condition:
+            not:
+              voice_assistant.is_running:
+          then:
+            - script.execute: start_wake_word
+            - script.execute: set_idle_or_mute_phase
+            - script.execute: draw_display
+
+micro_wake_word:
+  id: mww
+  models:
+    - okay_nabu
+    - hey_mycroft
+    - hey_jarvis
+  on_wake_word_detected:
+    - voice_assistant.start:
+        wake_word: !lambda return wake_word;
+
+voice_assistant:
+  id: va
+  microphone: box_mic
+  media_player: speaker_media_player
+  micro_wake_word: mww
+  noise_suppression_level: 2
+  auto_gain: 31dBFS
+  volume_multiplier: 2.0
+  on_listening:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
+    - text_sensor.template.publish:
+        id: text_request
+        state: ""
+    - text_sensor.template.publish:
+        id: text_response
+        state: ""
+    - script.execute: draw_display
+  on_stt_vad_end:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
+    - script.execute: draw_display
+  on_stt_end:
+    - text_sensor.template.publish:
+        id: text_request
+        state: !lambda return x;
+    - script.execute: draw_display
+  on_tts_start:
+    - text_sensor.template.publish:
+        id: text_response
+        state: !lambda return x;
+    - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
+    - script.execute: draw_display
+  on_end:
+    # Wait a short amount of time to see if an announcement starts
+    - wait_until:
+        condition:
+          - media_player.is_announcing:
+        timeout: 0.5s
+    # Announcement is finished and the I2S bus is free
+    - wait_until:
+        - and:
+            - not:
+                media_player.is_announcing:
+            - not:
+                speaker.is_playing:
+    # Restart only mWW if enabled; streaming wake words automatically restart
+    - if:
+        condition:
+          - lambda: return id(wake_word_engine_location).current_option() == "On device";
+        then:
+          - lambda: id(va).set_use_wake_word(false);
+          - micro_wake_word.start:
+    - script.execute: set_idle_or_mute_phase
+    - script.execute: draw_display
+    # Clear text sensors
+    - text_sensor.template.publish:
+        id: text_request
+        state: ""
+    - text_sensor.template.publish:
+        id: text_response
+        state: ""
+  on_error:
+    - if:
+        condition:
+          lambda: return !id(init_in_progress);
+        then:
+          - lambda: id(voice_assistant_phase) = ${voice_assist_error_phase_id};
+          - script.execute: draw_display
+          - delay: 1s
+          - if:
+              condition:
+                switch.is_off: mute
+              then:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+              else:
+                - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+          - script.execute: draw_display
+  on_client_connected:
+    - lambda: id(init_in_progress) = false;
+    - script.execute: start_wake_word
+    - script.execute: set_idle_or_mute_phase
+    - script.execute: draw_display
+  on_client_disconnected:
+    - script.execute: stop_wake_word
+    - lambda: id(voice_assistant_phase) = ${voice_assist_not_ready_phase_id};
+    - script.execute: draw_display
+  on_timer_started:
+    - script.execute: draw_display
+  on_timer_cancelled:
+    - script.execute: draw_display
+  on_timer_updated:
+    - script.execute: draw_display
+  on_timer_tick:
+    - script.execute: draw_display
+  on_timer_finished:
+    - switch.turn_on: timer_ringing
+    - wait_until:
+        media_player.is_announcing:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_timer_finished_phase_id};
+    - script.execute: draw_display
+
+# C-138: a tap on the screen asks without the wake word (when it is waiting, and not muted)
+touchscreen:
+  - platform: gt911
+    id: box_touch
+    i2c_id: i2c_adc_dac
+    interrupt_pin:
+      number: GPIO3
+      ignore_strapping_warning: true
+    on_touch:
+      - if:
+          condition:
+            and:
+              - lambda: return id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
+              - switch.is_off: mute
+              - not:
+                  voice_assistant.is_running:
+          then:
+            - if:
+                condition:
+                  lambda: return id(wake_word_engine_location).current_option() == "On device";
+                then:
+                  - micro_wake_word.stop:
+                  - delay: 200ms
+            - voice_assistant.start:
+
+script:
+  # Every voice phase is the daemon's face (face_page); not connected, no Wi-Fi and starting are ESPHome's own pages
+  - id: draw_display
+    then:
+      - if:
+          condition:
+            lambda: return !id(init_in_progress);
+          then:
+            - if:
+                condition:
+                  wifi.connected:
+                then:
+                  - if:
+                      condition:
+                        api.connected:
+                      then:
+                        - lambda: |-
+                            if (id(voice_assistant_phase) == ${voice_assist_not_ready_phase_id}) id(s3_box_lcd).show_page(no_ha_page);
+                            else id(s3_box_lcd).show_page(face_page);
+                            id(s3_box_lcd).update();
+                      else:
+                        - display.page.show: no_ha_page
+                        - component.update: s3_box_lcd
+                else:
+                  - display.page.show: no_wifi_page
+                  - component.update: s3_box_lcd
+          else:
+            - display.page.show: initializing_page
+            - component.update: s3_box_lcd
+
+  # C-138: ask the companion for this box's face; fetch the pictures again only when its revision changed
+  - id: fetch_face
+    mode: single
+    then:
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - http_request.get:
+                url: !lambda 'return id(companion_url).state + "/api/device/face?via=wifi&device=" + App.get_name();'
+                capture_response: true
+                max_response_buffer_size: 1024
+                on_response:
+                  then:
+                    - lambda: |-
+                        id(face_changed) = false;
+                        if (response->status_code != 200) return;
+                        json::parse_json(body, [](JsonObject root) -> bool {
+                          std::string rev = root["rev"] | "";
+                          bool has = root["has"] | false;
+                          std::string name = root["name"] | "";
+                          if (rev != id(face_rev) || has != id(face_has)) { id(face_rev) = rev; id(face_has) = has; id(face_changed) = true; }
+                          if (name != id(face_name)) { id(face_name) = name; id(daemon_name).publish_state(has ? name : ""); }
+                          return true;
+                        });
+                    - if:
+                        condition:
+                          lambda: return id(face_changed);
+                        then:
+                          - script.execute: download_faces
+                on_error:
+                  - logger.log:
+                      level: WARN
+                      format: "the companion did not answer at %s"
+                      args: ['id(companion_url).state.c_str()']
+
+  # The fourteen pictures, one at a time (each waits for the last: a box has only so much memory to decode with). With
+  # no daemon carried they are let go, and the placeholders -- ESPHome's own illustrations -- show instead.
+  - id: download_faces
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: return !id(face_has);
+          then:
+            - lambda: |-
+                online_image::OnlineImage *faces[] = { id(face_idle_0), id(face_idle_1), id(face_listening_0), id(face_listening_1),
+                  id(face_thinking_0), id(face_thinking_1), id(face_replying_0), id(face_replying_1), id(face_error_0),
+                  id(face_error_1), id(face_muted_0), id(face_muted_1), id(face_timer_0), id(face_timer_1) };
+                for (auto *img : faces) img->release();
+          else:
+            - repeat:
+                count: 14
+                then:
+                  - lambda: |-
+                      static const char *const PHASES[] = { "idle", "listening", "thinking", "replying", "error", "muted", "timer" };
+                      online_image::OnlineImage *faces[] = { id(face_idle_0), id(face_idle_1), id(face_listening_0), id(face_listening_1),
+                        id(face_thinking_0), id(face_thinking_1), id(face_replying_0), id(face_replying_1), id(face_error_0),
+                        id(face_error_1), id(face_muted_0), id(face_muted_1), id(face_timer_0), id(face_timer_1) };
+                      id(face_waiting) = true;
+                      faces[iteration]->set_url(id(companion_url).state + "/art/face/" + PHASES[iteration / 2] + "-" +
+                        std::to_string(iteration % 2) + ".png?device=" + App.get_name() + "&rev=" + id(face_rev));
+                      faces[iteration]->update();
+                  - wait_until:
+                      condition:
+                        lambda: return !id(face_waiting);
+                      timeout: 15s
+      - script.execute: draw_display
+
+  # The timer's bar along the top edge (ESPHome's own draws it along the bottom, where the words now are)
+  - id: draw_timer_timeline
+    then:
+      - lambda: |
+          const auto &timers = id(va).get_timers();
+          const voice_assistant::Timer *shown = nullptr;
+          bool active = false;
+          for (const auto &timer : timers) {
+            if (timer.is_active && (!active || timer.seconds_left <= shown->seconds_left)) { shown = &timer; active = true; }
+            else if (!active && (!shown || timer.seconds_left <= shown->seconds_left)) shown = &timer;
+          }
+          if (shown == nullptr) return;
+          int px = round(320.0 * shown->seconds_left / std::max(shown->total_seconds, static_cast<uint32_t>(1)));
+          if (px > 0) {
+            id(s3_box_lcd).filled_rectangle(0, 0, 320, 6, Color::WHITE);
+            id(s3_box_lcd).filled_rectangle(0, 1, px, 4, active ? id(active_timer_color) : id(paused_timer_color));
+          }
+  # The time left on the soonest running timer, top right
+  - id: draw_active_timer_widget
+    then:
+      - lambda: |
+          const auto &timers = id(va).get_timers();
+          const voice_assistant::Timer *shown = nullptr;
+          for (const auto &timer : timers) if (timer.is_active && (!shown || timer.seconds_left <= shown->seconds_left)) shown = &timer;
+          if (shown == nullptr) return;
+          uint32_t left = shown->seconds_left, h = left / 3600, m = (left % 3600) / 60, s = left % 60;
+          char text[12];
+          if (h > 0) snprintf(text, sizeof(text), "%02u:%02u", (unsigned) h, (unsigned) m);
+          else snprintf(text, sizeof(text), "%02u:%02u", (unsigned) m, (unsigned) s);
+          id(s3_box_lcd).filled_rectangle(206, 12, 106, 40, Color::WHITE);
+          id(s3_box_lcd).rectangle(206, 12, 106, 40, Color::BLACK);
+          id(s3_box_lcd).print(259, 32, id(font_timer), Color::BLACK, TextAlign::CENTER, text);
+  # Starts either mWW or the streaming wake word, depending on the configured location
+  - id: start_wake_word
+    then:
+      - if:
+          condition:
+            and:
+              - not:
+                  - voice_assistant.is_running:
+              - lambda: return id(wake_word_engine_location).current_option() == "On device";
+          then:
+            - lambda: id(va).set_use_wake_word(false);
+            - micro_wake_word.start:
+      - if:
+          condition:
+            and:
+              - not:
+                  - voice_assistant.is_running:
+              - lambda: return id(wake_word_engine_location).current_option() == "In Home Assistant";
+          then:
+            - lambda: id(va).set_use_wake_word(true);
+            - voice_assistant.start_continuous:
+  # Stops either mWW or the streaming wake word, depending on the configured location
+  - id: stop_wake_word
+    then:
+      - if:
+          condition:
+            lambda: return id(wake_word_engine_location).current_option() == "In Home Assistant";
+          then:
+            - lambda: id(va).set_use_wake_word(false);
+            - voice_assistant.stop:
+      - if:
+          condition:
+            lambda: return id(wake_word_engine_location).current_option() == "On device";
+          then:
+            - micro_wake_word.stop:
+  # Set the voice assistant phase to idle or muted, depending on if the software mute switch is activated
+  - id: set_idle_or_mute_phase
+    then:
+      - if:
+          condition:
+            switch.is_off: mute
+          then:
+            - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+          else:
+            - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+
+# C-138: the face moves -- a blink every few seconds when idle, the mouth while it speaks, the marks otherwise -- and
+# the screen is drawn again only when the frame changes. The companion is asked about the face every 20 s.
+interval:
+  - interval: 150ms
+    then:
+      - lambda: |-
+          if (id(init_in_progress) || id(s3_box_lcd).get_active_page() != id(face_page)) return;
+          int p = id(voice_assistant_phase), t = ++id(face_tick), f;
+          if (p == ${voice_assist_idle_phase_id}) f = (t % 27 == 26) ? 1 : 0;
+          else if (p == ${voice_assist_replying_phase_id}) f = (t / 2) % 2;
+          else if (p == ${voice_assist_muted_phase_id}) f = 0;
+          else f = (t / 3) % 2;
+          if (f != id(face_frame)) { id(face_frame) = f; id(s3_box_lcd).update(); }
+  - interval: 20s
+    then:
+      - script.execute: fetch_face
+
+switch:
+  - platform: gpio
+    name: Speaker Enable
+    pin:
+      number: GPIO46
+      ignore_strapping_warning: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    disabled_by_default: true
+  - platform: template
+    name: Mute
+    id: mute
+    icon: "mdi:microphone-off"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+    on_turn_off:
+      - microphone.unmute:
+      - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+      - script.execute: draw_display
+    on_turn_on:
+      - microphone.mute:
+      - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
+      - script.execute: draw_display
+  - platform: template
+    id: timer_ringing
+    optimistic: true
+    internal: true
+    restore_mode: ALWAYS_OFF
+    on_turn_off:
+      # Turn off the repeat mode and disable the pause between playlist items
+      - lambda: |-
+              id(speaker_media_player)
+                ->make_call()
+                .set_command(media_player::MediaPlayerCommand::MEDIA_PLAYER_COMMAND_REPEAT_OFF)
+                .set_announcement(true)
+                .perform();
+              id(speaker_media_player)->set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 0);
+      # Stop playing the alarm
+      - media_player.stop:
+          announcement: true
+    on_turn_on:
+      # Turn on the repeat mode and pause for 1000 ms between playlist items/repeats
+      - lambda: |-
+            id(speaker_media_player)
+              ->make_call()
+              .set_command(media_player::MediaPlayerCommand::MEDIA_PLAYER_COMMAND_REPEAT_ONE)
+              .set_announcement(true)
+              .perform();
+            id(speaker_media_player)->set_playlist_delay_ms(speaker::AudioPipelineType::ANNOUNCEMENT, 1000);
+      - media_player.speaker.play_on_device_media_file:
+          media_file: timer_finished_sound
+          announcement: true
+      - delay: 15min
+      - switch.turn_off: timer_ringing
+
+select:
+  - platform: template
+    entity_category: config
+    name: Wake word engine location
+    id: wake_word_engine_location
+    icon: "mdi:account-voice"
+    optimistic: true
+    restore_value: true
+    options:
+      - In Home Assistant
+      - On device
+    initial_option: On device
+    on_value:
+      - if:
+          condition:
+            lambda: return !id(init_in_progress);
+          then:
+            - wait_until:
+                lambda: return id(voice_assistant_phase) == ${voice_assist_muted_phase_id} || id(voice_assistant_phase) == ${voice_assist_idle_phase_id};
+            - if:
+                condition:
+                  lambda: return x == "In Home Assistant";
+                then:
+                  - micro_wake_word.stop
+                  - delay: 500ms
+                  - if:
+                      condition:
+                        switch.is_off: mute
+                      then:
+                        - lambda: id(va).set_use_wake_word(true);
+                        - voice_assistant.start_continuous:
+            - if:
+                condition:
+                  lambda: return x == "On device";
+                then:
+                  - lambda: id(va).set_use_wake_word(false);
+                  - voice_assistant.stop
+                  - delay: 500ms
+                  - if:
+                      condition:
+                        switch.is_off: mute
+                      then:
+                        - micro_wake_word.start
+
+# C-138: where the companion is, changed from Home Assistant (kept across restarts)
+text:
+  - platform: template
+    name: Companion address
+    id: companion_url
+    icon: "mdi:server-network"
+    entity_category: config
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ${companion_url}
+    max_length: 120
+    on_value:
+      - lambda: id(face_rev) = "";
+      - script.execute: fetch_face
+
+globals:
+  - id: init_in_progress
+    type: bool
+    restore_value: false
+    initial_value: "true"
+  - id: voice_assistant_phase
+    type: int
+    restore_value: false
+    initial_value: ${voice_assist_not_ready_phase_id}
+  # C-138: the face
+  - id: face_rev
+    type: std::string
+    restore_value: false
+  - id: face_has
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: face_name
+    type: std::string
+    restore_value: false
+  - id: face_changed
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: face_waiting
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: face_tick
+    type: int
+    restore_value: false
+    initial_value: "0"
+  - id: face_frame
+    type: int
+    restore_value: false
+    initial_value: "0"
+
+image:
+  - platform: file
+    file: ${error_illustration_file}
+    id: casita_error
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: ${idle_illustration_file}
+    id: casita_idle
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: ${listening_illustration_file}
+    id: casita_listening
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: ${thinking_illustration_file}
+    id: casita_thinking
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: ${replying_illustration_file}
+    id: casita_replying
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: ${timer_finished_illustration_file}
+    id: casita_timer_finished
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: ${loading_illustration_file}
+    id: casita_initializing
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/error_box_illustrations/error-no-wifi.png
+    id: error_no_wifi
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  - platform: file
+    file: https://github.com/esphome/wake-word-voice-assistants/raw/a159d9aae35a4d0123aa0bc1d2ceaa5357c6cbad/error_box_illustrations/error-no-ha.png
+    id: error_no_ha
+    resize: 320x240
+    type: RGB
+    transparency: alpha_channel
+  # C-138: the daemon's face, a picture a phase and frame, drawn by the companion (its address is set at run time)
+  - <<: &face
+      platform: online_image
+      url: http://companion.local:4730/art/face/idle-0.png
+      format: PNG
+      type: RGB565
+      buffer_size: 16384
+      on_download_finished:
+        - lambda: id(face_waiting) = false;
+      on_error:
+        - lambda: id(face_waiting) = false;
+    id: face_idle_0
+    placeholder: casita_idle
+  - { <<: *face, id: face_idle_1, placeholder: casita_idle }
+  - { <<: *face, id: face_listening_0, placeholder: casita_listening }
+  - { <<: *face, id: face_listening_1, placeholder: casita_listening }
+  - { <<: *face, id: face_thinking_0, placeholder: casita_thinking }
+  - { <<: *face, id: face_thinking_1, placeholder: casita_thinking }
+  - { <<: *face, id: face_replying_0, placeholder: casita_replying }
+  - { <<: *face, id: face_replying_1, placeholder: casita_replying }
+  - { <<: *face, id: face_error_0, placeholder: casita_error }
+  - { <<: *face, id: face_error_1, placeholder: casita_error }
+  - { <<: *face, id: face_muted_0, placeholder: casita_idle }
+  - { <<: *face, id: face_muted_1, placeholder: casita_idle }
+  - { <<: *face, id: face_timer_0, placeholder: casita_timer_finished }
+  - { <<: *face, id: face_timer_1, placeholder: casita_timer_finished }
+
+font:
+  - file:
+      type: gfonts
+      family: ${font_family}
+      weight: 300
+    id: font_said
+    size: 15
+    glyphsets:
+      - ${font_glyphsets}
+  - file:
+      type: gfonts
+      family: ${font_family}
+      weight: 700
+    id: font_name
+    size: 16
+    glyphsets:
+      - ${font_glyphsets}
+  - file:
+      type: gfonts
+      family: ${font_family}
+      weight: 300
+    id: font_timer
+    size: 30
+    glyphsets:
+      - ${font_glyphsets}
+
+text_sensor:
+  - id: text_request
+    platform: template
+  - id: text_response
+    platform: template
+  # C-138: which daemon is in the box, for Home Assistant
+  - id: daemon_name
+    platform: template
+    name: Daemon
+    icon: "mdi:ghost"
+
+color:
+  - id: loading_color
+    hex: "000000"
+  - id: active_timer_color
+    hex: "26ed3a"
+  - id: paused_timer_color
+    hex: "3b89e3"
+
+spi:
+  - id: spi_bus
+    clk_pin: 7
+    mosi_pin: 6
+
+display:
+  - platform: mipi_spi
+    id: s3_box_lcd
+    model: S3BOX
+    invert_colors: false
+    data_rate: 40MHz
+    cs_pin: 5
+    dc_pin: 4
+    reset_pin:
+      number: 48
+      inverted: true
+    update_interval: never
+    pages:
+      # C-138: every voice phase -- the daemon in its den in that phase's picture, the frame the interval chose; its name
+      # at the top left; what was asked (thinking) or answered (replying) on the floor, two lines
+      - id: face_page
+        lambda: |-
+          int p = id(voice_assistant_phase);
+          int i = p == ${voice_assist_listening_phase_id} ? 1 : p == ${voice_assist_thinking_phase_id} ? 2
+                : p == ${voice_assist_replying_phase_id} ? 3 : p == ${voice_assist_error_phase_id} ? 4
+                : p == ${voice_assist_muted_phase_id} ? 5 : p == ${voice_assist_timer_finished_phase_id} ? 6 : 0;
+          image::Image *faces[7][2] = {
+            { id(face_idle_0), id(face_idle_1) }, { id(face_listening_0), id(face_listening_1) },
+            { id(face_thinking_0), id(face_thinking_1) }, { id(face_replying_0), id(face_replying_1) },
+            { id(face_error_0), id(face_error_1) }, { id(face_muted_0), id(face_muted_1) }, { id(face_timer_0), id(face_timer_1) } };
+          // The casita stands on white while listening, thinking and replying, as ESPHome's own; the den fills the screen
+          it.fill(!id(face_has) && i >= 1 && i <= 3 ? Color::WHITE : Color::BLACK);
+          it.image(0, 0, faces[i][id(face_frame) & 1]);
+          if (id(face_has) && !id(face_name).empty()) {
+            it.print(11, 11, id(font_name), Color(0, 0, 0), id(face_name).c_str());
+            it.print(10, 10, id(font_name), Color(255, 255, 255), id(face_name).c_str());
+          }
+          const std::string said = i == 2 ? id(text_request).state : i == 3 ? id(text_response).state : "";
+          if (!said.empty()) {
+            // Two lines of about forty letters, broken at a space; the rest, when there is more, ends "..."
+            const size_t W = 40;
+            std::string a = said, b;
+            if (a.size() > W) {
+              size_t cut = a.rfind(' ', W);
+              if (cut == std::string::npos || cut < W / 2) cut = W;
+              b = a.substr(cut);
+              a = a.substr(0, cut);
+              while (!b.empty() && b[0] == ' ') b.erase(0, 1);
+              if (b.size() > W) b = b.substr(0, W - 3) + "...";
+            }
+            Color ink = id(face_has) ? Color(255, 255, 255) : Color(0, 0, 0), shade = id(face_has) ? Color(0, 0, 0) : Color(255, 255, 255);
+            it.print(161, 203, id(font_said), shade, TextAlign::TOP_CENTER, a.c_str());
+            it.print(160, 202, id(font_said), ink, TextAlign::TOP_CENTER, a.c_str());
+            if (!b.empty()) {
+              it.print(161, 221, id(font_said), shade, TextAlign::TOP_CENTER, b.c_str());
+              it.print(160, 220, id(font_said), ink, TextAlign::TOP_CENTER, b.c_str());
+            }
+          }
+          if (i == 0 || i == 5) { id(draw_timer_timeline).execute(); id(draw_active_timer_widget).execute(); }
+          else if (i <= 3) id(draw_timer_timeline).execute();
+      - id: no_ha_page
+        lambda: |-
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_ha), ImageAlign::CENTER);
+      - id: no_wifi_page
+        lambda: |-
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(error_no_wifi), ImageAlign::CENTER);
+      - id: initializing_page
+        lambda: |-
+          it.fill(id(loading_color));
+          it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_initializing), ImageAlign::CENTER);

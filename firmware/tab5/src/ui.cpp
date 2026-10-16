@@ -4,6 +4,7 @@
 #include <M5Unified.h>
 #include <lvgl.h>
 #include <map>
+#include <vector>
 #include <esp_heap_caps.h>
 #include "ui.h"
 #include "net.h"
@@ -18,13 +19,17 @@ static lv_color_t PAPER = lv_color_hex(0xF3F1EA), INK = lv_color_hex(0x1D232B), 
 static lv_color_t DAY = lv_color_hex(0x315A62);
 static uint32_t dayHex = 0x315A62;
 
-static lv_obj_t *tabs, *pages[8], *statusLeft, *statusRight, *overlay = nullptr;
-enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_PROFILE, P_SCHOOL, P_SETTINGS };   // C-131 PROFILE, C-137 SCHOOL
-static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "PROFILE", "SCHOOL", "SETTINGS" };
-static uint32_t drawnAt[8] = { 0 };                  // 0: draw the page again
+// The pages, in the tabs' order; P_COUNT sizes everything that has one entry a page (a new page adds its name, its NEEDS
+// and its DRAW below, and the static_asserts say so if one is missed)
+enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_HOME, P_PROFILE, P_SCHOOL, P_SETTINGS, P_COUNT };   // C-131 PROFILE, C-137 SCHOOL, C-139 HOME
+static lv_obj_t *tabs, *pages[P_COUNT], *statusLeft, *statusRight, *overlay = nullptr;
+static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "HOME", "PROFILE", "SCHOOL", "SETTINGS" };
+static_assert(sizeof TAB_NAMES / sizeof *TAB_NAMES == P_COUNT, "a name for every page");
+static uint32_t drawnAt[P_COUNT] = { 0 };            // 0: draw the page again
 // C-98: what each page shows, so a change to anything else leaves it alone (a rebuilt page flickered)
-static const uint32_t NEEDS[8] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | K_MESSAGE, K_INDEX | K_ART, K_DEVICES,
-                                   K_PROFILE | K_ART, K_PROFILE, K_NETS | K_MESSAGE | K_TODAY };
+static const uint32_t NEEDS[] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | K_MESSAGE, K_INDEX | K_ART, K_DEVICES, K_HOME,
+                                  K_PROFILE | K_ART, K_PROFILE, K_NETS | K_MESSAGE | K_TODAY };
+static_assert(sizeof NEEDS / sizeof *NEEDS == P_COUNT, "what every page needs");
 static int indexPage = 0, goalAt = 0;
 
 static lv_obj_t *label(lv_obj_t *parent, const String &text, const lv_font_t *font = &lv_font_montserrat_20,
@@ -522,6 +527,131 @@ static void drawDevices(lv_obj_t *p) {
   }
 }
 
+// ---- HOME (C-139): Home Assistant, through the companion (server/src/home.ts) -- the home's name, each room a heading as
+// DEVICES heads each maker, and each thing a card: its name, how it is, and what can be done to it (the server says which;
+// a lock is shown, never opened). A tap answers at once (C-121): the kept view takes what it will most likely do and is
+// drawn again, the thing marked "..." until the companion answers -- then it is sent NOW, never kept for later
+// (netHomeAct, not netSend: a kettle started hours late is wrong). One that does not go is put back and says so on its
+// card. Every word here is DRAFT.
+struct HomeTap { String id, action; };
+static std::vector<HomeTap> homeTaps;              // what each button on the page does, by its place here
+static const int HOME_MOST = 96;                   // things drawn at most (a few objects each); the site shows the rest
+
+static void foresee(JsonObject th, const String &action) {
+  String kind = th["kind"] | "", state = th["state"] | "";
+  if (action == "toggle" || action == "on" || action == "off") {
+    bool now = action == "toggle" ? !(th["on"] | false) : action == "on";
+    th["on"] = now; th["state"] = now ? "on" : "off";
+    if (!now && kind == "light") th["detail"] = nullptr;          // its brightness goes with it
+  } else if (action == "open" || action == "close") { th["state"] = action == "open" ? "opening" : "closing"; th["on"] = action == "open"; }
+  else if (action == "play_pause") { bool playing = state == "playing"; th["state"] = playing ? "paused" : "playing"; th["on"] = !playing; }
+}
+
+static void tapHome(lv_event_t *e) {
+  int i = (int)(long)lv_event_get_user_data(e);
+  if (i < 0 || i >= (int)homeTaps.size()) return;
+  HomeTap t = homeTaps[i];
+  String before;
+  JsonDocument h = newDoc();
+  if (kept("home", h)) {
+    for (JsonObject room : h["rooms"].as<JsonArray>())
+      for (JsonObject th : room["things"].as<JsonArray>()) {
+        if (t.id != (const char *)(th["id"] | "")) continue;
+        th.remove("busy"); th.remove("failed"); th.remove("said");
+        serializeJson(th, before);                   // put back if it does not go
+        foresee(th, t.action);
+        th["busy"] = true;
+      }
+    String json; serializeJson(h, json);
+    keep("home", json);
+  }
+  drawnAt[P_HOME] = 0;
+  netHomeAct(t.id, t.action, before);
+}
+
+static void homeButton(lv_obj_t *parent, const String &text, const String &id, const char *action, bool filled, int width = -1) {
+  homeTaps.push_back({ id, action });
+  lv_obj_t *b = button(parent, text, tapHome, (void *)(long)(homeTaps.size() - 1), filled);
+  if (width > 0) lv_obj_set_width(b, width);
+}
+
+static void drawThing(lv_obj_t *p, JsonObject th) {
+  String id = th["id"] | "", kind = th["kind"] | "", state = th["state"] | "";
+  bool on = th["on"] | false;
+  auto can = [&](const char *a) { for (JsonVariant c : th["can"].as<JsonArray>()) if (c.as<String>() == a) return true; return false; };
+  lv_obj_t *c = card(p);
+  lv_obj_set_flex_flow(c, LV_FLEX_FLOW_ROW);
+  lv_obj_set_style_pad_column(c, 16, 0);
+  lv_obj_set_flex_align(c, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  lv_obj_t *words = column(c, LV_SIZE_CONTENT);
+  lv_obj_set_flex_grow(words, 1);
+  lv_obj_set_style_pad_row(words, 4, 0);
+  label(words, th["name"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+  // how it is: its state where no button already says it, and its detail (80%, 21 C to 22 C, what is playing)
+  bool says = state == "unavailable" || state == "unknown" || kind == "cover" || kind == "media_player" || kind == "climate" || kind == "lock";
+  String line = says ? state : String(""), detail = th["detail"] | "";
+  if (detail.length()) line += (line.length() ? "  -  " : "") + detail;
+  if (th["busy"] | false) line += line.length() ? "   ..." : "...";
+  if (line.length()) label(words, line, &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  if (th["failed"].is<const char *>()) label(words, th["failed"].as<const char *>(), &lv_font_montserrat_20, DAY, LV_PCT(100));
+  else if (th["said"].is<const char *>()) label(words, th["said"].as<const char *>(), &lv_font_montserrat_20, QUIET);
+  lv_obj_t *keys = row(c);
+  lv_obj_set_width(keys, LV_SIZE_CONTENT);
+  lv_obj_set_flex_flow(keys, LV_FLEX_FLOW_ROW);
+  if (can("toggle")) homeButton(keys, on ? "ON" : "OFF", id, "toggle", on, 120);
+  if (can("open")) homeButton(keys, "OPEN", id, "open", state == "open" || state == "opening");
+  if (can("close")) homeButton(keys, "CLOSE", id, "close", state == "closed" || state == "closing");
+  if (can("stop")) homeButton(keys, "STOP", id, "stop", false);
+  if (can("run")) homeButton(keys, "RUN", id, "run", kind == "script" && on);
+  if (can("play_pause")) homeButton(keys, state == "playing" ? LV_SYMBOL_PAUSE : LV_SYMBOL_PLAY, id, "play_pause", state == "playing");
+  if (can("next")) homeButton(keys, LV_SYMBOL_NEXT, id, "next", false);
+  if (can("cooler")) homeButton(keys, LV_SYMBOL_MINUS, id, "cooler", false);
+  if (can("warmer")) homeButton(keys, LV_SYMBOL_PLUS, id, "warmer", false);
+}
+
+static void sentHomeAsk(const String &text) { if (text.length()) { netHomeAsk(text); drawnAt[P_HOME] = 0; } }
+static void tapHomeAsk(lv_event_t *) { askText("Ask the home -- Home Assistant's assistant answers", "", false, false, sentHomeAsk); }
+
+static void drawHome(lv_obj_t *p) {
+  homeTaps.clear();
+  JsonDocument h = newDoc();
+  if (!kept("home", h)) {
+    label(p, net.paired ? "HOME is Home Assistant, through the companion. Asking it now..." : "HOME shows here once the Tab5 is paired (SETTINGS).",
+          &lv_font_montserrat_28, QUIET, LV_PCT(100));
+    return;
+  }
+  String name = h["home"] | "";
+  label(p, name.length() ? name : String("HOME"), &lv_font_montserrat_40, DAY, LV_PCT(100));
+  bool ok = h["ok"] | false;
+  JsonArray rooms = h["rooms"].as<JsonArray>();
+  if (!ok) {                                       // not set up, or not answering: what went wrong, the rooms last seen below
+    lv_obj_t *c = card(p);
+    label(c, h["error"] | "Home Assistant did not answer.", &lv_font_montserrat_28, INK, LV_PCT(100));
+    if (rooms.size()) label(c, "Below, as it was last seen.", &lv_font_montserrat_20, QUIET);
+  } else if (!net.home && !net.away)
+    label(p, "KEPT: as it was last seen. A tap goes only when the companion answers.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  String asked, answer;                            // asked in words, and the answer
+  netHomeHeard(asked, answer);
+  if (ok) button(p, "ASK...", tapHomeAsk);
+  if (asked.length()) {
+    lv_obj_t *c = card(p);
+    label(c, "You asked: " + asked, &lv_font_montserrat_20, QUIET, LV_PCT(100));
+    label(c, answer.length() ? answer : String("..."), &lv_font_montserrat_28, INK, LV_PCT(100));
+  }
+  int shown = 0, all = 0;
+  for (JsonObject room : rooms) {
+    JsonArray things = room["things"].as<JsonArray>();
+    all += things.size();
+    if (shown >= HOME_MOST || !things.size()) continue;
+    String head = room["name"] | ""; head.toUpperCase();
+    label(p, head, &lv_font_montserrat_20, QUIET);
+    for (JsonObject th : things) { if (shown >= HOME_MOST) break; drawThing(p, th); shown++; }
+  }
+  if (all > shown) label(p, "And " + String(all - shown) + " more: the site shows the whole home.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  if (ok && !all) label(p, "Home Assistant has nothing HOME shows yet: its lights, switches, fans, covers, scenes, scripts, media, climate and locks.",
+                        &lv_font_montserrat_20, QUIET, LV_PCT(100));
+}
+
 // ---- SETTINGS: Wi-Fi, pairing, what is kept ---------------------------------------------------------------------------
 static String pickedSsid, pairServer;
 static void joinWith(const String &pass) { netJoin(pickedSsid, pass); }
@@ -974,7 +1104,8 @@ static void drawSettings(lv_obj_t *p) {
 
 // ---- the frame: a status bar and the tabs down the side --------------------------------------------------------------
 typedef void (*Draw)(lv_obj_t *);
-static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawProfile, drawSchool, drawSettings };
+static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawHome, drawProfile, drawSchool, drawSettings };
+static_assert(sizeof DRAW / sizeof *DRAW == P_COUNT, "a way to draw every page");
 
 static void takeDayColour() {
   // C-90: the colour every device wears -- the palette the user chose, in this Tab5's own state -- else the site's
@@ -988,7 +1119,7 @@ static void takeDayColour() {
   dayHex = v; DAY = lv_color_hex(v);
   lv_obj_t *bar = lv_tabview_get_tab_bar(tabs);
   lv_obj_set_style_bg_color(bar, DAY, 0);
-  for (int i = 0; i < 8; i++) drawnAt[i] = 0;
+  for (int i = 0; i < P_COUNT; i++) drawnAt[i] = 0;
 }
 
 static void redraw(int i) {
@@ -1007,7 +1138,7 @@ void uiBegin() { buildFrame(); }
 static String barLeft, barRight;                   // C-96: what the status bar says, so it is set only when it changes
 static void buildFrame() {
   barLeft = barRight = "";
-  for (int i = 0; i < 8; i++) drawnAt[i] = 0;
+  for (int i = 0; i < P_COUNT; i++) drawnAt[i] = 0;
   lv_obj_t *scr = lv_screen_active();
   lv_obj_set_style_bg_color(scr, PAPER, 0);
   lv_obj_t *bar = lv_obj_create(scr);
@@ -1031,7 +1162,7 @@ static void buildFrame() {
   lv_obj_set_style_bg_color(tb, DAY, 0);
   lv_obj_set_style_text_color(tb, lv_color_white(), 0);
   lv_obj_set_style_text_font(tb, portrait ? &lv_font_montserrat_16 : &lv_font_montserrat_20, 0);
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < P_COUNT; i++) {
     pages[i] = lv_tabview_add_tab(tabs, TAB_NAMES[i]);
     lv_obj_set_style_pad_all(pages[i], 24, 0);
     lv_obj_set_style_pad_row(pages[i], 14, 0);
@@ -1054,7 +1185,7 @@ void uiLoop() {
   if (seenChange != keptChanged) {
     seenChange = keptChanged;
     uint32_t what = keptMask.exchange(0);
-    for (int i = 0; i < 8; i++) if (what & NEEDS[i]) drawnAt[i] = 0;
+    for (int i = 0; i < P_COUNT; i++) if (what & NEEDS[i]) drawnAt[i] = 0;
     takeDayColour();
     JsonDocument t = newDoc();
     todayLine = kept("today", t) ? "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "") : "";
@@ -1062,6 +1193,7 @@ void uiLoop() {
     if (net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal) { artWas = net.artTotal; resetArt(); }
   }
   int at = lv_tabview_get_tab_active(tabs);
+  netHomeWatch(at == P_HOME);                        // C-139: HOME is downloaded while it is the page on the screen
   if (!overlay && !drawnAt[at]) redraw(at);
   if (listenLabel) {                                 // C-99: LISTEN, MAKING..., HUSH, and back when the voice ends
     if (netVoice == V_SPEAKING && !soundVoicePlaying()) netHush();
@@ -1081,5 +1213,6 @@ void uiLoop() {
     if (bat >= 0) right += "   " + String(bat) + "%";
     if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); }
     if (at == P_SETTINGS && !overlay) { static String said; if (said != net.message) { said = net.message; drawnAt[P_SETTINGS] = 0; } }
+    if (at == P_HOME && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_HOME] = 0; } }   // C-139: KEPT, or not
   }
 }

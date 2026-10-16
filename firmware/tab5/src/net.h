@@ -18,7 +18,7 @@ extern NetStatus net;
 extern std::atomic<uint32_t> keptChanged;   // bumped whenever a kept answer changes: the screens redraw from it
 // C-98: which answers changed since the screen last looked, so a page is drawn again only when what it shows did
 enum : uint32_t { K_TODAY = 1, K_GOALS = 2, K_PARTY = 4, K_PROFILE = 8, K_DEVICES = 16, K_STATE = 32, K_INDEX = 64,
-                  K_ART = 128, K_NETS = 256, K_MESSAGE = 512, K_VOICE = 1024 };
+                  K_ART = 128, K_NETS = 256, K_MESSAGE = 512, K_VOICE = 1024, K_HOME = 2048 };
 extern std::atomic<uint32_t> keptMask;
 
 void netBegin();
@@ -39,3 +39,11 @@ enum Voice { V_QUIET, V_MAKING, V_SPEAKING };
 extern std::atomic<int> netVoice;    // what the voice is doing
 void netSpeak(int species);          // make it and play it; a second call, or netHush(), stops it
 void netHush();
+// C-139: HOME -- Home Assistant through the companion (server/src/home.ts; its address and token are set on the computer it
+// runs on, never here). Kept as "home", downloaded while the page is open and every 30 s while it stays open. A tap is sent
+// NOW and never kept for later (an old "turn on the kettle" sent hours afterwards is wrong): it goes, or the page says it
+// did not. `before` is the thing as it was shown, put back if the tap does not go.
+void netHomeWatch(bool open);        // every pass of the screen: whether HOME is the page on it
+void netHomeAct(const String &id, const String &action, const String &before);
+void netHomeAsk(const String &text); // Home Assistant's own conversation agent answers
+void netHomeHeard(String &asked, String &answer);   // the last thing asked, and its answer ("" while it comes)

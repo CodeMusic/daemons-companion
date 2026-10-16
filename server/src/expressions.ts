@@ -26,7 +26,8 @@ export type Expression = { name: string; shade: Shade; pose: Pose; mark: Mark | 
 export type Patch = { x: number; y: number; w: number; h: number; rgb: [number, number, number] };
 export type Drawn = Expression & { patch: Patch[] };
 // A daemon's eyes, checked by a person (data/faces.json; tools/faces.ts suggests): boxes, and the colours around and of them
-export type Face = { eyes: [number, number, number, number][]; fill: number; line: number; fillRgb?: number[]; lineRgb?: number[] };
+export type Face = { eyes: [number, number, number, number][]; fill: number; line: number; fillRgb?: number[]; lineRgb?: number[];
+                     mouth?: [number, number, number, number] };   // C-138: where it speaks from, when a person has found it
 const FACES = facesJson as unknown as Record<string, Face>;
 export const faceOf = (art: string | undefined | null): Face | null => (art ? FACES[art] ?? null : null);
 

@@ -4,8 +4,8 @@
 #include <stdint.h>
 struct DeviceShape { int16_t x, y, w, h, r; uint32_t c; };
 struct DeviceLook { const char *kind, *maker, *name; const DeviceShape *shapes; uint8_t n; };
-static const char *const DEVICE_MAKERS[] = { "LilyGO", "M5Stack", "This phone" };
-static const int DEVICE_MAKER_N = 3;
+static const char *const DEVICE_MAKERS[] = { "LilyGO", "M5Stack", "Espressif", "This phone" };
+static const int DEVICE_MAKER_N = 4;
 static const DeviceShape DEVICE_SHAPES_0[] = { {150, 0, 20, 30, 0, 0x9AA0A8}, {90, 20, 140, 290, 70, 0x1F2125}, {110, 50, 100, 110, 10, 0x22313F}, {120, 60, 80, 90, 5, 0x46A8E0}, {110, 185, 100, 100, 50, 0xFF6AA8}, {118, 193, 84, 84, 42, 0x2B2E33}, {135, 210, 50, 50, 25, 0x17181B}, {230, 80, 10, 40, 0, 0x8B8F97} };
 static const DeviceShape DEVICE_SHAPES_1[] = { {10, 100, 300, 120, 60, 0x2A2C31}, {40, 130, 160, 60, 10, 0x22313F}, {50, 140, 140, 40, 5, 0x46A8E0}, {205, 115, 90, 90, 45, 0xFF6AA8}, {213, 123, 74, 74, 37, 0x2B2E33}, {227, 137, 46, 46, 23, 0x17181B} };
 static const DeviceShape DEVICE_SHAPES_2[] = { {30, 30, 10, 80, 0, 0xB8BDC4}, {25, 20, 20, 20, 10, 0xB8BDC4}, {10, 100, 300, 120, 60, 0x2A2C31}, {40, 130, 160, 60, 10, 0x22313F}, {50, 140, 140, 40, 5, 0x46A8E0}, {205, 115, 90, 90, 45, 0xFF6AA8}, {213, 123, 74, 74, 37, 0x2B2E33}, {227, 137, 46, 46, 23, 0x17181B} };
@@ -21,7 +21,8 @@ static const DeviceShape DEVICE_SHAPES_11[] = { {20, 20, 280, 280, 40, 0xD63A2F}
 static const DeviceShape DEVICE_SHAPES_12[] = { {20, 20, 280, 280, 40, 0xE4E4E2}, {26, 80, 12, 160, 6, 0xFF9A3C}, {282, 80, 12, 160, 6, 0xFF9A3C}, {40, 40, 240, 240, 30, 0x3A3C42}, {60, 60, 200, 150, 10, 0x22313F}, {70, 70, 180, 130, 5, 0x46A8E0}, {75, 230, 40, 20, 10, 0x8B8F97}, {140, 230, 40, 20, 10, 0x8B8F97}, {205, 230, 40, 20, 10, 0x8B8F97} };
 static const DeviceShape DEVICE_SHAPES_13[] = { {10, 10, 300, 300, 150, 0xE6E6E4}, {35, 35, 250, 250, 125, 0xF08A24}, {65, 65, 190, 190, 95, 0x22313F}, {75, 75, 170, 170, 85, 0x46A8E0} };
 static const DeviceShape DEVICE_SHAPES_14[] = { {0, 50, 320, 220, 30, 0x2A2C31}, {20, 70, 280, 180, 10, 0x22313F}, {26, 76, 268, 168, 5, 0x46A8E0}, {155, 55, 10, 10, 5, 0x0C0C0E} };
-static const DeviceShape DEVICE_SHAPES_15[] = { {90, 10, 140, 300, 40, 0x1B1C20}, {100, 25, 120, 270, 30, 0x46A8E0}, {120, 60, 80, 80, 20, 0xFFFFFF}, {135, 75, 50, 50, 10, 0x46A8E0}, {140, 35, 40, 10, 5, 0x1B1C20} };
+static const DeviceShape DEVICE_SHAPES_15[] = { {10, 200, 300, 110, 20, 0x2EC4D8}, {30, 20, 260, 240, 40, 0xEFEFED}, {55, 45, 210, 155, 10, 0x22313F}, {65, 55, 190, 135, 5, 0x46A8E0}, {149, 217, 22, 22, 11, 0xE8463A}, {154, 222, 12, 12, 6, 0xEFEFED}, {86, 29, 7, 7, 4, 0x55585E}, {226, 29, 7, 7, 4, 0x55585E} };
+static const DeviceShape DEVICE_SHAPES_16[] = { {90, 10, 140, 300, 40, 0x1B1C20}, {100, 25, 120, 270, 30, 0x46A8E0}, {120, 60, 80, 80, 20, 0xFFFFFF}, {135, 75, 50, 50, 10, 0x46A8E0}, {140, 35, 40, 10, 5, 0x1B1C20} };
 static const DeviceLook DEVICE_LOOKS[] = {
   { "t-embed-cc1101", "LilyGO", "T-Embed CC1101", DEVICE_SHAPES_0, 8 },
   { "t-embed", "LilyGO", "T-Embed", DEVICE_SHAPES_1, 6 },
@@ -38,8 +39,9 @@ static const DeviceLook DEVICE_LOOKS[] = {
   { "m5go", "M5Stack", "M5GO", DEVICE_SHAPES_12, 9 },
   { "m5-dial", "M5Stack", "Dial", DEVICE_SHAPES_13, 4 },
   { "m5-tab5", "M5Stack", "Tab5", DEVICE_SHAPES_14, 4 },
-  { "iphone-widget", "This phone", "This phone's widget", DEVICE_SHAPES_15, 5 },
+  { "esp32-s3-box-3", "Espressif", "ESP32-S3-BOX-3", DEVICE_SHAPES_15, 8 },
+  { "iphone-widget", "This phone", "This phone's widget", DEVICE_SHAPES_16, 5 },
 };
-static const int DEVICE_LOOK_N = 16;
+static const int DEVICE_LOOK_N = 17;
 static const char *const DEVICE_ALIASES[][2] = { { "t-deck-plus", "t-deck" } };
 static const int DEVICE_ALIAS_N = 1;

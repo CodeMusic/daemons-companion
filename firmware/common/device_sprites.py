@@ -20,7 +20,7 @@ JSON_OUT = os.path.join(ROOT, "server", "data", "devices.json")
 H_OUT = os.path.join(HERE, "device_sprites.h")
 
 # The makers, in the order the lists show them.
-MAKERS = ["LilyGO", "M5Stack", "This phone"]
+MAKERS = ["LilyGO", "M5Stack", "Espressif", "This phone"]
 
 # Colours shared between devices
 SCREEN = "#46a8e0"       # a lit screen
@@ -147,6 +147,15 @@ DEVICES = {
         r(0, 5, 32, 22, "#2a2c31", 3),
         r(2, 7, 28, 18, GLASS, 1), r(2.6, 7.6, 26.8, 16.8, SCREEN, 0.5),
         circle(16, 6, 1, "#0c0c0e"),
+    ]),
+    # ---- Espressif ---------------------------------------------------------------------------------------------------
+    # C-138: the ESP32-S3-BOX-3 -- a white face, the screen nearly all of it, its red circle below, on its cyan dock
+    "esp32-s3-box-3": ("Espressif", "ESP32-S3-BOX-3", [
+        r(1, 20, 30, 11, "#2ec4d8", 2),
+        r(3, 2, 26, 24, "#efefed", 4),
+        r(5.5, 4.5, 21, 15.5, GLASS, 1), r(6.5, 5.5, 19, 13.5, SCREEN, 0.5),
+        circle(16, 22.8, 2.2, "#e8463a"), circle(16, 22.8, 1.2, "#efefed"),
+        circle(9, 3.3, 0.7, "#55585e"), circle(23, 3.3, 0.7, "#55585e"),
     ]),
     # ---- this phone ---------------------------------------------------------------------------------------------------
     # the phone's widget: a phone, and the widget on its home screen

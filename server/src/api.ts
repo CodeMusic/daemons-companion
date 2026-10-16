@@ -528,8 +528,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && facePic) {
         const phase = facePic[1] as Phase, frame = Number(facePic[2]);
         if (!PHASES.includes(phase) || frame >= FRAMES) return send(res, 404, { error: `a face is ${PHASES.join(", ")}, frames 0..${FRAMES - 1}` });
-        res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache" });
-        return res.end(facePng(ecfg, boxFace(ecfg, store, deviceId), phase, frame));
+        // Its length, said: ESPHome's online_image (2026.9) never finishes a chunked picture -- seen on the BOX-3, each
+        // download waited out its timeout
+        const png = facePng(ecfg, boxFace(ecfg, store, deviceId), phase, frame);
+        res.writeHead(200, { "content-type": "image/png", "content-length": png.length, "cache-control": "no-cache" });
+        return res.end(png);
       }
       // ---- C-32: the link. The device's side: its commands, its results, its routines. ----
       if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via) }); }

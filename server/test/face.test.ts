@@ -101,6 +101,7 @@ describe("the BOX-3 through the device's own door (C-138)", () => {
   it("serves each phase's picture, and nothing else", async () => {
     const r = await fetch(`${base}/art/face/thinking-1.png?device=${BOX}`);
     expect(r.headers.get("content-type")).toBe("image/png");
+    expect(Number(r.headers.get("content-length"))).toBeGreaterThan(100);    // never chunked: the BOX-3 needs its length
     rgbOf(Buffer.from(await r.arrayBuffer()));
     expect((await fetch(`${base}/art/face/dancing-0.png?device=${BOX}`)).status).toBe(404);
     expect((await fetch(`${base}/art/face/idle-2.png?device=${BOX}`)).status).toBe(404);

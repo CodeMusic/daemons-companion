@@ -11,3 +11,4 @@ struct Battery {
 };
 void batteryWire();              // start the shared I2C bus once (the NFC uses it too)
 bool batteryRead(Battery &b);    // false when the gauge did not answer
+String chargerDump();            // PMU down the cable: the T-Display-S3 Pro's SY6970, REG00-REG14 raw ("PMU none" elsewhere)

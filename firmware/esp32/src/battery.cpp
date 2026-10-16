@@ -69,6 +69,14 @@ static bool sy6970Read(Battery &b) {
       charger.setPrechargeCurr(64);
       charger.setChargerConstantCurr(192);
       charger.enableMeasure();
+      // A charge ends when its current falls under ITERM (REG05 bits 3:0: 64 mA, and 64 a step) -- left at 256 mA, above
+      // the 192 mA it charges at (seen with PMU, 2026-10-15), so a charge could end before the cell was full: 64 mA.
+      // XPowersLib has no setter for it.
+      Wire.beginTransmission(SY6970_SLAVE_ADDRESS); Wire.write(0x05);
+      if (Wire.endTransmission(false) == 0 && Wire.requestFrom((uint8_t)SY6970_SLAVE_ADDRESS, (uint8_t)1) == 1) {
+        uint8_t r5 = Wire.read();
+        Wire.beginTransmission(SY6970_SLAVE_ADDRESS); Wire.write(0x05); Wire.write(r5 & 0xF0); Wire.endTransmission();
+      }
     }
   }
   if (!up) { b.present = false; return false; }
@@ -80,8 +88,20 @@ static bool sy6970Read(Battery &b) {
   b.mv = mv; b.percent = b.full ? 100 : percentFromMv(mv);
   return b.present;
 }
+// The charger's own account, raw -- REG00 to REG14, past XPowersLib (the user, 2026-10-15: the Pro will not start off
+// USB, and on USB it read 72%, not charging). PMU down the cable; docs/HARDWARE.md has what each bit means.
+String chargerDump() {
+  String out = "PMU sy6970";
+  for (uint8_t r = 0; r <= 0x14; r++) {
+    Wire.beginTransmission(0x6A); Wire.write(r);
+    if (Wire.endTransmission(false) != 0 || Wire.requestFrom((uint8_t)0x6A, (uint8_t)1) != 1) { out += " --"; continue; }
+    char h[4]; snprintf(h, sizeof h, " %02X", Wire.read()); out += h;
+  }
+  return out;
+}
 #else
 static bool sy6970Read(Battery &b) { b.present = false; return false; }
+String chargerDump() { return "PMU none"; }
 #endif
 
 bool batteryRead(Battery &b) {

@@ -513,6 +513,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line.startsWith("RATETEST ") && !fromPhone) { soundDacRate(line.substring(9).toInt()); reply("RATETEST " + String(soundRateTest()) + " ms for 2000 at " + line.substring(9)); }
   else if (line == "RATETEST" && !fromPhone) reply("RATETEST " + String(soundRateTest()) + " ms for 2000");   // C-95
   else if (line == "OUTBOX" && !fromPhone) reply(outboxStatus());   // C-121: the last send, for a check (bench.py)
+  else if (line == "PMU" && !fromPhone) reply(chargerDump());       // the Pro's charger, raw (battery.cpp)
   else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
     reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
           " want " + st.daemon.artKey + " | last " + artTold);

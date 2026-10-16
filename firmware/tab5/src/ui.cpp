@@ -592,39 +592,98 @@ static void showWords(const String &head, const String &body, const String &foot
   label(o, body, &lv_font_montserrat_20, INK, LV_PCT(100));
   if (foot.length()) label(o, foot, &lv_font_montserrat_20, QUIET, LV_PCT(100));
 }
+// C-140 (the user, 2026-10-16): a MARK or a ROOT opened reads as a small page -- its own heading (a MARK's in ink beside its
+// badge, a ROOT's in its own colour), the lesson's first line leading and the rest as points, then a small heading over
+// each part of the pair as it is earned: the leader afterwards, the union PLUGIN, the insight.
+static lv_obj_t *subHead(lv_obj_t *o, const String &t) { return label(o, t, &lv_font_montserrat_16, QUIET); }
+static void points(lv_obj_t *o, const std::vector<String> &lines) {
+  for (const String &l : lines) label(o, "-   " + l, &lv_font_montserrat_20, INK, LV_PCT(100));
+}
+static std::vector<String> paragraphs(JsonArray parts) {   // a lesson's scripts, re-flowed, a paragraph each
+  std::vector<String> out;
+  for (JsonVariant part : parts) {
+    String t = reflowed(part.as<String>()) + "\n\n";
+    int a = 0, b;
+    while ((b = t.indexOf("\n\n", a)) >= 0) { String p = t.substring(a, b); p.trim(); if (p.length()) out.push_back(p); a = b + 2; }
+  }
+  return out;
+}
+static int rootOfMark(JsonDocument &m, int n) {           // the understanding a MARK pairs with (wisdom.root_flag)
+  int f = m["marks"][n]["wisdom"]["root_flag"] | -1, k = 0;
+  for (JsonObject u : m["understandings"].as<JsonArray>()) { if ((int)(u["flag"] | -2) == f) return k; k++; }
+  return -1;
+}
+static void quote(lv_obj_t *o, const String &t) {
+  lv_obj_t *q = label(o, t, &lv_font_montserrat_20, DAY, LV_PCT(100));
+  lv_obj_set_style_border_side(q, LV_BORDER_SIDE_LEFT, 0); lv_obj_set_style_border_width(q, 4, 0);
+  lv_obj_set_style_border_color(q, DAY, 0); lv_obj_set_style_pad_left(q, 12, 0);
+}
 static void tapMark(lv_event_t *e) {
   int i = (int)(long)lv_event_get_user_data(e);
   JsonDocument pr = newDoc(), m = newDoc();
   if (!kept("profile", pr) || !kept("marks", m)) return;
+  lv_obj_t *o = openOverlay();
+  button(o, "BACK", closeOverlay, nullptr, false);
+  if (!(pr["marks"][i] | false)) { label(o, "MARK " + String(i + 1) + "  --  not yet earned.", &lv_font_montserrat_28, QUIET); return; }
   JsonObject mk = m["marks"][i];
-  if (!(pr["marks"][i] | false)) { showWords("MARK " + String(i + 1), "Not yet earned.", ""); return; }
-  String body, title = mk["title"] | "";
-  for (JsonVariant part : mk["lesson"].as<JsonArray>()) body += (body.length() ? "\n\n" : "") + reflowed(part.as<String>());
-  if (body.startsWith(title + ".")) body = body.substring(title.length() + 1);   // its first line is its name
-  body.trim();
-  title.toUpperCase();
-  // C-133: its leader afterwards -- where to come back until its understanding is held; then the two together, the union
-  // PLUGIN once given, the insight once arrived
-  JsonObject w = mk["wisdom"], got = pr["wisdom"][i];
-  if (!w.isNull() && !got.isNull()) {
-    body += "\n\n" + String((const char *)(w["leader"] | "")) + ", AFTERWARDS:\n";
-    for (JsonVariant l : ((got["root"] | false) ? w["with"] : w["without"]).as<JsonArray>()) body += l.as<String>() + " ";
-    if (got["given"] | false) {
-      body += "\n\n" + String((const char *)(w["union_plugin"] | "")) + ": " + (const char *)(w["union_routine"] | "") + ". ";
-      for (JsonVariant l : w["explain"].as<JsonArray>()) body += l.as<String>() + " ";
-    }
-    if (got["insight"] | false) body += "\n\nINSIGHT, " + String((const char *)(w["virtue"] | "")) + ": " + (const char *)(w["insight"] | "");
+  String title = mk["title"] | ""; title.toUpperCase();
+  lv_obj_t *head = row(o);
+  picture(head, "mark" + String(i + 1), 512);             // the badge, small
+  label(head, title, &lv_font_montserrat_28, INK);
+  std::vector<String> ps = paragraphs(mk["lesson"].as<JsonArray>());
+  if (ps.size()) {                                         // its own name dropped: the heading says it
+    String first = ps[0], up = first; up.toUpperCase();
+    if (up.startsWith(title + ".")) { first = first.substring(title.length() + 1); first.trim(); }
+    if (first.length()) label(o, first, &lv_font_montserrat_28, INK, LV_PCT(100));
+    points(o, std::vector<String>(ps.begin() + 1, ps.end()));
   }
-  showWords(title, body, "From the BENCHMARK in " + String((const char *)(mk["found"] | "")) + ".");
+  label(o, "From the BENCHMARK in " + String((const char *)(mk["found"] | "")) + ".", &lv_font_montserrat_20, DAY, LV_PCT(100));
+  JsonObject w = mk["wisdom"], got = pr["wisdom"][i];
+  if (w.isNull() || got.isNull()) return;
+  int r = rootOfMark(m, i);
+  String leader = w["leader"] | "";
+  subHead(o, (got["root"] | false) && r >= 0 ? leader + ", WITH " + String((const char *)(m["understandings"][r]["name"] | ""))
+                                             : leader + ", AFTERWARDS");
+  String said;
+  for (JsonVariant l : ((got["root"] | false) ? w["with"] : w["without"]).as<JsonArray>()) said += l.as<String>() + " ";
+  label(o, said, &lv_font_montserrat_20, INK, LV_PCT(100));
+  if (got["given"] | false) {
+    subHead(o, "UNION PLUGIN");
+    label(o, String((const char *)(w["union_plugin"] | "")) + "  -  " + (const char *)(w["union_routine"] | ""), &lv_font_montserrat_20, INK);
+    std::vector<String> ex; for (JsonVariant l : w["explain"].as<JsonArray>()) ex.push_back(l.as<String>());
+    points(o, ex);
+  }
+  if (got["insight"] | false) {
+    subHead(o, "INSIGHT  -  " + String((const char *)(w["virtue"] | "")));
+    quote(o, w["insight"] | "");
+  }
 }
 static void tapRoot(lv_event_t *e) {
   int i = (int)(long)lv_event_get_user_data(e);
   JsonDocument pr = newDoc(), m = newDoc();
   if (!kept("profile", pr) || !kept("marks", m)) return;
+  lv_obj_t *o = openOverlay();
+  button(o, "BACK", closeOverlay, nullptr, false);
+  if (!(pr["roots"][i] | false)) { label(o, "Not yet.", &lv_font_montserrat_28, QUIET); return; }
   JsonObject u = m["understandings"][i];
-  if (!(pr["roots"][i] | false)) { showWords("ROOTS", "Not yet.", ""); return; }
-  showWords(u["name"] | "", u["lesson"].isNull() ? String("Its lesson is still being written.") : String((const char *)u["lesson"]),
-            "Arrived at: " + String((const char *)(u["found"] | "")) + ".");
+  JsonArray rgb = u["rgb"].as<JsonArray>();
+  lv_color_t col = rgb.size() == 3 ? lv_color_make(rgb[0] | 90, rgb[1] | 107, rgb[2] | 140) : DAY;
+  label(o, u["name"] | "", &lv_font_montserrat_40, col);  // in its own colour
+  if (u["lesson"].isNull()) label(o, "Its lesson is still being written.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  else label(o, u["lesson"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+  label(o, "Arrived at: " + String((const char *)(u["found"] | "")) + ".", &lv_font_montserrat_20, DAY, LV_PCT(100));
+  int n = -1;
+  for (int k = 0; k < (int)m["marks"].size(); k++) if (rootOfMark(m, k) == i) n = k;
+  if (n < 0 || !(pr["marks"][n] | false)) return;
+  subHead(o, "PAIRED WITH");
+  lv_obj_t *pm = row(o);
+  picture(pm, "mark" + String(n + 1), 512);
+  String t = m["marks"][n]["title"] | ""; t.toUpperCase();
+  label(pm, t, &lv_font_montserrat_20, INK);
+  if (pr["wisdom"][n]["insight"] | false) {
+    subHead(o, "INSIGHT  -  " + String((const char *)(m["marks"][n]["wisdom"]["virtue"] | "")));
+    quote(o, m["marks"][n]["wisdom"]["insight"] | "");
+  }
 }
 static void tapPage(lv_event_t *e) {
   long v = (long)lv_event_get_user_data(e);

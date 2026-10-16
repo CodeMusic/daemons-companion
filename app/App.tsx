@@ -939,6 +939,151 @@ function RegionMap({ region, visited, open, cell }: { region: RegionsData["regio
   );
 }
 
+// C-128: GAME EVENTS -- the story so far, finer than the PROFILE: the debug page's story-ordered list, each row held or
+// not from the save. A row not yet held is not named (it would tell the story ahead); a row the save cannot answer is "?".
+type Progress = { events: { n: number; name: string; section: string; held: boolean | null }[];
+                  school: { textbook: boolean; floors: boolean[]; diploma: boolean; best: number | null; last: number | null;
+                            attempts: number; grade: string | null; passMark: number } };
+
+function EventsCard() {
+  const [pr, setPr] = useState<Progress | null>(null);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { api<Progress>("/api/progress").then(setPr).catch(() => {}); }, []);
+  if (!pr) return null;
+  const sections = [...new Set(pr.events.map((e) => e.section))];
+  return (
+    <Card>
+      <XStack onPress={() => setOpen((o) => !o)} justifyContent="space-between" alignItems="center" cursor="pointer">
+        <Eyebrow>GAME EVENTS</Eyebrow>
+        <Text fontSize={18} color="$color10">{open ? "−" : "+"}</Text>
+      </XStack>
+      {open ? sections.map((sec) => {
+        const rows = pr.events.filter((e) => e.section === sec);
+        return (
+          <YStack key={sec} marginTop={10} gap={4}>
+            <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10">{sec}</Text>
+            {rows.map((e) => (
+              <XStack key={e.n} gap={8} alignItems="center">
+                <Text fontFamily="$mono" fontSize={14} color={e.held ? "$color9" : "$color8"}>{e.held ? "+" : e.held === null ? "?" : "·"}</Text>
+                <Text fontSize={15} color={e.held ? "$color12" : "$color8"}>{e.held || e.held === null ? e.name : "Still to come."}</Text>
+              </XStack>
+            ))}
+          </YStack>
+        );
+      }) : null}
+    </Card>
+  );
+}
+
+// C-129: WHAT YOU HAVE BEEN TAUGHT -- CALLOW SCHOOL as the save has it: each floor's syllabus and board once stood on (the
+// TEXTBOOK greys the rest), a copy of the DIPLOMA, and the paper to sit again here -- practice, marked here, never the save.
+type SchoolData = { floors: { floor: string; subject: string; syllabus: string; board_intro: string; board: { topic: string; text: string }[] }[];
+                    paper: { section: string; questions: { q: number; title: string; text: string; choices: string[]; answer: number }[] }[];
+                    pass_mark: number; grades: { from: number; letter: string }[] };
+const SCHOOL: SchoolData = require("../server/data/school.json");
+const letterOf = (m: number) => SCHOOL.grades.find((g) => m >= g.from)?.letter ?? "";
+
+function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6} opacity={reached ? 1 : 0.45}>
+      <XStack onPress={() => reached && setOpen((o) => !o)} justifyContent="space-between" alignItems="center" cursor={reached ? "pointer" : "default"}>
+        <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{`${f.floor}  ${f.subject}`}</Text>
+        <Text fontSize={18} color="$color10">{reached ? (open ? "−" : "+") : ""}</Text>
+      </XStack>
+      {!reached ? <Small>Not yet stood on.</Small> : null}
+      {open ? (
+        <YStack gap={8}>
+          {reflow(f.syllabus).map((l, i) => <Small key={`s${i}`}>{l}</Small>)}
+          {f.board.map((b) => (
+            <YStack key={b.topic} backgroundColor="$color2" borderRadius={4} padding={10} gap={4}>
+              <Text fontFamily="$mono" fontSize={13} fontWeight="700" letterSpacing={1} color="$color12">{b.topic}</Text>
+              {reflow(b.text).map((l, i) => <Text key={i} fontSize={15} lineHeight={22} color="$color12">{l}</Text>)}
+            </YStack>
+          ))}
+        </YStack>
+      ) : null}
+    </YStack>
+  );
+}
+
+function PracticePaper() {
+  const all = SCHOOL.paper.flatMap((s) => s.questions.map((q) => ({ ...q, section: s.section })));
+  const [at, setAt] = useState<number | null>(null);
+  const [picks, setPicks] = useState<Record<number, number>>({});
+  const done = at !== null && at >= all.length;
+  if (at === null) return (
+    <Card>
+      <Eyebrow>THE PAPER, TO SIT AGAIN</Eyebrow>
+      <Small>{`Seven sections, ${all.length} questions, ${SCHOOL.pass_mark} to pass. Marked here; your save is never touched.`}</Small>
+      <Action label="Sit the paper" ink="#fbfaf6" onPress={() => { setPicks({}); setAt(0); }} />
+    </Card>
+  );
+  if (done) {
+    const right = all.filter((q, i) => picks[i] === q.answer).length, mark = Math.round((right * 100) / all.length);
+    return (
+      <Card>
+        <Eyebrow>MARKED</Eyebrow>
+        <Text fontSize={28} fontWeight="800" color="$color12">{`${mark}  ${letterOf(mark)}`}</Text>
+        <Small>{mark >= SCHOOL.pass_mark ? "A pass." : "Not a pass, this time."}</Small>
+        {all.map((q, i) => picks[i] === q.answer ? null : (
+          <Small key={i}>{`${q.section}: ${q.text} -- ${q.choices[q.answer]}`}</Small>
+        ))}
+        <Action label="Sit it again" ink="#fbfaf6" onPress={() => { setPicks({}); setAt(0); }} />
+      </Card>
+    );
+  }
+  const q = all[at];
+  return (
+    <Card>
+      <Eyebrow>{`${q.section} · ${at + 1} of ${all.length}`}</Eyebrow>
+      <Text fontSize={17} lineHeight={24} color="$color12">{q.text}</Text>
+      <YStack gap={8} marginTop={6}>
+        {q.choices.map((c, i) => (
+          <Button key={i} justifyContent="flex-start" backgroundColor="$color3" borderWidth={1} borderColor="$color6"
+                  onPress={() => { setPicks((p) => ({ ...p, [at]: i })); setAt(at + 1); }}>
+            <Text fontSize={16} color="$color12">{`${"ABCD"[i]}  ${c}`}</Text>
+          </Button>
+        ))}
+      </YStack>
+      <XStack gap={8}>
+        {at > 0 ? <Action label="Back" ink="#fbfaf6" onPress={() => setAt(at - 1)} /> : null}
+        <Action label="Stop" ink="#fbfaf6" onPress={() => setAt(null)} />
+      </XStack>
+    </Card>
+  );
+}
+
+function SchoolScreen() {
+  const [pr, setPr] = useState<Progress | null>(null);
+  const [p, setP] = useState<Profile | null>(null);
+  useEffect(() => {
+    api<Progress>("/api/progress").then(setPr).catch(() => {});
+    api<Profile>("/api/profile").then(setP).catch(() => {});
+  }, []);
+  if (!pr) return <Small>Reading your save…</Small>;
+  const s = pr.school;
+  return (
+    <YStack gap={14}>
+      <Card borderLeftWidth={6} borderLeftColor="$color9">
+        <Eyebrow>CALLOW SCHOOL</Eyebrow>
+        {s.diploma ? (
+          <YStack gap={4} marginTop={4}>
+            <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10">DIPLOMA</Text>
+            <Text fontSize={15} lineHeight={22} color="$color12">{`This is to certify that ${p?.name ?? "you"} sat the paper, all seven parts, and passed it.`}</Text>
+            {s.best !== null ? <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{`MARK ${s.best}  ${s.grade ?? ""}`}</Text> : null}
+          </YStack>
+        ) : <Small>{s.attempts ? `The paper sat ${s.attempts === 1 ? "once" : `${s.attempts} times`}; best ${s.best}. ${s.passMark} passes.` : "No DIPLOMA yet."}</Small>}
+      </Card>
+      <Card>
+        <Eyebrow>{s.textbook ? "THE TEXTBOOK" : "THE FLOORS"}</Eyebrow>
+        {SCHOOL.floors.map((f, i) => <Floor key={f.floor} f={f} reached={s.floors[i]} />)}
+      </Card>
+      <PracticePaper />
+    </YStack>
+  );
+}
+
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
 function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][number] }) {
@@ -1037,6 +1182,7 @@ function ProfileScreen() {
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
         {p.roots ? <RootsRow held={p.roots} /> : null}
       </Card>
+      <EventsCard />
       <NotebookCard />
     </YStack>
   );
@@ -1793,7 +1939,7 @@ function RelayCard({ ink }: { ink: string }) {
   );
 }
 
-const TABS = ["today", "goals", "daemon", "index", "device", "profile", "settings"] as const;
+const TABS = ["today", "goals", "daemon", "index", "device", "profile", "school", "settings"] as const;   // C-129: SCHOOL
 
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
@@ -1889,6 +2035,7 @@ function Shell() {
         {tab === "index" ? <IndexScreen ink={ink} /> : null}
         {tab === "device" ? <DeviceScreen ink={ink} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
+        {tab === "school" ? <SchoolScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
         {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /></YStack> : null}
       </ScrollView>

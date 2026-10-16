@@ -7,21 +7,23 @@ import type { Store } from "./store.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { readNotebook } from "./save/notebook.js";
+import { readProgress } from "./save/progress.js";
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
 const REGIONS = regionsJson;
 import { readIndex } from "./save/index.js";
-import { carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
+import { awayNow, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
-export type Ask = { method: string; path: string; body: any; deviceId: string };
+export type Ask = { method: string; path: string; body: any; deviceId: string; query?: Record<string, string> };   // C-131-B: query, for ?since=
 export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
-const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/marks", "/api/regions", "/api/index", "/api/party", "/api/daemon/life"];
-const POSTS = ["/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
+import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-131-B
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/marks", "/api/regions", "/api/progress", "/api/index", "/api/party", "/api/daemon/life"];
+const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -37,6 +39,9 @@ const NO_SAVE = "no save named -- set it in Settings";
 export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   const { method, path, body: b, deviceId } = a;
   if (method === "GET") {
+    // C-131-B: broadcasts -- a word or an act to every daemon, and their answers (broadcast.ts)
+    if (path === "/api/broadcasts") return ok({ items: castsSince(store, Number(a.query?.since) || 0) });
+    if (path === "/api/broadcast/acts") return ok({ acts: ACTS });
     if (path === "/api/today") return ok(today(h, store, now));
     if (path === "/api/goals") return ok(store.goals());
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48
@@ -57,11 +62,23 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const thisGame = m ? m.name === prof.name && m.trainerId === prof.trainerId && m.secretId === prof.secretId : null;
       return ok({ ...prof, edition: h.edition, thisGame, marriedTo: m ? m.name : null });
     }
+    if (path === "/api/progress") return ok(readProgress(save));        // C-128, C-129: GAME EVENTS and CALLOW SCHOOL
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/index") return ok(readIndex(save, h.edition));   // C-24: the save's own INDEX, OPUS's margins with it
     if (path === "/api/party") return ok(readSave(save));
   }
   if (method === "POST") {
+    // C-131-B: a broadcast from the app, the site or the Tab5, as one of our daemons
+    if (path === "/api/broadcast") {
+      const r = sendCast(store, awayNow(h), b, now);
+      return "error" in r ? no(400, r.error ?? "") : ok({ id: r.cast.id, cast: r.cast });
+    }
+    // C-131-B: a board's broadcast -- one it sent ("out"), or one it heard over LoRa or Bluetooth ("in") -- kept once
+    if (path === "/api/device/broadcast") {
+      const via: Via = b.via === "lora" || b.via === "ble" ? b.via : "net";
+      const r = takeCast(store, b, via, b.dir === "out", deviceId, now);
+      return "error" in r ? no(400, r.error ?? "") : ok({ fresh: r.fresh, id: r.cast.id });
+    }
     if (path === "/api/sync") return ok(sync(h, store, now));
     const care = path.match(CARE);                      // C-13: care -- feed, water, train, and SLEEP (C-114) -- kept as the device's are
     if (care) { store.logInteraction(care[1], "site"); return lifeNow(h, store, deviceId, now); }

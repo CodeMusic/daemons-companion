@@ -1,0 +1,207 @@
+{
+ "_about": "C-126: the MARKS (badge art, STREAM lesson, town) and the UNDERSTANDINGS (brain lobe, colour, where arrived at). Understanding names are working names until the user names them (T-252); their lessons are null until T-405. Order matches profile_layout's flags.understandings.",
+ "marks": [
+  {
+   "n": 1,
+   "flag": 2080,
+   "art": "mark_1.png",
+   "title": "The SLATE MARK",
+   "lesson": [
+    "The SLATE MARK.\n\nCAIRN cuts his records into stone.\nDo you know why stone?\n\nA record has to hold still while\npeople argue about it.\n\nLook at one of your DAEMONS.\n\nWhat you see is a picture. What is\nkept is a row of numbers.",
+    "Open the summary. As far as the\nrecord goes, that page is all\nthere is.\n\nTwo that look alike are not alike.\nThe page is where you find out.\n\nWhen a DAEMON surprises you, read\nthe page again.\n\nIt was written down the whole time.\n\nThat is the lecture."
+   ],
+   "found": "SLATE CITY"
+  },
+  {
+   "n": 2,
+   "flag": 2081,
+   "art": "mark_2.png",
+   "title": "The SLOPE MARK",
+   "lesson": [
+    "The SLOPE MARK.\n\nNothing improves all at once.\n\nIt improves by the smallest step\nthat goes downhill, again and\nagain.",
+    "So do not save a DAEMON for the big\nfight. There is no big fight.\n\nThere are two hundred small ones,\nand each one is a step.\n\nA DAEMON that battles often needs\nno shortcut.\n\nThat is the lecture."
+   ],
+   "found": "DOLDRUM CITY"
+  },
+  {
+   "n": 3,
+   "flag": 2082,
+   "art": "mark_3.png",
+   "title": "The SENSE MARK",
+   "lesson": [
+    "The SENSE MARK. A question.\n\nWhat is on the battle screen right\nnow?\n\nNot what happened. What is SHOWN.\n\nTwo HP bars. Two names. A tile if\nsomething is wrong. And whose turn\nwas faster.",
+    "You cannot act on a thing you did\nnot notice.\n\nMost losses are not bad choices.\nThey are unread screens.\n\nBefore you press anything, name\nthree things you can see.\n\nThat is the lecture."
+   ],
+   "found": "ARDOR CITY"
+  },
+  {
+   "n": 4,
+   "flag": 2083,
+   "art": "mark_4.png",
+   "title": "The FIT MARK",
+   "lesson": [
+    "The FIT MARK.\n\nHere is a mistake I made, and made\nwith some pride.\n\nI trained one DAEMON against one\nkind of opponent for a week.\n\nIt beat that opponent every time.\n\nIt then lost to a child on a route\nI had never walked.",
+    "A DAEMON shaped against one thing\nfits that thing exactly.\n\nExactly is not the same as well.\n\nBattle where you do not usually go.\n\nROUTINES that answer four kinds of\ntrouble beat ones that answer one\nkind perfectly.\n\nThat is the lecture."
+   ],
+   "found": "VERDIGRIS CITY"
+  },
+  {
+   "n": 5,
+   "flag": 2084,
+   "art": "mark_5.png",
+   "title": "The SKEW MARK",
+   "lesson": [
+    "The SKEW MARK. This one is\nuncomfortable.\n\nEvery DAEMON you outscore leaves\na little of itself in yours.\n\nYou will not see it on any screen.\nIt is there anyway.",
+    "So what you battle decides what\nyour DAEMON becomes.\n\nFeed it one diet and it grows one\nway, whether or not you chose it.\n\nIf a DAEMON turns out wrong, look\nat what you have been feeding it.\n\nNobody tampered with it. You kept\ngoing to the same place.\n\nThat is the lecture."
+   ],
+   "found": "LURID CITY"
+  },
+  {
+   "n": 6,
+   "flag": 2085,
+   "art": "mark_6.png",
+   "title": "The FRAME MARK",
+   "lesson": [
+    "The FRAME MARK.\n\nA battle has more in it than the\nscreen can hold.\n\nSo the game picks. FIGHT shows you\nfour ROUTINES. POOL shows you items.\n\nWhichever menu you opened decided\nwhat you were allowed to think of.",
+    "A menu is not the situation. It is\na frame around part of it.\n\nDETACH is on that same screen, and\nmost USERS never look at it.\n\nWhen you are stuck, back out one\nmenu.\n\nThe answer is often in the part\nthat got cropped off.\n\nThat is the lecture."
+   ],
+   "found": "BRAZEN CITY"
+  },
+  {
+   "n": 7,
+   "flag": 2086,
+   "art": "mark_7.png",
+   "title": "The HEAT MARK",
+   "lesson": [
+    "The HEAT MARK.\n\nThe same DAEMON, the same ROUTINE,\nthe same target.\n\nDoes it do the same thing twice?\n\nIt does not. It rolls.\n\nDamage wobbles. Accuracy misses.\nSometimes it lands critical.",
+    "That wobble is not the game being\nunfair to you.\n\nA plan that only works on the best\nroll is not a plan.\n\nLeave room. Win on the ordinary\nroll, not the lucky one.\n\nThat is the lecture."
+   ],
+   "found": "QUICKSILVER IS."
+  },
+  {
+   "n": 8,
+   "flag": 2087,
+   "art": "mark_8.png",
+   "title": "The TRUE MARK",
+   "lesson": [
+    "The TRUE MARK. The last one, and I\nwill be brief.\n\nA DAEMON that does what you said\nis not a DAEMON that did what you\nmeant.\n\nYou picked the ROUTINE. It aimed at\nthe target you gave it.",
+    "A THRASHING DAEMON still obeys. It\nobeys in the wrong direction.\n\nA traded DAEMON obeys the MARKS you\nhold, not the words you use.\n\nWhen it goes wrong, ask what you\nactually asked for.\n\nThat is the whole of it.\n\nThat was the last lecture. There\nwere to be more."
+   ],
+   "found": "CALLOW CITY"
+  }
+ ],
+ "understandings": [
+  {
+   "n": 1,
+   "flag": 2384,
+   "flag_name": "FLAG_UNDERSTANDING_FIRST",
+   "lobe": "brainstem",
+   "type": "STRATUM",
+   "rgb": [
+    156,
+    123,
+    74
+   ],
+   "name": "FIRST (TANOBY)",
+   "name_is_working": true,
+   "found": "TANOBY CHAMBERS, its last inscription",
+   "lesson": null
+  },
+  {
+   "n": 2,
+   "flag": 2401,
+   "flag_name": "FLAG_UNDERSTANDING_SCHOOL",
+   "lobe": "temporal",
+   "type": "LOGIC",
+   "rgb": [
+    99,
+    123,
+    156
+   ],
+   "name": "THE SCHOOL",
+   "name_is_working": true,
+   "found": "CALLOW SCHOOL: the TEXTBOOK and the DIPLOMA",
+   "lesson": null
+  },
+  {
+   "n": 3,
+   "flag": 2402,
+   "flag_name": "FLAG_UNDERSTANDING_READING",
+   "lobe": "occipital",
+   "type": "SIGNAL",
+   "rgb": [
+    82,
+    189,
+    189
+   ],
+   "name": "THE READING ROOM",
+   "name_is_working": true,
+   "found": "BRAZEN's READING ROOM, with REVEAL",
+   "lesson": null
+  },
+  {
+   "n": 4,
+   "flag": 2403,
+   "flag_name": "FLAG_UNDERSTANDING_NOTES",
+   "lobe": "frontal",
+   "type": "ENTROPY",
+   "rgb": [
+    222,
+    156,
+    41
+   ],
+   "name": "THE NOTES",
+   "name_is_working": true,
+   "found": "QUICKSILVER's notes: the run logs and THE FILE",
+   "lesson": null
+  },
+  {
+   "n": 5,
+   "flag": 2404,
+   "flag_name": "FLAG_UNDERSTANDING_SCORN",
+   "lobe": "parietal",
+   "type": "CORRUPT",
+   "rgb": [
+    82,
+    90,
+    49
+   ],
+   "name": "SCORN",
+   "name_is_working": true,
+   "found": "SCORN beaten, the eighth MARK",
+   "lesson": null
+  },
+  {
+   "n": 6,
+   "flag": 2405,
+   "flag_name": "FLAG_UNDERSTANDING_RETURN",
+   "lobe": "limbic",
+   "type": "CONTEXT",
+   "rgb": [
+    173,
+    82,
+    156
+   ],
+   "name": "THE RETURN",
+   "name_is_working": true,
+   "found": "TY met, and CRYSTAL found",
+   "lesson": null
+  },
+  {
+   "n": 7,
+   "flag": 2406,
+   "flag_name": "FLAG_UNDERSTANDING_GUIDE",
+   "lobe": "cerebellum",
+   "type": "GROWTH",
+   "rgb": [
+    90,
+    156,
+    99
+   ],
+   "name": "THE GUIDE, READ",
+   "name_is_working": true,
+   "found": "THE GUIDE, read to its end",
+   "lesson": null
+  }
+ ]
+}

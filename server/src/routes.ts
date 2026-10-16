@@ -6,6 +6,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
+import { readNotebook } from "./save/notebook.js";
 import { readIndex } from "./save/index.js";
 import { carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
 
@@ -15,7 +16,7 @@ export type Ask = { method: string; path: string; body: any; deviceId: string };
 export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
-const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/index", "/api/party", "/api/daemon/life"];
+const GETS = ["/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/index", "/api/party", "/api/daemon/life"];
 const POSTS = ["/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -50,6 +51,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const thisGame = m ? m.name === prof.name && m.trainerId === prof.trainerId && m.secretId === prof.secretId : null;
       return ok({ ...prof, edition: h.edition, thisGame, marriedTo: m ? m.name : null });
     }
+    if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/index") return ok(readIndex(save, h.edition));   // C-24: the save's own INDEX, OPUS's margins with it
     if (path === "/api/party") return ok(readSave(save));
   }

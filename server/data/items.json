@@ -918,7 +918,7 @@
  },
  "291": {
   "name": "PLUGIN03",
-  "description": "An attack with a pulsing blast of water. It may also thrash them."
+  "description": "One disturbance, spreading out in rings. It may leave them THRASHING."
  },
  "292": {
   "name": "PLUGIN04",
@@ -974,7 +974,7 @@
  },
  "305": {
   "name": "PLUGIN17",
-  "description": "Enables the user to evade all attacks. It may fail if used in succession."
+  "description": "A firewall for one turn. Nothing gets through. May fail if used twice running."
  },
  "306": {
   "name": "PLUGIN18",
@@ -982,11 +982,11 @@
  },
  "307": {
   "name": "PLUGIN19",
-  "description": "A harsh attack that absorbs half the damage it inflicted to restore HP."
+  "description": "Takes what is worth keeping. Half the damage restores the user's HP."
  },
  "308": {
   "name": "PLUGIN20",
-  "description": "It protects the user's party from all status problems for five turns."
+  "description": "Its party runs in safe mode. No state takes hold for five turns."
  },
  "309": {
   "name": "PLUGIN21",
@@ -1002,11 +1002,11 @@
  },
  "312": {
   "name": "PLUGIN24",
-  "description": "A strong electrical attack that may also leave them throttled."
+  "description": "Lets the whole stored charge go at once. It may leave them throttled."
  },
  "313": {
   "name": "PLUGIN25",
-  "description": "A brutal lightning attack that may also leave them throttled."
+  "description": "A spike too sudden to plan for. Often misses. May leave them throttled."
  },
  "314": {
   "name": "PLUGIN26",
@@ -1014,7 +1014,7 @@
  },
  "315": {
   "name": "PLUGIN27",
-  "description": "This attack move grows more powerful the more the user likes its USER."
+  "description": "The more it trusts its USER, the harder it hits."
  },
  "316": {
   "name": "PLUGIN28",
@@ -1042,11 +1042,11 @@
  },
  "322": {
   "name": "PLUGIN34",
-  "description": "A rapid jolt of electricity strikes them. It can't be evaded."
+  "description": "A signal carried on a wave that always arrives. It cannot be evaded."
  },
  "323": {
   "name": "PLUGIN35",
-  "description": "Scorches them with intense flames. They may overheat."
+  "description": "Gives off heat in every direction. It may leave them overheating."
  },
  "324": {
   "name": "PLUGIN36",
@@ -1058,7 +1058,7 @@
  },
  "326": {
   "name": "PLUGIN38",
-  "description": "Hits them with an intense flame. It may leave them overheating."
+  "description": "Everything in reach ignites at once. It may leave them overheating."
  },
  "327": {
   "name": "PLUGIN39",
@@ -1066,7 +1066,7 @@
  },
  "328": {
   "name": "PLUGIN40",
-  "description": "An extremely fast attack against one target. It can't be evaded."
+  "description": "Locks on and follows them wherever they go. It never misses."
  },
  "329": {
   "name": "PLUGIN41",
@@ -1074,7 +1074,7 @@
  },
  "330": {
   "name": "PLUGIN42",
-  "description": "An attack that is boosted if user is overheated, leaking, or throttled."
+  "description": "Running degraded, it hits twice as hard: overheating, leaking, throttled."
  },
  "331": {
   "name": "PLUGIN43",
@@ -1090,7 +1090,7 @@
  },
  "334": {
   "name": "PLUGIN46",
-  "description": "An attack that may take their held item if the user isn't holding one."
+  "description": "Lifts the item they are holding, if its own hands are empty."
  },
  "335": {
   "name": "PLUGIN47",
@@ -1106,7 +1106,7 @@
  },
  "338": {
   "name": "PLUGIN50",
-  "description": "An intense attack that also sharply reduces the user's SP. ATK stat."
+  "description": "Runs far too hot for one huge hit, then sharply lowers its SP. ATK."
  },
  "339": {
   "name": "DRIVER01",

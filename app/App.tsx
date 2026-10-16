@@ -817,7 +817,55 @@ function MeetingsCard() {
 // C-23: the PROFILE -- whichever save was synced: who it belongs to and how far it has gone, as the trainer card says.
 type Profile = { name: string; trainerId: number; playTime: { hours: number; minutes: number }; edition: string;
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
-                 gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null };
+                 gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
+                 choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
+                 notebook: boolean; roots: boolean[] };
+type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null }[] }[] };
+
+// C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
+const PLAYER_ART = {
+  REASON: { card: require("../server/data/art/player_reason.png"), walk: require("../server/data/art/player_reason_walk.png") },
+  INSTINCT: { card: require("../server/data/art/player_instinct.png"), walk: require("../server/data/art/player_instinct_walk.png") },
+};
+
+// C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
+// so a single line break is a space here and a blank line a new paragraph.
+function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][number] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
+      <XStack onPress={() => setOpen((o) => !o)} justifyContent="space-between" alignItems="center" gap={10} cursor="pointer">
+        <YStack flex={1}>
+          <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{page.title}</Text>
+          {page.about ? <Small>{page.about}</Small> : null}
+        </YStack>
+        <Text fontSize={18} color="$color10">{open ? "−" : "+"}</Text>
+      </XStack>
+      {open ? (page.text
+        ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} color="$color12">{par.replace(/\n/g, " ")}</Text>)
+        : <Small>Written by the game from your save each time you open it there.</Small>) : null}
+    </YStack>
+  );
+}
+
+function NotebookCard() {
+  const [n, setN] = useState<Notebook | null>(null);
+  useEffect(() => { api<Notebook>("/api/notebook").then(setN).catch(() => {}); }, []);
+  if (!n) return null;
+  return (
+    <Card>
+      <Eyebrow>NOTEBOOK</Eyebrow>
+      {!n.held ? <Small>Not carried yet.</Small>
+        : !n.sections.length ? <Small>Nothing filed in it yet.</Small>
+        : n.sections.map((s) => (
+            <YStack key={s.name} marginTop={10}>
+              <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10">{s.name}</Text>
+              {s.pages.map((pg, i) => <NotebookPage key={`${s.name}-${i}`} page={pg} />)}
+            </YStack>
+          ))}
+    </Card>
+  );
+}
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -840,8 +888,16 @@ function ProfileScreen() {
   return (
     <YStack gap={14}>
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
+        <XStack gap={14} alignItems="flex-end">
+          {/* C-125: as the trainer card draws them, and as they walk */}
+          <Image source={PLAYER_ART[p.choice ?? "REASON"].card} style={{ width: 128, height: 128 }} resizeMode="contain"
+                 accessibilityLabel={`${p.name}, as the trainer card draws them`} />
+          <Image source={PLAYER_ART[p.choice ?? "REASON"].walk} style={{ width: 32, height: 64 }} resizeMode="contain"
+                 accessibilityLabel="walking" />
+        </XStack>
         <Eyebrow>{p.edition} · ID No. {id}</Eyebrow>
         <Text fontFamily="$mono" fontSize={28} fontWeight="700" letterSpacing={2} color="$color12">{p.name}</Text>
+        {p.choice ? <Small>{p.choice}{p.rival ? ` · rival ${p.rival}` : ""}</Small> : null}
         <Small>{p.savedIn?.place ? `Last saved in ${p.savedIn.place}` : "Last saved somewhere the map does not name"}</Small>
         <Small color={p.thisGame === false ? "$color10" : undefined}>
           {p.thisGame === null ? "Not yet synced: the first save you SYNC becomes your companion's game."
@@ -850,6 +906,8 @@ function ProfileScreen() {
       </Card>
       <Card>
         <Fact label="PLAY TIME">{p.playTime.hours}:{String(p.playTime.minutes).padStart(2, "0")}</Fact>
+        {p.money !== undefined ? <Fact label="MONEY">{p.money.toLocaleString()}</Fact> : null}
+        {p.shoes !== undefined ? <Fact label="SHOES">{p.shoes ? `${p.shoes}'s` : "not yet"}</Fact> : null}
         <Fact label="INDEX">{p.index.held ? `${p.index.bound} bound · ${p.index.seen} seen` : "not yet held"}</Fact>
         <YStack paddingVertical={8} gap={8}>
           <XStack justifyContent="space-between"><Eyebrow>MARKS</Eyebrow><Text fontSize={16} color="$color12">{earned} of 8</Text></XStack>
@@ -863,7 +921,18 @@ function ProfileScreen() {
         <Fact label="DIPLOMA">{p.diploma ? "earned" : "not yet"}</Fact>
         <Fact label="OPUS">{p.opus ? "carried" : "not carried"}</Fact>
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
+        {p.roots ? (
+          <YStack paddingVertical={8} gap={8}>
+            {/* C-125: the USER card's ROOTS -- lit, never counted */}
+            <Eyebrow>ROOTS</Eyebrow>
+            <XStack gap={8}>
+              {p.roots.map((r, i) => <YStack key={i} width={16} height={16} borderRadius={8} borderWidth={2} borderColor="$color9"
+                                            backgroundColor={r ? "$color9" : "transparent"} />)}
+            </XStack>
+          </YStack>
+        ) : null}
       </Card>
+      <NotebookCard />
     </YStack>
   );
 }

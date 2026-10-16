@@ -4308,7 +4308,7 @@
    "back": "gfx/daemons/primer_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    45,
@@ -4336,7 +4336,7 @@
    "back": "gfx/daemons/syllabus_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    60,
@@ -4364,7 +4364,7 @@
    "back": "gfx/daemons/curriculum_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    80,
@@ -4392,7 +4392,7 @@
    "back": "gfx/daemons/tepid_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    39,
@@ -4420,7 +4420,7 @@
    "back": "gfx/daemons/seethe_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    58,
@@ -4448,7 +4448,7 @@
    "back": "gfx/daemons/heatdeath_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    78,
@@ -4476,7 +4476,7 @@
    "back": "gfx/daemons/learnrate_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -4504,7 +4504,7 @@
    "back": "gfx/daemons/momentum_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    65,
@@ -4532,7 +4532,7 @@
    "back": "gfx/daemons/steepest_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    85,
@@ -5871,7 +5871,7 @@
    "back": "gfx/daemons/glidepath_back.png"
   },
   "bodyType": 4,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    65,
@@ -6301,7 +6301,7 @@
    "back": "gfx/daemons/oldbranch_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    55,
@@ -6896,7 +6896,7 @@
    "back": "gfx/daemons/brontes_back.png"
   },
   "bodyType": 13,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    90,
@@ -6924,7 +6924,7 @@
    "back": "gfx/daemons/typhon_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    115,
@@ -6952,7 +6952,7 @@
    "back": "gfx/daemons/boreas_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    100,
@@ -7126,7 +7126,7 @@
    "back": "gfx/daemons/kairos_back.png"
   },
   "bodyType": 14,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    100,
@@ -7712,7 +7712,7 @@
    "back": "gfx/daemons/stump_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    40,
@@ -7740,7 +7740,7 @@
    "back": "gfx/daemons/boosting_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -7768,7 +7768,7 @@
    "back": "gfx/daemons/canopy_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    70,
@@ -7796,7 +7796,7 @@
    "back": "gfx/daemons/coinflip_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    45,
@@ -7825,7 +7825,7 @@
    "back": "gfx/daemons/montecarlo_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    60,
@@ -7854,7 +7854,7 @@
    "back": "gfx/daemons/lasvegas_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    80,
@@ -7882,7 +7882,7 @@
    "back": "gfx/daemons/runoff_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -7911,7 +7911,7 @@
    "back": "gfx/daemons/alluvium_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    70,
@@ -7940,7 +7940,7 @@
    "back": "gfx/daemons/delta_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    100,
@@ -7968,7 +7968,7 @@
    "back": "gfx/daemons/smudge_back.png"
   },
   "bodyType": 17,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    35,
@@ -7996,7 +7996,7 @@
    "back": "gfx/daemons/eclipse_back.png"
   },
   "bodyType": 17,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    70,
@@ -8024,7 +8024,7 @@
    "back": "gfx/daemons/detour_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    38,
@@ -8052,7 +8052,7 @@
    "back": "gfx/daemons/unbranched_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    78,
@@ -8223,7 +8223,7 @@
    "back": "gfx/daemons/tempo_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    40,
@@ -8252,7 +8252,7 @@
    "back": "gfx/daemons/cadence_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    60,
@@ -8281,7 +8281,7 @@
    "back": "gfx/daemons/cyclical_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    80,
@@ -8309,7 +8309,7 @@
    "back": "gfx/daemons/warmup_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    40,
@@ -8338,7 +8338,7 @@
    "back": "gfx/daemons/shaping_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    70,
@@ -8367,7 +8367,7 @@
    "back": "gfx/daemons/policy_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    90,
@@ -8483,7 +8483,7 @@
    "back": "gfx/daemons/shortjump_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    40,
@@ -8512,7 +8512,7 @@
    "back": "gfx/daemons/longjump_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    60,
@@ -8540,7 +8540,7 @@
    "back": "gfx/daemons/sparring_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    60,
@@ -8569,7 +8569,7 @@
    "back": "gfx/daemons/checkmate_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    60,
@@ -8597,7 +8597,7 @@
    "back": "gfx/daemons/hashcode_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    60,
@@ -8626,7 +8626,7 @@
    "back": "gfx/daemons/tangent_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    40,
@@ -8655,7 +8655,7 @@
    "back": "gfx/daemons/jacobian_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    60,
@@ -8684,7 +8684,7 @@
    "back": "gfx/daemons/particle_back.png"
   },
   "bodyType": 6,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    40,
@@ -8713,7 +8713,7 @@
    "back": "gfx/daemons/flocking_back.png"
   },
   "bodyType": 6,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    70,
@@ -8799,7 +8799,7 @@
    "back": "gfx/daemons/loopback_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    50,
@@ -8827,7 +8827,7 @@
    "back": "gfx/daemons/quine_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    70,
@@ -8969,7 +8969,7 @@
    "back": "gfx/daemons/slowburn_back.png"
   },
   "bodyType": 10,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    70,
@@ -8998,7 +8998,7 @@
    "back": "gfx/daemons/backdoor_back.png"
   },
   "bodyType": 17,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -9027,7 +9027,7 @@
    "back": "gfx/daemons/seepage_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    50,
@@ -9056,7 +9056,7 @@
    "back": "gfx/daemons/aquifer_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    110,
@@ -9084,7 +9084,7 @@
    "back": "gfx/daemons/confluence_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    43,
@@ -9112,7 +9112,7 @@
    "back": "gfx/daemons/backflow_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    43,
@@ -9141,7 +9141,7 @@
    "back": "gfx/daemons/blackwater_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    63,
@@ -9169,7 +9169,7 @@
    "back": "gfx/daemons/saddle_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    20,
@@ -9197,7 +9197,7 @@
    "back": "gfx/daemons/optimum_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    95,
@@ -9226,7 +9226,7 @@
    "back": "gfx/daemons/undertow_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    45,
@@ -9255,7 +9255,7 @@
    "back": "gfx/daemons/riptide_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    70,
@@ -9283,7 +9283,7 @@
    "back": "gfx/daemons/sinkhole_back.png"
   },
   "bodyType": 4,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    45,
@@ -9312,7 +9312,7 @@
    "back": "gfx/daemons/shimmer_back.png"
   },
   "bodyType": 4,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -9341,7 +9341,7 @@
    "back": "gfx/daemons/dustdevil_back.png"
   },
   "bodyType": 4,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    80,
@@ -9369,7 +9369,7 @@
    "back": "gfx/daemons/postulate_back.png"
   },
   "bodyType": 1,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    72,
@@ -9397,7 +9397,7 @@
    "back": "gfx/daemons/deduction_back.png"
   },
   "bodyType": 1,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    144,
@@ -9425,7 +9425,7 @@
    "back": "gfx/daemons/crackle_back.png"
   },
   "bodyType": 13,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    40,
@@ -9453,7 +9453,7 @@
    "back": "gfx/daemons/arcflash_back.png"
   },
   "bodyType": 13,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    70,
@@ -9568,7 +9568,7 @@
    "back": "gfx/daemons/stopgrad_back.png"
   },
   "bodyType": 15,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    90,
@@ -9597,7 +9597,7 @@
    "back": "gfx/daemons/permafrost_back.png"
   },
   "bodyType": 15,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    110,
@@ -9625,7 +9625,7 @@
    "back": "gfx/daemons/fewshot_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -9654,7 +9654,7 @@
    "back": "gfx/daemons/zeroshot_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    70,
@@ -9682,7 +9682,7 @@
    "back": "gfx/daemons/lockfile_back.png"
   },
   "bodyType": 15,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    50,
@@ -9710,7 +9710,7 @@
    "back": "gfx/daemons/stalemate_back.png"
   },
   "bodyType": 15,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    80,
@@ -9739,7 +9739,7 @@
    "back": "gfx/daemons/lilendian_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    70,
@@ -9768,7 +9768,7 @@
    "back": "gfx/daemons/bigendian_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    70,
@@ -9880,7 +9880,7 @@
    "back": "gfx/daemons/anode_back.png"
   },
   "bodyType": 13,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    60,
@@ -9908,7 +9908,7 @@
    "back": "gfx/daemons/cathode_back.png"
   },
   "bodyType": 13,
-  "streaks": false,
+  "streaks": true,
   "growth": 0,
   "base": [
    60,
@@ -9936,7 +9936,7 @@
    "back": "gfx/daemons/honeytrap_back.png"
   },
   "bodyType": 8,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    50,
@@ -10023,7 +10023,7 @@
    "back": "gfx/daemons/datagram_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    45,
@@ -10052,7 +10052,7 @@
    "back": "gfx/daemons/tradewind_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    75,
@@ -10165,7 +10165,7 @@
    "back": "gfx/daemons/laced_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    50,
@@ -10334,7 +10334,7 @@
    "back": "gfx/daemons/transfer_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    99,
@@ -10362,7 +10362,7 @@
    "back": "gfx/daemons/lowbit_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    64,
@@ -10390,7 +10390,7 @@
    "back": "gfx/daemons/shiftleft_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    84,
@@ -10418,7 +10418,7 @@
    "back": "gfx/daemons/wraparound_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    104,
@@ -10446,7 +10446,7 @@
    "back": "gfx/daemons/bifurcate_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    35,
@@ -10474,7 +10474,7 @@
    "back": "gfx/daemons/deepwell_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    55,
@@ -10502,7 +10502,7 @@
    "back": "gfx/daemons/shallows_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    55,
@@ -10530,7 +10530,7 @@
    "back": "gfx/daemons/redacted_back.png"
   },
   "bodyType": 17,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    65,
@@ -10614,7 +10614,7 @@
    "back": "gfx/daemons/forgery_back.png"
   },
   "bodyType": 3,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    73,
@@ -10642,7 +10642,7 @@
    "back": "gfx/daemons/pristine_back.png"
   },
   "bodyType": 0,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    73,
@@ -10671,7 +10671,7 @@
    "back": "gfx/daemons/stillrun_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    100,
@@ -10700,7 +10700,7 @@
    "back": "gfx/daemons/bootrom_back.png"
   },
   "bodyType": 8,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    50,
@@ -10729,7 +10729,7 @@
    "back": "gfx/daemons/firmware_back.png"
   },
   "bodyType": 8,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    60,
@@ -10758,7 +10758,7 @@
    "back": "gfx/daemons/bigiron_back.png"
   },
   "bodyType": 8,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    70,
@@ -10814,7 +10814,7 @@
    "back": "gfx/daemons/syn_back.png"
   },
   "bodyType": 6,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    65,
@@ -10842,7 +10842,7 @@
    "back": "gfx/daemons/ack_back.png"
   },
   "bodyType": 6,
-  "streaks": false,
+  "streaks": true,
   "growth": 2,
   "base": [
    65,
@@ -10871,7 +10871,7 @@
    "back": "gfx/daemons/savestate_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    66,
@@ -10900,7 +10900,7 @@
    "back": "gfx/daemons/warmstart_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    86,
@@ -10929,7 +10929,7 @@
    "back": "gfx/daemons/tokenring_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    45,
@@ -10958,7 +10958,7 @@
    "back": "gfx/daemons/trunkline_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 1,
   "base": [
    75,
@@ -11070,7 +11070,7 @@
    "back": "gfx/daemons/inkling_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    45,
@@ -11098,7 +11098,7 @@
    "back": "gfx/daemons/gestalt_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    65,
@@ -11127,7 +11127,7 @@
    "back": "gfx/daemons/epiphany_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    95,
@@ -11242,7 +11242,7 @@
    "back": "gfx/daemons/deucalion_back.png"
   },
   "bodyType": 5,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    80,
@@ -11270,7 +11270,7 @@
    "back": "gfx/daemons/khione_back.png"
   },
   "bodyType": 15,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    80,
@@ -11298,7 +11298,7 @@
    "back": "gfx/daemons/talos_back.png"
   },
   "bodyType": 8,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    80,
@@ -11326,7 +11326,7 @@
    "back": "gfx/daemons/pontus_back.png"
   },
   "bodyType": 11,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    100,
@@ -11354,7 +11354,7 @@
    "back": "gfx/daemons/gaia_back.png"
   },
   "bodyType": 4,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    100,
@@ -11383,7 +11383,7 @@
    "back": "gfx/daemons/ouranos_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    105,
@@ -11412,7 +11412,7 @@
    "back": "gfx/daemons/polydeuces_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    80,
@@ -11441,7 +11441,7 @@
    "back": "gfx/daemons/castor_back.png"
   },
   "bodyType": 16,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    80,
@@ -11470,7 +11470,7 @@
    "back": "gfx/daemons/elpis_back.png"
   },
   "bodyType": 8,
-  "streaks": false,
+  "streaks": true,
   "growth": 5,
   "base": [
    100,
@@ -11526,7 +11526,7 @@
    "back": "gfx/daemons/overtone_back.png"
   },
   "bodyType": 14,
-  "streaks": false,
+  "streaks": true,
   "growth": 4,
   "base": [
    65,

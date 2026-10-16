@@ -21,6 +21,20 @@ export interface Profile {
   savedIn: { map: string; place: string } | null;
   slot: "A" | "B";
   counter: number;
+  // C-125: the PROFILE's more
+  choice: "REASON" | "INSTINCT";   // who they chose to be at the title (sb2.playerGender: 0, 1)
+  rival: string;                   // the name they gave the rival
+  money: number;
+  shoes: "MOM" | "DAD" | null;     // whose RUNNING SHOES, if any (T-256)
+  notebook: boolean;               // CAIRN has handed it over
+  roots: boolean[];                // the seven understandings, as the USER card's brain shows them -- never a count
+}
+
+// A flag below DAEMONS' own start is a bit in SaveBlock1's flags; DAEMONS' flags live in SaveBlock2.
+export function flagReader(sb1: Uint8Array, sb2: Uint8Array) {
+  return (f: number) => f < P.flags.daemons_flags_start
+    ? !!(sb1[P.sb1.flags + (f >> 3)] & (1 << (f & 7)))
+    : !!(sb2[P.sb2.daemons_flags + ((f - P.flags.daemons_flags_start) >> 3)] & (1 << ((f - P.flags.daemons_flags_start) & 7)));
 }
 
 function bits(bytes: Uint8Array): number {
@@ -33,10 +47,7 @@ export function readProfile(save: Uint8Array, l: Layout = LAYOUT): Profile {
   const { useA, slot, sb1, sb2 } = blocks(save, l);
   const v2 = new DataView(sb2.buffer, sb2.byteOffset, sb2.byteLength);
   const v1 = new DataView(sb1.buffer, sb1.byteOffset, sb1.byteLength);
-  // A flag below DAEMONS' own start is a bit in SaveBlock1's flags; DAEMONS' flags live in SaveBlock2.
-  const flag = (f: number) => f < P.flags.daemons_flags_start
-    ? !!(sb1[P.sb1.flags + (f >> 3)] & (1 << (f & 7)))
-    : !!(sb2[P.sb2.daemons_flags + ((f - P.flags.daemons_flags_start) >> 3)] & (1 << ((f - P.flags.daemons_flags_start) & 7)));
+  const flag = flagReader(sb1, sb2);
   const id = v2.getUint32(P.sb2.trainer_id, true);
   const marks: boolean[] = [];
   for (let f = P.flags.marks_first; f <= P.flags.marks_last; f++) marks.push(flag(f));
@@ -58,5 +69,11 @@ export function readProfile(save: Uint8Array, l: Layout = LAYOUT): Profile {
     savedIn: MAPS[`${group}.${num}`] ?? null,
     slot: useA ? "A" : "B",
     counter: slot.counter,
+    choice: sb2[P.sb2.player_gender] ? "INSTINCT" : "REASON",
+    rival: decodeText(sb1.subarray(P.sb1.rival_name, P.sb1.rival_name + 7)),
+    money: (v1.getUint32(P.sb1.money, true) ^ v2.getUint32(P.sb2.encryption_key, true)) >>> 0,
+    shoes: !flag(P.flags.shoes) ? null : flag(P.flags.shoes_from_dad) ? "DAD" : "MOM",
+    notebook: flag(P.flags.notebook),
+    roots: P.flags.understandings.map(flag),
   };
 }

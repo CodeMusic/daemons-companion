@@ -14,6 +14,7 @@ import { deviceDay, PALETTES, type Palette } from "./days.js";
 import { life } from "./life.js";
 import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
+import { companionId, noteFor } from "./cards.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
@@ -220,6 +221,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
   return { date: t.date, edition: t.edition, season: t.season, server,
+           companion: companionId(store), cardNote: noteFor(store),   // C-124: whose cards are ours; a note to write
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
            settings: deviceSettings(store),

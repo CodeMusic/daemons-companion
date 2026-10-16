@@ -38,12 +38,12 @@ describe("meeting over LoRa (C-72)", () => {
     await post("/api/device/beacon", { peer: "feedbeef" });                       // one of ours
     expect((await post("/api/device/message", { dir: "in", kind: "wave", species: "25", peer: "0a0b0c0d", hops: 0 })).json).toMatchObject({ ok: true });
     expect((await post("/api/device/message", { dir: "in", kind: "say", species: "4", peer: "feedbeef", hops: 2, text: "WELL MET\u0007" })).status).toBe(200);
-    expect((await post("/api/device/message", { dir: "out", kind: "say", species: "1", peer: "00000000", text: "x".repeat(60) })).status).toBe(200);
+    expect((await post("/api/device/message", { dir: "out", kind: "say", species: "1", peer: "00000000", text: "x".repeat(100) })).status).toBe(200);   // C-123: eighty letters kept
     expect((await post("/api/device/message", { dir: "sideways", kind: "say", species: "1", peer: "00000000" })).status).toBe(400);
     expect((await post("/api/device/message", { dir: "in", kind: "say", species: "1", peer: "nope" })).status).toBe(400);
     const m = await get("/api/meetings");
     expect(m.messages.map((x: any) => [x.dir, x.kind, x.name, x.peer, x.hops, x.text, x.ours])).toEqual([
-      ["out", "say", "BULBASAUR".length ? m.messages[0].name : "", "00000000", 0, "x".repeat(40), false],
+      ["out", "say", "BULBASAUR".length ? m.messages[0].name : "", "00000000", 0, "x".repeat(80), false],
       ["in", "say", m.messages[1].name, "feedbeef", 2, "WELL MET", true],
       ["in", "wave", m.messages[2].name, "0a0b0c0d", 0, "", false]]);
     expect(m.messages[1].name).not.toBe("?");

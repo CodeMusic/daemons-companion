@@ -26,6 +26,7 @@
 //                                /api/goal/milestone {title}, /api/goal/remove {step | milestone}; /api/steps/:id/undo
 //   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
+import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
@@ -262,7 +263,7 @@ const DEVICE_DOOR = [
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
-     "/api/device/hello"].includes(p),
+     "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written"].includes(p),
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/")),
   (m: string) => m === "OPTIONS",
 ];
@@ -721,8 +722,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return send(res, 200, { counted: false, why: "already met this hour" });
         // C-72: over LoRa the frame says how many boards passed it on (0: heard directly); Bluetooth is always direct
         const lora = b.how === "lora", hops = lora ? Math.min(2, Math.max(0, Number(b.hops) || 0)) : 0;
-        store.logInteraction("met", `${species} ${peer}${lora ? ` lora ${hops}` : ""}`);
-        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : "ble", hops });
+        const card = b.how === "card";                            // C-124: a stranger's daemon, on a card held to the board
+        store.logInteraction("met", `${species} ${peer}${lora ? ` lora ${hops}` : card ? " card" : ""}`);
+        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : card ? "card" : "ble", hops });
       }
       // C-72: a wave or a word over LoRa -- heard ("in") from a daemon nearby, or sent ("out") to one (or to everyone,
       // peer 00000000). Kept as the daemon's life is kept, and shown under MET NEARBY. A word is forty letters at most.
@@ -732,10 +734,31 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const species = String(b.species ?? ""), peer = String(b.peer ?? "");
         if (!dir || !kind || !SPECIES[species] || !/^[0-9a-f]{8}$/.test(peer)) return send(res, 400, { error: "message {dir in|out, kind wave|say, species, peer}" });
         const hops = Math.min(2, Math.max(0, Number(b.hops) || 0));
-        const text = typeof b.text === "string" ? b.text.replace(/[^\x20-\x7e]/g, "").slice(0, 40) : "";
+        const text = typeof b.text === "string" ? b.text.replace(/[^\x20-\x7e]/g, "").slice(0, 80) : "";   // C-123: eighty
         store.logInteraction("msg", `${dir} ${kind} ${species} ${peer} ${hops} ${text}`);
         return send(res, 200, { ok: true, name: SPECIES[species].name });
       }
+      // C-124: a card held to a board -- read what each holds, PUT the board's daemon onto it, TAKE the card's, or SWAP.
+      // A card is a host (cards.ts); the answer carries what the card now holds, for the board to write onto it, this
+      // companion's id, and the board's own new state.
+      if (req.method === "POST" && path === "/api/device/card") {
+        const b = await body(req);
+        const op = ["read", "put", "take", "swap"].includes(b.op) ? b.op as CardOp : null;
+        if (!validUid(b.uid) || !op || !validDeviceId(deviceId)) return send(res, 400, { error: "card {uid: hex, op: read|put|take|swap}" });
+        const r = cardOp(store, awayNow(ecfg), deviceId, b.uid, op);
+        const brief = (d: (typeof r)["card"]) => d && { personality: d.personality, species: d.species, name: d.name,
+                                                        nickname: d.nickname || d.name, level: d.level };
+        if (!r.error && op !== "read") store.logInteraction("card", `${op} ${b.uid}`);
+        return send(res, r.error ? 409 : 200, { ok: !r.error, error: r.error ?? null, card: brief(r.card), board: brief(r.board),
+                                                companion: companionId(store), state: deviceState(ecfg, store, new Date(), deviceId) });
+      }
+      // C-124: a note for a card, typed on the T-Deck; kept until a reader has written it (and says so)
+      if (req.method === "POST" && path === "/api/device/note") {
+        const b = await body(req);
+        const t = keepNote(store, typeof b.text === "string" ? b.text : "", deviceId || "board");
+        return send(res, t ? 200 : 400, t ? { ok: true, note: t } : { error: "note {text}" });
+      }
+      if (req.method === "POST" && path === "/api/device/note/written") { noteWritten(store); return send(res, 200, { ok: true }); }
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";

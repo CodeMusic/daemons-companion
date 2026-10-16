@@ -18,10 +18,15 @@ function keep(store: Store, map: Record<string, number>) { store.setSetting(KEY,
 
 // The daemon this device carries, out of those away. With no device named (the site, an older board), the first away,
 // as it always was.
+// C-124: a device that gave its daemon to a card hosts none, by choice, until it takes one back -- never refilled
+export const NONE = -1;
+export function hostNone(store: Store, deviceId: string) { const map = carrying(store); map[deviceId] = NONE; keep(store, map); }
+
 export function carriedFor<T extends Away>(store: Store, away: T[], deviceId: string): T | null {
   if (!away.length) return null;
   if (!validDeviceId(deviceId)) return away[0];
   const map = carrying(store);
+  if (map[deviceId] === NONE) return null;
   const mine = away.find((d) => d.personality === map[deviceId]);
   if (mine) return mine;
   const taken = new Set(Object.entries(map).filter(([id]) => id !== deviceId).map(([, p]) => p));

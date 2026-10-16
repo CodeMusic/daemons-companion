@@ -820,7 +820,8 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
                  gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
                  choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
-                 notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[] };
+                 notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[];
+                 wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
                                                                    unread?: boolean; place?: string | null; link?: string | null }[] }[] };
 
@@ -832,7 +833,9 @@ const PLAYER_ART = {
 
 // C-126: the MARKS as the trainer card draws them, and each one's STREAM lesson; the understandings in their colours
 // (the USER card brain's), with where each is arrived at. DAEMONS exports both (marks.json, mark_N.png).
-type MarksData = { marks: { n: number; title: string; lesson: string[]; found: string }[];
+type MarksData = { marks: { n: number; title: string; lesson: string[]; found: string;
+                             wisdom?: { leader: string; virtue: string; without: string[]; with: string[]; explain: string[];
+                                        union_plugin: string; union_routine: string; insight: string } }[];
                    understandings: { n: number; name: string; name_is_working: boolean; rgb: number[]; lobe: string;
                                      found: string; lesson: string | null }[] };
 const MARKS: MarksData = require("../server/data/marks.json");
@@ -852,7 +855,7 @@ function Lesson({ head, lines, foot }: { head: string; lines: string[]; foot?: s
   );
 }
 
-function MarksRow({ held }: { held: boolean[] }) {
+function MarksRow({ held, wisdom }: { held: boolean[]; wisdom?: { root: boolean; given: boolean; insight: boolean }[] }) {
   const [at, setAt] = useState<number | null>(null);
   const m = at === null ? null : MARKS.marks[at];
   return (
@@ -867,8 +870,18 @@ function MarksRow({ held }: { held: boolean[] }) {
         ))}
       </XStack>
       {m ? (held[at!]
-        ? <Lesson head={m.title.toUpperCase()} foot={`From the BENCHMARK in ${m.found}.`}
-                  lines={m.lesson.flatMap(reflow).filter((l, i) => !(i === 0 && l.replace(/\.$/, "").toUpperCase() === m.title.toUpperCase()))} />
+        ? <YStack gap={6}>
+            <Lesson head={m.title.toUpperCase()} foot={`From the BENCHMARK in ${m.found}.`}
+                    lines={m.lesson.flatMap(reflow).filter((l, i) => !(i === 0 && l.replace(/\.$/, "").toUpperCase() === m.title.toUpperCase()))} />
+            {/* C-133: what its leader says after the win -- where to come back, until its understanding is held; then the
+                two together, the union PLUGIN once given, and the insight once it has arrived (T-389, T-390) */}
+            {m.wisdom && wisdom?.[at!] ? (
+              <Lesson head={`${m.wisdom.leader}, AFTERWARDS`}
+                      lines={[...(wisdom[at!].root ? m.wisdom.with : m.wisdom.without),
+                              ...(wisdom[at!].given ? [`${m.wisdom.union_plugin}: ${m.wisdom.union_routine}.`, ...m.wisdom.explain] : [])]}
+                      foot={wisdom[at!].insight ? `INSIGHT, ${m.wisdom.virtue}: ${m.wisdom.insight}` : undefined} />
+            ) : null}
+          </YStack>
         : <Lesson head={`MARK ${at! + 1}`} lines={["Not yet earned."]} />) : null}
     </YStack>
   );
@@ -1206,7 +1219,7 @@ function ProfileScreen() {
         {p.money !== undefined ? <Fact label="MONEY">{p.money.toLocaleString()}</Fact> : null}
         {p.shoes !== undefined ? <Fact label="SHOES">{p.shoes ? `${p.shoes}'s` : "not yet"}</Fact> : null}
         <Fact label="INDEX">{p.index.held ? `${p.index.bound} bound · ${p.index.seen} seen` : "not yet held"}</Fact>
-        <MarksRow held={p.marks} />
+        <MarksRow held={p.marks} wisdom={p.wisdom} />
         <Fact label="DIPLOMA">{p.diploma ? "earned" : "not yet"}</Fact>
         <Fact label="OPUS">{p.opus ? "carried" : "not carried"}</Fact>
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}

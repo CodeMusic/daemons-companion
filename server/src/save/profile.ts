@@ -5,6 +5,7 @@ import profileJson from "../../data/profile_layout.json" with { type: "json" };
 import mapsJson from "../../data/maps.json" with { type: "json" };
 import regionsJson from "../../data/regions.json" with { type: "json" };
 import grovesJson from "../../data/groves.json" with { type: "json" };
+import marksJson from "../../data/marks.json" with { type: "json" };
 import { blocks, decodeText, LAYOUT, type Layout } from "./reader.js";
 
 const P = profileJson;
@@ -32,7 +33,10 @@ export interface Profile {
   roots: boolean[];                // the seven understandings, as the USER card's brain shows them -- never a count
   visited: string[];               // C-127: every MAPSEC the save keeps a visited flag for and has set (towns, a few places)
   groves: string[];                // C-132: every grove (its map name) the save has found -- T-408's universes
+  wisdom: { root: boolean; given: boolean; insight: boolean }[];   // C-133: per MARK with a pair (T-389/T-390), how far
 }
+type Wisdom = { root_flag?: number; given_flag?: number; insight_flag?: number } | undefined;
+const WISDOM = (marksJson as unknown as { marks: { wisdom?: Wisdom }[] }).marks.map((m) => m.wisdom);
 const GROVES = (grovesJson as unknown as { groves: { grove: string; found_flag: number }[] }).groves;
 
 const SECTIONS = (regionsJson as unknown as { regions: { sections: Record<string, { visited_flag: number | null }> }[] }).regions
@@ -85,5 +89,7 @@ export function readProfile(save: Uint8Array, l: Layout = LAYOUT): Profile {
     roots: P.flags.understandings.map(flag),
     visited: SECTIONS.filter(([, s]) => flag(s.visited_flag)).map(([m]) => m),
     groves: GROVES.filter((g) => flag(g.found_flag)).map((g) => g.grove),
+    wisdom: WISDOM.map((w) => ({ root: !!w?.root_flag && flag(w.root_flag), given: !!w?.given_flag && flag(w.given_flag),
+                                 insight: !!w?.insight_flag && flag(w.insight_flag) })),
   };
 }

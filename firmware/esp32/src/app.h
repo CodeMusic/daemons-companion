@@ -66,6 +66,7 @@ enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE };   // 
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE };   // TALK: C-66; COMPOSE: C-123
 extern String composing;                  // C-123: the message being typed, to everyone nearby
+void keyboardIn(int c);                   // one key from the T-Deck's keyboard (or the cable's KEY TYPE)
 extern Page page;
 extern Screen screen;
 extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;

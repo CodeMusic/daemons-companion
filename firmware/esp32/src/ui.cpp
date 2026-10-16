@@ -520,7 +520,7 @@ void draw() {
           canvas.fillRoundRect(x - 2, H - 48, bw, 22, 5, PAPER);
           canvas.setTextColor(INK); canvas.drawString(w, x + 6, H - 37);
         }
-      } else canvas.drawString(hint(board.keyboard && board.loraChip != LoraChip::None ? "type: a message nearby   press: care" : "press: care for it"), x, H - 4);   // C-123, DRAFT
+      } else canvas.drawString(hint(board.keyboard && board.loraChip != LoraChip::None ? "type: a message nearby" : "press: care for it"), x, H - 4);   // C-123, DRAFT
       }
     } else {
       canvas.drawString("A DAEMON TO HOST", 10, 34);

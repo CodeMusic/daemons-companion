@@ -25,6 +25,7 @@ bool loraSay(const String &text);
 int loraTextMax();
 bool loraMessage(String &from, String &text);
 bool loraMessageRead();
+void loraPretendHeard(const String &name, const String &text);   // MESH HEARD down the cable: as if heard, for a check
 
 // For the server (net.cpp): a daemon heard, once per tag per hour (mine: one of our own companions' tags); and each
 // wave or word, in or out ("in"/"out", "wave"/"say").

@@ -85,6 +85,11 @@ void readDeck() {
   Wire.requestFrom((uint8_t)0x55, (uint8_t)1);
   int c = Wire.available() ? Wire.read() : 0;
   if (c <= 0 || c == 0xFF) return;
+  keyboardIn(c);
+}
+
+// One key from the T-Deck's keyboard -- or from the cable (KEY TYPE, KEY ENTER, KEY BKSP: C-123's check with SHOT)
+void keyboardIn(int c) {
   if (loraMessageRead()) { wake(); return; }                    // C-123: a message heard is read by the next key -- only that
   if (wake()) return;                                           // a key wakes it, and does nothing else
   lastInput = millis();

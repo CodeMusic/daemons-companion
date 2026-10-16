@@ -449,6 +449,10 @@ void handleLine(String line, bool fromPhone) {
     // MESH? (the radio, the band, who is near) | MESH BEACON | MESH CALL | MESH WAVE [tag] | MESH SAY <tag|*> word
     String rest = line.length() > 5 ? line.substring(5) : "";
     if (line == "MESH?") reply("MESH " + loraStatus());
+    else if (rest.startsWith("HEARD ")) {             // C-123: a message as if heard -- MESH HEARD <name> <words> -- for a check
+      String r = rest.substring(6); int sp = r.indexOf(' ');
+      loraPretendHeard(sp < 0 ? r : r.substring(0, sp), sp < 0 ? "" : r.substring(sp + 1));
+    }
     else if (rest == "BEACON" || rest == "CALL") reply(loraSend(rest == "CALL" ? 4 : 1, 0, "") ? "MESH sent" : "MESH not sent (no radio, or nothing carried)");
     else if (rest.startsWith("WAVE")) reply(loraSend(2, rest.length() > 5 ? strtoul(rest.substring(5).c_str(), nullptr, 16) : 0, "") ? "MESH sent" : "MESH not sent");
     else if (rest.startsWith("SAY ")) {
@@ -469,6 +473,13 @@ void handleLine(String line, bool fromPhone) {
       else { keyForce(String("ABC").indexOf(k.substring(k.indexOf(' ') + 1)), k.startsWith("DOWN")); delay(35); readKey(); }
     }
     else if (k == "CANCEL") { keyForget(); if (board.threeKeys()) readKey(); wake(); }   // and kept awake, for the next SHOT
+    // C-123: the T-Deck's keyboard, from the computer -- each letter as the keyboard gives it
+    else if (k.startsWith("TYPE ") || k == "ENTER" || k == "BKSP") {
+      if (!board.keyboard) reply("KEY no keyboard here");
+      else if (k == "ENTER") keyboardIn(13);
+      else if (k == "BKSP") keyboardIn(8);
+      else for (unsigned i = 5; i < k.length(); i++) keyboardIn(k[i]);
+    }
     if (!asleep) draw();
   }
   else if (line.startsWith("CMD ")) {

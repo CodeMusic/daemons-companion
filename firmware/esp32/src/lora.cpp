@@ -143,6 +143,7 @@ bool loraSay(const String &text) { return loraSend(K_SAY, 0, text); }
 int loraTextMax() { return TEXT_MAX; }
 bool loraMessage(String &from, String &text) { if (!msgShown) return false; from = msgFrom; text = msgText; return true; }
 bool loraMessageRead() { if (!msgShown) return false; msgShown = false; dirty = true; return true; }
+void loraPretendHeard(const String &name, const String &text) { msgFrom = name; msgText = text.substring(0, TEXT_MAX); msgShown = true; dirty = true; }
 
 bool loraSend(uint8_t kind, uint32_t to, const String &text) {
   uint32_t me = meetTag();
@@ -350,6 +351,7 @@ bool loraSay(const String &) { return false; }
 int loraTextMax() { return 0; }
 bool loraMessage(String &, String &) { return false; }
 bool loraMessageRead() { return false; }
+void loraPretendHeard(const String &, const String &) {}
 String loraStatus() { return "no radio"; }
 String runNearby() { return "This needs a board with a LoRa radio."; }    // DRAFT
 String runCallOut() { return "This needs a board with a LoRa radio."; }   // DRAFT

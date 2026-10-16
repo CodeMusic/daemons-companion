@@ -50,9 +50,10 @@ sent away. A daemon sent with no device chosen goes to a device without one.
 ## Setting it up
 
 1. **The companion listens on the network** (the site's SETTINGS), and you know the Mac's name or address.
-2. Copy `box3.example.yaml` to `box3.yaml` and `secrets.example.yaml` to `secrets.yaml` (both ignored by git); set
-   `companion_url`, the Wi-Fi, and the API key -- **the key Home Assistant already has for this box**, if it was adopted
-   in ESPHome Device Builder, so Home Assistant keeps it as it was; or remove the `api:` lines for none.
+2. Copy `box3.example.yaml` to `box3.yaml` (ignored by git) and set `companion_url`. **A box already on your Wi-Fi keeps
+   it** -- ESPHome saved the network it was given, and a flash by cable keeps it -- so no Wi-Fi goes in the file. A new
+   box: flash it, then join its own network from a phone and choose yours. Only if Home Assistant knows the box with an
+   encryption key (adopted in ESPHome Device Builder) does that key go in, through `secrets.yaml`.
 3. Build and flash. ESPHome's own BOX-3 firmware takes an update over Wi-Fi, so no cable is needed:
 
    ```bash

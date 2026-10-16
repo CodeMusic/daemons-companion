@@ -103,6 +103,9 @@ wifi:
 
 captive_portal:
 
+# C-138: a new box can be given its Wi-Fi down the cable or from Home Assistant's own setup (Improv), as ESPHome's own is
+improv_serial:
+
 # C-138: the companion's pictures come over plain HTTP on the home network
 http_request:
   timeout: 10s

@@ -4,6 +4,7 @@
 # so the handhelds' (~/.platformio) and the Tab5's (~/.platformio-tab5) are never touched.
 #
 #   firmware/box3/box3.sh compile                     build box3.yaml (copy box3.example.yaml to it first)
+#   firmware/box3/box3.sh upload --device /dev/cu.usbmodem1101   flash what was built, down the cable
 #   firmware/box3/box3.sh run                         build and flash -- over Wi-Fi if it is on the network, else ask
 #   firmware/box3/box3.sh run --device /dev/cu.usbmodem101    flash down the cable
 #   firmware/box3/box3.sh logs                        its log
@@ -18,8 +19,10 @@ if [[ ! -x "$VENV/bin/esphome" ]]; then
   "$py" -m venv "$VENV" && "$VENV/bin/pip" install -q esphome
 fi
 cd "$HERE"
-[[ -f box3.yaml ]] || { echo "box3: copy box3.example.yaml to box3.yaml (and secrets.example.yaml to secrets.yaml) and fill them in" >&2; exit 64; }
-[[ -f secrets.yaml ]] || { echo "box3: copy secrets.example.yaml to secrets.yaml and fill it in" >&2; exit 64; }
+[[ -f box3.yaml ]] || { echo "box3: copy box3.example.yaml to box3.yaml and set companion_url" >&2; exit 64; }
+if grep -q '!secret' box3.yaml && [[ ! -f secrets.yaml ]]; then
+  echo "box3: box3.yaml names secrets -- copy secrets.example.yaml to secrets.yaml and fill it in" >&2; exit 64
+fi
 cache="${ESPHOME_DATA_DIR:-$HOME/Library/Caches/esphome}"
 free=$(df -k "$HOME" | tail -1 | awk '{print $4}')
 if [[ "${1:-}" != logs && "$free" -lt 4194304 && ! -d "$cache/idf" ]]; then

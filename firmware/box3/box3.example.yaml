@@ -1,20 +1,22 @@
-# C-138: your BOX-3. Copy this to box3.yaml (ignored by git) and secrets.example.yaml to secrets.yaml, fill them in, and
-# build it (README.md). Everything else -- the voice assistant and the daemon's face -- is daemon-box3.yaml.
+# C-138: your BOX-3. Copy this to box3.yaml (ignored by git), set where the companion is, and build it (README.md).
+# Everything else -- the voice assistant and the daemon's face -- is daemon-box3.yaml.
 substitutions:
-  # Where the companion runs, as the box reaches it: the Mac's name on the network (System Settings > General >
-  # Sharing, "Local hostname") or its address, and the companion's port. The companion must listen on the network
-  # (its SETTINGS: "open to the network").
+  # Where the companion runs, as the box reaches it: the Mac's address on the network and the companion's port. The
+  # companion must listen on the network (its SETTINGS). Home Assistant can change it later ("Companion address").
   companion_url: http://your-mac.local:4730
 
 packages:
   daemon: !include daemon-box3.yaml
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+# Wi-Fi: a box that has been on your Wi-Fi keeps it -- ESPHome saves the network it was given (by Improv or its own
+# network page), and flashing by cable keeps what it saved. So most boxes need nothing here. A new box: flash it, then
+# join its own network ("ESP32-S3-BOX-3 Daemon ...") from a phone and choose yours. Or name it here, in secrets.yaml:
+# wifi:
+#   ssid: !secret wifi_ssid
+#   password: !secret wifi_password
 
-# If Home Assistant already knows this box with an encryption key (it was adopted in ESPHome Device Builder), give the
-# same key here and Home Assistant keeps it as it was. Without one, remove these three lines.
-api:
-  encryption:
-    key: !secret api_encryption_key
+# If Home Assistant knows this box with an encryption key (it was adopted in ESPHome Device Builder), give it the same
+# key so Home Assistant keeps it as it was. ESPHome's own BOX-3 firmware has none, and then nothing goes here.
+# api:
+#   encryption:
+#     key: !secret api_encryption_key

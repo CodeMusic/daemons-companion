@@ -18,7 +18,25 @@ const M = marginsJson as unknown as { levels_carried: number; instinct_gender: n
   margins: Record<string, { carried: string; neglected: string; instinctCarried?: string | null; instinctNeglected?: string | null }> };
 
 export type IndexEntry = { national: number; species: number; name: string; seen: boolean; bound: boolean; art: string | null;
-  category?: string; types?: string[]; entry?: string; margin?: { state: "carried" | "neglected"; text: string } };
+  category?: string; types?: string[]; entry?: string; margin?: { state: "carried" | "neglected"; text: string }; native?: string[] };
+
+// T-407: what a daemon is NATIVE to, in the game's own words and order (pokedex_screen.c DexScreen_PrintNative): its region
+// or its grove's universe (without its THE; the INDEX lists only daemons seen, so never "A GROVE"), its edition, its hours, its seasons -- each only when it keeps to some. All DRAFT, as in the game.
+type Native = { regions?: string[] | null; editions?: string[] | null; seasons?: string[] | null; hours?: string[] | null; grove?: string | null } | null | undefined;
+const HOURS = ["DAY", "DUSK", "NIGHT", "DAWN"], SEASONS = ["WINTER", "SPRING", "SUMMER", "AUTUMN"];
+function nativeList(some: string[] | null | undefined, all: string[], prep: string) {
+  if (!some?.length || some.length >= all.length) return null;
+  if (some.length === all.length - 1) return `NOT ${prep}${all.find((x) => !some.includes(x))}`;
+  return all.filter((x) => some.includes(x)).join(", ");
+}
+export function nativeLines(n: Native): string[] {
+  if (!n) return ["NOT IN THE WILD"];
+  const r = n.regions ?? [];
+  const out = [n.grove?.replace(/^THE /, "") ?? (r.length > 1 ? "GAMUT, MARGINS" : r[0] ?? "GAMUT")];
+  if (n.editions?.length === 1) out.push(`${n.editions[0]} ONLY`);
+  for (const line of [nativeList(n.hours, HOURS, "AT "), nativeList(n.seasons, SEASONS, "IN ")]) if (line) out.push(line);
+  return out;
+}
 
 export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: Layout = LAYOUT) {
   const { sb2 } = blocks(save, l);
@@ -41,7 +59,7 @@ export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: L
     const seen = bit(P.sb2.index_seen, row.national), bound = bit(P.sb2.index_bound, row.national);
     if (!seen && !bound) continue;                          // the game shows nothing of a daemon not yet met
     const art = row.art?.front ? `/art/species/${id}.png` : null;
-    const e: IndexEntry = { national: row.national, species: Number(id), name: row.name, seen: true, bound, art };
+    const e: IndexEntry = { national: row.national, species: Number(id), name: row.name, seen: true, bound, art, native: nativeLines(row.native) };
     if (bound) {
       Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: row.entry?.[edition] ?? "" });
       const m = profile.opus ? M.margins[id] : undefined;

@@ -396,6 +396,12 @@ static void tapEntry(lv_event_t *e) {
   label(right, String((const char *)(en["category"] | "")) + "   " + types, &lv_font_montserrat_20, DAY);
   String text = en["entry"] | ""; text.replace("\n", " ");
   label(right, text, &lv_font_montserrat_28, INK, LV_PCT(100));
+  JsonArray native = en["native"].as<JsonArray>();   // T-407: NATIVE, as the game's area page says it
+  if (native.size()) {
+    String lines; for (JsonVariant n : native) lines += (lines.length() ? "\n" : "") + String((const char *)n);
+    label(right, "NATIVE", &lv_font_montserrat_16, DAY);
+    label(right, lines, &lv_font_montserrat_20, INK, LV_PCT(100));
+  }
   lv_obj_t *r = row(right);                          // C-99: read aloud, in the INDEX voice, as the phone's LISTEN
   listening = en["species"] | 0;
   netHush(); voiceSaidWas = net.message;

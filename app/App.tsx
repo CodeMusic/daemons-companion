@@ -1512,7 +1512,7 @@ function TalkSettingsCard({ ink }: { ink: string }) {
 // ---- C-24: the save's own INDEX -- what was seen and bound, as the game shows it, each entry in the save's edition's
 // voice; and OPUS's margin beside an entry, when the save holds OPUS and the game would show one.
 type IndexEntry = { national: number; species: number; name: string; bound: boolean; art: string | null;
-                    category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string } };
+                    category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string }; native?: string[] };
 type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
 
 // C-85: any INDEX entry read aloud, one at a time (the user, 2026-10-08). The voice takes a moment to make, so LISTEN
@@ -1624,6 +1624,12 @@ function IndexScreen({ ink }: { ink: string }) {
                                onListen={() => voice.listen(e.species)} onStop={voice.stop} />
               ) : null}
               {voice.failed && open === e.national ? <Small color="$color8">{voice.failed}</Small> : null}
+              {e.native?.length ? (   /* T-407: NATIVE, as the game's area page says it */
+                <YStack gap={2}>
+                  <Eyebrow>NATIVE</Eyebrow>
+                  {e.native.map((n) => <Text key={n} fontFamily="$mono" fontSize={13} color="$color11">{n}</Text>)}
+                </YStack>
+              ) : null}
               {e.margin ? (
                 <YStack borderLeftWidth={3} borderLeftColor="$color9" paddingLeft={10}>
                   <Text fontSize={14} lineHeight={21} fontStyle="italic" color="$color11">{flat(e.margin.text)}</Text>

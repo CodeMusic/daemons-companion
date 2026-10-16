@@ -416,7 +416,11 @@ script:
     then:
       - if:
           condition:
-            wifi.connected:
+            and:
+              - wifi.connected:
+              - lambda: |-
+                  int p = id(voice_assistant_phase);
+                  return p == ${voice_assist_idle_phase_id} || p == ${voice_assist_muted_phase_id} || p == ${voice_assist_not_ready_phase_id};
           then:
             - http_request.get:
                 url: !lambda 'return id(companion_url).state + "/api/device/face?via=wifi&device=" + App.get_name();'
@@ -558,7 +562,9 @@ script:
             - lambda: id(voice_assistant_phase) = ${voice_assist_muted_phase_id};
 
 # C-138: the face moves -- a blink every few seconds when idle, the mouth while it speaks, the marks otherwise -- and
-# the screen is drawn again only when the frame changes. The companion is asked about the face every 20 s.
+# the screen is drawn again only when the frame changes. A whole frame takes about 280 ms on this bus, so while it LISTENS
+# (the microphone streaming to Home Assistant) it holds still; and the companion is asked about the face every 20 s, but
+# only while nothing is being said.
 interval:
   - interval: 150ms
     then:
@@ -566,6 +572,7 @@ interval:
           if (id(init_in_progress) || id(s3_box_lcd).get_active_page() != id(face_page)) return;
           int p = id(voice_assistant_phase), t = ++id(face_tick), f;
           if (p == ${voice_assist_idle_phase_id}) f = (t % 27 == 26) ? 1 : 0;
+          else if (p == ${voice_assist_listening_phase_id}) f = 0;
           else if (p == ${voice_assist_replying_phase_id}) f = (t / 2) % 2;
           else if (p == ${voice_assist_muted_phase_id}) f = 0;
           else f = (t / 3) % 2;

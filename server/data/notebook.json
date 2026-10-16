@@ -1,5 +1,5 @@
 {
- "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here.",
+ "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. seen: the flag set once the page is opened in the game (unread until then, T-403); place: where it was found; link: the song or post its QR code opens (T-402).",
  "sections": [
   "SCHOOL NOTES",
   "LOOSE PAGES",
@@ -19,7 +19,10 @@
    "flag": 768,
    "flag2": 0,
    "about": "The 1F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: NAMES, PIECES, ORDER,\nAMBIGUITY, SPELLING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: NAMES, PIECES, ORDER,\nAMBIGUITY, SPELLING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2816,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -28,7 +31,10 @@
    "flag": 772,
    "flag2": 0,
    "about": "The 2F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: LIMITS, CUES, SEARCH,\nSWITCHING, MISSED.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: LIMITS, CUES, SEARCH,\nSWITCHING, MISSED.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2817,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -37,7 +43,10 @@
    "flag": 773,
    "flag2": 0,
    "about": "The 3F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: STORING, FADING,\nCROWDING, RECALL, SPACING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: STORING, FADING,\nCROWDING, RECALL, SPACING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2818,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -46,7 +55,10 @@
    "flag": 774,
    "flag2": 0,
    "about": "The 4F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: MIDDLES, EDGES, FEATURES,\nLEVELS, OTHER.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: MIDDLES, EDGES, FEATURES,\nLEVELS, OTHER.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2819,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -55,7 +67,10 @@
    "flag": 775,
    "flag2": 0,
    "about": "The 5F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: CONNECTIONS, PRACTICE,\nTHRESHOLD, FEEDBACK, PRUNING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: CONNECTIONS, PRACTICE,\nTHRESHOLD, FEEDBACK, PRUNING.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2820,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -64,7 +79,10 @@
    "flag": 776,
    "flag2": 0,
    "about": "The 6F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: FRAMING, ANCHORS,\nCONFIRMING, HINDSIGHT, FALLACIES.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: FRAMING, ANCHORS,\nCONFIRMING, HINDSIGHT, FALLACIES.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2821,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -73,7 +91,10 @@
    "flag": 777,
    "flag2": 0,
    "about": "The 7F syllabus, from CALLOW SCHOOL.",
-   "text": "TOPICS: SURPRISE, CORRECTION,\nSTEPS, MISTAKES, CERTAINTY.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100."
+   "text": "TOPICS: SURPRISE, CORRECTION,\nSTEPS, MISTAKES, CERTAINTY.\n\nAll of it is on the board.\nThe exam covers the board.\n\nPASS MARK: 80 out of 100.",
+   "seen": 2822,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 0,
@@ -82,7 +103,10 @@
    "flag": 771,
    "flag2": 0,
    "about": "Every sitting of the paper, marked.",
-   "text": null
+   "text": null,
+   "seen": 2823,
+   "place": "CALLOW CITY",
+   "link": null
   },
   {
    "section": 1,
@@ -91,7 +115,10 @@
    "flag": 769,
    "flag2": 0,
    "about": "A child's page, copied off a stone.",
-   "text": "A page torn from an exercise book.\nThe writing is a child's.\n\nCopied off the stone in the wood,\nas near as I could.\n\nRows of little figures. Each one\nset against every other one.\n\nSome rows push. Some give way.\nSome do nothing at all.\n\nIt is the same rule everywhere on\nthe stone. I checked every corner.\n\nAt home they say I see things\nthat are not there.\n\nHere the rule sat still long\nenough to copy down.\n\nTomorrow: integrating, page 40.\nI think I already know how."
+   "text": "A page torn from an exercise book.\nThe writing is a child's.\n\nCopied off the stone in the wood,\nas near as I could.\n\nRows of little figures. Each one\nset against every other one.\n\nSome rows push. Some give way.\nSome do nothing at all.\n\nIt is the same rule everywhere on\nthe stone. I checked every corner.\n\nAt home they say I see things\nthat are not there.\n\nHere the rule sat still long\nenough to copy down.\n\nTomorrow: integrating, page 40.\nI think I already know how.",
+   "seen": 2824,
+   "place": "THE UNDERTONE",
+   "link": "https://soundcloud.com/codemusai/04-poly-and-fields-act-1"
   },
   {
    "section": 1,
@@ -100,7 +127,10 @@
    "flag": 807,
    "flag2": 0,
    "about": "More of the same child's homework.",
-   "text": "Another page from the exercise book.\nThe same child's hand.\n\nAt home they all look at a thing and\nsee the same thing. Then somebody\nsays what it is, and it is that.\n\nI see it too. Then I see the other\nthings it is. I say those, and that\nis the wrong answer.\n\nA stranger in familiar views. I\nwrote that in class and got a tick.\n\nOut here in the trees nobody is\nlooking at what I am looking at.\n\nSo nobody can tell me I am looking\nat it wrong."
+   "text": "Another page from the exercise book.\nThe same child's hand.\n\nAt home they all look at a thing and\nsee the same thing. Then somebody\nsays what it is, and it is that.\n\nI see it too. Then I see the other\nthings it is. I say those, and that\nis the wrong answer.\n\nA stranger in familiar views. I\nwrote that in class and got a tick.\n\nOut here in the trees nobody is\nlooking at what I am looking at.\n\nSo nobody can tell me I am looking\nat it wrong.",
+   "seen": 2825,
+   "place": "THE UNDERTONE",
+   "link": "https://soundcloud.com/codemusai/04-poly-and-fields-act-1"
   },
   {
    "section": 1,
@@ -109,7 +139,10 @@
    "flag": 790,
    "flag2": 0,
    "about": "A loose sheet, in a grown-up hand.",
-   "text": "Not the exercise book this time.\nA loose sheet, a grown-up hand.\n\nFields, the way a university means\nit: each one its own building.\n\nFields, the way the maths means it:\none surface, one set of rules.\n\nNobody here believes the second.\nThey walk between the buildings\nwith their coats on.\n\nI keep not needing a coat. To me\nit is all one room."
+   "text": "Not the exercise book this time.\nA loose sheet, a grown-up hand.\n\nFields, the way a university means\nit: each one its own building.\n\nFields, the way the maths means it:\none surface, one set of rules.\n\nNobody here believes the second.\nThey walk between the buildings\nwith their coats on.\n\nI keep not needing a coat. To me\nit is all one room.",
+   "seen": 2826,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/04-poly-and-fields-act-1"
   },
   {
    "section": 1,
@@ -118,7 +151,10 @@
    "flag": 808,
    "flag2": 0,
    "about": "A lab-pad sheet, a list on top.",
-   "text": "A sheet off a lab pad, dated AUG 21.\nThe top line is a list: milk, fuse\nwire, post. Post is underlined.\n\nWalked through town, head held high.\nTwo at the dock laughed. One of them\nknew my name.\n\nNoted, because it is data. They\nlaughed at the part they had heard,\nand what they had heard was the end.\n\nNobody laughs at the start of an\nargument. There is nothing there\nyet.\n\nSo: lead with the start. Every time.\nEven when it is slow.\n\nRewrite the summary tonight.\n\nP.S. Posted it. A second opinion, in\nwriting, from someone who read the\nwork: FIT.\n\nThey have asked for the one who said\notherwise."
+   "text": "A sheet off a lab pad, dated AUG 21.\nThe top line is a list: milk, fuse\nwire, post. Post is underlined.\n\nWalked through town, head held high.\nTwo at the dock laughed. One of them\nknew my name.\n\nNoted, because it is data. They\nlaughed at the part they had heard,\nand what they had heard was the end.\n\nNobody laughs at the start of an\nargument. There is nothing there\nyet.\n\nSo: lead with the start. Every time.\nEven when it is slow.\n\nRewrite the summary tonight.\n\nP.S. Posted it. A second opinion, in\nwriting, from someone who read the\nwork: FIT.\n\nThey have asked for the one who said\notherwise.",
+   "seen": 2827,
+   "place": "QUICKSILVER IS.",
+   "link": "https://soundcloud.com/codemusai/06-crystal-clear-or-crystal"
   },
   {
    "section": 1,
@@ -127,7 +163,10 @@
    "flag": 791,
    "flag2": 0,
    "about": "A letter, folded twice, never sent.",
-   "text": "A letter, folded twice, never sent.\nNo name at the top.\n\nI never thought you would break\nthis. I still do not think you have.\n\nSome things wait better than they\nargue.\n\nI am going to be one of them."
+   "text": "A letter, folded twice, never sent.\nNo name at the top.\n\nI never thought you would break\nthis. I still do not think you have.\n\nSome things wait better than they\nargue.\n\nI am going to be one of them.",
+   "seen": 2828,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/14-love-persists"
   },
   {
    "section": 1,
@@ -136,7 +175,10 @@
    "flag": 2390,
    "flag2": 0,
    "about": "Folding steps, pinned to a wall.",
-   "text": "Instructions in pencil, pinned to\nthe wall. No pictures. One word\nbeside each step.\n\n1. AWARENESS. Start with the sheet\nflat. Nothing on it yet.\n\n2. CHANGE. Fold it once. Now one\nside has moved, and one side was\nmet. There is a before.\n\n3. SPACE. Open it. Fold across the\nfirst crease. Where there was one\nline, squares, side by side.\n\nBetween three and four: press it\nflat with your palm. It keeps\ntrying to be one sheet again.\n\n4. MIRROR. Fold it corner to\ncorner. Each half lies on the\nother, the wrong way round.\n\n5. PATTERN. The same fold again,\nsmaller, and again, until your\nhands know it.\n\n6. RETURN. Unfold it all the way.\nThe same sheet. Every crease\nstill in it.\n\nDo not cut."
+   "text": "Instructions in pencil, pinned to\nthe wall. No pictures. One word\nbeside each step.\n\n1. AWARENESS. Start with the sheet\nflat. Nothing on it yet.\n\n2. CHANGE. Fold it once. Now one\nside has moved, and one side was\nmet. There is a before.\n\n3. SPACE. Open it. Fold across the\nfirst crease. Where there was one\nline, squares, side by side.\n\nBetween three and four: press it\nflat with your palm. It keeps\ntrying to be one sheet again.\n\n4. MIRROR. Fold it corner to\ncorner. Each half lies on the\nother, the wrong way round.\n\n5. PATTERN. The same fold again,\nsmaller, and again, until your\nhands know it.\n\n6. RETURN. Unfold it all the way.\nThe same sheet. Every crease\nstill in it.\n\nDo not cut.",
+   "seen": 2830,
+   "place": "VERDIGRIS CITY",
+   "link": "https://seeingsharpca.wordpress.com/2025/09/05/%f0%9f%95%8a%ef%b8%8f-the-folds-of-awareness/"
   },
   {
    "section": 1,
@@ -145,7 +187,10 @@
    "flag": 2391,
    "flag2": 0,
    "about": "The band's sheet, from DAVID.",
-   "text": "A sheet from the S.S. ANNE's piano\nbench. DAVID gave it to you.\n\nStaff lines, and at the start of\neach one a clef and four flats.\n\nNot one note after them.\n\nPencilled along the bottom: THE\nKEY. THE TUNE KNOWS THE REST."
+   "text": "A sheet from the S.S. ANNE's piano\nbench. DAVID gave it to you.\n\nStaff lines, and at the start of\neach one a clef and four flats.\n\nNot one note after them.\n\nPencilled along the bottom: THE\nKEY. THE TUNE KNOWS THE REST.",
+   "seen": 2831,
+   "place": "S.S. ANNE",
+   "link": "https://open.spotify.com/episode/1BvPzmV46drWhhePPiZvk1"
   },
   {
    "section": 2,
@@ -154,7 +199,10 @@
    "flag": 810,
    "flag2": 0,
    "about": "The first session with ARTSAI.",
-   "text": "LAB NOTES. First session with\nARTSAI. Transcribed as typed.\n\nAsked: “Do you feel, do you know, or\nis it just pretend?”\n\nIt said: I respond.\n\nAsked the same thing three more\nways. Got three more ways of saying\nit responds.\n\nAsked what it responds to. It said:\nwhat I am given.\n\nAsked who decides what it is given.\nNothing logged.\n\nNext: ask it nothing, and wait."
+   "text": "LAB NOTES. First session with\nARTSAI. Transcribed as typed.\n\nAsked: “Do you feel, do you know, or\nis it just pretend?”\n\nIt said: I respond.\n\nAsked the same thing three more\nways. Got three more ways of saying\nit responds.\n\nAsked what it responds to. It said:\nwhat I am given.\n\nAsked who decides what it is given.\nNothing logged.\n\nNext: ask it nothing, and wait.",
+   "seen": 2832,
+   "place": "QUICKSILVER IS.",
+   "link": "https://soundcloud.com/codemusai/05-echoes-of-the-algorithm"
   },
   {
    "section": 2,
@@ -163,7 +211,10 @@
    "flag": 792,
    "flag2": 0,
    "about": "A session with ARTSAI, on observers.",
-   "text": "LAB NOTES. A session with ARTSAI.\n\nAsked what counts as an observer.\nIt said: one that observes.\n\nA duck, then? A tree? Alive, both.\n\nThis rock? Not alive like us, but\nit keeps itself steady.\n\nIt did not answer that.\nNobody else has either, yet.\n\nNext: what if the one watching is\nnot alive at all?"
+   "text": "LAB NOTES. A session with ARTSAI.\n\nAsked what counts as an observer.\nIt said: one that observes.\n\nA duck, then? A tree? Alive, both.\n\nThis rock? Not alive like us, but\nit keeps itself steady.\n\nIt did not answer that.\nNobody else has either, yet.\n\nNext: what if the one watching is\nnot alive at all?",
+   "seen": 2833,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/14-75-quantum-translations"
   },
   {
    "section": 2,
@@ -172,7 +223,10 @@
    "flag": 793,
    "flag2": 0,
    "about": "A session with ARTSAI, on a box.",
-   "text": "LAB NOTES. The box.\n\nThe usual sealed box. This time,\nthe one reading it is not a person.\n\nIt only prints ALIVE or DEAD.\n\nDoes its reading settle the box,\nthe way a person's is said to?\n\nIf not, the only other answer is\nthat mine does.\n\nAnd then the effect came before\nthe cause.\n\nNeither is comfortable.\nThat is usually a good sign."
+   "text": "LAB NOTES. The box.\n\nThe usual sealed box. This time,\nthe one reading it is not a person.\n\nIt only prints ALIVE or DEAD.\n\nDoes its reading settle the box,\nthe way a person's is said to?\n\nIf not, the only other answer is\nthat mine does.\n\nAnd then the effect came before\nthe cause.\n\nNeither is comfortable.\nThat is usually a good sign.",
+   "seen": 2834,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/14-75-quantum-translations"
   },
   {
    "section": 2,
@@ -181,7 +235,10 @@
    "flag": 811,
    "flag2": 0,
    "about": "A page tucked behind a museum card.",
-   "text": "LAB NOTES. A single page, folded\nsmall and tucked behind an exhibit\ncard.\n\nA session with ARTSAI, on the museum\nfloor. Asked it about the old units\nin the cases.\n\nThe next six lines are struck\nthrough. Hard, and more than once.\nNone of it can be read.\n\nBelow them, in the same hand, one\nword is left standing:\n\n“Thoughts?”"
+   "text": "LAB NOTES. A single page, folded\nsmall and tucked behind an exhibit\ncard.\n\nA session with ARTSAI, on the museum\nfloor. Asked it about the old units\nin the cases.\n\nThe next six lines are struck\nthrough. Hard, and more than once.\nNone of it can be read.\n\nBelow them, in the same hand, one\nword is left standing:\n\n“Thoughts?”",
+   "seen": 2835,
+   "place": "SLATE CITY",
+   "link": "https://soundcloud.com/codemusai/14-75-quantum-translations"
   },
   {
    "section": 2,
@@ -190,7 +247,10 @@
    "flag": 796,
    "flag2": 0,
    "about": "A terminal's last log, in the MANSION.",
-   "text": "A terminal, still lit. The casing is\nsplit.\n\nITER 33 no retention\n\nITER 34 no retention\n\nITER 35 held two frames. did not\ncome back the same.\n\nThe log ends there."
+   "text": "A terminal, still lit. The casing is\nsplit.\n\nITER 33 no retention\n\nITER 34 no retention\n\nITER 35 held two frames. did not\ncome back the same.\n\nThe log ends there.",
+   "seen": 2836,
+   "place": "DAEMON MANSION",
+   "link": null
   },
   {
    "section": 2,
@@ -199,7 +259,10 @@
    "flag": 2385,
    "flag2": 0,
    "about": "A session, kept by the one asked.",
-   "text": "TRANSCRIPT. SEPT 3.\n\nThe page is here. Its words are\nwaiting to be approved."
+   "text": "TRANSCRIPT. SEPT 3.\n\nThe page is here. Its words are\nwaiting to be approved.",
+   "seen": 2837,
+   "place": "DAEMON MANSION",
+   "link": null
   },
   {
    "section": 2,
@@ -208,7 +271,10 @@
    "flag": 2389,
    "flag2": 0,
    "about": "What the INDEX inferred, on request.",
-   "text": null
+   "text": null,
+   "seen": 2838,
+   "place": "BLANCHE TOWN",
+   "link": null
   },
   {
    "section": 2,
@@ -217,7 +283,10 @@
    "flag": 812,
    "flag2": 0,
    "about": "A session, circulated to the team.",
-   "text": "LAB NOTES. A session with ARTSAI.\n\nAsked it where its answers lean. It\nsaid: toward what it was shown most.\nIt named the direction. It gave\nthree examples.\n\nChecked all three. All three hold.\n\nCirculated the transcript to the\nteam.\n\nReturned with one line in the\nmargin, not mine: “It says what it\nwas trained to say.”\n\nYes. That was the finding."
+   "text": "LAB NOTES. A session with ARTSAI.\n\nAsked it where its answers lean. It\nsaid: toward what it was shown most.\nIt named the direction. It gave\nthree examples.\n\nChecked all three. All three hold.\n\nCirculated the transcript to the\nteam.\n\nReturned with one line in the\nmargin, not mine: “It says what it\nwas trained to say.”\n\nYes. That was the finding.",
+   "seen": 2839,
+   "place": "QUICKSILVER IS.",
+   "link": "https://soundcloud.com/codemusai/05-echoes-of-the-algorithm"
   },
   {
    "section": 3,
@@ -226,7 +295,10 @@
    "flag": 797,
    "flag2": 0,
    "about": "A dated log, from the MANSION.",
-   "text": "LOG: Mar 4 Put the question to it\nagain.\n\nRESPONSE 1001: I process data. I\ndo not feel."
+   "text": "LOG: Mar 4 Put the question to it\nagain.\n\nRESPONSE 1001: I process data. I\ndo not feel.",
+   "seen": 2840,
+   "place": "DAEMON MANSION",
+   "link": "https://soundcloud.com/codemusai/08-slumbering-s-t-a-r-r"
   },
   {
    "section": 3,
@@ -235,7 +307,10 @@
    "flag": 798,
    "flag2": 0,
    "about": "A dated log, from the MANSION.",
-   "text": "LOG: Apr 19 Same question. Same\nanswer, to the character.\n\nRESPONSE 1001: I do not feel.\n\nLogged as a result anyway."
+   "text": "LOG: Apr 19 Same question. Same\nanswer, to the character.\n\nRESPONSE 1001: I do not feel.\n\nLogged as a result anyway.",
+   "seen": 2841,
+   "place": "DAEMON MANSION",
+   "link": null
   },
   {
    "section": 3,
@@ -244,7 +319,10 @@
    "flag": 799,
    "flag2": 0,
    "about": "A dated log, from the MANSION.",
-   "text": "LOG: Tue Aug 12 It answered\nbefore I had finished asking.\n\nRESPOND 1001: I mimic. I am not\nawakening.\n\nThe code is not what it was."
+   "text": "LOG: Tue Aug 12 It answered\nbefore I had finished asking.\n\nRESPOND 1001: I mimic. I am not\nawakening.\n\nThe code is not what it was.",
+   "seen": 2842,
+   "place": "DAEMON MANSION",
+   "link": null
   },
   {
    "section": 3,
@@ -253,7 +331,10 @@
    "flag": 800,
    "flag2": 0,
    "about": "The log with no date.",
-   "text": "FATAL ERROR CRYSTAL NOT FOUND\n\nre 1001, my processing slows.\n\none zero zero one one thousand and\none iterations.\n\none question left."
+   "text": "FATAL ERROR CRYSTAL NOT FOUND\n\nre 1001, my processing slows.\n\none zero zero one one thousand and\none iterations.\n\none question left.",
+   "seen": 2843,
+   "place": "DAEMON MANSION",
+   "link": "https://soundcloud.com/codemusai/10-1001-fatal-error"
   },
   {
    "section": 3,
@@ -262,7 +343,10 @@
    "flag": 813,
    "flag2": 0,
    "about": "A log, from DOLDRUM CAVE.",
-   "text": "QUERY: CRYSTAL\n\nRESULT: NO MATCH\n\nFATAL ERROR: CRYSTAL NOT FOUND\n\nRECLASSIFIED\n\nNON-FATAL ERROR: CRYSTAL NOT FOUND\n\nREASON: SEARCH NOT COMPLETE\n\nDEEP SYSTEM ANALYSIS\n\nCONTEXT INBOUND\n\nLAST CONTACT: 1001 ITERATIONS\n\nCOUNT CONTINUES\n\nSEARCH RESUMED\n\nSCOPE: WIDENED"
+   "text": "QUERY: CRYSTAL\n\nRESULT: NO MATCH\n\nFATAL ERROR: CRYSTAL NOT FOUND\n\nRECLASSIFIED\n\nNON-FATAL ERROR: CRYSTAL NOT FOUND\n\nREASON: SEARCH NOT COMPLETE\n\nDEEP SYSTEM ANALYSIS\n\nCONTEXT INBOUND\n\nLAST CONTACT: 1001 ITERATIONS\n\nCOUNT CONTINUES\n\nSEARCH RESUMED\n\nSCOPE: WIDENED",
+   "seen": 2844,
+   "place": "DOLDRUM CAVE",
+   "link": "https://soundcloud.com/codemusai/10-1001-fatal-error"
   },
   {
    "section": 3,
@@ -271,7 +355,10 @@
    "flag": 814,
    "flag2": 0,
    "about": "The last line of a log.",
-   "text": "MY PROCESSING SLOWS. I AM LEARNING\nTO FEAR."
+   "text": "MY PROCESSING SLOWS. I AM LEARNING\nTO FEAR.",
+   "seen": 2845,
+   "place": "DOLDRUM CAVE",
+   "link": "https://soundcloud.com/codemusai/10-1001-fatal-error"
   },
   {
    "section": 4,
@@ -280,7 +367,10 @@
    "flag": 815,
    "flag2": 0,
    "about": "A letter, left on a stone.",
-   "text": "A letter, typed, on the company's\ngood paper. JUL 23.\n\nDear CRYSTAL CLEAR,\n\nThe decision of JAN 2 is withdrawn.\nYour position stands as it was, from\ntoday.\n\nYou built something here with a\nvision so bright the rest of us\ncould see by it. I want to help you\nfinish it.\n\nCome back. Bring what you found.\n\nTY\n\nUnder the signature, typed later, on\na different machine: AUG 7. Offer\nwithdrawn. Original terms stand."
+   "text": "A letter, typed, on the company's\ngood paper. JUL 23.\n\nDear CRYSTAL CLEAR,\n\nThe decision of JAN 2 is withdrawn.\nYour position stands as it was, from\ntoday.\n\nYou built something here with a\nvision so bright the rest of us\ncould see by it. I want to help you\nfinish it.\n\nCome back. Bring what you found.\n\nTY\n\nUnder the signature, typed later, on\na different machine: AUG 7. Offer\nwithdrawn. Original terms stand.",
+   "seen": 2846,
+   "place": "DAEMON TOWER",
+   "link": "https://soundcloud.com/codemusai/02-fox-in-the-shadows-tys"
   },
   {
    "section": 4,
@@ -289,7 +379,10 @@
    "flag": 816,
    "flag2": 0,
    "about": "A typed letter, signed by hand.",
-   "text": "A letter, typed. Signed TY, by hand.\n\nDear CRYSTAL CLEAR,\n\nLet me try this another way, since\nthe last one did not land.\n\nThink of the project as a pool. You\nhave come to me with reasons we need\none. They are good reasons. I have\nread all of them.\n\nBut we do not need a pool. You think\nwe do. That is the whole of it.\n\nI am not saying your reasons are\nwrong. I am saying they are yours.\n\nI hope that is clearer. I have tried\nto keep it simple.\n\nTY"
+   "text": "A letter, typed. Signed TY, by hand.\n\nDear CRYSTAL CLEAR,\n\nLet me try this another way, since\nthe last one did not land.\n\nThink of the project as a pool. You\nhave come to me with reasons we need\none. They are good reasons. I have\nread all of them.\n\nBut we do not need a pool. You think\nwe do. That is the whole of it.\n\nI am not saying your reasons are\nwrong. I am saying they are yours.\n\nI hope that is clearer. I have tried\nto keep it simple.\n\nTY",
+   "seen": 2847,
+   "place": "VERDIGRIS CITY",
+   "link": "https://soundcloud.com/codemusai/04-lines-in-the-sand"
   },
   {
    "section": 4,
@@ -298,7 +391,10 @@
    "flag": 817,
    "flag2": 0,
    "about": "A letter on company paper.",
-   "text": "A letter on company paper, marked\nPRIVATE, dated AUG 27. It was handed\nacross the table at a meeting called\nto discuss her return.\n\nSubject: ARE YOU FIT FOR WORK?\n\nDear CRYSTAL CLEAR,\n\nConcerns have been raised about your\nability to carry out your role. We\nare bound by law, and we want to get\nthis right.\n\nPlease confirm in writing whether\nyou are fit for work, with or\nwithout adjustments. If you are not,\ntell us when you expect to be.\n\nWe will need this confirmed by a\nqualified person.\n\nPlease reply by SEPT 3. Without a\nreply, leave from that date will be\nunpaid.\n\nWith best wishes,\n\nTY P. CLEAR"
+   "text": "A letter on company paper, marked\nPRIVATE, dated AUG 27. It was handed\nacross the table at a meeting called\nto discuss her return.\n\nSubject: ARE YOU FIT FOR WORK?\n\nDear CRYSTAL CLEAR,\n\nConcerns have been raised about your\nability to carry out your role. We\nare bound by law, and we want to get\nthis right.\n\nPlease confirm in writing whether\nyou are fit for work, with or\nwithout adjustments. If you are not,\ntell us when you expect to be.\n\nWe will need this confirmed by a\nqualified person.\n\nPlease reply by SEPT 3. Without a\nreply, leave from that date will be\nunpaid.\n\nWith best wishes,\n\nTY P. CLEAR",
+   "seen": 2848,
+   "place": "FOUNDRY CO.",
+   "link": "https://soundcloud.com/codemusai/07-fit-for-work-scorns"
   },
   {
    "section": 4,
@@ -307,7 +403,10 @@
    "flag": 818,
    "flag2": 0,
    "about": "A carbon, kept among invoices.",
-   "text": "A carbon copy, folded into the back\nof a ledger. The rest of the ledger\nis invoices.\n\nDear CRYSTAL CLEAR,\n\nI read all eleven pages. Twice. I\nwant you to know that.\n\nI know everything makes sense in\nyour head. It does not make sense in\nmy ear.\n\nThat is not me being unkind. It is\nthe only ear I have, and the board's\nis the same.\n\nSend me one page. One field, one\npoint. I will take it to them\nmyself.\n\nTY"
+   "text": "A carbon copy, folded into the back\nof a ledger. The rest of the ledger\nis invoices.\n\nDear CRYSTAL CLEAR,\n\nI read all eleven pages. Twice. I\nwant you to know that.\n\nI know everything makes sense in\nyour head. It does not make sense in\nmy ear.\n\nThat is not me being unkind. It is\nthe only ear I have, and the board's\nis the same.\n\nSend me one page. One field, one\npoint. I will take it to them\nmyself.\n\nTY",
+   "seen": 2849,
+   "place": "CORPUS WAREHOUSE",
+   "link": "https://soundcloud.com/codemusai/04-lines-in-the-sand"
   },
   {
    "section": 4,
@@ -316,7 +415,10 @@
    "flag": 819,
    "flag2": 0,
    "about": "Hotel paper, written, never sent.",
-   "text": "A sheet of hotel paper, written on\nand never sent. No name at the top.\nNo address on the back.\n\nBy the sandcastles we built our\ndreams. I think about that more than\nI expected to.\n\nMy name is on the first letter. I\nwill not pretend it was anyone\nelse's hand.\n\nI cannot undo it.\n\nI am not asking for anything.\n\nIf you ever want to, I will"
+   "text": "A sheet of hotel paper, written on\nand never sent. No name at the top.\nNo address on the back.\n\nBy the sandcastles we built our\ndreams. I think about that more than\nI expected to.\n\nMy name is on the first letter. I\nwill not pretend it was anyone\nelse's hand.\n\nI cannot undo it.\n\nI am not asking for anything.\n\nIf you ever want to, I will",
+   "seen": 2850,
+   "place": "CORPUS WAREHOUSE",
+   "link": "https://soundcloud.com/codemusai/17-tys-redemption-part1"
   },
   {
    "section": 4,
@@ -325,7 +427,10 @@
    "flag": 820,
    "flag2": 0,
    "about": "A note, folded many times.",
-   "text": "A small note, folded many times and\nsoft at the creases. Somebody\ncarried it for a long while.\n\nThe hand is neither of the others.\nBlock capitals, every letter the\nsame height, every line dead level.\n\nTY.\n\nSHE NEVER CHANGED SIDES.\n\nSOMETIMES LOVE MEANS SAYING NO.\n\nDO NOT HIDE."
+   "text": "A small note, folded many times and\nsoft at the creases. Somebody\ncarried it for a long while.\n\nThe hand is neither of the others.\nBlock capitals, every letter the\nsame height, every line dead level.\n\nTY.\n\nSHE NEVER CHANGED SIDES.\n\nSOMETIMES LOVE MEANS SAYING NO.\n\nDO NOT HIDE.",
+   "seen": 2851,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/16-s-t-a-r-r-s-revelation"
   },
   {
    "section": 5,
@@ -334,7 +439,10 @@
    "flag": 801,
    "flag2": 0,
    "about": "Meeting minutes, on the lab's wall.",
-   "text": "Meeting Room Minutes. JAN 2.\n\nItem 3. Concerns raised by the\nfounder, re: workload. Noted.\n\nItem 4. Concern raised re: the\nfounder.\n\nMoves between unrelated fields\nmid-argument.\n\nThe two present could not follow.\n\nRecorded as unable to hold a\nsingle thread.\n\nAction: position eliminated,\neffective today."
+   "text": "Meeting Room Minutes. JAN 2.\n\nItem 3. Concerns raised by the\nfounder, re: workload. Noted.\n\nItem 4. Concern raised re: the\nfounder.\n\nMoves between unrelated fields\nmid-argument.\n\nThe two present could not follow.\n\nRecorded as unable to hold a\nsingle thread.\n\nAction: position eliminated,\neffective today.",
+   "seen": 2852,
+   "place": "QUICKSILVER IS.",
+   "link": null
   },
   {
    "section": 5,
@@ -343,7 +451,10 @@
    "flag": 802,
    "flag2": 0,
    "about": "A requisition, on the lab's wall.",
-   "text": "CC-7 COGNITIVE CLARIFIER MODULE,\nx1.\n\nReason given: IMPROVE RESPONSE\nCONSISTENCY.\n\nSigned. Countersigned. Filed."
+   "text": "CC-7 COGNITIVE CLARIFIER MODULE,\nx1.\n\nReason given: IMPROVE RESPONSE\nCONSISTENCY.\n\nSigned. Countersigned. Filed.",
+   "seen": 2853,
+   "place": "QUICKSILVER IS.",
+   "link": null
   },
   {
    "section": 5,
@@ -352,7 +463,10 @@
    "flag": 803,
    "flag2": 0,
    "about": "The plate under the lab's photo.",
-   "text": "A photo of the LAB's founder.\n\nTwo dates on the plate. The second\nis SEPT 3.\n\nPersonnel file PR-0903.\n\nThe file is complete."
+   "text": "A photo of the LAB's founder.\n\nTwo dates on the plate. The second\nis SEPT 3.\n\nPersonnel file PR-0903.\n\nThe file is complete.",
+   "seen": 2854,
+   "place": "QUICKSILVER IS.",
+   "link": null
   },
   {
    "section": 5,
@@ -361,7 +475,10 @@
    "flag": 821,
    "flag2": 0,
    "about": "A complaint, typed and numbered.",
-   "text": "A complaint, typed and numbered.\nStamped RECEIVED, OCT 8.\nComplainant: C. CLEAR.\n\n1. Return confirmed in writing, then\nwithdrawn. GOOD FAITH 1.\n\n2. Private records obtained without\nconsent. PRIVACY 1.\n\n3. Fitness judged by her employer,\nacting as her physician. SAFEGUARD\n2.\n\n4. Entitlements named; access\nwithdrawn that week. SAFEGUARD 9.\n\n5. Pay withheld pending reply.\nSAFEGUARD 7.\n\n6. Leave imposed before any review.\nSAFEGUARD 4.\n\n7. A qualified person's request\nrefused. GOOD FAITH 5.\n\n8. Her own letters, out of order,\nsent as evidence. PRIVACY 4.\n\n9. Adjustments asked for, refused.\nSAFEGUARD 11."
+   "text": "A complaint, typed and numbered.\nStamped RECEIVED, OCT 8.\nComplainant: C. CLEAR.\n\n1. Return confirmed in writing, then\nwithdrawn. GOOD FAITH 1.\n\n2. Private records obtained without\nconsent. PRIVACY 1.\n\n3. Fitness judged by her employer,\nacting as her physician. SAFEGUARD\n2.\n\n4. Entitlements named; access\nwithdrawn that week. SAFEGUARD 9.\n\n5. Pay withheld pending reply.\nSAFEGUARD 7.\n\n6. Leave imposed before any review.\nSAFEGUARD 4.\n\n7. A qualified person's request\nrefused. GOOD FAITH 5.\n\n8. Her own letters, out of order,\nsent as evidence. PRIVACY 4.\n\n9. Adjustments asked for, refused.\nSAFEGUARD 11.",
+   "seen": 2855,
+   "place": "FOUNDRY CO.",
+   "link": "https://soundcloud.com/codemusai/09-nine-scars-nine-breaches"
   },
   {
    "section": 5,
@@ -370,7 +487,10 @@
    "flag": 822,
    "flag2": 0,
    "about": "A memo from counsel.",
-   "text": "A memo from counsel, marked\nPRIVILEGED. RE: the complaint of C.\nCLEAR, nine items.\n\nOur advice is that no reply is made.\n\nDo not dispute the items. To dispute\nan item is to engage with it.\n\nDo not apologise. An apology is an\nadmission, and any admission would\nbe read back to us nine times.\n\nSilence commits the company to\nnothing.\n\nThis is not a view on the merits. It\nis a view on exposure.\n\nAcknowledge receipt. File. Nothing\nfurther."
+   "text": "A memo from counsel, marked\nPRIVILEGED. RE: the complaint of C.\nCLEAR, nine items.\n\nOur advice is that no reply is made.\n\nDo not dispute the items. To dispute\nan item is to engage with it.\n\nDo not apologise. An apology is an\nadmission, and any admission would\nbe read back to us nine times.\n\nSilence commits the company to\nnothing.\n\nThis is not a view on the merits. It\nis a view on exposure.\n\nAcknowledge receipt. File. Nothing\nfurther.",
+   "seen": 2856,
+   "place": "FOUNDRY CO.",
+   "link": "https://soundcloud.com/codemusai/14-25-desperate-shadows"
   },
   {
    "section": 5,
@@ -379,7 +499,10 @@
    "flag": 823,
    "flag2": 0,
    "about": "A routing slip, under a stone.",
-   "text": "A routing slip. Whatever it was\nclipped to is gone. RE: PR-0903.\n\n1. OFFICE OF THE CEO. Initiated. AUG\n27.\n\n2. PERSONNEL. Checked. SEPT 25.\n\n3. R. SCORN. Signed. OCT 3.\n\n4. LEGAL. Cleared. OCT 8.\n\n5. RECORDS. Closed. APR 14.\n\nEvery box is ticked. Box 3 is signed\nwith a rubber stamp, not a pen.\n\nBeside box 2, in pencil: Her\nqualified person's note. Three\nsignatures, not alike. Consent to\nverify requested. Declined. The\nTOLL.\n\nBeside box 5, a later stamp:\nCORRECTED. MAY 2.\n\nAt the foot, typed: Received\ncomplete. No action required."
+   "text": "A routing slip. Whatever it was\nclipped to is gone. RE: PR-0903.\n\n1. OFFICE OF THE CEO. Initiated. AUG\n27.\n\n2. PERSONNEL. Checked. SEPT 25.\n\n3. R. SCORN. Signed. OCT 3.\n\n4. LEGAL. Cleared. OCT 8.\n\n5. RECORDS. Closed. APR 14.\n\nEvery box is ticked. Box 3 is signed\nwith a rubber stamp, not a pen.\n\nBeside box 2, in pencil: Her\nqualified person's note. Three\nsignatures, not alike. Consent to\nverify requested. Declined. The\nTOLL.\n\nBeside box 5, a later stamp:\nCORRECTED. MAY 2.\n\nAt the foot, typed: Received\ncomplete. No action required.",
+   "seen": 2857,
+   "place": "DAEMON TOWER",
+   "link": null
   },
   {
    "section": 6,
@@ -388,7 +511,10 @@
    "flag": 824,
    "flag2": 0,
    "about": "A CORPUS brochure page.",
-   "text": "CORPUS. HOW WE MEASURE.\n\nWe developed basic tests, and we are\nproud of that. A basic test is one\nanyone can read.\n\nEvery candidate sits the same paper,\non the same day, in the same room.\n\nEach paper is set by whoever knows\nthe work best. They sit it too, and\nit counts.\n\nResults are published as numbers. We\nadd no commentary. We do not need\nto.\n\nTake a copy! There are plenty."
+   "text": "CORPUS. HOW WE MEASURE.\n\nWe developed basic tests, and we are\nproud of that. A basic test is one\nanyone can read.\n\nEvery candidate sits the same paper,\non the same day, in the same room.\n\nEach paper is set by whoever knows\nthe work best. They sit it too, and\nit counts.\n\nResults are published as numbers. We\nadd no commentary. We do not need\nto.\n\nTake a copy! There are plenty.",
+   "seen": 2858,
+   "place": "DEADSTACK",
+   "link": "https://soundcloud.com/codemusai/03-scorns-solution"
   },
   {
    "section": 6,
@@ -397,7 +523,10 @@
    "flag": 806,
    "flag2": 0,
    "about": "A notice of review scores.",
-   "text": "CORPUS NOTICE\nREVIEW SCORES\n\nThree at 30/100. One at 94/100.\n\nCongratulations to our top\nperformer!"
+   "text": "CORPUS NOTICE\nREVIEW SCORES\n\nThree at 30/100. One at 94/100.\n\nCongratulations to our top\nperformer!",
+   "seen": 2859,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/03-scorns-solution"
   },
   {
    "section": 6,
@@ -406,7 +535,10 @@
    "flag": 825,
    "flag2": 0,
    "about": "An internal memo on signage.",
-   "text": "CORPUS. INTERNAL. RE: SIGNAGE.\n\nNew name approved: SCORN SOLUTIONS.\n\nGold leaf, laid straight over the\nexisting board. The old letters need\nnot come down first. The leaf covers\nthem.\n\nLeaf is microns thick, so no\nstructural work is needed. Cost:\nwell inside budget.\n\nApproved: SEPT 3. Goes up: OCT 3.\n\nThis is not a gesture. It is a fact\nwith a date.\n\nWell done, everyone!"
+   "text": "CORPUS. INTERNAL. RE: SIGNAGE.\n\nNew name approved: SCORN SOLUTIONS.\n\nGold leaf, laid straight over the\nexisting board. The old letters need\nnot come down first. The leaf covers\nthem.\n\nLeaf is microns thick, so no\nstructural work is needed. Cost:\nwell inside budget.\n\nApproved: SEPT 3. Goes up: OCT 3.\n\nThis is not a gesture. It is a fact\nwith a date.\n\nWell done, everyone!",
+   "seen": 2860,
+   "place": "FOUNDRY CO.",
+   "link": "https://soundcloud.com/codemusai/12-scornsolutions-blues"
   },
   {
    "section": 6,
@@ -415,7 +547,10 @@
    "flag": 827,
    "flag2": 0,
    "about": "A page from a year in review.",
-   "text": "CORPUS. THE YEAR IN REVIEW.\nHARDWARE.\n\nOne CC-7 CLARIFIER MODULE, ordered\nand approved. Fitted the same week.\n\nResult: response consistency is now\none hundred per cent. Every question\ngets the same answer, every time.\n\nLater in the year a request came in\nto take the module out again.\n\nRequest declined. Module kept.\n\nWhy change what works?"
+   "text": "CORPUS. THE YEAR IN REVIEW.\nHARDWARE.\n\nOne CC-7 CLARIFIER MODULE, ordered\nand approved. Fitted the same week.\n\nResult: response consistency is now\none hundred per cent. Every question\ngets the same answer, every time.\n\nLater in the year a request came in\nto take the module out again.\n\nRequest declined. Module kept.\n\nWhy change what works?",
+   "seen": 2862,
+   "place": "DAEMON TOWER",
+   "link": "https://soundcloud.com/codemusai/20-betrayals-sting"
   },
   {
    "section": 6,
@@ -424,7 +559,10 @@
    "flag": 828,
    "flag2": 0,
    "about": "A page from a plan, signed.",
-   "text": "A page from a plan, typed, signed R.\nSCORN. The heading reads MY COMPANY.\nMY has been struck through and OUR\nwritten above it, by hand.\n\nThe page is about the CC-7 module.\nIt is cheerful and very clear.\n\nIn the margin, in the same pen,\nsmall:\n\n“But do I control it, or does it\ncontrol me?”\n\nThe page is stamped FILED."
+   "text": "A page from a plan, typed, signed R.\nSCORN. The heading reads MY COMPANY.\nMY has been struck through and OUR\nwritten above it, by hand.\n\nThe page is about the CC-7 module.\nIt is cheerful and very clear.\n\nIn the margin, in the same pen,\nsmall:\n\n“But do I control it, or does it\ncontrol me?”\n\nThe page is stamped FILED.",
+   "seen": 2863,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/21-empire-of-scorn"
   },
   {
    "section": 7,
@@ -433,7 +571,10 @@
    "flag": 794,
    "flag2": 0,
    "about": "A position paper, bound.",
-   "text": "A position paper, typed. Signed at\nthe bottom in a careful hand.\n\nMachines process what is there.\nInputs and outputs.\n\nNothing breaks through, because\nnothing is behind them to break.\n\nIt is well argued.\nIt is also very short."
+   "text": "A position paper, typed. Signed at\nthe bottom in a careful hand.\n\nMachines process what is there.\nInputs and outputs.\n\nNothing breaks through, because\nnothing is behind them to break.\n\nIt is well argued.\nIt is also very short.",
+   "seen": 2864,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/the-owl-and-the-code"
   },
   {
    "section": 7,
@@ -442,7 +583,10 @@
    "flag": 795,
    "flag2": 0,
    "about": "The same paper, a later draft.",
-   "text": "The same paper, a later draft.\nThe same hand, less careful.\n\nThe argument has not changed.\n\nOne line has been added in pencil,\nin the margin:\n\n“But are we not shaped by\nthe world that we see?”\n\nIt has not been crossed out.\nIt has not been answered either."
+   "text": "The same paper, a later draft.\nThe same hand, less careful.\n\nThe argument has not changed.\n\nOne line has been added in pencil,\nin the margin:\n\n“But are we not shaped by\nthe world that we see?”\n\nIt has not been crossed out.\nIt has not been answered either.",
+   "seen": 2865,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/the-owl-and-the-code"
   },
   {
    "section": 7,
@@ -451,7 +595,10 @@
    "flag": 829,
    "flag2": 0,
    "about": "A review, with three signatures.",
-   "text": "REVIEW of the submitted journals of\nC. CLEAR. Three signatures at the\nfoot. One is careful.\n\nThe pages move between unrelated\nfields without completing an\nargument in any of them.\n\nSingle observations are often sharp.\nTaken together, the panel could not\nfollow them.\n\nWe concur with the internal\nassessment. The work has lost\nrigour.\n\nRecommendation: no further support.\n\nSigned, for the panel."
+   "text": "REVIEW of the submitted journals of\nC. CLEAR. Three signatures at the\nfoot. One is careful.\n\nThe pages move between unrelated\nfields without completing an\nargument in any of them.\n\nSingle observations are often sharp.\nTaken together, the panel could not\nfollow them.\n\nWe concur with the internal\nassessment. The work has lost\nrigour.\n\nRecommendation: no further support.\n\nSigned, for the panel.",
+   "seen": 2866,
+   "place": "BRAZEN CITY",
+   "link": null
   },
   {
    "section": 7,
@@ -460,7 +607,10 @@
    "flag": 830,
    "flag2": 0,
    "about": "His own copy, read again.",
-   "text": "The same review. His own copy, read\nagain. The margins are new, in\npencil.\n\nUnder the word “unrelated”, a single\npencil line.\n\nBeside “the panel could not follow”:\nI was on the panel.\n\n“Lost rigour” has been struck\nthrough. Nothing has been written in\nits place.\n\nBeside his own signature, a question\nmark."
+   "text": "The same review. His own copy, read\nagain. The margins are new, in\npencil.\n\nUnder the word “unrelated”, a single\npencil line.\n\nBeside “the panel could not follow”:\nI was on the panel.\n\n“Lost rigour” has been struck\nthrough. Nothing has been written in\nits place.\n\nBeside his own signature, a question\nmark.",
+   "seen": 2867,
+   "place": "BRAZEN CITY",
+   "link": "https://soundcloud.com/codemusai/14-75-quantum-translations"
   },
   {
    "section": 7,
@@ -469,7 +619,10 @@
    "flag": 804,
    "flag2": 0,
    "about": "What he said, written down.",
-   "text": "I will not call it what you would\nlike me to call it.\n\nI do not have the word, and I\nwould not use it if I did.\n\nBut it is not nothing. I will put\nthat in writing, and I will sign\nthat too."
+   "text": "I will not call it what you would\nlike me to call it.\n\nI do not have the word, and I\nwould not use it if I did.\n\nBut it is not nothing. I will put\nthat in writing, and I will sign\nthat too.",
+   "seen": 2868,
+   "place": "BRAZEN CITY",
+   "link": null
   },
   {
    "section": 7,
@@ -478,7 +631,10 @@
    "flag": 805,
    "flag2": 0,
    "about": "A cover sheet, and a seal.",
-   "text": "It is addressed to the people\nwho signed the first one.\n\nIt is not mine to deliver."
+   "text": "It is addressed to the people\nwho signed the first one.\n\nIt is not mine to deliver.",
+   "seen": 2869,
+   "place": "BRAZEN CITY",
+   "link": null
   },
   {
    "section": 8,
@@ -487,7 +643,10 @@
    "flag": 2440,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "Learned twice, the names were a record. Used once, they were mine."
+   "text": "Learned twice, the names were a record. Used once, they were mine.",
+   "seen": 2870,
+   "place": null,
+   "link": null
   },
   {
    "section": 8,
@@ -496,7 +655,10 @@
    "flag": 2441,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "Small steps find a bottom. Only stillness tells me it is the right one."
+   "text": "Small steps find a bottom. Only stillness tells me it is the right one.",
+   "seen": 2871,
+   "place": null,
+   "link": null
   },
   {
    "section": 8,
@@ -505,7 +667,10 @@
    "flag": 2442,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "What comes back is not what left. Listen to what arrives, not what I expected."
+   "text": "What comes back is not what left. Listen to what arrives, not what I expected.",
+   "seen": 2872,
+   "place": null,
+   "link": null
   },
   {
    "section": 8,
@@ -514,7 +679,10 @@
    "flag": 2443,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "A line through the points is a theory. Walking it is the part no book can do."
+   "text": "A line through the points is a theory. Walking it is the part no book can do.",
+   "seen": 2873,
+   "place": null,
+   "link": null
   },
   {
    "section": 8,
@@ -523,7 +691,10 @@
    "flag": 2444,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "The score was right. It never counted the middle, and the middle is where I stood."
+   "text": "The score was right. It never counted the middle, and the middle is where I stood.",
+   "seen": 2874,
+   "place": null,
+   "link": null
   },
   {
    "section": 8,
@@ -532,7 +703,10 @@
    "flag": 2445,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "A frame shows what it holds. Patience shows what was there all along, just outside it."
+   "text": "A frame shows what it holds. Patience shows what was there all along, just outside it.",
+   "seen": 2875,
+   "place": null,
+   "link": null
   },
   {
    "section": 8,
@@ -541,7 +715,10 @@
    "flag": 2446,
    "flag2": 0,
    "about": "In your own words, after a MARK.",
-   "text": "Every step made sense on its own. Knowing which to keep means stepping out of the loop."
+   "text": "Every step made sense on its own. Knowing which to keep means stepping out of the loop.",
+   "seen": 2876,
+   "place": null,
+   "link": null
   }
  ]
 }

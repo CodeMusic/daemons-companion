@@ -6,7 +6,7 @@
 import { StatusBar } from "expo-status-bar";
 import { DenStage } from "./Den";                    // C-113
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Image, Platform, View } from "react-native";
+import { AppState, Image, Linking, Platform, View } from "react-native";
 import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import * as SecureStore from "expo-secure-store";
@@ -820,7 +820,8 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
                  choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
                  notebook: boolean; roots: boolean[] };
-type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null }[] }[] };
+type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
+                                                                   unread?: boolean; place?: string | null; link?: string | null }[] }[] };
 
 // C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
 const PLAYER_ART = {
@@ -836,14 +837,21 @@ function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][nu
     <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
       <XStack onPress={() => setOpen((o) => !o)} justifyContent="space-between" alignItems="center" gap={10} cursor="pointer">
         <YStack flex={1}>
-          <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{page.title}</Text>
+          <XStack alignItems="center" gap={8}>
+            {/* T-403: not yet read in the game -- the game's own NOTEBOOK marks it the same way until it is opened there */}
+            {page.unread ? <YStack width={8} height={8} borderRadius={4} backgroundColor="$color9" aria-label="not yet read" /> : null}
+            <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{page.title}</Text>
+          </XStack>
           {page.about ? <Small>{page.about}</Small> : null}
+          {open && page.place ? <Small color="$color10">{`Found in ${page.place}.`}</Small> : null}
         </YStack>
         <Text fontSize={18} color="$color10">{open ? "−" : "+"}</Text>
       </XStack>
       {open ? (page.text
-        ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} color="$color12">{par.replace(/\n/g, " ")}</Text>)
+        ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} marginBottom={4} color="$color12">{par.replace(/\n/g, " ")}</Text>)
         : <Small>Written by the game from your save each time you open it there.</Small>) : null}
+      {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
+      {open && page.link ? <Action label="Listen" ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
     </YStack>
   );
 }

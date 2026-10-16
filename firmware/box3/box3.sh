@@ -20,7 +20,7 @@ if [[ ! -x "$VENV/bin/esphome" ]]; then
 fi
 cd "$HERE"
 [[ -f box3.yaml ]] || { echo "box3: copy box3.example.yaml to box3.yaml and set companion_url" >&2; exit 64; }
-if grep -q '!secret' box3.yaml && [[ ! -f secrets.yaml ]]; then
+if grep -qE '^[^#]*!secret' box3.yaml && [[ ! -f secrets.yaml ]]; then
   echo "box3: box3.yaml names secrets -- copy secrets.example.yaml to secrets.yaml and fill it in" >&2; exit 64
 fi
 cache="${ESPHOME_DATA_DIR:-$HOME/Library/Caches/esphome}"

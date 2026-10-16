@@ -760,6 +760,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
           {ON_PHONE ? <Action label={reading ? "Reading…" : "Read aloud"} onPress={() => readAloud(open.species)} ink={ink} /> : null}
         </Card>
       ) : null}
+      <NearbyCard ink={ink} />
       <MeetingsCard />
     </YStack>
   );
@@ -777,6 +778,53 @@ const whenSaid = (iso: string) => {
   const hm = t.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   return today ? `today, ${hm}` : `${t.toLocaleDateString([], { month: "short", day: "numeric" })}, ${hm}`;
 };
+// C-134, the app's side (the hub is server/src/broadcast.ts): NEARBY -- what the daemons have said or done, typed or an
+// interaction from the shared list (acts.json, bundled, so it is offered offline too), by LoRa, Bluetooth or the companion,
+// each once. Another daemon's act can be answered, once. Asked again every ten seconds while the DAEMON tab is open.
+type Cast = { id: string; name: string; kind: "say" | "act" | "reply"; text?: string; act?: string; replyTo?: string; at: string;
+              via: string[]; mine: boolean };
+type Act = { code: string; label: string; seen: string; reply: string };
+const ACTS: { acts: Act[] } = require("../server/data/acts.json");
+function castLine(c: Cast) {
+  const a = ACTS.acts.find((x) => x.code === c.act);
+  return c.kind === "say" ? `${c.name}: ${c.text ?? ""}` : `${c.name} ${(c.kind === "reply" ? a?.reply : a?.seen) ?? ""}`;
+}
+
+function NearbyCard({ ink }: { ink: string }) {
+  const [items, setItems] = useState<Cast[]>([]);
+  const [text, setText] = useState("");
+  const [note, setNote] = useState("");
+  const load = useCallback(() => { api<{ items: Cast[] }>("/api/broadcasts").then((r) => setItems(r.items)).catch(() => {}); }, []);
+  useEffect(() => { load(); const t = setInterval(load, 10000); return () => clearInterval(t); }, [load]);
+  const send = async (body: object) => {
+    try { await api("/api/broadcast", body); setNote(""); load(); }
+    catch (e) { setNote((e as Error).message); }                 // e.g. no daemon is away to say it
+  };
+  const answered = (id: string) => items.some((o) => o.replyTo === id && o.mine);
+  return (
+    <Card>
+      <Eyebrow>NEARBY</Eyebrow>
+      {items.length ? items.slice(-8).map((c) => (
+        <XStack key={c.id} alignItems="center" gap={8} justifyContent="space-between">
+          <Text flex={1} fontSize={15} lineHeight={21} color={c.mine ? "$color10" : "$color12"}>{castLine(c)}</Text>
+          {c.kind === "act" && !c.mine && !answered(c.id)
+            ? <Action label="Answer" ink={ink} onPress={() => send({ kind: "reply", act: c.act, replyTo: c.id })} /> : null}
+        </XStack>
+      )) : <Small>Nothing said yet.</Small>}
+      <XStack gap={8} alignItems="center" marginTop={6}>
+        <Input flex={1} value={text} maxLength={40} onChangeText={setText} placeholder="Say something to every daemon nearby"
+               backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={14}
+               onSubmitEditing={() => { if (text.trim()) { send({ kind: "say", text: text.trim() }); setText(""); } }} />
+        <Action label="Say" ink={ink} onPress={() => { if (text.trim()) { send({ kind: "say", text: text.trim() }); setText(""); } }} />
+      </XStack>
+      <XStack gap={6} flexWrap="wrap">
+        {ACTS.acts.map((a) => <Action key={a.code} label={a.label} ink={ink} onPress={() => send({ kind: "act", act: a.code })} />)}
+      </XStack>
+      {note ? <Small color="$color10">{note}</Small> : null}
+    </Card>
+  );
+}
+
 function MeetingsCard() {
   const [m, setM] = useState<{ meetings: Meeting[]; messages?: Message[]; heardOurs: { at: string } | null; lastListen: Listen } | null>(null);
   useEffect(() => { api<any>("/api/meetings").then(setM).catch(() => {}); }, []);

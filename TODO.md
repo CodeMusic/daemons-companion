@@ -28,13 +28,15 @@ at the first open one. Each names its ticket; the ticket holds the detail.
    kept inside (the Pro wants one more flash for that). Since: the plain T-Embed, the T-Deck (C-123), the Fire with LoRa
    (C-123), the CC1101 with the cards (C-124), and both Dials -- out of touch since 10 October, given the networks and the
    address by the bridge; each on its own Wi-Fi, its daemon in five expressions, WHISPER one press from ROUTINES (qa
-   15Oct2026 C121 14). Still to see: the CoreS3, the StickS3, the T-Watch (a cable to find), the Tab5 (goal 4).*
+   15Oct2026 C121 14). The CoreS3: flashed (its new build taking, unlike C-89's first try), the bridge's networks,
+   seen (qa 15Oct2026 C121 15) -- its battery at 3%, left on USB. Still to see: the StickS3, the T-Watch (a cable to
+   find), the Tab5 (goal 4).*
 4. **The Tab5 re-paired** and its den and care seen (C-77, C-119; *waits on the user: the site's SETTINGS, PAIR A
    PHONE*).
-6. **WHISPER within reach on the boards with no radios of their own** (C-118; *the user, 2026-10-15, asking how WHISPER
+6. ~~**WHISPER within reach on the boards with no radios of their own**~~ (C-118; *the user, 2026-10-15, asking how WHISPER
    is reached on the M5 Cores*: below the whole party, about seven presses from home). ROUTINES now opens on the RADIOS
-   row -- WHISPER, UPLINK -- with the party after it: A+C, C to ROUTINES, B, B. *Built; bench.py photographs it on the
-   next M5GO, Fire or T-Display-S3 Pro on the cable.*
+   row -- WHISPER, UPLINK -- with the party after it: A+C, C to ROUTINES, B, B. ***Done 2026-10-15*** *(2c38a9e; seen on
+   the CoreS3: ROUTINES opened on RADIOS, its press WHISPER and UPLINK -- qa 15Oct2026 C121 15).*
 5. ~~**A bench check for every board**~~ -- so the time with the boards on the cable goes on seeing, not setting up.
    ***Built 2026-10-15***: *`firmware/esp32/bench.py` finds every board on the cable and makes a sheet for each: its
    screen at rest; on the three-button boards `check_keys.py` (C-121: a button held, let go, and the care heard by the

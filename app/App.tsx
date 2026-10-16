@@ -893,19 +893,112 @@ const MARK_ART = [require("../server/data/art/mark_1.png"), require("../server/d
 const reflow = (t: string) => t.split(/\n\n+/).map((par) => par.replace(/\n/g, " ").trim()).filter(Boolean);
 const rgbOf = (c: number[]) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
-function Lesson({ head, lines, foot }: { head: string; lines: string[]; foot?: string }) {
+// C-140 (the user, 2026-10-16: "the text isnt organized in a way or styled to make it easy to read"): a MARK or a ROOT,
+// opened, reads as a small page -- its own heading (a MARK's in ink beside its badge, a ROOT's in its own colour), the
+// lesson's first line leading and the rest as points, and then, as the pair is earned, a small heading over each part:
+// the leader afterwards, the union PLUGIN, the insight.
+type Wis = { root: boolean; given: boolean; insight: boolean };
+function Panel({ children }: { children: React.ReactNode }) {
+  return <YStack backgroundColor="$color2" borderRadius={6} padding={14} gap={10} marginTop={4}>{children}</YStack>;
+}
+function SubHead({ children }: { children: React.ReactNode }) {
+  return <Text fontFamily="$mono" fontSize={11} fontWeight="700" letterSpacing={2} color="$color10" marginTop={6}>{children}</Text>;
+}
+function Para({ children, lead }: { children: React.ReactNode; lead?: boolean }) {
+  return <Text fontSize={lead ? 17 : 15} lineHeight={lead ? 25 : 22} fontWeight={lead ? "600" : "400"} color="$color12">{children}</Text>;
+}
+function Points({ lines }: { lines: string[] }) {
   return (
-    <YStack backgroundColor="$color2" borderRadius={4} padding={12} gap={6} marginTop={4}>
-      <Text fontFamily="$mono" fontSize={14} fontWeight="700" letterSpacing={1} color="$color12">{head}</Text>
-      {lines.map((l, i) => <Text key={i} fontSize={15} lineHeight={22} color="$color12">{l}</Text>)}
-      {foot ? <Small color="$color10">{foot}</Small> : null}
+    <YStack gap={6}>
+      {lines.map((l, i) => (
+        <XStack key={i} gap={8} alignItems="flex-start">
+          <Text fontSize={15} lineHeight={22} color="$color9">•</Text>
+          <Text flex={1} fontSize={15} lineHeight={22} color="$color12">{l}</Text>
+        </XStack>
+      ))}
     </YStack>
   );
 }
+function Quote({ children }: { children: React.ReactNode }) {
+  return (
+    <YStack borderLeftWidth={3} borderColor="$color9" paddingLeft={10}>
+      <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color12">{children}</Text>
+    </YStack>
+  );
+}
+const rootOfMark = (n: number) => {        // the understanding a MARK pairs with (marks.json wisdom.root_flag)
+  const f = (MARKS.marks[n].wisdom as { root_flag?: number } | undefined)?.root_flag;
+  return MARKS.understandings.findIndex((u) => (u as { flag?: number }).flag === f);
+};
 
-function MarksRow({ held, wisdom }: { held: boolean[]; wisdom?: { root: boolean; given: boolean; insight: boolean }[] }) {
+function MarkPage({ n, w }: { n: number; w?: Wis }) {
+  const m = MARKS.marks[n];
+  const paras = m.lesson.flatMap(reflow)
+    .map((l, i) => (i === 0 && l.toUpperCase().startsWith(m.title.toUpperCase() + ".") ? l.slice(m.title.length + 1).trim() : l))  // the heading says it
+    .filter(Boolean);
+  const r = rootOfMark(n), root = r >= 0 ? MARKS.understandings[r] : null;
+  return (
+    <Panel>
+      <XStack gap={10} alignItems="center">
+        <Image source={MARK_ART[n]} style={{ width: 20, height: 20 }} resizeMode="contain" />
+        <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color="$color12">{m.title.toUpperCase()}</Text>
+      </XStack>
+      {paras.length ? <Para lead>{paras[0]}</Para> : null}
+      {paras.length > 1 ? <Points lines={paras.slice(1)} /> : null}
+      <Small color="$color10">{`From the BENCHMARK in ${m.found}.`}</Small>
+      {m.wisdom && w ? (
+        <YStack gap={6}>
+          <SubHead>{w.root && root ? `${m.wisdom.leader}, WITH ${root.name}` : `${m.wisdom.leader}, AFTERWARDS`}</SubHead>
+          <Para>{(w.root ? m.wisdom.with : m.wisdom.without).join(" ")}</Para>
+          {w.given ? (
+            <>
+              <SubHead>UNION PLUGIN</SubHead>
+              <Text fontFamily="$mono" fontSize={14} fontWeight="700" color="$color12">{`${m.wisdom.union_plugin} · ${m.wisdom.union_routine}`}</Text>
+              <Points lines={m.wisdom.explain} />
+            </>
+          ) : null}
+          {w.insight ? (
+            <>
+              <SubHead>{`INSIGHT · ${m.wisdom.virtue}`}</SubHead>
+              <Quote>{m.wisdom.insight}</Quote>
+            </>
+          ) : null}
+        </YStack>
+      ) : null}
+    </Panel>
+  );
+}
+
+function RootPage({ i, marks, wisdom }: { i: number; marks: boolean[]; wisdom?: Wis[] }) {
+  const u = MARKS.understandings[i];
+  const n = MARKS.marks.findIndex((_, k) => rootOfMark(k) === i);
+  const m = n >= 0 ? MARKS.marks[n] : null;
+  return (
+    <Panel>
+      <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color={rgbOf(u.rgb)}>{u.name}</Text>
+      {u.lesson ? <Para lead>{u.lesson}</Para> : <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color10">Its lesson is still being written.</Text>}
+      <Small color="$color10">{`Arrived at: ${u.found}.`}</Small>
+      {m && marks[n] ? (
+        <YStack gap={6}>
+          <SubHead>PAIRED WITH</SubHead>
+          <XStack gap={8} alignItems="center">
+            <Image source={MARK_ART[n]} style={{ width: 18, height: 18 }} resizeMode="contain" />
+            <Text fontFamily="$mono" fontSize={14} fontWeight="700" color="$color12">{m.title.toUpperCase()}</Text>
+          </XStack>
+          {wisdom?.[n]?.insight && m.wisdom ? (
+            <>
+              <SubHead>{`INSIGHT · ${m.wisdom.virtue}`}</SubHead>
+              <Quote>{m.wisdom.insight}</Quote>
+            </>
+          ) : null}
+        </YStack>
+      ) : null}
+    </Panel>
+  );
+}
+
+function MarksRow({ held, wisdom }: { held: boolean[]; wisdom?: Wis[] }) {
   const [at, setAt] = useState<number | null>(null);
-  const m = at === null ? null : MARKS.marks[at];
   return (
     <YStack paddingVertical={8} gap={8}>
       <XStack justifyContent="space-between"><Eyebrow>MARKS</Eyebrow><Text fontSize={16} color="$color12">{held.filter(Boolean).length} of 8</Text></XStack>
@@ -917,27 +1010,14 @@ function MarksRow({ held, wisdom }: { held: boolean[]; wisdom?: { root: boolean;
           </YStack>
         ))}
       </XStack>
-      {m ? (held[at!]
-        ? <YStack gap={6}>
-            <Lesson head={m.title.toUpperCase()} foot={`From the BENCHMARK in ${m.found}.`}
-                    lines={m.lesson.flatMap(reflow).filter((l, i) => !(i === 0 && l.replace(/\.$/, "").toUpperCase() === m.title.toUpperCase()))} />
-            {/* C-133: what its leader says after the win -- where to come back, until its understanding is held; then the
-                two together, the union PLUGIN once given, and the insight once it has arrived (T-389, T-390) */}
-            {m.wisdom && wisdom?.[at!] ? (
-              <Lesson head={`${m.wisdom.leader}, AFTERWARDS`}
-                      lines={[...(wisdom[at!].root ? m.wisdom.with : m.wisdom.without),
-                              ...(wisdom[at!].given ? [`${m.wisdom.union_plugin}: ${m.wisdom.union_routine}.`, ...m.wisdom.explain] : [])]}
-                      foot={wisdom[at!].insight ? `INSIGHT, ${m.wisdom.virtue}: ${m.wisdom.insight}` : undefined} />
-            ) : null}
-          </YStack>
-        : <Lesson head={`MARK ${at! + 1}`} lines={["Not yet earned."]} />) : null}
+      {at === null ? null : held[at] ? <MarkPage n={at} w={wisdom?.[at]} />
+        : <Panel><Text fontSize={15} color="$color10">{`MARK ${at + 1} -- not yet earned.`}</Text></Panel>}
     </YStack>
   );
 }
 
-function RootsRow({ held }: { held: boolean[] }) {
+function RootsRow({ held, marks, wisdom }: { held: boolean[]; marks: boolean[]; wisdom?: Wis[] }) {
   const [at, setAt] = useState<number | null>(null);
-  const u = at === null ? null : MARKS.understandings[at];
   return (
     <YStack paddingVertical={8} gap={8}>
       {/* the USER card's ROOTS -- each in its own colour, lit, never counted */}
@@ -950,9 +1030,8 @@ function RootsRow({ held }: { held: boolean[] }) {
                          outlineWidth={at === i ? 2 : 0} outlineColor="$color12" outlineStyle="solid" />;
         })}
       </XStack>
-      {u ? (held[at!]
-        ? <Lesson head={u.name} lines={[u.lesson ?? "Its lesson is still being written."]} foot={`Arrived at: ${u.found}.`} />
-        : <Lesson head="ROOTS" lines={["Not yet."]} />) : null}
+      {at === null ? null : held[at] ? <RootPage i={at} marks={marks} wisdom={wisdom} />
+        : <Panel><Text fontSize={15} color="$color10">Not yet.</Text></Panel>}
     </YStack>
   );
 }
@@ -1271,7 +1350,7 @@ function ProfileScreen() {
         <Fact label="DIPLOMA">{p.diploma ? "earned" : "not yet"}</Fact>
         <Fact label="OPUS">{p.opus ? "carried" : "not carried"}</Fact>
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
-        {p.roots ? <RootsRow held={p.roots} /> : null}
+        {p.roots ? <RootsRow held={p.roots} marks={p.marks} wisdom={p.wisdom} /> : null}
       </Card>
       {p.groves ? <GrovesCard found={p.groves} /> : null}
       <EventsCard />

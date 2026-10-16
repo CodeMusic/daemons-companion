@@ -25,8 +25,10 @@ at the first open one. Each names its ticket; the ticket holds the detail.
    loop sends after the drawing, and no task. The Fire flashed again with faa415e. The T-Display-S3 Pro, the T-Embed
    CC1101 and the SI4732: flashed and seen (401f168; qa 15Oct2026 C121 7, 8) -- all three had the companion's old
    address, and a STATE line down the cable gave them the new one; glad's heart was cut off by their short dens, now
-   kept inside (the Pro wants one more flash for that). Not yet on the cable today: the plain T-Embed, the T-Deck, the
-   CoreS3, the two Dials, the Tab5 (goal 4).*
+   kept inside (the Pro wants one more flash for that). Since: the plain T-Embed, the T-Deck (C-123), the Fire with LoRa
+   (C-123), the CC1101 with the cards (C-124), and both Dials -- out of touch since 10 October, given the networks and the
+   address by the bridge; each on its own Wi-Fi, its daemon in five expressions, WHISPER one press from ROUTINES (qa
+   15Oct2026 C121 14). Still to see: the CoreS3, the StickS3, the T-Watch (a cable to find), the Tab5 (goal 4).*
 4. **The Tab5 re-paired** and its den and care seen (C-77, C-119; *waits on the user: the site's SETTINGS, PAIR A
    PHONE*).
 6. **WHISPER within reach on the boards with no radios of their own** (C-118; *the user, 2026-10-15, asking how WHISPER

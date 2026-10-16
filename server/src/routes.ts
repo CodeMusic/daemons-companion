@@ -12,6 +12,9 @@ import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
 const REGIONS = regionsJson;
+import grovesJson from "../data/groves.json" with { type: "json" };
+import schoolJson from "../data/school.json" with { type: "json" };
+const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
 import { awayNow, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
 
@@ -22,7 +25,7 @@ export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/marks", "/api/regions", "/api/progress", "/api/index", "/api/party", "/api/daemon/life"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/index", "/api/party", "/api/daemon/life"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -53,6 +56,8 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       return row ? ok({ ...row, entry: row.entry[h.edition] }) : no(404, "no such species");
     }
     if (path === "/api/regions") return ok(REGIONS);   // C-131: the two regions' maps, for the Tab5 (no save needed)
+    if (path === "/api/groves") return ok(GROVES);     // C-137: the groves' universes and signs, for the Tab5 (no save needed)
+    if (path === "/api/school") return ok(SCHOOL);     // C-137: CALLOW SCHOOL's floors and the paper, for the Tab5
     if (path === "/api/marks") return ok(MARKS);   // C-131: each MARK's and understanding's words, for the Tab5 (no save needed)
     const save = h.save.read();
     if (!save) return no(404, NO_SAVE);

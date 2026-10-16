@@ -24,6 +24,23 @@ again only when the daemon, its expression or its den changed. Until the compani
 carried, each phase shows ESPHome's own illustration instead -- the box is never less than the voice assistant it was.
 `npx tsx server/tools/boxface.ts OUT.png NAME...` draws the sheet of them.
 
+## The daemon's words (C-142)
+
+The face is the daemon; so can the words be. The companion speaks enough of Ollama's API for Home Assistant's own
+**Ollama** integration to take a daemon as its model -- its answers come from the companion's talk (n8n `daemon/talk`),
+in the daemon's own voice, as the app and the handhelds have them.
+
+1. The companion listens on the network (the site's SETTINGS), and its **Home Assistant** card shows **the daemon as
+   its assistant**: an address ending `/ollama/<key>`. Give it to no one else; **New address** makes another.
+2. In Home Assistant: Settings, Devices & services, Add integration, **Ollama**, and that address. Choose the model
+   **daemon** -- the daemon this box carries, whichever that is -- or one daemon by its name. Leave "Control Home
+   Assistant" off: the daemon does not switch things itself.
+3. Settings, Voice assistants: in the box's assistant, the conversation agent is that Ollama agent, and **Prefer
+   handling commands locally** is on. "Turn on the kitchen light" is then done by Home Assistant before the daemon is
+   asked; everything else -- "what should I do this evening?" -- the daemon answers.
+
+When the talk cannot be reached, the daemon says so in a line rather than leaving the box silent.
+
 ## Which daemon
 
 The box is a device like the others (DEVICES, C-80): its name is `esp32-s3-box-3-` and the end of its MAC. Once it has

@@ -1966,7 +1966,8 @@ function HandheldCard({ ink }: { ink: string }) {
 // a light switched hours afterwards is not what was asked. ----
 type Thing = { id: string; name: string; kind: string; state: string; on: boolean | null; can: string[]; detail: string | null };
 type HomeView = { ok: boolean; error?: string; home?: string; rooms: { name: string; things: Thing[] }[] };
-type HomeSettings = { url: string | null; hasToken: boolean; ok: boolean; error?: string; home?: string };
+type HomeSettings = { url: string | null; hasToken: boolean; ok: boolean; error?: string; home?: string;
+                      agent?: { path: string; url: string | null; open: boolean } };   // C-142: the daemon as its agent
 const HOME_POLL_MS = 30000;
 let homeTalk: string | null = null;       // the assistant's conversation, kept for follow-ups while the app is open
 
@@ -1999,6 +2000,12 @@ const HOME_WORDS = {
   kept: "A token is kept.", notKept: "No token yet.",                                                     // DRAFT
   notYet: "Not set up yet: Home Assistant's address and a token.",                                       // DRAFT
   connected: (home?: string) => `Connected to ${home || "Home Assistant"}.`,                             // DRAFT
+  // C-142: the daemon as Home Assistant's conversation agent
+  agentHead: "THE DAEMON AS ITS ASSISTANT",                                                                 // DRAFT
+  agentAbout: "In Home Assistant, add the Ollama integration with this address, choose the model \"daemon\" (the one the BOX-3 carries) or a daemon by name, and make it the voice assistant's conversation agent with \"Prefer handling commands locally\" on -- Home Assistant still switches the lights, and the daemon answers the rest.", // DRAFT
+  agentClosed: (path: string) => `Open the companion to the network first (SETTINGS), then the address is this computer's, port and ${path}.`, // DRAFT
+  agentRenew: "New address",                                                                                 // DRAFT
+  agentRenewSure: "Sure? Home Assistant needs the new one",                                                  // DRAFT
 };
 
 // Under a thing's name: its state where no key already says it, and what it is doing (brightness, temperature, a song)
@@ -2170,11 +2177,11 @@ function HomeScreen({ ink, goSettings }: { ink: string; goSettings: () => void }
 function HomeAssistantCard({ ink }: { ink: string }) {
   const [s, setS] = useState<HomeSettings | null>(null);
   const [url, setUrl] = useState(""), [token, setToken] = useState(""), [said, setSaid] = useState("");
-  const [busy, setBusy] = useState(false), [sure, setSure] = useState(false);
+  const [busy, setBusy] = useState(false), [sure, setSure] = useState(false), [renewSure, setRenewSure] = useState(false);
   useEffect(() => { api<HomeSettings>("/api/settings/home").then((x) => { setS(x); setUrl(x.url ?? ""); }).catch(() => {}); }, []);
   if (!s) return null;
   const W = HOME_WORDS;
-  const save = async (b: { url?: string; token?: string }) => {
+  const save = async (b: { url?: string; token?: string; renewAgentKey?: boolean }) => {
     setBusy(true); setSaid("");
     try { const x = await api<HomeSettings>("/api/settings/home", b); setS(x); setUrl(x.url ?? ""); setToken(""); }
     catch (e) { setSaid((e as Error).message); }                     // e.g. an address that is not http(s)
@@ -2200,6 +2207,16 @@ function HomeAssistantCard({ ink }: { ink: string }) {
       <Small>{s.hasToken ? W.kept : W.notKept}</Small>
       <Small color={s.ok ? "$color10" : "$color8"}>{!s.url || !s.hasToken ? W.notYet : s.ok ? W.connected(s.home) : s.error ?? ""}</Small>
       {said ? <Small color="$color9">{said}</Small> : null}
+      {s.agent ? <>
+        <Eyebrow>{W.agentHead}</Eyebrow>
+        <Small>{W.agentAbout}</Small>
+        {s.agent.url ? <Text fontFamily="$mono" fontSize={13} color="$color12" selectable>{s.agent.url}</Text>
+                     : <Small color="$color8">{W.agentClosed(s.agent.path)}</Small>}
+        <XStack gap={8} flexWrap="wrap">
+          <Action label={renewSure ? W.agentRenewSure : W.agentRenew} ink={ink}
+                  onPress={() => { if (renewSure) { setRenewSure(false); save({ renewAgentKey: true }); } else { setRenewSure(true); setTimeout(() => setRenewSure(false), 5000); } }} />
+        </XStack>
+      </> : null}
     </Card>
   );
 }

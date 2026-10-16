@@ -62,6 +62,8 @@ import { EXPRESSIONS, SHADED, faceOf, shadePalette } from "./expressions.js";
 import { FRAMES, PHASES, faceRev, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
+import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
+import { kindOf } from "./deviceid.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, entry,
          EXP_PER_STEP, daemonLife, grown, ownBeacons, type Host, type SaveFile } from "./core.js";
 
@@ -325,6 +327,63 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
+  const agentKey = (renew = false) => ollamaKey((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), renew);   // C-142
+  // C-142: the address Home Assistant's Ollama integration is given -- this machine on the network, and the key
+  const agentView = (cfg: Config) => {
+    const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
+    const path = `/ollama/${agentKey()}`;
+    return { path, url: addr ? `http://${addr}:${cfg.port}${path}` : null, open: !!addr };   // url: null until it is on the network
+  };
+  // C-142: the daemons Home Assistant can take as its agent, each by its own name, and the one `daemon` means -- the one a
+  // BOX-3 carries (the voice assistant's own), else the first away. Read only: asking never puts a daemon in a device.
+  const agentDaemons = (cfg: Config): { byName: AgentDaemon[]; fallback: AgentDaemon | null } => {
+    const away = awayNow(cfg), used = new Set<string>();
+    const as = (d: (typeof away)[number]): AgentDaemon => {
+      const row = SPECIES[String(d.species)], nickname = String(d.nickname || d.name || "daemon");
+      let model = modelOf(nickname);
+      for (let n = 2; used.has(model); n++) model = modelOf(`${nickname} ${n}`);
+      used.add(model);
+      return { model, nickname, name: String(d.name ?? ""), types: (row?.types ?? []).join("/"), category: row?.category ?? "",
+               entry: row?.entry?.[cfg.edition] ?? "" };
+    };
+    const byName = away.map(as);
+    const box = devices.list().find((r) => kindOf(r.id) === "esp32-s3-box-3");
+    const carried = box ? carryView(store, away).byDevice[box.id] : null;
+    return { byName, fallback: carried ? byName[away.indexOf(carried)] : byName[0] ?? null };
+  };
+  // C-142: Ollama's API, as much of it as Home Assistant's integration asks for (ollama.ts)
+  async function answerOllama(req: IncomingMessage, res: ServerResponse, sub: string, cfg: Config) {
+    const method = req.method ?? "GET";
+    const plain = (status: number, text: string, type: string) => { res.writeHead(status, { "content-type": type }); res.end(text); };
+    if (sub === "/" || sub === "") return plain(200, "Ollama is running", "text/plain");
+    if (method === "GET" && sub === "/api/version") return send(res, 200, { version: OLLAMA_VERSION });
+    if (method === "GET" && sub === "/api/tags") return send(res, 200, tags(agentDaemons(cfg).byName));
+    if (method === "GET" && sub === "/api/ps") return send(res, 200, { models: [] });
+    if (method === "POST" && sub === "/api/show") {
+      const b = await body(req), a = agentDaemons(cfg);
+      return send(res, 200, show(pick(String(b.model ?? b.name ?? ""), a.byName, a.fallback)));
+    }
+    if (method === "POST" && sub === "/api/pull") { await body(req); return plain(200, JSON.stringify({ status: "success" }) + "\n", "application/x-ndjson"); }
+    if (method === "POST" && sub === "/api/chat") {
+      const b = await body(req), a = agentDaemons(cfg), d = pick(String(b.model ?? ""), a.byName, a.fallback);
+      const { text, history } = heard(Array.isArray(b.messages) ? b.messages : []), stream = b.stream !== false;
+      let answer = QUIET;
+      if (text) {
+        const st = deviceState(cfg, store, new Date(), "");
+        // The companion's own talk, as the app and the handhelds have it; `place` says it is the home asking
+        const r = await n8n(cfg, "daemon/talk", {
+          text, history, provider: store.getSetting("talk.provider") ?? "auto", speak: false, voice: "index", localModel: cfg.talk.localModel,
+          place: "home",
+          daemon: d ? { nickname: d.nickname, name: d.name, types: d.types, category: d.category, entry: d.entry } : { nickname: "your daemon" },
+          day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
+          goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null });
+        if (typeof r.answer === "string" && r.answer.trim()) answer = r.answer.trim();
+      }
+      res.writeHead(200, { "content-type": stream ? "application/x-ndjson" : "application/json" });
+      return res.end(chatReply(String(b.model ?? DEFAULT_MODEL), answer, stream));
+    }
+    return send(res, 404, { error: `not here: ${method} ${sub}` });
+  }
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -343,6 +402,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return { devices: devices.list().map((r) => ({ ...r, daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
                  away: away.map(brief), unplaced: unplaced.map(brief) };
       };
+      // ---- C-142: Home Assistant's way in, by the key in its address (never through the relay) ----
+      const ol = path.match(/^\/ollama\/([A-Za-z0-9_-]{16,64})(\/.*)?$/);
+      if (ol) {
+        if (req.headers[RELAY_HEADER] !== undefined || !same(ol[1], agentKey())) return send(res, 404, { error: "not found" });
+        return await answerOllama(req, res, ol[2] ?? "/", ecfg);
+      }
       // With "host": "0.0.0.0" the server is on the local network for a device -- and only the device's own door
       // answers it there. Settings, SYNC, the save and the goals stay this machine's, so nothing else on the network
       // can change the save path, write the save, or open a dialog on the Mac.
@@ -417,11 +482,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // ---- C-139: HOME -- Home Assistant through this server (home.ts). Its address and token are set on this machine
       // only (LOCAL_ONLY); a paired phone, the Tab5 and the site see rooms and states, and ask for actions by name. ----
-      if (req.method === "GET" && path === "/api/settings/home") return send(res, 200, { ...home.settings(), ...(await home.check()) });
+      if (req.method === "GET" && path === "/api/settings/home")
+        return send(res, 200, { ...home.settings(), ...(await home.check()), agent: agentView(ecfg) });
       if (req.method === "POST" && path === "/api/settings/home") {
         const b = await body(req);
         try { home.set(b.url, b.token); } catch (e) { return send(res, 400, { error: (e as Error).message }); }
-        return send(res, 200, { ...home.settings(), ...(await home.check()) });
+        if (b.renewAgentKey === true) agentKey(true);               // C-142: Home Assistant must be given the new address
+        return send(res, 200, { ...home.settings(), ...(await home.check()), agent: agentView(ecfg) });
       }
       if (req.method === "GET" && path === "/api/home") return send(res, 200, await home.view());
       if (req.method === "POST" && path === "/api/home/act") {

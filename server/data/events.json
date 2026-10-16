@@ -477,7 +477,7 @@
   },
   {
    "n": 34,
-   "name": "FIRST (TANOBY)",
+   "name": "STILL (TANOBY)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
@@ -490,7 +490,7 @@
   },
   {
    "n": 35,
-   "name": "THE SCHOOL",
+   "name": "NAMING (SCHOOL)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
@@ -503,7 +503,7 @@
   },
   {
    "n": 36,
-   "name": "THE READING ROOM",
+   "name": "NOTICE (READING)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
@@ -516,7 +516,7 @@
   },
   {
    "n": 37,
-   "name": "THE NOTES",
+   "name": "REFLECT (NOTES)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
@@ -529,7 +529,7 @@
   },
   {
    "n": 38,
-   "name": "SCORN",
+   "name": "STANCE (SCORN)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
@@ -542,7 +542,7 @@
   },
   {
    "n": 39,
-   "name": "THE RETURN",
+   "name": "MEND (RETURN)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
@@ -555,7 +555,7 @@
   },
   {
    "n": 40,
-   "name": "THE GUIDE, READ",
+   "name": "PRACTICE (GUIDE)",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [

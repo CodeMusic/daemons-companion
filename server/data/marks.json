@@ -1,5 +1,5 @@
 {
- "_about": "C-126: the MARKS (badge art, STREAM lesson, town) and the UNDERSTANDINGS (brain lobe, colour, where arrived at). Understanding names are working names until the user names them (T-252); their lessons are null until T-405. Order matches profile_layout's flags.understandings.",
+ "_about": "C-126: the MARKS (badge art, STREAM lesson, town) and the UNDERSTANDINGS (brain lobe, colour, where arrived at). Understanding names are the user's (T-252, 2026-10-16); their lessons are null until T-405. Order matches profile_layout's flags.understandings.",
  "marks": [
   {
    "n": 1,
@@ -291,8 +291,8 @@
     123,
     74
    ],
-   "name": "FIRST (TANOBY)",
-   "name_is_working": true,
+   "name": "STILL",
+   "name_is_working": false,
    "found": "TANOBY CHAMBERS, its last inscription",
    "lesson": null
   },
@@ -307,8 +307,8 @@
     123,
     156
    ],
-   "name": "THE SCHOOL",
-   "name_is_working": true,
+   "name": "NAMING",
+   "name_is_working": false,
    "found": "CALLOW SCHOOL: the TEXTBOOK and the DIPLOMA",
    "lesson": null
   },
@@ -323,8 +323,8 @@
     189,
     189
    ],
-   "name": "THE READING ROOM",
-   "name_is_working": true,
+   "name": "NOTICE",
+   "name_is_working": false,
    "found": "BRAZEN's READING ROOM, with REVEAL",
    "lesson": null
   },
@@ -339,8 +339,8 @@
     156,
     41
    ],
-   "name": "THE NOTES",
-   "name_is_working": true,
+   "name": "REFLECT",
+   "name_is_working": false,
    "found": "QUICKSILVER's notes: the run logs and THE FILE",
    "lesson": null
   },
@@ -355,8 +355,8 @@
     90,
     49
    ],
-   "name": "SCORN",
-   "name_is_working": true,
+   "name": "STANCE",
+   "name_is_working": false,
    "found": "SCORN beaten, the eighth MARK",
    "lesson": null
   },
@@ -371,8 +371,8 @@
     82,
     156
    ],
-   "name": "THE RETURN",
-   "name_is_working": true,
+   "name": "MEND",
+   "name_is_working": false,
    "found": "TY met, and CRYSTAL found",
    "lesson": null
   },
@@ -387,8 +387,8 @@
     156,
     99
    ],
-   "name": "THE GUIDE, READ",
-   "name_is_working": true,
+   "name": "PRACTICE",
+   "name_is_working": false,
    "found": "THE GUIDE, read to its end",
    "lesson": null
   }

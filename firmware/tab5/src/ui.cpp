@@ -268,6 +268,60 @@ static void tapCare(lv_event_t *e) {
   netSend("POST", String("/api/daemon/") + CARE_KIND[k], "{}");
 }
 
+// ---- NEARBY (C-134, broadcasts; the hub is server/src/broadcast.ts): what the daemons have said or done -- typed, or an
+// interaction from the shared list -- by LoRa, Bluetooth or the companion, each once; an act from another daemon can be
+// answered, once. Sent through netSend, so it is kept until the companion answers. Words from the hub's own lines.
+static String castLine(JsonObject c, JsonDocument &acts) {
+  String name = c["name"] | "", kind = c["kind"] | "";
+  if (kind == "say") return name + ": " + (const char *)(c["text"] | "");
+  for (JsonObject a : acts["acts"].as<JsonArray>())
+    if (String((const char *)(a["code"] | "")) == String((const char *)(c["act"] | "")))
+      return name + " " + (const char *)(kind == "reply" ? (a["reply"] | "") : (a["seen"] | ""));
+  return name;
+}
+static void sentSay(const String &text) {
+  if (!text.length()) return;
+  JsonDocument d; d["kind"] = "say"; d["text"] = text.substring(0, 40);
+  String body; serializeJson(d, body);
+  netSend("POST", "/api/broadcast", body);
+}
+static void tapSay(lv_event_t *) { askText("Say something to every daemon nearby (40 letters)", "", false, false, sentSay); }
+static void tapAct(lv_event_t *e) {
+  JsonDocument acts = newDoc();
+  if (!kept("acts", acts)) return;
+  JsonDocument d; d["kind"] = "act"; d["act"] = acts["acts"][(int)(long)lv_event_get_user_data(e)]["code"];
+  String body; serializeJson(d, body);
+  netSend("POST", "/api/broadcast", body);
+}
+static void tapAnswer(lv_event_t *e) {
+  JsonDocument b = newDoc();
+  if (!kept("broadcasts", b)) return;
+  JsonObject c = b["items"][(int)(long)lv_event_get_user_data(e)];
+  JsonDocument d; d["kind"] = "reply"; d["act"] = c["act"]; d["replyTo"] = c["id"];
+  String body; serializeJson(d, body);
+  netSend("POST", "/api/broadcast", body);
+}
+static void drawNearby(lv_obj_t *parent) {
+  JsonDocument b = newDoc(), acts = newDoc();
+  bool haveActs = kept("acts", acts);
+  lv_obj_t *c = card(parent);
+  label(c, "NEARBY", &lv_font_montserrat_20, QUIET);
+  JsonArray items = kept("broadcasts", b) ? b["items"].as<JsonArray>() : JsonArray();
+  if (!items.size()) label(c, "Nothing said yet.", &lv_font_montserrat_20, QUIET);
+  int from = items.size() > 6 ? items.size() - 6 : 0;
+  for (int i = from; i < (int)items.size(); i++) {
+    JsonObject it = items[i];
+    lv_obj_t *r = row(c);
+    label(r, castLine(it, acts), &lv_font_montserrat_20, (it["mine"] | false) ? QUIET : INK, LV_PCT(70));
+    bool answered = false;                              // an act from another daemon, not yet answered here, may be answered
+    for (JsonObject o : items) if (String((const char *)(o["replyTo"] | "")) == String((const char *)(it["id"] | "")) && (o["mine"] | false)) answered = true;
+    if (String((const char *)(it["kind"] | "")) == "act" && !(it["mine"] | false) && !answered) button(r, "ANSWER", tapAnswer, (void *)(long)i, false);
+  }
+  lv_obj_t *s = row(c);
+  button(s, "SAY...", tapSay);
+  if (haveActs) { int k = 0; for (JsonObject a : acts["acts"].as<JsonArray>()) button(s, a["label"] | "", tapAct, (void *)(long)k++, false); }
+}
+
 static void drawDaemon(lv_obj_t *p) {
   lv_obj_set_flex_flow(p, LV_FLEX_FLOW_ROW_WRAP);          // C-96: side by side in landscape, one above the other in portrait
   lv_obj_set_style_pad_column(p, 16, 0);
@@ -312,6 +366,7 @@ static void drawDaemon(lv_obj_t *p) {
   button(right, "SYNC WITH THE GAME", tapSyncGame);
   label(right, "Close the game first: SYNC writes the save.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
   if (net.message.length()) label(right, net.message, &lv_font_montserrat_20, DAY, LV_PCT(100));
+  drawNearby(right);
 }
 
 // ---- INDEX ------------------------------------------------------------------------------------------------------------

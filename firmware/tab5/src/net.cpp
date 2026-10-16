@@ -23,7 +23,8 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 }
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
-      !strcmp(name, "groves") || !strcmp(name, "school")) return K_PROFILE;   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
+      !strcmp(name, "groves") || !strcmp(name, "school")) return K_PROFILE;
+  if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
   for (int i = 0; i < 7; i++) if (!strcmp(name, N[i])) return 1u << i;
   return 0;
@@ -310,6 +311,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/progress", "progress");           // C-137: GAME EVENTS, and CALLOW SCHOOL as the save has it
     fetchKeep("/api/groves", "groves");               // the groves' universes and signs (C-132)
     fetchKeep("/api/school", "school");               // the floors' boards and the paper (C-129)
+    fetchKeep("/api/broadcast/acts", "acts");         // C-134: the interactions every screen offers alike
     fetchKeep("/api/devices", "devices");
     fetchKeep("/api/device/state", "state");          // this Tab5's own daemon (C-80)
     shareNetworks();                                  // C-93: every device's networks
@@ -468,6 +470,7 @@ static void netTask(void *) {
         lastToday = now;
         if (outboxCount()) flushOutbox();
         fetchKeep("/api/today", "today"); fetchKeep("/api/device/state", "state");
+        fetchKeep("/api/broadcasts", "broadcasts");        // C-134: what the daemons have said, here and nearby
         if (netsDue) shareNetworks();                       // C-93
       }
     }

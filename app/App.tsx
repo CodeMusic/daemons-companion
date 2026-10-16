@@ -820,7 +820,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
                  gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
                  choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
-                 notebook: boolean; roots: boolean[]; visited?: string[] };
+                 notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
                                                                    unread?: boolean; place?: string | null; link?: string | null }[] }[] };
 
@@ -936,6 +936,36 @@ function RegionMap({ region, visited, open, cell }: { region: RegionsData["regio
       </XStack>
       <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10">{open ? region.name : "???"}</Text>
     </YStack>
+  );
+}
+
+// C-132: the groves the save has found, each its own universe as THE NEXUS's signs name it (T-408) -- only those found:
+// the rest are a thing to come across, never listed ahead.
+type GrovesData = { nexus: string; groves: { grove: string; universe: string; sign: string; family: string[] }[] };
+const GROVES: GrovesData = require("../server/data/groves.json");
+function GrovesCard({ found }: { found: string[] }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const mine = GROVES.groves.filter((g) => found.includes(g.grove));
+  if (!mine.length) return null;
+  return (
+    <Card>
+      <Eyebrow>GROVES</Eyebrow>
+      <Small>{`Beyond them all, ${GROVES.nexus}.`}</Small>
+      {mine.map((g) => (
+        <YStack key={g.grove} borderTopWidth={1} borderColor="$color5" paddingVertical={8} gap={4}>
+          <XStack onPress={() => setOpen(open === g.grove ? null : g.grove)} justifyContent="space-between" cursor="pointer">
+            <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{g.universe}</Text>
+            <Text fontSize={18} color="$color10">{open === g.grove ? "−" : "+"}</Text>
+          </XStack>
+          {open === g.grove ? (
+            <YStack gap={4}>
+              <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color12">{g.sign.replace(/\n/g, " ")}</Text>
+              {g.family.length ? <Small>{`Lives here: ${g.family.join(", ")}`}</Small> : null}
+            </YStack>
+          ) : null}
+        </YStack>
+      ))}
+    </Card>
   );
 }
 
@@ -1182,6 +1212,7 @@ function ProfileScreen() {
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
         {p.roots ? <RootsRow held={p.roots} /> : null}
       </Card>
+      {p.groves ? <GrovesCard found={p.groves} /> : null}
       <EventsCard />
       <NotebookCard />
     </YStack>

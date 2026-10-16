@@ -4,6 +4,7 @@
 import profileJson from "../../data/profile_layout.json" with { type: "json" };
 import mapsJson from "../../data/maps.json" with { type: "json" };
 import regionsJson from "../../data/regions.json" with { type: "json" };
+import grovesJson from "../../data/groves.json" with { type: "json" };
 import { blocks, decodeText, LAYOUT, type Layout } from "./reader.js";
 
 const P = profileJson;
@@ -30,7 +31,9 @@ export interface Profile {
   notebook: boolean;               // CAIRN has handed it over
   roots: boolean[];                // the seven understandings, as the USER card's brain shows them -- never a count
   visited: string[];               // C-127: every MAPSEC the save keeps a visited flag for and has set (towns, a few places)
+  groves: string[];                // C-132: every grove (its map name) the save has found -- T-408's universes
 }
+const GROVES = (grovesJson as unknown as { groves: { grove: string; found_flag: number }[] }).groves;
 
 const SECTIONS = (regionsJson as unknown as { regions: { sections: Record<string, { visited_flag: number | null }> }[] }).regions
   .flatMap((r) => Object.entries(r.sections)).filter(([, s]) => s.visited_flag != null) as [string, { visited_flag: number }][];
@@ -81,5 +84,6 @@ export function readProfile(save: Uint8Array, l: Layout = LAYOUT): Profile {
     notebook: flag(P.flags.notebook),
     roots: P.flags.understandings.map(flag),
     visited: SECTIONS.filter(([, s]) => flag(s.visited_flag)).map(([m]) => m),
+    groves: GROVES.filter((g) => flag(g.found_flag)).map((g) => g.grove),
   };
 }

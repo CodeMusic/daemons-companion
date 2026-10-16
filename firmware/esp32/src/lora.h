@@ -18,6 +18,9 @@ int loraNearby(Nearby *out, int max);                      // the last ten minut
 // Sending: 1 BEACON (I am here), 2 WAVE, 3 SAY (a word, up to 40 letters), 4 CALL (who is there? every board that
 // hears it beacons back). `to` is a tag, or 0 for everyone. False when there is no radio or nothing is carried.
 bool loraSend(uint8_t kind, uint32_t to, const String &text);
+// C-134: a broadcast, with its own number (the same on every way it goes): 3 SAY to everyone, 5 ACT (the text is the
+// act's code), 6 REPLY (the text is the answered broadcast's id, 12 hex digits, a space, and the act's code)
+bool loraCast(uint8_t kind, uint16_t id, const String &text);
 
 // C-123: a message -- typed on the T-Deck's keyboard -- to every board nearby; the last one heard, kept on the screen
 // until it is read (loraMessageRead: true if one was showing)

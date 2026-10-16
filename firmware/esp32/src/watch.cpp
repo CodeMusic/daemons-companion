@@ -2,7 +2,7 @@
 #include "app.h"
 #include "talk.h"
 
-#if defined(BOARD_CORES3) || defined(BOARD_DIAL) || defined(BOARD_TDISPLAY_PRO)
+#if defined(BOARD_CORES3) || defined(BOARD_DIAL) || defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
 #define MAIN_BUS_TOUCH 1                                  // C-102: the Dial reads its touch as the CoreS3 does; C-105 the T-Display-S3 Pro
 #endif
 
@@ -17,6 +17,7 @@ bool watchLocalTime(struct tm &) { return false; }
 long watchSteps() { return -1; }
 bool watchTalking() { return false; }
 bool watchTouchDown() { return false; }
+int watchGesture() { return 0; }
 bool watchPowerOff() { return false; }
 String watchStatus() { return "WATCH none"; }
 
@@ -45,8 +46,8 @@ static TwoWire &touchWire = Wire1;
 static XPowersAXP2101 pmu;
 static SensorPCF8563 rtc;
 static SensorBMA423 accel;
-#if defined(BOARD_TDISPLAY_PRO)
-// C-105: the T-Display-S3 Pro's CST226SE (0x5A, RST 13, INT 21), set up as LilyGO's CapacitiveTouch example sets it for
+#if defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
+// C-135: the AMOLED's touch version has a CST816 (0x15), read by the same driver. C-105: the T-Display-S3 Pro's CST226SE (0x5A, RST 13, INT 21), set up as LilyGO's CapacitiveTouch example sets it for
 // the screen turned to landscape (rotation 1): its coordinates swapped and Y mirrored, so a point is the screen's own.
 // Its home key, under the glass, goes home (homeKey, read in touchLoop).
 #include <TouchDrvCSTXXX.hpp>
@@ -112,13 +113,24 @@ void watchBegin() {
       clockSet = true;
     }
   }
-#if defined(BOARD_TDISPLAY_PRO)
+#if defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
+#if defined(BOARD_TDISPLAY_AMOLED)
+  if (!board.touch) return;                                    // C-135: the version without touch
+  touchPanel.setPins(-1, 21);
+  pinMode(21, INPUT_PULLUP);
+  for (int i = 0; i < 6 && !haveTouch; i++) { haveTouch = touchPanel.begin(touchWire, 0x15, board.sda, board.scl); if (!haveTouch) delay(15); }
+#else
   touchPanel.setPins(13, 21);
   haveTouch = touchPanel.begin(touchWire, CST226SE_SLAVE_ADDRESS, board.sda, board.scl);
+#endif
   if (haveTouch) {
+#if defined(BOARD_TDISPLAY_PRO)
     touchPanel.setMaxCoordinates(board.width, board.height);
     touchPanel.setSwapXY(true);
     touchPanel.setMirrorXY(false, true);
+#else
+    pinMode(21, INPUT_PULLUP);                                 // C-135: the CST816's interrupt, low while a finger is down
+#endif
     touchPanel.setHomeButtonCallback([](void *) { homeKey = true; });
   }
 #elif defined(MAIN_BUS_TOUCH)
@@ -195,11 +207,41 @@ bool watchTalking() { return talking; }
 // 2026-10-09: at 5% the firmware slept until the BOOT pin -- which the watch has no way to press, so it would have looked
 // dead until its battery was pulled. Off through the PMU instead: the crown starts it again.
 bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; }
-bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchPanel.getPoint(x, y, 1) > 0; }
+// One finger, in the screen's own coordinates. C-135: the AMOLED's CST816 repeats its last point while no finger is
+// down, so it is read only while its interrupt says one is (as LilyGO's own library reads it), and turned to the
+// landscape screen here: its panel is 240 wide and 536 tall.
+static uint8_t touchRead(int16_t *x, int16_t *y) {
+#if defined(BOARD_TDISPLAY_AMOLED)
+  if (digitalRead(21)) return 0;
+  int16_t rx[1], ry[1];
+  if (touchPanel.getPoint(rx, ry, 1) <= 0) return 0;
+  x[0] = ry[0]; y[0] = 239 - rx[0];
+  return 1;
+#else
+  return touchPanel.getPoint(x, y, 1);
+#endif
+}
+bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchRead(x, y) > 0; }
+
+// C-134: a routine's own screen reads the touch itself (the loop, and so touchLoop, waits while it runs): a swipe
+// either way turns, a tap presses, a hold goes back -- each reported when the finger lifts.
+int watchGesture() {
+  static bool was = false; static int16_t x0, y0, x1, y1; static uint32_t at = 0;
+  if (!haveTouch) return 0;
+  int16_t x[1], y[1];
+  bool on = touchRead(x, y) > 0;
+  if (on) { if (!was) { was = true; at = millis(); x0 = x[0]; y0 = y[0]; } x1 = x[0]; y1 = y[0]; return 0; }
+  if (!was) return 0;
+  was = false;
+  int dx = x1 - x0, dy = y1 - y0;
+  if (abs(dx) > 50 && abs(dx) > abs(dy)) return dx < 0 ? 1 : -1;
+  if (abs(dy) > 40) return dy < 0 ? 1 : -1;
+  return millis() - at > 700 ? -2 : 2;
+}
 
 String watchStatus() {
   int16_t x[1], y[1];
-  bool on = haveTouch && touchPanel.getPoint(x, y, 1) > 0;
+  bool on = haveTouch && touchRead(x, y) > 0;
   return "WATCH pmu " + String(havePmu) + " clock " + String(haveRtc) + " steps " + String(haveAccel) + " touch " +
          String(haveTouch) + (on ? " finger " + String(x[0]) + "," + String(y[0]) : " no finger");
 }
@@ -207,9 +249,13 @@ String watchStatus() {
 static bool onTalk(int x, int y) { int cx, cy; talkSpot(cx, cy); int dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= 30 * 30; }
 
 static void touchLoop(uint32_t now) {
+#if defined(BOARD_TDISPLAY_AMOLED)
+  // C-135: the CST816 asleep at start answers no one; the first finger wakes it, and the driver starts then
+  if (!haveTouch && board.touch && !digitalRead(21)) haveTouch = touchPanel.begin(touchWire, 0x15, board.sda, board.scl);
+#endif
   if (!haveTouch) return;
   int16_t xs[1], ys[1];
-  bool pressed = touchPanel.getPoint(xs, ys, 1) > 0;
+  bool pressed = touchRead(xs, ys) > 0;
 #if defined(BOARD_TDISPLAY_PRO)
   if (homeKey) {                                               // C-105: the home key under the glass goes home -- but,
     homeKey = false;                                           // asleep, it does nothing (C-79: no touch wakes it in a pocket)

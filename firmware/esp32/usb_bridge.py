@@ -245,6 +245,14 @@ def bridge(a, port):
                                                   (": " + text) if text else ""), flush=True)
                 except Exception as e:
                     print("usb_bridge: could not pass on a message (%s)" % e, flush=True)
+            elif msg.startswith("CAST "):                   # C-134: a broadcast the board sent, or heard by radio
+                try:
+                    c = json.loads(msg[5:])
+                    server_json(a.server, "/api/device/broadcast", c)
+                    print("usb_bridge: %s %s %s by %s" % ("sent" if c.get("dir") == "out" else "heard", c.get("kind"),
+                                                         c.get("text") or c.get("act") or "", c.get("via")), flush=True)
+                except Exception as e:
+                    print("usb_bridge: could not pass on a broadcast (%s)" % e, flush=True)
             elif msg.startswith("ROUTINES "):
                 try:
                     device_json(a.server, "/api/device/routines", json.loads(msg[9:]))

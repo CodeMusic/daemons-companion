@@ -18,6 +18,7 @@ String runWhatsOnTheAir(); String runFindIt();   // LONGWAVE: longwave.cpp
 String runWhatRemote();                   // FLARE: radios.cpp
 String runListenFm(); String runStaticSynth(); String runListenAm(); String runLightning();   // C-69, C-70: radio.cpp
 String runNearby(); String runCallOut();   // C-72: MESH (LoRa), lora.cpp
+#include "broadcast.h"                    // C-134: CHORUS, broadcast.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
@@ -30,15 +31,17 @@ static const Routine CONTEXT_ROUTINES[]    = { { "CHANNEL", runListenFm }, { "ST
 static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
 static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
 static const Routine MESH_ROUTINES[]       = { { "NEARBY", runNearby }, { "CALL OUT", runCallOut } };   // C-72: LoRa, DRAFT (MESH was held for it, PLAN 10)
+static const Routine CHORUS_ROUTINES[]     = { { "TO EVERY DAEMON", runToEveryone }, { "WHAT CAME", runWhatCame } };   // C-134, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
 // C-67: the types this board can run -- the CC1101's radios only where they are; Bluetooth and Wi-Fi everywhere.
-RoutineType types[8];
+RoutineType types[10];
 int typeCount = 0;
 void routinesBegin() {
   typeCount = 0;
   if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      7 };
+  types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 2 };
   else if (board.keyboard) types[typeCount++] = { "TOUCHSTONE", "a card, through a reader", NOTE_ROUTINES, 1 };   // C-124

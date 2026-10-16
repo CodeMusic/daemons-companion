@@ -2,6 +2,7 @@
 #include <Preferences.h>
 #include <mbedtls/base64.h>
 #include "app.h"
+#include "broadcast.h"
 #include "expression.h"
 #include "sound.h"
 #include "leds.h"
@@ -66,6 +67,7 @@ bool takeState(const char *json) {
   // C-82: the relay's address and this board's own key -- only ever in the state the cable's bridge carries
   if (!doc["away"].isNull()) takeAway(doc["away"]["url"] | "", doc["away"]["key"] | "");
   if (!doc["clock"].isNull()) watchSetClock(doc["clock"]["epoch"] | 0, doc["clock"]["offset"] | 0);   // C-71
+  if (doc["casts"].is<JsonArrayConst>()) castFromState(doc["casts"].as<JsonArrayConst>());   // C-134: broadcasts, once each
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   if (!doc["settings"].isNull()) takeSettings(doc["settings"]);
   meetSetOurs(doc["beacons"] | "");          // C-15: our other companions (the phone) are never a meeting

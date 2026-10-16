@@ -86,7 +86,28 @@ DEVICES = {
         r(29, 10, 2, 2, KEY, 0.5), r(29, 19, 2, 2, KEY, 0.5),
         circle(30, 15.5, 1, "#4cd964"),
     ]),
+    # the T-Display-S3 AMOLED 1.91 (C-135): a slim black board, a long AMOLED (deeper black, brighter colour), two buttons
+    "t-display-amoled": ("LilyGO", "T-Display-S3 AMOLED", [
+        r(0, 9, 32, 14, "#141518", 1.5),
+        r(2.5, 10.5, 25, 11, "#05070a", 0.5), r(3.2, 11.2, 23.6, 9.6, "#5b8cff"),
+        r(29, 11, 2, 2.5, KEY, 0.5), r(29, 18.5, 2, 2.5, KEY, 0.5),
+    ]),
     # ---- M5Stack -----------------------------------------------------------------------------------------------------
+    # the Cardputer (C-136): a light grey card, the screen at the top left, the Stamp's orange corner, four rows of keys
+    "m5-cardputer": ("M5Stack", "Cardputer", [
+        r(1, 5, 30, 22, "#d9dbd8", 2),
+        r(3, 7, 13, 8, GLASS, 0.5), r(3.6, 7.6, 11.8, 6.8, SCREEN),
+        r(18, 7, 11, 5, "#f08a24", 1),
+        *keyboard(3, 16.5, 9, 3, 2.9, 2.2, "#2b2d32"),
+    ]),
+    # the Cardputer ADV (C-136): the same card in dark grey, with its LoRa cap and aerial
+    "m5-cardputer-adv": ("M5Stack", "Cardputer ADV", [
+        r(27, 0, 1.5, 6, "#b8bdc4"),
+        r(1, 5, 30, 22, "#34363b", 2),
+        r(3, 7, 13, 8, GLASS, 0.5), r(3.6, 7.6, 11.8, 6.8, SCREEN),
+        r(18, 7, 11, 5, "#f08a24", 1),
+        *keyboard(3, 16.5, 9, 3, 2.9, 2.2, "#1a1b1e"),
+    ]),
     # the StickS3: a dark stick, an upright screen, the face button under it, the blue button on its side
     "m5-sticks3": ("M5Stack", "StickS3", [
         r(10, 2, 12, 28, "#2e3035", 3),

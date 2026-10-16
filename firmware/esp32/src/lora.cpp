@@ -29,7 +29,8 @@
 #include "radios.h"
 #include <deque>
 
-static const uint8_t K_BEACON = 1, K_WAVE = 2, K_SAY = 3, K_CALL = 4;
+static const uint8_t K_BEACON = 1, K_WAVE = 2, K_SAY = 3, K_CALL = 4, K_ACT = 5, K_REPLY = 6;   // C-134: 5, 6
+#include "broadcast.h"
 static const int HOPS = 2, HEAD = 26, TEXT_MAX = 80, NEARBY_MAX = 12, FRAME_MAX = HEAD + TEXT_MAX;
 static const uint32_t BEACON_EVERY_MS = 120000, NEARBY_FOR_MS = 600000, ROTATE_MS = 3600000;
 
@@ -80,7 +81,7 @@ bool loraTakeSaid(String &dir, String &kind, int &species, String &tag, int &rel
   return true;
 }
 
-#if defined(BOARD_TDECK) || defined(BOARD_TWATCH_S3) || defined(BOARD_M5CORE)   // the M5s: with a LoRa433 module (board.cpp)
+#if defined(BOARD_TDECK) || defined(BOARD_TWATCH_S3) || defined(BOARD_M5CORE) || defined(BOARD_CARDPUTER)   // the M5s: with a LoRa433 module (board.cpp); C-136 the Cardputer ADV's cap
 #include <RadioLib.h>
 #include <SPI.h>
 
@@ -105,11 +106,13 @@ static String msgFrom, msgText; static bool msgShown = false;
 static uint16_t ourId = 0;
 static std::deque<uint64_t> seen;                                    // FROM<<16 | ID of frames already handled
 
+// C-136: the band this board's antenna can use -- the site's, unless it is below what the antenna is made for
+static int bandFor(int asked) { return board.loraMinMhz && asked < board.loraMinMhz ? 868 : asked; }
 static bool radioOn() {
   if (ready) return true;
   if (board.loraChip == LoraChip::None || (triedAt && millis() - triedAt < 60000)) return false;
   triedAt = millis();
-  bandMhz = cfg.band;
+  bandMhz = bandFor(cfg.band);
   tft.waitDMA();
   if (!bus) {
     bool shared = board.loraSck == board.lcdSclk;                // the T-Deck: the screen's bus, as the CC1101 shares it
@@ -181,20 +184,25 @@ bool loraMessage(String &from, String &text) { if (!msgShown) return false; from
 bool loraMessageRead() { if (!msgShown) return false; msgShown = false; dirty = true; return true; }
 void loraPretendHeard(const String &name, const String &text) { msgFrom = name; msgText = text.substring(0, TEXT_MAX); msgShown = true; dirty = true; }
 
+static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id);
 bool loraSend(uint8_t kind, uint32_t to, const String &text) {
+  if (!ourId) ourId = esp_random();
+  return sendWithId(kind, to, text, ++ourId);
+}
+bool loraCast(uint8_t kind, uint16_t id, const String &text) { return sendWithId(kind, 0, text, id); }
+static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id) {
   uint32_t me = meetTag();
   if (!ready || !me || !st.carrying) return false;
   uint8_t b[FRAME_MAX]; int n = 0;
   b[n++] = 'D'; b[n++] = 'A'; b[n++] = kind; b[n++] = HOPS;
   put32(b + n, me); n += 4;
   b[n++] = st.daemon.species >> 8; b[n++] = st.daemon.species;
-  if (!ourId) ourId = esp_random();
-  ourId++; b[n++] = ourId >> 8; b[n++] = ourId;
+  b[n++] = id >> 8; b[n++] = id;
   put32(b + n, to); n += 4;
   for (int i = 0; i < 10; i++) b[n++] = i < (int)st.daemon.name.length() ? st.daemon.name[i] : ' ';
   String t = text.substring(0, TEXT_MAX);
   for (int i = 0; i < (int)t.length(); i++) b[n++] = t[i];
-  seen.push_back(((uint64_t)me << 16) | ourId); if (seen.size() > 32) seen.pop_front();   // never relay our own echo
+  seen.push_back(((uint64_t)me << 16) | id); if (seen.size() > 32) seen.pop_front();   // never relay our own echo
   airTime(b, n);
   if (kind == K_WAVE || kind == K_SAY) saidQ.push_back({ "out", kind == K_WAVE ? "wave" : "say", st.daemon.species, to, 0, t });
   return true;
@@ -214,7 +222,18 @@ static void take(const uint8_t *b, int n, int rssi) {
   int relayed = HOPS - hops;
   remember(from, species, name, relayed, rssi);
   bool forMe = to == 0 || to == me;
-  if ((kind == K_WAVE || kind == K_SAY) && forMe) {
+  // C-134: a broadcast -- a word to everyone, an act, an answer -- goes to broadcast.cpp, which shows it once however
+  // it came (and may answer it); the mesh below passes it on as any frame
+  if ((kind == K_SAY && to == 0) || kind == K_ACT || kind == K_REPLY) {
+    if (kind == K_SAY) saidQ.push_back({ "in", "say", species, from, relayed, text });
+    String body = text; uint32_t rFrom = 0; uint16_t rId = 0;
+    if (kind == K_REPLY && text.length() >= 14) {
+      rFrom = strtoul(text.substring(0, 8).c_str(), nullptr, 16); rId = strtoul(text.substring(8, 12).c_str(), nullptr, 16);
+      body = text.substring(13);
+    }
+    castIn(from, id, kind == K_SAY ? CAST_SAY : kind == K_ACT ? CAST_ACT : CAST_REPLY, species, name, body, rFrom, rId, VIA_LORA);
+  }
+  else if ((kind == K_WAVE || kind == K_SAY) && forMe) {
     saidQ.push_back({ "in", kind == K_WAVE ? "wave" : "say", species, from, relayed, text });
     banner = kind == K_WAVE ? name + " waves" : name + ": " + text; bannerUntil = millis() + 12000;   // DRAFT
     if (kind == K_SAY) { msgFrom = name; msgText = text; msgShown = true; dirty = true; }   // C-123: kept until read
@@ -241,8 +260,8 @@ static void pump() {
 
 void loraLoop(uint32_t now, bool on, int species) {
   if (!radioOn()) return;
-  if (cfg.band != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915)) {   // the site moved the band
-    bandMhz = cfg.band; tft.waitDMA(); radioBus(); radio->setFrequency((float)bandMhz); radio->startReceive();
+  if (bandFor(cfg.band) != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915)) {   // the site moved the band
+    bandMhz = bandFor(cfg.band); tft.waitDMA(); radioBus(); radio->setFrequency((float)bandMhz); radio->startReceive();
   }
   pump();
   beaconOn = on && species > 0 && meetTag(); ourSpecies = species;
@@ -382,6 +401,7 @@ bool loraReady() { return false; }
 void loraBegin() {}
 void loraLoop(uint32_t, bool, int) {}
 bool loraSend(uint8_t, uint32_t, const String &) { return false; }
+bool loraCast(uint8_t, uint16_t, const String &) { return false; }   // C-134
 bool loraCanSay() { return false; }
 bool loraSay(const String &) { return false; }
 int loraTextMax() { return 0; }

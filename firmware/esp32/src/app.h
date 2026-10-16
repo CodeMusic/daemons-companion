@@ -167,7 +167,7 @@ void batteryFake(int pct);                // C-63: BATTEST <pct> down the cable 
 typedef String (*RoutineFn)();
 struct Routine { const char *name; RoutineFn run; };
 struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
-extern RoutineType types[8];
+extern RoutineType types[10];
 extern int typeCount;
 void routinesBegin();                     // the types this board can run
 bool partyFirst();                        // C-68: ROUTINES opens the party (a board with no radios of its own)

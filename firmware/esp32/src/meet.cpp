@@ -17,6 +17,7 @@
 #include "link.h"
 #include <NimBLEDevice.h>
 #include <deque>
+#include <array>
 
 static const char *PREFIX = "dae0beac-0015-4d45-";
 static const uint32_t ROTATE_MS = 3600000, LISTEN_EVERY_MS = 180000;
@@ -35,6 +36,11 @@ static void listenEnded(NimBLEScanResults) { listenDone = true; }
 
 static String hex8(uint32_t v) { char b[9]; snprintf(b, sizeof b, "%08lx", (unsigned long)v); return b; }
 
+// C-134: broadcast pieces heard, for the main loop (broadcast.cpp), and the beacon's UUID kept to restore after a burst
+static std::deque<std::array<uint8_t, 16>> pieces;
+static char beaconUuid[40] = "";
+static bool castScan = false;
+
 // Its own name, inside its own namespace: link.cpp also had a class called Heard, and two classes of one name in one
 // program share ONE vtable at link time -- the scan called the link's callback, and heard nothing for an hour (C-15).
 namespace {
@@ -44,6 +50,17 @@ class MeetListener : public NimBLEAdvertisedDeviceCallbacks {
     for (int i = 0; i < (int)d->getServiceUUIDCount(); i++) {
       std::string u = d->getServiceUUID(i).toString();
       for (auto &c : u) c = tolower(c);
+      if (u.size() == 36 && u.compare(0, 4, "dae1") == 0) {       // C-134: a broadcast's piece
+        std::array<uint8_t, 16> b; int k = 0;
+        for (size_t j = 0; j < u.size() && k < 16; j++) {
+          if (u[j] == '-') continue;
+          b[k++] = (uint8_t)strtol(u.substr(j, 2).c_str(), nullptr, 16); j++;
+        }
+        portENTER_CRITICAL(&lock);
+        if (k == 16 && pieces.size() < 48) pieces.push_back(b);
+        portEXIT_CRITICAL(&lock);
+        continue;
+      }
       if (u.size() != 36 || u.compare(0, 19, PREFIX) != 0) continue;
       int species = strtol(u.substr(19, 4).c_str(), nullptr, 16);
       uint32_t tag = strtoul(u.substr(24, 8).c_str(), nullptr, 16);
@@ -56,28 +73,29 @@ class MeetListener : public NimBLEAdvertisedDeviceCallbacks {
   }
 };
 }  // namespace
+static MeetListener *listener() { static MeetListener *l = new MeetListener(); return l; }   // one, for both listens
 
 void meetLoop(uint32_t now, bool on, int species) {
   if (!on || species <= 0) {
-    if (beaconSpecies >= 0) { linkSetBeacon(nullptr); beaconSpecies = -1; peer = 0; }
+    if (beaconSpecies >= 0) { linkSetBeacon(nullptr); beaconSpecies = -1; peer = 0; beaconUuid[0] = 0; }
     return;
   }
   if (!peer || now - peerAt > ROTATE_MS || species != beaconSpecies) {      // a new tag every hour
     do peer = esp_random(); while (!peer);
     peerAt = now; beaconSpecies = species;
-    char uuid[40];
-    snprintf(uuid, sizeof uuid, "%s%04x-%08lx0001", PREFIX, species & 0xFFFF, (unsigned long)peer);
-    linkSetBeacon(uuid);
+    snprintf(beaconUuid, sizeof beaconUuid, "%s%04x-%08lx0001", PREFIX, species & 0xFFFF, (unsigned long)peer);
+    linkSetBeacon(beaconUuid);
   }
   NimBLEScan *scan = NimBLEDevice::getScan();
   static bool ready = false;
   if (!ready) {
-    scan->setAdvertisedDeviceCallbacks(new MeetListener(), false);
     scan->setActiveScan(true);                             // the beacon is in the scan response
-    scan->setInterval(97); scan->setWindow(37);            // a light listen: about a third of the time
     ready = true;
   }
-  if ((!listenedAt || now - listenedAt > LISTEN_EVERY_MS) && !scan->isScanning()) {
+  if ((!listenedAt || now - listenedAt > LISTEN_EVERY_MS) && (castScan || !scan->isScanning())) {
+    if (castScan) { scan->stop(); castScan = false; }            // C-134: the light listen gives way to the meeting's
+    scan->setAdvertisedDeviceCallbacks(listener(), false);      // once a device, as it always was
+    scan->setInterval(97); scan->setWindow(37);            // a light listen: about a third of the time
     listenedAt = now;
     listenDevices = 0; listenBeacons = 0;
     listenStarted = scan->start(LISTEN_S, listenEnded, false);   // in the background; the loop carries on
@@ -116,5 +134,46 @@ bool meetTakeHeard(int &species, String &tag, bool &mine) {
     if (recent.size() > 64) recent.pop_front();
     species = h.first; tag = t;
     return true;
+  }
+}
+
+// ---- C-134: broadcasts' pieces ----------------------------------------------------------------------------------------
+static uint8_t burst[8][16]; static int burstN = 0, burstAt = 0; static uint32_t burstUntil = 0, burstTurned = 0;
+static void uuidOf(const uint8_t *b, char *out) {
+  snprintf(out, 40, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", b[0], b[1], b[2], b[3], b[4], b[5],
+           b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);
+}
+void meetCastSend(const uint8_t (*p)[16], int n, uint32_t forMs) {
+  burstN = min(n, 8);
+  for (int i = 0; i < burstN; i++) memcpy(burst[i], p[i], 16);
+  burstAt = 0; burstTurned = 0; burstUntil = millis() + forMs;
+}
+bool meetCastTake(uint8_t piece[16]) {
+  portENTER_CRITICAL(&lock);
+  bool got = !pieces.empty();
+  if (got) { memcpy(piece, pieces.front().data(), 16); pieces.pop_front(); }
+  portEXIT_CRITICAL(&lock);
+  return got;
+}
+void meetCastLoop(uint32_t now) {
+  NimBLEScan *scan = NimBLEDevice::getScan();
+  static bool ready = false;
+  if (!ready) { scan->setActiveScan(true); scan->setMaxResults(0); ready = true; }   // results told, never kept: it never ends
+  // the light listen: a tenth of the time, all the time, between the meetings' four-second listens
+  static uint32_t triedAt = 0;
+  if (!scan->isScanning() && now - triedAt > 2000) {          // not during the meetings' listen, which is a scan too
+    triedAt = now;
+    scan->setAdvertisedDeviceCallbacks(listener(), true);       // every advertisement: the pieces turn
+    scan->setInterval(160); scan->setWindow(16);
+    castScan = scan->start(0, nullptr, false);
+  }
+  // the pieces going out, each in turn for a fifth of a second; the beacon back after
+  if (burstN) {
+    if ((int32_t)(now - burstUntil) >= 0) { burstN = 0; linkSetBeacon(beaconUuid[0] ? beaconUuid : nullptr); return; }
+    if (now - burstTurned >= 200) {
+      burstTurned = now;
+      char u[40]; uuidOf(burst[burstAt], u); burstAt = (burstAt + 1) % burstN;
+      linkSetBeacon(u);
+    }
   }
 }

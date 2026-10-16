@@ -8,6 +8,7 @@
 #include "link.h"
 #include "meet.h"
 #include "lora.h"
+#include "broadcast.h"
 
 // C-105: what was printed, sent before going on -- but never waiting long. On the S3's own USB, Serial.flush() waits
 // until a program on the computer reads the port, with no limit: plugged into a computer with nothing reading it, a
@@ -84,6 +85,7 @@ void loop() {
   linkLoop(now);                            // C-55
   meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-15
   loraLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-72: the same switch, the same tag
+  meetCastLoop(now); castLoop(now);         // C-134: broadcasts -- Bluetooth's pieces, answers due
   meetReport();
   static bool wifiWas = false;              // C-52: the site hears at once when the board joins or leaves a network
   if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }

@@ -1,7 +1,20 @@
 #pragma once
 // C-67: the screen, configured from `board` at start (LovyanGFX takes its pins at run time, which TFT_eSPI cannot), and
 // the sprite everything is drawn into whole and then pushed, so nothing flickers.
-#if BOARD_CORES3 || BOARD_DIAL   // C-102: the Dial's round GC9A01 too, which M5GFX knows
+#if BOARD_TDISPLAY_AMOLED
+// C-135: the T-Display-S3 AMOLED 1.91 -- an RM67162 AMOLED on a QSPI bus, which LovyanGFX drives from 1.2.19 (this
+// build's alone; the others stay on 1.1.16). Pins from LovyanGFX's own lgfx_user/Lilygo_T_Display_S3_AMOLED.hpp and
+// LilyGO's LilyGo-AMOLED-Series. Its brightness is a register (0x51), not a backlight pin. It ignores a window whose x
+// or width is odd: the companion pushes its whole even-sized canvas, so that never arises.
+#define LGFX_USE_V1
+#include <LovyanGFX.hpp>
+class Display : public lgfx::LGFX_Device {
+  lgfx::Bus_SPI bus;
+  lgfx::Panel_RM67162 panel;
+ public:
+  void configure();
+};
+#elif BOARD_CORES3 || BOARD_DIAL   // C-102: the Dial's round GC9A01 too, which M5GFX knows
 // C-98: the CoreS3's screen, started by M5Stack's own M5GFX -- its autodetect reads the panel back to tell the ILI9342C
 // from the E (the later boards), resets it through the AW9523 and inverts it, as the board needs.
 #include <M5GFX.h>

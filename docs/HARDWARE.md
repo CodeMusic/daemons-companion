@@ -232,6 +232,54 @@ yet**: the light sensor, the backlight's 16 steps, the LED, the SD card, the shi
 examples/Cellphone/utilities.h; examples/Arduino_GFX_HelloWorld for the panel's size and offset; examples/CapacitiveTouch
 for the touch's orientation; examples/AdjustBacklight; examples/PMU_Example for the SY6970).*
 
+## The T-Display-S3 AMOLED 1.91 (C-135)
+
+An **ESP32-S3R8** (16 MB flash, 8 MB octal PSRAM) behind an **RM67162 AMOLED, 240x536**, on a **QSPI** bus (CS 6, SCK 47,
+D0-D3 18 / 7 / 48 / 5, RST 17, TE 9), turned to 536x240. **LovyanGFX 1.1.16 cannot drive it** (no RM67162, no quad SPI):
+`env:t-display-amoled` alone uses **LovyanGFX 1.2.19**, whose `Panel_RM67162` and quad `Bus_SPI` it takes as
+`lgfx_user/Lilygo_T_Display_S3_AMOLED.hpp` sets them -- except that file drives GPIO 9 as the panel's power, and on this
+board 9 is TE: the power is **GPIO 38** (V2.0; the green LED on V1.0, so it is driven high either way). Brightness is
+the panel's register 0x51, not a pin. The RM67162 ignores a window with an odd x or width; the companion pushes its whole
+even canvas, so it never asks for one.
+
+**Two versions**: with touch, a **CST816 (I2C 0x15, SDA 3 / SCL 2, its interrupt on 21)**; without, a second button on
+21. The board tells which at start by asking 0x15 -- **the CST816 sleeps when idle and then does not answer**, so it is
+asked six times and, once seen, remembered; the driver starts when a finger first wakes it if it slept through the
+start. **It repeats its last point while no finger is down**, so it is read only while its interrupt is low (as LilyGO's
+own library reads it), and turned to the landscape screen by hand (its panel is 240 wide). Touch: BOOT alone presses (held,
+back); the screen swipes. No touch: 21 presses, BOOT turns, held goes back, two seconds sleeps. **Battery** by voltage on
+IO4, halved. No speaker, microphone or radio beyond Wi-Fi and Bluetooth.
+
+*Sources: github.com/Xinyuan-LilyGO/T-Display-S3-AMOLED (examples/factory/pins_config.h, rm67162.cpp);
+Xinyuan-LilyGO/LilyGo-AMOLED-Series (README, src/LilyGo_AMOLED.h/.cpp, initSequence.cpp); lovyan03/LovyanGFX 1.2.19.*
+
+## The Cardputer and Cardputer ADV (C-136)
+
+**One build** (`env:m5-cardputer`): a **Stamp-S3 (ESP32-S3FN8: 8 MB flash, no PSRAM)**, an **ST7789V2 135x240** turned to
+240x135 (MOSI 35, SCK 36, DC 34, CS 37, RST 33, backlight 38; offsets 52/40, inverted), **BOOT (0)** its one button, the
+**battery by voltage on IO10**, halved, a **WS2812 on 21**, an SD card (SCK 40, MISO 39, MOSI 14, CS 12). Told apart at
+start as M5Stack's own libraries tell them: on the ADV a TCA8418 (0x34) or an ES8311 (0x18) answers on SDA 8 / SCL 9; on
+the original those two pins are the keyboard matrix's address lines, which a probe only wiggles.
+
+| | Cardputer | Cardputer ADV |
+|---|---|---|
+| keyboard | a **74HC138 matrix**: address 8 / 9 / 11, read on 13, 15, 3, 4, 5, 6, 7 (low: down) | a **TCA8418, I2C 0x34** (SDA 8 / SCL 9; INT 11, polled here) |
+| speaker | NS4168 on I2S: BCLK 41, LRCK 43, DATA 42 | **ES8311 (0x18)**, the StickS3's writes (MCLK from BCLK), then I2S 41 / 43 / 42 |
+| microphone | PDM: CLK 43 (the speaker's LRCK), DATA 46 -- not used yet | the ES8311 -- not used yet |
+| LoRa | -- (its pins are the keyboard's) | the **Cap LoRa-1262**: SX1262, CS 5, RST 3, BUSY 6, DIO1 4, on the SD card's bus; TCXO 1.8 V; **its antenna switch is a PI4IOE5V6408 (0x43)**, switched on with Meshtastic's writes; found when 0x43 answers. GPS on RX 15 / TX 13 (not used yet) |
+
+**The keys** (cardputer.cpp): M5Cardputer's map, four rows of fourteen; Shift held gives capitals; **Fn with ; . , /** are
+the arrows printed on them, and where nothing is typed **; , . /** alone move too (there is no ball). Enter presses, del
+goes back. They type a Wi-Fi password, and a word to every daemon (CHORUS, C-134).
+
+**The Cap's band**: it is made for **868-923 MHz**. The site's LoRa band is one for every board, and most of the user's are
+433; on this board a band below 850 is taken as **868** (`board.loraMinMhz`), so it hears the 868 boards and the 433 ones
+reach it by Bluetooth and the companion instead.
+
+*Sources: docs.m5stack.com (Cardputer, Cardputer-Adv, Cap_LoRa-1262); m5stack/M5GFX src/M5GFX.cpp (the panel and the
+board autodetect); m5stack/M5Unified (sound, battery, LED); m5stack/M5Cardputer (the key map, the matrix and the
+TCA8418); meshtastic/firmware variants/esp32s3/m5stack_cardputer_adv (the cap's pins, TCXO and antenna switch).*
+
 ## The M5Stack Tab5 (C-77)
 
 **ESP32-P4** (RISC-V, 360 MHz, 32 MB PSRAM, 16 MB flash) with an **ESP32-C6** beside it for Wi-Fi 6 and Bluetooth 5,

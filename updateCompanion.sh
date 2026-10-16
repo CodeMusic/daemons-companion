@@ -51,8 +51,10 @@ env_for() {                     # a board's id -> its build
     t-embed*)   echo t-embed ;;
     t-watch-s3) echo t-watch-s3 ;;
     t-deck*)    echo t-deck ;;      # C-104: the T-Deck and T-Deck Plus
+    t-display-amoled*) echo t-display-amoled ;;   # C-135
     t-display*) echo t-display-pro ;;   # C-105: the T-Display-S3 Pro
     m5-sticks3) echo m5-sticks3 ;;
+    m5-cardputer*) echo m5-cardputer ;;   # C-136: the Cardputer and the ADV, one build
     m5-cores3)  echo m5-cores3 ;;
     m5-dial)    echo m5-dial ;;     # C-102
     m5-core|m5-fire|m5go) echo m5-core ;;   # C-75: one build, the original ESP32
@@ -68,7 +70,9 @@ BOARDS=(
   "LilyGO|T-Watch S3|t-watch-s3"
   "LilyGO|T-Deck or T-Deck Plus|t-deck"
   "LilyGO|T-Display-S3 Pro|t-display-pro"
+  "LilyGO|T-Display-S3 AMOLED 1.91|t-display-amoled"
   "M5Stack|StickS3|m5-sticks3"
+  "M5Stack|Cardputer or Cardputer ADV|m5-cardputer"
   "M5Stack|CoreS3|m5-cores3"
   "M5Stack|M5GO or Fire|m5-core"
   "M5Stack|Dial|m5-dial"

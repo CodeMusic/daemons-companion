@@ -70,21 +70,34 @@ void inputBegin() {
 // The keyboard is its own ESP32-C3 on I2C 0x55: one character a read, 0 when none. Enter presses and Backspace goes
 // back everywhere; on a password screen the letters type; while a routine runs they go to it (deckTakeKey).
 static int tbPending = 0, deckKey = 0;
+int cardputerKey();                       // C-136: cardputer.cpp
 int deckTakeKey() { int k = deckKey; deckKey = 0; return k; }
 void readDeck() {
-  if (board.tbUp < 0) return;
-  static bool last[4], first = true; static int sum = 0;
-  const int pins[4] = { board.tbUp, board.tbDown, board.tbLeft, board.tbRight }, dir[4] = { -1, 1, -1, 1 };
-  if (first) { for (int i = 0; i < 4; i++) last[i] = digitalRead(pins[i]); first = false; }
-  for (int i = 0; i < 4; i++) { bool v = digitalRead(pins[i]); if (v != last[i]) { last[i] = v; sum += dir[i]; } }
-  if (sum >= 3 || sum <= -3) { tbPending += sum > 0 ? 1 : -1; sum = 0; }
+  if (board.tbUp >= 0) {                                      // C-136: a keyboard without a ball (the Cardputers) reads on
+    static bool last[4], first = true; static int sum = 0;
+    const int pins[4] = { board.tbUp, board.tbDown, board.tbLeft, board.tbRight }, dir[4] = { -1, 1, -1, 1 };
+    if (first) { for (int i = 0; i < 4; i++) last[i] = digitalRead(pins[i]); first = false; }
+    for (int i = 0; i < 4; i++) { bool v = digitalRead(pins[i]); if (v != last[i]) { last[i] = v; sum += dir[i]; } }
+    if (sum >= 3 || sum <= -3) { tbPending += sum > 0 ? 1 : -1; sum = 0; }
+  }
   if (!board.keyboard) return;
-  static uint32_t askedAt = 0;
-  if (millis() - askedAt < 40) return;
-  askedAt = millis();
-  Wire.requestFrom((uint8_t)0x55, (uint8_t)1);
-  int c = Wire.available() ? Wire.read() : 0;
+  int c = 0;
+  bool cardputer = board.kind == BoardKind::Cardputer || board.kind == BoardKind::CardputerAdv;
+  if (cardputer) c = cardputerKey();                            // C-136: its matrix, or its TCA8418 (cardputer.cpp)
+  else {
+    static uint32_t askedAt = 0;
+    if (millis() - askedAt < 40) return;
+    askedAt = millis();
+    Wire.requestFrom((uint8_t)0x55, (uint8_t)1);
+    c = Wire.available() ? Wire.read() : 0;
+  }
   if (c <= 0 || c == 0xFF) return;
+  // C-136: the arrows (Fn with ; . , /) move as the T-Deck's ball rolls; on a Cardputer, which has no ball, ; , . / do
+  // too wherever nothing is being typed
+  bool typing = screen == TYPE_PASS || routineRunning;
+  int arrow = c == 0x11 || c == 0x13 ? -1 : c == 0x12 || c == 0x14 ? 1 : 0;
+  if (!arrow && cardputer && !typing) arrow = c == ';' || c == ',' ? -1 : c == '.' || c == '/' ? 1 : 0;
+  if (arrow && !routineRunning) { if (!wake()) { lastInput = millis(); turn(arrow); } return; }
   keyboardIn(c);
 }
 

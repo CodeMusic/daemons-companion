@@ -24,6 +24,12 @@ static String hint(String s) {
     s.replace("hold the dial", "hold B"); s.replace("turn:", "A/C:"); s.replace("press:", "B:");
     return s;
   }
+  if (board.kind == BoardKind::Cardputer || board.kind == BoardKind::CardputerAdv) {   // C-136: keys only, no ball (DRAFT)
+    s.replace("top button: back", "del: back"); s.replace("top button: stop", "del: stop");
+    s.replace("top button: undo", "del: undo"); s.replace("top: delete", "del: delete");
+    s.replace("turn:", "; .:"); s.replace("press:", "enter:"); s.replace("hold the dial", "hold G0");
+    return s;
+  }
   if (board.keyboard) {                      // C-104: the T-Deck -- the ball rolls and clicks; Enter and Backspace too
     s.replace("top button: back", "backspace: back"); s.replace("top button: stop", "backspace: stop");
     s.replace("top button: undo", "backspace: undo"); s.replace("top: delete", "backspace: delete");

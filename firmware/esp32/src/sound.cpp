@@ -210,6 +210,7 @@ void soundBegin() {
   if (i2s_set_pin(PORT, &pins) != ESP_OK) { i2s_driver_uninstall(PORT); return; }
   i2s_zero_dma_buffer(PORT);
   if (board.kind == BoardKind::M5StickS3) { es8311Speaker(); pm1Gpio(3, true); }   // C-74: the codec, then its amplifier
+  if (board.kind == BoardKind::CardputerAdv) es8311Speaker();                     // C-136: the same codec, the same writes
   if (board.kind == BoardKind::M5CoreS3) coreS3Speaker(true, RATE);                  // C-75: the AW88298
   ready = true;
 }

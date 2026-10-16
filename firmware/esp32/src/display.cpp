@@ -5,7 +5,24 @@ Display tft;
 LGFX_Sprite canvas(&tft);
 int W = 320, H = 170;
 
-#if !BOARD_CORES3 && !BOARD_DIAL
+#if BOARD_TDISPLAY_AMOLED
+void Display::configure() {                 // C-135: LovyanGFX 1.2.19's own settings for this board
+  {
+    auto cfg = bus.config();
+    cfg.freq_write = 75000000; cfg.freq_read = 20000000;
+    cfg.pin_sclk = 47; cfg.pin_io0 = 18; cfg.pin_io1 = 7; cfg.pin_io2 = 48; cfg.pin_io3 = 5;
+    cfg.spi_host = SPI2_HOST; cfg.spi_mode = SPI_MODE0; cfg.dma_channel = SPI_DMA_CH_AUTO;
+    bus.config(cfg);
+    panel.setBus(&bus);
+  }
+  {
+    auto cfg = panel.config();
+    cfg.pin_rst = 17; cfg.pin_cs = 6; cfg.panel_width = 240; cfg.panel_height = 536; cfg.readable = true;
+    panel.config(cfg);
+  }
+  setPanel(&panel);
+}
+#elif !BOARD_CORES3 && !BOARD_DIAL
 // M5GFX's list for the ILI9342E (lgfx/v1/panel/Panel_ILI9342.hpp in M5Stack's fork): its own EXTC (DDh), power and
 // gamma registers. The C's list must not be sent to it.
 const uint8_t *Panel_ILI9342E::getInitCommands(uint8_t listno) const {
@@ -75,6 +92,9 @@ void backlight(bool on) {
   if (board.pmuBacklight) { pmuBacklight(on); return; }   // C-75: the CoreS3's is its power chip's
 #if BOARD_DIAL
   tft.setBrightness(on ? 160 : 0); return;                // C-102: M5GFX's PWM on GPIO 9
+#endif
+#if BOARD_TDISPLAY_AMOLED
+  tft.setBrightness(on ? 200 : 0); return;                // C-135: the AMOLED's own register (0x51)
 #endif
   if (board.lcdBl >= 0) { pinMode(board.lcdBl, OUTPUT); digitalWrite(board.lcdBl, on ? HIGH : LOW); }
 }

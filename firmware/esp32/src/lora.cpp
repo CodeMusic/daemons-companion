@@ -80,12 +80,21 @@ bool loraTakeSaid(String &dir, String &kind, int &species, String &tag, int &rel
   return true;
 }
 
-#if defined(BOARD_TDECK) || defined(BOARD_TWATCH_S3)
+#if defined(BOARD_TDECK) || defined(BOARD_TWATCH_S3) || defined(BOARD_M5CORE)   // the M5s: with a LoRa433 module (board.cpp)
 #include <RadioLib.h>
 #include <SPI.h>
 
 static SPIClass *bus = nullptr;
 static PhysicalLayer *radio = nullptr;
+// C-123, the M5s' first ESP32: the screen's driver leaves the shared host (SPI3) set to send only, for speed, and
+// Arduino's SPI never sets it back -- so the radio's every read came back empty ("chip not found"). Set again before
+// each use of the radio; the screen's driver sets its own at the start of each of its transactions.
+#if CONFIG_IDF_TARGET_ESP32
+#include <soc/spi_struct.h>
+static void radioBus() { SPI3.user.usr_miso = 1; SPI3.user.usr_mosi = 1; SPI3.user.doutdin = 1; SPI3.user.sio = 0; }
+#else
+static void radioBus() {}
+#endif
 static bool ready = false; static int bandMhz = 0; static uint32_t triedAt = 0;
 static volatile bool gotFrame = false;
 static void IRAM_ATTR onFrame() { gotFrame = true; }
@@ -104,10 +113,20 @@ static bool radioOn() {
   tft.waitDMA();
   if (!bus) {
     bool shared = board.loraSck == board.lcdSclk;                // the T-Deck: the screen's bus, as the CC1101 shares it
+    // the screen's own host, SPI3 (display.cpp) -- Arduino calls it HSPI on the S3 and VSPI on the M5s' first ESP32,
+    // whose HSPI is SPI2: taken there, the screen's pins would be routed away from it
+#if CONFIG_IDF_TARGET_ESP32
+    bus = new SPIClass(shared ? VSPI : HSPI);
+    // and its chip select left to RadioLib: given to the bus, the host raised it between bytes, and every read came
+    // back empty (the LoRa433's on G0, seen 2026-10-15) -- the finder (board.cpp), which gave it none, read it fine
+    bus->begin(board.loraSck, board.loraMiso, board.loraMosi, -1);
+#else
     bus = new SPIClass(shared ? HSPI : FSPI);
     bus->begin(board.loraSck, board.loraMiso, board.loraMosi, board.loraCs);
+#endif
   }
   int st;
+  radioBus();
   if (board.loraChip == LoraChip::SX1262) {
     SX1262 *r = new SX1262(new Module(board.loraCs, board.loraDio1, board.loraRst, board.loraBusy, *bus));
     st = r->begin((float)bandMhz, 125.0, 9, 5, 0x12, 10, 12, 1.8);   // LilyGO's modules: a TCXO at 1.8 V on DIO3
@@ -119,20 +138,37 @@ static bool radioOn() {
   }
   if (st != RADIOLIB_ERR_NONE) { Serial.printf("lora: the radio did not start (%d)\n", st); radio = nullptr; return false; }
   radio->setPacketReceivedAction(onFrame);
-  radio->startReceive();
+  radioBus(); radio->startReceive();
   ready = true;
   Serial.printf("lora: listening at %d MHz\n", bandMhz);
   return true;
 }
 
 bool loraReady() { return ready; }
+
+// DIAG (C-123, the Fire's LoRa433): the version register read three ways on the running board -- as it is, with the
+// host set back to full duplex, and with GPIO 19 attached again as the host's MISO
+String loraDiag() {   // the LoRa433's pins as found (board.cpp), and its version register read now
+  if (board.loraChip != LoraChip::SX1278) return "LORADIAG not an SX1278";
+  uint8_t v = 0;
+  if (bus) {
+    tft.waitDMA(); radioBus();
+    bus->beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+    digitalWrite(board.loraCs, LOW); bus->transfer(0x42); v = bus->transfer(0); digitalWrite(board.loraCs, HIGH);
+    bus->endTransaction();
+  }
+  char out[96];
+  snprintf(out, sizeof out, "LORADIAG cs %d irq %d rst %d version 0x%02X%s", board.loraCs, board.loraDio1, board.loraRst, v,
+           board.loraRst == 25 ? " (reset on the speaker's pin: silent)" : "");
+  return out;
+}
 void loraBegin() { radioOn(); }
 
 static void put32(uint8_t *b, uint32_t v) { b[0] = v >> 24; b[1] = v >> 16; b[2] = v >> 8; b[3] = v; }
 static uint32_t get32(const uint8_t *b) { return ((uint32_t)b[0] << 24) | ((uint32_t)b[1] << 16) | ((uint32_t)b[2] << 8) | b[3]; }
 
 static void airTime(const uint8_t *b, int n) {
-  tft.waitDMA();
+  tft.waitDMA(); radioBus();
   radio->transmit((uint8_t *)b, n);
   radio->startReceive();
 }
@@ -194,7 +230,7 @@ static void take(const uint8_t *b, int n, int rssi) {
 static void pump() {
   if (!gotFrame) return;
   gotFrame = false;
-  tft.waitDMA();
+  tft.waitDMA(); radioBus();
   size_t n = radio->getPacketLength();
   uint8_t b[FRAME_MAX];
   int st = n && n <= sizeof b ? radio->readData(b, n) : -1;
@@ -206,7 +242,7 @@ static void pump() {
 void loraLoop(uint32_t now, bool on, int species) {
   if (!radioOn()) return;
   if (cfg.band != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915)) {   // the site moved the band
-    bandMhz = cfg.band; tft.waitDMA(); radio->setFrequency((float)bandMhz); radio->startReceive();
+    bandMhz = cfg.band; tft.waitDMA(); radioBus(); radio->setFrequency((float)bandMhz); radio->startReceive();
   }
   pump();
   beaconOn = on && species > 0 && meetTag(); ourSpecies = species;
@@ -353,6 +389,7 @@ bool loraMessage(String &, String &) { return false; }
 bool loraMessageRead() { return false; }
 void loraPretendHeard(const String &, const String &) {}
 String loraStatus() { return "no radio"; }
+String loraDiag() { return "LORADIAG no radio"; }
 String runNearby() { return "This needs a board with a LoRa radio."; }    // DRAFT
 String runCallOut() { return "This needs a board with a LoRa radio."; }   // DRAFT
 #endif

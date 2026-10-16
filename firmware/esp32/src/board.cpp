@@ -248,7 +248,77 @@ bool boardPowerOff() { digitalWrite(46, LOW); delay(200); return true; }   // on
 // inverted is read off its RST line, as M5GFX reads it); M5Unified for the buttons (A 39, B 38, C 37), the IP5306 power
 // chip (I2C 0x75, SDA 21 / SCL 22), the speaker (the ESP32's DAC on GPIO 25) and the M5GO base's microphone (analog,
 // GPIO 34) and its ten SK6812 lights (GPIO 15).
+#include <SPI.h>
 static const uint8_t IP5306 = 0x75;
+
+// C-72, C-123 (the user, 2026-10-15: "core fire with lora hat for sure"): an M5 LoRa433 module (an Ra-02: an SX1278)
+// stacked on the Core, on the screen's bus. Its chip select, reset and interrupt are set by DIP switches on the module,
+// so they are found, not assumed: the chip select by the SX1278's version register (0x42 reads 0x12), the interrupt by
+// a one-byte send at 433 MHz whose TxDone raises DIO0 on one of the pins it can be switched to, its reset by holding
+// each of its two pins low and seeing it stop answering. The screen and the card are kept off the bus while it is asked.
+// None found: no LoRa. Seen 2026-10-15 on the Fire: chip select G0, interrupt G35, reset G25 -- the Core2's switch, and
+// on the Fire the speaker's pin, which the sound held low between sounds: the radio sat in reset ("chip not found").
+// With its reset there the radio has the pin, held high, and the Fire is silent; its DIP switch at G13 gives both.
+static uint8_t sxRw(SPIClass &s, int cs, uint8_t reg, int v = -1) {
+  s.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(cs, LOW);
+  s.transfer(v < 0 ? reg & 0x7F : reg | 0x80);
+  uint8_t r = s.transfer(v < 0 ? 0 : v);
+  digitalWrite(cs, HIGH);
+  s.endTransaction();
+  return r;
+}
+static void findLora433() {
+  pinMode(14, OUTPUT); digitalWrite(14, HIGH); pinMode(4, OUTPUT); digitalWrite(4, HIGH);   // the screen, the card
+  static const int CS[] = { 5, 0, 2, 12, 13, 26 }, IRQ[] = { 36, 35, 34 };
+  SPIClass s(VSPI);
+  s.begin(18, 19, 23, -1);
+  for (int c : CS) { pinMode(c, OUTPUT); digitalWrite(c, HIGH); }
+  int cs = -1;
+  for (int c : CS) if (sxRw(s, c, 0x42) == 0x12) { cs = c; break; }
+  for (int c : CS) if (c != cs) pinMode(c, INPUT);
+  int irq = -1;
+  if (cs >= 0) {
+    sxRw(s, cs, 0x01, 0x80); delay(10); sxRw(s, cs, 0x01, 0x81);                 // LoRa, standby
+    sxRw(s, cs, 0x06, 0x6C); sxRw(s, cs, 0x07, 0x40); sxRw(s, cs, 0x08, 0x00);  // 433 MHz
+    sxRw(s, cs, 0x40, 0x40);                                                       // DIO0: TxDone
+    sxRw(s, cs, 0x0E, 0x00); sxRw(s, cs, 0x0D, 0x00); sxRw(s, cs, 0x00, 0x00); sxRw(s, cs, 0x22, 0x01);
+    // twice: the pin must rise with each send and fall when its flag is cleared -- 34 and 35 have no pull-downs, and a
+    // floating one passed a single test (seen 2026-10-15: 34, then 35)
+    int votes[3] = { 0, 0, 0 };
+    for (int round = 0; round < 2; round++) {
+      bool was[3]; for (int i = 0; i < 3; i++) { pinMode(IRQ[i], INPUT); was[i] = digitalRead(IRQ[i]); }
+      sxRw(s, cs, 0x0D, 0x00);
+      sxRw(s, cs, 0x01, 0x83);                                                     // send the one byte
+      bool rose[3] = { false, false, false };
+      for (uint32_t t0 = millis(); millis() - t0 < 300; ) {
+        for (int i = 0; i < 3; i++) if (!was[i] && digitalRead(IRQ[i])) rose[i] = true;
+        if (sxRw(s, cs, 0x12) & 0x08) { delay(2); for (int i = 0; i < 3; i++) if (!was[i] && digitalRead(IRQ[i])) rose[i] = true; break; }
+      }
+      sxRw(s, cs, 0x12, 0xFF); delay(5);                                           // its flag cleared: DIO0 falls
+      for (int i = 0; i < 3; i++) if (rose[i] && !digitalRead(IRQ[i])) votes[i]++;
+      sxRw(s, cs, 0x01, 0x81);
+    }
+    for (int i = 0; i < 3; i++) if (votes[i] == 2) { irq = IRQ[i]; break; }
+    sxRw(s, cs, 0x01, 0x80);                                                       // asleep
+  }
+  int rst = -1;
+  if (cs >= 0 && irq >= 0)
+    for (int r : { 13, 25 }) {                         // the Basic's switch, then the Core2's
+      pinMode(r, OUTPUT); digitalWrite(r, LOW); delay(5);
+      bool held = sxRw(s, cs, 0x42) != 0x12;
+      digitalWrite(r, HIGH); delay(10);
+      if (held) { rst = r; break; }
+      pinMode(r, INPUT);
+    }
+  s.end();
+  Serial.printf("boot: lora433 %s (cs %d, irq %d, rst %d)\n", cs >= 0 && irq >= 0 ? "found" : cs >= 0 ? "answered, no irq" : "none", cs, irq, rst);
+  if (cs < 0 || irq < 0) return;
+  board.loraChip = LoraChip::SX1278; board.loraCs = cs; board.loraDio1 = irq; board.loraRst = rst;
+  if (rst == 25) { board.dacSpeaker = false; board.i2sDout = -1; }   // the speaker's pin is the radio's reset: silent
+  board.loraSck = 18; board.loraMiso = 19; board.loraMosi = 23;
+  board.lcdMiso = 19;                                  // the screen's bus told of its MISO, so it leaves it to the radio
+}
 static void ipWrite(uint8_t reg, uint8_t v) { Wire.beginTransmission(IP5306); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
 
 void boardBegin() {
@@ -274,6 +344,7 @@ void boardBegin() {
   static const uint8_t R[][2] = { {0x00, 0b00110011}, {0x01, 0b00011101}, {0x02, 0b01101100}, {0x20, 0b00000000},
                                   {0x21, 0b00001001}, {0x22, 0b00000010}, {0x23, 0b10101110}, {0x24, 0b11000001} };
   for (auto &w : R) ipWrite(w[0], w[1]);
+  findLora433();
 }
 
 // Switched off (switchOff): the boost no longer kept on under a light load, and the light load's wait 8 s -- so a board

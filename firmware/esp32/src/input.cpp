@@ -439,6 +439,7 @@ void readKeyCore() {
       uint32_t held = now - at[k];
       at[k] = now;
       if (asleep) { wake(); continue; }                          // the user, 2026-10-15: any button wakes it, and only that
+      if (loraMessageRead()) { wake(); continue; }               // C-123: a message heard is read by this press -- only that
       wake();
       bool tend = !menuOpen && screen == HOME;                   // C-117: home, the menu closed -- the buttons tend it
       // C-118: asleep, any button wakes it; at bedtime (drowsy, not yet put to bed) C puts it to bed instead of training

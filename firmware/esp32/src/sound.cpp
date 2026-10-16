@@ -185,6 +185,7 @@ void soundBegin() {
     ledcWrite(BUZZER_CH, 0);
     ready = true; return;
   }
+  if (!board.dacSpeaker && board.i2sDout < 0) return;   // no speaker -- or the Fire's given to its LoRa433's reset (board.cpp)
   if (board.dacSpeaker) {                      // C-75: started by the first sound, not here
 #if SOC_I2S_SUPPORTS_DAC
     dacQuiet();

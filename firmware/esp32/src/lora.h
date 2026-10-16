@@ -7,7 +7,8 @@ void loraBegin();                                          // after the screen: 
 void loraLoop(uint32_t now, bool on, int species);         // every pass: listening always; a beacon now and then while
                                                            // `on` (MEET OTHERS NEARBY) and a daemon is carried
 bool loraReady();
-String loraStatus();                                       // "MESH ready 433 nearby 2 ..." for the cable's MESH?
+String loraStatus();
+String loraDiag();                                         // LORADIAG down the cable: the M5 LoRa433's bus, three ways                                       // "MESH ready 433 nearby 2 ..." for the cable's MESH?
 
 // who was heard lately: by its hourly tag, with the daemon's species and name as its board said them, how many boards
 // passed it on (0: heard directly), how loud, and when

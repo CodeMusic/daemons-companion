@@ -44,7 +44,9 @@ void Display::configure() {
     cfg.pin_mosi = board.lcdMosi;
     cfg.pin_miso = board.lcdMiso;
     cfg.pin_dc = board.lcdDc;
-    cfg.spi_3wire = true;                // as M5GFX drives the CoreS3 (its D/C pin is also the SD card's MISO)
+    // as M5GFX drives the CoreS3 (its D/C pin is also the SD card's MISO) -- but not with a LoRa433 module on an M5GO
+    // or Fire: there the radio reads on the same host (C-123), and a half-duplex host never hears its MISO
+    cfg.spi_3wire = !(board.kind == BoardKind::M5Core && board.loraChip != LoraChip::None);
     bus.config(cfg);
     panel.setBus(&bus);
   }

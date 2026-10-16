@@ -382,7 +382,43 @@ static void tapCarry(lv_event_t *e) {
   String body = "{\"id\":\"" + c.id + "\",\"personality\":" + (c.personality < 0 ? String("null") : String((long long)c.personality)) + "}";
   netSend("POST", "/api/devices/carry", body);
 }
+// C-130: each device as it looks (firmware/common/device_sprites.py writes the list), and the maker it is listed under
+#include "../../common/device_sprites.h"
+static const DeviceLook *lookFor(const String &kind) {
+  String k = kind;
+  for (int i = 0; i < DEVICE_ALIAS_N; i++) if (k == DEVICE_ALIASES[i][0]) k = DEVICE_ALIASES[i][1];
+  const DeviceLook *best = nullptr; size_t bestLen = 0;
+  for (int i = 0; i < DEVICE_LOOK_N; i++) {
+    size_t n = strlen(DEVICE_LOOKS[i].kind);
+    if (k == DEVICE_LOOKS[i].kind) return &DEVICE_LOOKS[i];
+    if (k.startsWith(DEVICE_LOOKS[i].kind) && n > bestLen) { best = &DEVICE_LOOKS[i]; bestLen = n; }
+  }
+  return best;
+}
+static String makerOf(const String &kind) { const DeviceLook *l = lookFor(kind); return l ? l->maker : "Other"; }
+// The sprite, `px` pixels square: each shape a rounded rectangle on the 32x32 grid (the list keeps them in tenths)
+static void deviceSprite(lv_obj_t *parent, const String &kind, int px, bool dim) {
+  lv_obj_t *box = lv_obj_create(parent);
+  lv_obj_remove_style_all(box);
+  lv_obj_set_size(box, px, px);
+  lv_obj_clear_flag(box, LV_OBJ_FLAG_SCROLLABLE);
+  if (dim) lv_obj_set_style_opa(box, LV_OPA_70, 0);
+  const DeviceLook *l = lookFor(kind);
+  static const DeviceShape PLAIN[] = { {40, 80, 240, 160, 20, 0x5A5D63}, {70, 110, 180, 100, 10, 0x46A8E0} };
+  const DeviceShape *sh = l ? l->shapes : PLAIN; int n = l ? l->n : 2;
+  for (int i = 0; i < n; i++) {
+    lv_obj_t *o = lv_obj_create(box);
+    lv_obj_remove_style_all(o);
+    lv_obj_set_pos(o, sh[i].x * px / 320, sh[i].y * px / 320);
+    lv_obj_set_size(o, max(1, sh[i].w * px / 320), max(1, sh[i].h * px / 320));
+    lv_obj_set_style_radius(o, sh[i].r * px / 320, 0);
+    lv_obj_set_style_bg_opa(o, LV_OPA_COVER, 0);
+    lv_obj_set_style_bg_color(o, lv_color_hex(sh[i].c), 0);
+  }
+}
+
 static String kindName(const String &kind) {
+  if (const DeviceLook *l = lookFor(kind)) return l->name;
   if (kind == "t-embed-cc1101") return "T-Embed CC1101"; if (kind == "t-embed") return "T-Embed"; if (kind == "t-embed-si4732") return "T-Embed SI4732";
   if (kind == "t-watch-s3") return "T-Watch S3"; if (kind == "m5-sticks3") return "M5StickS3"; if (kind == "m5-cores3") return "M5Stack CoreS3";
   if (kind == "m5-fire") return "M5Stack Fire"; if (kind == "m5go") return "M5GO"; if (kind == "m5-tab5") return "M5Stack Tab5"; if (kind == "m5-dial") return "M5Stack Dial";
@@ -396,8 +432,20 @@ static void drawDevices(lv_obj_t *p) {
         &lv_font_montserrat_20, QUIET, LV_PCT(100));
   carryN = 0;
   JsonArray away = dv["away"];
+  // C-130: under each maker's name, and beside each device a picture of it
+  static const char *const OTHER = "Other";
+  for (int m = 0; m <= DEVICE_MAKER_N; m++) {
+  String maker = m < DEVICE_MAKER_N ? DEVICE_MAKERS[m] : OTHER;
+  bool headed = false;
   for (JsonObject d : dv["devices"].as<JsonArray>()) {
-    lv_obj_t *c = card(p);
+    if (makerOf(d["kind"] | "") != maker) continue;
+    if (!headed) { headed = true; String head = maker; head.toUpperCase(); label(p, head, &lv_font_montserrat_20, QUIET); }
+    lv_obj_t *outer = card(p);
+    lv_obj_set_flex_flow(outer, LV_FLEX_FLOW_ROW);
+    lv_obj_set_style_pad_column(outer, 20, 0);
+    deviceSprite(outer, d["kind"] | "", 96, !(d["here"] | false));
+    lv_obj_t *c = column(outer, LV_SIZE_CONTENT);
+    lv_obj_set_flex_grow(c, 1);
     String id = d["id"] | "";
     label(c, kindName(d["kind"] | "") + (id == deviceId() ? "  (this one)" : "") + ((d["here"] | false) ? "" : "  (away)"), &lv_font_montserrat_28, INK);
     String said = String((d["here"] | false) ? "here, by " : "last heard ") + ((d["here"] | false) ? (const char *)(d["via"] | "") : (const char *)(d["lastSeen"] | ""));
@@ -415,6 +463,7 @@ static void drawDevices(lv_obj_t *p) {
       button(r, a["nickname"] | "", tapCarry, (void *)(long)carryN++, pers == mine);
     }
     if (away.size() && carryN < 64) { carries[carryN] = { id, -1 }; button(r, "None", tapCarry, (void *)(long)carryN++, mine < 0); }
+  }
   }
 }
 

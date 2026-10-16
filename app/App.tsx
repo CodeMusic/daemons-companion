@@ -5,6 +5,7 @@
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
 import { DenStage } from "./Den";                    // C-113
+import { DeviceSprite, lookFor, makerOf, MAKERS } from "./deviceSprites";   // C-130
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, Image, Linking, Platform, View } from "react-native";
 import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
@@ -1475,10 +1476,17 @@ function DeviceScreen({ ink }: { ink: string }) {
             : "SEND a daemon from the party in the game and SYNC: it goes to your device."}</Small>
           {/* C-100 (DRAFT) */}
           {WIDGET ? <Small>{"Your phone can host one too: add the DAEMONS widget to your home screen, and it appears here as This phone's widget."}</Small> : null}
-          {link.devices.map((d) => (
-            <YStack key={d.id} gap={4} marginTop={8}>
+          {/* C-130: under each maker's name, and a picture of each device beside it */}
+          {MAKERS.map((maker) => ({ maker, ds: link.devices!.filter((d) => makerOf(d.kind) === maker) })).filter((g) => g.ds.length).map((g) => (
+          <YStack key={g.maker} marginTop={10}>
+          <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10" borderBottomWidth={1} borderColor="$color6"
+                paddingBottom={2}>{g.maker.toUpperCase()}</Text>
+          {g.ds.map((d) => (
+            <XStack key={d.id} gap={12} marginTop={8} alignItems="flex-start">
+            <DeviceSprite kind={d.kind} size={52} dim={!d.here} />
+            <YStack gap={4} flex={1}>
               <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
-                {`${KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
+                {`${lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
               <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone"
                                            : d.via === "relay" ? "its own Wi-Fi, away" : "Wi-Fi"}`
                                 : `last heard ${new Date(d.lastSeen).toLocaleString()}`,
@@ -1497,6 +1505,9 @@ function DeviceScreen({ ink }: { ink: string }) {
                   }} ink={ink} />
               ) : null}
             </YStack>
+            </XStack>
+          ))}
+          </YStack>
           ))}
         </Card>
       ) : null}

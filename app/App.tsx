@@ -914,7 +914,7 @@ type MarksData = { marks: { n: number; title: string; lesson: string[]; found: s
                              wisdom?: { leader: string; virtue: string; without: string[]; with: string[]; explain: string[];
                                         union_plugin: string; union_routine: string; insight: string } }[];
                    understandings: { n: number; name: string; name_is_working: boolean; rgb: number[]; lobe: string;
-                                     found: string; lesson: string | null }[] };
+                                     found: string; lesson: string[] | null }[] };   // T-405: its STREAM lecture, two scripts
 const MARKS: MarksData = require("../server/data/marks.json");
 const MARK_ART = [require("../server/data/art/mark_1.png"), require("../server/data/art/mark_2.png"), require("../server/data/art/mark_3.png"),
                   require("../server/data/art/mark_4.png"), require("../server/data/art/mark_5.png"), require("../server/data/art/mark_6.png"),
@@ -1020,13 +1020,18 @@ function MarkPage({ n, w }: { n: number; w?: Wis }) {
 
 function RootPage({ i, marks, wisdom }: { i: number; marks: boolean[]; wisdom?: Wis[] }) {
   const u = MARKS.understandings[i];
+  // T-405: read as a MARK's lesson is (C-140) -- its own name dropped, the heading says it; the first box leading, the rest as points
+  const paras = (u.lesson ?? []).flatMap(reflow)
+    .map((l, k) => (k === 0 && l.toUpperCase().startsWith(u.name.toUpperCase() + ".") ? l.slice(u.name.length + 1).trim() : l))
+    .filter(Boolean);
   const n = MARKS.marks.findIndex((_, k) => rootOfMark(k) === i);
   const m = n >= 0 ? MARKS.marks[n] : null;
   const dark = useDark();
   return (
     <Panel>
       <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color={rgbOf(dark ? onNight(u.rgb) : u.rgb)}>{u.name}</Text>
-      {u.lesson ? <Para lead>{u.lesson}</Para> : <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color10">Its lesson is still being written.</Text>}
+      {paras.length ? <Para lead>{paras[0]}</Para> : <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color10">Its lesson is still being written.</Text>}
+      {paras.length > 1 ? <Points lines={paras.slice(1)} /> : null}
       <Small color="$color10">{`Arrived at: ${u.found}.`}</Small>
       {m && marks[n] ? (
         <YStack gap={6}>

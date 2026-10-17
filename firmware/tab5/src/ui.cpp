@@ -866,8 +866,16 @@ static void tapRoot(lv_event_t *e) {
   JsonArray rgb = u["rgb"].as<JsonArray>();
   lv_color_t col = rgb.size() == 3 ? lv_color_make(rgb[0] | 90, rgb[1] | 107, rgb[2] | 140) : DAY;
   label(o, u["name"] | "", &lv_font_montserrat_40, col);  // in its own colour
-  if (u["lesson"].isNull()) label(o, "Its lesson is still being written.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
-  else label(o, u["lesson"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+  std::vector<String> ps = paragraphs(u["lesson"].as<JsonArray>());   // T-405: read as a MARK's lesson is (C-140)
+  if (ps.empty()) label(o, "Its lesson is still being written.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  else {
+    String first = ps[0], up = first, name = u["name"] | ""; up.toUpperCase(); name.toUpperCase();
+    if (up.startsWith(name + ".")) { first = first.substring(name.length() + 1); first.trim(); }
+    size_t next = 1;
+    if (!first.length() && ps.size() > 1) first = ps[next++];   // a box that was only its name: the next one leads
+    if (first.length()) label(o, first, &lv_font_montserrat_28, INK, LV_PCT(100));
+    points(o, std::vector<String>(ps.begin() + next, ps.end()));
+  }
   label(o, "Arrived at: " + String((const char *)(u["found"] | "")) + ".", &lv_font_montserrat_20, DAY, LV_PCT(100));
   int n = -1;
   for (int k = 0; k < (int)m["marks"].size(); k++) if (rootOfMark(m, k) == i) n = k;

@@ -46,6 +46,7 @@
 
 // the daemons' art comes as PNG (the server's /art/ routes)
 #define LV_USE_LODEPNG 1
+#define LV_USE_QRCODE 1                         // every QR code in the game, drawn to scan with a phone (the Tab5 has no browser)
 #define LV_CACHE_DEF_SIZE (16 * 1024 * 1024)       // decoded pictures kept (PSRAM), so a page of the INDEX decodes once
 #define LV_IMAGE_HEADER_CACHE_DEF_CNT 64
 

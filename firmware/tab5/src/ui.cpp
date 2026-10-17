@@ -890,6 +890,20 @@ static void tapRoot(lv_event_t *e) {
     quote(o, m["marks"][n]["wisdom"]["insight"] | "");
   }
 }
+// The game's QR codes, here as the code itself: the Tab5 has no browser, so a page that ends on one (a NOTEBOOK page's song
+// or post, the GUIDE's last chapter) shows it large enough to scan with a phone (the user, 2026-10-16)
+static void qrFor(lv_obj_t *parent, const String &url, lv_color_t dark, lv_color_t light) {
+  if (!url.length()) return;
+  bool song = url.indexOf("soundcloud.com") >= 0 || url.indexOf("youtu") >= 0 || url.indexOf("spotify.com") >= 0 || url.indexOf("bandcamp.com") >= 0;
+  label(parent, song ? "Scan with your phone to listen." : "Scan with your phone to read.", &lv_font_montserrat_20, QUIET, LV_PCT(100));   // DRAFT
+  lv_obj_t *q = lv_qrcode_create(parent);
+  lv_qrcode_set_size(q, 360);
+  lv_qrcode_set_dark_color(q, dark);
+  lv_qrcode_set_light_color(q, light);
+  lv_qrcode_update(q, url.c_str(), url.length());
+  lv_obj_set_style_border_color(q, light, 0);       // the quiet zone a phone needs around it
+  lv_obj_set_style_border_width(q, 16, 0);
+}
 static void tapPage(lv_event_t *e) {
   long v = (long)lv_event_get_user_data(e);
   JsonDocument nb = newDoc();
@@ -898,6 +912,7 @@ static void tapPage(lv_event_t *e) {
   String text = pg["text"].isNull() ? String("Written by the game from your save each time you open it there.") : reflowed(pg["text"].as<String>());
   String place = pg["place"] | "";
   showWords(pg["title"] | "", text, place.length() ? "Found in " + place + "." : String(""));
+  if (overlay) qrFor(overlay, pg["link"] | "", lv_color_black(), lv_color_white());
 }
 // C-127 on the Tab5: a region as the game's region map draws it, cropped to its cells, a cell a place, lit when the save
 // has visited it -- a place with no flag (a route) when it touches a lit one -- and ??? until the REVIEW BOARD. Each row is
@@ -1180,6 +1195,7 @@ static void showGuide() {
   label(pg, lab == head ? lab : lab + "  -  " + head, &lv_font_montserrat_16, BOOK_FAINT, LV_PCT(100));
   label(pg, ent["title"] | "", &lv_font_montserrat_40, BOOK_INK, LV_PCT(100));
   for (JsonVariant para : ent["paragraphs"].as<JsonArray>()) label(pg, para.as<String>(), &lv_font_montserrat_28, BOOK_INK, LV_PCT(100));
+  qrFor(pg, ent["link"] | "", BOOK_PAGE, BOOK_INK);   // the book ends on its code, light on the dark page, as in the game
   lv_obj_t *nav = row(pg);
   bookLink(nav, "< BACK", guideAt - 1, guideAt > 0);
   bookLink(nav, "CONTENTS", -1);

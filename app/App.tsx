@@ -1285,7 +1285,7 @@ function PracticePaper() {
 // C-145: THE LIBRARY -- what you can read, on one shelf: CALLOW SCHOOL (C-129) and, once the save holds it, THE PROGRAMMER'S
 // GUIDE TO THE HUMAN MIND with its 8-bit cover. Nothing of the GUIDE shows before it is found (a find stays blind, T-297).
 type GuideBookT = { held: boolean; title?: string; sections?: { key: string; label: string; heading: string;
-                    entries: { short: string; title: string; paragraphs: string[] }[] }[] };
+                    entries: { short: string; title: string; paragraphs: string[]; link?: string | null }[] }[] };
 const GUIDE_COVER = require("../server/data/art/guide_cover.png");
 // the GUIDE's own sixteen colours (DAEMONS tools/genguide.py): charcoal boards and pages, near-white ink, one cyan -- the
 // book looks like itself in either theme, as it does in the game
@@ -1363,6 +1363,11 @@ function GuideBook({ g }: { g: GuideBookT }) {
         <Text fontSize={20} lineHeight={27} fontWeight="700" color={BOOK.ink}>{e.title}</Text>
         <YStack height={2} backgroundColor={BOOK.cyan} width={48} />
         {e.paragraphs.map((p, i) => <Text key={i} fontSize={16} lineHeight={25} color={BOOK.ink}>{p}</Text>)}
+        {/* the game ends the book on a QR code; here, the link it opens */}
+        {e.link ? (
+          <Text {...mono} fontSize={13} color={BOOK.cyan} cursor="pointer" role="link" marginTop={4}
+                onPress={() => { Linking.openURL(e.link!).catch(() => {}); }}>{`${linkLabel(e.link).toUpperCase()} ›`}</Text>
+        ) : null}
         <XStack justifyContent="space-between" marginTop={8} paddingTop={12} borderTopWidth={1} borderColor={BOOK.edge}>
           {turn("‹ BACK", at > 0 ? at - 1 : null)}
           <Text {...mono} fontSize={12} color={BOOK.cyan} cursor="pointer" role="button" onPress={() => setAt(null)}>CONTENTS</Text>
@@ -1433,6 +1438,10 @@ function SchoolScreen() {
   );
 }
 
+// every QR code in the game opens its link here instead (the user, 2026-10-16: "in the site/app/tab5 it should browser to
+// the link"): a song is listened to, anything else read
+const linkLabel = (url: string) => (/soundcloud\.com|youtu\.?be|spotify\.com|bandcamp\.com/.test(url) ? "Listen" : "Read");
+
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
 function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][number] }) {
@@ -1455,7 +1464,7 @@ function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][nu
         ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} marginBottom={4} color="$color12">{par.replace(/\n/g, " ")}</Text>)
         : <Small>Written by the game from your save each time you open it there.</Small>) : null}
       {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
-      {open && page.link ? <Action label="Listen" ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
+      {open && page.link ? <Action label={linkLabel(page.link)} ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
     </YStack>
   );
 }

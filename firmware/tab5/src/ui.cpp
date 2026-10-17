@@ -26,7 +26,7 @@ static uint32_t dayHex = 0x315A62;
 // and its DRAW below, and the static_asserts say so if one is missed)
 enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_HOME, P_PROFILE, P_SCHOOL, P_SETTINGS, P_COUNT };   // C-131 PROFILE, C-137 SCHOOL, C-139 HOME
 static lv_obj_t *tabs, *pages[P_COUNT], *statusLeft, *statusRight, *overlay = nullptr;
-static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "HOME", "PROFILE", "SCHOOL", "SETTINGS" };
+static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "HOME", "PROFILE", "LIBRARY", "SETTINGS" };
 static_assert(sizeof TAB_NAMES / sizeof *TAB_NAMES == P_COUNT, "a name for every page");
 static uint32_t drawnAt[P_COUNT] = { 0 };            // 0: draw the page again
 // C-98: what each page shows, so a change to anything else leaves it alone (a rebuilt page flickered)
@@ -101,7 +101,7 @@ static lv_obj_t *row(lv_obj_t *parent) {
 
 // ---- the daemons' pictures: the kept PNGs, decoded by LVGL once each, drawn big without smoothing (they are pixel art)
 static std::map<String, lv_image_dsc_t *> art;
-static lv_obj_t *picture(lv_obj_t *parent, const String &key, int scale) {
+static lv_image_dsc_t *artDsc(const String &key) {
   lv_image_dsc_t *dsc = nullptr;
   auto it = art.find(key);
   if (it != art.end()) dsc = it->second;
@@ -116,6 +116,10 @@ static lv_obj_t *picture(lv_obj_t *parent, const String &key, int scale) {
       art[key] = dsc;
     }
   }
+  return dsc;
+}
+static lv_obj_t *picture(lv_obj_t *parent, const String &key, int scale) {
+  lv_image_dsc_t *dsc = artDsc(key);
   lv_obj_t *box = lv_obj_create(parent);
   lv_obj_set_size(box, 64 * scale / 256 + 8, 64 * scale / 256 + 8);
   lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
@@ -1105,7 +1109,87 @@ static void showQuestion() {
   }
   button(o, "STOP", closeOverlay, nullptr, false);
 }
-static void drawSchool(lv_obj_t *p) {
+// C-145: THE LIBRARY -- CALLOW SCHOOL, and THE PROGRAMMER'S GUIDE TO THE HUMAN MIND once the save holds it: its 8-bit cover
+// (the book cut out of the game's 240x160 screen, x 54..185, at whole pixels) and its CONTENTS, a chapter a tap, read on
+// the book's own charcoal pages with BACK, CONTENTS and NEXT. Nothing of the GUIDE shows before it is found (T-297).
+static lv_color_t BOOK_BOARDS = lv_color_hex(0x161618), BOOK_PAGE = lv_color_hex(0x282A2E), BOOK_EDGE = lv_color_hex(0x3E4046),
+                  BOOK_INK = lv_color_hex(0xE6EAEE), BOOK_FAINT = lv_color_hex(0x78808A), BOOK_CYAN = lv_color_hex(0x00C8FF);
+static lv_obj_t *guideCover(lv_obj_t *parent, int k) {
+  lv_obj_t *box = lv_obj_create(parent);
+  lv_obj_set_size(box, 132 * k, 160 * k);
+  lv_obj_set_style_bg_color(box, BOOK_BOARDS, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
+  lv_obj_set_style_radius(box, 0, 0);
+  lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);
+  if (lv_image_dsc_t *dsc = artDsc("guide_cover")) {
+    lv_obj_t *img = lv_image_create(box);
+    lv_image_set_src(img, dsc);
+    lv_image_set_antialias(img, false);
+    lv_image_set_pivot(img, 0, 0);
+    lv_image_set_scale(img, 256 * k);
+    lv_obj_set_pos(img, -54 * k, 0);
+  }
+  return box;
+}
+static int guideAt = -1;                           // the chapter open, counted through every part; -1 the CONTENTS
+static void showGuide();
+static void tapGuideAt(lv_event_t *e) { guideAt = (int)(long)lv_event_get_user_data(e); showGuide(); }
+static lv_obj_t *bookLink(lv_obj_t *parent, const String &text, int to, bool on = true) {
+  lv_obj_t *b = lv_button_create(parent);
+  lv_obj_set_style_bg_opa(b, LV_OPA_TRANSP, 0); lv_obj_set_style_shadow_width(b, 0, 0); lv_obj_set_style_pad_all(b, 10, 0);
+  lv_obj_t *t = lv_label_create(b);
+  lv_label_set_text(t, text.c_str());
+  lv_obj_set_style_text_font(t, &lv_font_montserrat_20, 0);
+  lv_obj_set_style_text_color(t, on ? BOOK_CYAN : BOOK_EDGE, 0);
+  if (on) lv_obj_add_event_cb(b, tapGuideAt, LV_EVENT_CLICKED, (void *)(long)to);
+  return b;
+}
+static void showGuide() {
+  JsonDocument g = newDoc();
+  if (!kept("guide", g) || !(g["held"] | false)) return;
+  JsonObject sec, ent; int total = 0;
+  for (JsonObject s : g["sections"].as<JsonArray>())
+    for (JsonObject e : s["entries"].as<JsonArray>()) { if (total == guideAt) { sec = s; ent = e; } total++; }
+  lv_obj_t *o = openOverlay();
+  lv_obj_set_style_bg_color(o, BOOK_BOARDS, 0);
+  button(o, "CLOSE", closeOverlay, nullptr, false);
+  lv_obj_t *pg = column(o, LV_PCT(100));
+  lv_obj_set_style_bg_color(pg, BOOK_PAGE, 0); lv_obj_set_style_bg_opa(pg, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_color(pg, BOOK_EDGE, 0); lv_obj_set_style_border_width(pg, 1, 0);
+  lv_obj_set_style_pad_all(pg, 24, 0); lv_obj_set_style_pad_row(pg, 14, 0);
+  if (ent.isNull()) {                              // the cover, then CONTENTS
+    guideAt = -1;
+    lv_obj_move_to_index(guideCover(o, 3), 1);
+    label(pg, "CONTENTS", &lv_font_montserrat_20, BOOK_CYAN);
+    int n = 0;
+    for (JsonObject s : g["sections"].as<JsonArray>()) {
+      label(pg, s["label"] | "", &lv_font_montserrat_16, BOOK_FAINT);
+      label(pg, s["heading"] | "", &lv_font_montserrat_28, BOOK_INK, LV_PCT(100));
+      for (JsonObject e : s["entries"].as<JsonArray>()) bookLink(pg, String((const char *)(e["short"] | "")) + "   >", n++);
+    }
+    return;
+  }
+  String lab = sec["label"] | "", head = sec["heading"] | ""; head.toUpperCase();
+  label(pg, lab == head ? lab : lab + "  -  " + head, &lv_font_montserrat_16, BOOK_FAINT, LV_PCT(100));
+  label(pg, ent["title"] | "", &lv_font_montserrat_40, BOOK_INK, LV_PCT(100));
+  for (JsonVariant para : ent["paragraphs"].as<JsonArray>()) label(pg, para.as<String>(), &lv_font_montserrat_28, BOOK_INK, LV_PCT(100));
+  lv_obj_t *nav = row(pg);
+  bookLink(nav, "< BACK", guideAt - 1, guideAt > 0);
+  bookLink(nav, "CONTENTS", -1);
+  bookLink(nav, "NEXT >", guideAt + 1, guideAt < total - 1);
+  label(pg, String(guideAt + 1) + " / " + String(total), &lv_font_montserrat_16, BOOK_FAINT);
+}
+
+static void drawLibrary(lv_obj_t *p) {
+  JsonDocument gd = newDoc();
+  if (kept("guide", gd) && (gd["held"] | false)) {
+    lv_obj_t *gc = card(p);
+    lv_obj_t *r = row(gc);
+    guideCover(r, 1);
+    lv_obj_t *t = column(r, 460);
+    label(t, "THE GUIDE", &lv_font_montserrat_20, QUIET);
+    label(t, gd["title"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+    button(t, "READ", tapGuideAt, (void *)(long)-1);
+  }
   JsonDocument pg = newDoc(), sc = newDoc(), pr = newDoc();
   if (!kept("progress", pg) || !kept("school", sc)) { label(p, "Nothing kept yet: CALLOW SCHOOL comes from your save, after a SYNC.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }
   kept("profile", pr);
@@ -1171,7 +1255,7 @@ static void drawSettings(lv_obj_t *p) {
 
 // ---- the frame: a status bar and the tabs down the side --------------------------------------------------------------
 typedef void (*Draw)(lv_obj_t *);
-static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawHome, drawProfile, drawSchool, drawSettings };
+static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawHome, drawProfile, drawLibrary, drawSettings };
 static_assert(sizeof DRAW / sizeof *DRAW == P_COUNT, "a way to draw every page");
 
 static void takeDayColour() {

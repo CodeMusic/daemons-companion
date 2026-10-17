@@ -24,7 +24,7 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 }
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
-      !strcmp(name, "groves") || !strcmp(name, "school")) return K_PROFILE;
+      !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide")) return K_PROFILE;   // C-145: the LIBRARY's GUIDE
   if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
   if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
@@ -372,6 +372,7 @@ static void fetchProfileArt() {
     one(String("player_") + who + "_walk", String("player=") + who + "&walk=1");
   }
   for (int m = 1; m <= 8; m++) one("mark" + String(m), "mark=" + String(m));
+  one("guide_cover", "guide=cover");               // C-145: the GUIDE's 8-bit cover
   if (any) changed(K_ART | K_PROFILE);
 }
 
@@ -421,6 +422,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/party", "party");
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/notebook", "notebook");           // C-131: the PROFILE's NOTEBOOK, as the app reads it
+    fetchKeep("/api/guide", "guide");                 // C-145: the GUIDE, once the save holds it
     fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours
     fetchKeep("/api/regions", "regions");             // the two regions' maps, lit from the profile's visited (C-127)
     fetchKeep("/api/progress", "progress");           // C-137: GAME EVENTS, and CALLOW SCHOOL as the save has it

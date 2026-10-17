@@ -294,7 +294,7 @@ async function keepEverything() {
   let moved = false;
   for (const p of ["/api/today", "/api/goal", "/api/goals", "/api/party", "/api/profile", "/api/index", "/api/meetings", "/api/daemon/life", "/api/walk",
                    "/api/settings", "/api/talk/settings", "/api/device/settings",   // C-92: SETTINGS opens away too
-                   "/api/notebook", "/api/progress", "/api/broadcasts"]) {   // C-125, C-128/129, C-134: PROFILE, SCHOOL, NEARBY away
+                   "/api/notebook", "/api/progress", "/api/broadcasts", "/api/guide"]) {   // C-125, C-128/129, C-134, C-145: PROFILE, LIBRARY, NEARBY away
     const before = JSON.stringify(KEPT.paths[p]);
     await liveAndKeep(p, () => false).catch(() => {});
     if (JSON.stringify(KEPT.paths[p]) !== before) moved = true;
@@ -1274,6 +1274,127 @@ function PracticePaper() {
         <Action label="Stop" ink="#fbfaf6" onPress={() => setAt(null)} />
       </XStack>
     </Card>
+  );
+}
+
+// C-145: THE LIBRARY -- what you can read, on one shelf: CALLOW SCHOOL (C-129) and, once the save holds it, THE PROGRAMMER'S
+// GUIDE TO THE HUMAN MIND with its 8-bit cover. Nothing of the GUIDE shows before it is found (a find stays blind, T-297).
+type GuideBookT = { held: boolean; title?: string; sections?: { key: string; label: string; heading: string;
+                    entries: { short: string; title: string; paragraphs: string[] }[] }[] };
+const GUIDE_COVER = require("../server/data/art/guide_cover.png");
+// the GUIDE's own sixteen colours (DAEMONS tools/genguide.py): charcoal boards and pages, near-white ink, one cyan -- the
+// book looks like itself in either theme, as it does in the game
+// the screen's ScrollView, so turning a page of a book starts the new one at its top
+const SCREEN: { scroller: { scrollTo?: (o: { y: number; animated: boolean }) => void } | null } = { scroller: null };
+const BOOK = { boards: "#161618", page: "#282a2e", edge: "#3e4046", ink: "#e6eaee", faint: "#78808a", cyan: "#00c8ff" };
+
+function LibraryScreen() {
+  const [book, setBook] = useState<"school" | "guide" | null>(null);
+  const [g, setG] = useState<GuideBookT | null>(null);
+  const [pr, setPr] = useState<Progress | null>(null);
+  useEffect(() => {
+    api<GuideBookT>("/api/guide").then(setG).catch(() => {});
+    api<Progress>("/api/progress").then(setPr).catch(() => {});
+  }, []);
+  const back = <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
+                     onPress={() => setBook(null)}>‹ LIBRARY</Text>;
+  if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
+  if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
+  const s = pr?.school;
+  const chapters = g?.sections?.reduce((n, x) => n + x.entries.length, 0) ?? 0;
+  return (
+    <YStack gap={14}>
+      <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
+        <XStack gap={14} alignItems="center">
+          <YStack width={72} height={48} borderRadius={3} backgroundColor="$color9" alignItems="center" justifyContent="center">
+            <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color="#fbfaf6">CALLOW</Text>
+          </YStack>
+          <YStack flex={1} gap={2}>
+            <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">CALLOW SCHOOL</Text>
+            <Small>{!s ? "The seven floors, the TEXTBOOK and the paper."
+              : s.diploma ? `DIPLOMA${s.best !== null ? ` · MARK ${s.best}` : ""}`
+              : s.textbook ? `The TEXTBOOK · ${s.floors.filter(Boolean).length} of ${s.floors.length} floors` : "The seven floors and the paper."}</Small>
+          </YStack>
+          <Text fontSize={18} color="$color10">›</Text>
+        </XStack>
+      </Card>
+      {g?.held ? (
+        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("guide")}>
+          <XStack gap={14} alignItems="center">
+            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor={BOOK.boards} borderRadius={3}>
+              <YStack width={33} height={40} overflow="hidden">
+                <Image source={GUIDE_COVER} style={{ width: 60, height: 40, marginLeft: -13.5 }} resizeMode="stretch"
+                       accessibilityLabel="the GUIDE's cover" />
+              </YStack>
+            </YStack>
+            <YStack flex={1} gap={2}>
+              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">THE GUIDE</Text>
+              <Small>{`${g.title ?? ""} · ${chapters} chapters`}</Small>
+            </YStack>
+            <Text fontSize={18} color="$color10">›</Text>
+          </XStack>
+        </Card>
+      ) : null}
+    </YStack>
+  );
+}
+
+// the GUIDE as the game's reader keeps it: the cover, then CONTENTS (each part, its chapters), then a chapter on one page
+// with the next and the last a tap away
+function GuideBook({ g }: { g: GuideBookT }) {
+  const flat = (g.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
+  const [at, setTo] = useState<number | null>(null);
+  const setAt = (to: number | null) => { setTo(to); SCREEN.scroller?.scrollTo?.({ y: 0, animated: false }); };
+  const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
+  if (at !== null && flat[at]) {
+    const { sec, e } = flat[at];
+    const turn = (label: string, to: number | null) => (
+      <Text {...mono} fontSize={12} color={to === null ? BOOK.edge : BOOK.cyan} cursor={to === null ? "default" : "pointer"} role="button"
+            onPress={() => to !== null && setAt(to)}>{label}</Text>
+    );
+    return (
+      <YStack backgroundColor={BOOK.page} borderColor={BOOK.edge} borderWidth={1} borderRadius={4} padding={18} gap={12}>
+        <Text {...mono} fontSize={11} color={BOOK.faint}>{sec.label.toUpperCase() === sec.heading.toUpperCase() ? sec.label : `${sec.label} · ${sec.heading.toUpperCase()}`}</Text>
+        <Text fontSize={20} lineHeight={27} fontWeight="700" color={BOOK.ink}>{e.title}</Text>
+        <YStack height={2} backgroundColor={BOOK.cyan} width={48} />
+        {e.paragraphs.map((p, i) => <Text key={i} fontSize={16} lineHeight={25} color={BOOK.ink}>{p}</Text>)}
+        <XStack justifyContent="space-between" marginTop={8} paddingTop={12} borderTopWidth={1} borderColor={BOOK.edge}>
+          {turn("‹ BACK", at > 0 ? at - 1 : null)}
+          <Text {...mono} fontSize={12} color={BOOK.cyan} cursor="pointer" role="button" onPress={() => setAt(null)}>CONTENTS</Text>
+          {turn("NEXT ›", at < flat.length - 1 ? at + 1 : null)}
+        </XStack>
+        <Text {...mono} fontSize={10} color={BOOK.faint} textAlign="center">{`${at + 1} / ${flat.length}`}</Text>
+      </YStack>
+    );
+  }
+  let n = 0;
+  return (
+    <YStack backgroundColor={BOOK.boards} borderRadius={4} padding={14} gap={14}>
+      {/* the book itself, cut out of the game's 240x160 screen (x 54..185), at a whole multiple so its pixels stay square */}
+      <YStack width={132 * 2} height={160 * 2} overflow="hidden" alignSelf="center" borderRadius={2}>
+        <Image source={GUIDE_COVER} style={{ width: 240 * 2, height: 160 * 2, marginLeft: -54 * 2, ...PIXELATED }}
+               resizeMode="stretch" accessibilityLabel={g.title ?? "the GUIDE"} />
+      </YStack>
+      <YStack backgroundColor={BOOK.page} borderColor={BOOK.edge} borderWidth={1} borderRadius={4} padding={16} gap={4}>
+        <Text {...mono} fontSize={12} color={BOOK.cyan}>CONTENTS</Text>
+        {(g.sections ?? []).map((sec) => (
+          <YStack key={sec.key} marginTop={10} gap={2}>
+            <Text {...mono} fontSize={10} color={BOOK.faint}>{sec.label}</Text>
+            <Text fontSize={15} fontWeight="700" color={BOOK.ink} marginBottom={4}>{sec.heading}</Text>
+            {sec.entries.map((e) => {
+              const i = n++;
+              return (
+                <XStack key={e.short} gap={10} paddingVertical={6} borderTopWidth={1} borderColor={BOOK.edge} cursor="pointer" role="button"
+                        onPress={() => setAt(i)}>
+                  <Text {...mono} fontSize={12} color={BOOK.cyan} flex={1}>{e.short}</Text>
+                  <Text fontSize={14} color={BOOK.faint}>›</Text>
+                </XStack>
+              );
+            })}
+          </YStack>
+        ))}
+      </YStack>
+    </YStack>
   );
 }
 
@@ -2439,7 +2560,7 @@ function RelayCard({ ink }: { ink: string }) {
   );
 }
 
-const TABS = ["today", "goals", "daemon", "index", "device", "home", "profile", "school", "settings"] as const;   // C-129: SCHOOL; C-139: HOME
+const TABS = ["today", "goals", "daemon", "index", "device", "home", "profile", "library", "settings"] as const;   // C-129: SCHOOL; C-139: HOME; C-145: SCHOOL into the LIBRARY
 
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
@@ -2527,7 +2648,7 @@ function Shell() {
         </XStack>
         </ScrollView>
       </YStack>
-      <ScrollView key={fresh} contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
+      <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
         {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
@@ -2536,7 +2657,7 @@ function Shell() {
         {tab === "device" ? <DeviceScreen ink={ink} /> : null}
         {tab === "home" ? <HomeScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
         {tab === "profile" ? <ProfileScreen /> : null}
-        {tab === "school" ? <SchoolScreen /> : null}
+        {tab === "library" ? <LibraryScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
         {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
       </ScrollView>

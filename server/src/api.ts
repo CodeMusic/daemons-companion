@@ -924,8 +924,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
         // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
-        if (q.has("player") || q.has("mark")) {
-          const name = q.has("player")
+        if (q.has("player") || q.has("mark") || q.has("guide")) {   // C-145: ?guide=cover, the GUIDE's 8-bit cover
+          const name = q.has("guide") ? "guide_cover.png" : q.has("player")
             ? `player_${q.get("player") === "instinct" ? "instinct" : "reason"}${q.get("walk") ? "_walk" : ""}.png`
             : `mark_${Math.max(1, Math.min(8, Number(q.get("mark")) || 1))}.png`;
           const file = join(ART_DIR, name);

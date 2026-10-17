@@ -15,7 +15,10 @@
 #include <Preferences.h>
 
 // ---- the look: paper, ink, and the day's colour (the app's, from /api/today) ------------------------------------------
+// C-144: in the light or in the night -- wearLook() sets these from LIGHT, DARK or AUTO (SETTINGS, kept on the Tab5)
 static lv_color_t PAPER = lv_color_hex(0xF3F1EA), INK = lv_color_hex(0x1D232B), QUIET = lv_color_hex(0x6B7178);
+static lv_color_t CARD = lv_color_white(), BAR = INK, UNLIT = lv_color_hex(0xC9D2C4);
+static bool darkNow = false;
 static lv_color_t DAY = lv_color_hex(0x315A62);
 static uint32_t dayHex = 0x315A62;
 
@@ -32,12 +35,19 @@ static const uint32_t NEEDS[] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | 
 static_assert(sizeof NEEDS / sizeof *NEEDS == P_COUNT, "what every page needs");
 static int indexPage = 0, goalAt = 0;
 
+// C-144: in the night, words in a colour chosen for the paper -- the day's, a root's -- are lifted towards the ink
+// until they read (about 4.5:1 on a card); in the light every colour is as it was chosen
+static lv_color_t legible(lv_color_t c) {
+  for (int i = 0; darkNow && i < 24 && lv_color_luminance(c) < 140; i++) c = lv_color_mix(INK, c, 32);
+  return c;
+}
+
 static lv_obj_t *label(lv_obj_t *parent, const String &text, const lv_font_t *font = &lv_font_montserrat_20,
                        lv_color_t colour = INK, int width = -1) {
   lv_obj_t *l = lv_label_create(parent);
   lv_label_set_text(l, text.c_str());
   lv_obj_set_style_text_font(l, font, 0);
-  lv_obj_set_style_text_color(l, colour, 0);
+  lv_obj_set_style_text_color(l, legible(colour), 0);
   if (width > 0) { lv_obj_set_width(l, width); lv_label_set_long_mode(l, LV_LABEL_LONG_WRAP); }
   return l;
 }
@@ -56,7 +66,7 @@ static lv_obj_t *column(lv_obj_t *parent, int w = LV_PCT(100), int h = LV_SIZE_C
 static lv_obj_t *card(lv_obj_t *parent, int w = LV_PCT(100)) {
   lv_obj_t *c = column(parent, w);
   lv_obj_set_style_bg_opa(c, LV_OPA_COVER, 0);
-  lv_obj_set_style_bg_color(c, lv_color_white(), 0);
+  lv_obj_set_style_bg_color(c, CARD, 0);
   lv_obj_set_style_border_width(c, 0, 0);
   lv_obj_set_style_border_side(c, LV_BORDER_SIDE_LEFT, 0);
   lv_obj_set_style_border_color(c, DAY, 0);
@@ -69,7 +79,7 @@ static lv_obj_t *card(lv_obj_t *parent, int w = LV_PCT(100)) {
 typedef void (*Tap)(lv_event_t *);
 static lv_obj_t *button(lv_obj_t *parent, const String &text, Tap tap, void *data = nullptr, bool filled = true) {
   lv_obj_t *b = lv_button_create(parent);
-  lv_obj_set_style_bg_color(b, filled ? DAY : lv_color_white(), 0);
+  lv_obj_set_style_bg_color(b, filled ? DAY : CARD, 0);
   lv_obj_set_style_border_color(b, DAY, 0);
   lv_obj_set_style_border_width(b, filled ? 0 : 2, 0);
   lv_obj_set_style_shadow_width(b, 0, 0);
@@ -112,6 +122,15 @@ static lv_obj_t *picture(lv_obj_t *parent, const String &key, int scale) {
   lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);   // C-99: a tap on the picture is a tap on what holds it (an INDEX cell)
   if (dsc) {
+    if (darkNow && key.startsWith("mark")) {        // C-144: the badges (16 px) are drawn for the paper -- in the night,
+      lv_obj_t *chip = lv_obj_create(box);          // each sits on a chip of it
+      int32_t side = 16 * scale / 256 + 8;
+      lv_obj_set_size(chip, side, side);
+      lv_obj_set_style_bg_color(chip, lv_color_hex(0xECE9DF), 0); lv_obj_set_style_bg_opa(chip, LV_OPA_COVER, 0);
+      lv_obj_set_style_border_width(chip, 0, 0); lv_obj_set_style_radius(chip, 6, 0);
+      lv_obj_remove_flag(chip, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(chip, LV_OBJ_FLAG_CLICKABLE);
+      lv_obj_center(chip);
+    }
     lv_obj_t *img = lv_image_create(box);
     lv_image_set_src(img, dsc);
     lv_image_set_antialias(img, false);
@@ -429,7 +448,7 @@ static void drawIndex(lv_obj_t *p) {
     bool seen = en["seen"] | false;
     lv_obj_t *cell = column(grid, 165);
     lv_obj_set_style_bg_opa(cell, LV_OPA_COVER, 0);
-    lv_obj_set_style_bg_color(cell, lv_color_white(), 0);
+    lv_obj_set_style_bg_color(cell, CARD, 0);
     lv_obj_set_style_radius(cell, 6, 0);
     lv_obj_set_style_pad_all(cell, 8, 0);
     lv_obj_set_flex_align(cell, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -714,6 +733,44 @@ static void tapOrient(lv_event_t *e) {
   drawnAt[P_SETTINGS] = 0;
 }
 
+// ---- C-144 (the user, 2026-10-16): LIGHT, DARK or AUTO. The Tab5 has no light or dark of its own to follow, so AUTO --
+// the default -- is dark through the daemon's night, 8pm to 6am where the companion is (server/src/life.ts NIGHT_FROM
+// and MORNING), by the clock its state carries; light until it has said the time. Kept on the Tab5, as the way up is.
+enum Look { L_AUTO, L_LIGHT, L_DARK };
+static int look = L_AUTO;
+static const char *LOOK_NAMES[] = { "AUTO", "LIGHT", "DARK" };
+static void loadLook() { Preferences p; p.begin("tab5ui", true); look = p.getUChar("look", L_AUTO); p.end(); if (look > 2) look = L_AUTO; }
+static void saveLook() { Preferences p; p.begin("tab5ui", false); p.putUChar("look", look); p.end(); }
+static bool wantDark() {
+  if (look != L_AUTO) return look == L_DARK;
+  struct tm t;
+  return localTime(t) && (t.tm_hour >= 20 || t.tm_hour < 6);
+}
+static void wearLook(bool dark) {
+  darkNow = dark;
+  PAPER = lv_color_hex(dark ? 0x15171B : 0xF3F1EA); CARD = dark ? lv_color_hex(0x1F2227) : lv_color_white();
+  INK = lv_color_hex(dark ? 0xECEAE3 : 0x1D232B); QUIET = lv_color_hex(dark ? 0x9AA0A8 : 0x6B7178);
+  BAR = lv_color_hex(dark ? 0x0C0D10 : 0x1D232B); UNLIT = lv_color_hex(dark ? 0x454C47 : 0xC9D2C4);
+  // LVGL's own pieces -- the keyboard, the text fields -- in the same light (its theme as the display made it)
+  lv_display_t *d = lv_display_get_default();
+  lv_display_set_theme(d, lv_theme_default_init(d, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), dark, LV_FONT_DEFAULT));
+}
+static void lookAgain() {                                          // the whole frame, built again in the other light
+  bool dark = wantDark();
+  if (dark == darkNow) return;
+  int at = tabs ? lv_tabview_get_tab_active(tabs) : 0;
+  closeOverlay();
+  lv_obj_clean(lv_screen_active());
+  wearLook(dark);
+  buildFrame();
+  lv_tabview_set_active(tabs, at, LV_ANIM_OFF);
+}
+static void tapLook(lv_event_t *e) {
+  look = (int)(long)lv_event_get_user_data(e); saveLook();
+  lookAgain();
+  drawnAt[P_SETTINGS] = 0;
+}
+
 // ---- PROFILE (C-131): as the app's -- the player as the game draws them, the save's facts, the MARKS (the trainer card's
 // badges) and ROOTS (each understanding's colour), each opening its words, and the NOTEBOOK by section, a page a tap.
 // Everything comes from what the Tab5 keeps: profile, marks, notebook (net.cpp), and the pictures (fetchProfileArt).
@@ -880,7 +937,7 @@ static void regionMap(lv_obj_t *parent, JsonObject region, JsonObject pr, int ce
         lv_obj_set_pos(r, (x - x0) * cell, (y - y0) * cell);
         lv_obj_set_size(r, (run - x) * cell - 1, cell - 1);
         lv_obj_set_style_radius(r, 0, 0); lv_obj_set_style_border_width(r, 0, 0); lv_obj_set_style_pad_all(r, 0, 0);
-        lv_obj_set_style_bg_color(r, on ? DAY : lv_color_hex(0xC9D2C4), 0);
+        lv_obj_set_style_bg_color(r, on ? DAY : UNLIT, 0);
         lv_obj_remove_flag(r, LV_OBJ_FLAG_CLICKABLE);
         x = run;
       }
@@ -1085,6 +1142,10 @@ static void drawSettings(lv_obj_t *p) {
   for (int i = 0; i < 3; i++) button(ro, ORIENT_NAMES[i], tapOrient, (void *)(long)i, i == orient);
   label(o, orient == O_AUTO ? (M5.Imu.isEnabled() ? "Turns with the Tab5." : "This Tab5's motion sensor did not answer, so AUTO stays as it is.")
                             : "Stays this way up.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
+  lv_obj_t *lr = row(o);                           // C-144
+  for (int i = 0; i < 3; i++) button(lr, LOOK_NAMES[i], tapLook, (void *)(long)i, i == look);
+  label(o, look == L_AUTO ? "Dark through the daemon's night, 8pm to 6am, by the companion's clock."   // DRAFT
+                          : look == L_DARK ? "Stays dark." : "Stays light.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
   lv_obj_t *w = card(p);
   label(w, "WI-FI", &lv_font_montserrat_20, QUIET);
   label(w, net.wifi ? "Joined " + net.network : "Not on a network", &lv_font_montserrat_28, INK);
@@ -1139,7 +1200,7 @@ static void redraw(int i) {
 
 static void tabChanged(lv_event_t *) { drawnAt[lv_tabview_get_tab_active(tabs)] = 0; soundSelect(); }   // C-94
 
-void uiBegin() { buildFrame(); }
+void uiBegin() { loadLook(); wearLook(wantDark()); buildFrame(); }   // C-144: in its light from the first frame
 
 static String barLeft, barRight;                   // C-96: what the status bar says, so it is set only when it changes
 static void buildFrame() {
@@ -1149,7 +1210,7 @@ static void buildFrame() {
   lv_obj_set_style_bg_color(scr, PAPER, 0);
   lv_obj_t *bar = lv_obj_create(scr);
   lv_obj_set_size(bar, LV_PCT(100), 48);
-  lv_obj_set_style_bg_color(bar, INK, 0);
+  lv_obj_set_style_bg_color(bar, BAR, 0);
   lv_obj_set_style_radius(bar, 0, 0); lv_obj_set_style_border_width(bar, 0, 0);
   lv_obj_set_style_pad_hor(bar, 18, 0); lv_obj_set_style_pad_ver(bar, 0, 0);
   lv_obj_remove_flag(bar, LV_OBJ_FLAG_SCROLLABLE);
@@ -1230,6 +1291,7 @@ void uiLoop() {
     if (bat >= 0) right += "   " + String(bat) + "%";
     if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); }
     if (at == P_SETTINGS && !overlay) { static String said; if (said != net.message) { said = net.message; drawnAt[P_SETTINGS] = 0; } }
+    if (look == L_AUTO && !overlay) lookAgain();   // C-144: at 8pm and 6am, or once the companion has said the time
     if (at == P_HOME && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_HOME] = 0; } }   // C-139: KEPT, or not
   }
 }

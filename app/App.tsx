@@ -7,8 +7,8 @@ import { StatusBar } from "expo-status-bar";
 import { DenStage } from "./Den";                    // C-113
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "./deviceSprites";   // C-130
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppState, Image, Linking, Platform, View } from "react-native";
-import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
+import { Appearance, AppState, Image, Linking, Platform, useColorScheme, View } from "react-native";
+import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, useThemeName, XStack, YStack } from "tamagui";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import * as SecureStore from "expo-secure-store";
 import { File, Paths } from "expo-file-system";
@@ -57,6 +57,28 @@ function setPalette(p: unknown) {
   const next = p === "rainbow" ? "rainbow" : "checkpoint";
   if (next !== PALETTE) { PALETTE = next; paletteHeard.forEach((f) => f()); }
 }
+// C-144 (the user, 2026-10-16): LIGHT, DARK or AUTO -- AUTO, the default, as the phone or the computer is set. Unlike the
+// palette it is not the companion's: each keeps its own (the phone in its secure storage, the site in this browser),
+// since each is looked at in its own light.
+type Look = "auto" | "light" | "dark";
+let LOOK: Look = "auto";
+const lookHeard = new Set<() => void>();
+const asLook = (v: unknown): Look => (v === "light" || v === "dark" ? v : "auto");
+async function loadLook() {
+  try { LOOK = asLook(ON_PHONE ? await SecureStore.getItemAsync("look", KEEP) : globalThis.localStorage?.getItem("daemons-look")); }
+  catch { /* AUTO */ }
+  wearLook();
+}
+function setLook(l: Look) {
+  LOOK = l; wearLook(); lookHeard.forEach((f) => f());
+  try {
+    if (ON_PHONE) SecureStore.setItemAsync("look", l, KEEP).catch(() => {});
+    else globalThis.localStorage?.setItem("daemons-look", l);
+  } catch { /* kept for this visit only */ }
+}
+// The phone's own pieces -- the keyboard, the share sheet, the status bar -- wear it too
+function wearLook() { if (ON_PHONE) Appearance.setColorScheme(LOOK === "auto" ? "unspecified" : LOOK); }
+const useDark = () => useThemeName().startsWith("dark");
 const keptFile = () => new File(Paths.document, "kept.json");
 async function loadKept() {
   if (!ON_PHONE) return;
@@ -899,6 +921,17 @@ const MARK_ART = [require("../server/data/art/mark_1.png"), require("../server/d
                   require("../server/data/art/mark_7.png"), require("../server/data/art/mark_8.png")];
 const reflow = (t: string) => t.split(/\n\n+/).map((par) => par.replace(/\n/g, " ").trim()).filter(Boolean);
 const rgbOf = (c: number[]) => `rgb(${c[0]},${c[1]},${c[2]})`;
+// C-144: a root's own colour as words on the night -- lifted towards the paper until it reads (4.5:1 on the cards)
+const luminance = (c: number[]) => c.map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+  .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+function onNight(c: number[]) {
+  const card = luminance([28, 31, 36]);
+  for (let t = 0; t < 1; t += 0.05) {
+    const m = c.map((v, i) => Math.round(v + ([251, 250, 246][i] - v) * t));
+    if ((luminance(m) + 0.05) / (card + 0.05) >= 4.5) return m;
+  }
+  return [251, 250, 246];
+}
 
 // C-140 (the user, 2026-10-16: "the text isnt organized in a way or styled to make it easy to read"): a MARK or a ROOT,
 // opened, reads as a small page -- its own heading (a MARK's in ink beside its badge, a ROOT's in its own colour), the
@@ -933,6 +966,15 @@ function Quote({ children }: { children: React.ReactNode }) {
     </YStack>
   );
 }
+// C-144: the badges are drawn for the paper -- in the dark each sits on a chip of it
+function Badge({ n, size }: { n: number; size: number }) {
+  const dark = useDark();
+  return (
+    <YStack padding={dark ? 2 : 0} borderRadius={4} backgroundColor={dark ? "#ece9df" : "transparent"}>
+      <Image source={MARK_ART[n]} style={{ width: size, height: size }} resizeMode="contain" />
+    </YStack>
+  );
+}
 const rootOfMark = (n: number) => {        // the understanding a MARK pairs with (marks.json wisdom.root_flag)
   const f = (MARKS.marks[n].wisdom as { root_flag?: number } | undefined)?.root_flag;
   return MARKS.understandings.findIndex((u) => (u as { flag?: number }).flag === f);
@@ -947,7 +989,7 @@ function MarkPage({ n, w }: { n: number; w?: Wis }) {
   return (
     <Panel>
       <XStack gap={10} alignItems="center">
-        <Image source={MARK_ART[n]} style={{ width: 20, height: 20 }} resizeMode="contain" />
+        <Badge n={n} size={20} />
         <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color="$color12">{m.title.toUpperCase()}</Text>
       </XStack>
       {paras.length ? <Para lead>{paras[0]}</Para> : null}
@@ -980,16 +1022,17 @@ function RootPage({ i, marks, wisdom }: { i: number; marks: boolean[]; wisdom?: 
   const u = MARKS.understandings[i];
   const n = MARKS.marks.findIndex((_, k) => rootOfMark(k) === i);
   const m = n >= 0 ? MARKS.marks[n] : null;
+  const dark = useDark();
   return (
     <Panel>
-      <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color={rgbOf(u.rgb)}>{u.name}</Text>
+      <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color={rgbOf(dark ? onNight(u.rgb) : u.rgb)}>{u.name}</Text>
       {u.lesson ? <Para lead>{u.lesson}</Para> : <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color10">Its lesson is still being written.</Text>}
       <Small color="$color10">{`Arrived at: ${u.found}.`}</Small>
       {m && marks[n] ? (
         <YStack gap={6}>
           <SubHead>PAIRED WITH</SubHead>
           <XStack gap={8} alignItems="center">
-            <Image source={MARK_ART[n]} style={{ width: 18, height: 18 }} resizeMode="contain" />
+            <Badge n={n} size={18} />
             <Text fontFamily="$mono" fontSize={14} fontWeight="700" color="$color12">{m.title.toUpperCase()}</Text>
           </XStack>
           {wisdom?.[n]?.insight && m.wisdom ? (
@@ -1006,13 +1049,15 @@ function RootPage({ i, marks, wisdom }: { i: number; marks: boolean[]; wisdom?: 
 
 function MarksRow({ held, wisdom }: { held: boolean[]; wisdom?: Wis[] }) {
   const [at, setAt] = useState<number | null>(null);
+  const dark = useDark();
   return (
     <YStack paddingVertical={8} gap={8}>
       <XStack justifyContent="space-between"><Eyebrow>MARKS</Eyebrow><Text fontSize={16} color="$color12">{held.filter(Boolean).length} of 8</Text></XStack>
       <XStack gap={2} flexWrap="wrap">
         {held.map((h, i) => (
           <YStack key={i} onPress={() => setAt(at === i ? null : i)} cursor="pointer" padding={3} borderRadius={4}
-                  borderWidth={2} borderColor={at === i ? "$color9" : "transparent"} aria-label={`MARK ${i + 1}${h ? ", earned" : ""}`}>
+                  borderWidth={2} borderColor={at === i ? "$color9" : "transparent"} aria-label={`MARK ${i + 1}${h ? ", earned" : ""}`}
+                  backgroundColor={dark ? "#ece9df" : "transparent"}>
             <Image source={MARK_ART[i]} style={{ width: 28, height: 28, opacity: h ? 1 : 0.18 }} resizeMode="contain" />
           </YStack>
         ))}
@@ -1051,6 +1096,7 @@ type RegionsData = { regions: { key: string; name: string; hidden_until: string 
 const REGIONS: RegionsData = require("../server/data/regions.json");
 
 function RegionMap({ region, visited, open, cell }: { region: RegionsData["regions"][number]; visited: Set<string>; open: boolean; cell: number }) {
+  const [litCell, unlitCell] = useDark() ? ["#5a82ad", "#454c47"] : ["#43658B", "#C9D2C4"];   // C-144: the night's pair
   const lit = useMemo(() => {
     const on = new Set<string>();
     if (!open) return on;
@@ -1075,7 +1121,7 @@ function RegionMap({ region, visited, open, cell }: { region: RegionsData["regio
               {used.map(([x, y]) => {
                 const m = map.grid[y][x];
                 return <View key={`${x}-${y}`} style={{ position: "absolute", left: (x - x0) * cell, top: (y - y0) * cell, width: cell - 0.5,
-                                                         height: cell - 0.5, backgroundColor: lit.has(m) ? "#43658B" : "#C9D2C4" }} />;
+                                                         height: cell - 0.5, backgroundColor: lit.has(m) ? litCell : unlitCell }} />;
               })}
             </View>
           );
@@ -1381,7 +1427,7 @@ function AloneSettings({ ink }: { ink: string }) {
   const give = async () => { try { await LOCAL!.shareSave(); } catch (e) { setNote((e as Error).message); } };
   return (
     <YStack gap={14}>
-      <VersionCard />
+      <VersionCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={LOCAL?.hasSave() ? "$color9" : "$color5"}>
         <Eyebrow>THIS PHONE HOSTS ON ITS OWN</Eyebrow>
         <Small>{`Your ${LOCAL?.edition() ?? "DAEMONS"} save is kept on this phone, a copy of Delta's. After you play, bring the newer ` +
@@ -1433,7 +1479,7 @@ function SavePathSettings({ ink }: { ink: string }) {
   // C-92: away, the companion's own settings may not be kept yet -- say so and show the rest, not an error
   if (!s) return (
     <YStack gap={14}>
-      <VersionCard />
+      <VersionCard ink={ink} />
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
       <LeaveCompanionCard ink={ink} />
@@ -1441,7 +1487,7 @@ function SavePathSettings({ ink }: { ink: string }) {
   );
   return (
     <YStack gap={14}>
-      <VersionCard />
+      <VersionCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
         <Text fontFamily="$mono" fontSize={13} color="$color12" wordWrap="break-word">{s.savePath ?? "not set"}</Text>
@@ -1474,8 +1520,9 @@ function SavePathSettings({ ink }: { ink: string }) {
 // C-91: which build this is -- the commit it was made from and when -- and, asked of the companion, whether the app has
 // changed since. On the site, the companion's own commit (the site is always the newest).
 const BUILD = process.env.EXPO_PUBLIC_BUILD ?? "";
-function VersionCard() {
+function VersionCard({ ink }: { ink: string }) {
   const [v, setV] = useState<{ server: string | null; appChanged: boolean | null } | null>(null);
+  const [look, seeLook] = useState(LOOK);                                    // C-144
   const commit = BUILD.split(" ")[0];
   useEffect(() => { api<typeof v>(`/api/version${commit ? `?build=${commit}` : ""}`).then(setV).catch(() => {}); }, [commit]);
   return (
@@ -1486,6 +1533,13 @@ function VersionCard() {
       </Text>
       {ON_PHONE && v?.appChanged ? <Small color="$color11">A newer app is ready. On the computer: ./bindCompanion.sh phone</Small>   // DRAFT
         : ON_PHONE && v?.appChanged === false ? <Small>Up to date.</Small> : null}
+      <YStack gap={4} marginTop={6}>
+        <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">
+          {ON_PHONE ? "LIGHT OR DARK -- AUTO AS THE PHONE IS SET" : "LIGHT OR DARK -- AUTO AS THIS COMPUTER IS SET"}
+        </Text>{/* DRAFT */}
+        <Choice<Look> value={look} options={[["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]]}
+                      onPick={(l) => { setLook(l); seeLook(l); }} ink={ink} />
+      </YStack>
     </Card>
   );
 }
@@ -2497,7 +2551,7 @@ function Shell() {
           </YStack>
         </XStack>
       ) : null}
-      <StatusBar style="dark" />
+      <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
     </YStack>
   );
   return day ? <Theme name={(rainbow ? `${day}rainbow` : day) as any}>{page}</Theme> : page;
@@ -2507,9 +2561,21 @@ export default function App() {
   // C-53: on the phone, pair first; on the site, the server is this machine
   const [paired, setPaired] = useState<boolean | null>(ON_PHONE ? null : true);
   useEffect(() => { unpaired = () => setPaired(false); loadConnection().then(setPaired); }, []);
+  // C-144: the paper or the night -- chosen, or AUTO as the phone or the computer is set
+  const [look, seeLook] = useState(LOOK);
+  useEffect(() => { const f = () => seeLook(LOOK); lookHeard.add(f); loadLook().then(f); return () => { lookHeard.delete(f); }; }, []);
+  const system = useColorScheme();
+  const scheme = look === "auto" ? (system === "dark" ? "dark" : "light") : look;
+  useEffect(() => {   // the site's own pieces too: its scroll bars, and the page behind the app
+    if (ON_PHONE || typeof document === "undefined") return;
+    document.documentElement.style.colorScheme = scheme;
+    document.body.style.backgroundColor = scheme === "dark" ? "#16181c" : "#f6f4ee";
+  }, [scheme]);
   return (
-    <TamaguiProvider config={config} defaultTheme="light">
-      {paired === null ? null : paired ? <Shell /> : <PairScreen onPaired={() => setPaired(true)} />}
+    <TamaguiProvider config={config} defaultTheme={scheme}>
+      <Theme name={scheme}>
+        {paired === null ? null : paired ? <Shell /> : <PairScreen onPaired={() => setPaired(true)} />}
+      </Theme>
     </TamaguiProvider>
   );
 }

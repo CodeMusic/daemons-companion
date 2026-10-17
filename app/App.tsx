@@ -2576,6 +2576,41 @@ function RelayCard({ ink }: { ink: string }) {
 
 const TABS = ["today", "goals", "daemon", "index", "device", "home", "profile", "library", "settings"] as const;   // C-129: SCHOOL; C-139: HOME; C-145: SCHOOL into the LIBRARY
 
+// The tabs, scrolled sideways when they do not all fit (nine do not, on a phone): a › at the right edge says there are more
+// and takes you to them, and goes once the last is in view
+function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void }) {
+  const strip = useRef<any>(null);
+  const size = useRef({ seen: 0, whole: 0, at: 0 });
+  const [more, setMore] = useState(false);
+  const measure = () => { const z = size.current; setMore(z.whole - z.seen - z.at > 4); };
+  return (
+    <YStack position="relative">
+      <ScrollView ref={strip} horizontal showsHorizontalScrollIndicator={false} scrollEventThrottle={32}
+                  onLayout={(e: any) => { size.current.seen = e.nativeEvent.layout.width; measure(); }}
+                  onContentSizeChange={(w: number) => { size.current.whole = w; measure(); }}
+                  onScroll={(e: any) => { size.current.at = e.nativeEvent.contentOffset.x; measure(); }}>
+        <XStack gap={20} marginTop={12} paddingRight={more ? 28 : 0} role="tablist">
+          {TABS.map((t) => (
+            <YStack key={t} paddingVertical={10} borderBottomWidth={3} cursor="pointer" role="tab"
+                    aria-selected={tab === t} borderBottomColor={tab === t ? "$color9" : "transparent"}
+                    onPress={() => setTab(t)}>
+              <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} fontWeight={tab === t ? "700" : "400"}
+                    color={tab === t ? "$color12" : "$color10"}>{t.toUpperCase()}</Text>
+            </YStack>
+          ))}
+        </XStack>
+      </ScrollView>
+      {more ? (
+        <YStack position="absolute" right={0} top={12} bottom={3} width={32} alignItems="flex-end" justifyContent="center"
+                backgroundColor="$color1" cursor="pointer" role="button" aria-label="more tabs"
+                onPress={() => strip.current?.scrollToEnd?.({ animated: true })}>
+          <Text fontSize={20} lineHeight={20} color="$color9">›</Text>
+        </YStack>
+      ) : null}
+    </YStack>
+  );
+}
+
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
   const [today, setToday] = useState<Today | null>(null);
@@ -2649,18 +2684,7 @@ function Shell() {
             </YStack>
           ) : null}
         </XStack>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <XStack gap={20} marginTop={12} role="tablist">
-          {TABS.map((t) => (
-            <YStack key={t} paddingVertical={10} borderBottomWidth={3} cursor="pointer" role="tab"
-                    aria-selected={tab === t} borderBottomColor={tab === t ? "$color9" : "transparent"}
-                    onPress={() => setTab(t)}>
-              <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} fontWeight={tab === t ? "700" : "400"}
-                    color={tab === t ? "$color12" : "$color10"}>{t.toUpperCase()}</Text>
-            </YStack>
-          ))}
-        </XStack>
-        </ScrollView>
+        <TabStrip tab={tab} setTab={setTab} />
       </YStack>
       <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
         {error ? <Stuck error={error} ink={ink} /> : null}

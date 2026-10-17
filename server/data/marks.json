@@ -1,5 +1,5 @@
 {
- "_about": "C-126: the MARKS (badge art, STREAM lesson, town) and the UNDERSTANDINGS (brain lobe, colour, where arrived at). Understanding names are the user's (T-252, 2026-10-16); their lessons are null until T-405. Order matches profile_layout's flags.understandings.",
+ "_about": "C-126: the MARKS (badge art, STREAM lesson, town) and the UNDERSTANDINGS (brain lobe, colour, where arrived at). Understanding names are the user's (T-252, 2026-10-16); their lessons are T-405's STREAM lectures, as the MARKS' are. Order matches profile_layout's flags.understandings.",
  "marks": [
   {
    "n": 1,
@@ -294,7 +294,10 @@
    "name": "STILL",
    "name_is_working": false,
    "found": "TANOBY CHAMBERS, its last inscription",
-   "lesson": null
+   "lesson": [
+    "STILL.\n\nBefore you think, something in you\nhas already decided to go on.\n\nIt counts your breaths. It holds\nyou upright. It never asks.\n\nMost of what keeps you here is not\na decision.",
+    "So when a battle goes badly, stop\nfor one breath before you choose.\n\nNot to plan. Only to notice that\nyou are still here.\n\nA choice made from there is a\ndifferent choice.\n\nThat is the lecture."
+   ]
   },
   {
    "n": 2,
@@ -310,7 +313,10 @@
    "name": "NAMING",
    "name_is_working": false,
    "found": "CALLOW SCHOOL: the TEXTBOOK and the DIPLOMA",
-   "lesson": null
+   "lesson": [
+    "NAMING.\n\nA word is a small box you put a\nthing in, so you can carry it.\n\nName a thing and you will see it\nfaster the next time.\n\nYou will also see it where it is\nnot.",
+    "A name you were taught is a\nborrowed one. It holds until it is\ntested.\n\nSo say the type before the screen\ndoes. Then check.\n\nWhen the name is wrong, the thing\nwas right. Change the name.\n\nThat is the lecture."
+   ]
   },
   {
    "n": 3,
@@ -326,7 +332,10 @@
    "name": "NOTICE",
    "name_is_working": false,
    "found": "BRAZEN's READING ROOM, with REVEAL",
-   "lesson": null
+   "lesson": [
+    "NOTICE.\n\nYour eyes take in far more than\nyou see.\n\nWhat reaches you is what you were\nalready looking for.\n\nThe rest was there. It was only\nnot chosen.",
+    "So look for something you were not\nlooking for.\n\nWalk a route you know well. Find\none thing on it you never saw.\n\nThere is always one.\n\nThat is the lecture."
+   ]
   },
   {
    "n": 4,
@@ -342,7 +351,10 @@
    "name": "REFLECT",
    "name_is_working": false,
    "found": "QUICKSILVER's notes: the run logs and THE FILE",
-   "lesson": null
+   "lesson": [
+    "REFLECT.\n\nInside a habit, every step makes\nsense. That is how it lasts.\n\nFrom the inside, a loop looks like\na straight road.\n\nYou need a second place to stand,\na little apart, watching yourself\nwalk.",
+    "After a battle you lost, do not\nask what went wrong.\n\nAsk what you did a few turns\nearlier that felt right.\n\nThat is usually where it was.\n\nThen do it again, and watch\nyourself doing it.\n\nThat is the lecture."
+   ]
   },
   {
    "n": 5,
@@ -358,7 +370,10 @@
    "name": "STANCE",
    "name_is_working": false,
    "found": "SCORN beaten, the eighth MARK",
-   "lesson": null
+   "lesson": [
+    "STANCE.\n\nPart of you always keeps track of\nwhere you are.\n\nNot the place. Where you are in\nit: your feet, the floor, how far\nthe wall is.\n\nLose that, and everything you read\nis about somebody else.",
+    "Being ahead tells you who is\nbehind you. It does not tell you\nwhere you are standing.\n\nBefore you compare your DAEMON to\na stronger one, find your feet.\n\nThen ask if that was where you\nwere going.\n\nThat is the lecture."
+   ]
   },
   {
    "n": 6,
@@ -374,7 +389,10 @@
    "name": "MEND",
    "name_is_working": false,
    "found": "TY met, and CRYSTAL found",
-   "lesson": null
+   "lesson": [
+    "MEND.\n\nSomething breaks between you and\nsomeone. It always does.\n\nWhat comes after is not decided by\nthe break.\n\nIt is decided by whether anyone\ncomes back.",
+    "When someone comes back, meet the\none who arrives.\n\nNot the one you remember. They\nhave been somewhere.\n\nSo have you.\n\nGo back first, when you can. It\ncosts less than it feels.\n\nThat is the lecture."
+   ]
   },
   {
    "n": 7,
@@ -390,7 +408,10 @@
    "name": "PRACTICE",
    "name_is_working": false,
    "found": "THE GUIDE, read to its end",
-   "lesson": null
+   "lesson": [
+    "PRACTICE.\n\nKnowing how is not kept where\nknowing that is kept.\n\nYou can read every page about a\nthing and still not do it.\n\nThe doing is learned somewhere\nquieter, and only by doing.",
+    "So do it badly, and often.\n\nThe first hundred times are not\nfailures. They are the lesson.\n\nOne day your hands will move\nbefore you have decided.\n\nThen you know it.\n\nThat is the lecture."
+   ]
   }
  ]
 }

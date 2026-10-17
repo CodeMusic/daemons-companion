@@ -73,3 +73,4 @@ void coreS3Mic();
 void pmuBacklight(bool on);
 bool boardPowerOff();
 void boardIdleOff();   // the M5GO and Fire: the IP5306 let cut the power once the board is idle, before its deep sleep
+String speakerPinTry(const String &mode);   // SPK down the cable: the Fire's G25 held each way, to hear the quietest

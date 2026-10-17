@@ -438,6 +438,23 @@ void boardIdleOff() { ipWrite(0x00, 0b00110001); ipWrite(0x02, 0b01100000); }
 #else
 
 // Does anything answer at this address with the bus on these pins? (The CC1101 board's SDA/SCL are the T-Embed's
+// The Fire's G25 -- its LoRa433's reset (the module's switch) and the speaker amplifier's input -- held each way down
+// the cable (SPK), so the quietest that keeps the radio up can be heard (the user, 2026-10-15: "the audio interference
+// noise"): high, pull (the weak pull-up), dac N (the chip's DAC, steady at N of 255), low (the radio in reset: the quiet
+// it had before), nosleep / sleep (Wi-Fi kept awake, or let doze: its current pulses less awake).
+#include <driver/dac.h>
+#include <WiFi.h>
+String speakerPinTry(const String &m) {
+  if (m == "nosleep" || m == "sleep") { WiFi.setSleep(m == "sleep"); return String("SPK wifi ") + (m == "sleep" ? "dozing" : "always awake"); }
+  dac_output_disable(DAC_CHANNEL_1);
+  if (m == "low") { pinMode(25, OUTPUT); digitalWrite(25, LOW); return "SPK low: the radio is in reset (no LoRa until the board starts again)"; }
+  if (m == "high") { pinMode(25, OUTPUT); digitalWrite(25, HIGH); }
+  else if (m == "pull") pinMode(25, INPUT_PULLUP);
+  else if (m.startsWith("dac ")) { dac_output_enable(DAC_CHANNEL_1); dac_output_voltage(DAC_CHANNEL_1, constrain(m.substring(4).toInt(), 0, 255)); }
+  else return "SPK high | pull | dac N | low | nosleep | sleep";
+  return "SPK " + m;
+}
+
 // SCL/SDA, so a probe on the wrong pair simply finds nothing.)
 static bool answers(int sda, int scl, uint8_t addr) {
   Wire.begin(sda, scl);
@@ -502,4 +519,5 @@ void pmuBacklight(bool) {}
 #ifndef BOARD_DIAL
 bool boardPowerOff() { return watchPowerOff(); }   // the watch: its PMU (watch.cpp); elsewhere false, and a deep sleep
 #endif
+String speakerPinTry(const String &) { return "SPK only the Fire"; }
 #endif

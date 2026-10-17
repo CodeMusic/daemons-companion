@@ -528,6 +528,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "PMU" && !fromPhone) reply(chargerDump());       // the Pro's charger, raw (battery.cpp)
   else if (line == "LORADIAG" && !fromPhone) reply(loraDiag());     // the M5 LoRa433's bus (lora.cpp)
   else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
+  else if (line.startsWith("SPK ") && !fromPhone) { reply(speakerPinTry(line.substring(4))); reply(loraDiag()); }   // the Fire's noise
     reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
           " want " + st.daemon.artKey + " | last " + artTold);
   else if (line == "WATCH" && !fromPhone) reply(watchStatus());   // C-98

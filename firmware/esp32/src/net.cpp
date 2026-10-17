@@ -1,3 +1,4 @@
+#include <Wire.h>
 // Wi-Fi, the server, the bridges (USB and phone), and the site's commands (C-67: from main.cpp).
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -527,12 +528,25 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "OUTBOX" && !fromPhone) reply(outboxStatus());   // C-121: the last send, for a check (bench.py)
   else if (line == "PMU" && !fromPhone) reply(chargerDump());       // the Pro's charger, raw (battery.cpp)
   else if (line == "LORADIAG" && !fromPhone) reply(loraDiag());     // the M5 LoRa433's bus (lora.cpp)
-  else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
   else if (line.startsWith("SPK ") && !fromPhone) { reply(speakerPinTry(line.substring(4))); reply(loraDiag()); }   // the Fire's noise
+  else if (line == "MEM" && !fromPhone)                // C-97: what the board has to work with, and its picture
     reply("MEM heap " + String(ESP.getFreeHeap()) + " largest " + String(ESP.getMaxAllocHeap()) + " | art have " + artKeyHave +
           " want " + st.daemon.artKey + " | last " + artTold);
   else if (line == "WATCH" && !fromPhone) reply(watchStatus());   // C-98
-  else if (line == "CASTS?" && !fromPhone) reply(castStatus());    // C-134: the broadcasts this board has, and how each came
+  else if (line == "CASTS?" && !fromPhone) reply(castStatus());
+  else if (line.startsWith("I2C ") && !fromPhone) {               // C-136: I2C sda scl -- who answers on those pins
+    int sda = line.substring(4).toInt(), scl = line.substring(line.lastIndexOf(' ') + 1).toInt();
+    // a bus held low (no pull-ups, or a chip holding it) hangs every address's wait: looked at first, and refused
+    pinMode(sda, INPUT_PULLUP); pinMode(scl, INPUT_PULLUP); delay(2);
+    if (!digitalRead(sda) || !digitalRead(scl)) { reply("I2C " + String(sda) + "/" + String(scl) + ": held low, not scanned"); return; }
+    Wire.end(); Wire.begin(sda, scl); Wire.setTimeOut(10);
+    String s = "I2C " + String(sda) + "/" + String(scl) + ":";
+    for (uint8_t a = 1; a < 127; a++) { Wire.beginTransmission(a); if (Wire.endTransmission() == 0) { char h[6]; snprintf(h, sizeof h, " %02X", a); s += h; } }
+    pinMode(sda, INPUT_PULLDOWN); pinMode(scl, INPUT_PULLDOWN); delay(2);
+    s += "  levels with pull-downs " + String(digitalRead(sda)) + String(digitalRead(scl));
+    Wire.begin(sda, scl);
+    reply(s);
+  }    // C-134: the broadcasts this board has, and how each came
   else if (line.startsWith("CAST ") && !fromPhone) {             // C-134: a bench test -- CAST act WAVE, CAST say hello
     String r = line.substring(5); int sp = r.indexOf(' ');
     String k = sp < 0 ? r : r.substring(0, sp), b = sp < 0 ? "" : r.substring(sp + 1);

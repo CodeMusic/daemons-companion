@@ -59,8 +59,16 @@ void boardBegin() {
   board.power = Power::AdcDivider; board.battAdc = 10;
   board.lights = Lights::WS2812; board.ledData = 21; board.ledCount = 1;
   board.sdCs = 12; pinMode(board.sdCs, OUTPUT); digitalWrite(board.sdCs, HIGH);
+  // The ADV first: its rail on (38 also feeds its LED, and on the ADV more than the backlight), then M5GFX's own test --
+  // the ADV's I2C pull-ups hold 8 and 9 high against the chip's pull-downs, where the original's matrix lines read low
+  // -- and the chips asked, a few times (a probe of the original only wiggles its matrix's address lines)
+  pinMode(38, OUTPUT); digitalWrite(38, HIGH); delay(60);
+  pinMode(8, INPUT_PULLDOWN); pinMode(9, INPUT_PULLDOWN); delay(2);
+  bool pulledUp = digitalRead(8) && digitalRead(9);
   Wire.begin(8, 9);
-  bool adv = i2cHere(0x34) || i2cHere(0x18);                   // the TCA8418, or the ES8311
+  bool adv = pulledUp;
+  for (int i = 0; i < 3 && !adv; i++) { adv = i2cHere(0x34) || i2cHere(0x18); if (!adv) delay(20); }
+  Serial.printf("boot: cardputer 8/9 %s, %s\n", pulledUp ? "pulled up" : "low", adv ? "ADV" : "the original");
   if (adv) {
     board.kind = BoardKind::CardputerAdv; board.id = "m5-cardputer-adv"; board.name = "Cardputer ADV";
     board.sda = 8; board.scl = 9;
@@ -430,14 +438,6 @@ void boardBegin() {
   findLora433();
 }
 
-// Switched off (switchOff): the boost no longer kept on under a light load, and the light load's wait 8 s -- so a board
-// asleep on its battery is switched off by the IP5306 itself, and its power button starts it. On USB it stays asleep.
-// Start-up writes the registers back (above).
-void boardIdleOff() { ipWrite(0x00, 0b00110001); ipWrite(0x02, 0b01100000); }
-
-#else
-
-// Does anything answer at this address with the bus on these pins? (The CC1101 board's SDA/SCL are the T-Embed's
 // The Fire's G25 -- its LoRa433's reset (the module's switch) and the speaker amplifier's input -- held each way down
 // the cable (SPK), so the quietest that keeps the radio up can be heard (the user, 2026-10-15: "the audio interference
 // noise"): high, pull (the weak pull-up), dac N (the chip's DAC, steady at N of 255), low (the radio in reset: the quiet
@@ -455,6 +455,14 @@ String speakerPinTry(const String &m) {
   return "SPK " + m;
 }
 
+// Switched off (switchOff): the boost no longer kept on under a light load, and the light load's wait 8 s -- so a board
+// asleep on its battery is switched off by the IP5306 itself, and its power button starts it. On USB it stays asleep.
+// Start-up writes the registers back (above).
+void boardIdleOff() { ipWrite(0x00, 0b00110001); ipWrite(0x02, 0b01100000); }
+
+#else
+
+// Does anything answer at this address with the bus on these pins? (The CC1101 board's SDA/SCL are the T-Embed's
 // SCL/SDA, so a probe on the wrong pair simply finds nothing.)
 static bool answers(int sda, int scl, uint8_t addr) {
   Wire.begin(sda, scl);
@@ -511,6 +519,7 @@ void pm1Gpio(uint8_t, bool) {}         // C-74: only the StickS3 has an M5PM1
 #endif
 #ifndef BOARD_M5CORE
 void boardIdleOff() {}                 // only the M5GO and Fire's IP5306 needs letting go before an off
+String speakerPinTry(const String &) { return "SPK only the Fire"; }
 #endif
 #ifndef BOARD_CORES3
 void coreS3Speaker(bool, int) {}       // C-75: only the CoreS3 has these
@@ -519,5 +528,4 @@ void pmuBacklight(bool) {}
 #ifndef BOARD_DIAL
 bool boardPowerOff() { return watchPowerOff(); }   // the watch: its PMU (watch.cpp); elsewhere false, and a deep sleep
 #endif
-String speakerPinTry(const String &) { return "SPK only the Fire"; }
 #endif

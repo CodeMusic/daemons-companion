@@ -133,7 +133,12 @@ static void footer(String s) {
     s.replace("running...    ", "");                         // the circle is narrow down there: what to do, not that it runs
     while (canvas.textWidth(s) > 130 && s.lastIndexOf("    ") > 0) s = s.substring(0, s.lastIndexOf("    "));
     canvas.drawString(s, W / 2, H - 2);
-  } else canvas.drawString(s, 10, H - 4);
+  } else {
+    // a narrow screen (the StickS3's 240): its gaps squeezed before it runs off the edge (the bench, 2026-10-17)
+    while (canvas.textWidth(s) > W - 14 && s.indexOf("    ") >= 0) s.replace("    ", "  ");
+    if (canvas.textWidth(s) > W - 14) { s.replace("hold side: ", "hold: "); s.replace("top button: ", "top: "); }
+    canvas.drawString(s, 10, H - 4);
+  }
   canvas.setTextDatum(TL_DATUM);
 }
 
@@ -147,6 +152,9 @@ const char *linkName() {
 
 // The ROUTINES screens: a list with the day's colour behind the chosen row (TYPES, LIST), or what a routine found
 // (RUN). Turn to choose, press to open or run, the top button to go back.
+// How many list rows a screen holds clear of its footer: five, or three on the StickS3's 135 (the bench, 2026-10-17:
+// its fourth and fifth ran into the footer)
+int listRowsFit() { return max(2, min(5, (H - 52 - 16) / 19)); }
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width = W - 12) {
   int y = 52 + i * 19;
   if (i == at) canvas.fillRect(6, y - 2, width, 18, day);
@@ -164,9 +172,9 @@ void drawRoutines(uint16_t day) {
   canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
   if (screen == PARTY) {                     // C-68: GAME ROUTINES -- the party, five rows at a time
     canvas.drawString("WHOSE ROUTINE?", 10, 32);                                  // DRAFT
-    int rows = partyRows(), cur = partyRowOf(partyAt), from = max(0, cur - 4);   // the RADIOS first on a party-first board
+    int rows = partyRows(), cur = partyRowOf(partyAt), fit = listRowsFit(), from = max(0, cur - (fit - 1));   // the RADIOS first on a party-first board
     if (!st.partyN) wrap("The party is empty, or the save is not read yet.", 12, partyFirst() ? 80 : 58, W - 24, 2, 18, 3, QUIET);
-    for (int r = from; r < rows && r < from + 5; r++) {
+    for (int r = from; r < rows && r < from + fit; r++) {
       int i = partyAtRow(r);
       if (i < st.partyN) {
         const Member &m = st.party[i];
@@ -184,8 +192,8 @@ void drawRoutines(uint16_t day) {
     }
   } else if (screen == TYPES) {
     canvas.drawString("ROUTINE TYPE", 10, 32);
-    int from = max(0, typeAt - 4);               // the CC1101 has six types: five rows at a time
-    for (int i = from; i < typeCount && i < from + 5; i++)
+    int fit = listRowsFit(), from = max(0, typeAt - (fit - 1));   // the CC1101 has six types: as many rows as fit
+    for (int i = from; i < typeCount && i < from + fit; i++)
       listRow(i - from, typeAt - from, String(types[i].name) + "  (" + types[i].radio + ")", day, ink);
   } else if (screen == LIST) {
     canvas.drawString(String(t.name) + "  (" + t.radio + ")", 10, 32);
@@ -193,8 +201,8 @@ void drawRoutines(uint16_t day) {
       wrap("No routines yet.", 12, 58, W - 24, 4, 27, 1, PAPER);
       wrap("They arrive as each radio is wired and tried on the board.", 12, 92, W - 24, 2, 18, 3, QUIET);
     } else {
-      int from = max(0, routineAt - 4);          // five rows, clear of the footer; the list scrolls past them
-      for (int i = from; i < t.count && i < from + 5; i++) listRow(i - from, routineAt - from, t.routines[i].name, day, ink);
+      int fit = listRowsFit(), from = max(0, routineAt - (fit - 1));   // rows clear of the footer; the list scrolls past them
+      for (int i = from; i < t.count && i < from + fit; i++) listRow(i - from, routineAt - from, t.routines[i].name, day, ink);
     }
   } else if (screen == PICK_REMOTE) {
     canvas.drawString("WHICH REMOTE " + upper(daemonName()) + " USES", 10, 32);
@@ -202,8 +210,8 @@ void drawRoutines(uint16_t day) {
     for (int i = 0; i < n; i++) listRow(i, remoteAt, (i == a ? "* " : "  ") + flareName(i), day, ink);
   } else if (screen == PICK_NET) {
     canvas.drawString("WHICH NETWORK SHOULD " + upper(daemonName()) + " LEARN?", 10, 32);
-    int from = max(0, netAt - 4);                // five rows, clear of the footer
-    for (int i = from; i < netCount && i < from + 5; i++)
+    int fit = listRowsFit(), from = max(0, netAt - (fit - 1));   // rows clear of the footer
+    for (int i = from; i < netCount && i < from + fit; i++)
       listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
   } else if (screen == COMPOSE) {             // C-123: a message to everyone nearby, typed on the keyboard
     canvas.drawString("A MESSAGE TO EVERYONE NEARBY", 10, 32);                    // DRAFT
@@ -486,7 +494,7 @@ void draw() {
         canvas.drawString(st.daemon.word.length() ? st.daemon.word : "fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", W / 2, 180);
         canvas.setTextColor(QUIET); footer("press: care for it");   // DRAFT
       } else {
-      int x = 168;
+      int x = H < 160 ? 104 : 168;                             // the StickS3: a narrower den, so its words have room
       if (wide()) {                                            // C-105: three times its size, kept off the top band
         inDen(6, 30, 226, H - 44, 3, H - 22);
         x = 240;
@@ -497,7 +505,8 @@ void draw() {
       else
         inDen(6, 30, x - 12, H - 46, 2, H - 24);               // C-36: as the game draws it, twice its size
       canvas.setTextDatum(TL_DATUM);
-      canvas.setTextFont(st.daemon.nickname.length() <= 8 ? 4 : 2); canvas.setTextColor(PAPER);
+      canvas.setTextFont(4); if (canvas.textWidth(st.daemon.nickname) > W - x - 4) canvas.setTextFont(2);   // large only if it fits
+      canvas.setTextColor(PAPER);
       canvas.drawString(st.daemon.nickname, x, 40);
       canvas.setTextFont(2); canvas.setTextColor(QUIET);
       // its species beside its level -- unless its nickname already is the species
@@ -509,7 +518,8 @@ void draw() {
       } else if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
       canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
       int cf = wide() ? 2 : 1, ch = wide() ? 16 : 11, cn = wide() ? 4 : 2;   // C-105: wide, the cue in a readable size
-      if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 128, W - x - 6, cf, ch, cn, QUIET);
+      if (H < 160) {}                                          // the StickS3: no room under its day for a cue
+      else if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 128, W - x - 6, cf, ch, cn, QUIET);
       else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 128, W - x - 6, cf, ch, cn, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
       if (keysUnder() && !menuOpen) {                         // C-118: each button's word right above it

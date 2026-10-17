@@ -298,8 +298,8 @@ static String drawMesh(uint16_t day, uint16_t ink) {
     if (!rowsN) wrap(calledFor ? "Nothing yet. A board that hears the call beacons back within a moment."
                                : "No daemon heard in the last ten minutes. Another board on the same band, hosting a daemon, says so every two minutes.", 12, 58, W - 24, 2, 18, 4, QUIET);   // DRAFT
     else {
-      int from = max(0, at - 4), rowsAll = rowsN + 1;
-      for (int i = from; i < rowsAll && i < from + 5; i++) {
+      int fit = listRowsFit(), from = max(0, at - (fit - 1)), rowsAll = rowsN + 1;
+      for (int i = from; i < rowsAll && i < from + fit; i++) {
         String text = i == 0 ? "EVERYONE NEARBY" : rows[i - 1].name + "   " + String(rows[i - 1].rssi) + " dBm   " +
                                (rows[i - 1].relayed ? "passed on   " : "") + ago(rows[i - 1].at);
         listRow(i - from, at - from, text, day, ink, W - 12);

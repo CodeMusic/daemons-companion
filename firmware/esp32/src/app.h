@@ -97,6 +97,7 @@ extern int cableKey;                      // C-101: a press sent down the cable 
 extern bool routineRunning;               // a routine is at work (the RUN screen's footer says so)
 String upper(String s);
 int wrap(const String &text, int x, int y, int w, int font, int lineH, int maxLines, uint16_t colour, int skip = 0);
+int listRowsFit();                         // list rows a screen holds clear of its footer: 5, or 3 on the StickS3
 extern int entryTop, entryLines;   // C-99: the INDEX entry, scrolled this many lines; how many it has
 uint16_t hex565(const String &h);
 bool lightColour(const String &h);

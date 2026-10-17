@@ -372,7 +372,7 @@ static void fetchProfileArt() {
     one(String("player_") + who + "_walk", String("player=") + who + "&walk=1");
   }
   for (int m = 1; m <= 8; m++) one("mark" + String(m), "mark=" + String(m));
-  one("guide_cover", "guide=cover");               // C-145: the GUIDE's 8-bit cover
+  one("guide_cover_named", "guide=cover");         // C-145: the GUIDE's 8-bit cover (named anew when it changed: a kept picture is never fetched again)
   if (any) changed(K_ART | K_PROFILE);
 }
 

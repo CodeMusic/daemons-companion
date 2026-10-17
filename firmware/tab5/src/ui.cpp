@@ -1143,7 +1143,7 @@ static lv_obj_t *guideCover(lv_obj_t *parent, int k) {
   lv_obj_set_style_bg_color(box, BOOK_BOARDS, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
   lv_obj_set_style_radius(box, 0, 0);
   lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);
-  if (lv_image_dsc_t *dsc = artDsc("guide_cover")) {
+  if (lv_image_dsc_t *dsc = artDsc("guide_cover_named")) {
     lv_obj_t *img = lv_image_create(box);
     lv_image_set_src(img, dsc);
     lv_image_set_antialias(img, false);

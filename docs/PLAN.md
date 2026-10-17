@@ -27,13 +27,14 @@ only keep the list, it walks beside you through it. Three pieces and a game:
 - **Through the day the device holds one thing: the next step of the first open sub-item**, and nudges you toward it.
   Ticking it off moves to the next. Nothing else competes for the screen.
 - **The day has a character.** Each weekday has its **colour** (the UI's tones), its **musical note**, its
-  **chakra**, and its **virtue** with a statement ("charity cures greed"), and the nudges lean toward that virtue.
+  **chakra**, and its **virtue over its shadow** ("Charity over Greed"), and the nudges lean toward that virtue. *(Never "cures": a shadow
+  is lit and balanced, not removed, and nobody is an illness -- the user, 2026-10-17, DAEMONS T-418.)*
   The game already uses the same week (DAEMONS vision 9.21: the rainbow in order and the notes C to B, Sunday first),
   so the table is **one table, exported from DAEMONS**, never typed twice. **RoverRadio's own pairing is taken**
-  (docs/INHERITANCE.md): Sunday red, C, Root, *Chastity cures Lust*; Monday orange, D, Sacral, *Temperance cures
-  Gluttony*; Tuesday yellow, E, Solar Plexus, *Charity cures Greed*; Wednesday green, F, Heart, *Diligence cures Sloth*;
-  Thursday blue, G, Throat, *Forgiveness cures Wrath*; Friday indigo, A, Third Eye, *Kindness cures Envy*; Saturday
-  violet, B, Crown, *Humility cures Pride*. *(The user's own design; change it here and in the export if wanted.)*
+  (docs/INHERITANCE.md): Sunday red, C, Root, *Chastity over Lust*; Monday orange, D, Sacral, *Temperance over
+  Gluttony*; Tuesday yellow, E, Solar Plexus, *Charity over Greed*; Wednesday green, F, Heart, *Diligence over Sloth*;
+  Thursday blue, G, Throat, *Forgiveness over Wrath*; Friday indigo, A, Third Eye, *Kindness over Envy*; Saturday
+  violet, B, Crown, *Humility over Pride* (RoverRadio said "cures"; the companion says "over", T-418). *(The user's own design; change it here and in the export if wanted.)*
 - **The AI is Musai's shape**, which is also the game's: one pass reasons **logically** (what are the real steps, in
   what order, how long), one **associatively** (why this matters to you, what would make it easier to start, what it
   connects to), and a third reads both, notes where they **agree** and where they **don't**, and writes the plan that

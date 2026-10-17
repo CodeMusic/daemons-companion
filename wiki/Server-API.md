@@ -54,7 +54,7 @@ A device names itself with an `x-device` header, or `?device=` through the relay
 
 | route | what it does |
 |---|---|
-| `GET /api/device/state` | what a device shows -- **for the device asking**: the day (its theme, virtue over vice, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, the party and their routines, and the clock |
+| `GET /api/device/state` | what a device shows -- **for the device asking**: the day (its theme, virtue over its shadow, chakra, note, and its menu and light colours), the season, the one next step, its daemon, what it holds and its INDEX entry, the party and their routines, and the clock |
 | `GET /api/device/art` | the hosted daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels |
 | `POST /api/device/battery` | `{percent, mv, charging, full, usb}` -- a board's charge, when it changes |
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state |

@@ -42,7 +42,7 @@ cable and flashing.
 
 The tabs:
 
-- **TODAY** -- the day's theme, its virtue over its vice, chakra and note, the season, and **THE ONE THING**: the one
+- **TODAY** -- the day's theme, its virtue over its shadow, chakra and note, the season, and **THE ONE THING**: the one
   next step. Each weekday has its own colours (`?day=tuesday` on the site previews another).
 - **GOALS** -- one goal, its steps and milestones, and WALKING.
 - **DAEMON** -- your party, drawn as the game draws it; **SYNC**; the hosted daemon's day and care; MET NEARBY.

@@ -182,7 +182,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 ## 11. The DAY, and the battery (C-73, C-63)
 
 - **Turn** past ROUTINES to the **DAY**. **See:** TODAY IS and the day's theme large (Wednesday: GROWTH), its virtue
-  over its vice (DILIGENCE CURES SLOTH), its chakra and its note. **Press:** the day's note.
+  over its shadow (DILIGENCE OVER SLOTH), its chakra and its note. **Press:** the day's note.
 - **See:** a small battery in the top band, with its percent; a bolt while it charges, red when low and unplugged.
   At 15% the board says BATTERY LOW; at 5% it says CHARGE ME and sleeps -- **only the top button wakes it**.
 
@@ -209,7 +209,7 @@ talks over **Wi-Fi**, so it must have joined a network.
 ## 14. The T-Watch S3 (C-71)
 
 - `./updateCompanion.sh --board t-watch-s3` the first time. **See:** the face -- the time, the day's theme, its virtue
-  over its vice, chakra and note, today's steps, the battery and a TALK button, ringed in the day's colour.
+  over its shadow, chakra and note, today's steps, the battery and a TALK button, ringed in the day's colour.
 - **Swipe** left and right through the pages; **tap** to press; **hold** to go back. The **crown** wakes it or goes
   back; held, it sleeps. **Tell me** if a swipe goes the wrong way -- the touch's direction is a guess.
 

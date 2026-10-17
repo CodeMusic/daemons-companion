@@ -17,8 +17,8 @@ tamagotchis that taught a generation to look after something small.
 
 - **One thing at a time.** The device shows today's next step, never the whole list. Big goals are broken down for
   you until every step is small enough to start now.
-- **The day has a character.** Each weekday has its colour, its musical note, its virtue and its saying ("charity
-  cures greed"), and the nudges lean that way. It is the same week the game keeps.
+- **The day has a character.** Each weekday has its colour, its musical note, its virtue and the shadow it is over
+  ("Charity over Greed"), and the nudges lean that way. It is the same week the game keeps.
 - **Gentle, never guilt.** A missed day makes the daemon tired, not ruined. Coming back is always welcome.
 - **The game's world, all the way through.** The same names, the same art, the same INDEX: every daemon on the device
   carries its INDEX entry, in its own edition's voice. The app is themed like the game, so it feels like part of it.

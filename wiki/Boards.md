@@ -93,7 +93,7 @@ only on its top button, so a pocket cannot wake it.
   Held, B talks; A goes back; C, two seconds, sleeps the board itself -- asleep, only a held B wakes it. In the menu,
   ROUTINES opens on **RADIOS** -- **WHISPER** (pair your phone) and **UPLINK** (Wi-Fi) -- with your party's routines
   below it. The M5GO base gives it its microphone and ten lights.
-- **T-Watch S3**: its home is the face -- the time, the day's theme, its virtue over its vice, chakra and note,
+- **T-Watch S3**: its home is the face -- the time, the day's theme, its virtue over its shadow, chakra and note,
   today's steps, the battery and a TALK button.
 
 On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and a word to a daemon nearby.
@@ -106,7 +106,7 @@ On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and
 - **DAEMON** -- the daemon drawn as the game draws it (its streaks too), its level, friendship and what it holds;
   press for its INDEX entry, in your edition's voice.
 - **ROUTINES** -- below.
-- **The DAY** -- its theme, virtue over vice, chakra and note; press for its note.
+- **The DAY** -- its theme, virtue over its shadow, chakra and note; press for its note.
 
 Any menu left alone goes to sleep (two minutes by default), and waking lands back at home, to a few notes of the title
 theme.

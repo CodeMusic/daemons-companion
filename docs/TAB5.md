@@ -53,7 +53,7 @@ phone but with the screen it will be a control center ... ideally we also downlo
    minutes away). Writes go to an outbox and are sent in order; SYNC with the game is never kept for later (it writes
    the save). The clock comes from the companion's state.
 3. **The screens**: TODAY, GOALS, DAEMON, INDEX (art grid, entry, LISTEN), DEVICES, PROFILE, SETTINGS. ***Built
-   2026-10-08, but LISTEN and PROFILE***: TODAY (the theme, virtue over vice, the next step and DONE), GOALS (each goal,
+   2026-10-08, but LISTEN and PROFILE***: TODAY (the theme, virtue over its shadow, the next step and DONE), GOALS (each goal,
    its steps ticked or unticked with a tap, + NEW GOAL on the keyboard, broken down by the companion), DAEMON (this
    Tab5's daemon large, its entry; the party; SYNC WITH THE GAME), INDEX (pages of eighteen, a tap opens the entry with
    its picture six times over), DEVICES (each device and its daemon, chosen with a tap), SETTINGS. A status bar: the

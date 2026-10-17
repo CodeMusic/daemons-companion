@@ -1210,7 +1210,7 @@
  },
  "366": {
   "name": "STREAM",
-  "description": "A stream is data read as it arrives. This one carries recorded lectures, one per MARK."
+  "description": "A stream is data read as it arrives. This one carries recorded lectures, one per MARK and more."
  },
  "367": {
   "name": "TRI-PASS",

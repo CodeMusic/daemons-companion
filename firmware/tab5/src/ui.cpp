@@ -1403,3 +1403,52 @@ void uiLoop() {
     if (at == P_HOME && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_HOME] = 0; } }   // C-139: KEPT, or not
   }
 }
+
+// ---- checking a screen from the computer (ui.h): what the handhelds answer, so a Tab5 page can be seen without a camera
+#include <mbedtls/base64.h>
+static void shotOut() {
+  lv_refr_now(nullptr);                            // what it shows now, not before the line that asked
+  int w = M5.Display.width(), h = M5.Display.height();
+  Serial.printf("SHOT %d %d 16\n", w, h);
+  static uint16_t px[1280];
+  static uint8_t bytes[1280 * 2];
+  static unsigned char out[1280 * 2 * 4 / 3 + 8];
+  for (int y = 0; y < h; y++) {
+    M5.Display.readRect(0, y, w, 1, px);
+    for (int x = 0; x < w; x++) { bytes[2 * x] = px[x] >> 8; bytes[2 * x + 1] = px[x] & 0xFF; }
+    size_t n = 0;
+    mbedtls_base64_encode(out, sizeof out, &n, bytes, w * 2);
+    out[n] = 0;
+    Serial.println((const char *)out);
+  }
+  Serial.println("SHOT END");
+}
+void uiCommand(const String &line) {
+  if (line == "SHOT") { shotOut(); return; }
+  if (line.startsWith("GO ")) {
+    String want = line.substring(3); want.trim(); want.toUpperCase();
+    for (int i = 0; i < P_COUNT; i++)
+      if (want == TAB_NAMES[i]) { closeOverlay(); lv_tabview_set_active(tabs, i, LV_ANIM_OFF); lv_obj_send_event(tabs, LV_EVENT_VALUE_CHANGED, nullptr); Serial.println("GO " + want); return; }
+    Serial.println("GO? " + want);
+    return;
+  }
+  if (line.startsWith("TAP ")) {
+    int sp = line.indexOf(' ', 4);
+    lv_point_t p = { (int32_t)line.substring(4, sp).toInt(), (int32_t)line.substring(sp + 1).toInt() };
+    lv_obj_t *o = overlay ? lv_indev_search_obj(overlay, &p) : nullptr;
+    if (!o) o = lv_indev_search_obj(lv_screen_active(), &p);
+    while (o && !lv_obj_has_flag(o, LV_OBJ_FLAG_CLICKABLE)) o = lv_obj_get_parent(o);
+    if (!o) { Serial.println("TAP nothing"); return; }
+    lv_obj_send_event(o, LV_EVENT_PRESSED, nullptr);
+    lv_obj_send_event(o, LV_EVENT_RELEASED, nullptr);
+    lv_obj_send_event(o, LV_EVENT_CLICKED, nullptr);
+    Serial.printf("TAP %d %d\n", (int)p.x, (int)p.y);
+    return;
+  }
+  if (line.startsWith("SCROLL ")) {
+    lv_obj_t *o = overlay ? overlay : pages[lv_tabview_get_tab_active(tabs)];
+    lv_obj_scroll_by(o, 0, -line.substring(7).toInt(), LV_ANIM_OFF);
+    Serial.println("SCROLL");
+    return;
+  }
+}

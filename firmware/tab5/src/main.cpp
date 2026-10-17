@@ -23,6 +23,12 @@ void setup() {
 
 void loop() {
   M5.update();
+  static String line;                          // SHOT, GO, TAP and SCROLL from the computer (ui.h)
+  while (Serial.available()) {
+    char c = Serial.read();
+    if (c == '\n') { line.trim(); if (line.length()) uiCommand(line); line = ""; }
+    else if (line.length() < 64) line += c;
+  }
   uiLoop();
   lv_timer_handler();
   static uint32_t helloAt = 0;                 // C-80: its name down the cable, as the handhelds say it

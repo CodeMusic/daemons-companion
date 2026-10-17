@@ -4,3 +4,9 @@
 void uiBegin();
 void uiLoop();      // every pass of loop(): redraw what changed, the status bar once a second
 int uiStartRotation();   // C-96: the way up the Tab5 was left in (PORTRAIT unless it was set otherwise)
+// Checking a screen from the computer, over the USB cable, as the handhelds are checked (firmware/tab5/shot.py):
+//   SHOT       the screen as it is now: "SHOT w h 16", a base64 line of RGB565 (high byte first) a row, "SHOT END"
+//   GO <TAB>   that page (its name as the tab says it), any overlay closed
+//   TAP x y    what is at that point pressed, an overlay's before the page's
+//   SCROLL dy  the overlay, or the page, scrolled by dy (down is positive)
+void uiCommand(const String &line);

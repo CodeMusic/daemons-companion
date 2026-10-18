@@ -3,18 +3,19 @@
 // pixel for pixel.
 // C-20: on Tamagui. The whole app sits in today's theme (tamagui.config.ts): $color9 is the day's colour, $color1 to
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
-import { StatusBar } from "expo-status-bar";
-import { DenStage } from "./Den";                    // C-113
-import { songSound } from "./songSound";              // C-156: the SONGBOOK's songs, played
-import { BETS, OUTCOMES, PAYS, draw, piecesFor, resultDetail, tableAct, type Piece } from "../server/src/slots";   // C-155: the boards' table
-import { DeviceSprite, lookFor, makerOf, MAKERS } from "./deviceSprites";   // C-130
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Appearance, AppState, Image, Linking, Platform, useColorScheme, View } from "react-native";
-import { Button, Input, ScrollView, Spinner, TamaguiProvider, Text, Theme, useThemeName, XStack, YStack } from "tamagui";
-import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
+import { RecordingPresets,requestRecordingPermissionsAsync,setAudioModeAsync,useAudioPlayer,useAudioPlayerStatus,useAudioRecorder } from "expo-audio";
+import { File,Paths } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
-import { File, Paths } from "expo-file-system";
-import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder } from "expo-audio";
+import { StatusBar } from "expo-status-bar";
+import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { Appearance,AppState,Image,Linking,Platform,useColorScheme,View } from "react-native";
+import { Button,Input,ScrollView,Spinner,TamaguiProvider,Text,Theme,useThemeName,XStack,YStack } from "tamagui";
+import { BETS,draw,OUTCOMES,PAYS,piecesFor,resultDetail,tableAct,type Piece } from "../server/src/slots"; // C-155: the boards' table
+import { DenStage } from "./Den"; // C-113
+import { DeviceSprite,lookFor,makerOf,MAKERS } from "./deviceSprites"; // C-130
+import { songSound } from "./songSound"; // C-156: the SONGBOOK's songs, played
+import config,{ DAYS,RAINBOW_COLOURS,WEEK_COLOURS } from "./tamagui.config";
+import { Act,Brand,Carried,Cast,Daemon,DeviceRow,DeviceSettings,GoalNow,GrovesData,GuideBookT,HomeSettings,HomeView,Index,Life,Link,Listen,MarksData,Meeting,Message,Notebook,PlayerState,Profile,Progress,Reading,RegionsData,SchoolData,Settings,Spoken,Step,Thing,Today,Walk,Wis } from "./types";
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
@@ -146,19 +147,7 @@ const WIDGET: typeof import("./widget") | null = Platform.OS === "ios" ? require
 const LOCAL: typeof import("./local") | null = ON_PHONE ? require("./local") : null;
 // C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
 const { careSound }: typeof import("./careSound") = ON_PHONE ? require("./careSound") : { careSound: () => "" };
-const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
-
-// C-73: the Xenith day -- the virtue over its shadow (cue), the chakra, the theme word
-type Day = { day: string; colour: string; hue: string; note: string; chakra: string; virtue: string; shadow?: string;
-             cue?: string; theme?: string };
-type Next = { goal: string; subitem: string; step: { id: number; text: string } } | null;
-type Today = { date: string; edition: string; day: Day; season: string; next: Next };
-type Step = { id: number; text: string; done: boolean };
-type Goal = { id: number; title: string; done: boolean; subitems: { id: number; title: string; done: boolean; steps: Step[] }[] };
-type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean; asked: boolean;
-                holding: string | null };
-
-async function apiLive<T>(path: string, body?: unknown): Promise<T> {
+const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};async function apiLive<T>(path: string, body?: unknown): Promise<T> {
   if (ALONE && LOCAL) {                                                  // C-111: answered here, by the same rules
     const r = await LOCAL.localApi(path, body);
     if (r.status >= 400) throw new Error((r.body as { error?: string })?.error ?? `the phone answered ${r.status}`);
@@ -496,14 +485,7 @@ function TodayMore({ goTo, ink }: { goTo: (t: (typeof TABS)[number]) => void; in
       ) : null}
     </>
   );
-}
-
-// C-46: ONE goal, built from milestones and steps -- each entry short on purpose (simpler is better, and the site says
-// so). A row is a step, or a milestone holding its own steps. Tap a step to do it; tap again to undo (C-49).
-type GoalNow = { goal: Goal | null; limit: number };
-type Walk = { date: string; goal: number; steps: number; reached: boolean };
-
-function Entry({ value, onChange, onSubmit, placeholder, limit }:
+}function Entry({ value, onChange, onSubmit, placeholder, limit }:
                { value: string; onChange: (v: string) => void; onSubmit: () => void; placeholder: string; limit: number }) {
   return (
     <XStack flexGrow={1} minWidth={200} alignItems="center" gap={6}>
@@ -622,15 +604,7 @@ function GoalsScreen({ reload, ink }: { reload: () => void; ink: string }) {
       <WalkCard ink={ink} />
     </YStack>
   );
-}
-
-type Settings = { savePath: string | null; dir: string | null; exists: boolean; valid: boolean; source: string; canPick: boolean };
-
-// C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
-type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
-              trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
-              level: number | null; grown: { exp: number; level: number } | null;
-              expression?: import("../server/src/expressions").Drawn };   // C-119: how it looks now, decided on the server
+}   // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
 function presumed(l: Life, what: "feed" | "water" | "train" | "sleep" | "wake"): Life {
@@ -697,12 +671,7 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
       {said ? <Small>{said}</Small> : null}
     </Card>
   );
-}
-
-// C-66, C-65: the daemon's voice on the phone. Its answer (and an INDEX entry read aloud) comes back as mp3 in base64 --
-// through the relay too, which carries only JSON -- so it is written to the cache and played from there.
-type Spoken = { answer?: string | null; heard?: string | null; provider?: string | null; error?: string | null; audioBase64?: string | null };
-function useVoice() {
+}function useVoice() {
   const player = useAudioPlayer(null);
   return (b64?: string | null) => {
     if (!b64) return;
@@ -898,40 +867,15 @@ function Segments<T extends string>({ value, onChange, options }: { value: T; on
       ))}
     </XStack>
   );
-}
-
-// C-60: who the daemon has met nearby (C-15). Each meeting: the species as the INDEX draws it, when, and whether a SYNC
-// has written it into the save yet. Below, quietly, the user's own check that the radios listen: the board's last
-// listen, and when the phone and the board last heard each other -- never counted as a meeting.
-type Meeting = { at: string; species: number; name: string; art: string | null; written: boolean; how?: "ble" | "lora"; hops?: number };
-// C-72: a wave or a word over LoRa, heard from a daemon nearby or sent from one of our boards (to one, or to everyone)
-type Message = { at: string; dir: "in" | "out"; kind: "wave" | "say"; species: number; name: string; peer: string; hops: number; text: string; ours: boolean };
-type Listen = { at: string; started: boolean; devices: number; beacons: number } | null;
-const whenSaid = (iso: string) => {
+}const whenSaid = (iso: string) => {
   const t = new Date(iso), today = new Date().toDateString() === t.toDateString();
   const hm = t.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   return today ? `today, ${hm}` : `${t.toLocaleDateString([], { month: "short", day: "numeric" })}, ${hm}`;
-};
-// C-134, the app's side (the hub is server/src/broadcast.ts): NEARBY -- what the daemons have said or done, typed or an
-// interaction from the shared list (acts.json, bundled, so it is offered offline too), by LoRa, Bluetooth or the companion,
-// each once. Another daemon's act can be answered, once. Asked again every ten seconds while the DAEMON tab is open.
-type Cast = { id: string; name: string; kind: "say" | "act" | "reply"; text?: string; act?: string; replyTo?: string; at: string;
-              via: string[]; mine: boolean };
-type Act = { code: string; label: string; seen: string; reply: string };
-const ACTS: { acts: Act[]; casino?: Act[] } = require("../server/data/acts.json");
+};const ACTS: { acts: Act[]; casino?: Act[] } = require("../server/data/acts.json");
 function castLine(c: Cast) {
   const a = [...ACTS.acts, ...(ACTS.casino ?? [])].find((x) => x.code === c.act);   // C-151: the CASINO's acts too
   return c.kind === "say" ? `${c.name}: ${c.text ?? ""}` : `${c.name} ${(c.kind === "reply" ? a?.reply : a?.seen) ?? ""}`;
-}
-
-// C-155 (the user, 2026-10-18: "we should have routines on the phone app too -- including casino"): ROUTINES on the app and
-// the site -- THE CASINO, played as a device of its own (on the phone the widget's, so its JACK is the widget's daemon;
-// the site keeps an id of its own), by server/src/slots.ts, the boards' own table; and the party's game routines.
-// Every word DRAFT.
-type PlayerState = { season: string; daemon: { slot: number; nickname: string } | null;
-                     casino: { balance: number; friends: number[]; table: { name: string; device: string }[] } | null;
-                     party: { name: string; routines: { name: string; colour: string }[] }[] };
-let PLAYER_ID: Promise<string> | null = null;
+}let PLAYER_ID: Promise<string> | null = null;
 function playerId(): Promise<string> {
   if (PLAYER_ID) return PLAYER_ID;
   PLAYER_ID = (async () => {
@@ -1188,34 +1132,13 @@ function MeetingsCard() {
       ) : null}
     </Card>
   );
-}
-
-// C-23: the PROFILE -- whichever save was synced: who it belongs to and how far it has gone, as the trainer card says.
-type Profile = { name: string; trainerId: number; playTime: { hours: number; minutes: number }; edition: string;
-                 index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
-                 gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
-                 choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
-                 casino?: { pending: number; spins: number; balance: number; table?: { name: string; device: string }[] };   // C-149, C-151
-                 notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[];
-                 wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
-type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
-                                                                   unread?: boolean; place?: string | null; link?: string | null; kind?: string;
-                                                                   key?: string | null; notes?: string[] | null; frames?: number[] | null }[] }[];
-                  keyColours?: string[]; outline?: string };   // T-417: the twelve key colours, C..B, and the heads' outline
+}   // T-417: the twelve key colours, C..B, and the heads' outline
 
 // C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
 const PLAYER_ART = {
   REASON: { card: require("../server/data/art/player_reason.png"), walk: require("../server/data/art/player_reason_walk.png") },
   INSTINCT: { card: require("../server/data/art/player_instinct.png"), walk: require("../server/data/art/player_instinct_walk.png") },
-};
-
-// C-126: the MARKS as the trainer card draws them, and each one's STREAM lesson; the understandings in their colours
-// (the USER card brain's), with where each is arrived at. DAEMONS exports both (marks.json, mark_N.png).
-type MarksData = { marks: { n: number; title: string; lesson: string[]; found: string;
-                             wisdom?: { leader: string; virtue: string; without: string[]; with: string[]; explain: string[];
-                                        union_plugin: string; union_routine: string; insight: string } }[];
-                   understandings: { n: number; name: string; name_is_working: boolean; rgb: number[]; lobe: string;
-                                     found: string; lesson: string[] | null }[] };   // T-405: its STREAM lecture, two scripts
+};   // T-405: its STREAM lecture, two scripts
 const MARKS: MarksData = require("../server/data/marks.json");
 const MARK_ART = [require("../server/data/art/mark_1.png"), require("../server/data/art/mark_2.png"), require("../server/data/art/mark_3.png"),
                   require("../server/data/art/mark_4.png"), require("../server/data/art/mark_5.png"), require("../server/data/art/mark_6.png"),
@@ -1232,14 +1155,7 @@ function onNight(c: number[]) {
     if ((luminance(m) + 0.05) / (card + 0.05) >= 4.5) return m;
   }
   return [251, 250, 246];
-}
-
-// C-140 (the user, 2026-10-16: "the text isnt organized in a way or styled to make it easy to read"): a MARK or a ROOT,
-// opened, reads as a small page -- its own heading (a MARK's in ink beside its badge, a ROOT's in its own colour), the
-// lesson's first line leading and the rest as points, and then, as the pair is earned, a small heading over each part:
-// the leader afterwards, the union PLUGIN, the insight.
-type Wis = { root: boolean; given: boolean; insight: boolean };
-function Panel({ children }: { children: React.ReactNode }) {
+}function Panel({ children }: { children: React.ReactNode }) {
   return <YStack backgroundColor="$color2" borderRadius={6} padding={14} gap={10} marginTop={4}>{children}</YStack>;
 }
 function SubHead({ children }: { children: React.ReactNode }) {
@@ -1392,14 +1308,7 @@ function RootsRow({ held, marks, wisdom }: { held: boolean[]; marks: boolean[]; 
         : <Panel><Text fontSize={15} color="$color10">Not yet.</Text></Panel>}
     </YStack>
   );
-}
-
-// C-127: the mainland and the islands as the game's region map draws them, a cell a place, lit as they are explored. The
-// save keeps a visited flag only for towns and a few places, so a place with no flag lights when it touches one that is
-// lit. The islands are ??? -- their name and their filling in -- until the REVIEW BOARD is beaten.
-type RegionsData = { regions: { key: string; name: string; hidden_until: string | null; maps: { grid: string[][] }[];
-                                 sections: Record<string, { name: string; visited_flag: number | null }> }[] };
-const REGIONS: RegionsData = require("../server/data/regions.json");
+}const REGIONS: RegionsData = require("../server/data/regions.json");
 
 function RegionMap({ region, visited, open, cell }: { region: RegionsData["regions"][number]; visited: Set<string>; open: boolean; cell: number }) {
   const [litCell, unlitCell] = useDark() ? ["#5a82ad", "#454c47"] : ["#43658B", "#C9D2C4"];   // C-144: the night's pair
@@ -1436,12 +1345,7 @@ function RegionMap({ region, visited, open, cell }: { region: RegionsData["regio
       <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10">{open ? region.name : "???"}</Text>
     </YStack>
   );
-}
-
-// C-132: the groves the save has found, each its own universe as THE NEXUS's signs name it (T-408) -- only those found:
-// the rest are a thing to come across, never listed ahead.
-type GrovesData = { nexus: string; groves: { grove: string; universe: string; sign: string; family: string[] }[] };
-const GROVES: GrovesData = require("../server/data/groves.json");
+}const GROVES: GrovesData = require("../server/data/groves.json");
 function GrovesCard({ found }: { found: string[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const mine = GROVES.groves.filter((g) => found.includes(g.grove));
@@ -1467,13 +1371,6 @@ function GrovesCard({ found }: { found: string[] }) {
     </Card>
   );
 }
-
-// C-128: GAME EVENTS -- the story so far, finer than the PROFILE: the debug page's story-ordered list, each row held or
-// not from the save. A row not yet held is not named (it would tell the story ahead); a row the save cannot answer is "?".
-type Progress = { events: { n: number; name: string; section: string; held: boolean | null }[];
-                  school: { textbook: boolean; floors: boolean[]; diploma: boolean; best: number | null; last: number | null;
-                            attempts: number; grade: string | null; passMark: number } };
-
 function EventsCard() {
   const [pr, setPr] = useState<Progress | null>(null);
   const [open, setOpen] = useState(false);
@@ -1502,14 +1399,7 @@ function EventsCard() {
       }) : null}
     </Card>
   );
-}
-
-// C-129: WHAT YOU HAVE BEEN TAUGHT -- CALLOW SCHOOL as the save has it: each floor's syllabus and board once stood on (the
-// TEXTBOOK greys the rest), a copy of the DIPLOMA, and the paper to sit again here -- practice, marked here, never the save.
-type SchoolData = { floors: { floor: string; subject: string; syllabus: string; board_intro: string; board: { topic: string; text: string }[] }[];
-                    paper: { section: string; questions: { q: number; title: string; text: string; choices: string[]; answer: number }[] }[];
-                    pass_mark: number; grades: { from: number; letter: string }[] };
-const SCHOOL: SchoolData = require("../server/data/school.json");
+}const SCHOOL: SchoolData = require("../server/data/school.json");
 const letterOf = (m: number) => SCHOOL.grades.find((g) => m >= g.from)?.letter ?? "";
 
 function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
@@ -1581,13 +1471,7 @@ function PracticePaper() {
       </XStack>
     </Card>
   );
-}
-
-// C-145: THE LIBRARY -- what you can read, on one shelf: CALLOW SCHOOL (C-129) and, once the save holds it, THE PROGRAMMER'S
-// GUIDE TO THE HUMAN MIND with its 8-bit cover. Nothing of the GUIDE shows before it is found (a find stays blind, T-297).
-type GuideBookT = { held: boolean; title?: string; sections?: { key: string; label: string; heading: string;
-                    entries: { short: string; title: string; paragraphs: string[]; link?: string | null }[] }[] };
-const GUIDE_COVER = require("../server/data/art/guide_cover.png");
+}const GUIDE_COVER = require("../server/data/art/guide_cover.png");
 // the GUIDE's own sixteen colours (DAEMONS tools/genguide.py): charcoal boards and pages, near-white ink, one cyan -- the
 // book looks like itself in either theme, as it does in the game
 // the screen's ScrollView, so turning a page of a book starts the new one at its top
@@ -2146,20 +2030,7 @@ function TalkSettingsCard({ ink }: { ink: string }) {
       {!t.connected ? <Small color="$color8">Talking is not set up yet: add "talk" to server/config.json (README, Talk to your daemon).</Small> : null}
     </Card>
   );
-}
-
-// ---- C-24: the save's own INDEX -- what was seen and bound, as the game shows it, each entry in the save's edition's
-// voice; and OPUS's margin beside an entry, when the save holds OPUS and the game would show one.
-type IndexEntry = { national: number; species: number; name: string; bound: boolean; art: string | null;
-                    category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string }; native?: string[] };
-type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
-
-// C-85: any INDEX entry read aloud, one at a time (the user, 2026-10-08). The voice takes a moment to make, so LISTEN
-// turns into a spinner with a stop in it, and then into HUSH while it speaks. While one is being read the other cards
-// are locked, so taps cannot start a second voice over the first. Stopping before the voice arrives only lets go of it:
-// the server finishes making it and nobody plays it.
-type Reading = { species: number; phase: "making" | "speaking" } | null;
-function useIndexReader() {
+}function useIndexReader() {
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
   const [reading, setReading] = useState<Reading>(null);
@@ -2280,33 +2151,11 @@ function IndexScreen({ ink }: { ink: string }) {
       ))}
     </YStack>
   );
-}
-
-// ---- C-32: the site and the device, linked. The server is the hub: this screen asks it what the link is, sends the
-// board commands through it, and shows what the board answered. C-33 (its Wi-Fi) and C-34 (FLARE's search) live here.
-type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; lastSeen: string | null; firmware: string;
-              routines: { name: string; radio: string; routines: string[] }[];
-              pending: { id: number; type: string }[]; results: { id: number; ok: boolean; text: string; at: string }[];
-              remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string; shared?: string[];
-              battery?: { percent: number; charging: boolean; full: boolean; usb: boolean; at: string } | null;   // C-63
-              lan: { address: string | null; port: number; open: boolean };
-              devices?: DeviceRow[]; away?: Carried[] };                                              // C-80
-// C-80: a daemon in each device -- what each carries, and every daemon away (SENT in the game) to choose from
-type Carried = { personality: number; slot: number; species: number; nickname: string; name: string; level: number };
-type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "relay" | null; lastSeen: string; here: boolean;
-                   firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null;
-                   daemon?: Carried | null };
-const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
+}const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed CC1101", "t-embed": "T-Embed",
                                              "t-embed-si4732": "T-Embed SI4732", "t-watch-s3": "T-Watch S3",
                                              "m5-sticks3": "M5StickS3", "m5-cores3": "M5Stack CoreS3",
                                              "m5-fire": "M5Stack Fire", "m5go": "M5GO", "m5-tab5": "M5Stack Tab5", "m5-dial": "M5Stack Dial",
-                                             "iphone-widget": "This phone's widget" };   // C-74, C-75, C-77, C-100
-type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
-type Brand = { brand: string; sets: RemoteSet[] };
-
-// C-43: the board's settings live here, not on the board: it picks them up whenever it is linked.
-type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sound: boolean; volume: number; ring: number; meet: boolean; band?: number;
-                        palette: "checkpoint" | "rainbow" };   // C-90
+                                             "iphone-widget": "This phone's widget" };   // C-90
 
 function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
   return (
@@ -2602,17 +2451,7 @@ function HandheldCard({ ink }: { ink: string }) {
       </XStack>
     </Card>
   );
-}
-
-// ---- C-139: HOME -- the house by hand (the user, 2026-10-16: "a new entry in the tab5/app/site where you can also
-// control your homeassistant"). The companion talks to Home Assistant (server/src/home.ts) and keeps its token; this
-// screen sees rooms, names and states, and asks for an action by name. It asks live every time and never shows what the
-// phone kept -- a light shown on that is off is worse than a moment's wait -- and a tap is never kept to be sent later:
-// a light switched hours afterwards is not what was asked. ----
-type Thing = { id: string; name: string; kind: string; state: string; on: boolean | null; can: string[]; detail: string | null };
-type HomeView = { ok: boolean; error?: string; home?: string; rooms: { name: string; things: Thing[] }[] };
-type HomeSettings = { url: string | null; hasToken: boolean; ok: boolean; error?: string; home?: string;
-                      agent?: { path: string; url: string | null; open: boolean } };   // C-142: the daemon as its agent
+}   // C-142: the daemon as its agent
 const HOME_POLL_MS = 30000;
 let homeTalk: string | null = null;       // the assistant's conversation, kept for follow-ups while the app is open
 

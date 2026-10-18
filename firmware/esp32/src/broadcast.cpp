@@ -156,6 +156,22 @@ static void takePiece(const uint8_t *b) {
   castIn(from, id, kind, species, name, body, rFrom, rId, VIA_BLE);
 }
 
+// ---- C-154 (the user, 2026-10-18: "all devices (even if not in casino) should get the notifications (either messages,
+// daemons moves, or casino)"): a word, an act or a big win, said for four seconds with a flash -- or, on a board asleep,
+// kept (the newest, and how many more) and said when it wakes. Still never a sound, and a sleeping board is not woken.
+static String missed; static int missedN = 0;
+static void notify(const Cast &c) {
+  if (c.kind == CAST_SAY) loraPretendHeard(c.name, c.body);   // a keyboard board keeps the word until it is read (C-123)
+  if (asleep) { missed = line(c); missedN++; return; }
+  ledsFlash();
+  flash = line(c); flashUntil = millis() + 4000; dirty = true;
+}
+void castWoke() {
+  if (!missedN) return;
+  flash = missed + (missedN > 1 ? "  (+" + String(missedN - 1) + " more)" : String(""));   // DRAFT
+  flashUntil = millis() + 6000; missed = ""; missedN = 0; dirty = true;
+}
+
 // ---- in and out -------------------------------------------------------------------------------------------------------
 void castIn(uint32_t from, uint16_t id, uint8_t kind, int species, const String &name, const String &body,
             uint32_t rFrom, uint16_t rId, uint8_t via) {
@@ -174,24 +190,24 @@ void castIn(uint32_t from, uint16_t id, uint8_t kind, int species, const String 
   if (via != VIA_NET) report(c, false, via);              // the companion learns of it (it has it already when it came from there)
   if (c.mine) return;
   // C-151: THE TABLE. A big win at the reels (JACKPOT, BIGWIN) is cheered by a daemon at the reels -- its answer is the
-  // cheer -- and kept quietly by one elsewhere; an answer to OUR big win is a cheer we see. A word to everyone, while we
-  // sit at the reels, goes to the reels' own line rather than the message box.
+  // cheer -- and an answer to OUR big win is a cheer we see. A word to everyone, while we sit at the reels, goes to the
+  // reels' own line rather than the message box.
   if (kind != CAST_SAY && casinoAct(body)) {
-    if (!casinoAtTable()) return;                          // kept, never shown, never answered
-    if (kind == CAST_ACT) {
-      casinoCast(c.name, body, 1);
-      if (st.carrying && answers.size() < 4) answers.push_back({ key, body, millis() + 1500 + esp_random() % 3500 });
-    } else if (rFrom == castTag()) casinoCast(c.name, body, 2);
+    if (casinoAtTable()) {
+      if (kind == CAST_ACT) {
+        casinoCast(c.name, body, 1);
+        if (st.carrying && answers.size() < 4) answers.push_back({ key, body, millis() + 1500 + esp_random() % 3500 });
+      } else if (rFrom == castTag()) casinoCast(c.name, body, 2);
+      return;
+    }
+    // C-154: off the table a big win is news like any other -- never answered (only players at the table cheer); a cheer
+    // for our own win, after we got up, too; others' cheers for others are not
+    if (kind == CAST_REPLY && rFrom != castTag()) return;
+    notify(c);
     return;
   }
   if (kind == CAST_SAY && casinoAtTable()) { casinoCast(c.name, body, 0); return; }
-  // shown: a flash and the words -- never a sound, and never on a sleeping board (it must never pester)
-  if (!asleep) {
-    ledsFlash();
-    if (kind == CAST_SAY) loraPretendHeard(c.name, c.body);   // a keyboard board keeps the word until it is read (C-123)
-    say(line(c));
-  }
-  dirty = true;
+  notify(c);                                              // C-154: shown, or kept for waking
   // an act is answered, once, a moment later -- by the daemon this board hosts
   if (kind == CAST_ACT && st.carrying && answers.size() < 4) answers.push_back({ key, body, millis() + 1500 + esp_random() % 3500 });
 }

@@ -584,10 +584,17 @@ void draw() {
   if (millis() < flashUntil) {               // a word that something happened
     canvas.setTextFont(4);                     // the box fits the word (seen with SHOT 2026-10-07: it overflowed)
     if (canvas.textWidth(flash) > W - 40) canvas.setTextFont(2);
-    int bw = min(W - 16, max(140, (int)canvas.textWidth(flash) + 32));
-    canvas.fillRoundRect(W / 2 - bw / 2, H / 2 - 22, bw, 44, 6, day);
-    canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM);
-    canvas.drawString(flash, W / 2, H / 2);
+    if (canvas.textWidth(flash) > W - 40) {    // C-154: a broadcast's longer words, on two or three lines
+      int bw = W - 16, bh = 64;
+      canvas.fillRoundRect(8, H / 2 - bh / 2, bw, bh, 6, day);
+      wrap(flash, 18, H / 2 - bh / 2 + 8, bw - 20, 2, 16, 3, ink);
+    } else {
+      int bw = min(W - 16, max(140, (int)canvas.textWidth(flash) + 32));
+      canvas.fillRoundRect(W / 2 - bw / 2, H / 2 - 22, bw, 44, 6, day);
+      canvas.setTextColor(ink); canvas.setTextDatum(MC_DATUM);
+      canvas.drawString(flash, W / 2, H / 2);
+    }
+    canvas.setTextDatum(TL_DATUM);
   }
   canvas.pushSprite(board.screenX, board.screenY);   // C-102: the Dial's square, inside its circle
   dirty = false;

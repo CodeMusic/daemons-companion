@@ -6,6 +6,7 @@
 #include "leds.h"
 #include "sound.h"
 #include "lora.h"
+#include "broadcast.h"                    // C-154: what came while asleep, said on waking
 
 bool asleep = false;
 uint32_t lastInput = 0;                   // C-42: any touch; left alone `sleepAfter` seconds, it sleeps
@@ -322,6 +323,7 @@ bool wake() {
   screen = HOME;
   menuOpen = false;                               // C-117: it wakes at home, out of the menu
   page = homePage();
+  castWoke();                                     // C-154: what came while it slept
   draw();
   backlight(true);
   ledsSleep(false);

@@ -19,6 +19,7 @@ void castLoop(uint32_t now);                         // every pass: Bluetooth's 
 void castFromState(JsonArrayConst casts);            // the companion's last ten minutes (the state's `casts`)
 bool castTakeReport(String &json);                   // what to tell the companion: POST /api/device/broadcast
 String castLast();                                   // the latest one in words, for a corner of the screen ("" for none)
+void castWoke();                                     // C-154: waking -- what came while asleep is said (the newest, how many more)
 String castStatus();                                 // CASTS? down the cable: what came, each with how (L B N) and whether ours
 
 String runToEveryone();                              // the routine: an act (or a typed word) to every daemon

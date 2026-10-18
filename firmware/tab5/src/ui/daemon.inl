@@ -126,7 +126,7 @@ static void casinoTakeState() {                     // the coins as the companio
 // draw them (common/casino_art.h, ported from casino.cpp by casino_art.py), in the day's dress: casino.cpp's lookNow (the
 // holiday's look, else the weather's when it is weather to notice, else the season's) and colourA / colourB
 #include "../../common/casino_art.h"
-static String dressLook = "leaves";
+static String dressLook = "leaves", dressHat;
 static uint32_t dressA = 0xE07020, dressB = 0xFFC040;
 static uint32_t hexOf(const char *h, uint32_t or_) { return h && strlen(h) == 7 && h[0] == '#' ? (uint32_t)strtol(h + 1, nullptr, 16) : or_; }
 static void casinoTakeDress(JsonDocument &st) {
@@ -139,6 +139,8 @@ static void casinoTakeDress(JsonDocument &st) {
   else dressLook = casinoSeason == "winter" ? "snow" : casinoSeason == "spring" ? "petals" : casinoSeason == "summer" ? "sun" : "leaves";
   uint32_t sa = 0xE07020, sb = 0xFFC040;
   for (const CasinoSeason &c : CASINO_SEASON) if (casinoSeason == c.season) { sa = c.a; sb = c.b; }
+  String hat = (const char *)(h["hat"] | "");          // casino.cpp hat(): none on a quiet day, or an upside-down one
+  dressHat = dressed && !(h["flip"] | false) && (hat == "santa" || hat == "witch" || hat == "party" || hat == "flower") ? hat : String("");
   dressA = dressed ? hexOf(h["colours"][0] | "", sa) : sa;
   dressB = dressed ? hexOf(h["colours"][1] | "", sb) : sb;
 }
@@ -177,6 +179,47 @@ static lv_obj_t *casinoDrawn(lv_obj_t *cell, const char *name) {
   lv_image_set_src(img, d); lv_image_set_antialias(img, false); lv_image_set_scale(img, 384);   // the boards' pixels, half again
   return img;
 }
+// where a daemon's head is in its picture -- the top row with anything drawn, the middle of it there (casino.cpp measure()),
+// in the picture's own 64 pixels -- from the picture the Tab5 keeps, decoded once
+#include <src/draw/lv_image_decoder_private.h>     // the decoded picture's pixels (lvgl.h keeps the session opaque)
+static bool casinoHead(const String &key, int &top, int &mid) {
+  static std::map<String, std::pair<int, int>> heads;
+  auto f = heads.find(key);
+  if (f != heads.end()) { top = f->second.first; mid = f->second.second; return top >= 0; }
+  top = -1; mid = 32;
+  if (lv_image_dsc_t *src = artDsc(key)) {
+    lv_image_decoder_dsc_t d;
+    if (lv_image_decoder_open(&d, src, nullptr) == LV_RESULT_OK) {
+      const lv_draw_buf_t *b = d.decoded;
+      if (b && b->header.cf == LV_COLOR_FORMAT_ARGB8888 && b->header.w && b->header.h) {
+        int w = b->header.w, h = b->header.h;
+        for (int y = 0; y < h && top < 0; y++) {
+          const uint8_t *row = b->data + y * b->header.stride; int lo = w, hi = -1;
+          for (int x = 0; x < w; x++) if (row[x * 4 + 3] > 127) { lo = min(lo, x); hi = x; }
+          if (hi >= 0) { top = y * 64 / h; mid = (lo + hi) / 2 * 64 / w; }
+        }
+      }
+      lv_image_decoder_close(&d);
+    }
+  }
+  heads[key] = { top, mid };
+  return top >= 0;
+}
+// the holiday's hat on a daemon's picture in a reel cell (the picture 96 across, centred, its 64 pixels half again)
+static void casinoHat(lv_obj_t *cell, const String &key) {
+  int top, mid;
+  if (!dressHat.length() || !casinoHead(key, top, mid)) return;
+  String name = "hat_" + dressHat;
+  const CasinoArt *art = nullptr;
+  for (int i = 0; i < CASINO_ART_N; i++) if (name == CASINO_ART[i].name) art = &CASINO_ART[i];
+  lv_image_dsc_t *d = art ? casinoArt(art->name) : nullptr;
+  if (!d) return;
+  lv_obj_t *img = lv_image_create(cell);
+  lv_image_set_src(img, d); lv_image_set_antialias(img, false);
+  lv_image_set_pivot(img, 0, 0); lv_image_set_scale(img, 384);
+  lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
+  lv_obj_set_pos(img, (180 - 96) / 2 + (mid - art->atX) * 3 / 2, (118 - 96) / 2 + (max(14, top) + 3 - art->atY) * 3 / 2);
+}
 static uint8_t stripAt(int i, int pos) { return reelStrip[i][((pos % slots::STRIP_N) + slots::STRIP_N) % slots::STRIP_N]; }
 static void casinoDrawCell(int i, int row) {
   lv_obj_t *cell = reelCell[i][row];
@@ -186,8 +229,8 @@ static void casinoDrawCell(int i, int row) {
   int sp = p >= slots::F1 && p <= slots::F3 ? casinoReelSp[p - 1] : 0;
   int slot = p == slots::JACK ? casinoJack : p <= slots::F3 ? casinoFriend[p - 1] : -1;
   lv_obj_t *o;
-  if (sp > 0) o = picture(cell, "s" + String(sp), 384);
-  else if (slot >= 0) o = picture(cell, "p" + String(slot), 384);
+  if (sp > 0) { o = picture(cell, "s" + String(sp), 384); lv_obj_center(o); casinoHat(cell, "s" + String(sp)); return; }
+  else if (slot >= 0) { o = picture(cell, "p" + String(slot), 384); lv_obj_center(o); casinoHat(cell, "p" + String(slot)); return; }
   else {                                           // drawn as the boards draw it; a daemon with no picture stands in as they do
     static const char *const STAND_IN[] = { "mark", "berry", "gem", "mark" };
     o = casinoDrawn(cell, p == slots::COIN ? "coin" : p == slots::SEASON ? dressLook.c_str() : STAND_IN[p]);

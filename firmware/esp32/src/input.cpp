@@ -80,6 +80,7 @@ void inputBegin() {
 // The keyboard is its own ESP32-C3 on I2C 0x55: one character a read, 0 when none. Enter presses and Backspace goes
 // back everywhere; on a password screen the letters type; while a routine runs they go to it (deckTakeKey).
 static int tbPending = 0, deckKey = 0;
+void touchStep(int step) { tbPending += step; }   // C-161: the watch's swipe inside a routine (radio.cpp buttonEvent)
 int cardputerKey();                       // C-136: cardputer.cpp
 int deckTakeKey() { int k = deckKey; deckKey = 0; return k; }
 void readDeck() {
@@ -170,12 +171,14 @@ void turn(int step) {
   if (screen == HOME) {                 // C-71: the watch has its face first
     // SWITCH OFF last (the user, 2026-10-15)
     // C-159: SOUND before it, on or off on the board itself
-    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE };
+    // C-161 (the user, 2026-10-18: "the first tabs should be the most used ones (goals, routines, etc... and finally
+    // settings"): on the face boards TODAY, then ROUTINES, then the daemon, the day, and SETTINGS (SOUND_PAGE) last
+    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, ROUTINES_PAGE, DAEMON, DAY_PAGE, SOUND_PAGE, OFF_PAGE };
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
     // C-163: the watch has no SWITCH OFF -- its crown held sleeps, held longer switches it off (its power chip)
     const Page *order = face ? WATCH : EMBED; int n = face ? (board.kind == BoardKind::TWatchS3 ? 6 : 7) : 6, at = 0;
     for (int i = 0; i < n; i++) if (order[i] == page) at = i;
-    page = order[(at + n + step) % n];
+    page = order[(at + n + step) % n];   // round either way (the user, 2026-10-18: "so u can swipe either direction")
   }
   else if (screen == TYPES) typeAt = (typeAt + typeCount + step) % typeCount;
   else if (screen == CARE_GRID) gridAt = (gridAt + 4 + step) % 4;                // C-163: a swipe, tile to tile

@@ -209,7 +209,7 @@ void drawRoutines(uint16_t day) {
       if (i < st.partyN) {
         const Member &m = st.party[i];
         listRow(r - from, cur - from, m.name + "  Lv" + m.level + "  " + m.types, day, ink);
-      } else listRow(r - from, cur - from, "CASINO AND RADIOS", day, ink);   // C-149: the CASINO is behind it too; DRAFT
+      } else listRow(r - from, cur - from, "CASINO AND ROUTINES", day, ink);   // C-149: the CASINO is behind it too; DRAFT
     }
   } else if (screen == MOVES) {
     const Member &m = st.party[partyAt];
@@ -554,10 +554,10 @@ void draw() {
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
-    wrap(partyFirst() ? String("The CASINO and its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
+    wrap(partyFirst() ? String("The CASINO and the board's routines first -- WHISPER, UPLINK -- then your party's. Press to open.")   // DRAFT
          : !st.carrying ? String(board.nfc ? "No daemon here. TOUCHSTONE can take one off a card; the party's routines are here too."
                                            : "No daemon here. Your party's routines, and the board's own. Press to open.")   // C-153, DRAFT
-         : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
+         : st.carrying ? "The routines " + daemonName() + " can run. Press to open."
                        : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round || H < 160 ? 2 : 4,
          board.round || H < 160 ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits; C-148 a
                                                                            // 135-high screen too (it ran into the names)
@@ -590,12 +590,15 @@ void draw() {
     canvas.setTextDatum(BL_DATUM);
   } else if (page == SOUND_PAGE) {           // C-159 (the user, 2026-10-18): the board's sound, on or off on the board itself
     canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
-    canvas.drawString("SOUND", 10, 32);                                            // DRAFT
-    canvas.setTextFont(4); canvas.setTextColor(cfg.sound ? day : QUIET);
-    canvas.drawString(cfg.sound ? "ON" : "OFF", 10, 52);                           // DRAFT
+    // C-161 (the user, 2026-10-18: "finally settings -- mostly those settings will be changed on the app/tab5/site not
+    // the device -- that said toggling sound on devices is a good idea"): SETTINGS, the last page -- the sound here
+    canvas.drawString("SETTINGS", 10, 32);                                         // DRAFT
+    canvas.setTextFont(4); canvas.setTextColor(cfg.sound ? readable(day) : QUIET);
+    canvas.drawString(cfg.sound ? "SOUND ON" : "SOUND OFF", 10, 52);               // DRAFT
     canvas.setTextFont(2); canvas.setTextColor(PAPER);
     wrap(String(cfg.sound ? "Volume " + String(cfg.volume) + "%. " : String("Silent: no tunes, no ticks. ")) +
-         (cfg.wakeEvery ? "The jingle plays on every wake." : "The jingle plays when it starts."), 10, 88, W - 20, 2, 18, 3, PAPER);   // DRAFT
+         (cfg.wakeEvery ? "The jingle plays on every wake." : "The jingle plays when it starts.") +
+         " The rest is set on the site, the app or the Tab5.", 10, 88, W - 20, 2, 18, 4, PAPER);   // DRAFT
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
     footer(hint(cfg.sound ? "press: turn it off" : "press: turn it on"));          // DRAFT
   } else if (page == OFF_PAGE) {             // the user, 2026-10-15: "there is no way to turn it off"

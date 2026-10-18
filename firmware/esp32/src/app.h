@@ -140,6 +140,7 @@ void tick();
 void untick();
 bool giveUp();                            // the top button (or the held dial) while a routine waits
 int buttonEvent();                        // a routine running the dial itself: 1 a tap, 2 two taps, -1 held (or the cable's KEY)
+void touchStep(int step);                 // C-161: a swipe, for dialStep() to give a routine (input.cpp)
 bool wide();                              // C-105: a screen wide enough for two columns (the T-Display-S3 Pro's 480)
 void talkSpot(int &x, int &y);            // where the face's TALK button is (drawn there, touched there)
 int talkReach();                          // C-162: how far from it a finger still talks -- the daemon is larger than a button

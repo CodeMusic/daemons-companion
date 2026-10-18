@@ -217,6 +217,18 @@ static uint8_t touchRead(int16_t *x, int16_t *y) {
   if (touchPanel.getPoint(rx, ry, 1) <= 0) return 0;
   x[0] = ry[0]; y[0] = 239 - rx[0];
   return 1;
+#elif defined(BOARD_TWATCH_S3)
+  // C-161: as a finger lifts the watch's FT6336 often gives one false point at the very edge -- x or y 0 or 239 (seen
+  // 2026-10-18: a tap at 54,34 "ended" at 239,61, a 185 px swipe, so a CARE tile tapped did the chosen one). Such a
+  // point is not taken: the last real one stands, and the lift after it ends the touch there.
+  static int16_t lastX = -1, lastY = -1;
+  if (touchPanel.getPoint(x, y, 1) <= 0) { lastX = -1; return 0; }
+  if (x[0] <= 0 || x[0] >= 239 || y[0] <= 0 || y[0] >= 239) {
+    if (lastX < 0) return 0;
+    x[0] = lastX; y[0] = lastY; return 1;
+  }
+  lastX = x[0]; lastY = y[0];
+  return 1;
 #else
   return touchPanel.getPoint(x, y, 1);
 #endif
@@ -225,8 +237,18 @@ bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchRead(x, y) 
 
 // C-134: a routine's own screen reads the touch itself (the loop, and so touchLoop, waits while it runs): a swipe
 // either way turns, a tap presses, a hold goes back -- each reported when the finger lifts.
+static int crownPoll();                                        // below, beside crownLoop
+// C-161: how far a finger moves to be a swipe -- on the watch's 240 px a swipe is short (29 and 49 px were read as taps,
+// 2026-10-18) and a tap moves under 10; the larger screens keep their 50
+#if defined(BOARD_TWATCH_S3)
+static const int SWIPE = 20;
+#else
+static const int SWIPE = 50;
+#endif
 int watchGesture() {
   static bool was = false; static int16_t x0, y0, x1, y1; static uint32_t at = 0;
+  // C-161: inside a routine the loop waits, and crownLoop with it -- so the crown is read here, and goes back
+  if (crownPoll() == 1) return -2;
   if (!haveTouch) return 0;
   int16_t x[1], y[1];
   bool on = touchRead(x, y) > 0;
@@ -234,8 +256,11 @@ int watchGesture() {
   if (!was) return 0;
   was = false;
   int dx = x1 - x0, dy = y1 - y0;
-  if (abs(dx) > 50 && abs(dx) > abs(dy)) return dx < 0 ? 1 : -1;
-  if (abs(dy) > 40) return dy < 0 ? 1 : -1;
+#if defined(BOARD_TWATCH_S3)
+  dx = -dx; dy = -dy;                                          // C-161: the watch's panel is turned half round (touchLoop)
+#endif
+  if (abs(dx) > SWIPE && abs(dx) > abs(dy)) return dx < 0 ? 1 : -1;
+  if (abs(dy) > SWIPE) return dy < 0 ? 1 : -1;
   return millis() - at > 700 ? -2 : 2;
 }
 
@@ -292,8 +317,8 @@ static void touchLoop(uint32_t now) {
   if (talking) { talking = false; dirty = true; return; }      // let go of TALK: C-66 sends what was heard
   if (asleep) return;                                          // only the crown wakes the watch (C-79)
   int dx = xNow - xFrom, dy = yNow - yFrom;
-  if (abs(dx) > 50 && abs(dx) > abs(dy)) turn(dx < 0 ? 1 : -1);  // swipe left: the next page, as the dial turned right
-  else if (abs(dy) > 50) turn(dy < 0 ? 1 : -1);
+  if (abs(dx) > SWIPE && abs(dx) > abs(dy)) turn(dx < 0 ? 1 : -1);  // swipe left: the next page, as the dial turned right
+  else if (abs(dy) > SWIPE) turn(dy < 0 ? 1 : -1);
   else if (now - downAt > 700) back();
   else {
     int off, tile;
@@ -310,14 +335,21 @@ static void touchLoop(uint32_t now) {
 }
 
 // ---- the crown: a short press wakes the watch, or goes back; a long one, asleep (the PMU powers off on a longer hold)
-static void crownLoop(uint32_t now) {
+// the crown, read once wherever it is asked: 1 a short press, 2 a long one, 0 neither
+static int crownPoll() {
   static uint32_t askedAt = 0;
-  if (!havePmu) return;
-  if (PMU_IRQ >= 0 ? !pmuIrq : now - askedAt < 100) return;   // C-75: no interrupt pin -- ask ten times a second
+  uint32_t now = millis();
+  if (!havePmu) return 0;
+  if (PMU_IRQ >= 0 ? !pmuIrq : now - askedAt < 100) return 0;   // C-75: no interrupt pin -- ask ten times a second
   askedAt = now; pmuIrq = false;
   pmu.getIrqStatus();
   bool shortPress = pmu.isPekeyShortPressIrq(), longPress = pmu.isPekeyLongPressIrq();
   pmu.clearIrqStatus();
+  return shortPress ? 1 : longPress ? 2 : 0;
+}
+static void crownLoop(uint32_t now) {
+  int c = crownPoll();
+  bool shortPress = c == 1, longPress = c == 2;
   if (shortPress) {                                            // C-161: the crown is a press, not a dial
     static uint32_t lastShort = 0;
     if (wake()) lastShort = now;                               // asleep, it only wakes (to home)

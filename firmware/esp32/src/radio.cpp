@@ -25,6 +25,7 @@
 #include "leds.h"
 #include "sound.h"
 #include "talk.h"
+#include "watch.h"                      // C-161: the watch's touch and crown inside a routine
 
 void drawArt(int x, int y, int scale, bool mirrored = false);                        // ui.cpp
 
@@ -68,6 +69,12 @@ static String freqText() { uint16_t f = rx.getFrequency(); return freqNumber(f, 
 int buttonEvent() {   // shared with lora.cpp's NEARBY (C-72)
   static bool down = false; static uint32_t at = 0, tappedAt = 0; static int taps = 0;
   if (cableKey) { int k = cableKey; cableKey = 0; return k; }
+  // C-161: the watch has no dial and no front button -- its touch and crown, read here: a tap presses, a hold or the
+  // crown goes back, a swipe is a step for dialStep() to give the routine
+  int g = watchGesture();
+  if (g == 2) return 1;
+  if (g == -2) return -1;
+  if (g == 1 || g == -1) touchStep(g);
   if (board.hasSideKey() && !digitalRead(board.sideKey)) return -1;
   bool pressed = !digitalRead(board.encKey);
   if (pressed && !down) { down = true; at = millis(); }

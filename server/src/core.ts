@@ -20,6 +20,7 @@ import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, coinsFor, tableFor } from "./casino.js";   // C-149, C-151
+import { casinoContext, reelSpecies, weatherNow } from "./context.js";   // C-158
 import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
 
@@ -229,7 +230,11 @@ export function grown(d: { species: number; exp: number; level: number; personal
 // `as`: an expression to draw it in instead of its own (GET /api/device/state?expression=, for a bench check)
 export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null, as: string | null = null) {
   const t = today(h, store, now);
-  let daemon = null, party: unknown[] = [], casino = null;
+  let daemon = null, party: unknown[] = [], casino: any = null;
+  // C-158: the world the devices live in -- the real one: the hour (the game's watches), the weather of the city set
+  // on the site -- and the CASINO's luck in it, with its reasons
+  const weather = weatherNow(store, now), today_ = holiday(t.edition, now);
+  const context = casinoContext(t.edition, now, t.season, today_, weather);
   const bytes = h.save.read();
   if (bytes) {
     const save = readSave(bytes);
@@ -238,6 +243,11 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     // C-149: the CASINO's coins -- the save's money and what waits for SYNC -- and the party's other daemons, its reels
     casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot),
                       tableFor(store, deviceId, readAway(bytes), now));   // C-151: our other boards at the reels
+    // C-158: the reels' other daemons -- seen in the game, at home in this season or hour first -- and the day's luck
+    const seen = readIndex(bytes, h.edition).entries.map((e) => e.species);
+    casino.reel = reelSpecies(seen, d?.species ?? null, save.party.map((p) => p.species), t.season, context.watch, now)
+      .map((sp) => ({ species: sp, name: SPECIES[String(sp)]?.name ?? "" }));
+    casino.context = { luck: context.luck, rtp: context.rtp, reasons: context.reasons };
     // C-149: OPUS's margin beside its INDEX entry, where the save holds OPUS and the margin has something to say
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
     // C-68: the party and their routines, for GAME ROUTINES
@@ -261,7 +271,8 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
            settings: deviceSettings(store, deviceId),   // C-159: its own over the shared
-           holiday: holiday(t.edition, now), casino,          // C-149: how a board dresses today; the CASINO's coins
+           holiday: today_, casino,                           // C-149: how a board dresses today; the CASINO's coins
+           world: { watch: context.watch, weather: weather && { kind: weather.kind, tempC: weather.tempC, city: weather.city } },   // C-158
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
            casts: castsForDevice(store, now),            // C-134: the last ten minutes' broadcasts; a board drops ids it has

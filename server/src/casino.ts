@@ -8,7 +8,8 @@
 // balance it is sent and which it must still add itself.
 import type { Store } from "./store.js";
 import { carrying } from "./carry.js";
-import { BETS, PAYS } from "./slots.js";
+import { BETS, PAYS, catReason } from "./slots.js";
+import type { Reason } from "./context.js";
 
 export const MONEY_MAX = 999999;
 const DELTA_MAX = 1000000;
@@ -64,19 +65,42 @@ export const clampMoney = (n: number) => Math.max(0, Math.min(MONEY_MAX, Math.ro
 // Strangers and boards nearby are the boards' own business (LoRa, Bluetooth): the companion knows only its own.
 export const TABLE_FOR_MS = 120000;
 // each with its daemon's species, so a board that also hears it by Bluetooth (a species, no name) counts it once
-export function tableFor(store: Store, device: string, away: { personality: number; nickname: string; name: string; species: number }[], now = new Date()) {
-  const last = new Map<string, { here: boolean; at: string }>();
+// C-158: a board at the reels also says the odds it plays at -- "here <device> <return in a thousand> <reach in
+// hundredths> <pulls without a win> <wins running>" -- for the CASINO's admin page
+type Away = { personality: number; nickname: string; name: string; species: number };
+export interface Seat { name: string; device: string; species: number; at: string;
+                        odds: { rtp: number; reach: number; dry: number; streak: number } | null }
+export function seated(store: Store, away: Away[], now = new Date()): Seat[] {
+  const last = new Map<string, { here: boolean; at: string; odds: Seat["odds"] }>();
   for (const r of store.kindSince("table", new Date(now.getTime() - TABLE_FOR_MS))) {
-    const m = /^(here|gone) ([A-Za-z0-9-]{1,48})$/.exec(r.detail ?? "");
-    if (m) last.set(m[2], { here: m[1] === "here", at: r.at });
+    const m = /^(here|gone) ([A-Za-z0-9-]{1,48})(?: (\d{3,4}) (-?\d{1,3}) (\d{1,5}) (\d{1,4}))?$/.exec(r.detail ?? "");
+    if (m) last.set(m[2], { here: m[1] === "here", at: r.at,
+                            odds: m[3] ? { rtp: Number(m[3]) / 1000, reach: Number(m[4]) / 100, dry: Number(m[5]), streak: Number(m[6]) } : null });
   }
-  const map = carrying(store), out: { name: string; device: string; species: number }[] = [];
+  const map = carrying(store), out: Seat[] = [];
   for (const [d, s] of last) {
-    if (d === device || !s.here) continue;
+    if (!s.here) continue;
     const who = away.find((a) => a.personality === map[d]);
-    out.push({ name: (who?.nickname || who?.name || "A DAEMON").toUpperCase(), device: d, species: who?.species ?? 0 });   // DRAFT
+    out.push({ name: (who?.nickname || who?.name || "A DAEMON").toUpperCase(), device: d, species: who?.species ?? 0, at: s.at, odds: s.odds });   // DRAFT
   }
   return out;
+}
+export function tableFor(store: Store, device: string, away: Away[], now = new Date()) {
+  return seated(store, away, now).filter((s) => s.device !== device).map(({ name, device, species }) => ({ name, device, species }));
+}
+
+// C-158 (the user, 2026-10-18: "a casino admin section where you can see who all is gambling and the current odds the
+// instance is experiencing -- clicking on it explains why those odds are active (eg win streak, holiday, etc)"): the
+// day's context with its reasons, and everyone at the reels with the odds they last said and why -- the context's
+// reasons and the string's own
+export function casinoAdmin(store: Store, away: Away[], context: { luck: number; rtp: number; reasons: Reason[] }, now = new Date()) {
+  return {
+    context,
+    players: seated(store, away, now).map((p) => ({
+      ...p,
+      reasons: p.odds ? [...context.reasons, catReason({ reach: p.odds.reach, dry: p.odds.dry, streak: p.odds.streak, pulls: 0 })] : context.reasons,
+    })),
+  };
 }
 
 // The coins a board plays with: the save's money and what waits, and which of this board's reports are in it.

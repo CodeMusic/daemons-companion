@@ -110,7 +110,8 @@ describe("the CASINO's coins (C-149)", () => {
     const store = new Store(":memory:");
     played(store, 100, 1); played(store, 50, 2); played(store, 10, 9, "a1b2", "t-embed-111111");
     const st = deviceState(cfg, store, new Date(), "m5-core-36f484") as any;
-    expect(st.casino).toEqual({ money: 3000, pending: 160, balance: 3160, seen: "a1b2.2", friends: [1], table: [] });   // PIP is carried
+    expect(st.casino).toMatchObject({ money: 3000, pending: 160, balance: 3160, seen: "a1b2.2", friends: [1], table: [] });   // PIP is carried
+    expect(st.casino.context.rtp).toBeGreaterThanOrEqual(0.9); expect(st.casino.context.rtp).toBeLessThanOrEqual(1);   // C-158
     expect(casinoSeen(store, "nobody")).toBe("");
   });
 

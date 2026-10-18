@@ -56,6 +56,9 @@ import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
+import { casinoAdmin } from "./casino.js";                     // C-158
+import { weatherNow } from "./context.js";
+import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
@@ -339,6 +342,7 @@ class Pairing {
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
+  weatherLoop(store);                                          // C-158: the real weather, while a city is set on the site
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
@@ -990,6 +994,27 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!body) return send(res, 404, { error: "no art for that species" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(body);
+      }
+      // C-158: the CASINO's admin page -- the day's luck and why, and everyone at the reels with the odds they play at
+      if (req.method === "GET" && path === "/api/casino") {
+        const bytes = ecfg.savePath && existsSync(ecfg.savePath) ? new Uint8Array(readFileSync(ecfg.savePath)) : null;
+        const st = deviceState(ecfg, store, new Date(), "") as any;
+        const ctx = st.casino?.context ?? { luck: 0, rtp: 0.95, reasons: [] };
+        let away: any[] = []; try { away = bytes ? readAway(bytes) : []; } catch { away = []; }
+        return send(res, 200, { ...casinoAdmin(store, away, ctx), world: st.world, holiday: st.holiday });
+      }
+      // C-158: the real weather -- the city set here (a place Open-Meteo knows), and the weather there now
+      if (req.method === "GET" && path === "/api/weather") return send(res, 200, { place: weatherPlace(store), now: weatherNow(store) });
+      if (req.method === "POST" && path === "/api/weather") {
+        const b = await body(req);
+        try { const place = await setWeatherCity(store, typeof b.city === "string" ? b.city : ""); return send(res, 200, { place, now: weatherNow(store) }); }
+        catch (e) { return send(res, 400, { error: (e as Error).message }); }
+      }
+      if (req.method === "GET" && path === "/api/device/art" && url.searchParams.get("species") !== null) {   // C-158: a reel's daemon by its species
+        const sp = url.searchParams.get("species") ?? "";
+        const body = /^\d{1,4}$/.test(sp) ? speciesPng(sp) : null;
+        if (!body) return send(res, 404, { error: "no art for that species" });
+        return send(res, 200, { species: Number(sp), ...deviceArt(body) });
       }
       if (req.method === "GET" && path === "/api/device/art") {   // C-36: the carried daemon, as a device draws it
         const slot = url.searchParams.get("slot");                          // C-149: or a party daemon, for the CASINO's reels

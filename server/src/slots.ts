@@ -71,3 +71,77 @@ export function tableAct(o: number): "JACKPOT" | "BIGWIN" | null { return o === 
 export function resultDetail(delta: number, boot: string, seq: number, device: string, spins: number): string {
   return `${Math.round(delta)} ${boot}.${seq} ${device} ${spins}`;
 }
+
+// ---- C-158 (the user, 2026-10-18): THE CASINO in context, and the cat and the string ---------------------------------
+// "odds via context, so like random is a base mode but there should be other factors -- like st Patrick's holiday gives
+// luck, also we should use psychology ... if u dangle a string by a cat he will play with it but if the string is out of
+// reach, or always within reach the cat loses interest -- it is best engaged when it is surprised, it almost gets the
+// string but what it predicted was a bit off, basically using under the hood the same learning mechanism as model
+// training". The user decided: between 90 and 100 back of every 100 bet -- an ordinary day keeps a small house edge, a
+// lucky one reaches even; the cat and the string shape WHEN wins come within that.
+//
+// LUCK, from the context (casino.ts's casinoContext: the holiday, the weather, the watch, the season), -1..+1, sets the
+// day's return: 90 at -1, 95 at 0, 100 at +1. REACH, the cat and the string, is the player's own, -1..+1: each pull it
+// learns as a model's weight does -- a step against its error, the error being whether a real win (2x or more) came
+// against how often one should (TARGET) -- so a dry spell brings the string nearer, a win takes it away, and a little
+// noise keeps it from being foreseen. It moves one pull's return by up to REACH_SPAN either way, and its mean is
+// nought, so over many pulls the day's return is what comes back. A loss often falls NEAR: the piece that would have won
+// stopped one place off the line -- oftener the nearer the string.
+export const RETURN_AT = (luck: number) => Math.min(1, Math.max(0.9, 0.95 + 0.05 * Math.max(-1, Math.min(1, luck))));
+export const REACH_SPAN = 0.04;                              // a pull's return, moved this much at the string's nearest
+export const TARGET = WEIGHTS.slice(2).reduce((a, b) => a + b, 0) / 1000;   // real wins (2x and up), as the table has them: 0.126
+export const LEARN = 0.25, NOISE = 0.08;                     // the step, and the surprise
+
+// the table for a return: every win's weight scaled alike, the loss taking up the rest -- in TEN thousand, so the
+// jackpot's small weight is scaled finely enough to keep the return (in a thousand it is 4, and rounds by a tenth)
+export const FINE = 10000;
+export function weightsFor(ret: number): number[] {
+  const k = ret / RETURN;
+  const wins = WEIGHTS.slice(1).map((w) => Math.round(w * 10 * k));
+  return [FINE - wins.reduce((a, b) => a + b, 0), ...wins];
+}
+export function drawFrom(weights: number[], rand: () => number = Math.random): number {
+  let r = Math.floor(rand() * weights.reduce((a, b) => a + b, 0));
+  for (let o = 0; o < weights.length; o++) { if (r < weights[o]) return o; r -= weights[o]; }
+  return 0;
+}
+
+export interface Cat { reach: number; dry: number; streak: number; pulls: number }
+export const CAT: Cat = { reach: 0, dry: 0, streak: 0, pulls: 0 };
+// one pull's return: the day's, moved by the string
+export function pullReturn(luck: number, cat: Cat): number {
+  return Math.min(1.04, Math.max(0.86, RETURN_AT(luck) + REACH_SPAN * cat.reach));
+}
+// after a pull: the string learns (a step against the error), and a little noise
+export function learn(cat: Cat, outcome: number, rand: () => number = Math.random): Cat {
+  const won = PAYS[outcome] >= 2 ? 1 : 0;
+  const reach = Math.max(-1, Math.min(1, cat.reach - LEARN * (won - TARGET) + NOISE * (rand() * 2 - 1)));
+  return { reach, dry: won ? 0 : cat.dry + 1, streak: won ? cat.streak + 1 : 0, pulls: cat.pulls + 1 };
+}
+// a loss falls near (the winning piece one place off the line) this often -- oftener the nearer the string
+export const nearChance = (cat: Cat) => Math.min(0.6, 0.25 + 0.35 * Math.max(0, cat.reach));
+
+// near: three pieces for a loss that ALMOST won -- two alike and the third not, the piece the third wanted being the
+// one to show beside the line (stopNear)
+export function nearPieces(rand: () => number = Math.random): { pieces: [Piece, Piece, Piece]; wanted: Piece } {
+  const pick = [1, 2, 3, 4][Math.floor(rand() * 4)] as Piece;          // a friend or the coin: two JACKs would pay
+  let c = Math.floor(rand() * 6) as Piece;
+  while (c === pick || outcomeOf(pick, pick, c) !== 0) c = Math.floor(rand() * 6) as Piece;
+  return { pieces: [pick, pick, c], wanted: pick };
+}
+// where a reel stops for its piece with another piece beside it, one place off the line -- or, if no such place comes
+// round in one turn, where it would stop anyway
+export function stopNear(reel: Piece[], pos: number, piece: Piece, beside: Piece, ahead = 0.7): number {
+  const at0 = Math.ceil(pos + ahead), at = (i: number) => reel[((i % STRIP) + STRIP) % STRIP];
+  for (let i = at0; i < at0 + STRIP; i++) if (at(i) === piece && (at(i + 1) === beside || at(i - 1) === beside)) return i;
+  return stopAt(reel, pos, piece, ahead);
+}
+
+// why a pull's odds are what they are, in words: the string's part (casino.ts adds the context's)
+export function catReason(cat: Cat): { source: string; effect: number; why: string } {
+  const effect = Math.round(REACH_SPAN * cat.reach * 1000) / 10;   // in points of return
+  const why = cat.streak >= 2 ? `${cat.streak} wins running: the string moves away`
+            : cat.dry >= 8 ? `${cat.dry} pulls without a win: the string comes nearer`
+            : cat.reach > 0.2 ? "the string is near" : cat.reach < -0.2 ? "the string is out of reach" : "the string where it should be";   // DRAFT
+  return { source: "the string", effect, why };
+}

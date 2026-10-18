@@ -66,3 +66,42 @@ describe("SLOTS (C-155)", () => {
     expect(parseResult(9, d)).toEqual({ id: 9, delta: -120, boot: "a1b2", seq: 3, device: "phone-pixel", spins: 7 });
   });
 });
+
+describe("THE CASINO in context: luck and the cat and the string (C-158)", () => {
+  it("returns 90 to 100 back as the luck goes from -1 to +1, scaling the wins alike", async () => {
+    const { RETURN_AT, weightsFor } = await import("../src/slots.js");
+    expect([RETURN_AT(-5), RETURN_AT(-1), RETURN_AT(0), RETURN_AT(1), RETURN_AT(9)]).toEqual([0.9, 0.9, 0.95, 1, 1]);
+    for (const r of [0.86, 0.9, 0.95, 1, 1.04]) {
+      const w = weightsFor(r);
+      expect(w.reduce((a, b) => a + b, 0)).toBe(10000);
+      expect(w.reduce((n, x, o) => n + x * PAYS[o], 0) / 10000).toBeCloseTo(r, 2);
+    }
+  });
+
+  it("brings the string nearer through a dry spell and away after a win, and keeps the day's return over many pulls", async () => {
+    const { CAT, learn, pullReturn, weightsFor, drawFrom, RETURN_AT } = await import("../src/slots.js");
+    let cat = { ...CAT };
+    for (let i = 0; i < 10; i++) cat = learn(cat, 0, () => 0.5);   // no noise
+    expect(cat.reach).toBeGreaterThan(0.3); expect(cat.dry).toBe(10);
+    const near = cat.reach; cat = learn(cat, 6, () => 0.5);
+    expect(cat.reach).toBeLessThan(near - 0.2); expect(cat.dry).toBe(0); expect(cat.streak).toBe(1);
+    // a long run: the money that comes back is the day's return, the string's shaping washing out
+    const r = dice(11); let bet = 0, back = 0; cat = { ...CAT };
+    for (let i = 0; i < 300000; i++) {
+      const o = drawFrom(weightsFor(pullReturn(0, cat)), r);
+      bet += 1; back += PAYS[o]; cat = learn(cat, o, r);
+    }
+    expect(Math.abs(back / bet - RETURN_AT(0))).toBeLessThan(0.012);
+  });
+
+  it("makes a near miss that does not pay, and stops the third reel with the wanted piece beside the line", async () => {
+    const { nearPieces, stopNear, strip, STRIP: N } = await import("../src/slots.js");
+    const r = dice(5);
+    for (let i = 0; i < 200; i++) {
+      const { pieces, wanted } = nearPieces(r);
+      expect(outcomeOf(...pieces)).toBe(0);
+      const s = strip(r), at = stopNear(s, 3.1, pieces[2], wanted);
+      expect(s[at % N]).toBe(pieces[2]);
+    }
+  });
+});

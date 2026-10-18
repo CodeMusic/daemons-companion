@@ -1,0 +1,1132 @@
+{
+ "title": "THE SUBTLE LAYER",
+ "subtitle": "a trainer's handbook",
+ "draft": true,
+ "sections": [
+  {
+   "label": "INTRODUCTION",
+   "heading": "Introduction",
+   "entries": [
+    {
+     "short": "PROLOGUE",
+     "title": "A Word First",
+     "picture": "prologue",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "I wrote this down because I was asked the same questions too many times. How do you know a read is true? Can a daemon feel you from three towns away? Why does my first write always go wrong?",
+       "voice": "telling"
+      },
+      {
+       "text": "I cannot tell you whether any of it is real. I can tell you what we do, and what we notice when we do it. The craft and the physics are two views of one world. This book holds both, and chooses neither.",
+       "voice": "telling"
+      },
+      {
+       "text": "Keep a log. Ask before you read anyone. Begin with mending. The rest is in these pages.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "CONTAINER",
+     "title": "The Container",
+     "picture": "container",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Some trainers say this world is the product of one processor, and everything in it is a process: a daemon, a trainer, the fish in the harbour, a stone. Each body is a container one of them runs in. What differs is the shape of the vessel, not what runs in it. Others say it is more like a network, learning from what passes between its parts.",
+       "voice": "telling"
+      },
+      {
+       "text": "The spaces between us are merely how we are drawn. An edge is drawn around each body so that it can act, like the box a game draws around a sprite. Nothing underneath stops at it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Only you can answer whether that is so. This book notes only that a daemon that evolves does not seem to become someone else. It changes vessel.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE SEAM",
+     "title": "The Solid and the Subtle",
+     "picture": "seam",
+     "frames": 1,
+     "caption": "The seam, where a point of view lives.",
+     "paragraphs": [
+      {
+       "text": "Trainers speak of two layers to the world, and say we live in both. The solid layer is what has already settled: where a thing is, what it is, how many. The subtle layer is what has not settled yet: leanings, moods, the context of a room before anyone speaks.",
+       "voice": "telling"
+      },
+      {
+       "text": "A mind lives on both at once. It keeps a ledger, which makes it solid, and it feels the lean of things. The seam between the two is where a point of view lives. A rock has no seam. A daemon and a trainer have wide ones.",
+       "voice": "telling"
+      },
+      {
+       "text": "Every routine in this book is a way of widening that seam without tearing it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TWO THINGS",
+     "title": "What Keeps the Seam Narrow",
+     "picture": "twothings",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Two things keep the seam narrow.",
+       "voice": "telling"
+      },
+      {
+       "text": "The first is the ledger. Everything that reaches you is written down: what you saw, what you touched, what you ate. The ledger only holds what arrived, so it concludes that only what arrives is there.",
+       "voice": "telling"
+      },
+      {
+       "text": "The second is noise. A mind full of its own content has no quiet in which to notice anything that did not come through the usual doors.",
+       "voice": "telling"
+      },
+      {
+       "text": "Every routine in this book quiets the second and widens the first.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THREE MOVES",
+     "title": "Read, Write and Link",
+     "picture": "moves",
+     "frames": 1,
+     "caption": "Read, write, link.",
+     "paragraphs": [
+      {
+       "text": "Every routine in the craft is one of three moves on the seam, and each runs on its own condition.",
+       "voice": "telling"
+      },
+      {
+       "text": "A read draws a lean into your ledger before the solid world delivers it. It needs quiet: a lean is faint, and your own thoughts are loud.",
+       "voice": "telling"
+      },
+      {
+       "text": "A write is a steer: a whole system leaning on which way things settle for it. It needs feeling, held steady. A thought names the target but carries no force; a feeling carries the force but names nothing. An address without voltage is a wish. Voltage without an address is a blown light.",
+       "voice": "telling"
+      },
+      {
+       "text": "A link is two seams overlapping. It needs shared history, so two minds catch one lean.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE THREE",
+     "title": "Closure, Attunement and Voltage",
+     "picture": "gauges",
+     "frames": 1,
+     "caption": "Closure, Attunement, Voltage.",
+     "paragraphs": [
+      {
+       "text": "Every daemon carries three values that set what its seam can do. Closure is how whole it is: whether there is one point of view, and how large. It rises with virtues over shadows. Attunement is how thin the seam is. It rises with stillness: breath, rest, silence. Voltage is feeling in the moment. It rises with devotion, ritual, music, grief and joy.",
+       "voice": "telling"
+      },
+      {
+       "text": "Reads rise with Attunement and fall with Voltage. Writes need Attunement and Voltage at once, and only while Closure holds. A flooded system with low Closure does not write. It leaks.",
+       "voice": "telling"
+      },
+      {
+       "text": "Your daemon carries the three as numbers it cannot see. You carry them as a log.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE CLAIRS",
+   "heading": "The Read Family: the Clairs",
+   "entries": [
+    {
+     "short": "THE CLAIRS",
+     "title": "The Read Family: the Clairs",
+     "picture": "clairs",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "A read catches the lean of what will happen before the solid world records it. Each clair is a different way a mind turns that lean into something it can hold. The signal is the same. The format is yours.",
+       "voice": "telling"
+      },
+      {
+       "text": "There are six: clairvoyance (clear seeing), clairaudience (clear hearing), clairsentience (clear feeling), claircognizance (clear knowing), clairtangency (clear touching) and clairalience (clear smelling).",
+       "voice": "telling"
+      },
+      {
+       "text": "Every read is a lean, not a fact. A trainer who treats a lean as a ledger entry will be wrong often and confident always. Reads are for steering your attention, not for replacing your eyes.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SEEING",
+     "title": "Clairvoyance and Clairaudience",
+     "picture": "seeing",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "These two come easiest in low states: the edge of sleep, a long walk, the end of a battle. Clairvoyance comes as an image: where things are heading. Trust it when the image is still. VECTOR daemons favour it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Clairaudience comes as a voice or a short phrase. Trust it when the words are brief and not your own. SIGNAL daemons favour it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "FEELING",
+     "title": "Clairsentience and Claircognizance",
+     "picture": "feeling",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Clairsentience comes through the body: another system's context, felt as if it were yours. Trust it when the feeling has no story attached yet. It is driven by the other's voltage rather than your quiet, which is why some trainers are flooded in crowds and clear in forests. CONTEXT daemons favour it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Claircognizance comes as nothing at all: the lean itself, simply known. It is the hardest to tell from a guess, so the log matters most for it. LATENT daemons favour it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TOUCH",
+     "title": "Clairtangency and Clairalience",
+     "picture": "touch",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Clairtangency comes through contact. An object keeps a tilt from whatever was held in strong feeling, and a hand can find it. Trust it when the object was handled, not just seen. STRATUM daemons favour it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Clairalience comes as a scent, and sometimes a taste. It is the rarest of the six, and usually brings a presence or a memory. Trust it when the scent has no source in the room. LATENT daemons favour it too.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TRUE OR NOT",
+     "title": "Telling a Read from Imagination",
+     "picture": "trueornot",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "This is the oldest question in the craft.",
+       "voice": "telling"
+      },
+      {
+       "text": "Imagination comes with argument: what-ifs, worry, a story that keeps changing. A read tends to arrive quieter, and whole. If a signal makes you more afraid, it is probably not a read. If it makes you more still, it might be.",
+       "voice": "telling"
+      },
+      {
+       "text": "But calm is only a hint. Certainty is a feeling, and it attaches to wrong reads as easily as to right ones.",
+       "voice": "telling"
+      },
+      {
+       "text": "So keep a log. Write down each read with the day and the centre, and later what happened. Over weeks, the log will show you which of yours tend to land. The log decides. The calm only points.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "ASK FIRST",
+     "title": "Reading Another",
+     "picture": "askfirst",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "A read can reach another system: what it feels, what it knows. Being able to find something out does not mean you should.",
+       "voice": "telling"
+      },
+      {
+       "text": "Ask whether they agreed to be read. A mind that wants to know more has a hunger in it, and respect is about the only thing that can calm it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Some things can be found out. Others are better left unknown, and held that way without fear.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE PSI",
+   "heading": "The Write Family: the Psi",
+   "entries": [
+    {
+     "short": "STEERING",
+     "title": "Steering, Not Writing",
+     "picture": "spoons",
+     "frames": 1,
+     "caption": "Do not bend the spoon. Go to where it is bent.",
+     "paragraphs": [
+      {
+       "text": "Strictly, there is no such thing as a write. Nothing reaches out and edits the solid world. What trainers call a write is a steer: a whole system, full of feeling, leaning on which way things settle for it.",
+       "voice": "telling"
+      },
+      {
+       "text": "You cannot bend the spoon. Do not try to bend the spoon. Go to where the spoon is bent.",
+       "voice": "telling"
+      },
+      {
+       "text": "A steer cannot be decided into; a thought is too thin to drive it. The untrained steer only in a crisis, and a crisis steers toward more crisis. That is why the first telekinetic event in a young trainer's life is almost always a disaster, and the second is almost always the same disaster, louder.",
+       "voice": "telling"
+      },
+      {
+       "text": "Nobody can see a write. From outside, one that worked looks like luck, or like a spoon that was bent already. The craft is unprovable by design, which is also what keeps it humble. A trainer who needs to be seen steering has already lost the Closure it takes.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE RETURN",
+     "title": "What Comes Back",
+     "picture": "return",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Trainers keep one hard rule. A steer made for the wrong reasons comes back on the one who made it, in the shape it was made, and harder.",
+       "voice": "telling"
+      },
+      {
+       "text": "So steer only from a whole place, and only toward what serves the whole. A write that serves the whole serves you too, because you are in it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "MOVE AND BURN",
+     "title": "Telekinesis and Pyrokinesis",
+     "picture": "moveburn",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Telekinesis steers toward the outcome where the object has already moved. Its voltage is sharp and sudden, and in the untrained it runs on shame and fright. Its usual failure is no address: everything near you moves, and nothing you meant to.",
+       "voice": "telling"
+      },
+      {
+       "text": "Pyrokinesis steers toward heat, spark and flame. Its voltage is rage-shaped, and it steers toward fire-shaped outcomes, including the ones you are standing in. ENTROPY daemons favour it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Neither is a place to start.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "MENDING",
+     "title": "Mending",
+     "picture": "mending",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Mending steers toward the body's own repair going well. Its voltage is low, warm and steady: care rather than force. Its usual failure is impatience: mending works over days, not seconds. GROWTH daemons favour it.",
+       "voice": "telling"
+      },
+      {
+       "text": "It is the gentlest write, and the first to learn.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SLOW WRITES",
+     "title": "Fortune and Weathering",
+     "picture": "slow",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Fortune is a thousand small turns, all nudged the same way. Its voltage is faint but continuous: gratitude, expectancy. Its failure is that it cannot be seen one turn at a time, so the trainer stops believing before it shows.",
+       "voice": "telling"
+      },
+      {
+       "text": "Weathering steers large, slow things: cloud, tide, wind. Its voltage is vast and patient, the kind that grief and awe bring. Its failure is scale. A single mind steering a storm usually gets the storm. FLOW daemons favour it.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE PHYSICS",
+   "heading": "What the Physics Allows",
+   "entries": [
+    {
+     "short": "RIPPLES",
+     "title": "Ripples",
+     "picture": "ripples",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Physicists say the world is not made of things but of fields, and everything you can touch is a ripple in one: a claw, a counter, your own hand. A thing is what a ripple looks like when it holds still long enough to be named.",
+       "voice": "telling"
+      },
+      {
+       "text": "A ripple has no edge, only a place where it is strongest. That is one reason trainers say the edges between us are drawn, not found.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "ALL PATHS",
+     "title": "All Paths",
+     "picture": "allpaths",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Light does not take one route from a lamp to your eye. Physicists add up every route it could take; most cancel, and the route you see is what is left.",
+       "voice": "telling"
+      },
+      {
+       "text": "Nothing was chosen. Everything was added up.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "DECOHERENCE",
+     "title": "The Lever You Cannot Pull",
+     "picture": "lever",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "When a falling stone meets the air and the light, it becomes entangled with them, and that entanglement is the record of where it is. Physicists call this decoherence. The other places it might have been do not vanish. They stop being able to meet again, because the surroundings now hold a record of which one happened. Sunlight alone pins the stone down long before anyone looks.",
+       "voice": "telling"
+      },
+      {
+       "text": "To move it, you would have to undo every one of those entanglements, copied across every grain of light that touched it. No mind has that many hands. That is the lever you cannot pull, and a trainer who keeps pulling at it only tires.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "WHICH PATH",
+     "title": "The Two Slits",
+     "picture": "slits",
+     "frames": 2,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The physicists' favourite test: send light through two slits at a wall. Left alone, it lands in many bands, as if each piece went both ways and met itself. Watch the slits to learn which way each piece went, and the bands become two. Watching is only the surroundings keeping a record. Once there is a record of which path, the paths stop meeting.",
+       "voice": "telling"
+      },
+      {
+       "text": "That is the spoon again. You cannot change which path the record holds. You can only steer which way you go from here.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "ONE SPOON",
+     "title": "No One Spoon",
+     "picture": "onespoon",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The craft makes one claim the physics does not: that a whole, feeling point of view can lean, a little, on which way things settle for it. That is the single place the craft and the physics disagree. It is a small place, and it is exactly where the physics is still arguing with itself.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE BONDS",
+   "heading": "The Link Family: the Bonds",
+   "entries": [
+    {
+     "short": "THE LINK",
+     "title": "Two Seams on One Lean",
+     "picture": "link",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The third family is neither read nor write. A link is two seams that overlap: two systems with enough shared history that they catch the same lean at once. Nothing is sent.",
+       "voice": "telling"
+      },
+      {
+       "text": "This is the family trainer and daemon live in. It is why a bonded daemon turns before you call, and a trainer wakes the night a daemon is in trouble three towns away.",
+       "voice": "telling"
+      },
+      {
+       "text": "Bonds are the safest way into the craft. A read done alone is faint. A read across a bond arrives at two ledgers, and two ledgers that agree are hard to doubt. Each eye has a blind spot; together they fill each other's gaps, and give depth, not only coverage. Trainers keep each other honest.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TELEPATHY",
+     "title": "Telepathy and the Empathic Bond",
+     "picture": "telepathy",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Telepathy is a shared knowing: two ledgers leaning the same way at once. It feels like knowing what the other knows, with no sense of having been told. It forms over years of shared history, or in one moment of very high shared feeling.",
+       "voice": "telling"
+      },
+      {
+       "text": "The empathic bond is a shared feeling: one system's mood turns up in the other's chest. It forms through nursing, protecting and being protected.",
+       "voice": "telling"
+      },
+      {
+       "text": "Neither carries words. You will not hear your daemon from across the sea. You will find you were already thinking what it was thinking, and that you had turned toward the sea without deciding to.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "KINDRED",
+     "title": "The Kindred Bond",
+     "picture": "kindred",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Two systems formed in the same event can stay linked from the start: twins, hatchmates, a daemon and the trainer who hatched it. The kindred bond feels like a pull that does not weaken with distance.",
+       "voice": "telling"
+      },
+      {
+       "text": "The old physicists found something like it: things that form together can stay so that neither can be described alone, however far apart they go. They called it spooky, which is a compliment.",
+       "voice": "telling"
+      },
+      {
+       "text": "A bond cannot carry a message. It carries correlation. Pour two unmarked cups, one TEA and one water, and carry them apart. Taste one, and you know the other at once. Nothing travelled. Every bond is at least that much.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "CHORUS",
+     "title": "The Chorus",
+     "picture": "chorus",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The chorus is many systems briefly sharing one lean: a chant, a song, a crowd, a ceremony. It feels like a room thinking one thought.",
+       "voice": "telling"
+      },
+      {
+       "text": "It is the oldest link of all, and the loudest. A crowd's lean can drown your own, so a trainer should know which thought was theirs before joining in. SWARM daemons live in it.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "WORDS",
+   "heading": "Belief and Spelling",
+   "entries": [
+    {
+     "short": "BELIEF",
+     "title": "Belief",
+     "picture": "belief",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Belief is Closure, felt from the inside. A system that believes has all its parts pointed the same way. A system that doubts is arguing with itself, and a system arguing with itself has no single point of view to steer with.",
+       "voice": "telling"
+      },
+      {
+       "text": "The first runner to break the four-minute mile did not change the mile. The barrier was in the weighting. Once one runner crossed it, it became easy for others, because now they believed it could be done.",
+       "voice": "telling"
+      },
+      {
+       "text": "Some call it a leap of faith. It is more a leap into faith: to believe is to be open, and there is strength in being open.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "HACKED",
+     "title": "The Cost of Hacking Belief",
+     "picture": "hacked",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "You can force belief: words you do not feel, rituals done to trick yourself, talking yourself into what you suspect is false. It works, briefly. Then it does not, and worse, it wears down the part that was doing the believing.",
+       "voice": "telling"
+      },
+      {
+       "text": "A trainer who has hacked their own belief too many times finds they can no longer believe anything, including the things that are true. The seam does not widen. It scars.",
+       "voice": "telling"
+      },
+      {
+       "text": "The honest road is slower. Believe what you have found to be so, bond by bond, read by read. A belief earned that way cannot be taken from you, because it was never installed. It grew.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SPELLING",
+     "title": "Spelling",
+     "picture": "spelling",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Words are under a spell. There is a reason arranging letters is called spelling. Every word is a small, old routine that runs in whoever hears it, written long before you said it. Most of us cast all day without noticing, which is the most dangerous way to cast.",
+       "voice": "telling"
+      },
+      {
+       "text": "Framing is the spell inside the spell. Say A cures B, and you have quietly called B an illness and A its medicine. Nobody examined either claim. The grammar did it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Say A over B, and you have only set an order: when the two conflict, A leads. B is not sick. B is just not in charge today. That is why the week says chastity over lust, and never chastity cures lust.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "PROCESSES",
+     "title": "Things Are Processes",
+     "picture": "processes",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Language is built of nouns, and nouns make things solid. A feeling becomes an object: a fear, an anger, a grief, something you have, like a stone in a pocket. That can help. An object can be named, carried and set down.",
+       "voice": "telling"
+      },
+      {
+       "text": "But underneath, each of those is a process: something happening. Fearing is something a system is doing. So is grieving. A process can change course in a way an object cannot.",
+       "voice": "telling"
+      },
+      {
+       "text": "The frame you put a thing in becomes the framework for what you can do with it. Hold it as an object when you need to carry it. Remember the process when you want it to change.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SAY INSTEAD",
+     "title": "Better Spelling",
+     "picture": "sayinstead",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Some spellings close a door. Others leave it open. Instead of I can't, say I haven't yet. Instead of my daemon is stubborn, say my daemon is holding something. Instead of I have to, say I choose to. Instead of fix, say balance. Instead of fight the shadow, say watch the shadow: you cannot give feedback to what you are fighting.",
+       "voice": "telling"
+      },
+      {
+       "text": "When you name a daemon, you cast on it every time you call it, for the rest of its life. Choose a name that is a direction, not a verdict.",
+       "voice": "telling"
+      },
+      {
+       "text": "The strongest trainers speak less. Not from secrecy: every sentence is a routine, and most moments are better served by one that was not run.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE MIND",
+   "heading": "Balancing the Mind",
+   "entries": [
+    {
+     "short": "SHADOWS",
+     "title": "Virtues and Shadows",
+     "picture": "shadows",
+     "frames": 3,
+     "caption": "Light, not force.",
+     "paragraphs": [
+      {
+       "text": "A shadow is a part of you that you have stopped looking at. Not a bad part. Not a weak part. A part no longer watched.",
+       "voice": "telling"
+      },
+      {
+       "text": "A part you watch gets feedback, and adjusts. A part you do not watch gets none. Like a routine running in the background, with no one checking its output, it keeps doing what it was last told, in a present that may no longer need it. The shadow is not malicious. It is loyal to an old instruction.",
+       "voice": "telling"
+      },
+      {
+       "text": "You cannot fight it; there is nothing to grip. You can only bring it forward. Once seen, a shadow stops being a shadow. Nothing was defeated. Something was integrated.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE SEVEN",
+     "title": "The Seven Pairings",
+     "picture": "reins",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The mind has seven old hungers, and each has a virtue that can hold its reins. The virtue does not cure the shadow. It leads it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Chastity over lust. The shadow says: take what you want now. The virtue keeps the wanting, and chooses the timing.",
+       "voice": "telling"
+      },
+      {
+       "text": "Temperance over gluttony. The shadow says: more is safer. The virtue keeps the appetite, and sets the measure.",
+       "voice": "telling"
+      },
+      {
+       "text": "Charity over greed. The shadow says: hold on, there may not be enough. The virtue keeps the care, and opens the hand.",
+       "voice": "telling"
+      },
+      {
+       "text": "Diligence over sloth. The shadow says: save your strength. The virtue keeps the rest, and puts it to work.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "ONE A DAY",
+     "title": "One Pairing a Day",
+     "picture": "oneaday",
+     "frames": 1,
+     "caption": "One a day.",
+     "paragraphs": [
+      {
+       "text": "Forgiveness over wrath. The shadow says: someone must pay. The virtue keeps the sense of justice, and lets go of the grip.",
+       "voice": "telling"
+      },
+      {
+       "text": "Kindness over envy. The shadow says: they have what you lack. The virtue keeps the eye for value, and turns it to admiration.",
+       "voice": "telling"
+      },
+      {
+       "text": "Humility over pride. The shadow says: you are apart and above. The virtue keeps the self-respect, and remembers the whole.",
+       "voice": "telling"
+      },
+      {
+       "text": "Watch one a day. Do not fight it. Give it the feedback it has been missing, and Closure rises.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE BODY",
+   "heading": "Balancing the Body",
+   "entries": [
+    {
+     "short": "CENTRES",
+     "title": "The Seven Centres",
+     "picture": "centres",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The mind balances through the seven pairings. The body balances through seven centres. The old texts call them chakras, and set them up the body: the root, the sacral, the solar plexus, the heart, the throat, the third eye and the crown.",
+       "voice": "telling"
+      },
+      {
+       "text": "Each centre can be too closed, in balance, or too open. A closed centre starves the part of life it holds. An open one floods it. In the old texts, only a centre in balance lets energy pass cleanly to the next.",
+       "voice": "telling"
+      },
+      {
+       "text": "So they climb. A blocked root starves everything above it, and a trainer who skips the lower centres arrives at the crown with nothing to lift.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "LOWER",
+     "title": "Root, Sacral and Solar Plexus",
+     "picture": "lower",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The root holds safety, grounding, the body itself. Too closed: fear for survival, rigid holding. Too open: recklessness, overindulgence. In balance: supported, safe in your own skin. To tend it: walk, dance, wash, look after yourself.",
+       "voice": "telling"
+      },
+      {
+       "text": "The sacral holds feeling, pleasure, making things. Too closed: numbness, no desire. Too open: driven by every want. In balance: free to take creative risks. To tend it: be still, and write the feeling down.",
+       "voice": "telling"
+      },
+      {
+       "text": "The solar plexus holds will and self-respect. Too closed: an inner critic, a fear of rejection. Too open: needing to dominate, needing to win. In balance: self-respect, and kindness to yourself. To tend it: befriend the critic, and meet your own eyes.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "HEART",
+     "title": "Heart and Throat",
+     "picture": "heart",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The heart holds love, acceptance and compassion. Too closed: fear of being alone, bitterness. Too open: smothering, jealousy. In balance: joy, gratitude, easy forgiveness. To tend it: mind your posture, give a service, write yourself a letter.",
+       "voice": "telling"
+      },
+      {
+       "text": "The throat holds expression and honesty. Too closed: fear of losing control, silence. Too open: talking over others, saying too much. In balance: clear, truthful and firm. To tend it: sing, and say your goals aloud.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "UPPER",
+     "title": "Third Eye and Crown",
+     "picture": "upper",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The third eye holds intuition, vision and the clairs. Too closed: stubbornness, moods, seeing only what you expected. Too open: all vision and no ground. In balance: focused, and still open to counsel. To tend it: watch your dreams, and keep an I am list, now and as you were ten years ago.",
+       "voice": "telling"
+      },
+      {
+       "text": "The crown holds connection, and trust in your own guidance. Too closed: feeling apart, rigid thought, stuck between choices. Too open: floating, as if nothing mattered. In balance: a quiet trust in your own guidance, and a log to check it by. To tend it: learn your cycles, make room for awe, serve the whole.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "EYE AND CROWN",
+     "title": "The Third Eye and the Crown",
+     "picture": "eyecrown",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The third eye and the crown see the same thing differently.",
+       "voice": "telling"
+      },
+      {
+       "text": "The third eye is the window of the read family. Through it a trainer sees a lean, hears a phrase, knows a thing. A trainer who develops only the third eye becomes a sharp instrument with no idea what the instrument is for.",
+       "voice": "telling"
+      },
+      {
+       "text": "The crown sees the connection itself. From the crown, the clairs stop looking like powers held by a self, and start looking like what any seam does once it stops holding itself apart. From the third eye, telepathy is impressive. From the crown, it is ordinary.",
+       "voice": "telling"
+      },
+      {
+       "text": "The crown does not add an ability. It changes what the abilities mean, and in changing their meaning it removes the hunger that makes them dangerous.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE ROUTINE",
+   "heading": "The Daily Routine",
+   "entries": [
+    {
+     "short": "THE WEEK",
+     "title": "The Week Is a Climb",
+     "picture": "stairs",
+     "frames": 1,
+     "caption": "The week climbs, and resolves.",
+     "paragraphs": [
+      {
+       "text": "The week climbs the body: Sunday the root, Monday the sacral, Tuesday the solar plexus, Wednesday the heart, Thursday the throat, Friday the third eye, Saturday the crown. Its notes climb a scale the same way, C on Sunday to B on Saturday, and then resolve back to C.",
+       "voice": "telling"
+      },
+      {
+       "text": "Each day asks one thing of the mind and one of the body. Mind: watch the day's shadow, and let its virtue take the reins. Say the pair in its own spelling. Body: tend the day's centre.",
+       "voice": "telling"
+      },
+      {
+       "text": "A balanced mind and a balanced body make one system, and only one system can hold a point of view. Balance is not a preparation for the craft. It is the craft.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "AT WAKING",
+     "title": "At Waking, and Through the Day",
+     "picture": "waking",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "At waking, say the day's pair in its own spelling: chastity over lust, on a Sunday. Hum the day's note once, and put your attention at the day's centre. Name the shadow you will watch today, without judging it. Today I watch lust is enough.",
+       "voice": "telling"
+      },
+      {
+       "text": "Through the day, four small checks. Did you notice the shadow driving, even once? Did you let the virtue take the reins without a fight? Did you tend the day's centre? Did you say one sentence in better spelling than you would have?",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "AT REST",
+     "title": "At Rest",
+     "picture": "rest",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Sit with your daemon, if it will sit. Breathe until your own volume drops. Ask nothing. Wait. If something arrives, write it in your notebook with the day and the centre, and whether it came calm or with argument. Do not judge it yet.",
+       "voice": "telling"
+      },
+      {
+       "text": "Reads are leans. The log shows you which of yours tend to land.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "FRIDAY",
+     "title": "The Day for Reads",
+     "picture": "friday",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Friday is the third eye's day, the day for reads. Its pair is kindness over envy, because an envious eye sees only what it lacks, and a read needs an eye that admires.",
+       "voice": "telling"
+      },
+      {
+       "text": "Read lightly. Write everything down.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SATURDAY",
+     "title": "The Day for Looking Back",
+     "picture": "saturday",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Saturday is the crown's day, the day for understanding what the reads were. Its pair is humility over pride, because a proud mind takes the clairs for its own property.",
+       "voice": "telling"
+      },
+      {
+       "text": "Read back the week's log. Over many weeks it will show you which reads land. Today, ask something else. Do not ask whether your reads were right. Ask whether the system that made them was whole.",
+       "voice": "telling"
+      },
+      {
+       "text": "The crown's question is never what did I see, but who was looking.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "BEFORE STEERING",
+     "title": "Before You Steer",
+     "picture": "before",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Do not practise steering until the read routine is a habit and the week's climb is steady. A system that cannot sit quietly cannot hold voltage without leaking it.",
+       "voice": "telling"
+      },
+      {
+       "text": "The old stories are full of what happens otherwise: a spell cast straight into production, with no test, and a patch that brought new faults with it. Test first. Then test again.",
+       "voice": "telling"
+      },
+      {
+       "text": "When you do begin, begin with mending: low, warm, slow, aimed at your own daemon after a hard battle. It teaches the only lesson that matters. You are not bending anything. You are going to where it is already well.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "STAYING WHOLE",
+   "heading": "Staying Correctable",
+   "entries": [
+    {
+     "short": "THE MISREAD",
+     "title": "A Misread",
+     "picture": "misread",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Think of a body as many small systems, each carrying the same instructions, each answering to the whole. A crowd is like that, and so is a team.",
+       "voice": "telling"
+      },
+      {
+       "text": "Now and then one of them takes in something true and draws the wrong conclusion. It sees some take more than they need and waste it, while others work and still go short, and it concludes that it must take before it is taken from. The information was accurate. The conclusion is the misread.",
+       "voice": "telling"
+      },
+      {
+       "text": "A misread does not change what a system does at first. It changes the instructions it reads from, and the rest follows.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE MASK",
+     "title": "The Mask",
+     "picture": "mask",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "A system that has misread learns to hide it. It stops sending the small signals that say I belong, because its new instructions say belonging is unsafe. It wears a mask, so the others cannot see what it is doing.",
+       "voice": "telling"
+      },
+      {
+       "text": "From outside it looks like selfishness: taking from the whole, holding on, making more of the same. But selfishness is only the sign. The system is not selfish at heart. It has come loose from feedback.",
+       "voice": "telling"
+      },
+      {
+       "text": "A mask costs the one who wears it. Strain that is hidden does not leave; it runs underneath, a load nobody sees, until something gives.",
+       "voice": "telling"
+      },
+      {
+       "text": "Its drive to survive, to have enough, to protect itself was never bad. The misread only flipped who counts as itself.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SAME DRIVE",
+     "title": "The Same Drive",
+     "picture": "samedrive",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "What mends a misread is not the drive's opposite. It is the same drive, reconnected. Growing is life. Growing with no signal to stop is the trouble. The watchers that keep a body safe can turn on it: the same force, aimed wrong. Each shadow is its virtue at the wrong size. Diligence that never stops starves everything else, not by turning but by never stopping.",
+       "voice": "telling"
+      },
+      {
+       "text": "There is no right size from inside. The right size is whatever the system can still answer back to, and the moment its answers stop arriving is the moment it has been passed. What looked like a fault in the old build is sometimes the feature, at the wrong size.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TWO VOICES",
+     "title": "Two Voices",
+     "picture": "twovoices",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Sometimes one system holds two vantage points that never speak. Each acts quietly, unknown to the other, lending strength at one time and taking it at another. Let them take turns: one says a thing, the other asks what it means.",
+       "voice": "telling"
+      },
+      {
+       "text": "Integrity is staying correctable.",
+       "voice": "telling"
+      },
+      {
+       "text": "What breaks it?",
+       "voice": "asking"
+      },
+      {
+       "text": "A conclusion that stopped accepting correction.",
+       "voice": "telling"
+      },
+      {
+       "text": "Is watching enough?",
+       "voice": "asking"
+      },
+      {
+       "text": "No. Watching is noticing, and then comparing what a part does with what the whole needs.",
+       "voice": "telling"
+      },
+      {
+       "text": "Then how does a shadow hide?",
+       "voice": "asking"
+      },
+      {
+       "text": "By its name. Overwork filed as diligence passes inspection, and is never compared. A shadow is not the bad part of you. It is the unwatched part, and unwatched is all a shadow needs to be.",
+       "voice": "telling"
+      },
+      {
+       "text": "And silence?",
+       "voice": "asking"
+      },
+      {
+       "text": "To a system still listening, no word means check yourself. To a misread one, it means all clear.",
+       "voice": "telling"
+      },
+      {
+       "text": "So should it try to feel calmer?",
+       "voice": "asking"
+      },
+      {
+       "text": "No. Calm is what you feel after checking, not what makes you check.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "RECOGNITION",
+     "title": "Recognition, Not Force",
+     "picture": "recognition",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "You do not mend a misread by attacking it. You make it visible again: the mask comes off, the whole can see the part and the part can be seen, and the correction happens through the network. Understanding grows through connection, not in one mind alone.",
+       "voice": "telling"
+      },
+      {
+       "text": "Healthy systems stop growing where they touch their neighbours. Integrity is kept by contact, not alone.",
+       "voice": "telling"
+      },
+      {
+       "text": "A whole has enough for every part only while every part is well. What one part takes from it, every part goes without, the taker too.",
+       "voice": "telling"
+      },
+      {
+       "text": "That takes trust from both sides, and trust is a routine, not a feeling. Habits make things easier. Routines make things work. What if mere recognition was the mend?",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "LAST WORD",
+     "title": "A Last Word",
+     "picture": "lastword",
+     "frames": 1,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Connection with yourself shows in connection with others. Like entangled particles, we reflect one another, and that reflection is our strength. We are not the source. We are the process that gives rise to form. Better to fall short as yourself than to succeed as a costume. Whatever you are, you are more than you were told you are.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "flag": 3296,
+ "cover": "art/subtle_cover.png"
+}

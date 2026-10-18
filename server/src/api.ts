@@ -983,8 +983,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
         // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
-        if (q.has("player") || q.has("mark") || q.has("guide")) {   // C-145: ?guide=cover, the GUIDE's 8-bit cover
-          const name = q.has("guide") ? "guide_cover.png" : q.has("player")
+        if (q.has("player") || q.has("mark") || q.has("guide") || q.has("subtle")) {   // C-145: ?guide=cover; T-423: ?subtle=<picture>_<frame>|cover
+          const sub = q.get("subtle") ?? "";
+          const name = q.has("subtle") ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `subtle_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
             ? `player_${q.get("player") === "instinct" ? "instinct" : "reason"}${q.get("walk") ? "_walk" : ""}.png`
             : `mark_${Math.max(1, Math.min(8, Number(q.get("mark")) || 1))}.png`;
           const file = join(ART_DIR, name);
@@ -1004,6 +1005,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!body) return send(res, 404, { error: "no art for that slot" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);
+      }
+      // T-423: THE SUBTLE LAYER's pictures -- /art/subtle/<picture>_<frame>.png, and /art/subtle/cover.png
+      const subtleArt = path.match(/^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/);
+      if (req.method === "GET" && subtleArt) {
+        const file = join(ART_DIR, `subtle_${subtleArt[1]}.png`);
+        if (!existsSync(file)) return send(res, 404, { error: "no such picture" });
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(readFileSync(file));
       }
       // C-158: where a daemon's head is in its picture (a party slot's, or a species'), for THE CASINO's holiday hats
       if (req.method === "GET" && path === "/art/head") {

@@ -49,7 +49,7 @@ function hear(played: number[], songs: Song[]): { song: Song; almost: boolean } 
 }
 
 // on the site, ?preview=1 in the page's address asks the companion's bench check (as if held, every song learned)
-const PREVIEW = Platform.OS === "web" ? (/[?&]preview=(1|harp|flute)\b/.exec(globalThis.location?.search ?? "")?.[0].replace(/^&/, "?") ?? "") : "";
+export const PREVIEW = Platform.OS === "web" ? (/[?&]preview=(1|harp|flute)\b/.exec(globalThis.location?.search ?? "")?.[0].replace(/^&/, "?") ?? "") : "";
 export function PlayBook() {
   const [p] = useApi<PlayData>(`/api/play${PREVIEW}`);
   const [song, setSong] = useState<Song | "free" | null>(null);

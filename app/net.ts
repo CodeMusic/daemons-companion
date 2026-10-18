@@ -316,6 +316,12 @@ export function keepArt(path: string, uri: string) {
 }
 
 export async function artByJson(path: string): Promise<string> {
+  const sub = /^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/.exec(path);   // T-423: THE SUBTLE LAYER's, kept as they are read
+  if (sub) {
+    const { png } = await api<{ png: string }>(`/api/art?subtle=${sub[1]}`);
+    keepArt(path, `data:image/png;base64,${png}`);
+    return ART.get(path)!;
+  }
   const m = /^\/art\/(party|species)\/(\d+)\.png(?:\?expression=(\w+))?$/.exec(path);   // C-119: in an expression's shade
   if (!m) throw new Error("no such picture");
   if (m[1] === "species" && ALONE) {                   // C-111: painted on the phone, one at a time as the INDEX asks

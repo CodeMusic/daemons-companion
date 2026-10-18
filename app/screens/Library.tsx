@@ -7,9 +7,10 @@ import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL,
 import { api } from "../net";
 import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
-import { Action, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
+import { Action, Art, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
 import { useApi } from "../useApi";
-import { PlayBook } from "./Play";
+import { PlayBook, PREVIEW } from "./Play";
+import { SubtleBook, type SubtleT } from "./Subtle";
 
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
   const [open, setOpen] = useState(false);
@@ -83,7 +84,8 @@ export function PracticePaper() {
 }
 export function LibraryScreen() {
   const dayInk = useInk();
-  const [book, setBook] = useState<"school" | "guide" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"school" | "guide" | "subtle" | "notebook" | "songbook" | "stream" | null>(null);
+  const [sub] = useApi<SubtleT>(`/api/subtle${PREVIEW ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {
@@ -94,6 +96,7 @@ export function LibraryScreen() {
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
   if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
+  if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
   if (book === "notebook") return <YStack gap={14}>{back}<NotebookCard skip="SONGBOOK" /></YStack>;   // C-156: moved here from YOU
   if (book === "songbook") return <YStack gap={14}>{back}<SongbookBook /></YStack>;
   if (book === "stream") return <YStack gap={14}>{back}<StreamBook /></YStack>;
@@ -127,6 +130,22 @@ export function LibraryScreen() {
             <YStack flex={1} gap={2}>
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">THE GUIDE</Text>
               <Small>{`${g.title ?? ""} · ${chapters} chapters`}</Small>
+            </YStack>
+            <Text fontSize={18} color="$color10">›</Text>
+          </XStack>
+        </Card>
+      ) : null}
+      {sub?.held ? (
+        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("subtle")}>
+          <XStack gap={14} alignItems="center">
+            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor="#1b0f1f" borderRadius={3}>
+              <YStack width={33} height={40} overflow="hidden">
+                <YStack marginLeft={-13.5}><Art path="/art/subtle/cover.png" size={60} height={40} /></YStack>
+              </YStack>
+            </YStack>
+            <YStack flex={1} gap={2}>
+              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{sub.title ?? "THE SUBTLE LAYER"}</Text>
+              <Small>{`${sub.subtitle ?? ""} · ${(sub.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages`}</Small>
             </YStack>
             <Text fontSize={18} color="$color10">›</Text>
           </XStack>

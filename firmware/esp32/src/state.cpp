@@ -102,6 +102,7 @@ bool takeState(const char *json) {
   JsonVariant cs = doc["casino"];
   st.casino.have = !cs.isNull();
   st.casino.known = strstr(json, "\"casino\":") != nullptr;   // an older companion says nothing of it
+  st.casino.look = "";                                       // no dress: the board's own rule (casino.cpp lookNow)
   if (st.casino.have) {
     st.casino.money = cs["money"] | 0L; st.casino.pending = cs["pending"] | 0L; st.casino.balance = cs["balance"] | 0L;
     st.casino.seen = cs["seen"] | ""; st.casino.friendN = 0;
@@ -115,6 +116,11 @@ bool takeState(const char *json) {
     }
     st.casino.reelN = 0;
     for (JsonVariant r : cs["reel"].as<JsonArray>()) if (st.casino.reelN < 3) st.casino.reel[st.casino.reelN++] = r["species"] | 0;
+    JsonVariant dr = cs["dress"];                        // C-158: how it is dressed, decided once by the companion
+    if (!dr.isNull()) {
+      st.casino.look = dr["look"] | ""; st.casino.hat = dr["hat"] | "none";
+      for (int i = 0; i < 2; i++) { const char *c = dr["colours"][i] | "#000000"; st.casino.colour[i] = hexColour(c); }
+    }
     st.casino.tableN = 0;                                // C-151: our other boards at the reels
     for (JsonVariant t : cs["table"].as<JsonArray>()) if (st.casino.tableN < 4) {
       st.casino.tableSpecies[st.casino.tableN] = t["species"] | 0; st.casino.table[st.casino.tableN++] = t["name"] | "";

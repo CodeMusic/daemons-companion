@@ -1,7 +1,7 @@
 // C-158: the world the devices live in, and the CASINO's luck in it -- on synthetic saves, never the user's own.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { casinoContext, reelSpecies, skyOf, watchOf, weatherNow } from "../src/context.js";
+import { casinoContext, casinoDress, reelSpecies, skyOf, watchOf, weatherNow } from "../src/context.js";
 import { setWeatherCity } from "../src/weather.js";
 import { casinoAdmin } from "../src/casino.js";
 import { holiday } from "../src/holidays.js";
@@ -15,6 +15,20 @@ describe("the world and the CASINO's luck (C-158)", () => {
 
   it("gathers WMO's weather codes", () => {
     expect([0, 2, 45, 61, 73, 95, 81].map(skyOf)).toEqual(["clear", "cloudy", "fog", "rain", "snow", "storm", "rain"]);
+  });
+
+  it("dresses THE CASINO by one rule for every screen: the holiday, else the weather worth noticing, else the season", () => {
+    const sky = (kind: "clear" | "rain" | "cloudy") => ({ kind, code: 0, tempC: 9, city: "Toronto", at: new Date().toISOString() });
+    const pat = holiday("CONTENT", at(3, 17))!;
+    expect(casinoDress("spring", pat, sky("rain"), "DAY")).toEqual({ look: pat.look, colours: pat.colours, hat: pat.hat });
+    expect(casinoDress("autumn", null, sky("rain"), "DAY")).toEqual({ look: "rain", colours: ["#e07020", "#ffc040"], hat: "none" });
+    expect(casinoDress("autumn", null, sky("clear"), "NIGHT").look).toBe("stars");
+    expect(casinoDress("autumn", null, sky("clear"), "DAY").look).toBe("leaves");
+    expect(casinoDress("winter", null, sky("cloudy"), "NIGHT")).toEqual({ look: "snow", colours: ["#a0d0ff", "#ffffff"], hat: "none" });
+    const quiet = { name: "A quiet day", quiet: true, look: "none", colours: [], hat: "none", flip: false };
+    expect(casinoDress("summer", quiet, null, "DAY")).toEqual({ look: "sun", colours: ["#ffd040", "#ff8020"], hat: "none" });
+    const flipped = { name: "Upside down", quiet: false, look: "none", colours: ["#112233", "#445566"], hat: "party", flip: true };
+    expect(casinoDress("spring", flipped, null, "DAY")).toEqual({ look: "petals", colours: ["#112233", "#445566"], hat: "none" });
   });
 
   it("makes St Patrick's the luckiest of days, a stormy night a bad one, and says why", () => {

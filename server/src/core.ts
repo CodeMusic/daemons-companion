@@ -20,7 +20,7 @@ import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, coinsFor, tableFor } from "./casino.js";   // C-149, C-151
-import { casinoContext, reelSpecies, weatherNow } from "./context.js";   // C-158
+import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.js";   // C-158
 import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
 
@@ -251,6 +251,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     casino.reel = reelSpecies(seen, d?.species ?? null, save.party.map((p) => p.species), t.season, context.watch, now)
       .map((sp) => ({ species: sp, name: SPECIES[String(sp)]?.name ?? "" }));
     casino.context = { luck: context.luck, rtp: context.rtp, reasons: context.reasons };
+    casino.dress = casinoDress(t.season, today_, weather, context.watch);   // C-158: one rule, read by every screen
     // C-149: OPUS's margin beside its INDEX entry, where the save holds OPUS and the margin has something to say
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
     // C-68: the party and their routines, for GAME ROUTINES

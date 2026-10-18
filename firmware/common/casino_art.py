@@ -32,9 +32,9 @@ OUT_H = os.path.join(HERE, "casino_art.h")
 # the casino.cpp code each part is ported from, by its SHA-1 (whitespace kept): change one there, port it here
 PORTED = {
     "drawn": "4b0b4b93a0cc52d9c5dde4590d162d8117650648",
-    "hat": "4af166dbdbd8769fd359c13af0530ab99fed74d0",
-    "colourA": "3bede24e0a783805b0e5df35b1f2efba483289e6",
-    "colourB": "10d7ef7f28744341507504e67c5322e8e900e31a",
+    "hat": "3fc305359376f918883fc0a7b3c0a0fc60695054",
+    "colourA": "040e169b030e43ab799c87ee165b98285f3f32c1",
+    "colourB": "40c1827e5238ab797ed1471c4c32d494e72691e6",
 }
 
 PIECE, HAT = (56, 56), (34, 28)

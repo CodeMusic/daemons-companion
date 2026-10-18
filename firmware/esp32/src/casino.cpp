@@ -111,7 +111,11 @@ static void reportNow() {
 
 // ---- how it is dressed ---------------------------------------------------------------------------------------------
 static bool dressed() { return st.holiday.name.length() && !st.holiday.quiet; }
+// C-158: the companion sends how it is dressed (server/src/context.ts casinoDress), the one rule the phone and the Tab5
+// read too; this board's own rule below is for a companion too old to send it -- the same rule, kept the same
+static bool sent() { return st.casino.look.length(); }
 static String lookNow() {                       // the holiday's look, else the weather's, else the season's own
+  if (sent()) return st.casino.look;
   if (dressed() && st.holiday.look != "none") return st.holiday.look;
   // C-158: the real weather outside, when it is weather to notice; a clear night, its stars
   if (st.sky == "rain" || st.sky == "storm" || st.sky == "fog") return st.sky;
@@ -123,10 +127,12 @@ static String lookNow() {                       // the holiday's look, else the 
   return "leaves";
 }
 static uint32_t colourA() {
+  if (sent()) return st.casino.colour[0];
   if (dressed() && st.holiday.colour[0]) return st.holiday.colour[0];
   return st.season == "winter" ? 0xA0D0FF : st.season == "spring" ? 0xFF90C0 : st.season == "summer" ? 0xFFD040 : 0xE07020;
 }
 static uint32_t colourB() {
+  if (sent()) return st.casino.colour[1];
   if (dressed() && st.holiday.colour[1]) return st.holiday.colour[1];
   return st.season == "winter" ? 0xFFFFFF : st.season == "spring" ? 0x90E070 : st.season == "summer" ? 0xFF8020 : 0xFFC040;
 }
@@ -340,8 +346,8 @@ static void drawn(const String &kind, int cx, int cy) {
 
 // a hat on a daemon's head, for the holiday (k: which picture, x y: where the picture is)
 static void hat(int k, int x, int y) {
-  const String &h = st.holiday.hat;
-  if (!dressed() || h == "none" || !h.length() || st.holiday.flip) return;
+  const String h = sent() ? st.casino.hat : dressed() && !st.holiday.flip ? st.holiday.hat : String("none");
+  if (h == "none" || !h.length()) return;
   int cx = x + midCol[k], base = y + max(14, topRow[k]) + 3;
   uint16_t a = c565(colourA()), b = c565(colourB());
   if (h == "santa") {

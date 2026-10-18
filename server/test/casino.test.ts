@@ -112,6 +112,7 @@ describe("the CASINO's coins (C-149)", () => {
     const st = deviceState(cfg, store, new Date(), "m5-core-36f484") as any;
     expect(st.casino).toMatchObject({ money: 3000, pending: 160, balance: 3160, seen: "a1b2.2", friends: [1], table: [] });   // PIP is carried
     expect(st.casino.context.rtp).toBeGreaterThanOrEqual(0.9); expect(st.casino.context.rtp).toBeLessThanOrEqual(1);   // C-158
+    expect(st.casino.dress.look).toBeTruthy(); expect(st.casino.dress.colours).toHaveLength(2);   // C-158: one rule for every screen
     expect(casinoSeen(store, "nobody")).toBe("");
   });
 

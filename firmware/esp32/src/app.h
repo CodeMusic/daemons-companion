@@ -39,6 +39,7 @@ struct Casino { bool have = false, known = false;   // known: the companion send
                String table[4]; int tableSpecies[4] = {}; int tableN = 0;   // C-151: our other boards at the reels, by their daemons
                float luck = 0; String why;                       // C-158: the day's luck (-1..+1), and its biggest reason in words
                int reel[3] = {}; int reelN = 0;                  // C-158: the reels' other daemons by species (seen in the game)
+               String look, hat; uint32_t colour[2] = { 0, 0 };   // C-158: how it is dressed, the companion's one rule (empty: an older one)
                 long money = 0, pending = 0, balance = 0; String seen; int friends[5] = {}; int friendN = 0; };
 struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {

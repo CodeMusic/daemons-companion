@@ -6,6 +6,7 @@
 // set on the site (weather.ts fetches it; kept here as "weather.now"). The game's casino follows the game's world (T-422).
 // Nothing here may import Node: a phone hosting alone runs it too.
 import speciesJson from "../data/species.json" with { type: "json" };
+import casinoArt from "../data/casino_art.json" with { type: "json" };
 import type { Store } from "./store.js";
 import type { Edition, Season } from "./seasons.js";
 import type { Holiday } from "./holidays.js";
@@ -82,4 +83,22 @@ export function reelSpecies(seen: number[], carried: number | null, party: numbe
     return s + (((sp * 2654435761 + hour * 40503) >>> 0) % 1000) / 1000;   // the hour's turn among equals
   };
   return seen.filter((sp) => sp !== carried && SPECIES[String(sp)]).sort((a, b) => score(b) - score(a)).slice(0, n);
+}
+
+// What THE CASINO is dressed for, decided once for every screen (the phone session, 2026-10-18: the boards' casino.cpp
+// lookNow, colourA, colourB and hat() had been copied to the phone and the Tab5): the holiday's look, else the weather's
+// when it is weather to notice (a clear night, its stars), else the season's own; the holiday's two colours, else the
+// season's (casino_art.json's, which casino_art.py ports from casino.cpp); the holiday's hat, never on a quiet day or one
+// turned upside down. Colours as "#rrggbb", as the holidays have them; "none" for no hat.
+export interface Dress { look: string; colours: [string, string]; hat: string }
+const SEASON_COLOURS = casinoArt.season as Record<Season, [string, string]>;
+export function casinoDress(season: Season, holiday: Holiday | null, weather: Weather | null, watch: Watch): Dress {
+  const dressed = !!holiday?.name && !holiday.quiet, sky = weather?.kind;
+  const look = dressed && holiday!.look !== "none" ? holiday!.look
+    : sky === "rain" || sky === "storm" || sky === "fog" || sky === "snow" ? sky
+    : sky === "clear" && watch === "NIGHT" ? "stars"
+    : season === "winter" ? "snow" : season === "spring" ? "petals" : season === "summer" ? "sun" : "leaves";
+  const [a, b] = SEASON_COLOURS[season] ?? SEASON_COLOURS.autumn;
+  return { look, colours: [(dressed && holiday!.colours[0]) || a, (dressed && holiday!.colours[1]) || b],
+           hat: dressed && !holiday!.flip && holiday!.hat ? holiday!.hat : "none" };
 }

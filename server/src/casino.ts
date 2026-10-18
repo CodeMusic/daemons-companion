@@ -57,17 +57,18 @@ export const clampMoney = (n: number) => Math.max(0, Math.min(MONEY_MAX, Math.ro
 // last two minutes, and not gone since, is at the table. Each by the daemon it carries (read, never assigned here).
 // Strangers and boards nearby are the boards' own business (LoRa, Bluetooth): the companion knows only its own.
 export const TABLE_FOR_MS = 120000;
-export function tableFor(store: Store, device: string, away: { personality: number; nickname: string; name: string }[], now = new Date()) {
+// each with its daemon's species, so a board that also hears it by Bluetooth (a species, no name) counts it once
+export function tableFor(store: Store, device: string, away: { personality: number; nickname: string; name: string; species: number }[], now = new Date()) {
   const last = new Map<string, { here: boolean; at: string }>();
   for (const r of store.kindSince("table", new Date(now.getTime() - TABLE_FOR_MS))) {
     const m = /^(here|gone) ([A-Za-z0-9-]{1,48})$/.exec(r.detail ?? "");
     if (m) last.set(m[2], { here: m[1] === "here", at: r.at });
   }
-  const map = carrying(store), out: { name: string; device: string }[] = [];
+  const map = carrying(store), out: { name: string; device: string; species: number }[] = [];
   for (const [d, s] of last) {
     if (d === device || !s.here) continue;
     const who = away.find((a) => a.personality === map[d]);
-    out.push({ name: (who?.nickname || who?.name || "A DAEMON").toUpperCase(), device: d });   // DRAFT
+    out.push({ name: (who?.nickname || who?.name || "A DAEMON").toUpperCase(), device: d, species: who?.species ?? 0 });   // DRAFT
   }
   return out;
 }
@@ -75,7 +76,7 @@ export function tableFor(store: Store, device: string, away: { personality: numb
 // The coins a board plays with: the save's money and what waits, and which of this board's reports are in it.
 // `friends`: the party's slots besides the daemon carried here, whose pictures are the other reels' daemons.
 // C-151: `table`, the user's other boards at the reels now
-export function coinsFor(store: Store, money: number, device: string, friends: number[], table: { name: string; device: string }[] = []) {
+export function coinsFor(store: Store, money: number, device: string, friends: number[], table: { name: string; device: string; species: number }[] = []) {
   const p = casinoPending(store);
   return { money, pending: p.delta, balance: clampMoney(money + p.delta), seen: casinoSeen(store, device), friends, table };
 }

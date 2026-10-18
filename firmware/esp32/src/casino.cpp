@@ -169,7 +169,7 @@ static void bitReset(Bit &b, int x0, int x1, int y0, int y1, bool anywhere, cons
 // goes unheard for 75 seconds. A big win (12x, the jackpot) goes to every daemon as a broadcast act (JACKPOT, BIGWIN);
 // a daemon at the reels cheers it -- its lights, a phrase -- and its answer is the cheer the winner sees. Names and big
 // wins only, never an amount; no money moves between games. On the T-Deck a word typed at the reels goes to the table.
-struct Seat { uint32_t tag; String name; uint8_t via; uint32_t at; };
+struct Seat { uint32_t tag; String name; uint8_t via; uint32_t at; int species; };
 static Seat seats[8]; static int seatN = 0;
 static bool sitting = false;
 static String ticker, callout, cheers, typing;  // a word or a cheer for a while; another's big win; our cheerers; a word being typed
@@ -181,8 +181,8 @@ void casinoHeard(uint32_t tag, int species, const String &name, bool here, uint8
   int i = 0;
   for (; i < seatN; i++) if (seats[i].tag == tag) break;
   if (!here) { if (i < seatN) seats[i] = seats[--seatN]; return; }
-  if (i == seatN) { if (seatN == 8) return; seatN++; seats[i] = Seat{ tag, "", 0, 0 }; }
-  seats[i].via |= via; seats[i].at = millis();
+  if (i == seatN) { if (seatN == 8) return; seatN++; seats[i] = Seat{ tag, "", 0, 0, 0 }; }
+  seats[i].via |= via; seats[i].at = millis(); if (species) seats[i].species = species;
   if (name.length()) seats[i].name = upper(name);
 }
 void casinoCast(const String &name, const String &body, int what) {
@@ -212,7 +212,14 @@ static String tableText() {
     if (names.indexOf(nm) >= 0) return;            // ours, heard by radio and through the companion too
     if (n < 3) { names += (n ? ", " : "") + nm; n++; } else more++;
   };
-  for (int i = 0; i < seatN; i++) add(seats[i].name);
+  // one heard only by Bluetooth (a species, no name) is not counted again when a named one has its species -- our own
+  // board, named by the companion, is the same board its beacon says is near
+  auto named = [&](int species) {
+    for (int k = 0; k < seatN; k++) if (seats[k].name.length() && seats[k].species == species) return true;
+    for (int k = 0; k < st.casino.tableN; k++) if (st.casino.tableSpecies[k] == species) return true;
+    return false;
+  };
+  for (int i = 0; i < seatN; i++) if (seats[i].name.length() || !named(seats[i].species)) add(seats[i].name);
   for (int i = 0; i < st.casino.tableN; i++) add(st.casino.table[i]);
   if (!n && !more) return "";
   return "AT THE TABLE: " + (n ? names + (more ? " +" + String(more) : String("")) : String(more) + " NEARBY");   // DRAFT
@@ -529,8 +536,9 @@ bool casinoTakeArt(const char *json) {
 // Each result is said down the cable too -- CASINO <result 0..6> <bet> <won> <money> -- so a check knows when to SHOT.
 // the cable, read here while the reels turn (the loop is not running): SHOT, the keys, and the bridge's own lines --
 // a STATE taken as ever (it keeps the bridge fresh), a party daemon's picture. Anything else waits for the loop.
-static String cableIn;
+static String cableIn, cableKeys;              // C-151: KEY TYPE's letters, ENTER and BKSP, read as the keyboard's
 static int cableEvent = 0;                       // 1 press, 2 bet up, 3 bet down, -1 leave, 10 + k a key A|B|C
+static int rigNext = -1;                         // C-151: KEY RIG <0..6> -- the next pull's result, for a check (never paid)
 static void readCable() {
   while (Serial.available()) {
     char c = Serial.read();
@@ -542,6 +550,13 @@ static void readCable() {
     else if (cableIn == "KEY LEFT") cableEvent = 3;
     else if (cableIn == "KEY BACK") cableEvent = -1;
     else if (cableIn == "KEY A" || cableIn == "KEY B" || cableIn == "KEY C") cableEvent = 10 + (cableIn[4] - 'A');
+    // C-151: for a check from the computer -- the T-Deck's keys (KEY TYPE <letters>, KEY ENTER, KEY BKSP, KEY SPACE), and
+    // the next pull's result (KEY RIG <0..6>): shown and called to the table as any, but never paid
+    else if (cableIn.startsWith("KEY TYPE ")) cableKeys += cableIn.substring(9);
+    else if (cableIn == "KEY ENTER") cableKeys += '\r';
+    else if (cableIn == "KEY BKSP") cableKeys += '\b';
+    else if (cableIn == "KEY SPACE") cableKeys += ' ';
+    else if (cableIn.startsWith("KEY RIG ")) rigNext = constrain((int)cableIn.substring(8).toInt(), 0, O_N - 1);
     // read where they lie, never copied (the M5GO, without PSRAM, had no room for a second 4 KB). A STATE proves the
     // bridge is there, so the board's reports keep going by the cable; it is read only where there is room to spare --
     // the reels keep their own count of the money meanwhile
@@ -627,14 +642,15 @@ String runSlots() {
   for (int k = 0; k < 3; k++) keyWas[k] = keyPin[k] >= 0 && !digitalRead(keyPin[k]);
   bool sideWas = board.hasSideKey() && !digitalRead(board.sideKey), frontWas = board.encKey >= 0 && !digitalRead(board.encKey);
   uint32_t sideAt = millis(), frontAt = millis(), last = millis(), helloAt = 0, idleSince = millis(), flashAt = 0;
-  bool leave = false;
+  bool leave = false, rigged = false;
   int lastTick[3] = { 0, 0, 0 };
 
   auto pull = [&]() {
     if (spinning()) return;
     fitBet();
     if (balance() < bet || bet <= 0) { note = "NO MONEY LEFT"; return; }               // DRAFT
-    outcome = draw1000(); piecesFor(outcome, want);
+    rigged = rigNext >= 0;                      // C-151: a check from the computer -- this result, paid nothing
+    outcome = rigged ? rigNext : draw1000(); rigNext = -1; piecesFor(outcome, want);
     unreported -= bet; sessionDelta -= bet; spins++; unreportedSpins++;
     shownBalance = balance();
     for (int k = 0; k < 3; k++) { reels[k].state = SPINNING; reels[k].speed = 0; }
@@ -700,6 +716,7 @@ String runSlots() {
       // stop each reel, + and - the bet (the arrows too), Backspace leaves -- and a letter begins a word to the table,
       // Enter says it, Backspace takes a letter back (and on an empty word, plays on)
       int ch = deckTakeKey();
+      if (!ch && cableKeys.length()) { ch = cableKeys[0]; cableKeys.remove(0, 1); }   // KEY TYPE from the computer
       if (ch) {
         idleSince = now;
         if (typing.length()) {
@@ -741,7 +758,7 @@ String runSlots() {
     if (phase == ROLLING && !spinning()) {
       phase = SHOWING; shownAt = now;
       won = bet * PAYS[outcome];
-      unreported += won; sessionDelta += won;
+      if (!rigged) { unreported += won; sessionDelta += won; }   // a rigged pull is never paid
       Serial.printf("CASINO %d %ld %ld %ld\n", outcome, bet, won, balance());   // for a check from the computer: its result, bet, win, money
       draw();                                    // seen before it is heard: without PSRAM the phrase plays here
       if (outcome == O_LOSE) { note = "NO WIN"; soundSlots(1, lookNow()); }                    // DRAFT
@@ -783,7 +800,15 @@ String runSlots() {
     for (int i = 0; i < seatN; ) if (now - seats[i].at > 75000) seats[i] = seats[--seatN]; else i++;
     // over Wi-Fi the state is asked for now and then, for our other boards at the table (the cable brings it itself);
     // not without PSRAM, where a state does not always fit beside the reels
-    if (psramFound() && !bridgeLive() && online() && now - polledAt > 30000) { polledAt = now; httpState("GET", "/api/device/state", ""); }
+    // (every 12 seconds while someone else sits here, so their words and big wins arrive; every 30 alone)
+    uint32_t every = seatN || st.casino.tableN ? 12000 : 30000;
+    if (psramFound() && !bridgeLive() && online() && now - polledAt > every) { polledAt = now; httpState("GET", "/api/device/state", ""); }
+    // a broadcast sent or heard goes on to the companion now, as the loop's own meetReport would: the table's words and
+    // big wins reach our other boards through it, whatever the radios manage (the cable's bridge, or Wi-Fi with room)
+    if (bridgeLive() || (online() && psramFound())) {
+      String cast;
+      while (castTakeReport(cast)) { if (bridgeLive()) bridge("CAST " + cast); else if (http("POST", "/api/device/broadcast", cast).isEmpty()) break; }
+    }
     if (phase == SHOWING && now - shownAt > 2600) phase = IDLE;
     // the bridge hears the board is here (the loop's own HELLO is not running)
     if (now - helloAt > HELLO_MS) { helloAt = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); }
@@ -794,7 +819,7 @@ String runSlots() {
     if (!spinning() && cfg.sleepAfter > 0 && now - idleSince > (uint32_t)cfg.sleepAfter * 1000) break;
     delay(4);
   }
-  if (phase == ROLLING) { won = bet * PAYS[outcome]; unreported += won; sessionDelta += won; }   // left mid-pull: it still pays
+  if (phase == ROLLING && !rigged) { won = bet * PAYS[outcome]; unreported += won; sessionDelta += won; }   // left mid-pull: it still pays
   reportNow();
   // C-151: up from the table -- said the same ways
   loraTable(false); meetSetTable(false); report("table", "gone " + deviceId());

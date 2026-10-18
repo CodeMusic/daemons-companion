@@ -128,6 +128,6 @@ describe("the CASINO's table (C-151)", () => {
     store.logInteraction("table", "gone t-embed-cccccc", new Date(now - 10000));    // got up
     store.logInteraction("table", "here m5-fire-a708a4", new Date(now - 5000));     // the board asking: never itself
     const st = deviceState(cfg, store, new Date(now), "m5-fire-a708a4") as any;
-    expect(st.casino.table).toEqual([{ name: "PIP", device: "t-deck-aaaaaa" }]);
+    expect(st.casino.table).toEqual([{ name: "PIP", device: "t-deck-aaaaaa", species: 1 }]);
   });
 });

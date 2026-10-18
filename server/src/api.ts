@@ -28,7 +28,7 @@
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform } from "node:os";
@@ -40,6 +40,7 @@ import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
 import { deviceArt, headOf, repaint, streakColours } from "./art.js";
+import { prunable } from "./backups.js";
 import { createConnection } from "node:net";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
@@ -79,6 +80,8 @@ function fileSave(path: string | null | undefined): SaveFile {
       const tmp = `${path}.companion-writing`;
       writeFileSync(tmp, bytes);
       renameSync(tmp, path);
+      // C-157: the backups pruned -- the newest sixty, and every one from the last fortnight, are kept (backups.ts)
+      try { for (const n of prunable(readdirSync(dir), basename(path), now)) unlinkSync(join(dir, n)); } catch { /* kept, then */ }
       return backup;
     },
   };

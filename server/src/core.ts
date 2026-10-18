@@ -83,10 +83,13 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const casino = casinoPending(store);
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
-  // only once the save holds them: what was met, and what was grown, are written
-  if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
-  if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
-  if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
+  // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
+  // records one as applied and not another (the save itself is a file: it is written, whole, just before)
+  store.together(() => {
+    if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
+    if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
+    if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
+  });
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),

@@ -101,6 +101,13 @@ export class Store {
     return row ? row.value : null;
   }
 
+  // C-157 (the review): several writes as one -- all of them, or (if one throws) none
+  together<T>(fn: () => T): T {
+    this.db.exec("BEGIN");
+    try { const r = fn(); this.db.exec("COMMIT"); return r; }
+    catch (e) { this.db.exec("ROLLBACK"); throw e; }
+  }
+
   setSetting(key: string, value: string | null) {
     if (value === null) this.db.prepare("DELETE FROM settings WHERE key = ?").run(key);
     else this.db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").run(key, value);

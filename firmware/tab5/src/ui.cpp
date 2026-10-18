@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "display.h"
 #include "den.h"
+#include "slots.h"
 #include <Preferences.h>
 
 // ---- the look: paper, ink, and the day's colour (the app's, from /api/today) ------------------------------------------
@@ -155,8 +156,11 @@ static void resetArt() {                          // the pictures were downloade
 // ---- overlays: an entry, a keyboard ------------------------------------------------------------------------------------
 static lv_obj_t *listenLabel = nullptr, *voiceSaid = nullptr;   // C-99: an entry's LISTEN, while its overlay is open
 static String voiceSaidWas;                        // what the network said when it opened: only what it says after shows
+static void showWords(const String &head, const String &body, const String &foot);
+static void (*overlayClosing)() = nullptr;          // C-155: an overlay that says goodbye as it closes (the CASINO's seat)
 static void closeOverlay(lv_event_t * = nullptr) {
   if (!overlay) return;
+  if (overlayClosing) { void (*f)() = overlayClosing; overlayClosing = nullptr; f(); }
   lv_obj_delete(overlay); overlay = nullptr;
   if (listenLabel) { listenLabel = voiceSaid = nullptr; netHush(); }   // closing an entry stops its voice
 }
@@ -330,6 +334,123 @@ static void tapAnswer(lv_event_t *e) {
   String body; serializeJson(d, body);
   netSend("POST", "/api/broadcast", body);
 }
+// C-155 (the user, 2026-10-18: "make sure it has the routines -- like casino"): THE CASINO on the Tab5, a player of its own
+// (its device id, so its JACK is its own daemon), by slots.h -- the boards' table. Three reels of the JACK, the party's
+// others, the coin and the season; seven bets; a seat at the table while it is open; what it wins or loses sent to the
+// companion every ten pulls and on leaving (INTERACT casino), a big win called to the table. Every word DRAFT.
+static lv_obj_t *reelBox[3], *casinoCoins, *casinoSaid, *casinoBetRow;
+static uint8_t reelAt[3] = { slots::COIN, slots::JACK, slots::SEASON }, reelWant[3];
+static int casinoBet = 10, casinoTick = -1, casinoOutcome = 0, casinoJack = -1, casinoFriend[3] = { -1, -1, -1 }, unsentSpins = 0, casinoSeqN = 0;
+static long unsentDelta = 0, reportedDelta = 0, stateBalance = 0;
+static String casinoSeason, casinoBootHex, lastReport;
+static lv_timer_t *casinoTimer = nullptr;
+static uint32_t seatAt = 0;
+static bool casinoOpen = false;
+static long casinoBalance() { long b = stateBalance + unsentDelta + reportedDelta; return b < 0 ? 0 : b > 999999 ? 999999 : b; }
+static void casinoSeat(const char *how) { netSend("POST", "/api/device/interact", String("{\"kind\":\"table\",\"detail\":\"") + how + " " + deviceId() + "\"}"); seatAt = millis(); }
+static void casinoReport() {
+  if (!unsentSpins) return;
+  if (!casinoBootHex.length()) { char h[5]; snprintf(h, sizeof h, "%04x", (unsigned)(esp_random() & 0xFFFF)); casinoBootHex = h; }
+  lastReport = casinoBootHex + "." + String(++casinoSeqN);
+  netSend("POST", "/api/device/interact", "{\"kind\":\"casino\",\"detail\":\"" + String(unsentDelta) + " " + lastReport + " " + deviceId() + " " + String(unsentSpins) + "\"}");
+  reportedDelta += unsentDelta; unsentDelta = 0; unsentSpins = 0;
+}
+static void casinoTakeState() {                     // the coins as the companion knows them, and this Tab5's reports it has counted
+  JsonDocument st = newDoc();
+  if (!kept("state", st) || st["casino"].isNull()) return;
+  stateBalance = st["casino"]["balance"] | 0L;
+  if (lastReport.length() && String((const char *)(st["casino"]["seen"] | "")) == lastReport) reportedDelta = 0;
+  casinoSeason = String((const char *)(st["season"] | ""));
+  casinoJack = st["daemon"].isNull() ? -1 : (int)(st["daemon"]["slot"] | -1);
+  JsonArray fr = st["casino"]["friends"].as<JsonArray>();
+  int k = 0, at = 0;
+  if (casinoJack < 0 && fr.size()) { casinoJack = fr[0] | -1; at = 1; }   // no daemon of its own: the party's first is the JACK
+  for (int i = 0; i < 3; i++) casinoFriend[i] = -1;
+  for (int i = at; i < (int)fr.size() && k < 3; i++) casinoFriend[k++] = fr[i] | -1;
+}
+static void casinoDrawPiece(int i) {
+  lv_obj_clean(reelBox[i]);
+  int p = reelAt[i], slot = p == slots::JACK ? casinoJack : p <= slots::F3 ? casinoFriend[p - 1] : -1;
+  lv_obj_t *o;
+  if (slot >= 0) o = picture(reelBox[i], "p" + String(slot), 512);
+  else if (p == slots::COIN) {
+    o = lv_obj_create(reelBox[i]); lv_obj_set_size(o, 100, 100); lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(o, lv_color_hex(0xE8B830), 0); lv_obj_set_style_border_color(o, lv_color_hex(0xA07A10), 0);
+    lv_obj_set_style_border_width(o, 6, 0);
+  } else {
+    String t = p == slots::SEASON ? casinoSeason : String("?"); t.toUpperCase();
+    lv_color_t c = casinoSeason == "winter" ? lv_color_hex(0x6C9CC6) : casinoSeason == "spring" ? lv_color_hex(0x4C9C4C)
+                 : casinoSeason == "summer" ? lv_color_hex(0xC8A527) : lv_color_hex(0xC9721B);
+    o = label(reelBox[i], t, &lv_font_montserrat_28, c);
+  }
+  lv_obj_center(o);
+}
+static void casinoShowCoins() { if (casinoCoins) lv_label_set_text(casinoCoins, String(casinoBalance()).c_str()); }
+static void casinoStep(lv_timer_t *t) {
+  if (!casinoOpen) { lv_timer_delete(t); casinoTimer = nullptr; return; }
+  casinoTick++;
+  for (int i = 0; i < 3; i++) { reelAt[i] = casinoTick >= 9 + i * 4 ? reelWant[i] : (reelAt[i] + 1 + i) % 6; casinoDrawPiece(i); }
+  if (casinoTick < 17) return;
+  lv_timer_delete(t); casinoTimer = nullptr; casinoTick = -1;
+  long paid = (long)casinoBet * slots::PAYS[casinoOutcome], won = paid - casinoBet;
+  unsentDelta += won; unsentSpins++;
+  lv_label_set_text(casinoSaid, casinoOutcome == 0 ? ("-" + String(casinoBet)).c_str()
+                    : ((casinoOutcome == 6 ? String("JACKPOT!  +") : String("+")) + String(paid)).c_str());
+  if (const char *act = slots::tableAct(casinoOutcome)) netSend("POST", "/api/broadcast", String("{\"kind\":\"act\",\"act\":\"") + act + "\"}");
+  if (unsentSpins >= 10) casinoReport();
+  casinoShowCoins();
+}
+static void casinoPull(lv_event_t *) {
+  if (casinoTimer || casinoBet > casinoBalance()) return;
+  casinoOutcome = slots::draw(); slots::piecesFor(casinoOutcome, reelWant);
+  lv_label_set_text(casinoSaid, ""); casinoTick = 0;
+  soundSelect();
+  casinoTimer = lv_timer_create(casinoStep, 80, nullptr);
+}
+static void casinoDrawBets();
+static void casinoTapBet(lv_event_t *e) { int b = (int)(long)lv_event_get_user_data(e); if (b <= casinoBalance()) { casinoBet = b; casinoDrawBets(); } }
+static void casinoDrawBets() {
+  lv_obj_clean(casinoBetRow);
+  for (int i = 0; i < slots::BET_N; i++) {
+    lv_obj_t *b = button(casinoBetRow, String(slots::BETS[i]), casinoTapBet, (void *)(long)slots::BETS[i], slots::BETS[i] == casinoBet);
+    if (slots::BETS[i] > casinoBalance()) lv_obj_set_style_opa(b, LV_OPA_40, 0);
+  }
+}
+static void casinoLeave() { casinoReport(); casinoSeat("gone"); casinoOpen = false; casinoCoins = nullptr; }
+static void tapCasino(lv_event_t *) {
+  JsonDocument st = newDoc();
+  if (!kept("state", st) || st["casino"].isNull()) { showWords("THE CASINO", "The CASINO plays with your save's money: the companion has to read your save first.", ""); return; }
+  casinoTakeState();
+  lv_obj_t *o = openOverlay();
+  casinoOpen = true; overlayClosing = casinoLeave; casinoSeat("here");
+  button(o, "LEAVE", closeOverlay, nullptr, false);
+  label(o, "THE CASINO", &lv_font_montserrat_28, DAY);
+  lv_obj_t *cr = row(o);
+  label(cr, "COINS", &lv_font_montserrat_20, QUIET);
+  casinoCoins = label(cr, "", &lv_font_montserrat_40, INK);
+  lv_obj_t *reels = row(o);
+  for (int i = 0; i < 3; i++) {
+    reelBox[i] = lv_obj_create(reels); lv_obj_set_size(reelBox[i], 190, 190);
+    lv_obj_set_style_border_color(reelBox[i], DAY, 0); lv_obj_set_style_border_width(reelBox[i], 4, 0);
+    lv_obj_remove_flag(reelBox[i], LV_OBJ_FLAG_SCROLLABLE);
+    casinoDrawPiece(i);
+  }
+  casinoSaid = label(o, "", &lv_font_montserrat_40, DAY);
+  casinoBetRow = row(o); casinoDrawBets();
+  button(o, "PULL", casinoPull);
+  JsonDocument d = newDoc(); kept("state", d);
+  String jackName = d["daemon"].isNull() ? String("your daemon") : String((const char *)(d["daemon"]["nickname"] | "your daemon"));
+  label(o, "Three of " + jackName + " pays fifty times. What you win or lose reaches your save at the next SYNC.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  String at; for (JsonObject t : d["casino"]["table"].as<JsonArray>()) at += (at.length() ? ", " : "") + String((const char *)(t["name"] | ""));
+  if (at.length()) label(o, "At the table: " + at + ".", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  casinoShowCoins();
+}
+// once a minute while the CASINO is open: still at the table, what is owed sent, the coins as the companion knows them
+static void casinoTick60() {
+  if (!casinoOpen || millis() - seatAt < 60000) return;
+  casinoSeat("here"); casinoReport(); casinoTakeState(); casinoShowCoins();
+}
+
 static void drawNearby(lv_obj_t *parent) {
   JsonDocument b = newDoc(), acts = newDoc();
   bool haveActs = kept("acts", acts);
@@ -395,6 +516,9 @@ static void drawDaemon(lv_obj_t *p) {
   button(right, "SYNC WITH THE GAME", tapSyncGame);
   label(right, "Close the game first: SYNC writes the save.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
   if (net.message.length()) label(right, net.message, &lv_font_montserrat_20, DAY, LV_PCT(100));
+  lv_obj_t *rc = card(right);                       // C-155: ROUTINES -- THE CASINO
+  label(rc, "ROUTINES", &lv_font_montserrat_20, QUIET);
+  button(rc, "THE CASINO", tapCasino);
   drawNearby(right);
 }
 
@@ -1416,6 +1540,7 @@ static void buildFrame() {
 
 static String todayLine;
 void uiLoop() {
+  casinoTick60();                                   // C-155
   static uint32_t imuAt = 0, heldSince = 0; static int heldWay = -1;   // C-96: AUTO, once a new way up has held 0.8 s
   if (orient == O_AUTO && !overlay && millis() - imuAt > 150) {
     imuAt = millis();

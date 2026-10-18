@@ -65,12 +65,16 @@ def main():
         dev.write((s + "\n").encode())
         time.sleep(2.0)
     rows, w, h = {}, 0, 0
-    for _ in range(3):
+    for _ in range(6):
         w, h = take(dev, rows)
         if w and len(rows) == h:
             break
-    if not w or len(rows) < h:
+    if not w or len(rows) < h * 0.95:
         sys.exit("shot: %d of %d rows arrived" % (len(rows), h))
+    if len(rows) < h:                                   # a few lost to a moving page: each from the row above, and said
+        print("shot: %d rows filled from the one above" % (h - len(rows)), file=sys.stderr)
+        for y in range(h):
+            rows.setdefault(y, rows.get(y - 1, bytes(w * 2)))
     img = Image.new("RGB", (w, h))
     px = []
     for y in range(h):

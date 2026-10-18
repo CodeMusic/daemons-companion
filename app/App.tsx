@@ -674,6 +674,7 @@ function TalkCard({ ink, name }: { ink: string; name: string }) {
 }
 
 function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
+  const [seg, setSeg] = useState<"yours" | "party" | "index" | "routines">("yours");   // C-156
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<{ species: number; name: string; category: string; entry: string } | null>(null);
@@ -751,6 +752,10 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
   const away = party?.find((d) => d.away) ?? hosted ?? undefined;
   return (
     <YStack gap={14}>
+      <Segments value={seg} onChange={setSeg} options={[["yours", "Yours"], ["party", "Party"], ["index", "INDEX"], ["routines", "Routines"]]} />
+      {seg === "index" ? <IndexScreen ink={ink} /> : null}
+      {seg === "routines" ? <RoutinesCard ink={ink} /> : null}
+      {seg === "yours" ? (<>
       {away ? <LifeCard ink={ink} name={away.nickname} daemon={away} /> : null}
       {away && ON_PHONE && !ALONE ? <TalkCard ink={ink} name={away.nickname} /> : null}
       {needPath ? (
@@ -769,6 +774,10 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
       </Card>
       {note ? <Small>{note}</Small> : null}
       {error && !needPath ? <Small color="$color8">{error}</Small> : null}
+      <NearbyCard ink={ink} />
+      <MeetingsCard />
+      </>) : null}
+      {seg === "party" ? (<>
       <XStack flexWrap="wrap" gap={12}>
         {(party ?? []).map((d) => (
           <YStack key={d.slot} width={150} alignItems="center" backgroundColor="$color1" borderWidth={1}
@@ -791,10 +800,23 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
           {ON_PHONE ? <Action label={reading ? "Reading…" : "Read aloud"} onPress={() => readAloud(open.species)} ink={ink} /> : null}
         </Card>
       ) : null}
-      <RoutinesCard ink={ink} />
-      <NearbyCard ink={ink} />
-      <MeetingsCard />
+      </>) : null}
     </YStack>
+  );
+}
+
+// C-156: a row of segments inside a tab -- DAEMON's Yours, Party, INDEX and Routines
+function Segments<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: [T, string][] }) {
+  return (
+    <XStack backgroundColor="$color3" borderRadius={9} padding={3}>
+      {options.map(([v, label]) => (
+        <YStack key={v} flex={1} paddingVertical={7} borderRadius={7} alignItems="center" cursor="pointer" role="tab"
+                aria-selected={v === value} backgroundColor={v === value ? "$color1" : "transparent"} onPress={() => onChange(v)}>
+          <Text fontFamily="$mono" fontSize={12} letterSpacing={1} fontWeight={v === value ? "700" : "400"}
+                color={v === value ? "$color12" : "$color10"}>{label}</Text>
+        </YStack>
+      ))}
+    </XStack>
   );
 }
 

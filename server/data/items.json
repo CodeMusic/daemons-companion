@@ -776,6 +776,10 @@
   "name": "FLUTE",
   "description": "Breathe and it sings for as long as a note is held. Pick a key, then play."
  },
+ "231": {
+  "name": "SUBTLE LAYER",
+  "description": "THE SUBTLE LAYER. A trainer's handbook of the craft: read, write and link."
+ },
  "254": {
   "name": "RED SCARF",
   "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS."

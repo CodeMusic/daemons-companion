@@ -35,10 +35,11 @@ the Fire and the StickC-Plus are the original ESP32, the Tab5 an ESP32-P4, the B
 the Fire's extra memory, the M5GO draws in 256 colours, and it has too little memory to reach the relay away from home
 over HTTPS. The StickC-Plus has no extra memory either: GLOW is written to fit beside the daemon it hosts.
 
-**The Tab5** is the **control center**: the app's screens on a 5-inch touch screen, nine tabs, the bar shrinking to fit
-them -- TODAY, GOALS, DAEMON (its daemon in its den and its expression, DRINK FEED TRAIN SLEEP or WAKE, NEARBY, the
-party, SYNC), INDEX (each entry, NATIVE, and LISTEN), DEVICES (by maker, a picture of each, which daemon goes where),
-HOME (Home Assistant), PROFILE, LIBRARY, SETTINGS (portrait, landscape or turning with it; AUTO, LIGHT or DARK, where
+**The Tab5** is the **control center**: the app's screens on a 5-inch touch screen, seven tabs -- TODAY (the day, the one
+thing, the daemon, NEARBY, the game, the LIBRARY's news), DAEMON (YOURS: its daemon in its den and its expression, DRINK
+FEED TRAIN SLEEP or WAKE, NEARBY, the party, SYNC; the INDEX: each entry, NATIVE, and LISTEN; ROUTINES: THE CASINO),
+GOALS, LIBRARY (CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK with PLAY, STREAM), YOU, PLACES (DEVICES by maker, a picture
+of each, which daemon goes where, and HOME, Home Assistant), SETTINGS (portrait, landscape or turning with it; AUTO, LIGHT or DARK, where
 AUTO is dark from 8pm to 6am). It has its own Wi-Fi, is paired like a phone with the site's PAIR A PHONE code, and keeps
 everything on it, the whole INDEX and its art included. **Paired by the computer's name** (`<your-computer>.local`), it
 asks the network for that name (mDNS) and keeps the answer ten minutes, or until a request fails, so it finds the

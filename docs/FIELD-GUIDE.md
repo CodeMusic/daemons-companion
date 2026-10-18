@@ -15,8 +15,8 @@ cd daemons-companion
 ./bindCompanion.sh
 ```
 
-- **See:** the site opens at <http://localhost:8081>, the tabs across the top: **TODAY · GOALS · DAEMON · INDEX ·
-  DEVICE · PROFILE · SETTINGS**. The whole page wears the day's colour (Sunday is a deep red).
+- **See:** the site opens at <http://localhost:8081>, the tabs across the top: **TODAY · DAEMON · GOALS · LIBRARY ·
+  YOU · PLACES**, and SETTINGS behind the gear (C-156). The whole page wears the day's colour (Sunday is a deep red).
 
 ## 2. Set your save (this is the part that confused you)
 

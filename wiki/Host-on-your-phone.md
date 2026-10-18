@@ -26,8 +26,8 @@ From the repository's root:
 ```
 
 The first run installs what it needs, starts the server in the background and opens the companion's **site** at
-<http://localhost:8081>. The tabs are TODAY, GOALS, DAEMON, INDEX, DEVICE, HOME, PROFILE, LIBRARY and SETTINGS; on a
-narrow screen the strip scrolls, and a › at its right edge says there are more. More in
+<http://localhost:8081>. The tabs are TODAY, DAEMON, GOALS, LIBRARY, YOU and PLACES, with
+SETTINGS behind the gear at the top right; on a phone's width the six share it. More in
 [Running the companion](Running-the-companion).
 
 ## 2. Point it at your save copy

@@ -7,7 +7,7 @@ phone but with the screen it will be a control center ... ideally we also downlo
 
 **The phone app's screens on a 5-inch touch screen, and a device of its own.**
 
-- **Like the app**: TODAY, GOALS (add one with the on-screen keyboard, tick steps), DAEMON (its daemon in its den, in its expression -- C-119 -- and its care: DRINK FEED TRAIN SLEEP, or WAKE, C-118; the party, SYNC), the INDEX
+- **Like the app** (rearranged by C-156: TODAY, DAEMON with the INDEX and ROUTINES in it, GOALS, LIBRARY, YOU, PLACES, SETTINGS): TODAY, GOALS (add one with the on-screen keyboard, tick steps), DAEMON (its daemon in its den, in its expression -- C-119 -- and its care: DRINK FEED TRAIN SLEEP, or WAKE, C-118; the party, SYNC), the INDEX
   (every entry and its art, read aloud), DEVICES (every device and which daemon each carries, chosen here), HOME (Home
   Assistant's rooms, a tap a light, and the house asked in words -- C-139), PROFILE,
   SETTINGS -- in the day's colours, as the app is.

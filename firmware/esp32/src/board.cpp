@@ -23,7 +23,9 @@ void boardBegin() {
   board.kind = BoardKind::TWatchS3; board.id = "t-watch-s3"; board.name = "T-Watch S3";
   board.width = 240; board.height = 240; board.rotation = 2;
   board.lcdCs = 12; board.lcdDc = 38; board.lcdSclk = 18; board.lcdMosi = 13; board.lcdBl = 45;
-  board.lcdPanelW = 240; board.lcdPanelH = 240; board.lcdOffsetX = 0; board.lcdOffsetY = 80;
+  // 0, not 80: the panel's RAM is 240x320 and LovyanGFX takes rotation 2's 80 rows itself (320 - 240 - offset_y), as
+  // TFT_eSPI's rowstart 80 is; with 80 here the picture sat 80 rows high, the bottom third static (seen 2026-10-18)
+  board.lcdPanelW = 240; board.lcdPanelH = 240; board.lcdOffsetX = 0; board.lcdOffsetY = 0;
   board.encKey = 0;                                  // BOOT; the power button is read through the AXP2101
   board.sda = 10; board.scl = 11;
   board.i2sBclk = 48; board.i2sLrclk = 15; board.i2sDout = 46;

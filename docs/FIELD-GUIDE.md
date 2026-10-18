@@ -45,11 +45,11 @@ Go to **SETTINGS**.
 - **WALKING** (on GOALS): 10,000 steps a day unless you choose; type today's steps until the phone counts them.
   **See:** reaching it says your daemon is glad of the walk.
 
-## 4. Your party, and the PROFILE
+## 4. Your party, and YOU
 
 - **DAEMON:** your party, drawn as the game draws them (type colours, streak markers). Click one to read its INDEX
   entry in your edition's voice.
-- **PROFILE:** your trainer name and ID No., play time, INDEX counts, the eight MARKS, DIPLOMA, OPUS, and where you
+- **YOU:** your trainer name and ID No., play time, INDEX counts, the eight MARKS, DIPLOMA, OPUS, and where you
   last saved. It also says whether this is **your companion's game** (the first save you SYNC becomes it).
 
 ## 5. The AWAY round trip (the heart of it)
@@ -79,7 +79,7 @@ writes its own copy back).
    - **See:** a warning, then "Bring <name> home without the app?" — yes brings it home; the game tells you to SYNC
      before sending another. Next **SYNC** settles it.
 10. **Married to one save:** SYNC a *different* game's save.
-   - **See:** "This save belongs to a different game…"; PROFILE says whose game the companion carries for. It is shown
+   - **See:** "This save belongs to a different game…"; YOU says whose game the companion carries for. It is shown
      but never written.
 
 ## 6. A handheld (optional, if a board is set up)
@@ -122,7 +122,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
   - **FLARE -> TEACH A REMOTE:** point your remote at the board. **See:** "Point your remote at ARTSAI and press
     POWER -- ARTSAI is listening (1 of 3)"; then VOLUME UP, then VOLUME DOWN. **See:** "ARTSAI learned your remote".
     Then **POWER**, **VOLUME UP**, **VOLUME DOWN** send from it; **CHOOSE A REMOTE** picks among those it knows.
-  - **No remote?** On the site's DEVICE tab, ITS REMOTES: choose your TV's brand, **Try its POWER**, and if the TV
+  - **No remote?** On the site's PLACES tab, ITS REMOTES: choose your TV's brand, **Try its POWER**, and if the TV
     answers, **It worked: keep this remote** -- its volume buttons come with it. (Sony is kept already, as SONY.)
   - **WHISPER -> OPEN TO MY PHONE:** on your phone, open nRF Connect (free), connect to **DAEMONS companion**.
     **See:** "Your phone is here"; on the phone, the TX line shows "Hello from your daemon." Write a word to the RX
@@ -138,7 +138,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 ## 7. The phone and the handheld together (C-55, C-57)
 
 - **Pair once.** On the handheld: ROUTINES, WHISPER, **PAIR MY PHONE**. **See:** a six-digit code. On the phone, in
-  the app's DEVICE tab, THE HANDHELD, ON THIS PHONE: **Pair the handheld**. iOS asks for a code: type the board's.
+  the app's PLACES tab, THE HANDHELD, ON THIS PHONE: **Pair the handheld**. iOS asks for a code: type the board's.
   **See:** on the board, "<daemon> knows your phone"; in the app, linked. A second pairing later asks for no code.
 - **In a pocket.** Unplug the board's USB. **See:** the corner says **PHONE** instead of USB, and a step done on the
   board reaches the app. Lock the phone, or switch to another app: **it still arrives**. *Swipe the app away and iOS
@@ -163,7 +163,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 
 *A meeting needs a second companion: someone else's board, or the app on someone else's phone.*
 
-- DEVICE, ITS SETTINGS, **MEET OTHERS NEARBY**: on (it is on for the board by default). The board and the phone each send one
+- PLACES, EVERY DEVICE'S SETTINGS, **MEET OTHERS NEARBY**: on (it is on for the board by default). The board and the phone each send one
   small beacon -- the species you carry, and a tag that changes every hour, nothing about you -- and listen a few
   seconds every three minutes.
 - **With a second companion near:** **See:** on the next SYNC, its daemon in your INDEX as seen, and your daemon's
@@ -176,7 +176,7 @@ See [`../firmware/esp32/FLASHING.md`](../firmware/esp32/FLASHING.md). In short, 
 - ROUTINES, FLARE, **THEATER MODE**: the board becomes the remote. **Press** the front button: POWER. **Turn right**
   (clockwise): VOLUME UP; **left**: VOLUME DOWN. **Top button**: done. The head shows which remote it is using
   (**CHOOSE A REMOTE** picks it).
-- **Rename a remote:** the site's or the app's DEVICE tab, ITS REMOTES, **Rename** beside it. **See:** the board's
+- **Rename a remote:** the site's or the app's PLACES tab, ITS REMOTES, **Rename** beside it. **See:** the board's
   CHOOSE A REMOTE and THEATER MODE use the new name.
 
 ## 11. The DAY, and the battery (C-73, C-63)
@@ -260,7 +260,7 @@ Wi-Fi at home and the relay away.*
   home.
 - **Add it.** Long-press the home screen, **Edit**, **Add Widget**, **DAEMONS**, small or medium. **See:** for a moment
   *Looking for your companion...*, then a daemon -- or *No daemon here* when every daemon AWAY is already carried.
-- **Give it one.** In the app, DEVICE, YOUR DEVICES: **This phone's widget** is there like a board. Choose a daemon for
+- **Give it one.** In the app, PLACES, YOUR DEVICES: **This phone's widget** is there like a board. Choose a daemon for
   it (one carried by a board moves). **See:** the widget shows it, its level, its word, fed and watered, and its cue.
 - **Tend it.** **FEED**, **WATER**, **TRAIN** on the widget. **See:** its answer ("Eaten.") and the counts move, without
   opening the app. *Out of reach, a press is kept on the phone and sent the next time the app opens.*

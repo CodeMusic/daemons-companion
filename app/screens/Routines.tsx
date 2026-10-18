@@ -69,7 +69,7 @@ export function Casino({ ink }: { ink: string }) {
   const [stopped, setStopped] = useState<boolean[]>([true, true, true]);
   // C-158: the cat and the string (slots.ts) -- this player's own, learning each pull; `beside`, the piece a near miss
   // shows one place off the line on the third reel
-  const run = useRef<{ o: number; want: Piece[]; at: (number | null)[]; started: number; beside: Piece | null } | null>(null);
+  const run = useRef<{ o: number; want: Piece[]; at: (number | null)[]; started: number; beside: Piece | null; bet: number } | null>(null);
   const cat = useRef<Cat>(CAT);
   const tick = useRef<ReturnType<typeof setInterval> | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
@@ -143,7 +143,17 @@ export function Casino({ ink }: { ink: string }) {
     playerId().then((p) => { who = p; setId(p); load(p).then(() => seat("here")).catch(() => seat("here")); });
     let n = 0;
     const t = setInterval(() => { if (who) { seat("here"); if (++n % 2 === 0) { report(who); load(who).catch(() => {}); } } }, 30000);
-    return () => { clearInterval(t); if (tick.current) clearInterval(tick.current); if (who) { report(who); seat("gone"); } };
+    return () => {
+      clearInterval(t); if (tick.current) clearInterval(tick.current);
+      // a pull left mid-spin (Leave, another segment, another tab) is settled as decided -- never escaped (the review,
+      // 2026-10-18: the bet is taken only on settling, so a losing pull could be walked away from; 14a2e87 on the Tab5)
+      const r = run.current;
+      if (r) {
+        run.current = null; cat.current = learn(cat.current, r.o);
+        unsent.current = { delta: unsent.current.delta + r.bet * PAYS[r.o] - r.bet, spins: unsent.current.spins + 1 };
+      }
+      if (who) { report(who); seat("gone"); }
+    };
   }, [load, report]);
   if (!st || !id) return <Small>Taking a seat…</Small>;
   if (!st.casino) return <Small>The CASINO plays with your save's money: choose your save on SETTINGS first.</Small>;
@@ -204,7 +214,7 @@ export function Casino({ ink }: { ink: string }) {
     if (o === 0 && Math.random() < nearChance(c)) { const n = nearPieces(strips.current[2]); if (n) { want = n.pieces; beside = n.wanted; } }
     else if (OUTCOMES[o] === "JACK2") { const t = almostThird(strips.current[2]); if (t !== null) { want = [JACK as Piece, JACK as Piece, t]; beside = JACK as Piece; } }
     sound(0);
-    run.current = { o, want, at: [null, null, null], started: Date.now(), beside };
+    run.current = { o, want, at: [null, null, null], started: Date.now(), beside, bet };
     setStopped([false, false, false]); setBanner(null); setSaid("");
     if (tick.current) clearInterval(tick.current);
     tick.current = setInterval(() => {

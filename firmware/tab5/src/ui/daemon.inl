@@ -690,7 +690,7 @@ static void drawDaemon(lv_obj_t *p) {
     label(c, types, &lv_font_montserrat_20, DAY);
     label(c, d["entry"] | "", &lv_font_montserrat_20, INK, LV_PCT(100));
   } else {
-    label(left, "This Tab5 hosts no daemon. SEND one from the party in the game, SYNC, and choose it on DEVICES.",
+    label(left, "This Tab5 hosts no daemon. SEND one from the party in the game, SYNC, and choose it in PLACES.",
           &lv_font_montserrat_28, QUIET, LV_PCT(100));
   }
   JsonDocument party = newDoc();

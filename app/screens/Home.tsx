@@ -30,7 +30,7 @@ export const HOME_WORDS = {
   on: "On", off: "Off", run: "Run", running: "Running", open: "Open", close: "Close", stop: "Stop",       // DRAFT
   play: "Play", pause: "Pause", next: "Next", cooler: "−", warmer: "+",                                   // DRAFT
   setHead: "HOME ASSISTANT",                                                                              // DRAFT
-  setAbout: "For the HOME tab. The companion talks to Home Assistant for every screen, and keeps the token on this computer.",   // DRAFT
+  setAbout: "For HOME, in PLACES. The companion talks to Home Assistant for every screen, and keeps the token on this computer.",   // DRAFT
   tokenHint: "Long-lived access token",                                                                   // DRAFT
   tokenKeptHint: "A token is kept. Paste a new one to replace it.",                                      // DRAFT
   tokenFrom: "The token comes from Home Assistant: your profile, Security, Long-lived access tokens.",    // DRAFT

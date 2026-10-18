@@ -114,9 +114,10 @@ function OwnRow({ k, label, own, set, children }: { k: string | string[]; label:
     </YStack>
   );
 }
-function OwnSettingsCard({ id, ink, daemon }: { id: string; ink: string; daemon?: Carried | null }) {
+function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: string; daemon?: Carried | null; onForgot?: () => void }) {
   const [s, setS] = useState<OwnSettings | null>(null);
   const [said, setSaid] = useState("");
+  const [forgetting, setForgetting] = useState(false);   // the README pass, 2026-10-18: the redesign had lost the way to forget one
   const path = `/api/devices/${encodeURIComponent(id)}/settings`;
   useEffect(() => { api<OwnSettings>(path).then(setS).catch((e) => setSaid((e as Error).message)); }, [path]);
   if (!s) return said ? <Small color="$color8">{said}</Small> : <Small>Asking the companion…</Small>;
@@ -163,6 +164,16 @@ function OwnSettingsCard({ id, ink, daemon }: { id: string; ink: string; daemon?
           <Small color="$color10">The season's sky behind the daemon and the weather in front, on the DAEMON and CLOCK faces.</Small>
         </OwnRow>
       </>) : null}
+      {/* forgetting a device: it leaves the list (and its daemon goes back to none) until it next says hello (DRAFT) */}
+      {forgetting ? (
+        <YStack gap={2} marginTop={10}>
+          <Small>It leaves this list, and its daemon goes back to none, until it next says hello. Forget it?</Small>
+          <XStack gap={8}>
+            <Action label="Yes, forget it" ink={ink} onPress={async () => { await api("/api/devices/forget", { id }); setForgetting(false); onForgot?.(); }} />
+            <Action label="No" ink={ink} onPress={() => setForgetting(false)} />
+          </XStack>
+        </YStack>
+      ) : <Text marginTop={10} fontSize={12} color="$color9" cursor="pointer" role="button" onPress={() => setForgetting(true)}>Forget this device</Text>}
       {said ? <Small color="$color8">{said}</Small> : null}
     </YStack>
   );
@@ -275,7 +286,9 @@ export function DeviceScreen({ ink }: { ink: string }) {
                     redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
-              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} /> : null}
+              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} onForgot={() => {
+                setMine(null); setLink((l) => l && { ...l, devices: (l.devices ?? []).filter((x) => x.id !== d.id) });
+              }} /> : null}
             </YStack>
             </XStack>
           ))}

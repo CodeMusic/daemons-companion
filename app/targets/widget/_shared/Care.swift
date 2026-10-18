@@ -62,6 +62,55 @@ enum CareSound {
   // The day's note, as tunes.h's dayRoot: Sunday C ... Saturday B
   static var dayRoot: Int { [72, 74, 76, 77, 79, 81, 83][(Calendar.current.component(.weekday, from: Date()) + 6) % 7] }
 
+  // T-425: the phrase on the save's own instrument -- DAEMONS' harp for CONTENT, flute for CONTEXT (Instruments.swift,
+  // written from server/data/sounds/ by firmware/common/instruments.py) -- rendered as the app and the Tab5 render it
+  // (app/instrument.ts): each note the sample played faster or slower to its pitch, looped while held or played out, under
+  // its attack, decay, sustain and release, the release ringing under the next. The square wave only if there is none.
+  static var loaded: [String: [Int16]] = [:]
+  static func samples(_ i: InstrumentSpec) -> [Int16]? {
+    if let s = loaded[i.name] { return s }
+    guard let d = Data(base64Encoded: i.samples64) else { return nil }
+    let s = d.withUnsafeBytes { Array($0.bindMemory(to: Int16.self)).map { Int16(littleEndian: $0) } }
+    loaded[i.name] = s
+    return s
+  }
+  static func sampled(_ tune: [(Int, Int)], root: Int, edition: String?) -> Data? {
+    guard let ins = Instruments.all.first(where: { $0.edition == edition }) ?? Instruments.all.first, let pcm = samples(ins), pcm.count > 1
+    else { return nil }
+    let rate = 22050, rel = rate * ins.releaseMs / 1000
+    let att = max(1, rate * ins.attackMs / 1000), dec = max(1, rate * ins.decayMs / 1000)
+    let loops = ins.loopStart >= 0 && ins.loopEnd > ins.loopStart + 1 && ins.loopEnd <= pcm.count
+    var at: [Int] = [], t = 0
+    for (_, ms) in tune { at.append(t); t += rate * ms / 1000 }
+    var mix = [Double](repeating: 0, count: t + rel)
+    for (k, (semis, ms)) in tune.enumerated() where semis != 127 {
+      let held = rate * ms / 1000
+      let step = pow(2, Double(root + semis - ins.root) / 12) * Double(ins.rate) / Double(rate)
+      var pos = 0.0, level = 0.0
+      for i in 0..<(held + rel) where at[k] + i < mix.count {
+        if pos >= Double(loops ? ins.loopEnd : pcm.count - 1) { if !loops { break }; pos -= Double(ins.loopEnd - ins.loopStart) }
+        let j = Int(pos), f = pos - Double(j)
+        let a = Double(pcm[j]) / 32768, b = Double(pcm[min(j + 1, pcm.count - 1)]) / 32768
+        if i < held { level = i < att ? Double(i) / Double(att) : i < att + dec ? 1 - (1 - ins.sustain) * Double(i - att) / Double(dec) : ins.sustain }
+        let env = i < held ? level : level * (1 - Double(i - held) / Double(max(1, rel)))
+        mix[at[k] + i] += (a + (b - a) * f) * env
+        pos += step
+      }
+    }
+    let peak = mix.reduce(0) { max($0, abs($1)) }, g = peak > 0 ? 0.7 / max(peak, 0.7) : 0   // never louder than the sample
+    return wavData(mix.map { Int16(max(-1, min(1, $0 * g)) * 32767) }, rate: rate)
+  }
+  static func wavData(_ samples: [Int16], rate: Int) -> Data {
+    var d = Data()
+    func u32(_ x: Int) { withUnsafeBytes(of: UInt32(x).littleEndian) { d.append(contentsOf: $0) } }
+    func u16(_ x: Int) { withUnsafeBytes(of: UInt16(x).littleEndian) { d.append(contentsOf: $0) } }
+    d.append(contentsOf: Array("RIFF".utf8)); u32(36 + samples.count * 2); d.append(contentsOf: Array("WAVEfmt ".utf8))
+    u32(16); u16(1); u16(1); u32(rate); u32(rate * 2); u16(2); u16(16)
+    d.append(contentsOf: Array("data".utf8)); u32(samples.count * 2)
+    for s in samples { withUnsafeBytes(of: s.littleEndian) { d.append(contentsOf: $0) } }
+    return d
+  }
+
   static func wav(_ tune: [(Int, Int)], root: Int) -> Data {
     let rate = 22050
     var samples: [Int16] = []
@@ -90,10 +139,11 @@ enum CareSound {
     guard let tune = tunes[kind], Shared.snapshot?.sound != false else { return }
     try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
     try? AVAudioSession.sharedInstance().setActive(true)
-    player = try? AVAudioPlayer(data: wav(tune, root: dayRoot))
+    let data = sampled(tune, root: dayRoot, edition: Shared.snapshot?.edition) ?? wav(tune, root: dayRoot)   // T-425
+    player = try? AVAudioPlayer(data: data)
     player?.volume = Float(min(1, Double(Shared.snapshot?.volume ?? 60) / 70))
     player?.play()
-    length = Double(tune.reduce(0) { $0 + $1.1 }) / 1000
+    length = player?.duration ?? Double(tune.reduce(0) { $0 + $1.1 }) / 1000
   }
 
   // The intent's process may end the moment perform() returns, so it waits for the phrase to finish first.

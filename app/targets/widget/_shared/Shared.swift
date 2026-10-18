@@ -36,6 +36,7 @@ struct Snapshot: Codable {
   var at: Date = Date()
   var sound: Bool? = nil            // C-160: this phone's own SOUND (PLACES, ITS SETTINGS): false is silent
   var volume: Int? = nil            //        and how loud, 0..100 as the boards have it (60 unless set)
+  var edition: String? = nil        // T-425: the save's -- its instrument, the harp (CONTENT) or the flute (CONTEXT)
 }
 
 // The day's life, as GET /api/daemon/life and POST /api/daemon/<care> answer (server/src/life.ts)
@@ -51,6 +52,7 @@ struct DeviceState: Decodable {
   let daemon: Daemon?
   struct Hearing: Decodable { let sound: Bool?; let volume: Int? }
   let settings: Hearing?            // C-160: its own over every device's
+  let edition: String?              // T-425: the save's edition
 }
 struct Art: Decodable { let png: String }
 
@@ -166,7 +168,7 @@ enum Companion {
       let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
                        cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date(),
-                       sound: st.settings?.sound, volume: st.settings?.volume)
+                       sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition)
       Shared.snapshot = s
       return s
     } catch {

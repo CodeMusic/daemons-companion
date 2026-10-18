@@ -921,7 +921,7 @@ static lv_color_t keyColour(JsonArray colours, int pc) {
   const char *h = colours[pc] | "";
   return strlen(h) == 7 ? lv_color_hex(strtol(h + 1, nullptr, 16)) : INK;
 }
-static void songStaff(lv_obj_t *parent, const String &key, JsonArray notes, JsonArray colours) {
+static void songStaff(lv_obj_t *parent, const String &key, JsonArray notes, JsonArray colours, const char *outline = "") {
   int kpc; char kacc; staffStep(key + "4", kpc, kacc);
   lv_obj_t *kr = row(parent);
   lv_obj_t *dot = lv_obj_create(kr); lv_obj_set_size(dot, 24, 24); lv_obj_set_style_radius(dot, 12, 0);
@@ -946,7 +946,8 @@ static void songStaff(lv_obj_t *parent, const String &key, JsonArray notes, Json
     if (accs[i]) { lv_obj_t *a = label(box, accs[i] == '#' ? "#" : "b", &lv_font_montserrat_20, QUIET); lv_obj_set_pos(a, x - 20, yOf(st[i]) - 14); }
     lv_obj_t *h = lv_obj_create(box); lv_obj_set_size(h, HEAD + 4, HEAD - 2); lv_obj_set_pos(h, x, yOf(st[i]) - HEAD / 2 + 1);
     lv_obj_set_style_radius(h, LV_RADIUS_CIRCLE, 0); lv_obj_set_style_bg_color(h, keyColour(colours, pcs[i]), 0);
-    lv_obj_set_style_border_color(h, lv_color_hex(0x1D2026), 0); lv_obj_set_style_border_width(h, 2, 0);
+    lv_obj_set_style_border_color(h, strlen(outline) == 7 ? lv_color_hex(strtol(outline + 1, nullptr, 16)) : lv_color_hex(0x1D2026), 0);
+    lv_obj_set_style_border_width(h, 2, 0);
   }
 }
 static void tapPage(lv_event_t *e) {
@@ -960,7 +961,7 @@ static void tapPage(lv_event_t *e) {
   String place = pg["place"] | "";
   bool staff = String(pg["kind"] | "") == "song" && pg["notes"].as<JsonArray>().size();
   showWords(pg["title"] | "", staff ? String(pg["about"] | "") : text, place.length() ? "Found in " + place + "." : String(""));
-  if (overlay && staff) songStaff(overlay, pg["key"] | "", pg["notes"].as<JsonArray>(), nb["keyColours"].as<JsonArray>());
+  if (overlay && staff) songStaff(overlay, pg["key"] | "", pg["notes"].as<JsonArray>(), nb["keyColours"].as<JsonArray>(), nb["outline"] | "");
   if (overlay) qrFor(overlay, pg["link"] | "", lv_color_black(), lv_color_white());
 }
 // C-127 on the Tab5: a region as the game's region map draws it, cropped to its cells, a cell a place, lit when the save

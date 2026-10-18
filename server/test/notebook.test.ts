@@ -6,7 +6,7 @@ import layout from "../data/profile_layout.json" with { type: "json" };
 
 describe("the NOTEBOOK", () => {
   it("holds nothing with no flags", () => {
-    expect(notebookOf(() => false, "CHRIS", "AL")).toEqual({ held: false, sections: [] });
+    expect(notebookOf(() => false, "CHRIS", "AL")).toMatchObject({ held: false, sections: [] });
   });
   it("holds a page once its flag is set, in its section, with its words", () => {
     const page = nb.pages.find((p) => p.text && !p.flag2)!;

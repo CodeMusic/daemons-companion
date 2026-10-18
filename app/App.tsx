@@ -909,7 +909,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
                                                                    unread?: boolean; place?: string | null; link?: string | null; kind?: string;
                                                                    key?: string | null; notes?: string[] | null }[] }[];
-                  keyColours?: string[] };   // T-417: the twelve key colours, C..B
+                  keyColours?: string[]; outline?: string };   // T-417: the twelve key colours, C..B, and the heads' outline
 
 // C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
 const PLAYER_ART = {
@@ -1461,7 +1461,7 @@ function pitch(n: string) {                                   // "C#5" -> its st
   const pc = (PC[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? 11 : 0)) % 12;
   return { step: Number(m[3]) * 7 + LETTERS.indexOf(m[1]) - (4 * 7 + 2), pc, acc: m[2] === "#" ? "♯" : m[2] === "b" ? "♭" : "" };
 }
-function SongStaff({ keyName, notes, colours }: { keyName: string; notes: string[]; colours?: string[] }) {
+function SongStaff({ keyName, notes, colours, outline }: { keyName: string; notes: string[]; colours?: string[]; outline?: string }) {
   const ps = notes.map(pitch).filter(Boolean) as NonNullable<ReturnType<typeof pitch>>[];
   const GAP = 10, HEAD = 12, COL = 26, LEFT = 18;
   const lo = Math.min(0, ...ps.map((p) => p.step)), hi = Math.max(8, ...ps.map((p) => p.step));
@@ -1485,7 +1485,7 @@ function SongStaff({ keyName, notes, colours }: { keyName: string; notes: string
               {ledgers.map((st) => <YStack key={st} position="absolute" left={x - 4} width={HEAD + 8} top={yOf(st)} height={1} backgroundColor="$color8" />)}
               {p.acc ? <Text position="absolute" left={x - 11} top={yOf(p.step) - 9} fontSize={13} color="$color11">{p.acc}</Text> : null}
               <YStack position="absolute" left={x} top={yOf(p.step) - HEAD / 2} width={HEAD} height={HEAD - 2} borderRadius={HEAD / 2}
-                      backgroundColor={colour(p.pc)} borderWidth={1} borderColor="#1d2026" />
+                      backgroundColor={colour(p.pc)} borderWidth={1} borderColor={outline ?? "#1d2026"} />
             </YStack>
           );
         })}
@@ -1496,7 +1496,7 @@ function SongStaff({ keyName, notes, colours }: { keyName: string; notes: string
 
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
-function NotebookPage({ page, colours }: { page: Notebook["sections"][number]["pages"][number]; colours?: string[] }) {
+function NotebookPage({ page, colours, outline }: { page: Notebook["sections"][number]["pages"][number]; colours?: string[]; outline?: string }) {
   const [open, setOpen] = useState(false);
   return (
     <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
@@ -1514,7 +1514,7 @@ function NotebookPage({ page, colours }: { page: Notebook["sections"][number]["p
       </XStack>
       {open ? (page.text
         ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} marginBottom={4} color="$color12">{par.replace(/\n/g, " ")}</Text>)
-        : page.kind === "song" && page.key && page.notes?.length ? <SongStaff keyName={page.key} notes={page.notes} colours={colours} />
+        : page.kind === "song" && page.key && page.notes?.length ? <SongStaff keyName={page.key} notes={page.notes} colours={colours} outline={outline} />
         : <Small>{page.kind === "song" ? "The game draws its notes in the key you played it in." : "Written by the game from your save each time you open it there."}</Small>) : null}
       {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
       {open && page.link ? <Action label={linkLabel(page.link)} ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
@@ -1534,7 +1534,7 @@ function NotebookCard() {
         : n.sections.map((s) => (
             <YStack key={s.name} marginTop={10}>
               <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10">{s.name}</Text>
-              {s.pages.map((pg, i) => <NotebookPage key={`${s.name}-${i}`} page={pg} colours={n.keyColours} />)}
+              {s.pages.map((pg, i) => <NotebookPage key={`${s.name}-${i}`} page={pg} colours={n.keyColours} outline={n.outline} />)}
             </YStack>
           ))}
     </Card>

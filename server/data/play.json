@@ -1,0 +1,303 @@
+{
+ "_about": "T-426 (the user, 2026-10-18): PLAY as the game plays it. The instrument is the save's edition's (CONTENT the HARP, CONTEXT the FLUTE; sounds/instruments.json) and is LOCKED until the save holds got_instrument_flag (or the item). Choose a key (major keys only), then play the scale's seven degrees; buttons are the game's (D-pad clockwise from Down 1, Left 2, Up 3, Right 4, then B 5, A 6, SELECT 7; L an octave down, R an octave up). A song is heard from the last sixteen notes: its key and its order count, octave and tempo do not; the right shape in another key is ALMOST. A learned song (learned_flag held; O CHRISTMAS TREE always) joins its notes and echoes. Each note drifts up in its key colour (key_colours, C..B; A is INDIGO). art/play_notes.png: 12 16x16 notes C..B; art/play_small.png: 12 wheel dots, 12 staff heads, 12 hollow heads, then the rest, 8x8.",
+ "got_instrument_flag": 2912,
+ "items": {
+  "HARP": 229,
+  "FLUTE": 230
+ },
+ "editions": {
+  "CONTENT": "harp",
+  "CONTEXT": "flute"
+ },
+ "keys": [
+  "C",
+  "Db",
+  "D",
+  "Eb",
+  "E",
+  "F",
+  "Gb",
+  "G",
+  "Ab",
+  "A",
+  "Bb",
+  "B"
+ ],
+ "buttons": {
+  "DOWN": 1,
+  "LEFT": 2,
+  "UP": 3,
+  "RIGHT": 4,
+  "B": 5,
+  "A": 6,
+  "SELECT": 7,
+  "L": "octave down",
+  "R": "octave up",
+  "START": "put it away"
+ },
+ "listen": {
+  "last_notes": 16,
+  "counts": [
+   "key",
+   "order"
+  ],
+  "ignores": [
+   "octave",
+   "tempo"
+  ],
+  "almost": "the right shape in another key"
+ },
+ "key_colours": [
+  "#ff0000",
+  "#ff4100",
+  "#ff8300",
+  "#ffc500",
+  "#ffff00",
+  "#00ff00",
+  "#00c5c5",
+  "#0041ff",
+  "#3100ff",
+  "#6200ff",
+  "#9400ff",
+  "#c500ff"
+ ],
+ "outline": "#201841",
+ "songs": [
+  {
+   "id": "FIR",
+   "title": "O CHRISTMAS TREE",
+   "key": "Bb",
+   "notes": [
+    "F4",
+    "Bb4",
+    "Bb4",
+    "Bb4",
+    "C5",
+    "D5",
+    "D5",
+    "D5"
+   ],
+   "frames": [
+    30,
+    22,
+    8,
+    40,
+    18,
+    22,
+    8,
+    40
+   ],
+   "learned_flag": 2913,
+   "heard_flag": null
+  },
+  {
+   "id": "NAMING",
+   "title": "TWELVE DAYS OF DECEMBER",
+   "key": "E",
+   "notes": [
+    "C#5",
+    "B4",
+    "G#4",
+    "A4",
+    "F#4",
+    "G#4",
+    "F#4",
+    "E4",
+    "D#4",
+    "E4"
+   ],
+   "frames": [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    40
+   ],
+   "learned_flag": 2914,
+   "heard_flag": 2923
+  },
+  {
+   "id": "STILL",
+   "title": "THE REALIZATION",
+   "key": "Eb",
+   "notes": [
+    "C4",
+    "Bb3",
+    "C4",
+    "D4",
+    "Eb4",
+    "D4",
+    "C4",
+    "F4",
+    "Eb4",
+    "F4"
+   ],
+   "frames": [
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    48
+   ],
+   "learned_flag": 2915,
+   "heard_flag": 2924
+  },
+  {
+   "id": "MEND",
+   "title": "FORGIVENESS OFFERED",
+   "key": "D",
+   "notes": [
+    "E4",
+    "D4",
+    "B3",
+    "E4",
+    "F#4",
+    "E4",
+    "C#4",
+    "E4",
+    "D4",
+    "B3",
+    "A3"
+   ],
+   "frames": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    48
+   ],
+   "learned_flag": 2916,
+   "heard_flag": 2925
+  },
+  {
+   "id": "PRACTICE",
+   "title": "SEQUEL THE GUARDIAN",
+   "key": "G",
+   "notes": [
+    "B3",
+    "A3",
+    "D4",
+    "C4",
+    "D4",
+    "E4",
+    "G3",
+    "B3",
+    "A3"
+   ],
+   "frames": [
+    17,
+    17,
+    17,
+    17,
+    17,
+    17,
+    17,
+    17,
+    44
+   ],
+   "learned_flag": 2917,
+   "heard_flag": 2926
+  },
+  {
+   "id": "STANCE",
+   "title": "HARMONY IN BALANCE",
+   "key": "D",
+   "notes": [
+    "A4",
+    "B4",
+    "C#5",
+    "A4",
+    "F#4",
+    "E4",
+    "F#4",
+    "D4"
+   ],
+   "frames": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    48
+   ],
+   "learned_flag": 2918,
+   "heard_flag": 2927
+  },
+  {
+   "id": "NOTICE",
+   "title": "THE SHIMMERING CANVAS",
+   "key": "D",
+   "notes": [
+    "C#5",
+    "B4",
+    "F#4",
+    "D4",
+    "E4",
+    "D4",
+    "F#4",
+    "E4"
+   ],
+   "frames": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    48
+   ],
+   "learned_flag": 2919,
+   "heard_flag": 2928
+  },
+  {
+   "id": "REFLECT",
+   "title": "REFLECTIONS WITHIN",
+   "key": "G",
+   "notes": [
+    "B3",
+    "E4",
+    "D4",
+    "C4",
+    "B3",
+    "D4",
+    "B3",
+    "C4",
+    "B3",
+    "G3"
+   ],
+   "frames": [
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    48
+   ],
+   "learned_flag": 2920,
+   "heard_flag": 2929
+  }
+ ]
+}

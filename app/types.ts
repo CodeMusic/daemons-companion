@@ -163,3 +163,9 @@ export type HomeView = { ok: boolean; error?: string; home?: string; rooms: { na
 
 export type HomeSettings = { url: string | null; hasToken: boolean; ok: boolean; error?: string; home?: string;
                       agent?: { path: string; url: string | null; open: boolean } };
+
+// C-156 (the user, 2026-10-18, B of the mockup): six tabs, SETTINGS behind the gear. The INDEX is DAEMON's, the NOTEBOOK
+// LIBRARY's, PROFILE is YOU, and DEVICE and HOME are PLACES together. ("settings" is a screen, not a tab.)
+export const TABS = ["today", "daemon", "goals", "library", "you", "places", "settings"] as const;
+
+export const SHOWN_TABS = TABS.filter((t) => t !== "settings");

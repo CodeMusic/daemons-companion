@@ -1,6 +1,6 @@
 // The app's way to the companion (C-157: out of App.tsx): where it is and the key (paired), the way from away (the relay),
 // what was kept for when it cannot be reached (C-62), and api() -- every request goes through it.
-import { File,Paths } from "expo-file-system";
+import { File, Paths } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
@@ -345,3 +345,9 @@ export function setConnection(c: { server?: string; token?: string | null; away?
   if (c.away !== undefined) AWAY = c.away;
 }
 export function onUnpaired(f: () => void) { unpaired = f; }
+
+// C-100 / C-111: the widget drawn again -- by the companion it asks, or on a phone alone, by the app
+export function redrawWidgetNow() {
+  if (ALONE && WIDGET && LOCAL) WIDGET.drawAlone(LOCAL.localApi).catch(() => {});
+  else WIDGET?.redrawWidget();
+}

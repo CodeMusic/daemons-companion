@@ -13,7 +13,12 @@ const ART: { pieces: string[]; season: Record<string, [string, string]>; hats: R
   = require("../server/data/casino_art.json");
 
 export type Dress = { look: string; a: string; b: string; piece: string; hat: string | null };
+// The companion decides it once (server/src/context.ts casinoDress, the state's casino.dress) for the boards, the phone and
+// the Tab5 alike; the rule below only for a state without it (no save read yet, or an older companion)
 export function casinoDress(st: PlayerState): Dress {
+  const d = st.casino?.dress;
+  if (d?.look && d.colours?.length === 2)
+    return { look: d.look, a: d.colours[0], b: d.colours[1], piece: ART.pieces.includes(d.look) ? d.look : "star", hat: ART.hats[d.hat] ? d.hat : null };
   const h = st.holiday, dressed = !!h?.name && !h.quiet;
   const sky = st.world?.weather?.kind, season = st.season;
   const look = dressed && h!.look !== "none" ? h!.look

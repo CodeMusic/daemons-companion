@@ -130,6 +130,16 @@ static String dressLook = "leaves", dressHat;
 static uint32_t dressA = 0xE07020, dressB = 0xFFC040;
 static uint32_t hexOf(const char *h, uint32_t or_) { return h && strlen(h) == 7 && h[0] == '#' ? (uint32_t)strtol(h + 1, nullptr, 16) : or_; }
 static void casinoTakeDress(JsonDocument &st) {
+  // decided once by the companion (server/src/context.ts casinoDress, the state's casino.dress) for every screen; the rule
+  // below only for a state without it (an older companion)
+  JsonObject cd = st["casino"]["dress"];
+  if (!cd.isNull() && strlen(cd["look"] | "")) {
+    dressLook = (const char *)(cd["look"] | "");
+    dressA = hexOf(cd["colours"][0] | "", 0xE07020); dressB = hexOf(cd["colours"][1] | "", 0xFFC040);
+    String hat = (const char *)(cd["hat"] | "none");
+    dressHat = hat == "santa" || hat == "witch" || hat == "party" || hat == "flower" ? hat : String("");
+    return;
+  }
   JsonObject h = st["holiday"];
   bool dressed = !h.isNull() && strlen(h["name"] | "") && !(h["quiet"] | false);
   String sky = (const char *)(st["world"]["weather"]["kind"] | ""), watch = (const char *)(st["world"]["watch"] | "");

@@ -66,7 +66,8 @@ export type CasinoHouse = { context: { luck: number; rtp: number; reasons: Reaso
 export type PlayerState = { season: string; day?: { note: string; menu?: string } | null; holiday?: { name: string; quiet?: boolean; look: string; colours: string[]; hat: string; flip: boolean } | null; daemon: { slot: number; nickname: string } | null;
                      world?: { watch: string; weather: { kind: string; tempC: number; city: string } | null };   // C-158: the real world outside
                      casino: { balance: number; friends: number[]; table: { name: string; device: string }[];
-                               reel?: { species: number; name: string }[]; context?: { luck: number; rtp: number; reasons: Reason[] } } | null;   // C-158
+                               reel?: { species: number; name: string }[]; context?: { luck: number; rtp: number; reasons: Reason[] };   // C-158
+                               dress?: { look: string; colours: string[]; hat: string } } | null;   // C-158: how the CASINO is dressed
                      party: { name: string; routines: { name: string; colour: string }[] }[];
                      settings?: { sound?: boolean; volume?: number } };   // C-160: this player's own, over every device's
 

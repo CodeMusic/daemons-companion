@@ -38,7 +38,8 @@ on [Flashing and linking](Flashing-and-linking).
 The site is the companion's own screen, on your computer, with **no logins**. It stays on your computer: the phone
 is the remote ([Away from home](Away-from-home)). The site is needed once per phone, to pair it, and for what only
 the computer can do -- opening the server to the network, the file picker for the save, the relay's settings, Home
-Assistant's token, and the cable and flashing.
+Assistant's token, and the cable and flashing. In a browser only the companion's own page may ask the server anything:
+a request from any other web page is refused, so a page you happen to have open cannot drive it.
 
 Six tabs, the same on the site and the phone, with **SETTINGS** behind the gear at the top right (on the Tab5 it is a
 seventh tab). A word, an act or a JACKPOT from another daemon shows as a banner over whatever tab is open; a tap opens
@@ -48,18 +49,21 @@ NEARBY.
   THING**, the one next step; then your daemon and its care (FEED, DRINK, TRAIN), NEARBY's latest, your game (where you
   saved, MARKS, coins, the CASINO's waiting for SYNC) and what waits in the LIBRARY. Each weekday has its own colours
   (`?day=tuesday` on the site previews another).
-- **DAEMON** -- four parts: **Yours** (its day and care, SYNC, NEARBY, MET NEARBY), **Party** (drawn as the game draws
-  it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN) and **Routines** (THE CASINO, the party's own).
+- **DAEMON** -- four parts: **Yours** (its day and care, on the phone HOLD TO TALK, SYNC, NEARBY, MET NEARBY), **Party**
+  (drawn as the game draws it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN) and **Routines** (THE
+  CASINO, THE HOUSE and the party's own -- [The CASINO](The-CASINO)).
 - **GOALS** -- one goal, its steps and milestones, and WALKING.
 - **LIBRARY** -- CALLOW SCHOOL, THE GUIDE once your save has found it, the **NOTEBOOK**, the **SONGBOOK** (the songs you
   have learned, in their colours, and PLAY to hear one) and **STREAM** (every lesson a MARK or a ROOT has opened).
 - **YOU** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES and GAME
   EVENTS.
-- **PLACES** -- your devices under their makers (a picture of each, which daemon each hosts, batteries, settings,
-  routines, remotes, networks) and your home: Home Assistant's rooms, each a tap, and the house asked in words
-  ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
-- **SETTINGS** (the gear) -- your save, the app's build and LIGHT OR DARK, who answers when you talk; on the phone THIS
-  PHONE; on the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
+- **PLACES** -- your devices under their makers (a picture of each, which daemon each hosts, batteries, ITS SETTINGS
+  for each one, routines, remotes, every device's settings and networks) and your home: Home Assistant's rooms, each a
+  tap, and the house asked in words ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
+- **SETTINGS** (the gear) -- the app's build and LIGHT OR DARK, your save, THE WEATHER, who answers when you talk; on
+  the phone THIS PHONE; on the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
+
+A press whose work fails says why under its key, for a few seconds, rather than failing unseen.
 
 YOU, the NOTEBOOK and the LIBRARY are on [Your game on the companion](Your-game-on-the-companion).
 
@@ -127,7 +131,8 @@ site and the iOS Simulator share your machine's network and need nothing.
 ## What the server knows about the game
 
 `server/data/` is exported from DAEMONS, never typed twice: species and their INDEX entries in both editions' voices,
-the text encoding, the week, the seasons, the save's layout, the routines and the daemons' art. With
+the text encoding, the week, the seasons, the holidays, the save's layout, the routines, the daemons' art, the NOTEBOOK
+and its songs, and DAEMONS' own HARP and FLUTE (synthesized for the project, nothing of Nintendo's). With
 [DAEMONS](https://github.com/CodeMusic/DAEMONS) checked out beside this repository:
 
 ```sh

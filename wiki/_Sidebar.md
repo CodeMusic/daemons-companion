@@ -4,6 +4,7 @@
 - [Host on your phone](Host-on-your-phone)
 - [Running the companion](Running-the-companion)
 - [Your game on the companion](Your-game-on-the-companion)
+- [The CASINO](The-CASINO)
 
 **More hosts**
 - [Boards](Boards)

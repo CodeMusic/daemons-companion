@@ -10,9 +10,10 @@ too (C-142). None of them needs the others. Every word on these screens is a dra
 **Set it up on the computer the companion runs on**: the site, SETTINGS, **HOME ASSISTANT** -- Home Assistant's
 address and a **long-lived access token** (in Home Assistant: your profile, Security, Long-lived access tokens), then
 **Save**. The token stays on that computer: it is never returned, never sent to a phone, the Tab5 or a board, and never
-set through the relay. The card says when it is connected; **Forget the token** (tap twice) takes it away.
+set through the relay. The card says when it is connected; **Forget the token** (tap twice) takes it away. A new
+address forgets the token unless a new one is entered with it, so a token is never sent somewhere it was not made for.
 
-Then the **HOME** tab, on the app, the site and the Tab5, lists your home by room -- the lights, switches, fans,
+Then **HOME**, in PLACES on the app, the site and the Tab5, lists your home by room -- the lights, switches, fans,
 blinds, scenes, scripts, players and heating Home Assistant has in each -- each a tap: On and Off, Run, Open, Stop and
 Close, play and pause, - and + for the heating. Locks are shown, never opened. A tap answers at once and is never kept
 for later: away from the companion, it is not saved up to happen when you are back. **ASK THE HOUSE** sends a line in
@@ -47,7 +48,7 @@ expression or its den has changed. It asks only while nothing is being said. Unt
 hosts no daemon, each phase shows ESPHome's own picture instead -- the box is never less than the voice assistant it
 was.
 
-**Which daemon**: the box is a device like the others. Once it has asked the companion it appears under DEVICE, YOUR
+**Which daemon**: the box is a device like the others. Once it has asked the companion it appears under PLACES, YOUR
 DEVICES, under ESPRESSIF, with its picture; choose its daemon there from those the game has sent away. In Home Assistant
 the box keeps its entities and gains two: **Companion address** (change where it looks without rebuilding) and
 **Daemon** (which daemon is in it).

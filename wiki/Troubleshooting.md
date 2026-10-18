@@ -10,7 +10,8 @@
 4. Check the companion is running and open to your network (the site, SETTINGS, PAIR A PHONE).
 
 *No daemon here* is different: the companion answered, and the widget hosts no daemon yet. SEND one in the game, SYNC,
-and choose it for the widget under DEVICE, YOUR DEVICES ([Host on your phone](Host-on-your-phone#7-choose-the-daemon-it-hosts)).
+and choose it for the widget under PLACES, YOUR DEVICES
+([Host on your phone](Host-on-your-phone#7-choose-the-daemon-it-hosts)).
 
 ## A press on the widget says *Kept until home answers.*
 
@@ -63,6 +64,12 @@ Screen dark, nothing on the cable: it is waiting in its bootloader, and its batt
 **Press RST once.** If an upload cannot connect at all, hold BOOT, press and release RST, let go of BOOT, and run it
 again. More on [Flashing and linking](Flashing-and-linking#recovery).
 
+## The bridge says a port *is another board now*
+
+After an unplug, `linkCompanion.sh` waits for **the same board**, known by its USB serial number, and leaves alone
+another board plugged in under that port's name -- so it never takes one board for another, or holds the port of a
+board you are flashing. To link a different board, stop the bridge (Ctrl-C) and start it again.
+
 ## A board on Wi-Fi has lost the companion
 
 A board that was out of touch while the computer moved to a new address keeps asking the old one. **Link it by cable
@@ -75,6 +82,16 @@ The HAT can hold a line the chip reads as it starts, which leaves it waiting in 
 the power button six seconds, then press it.** Or, with the bridge stopped, from the computer:
 `python3 firmware/esp32/hatfree.py`. If GLOW says it has not enough memory, flash the newest firmware: GLOW now fits
 beside the daemon the stick hosts.
+
+## A device makes no sound
+
+- **Its SOUND is off.** A board's own SOUND page says ON or OFF, and a press turns it on or off; the companion keeps it
+  as that board's own setting. In PLACES, YOUR DEVICES, its ITS SETTINGS, SOUND shows it too, as **this one's own**: tap
+  *back to every device's* to follow EVERY DEVICE'S SETTINGS again ([Settings](Settings#each-devices-own)).
+- **The phone**: its SOUND is the widget's, under PLACES, YOUR DEVICES, This phone's widget, ITS SETTINGS. The care
+  phrases and the CASINO's tunes also keep quiet while the phone is set to silent; a SONGBOOK song plays anyway.
+- **No jingle on waking** is as it should be: the title theme's few notes play when a board starts, unless its THE WAKE
+  JINGLE says every time it wakes.
 
 ## The M5GO or Fire is silent with its LoRa433
 
@@ -104,6 +121,9 @@ kept for later.
 - **`cannot find type '__ObjC::expo'`**, with a newer Xcode (27.1 and its Swift 6.4): `./bindCompanion.sh phone` patches
   the Expo script behind it and builds Expo's modules from source, so build with it rather than by hand. That first
   build is slower.
+- **A widget file that is never compiled** (a type the widget cannot find, after a file was added to
+  `app/targets/`): the Xcode project lists the widget's files by name. `./bindCompanion.sh phone` makes the native
+  project again whenever a file is added to or removed from `app/targets/`; building by hand, delete `app/ios` first.
 
 ## Still stuck
 

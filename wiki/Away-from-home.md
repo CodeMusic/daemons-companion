@@ -42,7 +42,7 @@ everything, and pairing is refused.
 
 - **The phone holds everything, and syncs.** It opens on what it last saw, at once, and brings it up to date when
   home answers, and each time it comes back to the front -- the day, the goal, the party and its art, the whole INDEX,
-  your PROFILE, the NOTEBOOK, GAME EVENTS, the LIBRARY (CALLOW SCHOOL and THE GUIDE) and NEARBY's broadcasts among it.
+  YOU, GAME EVENTS, the LIBRARY (CALLOW SCHOOL, THE GUIDE and the NOTEBOOK) and NEARBY's broadcasts among it.
   Away from the companion it says so: a toast at the foot, and once dismissed, a small **AWAY** at the top right.
 - **Nothing is lost.** Anything you change away -- goals, steps, care, the walk, settings -- is kept on the phone and
   sent in order when the companion answers. So is everything a board reports through the phone. The widget's presses

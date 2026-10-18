@@ -11,11 +11,11 @@ every hour**, nothing about you -- and listen for others a few seconds every few
 
 - **Passing someone else's companion is a meeting.** At the next SYNC your INDEX sees their daemon as seen, and yours
   grows a little friendlier. A tag is met once an hour, never more.
-- **Your own devices never count** as meeting each other. The DAEMON tab, MET NEARBY, says when they heard each other,
+- **Your own devices never count** as meeting each other. DAEMON, Yours, MET NEARBY says when they heard each other,
   which proves the radios.
 - **A card holding someone else's daemon is a meeting too**, held to a board with a reader
   ([Boards](Boards#routines)).
-- **Switch it off** in DEVICE, ITS SETTINGS, **MEET OTHERS NEARBY**.
+- **Switch it off** in PLACES, EVERY DEVICE'S SETTINGS, **MEET OTHERS NEARBY**.
 
 ## Broadcasts: a word or an act to every daemon
 
@@ -39,18 +39,33 @@ Bluetooth, N the companion).
   answer is never answered, a word is read rather than answered, and our own are not answered.
 
 **On a board**: ROUTINES, **CHORUS**: TO EVERY DAEMON (the acts; TYPE A WORD first on a keyboard) and WHAT CAME (the
-last ten). A broadcast arriving flashes the board's light and shows its words for a moment -- never a sound, never on a
-sleeping board.
+last ten).
 
-**On the app and the site**: the DAEMON tab's **NEARBY** -- the last eight broadcasts, **Answer** beside another
+**On the app and the site**: DAEMON, Yours, **NEARBY** -- the last eight broadcasts, **Answer** beside another
 daemon's act (once), a box to **Say** something to every daemon nearby, and a button for every act. While NEARBY is open
 and MEET OTHERS NEARBY is on, the phone also listens for the boards' Bluetooth pieces, and sends its own as theirs
 (C-141); iOS lets it advertise only while the app is in front. **The Tab5**: NEARBY on its DAEMON page, the last six,
 **ANSWER** and **SAY...** on its keyboard.
 
 **State**: built on every board, the app, the site and the Tab5. Seen: a WAVE sent from the companion arriving once on a
-board. Not yet seen: an act or its answer passing between two boards by LoRa or Bluetooth, or the phone's Bluetooth
-pieces heard by a board.
+board; a WAVE passing between two boards by Bluetooth and the companion, kept once (C-151); a word and a jackpot from
+one board arriving on another, and the jackpot cheered back. Not yet seen: a broadcast passing between two boards by
+LoRa, or the phone's Bluetooth pieces heard by a board.
+
+## Notifications
+
+What another daemon says or does -- a word, an act, or a big win at THE CASINO -- shows wherever you are, not only in
+NEARBY (C-154):
+
+- **On the app and the site**, as a banner over whatever tab is open, for a few seconds; a tap opens NEARBY. They look
+  every fifteen seconds while open. The phone does not yet send notifications of its own while the app is closed.
+- **On the Tab5**, the same banner over whatever page is open.
+- **On a board**, a flash of its light and the words for four seconds -- a longer one on two or three lines -- never a
+  sound. A board asleep is not woken: it keeps what came, and says the newest (and how many more) when it wakes.
+
+A big win is only answered at the reels: away from them it is news, and only players cheer
+([The CASINO](The-CASINO#the-table)). **State**: the boards' half seen on the T-Watch S3 (a word, a wave and another
+board's jackpot); the app's and the site's seen on the site. Not yet seen: a notice kept while a board slept.
 
 The design, the pieces and the ids:
 [docs/BROADCAST.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/BROADCAST.md).
@@ -64,8 +79,8 @@ the time. A daemon heard on both radios in an hour is one meeting.
 |---|---|---|
 | **T-Deck / T-Deck Plus** | an SX1262 on the board | runs |
 | **M5GO / M5Stack Fire** | an **M5 LoRa433** module stacked on it (an SX1278, 433 MHz), its pins found by itself | runs on the Fire |
-| **T-Watch S3** | an SX1262 on the board | built, not yet run |
-| **Cardputer ADV** | the **Cap LoRa-1262**, made for 868-923 MHz: a 433 setting is taken as 868 | built, not yet run |
+| **T-Watch S3** | an SX1262 on the board | the watch runs; its LoRa not yet heard by another board |
+| **Cardputer ADV** | the **Cap LoRa-1262**, made for 868-923 MHz: a 433 setting is taken as 868 | the ADV runs, listening at 868 MHz; not yet heard by another board |
 
 Its **MESH** routines:
 
@@ -80,16 +95,19 @@ the trackball sends it, Backspace takes a letter back and, on an empty message, 
 message heard on a board stays on its screen -- who sent it and the words, wrapped -- until a key or a touch reads it,
 and that key does nothing else. A board not yet updated keeps the first forty letters.
 
-Both routines need the board to be hosting a daemon. The DAEMON tab keeps every wave and word under MET NEARBY, WAVES
+Both routines need the board to be hosting a daemon. DAEMON, Yours keeps every wave and word under MET NEARBY, WAVES
 AND WORDS. Every board passes on what it hears once (two hops at most), so a daemon out of range is still heard through
 a board between.
 
-**The band** is set once, in DEVICE, ITS SETTINGS, **LORA BAND**: 433 (the default), 868 or 915 MHz -- whatever your
-boards were bought for; every board takes the one setting, so they agree. LoRa reaches only boards on the same band:
-the 868 boards and the 433 ones hear each other through Bluetooth and the companion instead. Nothing on the board says
-which it was built for, and which band you may use depends on where you live (in Canada and the US the licence-free
-band is 902-928 MHz; 868 is Europe's; 433 is amateur and low-power only). The radio sends at 10 dBm, a beacon a fifth of
-a second long every two minutes. Its sync word keeps it apart from Meshtastic.
+**The band** is set once, in PLACES, EVERY DEVICE'S SETTINGS, **LORA BAND**: 433 (the default), 868 or 915 MHz --
+whatever your boards were bought for; every board takes the one setting, so they agree. LoRa reaches only boards on the
+same band: the 868 boards and the 433 ones hear each other through Bluetooth and the companion instead. Nothing on the
+board says which it was built for, and which band you may use depends on where you live (in Canada and the US the
+licence-free band is 902-928 MHz; 868 is Europe's; 433 is amateur and low-power only). The radio sends at 10 dBm, a
+beacon a fifth of a second long every two minutes. Its sync word keeps it apart from Meshtastic.
+
+**At THE CASINO** a board with LoRa also sends a TABLE frame every half minute while it sits at the reels, never passed
+on, so the daemons nearby know who is playing ([The CASINO](The-CASINO#the-table)).
 
 **State:** the first message between two boards has been seen: typed on a T-Deck, it arrived on a Fire with its
 LoRa433 (2026-10-15). The T-Embed CC1101's Sub-GHz radio is not LoRa and never hears a MESH frame. On a Fire whose

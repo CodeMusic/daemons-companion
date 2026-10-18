@@ -1,8 +1,9 @@
 # Feelings and expressions
 
 A hosted daemon has feelings, and every host shows them on its face -- the boards, the app, the home-screen widget, the
-Tab5 and the BOX-3 -- from the daemon's own sprite, standing in its den. Nothing is drawn for any one daemon, so it
-works for every daemon you bring from the game.
+Tab5, the BOX-3 and the T-Watch S3's DAEMON and CLOCK faces -- from the daemon's own sprite, standing in its den (on the
+watch, on a hill under the season's sky). Nothing is drawn for any one daemon, so it works for every daemon you bring
+from the game.
 
 ## The den (C-113)
 

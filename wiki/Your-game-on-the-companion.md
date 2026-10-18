@@ -5,11 +5,18 @@ Tab5 alike. **It never spells out what your save has not reached**: a MARK not y
 story event still to come or a book not yet in your hands shows as not yet, and nothing more.
 
 A phone hosting on its own reads its own copy the same way
-([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)), and a paired phone keeps all of it, so
-PROFILE and the LIBRARY open away from home too ([Away from home](Away-from-home)). Every word on these screens is a
-draft, as the game's are.
+([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)), and a paired phone keeps all of it, so YOU
+and the LIBRARY open away from home too ([Away from home](Away-from-home)). Every word on these screens is a draft, as
+the game's are.
 
-## PROFILE
+| tab | what of your game it holds |
+|---|---|
+| **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
+| **DAEMON** | the party as the game draws it, and the **INDEX** |
+| **LIBRARY** | CALLOW SCHOOL, THE GUIDE, the NOTEBOOK, the SONGBOOK and STREAM |
+| **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES and GAME EVENTS |
+
+## YOU
 
 At the top, **you as the game draws you** (C-125): the trainer card's picture and your walking frame, REASON or
 INSTINCT as you chose, your name, edition and ID No., your rival, where you last saved, and whether this is **your
@@ -17,8 +24,8 @@ companion's game** (the first save you SYNC becomes it). Beside them, **the two 
 the islands, each place lit once your save has visited it, a route lit when it touches a lit place. The islands' name
 reads ??? and their map stays dark until the story is told to the end.
 
-Then the facts: PLAY TIME, **MONEY**, SHOES, the INDEX, the **MARKS**, the DIPLOMA, OPUS, THE STORY once it is told to
-the end, and the **ROOTS**.
+Then the facts: PLAY TIME, **MONEY** (and who is at the CASINO now), SHOES, the INDEX, the **MARKS**, the DIPLOMA,
+OPUS, THE STORY once it is told to the end, and the **ROOTS**.
 
 ### MARKS
 
@@ -51,21 +58,9 @@ The story so far, in finer detail than the facts (C-128), by section, in story o
 testing build keeps. A row your save holds is marked **+** and named; one still ahead is **·** *Still to come.*, and
 not named; **?** means the save cannot say.
 
-## The NOTEBOOK
-
-Every NOTEBOOK page your save holds (C-125), in the game's own sections, each tapped open and laid out as the game's
-NOTEBOOK lays it. A dot marks a page you have not yet read in the game; an open page says where it was found. A page the
-game writes from your save each time you open it there says so, rather than guessing.
-
-- **A page that ends on a QR code in the game** has a button instead (C-146): **Listen** for a song, **Read** for
-  anything else, and it opens the link. On the Tab5, which has no browser, the code itself is drawn under the page, to
-  scan with a phone.
-- **The SONGBOOK** is a section of its own. A song's page says that the game draws its notes in the key you played it
-  in.
-
 ## The LIBRARY
 
-A shelf of what can be read (C-145).
+A shelf of what can be read (C-145, C-156): five books, each opening as a page of its own.
 
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its
@@ -75,22 +70,45 @@ A shelf of what can be read (C-145).
 - **THE GUIDE** -- only once your save has found it. Its 8-bit cover, CONTENTS by part, and each chapter on the book's
   own dark page, with BACK, CONTENTS and NEXT; its last chapter ends on READ, the link its QR code opens. Nothing of it
   shows before it is found.
+- **The NOTEBOOK** -- every page your save holds (C-125), in the game's own sections, each tapped open and laid out as
+  the game's NOTEBOOK lays it. A dot marks a page you have not yet read in the game; an open page says where it was
+  found. A page the game writes from your save each time you open it there says so, rather than guessing. **A page that
+  ends on a QR code in the game** has a button instead (C-146): **Listen** for a song, **Read** for anything else, and
+  it opens the link. On the Tab5, which has no browser, the code itself is drawn under the page, to scan with a phone.
+- **The SONGBOOK** -- every song your save has learned (C-152): its key, a dot in the key's colour, and its motif on a
+  treble staff, each note's head in the colour of its pitch, as the game draws it -- the twelve key colours and the
+  outline exported from the game -- with a sharp or a flat beside it and ledger lines where needed. **PLAY** plays it,
+  each note held as long as the game holds it, on your game's own instrument: the HARP for a CONTENT save, the FLUTE for
+  CONTEXT ([Settings](Settings#sound)).
 
-On the Tab5 the LIBRARY is a tab of its own, the GUIDE a card over CALLOW SCHOOL and the book full screen.
+  **Your instrument, to play** (DAEMONS T-426) -- on the phone and the site, the SONGBOOK has the instrument itself,
+  **LOCKED** until the game has given it to you. PLAY FREELY, or choose a song (one learned, or one only heard, to
+  practise), then a key from the wheel. The HARP is eight strings to pluck or sweep a finger across; the FLUTE eight
+  holes held while you breathe into the microphone (a finger alone where there is none); an octave either way. Each
+  note drifts up in its key's colour as the game draws it, and the companion listens as the game does: a learned song
+  in its key joins on the staff and echoes, and the right notes in another key are ALMOST. A song only heard is to be
+  played back in the game. Seen on the site; not yet on the phone.
+- **STREAM** -- every lesson a MARK or a ROOT has opened, read as their pages read them: its first line leading and the
+  rest as points, and where it was opened.
+
+On the Tab5 the LIBRARY holds the same five; THE GUIDE opens full screen, and the SONGBOOK's PLAY plays on its speaker.
 
 ## The INDEX
 
-Every entry your save has seen, in your edition's voice, with **LISTEN** to hear it read aloud
+In DAEMON, **INDEX**: every entry your save has seen, in your edition's voice, with **LISTEN** to hear it read aloud
 ([Talk to your daemon](Talk-to-your-daemon)), and OPUS's margin beside it where your save holds OPUS. Each entry also
 says what its daemon is **NATIVE** to, in the game's own words and order (C-143): a region or a grove's universe,
 CONTENT ONLY or CONTEXT ONLY, its hours, its seasons, NOT AT or NOT IN, or NOT IN THE WILD.
 
 ## The CASINO's coins
 
-**The CASINO on the boards plays with your game's money** (C-149, [Boards](Boards#routines)). Until the next SYNC,
-PROFILE says beside MONEY what the boards have won or lost, over how many spins, and what your MONEY will be after.
-SYNC writes it into the save after the backup every SYNC makes -- never below nothing, never past 999999 -- and says
-what it brought: *The CASINO won ... : MONEY ... to ...* The Tab5 shows the same beside its MONEY.
+**THE CASINO plays with your game's money** -- on the boards, the phone, the site and the Tab5 alike (C-149, C-155,
+[The CASINO](The-CASINO)). Until the next SYNC, YOU says beside MONEY what has been won or lost, over how many spins,
+and what your MONEY will be after, and TODAY says it under YOUR GAME. SYNC writes it into the save after the backup
+every SYNC makes -- never below nothing, never past 999999 -- and says what it brought: *The CASINO won ... over ...
+spins: MONEY ... to ...* The Tab5 shows the same beside its MONEY.
+
+Its reels show daemons your save has SEEN in the INDEX, so as you play the game, new ones come to the reels.
 
 ## Light, dark or auto
 

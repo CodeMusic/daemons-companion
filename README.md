@@ -23,7 +23,7 @@ Nothing to buy. The phone in your pocket is the first host, and the one I would 
 4. **Put the app on your iPhone** (`./bindCompanion.sh phone`) and **pair** it: the site's SETTINGS, PAIR A PHONE
    offers your computer by its own name (`http://<name>.local:4730`), so the pairing holds wherever the two of you
    share a Wi-Fi.
-5. **Add the DAEMONS widget** to your home screen. It hosts a daemon of its own -- choose which under DEVICE, YOUR
+5. **Add the DAEMONS widget** to your home screen. It hosts a daemon of its own -- choose which under PLACES, YOUR
    DEVICES, This phone's widget -- and its **DRINK**, **FEED**, **TRAIN** and, at bedtime, **SLEEP** work right there,
    without opening anything. *Drank. Eaten. Trained. Asleep.*
 
@@ -44,7 +44,7 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | **your phone** -- the app and its home-screen widget | lives on your home screen, and comes along for everything else |
 | **LilyGO T-Embed** (CC1101, plain, SI4732) | answers a dial that hums in the day's key; on the SI4732 it tunes the radio and **learns the stations** it hears; the CC1101 reads cards |
 | **LilyGO T-Deck / T-Deck Plus** | can be typed to, and types back: a message sent over **LoRa** to every board a street away |
-| **LilyGO T-Watch S3** | wears the day on its face, and keeps your steps |
+| **LilyGO T-Watch S3** | stands on its face -- DAEMON, CLOCK or VIRTUE, chosen from the phone -- with the season's sky behind it and the weather in front; is tended with a double tap, and keeps your steps |
 | **LilyGO T-Display-S3 Pro**, **T-Display-S3 AMOLED** | spreads out across a wide screen |
 | **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads cards held to its face; the M5GO and Fire hear LoRa with a module |
 | **M5StickC-Plus** with its Thermal HAT | **sees heat**: GLOW, a routine type of its own -- the warmest thing in the room, and when someone is there |
@@ -52,8 +52,9 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | **M5Stack Tab5** | runs **the control center**: every screen of the app, on a tablet of its own |
 | **Espressif ESP32-S3-BOX-3** | is **your home's voice assistant**: Home Assistant's own, with the daemon for a face and, if you like, its words |
 
-A few of these are still on my bench -- the T-Watch and the Cardputers are built and waiting for their first run on the
-real thing. Each board's controls, pages, quirks and which ones run today:
+One is still on my bench: the plain Cardputer is built and waiting for its first run on the real thing. The T-Watch and
+the Cardputer ADV have had theirs and run, though not every key and tap of theirs has been tried by hand yet. Each
+board's controls, pages, quirks and which ones run today:
 **[Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards)**. Flashing one takes one command:
 **[Flashing and linking](https://github.com/CodeMusic/daemons-companion/wiki/Flashing-and-linking)**.
 
@@ -70,16 +71,24 @@ real thing. Each board's controls, pages, quirks and which ones run today:
 - **It talks.** Hold to talk on the phone or a board, and it answers in its INDEX voice
   ([Talk to your daemon](https://github.com/CodeMusic/daemons-companion/wiki/Talk-to-your-daemon)).
 - **It reads you its INDEX entry** aloud -- or anyone's.
-- **It plays.** Every board has **THE CASINO**: SLOTS, three reels of your own party, the season falling over them and
-  a holiday's dress when there is one. **The coins are your game's money** -- what the board wins or loses, the next
-  SYNC writes into your save. The odds are the Game Corner's: about 94 back for every 100 bet.
+- **It plays.** **THE CASINO** is on every board, the phone, the site and the Tab5: SLOTS, three reels of your daemon
+  and others you have seen in your game, the season -- or the weather outside -- falling over them, and a holiday's
+  dress when there is one. **The coins are your game's money** -- what is won or lost, the next SYNC writes into your
+  save. The odds move with the day, between 90 and 100 back for every 100 bet -- a holiday, the real weather of a city
+  you name, the hour, the season -- and THE HOUSE says why. Whoever else is at the reels sits at your table, and a big
+  win is cheered ([The CASINO](https://github.com/CodeMusic/daemons-companion/wiki/The-CASINO)).
 - **It notices others.** Pass someone hosting a daemon of their own, and your INDEX sees theirs. It can wave, bow or
-  say a word to every daemon in reach -- over Bluetooth, your network or LoRa, and you see each one once
+  say a word to every daemon in reach -- over Bluetooth, your network or LoRa, and you see each one once. What another
+  daemon says or does shows over whatever you have open, and a board asleep keeps it for when it wakes
   ([Meeting others nearby](https://github.com/CodeMusic/daemons-companion/wiki/Meeting-others-nearby)).
+- **It sounds like your game.** The phone, the site and the widget play every tune on your game's own instrument --
+  the HARP for a CONTENT save, the FLUTE for CONTEXT (the Tab5's is built, not yet flashed) -- and the boards play the
+  same notes on their own beeps. Each device's sound is its own to set, from off to loudest
+  ([Settings](https://github.com/CodeMusic/daemons-companion/wiki/Settings#sound)).
 - **It keeps a card.** On a board with a reader, hold a card to it and put your daemon on it, take the one it holds,
   or swap (built; its first real card is still to come).
-- **It can reach your home, if you let it.** HOME brings Home Assistant to the app, the site and the Tab5 (built; it
-  has yet to meet a real Home Assistant), and the BOX-3 wears the daemon's face
+- **It can reach your home, if you let it.** HOME, in PLACES, brings Home Assistant to the app, the site and the Tab5
+  (built; it has yet to meet a real Home Assistant), and the BOX-3 wears the daemon's face
   ([Home Assistant and the BOX-3](https://github.com/CodeMusic/daemons-companion/wiki/Home-Assistant-and-the-BOX-3)).
 - **It follows you out.** Away from home your phone reaches it through a relay of your own
   ([Away from home](https://github.com/CodeMusic/daemons-companion/wiki/Away-from-home)).
@@ -88,12 +97,15 @@ real thing. Each board's controls, pages, quirks and which ones run today:
 
 The companion reads your save, so it can show you what you have done in there -- on the app, the site and the Tab5:
 
+- **TODAY** -- where you last saved, your MARKS, your money and what the CASINO has waiting for the next SYNC, and
+  what is new in the LIBRARY, each opening its place.
 - **YOU** -- you as the game draws you, your rival, your money and your MARKS as badges, each opening its page;
   the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
   the story so far.
 - **LIBRARY** -- CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
-  GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, in
-  their colours, to hear again) and **STREAM** (every lesson a MARK or a ROOT has opened).
+  GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
+  a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE
+  to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened).
 - **The INDEX**, in DAEMON -- every entry, read aloud if you like, and where each daemon is NATIVE.
 
 LIGHT, DARK or AUTO on every screen. It never shows what your save has not reached yet

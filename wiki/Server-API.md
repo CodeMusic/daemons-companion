@@ -22,6 +22,10 @@ requests a phone hosting on its own answers the same way (C-111) -- marked *alon
 
 A device names itself with an `x-device` header, or `?device=` through the relay.
 
+**From a browser**, a request must come from a page of the companion's own (its `Origin`) and name an address of the
+companion's (its `Host`); anything else is refused with 403, so no other web page can drive it. A request body is JSON
+of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with 400.
+
 ## The day, goals and the walk
 
 | route | what it does |
@@ -41,11 +45,12 @@ A device names itself with an `x-device` header, or `?device=` through the relay
 | route | what it does |
 |---|---|
 | `GET /api/party` | the party of the configured save copy (*alone too*) |
-| `GET /api/profile` | the save's trainer, the player's choice and rival, play time, money, shoes, INDEX counts, MARKS and their wisdom, ROOTS, the DIPLOMA, OPUS, the places visited, the groves found, where it was saved, whether it is the companion's game -- and `casino`: what the CASINO has won or lost since the last SYNC (`pending`, `spins`, `balance`) (*alone too*) |
+| `GET /api/profile` | the save's trainer, the player's choice and rival, play time, money, shoes, INDEX counts, MARKS and their wisdom, ROOTS, the DIPLOMA, OPUS, the places visited, the groves found, where it was saved, whether it is the companion's game -- and `casino`: what the CASINO has won or lost since the last SYNC (`pending`, `spins`, `balance`) and who is at the reels now (`table`) (*alone too*) |
 | `GET /api/index` | the save's INDEX: seen and bound, each entry, OPUS's margins, and each entry's NATIVE lines (*alone too*) |
 | `GET /api/species/:id` | one daemon's name, types, category and its edition's INDEX entry (*alone too*) |
-| `GET /api/notebook` | the NOTEBOOK pages the save holds, by section: each page's words, its kind (a song is `song`), whether it is still unread in the game, where it was found, and its link where the game draws a QR code (*alone too*) |
+| `GET /api/notebook` | the NOTEBOOK pages the save holds, by section: each page's words, its kind (a song is `song`, with its key, notes and frames), whether it is still unread in the game, where it was found, and its link where the game draws a QR code; and the twelve key colours and the outline the SONGBOOK's staff is drawn in (*alone too*) |
 | `GET /api/progress` | GAME EVENTS -- every row held, not yet (and then unnamed) or unknown -- and CALLOW SCHOOL: the floors stood on, the TEXTBOOK, the DIPLOMA, the best and last mark, the sittings and the grade (*alone too*) |
+| `GET /api/play` | the instrument the save's edition plays (the HARP for CONTENT, the FLUTE for CONTEXT), whether the save holds it yet, and each song learned or only heard; `?preview=1`, for a check, as if held with every song learned (*alone too*) |
 | `GET /api/guide` | whether the save has found THE GUIDE, and once it has, the book by part and chapter (*alone too*) |
 | `GET /api/marks` | each MARK's and understanding's words, colours and towns -- no save needed (*alone too*) |
 | `GET /api/regions` | the two region maps' cells -- no save needed (*alone too*) |
@@ -56,6 +61,25 @@ A device names itself with an `x-device` header, or `?device=` through the relay
 | `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines; `?expression=` shades it |
 | `GET /art/species/<id>.png` | a species as the INDEX draws it |
 | `GET /api/art` | the same pictures as JSON, so they cross the relay: `?party=<slot>` (and `&expression=`), `?species=<id>`, `?all=species`, `?player=reason` or `instinct` (and `&walk=1`), `?mark=1` to `8`, `?guide=cover` |
+
+## THE CASINO
+
+[The CASINO](The-CASINO) has how it plays. Its rules are
+[`server/src/slots.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/slots.ts); its coins, seats
+and admin page [`server/src/casino.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/casino.ts);
+the day's luck and dress
+[`server/src/context.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/context.ts).
+
+| route | what it does |
+|---|---|
+| `GET /api/casino` | THE HOUSE: the day's luck and return with every reason (`context`), the hour and the weather (`world`), the holiday, and everyone at the reels in the last two minutes -- each by its device and the daemon it hosts, with the odds it last said and its reasons, the string's among them (`players`) |
+| `GET`/`POST /api/weather` | the city whose real weather the devices follow (`{city}`; `""` forgets it), and the weather there now -- from Open-Meteo, asked every fifteen minutes while a city is set |
+| `GET /art/head` | where a daemon's head is in its picture, for a holiday hat: `?slot=` (a party daemon) or `?species=` |
+| `GET /art/casino/<piece>.png` | one of the CASINO's drawn pieces or hats, as the boards draw them; `?a=` and `?b=` the holiday's or the season's two colours, `?day=` the day's (each `RRGGBB`) |
+
+A device's results reach the server as `POST /api/device/interact` with `kind: casino` (what a run of pulls came to,
+counted once, never more than its pulls could come to) and its seat as `kind: table` (`here` or `gone`, and the odds it
+plays at). A big win is a broadcast act, `JACKPOT` or `BIGWIN`.
 
 ## The daemon's life
 
@@ -71,7 +95,7 @@ A device names itself with an `x-device` header, or `?device=` through the relay
 | route | what it does |
 |---|---|
 | `GET /api/broadcasts?since=` | the broadcasts kept (the last sixty), each once, with the ways it came (*alone too*) |
-| `GET /api/broadcast/acts` | the acts a daemon can do, from `server/data/acts.json` (*alone too*) |
+| `GET /api/broadcast/acts` | the acts a daemon can do, from `server/data/acts.json`, and the CASINO's two (`casino`: JACKPOT and BIGWIN, never offered to choose) (*alone too*) |
 | `POST /api/broadcast` | `{kind: say, act or reply, text or act, replyTo?, as?}` -- from the app, the site or the Tab5, as one of the daemons away (*alone too*) |
 | `POST /api/device/broadcast` | a board's broadcast, sent (`dir: out`) or heard by LoRa or Bluetooth (`via`), kept once (*alone too*) |
 
@@ -81,20 +105,21 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 
 | route | what it does |
 |---|---|
-| `GET /api/device/state` | what a device shows -- **for the device asking**: the day (its theme, virtue over its shadow, chakra, note, and its menu and light colours), the season, the one next step, its daemon (what it holds, its INDEX entry, its life, its `expression` and `den`, OPUS's margin), the party and their routines, the clock, the settings, `holiday` (how a board dresses today), `casino` (`{money, pending, balance, seen, friends}`: the save's money, what waits for SYNC, what the board plays with, which of its reports are counted, and the party's other slots for the reels), `casts`, and a note waiting for a card. `?expression=` draws it in another expression, for a check |
-| `GET /api/device/art` | the hosted daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels; `?slot=0` to `5`, a party daemon's, for the CASINO's reels |
+| `GET /api/device/state` | what a device shows -- **for the device asking**: the day (its theme, virtue over its shadow, chakra, note, and its menu and light colours), the season, the one next step, its daemon (what it holds, its INDEX entry, its life, its `expression` and `den`, OPUS's margin), the party and their routines, the clock, its settings (its own over every device's), `holiday` (today's, and how to dress for it), `world` (the hour by the game's watches, and the weather), `casino` (`{money, pending, balance, seen, friends, table, reel, context, dress}`: the save's money, what waits for SYNC, what it plays with, which of its reports are counted, the party's other slots, who else is at the reels, the reels' daemons, the day's luck and return with its reasons, and how the CASINO is dressed), `play` (the instrument, whether it is held, the songs learned and heard), `casts`, and a note waiting for a card. `?expression=` draws it in another expression, for a check |
+| `GET /api/device/art` | the hosted daemon's front sprite, as sixteen RGB565 colours and 4-bit pixels; `?slot=0` to `5`, a party daemon's, or `?species=`, a reel's daemon by its species |
 | `POST /api/device/hello` | `{firmware}` -- a device's build (the Tab5) |
 | `POST /api/device/battery` | `{percent, mv, charging, full, usb}` -- a board's charge, when it changes |
 | `POST /api/device/ticks` | `{steps: [ids]}` -- the steps a device ticked off; answers with the new state and what to celebrate |
 | `POST /api/device/untick` | `{step}` -- a step ticked by accident, undone |
-| `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run, a care): tending the daemon. `kind: casino` is a CASINO result, kept until SYNC writes it into the save |
+| `POST /api/device/interact` | `{kind, detail}` -- a device was used (a routine run, a care): tending the daemon. `kind: casino` is a CASINO result, kept until SYNC writes it into the save; `kind: table` a seat at the reels; `kind: setting` (`sound on` or `off`) a board's SOUND page, kept as its own setting. Over the network a board logs only its routines, its cares, the CASINO, its seat and its sound |
 | `GET /api/device/link` | (this machine) the board: linked or not and how, its routines, their results, and every device with its daemon |
 | `GET /api/devices` | every device heard -- when, how, its firmware and battery, and which daemon it hosts -- and every daemon away |
 | `POST /api/devices/carry` | `{id, personality}` -- put a daemon that is away in that device (`null`: none); it leaves the device that had it |
 | `POST /api/devices/forget` | `{id}` -- forget a device; its key stops working |
 | `POST /api/device/run` | `{routine}` -- run one of the board's routines |
 | `GET /api/device/commands` | (the board) what the site sent it; `POST /api/device/results` and `/api/device/routines` answer |
-| `GET`/`POST /api/device/settings` | the board's settings: home, sleep, sound, volume, ring, colours, meeting, LoRa band |
+| `GET`/`POST /api/device/settings` | every device's settings: home, sleep, sound, volume, ring, colours, meeting, LoRa band |
+| `GET`/`POST /api/devices/<id>/settings` | one device's own settings over every device's: `shared`, `own`, what results (`settings`) and the keys it may keep (`keys`: home, sleep, sound, volume, ring, `wakeSound`, `face`, `faceSky`). A key sent as `null` goes back to every device's. This machine's, or a paired phone's -- never a board's own door |
 | `POST /api/device/wifi` | `{ssid, password}` -- the board's Wi-Fi, sent down its cable only |
 | `POST /api/device/networks` | the networks a board knows; a device that has proved itself is handed the whole shared list back |
 | `POST /api/device/network` | `{op: forget, ssid}` -- a network forgotten everywhere |

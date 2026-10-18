@@ -46,7 +46,8 @@ pull the save to your computer, set that path, and pull it again after you play.
 **Close the game before every SYNC** -- a running emulator writes its own copy of the save back over the
 companion's.
 
-1. In the companion, **DAEMON**, **SYNC**. The first time, it links the save: *"Linked. Your game now offers SEND…"*
+1. In the companion, **DAEMON**, Yours, **SYNC**. The first time, it links the save: *"Linked. Your game now offers
+   SEND…"*
 2. In the game, open a party daemon's menu and choose **SEND**. It appears only once the save is linked, and only a
    well daemon goes (full health, nothing ailing it). The game saves.
 3. Close the game, and **SYNC** again. The daemon is now **AWAY**: washed out in the companion's party, *ON YOUR
@@ -111,7 +112,7 @@ reaches the companion the way the app does, over your Wi-Fi at home and through 
 
 ## 7. Choose the daemon it hosts
 
-In the app (or on the site), **DEVICE**, **YOUR DEVICES**. The widget is listed there as **This phone's widget**,
+In the app (or on the site), **PLACES**, **YOUR DEVICES**. The widget is listed there as **This phone's widget**,
 alongside any boards, each saying which daemon it hosts (*"Hosts …"*). Choose a daemon for it from those
 AWAY. A daemon hosted by another device moves to the widget. The widget shows it, its level, its word for how it is,
 how it has eaten and drunk today, and its cue.
@@ -128,25 +129,32 @@ Press the buttons on the widget. Each answers at once, without opening the app:
 | **SLEEP** | *Asleep.* -- put to bed from 8pm it sleeps until 6; in the day, a nap of an hour and a half |
 
 **A press answers before the companion is asked** (C-122): the button lights with a check while the daemon hops, the
-counts move, and its phrase plays (a widget may not play sound itself, so iOS plays it through the app). A press made
-when the companion cannot be reached says *Kept until home answers.*: it is kept on the phone and sent the next time
-the widget or the app reaches the companion. Nothing is lost.
+counts move, and its phrase plays on your game's own instrument -- the HARP for a CONTENT save, the FLUTE for CONTEXT (a
+widget may not play sound itself, so iOS plays it through the app). A press made when the companion cannot be reached
+says *Kept until home answers.*: it is kept on the phone and sent the next time the widget or the app reaches the
+companion. Nothing is lost.
 
-The app's **DAEMON** tab has the same buttons, large, the daemon's day, **NEARBY** and **HOLD TO TALK**
-([Talk to your daemon](Talk-to-your-daemon)). At bedtime **SLEEP** is lit; while it sleeps one **WAKE** button wakes it,
-and the card says **ASLEEP** plainly. Its face shows how it feels -- glad after a meal, sleepy at night, its eyes closed
-asleep -- drawn from its own sprite, in its den ([Feelings and expressions](Feelings-and-expressions)). Your **goals**
-feed it too: every step you finish counts as a meal and gives it experience, which it takes home at the next SYNC. It
-never nags.
+The app's **DAEMON** tab, **Yours**, has the same buttons, large, the daemon's day, **NEARBY** and **HOLD TO TALK**
+([Talk to your daemon](Talk-to-your-daemon)); **TODAY** has DRINK, FEED and TRAIN too. At bedtime **SLEEP** is lit;
+while it sleeps one **WAKE** button wakes it, and the card says **ASLEEP** plainly. Its face shows how it feels -- glad
+after a meal, sleepy at night, its eyes closed asleep -- drawn from its own sprite, in its den
+([Feelings and expressions](Feelings-and-expressions)). Your **goals** feed it too: every step you finish counts as a
+meal and gives it experience, which it takes home at the next SYNC. It never nags.
 
-The rest of the app -- your PROFILE, the NOTEBOOK, the LIBRARY, the INDEX -- reads your game:
-[Your game on the companion](Your-game-on-the-companion). Every picture on the phone is enlarged by repeating its
-pixels, so the art stays crisp (C-147).
+**Its sound is its own**: PLACES, YOUR DEVICES, This phone's widget, **ITS SETTINGS**, **SOUND** -- Off silences the
+CASINO, the care phrases and the widget's buttons, and Quiet to Loudest sets how loud they play (C-160,
+[Settings](Settings#sound)).
+
+The rest of the app -- YOU, the LIBRARY with its NOTEBOOK, the INDEX -- reads your game:
+[Your game on the companion](Your-game-on-the-companion). DAEMON, **Routines** has THE CASINO, played with your game's
+money ([The CASINO](The-CASINO)). Another daemon's word, act or JACKPOT shows as a banner over whatever is open while
+the app is; a tap opens NEARBY. Every picture on the phone is enlarged by repeating its pixels, so the art stays crisp
+(C-147).
 
 ## Or: the phone on its own (C-111)
 
 **No computer.** Play DAEMONS in Delta on the same phone, and the app hosts the daemon itself: the day, the goal and its
-steps, the walk, the party and its art, PROFILE, the INDEX, the NOTEBOOK and the LIBRARY, the daemon's life and care,
+steps, the walk, the party and its art, YOU, the INDEX, the NOTEBOOK and the LIBRARY, the daemon's life and care,
 SYNC, and the widget, all answered on the phone by the companion's own rules.
 
 1. In Delta, hold the game, choose **Export Save File**, and save it to Files.
@@ -154,13 +162,13 @@ SYNC, and the widget, all answered on the phone by the companion's own rules.
    (CONTENT or CONTEXT), then **Choose the save from Files**. Already paired with a companion? SETTINGS, THIS PHONE,
    **Leave this companion** (tap twice) brings that screen back; nothing on the companion changes.
 3. The app keeps a copy of the save. SETTINGS then reads **THIS PHONE HOSTS ON ITS OWN**:
-   - **Take a newer save from Files** after you play, then SYNC on the DAEMON tab.
+   - **Take a newer save from Files** after you play, then SYNC on DAEMON, Yours.
    - **Give the save back to Delta** after a SYNC: save it to Files, then in Delta hold the game and **Import Save
      File**.
 4. The widget is this phone's device. Its presses are kept until the app opens and tends them.
 
-A handheld board, talking with your daemon, and reaching it from another device still need the companion on a
-computer: SETTINGS, A COMPANION ON A COMPUTER, **Pair with a companion instead**.
+A handheld board, talking with your daemon, THE WEATHER and THE HOUSE, and reaching it from another device still need
+the companion on a computer: SETTINGS, A COMPANION ON A COMPUTER, **Pair with a companion instead**.
 
 **State: built, and run in the iOS Simulator** on a scratch copy of a save -- the save taken, TODAY, the party painted,
 SYNC, the widget hosting a chosen daemon, the settings, the share sheet, a goal set. **Not yet seen**: a SYNC that

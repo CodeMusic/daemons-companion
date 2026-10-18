@@ -8,11 +8,11 @@ anywhere you did not set up.
 
 | where | how | state |
 |---|---|---|
-| the phone | DAEMON tab, **HOLD TO TALK** (with a daemon on your device) | built; needs a current phone build (`./bindCompanion.sh phone`) |
-| an INDEX entry | **LISTEN** on any entry in the INDEX tab (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks), the Tab5's INDEX, or press on the entry on a board | runs on the site |
+| the phone | DAEMON, Yours, **HOLD TO TALK** (with a daemon on your device) | built; needs a current phone build (`./bindCompanion.sh phone`) |
+| an INDEX entry | **LISTEN** on any entry in DAEMON, INDEX (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks), the Tab5's INDEX, or press on the entry on a board | runs on the site |
 | the T-Embed CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the cable; away from both, through the paired phone |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
-| the T-Watch S3, the CoreS3 | **hold TALK** on the face | built, not yet run |
+| the T-Watch S3, the CoreS3 | **hold the daemon** a beat on the DAEMON or CLOCK face, or **hold TALK** on the VIRTUE face | built; the watch runs, its talk not yet tried |
 | the StickS3, the M5GO, the Fire | **hold the face button** (the StickS3) or **B** (the M5GO and Fire, with the M5GO base) at home; on the M5GO and Fire, C opens its INDEX entry and A reads it aloud | built, not yet run |
 | the StickC-Plus | **hold the face button** at home; the answer is shown, not spoken -- its buzzer plays tunes, not a voice. Its microphone rests while a GLOW routine runs | built, not yet run |
 | the T-Deck | **hold the ball** at home | built |

@@ -2,7 +2,7 @@
 
 **Any device can host a daemon.** Your phone and its widget are enough ([Host on your phone](Host-on-your-phone));
 everything on this page is optional. A board -- most LilyGO and M5Stack handhelds -- hosts a daemon of its own: SEND
-another from your party, SYNC, and choose under DEVICE, YOUR DEVICES which device hosts which. With one device there
+another from your party, SYNC, and choose under PLACES, YOUR DEVICES which device hosts which. With one device there
 is nothing to choose.
 
 To put the firmware on a board and link it, see [Flashing and linking](Flashing-and-linking). Every board's pins and
@@ -15,13 +15,13 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 | **LilyGO T-Embed CC1101** | 320x170 | dial, its press, top button | yes (push to talk) | ring of 8 | IR, NFC (cards), Sub-GHz | gauge and charger | `t-embed` | **runs** |
 | **LilyGO T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | `t-embed` | **runs** |
 | **LilyGO T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, moving with the radio | AM/FM: **CHANNEL**, a move it learns | voltage | `t-embed` | **runs** |
-| **LilyGO T-Watch S3** | 240x240 touch | touch, the crown | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | built, not yet run |
+| **LilyGO T-Watch S3** | 240x240 touch | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | **runs** |
 | **LilyGO T-Deck, T-Deck Plus** | 320x240 | keyboard and trackball -- it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus, not yet used | voltage | `t-deck` | **runs** |
 | **LilyGO T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- (no microphone) | -- | -- | charger (voltage) | `t-display-pro` | **runs** |
 | **LilyGO T-Display-S3 AMOLED 1.91** | 536x240, touch on the touch version | touch and BOOT, or two buttons | -- (no microphone) | -- | -- | voltage | `t-display-amoled` | **runs** |
 | **M5StickS3** | 240x135 | two buttons | yes (hold the face) | -- | IR | power chip | `m5-sticks3` | **runs** |
 | **M5StickC-Plus 1.1** | 240x135 | two buttons | yes (hold the face); a buzzer, not a voice | -- | IR out; **GLOW** with its Thermal HAT | power chip | `m5-stickc-plus` | **runs** |
-| **M5Stack Cardputer, Cardputer ADV** | 240x135 | a keyboard and BOOT -- it **types** | -- (not yet) | one | LoRa (MESH) on the ADV with its Cap LoRa-1262 | voltage | `m5-cardputer` | built, not yet run |
+| **M5Stack Cardputer, Cardputer ADV** | 240x135 | a keyboard and BOOT -- it **types** | -- (not yet) | one | LoRa (MESH) on the ADV with its Cap LoRa-1262 | voltage | `m5-cardputer` | the ADV **runs**; the Cardputer built, not yet run |
 | **M5Stack CoreS3** | 320x240 touch | touch, the power key | yes (TALK on the face) | -- | -- | power chip | `m5-cores3` | **runs** |
 | **M5GO / M5Stack Fire** | 320x240 | A, B, C | yes, with the M5GO base | 10, on the base | LoRa (MESH) with an M5 LoRa433 module | power chip (in quarters) | `m5-core` | **runs** |
 | **M5Stack Dial** | 240 round, touch | the knob and its press; touch | -- (a buzzer: tunes, not a voice) | -- | RFID (TOUCHSTONE, cards) | -- | `m5-dial` | **runs** |
@@ -30,23 +30,28 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 
 *Built* means it compiles and has not yet run on that board. The three T-Embeds run **one firmware**: at start each
 looks at what answers on its I2C bus and knows which board it is. The Cardputer and the Cardputer ADV share one too, and
-tell themselves apart the same way. Every other board has a build of its own; the M5GO and the Fire share one. The M5GO,
-the Fire and the StickC-Plus are the original ESP32, the Tab5 an ESP32-P4, the BOX-3 and the rest ESP32-S3. Without
-the Fire's extra memory, the M5GO draws in 256 colours, and it has too little memory to reach the relay away from home
-over HTTPS. The StickC-Plus has no extra memory either: GLOW is written to fit beside the daemon it hosts.
+tell themselves apart the same way. The Cardputer ADV first ran on 2026-10-18 (C-136): it knew itself as the ADV, its
+chips answered, its LoRa cap listened at 868 MHz and it linked by its cable; its keys and speaker are not yet tried by
+hand. The T-Watch S3 ran the same day ([below](#the-t-watch-s3)). Every other board has a build of its own; the M5GO and
+the Fire share one. The M5GO, the Fire and the StickC-Plus are the original ESP32, the Tab5 an ESP32-P4, the BOX-3 and
+the rest ESP32-S3. Without the Fire's extra memory, the M5GO draws in 256 colours, and it has too little memory to reach
+the relay away from home over HTTPS. The StickC-Plus has no extra memory either: GLOW is written to fit beside the
+daemon it hosts.
 
-**The Tab5** is the **control center**: the app's screens on a 5-inch touch screen, seven tabs -- TODAY (the day, the one
-thing, the daemon, NEARBY, the game, the LIBRARY's news), DAEMON (YOURS: its daemon in its den and its expression, DRINK
-FEED TRAIN SLEEP or WAKE, NEARBY, the party, SYNC; the INDEX: each entry, NATIVE, and LISTEN; ROUTINES: THE CASINO),
-GOALS, LIBRARY (CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK with PLAY, STREAM), YOU, PLACES (DEVICES by maker, a picture
-of each, which daemon goes where, and HOME, Home Assistant), SETTINGS (portrait, landscape or turning with it; AUTO, LIGHT or DARK, where
-AUTO is dark from 8pm to 6am). It has its own Wi-Fi, is paired like a phone with the site's PAIR A PHONE code, and keeps
-everything on it, the whole INDEX and its art included. **Paired by the computer's name** (`<your-computer>.local`), it
-asks the network for that name (mDNS) and keeps the answer ten minutes, or until a request fails, so it finds the
-companion wherever the two share a Wi-Fi (built; not yet seen on the board). A QR code on a NOTEBOOK page is drawn on
-its screen to scan, since it has no browser. It is its own project, `firmware/tab5/` (an ESP32-P4); its newest pages are
-built and flashed, and not all yet seen on the board. See
-[docs/TAB5.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TAB5.md) and
+**The Tab5** is the **control center**: the app's screens on a 5-inch touch screen, seven tabs -- TODAY (the day, the
+one thing, the daemon, NEARBY, the game, the LIBRARY's news), DAEMON (YOURS: its daemon in its den and its expression,
+DRINK FEED TRAIN SLEEP or WAKE, NEARBY, the party, SYNC; the INDEX: each entry, NATIVE, and LISTEN; ROUTINES: THE CASINO
+and THE HOUSE), GOALS, LIBRARY (CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK with PLAY, STREAM), YOU, PLACES (DEVICES by
+maker, a picture of each, which daemon goes where, ITS SETTINGS for each, and HOME, Home Assistant), SETTINGS (portrait,
+landscape or turning with it; AUTO, LIGHT or DARK, where AUTO is dark from 8pm to 6am). Another daemon's word, act or
+JACKPOT shows as a banner over whatever page is open. It has its own Wi-Fi, is paired like a phone with the site's PAIR
+A PHONE code, and keeps everything on it, the whole INDEX and its art included. **Paired by the computer's name**
+(`<your-computer>.local`), it asks the network for that name (mDNS) and keeps the answer ten minutes, or until a request
+fails, so it finds the companion wherever the two share a Wi-Fi (built; not yet seen on the board). A QR code on a
+NOTEBOOK page is drawn on its screen to scan, since it has no browser. It is its own project, `firmware/tab5/` (an
+ESP32-P4); its CASINO, THE HOUSE and ITS SETTINGS are flashed and seen only waiting for the companion (the Tab5 has been
+off its Wi-Fi), and its newest -- the watch faces in ITS SETTINGS, and every tune on your game's own instrument -- are
+built, not yet flashed. See [docs/TAB5.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TAB5.md) and
 [Your game on the companion](Your-game-on-the-companion).
 
 **The BOX-3 is not our firmware.** It runs **ESPHome**, as Home Assistant's own BOX-3 voice assistant does -- the wake
@@ -67,16 +72,16 @@ The corner of a board's screen says how it is linked:
   needs a key the board is given only down its cable, so link each board by cable once after the relay is set.
 
 Networks are shared: a network learned on any board, the Tab5, the site or the app is learned by every device the
-next time each is in touch (DEVICE, EVERY DEVICE'S NETWORKS). Passwords go only to a device that proves itself -- down
+next time each is in touch (PLACES, EVERY DEVICE'S NETWORKS). Passwords go only to a device that proves itself -- down
 the cable or with its own key -- never over the phone's Bluetooth.
 
 ### A board and your phone, over Bluetooth
 
-Pair them once: on the board, ROUTINES, WHISPER, **PAIR MY PHONE** (it shows a six-digit code), and in the app,
-DEVICE, **Pair the handheld**. When iOS asks, type the board's code. From then on the phone carries the board's link
--- its goal, its daemon and its routines -- the way the cable does at the desk, and the link comes back by itself when
-the board is near again. Away from the companion, what the board does waits on the phone and goes up when the
-companion answers. The app only has to be open or in the background (home screen, phone locked: fine); an app swiped
+Pair them once: on the board, ROUTINES, WHISPER, **PAIR MY PHONE** (it shows a six-digit code), and in the app, PLACES,
+THE HANDHELD, ON THIS PHONE, **Pair the handheld**. When iOS asks, type the board's code. From then on the phone carries
+the board's link -- its goal, its daemon and its routines -- the way the cable does at the desk, and the link comes back
+by itself when the board is near again. Away from the companion, what the board does waits on the phone and goes up when
+the companion answers. The app only has to be open or in the background (home screen, phone locked: fine); an app swiped
 away in the app switcher is cut off from Bluetooth by iOS until it is opened again. **FORGET MY PHONES**, on the board,
 undoes every pairing; the app's **Forget it** undoes its own.
 
@@ -84,10 +89,11 @@ undoes every pairing; the app's **Forget it** undoes its own.
 
 | | the CC1101 | the plain T-Embed, the SI4732 | the T-Watch S3 | the T-Deck |
 |---|---|---|---|---|
-| choose | turn the dial | turn the dial | swipe | roll the trackball |
-| open, confirm | press the dial (acts when let go) | tap the dial | tap | click the ball, or Enter |
-| back | the top button | hold the dial half a second | hold, or the crown | hold the ball half a second, or Backspace |
-| **talk** | **hold the dial** half a second at home | **hold the dial** at home | **hold TALK** on the face | **hold the ball** at home |
+| choose | turn the dial | turn the dial | swipe: left or right a page, up or down a list | roll the trackball |
+| open, confirm | press the dial (acts when let go) | tap the dial | tap -- on a list, the row touched | click the ball, or Enter |
+| back | the top button | hold the dial half a second | hold, or press the crown | hold the ball half a second, or Backspace |
+| home | | | press the crown twice | |
+| **talk** | **hold the dial** half a second at home | **hold the dial** at home | **hold the daemon** a beat on the face, or TALK on the VIRTUE face | **hold the ball** at home |
 | sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown | hold the ball two seconds |
 | wake | **the top button only** | hold the dial | the crown | hold the ball, or any key |
 
@@ -108,9 +114,9 @@ only on its top button, so a pocket cannot wake it.
   With the **Thermal HAT** fitted, ROUTINES opens on **GLOW** (below).
 - **Cardputer and Cardputer ADV**: Enter presses and del goes back; **; , . /** move where nothing is being typed (Fn
   with them, where something is); BOOT presses, and held goes back. The keys type a Wi-Fi password and a word to every
-  daemon. Built, not yet run on either.
+  daemon. The ADV runs; its keys are not yet tried by hand, and the plain Cardputer has not yet run.
 - **M5Stack CoreS3**: a touch screen, used as the watch's is -- the face first, swipe to turn, tap to press, hold to go
-  back, TALK held on the face. Its power key wakes it or goes back, and held a second, sleeps.
+  back, TALK held on the face. Its power key wakes it or goes back, pressed twice goes home, and held a second, sleeps.
 - **M5Stack Dial**: turn the knob to choose and press it to open (held half a second, back; two seconds, sleep), or
   use its touch screen as the watch's. Its home is the face, round as the screen is. No microphone, so it does not
   talk; its buzzer plays the tunes. Its RFID reader is **TOUCHSTONE**: hold a tag to its face.
@@ -125,12 +131,42 @@ only on its top button, so a pocket cannot wake it.
   microphone and ten lights. With an **M5 LoRa433** module stacked on it, it finds the module's pins by itself and
   joins MESH ([Meeting others nearby](Meeting-others-nearby)); set the module's reset switch to G13, not G25, which is
   the speaker's pin (on G25 the Fire is silent).
-- **T-Watch S3**: its home is the face -- the time, the day's theme, its virtue over its shadow, chakra and note,
-  today's steps, the battery and a TALK button.
+- **T-Watch S3**: its home is the face ([below](#the-t-watch-s3)); a double tap on it opens CARE.
 
 On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and a word to a daemon nearby. At home,
 any letter starts **A MESSAGE TO EVERYONE NEARBY** over LoRa (C-123): Enter or the ball sends it, Backspace on an
 empty one leaves, eighty letters at most.
+
+## The T-Watch S3
+
+**The crown is a press, not a dial** (C-161): pressed, it goes back; pressed twice, home, to the face; held, the watch
+sleeps, and held longer its power chip switches it off -- so the watch has no SWITCH OFF page. Only the crown wakes it.
+Swipe left or right to turn a page, up or down to move through a list; a list's rows are a finger tall, four to the
+screen, and a tap opens the row touched.
+
+**Its face** is the watch's own setting, chosen on the app, the site or the Tab5: PLACES, YOUR DEVICES, the watch's ITS
+SETTINGS, **ITS FACE** (C-162).
+
+| face | what it shows |
+|---|---|
+| **DAEMON** (the default) | the daemon in the middle, the time above it |
+| **CLOCK** | the clock's hands over the daemon |
+| **VIRTUE** | the day's words: the theme, the time, the virtue over its shadow, the chakra and note, today's steps and the battery -- and a TALK button |
+
+On DAEMON and CLOCK the daemon is alive, as at home on the other boards: it breathes, now and then hops, and walks from
+side to side in its expression, its mark under the words. It stands on a hill under **the season's sky**, by your
+edition, with **the weather** in front of it -- the same look as THE CASINO's dress
+([The CASINO](The-CASINO#how-it-is-dressed)); **SEASON AND WEATHER** in ITS SETTINGS turns them off (C-163). Held a
+beat, the daemon listens: talk to it.
+
+**A double tap on the face opens CARE** (C-163): four tiles -- **DRINK**, **FEED**, **TRAIN** and **SLEEP** (**WAKE**
+while it sleeps, SLEEP lit at bedtime). A tap does it and goes home; the crown goes back.
+
+**State**: the watch first ran on 2026-10-18 (C-71) -- its screen, power chip, clock, steps and touch found, and eleven
+minutes carrying a daemon with no reset. The faces, the CARE grid, the SOUND page and notifications from other boards
+are seen on it. Not yet tried by hand: a tap landing on a row, the crown pressed twice, a care done from the grid. TALK
+is not yet seen: it waits on speech to text (C-83, [Talk to your daemon](Talk-to-your-daemon)). The Dial and the
+CoreS3 take the same faces, not yet seen on them.
 
 ## The pages
 
@@ -143,11 +179,14 @@ empty one leaves, eighty letters at most.
   press for its INDEX entry, in your edition's voice.
 - **ROUTINES** -- below.
 - **The DAY** -- its theme, virtue over its shadow, chakra and note; press for its note.
-- **SWITCH OFF** -- the last page on every board: press, and it is off; the page says how to start it again. Built
-  and flashed; the off and its start again are not yet seen.
+- **SOUND** -- the board's sound, ON or OFF: press to turn it on or off. The companion hears it as this board's own
+  setting ([Settings](Settings#sound)).
+- **SWITCH OFF** -- the last page on every board but the watch: press, and it is off; the page says how to start it
+  again. Built and flashed; the off and its start again are not yet seen.
 
-Any menu left alone goes to sleep (two minutes by default), and waking lands back at home, to a few notes of the title
-theme.
+Any menu left alone goes to sleep (two minutes by default), and waking lands back at home. A few notes of the title
+theme play when the board starts -- or on every wake, if its THE WAKE JINGLE says so (C-159; a board waking without it
+is not yet seen).
 
 ## Care
 
@@ -163,15 +202,17 @@ game's own music, in the day's key.
 - **Your goals nourish it**: each step you finish counts as a meal and one experience point, which it takes home at the
   next SYNC. It never nags.
 
-The site's and the app's DAEMON tab, the Tab5's DAEMON page and the phone's widget show the same, and tend it the same
-way.
+On the T-Watch S3, a double tap on the face opens the four as tiles ([above](#the-t-watch-s3)). TODAY and DAEMON,
+Yours on the site and the app, the Tab5's DAEMON page and the phone's widget show the same, and tend it the same way.
 
 ## Routines
 
 **ROUTINES** are the board's radios in the game's words, and your party's own routines from the game. A board shows
 only the types it has, in this order: GLOW where its HAT is fitted, the CASINO, FLARE, CHORUS, WHISPER, TOUCHSTONE,
-LONGWAVE, MESH, LATENT and CONTEXT, PARTY, UPLINK. A board with no radios of its own opens ROUTINES on a **RADIOS** row
-(its types) with the party after it (C-118).
+LONGWAVE, MESH, LATENT and CONTEXT, PARTY, UPLINK. A board with no radios of its own opens ROUTINES on its party, under
+a first row, **CASINO AND RADIOS** (its types: the CASINO, WHISPER, UPLINK) (C-118, C-149). A board hosting no daemon
+still opens its types: a routine that needs one says so when run, and on a board with a reader, TOUCHSTONE's HOLD A
+CARD can take a daemon back off a card (C-153; built, not yet flashed).
 
 | type | routine | what it does |
 |---|---|---|
@@ -179,12 +220,12 @@ LONGWAVE, MESH, LATENT and CONTEXT, PARTY, UPLINK. A board with no radios of its
 | GLOW | WARMEST THING | a ring that follows the warmest spot, and its temperature |
 | GLOW | SOMEONE'S HERE | five seconds learning the room, then watching: someone walking into view is shown in colour, with one note, and counted |
 | GLOW | HOW WARM IS THAT | a thermometer at the middle of the view |
-| CASINO | SLOTS | three reels of your party's daemons, played with your game's money (below) |
+| CASINO | SLOTS | three reels of daemons, played with your game's money (below, and [The CASINO](The-CASINO)) |
 | FLARE (IR) | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
 | FLARE | THEATER MODE | the board becomes the remote: press for POWER, turn for the volume, back when done |
 | FLARE | WHAT REMOTE IS THIS | point any remote at it and press: each press named -- its protocol, bits and code |
-| FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; the DEVICE tab can add one by brand |
+| FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; PLACES, ITS REMOTES can add one by brand |
 | CHORUS (every way) | TO EVERY DAEMON | an act -- WAVE, BOW, HUM A TUNE, DANCE ... -- sent to every daemon; on a keyboard board, TYPE A WORD first |
 | CHORUS | WHAT CAME | the last ten broadcasts, newest first, each with how it came: L LoRa, B Bluetooth, N the companion |
 | WHISPER (Bluetooth) | PAIR MY PHONE, OPEN TO MY PHONE, FORGET MY PHONES | the phone's link over Bluetooth |
@@ -201,8 +242,8 @@ LONGWAVE, MESH, LATENT and CONTEXT, PARTY, UPLINK. A board with no radios of its
 
 The radio routines are the hosted daemon's: they need one on the board, and speak in its name. A routine that waits
 (for a remote, a tag, a phone) says so; the back button gives up. Every routine you run is told to the server as
-tending your daemon. The DEVICE tab's ITS ROUTINES runs any of them from the site or the app, and ITS REMOTES can add
-a TV's remote by brand (**Try its POWER**, then keep it) and rename remotes.
+tending your daemon. In PLACES, ITS ROUTINES runs any of them from the site or the app, and ITS REMOTES can add a TV's
+remote by brand (**Try its POWER**, then keep it) and rename remotes.
 
 **Each board's own IR pins** (C-150). A board whose IR only sends -- the T-Watch S3 and the StickC-Plus -- has
 **FLARE (IR out)**: POWER, VOLUME UP and DOWN, THEATER MODE and CHOOSE A REMOTE. TEACH A REMOTE and WHAT REMOTE IS THIS
@@ -220,9 +261,14 @@ note typed on the T-Deck (or a Cardputer) is kept by the companion until a reade
 Built; no real card has been held to it yet.
 
 **CHORUS** (C-134) sends a broadcast every way the board has -- LoRa, Bluetooth and the companion -- and each board
-shows it once, however many ways it arrives. A broadcast arriving flashes the light and shows its words for a moment,
-never with a sound and never on a sleeping board. Every daemon that receives an act answers it once, a few seconds
-later. A board that hosts no daemon can hear but not send. See
+shows it once, however many ways it arrives. Every daemon that receives an act answers it once, a few seconds later. A
+board that hosts no daemon can hear but not send.
+
+**Notifications** (C-154): another daemon's word, its act, or a big win at THE CASINO arrives on a board as a flash of
+the light and its words for four seconds -- a longer one on two or three lines -- whether the board is at the reels or
+not. Never a sound, and a sleeping board is not woken: it keeps what came, and says the newest (and how many more) when
+it wakes. Seen on the T-Watch S3: a word, a wave and a jackpot from another board. Not yet seen: one kept while a board
+slept. See
 [docs/BROADCAST.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/BROADCAST.md) and
 [Meeting others nearby](Meeting-others-nearby#broadcasts-a-word-or-an-act-to-every-daemon).
 
@@ -232,19 +278,15 @@ seconds -- the daemon attunes to it and has learned that frequency: eight a band
 dial. While a station plays the daemon speaks it: its sprite, its aura and the ring move with the voice. LIGHTNING
 counts crashes on a quiet AM frequency; STATIC SYNTH plays notes from the static between FM stations.
 
-**THE CASINO** (every board, first in the list -- after GLOW on a StickC-Plus with its HAT): **SLOTS**. Three reels of
-your daemons -- three of the one on the board is the jackpot -- the party's others (as many as three), a coin, and the
-season's own piece (a snowflake, a blossom, the sun, a leaf). The season falls across the reels; on a holiday the reels
-dress for it (Halloween's pumpkins and witches' hats, Christmas's presents and red hats, New Year's fireworks ...) with
-the holiday's colours on the lights and its own tune on a big win; a quiet day (ANZAC Day, Obon, the Day of the Dead) is
-left plain. **The money is your game's**: the board plays with what your save holds plus what it has won or lost since,
-and the next **SYNC** writes the difference into the game -- never below nothing, never past 999999. Each pull's result
-is decided as the lever goes down, at about 94 back for every 100 bet, as the Game Corner's machines were, so stopping
-the reels yourself is the fun of it rather than a skill. On the M5GO and the Fire: A and C the bet, B the lever, then A,
-B and C stop the reel above each; held A leaves. A dial turns the bet and presses the lever, then stops the reels left
-to right. A touch screen swipes the bet and taps the lever, then taps to stop; held, it leaves. What the board has won
-or lost shows beside MONEY on the PROFILE until the SYNC that writes it
-([Your game on the companion](Your-game-on-the-companion)).
+**THE CASINO** (every board, first in the list -- after GLOW on a StickC-Plus with its HAT): **SLOTS**. Three reels:
+the daemon on the board (three of it is the jackpot), three more your save has seen in the INDEX, a coin, and the
+season's own piece. The season -- or the weather outside -- falls across the reels, and on a holiday they dress for it.
+**The money is your game's**: the board plays with what your save holds plus what has been won or lost since, and the
+next **SYNC** writes the difference into the game. Each pull's result is decided as the lever goes down, at odds the
+day sets between 90 and 100 back for every 100 bet, so stopping the reels yourself is the fun of it rather than a
+skill. A loss often falls near (**SO CLOSE**). At the reels a board sits at a table with everyone nearby and your own
+devices anywhere, and a big win is called out and cheered. The reels, the odds, the table and every board's controls:
+**[The CASINO](The-CASINO)**.
 
 The full list, with every routine, is in
 [firmware/esp32/FLASHING.md](https://github.com/CodeMusic/daemons-companion/blob/main/firmware/esp32/FLASHING.md).
@@ -256,18 +298,27 @@ each routine has its own tune, the ring dancing to it. A step done plays five no
 seven notes and a rainbow; the goal, a longer climb. **The ring** glows the day's colour, goes out after a minute
 unused, and follows the dial.
 
+The tunes are one copy for every device (`firmware/common/tunes.h`). The boards play them on their own beeps; the phone,
+the site and the widget play the same notes on your game's own instrument (the Tab5's is built, not yet flashed), and
+the boards with a speaker are to take it too (C-164, open). Each board's SOUND page turns it off or on
+([Settings](Settings#sound)).
+
 ## Battery
 
 The battery shows in the top bar, with a bolt while charging, red when low and unplugged. At 15% the board says so;
 at 5% it goes into deep sleep and the top button (or the board's wake button) wakes it. The CoreS3 switches itself off
-instead; its power key starts it again. The DEVICE tab shows each board's battery.
+instead; its power key starts it again. PLACES shows each device's battery.
 
 ## Board settings
 
-A board's settings are set on the site or in the app, DEVICE, ITS SETTINGS, and carried to the board the next time it
-is linked: HOME, WHERE IT WAKES; SLEEP WHEN LEFT ALONE; SOUND (and volume); THE RING AT REST; THE DAY'S COLOURS; MEET
-OTHERS NEARBY; and the LORA BAND. The Cardputer ADV's LoRa cap is made for 868-923 MHz, so it takes a 433 setting as
-868.
+A board's settings are set in PLACES on the site or in the app (one board's own on the Tab5 too), and carried to the
+board the next time it is linked. **EVERY DEVICE'S SETTINGS** are what every board takes: HOME, WHERE IT WAKES; SLEEP
+WHEN LEFT ALONE; SOUND; THE RING AT REST; THE DAY'S COLOURS; MEET OTHERS NEARBY; and the LORA BAND. The Cardputer ADV's
+LoRa cap is made for 868-923 MHz, so it takes a 433 setting as 868.
 
-The DEVICE tab's YOUR DEVICES lists every device under its maker -- LILYGO, M5STACK, ESPRESSIF, THIS PHONE -- each with
-a small picture of what it looks like, so a desk of boards is easy to tell apart (C-130).
+**One board's own** (C-159): tap ITS SETTINGS beside it in YOUR DEVICES, and its SOUND (off to loudest), THE WAKE
+JINGLE, HOME, its sleep and its ring can be its own rather than every device's -- and, on a round face, ITS FACE and
+SEASON AND WEATHER. Every row goes back to every device's in one tap ([Settings](Settings#each-devices-own)).
+
+PLACES, YOUR DEVICES lists every device under its maker -- LILYGO, M5STACK, ESPRESSIF, THIS PHONE -- each with a small
+picture of what it looks like, so a desk of boards is easy to tell apart (C-130).

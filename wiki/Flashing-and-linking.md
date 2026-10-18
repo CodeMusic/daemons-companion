@@ -63,16 +63,17 @@ skip it here (any answer that is not a number skips a board) and use its own scr
 ./linkCompanion.sh --port PORT
 ```
 
-The bridge finds the board's port, hands it the server's state every five seconds, and passes back what you do on it
--- steps ticked, routines run, broadcasts sent and heard, the CASINO's results. The corner of the board's screen says
-**USB**. If no server is answering, it starts one in the background (`.logs/server.log`) and Ctrl-C stops both; a
-server that was already running is used and left running. For the site as well, run `./bindCompanion.sh` first in
-another terminal.
+The bridge finds the board's port, hands it the server's state every five seconds, and passes back what you do on it --
+steps ticked, routines run, broadcasts sent and heard, the CASINO's results. The corner of the board's screen says
+**USB**. Unplugged, the bridge waits for the same board, known by its USB serial number, and leaves alone another
+plugged in under that port's name; to link a different one, start it again. If no server is answering, it starts one in
+the background (`.logs/server.log`) and Ctrl-C stops both; a server that was already running is used and left running.
+For the site as well, run `./bindCompanion.sh` first in another terminal.
 
 **Link each board by cable at least once.** That is when the server gives it a key of its own, the shared networks
 and the relay's address -- what it needs to reach the companion over Wi-Fi at home and through the relay away
 ([Away from home](Away-from-home)). A board that has lost the companion's address (the computer moved to a new one)
-is handed the current one the next time it is linked. Forgetting a board on the DEVICE tab stops its key.
+is handed the current one the next time it is linked. Forgetting a board (`POST /api/devices/forget`) stops its key.
 
 ## The BOX-3: `firmware/box3/box3.sh`
 
@@ -119,13 +120,15 @@ python3 hatfree.py            # a StickC-Plus held in its download mode by its H
 pio device monitor            # watch it start: boot: start ... boot: ready, then HELLO every three seconds
 ```
 
-Commands sent down the cable: `GO TODAY`, `GO DAEMON`, `GO INDEX`, `GO ROUTINES`, `GO DAY`, `GO PARTY` turn to a
-page; `KEY RIGHT`, `KEY LEFT`, `KEY PRESS`, `KEY BACK` work the controls -- and on the three-button boards
-`KEY DOWN A` and `KEY UP A` (or B, C) hold and let go a button as a finger does, `KEY CANCEL` forgetting one held; on a
-keyboard board `KEY TYPE <letters>`, `KEY ENTER` and `KEY BKSP` type as its keys do. `RUN <type> <n>` starts a routine;
-`MEM` reports the memory; `WATCH` the touch and clock; `EARTEST` what the microphones hear; `OUTBOX` the last report
-sent to the companion, how long it took and which way; `CASTS?` the broadcasts the board holds, each with its ways,
-and `CAST act WAVE` or `CAST say hello` sends one (with a daemon hosted); `MESH?` the LoRa radio
+Commands sent down the cable: `GO TODAY`, `GO DAEMON`, `GO INDEX`, `GO ROUTINES`, `GO DAY`, `GO PARTY` turn to a page,
+with `GO FACE` on a round face and `GO CARE` for the watch's CARE grid; `KEY RIGHT`, `KEY LEFT`, `KEY PRESS`, `KEY BACK`
+work the controls -- and on the three-button boards `KEY DOWN A` and `KEY UP A` (or B, C) hold and let go a button as a
+finger does, `KEY CANCEL` forgetting one held; on a keyboard board `KEY TYPE <letters>`, `KEY ENTER`, `KEY BKSP` and
+`KEY SPACE` type as its keys do. At THE CASINO, `KEY RIG <0..6>` decides the next pull for a check -- shown and called
+to the table, never paid -- and the board's CASINO line says whether a pull fell near. `RUN <type> <n>` starts a
+routine; `MEM` reports the memory; `WATCH` the touch and clock; `EARTEST` what the microphones hear; `OUTBOX` the last
+report sent to the companion, how long it took and which way; `CASTS?` the broadcasts the board holds, each with its
+ways, and `CAST act WAVE` or `CAST say hello` sends one (with a daemon hosted); `MESH?` the LoRa radio
 ([Meeting others nearby](Meeting-others-nearby)).
 
 **The Tab5** answers `SHOT`, `GO <tab>` (any of its tabs by name), `TAP <x> <y>` and `SCROLL <dy>` down its cable, and

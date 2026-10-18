@@ -8,7 +8,8 @@ the real world: you SEND it from your party in the game, and a device **hosts** 
 widget first, and, if you like, a handheld board too. You give it a drink, feed it, train it, put it to bed and talk
 with it, and it helps you with one goal, one next step at a time; as you get things done, it thrives and takes what it
 learned home to the game. Any device can host a daemon, and with more than one device each can host a different daemon
-from your party. It also reads your save, so your PROFILE, your NOTEBOOK and what you have been taught come with you.
+from your party. It also reads your save, so you as the game draws you, your NOTEBOOK and what you have been taught come
+with you -- and its CASINO plays with your game's money.
 
 ## The happy path: a daemon on your phone
 
@@ -32,18 +33,19 @@ been seen, so the computer is the way to start ([Host on your phone](Host-on-you
 | page | what it covers |
 |---|---|
 | [Host on your phone](Host-on-your-phone) | the happy path, step by step: the save, SEND and SYNC, the iPhone app, pairing, the widget -- and the phone on its own |
-| [Running the companion](Running-the-companion) | `bindCompanion.sh`, the site and its tabs, the server, its logs, keeping it running, Node 24 |
-| [Your game on the companion](Your-game-on-the-companion) | PROFILE, MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, the NOTEBOOK and SONGBOOK, the LIBRARY and CALLOW SCHOOL, NATIVE, the CASINO's coins |
-| [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, care, routines (GLOW, the CASINO, CHORUS, cards), sounds, battery |
+| [Running the companion](Running-the-companion) | `bindCompanion.sh`, the site and its six tabs, the server, its logs, keeping it running, Node 24 |
+| [Your game on the companion](Your-game-on-the-companion) | TODAY's game, YOU (MARKS and ROOTS, the region maps, GROVES, GAME EVENTS), the LIBRARY (CALLOW SCHOOL, THE GUIDE, the NOTEBOOK, the SONGBOOK, STREAM), the INDEX and NATIVE, the CASINO's coins |
+| [The CASINO](The-CASINO) | SLOTS on every board, the phone, the site and the Tab5: the reels, the coins, the day's odds and THE HOUSE, the dress and the holidays, the table and its cheers |
+| [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, the T-Watch S3's faces, care, routines (GLOW, the CASINO, CHORUS, cards), sounds, battery, settings |
 | [Flashing and linking](Flashing-and-linking) | `updateCompanion.sh`, `linkCompanion.sh` and `box3.sh`, checks down the cable, and what to do when a board looks dead |
-| [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3) | HOME on the app, the site and the Tab5; the BOX-3 as the home's voice assistant with the daemon for a face; the daemon as Home Assistant's conversation agent |
+| [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3) | HOME in PLACES on the app, the site and the Tab5; the BOX-3 as the home's voice assistant with the daemon for a face; the daemon as Home Assistant's conversation agent |
 | [Away from home](Away-from-home) | the relay through your own n8n, reading its executions, and keeping your computer reachable |
 | [Feelings and expressions](Feelings-and-expressions) | how it feels, and how its face shows it on every host -- from its own sprite, in its den |
 | [Talk to your daemon](Talk-to-your-daemon) | hold to talk, read aloud, and what it takes on your own machines |
-| [Meeting others nearby](Meeting-others-nearby) | the Bluetooth beacon, broadcasts to every daemon, and LoRa's MESH on the boards that have it |
-| [Settings](Settings) | the save path, `server/config.json`, and every settings card |
+| [Meeting others nearby](Meeting-others-nearby) | the Bluetooth beacon, broadcasts to every daemon, notifications, and LoRa's MESH on the boards that have it |
+| [Settings](Settings) | the save path and its backups, `server/config.json`, every settings card, THE WEATHER, each device's own settings and its sound |
 | [Server API](Server-API) | every route the server answers |
-| [Troubleshooting](Troubleshooting) | the widget stuck looking, presses kept, pairing by name, a board that looks dead, a silent Fire, disk space |
+| [Troubleshooting](Troubleshooting) | the widget stuck looking, presses kept, pairing by name, a board that looks dead, a device with no sound, a silent Fire, a bridge waiting for its board, a phone build that fails |
 
 ## Elsewhere in the repository
 

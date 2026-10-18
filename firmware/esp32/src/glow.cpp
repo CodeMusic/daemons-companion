@@ -19,6 +19,8 @@ extern "C" {
 
 static const uint8_t MLX = 0x33;
 static TwoWire &hat = Wire1;
+static bool listening = false;               // the buttons heard between the HAT's reads, while a routine runs
+static void listen();
 
 // ---- Melexis's driver's I2C, on the HAT's port. Words are big-endian; a read is cut to the Wire buffer's 128 bytes. ----
 extern "C" {
@@ -33,6 +35,9 @@ int MLX90640_I2CRead(uint8_t addr, uint16_t start, uint16_t n, uint16_t *data) {
     if (hat.requestFrom(addr, (uint8_t)(words * 2)) != words * 2) return -MLX90640_I2C_NACK_ERROR;
     for (uint16_t i = 0; i < words; i++) { uint16_t hi = hat.read(); data[i] = hi << 8 | hat.read(); }
     n -= words; start += words; data += words;
+    // a subpage is ~14 of these, ~90 ms in all: the buttons between each, or a tap made while it reads goes unheard --
+    // at 200 kHz the next subpage is always ready, so the wait below (which listens too) never comes
+    if (listening) listen();
   }
   return MLX90640_NO_ERROR;
 }
@@ -46,24 +51,35 @@ int MLX90640_I2CWrite(uint8_t addr, uint16_t reg, uint16_t v) {   // read back, 
 }
 
 // ---- the camera: up while a routine runs, its memory given back after (no PSRAM on the stick) ----------------------
-static paramsMLX90640 *params = nullptr;
-static uint16_t *frame = nullptr;            // 834 words: a subpage, as the driver reads it
-static float *to = nullptr, *room = nullptr; // each pixel's temperature, and SOMEONE'S HERE's still room
-static float *view = nullptr;               // what is drawn: each pixel half itself, half its four neighbours
-static uint16_t *eeBuf = nullptr;
+// The user, 2026-10-17: every routine said "not enough memory". With a daemon on the stick, its picture and its links,
+// the heap was 33 KB with 22 KB in one piece -- and GLOW asked for 14 KB of tables and then a 12 KB stack at once. Now:
+// the EEPROM is read into the frame's own buffer, the calibration's task has the 6 KB it needs (it leaves ~2 KB), the
+// picture is smoothed as it is drawn rather than into a copy, and SOMEONE'S HERE keeps its room in hundredths. At most
+// 13 KB, and no piece over 6 KB; 10 KB once it runs.
+static paramsMLX90640 *params = nullptr;     // 4.7 KB, the HAT's own calibration
+static uint16_t *frame = nullptr;            // 834 words: a subpage as the driver reads it -- and the EEPROM, first
+static float *to = nullptr;                  // each pixel's temperature
+static int16_t *room = nullptr;              // SOMEONE'S HERE's still room, in hundredths of a degree
 static volatile int extracted = 0;
+static volatile UBaseType_t stackLeft = 0;
 
 // Melexis's calibration keeps three 768-float tables on the stack as it works (3 KB each, one at a time) -- more than
 // the loop's 8 KB leaves this deep in a routine, so it runs in a task of its own, its stack given back when it ends.
 static void extractTask(void *waiting) {
-  extracted = MLX90640_ExtractParameters(eeBuf, params);
+  extracted = MLX90640_ExtractParameters(frame, params);
+  stackLeft = uxTaskGetStackHighWaterMark(nullptr);
   xTaskNotifyGive((TaskHandle_t)waiting);
   vTaskDelete(nullptr);
 }
 
+static String noRoom() {                     // DRAFT -- the numbers, so a failure can be told what it was short of
+  return "Not enough memory free to see heat just now: " + String(ESP.getFreeHeap() / 1024) + " KB free, " +
+         String(ESP.getMaxAllocHeap() / 1024) + " KB in one piece.";
+}
+
 static void glowEnd() {
-  free(params); free(frame); free(to); free(room); free(view); free(eeBuf);
-  params = nullptr; frame = nullptr; to = nullptr; room = nullptr; view = nullptr; eeBuf = nullptr;
+  free(params); free(frame); free(to); free(room);
+  params = nullptr; frame = nullptr; to = nullptr; room = nullptr;
   hat.end();                                 // 0 back to the microphone
   pinMode(board.hatSda, INPUT_PULLUP);       // and both held up, so nothing clocks the HAT while it waits (board.cpp)
   pinMode(board.hatScl, INPUT_PULLUP);
@@ -71,23 +87,26 @@ static void glowEnd() {
 
 static String glowBegin() {
   if (board.hatSda < 0) return "This board has no HAT header.";                                         // DRAFT
-  hat.begin(board.hatSda, board.hatScl, 400000);
+  // 200 kHz, not M5Stack's 400: the HAT has no pull-up on SCL, only the chip's own, too weak for 400 kHz's edges (one
+  // pixel read -135.9 C, 2026-10-17); a subpage still reads in about 90 ms of its 125
+  hat.begin(board.hatSda, board.hatScl, 200000);
   hat.beginTransmission(MLX);
   if (hat.endTransmission() != 0) {
     hat.end();
     return daemonName() + " sees no heat: no Thermal HAT answers on top of the stick.\nFit it, its window facing out, and run this again.";   // DRAFT
   }
   params = (paramsMLX90640 *)malloc(sizeof(paramsMLX90640));
-  frame = (uint16_t *)malloc(834 * sizeof(uint16_t));
-  to = (float *)calloc(768, sizeof(float));
-  view = (float *)calloc(768, sizeof(float));
-  eeBuf = (uint16_t *)malloc(MLX90640_EEPROM_DUMP_NUM * sizeof(uint16_t));
-  if (!params || !frame || !to || !view || !eeBuf) { glowEnd(); return "Not enough memory free to see heat just now."; }   // DRAFT
-  if (MLX90640_DumpEE(MLX, eeBuf) != 0) { glowEnd(); return "The Thermal HAT would not give its calibration."; }  // DRAFT
+  frame = (uint16_t *)malloc(834 * sizeof(uint16_t));             // 832 words of EEPROM fit in it
+  if (!params || !frame) { String why = noRoom(); glowEnd(); return why; }
+  if (MLX90640_DumpEE(MLX, frame) != 0) { glowEnd(); return "The Thermal HAT would not give its calibration."; }  // DRAFT
   extracted = -1;
-  if (xTaskCreate(extractTask, "glow", 12288, xTaskGetCurrentTaskHandle(), 1, nullptr) != pdPASS) { glowEnd(); return "Not enough memory free to see heat just now."; }
+  if (xTaskCreate(extractTask, "glow", 6144, xTaskGetCurrentTaskHandle(), 1, nullptr) != pdPASS) { String why = noRoom(); glowEnd(); return why; }
   ulTaskNotifyTake(pdTRUE, portMAX_DELAY);  // arithmetic only: it always ends
-  free(eeBuf); eeBuf = nullptr;
+  vTaskDelay(2);                            // the idle task gives its stack back before the tables below are asked for
+  to = (float *)calloc(768, sizeof(float));
+  if (!to) { String why = noRoom(); glowEnd(); return why; }
+  Serial.printf("glow: calibrated %d (its stack had %u bytes to spare; heap %u, largest %u)\n", extracted, (unsigned)stackLeft,
+                ESP.getFreeHeap(), ESP.getMaxAllocHeap());
   // its own calibration may find bad pixels it can still mend (BadPixelsCorrection); anything else is a failure
   if (extracted != 0 && extracted != -MLX90640_BROKEN_PIXELS_NUM_ERROR && extracted != -MLX90640_OUTLIER_PIXELS_NUM_ERROR) {
     String why = "The Thermal HAT's calibration did not read (" + String(extracted) + ").";             // DRAFT
@@ -120,11 +139,21 @@ static bool glowFrame() {
       delay(4);
     }
     int got = MLX90640_GetFrameData(MLX, frame);
+    if (heard == 1 || heard == -1) return true;   // stopped while it read: the picture can wait
     if (got < 0) { if (got == -MLX90640_FRAME_DATA_ERROR) continue; return false; }   // a garbled read: the next one
     float ta = MLX90640_GetTa(frame, params);
     MLX90640_CalculateTo(frame, params, 0.95f, ta - 8, to);        // 8 below its own air, as Melexis's open-air default
     MLX90640_BadPixelsCorrection(params->brokenPixels, to, 1, params);
     MLX90640_BadPixelsCorrection(params->outlierPixels, to, 1, params);
+    // a reading the sensor cannot make (outside -40..300 C, or not a number) is a word garbled on the bus: it takes the
+    // mean of its neighbours that can be made
+    for (int i = 0; i < 768; i++) {
+      if (to[i] > -41 && to[i] < 301) continue;
+      int r = i / 32, c = i % 32, n = 0; float sum = 0;
+      const int nb[4] = { c > 0 ? i - 1 : -1, c < 31 ? i + 1 : -1, r > 0 ? i - 32 : -1, r < 23 ? i + 32 : -1 };
+      for (int k : nb) if (k >= 0 && to[k] > -41 && to[k] < 301) { sum += to[k]; n++; }
+      to[i] = n ? sum / n : 20;
+    }
   }
   return true;
 }
@@ -166,14 +195,16 @@ static void glowStats() {
 // Chess mode reads alternate pixels in its two subpages, and a small offset between them showed as a chessboard once the
 // colours were stretched across a room's few degrees (seen on the stick, 2026-10-17). Each pixel's four neighbours are the
 // other subpage's, so half of it and an eighth of each evens the two out; the numbers on the screen stay the pixels' own.
-static void glowSmooth() {
-  for (int r = 0; r < 24; r++)
-    for (int c = 0; c < 32; c++) {
-      float t = to[r * 32 + c];
-      float n = (c > 0 ? to[r * 32 + c - 1] : t) + (c < 31 ? to[r * 32 + c + 1] : t) + (r > 0 ? to[(r - 1) * 32 + c] : t) + (r < 23 ? to[(r + 1) * 32 + c] : t);
-      view[r * 32 + c] = t * 0.5f + n * 0.125f;
-    }
+// A row at a time, as it is drawn (a copy of the whole picture was 3 KB the stick could not spare).
+static void smoothRow(int row, float *out) {   // out[col], in the screen's columns (mirrored, as px)
+  for (int col = 0; col < 32; col++) {
+    float t = px(to, col, row);
+    float n = (col > 0 ? px(to, col - 1, row) : t) + (col < 31 ? px(to, col + 1, row) : t) +
+              (row > 0 ? px(to, col, row - 1) : t) + (row < 23 ? px(to, col, row + 1) : t);
+    out[col] = t * 0.5f + n * 0.125f;
+  }
 }
+static inline float roomAt(int col, int row) { return room[row * 32 + (31 - col)] / 100.0f; }
 
 static String deg(float c) { return String(c, 1) + "C"; }   // DRAFT -- no degree sign in the board's fonts
 
@@ -190,18 +221,21 @@ static void cellCentre(int i, int &x, int &y) {   // a sensor pixel's middle, on
 
 static void drawHeat() {
   float span = hi - lo;
+  float rowA[32], rowB[32]; int haveA = -1, haveB = -1;   // the two smoothed rows the picture is between
   for (int sy = 0; sy < boxH; sy++) {
     float v = (sy + 0.5f) * 24 / boxH - 0.5f; if (v < 0) v = 0; if (v > 23) v = 23;
     int r0 = (int)v, r1 = r0 < 23 ? r0 + 1 : 23; float fv = v - r0;
+    if (haveA != r0) { if (haveB == r0) memcpy(rowA, rowB, sizeof rowA); else smoothRow(r0, rowA); haveA = r0; }
+    if (haveB != r1) { smoothRow(r1, rowB); haveB = r1; }
     for (int sx = 0; sx < boxW; sx++) {
       float u = (sx + 0.5f) * 32 / boxW - 0.5f; if (u < 0) u = 0; if (u > 31) u = 31;
       int c0 = (int)u, c1 = c0 < 31 ? c0 + 1 : 31; float fu = u - c0;
-      float t = (px(view, c0, r0) * (1 - fu) + px(view, c1, r0) * fu) * (1 - fv) + (px(view, c0, r1) * (1 - fu) + px(view, c1, r1) * fu) * fv;
+      float t = (rowA[c0] * (1 - fu) + rowA[c1] * fu) * (1 - fv) + (rowB[c0] * (1 - fu) + rowB[c1] * fu) * fv;
       int k = (int)((t - lo) / span * 63); if (k < 0) k = 0; if (k > 63) k = 63;
       uint16_t c = ramp[k];
       if (mode == HERE && !learnLeft) {      // SOMEONE'S HERE: the still room dimmed, what came into it in its colours
-        float d = (px(to, c0, r0) - px(room, c0, r0)) * (1 - fu) * (1 - fv) + (px(to, c1, r0) - px(room, c1, r0)) * fu * (1 - fv)
-                + (px(to, c0, r1) - px(room, c0, r1)) * (1 - fu) * fv + (px(to, c1, r1) - px(room, c1, r1)) * fu * fv;
+        float d = (px(to, c0, r0) - roomAt(c0, r0)) * (1 - fu) * (1 - fv) + (px(to, c1, r0) - roomAt(c1, r0)) * fu * (1 - fv)
+                + (px(to, c0, r1) - roomAt(c0, r1)) * (1 - fu) * fv + (px(to, c1, r1) - roomAt(c1, r1)) * fu * fv;
         if (d < 1.5f) c = (c >> 2) & 0x39E7;
       }
       canvas.drawPixel(boxX + sx, boxY + sy, c);
@@ -265,11 +299,12 @@ static String glowRun(int m) {
   lo = 20; hi = 30; warmest = coolest = centre = 0; hotAt = coldAt = 0;
   learnLeft = 0; comers = 0; newWarm = 0; someone = false;
   if (m == HERE) {
-    room = (float *)calloc(768, sizeof(float));
-    if (!room) { glowEnd(); return "Not enough memory free to see heat just now."; }                    // DRAFT
+    room = (int16_t *)calloc(768, sizeof(int16_t));
+    if (!room) { String why = noRoom(); glowEnd(); return why; }
     learnLeft = 20;                          // five seconds of pictures, the room still
   }
   float seenHot = -999, seenCold = 999, lastCentre = 0; int lost = 0, calm = 0, ready = 0;
+  listening = true;
   uint32_t t0 = millis(), lastCame = 0;
   bool firstShown = false;
   runPanel = drawGlow;
@@ -277,31 +312,33 @@ static String glowRun(int m) {
     if (!glowFrame()) { if (++lost > 3) break; delay(50); continue; }
     if (heard == 1 || heard == -1) break;
     lost = 0;
-    glowStats(); glowSmooth();
+    glowStats();
     if (!firstShown) { lo = coolest; hi = warmest; if (hi - lo < 5) { lo = (lo + hi) / 2 - 2.5f; hi = lo + 5; } firstShown = true; }
     seenHot = max(seenHot, warmest); seenCold = min(seenCold, coolest); lastCentre = centre;
     if (m == HERE) {
       if (learnLeft) {                       // the still room: each pixel's mean over the first twenty pictures
-        for (int i = 0; i < 768; i++) room[i] += to[i] / 20;
+        for (int i = 0; i < 768; i++) room[i] += (int16_t)lroundf(constrain(to[i], -40.0f, 300.0f) * 5);   // 100ths, a 20th
         learnLeft--;
       } else {
         // a warm body: a few pixels at least 2.5 degrees over the room and warm as a person is; it has come when two
         // pictures in a row say so, and gone after four that do not. The room follows slow changes where no one is.
         newWarm = 0;
         for (int i = 0; i < 768; i++) {
-          float d = to[i] - room[i];
+          float r = room[i] / 100.0f, d = to[i] - r;
           if (d > 2.5f && to[i] > 26) newWarm++;
-          else if (d < 1.0f) room[i] += (to[i] - room[i]) * 0.02f;
+          else if (d < 1.0f) room[i] = (int16_t)lroundf((r + d * 0.02f) * 100);
         }
         if (!someone) { ready = newWarm >= 6 ? ready + 1 : 0; if (ready >= 2) { someone = true; comers++; lastCame = millis(); calm = 0; progress(""); soundSelect(); } }
         else { calm = newWarm < 3 ? calm + 1 : 0; if (calm >= 4) { someone = false; ready = 0; } }
       }
     }
     progress("");
+    listen();                                // and a KEY PRESS that came down the cable while it drew (progress)
     if (heard == 1 || heard == -1) break;
     heard = 0;
     if (millis() - t0 > 10UL * 60 * 1000) break;   // ten minutes, then it rests: the stick's cell is small
   }
+  listening = false;
   runPanel = nullptr; lastInput = millis();
   int secs = (millis() - t0) / 1000;
   glowEnd();

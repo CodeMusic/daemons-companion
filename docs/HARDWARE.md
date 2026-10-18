@@ -116,6 +116,14 @@ GLOW take turns. The picture is mirrored left to right, as M5Stack's example dra
 itself and half its four neighbours: chess mode's two subpages differ a little, and stretched across a room's few
 degrees that showed as a chessboard (the temperatures shown stay the pixels' own).
 
+**Its memory, with a daemon on it**: 88 KB free at start, but **33 KB (22 KB in one piece)** once the state, the daemon's
+picture and its links are in -- and GLOW asked for 14 KB of tables and then a 12 KB stack at once, so on the user's
+stick every routine said not enough memory. Now it asks for at most 13 KB, no piece over 6 KB (the calibration's task:
+it uses ~4.3 KB of it), and holds ~10 KB while it runs; a failure says how much there was. The HAT's bus runs at
+200 kHz, not M5Stack's 400 -- the HAT has no pull-up on SCL, only the chip's own -- and a pixel no sensor could read
+(-135.9 C was seen) takes its neighbours' mean. At 200 kHz the next subpage is always ready, so the buttons are heard
+between the reads, not only in the wait.
+
 **Two things that cost a night (2026-10-17), both from code written for the S3s:**
 - **The firmware hung before printing a word.** Adafruit's PN532 object, made before `setup()`, sets its pins' modes,
   and its IRQ pin, 17, is a line of the PICO-D4's own flash: taken as an input, the flash stopped. IRrecv's pin, 1, is the

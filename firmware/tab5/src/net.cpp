@@ -293,6 +293,10 @@ static bool fetchKeep(const char *path, const char *name) {
   sendHome();                                      // C-139: a HOME tap waits for no download -- it goes between any two
   int code; String got = request("GET", path, "", code);
   if (code != 200) return false;
+  {                                                 // the review, 2026-10-18: a body cut short (a read timeout over the
+    JsonDocument whole = newDoc();                  // relay) is not kept -- it would replace the good copy offline
+    if (deserializeJson(whole, got)) return false;
+  }
   // C-96: the same answer as last time changes nothing -- no write to flash, and no page drawn again (which flickered
   // the screen and threw away its scroll every half minute)
   // The state's clock moves on every time; it is taken, and left out of the comparison.

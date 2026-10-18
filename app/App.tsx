@@ -972,6 +972,42 @@ function Casino({ ink }: { ink: string }) {
   );
 }
 
+// C-154 (the user, 2026-10-18: "all devices (even if not in casino) should get the notifications (either messages, daemons
+// moves, or casino)"): what another daemon says or does -- a word, an act, a JACKPOT -- shown on every tab as it arrives,
+// not only on NEARBY. Asked every 15 s; the first answer only learns what is already there. A tap opens NEARBY.
+const NEWS_SEEN = new Set<string>();
+let newsPrimed = false;
+function useNews(onTap: () => void) {
+  const [news, setNews] = useState<{ id: string; line: string } | null>(null);
+  useEffect(() => {
+    let gone: ReturnType<typeof setTimeout> | null = null;
+    const ask = () => api<{ items: Cast[] }>("/api/broadcasts").then((r) => {
+      const fresh = r.items.filter((c) => !NEWS_SEEN.has(c.id));
+      fresh.forEach((c) => NEWS_SEEN.add(c.id));
+      const theirs = fresh.filter((c) => !c.mine);
+      if (newsPrimed && theirs.length) {
+        const c = theirs[theirs.length - 1];
+        setNews({ id: c.id, line: castLine(c) + (theirs.length > 1 ? `  (+${theirs.length - 1})` : "") });
+        if (gone) clearTimeout(gone);
+        gone = setTimeout(() => setNews(null), 7000);
+      }
+      newsPrimed = true;
+    }).catch(() => {});
+    ask();
+    const t = setInterval(ask, 15000);
+    return () => { clearInterval(t); if (gone) clearTimeout(gone); };
+  }, []);
+  const banner = news ? (
+    <XStack position="absolute" left={16} right={16} top={ON_PHONE ? 122 : 112} alignItems="center" gap={10} padding={14}
+            borderRadius={10} backgroundColor="$color9" maxWidth={720} alignSelf="center" cursor="pointer" role="button"
+            onPress={() => { setNews(null); onTap(); }}>
+      <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="#fbfaf6">NEARBY</Text>
+      <Text flex={1} fontSize={14} fontWeight="700" color="#fbfaf6">{news.line}</Text>
+    </XStack>
+  ) : null;
+  return banner;
+}
+
 function NearbyCard({ ink }: { ink: string }) {
   const [items, setItems] = useState<Cast[]>([]);
   const [text, setText] = useState("");
@@ -2886,6 +2922,7 @@ function Shell() {
   const rainbow = PALETTE === "rainbow";                                      // C-90
   const ink = onColour(day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c");
   const showToast = !!OFFLINE && toastGone !== OFFLINE;
+  const newsBanner = useNews(() => setTab("daemon"));       // C-154
 
   const page = (
     <YStack flex={1} backgroundColor="$color2">
@@ -2915,6 +2952,7 @@ function Shell() {
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
         {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
       </ScrollView>
+      {newsBanner}
       {showToast ? (
         <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}
                 padding={14} borderRadius={10} backgroundColor="$color12" maxWidth={720} alignSelf="center">

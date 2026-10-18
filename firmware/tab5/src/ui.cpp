@@ -4,6 +4,7 @@
 #include <M5Unified.h>
 #include <lvgl.h>
 #include <map>
+#include <set>
 #include <vector>
 #include <esp_heap_caps.h>
 #include "ui.h"
@@ -445,6 +446,50 @@ static void tapCasino(lv_event_t *) {
   if (at.length()) label(o, "At the table: " + at + ".", &lv_font_montserrat_20, QUIET, LV_PCT(100));
   casinoShowCoins();
 }
+// C-154 (the user, 2026-10-18: "all devices (even if not in casino) should get the notifications"): what another daemon
+// says or does -- a word, an act, a JACKPOT -- as a banner over whatever page is open, for seven seconds, as it arrives in
+// what the Tab5 keeps (net.cpp asks every 30 s). The first look only learns what is already there. A tap opens NEARBY.
+static std::set<String> newsSeen;
+static bool newsPrimed = false;
+static lv_obj_t *newsBanner = nullptr;
+static uint32_t newsAt = 0, newsLooked = 0;
+static void newsTap(lv_event_t *) {
+  if (newsBanner) { lv_obj_delete(newsBanner); newsBanner = nullptr; }
+  closeOverlay(); lv_tabview_set_active(tabs, P_DAEMON, LV_ANIM_OFF); lv_obj_send_event(tabs, LV_EVENT_VALUE_CHANGED, nullptr);
+}
+static void newsLook() {
+  if (newsBanner && millis() - newsAt > 7000) { lv_obj_delete(newsBanner); newsBanner = nullptr; }
+  if (millis() - newsLooked < 2000) return;
+  newsLooked = millis();
+  JsonDocument b = newDoc(), acts = newDoc();
+  if (!kept("broadcasts", b)) return;
+  kept("acts", acts);
+  String line; int more = -1;
+  for (JsonObject c : b["items"].as<JsonArray>()) {
+    String id = c["id"] | "";
+    if (!id.length() || newsSeen.count(id)) continue;
+    newsSeen.insert(id);
+    if (newsPrimed && !(c["mine"] | false)) { line = castLine(c, acts); more++; }
+  }
+  newsPrimed = true;
+  if (!line.length()) return;
+  if (more > 0) line += "  (+" + String(more) + ")";
+  if (newsBanner) lv_obj_delete(newsBanner);
+  newsBanner = lv_obj_create(lv_layer_top());
+  lv_obj_set_size(newsBanner, LV_PCT(94), LV_SIZE_CONTENT);
+  lv_obj_align(newsBanner, LV_ALIGN_TOP_MID, 0, 60);
+  lv_obj_set_style_bg_color(newsBanner, DAY, 0); lv_obj_set_style_border_width(newsBanner, 0, 0);
+  lv_obj_set_style_radius(newsBanner, 14, 0); lv_obj_set_style_pad_all(newsBanner, 20, 0);
+  lv_obj_t *t = lv_label_create(newsBanner);
+  lv_label_set_text(t, ("NEARBY   " + line).c_str());
+  lv_obj_set_width(t, LV_PCT(100)); lv_label_set_long_mode(t, LV_LABEL_LONG_WRAP);
+  lv_obj_set_style_text_font(t, &lv_font_montserrat_28, 0); lv_obj_set_style_text_color(t, lv_color_white(), 0);
+  lv_obj_add_flag(newsBanner, LV_OBJ_FLAG_CLICKABLE);
+  lv_obj_add_event_cb(newsBanner, newsTap, LV_EVENT_CLICKED, nullptr);
+  newsAt = millis();
+  soundSelect();
+}
+
 // once a minute while the CASINO is open: still at the table, what is owed sent, the coins as the companion knows them
 static void casinoTick60() {
   if (!casinoOpen || millis() - seatAt < 60000) return;
@@ -1541,6 +1586,7 @@ static void buildFrame() {
 static String todayLine;
 void uiLoop() {
   casinoTick60();                                   // C-155
+  newsLook();                                       // C-154
   static uint32_t imuAt = 0, heldSince = 0; static int heldWay = -1;   // C-96: AUTO, once a new way up has held 0.8 s
   if (orient == O_AUTO && !overlay && millis() - imuAt > 150) {
     imuAt = millis();

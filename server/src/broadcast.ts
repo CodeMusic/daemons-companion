@@ -75,9 +75,13 @@ export function takeCast(store: Store, c: Partial<Cast> & { id: string }, via: V
   if (had) {
     // a board's own broadcast may reach here first as another board's "heard"; when its sender reports it, it is ours
     const more = !had.via.includes(via), ours = mine && !had.mine;
+    // a word cut for Bluetooth (43 letters) may be reported first; the whole of it, when it comes, is kept
+    const whole = had.kind === "say" && kind === "say" ? clean(c.text) : "";
+    const longer = whole.length > (had.text ?? "").length && whole.startsWith(had.text ?? "");
     if (more) had.via.push(via);
     if (ours) had.mine = true;
-    if (more || ours) keep(store, casts);
+    if (longer) had.text = whole;
+    if (more || ours || longer) keep(store, casts);
     return { cast: had, fresh: false };
   }
   const species = Number(c.species) || 0;

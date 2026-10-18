@@ -17,6 +17,16 @@ describe("broadcasts (C-134)", () => {
     expect("cast" in d && d.cast.mine).toBe(true);
   });
 
+  it("keeps the whole of a word whose Bluetooth copy, cut at 43 letters, came first", () => {
+    const s = new Store(":memory:");
+    const whole = "a word long enough that Bluetooth cut it short at forty-three";
+    takeCast(s, { id: "a1b2c3d40009", kind: "say", text: whole.slice(0, 43), name: "STARR" }, "ble");
+    const r = takeCast(s, { id: "a1b2c3d40009", kind: "say", text: whole, name: "STARR" }, "lora");
+    expect("cast" in r && r.cast.text).toBe(whole);
+    const again = takeCast(s, { id: "a1b2c3d40009", kind: "say", text: whole.slice(0, 43), name: "STARR" }, "net");
+    expect("cast" in again && again.cast.text).toBe(whole);
+  });
+
   it("refuses what is not a broadcast", () => {
     const s = new Store(":memory:");
     expect("error" in takeCast(s, { id: "nothex", kind: "act", act: "BOW" }, "net")).toBe(true);

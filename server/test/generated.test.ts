@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const SCRIPTS = ["firmware/common/acts.py", "firmware/common/device_sprites.py"];
+const SCRIPTS = ["firmware/common/acts.py", "firmware/common/device_sprites.py", "firmware/common/tunes.py"];   // C-160: the tunes too
 
 describe("the generated files are current", () => {
   for (const script of SCRIPTS) {

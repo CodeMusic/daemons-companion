@@ -1,5 +1,7 @@
 // ROUTINES -- THE CASINO (by server/src/slots.ts, the boards' table) and the party's game routines (C-155). (C-157: out of App.tsx.)
 import { useCallback, useEffect, useRef, useState } from "react";
+import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
+import { dayRoot, tuneSound } from "../tuneSound";
 import { Text, XStack, YStack } from "tamagui";
 import { BETS, draw, OUTCOMES, PAYS, piecesFor, resultDetail, STRIP, stopAt, strip, tableAct, type Piece } from "../../server/src/slots";
 import { playerId } from "../data";
@@ -68,6 +70,7 @@ export function Casino({ ink }: { ink: string }) {
   const [said, setSaid] = useState("");
   const unsent = useRef({ delta: 0, spins: 0 });
   const [owed, setOwed] = useState(0);                      // what this player has won or lost that the companion has not heard
+  const player = useAudioPlayer(null);
   const load = useCallback(async (who: string) => { setSt(await api<PlayerState>(`/api/device/state?device=${who}`)); }, []);
   const report = useCallback(async (who: string) => {
     const u = unsent.current;
@@ -90,8 +93,21 @@ export function Casino({ ink }: { ink: string }) {
   const jack = st.daemon?.slot ?? st.casino.friends[0];
   const friends = st.daemon ? st.casino.friends : st.casino.friends.slice(1);
   const spinning = stopped.some((x) => !x);
+  // C-160: the boards' own casino tunes (firmware/esp32/src/sound.cpp soundSlots), on the day's note: the lever, a loss, a
+  // small win, a big one or the jackpot -- a big win on a holiday plays the holiday's own (Halloween, Christmas ...)
+  const root = dayRoot(st.day?.note);
+  const sound = (what: 0 | 1 | 2 | 3 | 4) => {
+    const look = st.holiday?.look ?? "";
+    const [name, level] = what === 0 ? ["SLOTS_PULL", 0.8] : what === 1 ? ["SLOTS_LOSE", 0.5] : what === 2 ? ["SLOTS_WIN", 0.85]
+      : look === "pumpkins" ? ["SLOTS_SPOOKY", 0.9] : look === "presents" ? ["SLOTS_JINGLE", 0.9]
+      : look === "fireworks" ? ["SLOTS_FIREWORK", 0.9] : look === "hearts" ? ["SLOTS_SWEET", 0.85]
+      : what === 3 ? ["SLOTS_BIG", 0.9] : ["SLOTS_JACKPOT", 1];
+    const uri = tuneSound(name as string, root, level as number);
+    if (uri) setAudioModeAsync({ playsInSilentMode: false }).catch(() => {}).finally(() => { player.replace({ uri }); player.play(); });
+  };
   const settle = (o: number) => {
     const won = bet * PAYS[o] - bet;
+    sound(o === 0 ? 1 : OUTCOMES[o] === "JACK3" ? 4 : PAYS[o] >= 12 ? 3 : 2);
     unsent.current = { delta: unsent.current.delta + won, spins: unsent.current.spins + 1 };
     setOwed((n) => n + won);
     setSaid(o === 0 ? `-${bet}` : "");
@@ -108,6 +124,7 @@ export function Casino({ ink }: { ink: string }) {
   const pull = () => {
     if (spinning || bet > balance) return;
     const o = draw();
+    sound(0);
     run.current = { o, want: piecesFor(o), at: [null, null, null], started: Date.now() };
     setStopped([false, false, false]); setBanner(null); setSaid("");
     if (tick.current) clearInterval(tick.current);

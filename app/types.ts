@@ -55,7 +55,7 @@ export type Act = { code: string; label: string; seen: string; reply: string };
 // the site -- THE CASINO, played as a device of its own (on the phone the widget's, so its JACK is the widget's daemon;
 // the site keeps an id of its own), by server/src/slots.ts, the boards' own table; and the party's game routines.
 // Every word DRAFT.
-export type PlayerState = { season: string; holiday?: { name: string; look: string; colours: string[]; hat: string; flip: boolean } | null; daemon: { slot: number; nickname: string } | null;
+export type PlayerState = { season: string; day?: { note: string } | null; holiday?: { name: string; look: string; colours: string[]; hat: string; flip: boolean } | null; daemon: { slot: number; nickname: string } | null;
                      casino: { balance: number; friends: number[]; table: { name: string; device: string }[] } | null;
                      party: { name: string; routines: { name: string; colour: string }[] }[] };
 

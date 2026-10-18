@@ -21,7 +21,7 @@
 #include "leds.h"
 #include "casino.h"
 #include "sound.h"
-#include "relay_ca.h"
+#include "../../common/relay_ca.h"   // one copy for every board and the Tab5
 // C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) --
 // and kept in the board's own flash. A secrets.h, if there is one, is only the default for a board that has none yet.
 #if __has_include("secrets.h")

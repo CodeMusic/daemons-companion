@@ -11,7 +11,7 @@
 #include <esp_heap_caps.h>
 #include "net.h"
 #include "store.h"
-#include "relay_ca.h"
+#include "../../common/relay_ca.h"   // one copy for every board and the Tab5
 #include "sound.h"
 
 NetStatus net;

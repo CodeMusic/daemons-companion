@@ -14,7 +14,6 @@
 #include "leds.h"
 #include "sound.h"
 #include "../../common/play.h"
-#include "../../common/tunes.h"
 
 static String instrument = "harp";
 static bool unlocked = false, benchUnlock = false;
@@ -43,7 +42,7 @@ String playStatus() {
 static const int SCALE[7] = { 0, 2, 4, 5, 7, 9, 11 };    // the major scale's degrees, in semitones
 static int tonic(int key) { return 60 + key; }            // C4..B4
 static uint16_t colourOf(int midi) { uint32_t c = PLAY_COLOURS[((midi % 12) + 12) % 12]; return tft.color565(c >> 16, (c >> 8) & 255, c & 255); }
-static void sound(int midi, int ms) { playNoteSemis(midi - dayRoot(st.note.length() ? st.note[0] : 'C'), ms); }   // C-164: the save's instrument
+static void sound(int midi, int ms) { soundInstrumentNote(midi, ms); }   // C-164: the save's harp or flute (a square wave without a speaker for it)
 // a song's note as a degree (0..6, -1 off the scale) and an octave, both against its own key
 static void degreeOf(const PlaySong &s, int n, int &deg, int &oct) {
   int rel = s.notes[n] - tonic(s.key);

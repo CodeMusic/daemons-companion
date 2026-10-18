@@ -36,6 +36,7 @@ struct Member { String name, types; int level = 0, n = 0; String routine[4], typ
 // board's reports counted in it ("<boot>.<seq>"), and the party's other daemons by slot, the reels' pictures -- and how
 // the board dresses today: the holiday (server/data/holidays.json), its look, two colours and a hat; a QUIET day plain
 struct Casino { bool have = false, known = false;   // known: the companion sends `casino` at all (null: no save read)
+               String table[4]; int tableN = 0;                 // C-151: our other boards at the reels, by their daemons
                 long money = 0, pending = 0, balance = 0; String seen; int friends[5] = {}; int friendN = 0; };
 struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {

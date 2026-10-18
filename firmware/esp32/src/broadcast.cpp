@@ -26,6 +26,7 @@
 #include "leds.h"
 #include "watch.h"
 #include "../../common/acts.h"
+#include "casino.h"                                         // C-151: the table's cheers
 #include <deque>
 
 static const int RECENT_N = 10, SEEN_N = 64, BLE_TEXT = 43;
@@ -49,7 +50,12 @@ static uint32_t castTag() {
 static uint64_t keyOf(uint32_t from, uint16_t id) { return ((uint64_t)from << 16) | id; }
 static String hex8(uint32_t v) { char b[9]; snprintf(b, sizeof b, "%08lx", (unsigned long)v); return b; }
 static String idHex(uint32_t from, uint16_t id) { char b[13]; snprintf(b, sizeof b, "%08lx%04x", (unsigned long)from, id); return b; }
-static const Act *actOf(const String &code) { for (int i = 0; i < ACT_N; i++) if (code == ACTS[i].code) return &ACTS[i]; return nullptr; }
+static const Act *actOf(const String &code) {
+  for (int i = 0; i < ACT_N; i++) if (code == ACTS[i].code) return &ACTS[i];
+  for (int i = 0; i < CASINO_ACT_N; i++) if (code == CASINO_ACTS[i].code) return &CASINO_ACTS[i];   // C-151
+  return nullptr;
+}
+static bool casinoAct(const String &code) { for (int i = 0; i < CASINO_ACT_N; i++) if (code == CASINO_ACTS[i].code) return true; return false; }
 
 static Cast *find(uint64_t key) {
   for (int i = 0; i < recentN; i++) if (keyOf(recent[i].from, recent[i].id) == key) return &recent[i];
@@ -167,6 +173,18 @@ void castIn(uint32_t from, uint16_t id, uint8_t kind, int species, const String 
   keep(c);
   if (via != VIA_NET) report(c, false, via);              // the companion learns of it (it has it already when it came from there)
   if (c.mine) return;
+  // C-151: THE TABLE. A big win at the reels (JACKPOT, BIGWIN) is cheered by a daemon at the reels -- its answer is the
+  // cheer -- and kept quietly by one elsewhere; an answer to OUR big win is a cheer we see. A word to everyone, while we
+  // sit at the reels, goes to the reels' own line rather than the message box.
+  if (kind != CAST_SAY && casinoAct(body)) {
+    if (!casinoAtTable()) return;                          // kept, never shown, never answered
+    if (kind == CAST_ACT) {
+      casinoCast(c.name, body, 1);
+      if (st.carrying && answers.size() < 4) answers.push_back({ key, body, millis() + 1500 + esp_random() % 3500 });
+    } else if (rFrom == castTag()) casinoCast(c.name, body, 2);
+    return;
+  }
+  if (kind == CAST_SAY && casinoAtTable()) { casinoCast(c.name, body, 0); return; }
   // shown: a flash and the words -- never a sound, and never on a sleeping board (it must never pester)
   if (!asleep) {
     ledsFlash();

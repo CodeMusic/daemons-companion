@@ -21,6 +21,7 @@ bool loraSend(uint8_t kind, uint32_t to, const String &text);
 // C-134: a broadcast, with its own number (the same on every way it goes): 3 SAY to everyone, 5 ACT (the text is the
 // act's code), 6 REPLY (the text is the answered broadcast's id, 12 hex digits, a space, and the act's code)
 bool loraCast(uint8_t kind, uint16_t id, const String &text);
+bool loraTable(bool here);                                 // C-151: 7 TABLE -- at the CASINO's reels, or up from them
 
 // C-123: a message -- typed on the T-Deck's keyboard -- to every board nearby; the last one heard, kept on the screen
 // until it is read (loraMessageRead: true if one was showing)

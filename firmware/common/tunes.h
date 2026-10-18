@@ -108,3 +108,5 @@ static const Note TUNE_SLOTS_JINGLE[]  = { {4, 150}, {4, 150}, {4, 300}, {4, 150
 static const Note TUNE_SLOTS_FIREWORK[]= { {0, 50}, {5, 50}, {10, 50}, {15, 50}, {20, 50}, {24, 50}, {127, 70}, {12, 40},
                                            {19, 40}, {24, 220} };                                                     // New Year, July
 static const Note TUNE_SLOTS_SWEET[]   = { {0, 150}, {4, 150}, {7, 150}, {11, 150}, {12, 420} };                     // hearts
+// C-151: a cheer from the table -- a big win somewhere at the reels, heard by everyone sitting there
+static const Note TUNE_SLOTS_CHEER[]   = { {7, 70}, {12, 70}, {127, 40}, {7, 70}, {12, 70}, {16, 220} };

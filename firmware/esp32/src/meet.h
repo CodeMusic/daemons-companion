@@ -19,3 +19,6 @@ bool meetTakeHeard(int &species, String &peer, bool &ours);   // a companion hea
 void meetCastSend(const uint8_t (*pieces)[16], int n, uint32_t forMs);   // the beacon comes back when it is done
 bool meetCastTake(uint8_t piece[16]);                      // a piece heard (each piece more than once: broadcast.cpp keeps it once)
 void meetCastLoop(uint32_t now);                           // every pass: the light listen, and the pieces turning
+// C-151: at the CASINO's reels -- the beacon says so (ca51); and the boards heard saying it, each time one is heard
+void meetSetTable(bool on);
+bool meetTakeTable(int &species, uint32_t &tag);

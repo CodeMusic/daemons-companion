@@ -11,7 +11,9 @@
 // keeps the first forty). A frame says nothing about who carries the board.
 //
 // Kinds: 1 BEACON (I am here; every two minutes or so while a daemon is carried), 2 WAVE, 3 SAY, 4 CALL (who is there?
-// each board that hears it beacons back a moment later). TO is a tag, or 0 for everyone.
+// each board that hears it beacons back a moment later). TO is a tag, or 0 for everyone. C-151: 7 TABLE, "1" sitting at
+// the CASINO's reels (every half minute while there), "0" up from them -- sent with no hops, so never passed on: the
+// table is who is near.
 //
 // THE MESH is a flood: a frame that arrives with hops left is sent on once, a moment later, with one hop fewer, unless
 // this board has seen that FROM+ID already -- so a daemon out of radio range is still heard through a board between.
@@ -29,8 +31,9 @@
 #include "radios.h"
 #include <deque>
 
-static const uint8_t K_BEACON = 1, K_WAVE = 2, K_SAY = 3, K_CALL = 4, K_ACT = 5, K_REPLY = 6;   // C-134: 5, 6
+static const uint8_t K_BEACON = 1, K_WAVE = 2, K_SAY = 3, K_CALL = 4, K_ACT = 5, K_REPLY = 6, K_TABLE = 7;   // C-134: 5, 6; C-151: 7
 #include "broadcast.h"
+#include "casino.h"                                                  // C-151: the table
 static const int HOPS = 2, HEAD = 26, TEXT_MAX = 80, NEARBY_MAX = 12, FRAME_MAX = HEAD + TEXT_MAX;
 static const uint32_t BEACON_EVERY_MS = 120000, NEARBY_FOR_MS = 600000, ROTATE_MS = 3600000;
 
@@ -184,17 +187,19 @@ bool loraMessage(String &from, String &text) { if (!msgShown) return false; from
 bool loraMessageRead() { if (!msgShown) return false; msgShown = false; dirty = true; return true; }
 void loraPretendHeard(const String &name, const String &text) { msgFrom = name; msgText = text.substring(0, TEXT_MAX); msgShown = true; dirty = true; }
 
-static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id);
+static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id, uint8_t hops = HOPS);
+// C-151: at the reels ("1") or up from them ("0"), to whoever is near -- no hops: never passed on
+bool loraTable(bool here) { if (!ourId) ourId = esp_random(); return sendWithId(K_TABLE, 0, here ? "1" : "0", ++ourId, 0); }
 bool loraSend(uint8_t kind, uint32_t to, const String &text) {
   if (!ourId) ourId = esp_random();
   return sendWithId(kind, to, text, ++ourId);
 }
 bool loraCast(uint8_t kind, uint16_t id, const String &text) { return sendWithId(kind, 0, text, id); }
-static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id) {
+static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id, uint8_t hops) {
   uint32_t me = meetTag();
   if (!ready || !me || !st.carrying) return false;
   uint8_t b[FRAME_MAX]; int n = 0;
-  b[n++] = 'D'; b[n++] = 'A'; b[n++] = kind; b[n++] = HOPS;
+  b[n++] = 'D'; b[n++] = 'A'; b[n++] = kind; b[n++] = hops;
   put32(b + n, me); n += 4;
   b[n++] = st.daemon.species >> 8; b[n++] = st.daemon.species;
   b[n++] = id >> 8; b[n++] = id;
@@ -219,8 +224,9 @@ static void take(const uint8_t *b, int n, int rssi) {
   seen.push_back(key); if (seen.size() > 32) seen.pop_front();
   String name; for (int i = 16; i < 26; i++) if (b[i] != ' ') name += (char)b[i];
   String text; for (int i = HEAD; i < n && i < HEAD + TEXT_MAX; i++) text += (char)b[i];
-  int relayed = HOPS - hops;
+  int relayed = kind == K_TABLE ? 0 : HOPS - hops;               // C-151: a TABLE goes with no hops, heard directly or not at all
   remember(from, species, name, relayed, rssi);
+  if (kind == K_TABLE) { casinoHeard(from, species, name, text == "1", 1); return; }   // C-151: the table, never passed on
   bool forMe = to == 0 || to == me;
   // C-134: a broadcast -- a word to everyone, an act, an answer -- goes to broadcast.cpp, which shows it once however
   // it came (and may answer it); the mesh below passes it on as any frame
@@ -402,6 +408,7 @@ void loraBegin() {}
 void loraLoop(uint32_t, bool, int) {}
 bool loraSend(uint8_t, uint32_t, const String &) { return false; }
 bool loraCast(uint8_t, uint16_t, const String &) { return false; }   // C-134
+bool loraTable(bool) { return false; }                               // C-151
 bool loraCanSay() { return false; }
 bool loraSay(const String &) { return false; }
 int loraTextMax() { return 0; }

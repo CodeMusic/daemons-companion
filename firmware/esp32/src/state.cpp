@@ -89,6 +89,8 @@ bool takeState(const char *json) {
     st.casino.money = cs["money"] | 0L; st.casino.pending = cs["pending"] | 0L; st.casino.balance = cs["balance"] | 0L;
     st.casino.seen = cs["seen"] | ""; st.casino.friendN = 0;
     for (JsonVariant f : cs["friends"].as<JsonArray>()) if (st.casino.friendN < 5) st.casino.friends[st.casino.friendN++] = f | 0;
+    st.casino.tableN = 0;                                // C-151: our other boards at the reels
+    for (JsonVariant t : cs["table"].as<JsonArray>()) if (st.casino.tableN < 4) st.casino.table[st.casino.tableN++] = t["name"] | "";
   }
   JsonVariant hd = doc["holiday"];
   st.holiday = Holiday();

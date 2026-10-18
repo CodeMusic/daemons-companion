@@ -29,4 +29,4 @@ void soundUndo(int species, int day);                   // C-50: a step undone -
 void soundReelTick();                      // C-149: a reel ticking past (at most every 70 ms)
 void soundReelStop(int reel);              // C-149: a reel stopping, 0..2
 void soundCoin(int i);                     // C-149: a coin counted in
-void soundSlots(int what, const String &look);   // C-149: 0 the lever, 1 a loss, 2 a win, 3 a big win, 4 the jackpot
+void soundSlots(int what, const String &look);   // C-149: 0 the lever, 1 a loss, 2 a win, 3 a big win, 4 the jackpot; C-151: 5 a cheer

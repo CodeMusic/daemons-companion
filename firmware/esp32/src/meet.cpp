@@ -10,6 +10,9 @@
 // beacon cannot be followed from one hour to the next, and it says nothing about who carries it: a species, and
 // noise. It rides in the scan response (the advertisement proper carries the link's UUID, link.cpp).
 //
+// C-151: AT THE TABLE -- while a board sits at the CASINO's reels its beacon ends ca51, not 0001, so the boards nearby
+// that are at the reels too count it at the table (the phone, app/beacon.ts, reads only SSSS and PPPPPPPP: unchanged).
+//
 // THE LISTEN: four seconds every three minutes, which costs little. A tag already heard this hour is not heard again,
 // and the tags of our OWN other companions (the phone, which the server names in the state) are told but never
 // celebrated -- the server never counts them, and notes that our companions heard each other, which proves the radios.
@@ -28,6 +31,9 @@ static int beaconSpecies = -1;
 static String ours;                                        // our other companions' tags, "a1b2c3d4,..."
 static portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;
 static std::deque<std::pair<int, uint32_t>> heard;         // from the radio task, for the main loop
+static std::deque<std::pair<int, uint32_t>> tableSeen;     // C-151: beacons ending ca51 -- at the reels -- each time heard
+static bool atTable = false;
+static int burstN = 0;                                     // C-134: a broadcast's pieces turning in place of the beacon
 static std::deque<std::pair<uint32_t, uint32_t>> recent;   // tag -> when, for once an hour
 // each listen, told to the server, so the radio can be checked from the companion (devices heard, beacons among them)
 static volatile int listenDevices = 0, listenBeacons = 0;
@@ -68,6 +74,7 @@ class MeetListener : public NimBLEAdvertisedDeviceCallbacks {
       if (!species || tag == peer) continue;
       portENTER_CRITICAL(&lock);
       if (heard.size() < 16) heard.push_back({ species, tag });
+      if (u.compare(32, 4, "ca51") == 0 && tableSeen.size() < 16) tableSeen.push_back({ species, tag });   // C-151
       portEXIT_CRITICAL(&lock);
     }
   }
@@ -83,7 +90,7 @@ void meetLoop(uint32_t now, bool on, int species) {
   if (!peer || now - peerAt > ROTATE_MS || species != beaconSpecies) {      // a new tag every hour
     do peer = esp_random(); while (!peer);
     peerAt = now; beaconSpecies = species;
-    snprintf(beaconUuid, sizeof beaconUuid, "%s%04x-%08lx0001", PREFIX, species & 0xFFFF, (unsigned long)peer);
+    snprintf(beaconUuid, sizeof beaconUuid, "%s%04x-%08lx%s", PREFIX, species & 0xFFFF, (unsigned long)peer, atTable ? "ca51" : "0001");
     linkSetBeacon(beaconUuid);
   }
   NimBLEScan *scan = NimBLEDevice::getScan();
@@ -101,6 +108,23 @@ void meetLoop(uint32_t now, bool on, int species) {
     listenStarted = scan->start(LISTEN_S, listenEnded, false);   // in the background; the loop carries on
     if (!listenStarted) listenDone = true;
   }
+}
+
+// C-151: at the reels, or up from them -- the beacon's last four digits say so, at once (after a broadcast's burst, which
+// puts the beacon back as it is then)
+void meetSetTable(bool on) {
+  if (atTable == on) return;
+  atTable = on;
+  if (!beaconUuid[0]) return;
+  memcpy(beaconUuid + 32, on ? "ca51" : "0001", 4);
+  if (!burstN) linkSetBeacon(beaconUuid);
+}
+bool meetTakeTable(int &species, uint32_t &tag) {
+  portENTER_CRITICAL(&lock);
+  bool got = !tableSeen.empty();
+  if (got) { species = tableSeen.front().first; tag = tableSeen.front().second; tableSeen.pop_front(); }
+  portEXIT_CRITICAL(&lock);
+  return got;
 }
 
 bool meetTakeListen(String &line) {
@@ -138,7 +162,7 @@ bool meetTakeHeard(int &species, String &tag, bool &mine) {
 }
 
 // ---- C-134: broadcasts' pieces ----------------------------------------------------------------------------------------
-static uint8_t burst[8][16]; static int burstN = 0, burstAt = 0; static uint32_t burstUntil = 0, burstTurned = 0;
+static uint8_t burst[8][16]; static int burstAt = 0; static uint32_t burstUntil = 0, burstTurned = 0;
 static void uuidOf(const uint8_t *b, char *out) {
   snprintf(out, 40, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", b[0], b[1], b[2], b[3], b[4], b[5],
            b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);

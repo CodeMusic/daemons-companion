@@ -406,8 +406,9 @@ void soundReelTick() {
 }
 void soundReelStop(int reel) { tone(root - 12 + 7 * reel, 34, 0.9f); }
 void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f); }
-void soundSlots(int what, const String &look) {   // 0 the lever, 1 a loss, 2 a small win, 3 a big one, 4 the jackpot
+void soundSlots(int what, const String &look) {   // 0 the lever, 1 a loss, 2 a small win, 3 a big one, 4 the jackpot, 5 a cheer (C-151)
   if (what == 0) { play(TUNE_SLOTS_PULL, 3, root, -1, 0.8f); return; }
+  if (what == 5) { tuneLater(TUNE_SLOTS_CHEER, 6, root, DANCE_SPARKLE, 0.8f); return; }
   if (what == 1) { play(TUNE_SLOTS_LOSE, 2, root, -1, 0.5f); return; }
   if (what == 2) { tuneLater(TUNE_SLOTS_WIN, 4, root, DANCE_PULSE, 0.85f); return; }
   if (what >= 3 && look == "pumpkins") { tuneLater(TUNE_SLOTS_SPOOKY, 6, root, DANCE_SPARKLE, 0.9f); return; }

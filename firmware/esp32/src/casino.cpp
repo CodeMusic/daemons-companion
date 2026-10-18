@@ -27,6 +27,9 @@
 #include "casino.h"
 #include "leds.h"
 #include "sound.h"
+#include "broadcast.h"                            // C-151: the table -- its big wins and its words
+#include "lora.h"
+#include "meet.h"
 
 
 // ---- the pieces --------------------------------------------------------------------------------------------------
@@ -159,12 +162,69 @@ static void bitReset(Bit &b, int x0, int x1, int y0, int y1, bool anywhere, cons
   if (l == "snow") b.rgb = 0xFFFFFF;
 }
 
+// ---- C-151: THE TABLE (the user, 2026-10-17: "who else is gambling with you") ----------------------------------------
+// Who else is at the reels: the daemons near that say so -- over LoRa with their names (lora.cpp's TABLE frames, every
+// half minute), over Bluetooth by their beacon's ca51 (meet.cpp: a species only, so counted, not named) -- and the
+// user's own other boards anywhere, through the companion (the state's casino.table). Each is kept until it gets up or
+// goes unheard for 75 seconds. A big win (12x, the jackpot) goes to every daemon as a broadcast act (JACKPOT, BIGWIN);
+// a daemon at the reels cheers it -- its lights, a phrase -- and its answer is the cheer the winner sees. Names and big
+// wins only, never an amount; no money moves between games. On the T-Deck a word typed at the reels goes to the table.
+struct Seat { uint32_t tag; String name; uint8_t via; uint32_t at; };
+static Seat seats[8]; static int seatN = 0;
+static bool sitting = false;
+static String ticker, callout, cheers, typing;  // a word or a cheer for a while; another's big win; our cheerers; a word being typed
+static uint32_t tickerUntil = 0, calloutUntil = 0, cheersAt = 0, cheerAt = 0;
+static bool calloutJackpot = false;
+bool casinoAtTable() { return sitting; }
+void casinoHeard(uint32_t tag, int species, const String &name, bool here, uint8_t via) {
+  if (!sitting || !tag) return;
+  int i = 0;
+  for (; i < seatN; i++) if (seats[i].tag == tag) break;
+  if (!here) { if (i < seatN) seats[i] = seats[--seatN]; return; }
+  if (i == seatN) { if (seatN == 8) return; seatN++; seats[i] = Seat{ tag, "", 0, 0 }; }
+  seats[i].via |= via; seats[i].at = millis();
+  if (name.length()) seats[i].name = upper(name);
+}
+void casinoCast(const String &name, const String &body, int what) {
+  if (!sitting) return;
+  String who = upper(name);
+  uint32_t now = millis();
+  if (what == 0) { ticker = who + ": " + body; tickerUntil = now + 9000; }
+  else if (what == 1) {                         // another's big win: called out, cheered with the lights and a phrase
+    calloutJackpot = body == "JACKPOT";
+    callout = who + (calloutJackpot ? " HIT THE JACKPOT!" : " WON BIG!");   // DRAFT
+    calloutUntil = now + 3500; cheerAt = now;
+    soundSlots(5, "");
+  } else {                                      // a cheer for our own: who cheered, together for a while
+    if (now - cheersAt > 15000) cheers = "";
+    if (cheers.indexOf(who) < 0) cheers += (cheers.length() ? ", " : "") + who;
+    cheersAt = now;
+    ticker = cheers + (cheers.indexOf(',') > 0 ? " CHEER" : " CHEERS");   // DRAFT
+    tickerUntil = now + 6000;
+    soundCoin(2);
+  }
+  dirty = true;
+}
+static String tableText() {
+  String names; int n = 0, more = 0;
+  auto add = [&](const String &nm) {
+    if (!nm.length()) { more++; return; }
+    if (names.indexOf(nm) >= 0) return;            // ours, heard by radio and through the companion too
+    if (n < 3) { names += (n ? ", " : "") + nm; n++; } else more++;
+  };
+  for (int i = 0; i < seatN; i++) add(seats[i].name);
+  for (int i = 0; i < st.casino.tableN; i++) add(st.casino.table[i]);
+  if (!n && !more) return "";
+  return "AT THE TABLE: " + (n ? names + (more ? " +" + String(more) : String("")) : String(more) + " NEARBY");   // DRAFT
+}
+static bool tableRow() { return !board.round && H >= 160; }   // a line for the table under the band, where there is room
+
 // ---- drawing -------------------------------------------------------------------------------------------------------
 struct Frame { int top, bottom, mid, x0, reelW, gap, cellH, infoY; bool keys; };
 static Frame layout() {
   Frame f;
   f.keys = board.kind == BoardKind::M5Core;     // the three buttons under the screen, each named above it
-  f.top = board.round ? 58 : 30;
+  f.top = board.round ? 58 : tableRow() ? 42 : 30;   // C-151: the table's line above the reels
   f.infoY = board.round ? 184 : f.keys ? H - 44 : H - 30;
   f.bottom = f.infoY - 4;
   f.mid = (f.top + f.bottom) / 2;
@@ -385,6 +445,26 @@ static String drawSlots(uint16_t day, uint16_t ink) {
   canvas.fillTriangle(f.x0 - 6, f.mid - 5, f.x0 - 6, f.mid + 5, f.x0 - 1, f.mid, gold);
   int right = f.x0 + 3 * f.reelW + 2 * f.gap;
   canvas.fillTriangle(right + 5, f.mid - 5, right + 5, f.mid + 5, right, f.mid, gold);
+  // C-151: the table, between the band and the reels -- a word being typed, a word or a cheer, else who is sitting here
+  if (tableRow()) {
+    String row = typing.length() ? "SAY: " + typing + ((t / 400) % 2 ? "_" : " ")
+               : t < tickerUntil ? ticker : tableText();
+    if (!row.length() && board.keyboard) row = "type a word to the table";     // DRAFT
+    canvas.setTextFont(1); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextColor(typing.length() || t < tickerUntil ? PAPER : QUIET);
+    while (row.length() > 4 && canvas.textWidth(row) > W - 16) row.remove(row.length() - 1);
+    canvas.drawString(row, f.x0, 31);
+  }
+  // C-151: another's big win at the table, called out across the top of the reels (our own wins say theirs over it)
+  if (t < calloutUntil && !(phase == SHOWING && won > 0 && t - shownAt < 2600)) {
+    canvas.setTextFont(4); canvas.setTextDatum(MC_DATUM);
+    if (canvas.textWidth(callout) > W - 40) canvas.setTextFont(2);
+    int bw = min(W - 16, (int)canvas.textWidth(callout) + 26), by = f.top + 2;
+    bool lit = calloutJackpot && (t / 120) % 2;
+    canvas.fillRoundRect(W / 2 - bw / 2, by, bw, 36, 8, lit ? gold : day);
+    canvas.drawRoundRect(W / 2 - bw / 2, by, bw, 36, 8, PAPER);
+    canvas.setTextColor(lit ? INK : ink); canvas.drawString(callout, W / 2, by + 19);
+  }
   // a win, said large -- across the top of the reels, so the pieces that won stay in sight
   if (phase == SHOWING && won > 0 && t - shownAt < 2600) {
     String w = outcome == O_JACK3 ? "JACKPOT!  " + String(won) : "WIN  " + String(won);   // DRAFT
@@ -404,6 +484,9 @@ static String drawSlots(uint16_t day, uint16_t ink) {
   else if (f.keys && phase != ROLLING) { canvas.setTextFont(1); canvas.drawString("hold A: leave", right, f.infoY + 4); }   // DRAFT
   canvas.setTextDatum(TL_DATUM);
   if (!f.keys) {                                 // the footer says what does what, in this board's own words
+    if (board.keyboard)                          // C-151: the T-Deck's (and the Cardputer's) keys are the machine
+      return typing.length() ? "enter: say it    bksp: delete" : phase == ROLLING ? "1 2 3: stop each    space: the next"
+                             : "space: spin  1 2 3: stop  + -: bet  bksp: leave";   // DRAFT
     if (board.touch && !board.threeKeys()) return phase == ROLLING ? "tap: stop" : "swipe: bet    tap: spin    hold: leave";   // DRAFT
     if (board.threeKeys()) return phase == ROLLING ? "A B C: stop" : "A C: bet    B: spin    hold A: leave";   // DRAFT
     return phase == ROLLING ? "press: stop" : String("turn: bet    press: spin    ") + (board.hasSideKey() ? "top button: back" : "hold the dial: back");
@@ -528,6 +611,12 @@ String runSlots() {
   for (int i = 0; i < bitN; i++) bitReset(bits[i], f.x0, f.x0 + 3 * f.reelW, f.top, f.bottom, true, l);
   runPanel = drawSlots;
   soundSlots(0, l);
+  // C-151: sitting down -- said to whoever is near, by every way this board has, and to the companion
+  sitting = true; seatN = 0; ticker = callout = cheers = typing = ""; tickerUntil = calloutUntil = cheerAt = 0;
+  meetSetTable(true);
+  loraTable(true);
+  report("table", "here " + deviceId());
+  uint32_t tableAt = millis(), polledAt = millis(); int tableTicks = 0;
 
   // the buttons as they are now, so a press already down when it opened does nothing
   const int keyPin[3] = { board.keyLeft, board.encKey, board.keyRight };
@@ -607,10 +696,28 @@ String runSlots() {
         }
         sideWas = down;
       }
-      int ch = deckTakeKey();                   // the T-Deck's and the Cardputer's keys
-      if (ch == 13 || ch == 10 || ch == ' ') stopOrPull(-1); else if (ch == 8) leave = true;
-      else if (ch == 0x11 || ch == 0x13 || ch == ';' || ch == ',') betBy(-1); else if (ch == 0x12 || ch == 0x14 || ch == '.' || ch == '/') betBy(1);
-      if (ch) idleSince = now;
+      // the T-Deck's and the Cardputer's keys (C-151, the user: "keys as the machine"): space pulls (Enter too), 1 2 3
+      // stop each reel, + and - the bet (the arrows too), Backspace leaves -- and a letter begins a word to the table,
+      // Enter says it, Backspace takes a letter back (and on an empty word, plays on)
+      int ch = deckTakeKey();
+      if (ch) {
+        idleSince = now;
+        if (typing.length()) {
+          if (ch == 13 || ch == 10) {
+            String w = typing; w.trim(); typing = "";
+            if (w.length() && castSend(CAST_SAY, w)) { ticker = upper(daemonName()) + ": " + w; tickerUntil = now + 9000; }
+            else if (w.length()) { ticker = "No daemon here to say it"; tickerUntil = now + 3000; }   // DRAFT
+          }
+          else if (ch == 8) typing.remove(typing.length() - 1);
+          else if (ch >= 32 && ch < 127 && typing.length() < 40) typing += (char)ch;
+        }
+        else if (ch == ' ' || ch == 13 || ch == 10) stopOrPull(-1);
+        else if (ch >= '1' && ch <= '3') { if (phase == ROLLING) stopOrPull(ch - '1'); }
+        else if (ch == '+' || ch == '=' || ch == 0x12 || ch == 0x14 || ch == '.' || ch == '/') betBy(1);
+        else if (ch == '-' || ch == '_' || ch == 0x11 || ch == 0x13 || ch == ';' || ch == ',') betBy(-1);
+        else if (ch == 8) leave = true;
+        else if (board.keyboard && ch > 32 && ch < 127) typing = String((char)ch);
+      }
     }
     if (leave) break;
     now = millis();                             // after the input: a pull or a stop above stamped its own time, later than the first
@@ -641,6 +748,8 @@ String runSlots() {
       else if (PAYS[outcome] == 1) { note = "BET BACK"; for (int i = 0; i < 4; i++) soundCoin(i); }   // DRAFT
       else soundSlots(outcome == O_JACK3 ? 4 : PAYS[outcome] >= 12 ? 3 : 2, lookNow());
       if (unreportedSpins >= 10) reportNow();
+      // C-151: a big win is called to the table -- every daemon hears it; those at the reels cheer, and say so
+      if (PAYS[outcome] >= 12 && castSend(CAST_ACT, outcome == O_JACK3 ? "JACKPOT" : "BIGWIN")) cheers = "";
     }
     // the money counted up (or down) to what it is now
     long target = balance();
@@ -662,7 +771,19 @@ String runSlots() {
                : phase == SHOWING && now - shownAt < 2600 ? (outcome == O_JACK3 ? CASINO_JACKPOT : outcome == O_LOSE ? CASINO_LOSE : CASINO_WIN)
                : CASINO_IDLE;
     if (now - flashAt < 90) ledsCasino(CASINO_WIN, 0xFFFFFF, 0xFFFFFF);   // a reel caught: the lights flash once
+    else if (now - cheerAt < 2000 && cheerAt) ledsCasino(calloutJackpot ? CASINO_JACKPOT : CASINO_WIN, a, b);   // C-151: another's big win
     else ledsCasino(lights, a, b);
+    // C-151: the table -- the radios kept listening and answering (the loop is not running), who is heard sitting
+    // here, ourselves said every half minute over LoRa and each minute to the companion, and those gone quiet let go
+    loraLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);
+    meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);
+    meetCastLoop(now); castLoop(now);
+    { int sp; uint32_t tg; while (meetTakeTable(sp, tg)) casinoHeard(tg, sp, "", true, 2); }
+    if (now - tableAt > 30000) { tableAt = now; loraTable(true); if (++tableTicks % 2 == 0) report("table", "here " + deviceId()); }
+    for (int i = 0; i < seatN; ) if (now - seats[i].at > 75000) seats[i] = seats[--seatN]; else i++;
+    // over Wi-Fi the state is asked for now and then, for our other boards at the table (the cable brings it itself);
+    // not without PSRAM, where a state does not always fit beside the reels
+    if (psramFound() && !bridgeLive() && online() && now - polledAt > 30000) { polledAt = now; httpState("GET", "/api/device/state", ""); }
     if (phase == SHOWING && now - shownAt > 2600) phase = IDLE;
     // the bridge hears the board is here (the loop's own HELLO is not running)
     if (now - helloAt > HELLO_MS) { helloAt = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); }
@@ -675,6 +796,9 @@ String runSlots() {
   }
   if (phase == ROLLING) { won = bet * PAYS[outcome]; unreported += won; sessionDelta += won; }   // left mid-pull: it still pays
   reportNow();
+  // C-151: up from the table -- said the same ways
+  loraTable(false); meetSetTable(false); report("table", "gone " + deviceId());
+  sitting = false; seatN = 0; typing = "";
   putAway();
   cableIn = String();                           // its buffer given back
   runPanel = nullptr;

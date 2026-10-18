@@ -419,7 +419,15 @@ static void casinoDrawBets() {
     if (slots::BETS[i] > casinoBalance()) lv_obj_set_style_opa(b, LV_OPA_40, 0);
   }
 }
-static void casinoLeave() { casinoReport(); casinoSeat("gone"); casinoOpen = false; casinoCoins = nullptr; }
+static void casinoLeave() {
+  if (casinoTimer) {                                // the review, 2026-10-18: a pull left mid-spin is settled, as the
+    lv_timer_delete(casinoTimer); casinoTimer = nullptr; casinoTick = -1;   // handhelds settle it -- never escaped
+    unsentDelta += (long)casinoBet * slots::PAYS[casinoOutcome] - casinoBet; unsentSpins++;
+  }
+  casinoReport(); casinoSeat("gone"); casinoOpen = false;
+  casinoCoins = casinoSaid = casinoBetRow = nullptr;  // the overlay goes with them
+  for (int i = 0; i < 3; i++) reelBox[i] = nullptr;
+}
 static void tapCasino(lv_event_t *) {
   JsonDocument st = newDoc();
   if (!kept("state", st) || st["casino"].isNull()) { showWords("THE CASINO", "The CASINO plays with your save's money: the companion has to read your save first.", ""); return; }

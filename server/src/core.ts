@@ -19,7 +19,7 @@ import { companionId, noteFor } from "./cards.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
-import { casinoPending, coinsFor } from "./casino.js";   // C-149
+import { casinoPending, coinsFor, tableFor } from "./casino.js";   // C-149, C-151
 import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
 
@@ -214,7 +214,8 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     const d = carriedFor(store, readAway(bytes), deviceId);   // C-80: this device's own; C-103: a box's too
     const profile = readProfile(bytes);
     // C-149: the CASINO's coins -- the save's money and what waits for SYNC -- and the party's other daemons, its reels
-    casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot));
+    casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot),
+                      tableFor(store, deviceId, readAway(bytes), now));   // C-151: our other boards at the reels
     // C-149: OPUS's margin beside its INDEX entry, where the save holds OPUS and the margin has something to say
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
     // C-68: the party and their routines, for GAME ROUTINES

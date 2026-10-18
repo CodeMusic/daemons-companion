@@ -7,6 +7,7 @@
 // again when an answer is lost) is counted once, and the board can tell from `seen` which of its reports are in the
 // balance it is sent and which it must still add itself.
 import type { Store } from "./store.js";
+import { carrying } from "./carry.js";
 
 export const MONEY_MAX = 999999;
 const DELTA_MAX = 1000000;
@@ -51,9 +52,30 @@ export function casinoSeen(store: Store, device: string): string {
 
 export const clampMoney = (n: number) => Math.max(0, Math.min(MONEY_MAX, Math.round(n)));
 
+// C-151 (the user, 2026-10-17): THE TABLE -- the user's other boards at the reels now. A board says INTERACT table
+// "here <device>" as it sits down and each minute it stays, and "gone <device>" as it gets up; one heard from in the
+// last two minutes, and not gone since, is at the table. Each by the daemon it carries (read, never assigned here).
+// Strangers and boards nearby are the boards' own business (LoRa, Bluetooth): the companion knows only its own.
+export const TABLE_FOR_MS = 120000;
+export function tableFor(store: Store, device: string, away: { personality: number; nickname: string; name: string }[], now = new Date()) {
+  const last = new Map<string, { here: boolean; at: string }>();
+  for (const r of store.kindSince("table", new Date(now.getTime() - TABLE_FOR_MS))) {
+    const m = /^(here|gone) ([A-Za-z0-9-]{1,48})$/.exec(r.detail ?? "");
+    if (m) last.set(m[2], { here: m[1] === "here", at: r.at });
+  }
+  const map = carrying(store), out: { name: string; device: string }[] = [];
+  for (const [d, s] of last) {
+    if (d === device || !s.here) continue;
+    const who = away.find((a) => a.personality === map[d]);
+    out.push({ name: (who?.nickname || who?.name || "A DAEMON").toUpperCase(), device: d });   // DRAFT
+  }
+  return out;
+}
+
 // The coins a board plays with: the save's money and what waits, and which of this board's reports are in it.
 // `friends`: the party's slots besides the daemon carried here, whose pictures are the other reels' daemons.
-export function coinsFor(store: Store, money: number, device: string, friends: number[]) {
+// C-151: `table`, the user's other boards at the reels now
+export function coinsFor(store: Store, money: number, device: string, friends: number[], table: { name: string; device: string }[] = []) {
   const p = casinoPending(store);
-  return { money, pending: p.delta, balance: clampMoney(money + p.delta), seen: casinoSeen(store, device), friends };
+  return { money, pending: p.delta, balance: clampMoney(money + p.delta), seen: casinoSeen(store, device), friends, table };
 }

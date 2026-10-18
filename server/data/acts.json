@@ -60,5 +60,17 @@
    "seen": "wants to play",
    "reply": "joins in"
   }
+ ],
+ "casino": [
+  {
+   "code": "JACKPOT",
+   "seen": "hit the jackpot at the CASINO",
+   "reply": "cheers"
+  },
+  {
+   "code": "BIGWIN",
+   "seen": "won big at the CASINO",
+   "reply": "cheers"
+  }
  ]
 }

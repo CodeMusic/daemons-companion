@@ -101,7 +101,7 @@ describe("the CASINO's coins (C-149)", () => {
     const store = new Store(":memory:");
     played(store, 100, 1); played(store, 50, 2); played(store, 10, 9, "a1b2", "t-embed-111111");
     const st = deviceState(cfg, store, new Date(), "m5-core-36f484") as any;
-    expect(st.casino).toEqual({ money: 3000, pending: 160, balance: 3160, seen: "a1b2.2", friends: [1] });   // PIP is carried
+    expect(st.casino).toEqual({ money: 3000, pending: 160, balance: 3160, seen: "a1b2.2", friends: [1], table: [] });   // PIP is carried
     expect(casinoSeen(store, "nobody")).toBe("");
   });
 
@@ -113,5 +113,21 @@ describe("the CASINO's coins (C-149)", () => {
     expect(sync(cfg, store).casino).toBeNull();
     expect(moneyIn(path)).toBe(3000);
     expect(casinoPending(store).delta).toBe(500);                   // kept for the game it belongs to
+  });
+});
+
+describe("the CASINO's table (C-151)", () => {
+  it("lists our other boards at the reels, by the daemon each carries, and forgets one that got up or went quiet", () => {
+    const { cfg } = saveFile(3000);
+    const store = new Store(":memory:");
+    store.setSetting("carry", JSON.stringify({ "t-deck-aaaaaa": PIP.personality }));
+    const now = Date.now();
+    store.logInteraction("table", "here t-deck-aaaaaa", new Date(now - 30000));
+    store.logInteraction("table", "here m5go-bbbbbb", new Date(now - 200000));      // three minutes ago: gone quiet
+    store.logInteraction("table", "here t-embed-cccccc", new Date(now - 40000));
+    store.logInteraction("table", "gone t-embed-cccccc", new Date(now - 10000));    // got up
+    store.logInteraction("table", "here m5-fire-a708a4", new Date(now - 5000));     // the board asking: never itself
+    const st = deviceState(cfg, store, new Date(now), "m5-fire-a708a4") as any;
+    expect(st.casino.table).toEqual([{ name: "PIP", device: "t-deck-aaaaaa" }]);
   });
 });

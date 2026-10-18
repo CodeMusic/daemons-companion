@@ -34,9 +34,18 @@ ACTS = [
     ("PLAY",  "INVITE TO PLAY",  "wants to play",              "joins in"),
 ]
 
+# C-151 (the user, 2026-10-17): THE CASINO's own -- a big win called to the table (firmware/esp32/src/casino.cpp). Never
+# in TO EVERY DAEMON's list: only the reels send them, and only a daemon at the reels answers one -- its answer is the
+# cheer the winner sees. A board elsewhere keeps it quietly. Never an amount of money.
+CASINO = [
+    ("JACKPOT", "hit the jackpot at the CASINO", "cheers"),
+    ("BIGWIN",  "won big at the CASINO",         "cheers"),
+]
+
 
 def as_json():
-    return json.dumps({"acts": [{"code": c, "label": l, "seen": s, "reply": r} for c, l, s, r in ACTS]}, indent=1) + "\n"
+    return json.dumps({"acts": [{"code": c, "label": l, "seen": s, "reply": r} for c, l, s, r in ACTS],
+                       "casino": [{"code": c, "seen": s, "reply": r} for c, s, r in CASINO]}, indent=1) + "\n"
 
 
 def as_header():
@@ -48,6 +57,9 @@ def as_header():
     ]
     lines += ["  { %s, %s, %s, %s }," % tuple(json.dumps(v) for v in a) for a in ACTS]
     lines += ["};", "static const int ACT_N = %d;" % len(ACTS)]
+    lines += ["// C-151: the CASINO's, never in the list to choose from", "static const Act CASINO_ACTS[] = {"]
+    lines += ["  { %s, %s, %s, %s }," % tuple(json.dumps(v) for v in (c, c, s, r)) for c, s, r in CASINO]
+    lines += ["};", "static const int CASINO_ACT_N = %d;" % len(CASINO)]
     return "\n".join(lines) + "\n"
 
 

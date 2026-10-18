@@ -39,7 +39,9 @@ function load(store: Store): Cast[] {
 function keep(store: Store, casts: Cast[]) { store.setSetting(KEY, JSON.stringify(casts.slice(-KEEP))); }
 
 const clean = (t: unknown) => typeof t === "string" ? t.replace(/[^\x20-\x7e]/g, "").slice(0, TEXT_MAX) : "";
-export const actFor = (code: string | undefined) => ACTS.find((a) => a.code === code);
+// C-151: the CASINO's two (a big win at the reels) are read in words too, but never offered to choose
+const CASINO_ACTS: Act[] = ((actsJson as { casino?: Omit<Act, "label">[] }).casino ?? []).map((a) => ({ ...a, label: a.code }));
+export const actFor = (code: string | undefined) => ACTS.find((a) => a.code === code) ?? CASINO_ACTS.find((a) => a.code === code);
 
 // The words a person reads: "STARR bows", "ARCHIVER bows in return", "STARR: hello there".
 export function castLine(c: Cast): string {

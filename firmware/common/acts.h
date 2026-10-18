@@ -14,3 +14,9 @@ static const Act ACTS[] = {
   { "PLAY", "INVITE TO PLAY", "wants to play", "joins in" },
 };
 static const int ACT_N = 10;
+// C-151: the CASINO's, never in the list to choose from
+static const Act CASINO_ACTS[] = {
+  { "JACKPOT", "JACKPOT", "hit the jackpot at the CASINO", "cheers" },
+  { "BIGWIN", "BIGWIN", "won big at the CASINO", "cheers" },
+};
+static const int CASINO_ACT_N = 2;

@@ -57,6 +57,11 @@ export class Store {
       .all(id, `${personality} %`) as { id: number; detail: string }[]).map((r) => ({ id: r.id, gain: Number(r.detail.split(" ")[1]) || 0 }));
   }
 
+  // C-151: one kind since a moment, oldest first (who sat at the CASINO lately)
+  kindSince(kind: string, since: Date): { id: number; at: string; detail: string | null }[] {
+    return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = ? AND at >= ? ORDER BY id").all(kind, since.toISOString()) as any;
+  }
+
   // C-149: every interaction of one kind, oldest first (the CASINO's results)
   kindAll(kind: string): { id: number; at: string; detail: string | null }[] {
     return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = ? ORDER BY id").all(kind) as any;

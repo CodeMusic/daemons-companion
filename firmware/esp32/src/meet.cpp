@@ -46,6 +46,12 @@ static String hex8(uint32_t v) { char b[9]; snprintf(b, sizeof b, "%08lx", (unsi
 static std::deque<std::array<uint8_t, 16>> pieces;
 static char beaconUuid[40] = "";
 static bool castScan = false;
+// C-134: a meetings' listen is due -- the light listen starts no new piece until it has run. NEVER stop() a scan from
+// the loop: NimBLE 1.4.3's stop() clears the scan's results in the CALLING task while its host task (the other core) is
+// still adding and erasing them on each advertisement -- a double free, and the heap check reset every board a few
+// seconds after it woke (caught on the T-Watch S3 by the watch session, 2026-10-18). Each listen ends by itself.
+static volatile bool listenWanted = false;
+static void castEnded(NimBLEScanResults) {}
 
 // Its own name, inside its own namespace: link.cpp also had a class called Heard, and two classes of one name in one
 // program share ONE vtable at link time -- the scan called the link's callback, and heard nothing for an hour (C-15).
@@ -84,6 +90,7 @@ static MeetListener *listener() { static MeetListener *l = new MeetListener(); r
 
 void meetLoop(uint32_t now, bool on, int species) {
   if (!on || species <= 0) {
+    listenWanted = false;                                      // C-134: no meetings' listen to wait for
     if (beaconSpecies >= 0) { linkSetBeacon(nullptr); beaconSpecies = -1; peer = 0; beaconUuid[0] = 0; }
     return;
   }
@@ -99,8 +106,10 @@ void meetLoop(uint32_t now, bool on, int species) {
     scan->setActiveScan(true);                             // the beacon is in the scan response
     ready = true;
   }
-  if ((!listenedAt || now - listenedAt > LISTEN_EVERY_MS) && (castScan || !scan->isScanning())) {
-    if (castScan) { scan->stop(); castScan = false; }            // C-134: the light listen gives way to the meeting's
+  bool due = !listenedAt || now - listenedAt > LISTEN_EVERY_MS;
+  listenWanted = due;                                          // C-134: the light listen's piece ends within 3 s, then this
+  if (due && !scan->isScanning()) {
+    castScan = false; listenWanted = false;
     scan->setAdvertisedDeviceCallbacks(listener(), false);      // once a device, as it always was
     scan->setInterval(97); scan->setWindow(37);            // a light listen: about a third of the time
     listenedAt = now;
@@ -182,14 +191,16 @@ bool meetCastTake(uint8_t piece[16]) {
 void meetCastLoop(uint32_t now) {
   NimBLEScan *scan = NimBLEDevice::getScan();
   static bool ready = false;
-  if (!ready) { scan->setActiveScan(true); scan->setMaxResults(0); ready = true; }   // results told, never kept: it never ends
+  if (!ready) { scan->setActiveScan(true); scan->setMaxResults(0); ready = true; }   // results told, never kept
   // the light listen: a tenth of the time, all the time, between the meetings' four-second listens
+  // in pieces of three seconds that end by themselves (never stopped from here: see listenWanted), one after another,
+  // and none while the meetings' listen is due
   static uint32_t triedAt = 0;
-  if (!scan->isScanning() && now - triedAt > 2000) {          // not during the meetings' listen, which is a scan too
+  if (!scan->isScanning() && !listenWanted && now - triedAt > 250) {
     triedAt = now;
     scan->setAdvertisedDeviceCallbacks(listener(), true);       // every advertisement: the pieces turn
     scan->setInterval(160); scan->setWindow(16);
-    castScan = scan->start(0, nullptr, false);
+    castScan = scan->start(3, castEnded, false);
   }
   // the pieces going out, each in turn for a fifth of a second; the beacon back after
   if (burstN) {

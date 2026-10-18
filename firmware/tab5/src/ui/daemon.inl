@@ -103,6 +103,7 @@ static void casinoReport() {
   netSend("POST", "/api/device/interact", "{\"kind\":\"casino\",\"detail\":\"" + String(unsentDelta) + " " + lastReport + " " + deviceId() + " " + String(unsentSpins) + "\"}");
   reportedDelta += unsentDelta; unsentDelta = 0; unsentSpins = 0;
 }
+static void casinoTakeDress(JsonDocument &st);
 static void casinoTakeState() {                     // the coins as the companion knows them, and this Tab5's reports it has counted
   JsonDocument st = newDoc();
   if (!kept("state", st) || st["casino"].isNull()) return;
@@ -118,6 +119,62 @@ static void casinoTakeState() {                     // the coins as the companio
   for (int i = 0; i < 3; i++) { casinoFriend[i] = -1; casinoReelSp[i] = 0; }
   for (int i = at; i < (int)fr.size() && k < 3; i++) casinoFriend[k++] = fr[i] | -1;
   int r = 0; for (JsonObject x : st["casino"]["reel"].as<JsonArray>()) if (r < 3) casinoReelSp[r++] = x["species"] | 0;
+  casinoTakeDress(st);
+}
+// C-158: the pieces the boards draw rather than picture -- the coin, the season's or the holiday's, a stand-in -- as they
+// draw them (common/casino_art.h, ported from casino.cpp by casino_art.py), in the day's dress: casino.cpp's lookNow (the
+// holiday's look, else the weather's when it is weather to notice, else the season's) and colourA / colourB
+#include "../../common/casino_art.h"
+static String dressLook = "leaves";
+static uint32_t dressA = 0xE07020, dressB = 0xFFC040;
+static uint32_t hexOf(const char *h, uint32_t or_) { return h && strlen(h) == 7 && h[0] == '#' ? (uint32_t)strtol(h + 1, nullptr, 16) : or_; }
+static void casinoTakeDress(JsonDocument &st) {
+  JsonObject h = st["holiday"];
+  bool dressed = !h.isNull() && strlen(h["name"] | "") && !(h["quiet"] | false);
+  String sky = (const char *)(st["world"]["weather"]["kind"] | ""), watch = (const char *)(st["world"]["watch"] | "");
+  if (dressed && strcmp(h["look"] | "none", "none")) dressLook = (const char *)(h["look"] | "");
+  else if (sky == "rain" || sky == "storm" || sky == "fog" || sky == "snow") dressLook = sky;
+  else if (sky == "clear" && watch == "NIGHT") dressLook = "stars";
+  else dressLook = casinoSeason == "winter" ? "snow" : casinoSeason == "spring" ? "petals" : casinoSeason == "summer" ? "sun" : "leaves";
+  uint32_t sa = 0xE07020, sb = 0xFFC040;
+  for (const CasinoSeason &c : CASINO_SEASON) if (casinoSeason == c.season) { sa = c.a; sb = c.b; }
+  dressA = dressed ? hexOf(h["colours"][0] | "", sa) : sa;
+  dressB = dressed ? hexOf(h["colours"][1] | "", sb) : sb;
+}
+// a drawn piece as an 8-bit indexed picture: its palette the slots filled (0 clear, 1 A, 2 B, 3 the day's), then casino_art's
+static lv_image_dsc_t *casinoArt(const char *name) {
+  struct Made { lv_image_dsc_t *dsc = nullptr; uint32_t a = 0, b = 0, day = 0; };
+  static std::map<String, Made> made;
+  const CasinoArt *art = nullptr, *star = nullptr;
+  for (int i = 0; i < CASINO_ART_N; i++) { if (!strcmp(CASINO_ART[i].name, name)) art = &CASINO_ART[i]; if (!strcmp(CASINO_ART[i].name, "star")) star = &CASINO_ART[i]; }
+  if (!art) art = star;                            // stars, confetti, streamers: a star in the holiday's colour
+  if (!art) return nullptr;
+  Made &m = made[art->name];
+  if (m.dsc && m.a == dressA && m.b == dressB && m.day == dayHex) return m.dsc;
+  size_t n = 256 * sizeof(lv_color32_t) + (size_t)art->w * art->h;
+  if (!m.dsc) {
+    m.dsc = (lv_image_dsc_t *)heap_caps_calloc(1, sizeof(lv_image_dsc_t), MALLOC_CAP_SPIRAM);
+    m.dsc->data = (const uint8_t *)heap_caps_malloc(n, MALLOC_CAP_SPIRAM);
+    if (!m.dsc->data) return nullptr;
+  } else lv_image_cache_drop(m.dsc);              // the day's colours moved: the same picture, painted again
+  uint8_t *data = (uint8_t *)m.dsc->data;
+  lv_color32_t *pal = (lv_color32_t *)data;
+  memset(pal, 0, 256 * sizeof(lv_color32_t));
+  auto put = [&](int i, uint32_t rgb) { pal[i].red = rgb >> 16; pal[i].green = (rgb >> 8) & 255; pal[i].blue = rgb & 255; pal[i].alpha = 255; };
+  put(1, dressA); put(2, dressB); put(3, dayHex);
+  for (int i = 0; i < CASINO_PALETTE_N && 4 + i < 256; i++) put(4 + i, CASINO_PALETTE[i]);
+  memcpy(data + 256 * sizeof(lv_color32_t), art->px, (size_t)art->w * art->h);
+  m.dsc->header.magic = LV_IMAGE_HEADER_MAGIC; m.dsc->header.cf = LV_COLOR_FORMAT_I8;
+  m.dsc->header.w = art->w; m.dsc->header.h = art->h; m.dsc->header.stride = art->w;
+  m.dsc->data_size = n; m.a = dressA; m.b = dressB; m.day = dayHex;
+  return m.dsc;
+}
+static lv_obj_t *casinoDrawn(lv_obj_t *cell, const char *name) {
+  lv_image_dsc_t *d = casinoArt(name);
+  if (!d) return label(cell, "?", &lv_font_montserrat_28, QUIET);
+  lv_obj_t *img = lv_image_create(cell);
+  lv_image_set_src(img, d); lv_image_set_antialias(img, false); lv_image_set_scale(img, 384);   // the boards' pixels, half again
+  return img;
 }
 static uint8_t stripAt(int i, int pos) { return reelStrip[i][((pos % slots::STRIP_N) + slots::STRIP_N) % slots::STRIP_N]; }
 static void casinoDrawCell(int i, int row) {
@@ -130,17 +187,72 @@ static void casinoDrawCell(int i, int row) {
   lv_obj_t *o;
   if (sp > 0) o = picture(cell, "s" + String(sp), 384);
   else if (slot >= 0) o = picture(cell, "p" + String(slot), 384);
-  else if (p == slots::COIN) {
-    o = lv_obj_create(cell); lv_obj_set_size(o, 72, 72); lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(o, lv_color_hex(0xF2C230), 0); lv_obj_set_style_border_color(o, lv_color_hex(0xA07A10), 0);
-    lv_obj_set_style_border_width(o, 5, 0);
-  } else {
-    String t = p == slots::SEASON ? casinoSeason : String("?"); t.toUpperCase();
-    lv_color_t c = casinoSeason == "winter" ? lv_color_hex(0x9CC3E6) : casinoSeason == "spring" ? lv_color_hex(0x7CC47C)
-                 : casinoSeason == "summer" ? lv_color_hex(0xE8C547) : lv_color_hex(0xD9822B);
-    o = label(cell, t, &lv_font_montserrat_20, c);
+  else {                                           // drawn as the boards draw it; a daemon with no picture stands in as they do
+    static const char *const STAND_IN[] = { "mark", "berry", "gem", "mark" };
+    o = casinoDrawn(cell, p == slots::COIN ? "coin" : p == slots::SEASON ? dressLook.c_str() : STAND_IN[p]);
   }
   lv_obj_center(o);
+}
+// C-158: the season over the reels, as on the boards (casino.cpp bitReset and its drawing): a few pieces drifting down --
+// hearts and sparks rising -- or glinting where they are, in the day's two colours; moved on a timer of their own
+static const int FX_N = 12;
+static lv_obj_t *fx[FX_N];
+static float fxX[FX_N], fxY[FX_N], fxVX[FX_N], fxVY[FX_N], fxPh[FX_N];
+static int fxW = 0, fxH = 0;
+static lv_timer_t *fxTimer = nullptr;
+static uint32_t fxAt = 0;
+static bool fxTwinkles() { return dressLook == "stars" || dressLook == "sun" || dressLook == "frost" || dressLook == "moon"; }
+static void fxReset(int i, bool anywhere) {
+  bool rises = dressLook == "hearts" || dressLook == "fireworks";
+  fxX[i] = 20 + esp_random() % max(1, fxW - 40);
+  fxY[i] = anywhere || fxTwinkles() ? (float)(esp_random() % max(1, fxH)) : rises ? fxH + 8 : -10;
+  fxVX[i] = ((int)(esp_random() % 21) - 10) / 2.0f;
+  fxVY[i] = fxTwinkles() ? 0 : (30 + esp_random() % 45) * (rises ? -1.0f : 1.0f);
+  fxPh[i] = (esp_random() % 628) / 100.0f;
+}
+static void fxStep(lv_timer_t *t) {
+  if (!casinoOpen || !fx[0]) { lv_timer_delete(t); fxTimer = nullptr; return; }
+  uint32_t now = millis(); float dt = (now - fxAt) / 1000.0f; fxAt = now;
+  for (int i = 0; i < FX_N; i++) {
+    fxX[i] += fxVX[i] * dt; fxY[i] += fxVY[i] * dt;
+    if (fxY[i] > fxH + 10 || fxY[i] < -12 || fxX[i] < -10 || fxX[i] > fxW + 10) fxReset(i, false);
+    lv_obj_set_pos(fx[i], (int)(fxX[i] + 6 * sinf(fxPh[i] + now / 600.0f)), (int)fxY[i]);
+    if (fxTwinkles()) lv_obj_set_style_opa(fx[i], (lv_opa_t)(50 + 205 * (0.5f + 0.5f * sinf(fxPh[i] + now / 260.0f))), 0);
+  }
+}
+static void fxBar(lv_obj_t *parent, int w, int h, lv_color_t c) {
+  lv_obj_t *o = lv_obj_create(parent); lv_obj_remove_style_all(o); lv_obj_set_size(o, w, h);
+  lv_obj_set_style_bg_opa(o, LV_OPA_COVER, 0); lv_obj_set_style_bg_color(o, c, 0); lv_obj_center(o);
+}
+static void fxBegin(lv_obj_t *over) {
+  lv_obj_update_layout(over);
+  fxW = lv_obj_get_width(over); fxH = lv_obj_get_height(over);
+  static const uint32_t CONFETTI[] = { 0xFF4060, 0xFFD040, 0x40C0FF, 0x60E060, 0xC060FF };
+  const String &l = dressLook;
+  for (int i = 0; i < FX_N; i++) {
+    lv_obj_t *b = fx[i] = lv_obj_create(over);
+    lv_obj_remove_style_all(b); lv_obj_add_flag(b, LV_OBJ_FLAG_FLOATING); lv_obj_remove_flag(b, LV_OBJ_FLAG_CLICKABLE);
+    uint32_t c = l == "snow" || l == "frost" ? 0xFFFFFF : l == "confetti" || l == "streamers" ? CONFETTI[i % 5] : l == "pumpkins" ? 0xFF7A1A
+               : l == "clover" ? 0x20B040 : l == "rain" || l == "storm" ? 0x60A8FF : l == "fog" ? 0x8A8E96 : (i % 2 ? dressA : dressB);
+    int w = 6, h = 6, r = LV_RADIUS_CIRCLE;
+    if (l == "snow" || l == "frost") w = h = 4 + (i % 2) * 3;
+    else if (l == "petals") { w = 10; h = 6; }
+    else if (l == "leaves") { w = 8; h = 10; r = 2; }
+    else if (l == "confetti" || l == "streamers") { w = 5 + (i % 3) * 3; h = 4; r = 0; }
+    else if (l == "eggs") { w = 8; h = 10; }
+    else if (l == "presents") { w = h = 8; r = 1; }
+    else if (l == "fireworks") w = h = 4;
+    else if (l == "rain" || l == "storm") { w = 3; h = 12; r = 1; }
+    else if (l == "fog") { w = 36; h = 3; r = 1; }
+    if (fxTwinkles()) { lv_obj_set_size(b, 11, 11); fxBar(b, 11, 3, lv_color_hex(c)); fxBar(b, 3, 11, lv_color_hex(c)); }   // a glint, a cross
+    else {
+      lv_obj_set_size(b, w, h); lv_obj_set_style_radius(b, r, 0);
+      lv_obj_set_style_bg_opa(b, LV_OPA_COVER, 0); lv_obj_set_style_bg_color(b, lv_color_hex(c), 0);
+    }
+    fxReset(i, true);
+  }
+  fxAt = millis();
+  if (!fxTimer) fxTimer = lv_timer_create(fxStep, 60, nullptr);
 }
 static void casinoDrawReels() { for (int i = 0; i < 3; i++) for (int r = 0; r < 3; r++) casinoDrawCell(i, r); }
 static void casinoShowCoins() {
@@ -229,6 +341,7 @@ static void casinoLeave() {
   casinoCoins = casinoBetLabel = casinoSaid = casinoNear = casinoBanner = nullptr;   // the overlay goes with them
   casinoKeys[0] = casinoKeys[1] = nullptr;
   for (int i = 0; i < 3; i++) for (int r = 0; r < 3; r++) reelCell[i][r] = nullptr;
+  for (int i = 0; i < FX_N; i++) fx[i] = nullptr;
 }
 static lv_color_t hexOr(const char *h, lv_color_t or_) { return h && strlen(h) == 7 && h[0] == '#' ? lv_color_hex(strtol(h + 1, nullptr, 16)) : or_; }
 static void tapCasino(lv_event_t *) {
@@ -274,6 +387,8 @@ static void tapCasino(lv_event_t *) {
     }
   }
   label(reels, LV_SYMBOL_LEFT, &lv_font_montserrat_28, lv_color_hex(0xF2C230));
+  lv_obj_remove_flag(reels, LV_OBJ_FLAG_SCROLLABLE);
+  fxBegin(reels);                                  // the season over them
   casinoBanner = lv_obj_create(o);                 // WIN / JACKPOT, in gold, until the next pull
   lv_obj_set_size(casinoBanner, LV_PCT(100), LV_SIZE_CONTENT); lv_obj_set_style_radius(casinoBanner, 12, 0);
   lv_obj_set_style_bg_color(casinoBanner, lv_color_hex(0xF6C445), 0); lv_obj_set_style_border_width(casinoBanner, 0, 0);

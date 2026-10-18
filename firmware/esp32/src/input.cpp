@@ -221,7 +221,8 @@ void press() {
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
       if (partyFirst()) { screen = PARTY; partyAt = st.partyN; }    // C-68: the party's routines, on a board with no radios -- its RADIOS first
-      else if (!st.carrying) { screen = PARTY; partyAt = 0; }       // C-51: the radios are the carried daemon's; the party's routines are not
+      // C-153 (the user, 2026-10-18): with no daemon here the types still open -- TOUCHSTONE's HOLD A CARD is how a board
+      // takes one back off a card; a routine that needs a daemon says so when it runs (C-51 sent an empty board to PARTY)
       else { screen = TYPES; typeAt = 0; }
     }
   } else if (screen == TYPES) {
@@ -285,7 +286,7 @@ void back() {
   else if (screen == LIST) screen = TYPES;
   else if (screen == MOVES) screen = PARTY;                                   // C-68
   else if (screen == PARTY) {
-    if (partyFirst() || !st.carrying) { screen = HOME; page = ROUTINES_PAGE; }
+    if (partyFirst()) { screen = HOME; page = ROUTINES_PAGE; }                 // C-153: an empty board came from TYPES too
     else { screen = TYPES; for (int i = 0; i < typeCount; i++) if (isPartyType(i)) typeAt = i; }
   }
   else if (screen == TYPES && partyFirst()) { screen = PARTY; partyAt = st.partyN; }   // back to the radios' row

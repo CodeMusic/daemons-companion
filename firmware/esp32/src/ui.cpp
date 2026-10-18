@@ -416,7 +416,8 @@ void draw() {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
     wrap(partyFirst() ? String("The CASINO and its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
-         : !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
+         : !st.carrying ? String(board.nfc ? "No daemon here. TOUCHSTONE can take one off a card; the party's routines are here too."
+                                           : "No daemon here. Your party's routines, and the board's own. Press to open.")   // C-153, DRAFT
          : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
                        : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round || H < 160 ? 2 : 4,
          board.round || H < 160 ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits; C-148 a

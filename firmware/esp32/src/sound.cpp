@@ -304,15 +304,16 @@ static void rest(int ms) {
 
 // The dial turns in detents, often several a second: a pair for each would pile up behind the dial, so a turn
 // sounds only when the last one has had time to finish.
+// The interactions' notes are common/tunes.h's (C-94), as every device's are; only how loud is this board's.
+static void notes(const Note *t, int n, float level) { for (int i = 0; i < n; i++) tone(root + t[i].semis, t[i].ms, level); }
 void soundTurn(int dir) {
   if (millis() - lastTurn < 90) return;
   lastTurn = millis();
-  if (dir > 0) { tone(root, 28, 0.6f); tone(root + 7, 34, 0.6f); }
-  else         { tone(root + 7, 28, 0.6f); tone(root, 34, 0.6f); }
+  notes(dir > 0 ? TUNE_TURN_UP : TUNE_TURN_DOWN, 2, 0.6f);
 }
 
-void soundSelect() { tone(root + 12, 55); }
-void soundBack()   { tone(root - 12, 45, 0.7f); }
+void soundSelect() { notes(TUNE_SELECT, 1, 1.0f); }
+void soundBack()   { notes(TUNE_BACK, 1, 0.7f); }
 
 // ---- a routine's tune: about six notes, its own shape in the day's key, the ring dancing in step --------------------
 

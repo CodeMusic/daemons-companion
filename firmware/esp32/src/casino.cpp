@@ -28,7 +28,6 @@
 #include "leds.h"
 #include "sound.h"
 
-void handleLine(String line, bool fromPhone);   // net.cpp: a STATE that arrives while the reels turn is taken as ever
 
 // ---- the pieces --------------------------------------------------------------------------------------------------
 enum { P_JACK, P_F1, P_F2, P_F3, P_COIN, P_SEASON, P_N };
@@ -201,6 +200,14 @@ static void measure(int k) {                    // the top of its head, and the 
   }
 }
 
+// a line two or three pixels thick: drawWideLine is not held to the clip rectangle (a leaf's stem ran out of its reel
+// into the money, seen on the Fire), drawLine is
+static void thick(float x0, float y0, float x1, float y1, int w, uint16_t c) {
+  for (int d = -(w / 2); d <= (w - 1) / 2; d++) {
+    if (fabsf(x1 - x0) > fabsf(y1 - y0)) canvas.drawLine(x0, y0 + d, x1, y1 + d, c);
+    else canvas.drawLine(x0 + d, y0, x1 + d, y1, c);
+  }
+}
 static void star(int cx, int cy, int r, uint16_t c) {   // five points
   float px[10], py[10];
   for (int i = 0; i < 10; i++) { float a = -PI / 2 + i * PI / 5, rr = i % 2 ? r * 0.45f : r; px[i] = cx + rr * cosf(a); py[i] = cy + rr * sinf(a); }
@@ -221,7 +228,7 @@ static void drawn(const String &kind, int cx, int cy) {
     uint16_t c = c565(0xDDEEFF);
     for (int i = 0; i < 6; i++) {
       float ang = i * PI / 3; int ex = cx + 20 * cosf(ang), ey = cy + 20 * sinf(ang), mx = cx + 12 * cosf(ang), my = cy + 12 * sinf(ang);
-      canvas.drawWideLine(cx, cy, ex, ey, 2, c);
+      thick(cx, cy, ex, ey, 2, c);
       canvas.drawLine(mx, my, mx + 6 * cosf(ang + 0.8f), my + 6 * sinf(ang + 0.8f), c);
       canvas.drawLine(mx, my, mx + 6 * cosf(ang - 0.8f), my + 6 * sinf(ang - 0.8f), c);
     }
@@ -230,12 +237,12 @@ static void drawn(const String &kind, int cx, int cy) {
     for (int i = 0; i < 5; i++) { float ang = -PI / 2 + i * 2 * PI / 5; canvas.fillCircle(cx + 11 * cosf(ang), cy + 11 * sinf(ang), 9, a); }
     canvas.fillCircle(cx, cy, 6, c565(0xFFE060));
   } else if (kind == "sun") {
-    for (int i = 0; i < 8; i++) { float ang = i * PI / 4; canvas.drawWideLine(cx + 15 * cosf(ang), cy + 15 * sinf(ang), cx + 22 * cosf(ang), cy + 22 * sinf(ang), 3, b); }
+    for (int i = 0; i < 8; i++) { float ang = i * PI / 4; thick(cx + 15 * cosf(ang), cy + 15 * sinf(ang), cx + 22 * cosf(ang), cy + 22 * sinf(ang), 3, b); }
     canvas.fillCircle(cx, cy, 13, a);
   } else if (kind == "leaves") {
     canvas.fillTriangle(cx - 14, cy + 4, cx, cy - 20, cx + 14, cy + 4, a); canvas.fillTriangle(cx - 14, cy + 4, cx, cy + 16, cx + 14, cy + 4, a);
     canvas.fillTriangle(cx - 20, cy - 4, cx - 6, cy - 12, cx - 4, cy + 6, a); canvas.fillTriangle(cx + 20, cy - 4, cx + 6, cy - 12, cx + 4, cy + 6, a);
-    canvas.drawWideLine(cx, cy + 22, cx, cy - 12, 2, dark);
+    thick(cx, cy + 22, cx, cy - 12, 2, dark);
   } else if (kind == "pumpkins") {
     uint16_t o = c565(0xFF7A1A), od = c565(0xC04A00);
     canvas.fillEllipse(cx - 9, cy + 3, 11, 16, od); canvas.fillEllipse(cx + 9, cy + 3, 11, 16, od); canvas.fillEllipse(cx, cy + 3, 13, 17, o);
@@ -251,13 +258,13 @@ static void drawn(const String &kind, int cx, int cy) {
   } else if (kind == "clover") {
     uint16_t g = c565(0x20B040);
     heart(cx, cy - 12, 9, g); heart(cx - 11, cy, 9, g); heart(cx + 11, cy, 9, g);
-    canvas.drawWideLine(cx, cy + 4, cx + 6, cy + 20, 2, g);
+    thick(cx, cy + 4, cx + 6, cy + 20, 2, g);
   } else if (kind == "eggs") {
     canvas.fillEllipse(cx, cy, 15, 20, a);
     for (int i = -14; i < 14; i += 7) canvas.fillTriangle(cx + i, cy + 2, cx + i + 7, cy + 2, cx + i + 3, cy - 4, b);
     canvas.fillRect(cx - 14, cy + 2, 28, 4, b);
   } else if (kind == "fireworks") {
-    for (int i = 0; i < 12; i++) { float ang = i * PI / 6; canvas.drawWideLine(cx + 6 * cosf(ang), cy + 6 * sinf(ang), cx + 21 * cosf(ang), cy + 21 * sinf(ang), 2, i % 2 ? a : b); }
+    for (int i = 0; i < 12; i++) { float ang = i * PI / 6; thick(cx + 6 * cosf(ang), cy + 6 * sinf(ang), cx + 21 * cosf(ang), cy + 21 * sinf(ang), 2, i % 2 ? a : b); }
     canvas.fillCircle(cx, cy, 4, white);
   } else if (kind == "moon") {
     canvas.fillCircle(cx, cy, 19, c565(0xFFE070)); canvas.fillCircle(cx - 6, cy - 4, 4, c565(0xE8C050)); canvas.fillCircle(cx + 7, cy + 6, 3, c565(0xE8C050));
@@ -417,17 +424,21 @@ static String drawSlots(uint16_t day, uint16_t ink) {
 }
 
 // ---- the pictures, fetched as the reels are set ----------------------------------------------------------------------
+// The M5GO has no PSRAM: its 4 KB line, a copy of it and the picture's text in a JSON document did not all fit (seen
+// 2026-10-17: the reels drew stand-ins). So the document keeps only the small fields, and the picture is decoded where
+// it lies in the line.
 bool casinoTakeArt(const char *json) {
-  JsonDocument doc;
-  if (deserializeJson(doc, json) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
+  JsonDocument filter, doc;
+  filter["w"] = filter["h"] = filter["slot"] = filter["palette"] = true;
+  if (deserializeJson(doc, json, DeserializationOption::Filter(filter)) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
   int slot = doc["slot"] | -1, k = -1;
   for (int i = 0; i < 3; i++) if (friendSlot[i] == slot && slot >= 0) k = i + 1;
   if (k < 0 || !pix[k]) return false;            // not one the reels asked for (or they have been put away)
   JsonArray p = doc["palette"].as<JsonArray>();
   for (int i = 0; i < 16; i++) pal[k][i] = i < (int)p.size() ? (uint16_t)(p[i] | 0) : 0;
-  const char *b64 = doc["pixels"] | "";
+  const char *b64 = strstr(json, "\"pixels\":\""), *end = b64 ? strchr(b64 + 10, '"') : nullptr;
   size_t got = 0;
-  if (mbedtls_base64_decode(pix[k], 2048, &got, (const unsigned char *)b64, strlen(b64)) || got != 2048) return false;
+  if (!end || mbedtls_base64_decode(pix[k], 2048, &got, (const unsigned char *)b64 + 10, end - b64 - 10) || got != 2048) return false;
   measure(k); have[k] = true;
   return true;
 }
@@ -448,7 +459,11 @@ static void readCable() {
     else if (cableIn == "KEY LEFT") cableEvent = 3;
     else if (cableIn == "KEY BACK") cableEvent = -1;
     else if (cableIn == "KEY A" || cableIn == "KEY B" || cableIn == "KEY C") cableEvent = 10 + (cableIn[4] - 'A');
-    else if (cableIn.startsWith("STATE ") || cableIn.startsWith("PARTYART ")) handleLine(cableIn, false);
+    // read where they lie, never copied (the M5GO, without PSRAM, had no room for a second 4 KB). A STATE proves the
+    // bridge is there, so the board's reports keep going by the cable; it is read only where there is room to spare --
+    // the reels keep their own count of the money meanwhile
+    else if (cableIn.startsWith("STATE ")) { usbSeen = millis(); if (psramFound()) takeState(cableIn.c_str() + 6); }
+    else if (cableIn.startsWith("PARTYART ")) casinoTakeArt(cableIn.c_str() + 9);
     cableIn = "";
   }
 }
@@ -489,8 +504,11 @@ static void putAway() { for (int i = 1; i < 4; i++) { free(pix[i]); pix[i] = nul
 
 // ---- the routine ---------------------------------------------------------------------------------------------------
 String runSlots() {
+  if (!st.casino.known)                         // the companion is older than the CASINO: not the save's fault
+    return "The companion on your computer is older than the CASINO.\n\nUpdate it, and the CASINO opens with your game's money.";   // DRAFT
   if (!st.casino.have)
-    return "The CASINO plays with the money your game holds.\n\nLink this board to the companion, with your game's save set, and it opens.";   // DRAFT
+    return "The CASINO plays with the money your game holds.\n\nSet your game's save in the companion, and it opens.";   // DRAFT
+  cableIn.reserve(4800);                        // one buffer for the cable's lines, made once: no heap torn into pieces
   pix[0] = artPix; memcpy(pal[0], artPal, sizeof pal[0]);
   have[0] = st.carrying && artKeyHave.length() && artKeyHave == st.daemon.artKey;
   if (have[0]) measure(0);
@@ -653,6 +671,7 @@ String runSlots() {
   if (phase == ROLLING) { won = bet * PAYS[outcome]; unreported += won; sessionDelta += won; }   // left mid-pull: it still pays
   reportNow();
   putAway();
+  cableIn = String();                           // its buffer given back
   runPanel = nullptr;
   ledsDance(-1, 0, 0);
   lastInput = millis();

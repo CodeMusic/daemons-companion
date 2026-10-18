@@ -84,6 +84,7 @@ bool takeState(const char *json) {
   // C-149: the CASINO's coins, and the holiday (none: an ordinary day)
   JsonVariant cs = doc["casino"];
   st.casino.have = !cs.isNull();
+  st.casino.known = strstr(json, "\"casino\":") != nullptr;   // an older companion says nothing of it
   if (st.casino.have) {
     st.casino.money = cs["money"] | 0L; st.casino.pending = cs["pending"] | 0L; st.casino.balance = cs["balance"] | 0L;
     st.casino.seen = cs["seen"] | ""; st.casino.friendN = 0;

@@ -9,7 +9,7 @@ type Rule = { kind: "fixed"; month: number; day: number } | { kind: "nth_weekday
           | { kind: "easter"; offset: number } | { kind: "table"; dates: Record<string, string> }
           | { kind: "season_start"; season: Season };
 interface Row { name: string; edition: "both" | Edition; rule: Rule; days: number; quiet?: boolean; look?: string;
-                colours?: string[]; hat?: string; flip?: boolean }
+                colours?: string[]; hat?: string; flip?: boolean; steps_off?: string }
 export interface Holiday { name: string; quiet: boolean; look: string; colours: string[]; hat: string; flip: boolean }
 
 const ROWS = (holidaysJson as unknown as { holidays: Row[] }).holidays;
@@ -49,10 +49,14 @@ function start(rule: Rule, y: number, edition: Edition): number | null {
 
 export function holiday(edition: Edition, date: Date): Holiday | null {
   const y = date.getFullYear(), today = dayNumber(y, date.getMonth() + 1, date.getDate());   // the LOCAL date
-  const on = ROWS.filter((r) => (r.edition === "both" || r.edition === edition) && (() => {
+  const covers = (r: Row) => {
     const s = start(r.rule, y, edition);
     return s !== null && today >= s && today < s + r.days;
-  })());
+  };
+  const mine = ROWS.filter((r) => (r.edition === "both" || r.edition === edition) && covers(r));
+  // T-416 (the user, 2026-10-18): a holiday that steps off another is not on that one's day -- the day is the other's,
+  // and this one goes on around it inside its own span (in CONTEXT, Science Week off Youth Day, so both are seen)
+  const on = mine.filter((r) => !r.steps_off || !mine.some((o) => o.name === r.steps_off));
   const r = on.find((x) => x.edition === edition) ?? on[0];
   if (!r) return null;
   return { name: r.name, quiet: !!r.quiet, look: r.quiet ? "none" : r.look ?? "none", colours: r.quiet ? [] : r.colours ?? [],

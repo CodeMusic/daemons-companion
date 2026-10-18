@@ -38,6 +38,14 @@ describe("holidays (C-149, T-416)", () => {
     expect(holiday("CONTEXT", on(2026, 4, 25))?.quiet).toBe(true);
   });
 
+  it("steps a holiday off the one it gives way to: Science Week round Youth Day (T-416)", () => {
+    expect(holiday("CONTEXT", on(2026, 8, 11))?.name).toBe("National Science Week");
+    expect(holiday("CONTEXT", on(2026, 8, 12))?.name).toBe("International Youth Day");    // the day is Youth Day's
+    expect(holiday("CONTEXT", on(2026, 8, 13))?.name).toBe("National Science Week");      // and the fair goes on
+    expect(holiday("CONTENT", on(2026, 8, 12))?.name).toBe("International Youth Day");
+    expect(holiday("CONTENT", on(2040, 9, 20))?.name).toBe("Mid-Autumn Festival");         // the table runs to 2040
+  });
+
   it("runs a holiday of several days to its end, and turns April Fools' upside down", () => {
     expect(holiday("CONTEXT", on(2026, 8, 16))?.name).toBe("National Science Week");      // the 2nd Saturday, Aug 8, for 9 days
     expect(holiday("CONTEXT", on(2026, 8, 17))).toBeNull();

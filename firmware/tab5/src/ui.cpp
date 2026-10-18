@@ -145,7 +145,7 @@ void uiLoop() {
   if (!overlay && !drawnAt[at]) redraw(at);
   if (listenLabel) {                                 // C-99: LISTEN, MAKING..., HUSH, and back when the voice ends
     if (netVoice == V_SPEAKING && !soundVoicePlaying()) netHush();
-    String now = listenWord(), said = net.message;
+    String now = listenWord(), said = netMessage();
     if (strcmp(lv_label_get_text(listenLabel), now.c_str())) lv_label_set_text(listenLabel, now.c_str());
     if (said != voiceSaidWas) { voiceSaidWas = said; lv_label_set_text(voiceSaid, said.c_str()); }
   }
@@ -160,7 +160,7 @@ void uiLoop() {
     int bat = M5.Power.getBatteryLevel();
     if (bat >= 0) right += "   " + String(bat) + "%";
     if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); }
-    if (at == P_SETTINGS && !overlay) { static String said; if (said != net.message) { said = net.message; drawnAt[P_SETTINGS] = 0; } }
+    if (at == P_SETTINGS && !overlay) { static String said; if (said != netMessage()) { said = netMessage(); drawnAt[P_SETTINGS] = 0; } }
     if (look == L_AUTO && !overlay) lookAgain();   // C-144: at 8pm and 6am, or once the companion has said the time
     if (at == P_PLACES && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_PLACES] = 0; } }   // C-139: KEPT, or not
   }

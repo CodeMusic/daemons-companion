@@ -295,7 +295,7 @@ static void drawDaemon(lv_obj_t *p) {
   }
   button(right, "SYNC WITH THE GAME", tapSyncGame);
   label(right, "Close the game first: SYNC writes the save.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
-  if (net.message.length()) label(right, net.message, &lv_font_montserrat_20, DAY, LV_PCT(100));
+  if (netMessage().length()) label(right, netMessage(), &lv_font_montserrat_20, DAY, LV_PCT(100));
   lv_obj_t *rc = card(right);                       // C-155: ROUTINES -- THE CASINO
   label(rc, "ROUTINES", &lv_font_montserrat_20, QUIET);
   button(rc, "THE CASINO", tapCasino);

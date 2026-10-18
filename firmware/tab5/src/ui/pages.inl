@@ -13,7 +13,7 @@ static void drawSettings(lv_obj_t *p) {
                           : look == L_DARK ? "Stays dark." : "Stays light.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
   lv_obj_t *w = card(p);
   label(w, "WI-FI", &lv_font_montserrat_20, QUIET);
-  label(w, net.wifi ? "Joined " + net.network : "Not on a network", &lv_font_montserrat_28, INK);
+  label(w, net.wifi ? "Joined " + netNetworkName() : "Not on a network", &lv_font_montserrat_28, INK);
   button(w, "LOOK FOR NETWORKS", tapScan, nullptr, false);
   lv_obj_t *r = row(w);
   for (int i = 0; i < netNetworkCount; i++) button(r, netNetworks[i], tapNetwork, (void *)(long)i, false);
@@ -31,7 +31,7 @@ static void drawSettings(lv_obj_t *p) {
   if (waiting) label(k, String(waiting) + " change" + (waiting == 1 ? "" : "s") + " waiting to be sent", &lv_font_montserrat_20, DAY);
   button(k, "DOWNLOAD EVERYTHING AGAIN", tapSyncNow, nullptr, false);
   label(k, "This Tab5 is " + deviceId() + ", build " + COMPANION_BUILD, &lv_font_montserrat_16, QUIET);   // C-91
-  if (net.message.length()) label(p, net.message, &lv_font_montserrat_28, DAY, LV_PCT(100));
+  if (netMessage().length()) label(p, netMessage(), &lv_font_montserrat_28, DAY, LV_PCT(100));
 }
 
 // ---- C-156: the pages rearranged ---------------------------------------------------------------------------------------

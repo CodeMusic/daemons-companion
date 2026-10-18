@@ -30,7 +30,7 @@ static void tapEntry(lv_event_t *e) {
   }
   lv_obj_t *r = row(right);                          // C-99: read aloud, in the INDEX voice, as the phone's LISTEN
   listening = en["species"] | 0;
-  netHush(); voiceSaidWas = net.message;
+  netHush(); voiceSaidWas = netMessage();
   lv_obj_t *b = button(r, listenWord(), tapListen);
   listenLabel = lv_obj_get_child(b, 0);
   button(r, "CLOSE", closeOverlay, nullptr, false);

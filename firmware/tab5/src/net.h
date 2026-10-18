@@ -15,6 +15,11 @@ struct NetStatus {
   int artDone = 0, artTotal = 0;     // the INDEX's pictures, while they download
 };
 extern NetStatus net;
+// the review, 2026-10-18: net.message and net.network are written on the network's task and read on the screen's -- an
+// Arduino String torn mid-copy is garbage or a fault -- so they are read and written only through these (a mutex)
+String netMessage();
+String netNetworkName();
+void netSay(const String &m);
 extern std::atomic<uint32_t> keptChanged;   // bumped whenever a kept answer changes: the screens redraw from it
 // C-98: which answers changed since the screen last looked, so a page is drawn again only when what it shows did
 enum : uint32_t { K_TODAY = 1, K_GOALS = 2, K_PARTY = 4, K_PROFILE = 8, K_DEVICES = 16, K_STATE = 32, K_INDEX = 64,

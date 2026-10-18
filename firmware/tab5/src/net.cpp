@@ -15,6 +15,13 @@
 #include "sound.h"
 
 NetStatus net;
+static SemaphoreHandle_t statusLock = xSemaphoreCreateMutex();   // made before setup(): the screen may ask at once
+static void lockStatus() { xSemaphoreTake(statusLock, portMAX_DELAY); }
+static void unlockStatus() { xSemaphoreGive(statusLock); }
+void netSay(const String &m) { lockStatus(); net.message = m; unlockStatus(); }
+String netMessage() { lockStatus(); String m = net.message; unlockStatus(); return m; }
+String netNetworkName() { lockStatus(); String n = net.network; unlockStatus(); return n; }
+
 std::atomic<uint32_t> keptChanged{0};
 std::atomic<uint32_t> keptMask{0};
 static void changed(uint32_t what) { keptMask |= what; keptChanged++; }
@@ -500,7 +507,7 @@ static void join(const String &s, const String &p) {
   netsDue = true; save();
   WiFi.disconnect(); WiFi.begin(s.c_str(), p.c_str());
   for (int i = 0; i < 60 && WiFi.status() != WL_CONNECTED; i++) delay(250);
-  net.message = WiFi.status() == WL_CONNECTED ? "Joined " + s + "." : "Could not join " + s + ".";   // DRAFT
+  netSay(WiFi.status() == WL_CONNECTED ? "Joined " + s + "." : "Could not join " + s + ".");   // DRAFT
 }
 
 static void joinKnown() {
@@ -527,17 +534,17 @@ static void pair(const String &srvIn, const String &code) {
   if (c == 200 && !deserializeJson(d, got) && d["token"].is<const char *>()) {
     server = srv; token = d["token"].as<const char *>(); relay = d["away"] | "";
     save();
-    net.paired = true; net.message = "Paired. Downloading everything...";   // DRAFT
+    net.paired = true; netSay("Paired. Downloading everything...");   // DRAFT
     keepEverything(true);
-    net.message = "Paired.";
-  } else net.message = c == 403 ? "That code is not right, or has run out." : "The companion did not answer at " + srv + ".";   // DRAFT
+    netSay("Paired.");
+  } else netSay(c == 403 ? "That code is not right, or has run out." : "The companion did not answer at " + srv + ".");   // DRAFT
 }
 
 // C-99: an INDEX entry aloud. The companion makes the voice (POST /api/device/speak {species}) and keeps it as 16 kHz
 // PCM for a device to fetch -- at home only: the relay answers in JSON and carries no voice.
 static void speak(int species) {
   uint32_t gen = voiceGen;
-  auto said = [&](const String &m) { if (gen == voiceGen) { net.message = m; netVoice = V_QUIET; changed(K_VOICE); } };
+  auto said = [&](const String &m) { if (gen == voiceGen) { netSay(m); netVoice = V_QUIET; changed(K_VOICE); } };
   if (!net.home && net.away) return said("The voice is made at home: the INDEX is read aloud there.");   // DRAFT
   int code; String got = request("POST", "/api/device/speak", "{\"species\":" + String(species) + "}", code);
   JsonDocument d = newDoc();
@@ -563,21 +570,21 @@ static void speak(int species) {
   h.end();
   if (gen != voiceGen || got2 < len) { heap_caps_free(buf); return said(gen != voiceGen ? "" : "The voice did not all come down."); }   // DRAFT
   soundVoice((int16_t *)buf, len / 2, rate);
-  if (gen == voiceGen) { net.message = ""; netVoice = V_SPEAKING; changed(K_VOICE); }
+  if (gen == voiceGen) { netSay(""); netVoice = V_SPEAKING; changed(K_VOICE); }
 }
 
 // SYNC with the game (C-21): it writes the save, so it is never kept for later -- the companion answers now, or the
 // Tab5 says so.
 static void gameSync() {
   int code; String got = request("POST", "/api/sync", "{}", code);
-  if (code != 200) { net.message = code < 0 ? "SYNC needs the companion: nothing answered." : "SYNC did not work (" + String(code) + ")."; changed(K_MESSAGE); return; }   // DRAFT
+  if (code != 200) { netSay(code < 0 ? "SYNC needs the companion: nothing answered." : "SYNC did not work (" + String(code) + ")."); changed(K_MESSAGE); return; }   // DRAFT
   JsonDocument d = newDoc(); deserializeJson(d, got);
   String said;
   for (JsonVariant n : d["received"].as<JsonArray>()) said += String((const char *)n) + " came across. ";
   for (JsonVariant n : d["returned"].as<JsonArray>()) said += String((const char *)n) + " went home. ";
   for (JsonVariant n : d["refused"].as<JsonArray>()) said += String((const char *)n) + " ";   // T-397
   if (!(d["sameGame"] | true)) said = "That save is another game's: nothing was written. ";
-  net.message = said.length() ? said : "SYNC: nothing to answer.";   // DRAFT
+  netSay(said.length() ? said : "SYNC: nothing to answer.");   // DRAFT
   changed(K_MESSAGE);
   keepEverything(false);
 }
@@ -589,7 +596,7 @@ static void netTask(void *) {
   bool first = true;
   for (;;) {
     net.wifi = WiFi.status() == WL_CONNECTED;
-    net.network = net.wifi ? WiFi.SSID() : "";
+    { String n = net.wifi ? WiFi.SSID() : ""; lockStatus(); net.network = n; unlockStatus(); }
     xSemaphoreTake(jobLock, portMAX_DELAY);
     Job j = job; String a = jobA, b = jobB; job = NONE;
     xSemaphoreGive(jobLock);
@@ -602,7 +609,7 @@ static void netTask(void *) {
     else if (j == PAIR) pair(a, b);
     else if (j == SYNC && net.paired) { flushOutbox(); keepEverything(!hasArt("s1")); }
     else if (j == GAME && net.paired) gameSync();
-    else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { net.message = "The voice needs the companion."; netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
+    else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { netSay("The voice needs the companion."); netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
     sendHome();                                               // C-139: HOME's taps, now and before anything else
     uint32_t now = millis();
     if (!net.wifi && known && now - lastSync > 30000) { lastSync = now; joinKnown(); }

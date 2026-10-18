@@ -39,7 +39,7 @@ import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
-import { deviceArt, repaint, streakColours } from "./art.js";
+import { deviceArt, headOf, repaint, streakColours } from "./art.js";
 import { createConnection } from "node:net";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
@@ -987,6 +987,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!body) return send(res, 404, { error: "no art for that slot" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);
+      }
+      // C-158: where a daemon's head is in its picture (a party slot's, or a species'), for THE CASINO's holiday hats
+      if (req.method === "GET" && path === "/art/head") {
+        const slot = url.searchParams.get("slot"), sp = url.searchParams.get("species") ?? "";
+        const png = slot !== null && /^\d{1,3}$/.test(slot) ? partyPng(ecfg, (p) => p.slot === Number(slot)) : /^\d{1,4}$/.test(sp) ? speciesPng(sp) : null;
+        if (!png) return send(res, 404, { error: "no such picture" });
+        try { return send(res, 200, headOf(Buffer.from(png))); } catch { return send(res, 404, { error: "not a picture with a head" }); }
       }
       // C-158: THE CASINO's drawn pieces and hats as the boards draw them (firmware/common/casino_art.py), in the day's
       // colours: ?a= and ?b= the holiday's or the season's two, ?day= the day's (each RRGGBB; left out, the picture's own)

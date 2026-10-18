@@ -49,6 +49,17 @@ export function decodeIndexedPng(png: Buffer): { w: number; h: number; palette: 
 
 export const rgb565 = ([r, g, b]: number[]) => ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | (b >> 3);
 
+// C-158: where a daemon's head is, for a holiday hat to sit on -- the top row with anything drawn in it, and the middle of
+// what is drawn there (casino.cpp measure(), the boards' own rule); index 0 is clear
+export function headOf(png: Buffer): { w: number; h: number; top: number; mid: number } {
+  const { w, h, px } = decodeIndexedPng(png);
+  for (let y = 0; y < h; y++) {
+    let lo = w, hi = -1;
+    for (let x = 0; x < w; x++) if (px[y * w + x]) { lo = Math.min(lo, x); hi = x; }
+    if (hi >= 0) return { w, h, top: y, mid: (lo + hi) >> 1 };
+  }
+  return { w, h, top: h - 1, mid: w >> 1 };
+}
 export function deviceArt(png: Buffer) {
   const { w, h, palette, px } = decodeIndexedPng(png);
   if (px.some((i) => i > 15)) throw new Error("more than sixteen colours");   // the PLTE may be padded past 16

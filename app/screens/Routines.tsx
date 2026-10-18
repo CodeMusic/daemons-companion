@@ -1,7 +1,7 @@
 // ROUTINES -- THE CASINO (by server/src/slots.ts, the boards' table) and the party's game routines (C-155). (C-157: out of App.tsx.)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { casinoDress, pieceArt, SeasonFalling } from "../casinoDress";
+import { casinoDress, Hatted, pieceArt, SeasonFalling } from "../casinoDress";
 import { dayRoot, hearSettings, soundLevel, tuneSound } from "../tuneSound";
 import { Text, XStack, YStack } from "tamagui";
 import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
@@ -223,9 +223,11 @@ export function Casino({ ink }: { ink: string }) {
   // each piece as the boards show it: the daemons' pictures, the coin and the season's piece drawn as they draw them
   // (casino_art.py), and a drawn stand-in where a daemon has no picture (casino.cpp drawPiece: a MARK, a berry, a gem)
   const piece = (p: Piece, size: number) => {
-    if (p >= 1 && p <= 3 && reel[p - 1]) return <Art path={`/art/species/${reel[p - 1].species}.png`} size={size} />;
+    const day = st.day?.menu ?? "";
+    if (p >= 1 && p <= 3 && reel[p - 1])
+      return <Hatted path={`/art/species/${reel[p - 1].species}.png`} head={`species=${reel[p - 1].species}`} size={size} dress={dress} day={day} />;
     const slot = p === 0 ? jack : p <= 3 ? friends[p - 1] : undefined;
-    if (slot !== undefined) return <Art path={`/art/party/${slot}.png`} size={size} />;
+    if (slot !== undefined) return <Hatted path={`/art/party/${slot}.png`} head={`slot=${slot}`} size={size} dress={dress} day={day} />;
     const drawn = p === 4 ? "coin" : p === 5 ? dress.piece : (["mark", "berry", "gem", "mark"] as const)[p];
     return <Art path={pieceArt(drawn, dress, st.day?.menu ?? "")} size={size} />;   // the boards' MARK in the day's colour
   };

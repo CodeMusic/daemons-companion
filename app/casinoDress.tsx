@@ -3,13 +3,16 @@
 // when it is weather to notice (a clear night, its stars), else the season's own; its two colours the holiday's, else the
 // season's -- the drawn piece the boards draw for it (server/data/art/casino/, written by firmware/common/casino_art.py),
 // and the season falling over the reels as it falls over theirs.
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Animated, Easing, Text, View } from "react-native";
+import { api } from "./net";
 import type { PlayerState } from "./types";
+import { Art } from "./ui";
 
-const ART: { pieces: string[]; season: Record<string, [string, string]> } = require("../server/data/casino_art.json");
+const ART: { pieces: string[]; season: Record<string, [string, string]>; hats: Record<string, { w: number; h: number; x: number; y: number }> }
+  = require("../server/data/casino_art.json");
 
-export type Dress = { look: string; a: string; b: string; piece: string };
+export type Dress = { look: string; a: string; b: string; piece: string; hat: string | null };
 export function casinoDress(st: PlayerState): Dress {
   const h = st.holiday, dressed = !!h?.name && !h.quiet;
   const sky = st.world?.weather?.kind, season = st.season;
@@ -18,8 +21,34 @@ export function casinoDress(st: PlayerState): Dress {
     : sky === "clear" && st.world?.watch === "NIGHT" ? "stars"
     : season === "winter" ? "snow" : season === "spring" ? "petals" : season === "summer" ? "sun" : "leaves";
   const [sa, sb] = ART.season[season] ?? ART.season.autumn;
-  return { look, a: (dressed && h!.colours?.[0]) || sa, b: (dressed && h!.colours?.[1]) || sb, piece: ART.pieces.includes(look) ? look : "star" };
+  const hat = dressed && !h!.flip && ART.hats[h!.hat] ? h!.hat : null;   // casino.cpp hat(): none on a quiet day, or upside down
+  return { look, a: (dressed && h!.colours?.[0]) || sa, b: (dressed && h!.colours?.[1]) || sb, piece: ART.pieces.includes(look) ? look : "star", hat };
 }
+
+// A daemon's picture with the holiday's hat on its head, as the boards put it there (casino.cpp hat(): at the middle of the
+// top of its head, GET /art/head, the picture's 64 pixels scaled to `size`)
+const HEADS = new Map<string, Promise<{ top: number; mid: number; w: number } | null>>();
+const headOf = (q: string) => {
+  if (!HEADS.has(q)) HEADS.set(q, api<{ top: number; mid: number; w: number }>(`/art/head?${q}`).catch(() => null));
+  return HEADS.get(q)!;
+};
+export function Hatted({ path, head, size, dress, day }: { path: string; head: string; size: number; dress: Dress; day: string }) {
+  const [at, setAt] = useState<{ top: number; mid: number; w: number } | null>(null);
+  useEffect(() => { if (dress.hat) headOf(head).then(setAt); }, [head, dress.hat]);
+  const hat = dress.hat ? ART.hats[dress.hat] : null;
+  const k = size / (at?.w ?? 64);
+  return (
+    <View style={{ width: size, height: size }}>
+      <Art path={path} size={size} />
+      {hat && at ? (
+        <View pointerEvents="none" style={{ position: "absolute", left: (at.mid - hat.x) * k, top: (Math.max(14, at.top) + 3 - hat.y) * k }}>
+          <Art path={pieceArt(`hat_${dress.hat}`, dress, day)} size={hat.w * k} height={hat.h * k} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 // the piece's picture in the day's dress (GET /art/casino/<name>.png fills its colour slots)
 export const pieceArt = (name: string, d: Dress, day: string) =>
   `/art/casino/${name}.png?a=${d.a.slice(1)}&b=${d.b.slice(1)}&day=${/^#[0-9a-f]{6}$/i.test(day) ? day.slice(1) : "315a62"}`;

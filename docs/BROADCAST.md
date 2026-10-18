@@ -51,7 +51,8 @@ board. A word on a keyboard board stays until read, as C-123's do.
 
 **Bench checks down the cable**: `CASTS?` (what this board has, each with its ways), `CAST act WAVE`, `CAST say hello`
 (needs a daemon hosted). Checked 2026-10-16 on the T-Display-S3 AMOLED: a WAVE sent from the companion arrived once by N,
-and twice more of the same state kept one.
+and twice more of the same state kept one. **Bluetooth between two boards confirmed 2026-10-18**: the CC1101 heard the T-Deck's WAVE by Bluetooth and by the
+companion, and showed it once ([BN]). LoRa between two boards is not yet checked.
 
 ## The companion's half
 

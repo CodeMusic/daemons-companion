@@ -1047,6 +1047,9 @@ static void drawProfile(lv_obj_t *p) {
   char pt[16]; snprintf(pt, sizeof pt, "%d:%02d", (int)(t["hours"] | 0), (int)(t["minutes"] | 0));
   String shoes = pr["shoes"].isNull() ? String("not yet") : String((const char *)pr["shoes"]) + "'s";
   label(f, String("PLAY TIME  ") + pt + "      MONEY  " + String((long)(pr["money"] | 0)) + "      SHOES  " + shoes, &lv_font_montserrat_20, INK, LV_PCT(100));
+  String at;                                                 // C-151: the boards at the reels now, each by its daemon (DRAFT)
+  for (JsonObject t : pr["casino"]["table"].as<JsonArray>()) at += (at.length() ? ", " : "") + String((const char *)(t["name"] | ""));
+  if (at.length()) label(f, "At the CASINO now: " + at + ".", &lv_font_montserrat_20, QUIET, LV_PCT(100));
   long won = pr["casino"]["pending"] | 0L, spins = pr["casino"]["spins"] | 0L;   // C-149: the CASINO's, at the next SYNC (DRAFT)
   if (won || spins) label(f, String("The CASINO: ") + (won > 0 ? "+" + String(won) : won < 0 ? String(won) : String("even")) + " over " +
                              String(spins) + (spins == 1 ? " spin" : " spins") + ", into your save at the next SYNC (then " +

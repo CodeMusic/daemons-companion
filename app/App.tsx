@@ -903,7 +903,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
                  gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
                  choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
-                 casino?: { pending: number; spins: number; balance: number };   // C-149: won or lost since the last SYNC
+                 casino?: { pending: number; spins: number; balance: number; table?: { name: string; device: string }[] };   // C-149, C-151
                  notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[];
                  wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
@@ -1586,6 +1586,9 @@ function ProfileScreen() {
         <Fact label="PLAY TIME">{p.playTime.hours}:{String(p.playTime.minutes).padStart(2, "0")}</Fact>
         {p.money !== undefined ? <Fact label="MONEY">{p.money.toLocaleString()}</Fact> : null}
         {/* C-149: the CASINO plays with the save's money; what it won or lost reaches the save at the next SYNC (DRAFT) */}
+        {p.casino?.table?.length ? (   /* C-151: the boards at the reels now, each by its daemon (DRAFT) */
+          <Small color="$color10">{`At the CASINO now: ${p.casino.table.map((t) => t.name).join(", ")}.`}</Small>
+        ) : null}
         {p.casino && (p.casino.pending || p.casino.spins) ? (
           <Small color="$color10">{`The CASINO: ${p.casino.pending > 0 ? `+${p.casino.pending.toLocaleString()}` : p.casino.pending < 0 ? `-${(-p.casino.pending).toLocaleString()}` : "even"} over ${p.casino.spins} spin${p.casino.spins === 1 ? "" : "s"}, into your save at the next SYNC (then ${p.casino.balance.toLocaleString()}).`}</Small>
         ) : null}

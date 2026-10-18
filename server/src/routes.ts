@@ -4,9 +4,9 @@
 // may import Node: it runs in the app too (app/local.ts).
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
-import { readSave } from "./save/reader.js";
+import { readAway, readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
-import { casinoPending, clampMoney } from "./casino.js";
+import { casinoPending, clampMoney, tableFor } from "./casino.js";
 import actsJson from "../data/acts.json" with { type: "json" };
 import { readGuide } from "./save/guide.js";
 import { readNotebook } from "./save/notebook.js";
@@ -70,7 +70,8 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const thisGame = m ? m.name === prof.name && m.trainerId === prof.trainerId && m.secretId === prof.secretId : null;
       const c = casinoPending(store);                                   // C-149: what the CASINO has won or lost since the last SYNC
       return ok({ ...prof, edition: h.edition, thisGame, marriedTo: m ? m.name : null,
-                  casino: { pending: c.delta, spins: c.spins, balance: clampMoney(prof.money + c.delta) } });
+                  casino: { pending: c.delta, spins: c.spins, balance: clampMoney(prof.money + c.delta),
+                            table: tableFor(store, "", readAway(save), now) } });   // C-151: the boards at the reels now
     }
     if (path === "/api/progress") return ok(readProgress(save));        // C-128, C-129: GAME EVENTS and CALLOW SCHOOL
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here

@@ -38,7 +38,23 @@ static std::deque<std::pair<uint32_t, uint32_t>> recent;   // tag -> when, for o
 // each listen, told to the server, so the radio can be checked from the companion (devices heard, beacons among them)
 static volatile int listenDevices = 0, listenBeacons = 0;
 static volatile bool listenDone = false, listenStarted = false;
-static void listenEnded(NimBLEScanResults) { listenDone = true; }
+// C-134 (the watch session, 2026-10-18, a second crash): isScanning() goes false BEFORE NimBLE's host task has finished
+// with the scan that ended -- its DISC_COMPLETE handler still walks and clears the results -- so a start() the moment it
+// read false cleared them at the same time: the same double free, a narrower window. A new scan now waits for the last
+// one's complete callback, which NimBLE runs after that handler's clearing. (And if a callback never comes, ten seconds.)
+static volatile bool scanFree = true;
+static uint32_t scanFrom = 0;
+static bool scanMay(NimBLEScan *scan, uint32_t now) {
+  if (!scanFree && !scan->isScanning() && now - scanFrom > 10000) scanFree = true;   // a callback lost: free again
+  return scanFree && !scan->isScanning();
+}
+static bool scanStart(NimBLEScan *scan, uint32_t secs, void (*done)(NimBLEScanResults)) {
+  scanFree = false; scanFrom = millis();
+  bool ok = scan->start(secs, done, false);
+  if (!ok) scanFree = true;
+  return ok;
+}
+static void listenEnded(NimBLEScanResults) { listenDone = true; scanFree = true; }
 
 static String hex8(uint32_t v) { char b[9]; snprintf(b, sizeof b, "%08lx", (unsigned long)v); return b; }
 
@@ -51,7 +67,7 @@ static bool castScan = false;
 // still adding and erasing them on each advertisement -- a double free, and the heap check reset every board a few
 // seconds after it woke (caught on the T-Watch S3 by the watch session, 2026-10-18). Each listen ends by itself.
 static volatile bool listenWanted = false;
-static void castEnded(NimBLEScanResults) {}
+static void castEnded(NimBLEScanResults) { scanFree = true; }
 
 // Its own name, inside its own namespace: link.cpp also had a class called Heard, and two classes of one name in one
 // program share ONE vtable at link time -- the scan called the link's callback, and heard nothing for an hour (C-15).
@@ -108,13 +124,13 @@ void meetLoop(uint32_t now, bool on, int species) {
   }
   bool due = !listenedAt || now - listenedAt > LISTEN_EVERY_MS;
   listenWanted = due;                                          // C-134: the light listen's piece ends within 3 s, then this
-  if (due && !scan->isScanning()) {
+  if (due && scanMay(scan, now)) {
     castScan = false; listenWanted = false;
     scan->setAdvertisedDeviceCallbacks(listener(), false);      // once a device, as it always was
     scan->setInterval(97); scan->setWindow(37);            // a light listen: about a third of the time
     listenedAt = now;
     listenDevices = 0; listenBeacons = 0;
-    listenStarted = scan->start(LISTEN_S, listenEnded, false);   // in the background; the loop carries on
+    listenStarted = scanStart(scan, LISTEN_S, listenEnded);   // in the background; the loop carries on
     if (!listenStarted) listenDone = true;
   }
 }
@@ -196,11 +212,11 @@ void meetCastLoop(uint32_t now) {
   // in pieces of three seconds that end by themselves (never stopped from here: see listenWanted), one after another,
   // and none while the meetings' listen is due
   static uint32_t triedAt = 0;
-  if (!scan->isScanning() && !listenWanted && now - triedAt > 250) {
+  if (scanMay(scan, now) && !listenWanted && now - triedAt > 250) {
     triedAt = now;
     scan->setAdvertisedDeviceCallbacks(listener(), true);       // every advertisement: the pieces turn
     scan->setInterval(160); scan->setWindow(16);
-    castScan = scan->start(3, castEnded, false);
+    castScan = scanStart(scan, 3, castEnded);
   }
   // the pieces going out, each in turn for a fifth of a second; the beacon back after
   if (burstN) {

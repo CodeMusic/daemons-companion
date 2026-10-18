@@ -41,6 +41,10 @@ first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test th
 | type | routine | what it does |
 |---|---|---|
 | CASINO | SLOTS | three reels of the party's daemons, the season and the holiday dressing them, played with the save's money -- each result reported (INTERACT casino) and written into the game at SYNC; run on the board itself, never from the site (C-149, DRAFT) |
+| GLOW | SEE THE HEAT | the M5StickC-Plus with its Thermal HAT (an MLX90640): the heat, live, black through red to white, a ring on the warmest spot and an x on the coolest, with both temperatures. Press to stop (C-148, DRAFT) |
+| GLOW | WARMEST THING | a ring that follows the warmest spot, and its temperature (C-148, DRAFT) |
+| GLOW | SOMEONE'S HERE | five seconds learning the room still (keep out of its view), then the room dimmed and a warm body that comes into it shown in colour, with one note, and counted. Ends itself after ten minutes (C-148, DRAFT) |
+| GLOW | HOW WARM IS THAT | a thermometer at the middle of the view (C-148, DRAFT) |
 | FLARE | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn; kept, and chosen |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
 | FLARE | THEATER MODE | the routine the site cannot send: run on the board itself |

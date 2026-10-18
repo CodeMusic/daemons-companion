@@ -97,8 +97,9 @@ revision 1.0, read by esptool 2026-10-17). Its own build, `env:m5-stickc-plus` (
 **Button A 37 is the face, B 39 the side**, pulled up on the board -- the StickS3's two buttons, read the same way: the
 face presses (held at home it talks), the side turns (a tap), goes back (held half a second) and sleeps (two seconds).
 A **passive buzzer on 2** plays the tunes (LEDC, as the Dial's); no voice. **An SPM1423 PDM microphone, CLK 0 / DATA 34**,
-powered by the AXP192's GPIO0 as an LDO. The **red LED on 10** (lit low) is held dark. **IR out on 9** only -- no receiver,
-and `radios.cpp`'s IR pins are the T-Embed's -- so no FLARE yet.
+powered by the AXP192's GPIO0 as an LDO. The **red LED on 10** (lit low) is held dark. **IR out on 9** only, no receiver:
+since C-150 (each board's own IR pins) FLARE is there as `FLARE (IR out)`, its sending routines only -- POWER, VOLUME UP,
+VOLUME DOWN, THEATER MODE, CHOOSE A REMOTE; a remote is learnt on a board that can hear one, or added by brand on the site.
 
 **AXP192 (0x34) on SDA 21 / SCL 22** (the MPU6886 at 0x68 and the BM8563 clock at 0x51 share it, unused): started as
 M5Stack's `AXP192::begin()` starts it -- LDO2 (the backlight) and LDO3 (the screen) at 3.0 V, the cell charged to 4.2 V at

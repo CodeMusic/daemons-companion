@@ -1,6 +1,6 @@
 # LoRa: the daemons nearby, and a word between them (C-72, C-104)
 
-*Built 2026-10-10, not yet run on a board. The user: "most devices now have LoRa, most the 433, some I think might
+*Built 2026-10-10; first run 2026-10-15, when a word typed on the T-Deck reached the Fire over LoRa (C-123). The user: "most devices now have LoRa, most the 433, some I think might
 not be. For compatible ones, can we make a communication system, so you can go into that routine and see the nearby
 daemons and send them interactions or connections or messages."*
 
@@ -11,17 +11,17 @@ Bluetooth, sub-GHz and 2.4 GHz radios on the other boards cannot join however th
 
 | board | radio | LoRa? | band | state |
 |---|---|---|---|---|
-| **T-Deck Plus** | SX1262 | **yes** | as bought: 433, 868 or 915 | `env:t-deck`, built (C-104) |
-| **T-Watch S3** | SX1262 | **yes** | as bought: 433, 868 or 915 (or an SX1280 at 2.4 GHz, which talks to nothing here) | `env:t-watch-s3`, built |
-| **M5Stack Fire + LoRa433 module** | Ra-02, an SX1278 | **yes, at 433** | 410-525 MHz | not wired: the module's CS, RST and IRQ depend on its DIP switches (M5's docs give only IRQ 35 / RST 13 for a Core); and the Fire's build has about 400 bytes of instruction RAM to spare (HARDWARE.md) |
+| **T-Deck Plus** | SX1262 | **yes** | as bought: 433, 868 or 915 | `env:t-deck`, runs (C-104); its typed word reached the Fire (C-123) |
+| **T-Watch S3** | SX1262 | **yes** | as bought: 433, 868 or 915 (or an SX1280 at 2.4 GHz, which talks to nothing here) | `env:t-watch-s3`, runs (C-71); its LoRa not yet seen |
+| **M5Stack Fire + LoRa433 module** | Ra-02, an SX1278 | **yes, at 433** | 410-525 MHz | runs (C-123): the firmware finds the module's CS, IRQ and RST at start, whatever its DIP switches say (`findLora433`), and it heard the T-Deck. With RST on G25, the speaker's pin, the Fire is silent and its amplifier ticks on idle: the module's RST switch at G13 cures both |
 | **Cardputer ADV + Cap LoRa1262** | SX1262 (+ a GNSS) | yes, when the Cardputer is built (C-78) | 868/915 as sold | not built |
 | **T-Embed CC1101** (and PLUS) | CC1101 | **no** -- FSK/OOK, not LoRa; the PLUS's nRF24 is 2.4 GHz | -- | LONGWAVE listens; it will never hear a LoRa frame |
 | **T-Embed, SI4732** | -- | no (the SI4732 is a broadcast receiver) | -- | |
 | **M5StickS3, CoreS3, Dial, Tab5, M5GO** | -- | no, without a module | -- | the CoreS3 takes the LoRa433 module too (IRQ 10 / RST 5) |
 | **the phone** | -- | no | -- | Bluetooth only (C-15) |
 
-**So the pair that can talk today is the T-Deck Plus and the T-Watch S3, if they were bought for the same band.** The
-Fire with its LoRa433 module is the third, once its switches are read; it would need the other two to be 433 boards.
+**So the boards that talk today are the T-Deck Plus and the Fire with its LoRa433 module, at 433 (C-123, seen
+2026-10-15).** The T-Watch S3 is the third, if it was bought for 433.
 Everything else meets over Bluetooth (C-15), and a LoRa board carries both, so a meeting is one meeting whichever
 radio heard it.
 

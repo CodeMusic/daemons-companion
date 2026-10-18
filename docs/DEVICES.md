@@ -10,7 +10,7 @@
 | **T-Embed CC1101** | 320x170 | dial, its press, top button | PDM mic | I2S speaker | 8 WS2812 | IR, NFC, Sub-GHz | gauge + charger | Wi-Fi, USB cable, phone | runs (C-26) |
 | **T-Embed** (plain) | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | -- | voltage only | Wi-Fi, USB cable, phone | runs (C-67) |
 | **T-Embed SI4732** | 320x170 | dial and its press | two mics (ES7210) | I2S speaker | 7 APA102 | AM/FM receiver | voltage only | Wi-Fi, USB cable, phone | runs (C-67); its radio C-69 |
-| **T-Watch S3** | 240x240 touch | touch, the crown | PDM mic | I2S speaker | -- | LoRa, IR | PMU | Wi-Fi, USB cable, phone; LoRa later | built (C-71) |
+| **T-Watch S3** | 240x240 touch | touch, the crown | PDM mic | I2S speaker | -- | LoRa, IR | PMU | Wi-Fi, USB cable, phone; LoRa later | runs (C-71); the crown and swipes C-161, its faces C-162, its care C-163 |
 | **T-Deck / T-Deck Plus** | 320x240 (touch, unused) | keyboard, trackball | two mics (ES7210) | I2S speaker | -- | **LoRa**; GPS on the Plus | voltage only | Wi-Fi, USB cable, phone; **LoRa to other boards** | runs (C-104) |
 | **T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- | -- | green LED (unused) | -- (light sensor, unused) | charger's voltage | Wi-Fi, USB cable, phone | runs (C-105) |
 | **the phone** | -- | touch | its mic | its speaker | -- | -- | -- | Wi-Fi at home, the relay away | runs |

@@ -14,12 +14,15 @@ theme, virtue over vice, chakra and note -- the season, **the one next step**, t
 
 | | the CC1101 | the plain T-Embed, the SI4732 | the T-Watch S3 | the T-Deck (C-104) |
 |---|---|---|---|---|
-| choose | turn the dial | turn the dial | swipe | roll the trackball |
-| open, confirm | press the dial (acts when let go) | tap the dial | tap | click the ball, or Enter |
-| back | the top button | hold the dial half a second | hold, or the crown | hold the ball half a second, or Backspace |
-| **talk** | **hold the dial** half a second at home | **hold the dial** at home (just after ticking a step, the hold undoes it instead) | **hold TALK** on the face | **hold the ball** at home |
-| sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown | hold the ball two seconds |
+| choose | turn the dial | turn the dial | swipe: left or right between pages, up or down through a list | roll the trackball |
+| open, confirm | press the dial (acts when let go) | tap the dial | tap (in a list, the row tapped) | click the ball, or Enter |
+| back | the top button | hold the dial half a second | press the crown, or hold the screen; the crown pressed twice goes home, to the face | hold the ball half a second, or Backspace |
+| **talk** | **hold the dial** half a second at home | **hold the dial** at home (just after ticking a step, the hold undoes it instead) | **hold the daemon** a beat on its face (on VIRTUE, **hold TALK**) | **hold the ball** at home |
+| sleep | hold the top button, press the dial | hold the dial two seconds | hold the crown (longer, it switches off) | hold the ball two seconds |
 | wake | **the top button only** | hold the dial | the crown | hold the ball, or any key |
+
+**The T-Watch S3**'s crown is a press, not a dial (C-161). A double tap on its face opens CARE -- DRINK, FEED, TRAIN,
+SLEEP, a tap each (C-163) -- and which face it shows, DAEMON, CLOCK or VIRTUE, is the device's own setting (C-162).
 
 **The T-Display-S3 Pro** (C-105, `env:t-display-pro`) is a touch screen first: swipe to choose, tap to open, hold to go
 back, and its home key under the glass goes home. Its three buttons do the same (as the M5GO's A, B and C): the left one

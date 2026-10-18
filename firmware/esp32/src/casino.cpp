@@ -491,13 +491,18 @@ static void fetchFriends() {
   for (int i = 0; i < 3; i++) {
     if (!pix[i + 1]) continue;
     loading("Setting the reels... " + String(i + 1) + " of " + String(min(3, st.casino.friendN)));   // DRAFT
-    if (usbLive()) {
+    // the cable, if a bridge has been heard on it lately -- the M5GO's loop does not always have the room to take a STATE,
+    // so "lately" is two minutes, not usbLive's fifteen seconds -- else Wi-Fi
+    if (usbSeen && millis() - usbSeen < 120000) {
       Serial.printf("PARTYART? %d\n", friendSlot[i]);
       for (uint32_t t0 = millis(); !have[i + 1] && millis() - t0 < 2500; ) { readCable(); delay(5); }
-    } else if (online() && !bridgeLive()) {
+    }
+    if (!have[i + 1] && online() && !bridgeLive()) {
       bool ok; String got = http("GET", "/api/device/art?slot=" + String(friendSlot[i]), "", &ok);
       if (ok) casinoTakeArt(got.c_str());
     }
+    Serial.printf("CASINO ART %d %s heap %u largest %u\n", friendSlot[i], have[i + 1] ? "taken" : "missing",
+                  (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMaxAllocHeap());   // for a check from the computer
   }
 }
 static void putAway() { for (int i = 1; i < 4; i++) { free(pix[i]); pix[i] = nullptr; have[i] = false; } for (int &s : friendSlot) s = -1; }

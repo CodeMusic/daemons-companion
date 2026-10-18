@@ -1,6 +1,6 @@
 // C-155: THE CASINO's rules, kept once for every player -- and held to the handhelds' own copy in C++.
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { BETS, PAYS, RETURN, STRIP, WEIGHTS, draw, outcomeOf, piecesFor, resultDetail, stopAt, strip, tableAct } from "../src/slots.js";
 import { parseResult } from "../src/casino.js";
 
@@ -28,7 +28,9 @@ describe("SLOTS (C-155)", () => {
     expect(nums("PAYS")).toEqual(PAYS);
     expect(nums("BETS")).toEqual(BETS);
     for (const user of ["esp32/src/casino.cpp", "tab5/src/ui.cpp"]) {
-      const c = read(user);
+      // the Tab5's ui.cpp is in parts (C-157: ui/*.inl, included in order), the CASINO among them: every part is read
+      const parts = user.startsWith("tab5/") ? readdirSync(new URL("../../firmware/tab5/src/ui/", import.meta.url)).map((f) => read(`tab5/src/ui/${f}`)) : [];
+      const c = [read(user), ...parts].join("\n");
       expect(c).toContain('#include "../../common/slots.h"');
       expect(c).not.toMatch(/WEIGHTS?\[[^\]]*\]\s*=\s*\{/);         // no table of its own beside it
     }

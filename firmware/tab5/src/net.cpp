@@ -3,6 +3,7 @@
 #include <deque>
 #include <vector>
 #include <HTTPClient.h>
+#include <ESPmDNS.h>
 #include <NetworkClientSecure.h>
 #include <Preferences.h>
 #include <M5Unified.h>   // C-104: its battery, for the site
@@ -111,6 +112,26 @@ static String relayRequest(const char *method, const String &path, const String 
   return out;
 }
 
+// A companion paired by its computer's own name (M2cBook.local, which the site's PAIR card now offers) is found wherever
+// that computer is: the name is asked of the network (mDNS) and the answer kept ten minutes, or until a request fails.
+// An address stays as it is. Seen 2026-10-17: a phone paired by address at home lost the companion at another house.
+static String namedIp, namedHost; static uint32_t namedAt = 0;
+static String reachable(const String &base) {
+  int s = base.indexOf("://"), h0 = s < 0 ? 0 : s + 3, h1 = base.indexOf(':', h0);
+  if (h1 < 0) h1 = base.indexOf('/', h0);
+  if (h1 < 0) h1 = base.length();
+  String host = base.substring(h0, h1);
+  if (!host.endsWith(".local")) return base;
+  if (host != namedHost || !namedIp.length() || millis() - namedAt > 600000) {
+    static bool started = false;
+    if (!started) started = MDNS.begin(deviceId().c_str());
+    IPAddress ip = MDNS.queryHost(host.substring(0, host.length() - 6), 2000);
+    if ((uint32_t)ip == 0) return base;
+    namedHost = host; namedIp = ip.toString(); namedAt = millis();
+  }
+  return base.substring(0, h0) + namedIp + base.substring(h1);
+}
+
 static String request(const char *method, const String &rawPath, const String &body, int &code) {
   code = -1;
   if (WiFi.status() != WL_CONNECTED) return "";
@@ -120,7 +141,7 @@ static String request(const char *method, const String &rawPath, const String &b
     HTTPClient h;
     h.setConnectTimeout(relay.length() ? 1500 : 4000);
     h.setTimeout(30000);
-    h.begin(server + path);
+    h.begin(reachable(server) + path);
     if (token.length()) h.addHeader("authorization", "Bearer " + token);
     h.addHeader("x-device", deviceId());
     if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body.length() ? body : "{}"); }
@@ -128,6 +149,7 @@ static String request(const char *method, const String &rawPath, const String &b
     out = code > 0 ? h.getString() : "";
     h.end();
     if (code > 0) { awayAt = 0; net.home = true; net.away = false; }
+    else namedAt = 0;                              // a name answered elsewhere now: ask again next time
   }
   if (code < 0 && relay.startsWith("https://") && token.length()) {
     out = relayRequest(method, path, body, code);
@@ -492,7 +514,7 @@ static void pair(const String &srvIn, const String &code) {
   if (!srv.startsWith("http")) srv = "http://" + srv;
   if (srv.indexOf(':', 6) < 0) srv += ":4730";
   HTTPClient h; h.setTimeout(8000);
-  h.begin(srv + "/api/pair");
+  h.begin(reachable(srv) + "/api/pair");
   h.addHeader("content-type", "application/json");
   int c = h.POST("{\"code\":\"" + code + "\",\"name\":\"Tab5 " + deviceId().substring(8) + "\"}");
   String got = c > 0 ? h.getString() : "";
@@ -520,7 +542,7 @@ static void speak(int species) {
   if (!audio.length()) return said(String((const char *)(d["error"] | "The voice did not come.")));   // DRAFT
   if (gen != voiceGen || !net.home) return said(net.home ? "" : "The voice is made at home.");        // DRAFT
   HTTPClient h; h.setTimeout(30000);
-  h.begin(server + withDevice(audio));
+  h.begin(reachable(server) + withDevice(audio));
   if (token.length()) h.addHeader("authorization", "Bearer " + token);
   h.addHeader("x-device", deviceId());
   const char *keys[] = { "x-sample-rate" }; h.collectHeaders(keys, 1);

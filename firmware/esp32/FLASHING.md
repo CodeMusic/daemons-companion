@@ -33,10 +33,10 @@ On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and
 The pages: TODAY (press: the step is done; back undoes it for fifteen seconds), DAEMON (press: CARE, and its INDEX
 entry, read aloud on a press), ROUTINES and the DAY; the watch's face comes first.
 
-**ROUTINES** opens the routine types this board has: **FLARE** (IR), **WHISPER** (Bluetooth), **TOUCHSTONE** (NFC),
-**LONGWAVE** (Sub-GHz), **PARTY** (the game), **UPLINK** (Wi-Fi). A board with no radios of its own opens the party
-first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test that the radio works, on your own gear
-(`CONTEXT.md`):
+**ROUTINES** opens the routine types this board has: **CASINO**, **CHORUS** (every way at once), **FLARE** (IR),
+**WHISPER** (Bluetooth), **TOUCHSTONE** (NFC), **LONGWAVE** (Sub-GHz), **MESH** (LoRa), **GLOW** (heat),
+**PARTY** (the game), **UPLINK** (Wi-Fi). A board with no radios of its own opens the party first, with its
+Bluetooth and Wi-Fi a row below. Each radio routine is a test that the radio works, on your own gear (`CONTEXT.md`):
 
 | type | routine | what it does |
 |---|---|---|
@@ -45,12 +45,17 @@ first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test th
 | GLOW | WARMEST THING | a ring that follows the warmest spot, and its temperature (C-148, DRAFT) |
 | GLOW | SOMEONE'S HERE | five seconds learning the room still (keep out of its view), then the room dimmed and a warm body that comes into it shown in colour, with one note, and counted. Ends itself after ten minutes (C-148, DRAFT) |
 | GLOW | HOW WARM IS THAT | a thermometer at the middle of the view (C-148, DRAFT) |
+| CHORUS | TO EVERY DAEMON | a wave, a bow, a tune or (on the T-Deck) a typed word from your daemon to every daemon, by every way the board has -- LoRa, Bluetooth and the companion -- one broadcast however many ways it travels; every daemon answers an act once, a moment later (C-134, DRAFT) |
+| CHORUS | WHAT CAME | the broadcasts this board has heard, answers too, newest first and its own greyed, each marked with the ways it came: L LoRa, B Bluetooth, N the companion (C-134, DRAFT) |
 | FLARE | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn; kept, and chosen |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
 | FLARE | THEATER MODE | the routine the site cannot send: run on the board itself |
+| FLARE | on a board that only sends | the T-Watch and the StickC-Plus have an IR light and no receiver: their FLARE is POWER, VOLUME UP and DOWN, THEATER MODE and CHOOSE A REMOTE, nothing that listens (C-150) |
 | FLARE | WHAT REMOTE IS THIS | point any of your remotes at it and press: each press named -- its protocol (for most, the maker), bits and code. Listening only, for a minute |
 | FLARE | CHOOSE A REMOTE | which of the remotes it knows (up to six) FLARE uses; the site can add one by brand |
 | WHISPER | PAIR MY PHONE, OPEN TO MY PHONE, FORGET MY PHONES | the phone app's link over Bluetooth (C-55) |
+| TOUCHSTONE | HOLD A CARD | a card holds a daemon as a board does: hold one and choose -- PUT yours on it, TAKE the one on it, or SWAP them; never in two places, and a board that put its daemon away hosts none until it takes one back. A card from another companion is a meeting: the two daemons meet and nothing changes hands. With a note waiting from a T-Deck, an empty card also offers WRITE THE NOTE ON IT, and a card with a note shows it (C-124, DRAFT) |
+| TOUCHSTONE | A NOTE FOR A CARD | on the T-Deck, which has no reader: type a note; the companion keeps it for the next card a reader holds (C-124, DRAFT) |
 | TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind (MIFARE Classic, NTAG) and its ID. Reads nothing else |
 | LONGWAVE | WHAT'S ON THE AIR | listens (never sends) at 315, 433.92, 868.35 and 915 MHz -- weather stations, doorbells, meters: each band's level against its learnt quiet, and the bursts counted, for 90 seconds |
 | LONGWAVE | FIND IT | a hot-and-cold finder for one of your own transmitters: turn to choose its band, then walk -- the level, warmer or colder, and ticks that quicken as it gets louder |

@@ -4,7 +4,7 @@
 #   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
 #   ./updateCompanion.sh --all            ... every board found, without asking which
 #   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet):
-#                                             t-embed, t-watch-s3, t-deck, t-display-pro, m5-sticks3, m5-stickc-plus, m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
+#                                             t-embed, t-watch-s3, t-deck, t-display-pro, t-display-amoled, m5-sticks3, m5-stickc-plus, m5-cardputer (and ADV), m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
 #   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)

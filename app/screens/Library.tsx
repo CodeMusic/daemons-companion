@@ -187,7 +187,7 @@ export function SongbookBook() {
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{p.title}</Text>
               {p.about ? <Small>{p.about}</Small> : null}
             </YStack>
-            <Action label={playing === p.title ? "♪ …" : "PLAY"} onPress={() => play(p)} />
+            <Action label={playing === p.title ? "♪ …" : "LISTEN"} onPress={() => play(p)} />{/* T-426: PLAY is the instrument's now */}
           </XStack>
           <SongStaff keyName={p.key!} notes={p.notes!} colours={n.keyColours} outline={n.outline} />
         </YStack>

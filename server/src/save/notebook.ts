@@ -9,13 +9,15 @@ import profileJson from "../../data/profile_layout.json" with { type: "json" };
 
 interface Page { section: number; title: string; kind: string; flag: number; flag2: number; about: string | null; text: string | null;
                  seen?: number | null; place?: string | null;   // T-403: its SEEN flag, and where it was found
-                 link?: string | null }                          // T-402: the song or post its QR code opens
-const NB = notebookJson as { sections: string[]; pages: Page[] };
+                 link?: string | null;                           // T-402: the song or post its QR code opens
+                 key?: string | null; notes?: string[] | null }  // T-417: a SONGBOOK page's key and motif
+const NB = notebookJson as { sections: string[]; pages: Page[]; key_colours?: string[] };
 
 export interface Notebook {
   held: boolean;                                            // the NOTEBOOK itself is in the bag
   sections: { name: string; pages: { title: string; kind: string; about: string | null; text: string | null; unread: boolean; place: string | null;
-                                    link: string | null }[] }[];
+                                    link: string | null; key?: string | null; notes?: string[] | null }[] }[];
+  keyColours?: string[];                                    // T-417: the twelve key colours, C..B, the staff's heads
 }
 
 export function readNotebook(save: Uint8Array, l: Layout = LAYOUT): Notebook {
@@ -32,6 +34,7 @@ export function notebookOf(flag: (f: number) => boolean, name: string, rival: st
   const sections = NB.sections.map((n) => ({ name: n, pages: [] as Notebook["sections"][number]["pages"] }));
   for (const p of NB.pages)
     if (flag(p.flag) && (!p.flag2 || flag(p.flag2))) sections[p.section].pages.push({ title: p.title, about: p.about, text: named(p.text),
-        unread: p.seen != null && !flag(p.seen), place: p.place ?? null, link: p.link ?? null, kind: p.kind });   // T-403: unread until opened in the game
-  return { held: flag(P.flags.notebook), sections: sections.filter((s) => s.pages.length) };
+        unread: p.seen != null && !flag(p.seen), place: p.place ?? null, link: p.link ?? null, kind: p.kind,
+        ...(p.kind === "song" ? { key: p.key ?? null, notes: p.notes ?? null } : {}) });   // T-403: unread until opened in the game
+  return { held: flag(P.flags.notebook), sections: sections.filter((s) => s.pages.length), ...(NB.key_colours ? { keyColours: NB.key_colours } : {}) };
 }

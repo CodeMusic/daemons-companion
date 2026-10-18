@@ -302,9 +302,10 @@ static void tapCare(lv_event_t *e) {
 static String castLine(JsonObject c, JsonDocument &acts) {
   String name = c["name"] | "", kind = c["kind"] | "";
   if (kind == "say") return name + ": " + (const char *)(c["text"] | "");
-  for (JsonObject a : acts["acts"].as<JsonArray>())
-    if (String((const char *)(a["code"] | "")) == String((const char *)(c["act"] | "")))
-      return name + " " + (const char *)(kind == "reply" ? (a["reply"] | "") : (a["seen"] | ""));
+  for (const char *list : { "acts", "casino" })              // C-151: the CASINO's JACKPOT and BIGWIN too
+    for (JsonObject a : acts[list].as<JsonArray>())
+      if (String((const char *)(a["code"] | "")) == String((const char *)(c["act"] | "")))
+        return name + " " + (const char *)(kind == "reply" ? (a["reply"] | "") : (a["seen"] | ""));
   return name;
 }
 static void sentSay(const String &text) {
@@ -904,6 +905,50 @@ static void qrFor(lv_obj_t *parent, const String &url, lv_color_t dark, lv_color
   lv_obj_set_style_border_color(q, light, 0);       // the quiet zone a phone needs around it
   lv_obj_set_style_border_width(q, 16, 0);
 }
+// T-417: a SONGBOOK page's motif, as the game draws it -- the key's note in the key's colour, then the heads on a treble
+// staff, each coloured by its pitch class (the twelve key colours, exported in notebook.json), a sharp or flat beside it.
+// E4 on the bottom line, a step a line or a space, ledger lines where needed. Absolute positions in a box of its own.
+static int staffStep(const String &n, int &pc, char &acc) {
+  static const char *L = "CDEFGAB"; static const int PCS[] = { 0, 2, 4, 5, 7, 9, 11 };
+  if (n.length() < 2) return 99;
+  const char *at = strchr(L, n[0]); if (!at) return 99;
+  int i = at - L, k = 1; acc = 0;
+  if (n[1] == '#' || n[1] == 'b') { acc = n[1]; k = 2; }
+  pc = (PCS[i] + (acc == '#' ? 1 : acc == 'b' ? 11 : 0)) % 12;
+  return n.substring(k).toInt() * 7 + i - (4 * 7 + 2);
+}
+static lv_color_t keyColour(JsonArray colours, int pc) {
+  const char *h = colours[pc] | "";
+  return strlen(h) == 7 ? lv_color_hex(strtol(h + 1, nullptr, 16)) : INK;
+}
+static void songStaff(lv_obj_t *parent, const String &key, JsonArray notes, JsonArray colours) {
+  int kpc; char kacc; staffStep(key + "4", kpc, kacc);
+  lv_obj_t *kr = row(parent);
+  lv_obj_t *dot = lv_obj_create(kr); lv_obj_set_size(dot, 24, 24); lv_obj_set_style_radius(dot, 12, 0);
+  lv_obj_set_style_bg_color(dot, keyColour(colours, kpc), 0); lv_obj_set_style_border_width(dot, 0, 0);
+  label(kr, "IN " + key, &lv_font_montserrat_20, QUIET);
+  const int GAP = 20, HEAD = 24, COL = 52, LEFT = 30;
+  int lo = 0, hi = 8, n = 0; std::vector<int> st, pcs; std::vector<char> accs;
+  for (JsonVariant v : notes) { int pc; char a; int s = staffStep(v.as<String>(), pc, a); if (s == 99) continue;
+    st.push_back(s); pcs.push_back(pc); accs.push_back(a); lo = min(lo, s); hi = max(hi, s); n++; }
+  auto yOf = [&](int s) { return (hi - s) * (GAP / 2) + HEAD / 2; };
+  lv_obj_t *box = lv_obj_create(parent);
+  lv_obj_set_size(box, LEFT + n * COL + 16, yOf(lo) + HEAD);
+  lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
+  lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE);
+  auto line = [&](int x, int w, int s) { lv_obj_t *l = lv_obj_create(box); lv_obj_set_size(l, w, 2); lv_obj_set_pos(l, x, yOf(s));
+    lv_obj_set_style_bg_color(l, QUIET, 0); lv_obj_set_style_border_width(l, 0, 0); lv_obj_set_style_radius(l, 0, 0); };
+  for (int s = 0; s <= 8; s += 2) line(0, LEFT + n * COL + 16, s);
+  for (int i = 0; i < n; i++) {
+    int x = LEFT + i * COL;
+    for (int s = -2; s >= st[i]; s -= 2) line(x - 8, HEAD + 16, s);
+    for (int s = 10; s <= st[i]; s += 2) line(x - 8, HEAD + 16, s);
+    if (accs[i]) { lv_obj_t *a = label(box, accs[i] == '#' ? "#" : "b", &lv_font_montserrat_20, QUIET); lv_obj_set_pos(a, x - 20, yOf(st[i]) - 14); }
+    lv_obj_t *h = lv_obj_create(box); lv_obj_set_size(h, HEAD + 4, HEAD - 2); lv_obj_set_pos(h, x, yOf(st[i]) - HEAD / 2 + 1);
+    lv_obj_set_style_radius(h, LV_RADIUS_CIRCLE, 0); lv_obj_set_style_bg_color(h, keyColour(colours, pcs[i]), 0);
+    lv_obj_set_style_border_color(h, lv_color_hex(0x1D2026), 0); lv_obj_set_style_border_width(h, 2, 0);
+  }
+}
 static void tapPage(lv_event_t *e) {
   long v = (long)lv_event_get_user_data(e);
   JsonDocument nb = newDoc();
@@ -913,7 +958,9 @@ static void tapPage(lv_event_t *e) {
                : String(pg["kind"] | "") == "song" ? String("The game draws its notes in the key you played it in.")   // T-417, DRAFT
                : String("Written by the game from your save each time you open it there.");
   String place = pg["place"] | "";
-  showWords(pg["title"] | "", text, place.length() ? "Found in " + place + "." : String(""));
+  bool staff = String(pg["kind"] | "") == "song" && pg["notes"].as<JsonArray>().size();
+  showWords(pg["title"] | "", staff ? String(pg["about"] | "") : text, place.length() ? "Found in " + place + "." : String(""));
+  if (overlay && staff) songStaff(overlay, pg["key"] | "", pg["notes"].as<JsonArray>(), nb["keyColours"].as<JsonArray>());
   if (overlay) qrFor(overlay, pg["link"] | "", lv_color_black(), lv_color_white());
 }
 // C-127 on the Tab5: a region as the game's region map draws it, cropped to its cells, a cell a place, lit when the save

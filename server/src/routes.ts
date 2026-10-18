@@ -7,6 +7,7 @@ import type { Store } from "./store.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { casinoPending, clampMoney } from "./casino.js";
+import actsJson from "../data/acts.json" with { type: "json" };
 import { readGuide } from "./save/guide.js";
 import { readNotebook } from "./save/notebook.js";
 import { readProgress } from "./save/progress.js";
@@ -46,7 +47,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   if (method === "GET") {
     // C-134: broadcasts -- a word or an act to every daemon, and their answers (broadcast.ts)
     if (path === "/api/broadcasts") return ok({ items: castsSince(store, Number(a.query?.since) || 0) });
-    if (path === "/api/broadcast/acts") return ok({ acts: ACTS });
+    if (path === "/api/broadcast/acts") return ok({ acts: ACTS, casino: (actsJson as { casino?: unknown[] }).casino ?? [] });   // C-151: JACKPOT, BIGWIN
     if (path === "/api/today") return ok(today(h, store, now));
     if (path === "/api/goals") return ok(store.goals());
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48

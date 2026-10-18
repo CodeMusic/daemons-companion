@@ -813,9 +813,9 @@ const whenSaid = (iso: string) => {
 type Cast = { id: string; name: string; kind: "say" | "act" | "reply"; text?: string; act?: string; replyTo?: string; at: string;
               via: string[]; mine: boolean };
 type Act = { code: string; label: string; seen: string; reply: string };
-const ACTS: { acts: Act[] } = require("../server/data/acts.json");
+const ACTS: { acts: Act[]; casino?: Act[] } = require("../server/data/acts.json");
 function castLine(c: Cast) {
-  const a = ACTS.acts.find((x) => x.code === c.act);
+  const a = [...ACTS.acts, ...(ACTS.casino ?? [])].find((x) => x.code === c.act);   // C-151: the CASINO's acts too
   return c.kind === "say" ? `${c.name}: ${c.text ?? ""}` : `${c.name} ${(c.kind === "reply" ? a?.reply : a?.seen) ?? ""}`;
 }
 
@@ -907,7 +907,9 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[];
                  wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
-                                                                   unread?: boolean; place?: string | null; link?: string | null; kind?: string }[] }[] };
+                                                                   unread?: boolean; place?: string | null; link?: string | null; kind?: string;
+                                                                   key?: string | null; notes?: string[] | null }[] }[];
+                  keyColours?: string[] };   // T-417: the twelve key colours, C..B
 
 // C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
 const PLAYER_ART = {
@@ -1449,9 +1451,52 @@ function SchoolScreen() {
 // the link"): a song is listened to, anything else read
 const linkLabel = (url: string) => (/soundcloud\.com|youtu\.?be|spotify\.com|bandcamp\.com/.test(url) ? "Listen" : "Read");
 
+// T-417: a SONGBOOK page, as the game draws it -- its key's note in the key's colour, then the motif on a treble staff, each
+// head coloured by its pitch class (C red .. A indigo .. B purple, DAEMONS' key colours, exported in notebook.json) and
+// a sharp or flat beside it as written. E4 sits on the bottom line; a step is a line or a space; ledger lines where needed.
+const LETTERS = "CDEFGAB", PC: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+function pitch(n: string) {                                   // "C#5" -> its staff step (E4 = 0) and pitch class
+  const m = /^([A-G])([#b]?)(-?\d)$/.exec(n);
+  if (!m) return null;
+  const pc = (PC[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? 11 : 0)) % 12;
+  return { step: Number(m[3]) * 7 + LETTERS.indexOf(m[1]) - (4 * 7 + 2), pc, acc: m[2] === "#" ? "♯" : m[2] === "b" ? "♭" : "" };
+}
+function SongStaff({ keyName, notes, colours }: { keyName: string; notes: string[]; colours?: string[] }) {
+  const ps = notes.map(pitch).filter(Boolean) as NonNullable<ReturnType<typeof pitch>>[];
+  const GAP = 10, HEAD = 12, COL = 26, LEFT = 18;
+  const lo = Math.min(0, ...ps.map((p) => p.step)), hi = Math.max(8, ...ps.map((p) => p.step));
+  const yOf = (step: number) => (hi - step) * (GAP / 2) + HEAD / 2;
+  const colour = (pc: number) => colours?.[pc] ?? "$color12";
+  const keyP = pitch(keyName + "4");
+  return (
+    <YStack gap={6} marginTop={4}>
+      <XStack alignItems="center" gap={8}>
+        <YStack width={12} height={12} borderRadius={6} backgroundColor={keyP ? colour(keyP.pc) : "$color9"} />
+        <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} color="$color11">{`IN ${keyName.replace("b", "♭")}`}</Text>
+      </XStack>
+      <YStack height={yOf(lo) + HEAD} width={LEFT + ps.length * COL + 8} position="relative">
+        {[0, 2, 4, 6, 8].map((st) => <YStack key={st} position="absolute" left={0} right={0} top={yOf(st)} height={1} backgroundColor="$color8" />)}
+        {ps.map((p, i) => {
+          const x = LEFT + i * COL, ledgers: number[] = [];
+          for (let st = -2; st >= p.step; st -= 2) ledgers.push(st);
+          for (let st = 10; st <= p.step; st += 2) ledgers.push(st);
+          return (
+            <YStack key={i}>
+              {ledgers.map((st) => <YStack key={st} position="absolute" left={x - 4} width={HEAD + 8} top={yOf(st)} height={1} backgroundColor="$color8" />)}
+              {p.acc ? <Text position="absolute" left={x - 11} top={yOf(p.step) - 9} fontSize={13} color="$color11">{p.acc}</Text> : null}
+              <YStack position="absolute" left={x} top={yOf(p.step) - HEAD / 2} width={HEAD} height={HEAD - 2} borderRadius={HEAD / 2}
+                      backgroundColor={colour(p.pc)} borderWidth={1} borderColor="#1d2026" />
+            </YStack>
+          );
+        })}
+      </YStack>
+    </YStack>
+  );
+}
+
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
-function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][number] }) {
+function NotebookPage({ page, colours }: { page: Notebook["sections"][number]["pages"][number]; colours?: string[] }) {
   const [open, setOpen] = useState(false);
   return (
     <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
@@ -1469,6 +1514,7 @@ function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][nu
       </XStack>
       {open ? (page.text
         ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} marginBottom={4} color="$color12">{par.replace(/\n/g, " ")}</Text>)
+        : page.kind === "song" && page.key && page.notes?.length ? <SongStaff keyName={page.key} notes={page.notes} colours={colours} />
         : <Small>{page.kind === "song" ? "The game draws its notes in the key you played it in." : "Written by the game from your save each time you open it there."}</Small>) : null}
       {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
       {open && page.link ? <Action label={linkLabel(page.link)} ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
@@ -1488,7 +1534,7 @@ function NotebookCard() {
         : n.sections.map((s) => (
             <YStack key={s.name} marginTop={10}>
               <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10">{s.name}</Text>
-              {s.pages.map((pg, i) => <NotebookPage key={`${s.name}-${i}`} page={pg} />)}
+              {s.pages.map((pg, i) => <NotebookPage key={`${s.name}-${i}`} page={pg} colours={n.keyColours} />)}
             </YStack>
           ))}
     </Card>

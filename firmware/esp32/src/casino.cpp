@@ -776,9 +776,11 @@ String runSlots() {
       if (!rigged) { unreported += won; sessionDelta += won; slots::learn(cat, outcome); }   // a rigged pull is never paid, nor learned from
       Serial.printf("CASINO %d %ld %ld %ld\n", outcome, bet, won, balance());   // for a check from the computer: its result, bet, win, money
       draw();                                    // seen before it is heard: without PSRAM the phrase plays here
-      if (outcome == O_LOSE) { note = "NO WIN"; soundSlots(1, lookNow()); }                    // DRAFT
+      // C-158: the words the phone says too -- a near miss is SO CLOSE, two JACKs ALMOST THE JACKPOT
+      if (outcome == O_LOSE) { note = nearWanted >= 0 ? "SO CLOSE" : "NO WIN"; soundSlots(1, lookNow()); }   // DRAFT
       else if (PAYS[outcome] == 1) { note = "BET BACK"; for (int i = 0; i < 4; i++) soundCoin(i); }   // DRAFT
       else soundSlots(outcome == O_JACK3 ? 4 : PAYS[outcome] >= 12 ? 3 : 2, lookNow());
+      if (outcome == O_JACK2) { ticker = "ALMOST THE JACKPOT"; tickerUntil = now + 3500; }   // C-158: the phone's words; DRAFT
       if (unreportedSpins >= 10) reportNow();
       // C-151: a big win is called to the table -- every daemon hears it; those at the reels cheer, and say so
       if (slots::tableAct(outcome) && castSend(CAST_ACT, slots::tableAct(outcome))) cheers = "";

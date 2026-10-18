@@ -176,6 +176,15 @@ def bridge(a, port):
                     print("usb_bridge: art -> device (%d bytes)" % len(art["pixels"]), flush=True)
                 except Exception as e:
                     print("usb_bridge: no art for the device (%s)" % e, flush=True)
+            elif msg.startswith("PARTYART? "):
+                # C-149: a party daemon's picture, for the CASINO's reels -- asked for by its slot as the reels are set
+                try:
+                    slot = int(msg.split()[1])
+                    art = server_json(a.server, "/api/device/art?slot=%d" % slot)
+                    dev.write(("PARTYART " + json.dumps(art, separators=(",", ":")) + "\n").encode())
+                    print("usb_bridge: the CASINO's reel: party slot %d -> device" % slot, flush=True)
+                except Exception as e:
+                    print("usb_bridge: no picture for the CASINO's reel (%s)" % e, flush=True)
             elif msg.startswith("UNREAD "):
                 print("usb_bridge: the device could not read the state it was sent (%s bytes arrived)" % msg.split()[1],
                       flush=True)

@@ -393,3 +393,27 @@ void soundLoop() {
   if (seq != shown) { shown = seq; ledsDance(kind, step, steps); }
   soundIdle();
 }
+
+// ---- C-149: THE CASINO -- a reel ticking past, stopping (each reel a fifth up), the coins counted in, and the result:
+// a loss softly, a win in the day's key, the jackpot's fanfare -- and on a holiday's big win, the holiday's own phrase.
+// The ticks and stops play here and are short; a result's phrase plays from the tune task where there is one, so the
+// reels and the lights go on moving under it (without PSRAM, the M5GO, it plays here and the screen waits for it).
+void soundReelTick() {
+  static uint32_t at = 0;
+  if (millis() - at < 70) return;
+  at = millis();
+  tone(root + 24, 5, 0.3f);
+}
+void soundReelStop(int reel) { tone(root - 12 + 7 * reel, 34, 0.9f); }
+void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f); }
+void soundSlots(int what, const String &look) {   // 0 the lever, 1 a loss, 2 a small win, 3 a big one, 4 the jackpot
+  if (what == 0) { play(TUNE_SLOTS_PULL, 3, root, -1, 0.8f); return; }
+  if (what == 1) { play(TUNE_SLOTS_LOSE, 2, root, -1, 0.5f); return; }
+  if (what == 2) { tuneLater(TUNE_SLOTS_WIN, 4, root, DANCE_PULSE, 0.85f); return; }
+  if (what >= 3 && look == "pumpkins") { tuneLater(TUNE_SLOTS_SPOOKY, 6, root, DANCE_SPARKLE, 0.9f); return; }
+  if (what >= 3 && look == "presents") { tuneLater(TUNE_SLOTS_JINGLE, 11, root, DANCE_SPARKLE, 0.9f); return; }
+  if (what >= 3 && look == "fireworks") { tuneLater(TUNE_SLOTS_FIREWORK, 10, root, DANCE_RAINBOW, 0.9f); return; }
+  if (what >= 3 && look == "hearts") { tuneLater(TUNE_SLOTS_SWEET, 5, root, DANCE_GLIMMER, 0.85f); return; }
+  if (what == 3) tuneLater(TUNE_SLOTS_BIG, 8, root, DANCE_RAINBOW, 0.9f);
+  else tuneLater(TUNE_SLOTS_JACKPOT, 13, root, DANCE_BLOOM, 1.0f);
+}

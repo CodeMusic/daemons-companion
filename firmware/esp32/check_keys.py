@@ -3,9 +3,9 @@
 
     python3 check_keys.py OUT.png [PORT] [--server=http://localhost:4730]
 
-Four screens side by side in OUT.png: the board at rest; A held (its word drawn pressed, the moment it went down);
-A tapped -- DRINK, or FEED if it has drunk its three today -- with the word and the day's count drawn at once; and the
-board a few seconds on. Then whether the companion heard it: nothing here sends a STATE line, so the board is not
+Five screens side by side in OUT.png: the board at rest; A held (its word drawn pressed, the moment it went down);
+A tapped, which opens CARE (C-149: at home A CARE, B ROUTINES, C INDEX); there A tapped -- DRINK, or B, FEED, if it
+has drunk its three today -- with the word and the day's count drawn at once, and home; and the board a few seconds on. Then whether the companion heard it: nothing here sends a STATE line, so the board is not
 bridged and the care goes out through its OUTBOX over Wi-Fi, and the companion's count for that device moves on.
 
 The press is the firmware's own (KEY DOWN, KEY UP; KEY CANCEL forgets the held one, as a SHOT takes seconds and a
@@ -72,9 +72,12 @@ def check(dev, device, server):
     key, said = ("B", "FEED") if before and before[1] >= 3 and before[0] < 3 else ("A", "DRINK")
     send(dev, "KEY CANCEL", 0.4)                         # awake: left alone since its flash, its screen may be asleep
     shots = [("at rest", shot.take(dev))]
-    send(dev, "KEY DOWN " + key, 0.3)
-    shots.append((said + " held", shot.take(dev)))
+    send(dev, "KEY DOWN A", 0.3)
+    shots.append(("CARE held", shot.take(dev)))
     send(dev, "KEY CANCEL", 0.5)
+    send(dev, "KEY DOWN A", 0.15)                        # C-149: A opens CARE, whose own A, B and C do each care
+    send(dev, "KEY UP A", 0.4)
+    shots.append(("CARE open", shot.take(dev)))
     send(dev, "KEY DOWN " + key, 0.15)
     heard = []                                           # the companion, asked twice a second from the release on --
 

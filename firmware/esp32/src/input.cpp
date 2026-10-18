@@ -17,7 +17,12 @@ bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 // buttons tend it -- A drink, B feed, C train, as the phone's widget has them -- and A and C pressed together open the
 // menu (the pages and everything under them, as before), and close it again. The care kinds keep their own numbers --
 // feed 0, water 1, train 2, sleep 3 -- which the server, the sounds (TUNE_CARE) and the CARE list all read.
+// C-149 (the user, 2026-10-17): home's three buttons re-laid -- A opens CARE (there A drink, B feed, C train, or sleep
+// at bedtime: one press, and home), B the ROUTINES (the CASINO first), C its INDEX entry (and OPUS's margin; there A
+// reads it aloud, B shows more, C goes home). A and C together still open the whole menu.
 bool menuOpen = false;
+bool quickScreen() { return board.threeKeys() && !menuOpen && (screen == CARE_KEYS || screen == INDEX_ENTRY); }
+static void goHome() { screen = HOME; page = homePage(); dirty = true; }
 String composing;                         // C-123
 // C-123: the message typed, sent to everyone nearby over LoRa -- or said why not
 static void sendComposed() {
@@ -221,8 +226,10 @@ void press() {
     }
   } else if (screen == TYPES) {
     if (isPartyType(typeAt)) { screen = PARTY; partyAt = 0; }     // C-68: the CC1101's way in
+    else if (!strcmp(types[typeAt].name, "CASINO")) { routineAt = 0; runRoutine(); }   // C-149: its one routine, at once
     else { screen = LIST; routineAt = 0; }
   }
+  else if (screen == CARE_KEYS) { careDo(0); goHome(); }          // C-149: the cable's KEY PRESS is B, which feeds
   else if (screen == PARTY) {
     if (partyAt >= st.partyN) { if (partyFirst()) { screen = TYPES; typeAt = 0; } }   // the radios' row
     else if (!st.party[partyAt].n) say("No routines yet");                         // DRAFT
@@ -269,11 +276,12 @@ void back() {
   if (screen == HOME && menuOpen) { menuOpen = false; page = homePage(); dirty = true; return; }   // C-117: out of the menu
   if (screen == TALK) { screen = HOME; }                         // C-66
   if (screen == COMPOSE) { screen = HOME; composing = ""; dirty = true; return; }   // C-123: not sent
-  else if (screen == INDEX_ENTRY) { screen = CARE; careAt = 4; }
+  else if (screen == INDEX_ENTRY) { if (quickScreen()) goHome(); else { screen = CARE; careAt = 4; } }   // C-149
+  else if (screen == CARE_KEYS) goHome();                                    // C-149: nothing done
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
   else if (screen == PICK_NET || screen == PICK_REMOTE) screen = LIST;
-  else if (screen == RUN) screen = LIST;
+  else if (screen == RUN) screen = !strcmp(types[typeAt].name, "CASINO") ? TYPES : LIST;   // C-149: the CASINO has no list
   else if (screen == LIST) screen = TYPES;
   else if (screen == MOVES) screen = PARTY;                                   // C-68
   else if (screen == PARTY) {
@@ -281,6 +289,7 @@ void back() {
     else { screen = TYPES; for (int i = 0; i < typeCount; i++) if (isPartyType(i)) typeAt = i; }
   }
   else if (screen == TYPES && partyFirst()) { screen = PARTY; partyAt = st.partyN; }   // back to the radios' row
+  else if (screen == TYPES && board.threeKeys() && !menuOpen) goHome();      // C-149: B opened them from home
   else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
   dirty = true;
 }
@@ -455,12 +464,25 @@ void readKeyCore() {
       if (loraMessageRead()) { wake(); continue; }               // C-123: a message heard is read by this press -- only that
       wake();
       bool tend = !menuOpen && screen == HOME;                   // C-117: home, the menu closed -- the buttons tend it
-      // C-118: asleep, any button wakes it; at bedtime (drowsy, not yet put to bed) C puts it to bed instead of training
+      // C-118: asleep, any button wakes it; at bedtime (drowsy, not yet put to bed) CARE's C puts it to bed, not trains
       bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
       if (tend && sleeping && held < 500) careDo(4);
-      else if (k == 0) { if (held >= 500) back(); else if (tend) careDo(1); else turn(-1); }
-      else if (k == 2) { if (held >= 2000) sleepNow(); else if (tend) careDo(bed ? 3 : 2); else turn(1); }
-      else if (tend) careDo(0);
+      else if (k == 2 && held >= 2000) sleepNow();
+      else if (k == 0 && held >= 500) back();
+      else if (tend) {                                           // C-149: CARE, the ROUTINES, the INDEX
+        if (k == 1) { screen = TYPES; typeAt = 0; dirty = true; }
+        else if (!st.carrying) { say("No daemon here"); soundBack(); }               // DRAFT
+        else if (k == 0) { screen = CARE_KEYS; dirty = true; }
+        else { screen = INDEX_ENTRY; entryTop = 0; dirty = true; }
+      }
+      else if (quickScreen() && screen == CARE_KEYS) { careDo(k == 0 ? 1 : k == 1 ? 0 : bed ? 3 : 2); goHome(); }
+      else if (quickScreen()) {                                  // its INDEX entry: A aloud, B more, C home
+        if (k == 0) { if (talkCan()) talkReadEntry(); else say("No voice on this board"); }   // DRAFT
+        else if (k == 1) { entryTop = entryTop + 3 >= entryLines ? 0 : entryTop + 3; dirty = true; }
+        else goHome();
+      }
+      else if (k == 0) turn(-1);
+      else if (k == 2) turn(1);
       else press();
     }
   }

@@ -16,3 +16,6 @@ void ledsBrightness(int percent);   // C-43: the ring at rest, a share of the da
 void ledsVoice(int level);    // C-101: the ring speaking along with a voice, 0..100 now (call it each frame; it fades
                               // back to rest a moment after the last)
 void ledsLoop();              // every pass of the loop: animations, and going out when unused
+// C-149: THE CASINO's lights, one frame a call, in its two colours (0xRRGGBB); ledsDance(-1, 0, 0) gives the ring back
+enum { CASINO_IDLE, CASINO_SPIN, CASINO_WIN, CASINO_JACKPOT, CASINO_LOSE };
+void ledsCasino(int mode, uint32_t a, uint32_t b);

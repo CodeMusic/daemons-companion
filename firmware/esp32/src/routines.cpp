@@ -20,6 +20,7 @@ String runListenFm(); String runStaticSynth(); String runListenAm(); String runL
 String runNearby(); String runCallOut();   // C-72: MESH (LoRa), lora.cpp
 #include "broadcast.h"                    // C-134: CHORUS, broadcast.cpp
 String runSeeTheHeat(); String runWarmestThing(); String runSomeonesHere(); String runHowWarm();   // C-148: GLOW, glow.cpp
+#include "casino.h"                       // C-149: CASINO, casino.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
@@ -38,6 +39,7 @@ static const Routine MESH_ROUTINES[]       = { { "NEARBY", runNearby }, { "CALL 
 static const Routine CHORUS_ROUTINES[]     = { { "TO EVERY DAEMON", runToEveryone }, { "WHAT CAME", runWhatCame } };   // C-134, DRAFT
 static const Routine GLOW_ROUTINES[]      = { { "SEE THE HEAT", runSeeTheHeat }, { "WARMEST THING", runWarmestThing },
                                                { "SOMEONE'S HERE", runSomeonesHere }, { "HOW WARM IS THAT", runHowWarm } };   // C-148: the user's names, DRAFT
+static const Routine CASINO_ROUTINES[]     = { { "SLOTS", runSlots } };   // C-149, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
@@ -47,6 +49,7 @@ int typeCount = 0;
 void routinesBegin() {
   typeCount = 0;
   if (board.hatSda >= 0) types[typeCount++] = { "GLOW",  "Thermal",   GLOW_ROUTINES,       4 };   // C-148: the board's own sense first; DRAFT
+  types[typeCount++] =                     { "CASINO",     "the game's money", CASINO_ROUTINES, 1 };   // C-149: every board, first (after the StickC-Plus's GLOW), DRAFT
   if (board.ir)     types[typeCount++] = board.irRx >= 0 ? RoutineType{ "FLARE", "IR", FLARE_ROUTINES, 7 }
                                                          : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
@@ -64,7 +67,8 @@ void routinesBegin() {
 // C-68: GAME ROUTINES. A board with no radios of its own (the plain T-Embed; the SI4732 until its own types, C-69) opens
 // the party from ROUTINES, with its Bluetooth and Wi-Fi a row below; the CC1101 reaches the same screen as its PARTY type.
 // C-148: a board with a HAT header is not one -- GLOW is a sense of its own, so it opens on the types, GLOW first.
-bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732 && board.loraChip == LoraChip::None && board.hatSda < 0; }   // the SI4732 has its radio (C-69); LoRa is a radio too (C-72)
+// C-149: nor the three-button boards, whose B opens the ROUTINE TYPES at once -- the CASINO, then the party among them
+bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732 && board.loraChip == LoraChip::None && board.hatSda < 0 && !board.threeKeys(); }   // the SI4732 has its radio (C-69); LoRa is a radio too (C-72)
 bool isPartyType(int i) { return i >= 0 && i < typeCount && !strcmp(types[i].name, "PARTY"); }
 int partyRows() { return st.partyN + (partyFirst() ? 1 : 0); }
 // The user, 2026-10-15, asking how WHISPER is reached on the M5GO and the Fire: below the whole party, about seven
@@ -92,7 +96,7 @@ void runRoutine() {
   runResult = "Running...";
   screen = RUN;
   draw();
-  soundRoutine(t.name);                 // C-40: its tune, the ring dancing -- the daemon starting the routine
+  if (strcmp(t.name, "CASINO")) soundRoutine(t.name);   // C-40: its tune, the ring dancing (C-149: the CASINO pulls its own lever)
   routineRunning = true;
   runResult = t.routines[routineAt].run();
   routineRunning = false; lastInput = millis();

@@ -40,6 +40,7 @@ first, with its Bluetooth and Wi-Fi a row below. Each radio routine is a test th
 
 | type | routine | what it does |
 |---|---|---|
+| CASINO | SLOTS | three reels of the party's daemons, the season and the holiday dressing them, played with the save's money -- each result reported (INTERACT casino) and written into the game at SYNC; run on the board itself, never from the site (C-149, DRAFT) |
 | FLARE | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn; kept, and chosen |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
 | FLARE | THEATER MODE | the routine the site cannot send: run on the board itself |

@@ -86,13 +86,14 @@ only on its top button, so a pocket cannot wake it.
 - **M5Stack Dial**: turn the knob to choose and press it to open (held half a second, back; two seconds, sleep), or
   use its touch screen as the watch's. Its home is the face, round as the screen is. No microphone, so it does not
   talk; its buzzer plays the tunes. Its RFID reader is **TOUCHSTONE**: hold a tag to its face.
-- **M5GO and Fire**: at home the three buttons tend the daemon, and what each does is written right above it --
-  **A DRINK, B FEED, C TRAIN**. At bedtime (from 8pm, when it is sleepy and not yet put to bed) the right one says
-  **SLEEP**, lit: press it to put it to bed. While it sleeps the screen says **ASLEEP** and one **WAKE** bar runs under
-  all three: any button wakes it. **A and C together** open the menu (where A and C turn, B presses) and close it.
-  Held, B talks; A goes back; C, two seconds, sleeps the board itself -- asleep, only a held B wakes it. In the menu,
-  ROUTINES opens on **RADIOS** -- **WHISPER** (pair your phone) and **UPLINK** (Wi-Fi) -- with your party's routines
-  below it. The M5GO base gives it its microphone and ten lights.
+- **M5GO and Fire**: at home what each button does is written right above it -- **A CARE, B ROUTINES, C INDEX**.
+  **CARE** puts **DRINK, FEED, TRAIN** over the three: one press, and it is home again. At bedtime (from 8pm, when it
+  is sleepy and not yet put to bed) CARE is lit, and in it the right one says **SLEEP**: press it to put it to bed.
+  **ROUTINES** opens the routine types, the **CASINO** first (below). **INDEX** shows its INDEX entry, and OPUS's margin
+  if you have OPUS -- there A reads it aloud, B shows more and C goes home. While it sleeps the screen says **ASLEEP**
+  and one **WAKE** bar runs under all three: any button wakes it. **A and C together** open the whole menu (where A and
+  C turn, B presses) and close it. Held, B talks; A goes back; C, two seconds, sleeps the board itself -- asleep, only
+  a held B wakes it. The M5GO base gives it its microphone and ten lights.
 - **T-Watch S3**: its home is the face -- the time, the day's theme, its virtue over its shadow, chakra and note,
   today's steps, the battery and a TALK button.
 
@@ -125,6 +126,7 @@ only the types it has; one with no radios of its own opens the party first.
 
 | type | routine | what it does |
 |---|---|---|
+| CASINO | SLOTS | three reels of your party's daemons, played with your game's money (below) |
 | FLARE (IR) | TEACH A REMOTE | your daemon learns a remote: press POWER, VOLUME UP, VOLUME DOWN on it in turn |
 | FLARE | POWER, VOLUME UP, VOLUME DOWN | sends that button from the remote in use |
 | FLARE | THEATER MODE | the board becomes the remote: press for POWER, turn for the volume, back when done |
@@ -150,6 +152,17 @@ and STATIC SYNTH). **CHANNEL is a move the daemon learns**: turn to tune, tap to
 seconds -- the daemon attunes to it and has learned that frequency: eight a band, kept on the board, marked on the
 dial. While a station plays the daemon speaks it: its sprite, its aura and the ring move with the voice. LIGHTNING
 counts crashes on a quiet AM frequency; STATIC SYNTH plays notes from the static between FM stations.
+
+**THE CASINO** (every board, first in the list): **SLOTS**. Three reels of your daemons -- three of the one on the
+board is the jackpot -- the party's others (as many as three), a coin, and the season's own piece (a snowflake, a
+blossom, the sun, a leaf). The season falls across the reels; on a holiday the reels dress for it (Halloween's
+pumpkins and witches' hats, Christmas's presents and red hats, New Year's fireworks ...) with the holiday's colours on
+the lights and its own tune on a big win; a quiet day (ANZAC Day, Obon, the Day of the Dead) is left plain. **The money
+is your game's**: the board plays with what your save holds plus what it has won or lost since, and the next **SYNC**
+writes the difference into the game -- never below nothing, never past 999999. Each pull's result is decided as the
+lever goes down, at about 94 back for every 100 bet, as the Game Corner's machines were, so stopping the reels yourself
+is the fun of it rather than a skill. On the M5GO and the Fire: A and C the bet, B the lever, then A, B and C stop the
+reel above each; held A leaves. A dial turns the bet and presses the lever, then stops the reels left to right.
 
 The full list, with every routine, is in
 [firmware/esp32/FLASHING.md](https://github.com/CodeMusic/daemons-companion/blob/main/firmware/esp32/FLASHING.md).

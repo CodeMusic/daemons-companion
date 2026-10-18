@@ -28,9 +28,15 @@ struct Den { String motif = "nest", wall = "#67625a", deep = "#3b3832", floor = 
 struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0, species = 0;
                 String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
                 int grownTo = 0;                                                  // C-45: the level it has grown to here
-                String tired = "awake"; Den den; };                               // C-113: asleep it stays put; its den
+                String tired = "awake"; Den den;                                  // C-113: asleep it stays put; its den
+                String margin; };                                                 // C-149: OPUS's margin, if the save holds OPUS
 // C-68: a party daemon, and its routines as the game names them, each with the colour its streak takes on this body
 struct Member { String name, types; int level = 0, n = 0; String routine[4], type[4]; uint32_t colour[4] = {}; };
+// C-149: THE CASINO's coins -- the save's money and what waits for SYNC (server/src/casino.ts), `seen` the newest of this
+// board's reports counted in it ("<boot>.<seq>"), and the party's other daemons by slot, the reels' pictures -- and how
+// the board dresses today: the holiday (server/data/holidays.json), its look, two colours and a hat; a QUIET day plain
+struct Casino { bool have = false; long money = 0, pending = 0, balance = 0; String seen; int friends[5] = {}; int friendN = 0; };
+struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {
   bool have = false;
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue, chakra, theme;
@@ -38,6 +44,7 @@ struct State {
   bool carrying = false; Daemon daemon;
   Member party[6]; int partyN = 0;          // C-68
   String companion, cardNote;               // C-124: whose cards are ours; a note waiting for a card
+  Casino casino; Holiday holiday;           // C-149
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
@@ -65,7 +72,8 @@ String daemonName();                      // C-51: the routines speak in its nam
 // party, then a daemon's routines; picking one plays it, the ring lit its colour.
 enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE };   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
-enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE };   // TALK: C-66; COMPOSE: C-123
+enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE,   // TALK: C-66; COMPOSE: C-123
+              CARE_KEYS };                // C-149: the three-button boards' CARE -- a button each, then home
 extern String composing;                  // C-123: the message being typed, to everyone nearby
 void keyboardIn(int c);                   // one key from the T-Deck's keyboard (or the cable's KEY TYPE)
 extern Page page;
@@ -73,6 +81,7 @@ extern Screen screen;
 extern int careAt, remoteAt, typeAt, routineAt, partyAt, moveAt;
 extern uint32_t hopUntil;
 extern bool menuOpen;                     // C-117: three-button boards -- A and C together open it
+bool quickScreen();                       // C-149: a screen the three buttons opened from home (CARE, INDEX): home after
 extern uint8_t keysHeld;                  // C-121: the three buttons down right now (bit 0 A, 1 B, 2 C), lit on the screen
 void keyForce(int k, bool held);          // C-121: KEY DOWN|UP A|B|C from the computer (0 A, 1 B, 2 C)
 void keyForget();                         // C-121: KEY CANCEL -- what is held forgotten, nothing done

@@ -64,9 +64,12 @@ def bench(port, server, outdir):
         check_keys.send(dev, "GO ROUTINES", 0.4)
         check_keys.send(dev, "KEY PRESS", 0.4)
         radios = shot.take(dev)
-        check_keys.send(dev, "KEY PRESS", 0.4)
-        rows.append(("%s ROUTINES" % kind, [("opened", radios), ("its first row pressed", shot.take(dev))],
-                     "GO ROUTINES, then KEY PRESS twice -- as a finger: A+C, C to ROUTINES, B, B"))
+        # C-149: the types open on the CASINO, whose press would start SLOTS and hold the board -- so two rows on to
+        # WHISPER instead (CASINO, CHORUS, WHISPER), not pressed
+        check_keys.send(dev, "KEY RIGHT", 0.2)
+        check_keys.send(dev, "KEY RIGHT", 0.4)
+        rows.append(("%s ROUTINES" % kind, [("opened", radios), ("two rows on: WHISPER", shot.take(dev))],
+                     "GO ROUTINES, KEY PRESS, then KEY RIGHT twice -- as a finger: B, C, C"))
         check_keys.send(dev, "GO DAEMON", 0.4)
     own = check_keys.state(server, device)
     if own is None or not own.get("daemon"):

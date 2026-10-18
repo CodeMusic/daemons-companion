@@ -75,14 +75,18 @@ void drawArt(int x, int y, int scale, bool mirrored = false) { drawSprite(x, y, 
 // TRAIN; at bedtime (it is drowsy, not yet put to bed) the right one becomes SLEEP, lit; asleep, one bar: any button
 // wakes it.
 bool keysUnder() { return board.kind == BoardKind::M5Core && st.carrying; }
-// what each of the three does at home, as it is now -- asleep, any of them wakes it
+// what each of the three does at home, as it is now -- asleep, any of them wakes it. C-149: at home CARE, ROUTINES and
+// INDEX; in CARE the three cares; in the INDEX entry READ, MORE and HOME
 static const char *keyWord(int k) {
+  bool bed = st.daemon.tired == "drowsy";
+  if (screen == CARE_KEYS) return k == 0 ? "DRINK" : k == 1 ? "FEED" : bed ? "SLEEP" : "TRAIN";   // DRAFT
+  if (screen == INDEX_ENTRY) return k == 0 ? (talkCan() ? "READ" : "-") : k == 1 ? "MORE" : "HOME";   // DRAFT
   if (st.daemon.tired == "asleep") return "WAKE";                               // DRAFT
-  return k == 0 ? "DRINK" : k == 1 ? "FEED" : st.daemon.tired == "drowsy" ? "SLEEP" : "TRAIN";   // DRAFT
+  return k == 0 ? "CARE" : k == 1 ? "ROUTINES" : "INDEX";                       // DRAFT
 }
 // C-121: a button held is drawn pressed -- filled white, its word dark -- the moment it goes down, before it does anything
 static void keyLabels(uint16_t day, uint16_t ink) {
-  bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
+  bool sleeping = st.daemon.tired == "asleep" && screen == HOME, bed = st.daemon.tired == "drowsy";
   canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM);
   if (sleeping) {
     canvas.fillRoundRect(4, H - 24, W - 8, 22, 5, keysHeld ? PAPER : day);
@@ -91,7 +95,7 @@ static void keyLabels(uint16_t day, uint16_t ink) {
   }
   int bw = W / 3;
   for (int k = 0; k < 3; k++) {
-    bool held = keysHeld & (1 << k), lit = k == 2 && bed;
+    bool held = keysHeld & (1 << k), lit = bed && (screen == CARE_KEYS ? k == 2 : screen == HOME && k == 0);   // bedtime: CARE, then SLEEP
     int bx = k * bw + 4;
     if (held || lit) canvas.fillRoundRect(bx, H - 24, bw - 8, 22, 5, held ? PAPER : day);
     else canvas.drawRoundRect(bx, H - 24, bw - 8, 22, 5, QUIET);
@@ -361,6 +365,18 @@ void draw() {
     drawArt(W - 70, 34, 1);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     footer(hint("turn: choose    press: do it    top button: back"));
+  } else if (screen == CARE_KEYS) {                           // C-149: CARE from home -- a button each, then home
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);                   // DRAFT
+    bool under = board.kind == BoardKind::M5Core;
+    int sc = H >= 200 ? 2 : 1, side = 64 * sc;
+    drawArt(W / 2 - side / 2, under ? 46 : 40, sc);
+    canvas.setTextColor(QUIET); canvas.setTextDatum(TC_DATUM);
+    canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", W / 2, under ? H - 46 : H - 34);
+    canvas.setTextDatum(TL_DATUM);
+    if (under) keyLabels(day, ink);
+    else { canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+           footer(st.daemon.tired == "drowsy" ? "A drink  B feed  C sleep    hold A: back" : "A drink  B feed  C train    hold A: back"); }   // DRAFT
   } else if (screen == INDEX_ENTRY) {                         // C-36: its INDEX entry, in the edition's voice
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
@@ -368,12 +384,22 @@ void draw() {
     canvas.drawString(upper(st.daemon.category) + "  " + st.daemon.types, 10, 50);
     drawArt(W - 68, 30, 1);
     // C-99: the whole entry -- the room under the sprite, scrolled by the dial (a swipe on a touch screen)
-    int fit = (H - 16 - 72) / 16;
-    entryLines = wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, fit, PAPER, entryTop);   // clear of the sprite (SHOT, 2026-10-04)
+    // C-149: and OPUS's margin after it, in the day's colour, where the save holds OPUS; on the M5GO and the Fire, from
+    // home, the three buttons' words under it
+    bool under = quickScreen() && board.kind == BoardKind::M5Core;
+    int fit = (H - (under ? 44 : 16) - 72) / 16;
+    int lines = wrap(st.daemon.entry, 10, 72, W - 112, 2, 16, fit, PAPER, entryTop);   // clear of the sprite (SHOT, 2026-10-04)
+    if (st.daemon.margin.length()) {
+      int from = lines + 1, row = max(0, from - entryTop);
+      lines = from + wrap("OPUS: " + st.daemon.margin, 10, 72 + row * 16, W - 112, 2, 16, max(0, fit - row), day, max(0, entryTop - from));   // DRAFT
+    }
+    entryLines = lines;
     if (entryTop > max(0, entryLines - fit)) { entryTop = max(0, entryLines - fit); dirty = true; }
     String more = entryLines > fit ? String(entryTop + fit < entryLines ? "turn: more    " : "turn: back up    ") : String("");   // DRAFT
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-    footer(hint(more + (talkCan() ? "press: read aloud    " : "") + "top button: back"));   // C-65, DRAFT
+    if (under) keyLabels(day, ink);
+    else if (quickScreen()) footer(String(talkCan() ? "A: read aloud    " : "") + "B: more    C: home");   // C-149, DRAFT
+    else footer(hint(more + (talkCan() ? "press: read aloud    " : "") + "top button: back"));   // C-65, DRAFT
   } else if (screen == TALK) {                               // C-66: what was heard, and the daemon's answer
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString(upper(st.carrying ? st.daemon.nickname : String("your daemon")), 10, 32);
@@ -527,8 +553,8 @@ void draw() {
         canvas.drawString("A+C: menu", x, H - 28);              // DRAFT
         keyLabels(day, ink);
       } else if (board.threeKeys() && !menuOpen) {            // C-117: the T-Display-S3 Pro's buttons are on its side
-        bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
-        canvas.drawString(sleeping ? "any button: wake" : bed ? "A drink  B feed  C sleep" : "A drink  B feed  C train", x, H - 14);   // DRAFT
+        bool sleeping = st.daemon.tired == "asleep";
+        canvas.drawString(sleeping ? "any button: wake" : "A care  B routines  C index", x, H - 14);   // C-149, DRAFT
         canvas.drawString("A+C: menu", x, H - 4);
         if (keysHeld) {                                       // C-121: the held button's word, lit, above its footer
           const char *w = keyWord(keysHeld & 1 ? 0 : keysHeld & 2 ? 1 : 2);

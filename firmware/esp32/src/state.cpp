@@ -81,6 +81,21 @@ bool takeState(const char *json) {
     st.milestone = doc["step"]["milestone"]["title"] | ""; st.msAt = doc["step"]["milestone"]["at"] | 0;
     st.msOf = doc["step"]["milestone"]["of"] | 0;
   }
+  // C-149: the CASINO's coins, and the holiday (none: an ordinary day)
+  JsonVariant cs = doc["casino"];
+  st.casino.have = !cs.isNull();
+  if (st.casino.have) {
+    st.casino.money = cs["money"] | 0L; st.casino.pending = cs["pending"] | 0L; st.casino.balance = cs["balance"] | 0L;
+    st.casino.seen = cs["seen"] | ""; st.casino.friendN = 0;
+    for (JsonVariant f : cs["friends"].as<JsonArray>()) if (st.casino.friendN < 5) st.casino.friends[st.casino.friendN++] = f | 0;
+  }
+  JsonVariant hd = doc["holiday"];
+  st.holiday = Holiday();
+  if (!hd.isNull()) {
+    st.holiday.name = hd["name"] | ""; st.holiday.look = hd["look"] | "none"; st.holiday.hat = hd["hat"] | "none";
+    st.holiday.quiet = hd["quiet"] | false; st.holiday.flip = hd["flip"] | false;
+    for (int i = 0; i < 2; i++) { const char *c = hd["colours"][i] | "#000000"; st.holiday.colour[i] = strtol(c + 1, nullptr, 16); }
+  }
   st.partyN = 0;                             // C-68: the party and its routines
   for (JsonVariant p : doc["party"].as<JsonArray>()) {
     if (st.partyN >= 6) break;
@@ -104,6 +119,8 @@ bool takeState(const char *json) {
     st.daemon.entry.replace("\n", " ");     // the game's line breaks are for its own window; this screen wraps its own
     st.daemon.artKey = doc["daemon"]["artKey"] | "";
     st.daemon.species = doc["daemon"]["species"] | 0;
+    st.daemon.margin = doc["daemon"]["margin"] | "";      // C-149: OPUS's margin beside its entry
+    st.daemon.margin.replace("\n", " ");
     JsonVariant lf = doc["daemon"]["life"];
     st.daemon.word = lf["word"] | ""; st.daemon.cue = lf["cue"] | "";
     st.daemon.grownTo = doc["daemon"]["grown"]["level"] | 0;

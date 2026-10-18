@@ -93,3 +93,18 @@ inline void gameTune(Note *out, const char *name, const char *type, float &duty,
     at += (int)((s >> 18) % 4) - 1; if (at < 0) at = 0; if (at > 7) at = 7;   // wandering upward
   }
 }
+
+// C-149: THE CASINO -- the lever, a loss, a win small and large, the jackpot, and a holiday's own phrase on a big win.
+// In the day's key, like everything else; JINGLE is the chorus head of Jingle Bells (1857), the only borrowed tune.
+static const Note TUNE_SLOTS_PULL[]    = { {0, 40}, {7, 40}, {12, 70} };
+static const Note TUNE_SLOTS_LOSE[]    = { {0, 90}, {-5, 170} };
+static const Note TUNE_SLOTS_WIN[]     = { {0, 70}, {4, 70}, {7, 70}, {12, 160} };
+static const Note TUNE_SLOTS_BIG[]     = { {0, 80}, {4, 80}, {7, 80}, {12, 80}, {7, 80}, {12, 80}, {16, 80}, {19, 260} };
+static const Note TUNE_SLOTS_JACKPOT[] = { {0, 100}, {0, 100}, {0, 100}, {4, 300}, {2, 100}, {2, 100}, {2, 100}, {5, 300},
+                                           {7, 90}, {12, 90}, {16, 90}, {19, 90}, {24, 520} };
+static const Note TUNE_SLOTS_SPOOKY[]  = { {12, 160}, {11, 160}, {7, 160}, {6, 320}, {3, 160}, {0, 420} };          // Halloween
+static const Note TUNE_SLOTS_JINGLE[]  = { {4, 150}, {4, 150}, {4, 300}, {4, 150}, {4, 150}, {4, 300}, {4, 150}, {7, 150},
+                                           {0, 220}, {2, 80}, {4, 450} };                                              // Christmas
+static const Note TUNE_SLOTS_FIREWORK[]= { {0, 50}, {5, 50}, {10, 50}, {15, 50}, {20, 50}, {24, 50}, {127, 70}, {12, 40},
+                                           {19, 40}, {24, 220} };                                                     // New Year, July
+static const Note TUNE_SLOTS_SWEET[]   = { {0, 150}, {4, 150}, {7, 150}, {11, 150}, {12, 420} };                     // hearts

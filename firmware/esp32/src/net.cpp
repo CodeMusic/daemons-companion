@@ -19,6 +19,7 @@
 #include "meet.h"
 #include "lora.h"
 #include "leds.h"
+#include "casino.h"
 #include "sound.h"
 #include "relay_ca.h"
 // C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) --
@@ -332,6 +333,8 @@ void handleCommand(JsonVariant c) {
         if (want == String(types[i].name) + "/" + types[i].routines[k].name) {
           if (types[i].routines[k].run == runTheaterMode)   // it holds the board's controls until the top button
             return sendResult(id, false, "THEATER MODE is run on the board itself: it makes the dial and the button the remote.");
+          if (types[i].routines[k].run == runSlots)         // C-149: so does the CASINO, until it is left
+            return sendResult(id, false, "SLOTS is played on the board itself.");   // DRAFT
           typeAt = i; routineAt = k;
           runRoutine();
           return sendResult(id, true, runResult);
@@ -442,6 +445,7 @@ void handleLine(String line, bool fromPhone) {
     else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing
   }
   else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
+  else if (line.startsWith("PARTYART ")) casinoTakeArt(line.c_str() + 9);   // C-149: a party daemon, for the CASINO's reels
   else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
   else if (line == "SHOT" && !fromPhone) { if (dirty && !asleep) draw(); shot(); }   // C-121: what it shows now, not before the line ahead of it
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());

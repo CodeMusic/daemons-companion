@@ -176,3 +176,36 @@ void ledsLoop() {
   }
   if (frame != shown) { ring.show(); shown = frame; }
 }
+
+// C-149: THE CASINO's lights, one frame each pass of its loop, in two colours (the holiday's, else the season's): at
+// rest a marquee, the two colours stepping round; spinning a fast chase; a win the whole ring blinking one colour and
+// the other; the jackpot every colour, strobing; a loss the ring nearly dark. On the M5GO's two bars of five the same
+// numbers run up one side and down the other, which reads as lights racing round a sign.
+void ledsCasino(int mode, uint32_t a, uint32_t b) {
+  if (sleeping) return;
+  touch();
+  uint32_t t = millis();
+  switch (mode) {
+    case CASINO_SPIN: {
+      int at = (t / 55) % N;
+      fill(share(b, 10));
+      ring.setPixelColor(at, share(a, 100)); ring.setPixelColor((at + N - 1) % N, share(a, 45)); ring.setPixelColor((at + N - 2) % N, share(b, 30));
+      break;
+    }
+    case CASINO_WIN: {
+      bool odd = (t / 130) % 2;
+      fill(share(odd ? a : b, 85));
+      break;
+    }
+    case CASINO_JACKPOT:
+      for (int i = 0; i < N; i++)
+        ring.setPixelColor(i, (t / 70) % 3 == 0 ? ring.Color(200, 200, 200)
+                                                : ring.gamma32(ring.ColorHSV((uint16_t)((i * 65536 / N + t * 90) & 0xffff), 255, 200)));
+      break;
+    case CASINO_LOSE: fill(share(b, 6)); break;
+    default:                                                    // CASINO_IDLE: the marquee
+      for (int i = 0; i < N; i++) ring.setPixelColor(i, share(((i + t / 320) % 2) ? a : b, 45));
+  }
+  ring.show();
+  shown = -3;                                                   // the ring at rest is redrawn after
+}

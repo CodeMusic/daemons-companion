@@ -1,0 +1,658 @@
+// C-149 (the user, 2026-10-17): THE CASINO -- SLOTS, on every board. "we use daemon sprites on the 3 slot wheels or
+// similar elements from the game -- and also elements from the season maybe would overlay on the sprites -- and when it
+// is a holiday we do something holiday themed -- you can gain coins -- they represent the money u have in the game ...
+// fun light effects and sounds to make the casino experience really fun".
+//
+// Three reels. Their pieces: the daemon carried here (three of it is the jackpot), up to three of the party's others
+// (their pictures fetched as the reels are set: PARTYART? down the cable, or GET /api/device/art?slot= over Wi-Fi --
+// drawn pieces stand in for any that cannot be), the COIN, and the SEASON's own piece: a snowflake, a blossom, the sun,
+// a leaf -- or on a holiday the holiday's (a pumpkin, a present, a heart ...). The season falls across the reels, and on
+// a holiday the daemons dress for it (server/data/holidays.json); a QUIET day is left as it is.
+//
+// The coins are the save's money (server/src/casino.ts): the balance is the state's, plus this board's results the
+// server has not counted yet. Each result goes as INTERACT casino "<delta> <boot>.<seq> <device> <spins>" -- every ten
+// spins, and once more on leaving -- and waits on the server until SYNC writes it into the game.
+//
+// The result is decided at the pull, from the table below (about 94% back over many spins, a house edge as the Game
+// Corner had), and each reel slips on to its piece when it is stopped -- so a quick finger wins nothing a slow one
+// would not, and stopping the reels yourself is still the fun of it.
+//
+// The controls: on the M5GO, the Fire and the T-Display-S3 Pro, A and C the bet and B the lever, then A, B and C stop
+// the reel above each (held A leaves). A dial turns the bet and presses the lever, then stops the reels left to right;
+// the top button (or the dial held) leaves. The StickS3: front the lever and the stops, side the bet, held side leaves.
+// A touch screen: swipe the bet, tap, hold to leave. The cable: KEY PRESS, KEY RIGHT / LEFT, KEY A|B|C, KEY BACK.
+#include <WiFi.h>
+#include <mbedtls/base64.h>
+#include "app.h"
+#include "casino.h"
+#include "leds.h"
+#include "sound.h"
+
+void handleLine(String line, bool fromPhone);   // net.cpp: a STATE that arrives while the reels turn is taken as ever
+
+// ---- the pieces --------------------------------------------------------------------------------------------------
+enum { P_JACK, P_F1, P_F2, P_F3, P_COIN, P_SEASON, P_N };
+static const int STRIP = 12;                    // each piece twice round a reel, so a reel slips at most six
+static uint8_t *pix[4] = {};                    // the daemons' pictures: 0 the one carried (artPix), 1..3 the party's
+static uint16_t pal[4][16];
+static bool have[4] = {};
+static int topRow[4], midCol[4];                // where each picture's head is, for its hat
+static int friendSlot[3] = { -1, -1, -1 };
+
+// the result, decided at the pull: its chance in a thousand, and what it pays for each coin bet (the bet included)
+enum { O_LOSE, O_SEASON1, O_JACK2, O_SEASON3, O_COIN3, O_FRIEND3, O_JACK3, O_N };
+static const int WEIGHT[O_N] = { 694, 180, 40, 40, 30, 12, 4 };   // 1000 in all: 94.4 back of every 100 bet
+static const int PAYS[O_N]   = { 0, 1, 2, 4, 6, 12, 50 };
+static const long BETS[] = { 10, 20, 50, 100, 200, 500, 1000 };
+static const int BET_N = sizeof BETS / sizeof BETS[0];
+
+static int outcomeOf(int a, int b, int c) {
+  if (a == b && b == c) return a == P_JACK ? O_JACK3 : a == P_COIN ? O_COIN3 : a == P_SEASON ? O_SEASON3 : O_FRIEND3;
+  if (a == P_JACK && b == P_JACK) return O_JACK2;
+  if (a == P_SEASON) return O_SEASON1;
+  return O_LOSE;
+}
+static void piecesFor(int o, int out[3]) {      // three pieces that make exactly this result
+  auto any = []() { return (int)(esp_random() % P_N); };
+  switch (o) {
+    case O_JACK3: out[0] = out[1] = out[2] = P_JACK; return;
+    case O_FRIEND3: out[0] = out[1] = out[2] = P_F1 + esp_random() % 3; return;
+    case O_COIN3: out[0] = out[1] = out[2] = P_COIN; return;
+    case O_SEASON3: out[0] = out[1] = out[2] = P_SEASON; return;
+    case O_JACK2: out[0] = out[1] = P_JACK; do out[2] = any(); while (out[2] == P_JACK); return;
+    default:
+      for (int tries = 0; tries < 500; tries++) {
+        out[0] = o == O_SEASON1 ? P_SEASON : any(); out[1] = any(); out[2] = any();
+        if (outcomeOf(out[0], out[1], out[2]) == o) return;
+      }
+      out[0] = P_COIN; out[1] = P_F1; out[2] = P_F2;   // a loss, whatever the dice did
+  }
+}
+static int draw1000() {
+  int r = esp_random() % 1000;
+  for (int o = 0; o < O_N; o++) { if (r < WEIGHT[o]) return o; r -= WEIGHT[o]; }
+  return O_LOSE;
+}
+
+// ---- the reels -----------------------------------------------------------------------------------------------------
+struct Reel { int strip[STRIP]; float pos = 0, speed = 0; int state = 0; float from = 0, to = 0; uint32_t at = 0, dur = 0; };
+enum { STILL, SPINNING, STOPPING };
+static Reel reels[3];
+static int want[3];                             // the piece each reel stops on, this pull
+static uint32_t pulledAt = 0;
+static const float SPEED = 14;                  // pieces a second, flat out
+
+static void shuffle(Reel &r) {
+  for (int i = 0; i < STRIP; i++) r.strip[i] = i % P_N;
+  for (int i = STRIP - 1; i > 0; i--) { int j = esp_random() % (i + 1); int t = r.strip[i]; r.strip[i] = r.strip[j]; r.strip[j] = t; }
+  r.pos = esp_random() % STRIP; r.state = STILL; r.speed = 0;
+}
+static int pieceAt(const Reel &r, int i) { return r.strip[((i % STRIP) + STRIP) % STRIP]; }
+static void stopReel(int k) {
+  Reel &r = reels[k];
+  if (r.state != SPINNING) return;
+  int at = (int)ceilf(r.pos + 0.7f);            // never back: on past the next piece to the wanted one
+  while (pieceAt(r, at) != want[k]) at++;
+  r.state = STOPPING; r.from = r.pos; r.to = at; r.at = millis();
+  r.dur = (uint32_t)constrain((at - r.pos) / SPEED * 1000 * 1.6f, 220.0f, 900.0f);
+}
+static bool spinning() { for (auto &r : reels) if (r.state != STILL) return true; return false; }
+static int nextToStop() { for (int k = 0; k < 3; k++) if (reels[k].state == SPINNING) return k; return -1; }
+
+// ---- the money ---------------------------------------------------------------------------------------------------
+static uint32_t bootId = 0;                     // this start's own name for its reports
+static int seq = 0;
+struct Sent { int seq; long delta; };
+static Sent unseen[24]; static int unseenN = 0; // reports the state has not counted yet
+static long sessionDelta = 0, unreported = 0; static int spins = 0, unreportedSpins = 0;
+
+static long balance() {
+  String s = st.casino.seen; int dot = s.indexOf('.');
+  bool mine = dot > 0 && strtoul(s.substring(0, dot).c_str(), nullptr, 16) == bootId;
+  int seen = mine ? s.substring(dot + 1).toInt() : 0;
+  int keep = 0; long b = st.casino.balance + unreported;
+  for (int i = 0; i < unseenN; i++) if (!mine || unseen[i].seq > seen) { b += unseen[i].delta; unseen[keep++] = unseen[i]; }
+  unseenN = keep;                               // what the state has counted is forgotten here
+  return max(0L, b);
+}
+static void reportNow() {
+  if (!unreported && !unreportedSpins) return;
+  if (!bootId) bootId = (esp_random() & 0xffff) | 1;   // four hex digits: the outbox carries 47 letters
+  seq++;
+  if (unseenN == 24) { memmove(unseen, unseen + 1, sizeof unseen[0] * 23); unseenN = 23; }
+  unseen[unseenN++] = { seq, unreported };
+  char hexBoot[9]; snprintf(hexBoot, sizeof hexBoot, "%x", (unsigned)bootId);
+  report("casino", String(unreported) + " " + hexBoot + "." + seq + " " + deviceId() + " " + unreportedSpins);
+  unreported = 0; unreportedSpins = 0;
+}
+
+// ---- how it is dressed ---------------------------------------------------------------------------------------------
+static bool dressed() { return st.holiday.name.length() && !st.holiday.quiet; }
+static String lookNow() {                       // the holiday's look, else the season's own
+  if (dressed() && st.holiday.look != "none") return st.holiday.look;
+  if (st.season == "winter") return "snow";
+  if (st.season == "spring") return "petals";
+  if (st.season == "summer") return "sun";
+  return "leaves";
+}
+static uint32_t colourA() {
+  if (dressed() && st.holiday.colour[0]) return st.holiday.colour[0];
+  return st.season == "winter" ? 0xA0D0FF : st.season == "spring" ? 0xFF90C0 : st.season == "summer" ? 0xFFD040 : 0xE07020;
+}
+static uint32_t colourB() {
+  if (dressed() && st.holiday.colour[1]) return st.holiday.colour[1];
+  return st.season == "winter" ? 0xFFFFFF : st.season == "spring" ? 0x90E070 : st.season == "summer" ? 0xFF8020 : 0xFFC040;
+}
+static uint16_t c565(uint32_t rgb) { return canvas.color565((rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255); }
+
+// the falling season (or holiday) over the reels: a few pieces drifting down, or twinkling where they are
+struct Bit { float x, y, vx, vy, phase; uint32_t rgb; };
+static Bit bits[18];
+static int bitN = 0;
+static bool twinkles(const String &l) { return l == "stars" || l == "sun" || l == "frost" || l == "moon"; }
+static void bitReset(Bit &b, int x0, int x1, int y0, int y1, bool anywhere, const String &l) {
+  b.x = x0 + esp_random() % max(1, x1 - x0); b.y = anywhere ? y0 + esp_random() % max(1, y1 - y0) : y0 - 6;
+  b.vx = ((int)(esp_random() % 21) - 10) / 3.0f; b.vy = twinkles(l) ? 0 : 14 + esp_random() % 22;
+  if (l == "hearts" || l == "fireworks") b.vy = -b.vy;   // hearts rise; sparks go up
+  b.phase = (esp_random() % 628) / 100.0f;
+  b.rgb = (esp_random() & 1) ? colourA() : colourB();
+  if (l == "confetti" || l == "streamers") { static const uint32_t C[] = { 0xFF4060, 0xFFD040, 0x40C0FF, 0x60E060, 0xC060FF }; b.rgb = C[esp_random() % 5]; }
+  if (l == "snow") b.rgb = 0xFFFFFF;
+}
+
+// ---- drawing -------------------------------------------------------------------------------------------------------
+struct Frame { int top, bottom, mid, x0, reelW, gap, cellH, infoY; bool keys; };
+static Frame layout() {
+  Frame f;
+  f.keys = board.kind == BoardKind::M5Core;     // the three buttons under the screen, each named above it
+  f.top = board.round ? 58 : 30;
+  f.infoY = board.round ? 184 : f.keys ? H - 44 : H - 30;
+  f.bottom = f.infoY - 4;
+  f.mid = (f.top + f.bottom) / 2;
+  f.gap = 6;
+  int span = board.round ? 212 : W - 16;
+  f.reelW = (span - 2 * f.gap) / 3;
+  f.x0 = (W - (3 * f.reelW + 2 * f.gap)) / 2;
+  f.cellH = 72;
+  return f;
+}
+
+// a 64x64 picture of four bits a pixel, colour 0 clear -- upside down on April Fools' Day
+static void drawPicture(int k, int x, int y) {
+  const uint8_t *p = pix[k]; bool flip = st.holiday.flip;
+  for (int j = 0; j < 64; j++) {
+    int row = flip ? 63 - j : j;
+    for (int i = 0; i < 64; ) {
+      uint8_t b = p[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
+      if (!c) { i++; continue; }
+      int run = 1;                              // a run of one colour, one line drawn
+      while (i + run < 64) { uint8_t b2 = p[(j * 64 + i + run) >> 1], c2 = ((i + run) & 1) ? (b2 & 15) : (b2 >> 4); if (c2 != c) break; run++; }
+      canvas.drawFastHLine(x + i, y + row, run, pal[k][c]);
+      i += run;
+    }
+  }
+}
+static void measure(int k) {                    // the top of its head, and the middle of it there
+  topRow[k] = 63; midCol[k] = 32;
+  for (int j = 0; j < 64; j++) {
+    int lo = 64, hi = -1;
+    for (int i = 0; i < 64; i++) { uint8_t b = pix[k][(j * 64 + i) >> 1]; if ((i & 1) ? (b & 15) : (b >> 4)) { lo = min(lo, i); hi = i; } }
+    if (hi >= 0) { topRow[k] = j; midCol[k] = (lo + hi) / 2; return; }
+  }
+}
+
+static void star(int cx, int cy, int r, uint16_t c) {   // five points
+  float px[10], py[10];
+  for (int i = 0; i < 10; i++) { float a = -PI / 2 + i * PI / 5, rr = i % 2 ? r * 0.45f : r; px[i] = cx + rr * cosf(a); py[i] = cy + rr * sinf(a); }
+  for (int i = 0; i < 10; i++) canvas.fillTriangle(cx, cy, px[i], py[i], px[(i + 1) % 10], py[(i + 1) % 10], c);
+}
+static void heart(int cx, int cy, int r, uint16_t c) {
+  canvas.fillCircle(cx - r / 2, cy - r / 4, r / 2 + 1, c); canvas.fillCircle(cx + r / 2, cy - r / 4, r / 2 + 1, c);
+  canvas.fillTriangle(cx - r - 1, cy, cx + r + 1, cy, cx, cy + r + 2, c);
+}
+// a piece drawn rather than pictured, about 48 across: the coin, the season's, a holiday's, or one standing in for a
+// daemon the reels could not fetch
+static void drawn(const String &kind, int cx, int cy) {
+  uint16_t a = c565(colourA()), b = c565(colourB()), white = PAPER, gold = c565(0xFFC830), dark = c565(0x8A5A10);
+  if (kind == "coin") {
+    canvas.fillCircle(cx, cy, 21, dark); canvas.fillCircle(cx - 1, cy - 1, 20, gold); canvas.drawCircle(cx - 1, cy - 1, 15, dark);
+    star(cx - 1, cy - 1, 10, c565(0xFFF0A0)); canvas.fillCircle(cx - 9, cy - 10, 3, c565(0xFFF8D0));
+  } else if (kind == "snow" || kind == "frost") {
+    uint16_t c = c565(0xDDEEFF);
+    for (int i = 0; i < 6; i++) {
+      float ang = i * PI / 3; int ex = cx + 20 * cosf(ang), ey = cy + 20 * sinf(ang), mx = cx + 12 * cosf(ang), my = cy + 12 * sinf(ang);
+      canvas.drawWideLine(cx, cy, ex, ey, 2, c);
+      canvas.drawLine(mx, my, mx + 6 * cosf(ang + 0.8f), my + 6 * sinf(ang + 0.8f), c);
+      canvas.drawLine(mx, my, mx + 6 * cosf(ang - 0.8f), my + 6 * sinf(ang - 0.8f), c);
+    }
+    canvas.fillCircle(cx, cy, 3, white);
+  } else if (kind == "petals") {
+    for (int i = 0; i < 5; i++) { float ang = -PI / 2 + i * 2 * PI / 5; canvas.fillCircle(cx + 11 * cosf(ang), cy + 11 * sinf(ang), 9, a); }
+    canvas.fillCircle(cx, cy, 6, c565(0xFFE060));
+  } else if (kind == "sun") {
+    for (int i = 0; i < 8; i++) { float ang = i * PI / 4; canvas.drawWideLine(cx + 15 * cosf(ang), cy + 15 * sinf(ang), cx + 22 * cosf(ang), cy + 22 * sinf(ang), 3, b); }
+    canvas.fillCircle(cx, cy, 13, a);
+  } else if (kind == "leaves") {
+    canvas.fillTriangle(cx - 14, cy + 4, cx, cy - 20, cx + 14, cy + 4, a); canvas.fillTriangle(cx - 14, cy + 4, cx, cy + 16, cx + 14, cy + 4, a);
+    canvas.fillTriangle(cx - 20, cy - 4, cx - 6, cy - 12, cx - 4, cy + 6, a); canvas.fillTriangle(cx + 20, cy - 4, cx + 6, cy - 12, cx + 4, cy + 6, a);
+    canvas.drawWideLine(cx, cy + 22, cx, cy - 12, 2, dark);
+  } else if (kind == "pumpkins") {
+    uint16_t o = c565(0xFF7A1A), od = c565(0xC04A00);
+    canvas.fillEllipse(cx - 9, cy + 3, 11, 16, od); canvas.fillEllipse(cx + 9, cy + 3, 11, 16, od); canvas.fillEllipse(cx, cy + 3, 13, 17, o);
+    canvas.fillRect(cx - 2, cy - 18, 5, 7, c565(0x2E7D32));
+    canvas.fillTriangle(cx - 9, cy - 1, cx - 3, cy - 1, cx - 6, cy - 7, INK); canvas.fillTriangle(cx + 3, cy - 1, cx + 9, cy - 1, cx + 6, cy - 7, INK);
+    canvas.fillTriangle(cx - 9, cy + 7, cx + 9, cy + 7, cx, cy + 13, INK);
+  } else if (kind == "presents") {
+    canvas.fillRect(cx - 17, cy - 10, 34, 28, a); canvas.fillRect(cx - 19, cy - 15, 38, 8, a);
+    canvas.fillRect(cx - 3, cy - 15, 6, 33, b); canvas.fillRect(cx - 19, cy - 13, 38, 4, b);
+    canvas.fillEllipse(cx - 7, cy - 19, 7, 4, b); canvas.fillEllipse(cx + 7, cy - 19, 7, 4, b);
+  } else if (kind == "hearts") {
+    heart(cx, cy - 2, 18, a); heart(cx - 4, cy - 6, 6, c565(0xFFD0E0));
+  } else if (kind == "clover") {
+    uint16_t g = c565(0x20B040);
+    heart(cx, cy - 12, 9, g); heart(cx - 11, cy, 9, g); heart(cx + 11, cy, 9, g);
+    canvas.drawWideLine(cx, cy + 4, cx + 6, cy + 20, 2, g);
+  } else if (kind == "eggs") {
+    canvas.fillEllipse(cx, cy, 15, 20, a);
+    for (int i = -14; i < 14; i += 7) canvas.fillTriangle(cx + i, cy + 2, cx + i + 7, cy + 2, cx + i + 3, cy - 4, b);
+    canvas.fillRect(cx - 14, cy + 2, 28, 4, b);
+  } else if (kind == "fireworks") {
+    for (int i = 0; i < 12; i++) { float ang = i * PI / 6; canvas.drawWideLine(cx + 6 * cosf(ang), cy + 6 * sinf(ang), cx + 21 * cosf(ang), cy + 21 * sinf(ang), 2, i % 2 ? a : b); }
+    canvas.fillCircle(cx, cy, 4, white);
+  } else if (kind == "moon") {
+    canvas.fillCircle(cx, cy, 19, c565(0xFFE070)); canvas.fillCircle(cx - 6, cy - 4, 4, c565(0xE8C050)); canvas.fillCircle(cx + 7, cy + 6, 3, c565(0xE8C050));
+  } else if (kind == "berry") {                 // the pieces standing in for the party
+    canvas.fillCircle(cx - 7, cy + 4, 12, c565(0xD02040)); canvas.fillCircle(cx + 8, cy + 6, 11, c565(0xB01030));
+    canvas.fillTriangle(cx, cy - 8, cx + 14, cy - 20, cx + 4, cy - 6, c565(0x30A040));
+  } else if (kind == "gem") {
+    uint16_t c = c565(0x40D8E8);
+    canvas.fillTriangle(cx - 18, cy - 4, cx + 18, cy - 4, cx, cy + 20, c); canvas.fillTriangle(cx - 18, cy - 4, cx + 18, cy - 4, cx, cy - 18, c565(0xA0F0FF));
+  } else if (kind == "mark") {
+    uint16_t day = hex565(st.menu);
+    canvas.fillCircle(cx, cy, 19, day); canvas.drawCircle(cx, cy, 19, white); star(cx, cy, 11, white);
+  } else star(cx, cy, 19, a);                   // stars, confetti, streamers: a star in the holiday's colour
+}
+
+// a hat on a daemon's head, for the holiday (k: which picture, x y: where the picture is)
+static void hat(int k, int x, int y) {
+  const String &h = st.holiday.hat;
+  if (!dressed() || h == "none" || !h.length() || st.holiday.flip) return;
+  int cx = x + midCol[k], base = y + max(14, topRow[k]) + 3;
+  uint16_t a = c565(colourA()), b = c565(colourB());
+  if (h == "santa") {
+    canvas.fillTriangle(cx - 11, base, cx + 11, base, cx + 6, base - 16, c565(0xE02828));
+    canvas.fillRoundRect(cx - 12, base - 3, 24, 5, 2, PAPER); canvas.fillCircle(cx + 7, base - 16, 3, PAPER);
+  } else if (h == "witch") {
+    uint16_t w = c565(0x3A1A5A);
+    canvas.fillTriangle(cx - 8, base, cx + 8, base, cx + 4, base - 20, w); canvas.fillRect(cx - 14, base - 2, 28, 3, w);
+    canvas.fillRect(cx - 7, base - 5, 14, 3, c565(0xFF7A1A));
+  } else if (h == "party") {
+    canvas.fillTriangle(cx - 8, base, cx + 8, base, cx, base - 18, a);
+    canvas.drawLine(cx - 5, base - 5, cx + 4, base - 9, b); canvas.drawLine(cx - 3, base - 10, cx + 2, base - 13, b);
+    canvas.fillCircle(cx, base - 18, 3, b);
+  } else if (h == "flower") {
+    for (int i = 0; i < 5; i++) { float ang = i * 2 * PI / 5; canvas.fillCircle(cx + 9 + 4 * cosf(ang), base - 2 + 4 * sinf(ang), 3, a); }
+    canvas.fillCircle(cx + 9, base - 2, 2, b);
+  }
+}
+
+static void drawPiece(int piece, int cx, int cy) {
+  if (piece == P_COIN) { drawn("coin", cx, cy); return; }
+  if (piece == P_SEASON) { drawn(lookNow(), cx, cy); return; }
+  int k = piece == P_JACK ? 0 : piece - P_F1 + 1;
+  if (have[k]) { drawPicture(k, cx - 32, cy - 32); hat(k, cx - 32, cy - 32); return; }
+  static const char *STAND_IN[] = { "mark", "berry", "gem", "mark" };   // the jackpot stands in as a MARK, if it must
+  drawn(STAND_IN[k], cx, cy);
+}
+
+// the screen's state, between frames
+enum { IDLE, ROLLING, SHOWING };
+static int phase = IDLE, outcome = O_LOSE, betAt = 2;
+static long bet = 50, won = 0, shownBalance = 0;
+static uint32_t shownAt = 0;
+static String note;                              // the word under the reels, for a moment
+
+static void fitBet() {                           // never more than is there to bet
+  long b = balance();
+  while (betAt > 0 && BETS[betAt] > b) betAt--;
+  bet = BETS[betAt];
+}
+
+static String drawSlots(uint16_t day, uint16_t ink) {
+  Frame f = layout();
+  uint32_t t = millis();
+  // the band: CASINO and what it is dressed for, over the day's name (the link and the battery stay where they are)
+  if (!board.round) {
+    canvas.fillRect(0, 0, W - 120, 26, day);
+    canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(ML_DATUM);
+    String title = "CASINO";                                                       // DRAFT
+    String dress = st.holiday.name.length() ? upper(st.holiday.name) : upper(st.season);
+    if (canvas.textWidth(title + "  " + dress) < W - 130) title += "  " + dress;
+    canvas.drawString(title, 8, 13);
+  }
+  // the reels
+  for (int k = 0; k < 3; k++) {
+    int x = f.x0 + k * (f.reelW + f.gap);
+    canvas.fillRoundRect(x, f.top, f.reelW, f.bottom - f.top, 6, c565(0x2A2C31));
+    canvas.setClipRect(x + 2, f.top + 2, f.reelW - 4, f.bottom - f.top - 4);
+    const Reel &r = reels[k];
+    int base = (int)floorf(r.pos);
+    for (int i = base - 2; i <= base + 2; i++) {
+      int cy = f.mid + (int)roundf((r.pos - i) * f.cellH);
+      if (cy < f.top - 40 || cy > f.bottom + 40) continue;
+      drawPiece(pieceAt(r, i), x + f.reelW / 2, cy);
+    }
+    canvas.clearClipRect();
+    // the winning pieces framed, blinking
+    if (phase == SHOWING && outcome != O_LOSE && (t / 160) % 2 == 0) {
+      int lit = outcome == O_JACK2 ? 2 : outcome == O_SEASON1 ? 1 : 3;
+      if (k < lit) for (int w = 0; w < 3; w++) canvas.drawRoundRect(x + 2 + w, f.mid - 36 + w, f.reelW - 4 - 2 * w, 72 - 2 * w, 6, c565(0xFFC830));
+    }
+  }
+  // the season falling over them (or the holiday's)
+  String l = lookNow();
+  canvas.setClipRect(f.x0, f.top, 3 * f.reelW + 2 * f.gap, f.bottom - f.top);
+  for (int i = 0; i < bitN; i++) {
+    Bit &b = bits[i]; uint16_t c = c565(b.rgb);
+    int x = b.x + 4 * sinf(b.phase + t / 600.0f), y = b.y;
+    if (l == "snow" || l == "frost") canvas.fillCircle(x, y, 1 + (i % 2), c);
+    else if (l == "petals") canvas.fillEllipse(x, y, 3, 2, c);
+    else if (l == "leaves") { canvas.fillTriangle(x - 3, y, x, y - 4, x + 3, y, c); canvas.fillTriangle(x - 3, y, x, y + 4, x + 3, y, c); }
+    else if (l == "hearts") heart(x, y, 4, c);
+    else if (l == "confetti" || l == "streamers") canvas.fillRect(x, y, 3 + (i % 3), 2, c);
+    else if (l == "clover") heart(x, y, 3, c565(0x20B040));
+    else if (l == "eggs") canvas.fillEllipse(x, y, 3, 4, c);
+    else if (l == "pumpkins") { canvas.fillCircle(x, y, 3, c565(0xFF7A1A)); canvas.drawFastVLine(x, y - 5, 2, c565(0x2E7D32)); }
+    else if (l == "presents") { canvas.fillRect(x - 2, y - 2, 5, 5, c); canvas.drawFastVLine(x, y - 2, 5, PAPER); }
+    else if (l == "fireworks") canvas.fillCircle(x, y, 1, c);
+    else {                                        // twinkling where they are: stars, the sun's glints, the frost
+      float s = 0.5f + 0.5f * sinf(b.phase + t / 260.0f);
+      int r = 1 + (int)(3 * s);
+      canvas.drawFastHLine(x - r, y, 2 * r + 1, c); canvas.drawFastVLine(x, y - r, 2 * r + 1, c);
+    }
+  }
+  canvas.clearClipRect();
+  // the line they pay on
+  uint16_t gold = c565(0xFFC830);
+  canvas.fillTriangle(f.x0 - 6, f.mid - 5, f.x0 - 6, f.mid + 5, f.x0 - 1, f.mid, gold);
+  int right = f.x0 + 3 * f.reelW + 2 * f.gap;
+  canvas.fillTriangle(right + 5, f.mid - 5, right + 5, f.mid + 5, right, f.mid, gold);
+  // a win, said large -- across the top of the reels, so the pieces that won stay in sight
+  if (phase == SHOWING && won > 0 && t - shownAt < 2600) {
+    String w = outcome == O_JACK3 ? "JACKPOT!  " + String(won) : "WIN  " + String(won);   // DRAFT
+    canvas.setTextFont(4); canvas.setTextDatum(MC_DATUM);
+    int bw = min(W - 16, (int)canvas.textWidth(w) + 30), by = f.top + 2;
+    canvas.fillRoundRect(W / 2 - bw / 2, by, bw, 36, 8, outcome == O_JACK3 && (t / 120) % 2 ? gold : day);
+    canvas.drawRoundRect(W / 2 - bw / 2, by, bw, 36, 8, PAPER);
+    canvas.setTextColor(outcome == O_JACK3 && (t / 120) % 2 ? INK : ink); canvas.drawString(w, W / 2, by + 19);
+  }
+  // the money, the bet, and a word
+  canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM); canvas.setTextColor(PAPER);
+  canvas.drawString("MONEY " + String(shownBalance), f.x0, f.infoY);                // DRAFT
+  canvas.setTextDatum(TC_DATUM); canvas.setTextColor(day);
+  canvas.drawString("BET " + String(bet), W / 2 + (board.round ? 0 : 10), f.infoY);  // DRAFT
+  canvas.setTextDatum(TR_DATUM); canvas.setTextColor(QUIET);
+  if (!board.round) canvas.drawString(note, right, f.infoY);
+  canvas.setTextDatum(TL_DATUM);
+  if (!f.keys) {                                 // the footer says what does what, in this board's own words
+    if (board.touch && !board.threeKeys()) return phase == ROLLING ? "tap: stop" : "swipe: bet    tap: spin    hold: leave";   // DRAFT
+    if (board.threeKeys()) return phase == ROLLING ? "A B C: stop" : "A C: bet    B: spin    hold A: leave";   // DRAFT
+    return phase == ROLLING ? "press: stop" : String("turn: bet    press: spin    ") + (board.hasSideKey() ? "top button: back" : "hold the dial: back");
+  }
+  // the M5GO and the Fire: each button's word above it -- BET- SPIN BET+, and while the reels turn STOP under each
+  int bw = W / 3;
+  for (int k = 0; k < 3; k++) {
+    bool roll = phase == ROLLING, live = !roll || reels[k].state == SPINNING;
+    const char *word = roll ? "STOP" : k == 0 ? "BET -" : k == 1 ? "SPIN" : "BET +";   // DRAFT
+    int bx = k * bw + 4;
+    if (roll && live) canvas.fillRoundRect(bx, H - 24, bw - 8, 22, 5, day);
+    else canvas.drawRoundRect(bx, H - 24, bw - 8, 22, 5, live ? QUIET : INK);
+    canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM); canvas.setTextColor(roll && live ? ink : live ? PAPER : QUIET);
+    canvas.drawString(word, bx + (bw - 8) / 2, H - 13);
+  }
+  canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+  if (phase != ROLLING) canvas.drawString("hold A: leave", f.x0, H - 28);           // DRAFT
+  canvas.setTextDatum(TL_DATUM);
+  return " ";                                    // its own words are drawn: no footer under them
+}
+
+// ---- the pictures, fetched as the reels are set ----------------------------------------------------------------------
+bool casinoTakeArt(const char *json) {
+  JsonDocument doc;
+  if (deserializeJson(doc, json) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
+  int slot = doc["slot"] | -1, k = -1;
+  for (int i = 0; i < 3; i++) if (friendSlot[i] == slot && slot >= 0) k = i + 1;
+  if (k < 0 || !pix[k]) return false;            // not one the reels asked for (or they have been put away)
+  JsonArray p = doc["palette"].as<JsonArray>();
+  for (int i = 0; i < 16; i++) pal[k][i] = i < (int)p.size() ? (uint16_t)(p[i] | 0) : 0;
+  const char *b64 = doc["pixels"] | "";
+  size_t got = 0;
+  if (mbedtls_base64_decode(pix[k], 2048, &got, (const unsigned char *)b64, strlen(b64)) || got != 2048) return false;
+  measure(k); have[k] = true;
+  return true;
+}
+
+// the cable, read here while the reels turn (the loop is not running): SHOT, the keys, and the bridge's own lines --
+// a STATE taken as ever (it keeps the bridge fresh), a party daemon's picture. Anything else waits for the loop.
+static String cableIn;
+static int cableEvent = 0;                       // 1 press, 2 bet up, 3 bet down, -1 leave, 10 + k a key A|B|C
+static void readCable() {
+  while (Serial.available()) {
+    char c = Serial.read();
+    if (c != '\n') { if (cableIn.length() < 6000) cableIn += c; continue; }
+    cableIn.trim();
+    if (cableIn == "SHOT") { draw(); shot(); }
+    else if (cableIn == "KEY PRESS") cableEvent = 1;
+    else if (cableIn == "KEY RIGHT" || cableIn == "KEY PRESS2") cableEvent = 2;
+    else if (cableIn == "KEY LEFT") cableEvent = 3;
+    else if (cableIn == "KEY BACK") cableEvent = -1;
+    else if (cableIn == "KEY A" || cableIn == "KEY B" || cableIn == "KEY C") cableEvent = 10 + (cableIn[4] - 'A');
+    else if (cableIn.startsWith("STATE ") || cableIn.startsWith("PARTYART ")) handleLine(cableIn, false);
+    cableIn = "";
+  }
+}
+
+static void loading(const String &what) {
+  runPanel = [](uint16_t day, uint16_t ink) -> String {
+    canvas.setTextFont(4); canvas.setTextColor(day); canvas.setTextDatum(MC_DATUM);
+    canvas.drawString("CASINO", W / 2, H / 2 - 18);                                // DRAFT
+    canvas.setTextFont(2); canvas.setTextColor(QUIET);
+    canvas.drawString(runResult, W / 2, H / 2 + 14);
+    canvas.setTextDatum(TL_DATUM);
+    return " ";
+  };
+  runResult = what; draw();
+}
+
+static void fetchFriends() {
+  for (int i = 0; i < 3; i++) {
+    friendSlot[i] = i < st.casino.friendN ? st.casino.friends[i] : -1;
+    have[i + 1] = false;
+    pix[i + 1] = friendSlot[i] >= 0 ? (uint8_t *)malloc(2048) : nullptr;
+  }
+  // without PSRAM a request made while the speaker still holds its buffers runs out of memory (net.cpp): let it go first
+  for (uint32_t t0 = millis(); !soundQuiet() && millis() - t0 < 1200; ) { soundIdle(); delay(20); }
+  for (int i = 0; i < 3; i++) {
+    if (!pix[i + 1]) continue;
+    loading("Setting the reels... " + String(i + 1) + " of " + String(min(3, st.casino.friendN)));   // DRAFT
+    if (usbLive()) {
+      Serial.printf("PARTYART? %d\n", friendSlot[i]);
+      for (uint32_t t0 = millis(); !have[i + 1] && millis() - t0 < 2500; ) { readCable(); delay(5); }
+    } else if (online() && !bridgeLive()) {
+      bool ok; String got = http("GET", "/api/device/art?slot=" + String(friendSlot[i]), "", &ok);
+      if (ok) casinoTakeArt(got.c_str());
+    }
+  }
+}
+static void putAway() { for (int i = 1; i < 4; i++) { free(pix[i]); pix[i] = nullptr; have[i] = false; } for (int &s : friendSlot) s = -1; }
+
+// ---- the routine ---------------------------------------------------------------------------------------------------
+String runSlots() {
+  if (!st.casino.have)
+    return "The CASINO plays with the money your game holds.\n\nLink this board to the companion, with your game's save set, and it opens.";   // DRAFT
+  pix[0] = artPix; memcpy(pal[0], artPal, sizeof pal[0]);
+  have[0] = st.carrying && artKeyHave.length() && artKeyHave == st.daemon.artKey;
+  if (have[0]) measure(0);
+  fetchFriends();
+  for (auto &r : reels) shuffle(r);
+  phase = IDLE; won = 0; note = ""; spins = 0; sessionDelta = 0;
+  fitBet();
+  shownBalance = balance();
+  if (shownBalance < BETS[0]) { putAway(); runPanel = nullptr; return "No money to play with.\n\nThe game's money is the CASINO's: earn some in the game, and SYNC."; }   // DRAFT
+  String l = lookNow(); Frame f = layout();
+  bitN = board.round ? 10 : 14;
+  for (int i = 0; i < bitN; i++) bitReset(bits[i], f.x0, f.x0 + 3 * f.reelW, f.top, f.bottom, true, l);
+  runPanel = drawSlots;
+  soundSlots(0, l);
+
+  // the buttons as they are now, so a press already down when it opened does nothing
+  const int keyPin[3] = { board.keyLeft, board.encKey, board.keyRight };
+  // a press is "fresh" if it began with the reels at rest: only such a press bets, pulls on its release, or leaves held --
+  // a press that stopped a reel and is held on past the result does nothing more
+  bool keyWas[3] = { false, false, false }, keyFresh[3] = { false, false, false }, frontFresh = false;
+  uint32_t keyAt[3] = { millis(), millis(), millis() };
+  for (int k = 0; k < 3; k++) keyWas[k] = keyPin[k] >= 0 && !digitalRead(keyPin[k]);
+  bool sideWas = board.hasSideKey() && !digitalRead(board.sideKey), frontWas = board.encKey >= 0 && !digitalRead(board.encKey);
+  uint32_t sideAt = millis(), frontAt = millis(), last = millis(), helloAt = 0, idleSince = millis(), flashAt = 0;
+  bool leave = false;
+  int lastTick[3] = { 0, 0, 0 };
+
+  auto pull = [&]() {
+    if (spinning()) return;
+    fitBet();
+    if (balance() < bet || bet <= 0) { note = "NO MONEY LEFT"; return; }               // DRAFT
+    outcome = draw1000(); piecesFor(outcome, want);
+    unreported -= bet; sessionDelta -= bet; spins++; unreportedSpins++;
+    shownBalance = balance();
+    for (int k = 0; k < 3; k++) { reels[k].state = SPINNING; reels[k].speed = 0; }
+    pulledAt = millis(); phase = ROLLING; won = 0; note = "";
+    soundSlots(0, lookNow());
+  };
+  auto betBy = [&](int d) {
+    if (spinning()) return;
+    betAt = constrain(betAt + d, 0, BET_N - 1);
+    while (betAt > 0 && BETS[betAt] > balance()) betAt--;
+    bet = BETS[betAt]; phase = phase == SHOWING ? IDLE : phase;
+    soundTurn(d);
+  };
+  auto stopOrPull = [&](int k) {                // a press: stop this reel (or the next), else pull the lever
+    if (phase == ROLLING) { int s = k >= 0 ? k : nextToStop(); if (s >= 0) stopReel(s); }
+    else pull();
+  };
+
+  while (!leave) {
+    uint32_t now = millis(); float dt = min(0.08f, (now - last) / 1000.0f); last = now;
+    readCable(); readDeck();
+    // the input, as this board has it
+    int ev = cableEvent; cableEvent = 0;
+    if (ev == 1) stopOrPull(-1); else if (ev == 2) betBy(1); else if (ev == 3) betBy(-1); else if (ev == -1) leave = true;
+    else if (ev >= 10) { int k = ev - 10; if (phase == ROLLING) stopOrPull(k); else if (k == 0) betBy(-1); else if (k == 1) pull(); else betBy(1); }
+    if (board.threeKeys()) {                    // A B C: the bet, the lever, the bet -- and while turning, each its reel
+      for (int k = 0; k < 3; k++) {
+        bool down = !digitalRead(keyPin[k]);
+        if (down && !keyWas[k]) { keyAt[k] = now; keyFresh[k] = phase != ROLLING; if (!keyFresh[k]) stopOrPull(k); else if (k == 1) pull(); }
+        if (down && k == 0 && keyFresh[0] && now - keyAt[0] > 600) { leave = true; while (!digitalRead(keyPin[0])) delay(5); }
+        if (!down && keyWas[k] && keyFresh[k] && now - keyAt[k] > 30 && now - keyAt[k] < 600) { if (k == 0) betBy(-1); if (k == 2) betBy(1); }
+        if (down != keyWas[k]) idleSince = now;
+        keyWas[k] = down;
+      }
+    } else {
+      int step = dialStep();                    // the dial, or the T-Deck's ball
+      if (step) { betBy(step); idleSince = now; }
+      if (board.touch) {                        // the watch and the CoreS3
+        int g = watchGesture();
+        if (g == 1 || g == -1) betBy(g); else if (g == 2) stopOrPull(-1); else if (g == -2) leave = true;
+        if (g) idleSince = now;
+      }
+      if (board.encKey >= 0) {                  // the dial's press (the StickS3's front): the lever and the stops
+        // where it is the only button (the plain T-Embed, the Dial, the T-Deck's ball) a tap pulls on its release and
+        // held it leaves; beside a top button it pulls the moment it goes down
+        bool down = !digitalRead(board.encKey), single = !board.hasSideKey();
+        if (down && !frontWas) { frontAt = now; frontFresh = phase != ROLLING; if (!frontFresh) stopOrPull(-1); else if (!single) pull(); idleSince = now; }
+        if (down && single && frontFresh && now - frontAt > 700) { leave = true; while (!digitalRead(board.encKey)) delay(5); }
+        if (!down && frontWas && single && frontFresh && now - frontAt > 30 && now - frontAt <= 700) pull();
+        frontWas = down;
+      }
+      if (board.hasSideKey()) {                 // the top button leaves; the StickS3's side: a tap the bet, held leave
+        bool down = !digitalRead(board.sideKey);
+        if (down && !sideWas) sideAt = now;
+        if (!down && sideWas && now - sideAt > 30) {
+          if (board.noDial() && now - sideAt < 500) betBy(betAt + 1 < BET_N && BETS[betAt + 1] <= balance() ? 1 : -BET_N);
+          else leave = true;
+          idleSince = now;
+        }
+        sideWas = down;
+      }
+      int ch = deckTakeKey();                   // the T-Deck's and the Cardputer's keys
+      if (ch == 13 || ch == 10 || ch == ' ') stopOrPull(-1); else if (ch == 8) leave = true;
+      else if (ch == 0x11 || ch == 0x13 || ch == ';' || ch == ',') betBy(-1); else if (ch == 0x12 || ch == 0x14 || ch == '.' || ch == '/') betBy(1);
+      if (ch) idleSince = now;
+    }
+    if (leave) break;
+    // the reels: up to speed, on by themselves after a while, each slipping to its piece
+    for (int k = 0; k < 3; k++) {
+      Reel &r = reels[k];
+      if (r.state == SPINNING) {
+        r.speed = min(SPEED, r.speed + SPEED * dt * 5);
+        r.pos += r.speed * dt;
+        if (now - pulledAt > 1700u + 550u * k && (k == 0 || reels[k - 1].state != SPINNING)) stopReel(k);
+      } else if (r.state == STOPPING) {
+        float u = min(1.0f, (now - r.at) / (float)r.dur);
+        const float c1 = 1.4f, c3 = c1 + 1;      // eased out, a little past and back -- a reel's catch
+        float e = 1 + c3 * powf(u - 1, 3) + c1 * powf(u - 1, 2);
+        r.pos = r.from + (r.to - r.from) * e;
+        if (u >= 1) { r.pos = r.to; r.state = STILL; soundReelStop(k); flashAt = now; }
+      }
+      if ((int)floorf(r.pos) != lastTick[k] && r.state != STILL) { lastTick[k] = (int)floorf(r.pos); soundReelTick(); }
+    }
+    // all three stopped: what it came to
+    if (phase == ROLLING && !spinning()) {
+      phase = SHOWING; shownAt = now;
+      won = bet * PAYS[outcome];
+      unreported += won; sessionDelta += won;
+      draw();                                    // seen before it is heard: without PSRAM the phrase plays here
+      if (outcome == O_LOSE) { note = "NO WIN"; soundSlots(1, lookNow()); }                    // DRAFT
+      else if (PAYS[outcome] == 1) { note = "BET BACK"; for (int i = 0; i < 4; i++) soundCoin(i); }   // DRAFT
+      else soundSlots(outcome == O_JACK3 ? 4 : PAYS[outcome] >= 12 ? 3 : 2, lookNow());
+      if (unreportedSpins >= 10) reportNow();
+    }
+    // the money counted up (or down) to what it is now
+    long target = balance();
+    if (shownBalance != target) {
+      long d = target - shownBalance, stepBy = max(1L, labs(d) / 8);
+      shownBalance += d > 0 ? min(d, stepBy) : max(d, -stepBy);
+    }
+    // the season over the reels
+    for (int i = 0; i < bitN; i++) {
+      Bit &b = bits[i];
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if (b.y > f.bottom + 6 || b.y < f.top - 8 || b.x < f.x0 - 8 || b.x > f.x0 + 3 * f.reelW + 2 * f.gap + 8)
+        bitReset(b, f.x0, f.x0 + 3 * f.reelW, b.vy < 0 ? f.bottom + 4 : f.top, f.bottom, false, l);
+      if (b.vy < 0 && b.y < f.top - 6) b.y = f.bottom + 4;
+    }
+    // the lights
+    uint32_t a = colourA(), b = colourB();
+    int lights = phase == ROLLING ? CASINO_SPIN
+               : phase == SHOWING && now - shownAt < 2600 ? (outcome == O_JACK3 ? CASINO_JACKPOT : outcome == O_LOSE ? CASINO_LOSE : CASINO_WIN)
+               : CASINO_IDLE;
+    if (now - flashAt < 90) ledsCasino(CASINO_WIN, 0xFFFFFF, 0xFFFFFF);   // a reel caught: the lights flash once
+    else ledsCasino(lights, a, b);
+    if (phase == SHOWING && now - shownAt > 2600) phase = IDLE;
+    // the bridge hears the board is here (the loop's own HELLO is not running)
+    if (now - helloAt > HELLO_MS) { helloAt = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); }
+    soundIdle();
+    lastInput = now;
+    draw();
+    // left alone at rest as long as the board would sleep: it gets up from the table
+    if (!spinning() && cfg.sleepAfter > 0 && now - idleSince > (uint32_t)cfg.sleepAfter * 1000) break;
+    delay(4);
+  }
+  if (phase == ROLLING) { won = bet * PAYS[outcome]; unreported += won; sessionDelta += won; }   // left mid-pull: it still pays
+  reportNow();
+  putAway();
+  runPanel = nullptr;
+  ledsDance(-1, 0, 0);
+  lastInput = millis();
+  String how = sessionDelta > 0 ? "won " + String(sessionDelta) : sessionDelta < 0 ? "lost " + String(-sessionDelta) : "came out even";
+  return daemonName() + " " + how + " in " + String(spins) + (spins == 1 ? " spin" : " spins") + ".\n\nThe game's money changes at the next SYNC.";   // DRAFT
+}

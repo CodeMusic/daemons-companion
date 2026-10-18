@@ -16,6 +16,7 @@
 //   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
 //   GET  /api/meetings           C-60: who the daemon met nearby, and whether a SYNC has written it in
 //   GET  /api/device/art         C-36: the carried daemon's front sprite, as sixteen colours and four bits a pixel
+//                                (?slot=0..5: a party daemon's, for the CASINO's reels, C-149)
 //   GET  /api/device/commands    C-32: the device takes what the site sent it; POST /api/device/results answers each,
 //                                POST /api/device/routines says what routines it has
 //   GET  /api/device/link        C-32 (this machine only): linked or not, by which way, its routines and results;
@@ -966,6 +967,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return res.end(body);
       }
       if (req.method === "GET" && path === "/api/device/art") {   // C-36: the carried daemon, as a device draws it
+        const slot = url.searchParams.get("slot");                          // C-149: or a party daemon, for the CASINO's reels
+        if (slot !== null) {
+          const n = Number(slot);
+          const body = /^[0-5]$/.test(slot) ? partyPng(ecfg, (p) => p.slot === n) : null;
+          if (!body) return send(res, 404, { error: "no daemon in that party slot" });
+          return send(res, 200, { slot: n, ...deviceArt(body) });
+        }
         const mine = carriedDaemon(ecfg, store, deviceId);                  // C-80: this device's own
         const body = mine && partyPng(ecfg, (p) => p.away && p.personality === mine.personality);
         if (!body) return send(res, 404, { error: "no daemon is on the device" });

@@ -19,6 +19,9 @@ import { companionId, noteFor } from "./cards.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
+import { casinoPending, coinsFor } from "./casino.js";   // C-149
+import { holiday } from "./holidays.js";                 // C-149
+import { readIndex } from "./save/index.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -52,7 +55,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const sameGame = married.name === game.name && married.trainerId === game.trainerId && married.secretId === game.secretId;
   if (!sameGame)
     return { sameGame, firstSave, married, received: [], returned: [], refused: [], firstLink: false, recalledSeen: false, backup: null,
-             met: { companions: 0, newlySeen: 0, friendship: null }, grew: null };
+             met: { companions: 0, newlySeen: 0, friendship: null }, grew: null, casino: null };
   // C-15: what was met nearby since the last SYNC -- each species seen; +1 friendship for each companion met in a day
   // (the beacon's id changes hourly, so it is counted per hour seen), at most +5 a day. Small, as everything is (PLAN 7).
   const applied = Number(store.getSetting("met.applied") ?? 0);
@@ -75,17 +78,21 @@ export function sync(h: Host, store: Store, now = new Date()) {
     const p = pendingExp(store, d.personality);
     if (p.exp > 0) { grow.push({ personality: d.personality, exp: p.exp }); growLast.set(d.personality, p.last); }
   }
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow });
+  // C-149: what the CASINO won or lost on the boards since the last SYNC, into the money
+  const casino = casinoPending(store);
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written
   if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
   if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
+  if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
            met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship },
-           grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null };
+           grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null,
+           casino: casino.delta || casino.spins ? { won: casino.delta, spins: casino.spins, from: r.money?.from ?? p.money, to: r.money?.to ?? p.money } : null };
 }
 
 
@@ -200,11 +207,16 @@ export function grown(d: { species: number; exp: number; level: number; personal
 // `as`: an expression to draw it in instead of its own (GET /api/device/state?expression=, for a bench check)
 export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null, as: string | null = null) {
   const t = today(h, store, now);
-  let daemon = null, party: unknown[] = [];
+  let daemon = null, party: unknown[] = [], casino = null;
   const bytes = h.save.read();
   if (bytes) {
     const save = readSave(bytes);
     const d = carriedFor(store, readAway(bytes), deviceId);   // C-80: this device's own; C-103: a box's too
+    const profile = readProfile(bytes);
+    // C-149: the CASINO's coins -- the save's money and what waits for SYNC -- and the party's other daemons, its reels
+    casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot));
+    // C-149: OPUS's margin beside its INDEX entry, where the save holds OPUS and the margin has something to say
+    const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
@@ -217,7 +229,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
                       expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
-                      grown: grown(d, store) };
+                      grown: grown(d, store), margin };
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
@@ -226,6 +238,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
            settings: deviceSettings(store),
+           holiday: holiday(t.edition, now), casino,          // C-149: how a board dresses today; the CASINO's coins
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
            casts: castsForDevice(store, now),            // C-134: the last ten minutes' broadcasts; a board drops ids it has

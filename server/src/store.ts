@@ -57,6 +57,11 @@ export class Store {
       .all(id, `${personality} %`) as { id: number; detail: string }[]).map((r) => ({ id: r.id, gain: Number(r.detail.split(" ")[1]) || 0 }));
   }
 
+  // C-149: every interaction of one kind, oldest first (the CASINO's results)
+  kindAll(kind: string): { id: number; at: string; detail: string | null }[] {
+    return this.db.prepare("SELECT id, at, detail FROM interactions WHERE kind = ? ORDER BY id").all(kind) as any;
+  }
+
   // C-53: phones paired with this companion, each with its own key
   addPhone(token: string, name: string) { this.db.prepare("INSERT INTO phones (token, name, paired) VALUES (?, ?, ?)").run(token, name, new Date().toISOString()); }
   phoneFor(token: string): { name: string } | null {

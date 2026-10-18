@@ -12,6 +12,9 @@
 // at home. `refused` holds the one exception: a SYNC that would leave nobody home keeps the last one there (T-397) -- and, on the save the app is married to
 // (C-22), writes the companion's two flags in SaveBlock2 (DAEMONS T-370): LINKED, which shows SEND in the game, set;
 // and RECALLED, the game's note that a daemon came home without the app, read and cleared.
+//
+// C-149: and the CASINO's winnings and losses (`money`, a change): the money SaveBlock1 keeps, XOR SaveBlock2's
+// encryption key as the game keeps it, never below 0 or above 999999.
 import P from "../../data/profile_layout.json" with { type: "json" };
 import speciesJson from "../../data/species.json" with { type: "json" };
 import { expFor, levelFromExp } from "./growth.js";
@@ -23,7 +26,8 @@ import { LAYOUT, type Layout, ORDERS, readSlot, newer, readDaemon, sectionChecks
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }
 export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
                               changed: boolean; newlySeen: number[]; friendship: { nickname: string; from: number; to: number } | null;
-                              grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null }
+                              grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null;
+                              money: { from: number; to: number } | null }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
@@ -39,7 +43,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 }
 
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
-export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[] }, l: Layout = LAYOUT): SyncResult {
+export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -165,10 +169,23 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     for (let k = 28; k < l.pokemon_size; k++) { const b = at(home.recStart + k); if (out[b.byte] !== rec[k]) { out[b.byte] = rec[k]; touched.add(b.id); } }
     grew = { nickname: home.d.nickname, personality: g.personality, exp: exp - was, from, to };
   }
+  // C-149: the CASINO's change to the money -- the key is SaveBlock2's, the money SaveBlock1's (each where its sector sits)
+  let money: SyncResult["money"] = null;
+  if (opts.money) {
+    const key = new DataView(out.buffer, where.get(0)! + P.sb2.encryption_key).getUint32(0, true);
+    const bytes = [0, 1, 2, 3].map((k) => at(P.sb1.money + k));
+    const read = () => bytes.reduce((n, b, k) => n | (out[b.byte] << (8 * k)), 0) >>> 0;
+    const from = (read() ^ key) >>> 0, to = Math.max(0, Math.min(999999, from + Math.round(opts.money)));
+    if (to !== from) {
+      const sealed = (to ^ key) >>> 0;
+      bytes.forEach((b, k) => { out[b.byte] = (sealed >>> (8 * k)) & 0xff; touched.add(b.id); });
+      money = { from, to };
+    }
+  }
   for (const id of touched) {
     const off = where.get(id)!;
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money };
 }

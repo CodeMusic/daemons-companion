@@ -77,7 +77,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/progress") return ok(readProgress(save));        // C-128, C-129: GAME EVENTS and CALLOW SCHOOL
     if (path === "/api/play") {                                         // T-426: the instrument, held or not, and the songs
       const p = readPlay(save, h.edition);                              // ?preview=1, a bench check: as if held, every song learned
-      return ok(a.query?.preview === "1" ? { ...p, unlocked: true, songs: p.songs.map((x) => ({ ...x, learned: true, heard: false })) } : p);
+      const pv = a.query?.preview;                                      // (?preview=flute or harp: that instrument)
+      return ok(pv ? { ...p, instrument: pv === "flute" || pv === "harp" ? pv : p.instrument, unlocked: true,
+                       songs: p.songs.map((x) => ({ ...x, learned: true, heard: false })) } : p);
     }
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/guide") return ok(readGuide(save));              // C-145: the GUIDE, once found

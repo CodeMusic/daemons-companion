@@ -3,7 +3,7 @@
 // firmware/common/tunes.h by firmware/common/tunes.py -- never a copy of our own), on the day's note, on the square wave
 // they play. A file in the cache on the phone; a data URI on the site.
 import { Platform } from "react-native";
-import { sampledWav, wavPcm, type Instrument } from "./instrument";
+import { echoWav, sampledWav, wavPcm, type Instrument } from "./instrument";
 import { wav } from "./squareWave";
 
 const TUNES: { tunes: Record<string, [number, number][]>; wakeBase: number } = require("../server/data/tunes.json");
@@ -48,6 +48,23 @@ export const voiceName = () => voice?.name ?? "square";
 // any tune's bytes in the voice playing now (PLAY's songs too, songSound.ts)
 export const tuneWav = (notes: [number, number][], root: number, level = 1) =>
   voice ? sampledWav(notes, root, voice.pcm, voice.ins, level) : wav(notes, root, level);
+
+// T-426: any notes as a sound to play, named `id` (a file kept in the cache on the phone, a data URI on the site) -- one
+// note of PLAY, or (echo) a learned song with its echo; in the voice playing now
+export function soundOf(id: string, notes: [number, number][], root = 0, level = 1, echo = false): string {
+  const bytes = echo && voice ? echoWav(notes, root, voice.pcm, voice.ins, level) : tuneWav(notes, root, level);
+  return asUri(bytes, `${id}-${voiceName()}${echo ? "-echo" : ""}`);
+}
+function asUri(bytes: Uint8Array, name: string): string {
+  if (Platform.OS === "web") {
+    let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return `data:audio/wav;base64,${btoa(bin)}`;
+  }
+  const { File, Paths }: typeof import("expo-file-system") = require("expo-file-system");
+  const f = new File(Paths.cache, `${name.replace(/[^A-Za-z0-9_-]/g, "_")}.wav`);
+  if (!f.exists) { f.create(); f.write(bytes); }
+  return f.uri;
+}
 
 export function tuneSound(name: string, root: number, level = 1): string | null {
   const notes = TUNES.tunes[name];

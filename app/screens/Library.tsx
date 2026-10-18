@@ -9,6 +9,7 @@ import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
 import { Action, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
 import { useApi } from "../useApi";
+import { PlayBook } from "./Play";
 
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
   const [open, setOpen] = useState(false);
@@ -175,6 +176,8 @@ export function SongbookBook() {
     } catch { setPlaying(null); }
   };
   return (
+    <YStack gap={14}>
+    <PlayBook />{/* T-426: the save's own instrument, played here */}
     <Card>
       <Eyebrow>SONGBOOK</Eyebrow>
       {!songs.length ? <Small>The songs you learn in the game are kept here, to see and to hear.</Small> : songs.map((p) => (
@@ -190,6 +193,7 @@ export function SongbookBook() {
         </YStack>
       ))}
     </Card>
+    </YStack>
   );
 }
 

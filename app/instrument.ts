@@ -33,6 +33,22 @@ function note(pcm: Int16Array, ins: Instrument, midi: number, ms: number): Float
 
 // A tune ([semitones over `root`, ms], 127 a rest -- firmware/common/tunes.h) on the instrument, as a WAV file's bytes
 export function sampledWav(tune: [number, number][], root: number, pcm: Int16Array, ins: Instrument, level = 1): Uint8Array {
+  return pcmWav(normal(render(tune, root, pcm, ins), level), RATE);
+}
+// T-426: a learned song's echo, as the game plays it -- the tune, and the same tune again eight frames later at 40%
+export function echoWav(tune: [number, number][], root: number, pcm: Int16Array, ins: Instrument, level = 1): Uint8Array {
+  const a = render(tune, root, pcm, ins), lag = Math.round((RATE * 8) / 60), mix = new Float32Array(a.length + lag);
+  for (let i = 0; i < a.length; i++) { mix[i] += a[i]; mix[i + lag] += 0.4 * a[i]; }
+  return pcmWav(normal(mix, level), RATE);
+}
+function normal(mix: Float32Array, level: number): Float32Array {
+  let peak = 0;
+  for (let i = 0; i < mix.length; i++) peak = Math.max(peak, Math.abs(mix[i]));
+  const k = peak > 0 ? (0.7 * level) / Math.max(peak, 0.7) : 0;   // never louder than the sample, never clipped
+  for (let i = 0; i < mix.length; i++) mix[i] *= k;
+  return mix;
+}
+function render(tune: [number, number][], root: number, pcm: Int16Array, ins: Instrument): Float32Array {
   const starts: number[] = [];
   let t = 0;
   for (const [, ms] of tune) { starts.push(t); t += Math.round((RATE * ms) / 1000); }
@@ -42,11 +58,7 @@ export function sampledWav(tune: [number, number][], root: number, pcm: Int16Arr
     const s = note(pcm, ins, root + semis, ms);
     for (let i = 0; i < s.length && starts[n] + i < mix.length; i++) mix[starts[n] + i] += s[i];
   });
-  let peak = 0;
-  for (let i = 0; i < mix.length; i++) peak = Math.max(peak, Math.abs(mix[i]));
-  const k = peak > 0 ? (0.7 * level) / Math.max(peak, 0.7) : 0;   // never louder than the sample, never clipped
-  for (let i = 0; i < mix.length; i++) mix[i] *= k;
-  return pcmWav(mix, RATE);
+  return mix;
 }
 
 // The samples of a mono 16-bit WAV file (its "data" chunk)

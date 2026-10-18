@@ -95,9 +95,31 @@ def main():
     ap.add_argument("--server", default="http://127.0.0.1:4730")
     ap.add_argument("--every", type=float, default=5.0, help="seconds between state updates")
     a = ap.parse_args()
-    # The board can be unplugged at any time: say so, wait for it, and carry on when it is back.
+    # The board can be unplugged at any time: say so, wait for it, and carry on when it is back -- the SAME board. Another
+    # plugged in under the port's name (or first in the list) is not it: a bridge that took the Tab5 for the Cardputer
+    # once held its port through a flash (2026-10-18). So the board is known by its USB serial number from the start.
+    import serial.tools.list_ports as list_ports
+    def serial_of(port):
+        for x in list_ports.comports():
+            if x.device == port:
+                return (x.serial_number or "").upper()
+        return ""
+    def port_of(sn):
+        for x in list_ports.comports():
+            if sn and (x.serial_number or "").upper() == sn:
+                return x.device
+        return None
+    want, waiting = None, False
     while True:
-        port = a.port or find_port(wait=True)
+        port = (port_of(want) if want else None) or a.port or find_port(wait=True)
+        sn = serial_of(port)
+        if want and sn != want:
+            if not waiting:
+                print("usb_bridge: %s is another board now (%s) -- waiting for %s" % (port, sn or "nothing", want), flush=True)
+                waiting = True
+            time.sleep(2)
+            continue
+        want, waiting = want or sn, False
         try:
             bridge(a, port)
         except serial.SerialException:

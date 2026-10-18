@@ -5,6 +5,7 @@
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
 import { DenStage } from "./Den";                    // C-113
+import { songSound } from "./songSound";              // C-156: the SONGBOOK's songs, played
 import { BETS, OUTCOMES, PAYS, draw, piecesFor, resultDetail, tableAct, type Piece } from "../server/src/slots";   // C-155: the boards' table
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "./deviceSprites";   // C-130
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1097,7 +1098,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
                                                                    unread?: boolean; place?: string | null; link?: string | null; kind?: string;
-                                                                   key?: string | null; notes?: string[] | null }[] }[];
+                                                                   key?: string | null; notes?: string[] | null; frames?: number[] | null }[] }[];
                   keyColours?: string[]; outline?: string };   // T-417: the twelve key colours, C..B, and the heads' outline
 
 // C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
@@ -1492,7 +1493,7 @@ const SCREEN: { scroller: { scrollTo?: (o: { y: number; animated: boolean }) => 
 const BOOK = { boards: "#161618", page: "#282a2e", edge: "#3e4046", ink: "#e6eaee", faint: "#78808a", cyan: "#00c8ff" };
 
 function LibraryScreen() {
-  const [book, setBook] = useState<"school" | "guide" | null>(null);
+  const [book, setBook] = useState<"school" | "guide" | "notebook" | "songbook" | "stream" | null>(null);
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {
@@ -1503,6 +1504,9 @@ function LibraryScreen() {
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
   if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
+  if (book === "notebook") return <YStack gap={14}>{back}<NotebookCard skip="SONGBOOK" /></YStack>;   // C-156: moved here from YOU
+  if (book === "songbook") return <YStack gap={14}>{back}<SongbookBook /></YStack>;
+  if (book === "stream") return <YStack gap={14}>{back}<StreamBook /></YStack>;
   const s = pr?.school;
   const chapters = g?.sections?.reduce((n, x) => n + x.entries.length, 0) ?? 0;
   return (
@@ -1538,7 +1542,103 @@ function LibraryScreen() {
           </XStack>
         </Card>
       ) : null}
+      <ShelfBook colour="#7a5a2e" spine="NOTES" title="NOTEBOOK" about="The pages you have found, read as the game keeps them." onPress={() => setBook("notebook")} />
+      <ShelfBook colour="#2d6a74" spine="♪" title="SONGBOOK" about="The songs you have learned, in their colours, to hear again." onPress={() => setBook("songbook")} />
+      <ShelfBook colour="#3d4f8a" spine="STREAM" title="STREAM" about="Every lesson a MARK or a ROOT has opened." onPress={() => setBook("stream")} />
     </YStack>
+  );
+}
+
+// C-156: a book on LIBRARY's shelf -- a coloured spine, its name, a line about it
+function ShelfBook({ colour, spine, title, about, onPress }: { colour: string; spine: string; title: string; about: string; onPress: () => void }) {
+  return (
+    <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={onPress}>
+      <XStack gap={14} alignItems="center">
+        <YStack width={72} height={48} borderRadius={3} backgroundColor={colour} alignItems="center" justifyContent="center">
+          <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color="#fbfaf6">{spine}</Text>
+        </YStack>
+        <YStack flex={1} gap={2}>
+          <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{title}</Text>
+          <Small>{about}</Small>
+        </YStack>
+        <Text fontSize={18} color="$color10">›</Text>
+      </XStack>
+    </Card>
+  );
+}
+
+// C-156 (the user, 2026-10-18: "songbook should have a section in library where u see the color notes and can ... play to
+// hear ones you've learned"): every song the save has learned, its key and motif on the staff in their colours, and PLAY
+// for it on the square wave the boards use, each note held as the game holds it (notebook.json's frames). DRAFT.
+function SongbookBook() {
+  const [n, setN] = useState<Notebook | null>(null);
+  const player = useAudioPlayer(null);
+  const [playing, setPlaying] = useState<string | null>(null);
+  useEffect(() => { api<Notebook>("/api/notebook").then(setN).catch(() => {}); }, []);
+  if (!n) return <Small>Reading your save…</Small>;
+  const songs = n.sections.find((s) => s.name === "SONGBOOK")?.pages.filter((p) => p.kind === "song" && p.notes?.length) ?? [];
+  const play = async (p: (typeof songs)[number]) => {
+    try {
+      await setAudioModeAsync({ playsInSilentMode: true });
+      player.replace({ uri: songSound(p.title, p.notes!, p.frames) }); player.play();
+      setPlaying(p.title);
+      const ms = (p.frames ?? []).reduce((a, f) => a + f, 0) * 1000 / 60 || p.notes!.length * 300;
+      setTimeout(() => setPlaying((t) => (t === p.title ? null : t)), ms + 200);
+    } catch { setPlaying(null); }
+  };
+  return (
+    <Card>
+      <Eyebrow>SONGBOOK</Eyebrow>
+      {!songs.length ? <Small>The songs you learn in the game are kept here, to see and to hear.</Small> : songs.map((p) => (
+        <YStack key={p.title} borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={4}>
+          <XStack alignItems="center" justifyContent="space-between" gap={10}>
+            <YStack flex={1}>
+              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{p.title}</Text>
+              {p.about ? <Small>{p.about}</Small> : null}
+            </YStack>
+            <Action label={playing === p.title ? "♪ …" : "PLAY"} ink="#fbfaf6" onPress={() => play(p)} />
+          </XStack>
+          <SongStaff keyName={p.key!} notes={p.notes!} colours={n.keyColours} outline={n.outline} />
+        </YStack>
+      ))}
+    </Card>
+  );
+}
+
+// C-156: STREAM -- every lesson the save has opened, a MARK's (its BENCHMARK) and a ROOT's (its understanding), read as the
+// MARK and ROOT pages read them: the first box leading, the rest as points. DRAFT.
+function StreamBook() {
+  const [p, setP] = useState<Profile | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  useEffect(() => { api<Profile>("/api/profile").then(setP).catch(() => {}); }, []);
+  if (!p) return <Small>Reading your save…</Small>;
+  const parts = (lesson: string[] | null | undefined, name: string) => (lesson ?? []).flatMap(reflow)
+    .map((l, k) => (k === 0 && l.toUpperCase().startsWith(name.toUpperCase() + ".") ? l.slice(name.length + 1).trim() : l)).filter(Boolean);
+  const items = [
+    ...MARKS.marks.map((m, i) => ({ id: `m${i}`, held: !!p.marks?.[i], title: m.title.toUpperCase(), from: `the BENCHMARK in ${m.found}`, paras: parts(m.lesson, m.title) })),
+    ...MARKS.understandings.map((u, i) => ({ id: `u${i}`, held: !!p.roots?.[i], title: u.name, from: u.found, paras: parts(u.lesson, u.name) })),
+  ].filter((x) => x.held && x.paras.length);
+  return (
+    <Card>
+      <Eyebrow>STREAM</Eyebrow>
+      {!items.length ? <Small>Each MARK and each ROOT opens a lesson; they are kept here.</Small> : items.map((x) => (
+        <YStack key={x.id} borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
+          <XStack onPress={() => setOpen(open === x.id ? null : x.id)} justifyContent="space-between" alignItems="center" cursor="pointer">
+            <YStack flex={1}>
+              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{x.title}</Text>
+              <Small>{x.from}</Small>
+            </YStack>
+            <Text fontSize={18} color="$color10">{open === x.id ? "−" : "+"}</Text>
+          </XStack>
+          {open === x.id ? (
+            <YStack gap={8}>
+              <Para lead>{x.paras[0]}</Para>
+              {x.paras.length > 1 ? <Points lines={x.paras.slice(1)} /> : null}
+            </YStack>
+          ) : null}
+        </YStack>
+      ))}
+    </Card>
   );
 }
 
@@ -1711,7 +1811,7 @@ function NotebookPage({ page, colours, outline }: { page: Notebook["sections"][n
   );
 }
 
-function NotebookCard() {
+function NotebookCard({ skip }: { skip?: string } = {}) {
   const [n, setN] = useState<Notebook | null>(null);
   useEffect(() => { api<Notebook>("/api/notebook").then(setN).catch(() => {}); }, []);
   if (!n) return null;
@@ -1720,7 +1820,7 @@ function NotebookCard() {
       <Eyebrow>NOTEBOOK</Eyebrow>
       {!n.held ? <Small>Not carried yet.</Small>
         : !n.sections.length ? <Small>Nothing filed in it yet.</Small>
-        : n.sections.map((s) => (
+        : n.sections.filter((s) => s.name !== skip).map((s) => (
             <YStack key={s.name} marginTop={10}>
               <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10">{s.name}</Text>
               {s.pages.map((pg, i) => <NotebookPage key={`${s.name}-${i}`} page={pg} colours={n.keyColours} outline={n.outline} />)}
@@ -1791,7 +1891,6 @@ function ProfileScreen() {
       </Card>
       {p.groves ? <GrovesCard found={p.groves} /> : null}
       <EventsCard />
-      <NotebookCard />
     </YStack>
   );
 }
@@ -2826,7 +2925,10 @@ function RelayCard({ ink }: { ink: string }) {
   );
 }
 
-const TABS = ["today", "goals", "daemon", "index", "device", "home", "profile", "library", "settings"] as const;   // C-129: SCHOOL; C-139: HOME; C-145: SCHOOL into the LIBRARY
+// C-156 (the user, 2026-10-18, B of the mockup): six tabs, SETTINGS behind the gear. The INDEX is DAEMON's, the NOTEBOOK
+// LIBRARY's, PROFILE is YOU, and DEVICE and HOME are PLACES together. ("settings" is a screen, not a tab.)
+const TABS = ["today", "daemon", "goals", "library", "you", "places", "settings"] as const;
+const SHOWN_TABS = TABS.filter((t) => t !== "settings");
 
 // The tabs, scrolled sideways when they do not all fit (nine do not, on a phone): a › at the right edge says there are more
 // and takes you to them, and goes once the last is in view
@@ -2834,19 +2936,22 @@ function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (ty
   const strip = useRef<any>(null);
   const size = useRef({ seen: 0, whole: 0, at: 0 });
   const [more, setMore] = useState(false);
+  const [narrow, setNarrow] = useState(false);              // C-156: a phone's width -- the six share it, a size smaller
   const measure = () => { const z = size.current; setMore(z.whole - z.seen - z.at > 4); };
   return (
     <YStack position="relative">
       <ScrollView ref={strip} horizontal showsHorizontalScrollIndicator={false} scrollEventThrottle={32}
-                  onLayout={(e: any) => { size.current.seen = e.nativeEvent.layout.width; measure(); }}
+                  contentContainerStyle={narrow ? { flexGrow: 1 } : undefined}
+                  onLayout={(e: any) => { size.current.seen = e.nativeEvent.layout.width; setNarrow(size.current.seen < 560); measure(); }}
                   onContentSizeChange={(w: number) => { size.current.whole = w; measure(); }}
                   onScroll={(e: any) => { size.current.at = e.nativeEvent.contentOffset.x; measure(); }}>
-        <XStack gap={20} marginTop={12} paddingRight={more ? 28 : 0} role="tablist">
-          {TABS.map((t) => (
+        <XStack gap={narrow ? 10 : 20} marginTop={12} paddingRight={more ? 28 : 0} role="tablist"
+                flexGrow={narrow ? 1 : 0} justifyContent={narrow ? "space-between" : "flex-start"}>
+          {SHOWN_TABS.map((t) => (
             <YStack key={t} paddingVertical={10} borderBottomWidth={3} cursor="pointer" role="tab"
                     aria-selected={tab === t} borderBottomColor={tab === t ? "$color9" : "transparent"}
                     onPress={() => setTab(t)}>
-              <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} fontWeight={tab === t ? "700" : "400"}
+              <Text fontFamily="$mono" fontSize={narrow ? 11 : 12} letterSpacing={narrow ? 0.6 : 1.5} fontWeight={tab === t ? "700" : "400"}
                     color={tab === t ? "$color12" : "$color10"}>{t.toUpperCase()}</Text>
             </YStack>
           ))}
@@ -2936,6 +3041,10 @@ function Shell() {
               <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
             </YStack>
           ) : null}
+          <YStack marginLeft={OFFLINE && !showToast ? 10 : "auto"} padding={4} cursor="pointer" role="button" aria-label="settings"
+                  onPress={() => setTab(tab === "settings" ? "today" : "settings")}>
+            <Text fontSize={20} lineHeight={22} color={tab === "settings" ? "$color12" : "$color10"}>⚙</Text>
+          </YStack>
         </XStack>
         <TabStrip tab={tab} setTab={setTab} />
       </YStack>
@@ -2944,10 +3053,8 @@ function Shell() {
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
         {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
-        {tab === "index" ? <IndexScreen ink={ink} /> : null}
-        {tab === "device" ? <DeviceScreen ink={ink} /> : null}
-        {tab === "home" ? <HomeScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
-        {tab === "profile" ? <ProfileScreen /> : null}
+        {tab === "places" ? <YStack gap={14}><DeviceScreen ink={ink} /><HomeScreen ink={ink} goSettings={() => setTab("settings")} /></YStack> : null}
+        {tab === "you" ? <ProfileScreen /> : null}
         {tab === "library" ? <LibraryScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
         {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}

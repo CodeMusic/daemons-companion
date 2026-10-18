@@ -108,9 +108,41 @@ export function SavePathSettings({ ink }: { ink: string }) {
         </XStack>
         {note ? <Small>{note}</Small> : null}
       </Card>
+      <WeatherCard ink={ink} />
       <TalkSettingsCard ink={ink} />
       <LeaveCompanionCard ink={ink} />
     </YStack>
+  );
+}
+
+// C-158 (the user, 2026-10-18: real weather, "a city set on the site"): the city whose weather the devices and the
+// CASINO's luck follow (GET/POST /api/weather; Open-Meteo, no account). "" forgets it. Every word DRAFT.
+type Weather = { place: { name: string; country: string } | null; now: { kind: string; tempC: number; city: string } | null };
+export function WeatherCard({ ink }: { ink: string }) {
+  const [w, setW] = useState<Weather | null>(null);
+  const [typed, setTyped] = useState(""), [said, setSaid] = useState("");
+  useEffect(() => { api<Weather>("/api/weather").then((x) => { setW(x); setTyped(x.place?.name ?? ""); }).catch(() => {}); }, []);
+  if (!w) return null;
+  const save = async (city: string) => {
+    setSaid("Asking…");
+    try { const x = await api<Weather>("/api/weather", { city }); setW(x); setTyped(x.place?.name ?? ""); setSaid(x.place ? "" : "Forgotten: no weather now."); }
+    catch (e) { setSaid((e as Error).message); }
+  };
+  return (
+    <Card>
+      <Eyebrow>THE WEATHER</Eyebrow>
+      <Small>Your devices follow the real weather of one city, and so does the CASINO's luck: a clear sky or snow a little
+        kinder, rain or a storm a little less.</Small>
+      {w.place ? <Text fontFamily="$mono" fontSize={14} color="$color12">
+        {`${w.place.name}, ${w.place.country}${w.now ? ` · ${w.now.kind}, ${Math.round(w.now.tempC)}°C` : ""}`}</Text> : <Small color="$color10">No city set.</Small>}
+      <XStack gap={8} alignItems="center" flexWrap="wrap" marginTop={4}>
+        <Input flexGrow={1} minWidth={180} value={typed} onChangeText={setTyped} onSubmitEditing={() => save(typed)}
+               placeholder="A city" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+        <Action label="Set" onPress={() => save(typed)} ink={ink} />
+        {w.place ? <Action label="Forget" onPress={() => save("")} ink={ink} /> : null}
+      </XStack>
+      {said ? <Small>{said}</Small> : null}
+    </Card>
   );
 }
 export function VersionCard({ ink }: { ink: string }) {

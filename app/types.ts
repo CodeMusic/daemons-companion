@@ -55,8 +55,17 @@ export type Act = { code: string; label: string; seen: string; reply: string };
 // the site -- THE CASINO, played as a device of its own (on the phone the widget's, so its JACK is the widget's daemon;
 // the site keeps an id of its own), by server/src/slots.ts, the boards' own table; and the party's game routines.
 // Every word DRAFT.
+// C-158: why the CASINO's odds are what they are -- a part of the day's luck (-1..+1), or the string's (in points of return)
+export type Reason = { source: string; effect: number; why: string };
+// THE HOUSE (GET /api/casino): the day's luck and why, and everyone at the reels with the odds they last said
+export type CasinoHouse = { context: { luck: number; rtp: number; reasons: Reason[] };
+                            players: { name: string; device: string; species: number; at: string;
+                                       odds: { rtp: number; reach: number; dry: number; streak: number } | null; reasons: Reason[] }[];
+                            world?: { watch: string; weather: { kind: string; tempC: number; city: string } | null };
+                            holiday?: { name: string } | null };
 export type PlayerState = { season: string; day?: { note: string } | null; holiday?: { name: string; look: string; colours: string[]; hat: string; flip: boolean } | null; daemon: { slot: number; nickname: string } | null;
-                     casino: { balance: number; friends: number[]; table: { name: string; device: string }[] } | null;
+                     casino: { balance: number; friends: number[]; table: { name: string; device: string }[];
+                               reel?: { species: number; name: string }[]; context?: { luck: number; rtp: number; reasons: Reason[] } } | null;   // C-158
                      party: { name: string; routines: { name: string; colour: string }[] }[] };
 
 // C-23: the PROFILE -- whichever save was synced: who it belongs to and how far it has gone, as the trainer card says.

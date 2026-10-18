@@ -41,6 +41,13 @@ static void send(const Note *notes, int n, int base, float level, float duty = 0
   xQueueSend(queue, &t, 0);                    // a full queue drops the sound, never the tap
 }
 
+// C-156: a SONGBOOK song on the square voice the tunes use, each note its MIDI number for its milliseconds (up to 14)
+void soundSong(const int *midi, const int *ms, int n) {
+  Note notes[14]; n = n > 14 ? 14 : n;
+  for (int i = 0; i < n; i++) notes[i] = { (int8_t)(midi[i] > 126 ? 126 : midi[i]), (uint16_t)ms[i] };
+  send(notes, n, 0, 1.0f);
+}
+
 void soundBegin() {
   M5.Speaker.begin();
   queue = xQueueCreate(4, sizeof(Tune));

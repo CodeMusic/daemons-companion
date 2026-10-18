@@ -26,14 +26,16 @@ static uint32_t dayHex = 0x315A62;
 
 // The pages, in the tabs' order; P_COUNT sizes everything that has one entry a page (a new page adds its name, its NEEDS
 // and its DRAW below, and the static_asserts say so if one is missed)
-enum { P_TODAY, P_GOALS, P_DAEMON, P_INDEX, P_DEVICES, P_HOME, P_PROFILE, P_SCHOOL, P_SETTINGS, P_COUNT };   // C-131 PROFILE, C-137 SCHOOL, C-139 HOME
+// C-156 (the user, 2026-10-18, B of the mockup): TODAY the home page, DAEMON with the INDEX in it, the LIBRARY with the
+// NOTEBOOK, SONGBOOK and STREAM, YOU (PROFILE), PLACES (DEVICES and HOME); SETTINGS stays a tab here (no gear in the bar)
+enum { P_TODAY, P_DAEMON, P_GOALS, P_LIBRARY, P_YOU, P_PLACES, P_SETTINGS, P_COUNT };
 static lv_obj_t *tabs, *pages[P_COUNT], *statusLeft, *statusRight, *overlay = nullptr;
-static const char *TAB_NAMES[] = { "TODAY", "GOALS", "DAEMON", "INDEX", "DEVICES", "HOME", "PROFILE", "LIBRARY", "SETTINGS" };
+static const char *TAB_NAMES[] = { "TODAY", "DAEMON", "GOALS", "LIBRARY", "YOU", "PLACES", "SETTINGS" };
 static_assert(sizeof TAB_NAMES / sizeof *TAB_NAMES == P_COUNT, "a name for every page");
 static uint32_t drawnAt[P_COUNT] = { 0 };            // 0: draw the page again
 // C-98: what each page shows, so a change to anything else leaves it alone (a rebuilt page flickered)
-static const uint32_t NEEDS[] = { K_TODAY, K_GOALS, K_STATE | K_PARTY | K_ART | K_MESSAGE, K_INDEX | K_ART, K_DEVICES, K_HOME,
-                                  K_PROFILE | K_ART, K_PROFILE, K_NETS | K_MESSAGE | K_TODAY };
+static const uint32_t NEEDS[] = { K_TODAY | K_STATE | K_PROFILE | K_ART, K_STATE | K_PARTY | K_ART | K_MESSAGE | K_INDEX, K_GOALS,
+                                  K_PROFILE, K_PROFILE | K_ART, K_DEVICES | K_HOME, K_NETS | K_MESSAGE | K_TODAY };
 static_assert(sizeof NEEDS / sizeof *NEEDS == P_COUNT, "what every page needs");
 static int indexPage = 0, goalAt = 0;
 
@@ -211,7 +213,7 @@ static void tapDone(lv_event_t *e) {
   netSend("POST", "/api/steps/" + String(id) + "/done", "{}");
 }
 
-static void drawToday(lv_obj_t *p) {
+static void drawTodayDay(lv_obj_t *p) {
   JsonDocument t = newDoc();
   if (!kept("today", t)) { label(p, "Nothing kept yet. Join a network and pair in SETTINGS.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }
   JsonObject day = t["day"];
@@ -569,7 +571,7 @@ static void drawDaemon(lv_obj_t *p) {
 
 // ---- INDEX ------------------------------------------------------------------------------------------------------------
 static const int PER_PAGE = 18;
-static void tapIndexPage(lv_event_t *e) { indexPage += (int)(long)lv_event_get_user_data(e); drawnAt[P_INDEX] = 0; }
+static void tapIndexPage(lv_event_t *e) { indexPage += (int)(long)lv_event_get_user_data(e); drawnAt[P_DAEMON] = 0; }
 
 static int listening = 0;                          // the species LISTEN reads
 static const char *listenWord() { return netVoice == V_MAKING ? "MAKING THE VOICE...  STOP" : netVoice == V_SPEAKING ? "HUSH" : LV_SYMBOL_VOLUME_MAX "  LISTEN"; }   // DRAFT
@@ -764,7 +766,7 @@ static void tapHome(lv_event_t *e) {
     String json; serializeJson(h, json);
     keep("home", json);
   }
-  drawnAt[P_HOME] = 0;
+  drawnAt[P_PLACES] = 0;
   netHomeAct(t.id, t.action, before);
 }
 
@@ -808,7 +810,7 @@ static void drawThing(lv_obj_t *p, JsonObject th) {
   if (can("warmer")) homeButton(keys, LV_SYMBOL_PLUS, id, "warmer", false);
 }
 
-static void sentHomeAsk(const String &text) { if (text.length()) { netHomeAsk(text); drawnAt[P_HOME] = 0; } }
+static void sentHomeAsk(const String &text) { if (text.length()) { netHomeAsk(text); drawnAt[P_PLACES] = 0; } }
 static void tapHomeAsk(lv_event_t *) { askText("Ask the home -- Home Assistant's assistant answers", "", false, false, sentHomeAsk); }
 
 static void drawHome(lv_obj_t *p) {
@@ -1276,7 +1278,11 @@ static void drawProfile(lv_obj_t *p) {
     }
   }
   button(p, "GAME EVENTS", tapEvents, nullptr, false);
-  // the NOTEBOOK: the game's sections, a page a tap; a page not yet opened in the game is marked
+}
+
+// C-156: the NOTEBOOK, now on the LIBRARY's shelf: the game's sections, a page a tap; a page not yet opened in the game is
+// marked. The SONGBOOK's section is the SONGBOOK's own.
+static void notebookCard(lv_obj_t *p) {
   lv_obj_t *n = card(p);
   label(n, "NOTEBOOK", &lv_font_montserrat_20, QUIET);
   JsonDocument nb = newDoc();
@@ -1284,6 +1290,7 @@ static void drawProfile(lv_obj_t *p) {
   JsonArray secs = nb["sections"].as<JsonArray>();
   if (!secs.size()) { label(n, "Nothing filed in it yet.", &lv_font_montserrat_20, INK); return; }
   for (int s = 0; s < (int)secs.size(); s++) {
+    if (String((const char *)(secs[s]["name"] | "")) == "SONGBOOK") continue;
     label(n, secs[s]["name"] | "", &lv_font_montserrat_20, DAY);
     lv_obj_t *pr2 = row(n);
     JsonArray pages = secs[s]["pages"].as<JsonArray>();
@@ -1503,9 +1510,128 @@ static void drawSettings(lv_obj_t *p) {
   if (net.message.length()) label(p, net.message, &lv_font_montserrat_28, DAY, LV_PCT(100));
 }
 
+// ---- C-156: the pages rearranged ---------------------------------------------------------------------------------------
+static void goTab(lv_event_t *e) {
+  int i = (int)(long)lv_event_get_user_data(e);
+  closeOverlay(); lv_tabview_set_active(tabs, i, LV_ANIM_OFF); lv_obj_send_event(tabs, LV_EVENT_VALUE_CHANGED, nullptr);
+}
+// TODAY: the day and the one thing, then a glance at each place, each opening it (every word DRAFT)
+static void drawToday(lv_obj_t *p) {
+  drawTodayDay(p);
+  JsonDocument st = newDoc(), pr = newDoc(), nb = newDoc(), b = newDoc(), acts = newDoc();
+  if (kept("state", st) && !st["daemon"].isNull()) {
+    lv_obj_t *c = card(p), *r = row(c);
+    picture(r, "p" + String((int)(st["daemon"]["slot"] | 0)), 384);
+    lv_obj_t *t = column(r, 420);
+    label(t, "YOUR DAEMON", &lv_font_montserrat_16, QUIET);
+    label(t, String((const char *)(st["daemon"]["nickname"] | "")), &lv_font_montserrat_28, INK);
+    button(t, "CARE", goTab, (void *)(long)P_DAEMON, false);
+  }
+  if (kept("broadcasts", b)) {
+    kept("acts", acts);
+    String line;
+    for (JsonObject c : b["items"].as<JsonArray>()) if (!(c["mine"] | false)) line = castLine(c, acts);
+    if (line.length()) { lv_obj_t *c = card(p); label(c, "NEARBY", &lv_font_montserrat_16, QUIET); label(c, line, &lv_font_montserrat_28, INK, LV_PCT(100)); }
+  }
+  if (kept("profile", pr)) {
+    lv_obj_t *c = card(p);
+    label(c, "YOUR GAME", &lv_font_montserrat_16, QUIET);
+    int marks = 0; for (JsonVariant m : pr["marks"].as<JsonArray>()) marks += m.as<bool>() ? 1 : 0;
+    String saved = pr["savedIn"].isNull() ? String("Saved") : "Saved in " + String((const char *)(pr["savedIn"]["place"] | ""));
+    label(c, saved + "  -  " + String(marks) + " MARKS  -  " + String((long)(pr["money"] | 0L)), &lv_font_montserrat_28, INK, LV_PCT(100));
+    long won = pr["casino"]["pending"] | 0L;
+    if (won) label(c, "The CASINO: " + String(won > 0 ? "+" : "") + String(won) + " at the next SYNC.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+    button(c, "OPEN", goTab, (void *)(long)P_YOU, false);
+  }
+  if (kept("notebook", nb)) {
+    int unread = 0, songs = 0;
+    for (JsonObject sec : nb["sections"].as<JsonArray>())
+      for (JsonObject pg : sec["pages"].as<JsonArray>()) { if (pg["unread"] | false) unread++; if (String((const char *)(pg["kind"] | "")) == "song") songs++; }
+    if (unread || songs) {
+      lv_obj_t *c = card(p);
+      label(c, "IN THE LIBRARY", &lv_font_montserrat_16, QUIET);
+      String l = unread ? String(unread) + " NOTEBOOK page" + (unread == 1 ? "" : "s") + " not yet read" : String("");
+      if (songs) l += String(l.length() ? "  -  " : "") + String(songs) + " song" + (songs == 1 ? "" : "s") + " in the SONGBOOK";
+      label(c, l, &lv_font_montserrat_28, INK, LV_PCT(100));
+      button(c, "OPEN", goTab, (void *)(long)P_LIBRARY, false);
+    }
+  }
+}
+// DAEMON: Yours (its den, care, the party, SYNC, NEARBY), the INDEX, the Routines (THE CASINO)
+static int daemonSeg = 0;
+static void tapDaemonSeg(lv_event_t *e) { daemonSeg = (int)(long)lv_event_get_user_data(e); drawnAt[P_DAEMON] = 0; }
+static void drawDaemonPage(lv_obj_t *p) {
+  lv_obj_t *r = row(p);
+  static const char *SEGS[] = { "YOURS", "INDEX", "ROUTINES" };
+  for (int i = 0; i < 3; i++) button(r, SEGS[i], tapDaemonSeg, (void *)(long)i, i == daemonSeg);
+  if (daemonSeg == 1) { drawIndex(p); return; }
+  if (daemonSeg == 2) {
+    lv_obj_t *c = card(p);
+    label(c, "ROUTINES", &lv_font_montserrat_20, QUIET);
+    button(c, "THE CASINO", tapCasino);
+    return;
+  }
+  drawDaemon(p);
+}
+// PLACES: the boards and the home together
+static void drawPlaces(lv_obj_t *p) { drawDevices(p); drawHome(p); }
+// the LIBRARY's SONGBOOK: each learned song opens its staff, and PLAY plays it on the speaker (frames, 60 a second)
+static void tapSong(lv_event_t *e) {
+  long v = (long)lv_event_get_user_data(e);
+  JsonDocument nb = newDoc();
+  if (!kept("notebook", nb)) return;
+  JsonObject pg = nb["sections"][(int)(v >> 8)]["pages"][(int)(v & 0xFF)];
+  int midi[14], ms[14], n = 0;
+  JsonArray notes = pg["notes"].as<JsonArray>(), frames = pg["frames"].as<JsonArray>();
+  for (int i = 0; i < (int)notes.size() && n < 14; i++) {
+    int pc; char acc; int step = staffStep(notes[i].as<String>(), pc, acc);
+    if (step == 99) continue;
+    String nn = notes[i].as<String>(); int oct = nn.substring(acc ? 2 : 1).toInt();
+    midi[n] = 12 * (oct + 1) + pc - (acc == 'b' && pc == 11 ? 12 : 0) + (acc == '#' && pc == 0 ? 12 : 0);
+    int f = frames.size() > (size_t)i ? (int)(frames[i] | 15) : (i == (int)notes.size() - 1 ? 40 : 15);
+    ms[n] = f * 1000 / 60; n++;
+  }
+  soundSong(midi, ms, n);
+}
+static void songbookCard(lv_obj_t *p) {
+  JsonDocument nb = newDoc();
+  lv_obj_t *c = card(p);
+  label(c, "SONGBOOK", &lv_font_montserrat_20, QUIET);
+  if (!kept("notebook", nb)) return;
+  JsonArray secs = nb["sections"].as<JsonArray>();
+  int found = 0;
+  for (int s = 0; s < (int)secs.size(); s++) {
+    if (String((const char *)(secs[s]["name"] | "")) != "SONGBOOK") continue;
+    JsonArray pages = secs[s]["pages"].as<JsonArray>();
+    for (int k = 0; k < (int)pages.size() && k < 256; k++) {
+      if (!pages[k]["notes"].as<JsonArray>().size()) continue;
+      lv_obj_t *r = row(c);
+      button(r, pages[k]["title"] | "", tapPage, (void *)(long)((s << 8) | k), false);
+      button(r, "PLAY", tapSong, (void *)(long)((s << 8) | k));
+      found++;
+    }
+  }
+  if (!found) label(c, "The songs you learn in the game are kept here, to see and to hear.", &lv_font_montserrat_20, INK, LV_PCT(100));
+}
+// the LIBRARY's STREAM: every lesson a MARK or a ROOT has opened, each on its own page
+static void streamCard(lv_obj_t *p) {
+  JsonDocument pr = newDoc(), m = newDoc();
+  lv_obj_t *c = card(p);
+  label(c, "STREAM", &lv_font_montserrat_20, QUIET);
+  if (!kept("profile", pr) || !kept("marks", m)) return;
+  lv_obj_t *r = row(c); int found = 0;
+  JsonArray marks = m["marks"].as<JsonArray>(), us = m["understandings"].as<JsonArray>();
+  for (int i = 0; i < (int)marks.size(); i++)
+    if ((pr["marks"][i] | false) && marks[i]["lesson"].as<JsonArray>().size()) { String t = marks[i]["title"] | ""; t.toUpperCase(); button(r, t, tapMark, (void *)(long)i, false); found++; }
+  for (int i = 0; i < (int)us.size(); i++)
+    if ((pr["roots"][i] | false) && us[i]["lesson"].as<JsonArray>().size()) { button(r, us[i]["name"] | "", tapRoot, (void *)(long)i, false); found++; }
+  if (!found) label(c, "Each MARK and each ROOT opens a lesson; they are kept here.", &lv_font_montserrat_20, INK, LV_PCT(100));
+}
+static void drawLibraryShelf(lv_obj_t *p) { drawLibrary(p); notebookCard(p); songbookCard(p); streamCard(p); }
+
 // ---- the frame: a status bar and the tabs down the side --------------------------------------------------------------
 typedef void (*Draw)(lv_obj_t *);
-static const Draw DRAW[] = { drawToday, drawGoals, drawDaemon, drawIndex, drawDevices, drawHome, drawProfile, drawLibrary, drawSettings };
+static const Draw DRAW[] = { drawToday, drawDaemonPage, drawGoals, drawLibraryShelf, drawProfile, drawPlaces, drawSettings };
 static_assert(sizeof DRAW / sizeof *DRAW == P_COUNT, "a way to draw every page");
 
 static void takeDayColour() {
@@ -1607,7 +1733,7 @@ void uiLoop() {
     if (net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal) { artWas = net.artTotal; resetArt(); }
   }
   int at = lv_tabview_get_tab_active(tabs);
-  netHomeWatch(at == P_HOME);                        // C-139: HOME is downloaded while it is the page on the screen
+  netHomeWatch(at == P_PLACES);                        // C-139: HOME is downloaded while it is the page on the screen
   if (!overlay && !drawnAt[at]) redraw(at);
   if (listenLabel) {                                 // C-99: LISTEN, MAKING..., HUSH, and back when the voice ends
     if (netVoice == V_SPEAKING && !soundVoicePlaying()) netHush();
@@ -1628,7 +1754,7 @@ void uiLoop() {
     if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); }
     if (at == P_SETTINGS && !overlay) { static String said; if (said != net.message) { said = net.message; drawnAt[P_SETTINGS] = 0; } }
     if (look == L_AUTO && !overlay) lookAgain();   // C-144: at 8pm and 6am, or once the companion has said the time
-    if (at == P_HOME && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_HOME] = 0; } }   // C-139: KEPT, or not
+    if (at == P_PLACES && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_PLACES] = 0; } }   // C-139: KEPT, or not
   }
 }
 

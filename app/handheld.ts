@@ -265,6 +265,10 @@ class Link {
       }
     } else if (word === "ART?") {
       try { this.say("ART " + JSON.stringify(await this.ask("/api/device/art"))); } catch { /* asked again later */ }
+    } else if (word === "PARTYART?") {                      // C-149: a party daemon's picture for the CASINO's reels, by its slot
+      const slot = parseInt(rest, 10);                      // (the cable's usb_bridge.py answers the same; without it, drawn pieces)
+      if (slot >= 0 && slot <= 5)
+        try { this.say("PARTYART " + JSON.stringify(await this.ask(`/api/device/art?slot=${slot}`))); } catch { /* the reel keeps its piece */ }
     } else if (word === "INTERACT") {
       const [kind, ...detail] = rest.split(" ");
       try { await this.flush(); await this.ask("/api/device/interact", { kind, detail: detail.join(" ") }); await this.sendState(); }

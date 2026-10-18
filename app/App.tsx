@@ -703,7 +703,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
     const r = await api<{ sameGame: boolean; firstSave: boolean; married: { name: string }; received: string[];
                           returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
                           grew: { nickname: string; exp: number; from: number; to: number } | null;
-                          backup: string | null }>("/api/sync", {});
+                          backup: string | null; casino: { won: number; spins: number; from: number; to: number } | null }>("/api/sync", {});
     const said: string[] = [];
     if (!r.sameGame) said.push(`This save belongs to a different game. Your companion hosts daemons from ${r.married.name}'s.`);
     if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");
@@ -711,6 +711,12 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
     r.returned.forEach((n) => said.push(`${n} is home.`));
     r.refused.forEach((n) => said.push(n));                     // T-397: the server says why, whole
     if (r.recalledSeen) said.push("The daemon you brought home in the game is settled here too.");
+    if (r.casino) {                                             // C-149: the CASINO's coins, written into the save's money (DRAFT)
+      const c = r.casino, spins = `${c.spins} spin${c.spins === 1 ? "" : "s"}`;
+      said.push(c.to === c.from && c.won > 0 ? `The CASINO won ${c.won.toLocaleString()} over ${spins}, but your MONEY is already full.`
+        : c.won >= 0 ? `The CASINO won ${c.won.toLocaleString()} over ${spins}: MONEY ${c.from.toLocaleString()} to ${c.to.toLocaleString()}.`
+        : `The CASINO lost ${(-c.won).toLocaleString()} over ${spins}: MONEY ${c.from.toLocaleString()} to ${c.to.toLocaleString()}.`);
+    }
     if (r.grew) said.push(r.grew.to > r.grew.from ? `${r.grew.nickname} came home grown: level ${r.grew.from} to ${r.grew.to}.`
                                                   : `${r.grew.nickname} came home with ${r.grew.exp} more experience.`);   // C-45
     // C-111: on a phone alone the game's save changed here -- it goes back to Delta, or the game never sees it
@@ -897,6 +903,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  index: { held: boolean; seen: number; bound: number }; marks: boolean[]; diploma: boolean; opus: boolean;
                  gameClear: boolean; savedIn: { place: string } | null; thisGame: boolean | null; marriedTo: string | null;
                  choice: "REASON" | "INSTINCT"; rival: string; money: number; shoes: "MOM" | "DAD" | null;   // C-125
+                 casino?: { pending: number; spins: number; balance: number };   // C-149: won or lost since the last SYNC
                  notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[];
                  wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
@@ -1532,6 +1539,10 @@ function ProfileScreen() {
       <Card>
         <Fact label="PLAY TIME">{p.playTime.hours}:{String(p.playTime.minutes).padStart(2, "0")}</Fact>
         {p.money !== undefined ? <Fact label="MONEY">{p.money.toLocaleString()}</Fact> : null}
+        {/* C-149: the CASINO plays with the save's money; what it won or lost reaches the save at the next SYNC (DRAFT) */}
+        {p.casino && (p.casino.pending || p.casino.spins) ? (
+          <Small color="$color10">{`The CASINO: ${p.casino.pending > 0 ? `+${p.casino.pending.toLocaleString()}` : p.casino.pending < 0 ? `-${(-p.casino.pending).toLocaleString()}` : "even"} over ${p.casino.spins} spin${p.casino.spins === 1 ? "" : "s"}, into your save at the next SYNC (then ${p.casino.balance.toLocaleString()}).`}</Small>
+        ) : null}
         {p.shoes !== undefined ? <Fact label="SHOES">{p.shoes ? `${p.shoes}'s` : "not yet"}</Fact> : null}
         <Fact label="INDEX">{p.index.held ? `${p.index.bound} bound · ${p.index.seen} seen` : "not yet held"}</Fact>
         <MarksRow held={p.marks} wisdom={p.wisdom} />

@@ -513,7 +513,7 @@ static String drawSlots(uint16_t day, uint16_t ink) {
 // it lies in the line.
 bool casinoTakeArt(const char *json) {
   JsonDocument filter, doc;
-  filter["w"] = filter["h"] = filter["slot"] = filter["palette"] = true;
+  filter["w"] = filter["h"] = filter["slot"] = filter["species"] = filter["palette"] = true;   // C-158: species too
   if (deserializeJson(doc, json, DeserializationOption::Filter(filter)) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
   int slot = doc["slot"] | -1, species = doc["species"] | -1, k = -1;
   for (int i = 0; i < 3; i++) if ((friendSlot[i] == slot && slot >= 0) || (friendSpecies[i] == species && species >= 0)) k = i + 1;

@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SCRIPTS = ["firmware/common/acts.py", "firmware/common/device_sprites.py", "firmware/common/tunes.py",   // C-160: the tunes too
-                 "firmware/common/casino_art.py"];   // C-158: THE CASINO's drawn pieces, and casino.cpp's drawing they were ported from
+                 "firmware/common/casino_art.py", "firmware/common/instruments.py"];   // T-425: the harp and flute, for the Tab5   // C-158: THE CASINO's drawn pieces, and casino.cpp's drawing they were ported from
 
 describe("the generated files are current", () => {
   for (const script of SCRIPTS) {

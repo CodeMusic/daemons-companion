@@ -1,0 +1,27 @@
+{
+ "_about": "T-425 (the user, 2026-10-18): our own HARP and FLUTE, one voice for the game and the companion; a CONTENT save plays the harp, CONTEXT the flute. Written by DAEMONS tools/geninstruments.py. Each WAV is one note at root_midi; pitch a note by resampling at 2^((note - root_midi)/12). loop_start/loop_end in samples (null: no loop, play it out); the envelope in ms, sustain 0..1.",
+ "harp": {
+  "file": "harp.wav",
+  "sample_rate": 22050,
+  "root_midi": 60,
+  "loop_start": null,
+  "loop_end": null,
+  "attack_ms": 0,
+  "decay_ms": 0,
+  "sustain": 1.0,
+  "release_ms": 250,
+  "edition": "CONTENT"
+ },
+ "flute": {
+  "file": "flute.wav",
+  "sample_rate": 22050,
+  "root_midi": 60,
+  "loop_start": 13232,
+  "loop_end": 30257,
+  "attack_ms": 80,
+  "decay_ms": 0,
+  "sustain": 1.0,
+  "release_ms": 150,
+  "edition": "CONTEXT"
+ }
+}

@@ -63,9 +63,9 @@ type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: O
 type Face = "daemon" | "clock" | "virtue";
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
 const FACES: [Face, string, string][] = [   // DRAFT
-  ["daemon", "DAEMON", "the daemon in the middle, the time above"],
-  ["clock", "CLOCK", "its hands over the daemon"],
-  ["virtue", "VIRTUE", "the day's words: the watch's first face"],
+  ["daemon", "DAEMON", "the time above it"],
+  ["clock", "CLOCK", "hands over it"],
+  ["virtue", "VIRTUE", "the day's words"],
 ];
 function FacePicture({ face, sky, daemon, ring }: { face: Face; sky: boolean; daemon: Carried | null | undefined; ring: string }) {
   const S = 56, seasonal = sky && face !== "virtue";

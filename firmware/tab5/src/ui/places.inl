@@ -125,7 +125,7 @@ static void ownFaces(lv_obj_t *box, JsonDocument &d) {
   static const char *const FACE_K[] = { "face" };
   ownHead(box, d, "ITS FACE", FACE_K, 1);
   static const char *const F[] = { "daemon", "clock", "virtue" }, *const FN[] = { "DAEMON", "CLOCK", "VIRTUE" };
-  static const char *const FA[] = { "the daemon in the middle, the time above", "its hands over the daemon", "the day's words: the watch's first face" };
+  static const char *const FA[] = { "the time above it", "hands over it", "the day's words" };
   int slot = ownDaemonSlot();
   lv_obj_t *r = row(box);
   for (int i = 0; i < 3 && ownTapN < 40; i++) {

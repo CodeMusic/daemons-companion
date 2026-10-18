@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Image, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { GROVES, MARK_ART, MARKS, onNight, PLAYER_ART, reflow, REGIONS, rgbOf, rootOfMark } from "../data";
+import { GROVES, lessonParas, MARK_ART, MARKS, onNight, PLAYER_ART, REGIONS, rgbOf, rootOfMark } from "../data";
 import { useDark } from "../look";
 import { api } from "../net";
 import { Profile, Progress, RegionsData, Wis } from "../types";
@@ -19,9 +19,7 @@ export function Badge({ n, size }: { n: number; size: number }) {
 
 export function MarkPage({ n, w }: { n: number; w?: Wis }) {
   const m = MARKS.marks[n];
-  const paras = m.lesson.flatMap(reflow)
-    .map((l, i) => (i === 0 && l.toUpperCase().startsWith(m.title.toUpperCase() + ".") ? l.slice(m.title.length + 1).trim() : l))  // the heading says it
-    .filter(Boolean);
+  const paras = lessonParas(m.lesson, m.title);
   const r = rootOfMark(n), root = r >= 0 ? MARKS.understandings[r] : null;
   return (
     <Panel>
@@ -58,9 +56,7 @@ export function MarkPage({ n, w }: { n: number; w?: Wis }) {
 export function RootPage({ i, marks, wisdom }: { i: number; marks: boolean[]; wisdom?: Wis[] }) {
   const u = MARKS.understandings[i];
   // T-405: read as a MARK's lesson is (C-140) -- its own name dropped, the heading says it; the first box leading, the rest as points
-  const paras = (u.lesson ?? []).flatMap(reflow)
-    .map((l, k) => (k === 0 && l.toUpperCase().startsWith(u.name.toUpperCase() + ".") ? l.slice(u.name.length + 1).trim() : l))
-    .filter(Boolean);
+  const paras = lessonParas(u.lesson, u.name);
   const n = MARKS.marks.findIndex((_, k) => rootOfMark(k) === i);
   const m = n >= 0 ? MARKS.marks[n] : null;
   const dark = useDark();

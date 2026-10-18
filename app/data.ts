@@ -92,3 +92,11 @@ export const KIND_NAMES: Record<string, string> = { "t-embed-cc1101": "T-Embed C
                                              "m5-sticks3": "M5StickS3", "m5-cores3": "M5Stack CoreS3",
                                              "m5-fire": "M5Stack Fire", "m5go": "M5GO", "m5-tab5": "M5Stack Tab5", "m5-dial": "M5Stack Dial",
                                              "iphone-widget": "This phone's widget" };
+
+// A lesson (a MARK's or a ROOT's STREAM show) as the pages read it: its boxes re-flowed, its own name dropped from the first
+// (the heading says it), empty ones gone -- the first leads, the rest are points (C-140; one copy, the review, 2026-10-18)
+export function lessonParas(lesson: string[] | null | undefined, name: string): string[] {
+  return (lesson ?? []).flatMap(reflow)
+    .map((l, k) => (k === 0 && l.toUpperCase().startsWith(name.toUpperCase() + ".") ? l.slice(name.length + 1).trim() : l))
+    .filter(Boolean);
+}

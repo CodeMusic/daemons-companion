@@ -3,7 +3,7 @@ import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { useEffect, useState } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { BOOK, GUIDE_COVER, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../data";
+import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../data";
 import { api } from "../net";
 import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
@@ -200,11 +200,9 @@ export function StreamBook() {
   const [open, setOpen] = useState<string | null>(null);
   useEffect(() => { api<Profile>("/api/profile").then(setP).catch(() => {}); }, []);
   if (!p) return <Small>Reading your save…</Small>;
-  const parts = (lesson: string[] | null | undefined, name: string) => (lesson ?? []).flatMap(reflow)
-    .map((l, k) => (k === 0 && l.toUpperCase().startsWith(name.toUpperCase() + ".") ? l.slice(name.length + 1).trim() : l)).filter(Boolean);
   const items = [
-    ...MARKS.marks.map((m, i) => ({ id: `m${i}`, held: !!p.marks?.[i], title: m.title.toUpperCase(), from: `the BENCHMARK in ${m.found}`, paras: parts(m.lesson, m.title) })),
-    ...MARKS.understandings.map((u, i) => ({ id: `u${i}`, held: !!p.roots?.[i], title: u.name, from: u.found, paras: parts(u.lesson, u.name) })),
+    ...MARKS.marks.map((m, i) => ({ id: `m${i}`, held: !!p.marks?.[i], title: m.title.toUpperCase(), from: `the BENCHMARK in ${m.found}`, paras: lessonParas(m.lesson, m.title) })),
+    ...MARKS.understandings.map((u, i) => ({ id: `u${i}`, held: !!p.roots?.[i], title: u.name, from: u.found, paras: lessonParas(u.lesson, u.name) })),
   ].filter((x) => x.held && x.paras.length);
   return (
     <Card>

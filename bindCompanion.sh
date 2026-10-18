@@ -106,9 +106,13 @@ PY
   # Generate the native project again whenever app.json or the dependencies changed since it was made: a plugin added
   # later (C-55's Bluetooth permission) otherwise never reaches it, and iOS closes an app that touches Bluetooth
   # without its permission line -- the user's first PAIR crashed on exactly that.
-  if [[ ! -d ios || app.json -nt ios/.prebuilt || package.json -nt ios/.prebuilt ]]; then
+  # And whenever a file is added to or removed from targets/ (the widget's): the project lists each by name, so a new one
+  # (T-425's Instruments.swift) was never compiled and the build failed on it.
+  targets_now="$(cd targets 2>/dev/null && find . -type f | sort)"
+  if [[ ! -d ios || app.json -nt ios/.prebuilt || package.json -nt ios/.prebuilt || "$targets_now" != "$(cat ios/.prebuilt-targets 2>/dev/null)" ]]; then
     CI=1 npx expo prebuild --platform ios --no-install
     touch ios/.prebuilt
+    printf '%s' "$targets_now" > ios/.prebuilt-targets
   fi
   (cd ios && pod install)
   phone_id="$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && $0 !~ /simulated/ { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }' || true)"   # awk stops reading at the first phone: under pipefail that SIGPIPE (141) would end the script

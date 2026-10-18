@@ -56,7 +56,7 @@ import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
-import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
+import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
 export type { DeviceSettings };
@@ -274,7 +274,7 @@ export function ourHost(hostOrUrl: string): boolean {
 }
 // What a board may log about itself over the network (INTERACT): its routines, the CASINO's coins and seat, and its cares.
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake"];
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting"];   // C-159: setting
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -626,6 +626,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { provider: b.provider, connected: !!ecfg.talk.url });
       }
       if (req.method === "GET" && path === "/api/device/settings") return send(res, 200, deviceSettings(store));   // C-43
+      // C-159: one device's own settings, over the shared -- for the app, the site and the Tab5's DEVICES (the device's
+      // own door never reaches here: /api/devices/ is this machine's, or a paired phone's)
+      const own = path.match(/^\/api\/devices\/([a-z0-9][a-z0-9-]{2,47})\/settings$/);
+      if (own && req.method === "GET")
+        return send(res, 200, { device: own[1], shared: deviceSettings(store), own: ownSettings(store, own[1]),
+                                settings: deviceSettings(store, own[1]), keys: OWN_KEYS });
+      if (own && req.method === "POST") {
+        const r = setOwnSettings(store, own[1], await body(req));
+        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { device: own[1], own: ownSettings(store, own[1]), settings: r });
+      }
       if (req.method === "POST" && path === "/api/device/settings") {
         const s = checkSettings({ ...deviceSettings(store), ...(await body(req)) });
         if (typeof s === "string") return send(res, 400, { error: s });
@@ -907,6 +917,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!kind) return send(res, 400, { error: "an interaction needs a kind" });
         if (!phone && !isLoopback(req.socket.remoteAddress) && !NETWORK_KINDS.includes(kind))
           return send(res, 403, { error: "a board does not log that" });
+        // C-159: a board's own setting, changed on the board -- "sound on|off [device]" -- kept as its own, not as tending it
+        if (kind === "setting") {
+          const m = /^(sound) (on|off)(?: ([a-z0-9][a-z0-9-]{2,47}))?$/.exec(typeof b.detail === "string" ? b.detail : "");
+          const who = m?.[3] ?? deviceId;
+          if (!m || !validDeviceId(who)) return send(res, 400, { error: "a setting is sound on|off, from a device" });
+          const r = setOwnSettings(store, who, { sound: m[2] === "on" });
+          return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { settings: r });
+        }
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
         return send(res, 200, { last: store.lastInteraction() });
       }

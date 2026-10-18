@@ -36,6 +36,14 @@ static String hint(String s) {
     s.replace("turn:", "roll:"); s.replace("press:", "click:"); s.replace("hold the dial", "hold the ball");
     return s;
   }
+  // C-160 (the user, 2026-10-18: "the regular t-embed that top button is reset or power, so on that device we do not have a
+  // back... hold front button to go back, tap front button to select"): the plain T-Embed and the SI4732 have the dial
+  // alone -- held half a second it goes back (input.cpp, readKeyAlone), and their screens say so
+  if (!board.hasSideKey() && board.encA >= 0 && !board.touch && !board.keyboard) {
+    s.replace("top button: back", "hold: back"); s.replace("top button: stop", "hold: stop");
+    s.replace("top button: undo", "hold: undo"); s.replace("top: delete", "hold: delete");
+    return s;
+  }
   if (!board.noDial()) return s;
   s.replace("top button: back", "hold side: back"); s.replace("top button: stop", "side: stop");
   s.replace("top button: undo", "hold side: undo"); s.replace("top: delete", "hold side: delete");
@@ -449,6 +457,16 @@ void draw() {
     canvas.drawString(COMPANION_BUILD, W - 8, H - 6);
     }
     canvas.setTextDatum(BL_DATUM);
+  } else if (page == SOUND_PAGE) {           // C-159 (the user, 2026-10-18): the board's sound, on or off on the board itself
+    canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("SOUND", 10, 32);                                            // DRAFT
+    canvas.setTextFont(4); canvas.setTextColor(cfg.sound ? day : QUIET);
+    canvas.drawString(cfg.sound ? "ON" : "OFF", 10, 52);                           // DRAFT
+    canvas.setTextFont(2); canvas.setTextColor(PAPER);
+    wrap(String(cfg.sound ? "Volume " + String(cfg.volume) + "%. " : String("Silent: no tunes, no ticks. ")) +
+         (cfg.wakeEvery ? "The jingle plays on every wake." : "The jingle plays when it starts."), 10, 88, W - 20, 2, 18, 3, PAPER);   // DRAFT
+    canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+    footer(hint(cfg.sound ? "press: turn it off" : "press: turn it on"));          // DRAFT
   } else if (page == OFF_PAGE) {             // the user, 2026-10-15: "there is no way to turn it off"
     canvas.setTextFont(4); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("SWITCH OFF", 10, 40);                                       // DRAFT

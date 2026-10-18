@@ -140,3 +140,26 @@ describe("the CASINO's table (C-151)", () => {
     expect(st.casino.table).toEqual([{ name: "PIP", device: "t-deck-aaaaaa", species: 1 }]);
   });
 });
+
+describe("each device's own settings (C-159)", () => {
+  it("keeps a device's own over the shared, clears one given null, and refuses a bad one", async () => {
+    const { setOwnSettings, deviceSettings, ownSettings } = await import("../src/core.js");
+    const store = new Store(":memory:");
+    expect(deviceSettings(store, "t-watch-s3-77bef4").wakeSound).toBe("power");      // the jingle at power-up, by default
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { sound: false, wakeSound: "every", band: 868 })).toMatchObject({ sound: false, wakeSound: "every", band: 433 });
+    expect(deviceSettings(store, "t-watch-s3-77bef4").sound).toBe(false);
+    expect(deviceSettings(store, "t-deck-09ffa8").sound).toBe(true);                   // another's untouched
+    expect(ownSettings(store, "t-watch-s3-77bef4")).toEqual({ sound: false, wakeSound: "every" });   // the band is the companion's
+    setOwnSettings(store, "t-watch-s3-77bef4", { sound: null });
+    expect(deviceSettings(store, "t-watch-s3-77bef4").sound).toBe(true);
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { volume: 400 })).toBe("volume is 0 to 100");
+  });
+
+  it("gives a device its own settings in its state", () => {
+    const { cfg } = saveFile(3000);
+    const store = new Store(":memory:");
+    store.setSetting("device.m5-fire-a708a4", JSON.stringify({ sound: false }));
+    expect((deviceState(cfg, store, new Date(), "m5-fire-a708a4") as any).settings.sound).toBe(false);
+    expect((deviceState(cfg, store, new Date(), "t-deck-09ffa8") as any).settings.sound).toBe(true);
+  });
+});

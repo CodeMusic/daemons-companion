@@ -100,11 +100,31 @@ export function sync(h: Host, store: Store, now = new Date()) {
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
 export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
                                  palette: "checkpoint" as Palette,                                                // C-90
-                                 band: 433 };   // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
+                                 band: 433,     // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
+                                 wakeSound: "power" as "power" | "every" };   // C-159: the jingle at power-up, or on every wake
 export type DeviceSettings = typeof DEVICE_SETTINGS;
-export function deviceSettings(store: Store): DeviceSettings {
-  try { return { ...DEVICE_SETTINGS, ...JSON.parse(store.getSetting("device") ?? "{}") }; }
-  catch { return { ...DEVICE_SETTINGS }; }
+function parsed(store: Store, key: string): Partial<DeviceSettings> {
+  try { return JSON.parse(store.getSetting(key) ?? "{}"); } catch { return {}; }
+}
+// C-159 (the user, 2026-10-18: "tap the device to open its specific settings -- there you can adjust sound style, volume
+// (or mute), along with any other device specific settings"): each device's own over the shared ones. What a device may
+// keep for itself; the rest (the palette, the band, meeting others) is the companion's, the same for every board.
+export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound"] as const;
+export function ownSettings(store: Store, deviceId: string): Partial<DeviceSettings> {
+  return deviceId ? parsed(store, `device.${deviceId}`) : {};
+}
+export function deviceSettings(store: Store, deviceId = ""): DeviceSettings {
+  return { ...DEVICE_SETTINGS, ...parsed(store, "device"), ...ownSettings(store, deviceId) };
+}
+// a device's own, changed: a key given a value is kept (checked as the shared ones are), a key given null goes back to
+// the shared one. The settings that result, or why not.
+export function setOwnSettings(store: Store, deviceId: string, patch: Record<string, unknown>): DeviceSettings | string {
+  const own: Record<string, unknown> = { ...ownSettings(store, deviceId) };
+  for (const k of OWN_KEYS) if (k in patch) { if (patch[k] === null) delete own[k]; else own[k] = patch[k]; }
+  const s = checkSettings({ ...DEVICE_SETTINGS, ...parsed(store, "device"), ...own });
+  if (typeof s === "string") return s;
+  store.setSetting(`device.${deviceId}`, Object.keys(own).length ? JSON.stringify(own) : null);
+  return s;
 }
 export function checkSettings(b: any): DeviceSettings | string {
   const s = { ...DEVICE_SETTINGS, ...b };
@@ -116,7 +136,9 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (typeof s.meet !== "boolean") return "meet is on or off";
   if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
   if (![433, 868, 915].includes(s.band)) return "band is 433, 868 or 915";
-  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band };
+  if (!["power", "every"].includes(s.wakeSound)) return "wakeSound is power or every";   // C-159
+  return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band,
+           wakeSound: s.wakeSound };
 }
 
 
@@ -238,7 +260,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            companion: companionId(store), cardNote: noteFor(store),   // C-124: whose cards are ours; a note to write
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
-           settings: deviceSettings(store),
+           settings: deviceSettings(store, deviceId),   // C-159: its own over the shared
            holiday: holiday(t.edition, now), casino,          // C-149: how a board dresses today; the CASINO's coins
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them

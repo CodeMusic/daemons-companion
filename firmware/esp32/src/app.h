@@ -50,7 +50,8 @@ struct State {
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
-                  bool meet = true; int band = 433; };         // meet: C-15, meeting others nearby; band: C-72, LoRa
+                  bool meet = true; int band = 433;
+                  bool wakeEvery = false; };   // C-159: the wake jingle on every wake, not only at power-up         // meet: C-15, meeting others nearby; band: C-72, LoRa
 extern State st;
 extern Settings cfg;
 extern bool dirty;
@@ -60,6 +61,7 @@ extern String artKeyHave;
 extern uint32_t artAskedAt;
 void loadSettings();
 void takeSettings(JsonVariant s);
+void soundSetHere(bool on);               // C-159: SOUND turned on or off on the board itself -- kept, and told to the companion
 bool takeState(const String &json);
 bool takeState(const char *json);
 bool takeArt(const String &json);
@@ -72,7 +74,7 @@ String daemonName();                      // C-51: the routines speak in its nam
 // routine RUNs. INDEX_ENTRY: the carried daemon's (C-36). PICK_NET, TYPE_PASS: joining a network on the board (C-33).
 // CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51. PARTY, MOVES: GAME ROUTINES (C-68) -- the
 // party, then a daemon's routines; picking one plays it, the ring lit its colour.
-enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE };   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_PAGE };   // C-159: SOUND, on or off on the board   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE,   // TALK: C-66; COMPOSE: C-123
               CARE_KEYS };                // C-149: the three-button boards' CARE -- a button each, then home

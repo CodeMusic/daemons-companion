@@ -23,22 +23,37 @@ void loadSettings() {
   cfg.home = p.getString("home", cfg.home); cfg.sleepAfter = p.getInt("sleep", cfg.sleepAfter);
   cfg.sound = p.getBool("sound", cfg.sound); cfg.volume = p.getInt("volume", cfg.volume); cfg.ring = p.getInt("ring", cfg.ring);
   cfg.meet = p.getBool("meet", cfg.meet); cfg.band = p.getInt("band", cfg.band);
+  cfg.wakeEvery = p.getBool("wake", cfg.wakeEvery);         // C-159
   p.end();
   applySettings();
 }
 
+static void saveSettings() {
+  Preferences p; p.begin("settings", false);
+  p.putString("home", cfg.home); p.putInt("sleep", cfg.sleepAfter); p.putBool("sound", cfg.sound);
+  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring); p.putBool("meet", cfg.meet); p.putInt("band", cfg.band);
+  p.putBool("wake", cfg.wakeEvery);                         // C-159
+  p.end();
+}
+// C-159: SOUND changed on the board -- a state already on its way still says the old one, so for a little while the
+// board's own word stands
+static uint32_t soundHereAt = 0;
+void soundSetHere(bool on) {
+  cfg.sound = on; soundHereAt = millis();
+  saveSettings(); applySettings();
+  report("setting", String("sound ") + (on ? "on " : "off ") + deviceId());
+}
 void takeSettings(JsonVariant s) {
   Settings got;
   got.home = s["home"] | cfg.home.c_str(); got.sleepAfter = s["sleepAfter"] | cfg.sleepAfter;
   got.sound = s["sound"] | cfg.sound; got.volume = s["volume"] | cfg.volume; got.ring = s["ring"] | cfg.ring;
   got.meet = s["meet"] | cfg.meet; got.band = s["band"] | cfg.band;
+  got.wakeEvery = String((const char *)(s["wakeSound"] | (cfg.wakeEvery ? "every" : "power"))) == "every";   // C-159
+  if (soundHereAt && millis() - soundHereAt < 30000) got.sound = cfg.sound;
   if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
-      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band) return;
+      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery) return;
   cfg = got;
-  Preferences p; p.begin("settings", false);
-  p.putString("home", cfg.home); p.putInt("sleep", cfg.sleepAfter); p.putBool("sound", cfg.sound);
-  p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring); p.putBool("meet", cfg.meet); p.putInt("band", cfg.band);
-  p.end();
+  saveSettings();
   applySettings();
 }
 

@@ -168,9 +168,10 @@ void turn(int step) {
   soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) {                 // C-71: the watch has its face first
     // SWITCH OFF last (the user, 2026-10-15)
-    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, OFF_PAGE };
+    // C-159: SOUND before it, on or off on the board itself
+    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE };
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
-    const Page *order = face ? WATCH : EMBED; int n = face ? 6 : 5, at = 0;
+    const Page *order = face ? WATCH : EMBED; int n = face ? 7 : 6, at = 0;
     for (int i = 0; i < n; i++) if (order[i] == page) at = i;
     page = order[(at + n + step) % n];
   }
@@ -222,6 +223,7 @@ void press() {
     if (page == TODAY) tick();
     else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
     else if (page == OFF_PAGE) switchOff("Off.");                                // the user, 2026-10-15; DRAFT
+    else if (page == SOUND_PAGE) { soundSetHere(!cfg.sound); if (cfg.sound) soundSelect(); }   // C-159
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
       if (partyFirst()) { screen = PARTY; partyAt = st.partyN; }    // C-68: the party's routines, on a board with no radios -- its RADIOS first
@@ -330,7 +332,7 @@ bool wake() {
   draw();
   backlight(true);
   ledsSleep(false);
-  soundWake();
+  if (cfg.wakeEvery) soundWake();                  // C-159 (the user, 2026-10-18): the jingle at power-up, unless set for every wake
   dirty = true;
   return true;
 }

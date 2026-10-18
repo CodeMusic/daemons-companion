@@ -680,6 +680,7 @@ String runSlots() {
   runPanel = nullptr;
   ledsDance(-1, 0, 0);
   lastInput = millis();
+  if (!spins) return daemonName() + " looked at the reels, and kept its money.";   // DRAFT
   String how = sessionDelta > 0 ? "won " + String(sessionDelta) : sessionDelta < 0 ? "lost " + String(-sessionDelta) : "came out even";
   return daemonName() + " " + how + " in " + String(spins) + (spins == 1 ? " spin" : " spins") + ".\n\nThe game's money changes at the next SYNC.";   // DRAFT
 }

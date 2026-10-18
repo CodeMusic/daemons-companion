@@ -107,6 +107,7 @@ static void buildFrame() {
 }
 
 static String todayLine;
+static int artStale = 0;                           // 1: pictures changed (reset when no overlay is open); 2: all, now
 void uiLoop() {
   casinoTick60();                                   // C-155
   newsLook();                                       // C-154
@@ -127,7 +128,17 @@ void uiLoop() {
     JsonDocument t = newDoc();
     todayLine = kept("today", t) ? "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "") : "";
     soundFromState();                                    // C-94: the volume and the day's key, as the state says
-    if (net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal) { artWas = net.artTotal; resetArt(); }
+    bool allArt = net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal;
+    if (allArt) { artWas = net.artTotal; artStale = 2; }      // every picture anew (pairing): now, the overlay with it
+    else if (what & K_ART) artStale = artStale ? artStale : 1; // one picture anew (a mood's shade): once no overlay is open
+  }
+  // the review, 2026-10-18: nothing may still show a picture when its decoded copy is freed -- every page emptied and drawn
+  // again first -- and a picture fetched anew is shown, not the one decoded before it
+  if (artStale == 2 || (artStale == 1 && !overlay)) {
+    artStale = 0;
+    closeOverlay();
+    for (int i = 0; i < P_COUNT; i++) { lv_obj_clean(pages[i]); drawnAt[i] = 0; }
+    resetArt();
   }
   int at = lv_tabview_get_tab_active(tabs);
   netHomeWatch(at == P_PLACES);                        // C-139: HOME is downloaded while it is the page on the screen

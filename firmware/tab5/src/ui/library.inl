@@ -61,13 +61,34 @@ static lv_obj_t *guideCover(lv_obj_t *parent, int k) {
   lv_obj_set_style_bg_color(box, BOOK_BOARDS, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
   lv_obj_set_style_radius(box, 0, 0);
   lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);
-  if (lv_image_dsc_t *dsc = artDsc("guide_cover_named")) {
+  if (lv_image_dsc_t *dsc = artDsc("guide_cover_plain")) {
     lv_obj_t *img = lv_image_create(box);
     lv_image_set_src(img, dsc);
     lv_image_set_antialias(img, false);
     lv_image_set_pivot(img, 0, 0);
     lv_image_set_scale(img, 256 * k);
     lv_obj_set_pos(img, -54 * k, 0);
+  }
+  // the art carries no lettering (the game's font is Nintendo's): the title and author, set here in the Tab5's own type --
+  // two small lines, the last two words large, above the cyan rules; the author at the foot (large covers only)
+  JsonDocument gd = newDoc();
+  if (k >= 2 && kept("guide", gd)) {
+    String title = (const char *)(gd["title"] | ""), author = (const char *)(gd["author"] | "");
+    int sp2 = title.lastIndexOf(' '), sp1 = sp2 > 0 ? title.lastIndexOf(' ', sp2 - 1) : -1;
+    String big = sp1 >= 0 ? title.substring(sp1 + 1) : title, rest = sp1 >= 0 ? title.substring(0, sp1) : String("");
+    int cut = -1, best = 999;                        // the small lines split as evenly as the words allow
+    for (int i = rest.indexOf(' '); i > 0; i = rest.indexOf(' ', i + 1))
+      if (abs((int)(i - (rest.length() - i - 1))) < best) { best = abs((int)(i - (rest.length() - i - 1))); cut = i; }
+    auto put = [&](const String &t, const lv_font_t *f, int y) {
+      if (!t.length()) return;
+      lv_obj_t *l = lv_label_create(box); lv_label_set_text(l, t.c_str());
+      lv_obj_set_style_text_font(l, f, 0); lv_obj_set_style_text_color(l, lv_color_hex(0xF3F4F6), 0);
+      lv_obj_align(l, LV_ALIGN_TOP_MID, 0, y);
+    };
+    put(cut > 0 ? rest.substring(0, cut) : rest, &lv_font_montserrat_20, 4 * k);
+    put(cut > 0 ? rest.substring(cut + 1) : String(""), &lv_font_montserrat_20, 4 * k + 24);
+    put(big, &lv_font_montserrat_40, 4 * k + 54);
+    put(author, &lv_font_montserrat_20, 144 * k);
   }
   return box;
 }

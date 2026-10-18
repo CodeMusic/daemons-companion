@@ -8,12 +8,14 @@ import { flagReader } from "./profile.js";
 
 type Entry = { short: string; title: string; paragraphs: string[] };
 type Section = { key: string; label: string; heading: string; entries: Entry[] };
-const G = guideJson as { flag: number; draft: boolean; title: string; sections: Section[] };
+const G = guideJson as { flag: number; draft: boolean; title: string; author?: string; sections: Section[] };
 
-export interface Guide { held: boolean; title?: string; draft?: boolean; sections?: Section[] }
+// the cover carries no lettering (the game's font is Nintendo's): its title and author come here, for each screen to set
+// in its own type over the art (78cce6f; the author's name approved for the public cover, 2026-10-17)
+export interface Guide { held: boolean; title?: string; author?: string; draft?: boolean; sections?: Section[] }
 
 export function guideOf(flag: (f: number) => boolean): Guide {
-  return flag(G.flag) ? { held: true, title: G.title, draft: G.draft, sections: G.sections } : { held: false };
+  return flag(G.flag) ? { held: true, title: G.title, author: G.author, draft: G.draft, sections: G.sections } : { held: false };
 }
 
 export function readGuide(save: Uint8Array, l: Layout = LAYOUT): Guide {

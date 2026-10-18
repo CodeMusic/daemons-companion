@@ -253,6 +253,23 @@ export function StreamBook() {
 
 // the GUIDE as the game's reader keeps it: the cover, then CONTENTS (each part, its chapters), then a chapter on one page
 // with the next and the last a tap away
+// the GUIDE's title set over its cover as the game set it: two small lines, the last two words large, above the cyan rules
+// (y 50 of 160); the author at the foot (y 147) -- at the cover's 2x
+function CoverTitle({ title, author }: { title: string; author: string }) {
+  const words = title.split(" "), big = words.slice(-2).join(" "), rest = words.slice(0, -2);
+  let cut = 1, best = Infinity;                        // the small lines split as evenly as the words allow
+  for (let k = 1; k < rest.length; k++) {
+    const d = Math.abs(rest.slice(0, k).join(" ").length - rest.slice(k).join(" ").length);
+    if (d < best) { best = d; cut = k; }
+  }
+  const line = { position: "absolute" as const, left: 0, right: 0, textAlign: "center" as const, fontFamily: "$mono" as const, color: "#f3f4f6" };
+  return (<>
+    <Text {...line} top={10} fontSize={13} lineHeight={16} letterSpacing={1} fontWeight="700">{rest.slice(0, cut).join(" ")}</Text>
+    <Text {...line} top={27} fontSize={13} lineHeight={16} letterSpacing={1} fontWeight="700">{rest.slice(cut).join(" ")}</Text>
+    <Text {...line} top={50} fontSize={29} lineHeight={34} letterSpacing={2} fontWeight="800">{big}</Text>
+    <Text {...line} top={288} fontSize={12} letterSpacing={1} fontWeight="700">{author}</Text>
+  </>);
+}
 export function GuideBook({ g }: { g: GuideBookT }) {
   const flat = (g.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
   const [at, setTo] = useState<number | null>(null);
@@ -287,10 +304,12 @@ export function GuideBook({ g }: { g: GuideBookT }) {
   let n = 0;
   return (
     <YStack backgroundColor={BOOK.boards} borderRadius={4} padding={14} gap={14}>
-      {/* the book itself, cut out of the game's 240x160 screen (x 54..185), at a whole multiple so its pixels stay square */}
-      <YStack width={132 * 2} height={160 * 2} overflow="hidden" alignSelf="center" borderRadius={2}>
+      {/* the book itself, cut out of the game's 240x160 screen (x 54..185), at a whole multiple so its pixels stay square; the
+          art carries no lettering (the game's font is Nintendo's), so the title and author are set here in our own type */}
+      <YStack width={132 * 2} height={160 * 2} overflow="hidden" alignSelf="center" borderRadius={2} position="relative">
         <Image source={GUIDE_COVER} style={{ width: 240 * 2, height: 160 * 2, marginLeft: -54 * 2, ...PIXELATED }}
                resizeMode="stretch" accessibilityLabel={g.title ?? "the GUIDE"} />
+        <CoverTitle title={g.title ?? ""} author={g.author ?? ""} />
       </YStack>
       <YStack backgroundColor={BOOK.page} borderColor={BOOK.edge} borderWidth={1} borderRadius={4} padding={16} gap={4}>
         <Text {...mono} fontSize={12} color={BOOK.cyan}>CONTENTS</Text>

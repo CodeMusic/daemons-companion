@@ -123,7 +123,7 @@ export type SchoolData = { floors: { floor: string; subject: string; syllabus: s
 
 // C-145: THE LIBRARY -- what you can read, on one shelf: CALLOW SCHOOL (C-129) and, once the save holds it, THE PROGRAMMER'S
 // GUIDE TO THE HUMAN MIND with its 8-bit cover. Nothing of the GUIDE shows before it is found (a find stays blind, T-297).
-export type GuideBookT = { held: boolean; title?: string; sections?: { key: string; label: string; heading: string;
+export type GuideBookT = { held: boolean; title?: string; author?: string; sections?: { key: string; label: string; heading: string;
                     entries: { short: string; title: string; paragraphs: string[]; link?: string | null }[] }[] };
 
 // ---- C-24: the save's own INDEX -- what was seen and bound, as the game shows it, each entry in the save's edition's

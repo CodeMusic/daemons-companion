@@ -183,7 +183,7 @@ void drawRoutines(uint16_t day) {
       if (i < st.partyN) {
         const Member &m = st.party[i];
         listRow(r - from, cur - from, m.name + "  Lv" + m.level + "  " + m.types, day, ink);
-      } else listRow(r - from, cur - from, "RADIOS  (Bluetooth, Wi-Fi)", day, ink);   // DRAFT
+      } else listRow(r - from, cur - from, "CASINO AND RADIOS", day, ink);   // C-149: the CASINO is behind it too; DRAFT
     }
   } else if (screen == MOVES) {
     const Member &m = st.party[partyAt];
@@ -415,7 +415,7 @@ void draw() {
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
-    wrap(partyFirst() ? String("Its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
+    wrap(partyFirst() ? String("The CASINO and its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
          : !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
          : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
                        : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round || H < 160 ? 2 : 4,

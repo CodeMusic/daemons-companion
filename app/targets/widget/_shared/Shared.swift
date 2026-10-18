@@ -34,6 +34,8 @@ struct Snapshot: Codable {
   var den: Den? = nil               // C-113: where it is drawn (server/src/dens.ts)
   var expr: Expr? = nil             // C-119: its expression
   var at: Date = Date()
+  var sound: Bool? = nil            // C-160: this phone's own SOUND (PLACES, ITS SETTINGS): false is silent
+  var volume: Int? = nil            //        and how loud, 0..100 as the boards have it (60 unless set)
 }
 
 // The day's life, as GET /api/daemon/life and POST /api/daemon/<care> answer (server/src/life.ts)
@@ -47,6 +49,8 @@ struct DeviceState: Decodable {
   struct Daemon: Decodable { let slot: Int; let name: String; let nickname: String; let level: Int; let artKey: String; let life: Life
                          let den: Den?; let expression: Expr? }
   let daemon: Daemon?
+  struct Hearing: Decodable { let sound: Bool?; let volume: Int? }
+  let settings: Hearing?            // C-160: its own over every device's
 }
 struct Art: Decodable { let png: String }
 
@@ -161,7 +165,8 @@ enum Companion {
       if png == nil { png = (try? await call("/api/art?party=\(d.slot)" + (look == "awake" ? "" : "&expression=\(look)")) as Art)?.png }
       let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
-                       cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date())
+                       cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date(),
+                       sound: st.settings?.sound, volume: st.settings?.volume)
       Shared.snapshot = s
       return s
     } catch {

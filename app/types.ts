@@ -66,7 +66,8 @@ export type CasinoHouse = { context: { luck: number; rtp: number; reasons: Reaso
 export type PlayerState = { season: string; day?: { note: string } | null; holiday?: { name: string; look: string; colours: string[]; hat: string; flip: boolean } | null; daemon: { slot: number; nickname: string } | null;
                      casino: { balance: number; friends: number[]; table: { name: string; device: string }[];
                                reel?: { species: number; name: string }[]; context?: { luck: number; rtp: number; reasons: Reason[] } } | null;   // C-158
-                     party: { name: string; routines: { name: string; colour: string }[] }[] };
+                     party: { name: string; routines: { name: string; colour: string }[] }[];
+                     settings?: { sound?: boolean; volume?: number } };   // C-160: this player's own, over every device's
 
 // C-23: the PROFILE -- whichever save was synced: who it belongs to and how far it has gone, as the trainer card says.
 export type Profile = { name: string; trainerId: number; playTime: { hours: number; minutes: number }; edition: string;

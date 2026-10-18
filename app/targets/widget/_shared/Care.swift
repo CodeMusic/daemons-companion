@@ -85,11 +85,13 @@ enum CareSound {
 
   // Playback, mixed with whatever is playing: the press runs with the app in the background, where an ambient session is
   // silenced. It is a short phrase, played over (never instead of) the user's own audio.
+  // C-160: as this phone's own SOUND says (PLACES, ITS SETTINGS) -- off is silent; the boards' volume, full from 70
   static func play(_ kind: CareKind) {
-    guard let tune = tunes[kind] else { return }
+    guard let tune = tunes[kind], Shared.snapshot?.sound != false else { return }
     try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
     try? AVAudioSession.sharedInstance().setActive(true)
     player = try? AVAudioPlayer(data: wav(tune, root: dayRoot))
+    player?.volume = Float(min(1, Double(Shared.snapshot?.volume ?? 60) / 70))
     player?.play()
     length = Double(tune.reduce(0) { $0 + $1.1 }) / 1000
   }

@@ -3,11 +3,12 @@ import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, 
 import { File, Paths } from "expo-file-system";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
-import { ACTS, castLine } from "../data";
+import { ACTS, castLine, playerId } from "../data";
 import { DenStage } from "../Den";
 import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../net";
 import { Carried, Cast, Daemon, DeviceRow, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../types";
 import { Action, Art, Card, CareKey, careSound, Eyebrow, Segments, Small, whenSaid } from "../ui";
+import { hearSettings, soundLevel } from "../tuneSound";
 import { IndexScreen } from "./Index";
 import { RoutinesCard } from "./Routines";
  // C-119: how it looks now, decided on the server
@@ -33,13 +34,21 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   useEffect(() => {
     api<Life>("/api/daemon/life").then(setL).catch(() => {});
     api<Today>("/api/today").then((t) => setNote(t.day.note)).catch(() => {});
+    // C-160: this phone's own SOUND (PLACES, ITS SETTINGS) -- away, as it was last heard
+    playerId().then((id) => api<{ settings: { sound?: boolean; volume?: number } }>(`/api/devices/${encodeURIComponent(id)}/settings`))
+      .then((r) => hearSettings(r.settings)).catch(() => {});
   }, []);
   if (!l) return null;
   const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
     setSaid(word); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
     setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
     if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
-      try { if (what !== "wake") { await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) }); player.play(); } }
+      try {
+        if (what !== "wake" && soundLevel() > 0) {
+          await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) });
+          player.volume = soundLevel(); player.play();
+        }
+      }
       catch { /* quiet is fine */ }
     }
     try { setL(await api<Life>(`/api/daemon/${what}`, {})); }   // its answer corrects the counts

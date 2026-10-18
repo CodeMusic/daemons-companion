@@ -11,6 +11,13 @@ export const dayRoot = (note?: string | null) => { const i = NAMES.indexOf(note 
 export const WAKE_BASE = TUNES.wakeBase;
 export const tuneNotes = (name: string) => TUNES.tunes[name] ?? null;
 
+// C-160 (the user, 2026-10-18: "a way to turn off the sound effects"): this player's own SOUND, set in PLACES (ITS
+// SETTINGS) as every board's is -- off, or the boards' volume (0..100, 60 unless set) as a level here, full from 70
+type Hearing = { sound?: boolean; volume?: number } | null | undefined;
+let mine: Hearing = null;
+export const hearSettings = (s: Hearing) => { if (s) mine = s; };
+export const soundLevel = (s: Hearing = mine) => (s?.sound === false ? 0 : Math.min(1, (s?.volume ?? 60) / 70));
+
 export function tuneSound(name: string, root: number, level = 1): string | null {
   const notes = TUNES.tunes[name];
   if (!notes) return null;

@@ -1,7 +1,7 @@
 // ROUTINES -- THE CASINO (by server/src/slots.ts, the boards' table) and the party's game routines (C-155). (C-157: out of App.tsx.)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { dayRoot, tuneSound } from "../tuneSound";
+import { dayRoot, hearSettings, soundLevel, tuneSound } from "../tuneSound";
 import { Text, XStack, YStack } from "tamagui";
 import { BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
          stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../server/src/slots";
@@ -104,6 +104,7 @@ export function Casino({ ink }: { ink: string }) {
   if (!st || !id) return <Small>Taking a seat…</Small>;
   if (!st.casino) return <Small>The CASINO plays with your save's money: choose your save on SETTINGS first.</Small>;
   luck.current = st.casino.context?.luck ?? 0;
+  hearSettings(st.settings);
   const balance = Math.max(0, Math.min(999999, st.casino.balance + owed));
   const jack = st.daemon?.slot ?? st.casino.friends[0];
   const friends = st.daemon ? st.casino.friends : st.casino.friends.slice(1);
@@ -118,7 +119,9 @@ export function Casino({ ink }: { ink: string }) {
       : look === "pumpkins" ? ["SLOTS_SPOOKY", 0.9] : look === "presents" ? ["SLOTS_JINGLE", 0.9]
       : look === "fireworks" ? ["SLOTS_FIREWORK", 0.9] : look === "hearts" ? ["SLOTS_SWEET", 0.85]
       : what === 3 ? ["SLOTS_BIG", 0.9] : ["SLOTS_JACKPOT", 1];
-    const uri = tuneSound(name as string, root, level as number);
+    const loud = soundLevel(st.settings) * (level as number);   // C-160: this player's own SOUND -- off is silent
+    if (!loud) return;
+    const uri = tuneSound(name as string, root, Math.round(loud * 20) / 20);
     if (uri) setAudioModeAsync({ playsInSilentMode: false }).catch(() => {}).finally(() => { player.replace({ uri }); player.play(); });
   };
   const settle = (o: number, near: boolean) => {

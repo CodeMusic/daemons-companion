@@ -23,6 +23,7 @@ import { casinoPending, coinsFor, tableFor } from "./casino.js";   // C-149, C-1
 import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.js";   // C-158
 import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
+import { readPlay } from "./save/play.js";            // T-426: the instrument, on the boards with keys
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -243,6 +244,9 @@ export function grown(d: { species: number; exp: number; level: number; personal
 export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null, as: string | null = null) {
   const t = today(h, store, now);
   let daemon = null, party: unknown[] = [], casino: any = null;
+  // T-426: what the save holds of the instrument -- which, unlocked or not, the songs learned and heard (the songs
+  // themselves are built into the boards, firmware/common/play.h)
+  let play: { i: string; u: boolean; l: string[]; h: string[] } | null = null;
   // C-158: the world the devices live in -- the real one: the hour (the game's watches), the weather of the city set
   // on the site -- and the CASINO's luck in it, with its reasons
   const weather = weatherNow(store, now), today_ = holiday(t.edition, now);
@@ -252,6 +256,10 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     const save = readSave(bytes);
     const d = carriedFor(store, readAway(bytes), deviceId);   // C-80: this device's own; C-103: a box's too
     const profile = readProfile(bytes);
+    try {
+      const p = readPlay(bytes, t.edition);
+      play = { i: p.instrument, u: p.unlocked, l: p.songs.filter((s) => s.learned).map((s) => s.id), h: p.songs.filter((s) => s.heard).map((s) => s.id) };
+    } catch { play = null; }
     // C-149: the CASINO's coins -- the save's money and what waits for SYNC -- and the party's other daemons, its reels
     casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot),
                       tableFor(store, deviceId, readAway(bytes), now));   // C-151: our other boards at the reels
@@ -289,6 +297,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
            casts: castsForDevice(store, now),            // C-134: the last ten minutes' broadcasts; a board drops ids it has
+           play,                                         // T-426: the instrument, on the boards with keys
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },

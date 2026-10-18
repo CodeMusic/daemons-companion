@@ -19,8 +19,8 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
     <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
   return (
     <Card>
-      <Eyebrow>ITS SETTINGS</Eyebrow>
-      <Small>Set here and carried to the board the next time it is linked; it keeps them when it is not.</Small>
+      <Eyebrow>EVERY DEVICE'S SETTINGS</Eyebrow>
+      <Small>Set here and carried to every board the next time it is linked; it keeps them when it is not. A device's own (tap it in YOUR DEVICES) win over these.</Small>
       <Row label="HOME, WHERE IT WAKES">
         <Choice<DeviceSettings["home"]> value={s.home} options={[["daemon", "The daemon"], ["today", "Today's step"]]} onPick={(home) => set({ home })} ink={ink} />
       </Row>
@@ -49,7 +49,64 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
   );
 }
 
+// C-160 (the user, 2026-10-18: "tap the device to open its specific settings -- sound style, volume (or mute), along with
+// any other device specific settings"): one device's own settings over the shared ones (GET/POST /api/devices/<id>/settings,
+// the CASINO session's) -- each row says whether it is this device's own or every device's, and goes back with one tap.
+// A board's own SOUND page reports here too. Every word DRAFT.
+type OwnSettings = { device: string; shared: DeviceSettings & { wakeSound?: string }; own: Partial<DeviceSettings & { wakeSound: string }>;
+                     settings: DeviceSettings & { wakeSound?: string }; keys: string[] };
+function OwnSettingsCard({ id, ink }: { id: string; ink: string }) {
+  const [s, setS] = useState<OwnSettings | null>(null);
+  const [said, setSaid] = useState("");
+  const path = `/api/devices/${encodeURIComponent(id)}/settings`;
+  useEffect(() => { api<OwnSettings>(path).then(setS).catch((e) => setSaid((e as Error).message)); }, [path]);
+  if (!s) return said ? <Small color="$color8">{said}</Small> : <Small>Asking the companion…</Small>;
+  const set = async (patch: Record<string, unknown>) => {
+    try { const r = await api<Pick<OwnSettings, "own" | "settings">>(path, patch); setS((x) => x && { ...x, ...r }); setSaid(""); }
+    catch (e) { setSaid((e as Error).message); }
+  };
+  const v = s.settings;
+  const Row = ({ k, label, children }: { k: string | string[]; label: string; children: React.ReactNode }) => {
+    const keys = Array.isArray(k) ? k : [k], own = keys.some((x) => x in s.own);
+    return (
+      <YStack gap={4} marginTop={8}>
+        <XStack gap={8} alignItems="baseline" flexWrap="wrap">
+          <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{label}</Text>
+          {own ? <Text fontSize={12} color="$color9" cursor="pointer" role="button"
+                       onPress={() => set(Object.fromEntries(keys.map((x) => [x, null])))}>{"this one's own · back to every device's"}</Text>
+               : <Text fontSize={12} color="$color10">as every device</Text>}
+        </XStack>
+        {children}
+      </YStack>
+    );
+  };
+  return (
+    <YStack backgroundColor="$color2" borderRadius={6} padding={12} gap={2} marginTop={6}>
+      <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">ITS OWN SETTINGS</Text>
+      <Row k={["sound", "volume"]} label="SOUND">
+        <Choice value={v.sound ? v.volume : 0} options={[[0, "Off"], [20, "Quiet"], [40, "Middle"], [70, "Loud"], [100, "Loudest"]]}
+                onPick={(x) => set(x === 0 ? { sound: false } : { sound: true, volume: x })} ink={ink} />
+      </Row>
+      <Row k="wakeSound" label="THE WAKE JINGLE">
+        <Choice value={v.wakeSound ?? "power"} options={[["power", "When it starts"], ["every", "Every time it wakes"]]}
+                onPick={(wakeSound) => set({ wakeSound })} ink={ink} />
+      </Row>
+      <Row k="home" label="HOME, WHERE IT WAKES">
+        <Choice<DeviceSettings["home"]> value={v.home} options={[["daemon", "The daemon"], ["today", "Today's step"]]} onPick={(home) => set({ home })} ink={ink} />
+      </Row>
+      <Row k="sleepAfter" label="SLEEP WHEN LEFT ALONE">
+        <Choice value={v.sleepAfter} options={[[30, "30 s"], [60, "1 min"], [120, "2 min"], [300, "5 min"], [0, "Never"]]} onPick={(sleepAfter) => set({ sleepAfter })} ink={ink} />
+      </Row>
+      <Row k="ring" label="THE RING AT REST">
+        <Choice value={v.ring} options={[[0, "Off"], [15, "Dim"], [33, "A third"], [60, "Bright"]]} onPick={(ring) => set({ ring })} ink={ink} />
+      </Row>
+      {said ? <Small color="$color8">{said}</Small> : null}
+    </YStack>
+  );
+}
+
 export function DeviceScreen({ ink }: { ink: string }) {
+  const [mine, setMine] = useState<string | null>(null);   // C-160: the device whose own settings are open
   const [link, setLink] = useState<Link | null>(null);
   const [error, setError] = useState("");
   const [ran, setRan] = useState<number | null>(null);
@@ -132,8 +189,12 @@ export function DeviceScreen({ ink }: { ink: string }) {
             <XStack key={d.id} gap={12} marginTop={8} alignItems="flex-start">
             <DeviceSprite kind={d.kind} size={52} dim={!d.here} />
             <YStack gap={4} flex={1}>
-              <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
-                {`${lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
+              <XStack justifyContent="space-between" alignItems="baseline" gap={8} cursor="pointer" role="button"
+                      onPress={() => setMine(mine === d.id ? null : d.id)}>
+                <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
+                  {`${lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
+                <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color9">{mine === d.id ? "CLOSE" : "ITS SETTINGS ›"}</Text>
+              </XStack>
               <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone"
                                            : d.via === "relay" ? "its own Wi-Fi, away" : "Wi-Fi"}`
                                 : `last heard ${new Date(d.lastSeen).toLocaleString()}`,
@@ -151,6 +212,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
                     redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
+              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} /> : null}
             </YStack>
             </XStack>
           ))}
@@ -232,8 +294,8 @@ export function DeviceScreen({ ink }: { ink: string }) {
         <Small>One list for all your devices (DRAFT): a network learned on any of them, or added here, is learned by every
           one the next time it is in touch, and one forgotten is forgotten by all. Each joins whichever it is near.</Small>
         {(link.shared ?? link.networks).length === 0 ? <Small color="$color10">None learned yet.</Small> : null}
-        {(link.shared ?? link.networks).map((n) => (
-          <XStack key={n} alignItems="center" gap={8} paddingVertical={2}>
+        {(link.shared ?? link.networks).map((n, i) => (
+          <XStack key={`${i}:${n}`} alignItems="center" gap={8} paddingVertical={2}>
             <Text flex={1} fontSize={15} fontWeight={n === link.currentNetwork ? "700" : "400"} color="$color12">
               {`${n}${n === link.currentNetwork ? "  (on it now)" : ""}`}</Text>
             <Action label="Forget everywhere" onPress={async () => setForgot((await api<{ id: number }>("/api/device/network", { op: "forget", ssid: n })).id)} ink={ink} />

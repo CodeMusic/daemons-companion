@@ -54,10 +54,9 @@ static String kindName(const String &kind) {
 // C-160 (the user, 2026-10-18: "tap the device to open its specific settings -- sound style, volume (or mute), along with
 // any other device specific settings"): one device's own settings over every device's (GET/POST /api/devices/<id>/settings)
 // -- each row this one's own or as every device, and back to every device's in one tap. Every word DRAFT.
-static String ownPath, ownTaps[40]; static int ownTapN = 0;
+static String ownPath, ownId, ownTaps[40]; static int ownTapN = 0;
 static void ownTap(lv_event_t *e) { netSend("POST", ownPath, ownTaps[(int)(long)lv_event_get_user_data(e)]); }
-static void ownChoice(lv_obj_t *box, JsonDocument &d, const char *head, const char *const keys[], int nk,
-                      const char *const names[], const char *const bodies[], int n, int on) {
+static void ownHead(lv_obj_t *box, JsonDocument &d, const char *head, const char *const keys[], int nk) {
   bool own = false;
   for (int k = 0; k < nk; k++) own |= !d["own"][keys[k]].isNull();
   lv_obj_t *h = row(box);
@@ -67,8 +66,86 @@ static void ownChoice(lv_obj_t *box, JsonDocument &d, const char *head, const ch
     ownTaps[ownTapN] = back;
     button(h, "this one's own - back to every device's", ownTap, (void *)(long)ownTapN++, false);
   } else label(h, "as every device", &lv_font_montserrat_16, QUIET);
+}
+static void ownChoice(lv_obj_t *box, JsonDocument &d, const char *head, const char *const keys[], int nk,
+                      const char *const names[], const char *const bodies[], int n, int on) {
+  ownHead(box, d, head, keys, nk);
   lv_obj_t *r = row(box);
   for (int i = 0; i < n && ownTapN < 40; i++) { ownTaps[ownTapN] = bodies[i]; button(r, names[i], ownTap, (void *)(long)ownTapN++, i == on); }
+}
+// C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, each drawn small
+// with the device's own daemon -- the season's sky behind it while SEASON AND WEATHER is on -- for the boards that draw the
+// round face (the T-Watch S3, the Dial, the CoreS3). Every word DRAFT.
+static bool roundFace(const String &id) { return id.startsWith("t-watch-s3-") || id.startsWith("m5-dial-") || id.startsWith("m5-cores3-"); }
+static int ownDaemonSlot() {                         // the daemon the device hosts, from the kept devices
+  JsonDocument dv = newDoc();
+  if (!kept("devices", dv)) return -1;
+  for (JsonObject r : dv["devices"].as<JsonArray>())
+    if (ownId == String((const char *)(r["id"] | ""))) return r["daemon"].isNull() ? -1 : (int)(r["daemon"]["slot"] | -1);
+  return -1;
+}
+static void facePicture(lv_obj_t *parent, const char *face, bool sky, int slot) {
+  const int S = 120;
+  lv_obj_t *o = lv_obj_create(parent);
+  lv_obj_remove_style_all(o); lv_obj_set_size(o, S, S);
+  lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0); lv_obj_set_style_clip_corner(o, true, 0);
+  lv_obj_set_style_bg_opa(o, LV_OPA_COVER, 0); lv_obj_set_style_bg_color(o, lv_color_hex(0x16181D), 0);
+  lv_obj_set_style_border_width(o, 3, 0); lv_obj_set_style_border_color(o, lv_color_hex(0x833131), 0);
+  lv_obj_remove_flag(o, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(o, LV_OBJ_FLAG_CLICKABLE);
+  bool virtue = !strcmp(face, "virtue");
+  if (sky && !virtue) {                              // the season's sky, and its hill
+    lv_obj_t *b = lv_obj_create(o); lv_obj_remove_style_all(b); lv_obj_set_size(b, S, S);
+    lv_obj_set_style_bg_opa(b, LV_OPA_COVER, 0); lv_obj_set_style_bg_color(b, lv_color_hex(0x3A2318), 0);
+    lv_obj_t *h = lv_obj_create(o); lv_obj_remove_style_all(h); lv_obj_set_size(h, S + 30, S * 3 / 4); lv_obj_set_pos(h, -15, S * 3 / 4);
+    lv_obj_set_style_radius(h, LV_RADIUS_CIRCLE, 0); lv_obj_set_style_bg_opa(h, LV_OPA_COVER, 0); lv_obj_set_style_bg_color(h, lv_color_hex(0x6B3A1C), 0);
+  }
+  if (virtue) {
+    lv_obj_t *t = label(o, "13:06", &lv_font_montserrat_28, lv_color_hex(0xF3F1EA)); lv_obj_align(t, LV_ALIGN_CENTER, 0, -10);
+    for (int k = 0; k < 2; k++) {
+      lv_obj_t *bar = lv_obj_create(o); lv_obj_remove_style_all(bar); lv_obj_set_size(bar, k ? 36 : 60, 5);
+      lv_obj_set_style_radius(bar, 2, 0); lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, 0);
+      lv_obj_set_style_bg_color(bar, lv_color_hex(k ? 0x7A7F88 : 0xC9C6BD), 0); lv_obj_align(bar, LV_ALIGN_CENTER, 0, 16 + k * 10);
+    }
+    return;
+  }
+  bool clock = !strcmp(face, "clock");
+  if (slot >= 0) { lv_obj_t *pic = picture(o, "p" + String(slot), clock ? 256 : 224); lv_obj_align(pic, LV_ALIGN_CENTER, 0, clock ? 0 : 10); }
+  if (!clock) { lv_obj_t *t = label(o, "13:06", &lv_font_montserrat_16, lv_color_hex(0xF3F1EA)); lv_obj_align(t, LV_ALIGN_TOP_MID, 0, 10); return; }
+  static lv_point_precise_t minute[2] = { { 60, 60 }, { 84, 32 } }, hour[2] = { { 60, 60 }, { 40, 46 } };
+  for (lv_point_precise_t *pts : { minute, hour }) {
+    lv_obj_t *l = lv_line_create(o); lv_line_set_points(l, pts, 2);
+    lv_obj_set_style_line_width(l, 5, 0); lv_obj_set_style_line_rounded(l, true, 0); lv_obj_set_style_line_color(l, lv_color_hex(0xF3F1EA), 0);
+  }
+  lv_obj_t *dot = lv_obj_create(o); lv_obj_remove_style_all(dot); lv_obj_set_size(dot, 12, 12); lv_obj_align(dot, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0); lv_obj_set_style_bg_opa(dot, LV_OPA_COVER, 0); lv_obj_set_style_bg_color(dot, lv_color_hex(0x833131), 0);
+}
+static void ownFaces(lv_obj_t *box, JsonDocument &d) {
+  JsonObject v = d["settings"];
+  String face = (const char *)(v["face"] | "daemon"); bool sky = v["faceSky"] | true;
+  static const char *const FACE_K[] = { "face" };
+  ownHead(box, d, "ITS FACE", FACE_K, 1);
+  static const char *const F[] = { "daemon", "clock", "virtue" }, *const FN[] = { "DAEMON", "CLOCK", "VIRTUE" };
+  static const char *const FA[] = { "the daemon in the middle, the time above", "its hands over the daemon", "the day's words: the watch's first face" };
+  int slot = ownDaemonSlot();
+  lv_obj_t *r = row(box);
+  for (int i = 0; i < 3 && ownTapN < 40; i++) {
+    lv_obj_t *c = lv_obj_create(r);
+    lv_obj_set_size(c, 190, LV_SIZE_CONTENT); lv_obj_set_style_pad_all(c, 10, 0); lv_obj_set_style_radius(c, 10, 0);
+    lv_obj_set_style_bg_opa(c, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(c, face == F[i] ? 4 : 0, 0); lv_obj_set_style_border_color(c, DAY, 0);
+    lv_obj_set_flex_flow(c, LV_FLEX_FLOW_COLUMN); lv_obj_set_flex_align(c, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_remove_flag(c, LV_OBJ_FLAG_SCROLLABLE);
+    facePicture(c, F[i], sky, slot);
+    label(c, FN[i], &lv_font_montserrat_20, INK);
+    lv_obj_t *about = label(c, FA[i], &lv_font_montserrat_16, QUIET, LV_PCT(100)); lv_obj_set_style_text_align(about, LV_TEXT_ALIGN_CENTER, 0);
+    ownTaps[ownTapN] = String("{\"face\":\"") + F[i] + "\"}";
+    lv_obj_add_flag(c, LV_OBJ_FLAG_CLICKABLE); lv_obj_add_event_cb(c, ownTap, LV_EVENT_CLICKED, (void *)(long)ownTapN++);
+  }
+  static const char *const SKY_K[] = { "faceSky" };
+  static const char *const SKY_N[] = { "On", "Off" };
+  static const char *const SKY_B[] = { "{\"faceSky\":true}", "{\"faceSky\":false}" };
+  ownChoice(box, d, "SEASON AND WEATHER", SKY_K, 1, SKY_N, SKY_B, 2, sky ? 0 : 1);
+  label(box, "The season's sky behind the daemon and the weather in front, on the DAEMON and CLOCK faces.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
 }
 static void drawOwnSettings(lv_obj_t *box, JsonDocument &d) {
   ownTapN = 0;
@@ -99,12 +176,13 @@ static void drawOwnSettings(lv_obj_t *box, JsonDocument &d) {
   static const int RG_V[] = { 0, 15, 33, 60 };
   int rg = -1, rv = v["ring"] | 15; for (int i = 0; i < 4; i++) if (RG_V[i] == rv) rg = i;
   ownChoice(box, d, "THE RING AT REST", RG_K, 1, RG_N, RG_B, 4, rg);
+  if (roundFace(ownId)) ownFaces(box, d);           // C-162, C-163
 }
 static std::vector<String> ownIds;
 static void tapOwnSettings(lv_event_t *e) {
   const String &id = ownIds[(int)(long)lv_event_get_user_data(e)];
   String kind = id.lastIndexOf('-') > 0 ? id.substring(0, id.lastIndexOf('-')) : id;
-  ownPath = "/api/devices/" + id + "/settings";
+  ownId = id; ownPath = "/api/devices/" + id + "/settings";
   openWatched(kindName(kind) + (id == deviceId() ? " (this one)" : "") + ": ITS OWN SETTINGS", ownPath, drawOwnSettings);
 }
 

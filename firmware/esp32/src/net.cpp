@@ -547,6 +547,8 @@ void handleLine(String line, bool fromPhone) {
           " want " + st.daemon.artKey + " | last " + artTold);
   else if (line == "WATCH" && !fromPhone) reply(watchStatus());   // C-98
   else if (line == "CASTS?" && !fromPhone) reply(castStatus());
+  else if (line == "PLAY?" && !fromPhone) reply(playStatus());      // T-426: the instrument, its lock, the songs
+  else if (line == "PLAY UNLOCK" && !fromPhone) { playBenchUnlock(); reply(playStatus()); }   // T-426: a bench check
   else if (line.startsWith("I2C ") && !fromPhone) {               // C-136: I2C sda scl -- who answers on those pins
     int sda = line.substring(4).toInt(), scl = line.substring(line.lastIndexOf(' ') + 1).toInt();
     // a bus held low (no pull-ups, or a chip holding it) hangs every address's wait: looked at first, and refused

@@ -270,6 +270,7 @@ void castFromState(JsonArrayConst casts) {
 void routineInput(int &step, int &ev) {
   readDeck();
   step = dialStep(); ev = 0;
+  if (cableKey == 1 || cableKey == -1) { ev = cableKey; cableKey = 0; return; }   // KEY PRESS / KEY BACK, read by progress()
   int g = watchGesture();
   if (g == 1 || g == -1) step = g; else if (g == 2) ev = 1; else if (g == -2) ev = -1;
   static bool l = false, r = false, s = false, f = false; static uint32_t lAt = 0, sAt = 0, fAt = 0;

@@ -130,6 +130,9 @@ void inputBegin();
 void readEncoder();
 int dialStep();                           // one detent, read and spent (a routine tuning a radio)
 void routineInput(int &step, int &ev);    // C-134 (broadcast.cpp): every board's controls inside a routine; C-148 GLOW too
+void playFromState(JsonVariantConst p);    // T-426 (play.cpp): what the save holds of the instrument
+void playBenchUnlock();                    // T-426: PLAY UNLOCK down the cable -- open on this board until it restarts
+String playStatus();                       // T-426: PLAY? down the cable
 void readKey();
 void turn(int step);
 void press();

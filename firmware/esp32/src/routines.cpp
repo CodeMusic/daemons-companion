@@ -19,6 +19,7 @@ String runWhatRemote();                   // FLARE: radios.cpp
 String runListenFm(); String runStaticSynth(); String runListenAm(); String runLightning();   // C-69, C-70: radio.cpp
 String runNearby(); String runCallOut();   // C-72: MESH (LoRa), lora.cpp
 #include "broadcast.h"                    // C-134: CHORUS, broadcast.cpp
+String runSongbook(); String runPlayFreely();   // T-426: MUSIC, play.cpp
 String runSeeTheHeat(); String runWarmestThing(); String runSomeonesHere(); String runHowWarm();   // C-148: GLOW, glow.cpp
 #include "casino.h"                       // C-149: CASINO, casino.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
@@ -36,6 +37,7 @@ static const Routine CONTEXT_ROUTINES[]    = { { "CHANNEL", runListenFm }, { "ST
 static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
 static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
 static const Routine MESH_ROUTINES[]       = { { "NEARBY", runNearby }, { "CALL OUT", runCallOut } };   // C-72: LoRa, DRAFT (MESH was held for it, PLAN 10)
+static const Routine MUSIC_ROUTINES[]      = { { "SONGBOOK", runSongbook }, { "PLAY FREELY", runPlayFreely } };   // T-426, DRAFT
 static const Routine CHORUS_ROUTINES[]     = { { "TO EVERY DAEMON", runToEveryone }, { "WHAT CAME", runWhatCame } };   // C-134, DRAFT
 static const Routine GLOW_ROUTINES[]      = { { "SEE THE HEAT", runSeeTheHeat }, { "WARMEST THING", runWarmestThing },
                                                { "SOMEONE'S HERE", runSomeonesHere }, { "HOW WARM IS THAT", runHowWarm } };   // C-148: the user's names, DRAFT
@@ -53,6 +55,7 @@ void routinesBegin() {
   if (board.ir)     types[typeCount++] = board.irRx >= 0 ? RoutineType{ "FLARE", "IR", FLARE_ROUTINES, 7 }
                                                          : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
+  if (board.keyboard) types[typeCount++] = { "MUSIC",      "the game's instrument", MUSIC_ROUTINES, 2 };   // T-426: the boards with number keys, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 2 };
   else if (board.keyboard) types[typeCount++] = { "TOUCHSTONE", "a card, through a reader", NOTE_ROUTINES, 1 };   // C-124

@@ -780,6 +780,9 @@ void progress(const String &text) {
     else if (in == "KEY PRESS") cableKey = 1;      // C-101: a routine that runs the dial itself, checked from the computer
     else if (in == "KEY PRESS2") cableKey = 2;
     else if (in == "KEY BACK") cableKey = -1;
+    else if (in.startsWith("KEY TYPE ") && in.length() > 9) keyboardIn(in[9]);   // T-426: a key, as if typed (one a line)
+    else if (in == "KEY ENTER") keyboardIn(13);
+    else if (in == "KEY BKSP") keyboardIn(8);
     in = "";
   }
 }

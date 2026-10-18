@@ -5,6 +5,7 @@
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import { StatusBar } from "expo-status-bar";
 import { DenStage } from "./Den";                    // C-113
+import { BETS, OUTCOMES, PAYS, draw, piecesFor, resultDetail, tableAct, type Piece } from "../server/src/slots";   // C-155: the boards' table
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "./deviceSprites";   // C-130
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Appearance, AppState, Image, Linking, Platform, useColorScheme, View } from "react-native";
@@ -789,6 +790,7 @@ function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void
           {ON_PHONE ? <Action label={reading ? "Reading…" : "Read aloud"} onPress={() => readAloud(open.species)} ink={ink} /> : null}
         </Card>
       ) : null}
+      <RoutinesCard ink={ink} />
       <NearbyCard ink={ink} />
       <MeetingsCard />
     </YStack>
@@ -817,6 +819,157 @@ const ACTS: { acts: Act[]; casino?: Act[] } = require("../server/data/acts.json"
 function castLine(c: Cast) {
   const a = [...ACTS.acts, ...(ACTS.casino ?? [])].find((x) => x.code === c.act);   // C-151: the CASINO's acts too
   return c.kind === "say" ? `${c.name}: ${c.text ?? ""}` : `${c.name} ${(c.kind === "reply" ? a?.reply : a?.seen) ?? ""}`;
+}
+
+// C-155 (the user, 2026-10-18: "we should have routines on the phone app too -- including casino"): ROUTINES on the app and
+// the site -- THE CASINO, played as a device of its own (on the phone the widget's, so its JACK is the widget's daemon;
+// the site keeps an id of its own), by server/src/slots.ts, the boards' own table; and the party's game routines.
+// Every word DRAFT.
+type PlayerState = { season: string; daemon: { slot: number; nickname: string } | null;
+                     casino: { balance: number; friends: number[]; table: { name: string; device: string }[] } | null;
+                     party: { name: string; routines: { name: string; colour: string }[] }[] };
+let PLAYER_ID: Promise<string> | null = null;
+function playerId(): Promise<string> {
+  if (PLAYER_ID) return PLAYER_ID;
+  PLAYER_ID = (async () => {
+    if (WIDGET) return WIDGET.widgetId();
+    let id: string | null = null;
+    try { id = globalThis.localStorage?.getItem("player-id") ?? null; } catch { /* a private window */ }
+    if (!id) {
+      id = `site-${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}`;
+      try { globalThis.localStorage?.setItem("player-id", id); } catch { /* kept for this visit only */ }
+    }
+    return id;
+  })();
+  return PLAYER_ID;
+}
+const CASINO_BOOT = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");   // this start of the app
+let casinoSeq = 0;
+const SEASON_INK: Record<string, string> = { winter: "#9cc3e6", spring: "#7cc47c", summer: "#e8c547", autumn: "#d9822b" };
+
+function RoutinesCard({ ink }: { ink: string }) {
+  const [open, setOpen] = useState<"casino" | "party" | null>(null);
+  return (
+    <Card>
+      <Eyebrow>ROUTINES</Eyebrow>
+      <XStack gap={8} flexWrap="wrap" marginTop={4}>
+        <Action label={open === "casino" ? "Leave the CASINO" : "THE CASINO"} ink={ink} onPress={() => setOpen(open === "casino" ? null : "casino")} />
+        <Action label={open === "party" ? "Close" : "YOUR PARTY'S ROUTINES"} ink={ink} onPress={() => setOpen(open === "party" ? null : "party")} />
+      </XStack>
+      {open === "casino" ? <Casino ink={ink} /> : null}
+      {open === "party" ? <PartyRoutines /> : null}
+    </Card>
+  );
+}
+
+function PartyRoutines() {
+  const [st, setSt] = useState<PlayerState | null>(null);
+  const [said, setSaid] = useState("");
+  useEffect(() => { playerId().then((id) => api<PlayerState>(`/api/device/state?device=${id}`)).then(setSt).catch(() => {}); }, []);
+  if (!st) return <Small>Asking the companion…</Small>;
+  return (
+    <YStack gap={10} marginTop={8}>
+      {said ? <Text fontFamily="$mono" fontSize={14} fontWeight="700" color="$color12">{said}</Text> : null}
+      {st.party.map((m, i) => (
+        <YStack key={i} gap={4}>
+          <Text fontFamily="$mono" fontSize={13} letterSpacing={1} color="$color11">{m.name}</Text>
+          <XStack gap={6} flexWrap="wrap">
+            {m.routines.map((r) => (
+              <XStack key={r.name} paddingHorizontal={10} paddingVertical={6} borderRadius={4} borderWidth={2} borderColor={r.colour}
+                      cursor="pointer" role="button" onPress={() => setSaid(`${m.name} used ${r.name}!`)}>
+                <Text fontFamily="$mono" fontSize={12} color="$color12">{r.name}</Text>
+              </XStack>
+            ))}
+          </XStack>
+        </YStack>
+      ))}
+    </YStack>
+  );
+}
+
+function Casino({ ink }: { ink: string }) {
+  const [id, setId] = useState<string | null>(null);
+  const [st, setSt] = useState<PlayerState | null>(null);
+  const [bet, setBet] = useState(BETS[0]);
+  const [reels, setReels] = useState<Piece[]>([4, 0, 5]);
+  const [spinning, setSpinning] = useState(false);
+  const [said, setSaid] = useState("");
+  const unsent = useRef({ delta: 0, spins: 0 });
+  const [owed, setOwed] = useState(0);                      // what this player has won or lost that the companion has not heard
+  const load = useCallback(async (who: string) => { setSt(await api<PlayerState>(`/api/device/state?device=${who}`)); }, []);
+  const report = useCallback(async (who: string) => {
+    const u = unsent.current;
+    if (!u.spins) return;
+    const detail = resultDetail(u.delta, CASINO_BOOT, ++casinoSeq, who, u.spins);
+    unsent.current = { delta: 0, spins: 0 };
+    try { await api("/api/device/interact", { kind: "casino", detail }); setOwed(0); await load(who); }
+    catch { unsent.current = { delta: unsent.current.delta + u.delta, spins: unsent.current.spins + u.spins }; }
+  }, [load]);
+  useEffect(() => {
+    let who = "";
+    const seat = (how: "here" | "gone") => api("/api/device/interact", { kind: "table", detail: `${how} ${who}` }).catch(() => {});
+    playerId().then((p) => { who = p; setId(p); load(p).catch(() => {}); seat("here"); });
+    const t = setInterval(() => { if (who) { seat("here"); report(who); load(who).catch(() => {}); } }, 60000);
+    return () => { clearInterval(t); if (who) { report(who); seat("gone"); } };
+  }, [load, report]);
+  if (!st || !id) return <Small>Taking a seat…</Small>;
+  if (!st.casino) return <Small>The CASINO plays with your save's money: choose your save on SETTINGS first.</Small>;
+  const balance = Math.max(0, Math.min(999999, st.casino.balance + owed));
+  const jack = st.daemon?.slot ?? st.casino.friends[0];
+  const friends = st.daemon ? st.casino.friends : st.casino.friends.slice(1);
+  const pull = () => {
+    if (spinning || bet > balance) return;
+    const o = draw(), want = piecesFor(o), won = bet * PAYS[o] - bet;
+    setSpinning(true); setSaid("");
+    let ticks = 0;
+    const t = setInterval(() => {
+      ticks++;
+      setReels((r) => r.map((p, i) => (ticks >= 9 + i * 4 ? want[i] : (((p + 1 + i) % 6) as Piece))));
+      if (ticks >= 17) {
+        clearInterval(t); setReels(want); setSpinning(false);
+        unsent.current = { delta: unsent.current.delta + won, spins: unsent.current.spins + 1 };
+        setOwed((n) => n + won);
+        setSaid(o === 0 ? `-${bet}` : `${OUTCOMES[o] === "JACK3" ? "JACKPOT! " : ""}+${(bet * PAYS[o]).toLocaleString()}`);
+        const act = tableAct(o);
+        if (act) api("/api/broadcast", { kind: "act", act }).catch(() => {});
+        if (unsent.current.spins >= 10) report(id);
+      }
+    }, 80);
+  };
+  const piece = (p: Piece) => {
+    const slot = p === 0 ? jack : p <= 3 ? friends[p - 1] : undefined;
+    if (slot !== undefined) return <Art path={`/art/party/${slot}.png`} size={72} />;
+    if (p === 4) return <YStack width={56} height={56} borderRadius={28} backgroundColor="#e8b830" borderWidth={3} borderColor="#a07a10" />;
+    if (p === 5) return <Text fontFamily="$mono" fontSize={14} fontWeight="800" color={SEASON_INK[st.season] ?? "$color12"}>{st.season.toUpperCase()}</Text>;
+    return <Text fontFamily="$mono" fontSize={12} color="$color10">?</Text>;
+  };
+  return (
+    <YStack gap={12} marginTop={10}>
+      <XStack justifyContent="space-between" alignItems="baseline">
+        <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color11">COINS</Text>
+        <Text fontFamily="$mono" fontSize={22} fontWeight="800" color="$color12">{balance.toLocaleString()}</Text>
+      </XStack>
+      <XStack gap={8} justifyContent="center">
+        {reels.map((p, i) => (
+          <YStack key={i} width={88} height={88} borderRadius={6} borderWidth={2} borderColor="$color9" backgroundColor="$color2"
+                  alignItems="center" justifyContent="center">{piece(p)}</YStack>
+        ))}
+      </XStack>
+      {said ? <Text textAlign="center" fontFamily="$mono" fontSize={18} fontWeight="800" color={said.startsWith("-") ? "$color10" : "$color9"}>{said}</Text> : null}
+      <XStack gap={6} flexWrap="wrap" justifyContent="center">
+        {BETS.map((b) => (
+          <XStack key={b} paddingHorizontal={10} paddingVertical={6} borderRadius={4} borderWidth={2}
+                  borderColor={b === bet ? "$color9" : "$color5"} opacity={b > balance ? 0.35 : 1}
+                  cursor="pointer" role="button" onPress={() => b <= balance && setBet(b)}>
+            <Text fontFamily="$mono" fontSize={12} color="$color12">{b}</Text>
+          </XStack>
+        ))}
+      </XStack>
+      <Action label={spinning ? "…" : `PULL (${bet})`} ink={ink} onPress={pull} />
+      <Small color="$color10">{`Three of ${st.daemon?.nickname ?? "your daemon"} pays fifty times. What you win or lose reaches your save at the next SYNC.`}</Small>
+      {st.casino.table.length ? <Small>{`At the table: ${st.casino.table.map((t) => t.name).join(", ")}.`}</Small> : null}
+    </YStack>
+  );
 }
 
 function NearbyCard({ ink }: { ink: string }) {

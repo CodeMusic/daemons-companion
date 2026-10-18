@@ -774,7 +774,7 @@ String runSlots() {
       phase = SHOWING; shownAt = now;
       won = bet * PAYS[outcome];
       if (!rigged) { unreported += won; sessionDelta += won; slots::learn(cat, outcome); }   // a rigged pull is never paid, nor learned from
-      Serial.printf("CASINO %d %ld %ld %ld\n", outcome, bet, won, balance());   // for a check from the computer: its result, bet, win, money
+      Serial.printf("CASINO %d %ld %ld %ld %d\n", outcome, bet, won, balance(), nearWanted >= 0 ? 1 : 0);   // for a check from the computer: its result, bet, win, money, and whether it fell near
       draw();                                    // seen before it is heard: without PSRAM the phrase plays here
       // C-158: the words the phone says too -- a near miss is SO CLOSE, two JACKs ALMOST THE JACKPOT
       if (outcome == O_LOSE) { note = nearWanted >= 0 ? "SO CLOSE" : "NO WIN"; soundSlots(1, lookNow()); }   // DRAFT

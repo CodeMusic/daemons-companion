@@ -9,7 +9,8 @@ import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
 import { Action, Art, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
 import { useApi } from "../useApi";
-import { PlayBook, PREVIEW } from "./Play";
+import { previewQuery } from "../preview";
+import { PlayBook } from "./Play";
 import { SubtleBook, type SubtleT } from "./Subtle";
 
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
@@ -85,7 +86,7 @@ export function PracticePaper() {
 export function LibraryScreen() {
   const dayInk = useInk();
   const [book, setBook] = useState<"school" | "guide" | "subtle" | "notebook" | "songbook" | "stream" | null>(null);
-  const [sub] = useApi<SubtleT>(`/api/subtle${PREVIEW ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
+  const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {

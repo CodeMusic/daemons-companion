@@ -24,6 +24,7 @@ import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import { SHOWN_TABS, TABS, Today } from "./types";
 import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
+import { loadPreview } from "./preview";
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void }) {
   const strip = useRef<any>(null);
@@ -178,6 +179,7 @@ export default function App() {
   // C-144: the paper or the night -- chosen, or AUTO as the phone or the computer is set
   const [look, seeLook] = useState(LOOK);
   useEffect(() => { const f = () => seeLook(LOOK); lookHeard.add(f); loadLook().then(f); return () => { lookHeard.delete(f); }; }, []);
+  useEffect(() => { loadPreview(); }, []);                  // SETTINGS' PREVIEW, a bench check (preview.ts)
   const system = useColorScheme();
   const scheme = look === "auto" ? (system === "dark" ? "dark" : "light") : look;
   useEffect(() => {   // the site's own pieces too: its scroll bars, and the page behind the app

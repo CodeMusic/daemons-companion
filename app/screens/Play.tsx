@@ -14,6 +14,7 @@ import { Animated, Easing, Image, PanResponder, Platform, View } from "react-nat
 import { createAudioPlayer, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder,
          useAudioRecorderState, type AudioPlayer } from "expo-audio";
 import { Text, XStack, YStack } from "tamagui";
+import { previewQuery } from "../preview";
 import { soundOf } from "../tuneSound";
 import { Action, Card, Eyebrow, PIXELATED, Small } from "../ui";
 import { useApi } from "../useApi";
@@ -48,10 +49,9 @@ function hear(played: number[], songs: Song[]): { song: Song; almost: boolean } 
   return null;
 }
 
-// on the site, ?preview=1 in the page's address asks the companion's bench check (as if held, every song learned)
-export const PREVIEW = Platform.OS === "web" ? (/[?&]preview=(1|harp|flute)\b/.exec(globalThis.location?.search ?? "")?.[0].replace(/^&/, "?") ?? "") : "";
+// SETTINGS' PREVIEW (or the site's ?preview=) asks the companion's bench check: as if held, every song learned
 export function PlayBook() {
-  const [p] = useApi<PlayData>(`/api/play${PREVIEW}`);
+  const [p] = useApi<PlayData>(`/api/play${previewQuery()}`);
   const [song, setSong] = useState<Song | "free" | null>(null);
   const [key, setKey] = useState<number | null>(null);
   if (!p) return null;

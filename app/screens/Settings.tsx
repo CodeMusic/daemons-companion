@@ -8,6 +8,7 @@ import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER } from 
 import { Settings } from "../types";
 import { Action, Card, Choice, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
+import { PREVIEW_ON, setPreview } from "../preview";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
@@ -25,6 +26,7 @@ export function AloneSettings({ ink }: { ink: string }) {
   return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
+      <PreviewCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={LOCAL?.hasSave() ? "$color9" : "$color5"}>
         <Eyebrow>THIS PHONE HOSTS ON ITS OWN</Eyebrow>
         <Small>{`Your ${LOCAL?.edition() ?? "DAEMONS"} save is kept on this phone, a copy of Delta's. After you play, bring the newer ` +
@@ -78,6 +80,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
   if (!s) return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
+      <PreviewCard ink={ink} />
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
       <LeaveCompanionCard ink={ink} />
@@ -86,6 +89,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
   return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
+      <PreviewCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
         <Text fontFamily="$mono" fontSize={13} color="$color12" wordWrap="break-word">{s.savePath ?? "not set"}</Text>
@@ -143,6 +147,18 @@ export function WeatherCard({ ink }: { ink: string }) {
         {w.place ? <Action label="Forget" onPress={() => save("")} ink={ink} /> : null}
       </XStack>
       {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+// SETTINGS' PREVIEW (preview.ts): PLAY and THE SUBTLE LAYER as if the game had given them -- a bench check, read only
+export function PreviewCard({ ink }: { ink: string }) {
+  const [on, setOn] = useState(PREVIEW_ON);
+  return (
+    <Card>
+      <Eyebrow>PREVIEW</Eyebrow>
+      <Small>Shows PLAY and THE SUBTLE LAYER as if the game had already given them, to check them before the game does.
+        Your save is never touched.</Small>
+      <Choice value={on} options={[[false, "Off"], [true, "On"]]} onPick={(v) => { setPreview(v); setOn(v); }} ink={ink} />
     </Card>
   );
 }

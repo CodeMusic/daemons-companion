@@ -14,7 +14,11 @@ pairing key still decides who gets in.
 
 **The phone app is the site** -- the same screens on the same server -- so away it does what the site does at home.
 Only what belongs to your computer stays at home: pairing a phone (and listing or forgetting phones), opening the
-server to the network, the file picker for the save, the relay's settings, and the cable and flashing.
+server to the network, the file picker for the save, the relay's settings, Home Assistant's address and token, and the
+cable and flashing.
+
+A phone hosting on its own (C-111) needs none of this: it has no companion to reach
+([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)).
 
 ## Set it up
 
@@ -37,12 +41,14 @@ everything, and pairing is refused.
 ## What works away
 
 - **The phone holds everything, and syncs.** It opens on what it last saw, at once, and brings it up to date when
-  home answers, and each time it comes back to the front. Away from the companion it says so: a toast at the foot,
-  and once dismissed, a small **AWAY** at the top right.
+  home answers, and each time it comes back to the front -- the day, the goal, the party and its art, the whole INDEX,
+  your PROFILE, the NOTEBOOK, GAME EVENTS, the LIBRARY (CALLOW SCHOOL and THE GUIDE) and NEARBY's broadcasts among it.
+  Away from the companion it says so: a toast at the foot, and once dismissed, a small **AWAY** at the top right.
 - **Nothing is lost.** Anything you change away -- goals, steps, care, the walk, settings -- is kept on the phone and
   sent in order when the companion answers. So is everything a board reports through the phone. The widget's presses
-  too: *Kept until home answers.* Only what needs an answer at once (talking, a voice, SYNC, telling a board to act
-  now) waits for a connection.
+  too: *Kept until home answers.* -- the widget sends them itself the next time it reaches the companion. Only what
+  needs an answer at once (talking, a voice, SYNC, telling a board to act now, a tap on HOME) waits for a connection;
+  a tap on HOME is never saved up to happen later.
 - **Read aloud and talk work away** -- the relay waits up to a minute for a voice.
 - **A board away** goes out through the paired phone, or on a Wi-Fi it knows asks the relay itself with its own key
   (given only down its cable at home -- so link each board by cable once after the relay is set). Talking and read
@@ -86,8 +92,10 @@ Until then, keep your computer's home address from moving:
 - **A DHCP reservation** on your router for the computer, so it always gets the same address.
 - **A Fixed private Wi-Fi address** on the computer: on a Mac, System Settings, Wi-Fi, *Details…* beside your network,
   **Private Wi-Fi address: Fixed** (a rotating one would change the address the router sees).
-- **Pair the phone by name**, `<your-computer>.local:4730`, so the phone finds it at home whatever its address
-  ([Host on your phone](Host-on-your-phone#5-pair-it)).
+- **Pair the phone by name**, `http://<your-computer>.local:4730` -- the address the site's PAIR A PHONE now offers
+  -- so the phone finds it on any Wi-Fi the two share, whatever its address
+  ([Host on your phone](Host-on-your-phone#5-pair-it)). The name works only on a shared network; through the relay it
+  is the Forward node's address that counts.
 - Keep the server **open to your network** (the site, SETTINGS, PAIR A PHONE).
 
 ## Keep it reachable

@@ -30,27 +30,36 @@ background, and opens the site at <http://localhost:8081>. **Ctrl-C stops both.*
 Simulator, `a` the Android emulator, `r` reloads. A session started as a site can reach the others without starting
 again. If a server is already answering on the port, the script uses it, and leaves it running when you stop.
 
-The two scripts for boards, `updateCompanion.sh` and `linkCompanion.sh`, are on
-[Flashing and linking](Flashing-and-linking).
+The two scripts for boards, `updateCompanion.sh` and `linkCompanion.sh`, and the BOX-3's `firmware/box3/box3.sh`, are
+on [Flashing and linking](Flashing-and-linking).
 
 ## The site
 
 The site is the companion's own screen, on your computer, with **no logins**. It stays on your computer: the phone
 is the remote ([Away from home](Away-from-home)). The site is needed once per phone, to pair it, and for what only
-the computer can do -- opening the server to the network, the file picker for the save, the relay's settings, and the
-cable and flashing.
+the computer can do -- opening the server to the network, the file picker for the save, the relay's settings, Home
+Assistant's token, and the cable and flashing.
 
-The tabs:
+The tabs, the same on the site and the phone (on a narrow screen the strip scrolls, and a › at its right edge says
+there are more):
 
-- **TODAY** -- the day's theme, its virtue over its shadow, chakra and note, the season, and **THE ONE THING**: the one
-  next step. Each weekday has its own colours (`?day=tuesday` on the site previews another).
+- **TODAY** -- the day's theme, its virtue over its shadow, chakra and note, the season, the daemon in its den, and
+  **THE ONE THING**: the one next step. Each weekday has its own colours (`?day=tuesday` on the site previews another).
 - **GOALS** -- one goal, its steps and milestones, and WALKING.
-- **DAEMON** -- your party, drawn as the game draws it; **SYNC**; the hosted daemon's day and care; MET NEARBY.
-- **INDEX** -- every entry, and **LISTEN** to hear one read aloud.
-- **DEVICE** -- your devices, which daemon each hosts, their batteries, settings, routines, remotes and networks.
-- **PROFILE** -- the save's trainer, play time, INDEX counts, MARKS, DIPLOMA, OPUS, and where it was saved.
-- **SETTINGS** -- your save, the app's build, who answers when you talk; on the site also PAIR A PHONE and AWAY FROM
-  HOME.
+- **DAEMON** -- your party, drawn as the game draws it; **SYNC**; the hosted daemon's day and care (DRINK, FEED,
+  TRAIN, SLEEP, or WAKE while it sleeps); **NEARBY**, broadcasts to and from every daemon; MET NEARBY.
+- **INDEX** -- every entry, where each daemon is NATIVE, and **LISTEN** to hear one read aloud.
+- **DEVICE** -- your devices under their makers, a picture of each, which daemon each hosts, their batteries,
+  settings, routines, remotes and networks.
+- **HOME** -- Home Assistant's rooms and what is in them, each a tap, and the house asked in words
+  ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
+- **PROFILE** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES,
+  GAME EVENTS and the NOTEBOOK.
+- **LIBRARY** -- CALLOW SCHOOL, and THE GUIDE once your save has found it.
+- **SETTINGS** -- your save, the app's build and LIGHT OR DARK, who answers when you talk; on the phone THIS PHONE; on
+  the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
+
+PROFILE, the NOTEBOOK and the LIBRARY are on [Your game on the companion](Your-game-on-the-companion).
 
 ## The server
 

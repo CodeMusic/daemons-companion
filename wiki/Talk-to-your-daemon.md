@@ -13,9 +13,13 @@ anywhere you did not set up.
 | the T-Embed CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the cable; away from both, through the paired phone |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |
 | the T-Watch S3, the CoreS3 | **hold TALK** on the face | built, not yet run |
-| the StickS3, the M5GO, the Fire | **hold the face button** (the StickS3) or **B** (the M5GO and Fire, with the M5GO base) at home | built, not yet run |
+| the StickS3, the M5GO, the Fire | **hold the face button** (the StickS3) or **B** (the M5GO and Fire, with the M5GO base) at home; on the M5GO and Fire, C opens its INDEX entry and A reads it aloud | built, not yet run |
+| the StickC-Plus | **hold the face button** at home; the answer is shown, not spoken -- its buzzer plays tunes, not a voice. Its microphone rests while a GLOW routine runs | built, not yet run |
 | the T-Deck | **hold the ball** at home | built |
-| the Dial, the T-Display-S3 Pro | -- no microphone | |
+| the Dial, the T-Display-S3 Pro, the T-Display-S3 AMOLED | -- no microphone | |
+| the Cardputers | -- their microphones are not used yet | |
+| the BOX-3 | its **wake word**, or a tap on its screen: Home Assistant's own voice assistant, with the daemon for a face. With the companion as its conversation agent, the daemon answers ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)) | the box **runs**; the daemon as its agent built, not yet tried in a real Home Assistant |
+| a phone hosting on its own | -- talking needs the companion on a computer | |
 | away from home | talking and read aloud need home or the paired phone: the relay carries words, not a recording or a voice | |
 | no network at all | an LLM630 behind a T-Embed, chosen with `BRAIN` down the cable | client built, not yet run: [docs/LLM630.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/LLM630.md) |
 
@@ -52,3 +56,7 @@ read aloud reach the voice from anywhere.
 
 The server sends every recording on as a 16 kHz WAV, and hands a board the answer's voice as 16 kHz samples it streams
 straight into its speaker (`server/src/ai/voice.ts`; needs `ffmpeg`, or macOS's own `afconvert`).
+
+**Home Assistant uses the same talk.** As Home Assistant's conversation agent (C-142), the companion passes what was
+said, and the few turns before it, to `daemon/talk`, saying the home is asking and asking for words only: Home
+Assistant speaks the answer with its own voice pipeline. When the talk cannot be reached, the daemon says so in a line.

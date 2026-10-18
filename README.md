@@ -20,15 +20,19 @@ Nothing to buy. The phone in your pocket is the first host, and the one I would 
 2. **Start the companion** on your computer and show it a **copy** of your save -- never the only one
    (`./bindCompanion.sh`, then SETTINGS on the site it opens).
 3. **SYNC.** The daemon steps out of the game.
-4. **Put the app on your iPhone** (`./bindCompanion.sh phone`) and **pair** it (the site's SETTINGS, PAIR A PHONE).
+4. **Put the app on your iPhone** (`./bindCompanion.sh phone`) and **pair** it: the site's SETTINGS, PAIR A PHONE
+   offers your computer by its own name (`http://<name>.local:4730`), so the pairing holds wherever the two of you
+   share a Wi-Fi.
 5. **Add the DAEMONS widget** to your home screen. It hosts a daemon of its own -- choose which under DEVICE, YOUR
-   DEVICES, This phone's widget -- and its **FEED**, **WATER** and **TRAIN** work right there, without opening anything.
-   *Eaten. Drank. Trained.*
+   DEVICES, This phone's widget -- and its **DRINK**, **FEED**, **TRAIN** and, at bedtime, **SLEEP** work right there,
+   without opening anything. *Drank. Eaten. Trained. Asleep.*
 
 Every step, with what you should see: **[Host on your phone](https://github.com/CodeMusic/daemons-companion/wiki/Host-on-your-phone)**.
 
-*One honest note from the lab: today the phone still talks to the companion on a computer of yours, which keeps that
-copy of your save. A phone and a game that need nothing else is what I am working on next (C-111).*
+*One honest note from the lab: the phone can now host on its own, with no computer at all (SETTINGS, THIS PHONE HOSTS
+ON ITS OWN) -- your save comes over from Delta through Files and goes back by the share sheet (C-111). I have run it
+in the simulator; a whole round trip on a real phone, with a SEND, I have not yet seen. Until I have, the computer is
+the way I would start.*
 
 ## Any device can host one
 
@@ -38,32 +42,62 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | | a daemon hosted here... |
 |---|---|
 | **your phone** -- the app and its home-screen widget | lives on your home screen, and comes along for everything else |
-| **LilyGO T-Embed** (CC1101, plain, SI4732) | answers a dial that hums in the day's key; on the SI4732 it tunes the radio and **learns the stations** it hears |
-| **LilyGO T-Deck / T-Deck Plus** | can be typed to, and calls out over **LoRa** to daemons a street away |
+| **LilyGO T-Embed** (CC1101, plain, SI4732) | answers a dial that hums in the day's key; on the SI4732 it tunes the radio and **learns the stations** it hears; the CC1101 reads cards |
+| **LilyGO T-Deck / T-Deck Plus** | can be typed to, and types back: a message sent over **LoRa** to every board a street away |
 | **LilyGO T-Watch S3** | wears the day on its face, and keeps your steps |
-| **LilyGO T-Display-S3 Pro** | spreads out across a wide screen |
-| **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads tags held to its face |
+| **LilyGO T-Display-S3 Pro**, **T-Display-S3 AMOLED** | spreads out across a wide screen |
+| **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads cards held to its face; the M5GO and Fire hear LoRa with a module |
+| **M5StickC-Plus** with its Thermal HAT | **sees heat**: GLOW, a routine type of its own -- the warmest thing in the room, and when someone is there |
+| **M5Stack Cardputer / Cardputer ADV** | a keyboard in a pocket; the ADV's cap speaks LoRa |
 | **M5Stack Tab5** | runs **the control center**: every screen of the app, on a tablet of its own |
+| **Espressif ESP32-S3-BOX-3** | is **your home's voice assistant**: Home Assistant's own, with the daemon for a face and, if you like, its words |
 
-A few of these are still on my bench -- built, and waiting for their first run on the real thing. Each board's
-controls, pages, quirks and which ones run today: **[Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards)**.
-Flashing one takes one command: **[Flashing and linking](https://github.com/CodeMusic/daemons-companion/wiki/Flashing-and-linking)**.
+A few of these are still on my bench -- the T-Watch and the Cardputers are built and waiting for their first run on the
+real thing. Each board's controls, pages, quirks and which ones run today:
+**[Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards)**. Flashing one takes one command:
+**[Flashing and linking](https://github.com/CodeMusic/daemons-companion/wiki/Flashing-and-linking)**.
 
 ## What a hosted daemon does
 
-- **It keeps its day.** Fed, watered, trained, put to bed; a quiet line at a meal time, and one at bedtime. It never nags.
-- **It feels -- and you can see it.** Glad after a meal, sleepy at night, its eyes closing when it sleeps. I drew none
-  of that by hand: every host shades and shapes its own sprite, so it works for whichever daemon you bring out
+- **It keeps its day.** Given a drink, fed, trained, put to bed; a quiet line at a meal time, and one at bedtime. It
+  never nags.
+- **It feels -- and you can see it.** Glad after a meal, sleepy at night, its eyes closing when it sleeps, standing in a
+  den that looks like its type. I drew none of that by hand: every host shades and shapes its own sprite, so it works
+  for whichever daemon you bring out
   ([Feelings and expressions](https://github.com/CodeMusic/daemons-companion/wiki/Feelings-and-expressions)).
 - **It helps with yours.** Tell it what you want to get done and it finds **one next step**. Each step you finish is a
   meal, and experience it takes home at the next SYNC.
 - **It talks.** Hold to talk on the phone or a board, and it answers in its INDEX voice
   ([Talk to your daemon](https://github.com/CodeMusic/daemons-companion/wiki/Talk-to-your-daemon)).
 - **It reads you its INDEX entry** aloud -- or anyone's.
-- **It notices others.** Pass someone hosting a daemon of their own, and your INDEX sees theirs
+- **It plays.** Every board has **THE CASINO**: SLOTS, three reels of your own party, the season falling over them and
+  a holiday's dress when there is one. **The coins are your game's money** -- what the board wins or loses, the next
+  SYNC writes into your save. The odds are the Game Corner's: about 94 back for every 100 bet.
+- **It notices others.** Pass someone hosting a daemon of their own, and your INDEX sees theirs. It can wave, bow or
+  say a word to every daemon in reach -- over Bluetooth, your network or LoRa, and you see each one once
   ([Meeting others nearby](https://github.com/CodeMusic/daemons-companion/wiki/Meeting-others-nearby)).
+- **It keeps a card.** On a board with a reader, hold a card to it and put your daemon on it, take the one it holds,
+  or swap (built; its first real card is still to come).
+- **It can reach your home, if you let it.** HOME brings Home Assistant to the app, the site and the Tab5 (built; it
+  has yet to meet a real Home Assistant), and the BOX-3 wears the daemon's face
+  ([Home Assistant and the BOX-3](https://github.com/CodeMusic/daemons-companion/wiki/Home-Assistant-and-the-BOX-3)).
 - **It follows you out.** Away from home your phone reaches it through a relay of your own
   ([Away from home](https://github.com/CodeMusic/daemons-companion/wiki/Away-from-home)).
+
+## Your game, in your pocket
+
+The companion reads your save, so it can show you what you have done in there -- on the app, the site and the Tab5:
+
+- **PROFILE** -- you as the game draws you, your rival, your money and your MARKS as badges, each opening its page;
+  the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
+  the story so far.
+- **The NOTEBOOK**, to read: every page you have written in the game, the SONGBOOK's songs among them.
+- **LIBRARY** -- CALLOW SCHOOL, and THE GUIDE once you have found it in the game. **SCHOOL** keeps your DIPLOMA and
+  lets you sit the paper again, marked here and never in your save.
+- **The INDEX** -- every entry, read aloud if you like, and where each daemon is NATIVE.
+
+LIGHT, DARK or AUTO on every screen. It never shows what your save has not reached yet
+([Your game on the companion](https://github.com/CodeMusic/daemons-companion/wiki/Your-game-on-the-companion)).
 
 ## Starting it
 
@@ -86,8 +120,9 @@ When something does not answer: **[Troubleshooting](https://github.com/CodeMusic
 - [**CONTEXT.md**](CONTEXT.md) -- what this project is and who it is for.
 - [**docs/vision.md**](docs/vision.md) and [**docs/PLAN.md**](docs/PLAN.md) -- what it is for, and how each piece is built.
 - [**docs/DEVICES.md**](docs/DEVICES.md), [**docs/HARDWARE.md**](docs/HARDWARE.md), [**docs/REMOTE.md**](docs/REMOTE.md),
-  [**docs/LORA.md**](docs/LORA.md), [**docs/TAB5.md**](docs/TAB5.md), [**docs/LLM630.md**](docs/LLM630.md) -- the hosts, their
-  parts, the way home from anywhere, the mesh, the control center, the offline brain.
+  [**docs/LORA.md**](docs/LORA.md), [**docs/BROADCAST.md**](docs/BROADCAST.md), [**docs/TAB5.md**](docs/TAB5.md),
+  [**firmware/box3/README.md**](firmware/box3/README.md), [**docs/LLM630.md**](docs/LLM630.md) -- the hosts, their parts,
+  the way home from anywhere, the mesh, a word to every daemon, the control center, the home's voice, the offline brain.
 - [**docs/INHERITANCE.md**](docs/INHERITANCE.md) -- what RoverRadio and RoverCub already did; this is their successor.
 - [**TODO.md**](TODO.md) -- the work, decided and not done.
 

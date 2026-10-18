@@ -3,10 +3,12 @@
 **Start here**
 - [Host on your phone](Host-on-your-phone)
 - [Running the companion](Running-the-companion)
+- [Your game on the companion](Your-game-on-the-companion)
 
 **More hosts**
 - [Boards](Boards)
 - [Flashing and linking](Flashing-and-linking)
+- [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)
 
 **Further**
 - [Feelings and expressions](Feelings-and-expressions)

@@ -1,7 +1,17 @@
 # Feelings and expressions
 
-A hosted daemon has feelings, and every host shows them on its face -- the boards, the app, the home-screen widget --
-from the daemon's own sprite. Nothing is drawn for any one daemon, so it works for every daemon you bring from the game.
+A hosted daemon has feelings, and every host shows them on its face -- the boards, the app, the home-screen widget, the
+Tab5 and the BOX-3 -- from the daemon's own sprite, standing in its den. Nothing is drawn for any one daemon, so it
+works for every daemon you bring from the game.
+
+## The den (C-113)
+
+A daemon lives somewhere, and the place looks like its type.
+[`server/src/dens.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/dens.ts) describes one den a
+type: the type's colour, as the game colours its sprites, and a motif for what the type is -- FLOW waves, STRATUM
+layers, LEGACY a cairn, OPAQUE a box you cannot see into -- with a second type tinting the floor. No words: a den is
+only somewhere to be. Every host is sent the description and draws it itself, the daemon walking it and facing its way;
+the BOX-3's pictures are drawn by the companion.
 
 ## The feelings (C-120)
 
@@ -64,6 +74,18 @@ npx tsx tools/faces.ts --sheet /tmp/faces          # picture sheets: green check
 npx tsx tools/faces.ts --write                     # after editing faces.json: its colours filled in
 npx tsx tools/expressions.ts /tmp/look.png caremusai relay   # any daemon in every expression, as the hosts draw it
 npx tsx tools/expressions.ts --only awake,asleep /tmp/check.png NAME...   # the check: do its eyes really close?
+```
+
+## The mouths (C-138)
+
+On the BOX-3 the daemon speaks Home Assistant's answers, and its mouth moves -- but, as with the eyes, **only a mouth a
+person has checked is drawn** (`mouth` in `faces.json`). `tools/mouths.ts` suggests one, looking only below checked eyes
+(`server/data/mouths.suggested.json`). 24 daemons have checked mouths today; the rest speak with a speech bubble.
+
+```sh
+cd server
+npx tsx tools/mouths.ts --sheet /tmp/mouths.png      # each suggestion boxed, and the mouth open
+npx tsx tools/boxface.ts /tmp/box.png caremusai      # the BOX-3's faces as the server draws them, every phase
 ```
 
 ## Tuning

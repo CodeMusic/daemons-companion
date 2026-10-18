@@ -23,6 +23,7 @@ String flareRemove(int r);
 String flareRename(int r, const String &name);   // C-59
 String flareAdd(const String &name, const String protocol[3], const uint64_t value[3], const uint16_t bits[3], const uint16_t repeat[3]);
 String flareRemotesJson();
+bool flareTakeShared(const String &json);   // C-165: the one list of remotes every device shares, as the server hands it
 // C-34: one code from the site's search
 String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint16_t repeat, bool keep);
 

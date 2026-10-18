@@ -46,6 +46,7 @@ import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
 import { assign, carryView } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
+import { SharedRemotes } from "./remotes.js";
 import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -347,6 +348,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
   weatherLoop(store);                                          // C-158: the real weather, while a city is set on the site
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
+  const remotesShared = new SharedRemotes(store);              // C-165: and of remotes
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
@@ -654,8 +656,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/device/remotes") {
         const b = await body(req);
         hub.remotes = { active: Number(b.active ?? 0), remotes: Array.isArray(b.remotes) ? b.remotes : [] };
-        return send(res, 200, { ok: true });
+        // C-165: a board that reports its remotes' codes (known) and what it removed (forgot) is merged into the one
+        // list, and handed it back -- from a device that proved itself, as with the networks
+        if (!Array.isArray(b.known)) return send(res, 200, { ok: true });
+        const proved = via !== "phone" && ((isLoopback(req.socket.remoteAddress) && !relayed) || !!board || !!phone);
+        if (!proved) return send(res, 200, { ok: true, rev: remotesShared.rev() });
+        remotesShared.merge(b.known, Array.isArray(b.forgot) ? b.forgot : []);
+        return send(res, 200, { ok: true, ...remotesShared.full() });
       }
+      // C-165: the shared list's names, for the site and the app
+      if (req.method === "GET" && path === "/api/remotes") return send(res, 200, remotesShared.names());
       // C-52: the networks the board has learned (names), and forgetting one. C-93: a device that has proved itself --
       // down the cable (the bridge, on this machine), by a board's own key, or a paired key (the Tab5) -- also reports
       // what it knows with the passwords, and what it forgot, and is handed back the whole shared list to learn. Over the
@@ -692,17 +702,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         if (b.op === "activate" || b.op === "remove") {
           if (!Number.isInteger(b.index)) return send(res, 400, { error: "which remote: {index}" });
+          if (b.op === "remove") remotesShared.forget(hub.remotes.remotes[b.index]?.name);   // C-165: removed everywhere
           return send(res, 200, { id: hub.send({ type: "remote", op: b.op, index: b.index }) });
         }
         if (b.op === "rename") {                   // C-59: the user's own name for it, as the board's font can draw it
           const name = typeof b.name === "string" ? b.name.replace(/[^\x20-\x7e]/g, "").trim().slice(0, 16).trim() : "";
           if (!Number.isInteger(b.index) || !name) return send(res, 400, { error: "rename {index, name}: a name of 1-16 plain letters" });
+          remotesShared.rename(hub.remotes.remotes[b.index]?.name, name);   // C-165: and on every device
           return send(res, 200, { id: hub.send({ type: "remote", op: "rename", index: b.index, name }) });
         }
         if (b.op === "add") {                      // a brand's whole remote, from the code table
           const set = irCodesJson.brands.find((x) => x.brand === b.brand)?.sets.find((x) => x.label === b.label);
           if (!set) return send(res, 400, { error: "no such remote in the table" });
           const button = (code: string) => ({ protocol: set.protocol, code, bits: set.bits, repeat: set.repeat });
+          remotesShared.learn({ name: set.label, buttons: [set.power, set.volumeUp, set.volumeDown].map((v) =>   // C-165: every device
+            ({ p: set.protocol, v: String(v).replace(/^0x/i, ""), b: set.bits, r: set.repeat ?? 0 })) });
           return send(res, 200, { id: hub.send({ type: "remote", op: "add", name: set.label,
                                                  buttons: [button(set.power), button(set.volumeUp), button(set.volumeDown)] }) });
         }

@@ -408,6 +408,25 @@ static void moveRemote(int from, int to) {
   saveRemote(to, flareName(from), b3);
 }
 
+// C-165: what this board has taught (fresh) or removed (forgot) since it last took the shared list -- names, one a line,
+// kept so a board that was away tells the server when it is back
+static String syncList(const char *which) { remotes.begin("remotes", true); String s = remotes.getString(which, ""); remotes.end(); return s; }
+static String withoutLine(const String &lines, const String &name) {   // the list, that name's line taken out
+  String out, s = lines + "\n";
+  for (int at = 0, nl; (nl = s.indexOf('\n', at)) >= 0; at = nl + 1) {
+    String one = s.substring(at, nl);
+    if (one.length() && one != name) out += (out.length() ? "\n" : "") + one;
+  }
+  return out;
+}
+static void syncMark(const char *which, const String &name, const char *other) {
+  String s = withoutLine(syncList(which), name);
+  s += (s.length() ? "\n" : "") + name;
+  remotes.begin("remotes", false); remotes.putString(which, s); remotes.putString(other, withoutLine(syncList(other), name)); remotes.end();
+}
+static void markFresh(const String &name) { syncMark("fresh", name, "forgot"); }
+static void markForgot(const String &name) { syncMark("forgot", name, "fresh"); }
+
 // C-59: a remote renamed on the site or the phone (the user, 2026-10-05: "it helps personalize it")
 String flareRename(int r, const String &name) {
   if (r < 0 || r >= flareCount()) return "No such remote.";
@@ -415,13 +434,17 @@ String flareRename(int r, const String &name) {
   remotes.begin("remotes", false);
   remotes.putString(key("n", r).c_str(), name);
   remotes.end();
+  markForgot(was); markFresh(name);                         // C-165: on every device, under its new name
   return was + " is " + name + " now.";
 }
 
-String flareRemove(int r) {
+static String removeAt(int r, bool here);
+String flareRemove(int r) { return removeAt(r, true); }
+static String removeAt(int r, bool here) {                // here: removed on this board, so on every device (C-165)
   int n = flareCount();
   if (r < 0 || r >= n) return "No such remote.";
   String gone = flareName(r);
+  if (here) markForgot(gone);
   for (int k = r; k < n - 1; k++) moveRemote(k + 1, k);
   remotes.begin("remotes", false);
   remotes.remove(key("n", n - 1).c_str());
@@ -433,11 +456,12 @@ String flareRemove(int r) {
   return "Forgot " + gone + ".";
 }
 
-static String addRemote(const String &name, Button *buttons) {
+static String addRemote(const String &name, Button *buttons, bool here = true) {
   int n = flareCount();
   if (n >= MAX_REMOTES) return "";
   saveRemote(n, name, buttons);
-  remotes.begin("remotes", false); remotes.putUChar("count", n + 1); remotes.putUChar("active", n); remotes.end();
+  remotes.begin("remotes", false); remotes.putUChar("count", n + 1); if (here) remotes.putUChar("active", n); remotes.end();
+  if (here) markFresh(name);                                // C-165: taught here: every device takes it
   return name;
 }
 
@@ -453,16 +477,63 @@ String flareAdd(const String &name, const String protocol[3], const uint64_t val
                                         daemonName() + " knows six remotes already. Remove one on the site first.";
 }
 
-// The remotes, for the site (sent with LIST).
-String flareRemotesJson() {
-  String out = "{\"active\":" + String(flareActive()) + ",\"remotes\":[";
-  for (int r = 0, n = flareCount(); r < n; r++) {
-    if (r) out += ",";
-    out += "{\"name\":\"" + flareName(r) + "\",\"buttons\":[";
-    for (int b = 0; b < 3; b++) { Button x; out += String(b ? "," : "") + (loadButton(r, b, x) ? "true" : "false"); }
-    out += "]}";
+// The remotes, for the site (sent with LIST) -- and, C-165, their codes for the one list every device shares (known),
+// and what this board removed (forgot). A button the library could not name, or an air conditioner's whole state,
+// stays here (null).
+static String buttonJson(const Button &x) {
+  if (x.type == -1 || x.type == UNKNOWN || hasACState((decode_type_t)x.type)) return "null";
+  return "{\"p\":\"" + typeToString((decode_type_t)x.type, false) + "\",\"v\":\"" + uint64ToString(x.value, 16) +
+         "\",\"b\":" + String(x.bits) + ",\"r\":" + String(x.repeat) + "}";
+}
+static String namesJson(const String &lines) {
+  String out = "[", s = lines + "\n";
+  for (int at = 0, nl; (nl = s.indexOf('\n', at)) >= 0; at = nl + 1) {
+    String one = s.substring(at, nl); one.trim();
+    if (one.length()) out += String(out.length() > 1 ? "," : "") + "\"" + one + "\"";
   }
-  return out + "]}";
+  return out + "]";
+}
+String flareRemotesJson() {
+  String out = "{\"active\":" + String(flareActive()) + ",\"remotes\":[", known = "[", fresh = "\n" + syncList("fresh") + "\n";
+  for (int r = 0, n = flareCount(); r < n; r++) {
+    if (r) { out += ","; known += ","; }
+    String name = flareName(r);
+    out += "{\"name\":\"" + name + "\",\"buttons\":[";
+    known += "{\"name\":\"" + name + "\",\"buttons\":[";
+    for (int b = 0; b < 3; b++) {
+      Button x; bool have = loadButton(r, b, x);
+      out += String(b ? "," : "") + (have ? "true" : "false");
+      known += String(b ? "," : "") + (have ? buttonJson(x) : String("null"));
+    }
+    out += "]}";
+    known += "]" + String(fresh.indexOf("\n" + name + "\n") >= 0 ? ",\"fresh\":true" : "") + "}";
+  }
+  return out + "],\"known\":" + known + "],\"forgot\":" + namesJson(syncList("forgot")) + "}";
+}
+
+// C-165: the shared list, as the server hands it back -- what was removed anywhere, removed here; what this board has not
+// got, added (not made the one FLARE uses); then nothing here is fresh any more
+static int remoteIndex(const String &name) { for (int r = 0, n = flareCount(); r < n; r++) if (flareName(r) == name) return r; return -1; }
+bool flareTakeShared(const String &json) {
+  JsonDocument d;
+  if (deserializeJson(d, json) || !d["shared"].is<JsonArray>()) return false;
+  for (JsonVariant f : d["forget"].as<JsonArray>()) { int r = remoteIndex(f | ""); if (r >= 0) removeAt(r, false); }
+  for (JsonVariant s : d["shared"].as<JsonArray>()) {
+    String name = s["name"] | "";
+    if (!name.length() || remoteIndex(name) >= 0 || flareCount() >= MAX_REMOTES) continue;
+    Button b3[3]; bool any = false;
+    for (int b = 0; b < 3; b++) {
+      JsonVariant x = s["buttons"][b];
+      if (x.isNull()) continue;
+      decode_type_t t = strToDecodeType(String(x["p"] | "").c_str());
+      if (t == UNKNOWN) continue;
+      b3[b].type = t; b3[b].value = strtoull(String(x["v"] | "0").c_str(), nullptr, 16);
+      b3[b].bits = x["b"] | 0; b3[b].repeat = x["r"] | 0; any = true;
+    }
+    if (any) addRemote(name, b3, false);
+  }
+  remotes.begin("remotes", false); remotes.putString("fresh", ""); remotes.putString("forgot", ""); remotes.end();
+  return true;
 }
 
 // The single code taught before remotes (the user's first learned POWER) becomes the first remote, once.

@@ -237,6 +237,9 @@ def bridge(a, port):
                     if kind == "NETWORKS" and isinstance(r, dict) and "shared" in r:   # C-93: every device's networks
                         dev.write(("NETS " + json.dumps(r, separators=(",", ":")) + "\n").encode())
                         print("usb_bridge: the shared networks -> device (%d)" % len(r["shared"]), flush=True)
+                    if kind == "REMOTES" and isinstance(r, dict) and "shared" in r:    # C-165: every device's remotes
+                        dev.write(("RSHARED " + json.dumps(r, separators=(",", ":")) + "\n").encode())
+                        print("usb_bridge: the shared remotes -> device (%d)" % len(r["shared"]), flush=True)
                 except Exception as e:
                     print("usb_bridge: could not pass on the %s (%s)" % (kind.lower(), e), flush=True)
             elif msg.startswith("LISTEN "):                 # C-15: one listen of the meeting radio, for the check

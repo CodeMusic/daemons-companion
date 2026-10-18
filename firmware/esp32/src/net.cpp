@@ -388,8 +388,19 @@ void handleCommand(JsonVariant c) {
 
 // C-51, C-52: the board's remotes and networks, for the site -- down the cable, or over Wi-Fi
 void reportRemotes() {
-  if (bridgeLive()) bridge("REMOTES " + flareRemotesJson());
-  else http("POST", "/api/device/remotes", flareRemotesJson());
+  if (bridgeLive()) { bridge("REMOTES " + flareRemotesJson()); return; }   // C-165: the bridge hands back RSHARED
+  bool ok;
+  String got = http("POST", "/api/device/remotes", flareRemotesJson(), &ok);
+  if (ok) flareTakeShared(got);                            // C-165: the one list, as this board proved itself
+}
+// C-165: a board with IR out tells its remotes again every ten minutes while it is in touch, and takes the shared list
+// back -- so a remote taught on another board reaches it without a link of its own starting
+void remotesLoop(uint32_t now) {
+  static uint32_t at = 0;
+  if (!board.ir || !(bridgeLive() || online()) || (at && now - at < 600000)) return;
+  if (!at) { at = now; return; }                           // the link's own start reports first (LIST, pollCommands)
+  at = now;
+  reportRemotes();
 }
 // C-93: down the cable, with the passwords (the bridge, on the server's own machine, hands back the shared list as NETS);
 // over the phone's Bluetooth, names only; over Wi-Fi, with them only when this board has its own key to prove itself.
@@ -459,6 +470,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
                              reply("NETWORKS " + networksJson(!fromPhone)); }
   else if (line.startsWith("NETS ") && !fromPhone) takeShared(line.substring(5));   // C-93: the shared list, by cable only
+  else if (line.startsWith("RSHARED ") && !fromPhone) flareTakeShared(line.substring(8));   // C-165: the shared remotes
   else if (line.startsWith("MESH") && !fromPhone) {   // C-72: the LoRa radio, from the computer -- a bench test with two boards
     // MESH? (the radio, the band, who is near) | MESH BEACON | MESH CALL | MESH WAVE [tag] | MESH SAY <tag|*> word
     String rest = line.length() > 5 ? line.substring(5) : "";

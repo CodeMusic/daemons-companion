@@ -200,6 +200,7 @@ void switchOff(const String &word);   // the board off: its own off, or the chip
 const char *startAgain();             // how it is started again, said on the SWITCH OFF page
 String outboxStatus();   // C-121: OUTBOX down the cable -- what waits, and the last send: its answer, time, way and tries
 void reportRemotes();
+void remotesLoop(uint32_t now);           // C-165: the remotes told again now and then, the shared list taken back
 void reportNetworks();
 void meetReport();
 void askForArt();

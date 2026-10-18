@@ -8,7 +8,7 @@ import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, 
          stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../server/src/slots";
 import { KIND_NAMES, playerId } from "../data";
 import { api } from "../net";
-import { CasinoHouse, PlayerState, Reason } from "../types";
+import { Cast, CasinoHouse, PlayerState, Reason } from "../types";
 import { Action, Art, Card, Eyebrow, Small } from "../ui";
 export const CASINO_BOOT = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
    // this start of the app
@@ -79,6 +79,49 @@ export function Casino({ ink }: { ink: string }) {
   const player = useAudioPlayer(null);
   const luck = useRef(0);                                   // the day's, from the state (context.ts), for the seat's line
   const [reelsW, setReelsW] = useState(0);                  // the reels' width, for the season falling over them
+  // C-158 (the boards' C-151): THE TABLE's news while sitting here -- another's big win called out and cheered (answered a
+  // moment later, as a board at the reels answers it, when this player carries a daemon to say it), a cheer for ours, a
+  // word to everyone -- on the table's line for a while (casino.cpp casinoCast)
+  const [news, setNews] = useState<{ line: string; until: number } | null>(null);
+  const heard = useRef({ seen: new Set<string>(), primed: false, cheers: [] as string[], cheersAt: 0 });
+  const playRef = useRef<(name: string, level: number) => void>(() => {});
+  const carries = useRef(false);
+  useEffect(() => {
+    let gone = false;
+    const look = async () => {
+      let items: Cast[] = [];
+      try { items = (await api<{ items: Cast[] }>("/api/broadcasts")).items; } catch { return; }
+      const h = heard.current, big = (c: Cast) => c.kind === "act" && (c.act === "JACKPOT" || c.act === "BIGWIN");
+      const ours = new Set(items.filter((c) => c.mine && big(c)).map((c) => c.id));
+      for (const c of items) {
+        if (h.seen.has(c.id)) continue;
+        h.seen.add(c.id);
+        if (!h.primed || c.mine || gone) continue;
+        const who = c.name.toUpperCase(), now = Date.now();
+        if (big(c)) {
+          setNews({ line: `${who} ${c.act === "JACKPOT" ? "HIT THE JACKPOT!" : "WON BIG!"}`, until: now + 3500 });   // DRAFT
+          playRef.current("SLOTS_CHEER", 0.8);
+          if (carries.current && !items.some((o) => o.mine && o.replyTo === c.id))
+            setTimeout(() => { if (!gone) api("/api/broadcast", { kind: "reply", act: c.act, replyTo: c.id }).catch(() => {}); }, 1500 + Math.random() * 3500);
+        } else if (c.kind === "reply" && c.replyTo && ours.has(c.replyTo)) {
+          if (now - h.cheersAt > 15000) h.cheers = [];
+          if (!h.cheers.includes(who)) h.cheers.push(who);
+          h.cheersAt = now;
+          setNews({ line: `${h.cheers.join(", ")} ${h.cheers.length > 1 ? "CHEER" : "CHEERS"}`, until: now + 6000 });   // DRAFT
+          playRef.current("SELECT", 0.45);
+        } else if (c.kind === "say" && c.text) setNews({ line: `${who}: ${c.text}`, until: now + 9000 });
+      }
+      h.primed = true;
+    };
+    look();
+    const t = setInterval(look, 5000);
+    return () => { gone = true; clearInterval(t); };
+  }, []);
+  useEffect(() => {
+    if (!news) return;
+    const t = setTimeout(() => setNews(null), Math.max(0, news.until - Date.now()));
+    return () => clearTimeout(t);
+  }, [news]);
   const load = useCallback(async (who: string) => { setSt(await api<PlayerState>(`/api/device/state?device=${who}`)); }, []);
   const report = useCallback(async (who: string) => {
     const u = unsent.current;
@@ -115,16 +158,20 @@ export function Casino({ ink }: { ink: string }) {
   // C-160: the boards' own casino tunes (firmware/esp32/src/sound.cpp soundSlots), on the day's note: the lever, a loss, a
   // small win, a big one or the jackpot -- a big win on a holiday plays the holiday's own (Halloween, Christmas ...)
   const root = dayRoot(st.day?.note);
+  const play = (name: string, level: number) => {
+    const loud = soundLevel(st.settings) * level;           // C-160: this player's own SOUND -- off is silent
+    if (!loud) return;
+    const uri = tuneSound(name, root, Math.round(loud * 20) / 20);
+    if (uri) setAudioModeAsync({ playsInSilentMode: false }).catch(() => {}).finally(() => { player.replace({ uri }); player.play(); });
+  };
+  playRef.current = play; carries.current = !!st.daemon;
   const sound = (what: 0 | 1 | 2 | 3 | 4) => {
     const look = st.holiday?.look ?? "";
     const [name, level] = what === 0 ? ["SLOTS_PULL", 0.8] : what === 1 ? ["SLOTS_LOSE", 0.5] : what === 2 ? ["SLOTS_WIN", 0.85]
       : look === "pumpkins" ? ["SLOTS_SPOOKY", 0.9] : look === "presents" ? ["SLOTS_JINGLE", 0.9]
       : look === "fireworks" ? ["SLOTS_FIREWORK", 0.9] : look === "hearts" ? ["SLOTS_SWEET", 0.85]
       : what === 3 ? ["SLOTS_BIG", 0.9] : ["SLOTS_JACKPOT", 1];
-    const loud = soundLevel(st.settings) * (level as number);   // C-160: this player's own SOUND -- off is silent
-    if (!loud) return;
-    const uri = tuneSound(name as string, root, Math.round(loud * 20) / 20);
-    if (uri) setAudioModeAsync({ playsInSilentMode: false }).catch(() => {}).finally(() => { player.replace({ uri }); player.play(); });
+    play(name as string, level as number);
   };
   const settle = (o: number, near: boolean) => {
     const won = bet * PAYS[o] - bet;
@@ -180,7 +227,7 @@ export function Casino({ ink }: { ink: string }) {
     const slot = p === 0 ? jack : p <= 3 ? friends[p - 1] : undefined;
     if (slot !== undefined) return <Art path={`/art/party/${slot}.png`} size={size} />;
     const drawn = p === 4 ? "coin" : p === 5 ? dress.piece : (["mark", "berry", "gem", "mark"] as const)[p];
-    return <Art path={pieceArt(drawn, dress, ink)} size={size} />;
+    return <Art path={pieceArt(drawn, dress, st.day?.menu ?? "")} size={size} />;   // the boards' MARK in the day's colour
   };
   const bets = BETS.filter((b) => b <= Math.max(balance, BETS[0]));
   const betBy = (d: number) => { const i = Math.max(0, Math.min(bets.length - 1, bets.indexOf(bet) + d)); setBet(bets[i] ?? BETS[0]); };
@@ -193,7 +240,8 @@ export function Casino({ ink }: { ink: string }) {
         <Text fontFamily="$mono" fontSize={14} letterSpacing={2} fontWeight="700" color={st.holiday ? "#fbfaf6" : ink}>
           {`CASINO   ${(st.holiday?.name ?? st.season).toUpperCase()}`}</Text>
       </XStack>
-      {table.length ? <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{`AT THE TABLE: ${table[0].name}${table.length > 1 ? ` +${table.length - 1}` : ""}`}</Text> : null}
+      {news ? <Text fontFamily="$mono" fontSize={13} letterSpacing={1} fontWeight="700" color="$color12">{news.line}</Text>
+        : table.length ? <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{`AT THE TABLE: ${table[0].name}${table.length > 1 ? ` +${table.length - 1}` : ""}`}</Text> : null}
       {/* the reels: each shows three of its strip, the middle row the payline between the arrows */}
       <YStack position="relative" onLayout={(e) => setReelsW(e.nativeEvent.layout.width)}>
         <XStack gap={8} justifyContent="center" alignItems="center">

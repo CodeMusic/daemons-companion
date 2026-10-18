@@ -19,4 +19,5 @@ bool watchPowerOff();                     // the PMU switches everything off; th
 bool watchTalking();                      // push to talk held on the face (C-66 listens)
 bool watchTouchDown();                    // a finger on the screen now (talk.cpp listens while it stays)
 int watchGesture();                       // C-134: inside a routine -- a swipe (+1 next, -1 back a row), 2 a tap, -2 a hold; 0 nothing
+bool watchGestureAcross();                // C-161: that swipe went across (left or right), not up or down
 String watchStatus();                     // C-98: the parts found, and a finger now, for WATCH from the computer

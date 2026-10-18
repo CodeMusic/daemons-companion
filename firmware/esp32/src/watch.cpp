@@ -18,6 +18,7 @@ long watchSteps() { return -1; }
 bool watchTalking() { return false; }
 bool watchTouchDown() { return false; }
 int watchGesture() { return 0; }
+bool watchGestureAcross() { return false; }
 bool watchPowerOff() { return false; }
 String watchStatus() { return "WATCH none"; }
 
@@ -245,6 +246,8 @@ static const int SWIPE = 20;
 #else
 static const int SWIPE = 50;
 #endif
+static bool across = false;                                    // the last swipe went across, not up or down
+bool watchGestureAcross() { return across; }
 int watchGesture() {
   static bool was = false; static int16_t x0, y0, x1, y1; static uint32_t at = 0;
   // C-161: inside a routine the loop waits, and crownLoop with it -- so the crown is read here, and goes back
@@ -259,7 +262,8 @@ int watchGesture() {
 #if defined(BOARD_TWATCH_S3)
   dx = -dx; dy = -dy;                                          // C-161: the watch's panel is turned half round (touchLoop)
 #endif
-  if (abs(dx) > SWIPE && abs(dx) > abs(dy)) return dx < 0 ? 1 : -1;
+  across = abs(dx) > SWIPE && abs(dx) > abs(dy);
+  if (across) return dx < 0 ? 1 : -1;
   if (abs(dy) > SWIPE) return dy < 0 ? 1 : -1;
   return millis() - at > 700 ? -2 : 2;
 }

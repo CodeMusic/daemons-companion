@@ -714,7 +714,8 @@ String runSlots() {
       if (step) { betBy(step); idleSince = now; }
       if (board.touch) {                        // the watch and the CoreS3
         int g = watchGesture();
-        if (g == 1 || g == -1) betBy(g); else if (g == 2) stopOrPull(-1); else if (g == -2) leave = true;
+        // the bet as a slider: up or right is more (the user, 2026-10-18: on the watch left to right is on), down or left less
+        if (g == 1 || g == -1) betBy(watchGestureAcross() ? -g : g); else if (g == 2) stopOrPull(-1); else if (g == -2) leave = true;
         if (g) idleSince = now;
       }
       if (board.encKey >= 0) {                  // the dial's press (the StickS3's front): the lever and the stops

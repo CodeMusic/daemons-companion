@@ -165,7 +165,7 @@ Every device plays the boards' own CASINO tunes, on the day's note: the lever, a
 | the M5GO, the Fire, the T-Display-S3 Pro | A and C | B | A, B and C, the reel above each | hold A |
 | a dial (the T-Embeds, the Dial) | turn | press | press, left to right | the top button, or hold the dial |
 | the StickS3 | the side button | the front | the front | hold the side |
-| a touch screen (the T-Watch S3, the CoreS3) | swipe | tap | tap | hold |
+| a touch screen (the T-Watch S3, the CoreS3) | swipe up or right for more, down or left for less | tap | tap | hold, or the watch's crown |
 | a keyboard (the T-Deck, the Cardputers) | + and - | space or Enter | 1, 2 and 3 | Backspace |
 | the phone, the site, the Tab5 | BET - and BET + | SPIN | STOP, under each reel | leave the CASINO |
 

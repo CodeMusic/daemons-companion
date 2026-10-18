@@ -88,13 +88,13 @@ real thing. Each board's controls, pages, quirks and which ones run today:
 
 The companion reads your save, so it can show you what you have done in there -- on the app, the site and the Tab5:
 
-- **PROFILE** -- you as the game draws you, your rival, your money and your MARKS as badges, each opening its page;
+- **YOU** -- you as the game draws you, your rival, your money and your MARKS as badges, each opening its page;
   the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
   the story so far.
-- **The NOTEBOOK**, to read: every page you have written in the game, the SONGBOOK's songs among them.
-- **LIBRARY** -- CALLOW SCHOOL, and THE GUIDE once you have found it in the game. **SCHOOL** keeps your DIPLOMA and
-  lets you sit the paper again, marked here and never in your save.
-- **The INDEX** -- every entry, read aloud if you like, and where each daemon is NATIVE.
+- **LIBRARY** -- CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
+  GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, in
+  their colours, to hear again) and **STREAM** (every lesson a MARK or a ROOT has opened).
+- **The INDEX**, in DAEMON -- every entry, read aloud if you like, and where each daemon is NATIVE.
 
 LIGHT, DARK or AUTO on every screen. It never shows what your save has not reached yet
 ([Your game on the companion](https://github.com/CodeMusic/daemons-companion/wiki/Your-game-on-the-companion)).

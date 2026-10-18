@@ -40,26 +40,28 @@ is the remote ([Away from home](Away-from-home)). The site is needed once per ph
 the computer can do -- opening the server to the network, the file picker for the save, the relay's settings, Home
 Assistant's token, and the cable and flashing.
 
-The tabs, the same on the site and the phone (on a narrow screen the strip scrolls, and a › at its right edge says
-there are more):
+Six tabs, the same on the site and the phone, with **SETTINGS** behind the gear at the top right (on the Tab5 it is a
+seventh tab). A word, an act or a JACKPOT from another daemon shows as a banner over whatever tab is open; a tap opens
+NEARBY.
 
-- **TODAY** -- the day's theme, its virtue over its shadow, chakra and note, the season, the daemon in its den, and
-  **THE ONE THING**: the one next step. Each weekday has its own colours (`?day=tuesday` on the site previews another).
+- **TODAY** -- the home page: the day's theme, its virtue over its shadow, chakra and note, the season, and **THE ONE
+  THING**, the one next step; then your daemon and its care (FEED, DRINK, TRAIN), NEARBY's latest, your game (where you
+  saved, MARKS, coins, the CASINO's waiting for SYNC) and what waits in the LIBRARY. Each weekday has its own colours
+  (`?day=tuesday` on the site previews another).
+- **DAEMON** -- four parts: **Yours** (its day and care, SYNC, NEARBY, MET NEARBY), **Party** (drawn as the game draws
+  it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN) and **Routines** (THE CASINO, the party's own).
 - **GOALS** -- one goal, its steps and milestones, and WALKING.
-- **DAEMON** -- your party, drawn as the game draws it; **SYNC**; the hosted daemon's day and care (DRINK, FEED,
-  TRAIN, SLEEP, or WAKE while it sleeps); **NEARBY**, broadcasts to and from every daemon; MET NEARBY.
-- **INDEX** -- every entry, where each daemon is NATIVE, and **LISTEN** to hear one read aloud.
-- **DEVICE** -- your devices under their makers, a picture of each, which daemon each hosts, their batteries,
-  settings, routines, remotes and networks.
-- **HOME** -- Home Assistant's rooms and what is in them, each a tap, and the house asked in words
+- **LIBRARY** -- CALLOW SCHOOL, THE GUIDE once your save has found it, the **NOTEBOOK**, the **SONGBOOK** (the songs you
+  have learned, in their colours, and PLAY to hear one) and **STREAM** (every lesson a MARK or a ROOT has opened).
+- **YOU** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES and GAME
+  EVENTS.
+- **PLACES** -- your devices under their makers (a picture of each, which daemon each hosts, batteries, settings,
+  routines, remotes, networks) and your home: Home Assistant's rooms, each a tap, and the house asked in words
   ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
-- **PROFILE** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES,
-  GAME EVENTS and the NOTEBOOK.
-- **LIBRARY** -- CALLOW SCHOOL, and THE GUIDE once your save has found it.
-- **SETTINGS** -- your save, the app's build and LIGHT OR DARK, who answers when you talk; on the phone THIS PHONE; on
-  the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
+- **SETTINGS** (the gear) -- your save, the app's build and LIGHT OR DARK, who answers when you talk; on the phone THIS
+  PHONE; on the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
 
-PROFILE, the NOTEBOOK and the LIBRARY are on [Your game on the companion](Your-game-on-the-companion).
+YOU, the NOTEBOOK and the LIBRARY are on [Your game on the companion](Your-game-on-the-companion).
 
 ## The server
 

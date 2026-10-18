@@ -102,7 +102,9 @@ void loop() {
   if (!asleep && cfg.sleepAfter > 0 && (int32_t)(now - lastInput) > (int32_t)cfg.sleepAfter * 1000) sleepNow();
   // the daemon at home is alive: redraw it a few times a second
   static uint32_t lifeAt = 0;
-  if (!asleep && screen == HOME && page == DAEMON && st.carrying && now - lifeAt > 90) { lifeAt = now; dirty = true; }
+  if (!asleep && screen == HOME && (page == DAEMON || (page == FACE_PAGE && faceHasDaemon())) && st.carrying && now - lifeAt > 90) {   // C-162
+    lifeAt = now; dirty = true;
+  }
   if (dirty && !asleep) draw();
   delay(1);
 }

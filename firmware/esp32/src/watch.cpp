@@ -246,7 +246,7 @@ String watchStatus() {
          String(haveTouch) + (on ? " finger " + String(x[0]) + "," + String(y[0]) : " no finger");
 }
 
-static bool onTalk(int x, int y) { int cx, cy; talkSpot(cx, cy); int dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= 30 * 30; }
+static bool onTalk(int x, int y) { int cx, cy, r = talkReach(); talkSpot(cx, cy); int dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= r * r; }
 
 static void touchLoop(uint32_t now) {
 #if defined(BOARD_TDISPLAY_AMOLED)
@@ -270,15 +270,20 @@ static void touchLoop(uint32_t now) {
 #else
     int x = W - 1 - xs[0], y = H - 1 - ys[0];
 #endif
+    auto listen = [&]() {                                      // C-66: held, it listens (talk.cpp)
+      talking = true; draw();
+      talkHold();                                              // returns once the finger lifts and the answer is said
+      talking = false; down = false; lastInput = millis(); dirty = true;
+    };
+    bool atFace = screen == HOME && page == FACE_PAGE;
     if (!down) {
       down = true; downAt = now; xFrom = x; yFrom = y;
       if (asleep) return;
-      if (screen == HOME && page == FACE_PAGE && onTalk(x, y) && talkCan()) {   // C-66: held, it listens (talk.cpp)
-        talking = true; draw();
-        talkHold();                                            // returns once the finger lifts and the answer is said
-        talking = false; down = false; lastInput = millis(); dirty = true;
-      }
+      if (atFace && !faceHasDaemon() && onTalk(x, y) && talkCan()) listen();   // the TALK button: at once
     }
+    // C-162: on a face with the daemon, the daemon held a beat listens -- so a tap on it is only a tap
+    else if (!asleep && atFace && faceHasDaemon() && now - downAt > 350 && abs(x - xFrom) < 20 && abs(y - yFrom) < 20 &&
+             onTalk(xFrom, yFrom) && talkCan()) listen();
     xNow = x; yNow = y;
     return;
   }
@@ -290,7 +295,11 @@ static void touchLoop(uint32_t now) {
   if (abs(dx) > 50 && abs(dx) > abs(dy)) turn(dx < 0 ? 1 : -1);  // swipe left: the next page, as the dial turned right
   else if (abs(dy) > 50) turn(dy < 0 ? 1 : -1);
   else if (now - downAt > 700) back();
-  else press();
+  else {                                                       // C-161: a tap on a list's row opens that row
+    int off;
+    if (screen != HOME && tapRowAt(yFrom, off) && off) turn(off);
+    press();
+  }
 }
 
 // ---- the crown: a short press wakes the watch, or goes back; a long one, asleep (the PMU powers off on a longer hold)
@@ -302,7 +311,12 @@ static void crownLoop(uint32_t now) {
   pmu.getIrqStatus();
   bool shortPress = pmu.isPekeyShortPressIrq(), longPress = pmu.isPekeyLongPressIrq();
   pmu.clearIrqStatus();
-  if (shortPress) { if (!wake()) back(); }
+  if (shortPress) {                                            // C-161: the crown is a press, not a dial
+    static uint32_t lastShort = 0;
+    if (wake()) lastShort = now;                               // asleep, it only wakes (to home)
+    else if (lastShort && now - lastShort < 500) { lastShort = 0; goHomeNow(); }   // pressed twice: home, the face
+    else { lastShort = now; back(); }
+  }
   else if (longPress && !asleep) sleepNow();
 }
 

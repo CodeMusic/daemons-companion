@@ -25,6 +25,7 @@ bool undoable() { return lastDone >= 0 && millis() - lastDoneAt < UNDO_MS; }
 bool menuOpen = false;
 bool quickScreen() { return board.threeKeys() && !menuOpen && (screen == CARE_KEYS || screen == INDEX_ENTRY); }
 static void goHome() { screen = HOME; page = homePage(); dirty = true; }
+void goHomeNow() { goHome(); }                  // C-161: the watch's crown, pressed twice
 String composing;                         // C-123
 // C-123: the message typed, sent to everyone nearby over LoRa -- or said why not
 static void sendComposed() {

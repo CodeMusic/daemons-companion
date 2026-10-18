@@ -175,13 +175,22 @@ const char *linkName() {
 // (RUN). Turn to choose, press to open or run, the top button to go back.
 // How many list rows a screen holds clear of its footer: five, or three on the StickS3's 135 (the bench, 2026-10-17:
 // its fourth and fifth ran into the footer)
-int listRowsFit() { return max(2, min(5, (H - 52 - 16) / 19)); }
+// C-161 (the user, 2026-10-18): on the watch a row is a finger's height, about four to the screen, and a tap on one
+// opens it -- each row drawn is kept, how far it lies from the chosen one, for watch.cpp's touch to find
+static int rowH() { return board.kind == BoardKind::TWatchS3 ? 42 : 19; }
+static int tapN = 0; static int16_t tapTop[8], tapOff[8];
+bool tapRowAt(int y, int &off) {
+  for (int k = 0; k < tapN; k++) if (y >= tapTop[k] && y < tapTop[k] + rowH()) { off = tapOff[k]; return true; }
+  return false;
+}
+int listRowsFit() { return max(2, min(5, (H - 52 - 16) / rowH())); }
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width = W - 12) {
-  int y = 52 + i * 19;
-  if (i == at) canvas.fillRect(6, y - 2, width, 18, day);
+  int y = 52 + i * rowH();
+  if (i == at) canvas.fillRect(6, y - 2, width, rowH() - 1, day);
   canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM);
   canvas.setTextColor(i == at ? ink : PAPER);
-  canvas.drawString(text, 12, y);
+  canvas.drawString(text, 12, y + (rowH() - 19) / 2);
+  if (tapN < 8) { tapTop[tapN] = y - 2; tapOff[tapN] = i - at; tapN++; }
 }
 
 String (*runPanel)(uint16_t day, uint16_t ink) = nullptr;
@@ -228,7 +237,8 @@ void drawRoutines(uint16_t day) {
   } else if (screen == PICK_REMOTE) {
     canvas.drawString("WHICH REMOTE " + upper(daemonName()) + " USES", 10, 32);
     int n = flareCount(), a = flareActive();
-    for (int i = 0; i < n; i++) listRow(i, remoteAt, (i == a ? "* " : "  ") + flareName(i), day, ink);
+    int fit = listRowsFit(), from = max(0, remoteAt - (fit - 1));   // C-161: up to six remotes, as many rows as fit
+    for (int i = from; i < n && i < from + fit; i++) listRow(i - from, remoteAt - from, (i == a ? "* " : "  ") + flareName(i), day, ink);
   } else if (screen == PICK_NET) {
     canvas.drawString("WHICH NETWORK SHOULD " + upper(daemonName()) + " LEARN?", 10, 32);
     int fit = listRowsFit(), from = max(0, netAt - (fit - 1));   // rows clear of the footer
@@ -275,7 +285,12 @@ void drawRoutines(uint16_t day) {
 
 // C-105: a screen wide enough for two columns -- the T-Display-S3 Pro's 480x222. The narrow pages are drawn for 320.
 bool wide() { return W >= 400 && !board.round; }
-void talkSpot(int &x, int &y) { if (wide()) { x = W - 46; y = H - 40; } else { x = W / 2; y = H - 34; } }
+bool faceHasDaemon(); static int faceDaemonY();   // C-162: below
+void talkSpot(int &x, int &y) {
+  if (wide()) { x = W - 46; y = H - 40; }
+  else if (faceHasDaemon()) { x = W / 2; y = faceDaemonY(); }   // C-162: the daemon itself, held
+  else { x = W / 2; y = H - 34; }
+}
 
 // C-105: the face, wide -- the time large on the left, under it the date and the battery; on the right, beyond a line
 // in the day's colour, the day's theme, its virtue over its vice, its chakra and note, and the daemon carried, small.
@@ -323,8 +338,109 @@ static void drawFaceWide(uint16_t day, uint16_t ink) {
 
 // C-71: the watch's face -- the time, the day's theme, its virtue over its vice, its chakra and note, today's steps,
 // and TALK, held to talk (C-66). The day's colour rings the face.
+// C-162 (the user, 2026-10-18: "most will have the daemon in the middle -- maybe some are standard clocks and some
+// digital"): the round face is the device's own setting -- DAEMON (the daemon in the middle, the time above it; the
+// default), CLOCK (hands over the daemon) or VIRTUE (the day's words, as the watch first had). Held, the daemon talks.
+bool faceHasDaemon() { return !wide() && cfg.face != "virtue" && st.carrying; }
+int talkReach() { return faceHasDaemon() ? 56 : 30; }
+static int faceDaemonY() { return cfg.face == "clock" ? 120 : 130; }   // the middle of the daemon, for TALK
+
+// the daemon on a face, alive as at home (C-42, C-119): it breathes and now and then hops; no den, a shadow under it
+static void faceDaemon(int cx, int floorY, int sc) {
+  uint32_t t = millis();
+  bool still = expression.still;
+  int bob = still ? 0 : (int)roundf(3 * expression.bob * sinf(t / 420.0f));
+  int hop = still ? 0 : (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
+  if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
+  int side = 64 * sc, ax = cx - side / 2 + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
+  int ay = floorY - side + 4 * sc + bob + hop;
+  canvas.fillEllipse(cx, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
+  drawArt(ax, ay, sc);
+  drawMark(ax, ay, sc, false, 26);
+}
+
+// the daemon's ring while TALK listens
+static void faceListening(uint16_t day) {
+  if (!watchTalking()) return;
+  int cy = faceDaemonY();
+  for (int k = 0; k < 3; k++) canvas.drawCircle(W / 2, cy, 66 + k, day);
+}
+
+// a line of the day's words, as large as the circle leaves room for at that height
+static void faceLine(const String &text, int y, uint16_t colour) {
+  int r = min(W, H) / 2 - 6, dy = abs(y - H / 2), room = 2 * (int)sqrtf(max(0, r * r - dy * dy));
+  canvas.setTextFont(2);
+  if (canvas.textWidth(text) > room) canvas.setTextFont(1);
+  canvas.setTextColor(colour);
+  canvas.drawString(text, W / 2, y);
+}
+
+// the bottom line: the chakra and note -- or the battery, when it runs low off the cable
+static String faceFoot() {
+  if (bat.present && !bat.usb && bat.percent <= 20) return "BATTERY " + String(bat.percent) + "%";   // DRAFT
+  return upper(st.chakra) + (st.note.length() ? "  -  " + st.note : "");
+}
+
+static void faceRing(uint16_t day) {
+  int r = min(W, H) / 2;
+  canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
+  for (int k = 2; k <= 4; k++) canvas.drawCircle(W / 2, H / 2, r - k, day);
+}
+
+static void drawFaceDaemon(uint16_t day) {
+  faceRing(day);
+  canvas.setTextDatum(MC_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day));
+  canvas.drawString(upper(st.theme.length() ? st.theme : st.day), W / 2, 34);
+  struct tm t; char hm[6] = "--:--";
+  if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
+  if (st.carrying) {
+    canvas.setTextFont(4); canvas.setTextColor(PAPER);
+    canvas.drawString(hm, W / 2, 57);
+    faceDaemon(W / 2, 188, 2);
+    faceListening(day);
+  } else {
+    canvas.setTextFont(7); canvas.setTextColor(PAPER);
+    canvas.drawString(hm, W / 2, 96);
+    canvas.setTextFont(1); canvas.setTextColor(QUIET);
+    canvas.drawString("NO DAEMON HERE", W / 2, 146);         // DRAFT
+  }
+  faceLine(upper(st.virtue), 207, PAPER);
+  canvas.setTextFont(1); canvas.setTextColor(bat.present && !bat.usb && bat.percent <= 20 ? 0xF800 : QUIET);
+  canvas.drawString(faceFoot(), W / 2, 225);
+  canvas.setTextDatum(TL_DATUM);
+}
+
+static void drawFaceClock(uint16_t day) {
+  faceRing(day);
+  int cx = W / 2, cy = H / 2;
+  for (int i = 0; i < 12; i++) {                             // the hours, longer at twelve, three, six and nine
+    float a = i * PI / 6;
+    int in = i % 3 ? 104 : 96;
+    canvas.drawWideLine(cx + in * sinf(a), cy - in * cosf(a), cx + 112 * sinf(a), cy - 112 * cosf(a), i % 3 ? 1.0f : 2.0f, day);   // r: half the width
+  }
+  canvas.setTextDatum(MC_DATUM);
+  canvas.setTextFont(1); canvas.setTextColor(readable(day));
+  canvas.drawString(upper(st.theme.length() ? st.theme : st.day), cx, 50);
+  if (st.carrying) { faceDaemon(cx, 176, 2); faceListening(day); }
+  canvas.setTextFont(1); canvas.setTextColor(PAPER);
+  canvas.drawString(upper(st.virtue), cx, 196);
+  struct tm t;
+  if (watchLocalTime(t)) {                                   // the hands over the daemon, each edged in INK to stand off it
+    float m = (t.tm_min + t.tm_sec / 60.0f) * PI / 30, h = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;
+    canvas.drawWideLine(cx, cy, cx + 54 * sinf(h), cy - 54 * cosf(h), 4.0f, INK);
+    canvas.drawWideLine(cx, cy, cx + 54 * sinf(h), cy - 54 * cosf(h), 2.5f, PAPER);
+    canvas.drawWideLine(cx, cy, cx + 86 * sinf(m), cy - 86 * cosf(m), 3.0f, INK);
+    canvas.drawWideLine(cx, cy, cx + 86 * sinf(m), cy - 86 * cosf(m), 1.5f, PAPER);
+    canvas.fillCircle(cx, cy, 5, day); canvas.drawCircle(cx, cy, 5, INK);
+  }
+  canvas.setTextDatum(TL_DATUM);
+}
+
 static void drawFace(uint16_t day, uint16_t ink) {
   if (wide()) { drawFaceWide(day, ink); return; }
+  if (cfg.face == "clock") { drawFaceClock(day); return; }   // C-162
+  if (cfg.face != "virtue") { drawFaceDaemon(day); return; }
   canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
   int r = min(W, H) / 2;                                     // C-75: round on the watch, and inside the CoreS3's 320x240
   canvas.drawCircle(W / 2, H / 2, r - 2, day); canvas.drawCircle(W / 2, H / 2, r - 3, day);
@@ -355,6 +471,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
 
 void draw() {
   uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
+  tapN = 0;                                                 // C-161: the rows this frame draws
   canvas.fillSprite(INK);
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
@@ -378,7 +495,8 @@ void draw() {
   if (screen == CARE) {                                      // C-13
     canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);
-    for (int i = 0; i < 5; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
+    int fit = listRowsFit(), from = max(0, careAt - (fit - 1));   // C-161: as many as fit (four on the watch), scrolled
+    for (int i = from; i < 5 && i < from + fit; i++) listRow(i - from, careAt - from, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
     drawArt(W - 70, 34, 1);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     footer(hint("turn: choose    press: do it    top button: back"));

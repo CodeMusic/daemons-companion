@@ -54,8 +54,9 @@ struct State {
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
-                  bool meet = true; int band = 433;
-                  bool wakeEvery = false; };   // C-159: the wake jingle on every wake, not only at power-up         // meet: C-15, meeting others nearby; band: C-72, LoRa
+                  bool meet = true; int band = 433;   // meet: C-15, meeting others nearby; band: C-72, LoRa
+                  bool wakeEvery = false;      // C-159: the wake jingle on every wake, not only at power-up
+                  String face = "daemon"; };   // C-162: the round face -- daemon, clock or virtue
 extern State st;
 extern Settings cfg;
 extern bool dirty;
@@ -139,6 +140,10 @@ bool giveUp();                            // the top button (or the held dial) w
 int buttonEvent();                        // a routine running the dial itself: 1 a tap, 2 two taps, -1 held (or the cable's KEY)
 bool wide();                              // C-105: a screen wide enough for two columns (the T-Display-S3 Pro's 480)
 void talkSpot(int &x, int &y);            // where the face's TALK button is (drawn there, touched there)
+int talkReach();                          // C-162: how far from it a finger still talks -- the daemon is larger than a button
+bool faceHasDaemon();                     // C-162: the face shows the daemon (and holding it talks)
+bool tapRowAt(int y, int &off);           // C-161: the list row drawn at y, as an offset from the chosen one
+void goHomeNow();                         // C-161: the crown pressed twice
 void cableFlush(uint32_t ms = 60);       // C-105: send what was printed, waiting at most this long for a reader
 int deckTakeKey();                        // C-104: the T-Deck's keyboard, one character read and spent (0: none)
 void readDeck();                          // C-104: the keyboard and the trackball, every pass of the loop

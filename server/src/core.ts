@@ -100,12 +100,18 @@ export function sync(h: Host, store: Store, now = new Date()) {
 }
 
 
+// C-162 (the user, 2026-10-18): the faces a round screen can show at home -- the daemon in the middle with the time
+// above it (the default), the daemon under a clock's hands, or the day's words alone (the watch's first face)
+export const FACES = ["daemon", "clock", "virtue"] as const;
+export type Face = typeof FACES[number];
+
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
 export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
                                  palette: "checkpoint" as Palette,                                                // C-90
                                  band: 433,     // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
-                                 wakeSound: "power" as "power" | "every" };   // C-159: the jingle at power-up, or on every wake
+                                 wakeSound: "power" as "power" | "every",     // C-159: the jingle at power-up, or on every wake
+                                 face: "daemon" as Face };                    // C-162: the round face a watch shows first
 export type DeviceSettings = typeof DEVICE_SETTINGS;
 function parsed(store: Store, key: string): Partial<DeviceSettings> {
   try { return JSON.parse(store.getSetting(key) ?? "{}"); } catch { return {}; }
@@ -113,7 +119,7 @@ function parsed(store: Store, key: string): Partial<DeviceSettings> {
 // C-159 (the user, 2026-10-18: "tap the device to open its specific settings -- there you can adjust sound style, volume
 // (or mute), along with any other device specific settings"): each device's own over the shared ones. What a device may
 // keep for itself; the rest (the palette, the band, meeting others) is the companion's, the same for every board.
-export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound"] as const;
+export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face"] as const;   // face: C-162
 export function ownSettings(store: Store, deviceId: string): Partial<DeviceSettings> {
   return deviceId ? parsed(store, `device.${deviceId}`) : {};
 }
@@ -141,8 +147,9 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
   if (![433, 868, 915].includes(s.band)) return "band is 433, 868 or 915";
   if (!["power", "every"].includes(s.wakeSound)) return "wakeSound is power or every";   // C-159
+  if (!FACES.includes(s.face)) return "face is daemon, clock or virtue";                 // C-162
   return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band,
-           wakeSound: s.wakeSound };
+           wakeSound: s.wakeSound, face: s.face };
 }
 
 

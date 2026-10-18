@@ -155,6 +155,11 @@ describe("each device's own settings (C-159)", () => {
     setOwnSettings(store, "t-watch-s3-77bef4", { sound: null });
     expect(deviceSettings(store, "t-watch-s3-77bef4").sound).toBe(true);
     expect(setOwnSettings(store, "t-watch-s3-77bef4", { volume: 400 })).toBe("volume is 0 to 100");
+    // C-162: a watch's own face, the daemon by default
+    expect(deviceSettings(store, "t-watch-s3-77bef4").face).toBe("daemon");
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { face: "clock" })).toMatchObject({ face: "clock" });
+    expect(deviceSettings(store, "m5-dial-3a1b24").face).toBe("daemon");               // another's untouched
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { face: "sundial" })).toBe("face is daemon, clock or virtue");
   });
 
   it("gives a device its own settings in its state", () => {

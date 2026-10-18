@@ -768,6 +768,14 @@
   "name": "GUIDE",
   "description": "THE PROGRAMMER'S GUIDE TO THE HUMAN MIND. From a bookshelf on ONE ISLAND."
  },
+ "229": {
+  "name": "HARP",
+  "description": "Strings that answer the hand. Pick any of the twelve keys, then play what you hear."
+ },
+ "230": {
+  "name": "FLUTE",
+  "description": "Breathe and it sings for as long as a note is held. Pick a key, then play."
+ },
  "254": {
   "name": "RED SCARF",
   "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS."

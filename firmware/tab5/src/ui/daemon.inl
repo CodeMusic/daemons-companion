@@ -81,7 +81,7 @@ static long unsentDelta = 0, reportedDelta = 0, stateBalance = 0;
 static String casinoSeason, casinoBootHex, lastReport, casinoLook;
 static lv_timer_t *casinoTimer = nullptr;
 static uint32_t seatAt = 0;
-static bool casinoOpen = false, stripsMade = false;
+static bool casinoOpen = false, stripsMade = false, casinoCarries = false;
 static slots::Cat casinoCat;
 static float casinoLuck = 0;
 static long casinoBalance() { long b = stateBalance + unsentDelta + reportedDelta; return b < 0 ? 0 : b > 999999 ? 999999 : b; }
@@ -94,7 +94,7 @@ static void casinoSeat(const char *how) {
                          min(casinoCat.dry, 99999), min(casinoCat.streak, 9999));
     odds = b;
   }
-  netSend("POST", "/api/device/interact", String("{\"kind\":\"table\",\"detail\":\"") + how + " " + deviceId() + odds + "\"}"); seatAt = millis();
+  netSendQuiet("POST", "/api/device/interact", String("{\"kind\":\"table\",\"detail\":\"") + how + " " + deviceId() + odds + "\"}"); seatAt = millis();
 }
 static void casinoReport() {
   if (!unsentSpins) return;
@@ -113,6 +113,7 @@ static void casinoTakeState() {                     // the coins as the companio
   casinoLook = String((const char *)(st["holiday"]["look"] | ""));
   casinoLuck = st["casino"]["context"]["luck"] | 0.0f;
   casinoJack = st["daemon"].isNull() ? -1 : (int)(st["daemon"]["slot"] | -1);
+  casinoCarries = !st["daemon"].isNull();
   JsonArray fr = st["casino"]["friends"].as<JsonArray>();
   int k = 0, at = 0;
   if (casinoJack < 0 && fr.size()) { casinoJack = fr[0] | -1; at = 1; }   // no daemon of its own: the party's first is the JACK
@@ -308,6 +309,56 @@ static void casinoStopTap(lv_event_t *e) {
   int i = (int)(long)lv_event_get_user_data(e);
   if (casinoTimer && reelStop[i] < 0) reelStop[i] = casinoStopFor(i);
 }
+// C-158 (the boards' C-151): THE TABLE's news while sitting here, from what the daemons have said (watched while the CASINO
+// is open, every 15 s) -- another's big win called out with the cheer, and answered when this Tab5 carries a daemon to say
+// it; who cheered ours; a word to everyone -- on the table's line for a while (casino.cpp casinoCast)
+static lv_obj_t *casinoTableLine = nullptr;
+static String casinoTableText, tableCheers;
+static std::set<String> tableSeen;
+static bool tablePrimed = false;
+static uint32_t tableRevSeen = 0, tableUntil = 0, tableCheersAt = 0;
+static void tableSay(const String &line, uint32_t ms) {
+  if (!casinoTableLine) return;
+  lv_label_set_text(casinoTableLine, line.c_str()); lv_obj_set_style_text_color(casinoTableLine, INK, 0);
+  tableUntil = millis() + ms;
+}
+static void casinoHearTable() {
+  if (!casinoOpen || !casinoTableLine) return;
+  if (tableUntil && millis() > tableUntil) {       // back to who is sitting here
+    tableUntil = 0; lv_label_set_text(casinoTableLine, casinoTableText.c_str()); lv_obj_set_style_text_color(casinoTableLine, QUIET, 0);
+  }
+  if (watchRev == tableRevSeen) return;
+  tableRevSeen = watchRev;
+  String body = netWatched();
+  JsonDocument d = newDoc();
+  if (!body.length() || deserializeJson(d, body)) return;
+  JsonArray items = d["items"].as<JsonArray>();
+  auto big = [](JsonObject c) { String a = (const char *)(c["act"] | ""); return String((const char *)(c["kind"] | "")) == "act" && (a == "JACKPOT" || a == "BIGWIN"); };
+  std::set<String> ours;
+  for (JsonObject c : items) if ((c["mine"] | false) && big(c)) ours.insert((const char *)(c["id"] | ""));
+  for (JsonObject c : items) {
+    String id = (const char *)(c["id"] | "");
+    if (!id.length() || tableSeen.count(id)) continue;
+    tableSeen.insert(id);
+    if (!tablePrimed || (c["mine"] | false)) continue;
+    String who = (const char *)(c["name"] | "A DAEMON"); who.toUpperCase();
+    String kind = (const char *)(c["kind"] | ""), act = (const char *)(c["act"] | "");
+    if (big(c)) {
+      tableSay(who + (act == "JACKPOT" ? " HIT THE JACKPOT!" : " WON BIG!"), 3500);   // DRAFT
+      soundSlots(5, "");
+      bool answered = false;
+      for (JsonObject o : items) if ((o["mine"] | false) && id == String((const char *)(o["replyTo"] | ""))) answered = true;
+      if (casinoCarries && !answered) netSendQuiet("POST", "/api/broadcast", "{\"kind\":\"reply\",\"act\":\"" + act + "\",\"replyTo\":\"" + id + "\"}");
+    } else if (kind == "reply" && ours.count((const char *)(c["replyTo"] | ""))) {
+      if (millis() - tableCheersAt > 15000) tableCheers = "";
+      if (tableCheers.indexOf(who) < 0) tableCheers += (tableCheers.length() ? ", " : "") + who;
+      tableCheersAt = millis();
+      tableSay(tableCheers + (tableCheers.indexOf(',') > 0 ? " CHEER" : " CHEERS"), 6000);   // DRAFT
+      soundSelect();
+    } else if (kind == "say" && strlen(c["text"] | "")) tableSay(who + ": " + (const char *)(c["text"] | ""), 9000);
+  }
+  tablePrimed = true;
+}
 static void casinoPull(lv_event_t *) {
   if (casinoTimer || casinoBet > casinoBalance()) return;
   int w[slots::OUTCOME_N];
@@ -338,6 +389,7 @@ static void casinoLeave() {
     slots::learn(casinoCat, casinoOutcome);
   }
   casinoReport(); casinoSeat("gone"); casinoOpen = false;
+  netWatch(""); casinoTableLine = nullptr; tableUntil = 0;   // C-158: the table's news, no longer watched
   casinoCoins = casinoBetLabel = casinoSaid = casinoNear = casinoBanner = nullptr;   // the overlay goes with them
   casinoKeys[0] = casinoKeys[1] = nullptr;
   for (int i = 0; i < 3; i++) for (int r = 0; r < 3; r++) reelCell[i][r] = nullptr;
@@ -367,7 +419,10 @@ static void tapCasino(lv_event_t *) {
   label(band, "CASINO    " + dress, &lv_font_montserrat_28, lv_color_white());
   String at; int more = 0;
   for (JsonObject t : st["casino"]["table"].as<JsonArray>()) { if (!at.length()) at = (const char *)(t["name"] | ""); else more++; }
-  if (at.length()) label(o, "AT THE TABLE: " + at + (more ? "  +" + String(more) : String("")), &lv_font_montserrat_20, QUIET);   // DRAFT
+  casinoTableText = at.length() ? "AT THE TABLE: " + at + (more ? "  +" + String(more) : String("")) : String("");   // DRAFT
+  casinoTableLine = label(o, casinoTableText, &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  tablePrimed = false; tableSeen.clear(); tableRevSeen = watchRev;
+  netWatch("/api/broadcasts");                     // C-158: the table's news, while sitting here
   // the reels: each shows three of its strip, the middle row the payline between the arrows
   lv_obj_t *reels = row(o);
   lv_obj_set_style_pad_column(reels, 12, 0);
@@ -502,7 +557,7 @@ static void newsLook() {
     String id = c["id"] | "";
     if (!id.length() || newsSeen.count(id)) continue;
     newsSeen.insert(id);
-    if (newsPrimed && !(c["mine"] | false)) { line = castLine(c, acts); more++; }
+    if (newsPrimed && !(c["mine"] | false) && !casinoOpen) { line = castLine(c, acts); more++; }   // C-158: at the table, its own line says it
   }
   newsPrimed = true;
   if (!line.length()) return;
@@ -526,6 +581,7 @@ static void newsLook() {
 // every half minute while the CASINO is open: still at the table, and at what odds (C-158); every minute what is owed
 // sent and the coins as the companion knows them
 static void casinoTick60() {
+  casinoHearTable();                                // C-158: every pass, as the news arrives
   if (!casinoOpen || millis() - seatAt < 30000) return;
   static bool odd = false; odd = !odd;
   casinoSeat("here");

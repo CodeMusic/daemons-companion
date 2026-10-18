@@ -518,6 +518,8 @@ static bool flushOutbox() {
   return sent;
 }
 
+static std::atomic<bool> flushDue{false};
+void netSendQuiet(const char *method, const String &path, const String &body) { outboxAdd(method, path, body); flushDue = true; }
 void netSend(const char *method, const String &path, const String &body) {
   outboxAdd(method, path, body);
   netSyncNow();                                     // the network task sends it, then brings what changed
@@ -641,6 +643,7 @@ static void netTask(void *) {
     if (!net.wifi && known && now - lastSync > 30000) { lastSync = now; joinKnown(); }
     if (net.wifi && net.paired) {
       if (homeOpen && (homeDue || now - lastHome > 30000)) { homeDue = false; lastHome = now; fetchHome(); }   // C-139: while open
+      if (flushDue) { flushDue = false; flushOutbox(); }      // C-158: a quiet write, sent on its own
       { bool on; xSemaphoreTake(watchLock, portMAX_DELAY); on = watchPath.length() > 0; xSemaphoreGive(watchLock);   // C-158, C-160
         if (on && (watchDue || now - lastWatch > 15000)) { watchDue = false; lastWatch = now; fetchWatch(); } }
       if (first || now - lastSync > 10 * 60000) {            // everything, now and then (the pictures the first time)

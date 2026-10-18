@@ -36,6 +36,9 @@ void netPair(const String &server, const String &code);
 void netSyncNow();                   // download everything again
 void netGameSync();                  // SYNC with the game: only when the companion answers (it writes the save)
 void netSend(const char *method, const String &path, const String &body);   // a write: sent now, or kept and sent later
+// C-158: a write that changes nothing the Tab5 shows (the CASINO's seat at the table, a cheer) -- kept and sent as soon as
+// the network task is free, without downloading everything again after it as netSend does
+void netSendQuiet(const char *method, const String &path, const String &body);
 String serverAddress();
 bool localTime(struct tm &out);      // the time where the companion is, once it has said (its state carries the clock)
 String relayAddress();

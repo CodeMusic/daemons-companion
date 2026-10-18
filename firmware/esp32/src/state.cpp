@@ -93,6 +93,7 @@ bool takeState(const char *json) {
   if (doc["casts"].is<JsonArrayConst>()) castFromState(doc["casts"].as<JsonArrayConst>());   // C-134: broadcasts, once each
   playFromState(doc["play"]);                // T-426: the instrument, its lock and the songs learned
   soundDay(st.note);                         // C-40: the interactions are in the day's key
+  soundEdition(st.edition);                  // C-164: and on the save's own instrument
   if (!doc["settings"].isNull()) takeSettings(doc["settings"]);
   meetSetOurs(doc["beacons"] | "");          // C-15: our other companions (the phone) are never a meeting
   netsRevSeen(doc["netsRev"] | -1L);         // C-93: another device learned or forgot a network

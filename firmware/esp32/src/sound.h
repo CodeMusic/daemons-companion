@@ -13,12 +13,14 @@ void soundResume();
 void es8311Mic();
 void soundSettings(bool on, int volume);   // C-43: from the site
 void soundDay(const String &note);         // the day's note: "C" (Sunday) .. "B" (Saturday)
+void soundEdition(const String &edition); // C-164: the save's instrument -- the harp for CONTENT, the flute for CONTEXT
 void soundTurn(int dir);                   // the dial: right an ascending pair, left a descending one
 void soundSelect();                        // one tone, the day's own
 void soundBack();                          // the day's note an octave down, softly
 void soundRoutine(const char *type);       // a routine starting: its tune, the ring dancing to it
 void soundGameRoutine(const String &name, const String &type, uint32_t rgb);   // C-68: a game routine, the ring its colour
 void soundPcm(const int16_t *samples, size_t n);
+void soundInstrumentNote(int midi, int ms);   // C-164: one note, MIDI (C4 60), on the save's instrument where there is one
 void playNoteSemis(int semis, int ms);     // C-70: one note, this many semitones over the day's note   // C-66: a voice, 16 kHz mono, streamed in
 uint32_t soundRateTest();
 void soundDacRate(int hz);                  // C-95: the check only                  // C-95: ms to play 2 s of samples (RATETEST down the cable)

@@ -2,7 +2,10 @@
 // utilities.h, driven as its own mic-and-speaker test drives it: 16 kHz, 16-bit, the left channel, I2S_NUM_1).
 //
 // The voice is a square wave with a short rise and fall -- the game's own chip voice, and no clicks. Just enough tones
-// to be recognised: the user's rule is that two give enough character.
+// to be recognised: the user's rule is that two give enough character. C-164 (DAEMONS T-425): on a board with an I2S
+// speaker every tune is played instead on the save's own instrument -- DAEMONS' harp for CONTENT, its flute for CONTEXT
+// (firmware/common/instruments.h), the same notes as the phone, the site and the Tab5 play them on it. The M5GO and
+// Fire's DAC and the Dial's and StickC-Plus's buzzers keep the square wave.
 //
 // Every interaction is in the DAY'S KEY: its note (vision 9.21: Sunday C ... Saturday B) in the octave above middle C.
 // A routine's tune is that routine's shape in the day's key, so the same routine sounds a little different each day
@@ -14,10 +17,19 @@
 #include <freertos/queue.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
+#include <Preferences.h>
+#include <esp_timer.h>
 #include "sound.h"
 #include "board.h"
 #include "leds.h"
 #include "../../common/tunes.h"              // C-94: the same notes as every device
+// C-164: the instrument's samples (about 160 KB of flash) only in the builds whose boards have an I2S speaker
+#if defined(BOARD_M5CORE) || defined(BOARD_STICKC_PLUS) || defined(BOARD_DIAL) || defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
+#define SAMPLED 0
+#else
+#define SAMPLED 1
+#include "../../common/instruments.h"         // DAEMONS' own harp and flute
+#endif
 
 static i2s_port_t PORT = I2S_NUM_1;          // C-75: I2S_NUM_0 for the ESP32's own DAC, which only it drives
 static const int RATE = 16000;   // C-67: the pins are the board's
@@ -44,6 +56,7 @@ static bool stopped() { return inTune() && playingGen != stopGen; }
 static void quiet() {                        // the loop is about to sound: the tune playing or waiting ends first
   if (!tuneTask || inTune()) return;
   stopGen++;
+  xTaskNotifyGive(tuneTask);                 // C-164: a tune's last notes ringing out stop at once (ringOut)
   if (tunePlaying && xSemaphoreTake(voice, pdMS_TO_TICKS(80)) == pdTRUE) xSemaphoreGive(voice);
 }
 static portMUX_TYPE danceMux = portMUX_INITIALIZER_UNLOCKED;
@@ -80,12 +93,17 @@ static uint32_t playedAt = 0;
 // for DAC_ASK and really plays DAC_OUT_HZ, and play() holds each 16 kHz sample for its share of those frames.
 static const int DAC_ASK = 8000, DAC_OUT_HZ = 44260;
 static const int BUZZER_CH = 2;               // C-102: the Dial's buzzer, on LEDC (M5GFX has 7 for the backlight)
+static int64_t queuedUntil = 0;              // C-164: when the speaker will have played everything it has been given (us)
 static void play(const int16_t *buf, size_t n) {
   if (board.buzzer >= 0) return;               // C-102: a buzzer plays notes (tone()), never samples
   size_t wrote;
   playedAt = millis();
   if (board.dacSpeaker && !dacStart()) return;
-  if (!board.dacSpeaker) { i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY); return; }
+  if (!board.dacSpeaker) {
+    i2s_write(PORT, buf, n * sizeof(int16_t), &wrote, portMAX_DELAY);
+    queuedUntil = max(queuedUntil, esp_timer_get_time()) + (int64_t)n * 1000000 / RATE;
+    return;
+  }
   // C-95: the DAC plays at DAC_OUT_HZ, not RATE (below), so each sample is held for as many of its frames as it lasts
   static uint16_t pair[512];
   static float pos = 0;                       // where in the samples the next frame falls, carried from call to call
@@ -99,6 +117,7 @@ static void play(const int16_t *buf, size_t n) {
   if (k) i2s_write(PORT, pair, k * 2 * sizeof(uint16_t), &wrote, portMAX_DELAY);
 }
 
+static void ringHere();                      // C-164: what still rings, on a board without the tune task (soundIdle)
 #if SOC_I2S_SUPPORTS_DAC
 // C-75: the M5GO and Fire's speaker, on the ESP32's own DAC (GPIO 25, its channel 1) -- I2S_NUM_0 drives it. Only while a
 // sound plays (2026-10-09: the Fire whined): between, the DAC is let go and GPIO 25 held low, as M5Unified holds it.
@@ -112,6 +131,7 @@ static bool dacStart() {
   return true;
 }
 void soundIdle() {
+  ringHere();
   if (!dacOn || millis() - playedAt < 400) return;
   if (voice && xSemaphoreTake(voice, 0) != pdTRUE) return;     // C-121: a tune is playing from its task
   i2s_driver_uninstall(PORT);
@@ -144,18 +164,98 @@ bool soundQuiet() { return !dacOn; }       // C-121: the DAC let go, its DMA giv
 #else
 static bool dacStart() { return false; }
 void soundDacRate(int) {}
-void soundIdle() {}
+void soundIdle() { ringHere(); }
 bool soundQuiet() { return true; }
 #endif
 
+// ---- C-164: the instrument. Each note is a voice: the sample played faster or slower to its pitch (from the instrument's
+// root), looped while it is held if it loops (the flute) or played out if not (the harp), under its attack, decay and
+// sustain, then its release -- which rings on under the next note, as app/instrument.ts and the Tab5 render it. The
+// voices are mixed as they play, a block at a time, so nothing is held in memory but where each one is; and since a note
+// rings on after it ends, what rings after a tune is played out by the tune's task (ringOut), never more than a little
+// ahead of the speaker, so the next press is heard at once and mixed into whatever is still sounding.
+#if SAMPLED
+struct Voice { const Instrument *ins; float pos, step, level, gain, invRel; int32_t i, held, rel; bool on; };
+static Voice voices[6];
+static int instrument = 0;                    // INSTRUMENTS[], by the save's edition (soundEdition): the harp until told
+// at a level the square wave played at, the flute about as loud as it (by its RMS), the harp -- a pluck, dying away --
+// a little under half; and above 24000 a sum of voices is bent toward the most a sample can be, never clipped
+static const float SAMPLE_GAIN = 2.4f / 32768;
+static int16_t soft(float x) {
+  const float K = 24000, room = 32767 - K;
+  float m = fabsf(x);
+  if (m > K) m = K + room * tanhf((m - K) / room);
+  return (int16_t)lroundf(x < 0 ? -m : m);
+}
+static bool sampled() { return board.buzzer < 0 && !board.dacSpeaker; }
+static bool sounding() { for (const Voice &v : voices) if (v.on) return true; return false; }
+static void voicesOff() { for (Voice &v : voices) v.on = false; }
+static void voiceStart(int midi, int32_t held, float level) {
+  const Instrument &ins = INSTRUMENTS[instrument];
+  Voice *pick = nullptr;
+  for (Voice &w : voices) {
+    if (w.on && w.i < w.held) w.held = w.i;   // anything still held is let go: a tune cut short rings out under this
+    if (!w.on) { if (!pick || pick->on) pick = &w; }
+    else if (!pick || (pick->on && w.i - w.held > pick->i - pick->held)) pick = &w;   // else the one furthest gone
+  }
+  int32_t rel = max(1, (int)ins.releaseMs * RATE / 1000);
+  *pick = { &ins, 0, powf(2.0f, (midi - ins.root) / 12.0f) * ins.rate / RATE, 0, amplitude * level * SAMPLE_GAIN,
+            1.0f / rel, 0, held, rel, true };
+}
+static void mix(int16_t *out, int n) {        // the next n samples of every voice sounding (n <= 256)
+  static float acc[256];
+  for (int k = 0; k < n; k++) acc[k] = 0;
+  for (Voice &v : voices) {
+    if (!v.on) continue;
+    const Instrument &ins = *v.ins;
+    bool loops = ins.loopStart >= 0 && ins.loopEnd > ins.loopStart + 1 && (uint32_t)ins.loopEnd <= ins.n;
+    float end = loops ? (float)ins.loopEnd : (float)(ins.n - 1);
+    int32_t att = max(1, (int)ins.attackMs * RATE / 1000), dec = max(1, (int)ins.decayMs * RATE / 1000);
+    for (int k = 0; k < n; k++) {
+      if (v.pos >= end) { if (!loops) { v.on = false; break; } v.pos -= ins.loopEnd - ins.loopStart; }
+      if (v.i >= v.held + v.rel) { v.on = false; break; }
+      uint32_t j = (uint32_t)v.pos; float f = v.pos - j;
+      float a = ins.pcm[j], b = ins.pcm[j + 1 < ins.n ? j + 1 : ins.n - 1];
+      if (v.i < v.held) v.level = v.i < att ? (float)v.i / att : v.i < att + dec ? 1 - (1 - ins.sustain) * ((float)(v.i - att) / dec) : ins.sustain;
+      float env = v.i < v.held ? v.level : v.level * (1 - (v.i - v.held) * v.invRel);
+      acc[k] += (a + (b - a) * f) * env * v.gain;
+      v.pos += v.step; v.i++;
+    }
+  }
+  for (int k = 0; k < n; k++) out[k] = soft(acc[k]);
+}
+// what still rings, given the speaker until it holds `ahead` us -- false once nothing does. If the speaker ran dry first
+// (the loop was busy), what was ringing has already been cut off, and is not taken up again after the silence.
+static bool ringSome(int64_t ahead) {
+  static int16_t buf[128];
+  if (sounding() && queuedUntil < esp_timer_get_time() - 5000) voicesOff();
+  while (sounding() && queuedUntil - esp_timer_get_time() < ahead) { mix(buf, 128); play(buf, 128); }
+  return sounding();
+}
+#endif
+static void ringHere() {
+#if SAMPLED
+  if (!tuneTask && ready && enabled) ringSome(100000);   // a tenth of a second ahead: the loop comes round at least that often
+#endif
+}
+
 static void play(const Note *notes, int n, int base, int dance, float level);
+// C-164: the task's -- what still rings, played out to its end a little ahead of the speaker, unless another sound is
+// asked for, which takes the voices on as they are
+static void ringOut() {
+#if SAMPLED
+  while (!stopped() && ready && enabled && ringSome(40000)) ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(4));
+  if (!enabled) voicesOff();
+#endif
+}
 static void tuneLoop(void *) {
   Tune t;
   for (;;) {
     if (xQueueReceive(tunes, &t, portMAX_DELAY) != pdTRUE || t.gen != stopGen) continue;   // ended before it began
     xSemaphoreTake(voice, portMAX_DELAY);
     playingGen = t.gen; tunePlaying = true;
-    play(t.notes, t.n, t.base, t.dance, t.level);
+    if (t.n) play(t.notes, t.n, t.base, t.dance, t.level);
+    ringOut();                                 // C-164: what still rings after it (or after the loop's last sound)
     tunePlaying = false;
     xSemaphoreGive(voice);
   }
@@ -176,9 +276,34 @@ static void tuneLater(const Note *notes, int n, int base, int dance, float level
   Tune t = { notes, n, base, dance, level, ++stopGen };          // the one playing, if any, ends
   xQueueOverwrite(tunes, &t);
 }
+// C-164: the loop's sound has been played; what still rings of it, the task rings out (without it, soundIdle does)
+static void ringLater() {
+#if SAMPLED
+  if (inTune() || !sounding()) return;
+  if (!tuneTask) { ringSome(100000); return; }   // the first tenth of a second now, in case the loop is slow to come round
+  Tune t = { nullptr, 0, 0, -1, 0, ++stopGen };
+  xQueueOverwrite(tunes, &t);
+#endif
+}
+// C-164: the voices, the loop's while it sounds -- the task has let them go (quiet()), and this waits until it has
+static bool own() {
+#if SAMPLED
+  return voice && !inTune() && xSemaphoreTake(voice, pdMS_TO_TICKS(150)) == pdTRUE;
+#else
+  return false;
+#endif
+}
 
 void soundBegin() {
   tuneTaskBegin();
+#if SAMPLED
+  static bool kept = false;                    // C-164: the last save's instrument, so the jingle at power-up is on it
+  if (!kept) {
+    kept = true;
+    Preferences p; p.begin("sound", true); String ed = p.getString("edition", "CONTENT"); p.end();
+    for (int i = 0; i < INSTRUMENT_N; i++) if (ed == INSTRUMENTS[i].edition) instrument = i;
+  }
+#endif
   if (board.buzzer >= 0) {                     // C-102: the Dial's passive buzzer -- each note a square wave from LEDC
     ledcSetup(BUZZER_CH, 2000, 10);
     ledcAttachPin(board.buzzer, BUZZER_CH);
@@ -220,6 +345,9 @@ void soundBegin() {
 void soundPause() {
   if (!ready || !board.sharedClocks()) return;
   quiet();
+#if SAMPLED
+  voicesOff();
+#endif
   if (board.kind == BoardKind::M5StickS3) pm1Gpio(3, false);
   else coreS3Speaker(false, 0);
   i2s_driver_uninstall(PORT);
@@ -237,6 +365,17 @@ void soundSettings(bool on, int volume) {
 
 void soundDay(const String &note) { root = dayRoot(note.length() ? note[0] : 'C'); }
 
+// C-164: the save's edition chooses the instrument -- the harp for CONTENT, the flute for CONTEXT -- kept for the next start
+void soundEdition(const String &edition) {
+#if SAMPLED
+  for (int i = 0; i < INSTRUMENT_N; i++) {
+    if (edition != INSTRUMENTS[i].edition || i == instrument) continue;
+    instrument = i;
+    Preferences p; p.begin("sound", false); p.putString("edition", edition); p.end();
+  }
+#endif
+}
+
 static float hz(int midi) { return noteHz(midi); }
 
 // One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself).
@@ -252,6 +391,15 @@ static void tone(int midi, int ms, float level = 1.0f) {
   }
   static int16_t buf[256];
   int total = RATE * ms / 1000, rise = RATE * 4 / 1000, fall = RATE * 8 / 1000;
+#if SAMPLED
+  if (sampled()) {                             // C-164: a voice of the instrument, mixed with what still rings
+    bool took = own();
+    voiceStart(midi, total, level);
+    for (int done = 0; done < total && !stopped(); done += 256) { int n = min(256, total - done); mix(buf, n); play(buf, n); }
+    if (took) xSemaphoreGive(voice);
+    return;
+  }
+#endif
   float period = RATE / hz(midi), phase = 0;
   int amp = (int)(amplitude * level);
   for (int done = 0; done < total && !stopped();) {
@@ -265,7 +413,8 @@ static void tone(int midi, int ms, float level = 1.0f) {
   }
 }
 
-void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); }
+void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); ringLater(); }
+void soundInstrumentNote(int midi, int ms) { tone(midi, ms, 0.7f); ringLater(); }   // C-164, for T-426's PLAY
 
 // C-66: a voice, as 16 kHz samples, at the volume set. It plays even with the board's sounds off: it was asked for.
 // C-95: a check from the computer (RATETEST down the cable) -- how long the speaker takes to play two seconds of
@@ -273,6 +422,9 @@ void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); }
 uint32_t soundRateTest() {
   if (!ready) return 0;
   quiet();
+#if SAMPLED
+  voicesOff();
+#endif
   static int16_t zero[256] = {0};
   for (int i = 0; i < 16; i++) play(zero, 256);                 // fill the DMA first, so the timing is steady state
   uint32_t t0 = millis();
@@ -283,6 +435,9 @@ uint32_t soundRateTest() {
 void soundPcm(const int16_t *samples, size_t n) {
   if (!ready) return;
   quiet();
+#if SAMPLED
+  voicesOff();                                 // C-164: a voice is heard alone
+#endif
   static int16_t buf[256];
   float scale = (amplitude ? amplitude : 40 * 120) / 12000.0f;
   for (size_t done = 0; done < n;) {
@@ -297,7 +452,14 @@ static void rest(int ms) {
   quiet();
   if (!ready || !enabled || board.buzzer >= 0) { for (int left = ms; left > 0 && !stopped(); left -= 10) delay(min(10, left)); return; }
   static int16_t zero[256] = {0};
+#if SAMPLED
+  static int16_t buf[256];
+  bool ring = sampled() && sounding();         // C-164: what still rings goes on through it
+#endif
   for (int total = RATE * ms / 1000; total > 0 && !stopped(); total -= 256) {
+#if SAMPLED
+    if (ring) { mix(buf, min(256, total)); play(buf, min(256, total)); continue; }
+#endif
     play(zero, min(256, total));
   }
 }
@@ -305,7 +467,7 @@ static void rest(int ms) {
 // The dial turns in detents, often several a second: a pair for each would pile up behind the dial, so a turn
 // sounds only when the last one has had time to finish.
 // The interactions' notes are common/tunes.h's (C-94), as every device's are; only how loud is this board's.
-static void notes(const Note *t, int n, float level) { for (int i = 0; i < n; i++) tone(root + t[i].semis, t[i].ms, level); }
+static void notes(const Note *t, int n, float level) { for (int i = 0; i < n; i++) tone(root + t[i].semis, t[i].ms, level); ringLater(); }
 void soundTurn(int dir) {
   if (millis() - lastTurn < 90) return;
   lastTurn = millis();
@@ -325,6 +487,7 @@ static void play(const Note *notes, int n, int base, int kind, float level) {
   }
   rest(20);
   dance(-1, 0, 0);                                   // back to the ring at rest
+  ringLater();                                       // C-164: from the loop, what still rings is the task's to ring out
 }
 
 void soundRoutine(const char *type) {
@@ -384,7 +547,7 @@ void soundUndo(int species, int day) {                      // the step's own tu
 void soundWake() { tuneLater(TUNE_WAKE, 6, WAKE_BASE, DANCE_SWEEP, 0.8f); }   // C-121: from its task
 
 // C-121: a press, heard the moment it lands -- one short tick in the day's key, before anything it does
-void soundTap() { tone(root + 12, 16, 0.5f); }
+void soundTap() { tone(root + 12, 16, 0.5f); ringLater(); }
 
 // C-121: every pass of the loop -- the step of the dance the tune's task asked for, and the DAC let go when it is quiet
 void soundLoop() {
@@ -404,9 +567,10 @@ void soundReelTick() {
   if (millis() - at < 70) return;
   at = millis();
   tone(root + 24, 5, 0.3f);
+  ringLater();
 }
-void soundReelStop(int reel) { tone(root - 12 + 7 * reel, 34, 0.9f); }
-void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f); }
+void soundReelStop(int reel) { tone(root - 12 + 7 * reel, 34, 0.9f); ringLater(); }
+void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f); ringLater(); }
 void soundSlots(int what, const String &look) {   // 0 the lever, 1 a loss, 2 a small win, 3 a big one, 4 the jackpot, 5 a cheer (C-151)
   if (what == 0) { play(TUNE_SLOTS_PULL, 3, root, -1, 0.8f); return; }
   if (what == 5) { tuneLater(TUNE_SLOTS_CHEER, 6, root, DANCE_SPARKLE, 0.8f); return; }

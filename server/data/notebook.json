@@ -1,5 +1,5 @@
 {
- "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. seen: the flag set once the page is opened in the game (unread until then, T-403); place: where it was found; link: the song or post its QR code opens (T-402).",
+ "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. kind song (T-417, the SONGBOOK): drawn by the game as coloured notes in the key it was played in; song names the tune. seen: the flag set once the page is opened in the game (unread until then, T-403); place: where it was found; link: the song or post its QR code opens (T-402).",
  "sections": [
   "SCHOOL NOTES",
   "LOOSE PAGES",
@@ -720,6 +720,19 @@
    "seen": 2876,
    "place": null,
    "link": null
+  },
+  {
+   "section": 9,
+   "title": "O CHRISTMAS TREE",
+   "kind": "song",
+   "flag": 2913,
+   "flag2": 0,
+   "about": "Hummed by the singing firs.",
+   "text": null,
+   "seen": 2877,
+   "place": null,
+   "link": null,
+   "song": "PLAY_SONG_FIR"
   }
  ]
 }

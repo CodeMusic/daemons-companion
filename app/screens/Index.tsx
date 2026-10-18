@@ -7,6 +7,7 @@ import { Spinner, Text, XStack, YStack } from "tamagui";
 import { api, ON_PHONE } from "../net";
 import { Index, Reading, Spoken } from "../types";
 import { Art, Card, Eyebrow, Small } from "../ui";
+import { useApi } from "../useApi";
 export function useIndexReader() {
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
@@ -74,12 +75,10 @@ export function ListenControl({ phase, onListen, onStop, ink }: { phase: "making
 }
 
 export function IndexScreen({ ink }: { ink: string }) {
-  const [ix, setIx] = useState<Index | null>(null);
-  const [error, setError] = useState("");
+  const [ix, , error] = useApi<Index>("/api/index");
   const [open, setOpen] = useState<number | null>(null);
   const voice = useIndexReader();
   const busy = voice.reading !== null;
-  useEffect(() => { api<Index>("/api/index").then(setIx).catch((e) => setError(e.message)); }, []);
   if (error) return <Small>{error}</Small>;
   if (!ix) return <Small>Loading…</Small>;
   const flat = (s: string) => s.replace(/\n/g, " ");      // the game's line breaks are for its own window

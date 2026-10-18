@@ -7,9 +7,9 @@ import { setPalette } from "../look";
 import { ALONE, api, HANDHELD, HandheldNow, isAway, OFFLINE, redrawWidgetNow, WIDGET } from "../net";
 import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../types";
 import { Action, Card, Choice, Eyebrow, Result, Small } from "../ui";
+import { useApi } from "../useApi";
 export function DeviceSettingsCard({ ink }: { ink: string }) {
-  const [s, setS] = useState<DeviceSettings | null>(null);
-  useEffect(() => { api<DeviceSettings>("/api/device/settings").then(setS).catch(() => {}); }, []);
+  const [s, setS] = useApi<DeviceSettings>("/api/device/settings");
   if (!s) return null;
   const set = async (patch: Partial<DeviceSettings>) => {
     const r = await api<DeviceSettings>("/api/device/settings", patch);

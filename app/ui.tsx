@@ -62,15 +62,24 @@ export function CareKey({ label, onPress, ink, lit = false }: { label: string; o
 export const InkContext = createContext("#fbfaf6");
 export const useInk = () => useContext(InkContext);
 
-export function Action({ label, onPress, ink }: { label: string; onPress: () => void; ink?: string }) {
+// C-157 (the review: ~20 handlers with no catch): a press whose work fails says so under its key for a while, instead of
+// failing unseen -- every Action's, so no screen has to remember to catch
+export function Action({ label, onPress, ink }: { label: string; onPress: () => unknown; ink?: string }) {
   const dayInk = useInk();
   ink = ink ?? dayInk;
-  return (
+  const [failed, setFailed] = useState<string | null>(null);
+  const press = () => {
+    const fail = (e: unknown) => { setFailed((e as Error)?.message || "That did not go."); setTimeout(() => setFailed(null), 6000); };   // DRAFT
+    try { const r = onPress(); if (r && typeof (r as Promise<unknown>).then === "function") (r as Promise<unknown>).catch(fail); }
+    catch (e) { fail(e); }
+  };
+  const key = (
     <Button alignSelf="flex-start" marginTop={8} backgroundColor="$color9" borderRadius={3} paddingHorizontal={18}
-            hoverStyle={{ backgroundColor: "$color10" }} pressStyle={{ backgroundColor: "$color10" }} onPress={onPress}>
+            hoverStyle={{ backgroundColor: "$color10" }} pressStyle={{ backgroundColor: "$color10" }} onPress={press}>
       <Text fontFamily="$mono" fontSize={13} letterSpacing={1} fontWeight="700" color={ink}>{label}</Text>
     </Button>
   );
+  return failed ? <YStack alignSelf="flex-start" maxWidth={320}>{key}<Small color="$color8">{failed}</Small></YStack> : key;
 }
 export function Entry({ value, onChange, onSubmit, placeholder, limit }:
                { value: string; onChange: (v: string) => void; onSubmit: () => void; placeholder: string; limit: number }) {

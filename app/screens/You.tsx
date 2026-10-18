@@ -1,12 +1,12 @@
 // YOU -- the trainer card, MARKS and ROOTS, the region maps, GROVES, GAME EVENTS. (C-157: out of App.tsx.)
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Image, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { GROVES, lessonParas, MARK_ART, MARKS, onNight, PLAYER_ART, REGIONS, rgbOf, rootOfMark } from "../data";
 import { useDark } from "../look";
-import { api } from "../net";
 import { Profile, Progress, RegionsData, Wis } from "../types";
 import { Card, Eyebrow, Fact, Panel, Para, Points, Quote, Small, SubHead } from "../ui";
+import { useApi } from "../useApi";
  // C-144: the badges are drawn for the paper -- in the dark each sits on a chip of it
 export function Badge({ n, size }: { n: number; size: number }) {
   const dark = useDark();
@@ -189,9 +189,8 @@ export function GrovesCard({ found }: { found: string[] }) {
 }
 
 export function EventsCard() {
-  const [pr, setPr] = useState<Progress | null>(null);
+  const [pr] = useApi<Progress>("/api/progress");
   const [open, setOpen] = useState(false);
-  useEffect(() => { api<Progress>("/api/progress").then(setPr).catch(() => {}); }, []);
   if (!pr) return null;
   const sections = [...new Set(pr.events.map((e) => e.section))];
   return (
@@ -219,9 +218,7 @@ export function EventsCard() {
 }
 
 export function ProfileScreen() {
-  const [p, setP] = useState<Profile | null>(null);
-  const [error, setError] = useState("");
-  useEffect(() => { api<Profile>("/api/profile").then(setP).catch((e) => setError(e.message)); }, []);
+  const [p, , error] = useApi<Profile>("/api/profile");
   if (error) return <Small>{error}</Small>;
   if (!p) return <Small>Reading your save…</Small>;
   const id = String(p.trainerId).padStart(5, "0");

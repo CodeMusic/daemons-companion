@@ -8,6 +8,7 @@ import { api } from "../net";
 import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
 import { Action, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
+import { useApi } from "../useApi";
 
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
   const [open, setOpen] = useState(false);
@@ -159,10 +160,9 @@ export function ShelfBook({ colour, spine, title, about, onPress }: { colour: st
 // hear ones you've learned"): every song the save has learned, its key and motif on the staff in their colours, and PLAY
 // for it on the square wave the boards use, each note held as the game holds it (notebook.json's frames). DRAFT.
 export function SongbookBook() {
-  const [n, setN] = useState<Notebook | null>(null);
+  const [n] = useApi<Notebook>("/api/notebook");
   const player = useAudioPlayer(null);
   const [playing, setPlaying] = useState<string | null>(null);
-  useEffect(() => { api<Notebook>("/api/notebook").then(setN).catch(() => {}); }, []);
   if (!n) return <Small>Reading your save…</Small>;
   const songs = n.sections.find((s) => s.name === "SONGBOOK")?.pages.filter((p) => p.kind === "song" && p.notes?.length) ?? [];
   const play = async (p: (typeof songs)[number]) => {
@@ -196,9 +196,8 @@ export function SongbookBook() {
 // C-156: STREAM -- every lesson the save has opened, a MARK's (its BENCHMARK) and a ROOT's (its understanding), read as the
 // MARK and ROOT pages read them: the first box leading, the rest as points. DRAFT.
 export function StreamBook() {
-  const [p, setP] = useState<Profile | null>(null);
+  const [p] = useApi<Profile>("/api/profile");
   const [open, setOpen] = useState<string | null>(null);
-  useEffect(() => { api<Profile>("/api/profile").then(setP).catch(() => {}); }, []);
   if (!p) return <Small>Reading your save…</Small>;
   const items = [
     ...MARKS.marks.map((m, i) => ({ id: `m${i}`, held: !!p.marks?.[i], title: m.title.toUpperCase(), from: `the BENCHMARK in ${m.found}`, paras: lessonParas(m.lesson, m.title) })),
@@ -383,8 +382,7 @@ export function NotebookPage({ page, colours, outline }: { page: Notebook["secti
 }
 
 export function NotebookCard({ skip }: { skip?: string } = {}) {
-  const [n, setN] = useState<Notebook | null>(null);
-  useEffect(() => { api<Notebook>("/api/notebook").then(setN).catch(() => {}); }, []);
+  const [n] = useApi<Notebook>("/api/notebook");
   if (!n) return null;
   return (
     <Card>

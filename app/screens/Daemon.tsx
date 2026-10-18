@@ -11,6 +11,7 @@ import { Action, Art, Card, CareKey, careSound, Eyebrow, Segments, Small, whenSa
 import { hearSettings, soundLevel } from "../tuneSound";
 import { IndexScreen } from "./Index";
 import { RoutinesCard } from "./Routines";
+import { useApi } from "../useApi";
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
@@ -349,8 +350,7 @@ export function NearbyCard({ ink }: { ink: string }) {
 }
 
 export function MeetingsCard() {
-  const [m, setM] = useState<{ meetings: Meeting[]; messages?: Message[]; heardOurs: { at: string } | null; lastListen: Listen } | null>(null);
-  useEffect(() => { api<any>("/api/meetings").then(setM).catch(() => {}); }, []);
+  const [m] = useApi<{ meetings: Meeting[]; messages?: Message[]; heardOurs: { at: string } | null; lastListen: Listen }>("/api/meetings");
   if (!m) return null;
   return (
     <Card borderColor="$color5">

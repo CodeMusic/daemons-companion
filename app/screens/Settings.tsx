@@ -7,6 +7,7 @@ import { LOOK, Look, setLook } from "../look";
 import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER } from "../net";
 import { Settings } from "../types";
 import { Action, Card, Choice, Eyebrow, Small } from "../ui";
+import { useApi } from "../useApi";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
@@ -146,10 +147,9 @@ export function WeatherCard({ ink }: { ink: string }) {
   );
 }
 export function VersionCard({ ink }: { ink: string }) {
-  const [v, setV] = useState<{ server: string | null; appChanged: boolean | null } | null>(null);
-  const [look, seeLook] = useState(LOOK);                                    // C-144
   const commit = BUILD.split(" ")[0];
-  useEffect(() => { api<typeof v>(`/api/version${commit ? `?build=${commit}` : ""}`).then(setV).catch(() => {}); }, [commit]);
+  const [v] = useApi<{ server: string | null; appChanged: boolean | null }>(`/api/version${commit ? `?build=${commit}` : ""}`);
+  const [look, seeLook] = useState(LOOK);                                    // C-144
   return (
     <Card>
       <Eyebrow>THIS APP</Eyebrow>
@@ -171,8 +171,7 @@ export function VersionCard({ ink }: { ink: string }) {
 
 // C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly.
 export function TalkSettingsCard({ ink }: { ink: string }) {
-  const [t, setT] = useState<{ provider: "auto" | "local" | "openrouter"; connected: boolean } | null>(null);
-  useEffect(() => { api<typeof t>("/api/talk/settings").then(setT).catch(() => {}); }, []);
+  const [t, setT] = useApi<{ provider: "auto" | "local" | "openrouter"; connected: boolean }>("/api/talk/settings");
   if (!t) return null;
   const pick = async (provider: "auto" | "local" | "openrouter") => setT(await api<typeof t>("/api/talk/settings", { provider }));
   return (

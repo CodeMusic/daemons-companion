@@ -4,6 +4,7 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { api } from "../net";
 import { GoalNow, Step, Walk } from "../types";
 import { Action, Card, Entry, Eyebrow, Small } from "../ui";
+import { useApi } from "../useApi";
 export function StepRow({ step, onToggle, onRemove }: { step: Step; onToggle: () => void; onRemove: () => void }) {
   return (
     <XStack alignItems="center" gap={10} paddingVertical={4}>
@@ -17,9 +18,8 @@ export function StepRow({ step, onToggle, onRemove }: { step: Step; onToggle: ()
 }
 
 export function WalkCard({ ink }: { ink: string }) {
-  const [w, setW] = useState<Walk | null>(null);
+  const [w, setW] = useApi<Walk>("/api/walk");
   const [typed, setTyped] = useState("");
-  useEffect(() => { api<Walk>("/api/walk").then(setW).catch(() => {}); }, []);
   if (!w) return null;
   const save = async (patch: object) => { setW(await api<Walk>("/api/walk", patch)); setTyped(""); };
   return (

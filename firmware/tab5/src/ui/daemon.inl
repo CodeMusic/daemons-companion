@@ -66,16 +66,36 @@ static void tapAnswer(lv_event_t *e) {
 // (its device id, so its JACK is its own daemon), by slots.h -- the boards' table. Three reels of the JACK, the party's
 // others, the coin and the season; seven bets; a seat at the table while it is open; what it wins or loses sent to the
 // companion every ten pulls and on leaving (INTERACT casino), a big win called to the table. Every word DRAFT.
-static lv_obj_t *reelBox[3], *casinoCoins, *casinoSaid, *casinoBetRow;
-static uint8_t reelAt[3] = { slots::COIN, slots::JACK, slots::SEASON }, reelWant[3];
-static int casinoBet = 10, casinoTick = -1, casinoOutcome = 0, casinoJack = -1, casinoFriend[3] = { -1, -1, -1 }, unsentSpins = 0, casinoSeqN = 0;
+// C-158 (the user, 2026-10-18: "the phone casino needs to be more like the devices"; the Tab5 too): like the boards' -- the
+// band (CASINO and the season, or the holiday in its colours), AT THE TABLE, three dark reels each showing three of its
+// strip (each piece twice, shuffled), the payline the middle row between the arrows, MONEY and BET, BET - / SPIN / BET +
+// becoming STOP for each reel; the pull is decided by slots.h's engine -- the day's luck (the state's casino.context), this
+// Tab5's own cat and string, a loss often falling near (the winning piece one place off the line) -- and each reel slips
+// on to its piece when STOPped or by itself. The reels' other daemons are the ones seen in the game (casino.reel).
+static lv_obj_t *reelCell[3][3], *casinoCoins, *casinoBetLabel, *casinoSaid, *casinoNear, *casinoBanner, *casinoKeys[2];
+static uint8_t reelStrip[3][slots::STRIP_N], reelWant[3];
+static int reelPos[3] = { 0, 4, 8 }, reelStop[3] = { -1, -1, -1 }, nearBeside = -1;
+static int casinoBet = 10, casinoTick = -1, casinoOutcome = 0, casinoJack = -1, casinoFriend[3] = { -1, -1, -1 }, casinoReelSp[3] = { 0, 0, 0 };
+static int unsentSpins = 0, casinoSeqN = 0;
 static long unsentDelta = 0, reportedDelta = 0, stateBalance = 0;
-static String casinoSeason, casinoBootHex, lastReport;
+static String casinoSeason, casinoBootHex, lastReport, casinoLook;
 static lv_timer_t *casinoTimer = nullptr;
 static uint32_t seatAt = 0;
-static bool casinoOpen = false;
+static bool casinoOpen = false, stripsMade = false;
+static slots::Cat casinoCat;
+static float casinoLuck = 0;
 static long casinoBalance() { long b = stateBalance + unsentDelta + reportedDelta; return b < 0 ? 0 : b > 999999 ? 999999 : b; }
-static void casinoSeat(const char *how) { netSend("POST", "/api/device/interact", String("{\"kind\":\"table\",\"detail\":\"") + how + " " + deviceId() + "\"}"); seatAt = millis(); }
+// sitting here says the odds this Tab5 plays at -- the return in a thousand, the string's reach in hundredths, pulls without
+// a win, wins running (server casino.ts seated) -- for THE HOUSE
+static void casinoSeat(const char *how) {
+  String odds;
+  if (!strcmp(how, "here")) {
+    char b[48]; snprintf(b, sizeof b, " %d %d %d %d", (int)lroundf(slots::pullReturn(casinoLuck, casinoCat) * 1000), (int)lroundf(casinoCat.reach * 100),
+                         min(casinoCat.dry, 99999), min(casinoCat.streak, 9999));
+    odds = b;
+  }
+  netSend("POST", "/api/device/interact", String("{\"kind\":\"table\",\"detail\":\"") + how + " " + deviceId() + odds + "\"}"); seatAt = millis();
+}
 static void casinoReport() {
   if (!unsentSpins) return;
   if (!casinoBootHex.length()) { char h[5]; snprintf(h, sizeof h, "%04x", (unsigned)(esp_random() & 0xFFFF)); casinoBootHex = h; }
@@ -89,97 +109,196 @@ static void casinoTakeState() {                     // the coins as the companio
   stateBalance = st["casino"]["balance"] | 0L;
   if (lastReport.length() && String((const char *)(st["casino"]["seen"] | "")) == lastReport) reportedDelta = 0;
   casinoSeason = String((const char *)(st["season"] | ""));
+  casinoLook = String((const char *)(st["holiday"]["look"] | ""));
+  casinoLuck = st["casino"]["context"]["luck"] | 0.0f;
   casinoJack = st["daemon"].isNull() ? -1 : (int)(st["daemon"]["slot"] | -1);
   JsonArray fr = st["casino"]["friends"].as<JsonArray>();
   int k = 0, at = 0;
   if (casinoJack < 0 && fr.size()) { casinoJack = fr[0] | -1; at = 1; }   // no daemon of its own: the party's first is the JACK
-  for (int i = 0; i < 3; i++) casinoFriend[i] = -1;
+  for (int i = 0; i < 3; i++) { casinoFriend[i] = -1; casinoReelSp[i] = 0; }
   for (int i = at; i < (int)fr.size() && k < 3; i++) casinoFriend[k++] = fr[i] | -1;
+  int r = 0; for (JsonObject x : st["casino"]["reel"].as<JsonArray>()) if (r < 3) casinoReelSp[r++] = x["species"] | 0;
 }
-static void casinoDrawPiece(int i) {
-  lv_obj_clean(reelBox[i]);
-  int p = reelAt[i], slot = p == slots::JACK ? casinoJack : p <= slots::F3 ? casinoFriend[p - 1] : -1;
+static uint8_t stripAt(int i, int pos) { return reelStrip[i][((pos % slots::STRIP_N) + slots::STRIP_N) % slots::STRIP_N]; }
+static void casinoDrawCell(int i, int row) {
+  lv_obj_t *cell = reelCell[i][row];
+  if (!cell) return;
+  lv_obj_clean(cell);
+  int p = stripAt(i, reelPos[i] + row - 1);
+  int sp = p >= slots::F1 && p <= slots::F3 ? casinoReelSp[p - 1] : 0;
+  int slot = p == slots::JACK ? casinoJack : p <= slots::F3 ? casinoFriend[p - 1] : -1;
   lv_obj_t *o;
-  if (slot >= 0) o = picture(reelBox[i], "p" + String(slot), 512);
+  if (sp > 0) o = picture(cell, "s" + String(sp), 384);
+  else if (slot >= 0) o = picture(cell, "p" + String(slot), 384);
   else if (p == slots::COIN) {
-    o = lv_obj_create(reelBox[i]); lv_obj_set_size(o, 100, 100); lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(o, lv_color_hex(0xE8B830), 0); lv_obj_set_style_border_color(o, lv_color_hex(0xA07A10), 0);
-    lv_obj_set_style_border_width(o, 6, 0);
+    o = lv_obj_create(cell); lv_obj_set_size(o, 72, 72); lv_obj_set_style_radius(o, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(o, lv_color_hex(0xF2C230), 0); lv_obj_set_style_border_color(o, lv_color_hex(0xA07A10), 0);
+    lv_obj_set_style_border_width(o, 5, 0);
   } else {
     String t = p == slots::SEASON ? casinoSeason : String("?"); t.toUpperCase();
-    lv_color_t c = casinoSeason == "winter" ? lv_color_hex(0x6C9CC6) : casinoSeason == "spring" ? lv_color_hex(0x4C9C4C)
-                 : casinoSeason == "summer" ? lv_color_hex(0xC8A527) : lv_color_hex(0xC9721B);
-    o = label(reelBox[i], t, &lv_font_montserrat_28, c);
+    lv_color_t c = casinoSeason == "winter" ? lv_color_hex(0x9CC3E6) : casinoSeason == "spring" ? lv_color_hex(0x7CC47C)
+                 : casinoSeason == "summer" ? lv_color_hex(0xE8C547) : lv_color_hex(0xD9822B);
+    o = label(cell, t, &lv_font_montserrat_20, c);
   }
   lv_obj_center(o);
 }
-static void casinoShowCoins() { if (casinoCoins) lv_label_set_text(casinoCoins, String(casinoBalance()).c_str()); }
+static void casinoDrawReels() { for (int i = 0; i < 3; i++) for (int r = 0; r < 3; r++) casinoDrawCell(i, r); }
+static void casinoShowCoins() {
+  if (casinoCoins) lv_label_set_text(casinoCoins, ("MONEY " + String(casinoBalance())).c_str());
+  if (casinoBetLabel) lv_label_set_text(casinoBetLabel, ("BET " + String(casinoBet)).c_str());
+}
+static void casinoShowKeys(bool spinning) {        // shown and hidden, never rebuilt inside a tap on one of them
+  if (!casinoKeys[0]) return;
+  if (spinning) { lv_obj_add_flag(casinoKeys[0], LV_OBJ_FLAG_HIDDEN); lv_obj_remove_flag(casinoKeys[1], LV_OBJ_FLAG_HIDDEN); }
+  else { lv_obj_remove_flag(casinoKeys[0], LV_OBJ_FLAG_HIDDEN); lv_obj_add_flag(casinoKeys[1], LV_OBJ_FLAG_HIDDEN); }
+}
+// where reel i stops: on its piece, the first place past where it is -- the third, for a near miss, with the piece it
+// wanted beside the line (slots.ts stopAt / stopNear)
+static int casinoStopFor(int i) {
+  int from = reelPos[i] + 1;
+  if (i == 2 && nearBeside >= 0)
+    for (int k = from; k < from + slots::STRIP_N; k++)
+      if (stripAt(2, k) == reelWant[2] && (stripAt(2, k - 1) == nearBeside || stripAt(2, k + 1) == nearBeside)) return k;
+  for (int k = from; k < from + slots::STRIP_N; k++) if (stripAt(i, k) == reelWant[i]) return k;
+  return from;
+}
+static void casinoSettle() {
+  long paid = (long)casinoBet * slots::PAYS[casinoOutcome], won = paid - casinoBet;
+  bool near = nearBeside >= 0;
+  slots::learn(casinoCat, casinoOutcome);
+  unsentDelta += won; unsentSpins++;
+  soundSlots(casinoOutcome == 0 ? 1 : casinoOutcome == 6 ? 4 : slots::PAYS[casinoOutcome] >= 12 ? 3 : 2, casinoLook);
+  lv_label_set_text(casinoSaid, casinoOutcome == 0 ? ("-" + String(casinoBet)).c_str() : "");
+  lv_label_set_text(casinoNear, !near ? "" : casinoOutcome == 0 ? "SO CLOSE" : "ALMOST THE JACKPOT");   // DRAFT
+  if (casinoOutcome) {
+    lv_label_set_text(lv_obj_get_child(casinoBanner, 0), ((casinoOutcome == 6 ? String("JACKPOT!  ") : String("WIN  ")) + String(paid)).c_str());   // DRAFT
+    lv_obj_remove_flag(casinoBanner, LV_OBJ_FLAG_HIDDEN);
+  }
+  if (const char *act = slots::tableAct(casinoOutcome)) netSend("POST", "/api/broadcast", String("{\"kind\":\"act\",\"act\":\"") + act + "\"}");
+  if (unsentSpins >= 10) casinoReport();
+  casinoShowCoins(); casinoShowKeys(false);
+}
 static void casinoStep(lv_timer_t *t) {
   if (!casinoOpen) { lv_timer_delete(t); casinoTimer = nullptr; return; }
   casinoTick++;
-  for (int i = 0; i < 3; i++) { reelAt[i] = casinoTick >= 9 + i * 4 ? reelWant[i] : (reelAt[i] + 1 + i) % 6; casinoDrawPiece(i); }
-  if (casinoTick < 17) return;
+  bool all = true;
+  for (int i = 0; i < 3; i++) {
+    if (reelStop[i] < 0 && casinoTick > 26 + i * 6) reelStop[i] = casinoStopFor(i);   // by itself, a reel at a time
+    if (reelStop[i] >= 0 && reelPos[i] >= reelStop[i]) continue;
+    all = false; reelPos[i]++;
+    for (int r = 0; r < 3; r++) casinoDrawCell(i, r);
+  }
+  if (!all) return;
   lv_timer_delete(t); casinoTimer = nullptr; casinoTick = -1;
-  long paid = (long)casinoBet * slots::PAYS[casinoOutcome], won = paid - casinoBet;
-  unsentDelta += won; unsentSpins++;
-  lv_label_set_text(casinoSaid, casinoOutcome == 0 ? ("-" + String(casinoBet)).c_str()
-                    : ((casinoOutcome == 6 ? String("JACKPOT!  +") : String("+")) + String(paid)).c_str());
-  if (const char *act = slots::tableAct(casinoOutcome)) netSend("POST", "/api/broadcast", String("{\"kind\":\"act\",\"act\":\"") + act + "\"}");
-  if (unsentSpins >= 10) casinoReport();
-  casinoShowCoins();
+  casinoSettle();
+}
+static void casinoStopTap(lv_event_t *e) {
+  int i = (int)(long)lv_event_get_user_data(e);
+  if (casinoTimer && reelStop[i] < 0) reelStop[i] = casinoStopFor(i);
 }
 static void casinoPull(lv_event_t *) {
   if (casinoTimer || casinoBet > casinoBalance()) return;
-  casinoOutcome = slots::draw(); slots::piecesFor(casinoOutcome, reelWant);
-  lv_label_set_text(casinoSaid, ""); casinoTick = 0;
-  soundSelect();
-  casinoTimer = lv_timer_create(casinoStep, 80, nullptr);
+  int w[slots::OUTCOME_N];
+  slots::weightsFor(slots::pullReturn(casinoLuck, casinoCat), w);
+  casinoOutcome = slots::drawFrom(w); slots::piecesFor(casinoOutcome, reelWant);
+  nearBeside = -1;                                 // a loss often falls near; a 2x shows a third JACK beside the line
+  uint8_t wanted = 0, c = 0;
+  if (casinoOutcome == 0 && (float)(esp_random() % 1000) / 1000.0f < slots::nearChance(casinoCat)) {
+    if (slots::nearPieces(reelStrip[2], reelWant, wanted)) nearBeside = wanted;
+  } else if (casinoOutcome == 2 && slots::almostThird(reelStrip[2], c)) { reelWant[2] = c; nearBeside = slots::JACK; }
+  for (int i = 0; i < 3; i++) reelStop[i] = -1;
+  lv_label_set_text(casinoSaid, ""); lv_label_set_text(casinoNear, ""); lv_obj_add_flag(casinoBanner, LV_OBJ_FLAG_HIDDEN);
+  casinoTick = 0;
+  soundSlots(0, casinoLook);
+  casinoShowKeys(true);
+  casinoTimer = lv_timer_create(casinoStep, 70, nullptr);
 }
-static void casinoDrawBets();
-static void casinoTapBet(lv_event_t *e) { int b = (int)(long)lv_event_get_user_data(e); if (b <= casinoBalance()) { casinoBet = b; casinoDrawBets(); } }
-static void casinoDrawBets() {
-  lv_obj_clean(casinoBetRow);
-  for (int i = 0; i < slots::BET_N; i++) {
-    lv_obj_t *b = button(casinoBetRow, String(slots::BETS[i]), casinoTapBet, (void *)(long)slots::BETS[i], slots::BETS[i] == casinoBet);
-    if (slots::BETS[i] > casinoBalance()) lv_obj_set_style_opa(b, LV_OPA_40, 0);
-  }
+static void casinoBetBy(lv_event_t *e) {
+  int d = (int)(long)lv_event_get_user_data(e), at = 0;
+  for (int i = 0; i < slots::BET_N; i++) if (slots::BETS[i] == casinoBet) at = i;
+  for (int k = at + d; k >= 0 && k < slots::BET_N; k += d) if (slots::BETS[k] <= max(casinoBalance(), (long)slots::BETS[0])) { casinoBet = slots::BETS[k]; break; }
+  casinoShowCoins();
 }
 static void casinoLeave() {
   if (casinoTimer) {                                // the review, 2026-10-18: a pull left mid-spin is settled, as the
     lv_timer_delete(casinoTimer); casinoTimer = nullptr; casinoTick = -1;   // handhelds settle it -- never escaped
     unsentDelta += (long)casinoBet * slots::PAYS[casinoOutcome] - casinoBet; unsentSpins++;
+    slots::learn(casinoCat, casinoOutcome);
   }
   casinoReport(); casinoSeat("gone"); casinoOpen = false;
-  casinoCoins = casinoSaid = casinoBetRow = nullptr;  // the overlay goes with them
-  for (int i = 0; i < 3; i++) reelBox[i] = nullptr;
+  casinoCoins = casinoBetLabel = casinoSaid = casinoNear = casinoBanner = nullptr;   // the overlay goes with them
+  casinoKeys[0] = casinoKeys[1] = nullptr;
+  for (int i = 0; i < 3; i++) for (int r = 0; r < 3; r++) reelCell[i][r] = nullptr;
 }
+static lv_color_t hexOr(const char *h, lv_color_t or_) { return h && strlen(h) == 7 && h[0] == '#' ? lv_color_hex(strtol(h + 1, nullptr, 16)) : or_; }
 static void tapCasino(lv_event_t *) {
   JsonDocument st = newDoc();
   if (!kept("state", st) || st["casino"].isNull()) { showWords("THE CASINO", "The CASINO plays with your save's money: the companion has to read your save first.", ""); return; }
   casinoTakeState();
+  if (!stripsMade) {                               // each piece twice round a reel, shuffled (slots.ts strip)
+    stripsMade = true;
+    for (int i = 0; i < 3; i++) {
+      for (int k = 0; k < slots::STRIP_N; k++) reelStrip[i][k] = k % 6;
+      for (int k = slots::STRIP_N - 1; k > 0; k--) { int j = esp_random() % (k + 1); uint8_t t = reelStrip[i][k]; reelStrip[i][k] = reelStrip[i][j]; reelStrip[i][j] = t; }
+    }
+  }
   lv_obj_t *o = openOverlay();
   casinoOpen = true; overlayClosing = casinoLeave; casinoSeat("here");
   button(o, "LEAVE", closeOverlay, nullptr, false);
-  label(o, "THE CASINO", &lv_font_montserrat_28, DAY);
-  lv_obj_t *cr = row(o);
-  label(cr, "COINS", &lv_font_montserrat_20, QUIET);
-  casinoCoins = label(cr, "", &lv_font_montserrat_40, INK);
+  // the band: CASINO and what it is dressed for, in the holiday's colours or the day's
+  lv_obj_t *band = lv_obj_create(o);
+  lv_obj_set_size(band, LV_PCT(100), LV_SIZE_CONTENT); lv_obj_set_style_radius(band, 6, 0); lv_obj_set_style_border_width(band, 0, 0);
+  lv_obj_set_style_pad_all(band, 14, 0); lv_obj_remove_flag(band, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_bg_color(band, hexOr(st["holiday"]["colours"][0] | "", BAR), 0);
+  String dress = st["holiday"].isNull() ? casinoSeason : String((const char *)(st["holiday"]["name"] | "")); dress.toUpperCase();
+  label(band, "CASINO    " + dress, &lv_font_montserrat_28, lv_color_white());
+  String at; int more = 0;
+  for (JsonObject t : st["casino"]["table"].as<JsonArray>()) { if (!at.length()) at = (const char *)(t["name"] | ""); else more++; }
+  if (at.length()) label(o, "AT THE TABLE: " + at + (more ? "  +" + String(more) : String("")), &lv_font_montserrat_20, QUIET);   // DRAFT
+  // the reels: each shows three of its strip, the middle row the payline between the arrows
   lv_obj_t *reels = row(o);
+  lv_obj_set_style_pad_column(reels, 12, 0);
+  lv_obj_set_flex_align(reels, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+  label(reels, LV_SYMBOL_PLAY, &lv_font_montserrat_28, lv_color_hex(0xF2C230));
   for (int i = 0; i < 3; i++) {
-    reelBox[i] = lv_obj_create(reels); lv_obj_set_size(reelBox[i], 190, 190);
-    lv_obj_set_style_border_color(reelBox[i], DAY, 0); lv_obj_set_style_border_width(reelBox[i], 4, 0);
-    lv_obj_remove_flag(reelBox[i], LV_OBJ_FLAG_SCROLLABLE);
-    casinoDrawPiece(i);
+    lv_obj_t *r = lv_obj_create(reels);
+    lv_obj_set_size(r, 180, 3 * 118); lv_obj_set_style_radius(r, 10, 0); lv_obj_set_style_border_width(r, 0, 0);
+    lv_obj_set_style_bg_color(r, lv_color_hex(0x25282E), 0); lv_obj_set_style_pad_all(r, 0, 0);
+    lv_obj_remove_flag(r, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_flex_flow(r, LV_FLEX_FLOW_COLUMN);
+    for (int k = 0; k < 3; k++) {
+      lv_obj_t *c = reelCell[i][k] = lv_obj_create(r);
+      lv_obj_remove_style_all(c); lv_obj_set_size(c, 180, 118);
+      lv_obj_remove_flag(c, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(c, LV_OBJ_FLAG_CLICKABLE);
+      if (k != 1) lv_obj_set_style_opa(c, LV_OPA_50, 0);
+    }
   }
-  casinoSaid = label(o, "", &lv_font_montserrat_40, DAY);
-  casinoBetRow = row(o); casinoDrawBets();
-  button(o, "PULL", casinoPull);
+  label(reels, LV_SYMBOL_LEFT, &lv_font_montserrat_28, lv_color_hex(0xF2C230));
+  casinoBanner = lv_obj_create(o);                 // WIN / JACKPOT, in gold, until the next pull
+  lv_obj_set_size(casinoBanner, LV_PCT(100), LV_SIZE_CONTENT); lv_obj_set_style_radius(casinoBanner, 12, 0);
+  lv_obj_set_style_bg_color(casinoBanner, lv_color_hex(0xF6C445), 0); lv_obj_set_style_border_width(casinoBanner, 0, 0);
+  lv_obj_set_style_pad_all(casinoBanner, 10, 0); lv_obj_remove_flag(casinoBanner, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_t *bl = label(casinoBanner, "", &lv_font_montserrat_40, lv_color_hex(0x2B2310)); lv_obj_center(bl);
+  lv_obj_add_flag(casinoBanner, LV_OBJ_FLAG_HIDDEN);
+  // the info row, as the boards': MONEY and BET, and what the last pull came to
+  lv_obj_t *info = row(o);
+  lv_obj_set_style_pad_column(info, 30, 0);
+  casinoCoins = label(info, "", &lv_font_montserrat_28, INK);
+  casinoBetLabel = label(info, "", &lv_font_montserrat_28, legible(DAY));
+  casinoSaid = label(info, "", &lv_font_montserrat_28, QUIET);
+  casinoNear = label(o, "", &lv_font_montserrat_28, legible(DAY));
+  // the keys, labelled as the boards' are: BET - SPIN BET +, and STOP for each reel while they turn
+  casinoKeys[0] = row(o);
+  button(casinoKeys[0], "BET -", casinoBetBy, (void *)(long)-1, false);
+  button(casinoKeys[0], "SPIN", casinoPull);
+  button(casinoKeys[0], "BET +", casinoBetBy, (void *)(long)1, false);
+  casinoKeys[1] = row(o);
+  for (int i = 0; i < 3; i++) button(casinoKeys[1], "STOP", casinoStopTap, (void *)(long)i);
+  casinoShowKeys(false);
   JsonDocument d = newDoc(); kept("state", d);
   String jackName = d["daemon"].isNull() ? String("your daemon") : String((const char *)(d["daemon"]["nickname"] | "your daemon"));
   label(o, "Three of " + jackName + " pays fifty times. What you win or lose reaches your save at the next SYNC.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
-  String at; for (JsonObject t : d["casino"]["table"].as<JsonArray>()) at += (at.length() ? ", " : "") + String((const char *)(t["name"] | ""));
-  if (at.length()) label(o, "At the table: " + at + ".", &lv_font_montserrat_20, QUIET, LV_PCT(100));
-  casinoShowCoins();
+  casinoDrawReels(); casinoShowCoins();
 }
 // C-158 (the user, 2026-10-18: "a casino admin section [app/site/tab5] where you can see who all is gambling and the current
 // odds ... clicking on it explains why those odds are active"): THE HOUSE, from GET /api/casino -- today's odds and why,
@@ -289,10 +408,13 @@ static void newsLook() {
   soundSelect();
 }
 
-// once a minute while the CASINO is open: still at the table, what is owed sent, the coins as the companion knows them
+// every half minute while the CASINO is open: still at the table, and at what odds (C-158); every minute what is owed
+// sent and the coins as the companion knows them
 static void casinoTick60() {
-  if (!casinoOpen || millis() - seatAt < 60000) return;
-  casinoSeat("here"); casinoReport(); casinoTakeState(); casinoShowCoins();
+  if (!casinoOpen || millis() - seatAt < 30000) return;
+  static bool odd = false; odd = !odd;
+  casinoSeat("here");
+  if (!odd) { casinoReport(); casinoTakeState(); casinoShowCoins(); }
 }
 
 static void drawNearby(lv_obj_t *parent) {

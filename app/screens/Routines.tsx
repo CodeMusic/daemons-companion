@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { dayRoot, hearSettings, soundLevel, tuneSound } from "../tuneSound";
 import { Text, XStack, YStack } from "tamagui";
-import { BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
+import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
          stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../server/src/slots";
 import { KIND_NAMES, playerId } from "../data";
 import { api } from "../net";
@@ -150,8 +150,10 @@ export function Casino({ ink }: { ink: string }) {
     // "almost the jackpot", a third JACK beside the line
     const c = cat.current, o = drawFrom(weightsFor(pullReturn(luck.current, c)));
     let want: Piece[] = piecesFor(o), beside: Piece | null = null;
-    if (o === 0 && Math.random() < nearChance(c)) { const n = nearPieces(); want = n.pieces; beside = n.wanted; }
-    else if (OUTCOMES[o] === "JACK2") beside = JACK as Piece;
+    // the third piece chosen from what sits beside the wanted one on that reel, so a near miss is truly near (where none
+    // comes round, a plain loss or a plain 2x)
+    if (o === 0 && Math.random() < nearChance(c)) { const n = nearPieces(strips.current[2]); if (n) { want = n.pieces; beside = n.wanted; } }
+    else if (OUTCOMES[o] === "JACK2") { const t = almostThird(strips.current[2]); if (t !== null) { want = [JACK as Piece, JACK as Piece, t]; beside = JACK as Piece; } }
     sound(0);
     run.current = { o, want, at: [null, null, null], started: Date.now(), beside };
     setStopped([false, false, false]); setBanner(null); setSaid("");

@@ -94,6 +94,20 @@ void soundWake()   { send(TUNE_WAKE, 6, WAKE_BASE, 0.8f); }
 void soundSelect() { send(TUNE_SELECT, 1, root, 1.0f); }
 void soundBack()   { send(TUNE_BACK, 1, root, 0.7f); }
 void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; send(t.notes, t.n, root, 0.85f); }   // C-114, C-118
+#define TUNE(t) t, (int)(sizeof t / sizeof *t)
+void soundSlots(int what, const String &look) {   // C-158: the boards' rule (firmware/esp32/src/sound.cpp), without the lights
+  if (what == 0) send(TUNE(TUNE_SLOTS_PULL), root, 0.8f);
+  else if (what == 5) send(TUNE(TUNE_SLOTS_CHEER), root, 0.8f);
+  else if (what == 1) send(TUNE(TUNE_SLOTS_LOSE), root, 0.5f);
+  else if (what == 2) send(TUNE(TUNE_SLOTS_WIN), root, 0.85f);
+  else if (look == "pumpkins") send(TUNE(TUNE_SLOTS_SPOOKY), root, 0.9f);
+  else if (look == "presents") send(TUNE(TUNE_SLOTS_JINGLE), root, 0.9f);
+  else if (look == "fireworks") send(TUNE(TUNE_SLOTS_FIREWORK), root, 0.9f);
+  else if (look == "hearts") send(TUNE(TUNE_SLOTS_SWEET), root, 0.85f);
+  else if (what == 3) send(TUNE(TUNE_SLOTS_BIG), root, 0.9f);
+  else send(TUNE(TUNE_SLOTS_JACKPOT), root, 1.0f);
+}
+#undef TUNE
 void soundStep(bool undone) {
   Note tune[5], back[5];
   accomplishTune(tune, 0, species, day);

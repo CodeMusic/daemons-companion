@@ -7,7 +7,7 @@ import { BOOK, GUIDE_COVER, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } fro
 import { api } from "../net";
 import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
-import { Action, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small } from "../ui";
+import { Action, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
 
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
   const [open, setOpen] = useState(false);
@@ -42,7 +42,7 @@ export function PracticePaper() {
     <Card>
       <Eyebrow>THE PAPER, TO SIT AGAIN</Eyebrow>
       <Small>{`Seven sections, ${all.length} questions, ${SCHOOL.pass_mark} to pass. Marked here; your save is never touched.`}</Small>
-      <Action label="Sit the paper" ink="#fbfaf6" onPress={() => { setPicks({}); setAt(0); }} />
+      <Action label="Sit the paper" onPress={() => { setPicks({}); setAt(0); }} />
     </Card>
   );
   if (done) {
@@ -55,7 +55,7 @@ export function PracticePaper() {
         {all.map((q, i) => picks[i] === q.answer ? null : (
           <Small key={i}>{`${q.section}: ${q.text} -- ${q.choices[q.answer]}`}</Small>
         ))}
-        <Action label="Sit it again" ink="#fbfaf6" onPress={() => { setPicks({}); setAt(0); }} />
+        <Action label="Sit it again" onPress={() => { setPicks({}); setAt(0); }} />
       </Card>
     );
   }
@@ -73,13 +73,14 @@ export function PracticePaper() {
         ))}
       </YStack>
       <XStack gap={8}>
-        {at > 0 ? <Action label="Back" ink="#fbfaf6" onPress={() => setAt(at - 1)} /> : null}
-        <Action label="Stop" ink="#fbfaf6" onPress={() => setAt(null)} />
+        {at > 0 ? <Action label="Back" onPress={() => setAt(at - 1)} /> : null}
+        <Action label="Stop" onPress={() => setAt(null)} />
       </XStack>
     </Card>
   );
 }
 export function LibraryScreen() {
+  const dayInk = useInk();
   const [book, setBook] = useState<"school" | "guide" | "notebook" | "songbook" | "stream" | null>(null);
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
@@ -101,7 +102,7 @@ export function LibraryScreen() {
       <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
         <XStack gap={14} alignItems="center">
           <YStack width={72} height={48} borderRadius={3} backgroundColor="$color9" alignItems="center" justifyContent="center">
-            <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color="#fbfaf6">CALLOW</Text>
+            <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color={dayInk}>CALLOW</Text>
           </YStack>
           <YStack flex={1} gap={2}>
             <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">CALLOW SCHOOL</Text>
@@ -183,7 +184,7 @@ export function SongbookBook() {
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{p.title}</Text>
               {p.about ? <Small>{p.about}</Small> : null}
             </YStack>
-            <Action label={playing === p.title ? "♪ …" : "PLAY"} ink="#fbfaf6" onPress={() => play(p)} />
+            <Action label={playing === p.title ? "♪ …" : "PLAY"} onPress={() => play(p)} />
           </XStack>
           <SongStaff keyName={p.key!} notes={p.notes!} colours={n.keyColours} outline={n.outline} />
         </YStack>
@@ -378,7 +379,7 @@ export function NotebookPage({ page, colours, outline }: { page: Notebook["secti
         : page.kind === "song" && page.key && page.notes?.length ? <SongStaff keyName={page.key} notes={page.notes} colours={colours} outline={outline} />
         : <Small>{page.kind === "song" ? "The game draws its notes in the key you played it in." : "Written by the game from your save each time you open it there."}</Small>) : null}
       {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
-      {open && page.link ? <Action label={linkLabel(page.link)} ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
+      {open && page.link ? <Action label={linkLabel(page.link)} onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
     </YStack>
   );
 }

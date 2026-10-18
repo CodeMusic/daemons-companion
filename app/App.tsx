@@ -22,7 +22,7 @@ import { TodayScreen } from "./screens/Today";
 import { ProfileScreen } from "./screens/You";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import { SHOWN_TABS, TABS, Today } from "./types";
-import { onColour, Stuck } from "./ui"; // The tabs, scrolled sideways when they do not all fit (nine do not, on a phone): a › at the right edge says there are more
+import { InkContext, onColour, Stuck } from "./ui";
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void }) {
   const strip = useRef<any>(null);
@@ -118,7 +118,7 @@ function Shell() {
   const rainbow = PALETTE === "rainbow";                                      // C-90
   const ink = onColour(day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c");
   const showToast = !!OFFLINE && toastGone !== OFFLINE;
-  const newsBanner = useNews(() => setTab("daemon"));       // C-154
+  const newsBanner = useNews(() => setTab("daemon"), ink);  // C-154
 
   const page = (
     <YStack flex={1} backgroundColor="$color2">
@@ -165,7 +165,8 @@ function Shell() {
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
     </YStack>
   );
-  return day ? <Theme name={(rainbow ? `${day}rainbow` : day) as any}>{page}</Theme> : page;
+  const inked = <InkContext.Provider value={ink}>{page}</InkContext.Provider>;   // the day's ink for every key and banner
+  return day ? <Theme name={(rainbow ? `${day}rainbow` : day) as any}>{inked}</Theme> : inked;
 }
 
 export default function App() {

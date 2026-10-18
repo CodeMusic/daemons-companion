@@ -1,5 +1,5 @@
 // The app's building blocks -- cards, words, keys, pictures, the lesson's parts (C-157: out of App.tsx).
-import { useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Image, Platform } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ALONE, ART, artByJson, isAway, ON_PHONE, pairAgain, SERVER } from "./net";
@@ -57,7 +57,14 @@ export function CareKey({ label, onPress, ink, lit = false }: { label: string; o
   );
 }
 
-export function Action({ label, onPress, ink }: { label: string; onPress: () => void; ink: string }) {
+// The ink that reads on the day's colour (onColour), given by the Shell to everything inside it -- a key or a banner on
+// $color9 that hard-coded white was too faint on Tuesday's yellow and Wednesday's green (the review, 2026-10-18)
+export const InkContext = createContext("#fbfaf6");
+export const useInk = () => useContext(InkContext);
+
+export function Action({ label, onPress, ink }: { label: string; onPress: () => void; ink?: string }) {
+  const dayInk = useInk();
+  ink = ink ?? dayInk;
   return (
     <Button alignSelf="flex-start" marginTop={8} backgroundColor="$color9" borderRadius={3} paddingHorizontal={18}
             hoverStyle={{ backgroundColor: "$color10" }} pressStyle={{ backgroundColor: "$color10" }} onPress={onPress}>
@@ -143,7 +150,9 @@ export function Fact({ label, children }: { label: string; children: React.React
 }
    // C-90
 
-export function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink: string }) {
+export function Choice<T>({ value, options, onPick, ink }: { value: T; options: [T, string][]; onPick: (v: T) => void; ink?: string }) {
+  const dayInk = useInk();
+  ink = ink ?? dayInk;
   return (
     <XStack gap={2} flexWrap="wrap">
       {options.map(([v, label]) => (

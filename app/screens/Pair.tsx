@@ -36,7 +36,7 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
       <Input value={name} onChangeText={setName} placeholder="this phone's name" maxLength={40}
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
-      <Action label="Pair" onPress={pair} ink="#fbfaf6" />
+      <Action label="Pair" onPress={pair} />
       {error ? <Small color="$color9">{error}</Small> : null}
       {LOCAL ? <PhoneAlone onPaired={onPaired} /> : null}
     </YStack>
@@ -60,8 +60,8 @@ export function PhoneAlone({ onPaired }: { onPaired: () => void }) {
       <Text fontSize={20} fontWeight="700" color="$color12">Or host it on this phone alone</Text>
       <Small>{"No computer needed. Play DAEMONS in Delta on this phone; in Delta, hold the game, choose Export Save File and " +
         "save it to Files. Then choose it here. Which edition is it?"}</Small>
-      <Choice<"CONTENT" | "CONTEXT"> value={edition} options={[["CONTENT", "CONTENT"], ["CONTEXT", "CONTEXT"]]} onPick={setEdition} ink="#fbfaf6" />
-      <Action label="Choose the save from Files" onPress={start} ink="#fbfaf6" />
+      <Choice<"CONTENT" | "CONTEXT"> value={edition} options={[["CONTENT", "CONTENT"], ["CONTEXT", "CONTEXT"]]} onPick={setEdition} />
+      <Action label="Choose the save from Files" onPress={start} />
       {error ? <Small color="$color9">{error}</Small> : null}
     </YStack>
   );

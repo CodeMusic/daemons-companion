@@ -214,7 +214,8 @@ export const ONE_SHOT = /^\/api\/device\/commands/;
 export async function liveAndKeep<T>(path: string, servedKept: () => boolean): Promise<T> {
   const j = await apiLive<T>(path);
   const changed = JSON.stringify(KEPT.paths[path]) !== JSON.stringify(j);
-  KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept();
+  KEPT.paths[path] = j; KEPT.at = new Date().toISOString();
+  if (changed) saveKept();                               // the review, 2026-10-18: the same answer is not written again
   setOffline(null);
   if (KEPT.queue.length) sendHeld();
   if (changed && servedKept() && !POLLED.test(path)) freshSoon();
@@ -243,7 +244,11 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
   try {
     const j = await apiLive<T>(path, body);
     if (ON_PHONE) {
-      if (body === undefined && !path.startsWith("/api/art") && !ONE_SHOT.test(path)) { KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept(); }
+      if (body === undefined && !path.startsWith("/api/art") && !ONE_SHOT.test(path)) {
+        const changed = JSON.stringify(KEPT.paths[path]) !== JSON.stringify(j);   // the review, 2026-10-18: kept.json
+        KEPT.paths[path] = j; KEPT.at = new Date().toISOString();                  // (all the art in it) was written
+        if (changed) saveKept();                                                    // after every poll, every 1.5 s
+      }
       setOffline(null);
       if (KEPT.queue.length) sendHeld();
     }

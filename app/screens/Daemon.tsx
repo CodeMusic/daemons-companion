@@ -267,7 +267,7 @@ export const NEWS_SEEN = new Set<string>();
 
 export let newsPrimed = false;
 
-export function useNews(onTap: () => void) {
+export function useNews(onTap: () => void, ink = "#fbfaf6") {
   const [news, setNews] = useState<{ id: string; line: string } | null>(null);
   useEffect(() => {
     let gone: ReturnType<typeof setTimeout> | null = null;
@@ -291,8 +291,8 @@ export function useNews(onTap: () => void) {
     <XStack position="absolute" left={16} right={16} top={ON_PHONE ? 122 : 112} alignItems="center" gap={10} padding={14}
             borderRadius={10} backgroundColor="$color9" maxWidth={720} alignSelf="center" cursor="pointer" role="button"
             onPress={() => { setNews(null); onTap(); }}>
-      <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="#fbfaf6">NEARBY</Text>
-      <Text flex={1} fontSize={14} fontWeight="700" color="#fbfaf6">{news.line}</Text>
+      <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color={ink}>NEARBY</Text>
+      <Text flex={1} fontSize={14} fontWeight="700" color={ink}>{news.line}</Text>
     </XStack>
   ) : null;
   return banner;

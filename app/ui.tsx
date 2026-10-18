@@ -1,8 +1,8 @@
 // The app's building blocks -- cards, words, keys, pictures, the lesson's parts (C-157: out of App.tsx).
-import { useCallback,useEffect,useState } from "react";
-import { Image,Platform } from "react-native";
-import { Button,Input,Text,XStack,YStack } from "tamagui";
-import { ALONE,ART,artByJson,isAway,ON_PHONE,pairAgain,SERVER } from "./net";
+import { useCallback, useEffect, useState } from "react";
+import { Image, Platform } from "react-native";
+import { Button, Input, Text, XStack, YStack } from "tamagui";
+import { ALONE, ART, artByJson, isAway, ON_PHONE, pairAgain, SERVER } from "./net";
 import { Link } from "./types";
  // C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
 export const { careSound }: typeof import("./careSound") = ON_PHONE ? require("./careSound") : { careSound: () => "" };

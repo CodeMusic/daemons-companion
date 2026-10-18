@@ -2,7 +2,7 @@
 import * as SecureStore from "expo-secure-store";
 import { Appearance } from "react-native";
 import { useThemeName } from "tamagui";
-import { KEEP,ON_PHONE } from "./net";
+import { KEEP, ON_PHONE } from "./net";
  // C-90: which palette the day wears -- the site's (the default) or the rainbow week -- from the companion's settings,
 // so the site, the phone and every device agree. Changing it redraws the whole app.
 export let PALETTE: "checkpoint" | "rainbow" = "checkpoint";

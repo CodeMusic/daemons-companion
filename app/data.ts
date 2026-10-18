@@ -1,6 +1,6 @@
 // What the app carries from the game (the MARKS, the school, the regions, the pictures) and the helpers that read it (C-157: out of App.tsx).
 import { WIDGET } from "./net";
-import { Act,Cast,GrovesData,MarksData,RegionsData,SchoolData } from "./types";
+import { Act, Cast, GrovesData, MarksData, RegionsData, SchoolData } from "./types";
 export const ACTS: { acts: Act[]; casino?: Act[] } = require("../server/data/acts.json");
 
 export function castLine(c: Cast) {

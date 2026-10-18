@@ -25,6 +25,7 @@
 #include "ui/settings.inl"
 #include "ui/you.inl"
 #include "ui/library.inl"
+#include "ui/play.inl"                             // T-426: PLAY, the save's instrument by touch
 #include "ui/pages.inl"
 // ---- the frame: a status bar and the tabs down the side --------------------------------------------------------------
 typedef void (*Draw)(lv_obj_t *);
@@ -111,6 +112,7 @@ static int artStale = 0;                           // 1: pictures changed (reset
 void uiLoop() {
   casinoTick60();                                   // C-155
   watchLook();                                      // C-158, C-160: THE HOUSE, a device's own settings
+  playLook();                                       // T-426: a joined song comes apart after its echo
   newsLook();                                       // C-154
   static uint32_t imuAt = 0, heldSince = 0; static int heldWay = -1;   // C-96: AUTO, once a new way up has held 0.8 s
   if (orient == O_AUTO && !overlay && millis() - imuAt > 150) {

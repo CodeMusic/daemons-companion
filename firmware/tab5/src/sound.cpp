@@ -27,7 +27,7 @@ static void wave(float duty, uint8_t *out) {      // one cycle of a square wave,
 // stay the square wave.
 static volatile int instrumentAt = 0;              // INSTRUMENTS[], by the save's edition (soundFromState)
 static const int RATE = 22050;
-static int16_t *renderTune(const Tune &t, size_t &count) {
+static float *renderMix(const Tune &t, size_t &count) {   // the tune's samples, before they are scaled
   const Instrument &ins = INSTRUMENTS[instrumentAt];
   size_t total = 0;
   for (int k = 0; k < t.n; k++) total += (size_t)t.notes[k].ms * RATE / 1000;
@@ -53,14 +53,61 @@ static int16_t *renderTune(const Tune &t, size_t &count) {
     }
     start += held;
   }
+  count = len;
+  return mix;
+}
+static int16_t *toPcm(float *mix, size_t len) {     // scaled, never louder than the sample, never clipped; `mix` freed
   float peak = 0;
   for (size_t i = 0; i < len; i++) peak = max(peak, fabsf(mix[i]));
-  float g = peak > 0 ? 0.7f / max(peak, 0.7f) : 0;   // never louder than the sample, never clipped
+  float g = peak > 0 ? 0.7f / max(peak, 0.7f) : 0;
   int16_t *out = (int16_t *)heap_caps_malloc(len * sizeof(int16_t), MALLOC_CAP_SPIRAM);
   if (out) for (size_t i = 0; i < len; i++) out[i] = (int16_t)lroundf(constrain(mix[i] * g, -1.0f, 1.0f) * 32767);
   heap_caps_free(mix);
-  count = len;
   return out;
+}
+static int16_t *renderTune(const Tune &t, size_t &count) {
+  float *mix = renderMix(t, count);
+  return mix ? toPcm(mix, count) : nullptr;
+}
+
+// T-426: PLAY's notes, each on a speaker channel of its own (2..5 in turn) so plucked strings ring together, and a learned
+// song's echo on 6 -- the tune, and again eight frames later at 40%, as the game echoes it. Played at once, from the
+// screen's own task: a note must not wait behind a tune.
+static int16_t *channelPcm[8] = {};
+static int nextNote = 0;
+static void freeChannel(int ch) {
+  M5.Speaker.stop(ch);
+  for (int i = 0; i < 20 && M5.Speaker.isPlaying(ch); i++) delay(1);   // let go of the buffer before it is freed
+  if (channelPcm[ch]) { heap_caps_free(channelPcm[ch]); channelPcm[ch] = nullptr; }
+}
+static void playOn(int ch, int16_t *pcm, size_t n) {
+  freeChannel(ch);
+  channelPcm[ch] = pcm;
+  M5.Speaker.setVolume((uint8_t)(volume * 2)); M5.Speaker.setChannelVolume(ch, 255);
+  M5.Speaker.playRaw(pcm, n, RATE, false, 1, ch, true);
+}
+int soundNote(int midi, int ms) {
+  if (!enabled || volume == 0) return -1;
+  Tune t = {}; t.n = 1; t.base = 0; t.level = 1; t.sampled = true; t.notes[0] = { (int8_t)min(midi, 126), (uint16_t)ms };
+  size_t n = 0; int16_t *pcm = renderTune(t, n);
+  if (!pcm) return -1;
+  int ch = 2 + nextNote; nextNote = (nextNote + 1) % 4;
+  playOn(ch, pcm, n);
+  return ch;
+}
+void soundNoteOff(int ch) { if (ch >= 2 && ch <= 6) freeChannel(ch); }
+void soundEcho(const uint8_t *notes, const uint8_t *frames, int n) {
+  if (!enabled || volume == 0) return;
+  Tune t = {}; t.n = min(n, 14); t.base = 0; t.level = 1; t.sampled = true;
+  for (int i = 0; i < t.n; i++) t.notes[i] = { (int8_t)min((int)notes[i], 126), (uint16_t)(frames[i] * 1000 / 60) };
+  size_t len = 0; float *a = renderMix(t, len);
+  if (!a) return;
+  size_t lag = (size_t)RATE * 8 / 60;
+  float *mix = (float *)heap_caps_calloc(len + lag, sizeof(float), MALLOC_CAP_SPIRAM);
+  if (!mix) { heap_caps_free(a); return; }
+  for (size_t i = 0; i < len; i++) { mix[i] += a[i]; mix[i + lag] += 0.4f * a[i]; }
+  heap_caps_free(a);
+  if (int16_t *pcm = toPcm(mix, len + lag)) playOn(6, pcm, len + lag);
 }
 
 static void player(void *) {

@@ -14,6 +14,11 @@ void soundStep(bool undone);
 // C-158: THE CASINO's, as the boards play them (esp32 sound.cpp soundSlots): 0 the lever, 1 a loss, 2 a small win, 3 a big
 // one, 4 the jackpot, 5 a cheer -- a big win on a holiday its own (look: pumpkins, presents, fireworks, hearts)
 void soundSlots(int what, const String &look);
+// T-426: PLAY -- one note on the save's instrument at once, on a channel of its own (returned; held notes are let go with
+// soundNoteOff), and a learned song's echo
+int soundNote(int midi, int ms);
+void soundNoteOff(int channel);
+void soundEcho(const uint8_t *notes, const uint8_t *frames, int n);
 void soundSong(const int *midi, const int *ms, int n);   // C-156: a SONGBOOK song, its notes (MIDI) for their lengths
 // C-99: a voice, 16-bit mono PCM; the buffer (PSRAM) is the sound's to free once it is over or stopped
 void soundVoice(int16_t *pcm, size_t samples, int rate);

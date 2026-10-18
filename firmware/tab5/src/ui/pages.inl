@@ -134,7 +134,7 @@ static void songbookCard(lv_obj_t *p) {
       if (!pages[k]["notes"].as<JsonArray>().size()) continue;
       lv_obj_t *r = row(c);
       button(r, pages[k]["title"] | "", tapPage, (void *)(long)((s << 8) | k), false);
-      button(r, "PLAY", tapSong, (void *)(long)((s << 8) | k));
+      button(r, "LISTEN", tapSong, (void *)(long)((s << 8) | k));   // T-426: PLAY is the instrument's now
       found++;
     }
   }
@@ -154,5 +154,5 @@ static void streamCard(lv_obj_t *p) {
     if ((pr["roots"][i] | false) && us[i]["lesson"].as<JsonArray>().size()) { button(r, us[i]["name"] | "", tapRoot, (void *)(long)i, false); found++; }
   if (!found) label(c, "Each MARK and each ROOT opens a lesson; they are kept here.", &lv_font_montserrat_20, INK, LV_PCT(100));
 }
-static void drawLibraryShelf(lv_obj_t *p) { drawLibrary(p); notebookCard(p); songbookCard(p); streamCard(p); }
+static void drawLibraryShelf(lv_obj_t *p) { drawLibrary(p); notebookCard(p); playCard(p); songbookCard(p); streamCard(p); }   // T-426: PLAY
 

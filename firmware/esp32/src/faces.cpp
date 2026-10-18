@@ -57,6 +57,7 @@ static void reset(Bit &b, const String &l, bool anywhere) {
   b.rgb = l == "snow" ? 0xFFFFFF : seasonColour(esp_random() & 1);
 }
 void faceWeather() {
+  if (!faceSkyOn()) return;                                       // the season and its weather go together (faceSky)
   String l = seasonLook();
   if (!l.length() || l == "none") return;
   int n = l == "rain" || l == "storm" ? 20 : l == "fog" ? 6 : 14;

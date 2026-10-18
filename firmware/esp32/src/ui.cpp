@@ -347,7 +347,7 @@ static int faceDaemonY() { return cfg.face == "clock" ? 120 : 130; }   // the mi
 
 // the daemon on a face, alive as at home (C-42, C-113, C-119): it breathes, now and then hops, and walks a little from
 // side to side, facing the way it goes -- in its expression, its eyes and its mark; no den, a shadow under it
-static void faceDaemon(int cx, int floorY, int sc, int room) {
+static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   // markTop: its mark kept under the words
   uint32_t t = millis();
   bool still = expression.still;
   int bob = still ? 0 : (int)roundf(3 * expression.bob * sinf(t / 420.0f));
@@ -359,7 +359,7 @@ static void faceDaemon(int cx, int floorY, int sc, int room) {
   int ay = floorY - side + 4 * sc + bob + hop;
   canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
   drawArt(ax, ay, sc, right);
-  drawMark(ax, ay, sc, right, 26);
+  drawMark(ax, ay, sc, right, markTop);
 }
 
 // the daemon's ring while TALK listens
@@ -397,7 +397,7 @@ static void drawFaceDaemon(uint16_t day) {
   struct tm t; char hm[6] = "--:--";
   if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
   canvas.setTextDatum(MC_DATUM);
-  if (st.carrying) { faceDaemon(W / 2, 188, 2, 56); faceListening(day); }
+  if (st.carrying) { faceDaemon(W / 2, 188, 2, 56, 72); faceListening(day); }
   faceWeather();
   canvas.setTextFont(2); edgedString(upper(st.theme.length() ? st.theme : st.day), W / 2, 34, readable(day));
   if (st.carrying) { canvas.setTextFont(4); edgedString(hm, W / 2, 57, PAPER); }
@@ -422,7 +422,7 @@ static void drawFaceClock(uint16_t day) {
     int in = i % 3 ? 104 : 96;
     canvas.drawWideLine(cx + in * sinf(a), cy - in * cosf(a), cx + 112 * sinf(a), cy - 112 * cosf(a), i % 3 ? 1.0f : 2.0f, tick);   // r: half the width
   }
-  if (st.carrying) { faceDaemon(cx, 176, 2, 48); faceListening(day); }
+  if (st.carrying) { faceDaemon(cx, 176, 2, 48, 60); faceListening(day); }
   faceWeather();
   canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
   edgedString(upper(st.theme.length() ? st.theme : st.day), cx, 50, readable(day));

@@ -502,12 +502,13 @@ void handleLine(String line, bool fromPhone) {
     else if (fromPhone && String(d["type"] | "") == "wifi") reply("UNREAD wifi");   // C-33: a password only down the cable
     else handleCommand(d.as<JsonVariant>());
   }
-  else if (line.startsWith("GO ") && !fromPhone) {   // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES|DAY|PARTY
+  else if (line.startsWith("GO ") && !fromPhone) {   // with SHOT, to check a screen from the computer: GO TODAY|DAEMON|INDEX|ROUTINES|DAY|PARTY|FACE|CARE
     String to = line.substring(3);
     wake();
-    screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : to == "PARTY" ? PARTY : HOME;   // C-68: GO PARTY
+    screen = to == "INDEX" && st.carrying ? INDEX_ENTRY : to == "PARTY" ? PARTY : to == "CARE" && st.carrying ? CARE_GRID : HOME;   // C-68: GO PARTY; C-163: GO CARE
+    if (screen == CARE_GRID) gridAt = 0;
     entryTop = 0;
-    page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : TODAY;
+    page = to == "DAEMON" || to == "INDEX" ? DAEMON : to == "ROUTINES" ? ROUTINES_PAGE : to == "DAY" ? DAY_PAGE : to == "FACE" ? FACE_PAGE : TODAY;   // C-162: GO FACE
     draw();
   }
   else if (line == "EARTEST" && !fromPhone) { String radioEarTest(); reply(radioEarTest()); }   // C-101

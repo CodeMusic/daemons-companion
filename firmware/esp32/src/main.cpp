@@ -96,8 +96,10 @@ void loop() {
   soundLoop();                              // C-121: the tune task's dance shown; C-75: the DAC let go between sounds
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }
-  // C-42: any menu, left alone, goes to sleep; waking lands at home
-  if (!asleep && cfg.sleepAfter > 0 && now - lastInput > (uint32_t)cfg.sleepAfter * 1000) sleepNow();
+  // C-42: any menu, left alone, goes to sleep; waking lands at home. Signed: watchLoop's touch and crown come after
+  // `now` was read, so lastInput can be a few ms newer than it -- unsigned, that was 49 days alone, and the watch slept
+  // the moment it was woken or touched (2026-10-18)
+  if (!asleep && cfg.sleepAfter > 0 && (int32_t)(now - lastInput) > (int32_t)cfg.sleepAfter * 1000) sleepNow();
   // the daemon at home is alive: redraw it a few times a second
   static uint32_t lifeAt = 0;
   if (!asleep && screen == HOME && page == DAEMON && st.carrying && now - lifeAt > 90) { lifeAt = now; dirty = true; }

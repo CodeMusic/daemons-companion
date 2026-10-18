@@ -6,8 +6,11 @@ import { DeviceSprite, lookFor, makerOf, MAKERS } from "../deviceSprites";
 import { setPalette } from "../look";
 import { ALONE, api, HANDHELD, HandheldNow, isAway, OFFLINE, redrawWidgetNow, WIDGET } from "../net";
 import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../types";
-import { Action, Card, Choice, Eyebrow, Result, Small } from "../ui";
+import { Action, Art, Card, Choice, Eyebrow, Result, Small } from "../ui";
 import { useApi } from "../useApi";
+// a shared setting's row (a component of its own, so a redraw never builds the rows again)
+const Row = (p: { label: string; children: React.ReactNode }) =>
+  <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
 export function DeviceSettingsCard({ ink }: { ink: string }) {
   const [s, setS] = useApi<DeviceSettings>("/api/device/settings");
   if (!s) return null;
@@ -15,8 +18,6 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
     const r = await api<DeviceSettings>("/api/device/settings", patch);
     setS(r); setPalette(r.palette);                                 // C-90: the app wears it at once
   };
-  const Row = (p: { label: string; children: React.ReactNode }) =>
-    <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
   return (
     <Card>
       <Eyebrow>EVERY DEVICE'S SETTINGS</Eyebrow>
@@ -53,9 +54,67 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
 // any other device specific settings"): one device's own settings over the shared ones (GET/POST /api/devices/<id>/settings,
 // the CASINO session's) -- each row says whether it is this device's own or every device's, and goes back with one tap.
 // A board's own SOUND page reports here too. Every word DRAFT.
-type OwnSettings = { device: string; shared: DeviceSettings & { wakeSound?: string }; own: Partial<DeviceSettings & { wakeSound: string }>;
-                     settings: DeviceSettings & { wakeSound?: string }; keys: string[] };
-function OwnSettingsCard({ id, ink }: { id: string; ink: string }) {
+type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean };
+type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: Own; keys: string[] };
+
+// C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, and the season
+// behind its daemon with the weather in front -- only for the boards that draw the round face (the T-Watch S3, the Dial,
+// the CoreS3; the wide boards' face is another). Each face as a small picture, drawn here with the device's own daemon.
+type Face = "daemon" | "clock" | "virtue";
+const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
+const FACES: [Face, string, string][] = [   // DRAFT
+  ["daemon", "DAEMON", "the daemon in the middle, the time above"],
+  ["clock", "CLOCK", "its hands over the daemon"],
+  ["virtue", "VIRTUE", "the day's words: the watch's first face"],
+];
+function FacePicture({ face, sky, daemon, ring }: { face: Face; sky: boolean; daemon: Carried | null | undefined; ring: string }) {
+  const S = 56, seasonal = sky && face !== "virtue";
+  return (
+    <YStack position="relative" width={S} height={S} borderRadius={S} overflow="hidden" backgroundColor="#16181d" borderWidth={2}
+            borderColor={ring} alignItems="center" justifyContent="center">
+      {seasonal ? <YStack position="absolute" left={0} right={0} top={0} height={S} backgroundColor="#3a2318" /> : null}
+      {seasonal ? <YStack position="absolute" left={-10} right={-10} bottom={-S * 0.55} height={S * 0.8} borderRadius={S} backgroundColor="#6b3a1c" /> : null}
+      {face === "virtue" ? (
+        <YStack alignItems="center" gap={3}>
+          <Text fontFamily="$mono" fontSize={14} fontWeight="800" color="#f3f1ea">13:06</Text>
+          <YStack width={32} height={3} backgroundColor="#c9c6bd" borderRadius={2} />
+          <YStack width={20} height={3} backgroundColor="#7a7f88" borderRadius={2} />
+        </YStack>
+      ) : (<>
+        {face === "daemon" ? <Text position="absolute" top={5} fontFamily="$mono" fontSize={9} fontWeight="800" color="#f3f1ea">13:06</Text> : null}
+        <YStack marginTop={face === "daemon" ? 9 : 0}>
+          {daemon ? <Art path={`/art/party/${daemon.slot}.png`} size={face === "daemon" ? 36 : 40} /> : <YStack width={24} height={24} borderRadius={24} backgroundColor="#5b6b8c" />}
+        </YStack>
+        {face === "clock" ? (<>
+          <YStack position="absolute" width={3} height={18} backgroundColor="#f3f1ea" borderRadius={2} top={S / 2 - 2 - 18} left={S / 2 - 3.5}
+                  style={{ transform: [{ translateY: 9 }, { rotate: "40deg" }, { translateY: -9 }] }} />
+          <YStack position="absolute" width={3} height={12} backgroundColor="#f3f1ea" borderRadius={2} top={S / 2 - 2 - 12} left={S / 2 - 3.5}
+                  style={{ transform: [{ translateY: 6 }, { rotate: "-60deg" }, { translateY: -6 }] }} />
+          <YStack position="absolute" width={6} height={6} borderRadius={6} backgroundColor={ring} top={S / 2 - 5} left={S / 2 - 5} />
+        </>) : null}
+      </>)}
+    </YStack>
+  );
+}
+// one setting's row: its name, whether it is this device's own (and back to every device's in a tap), and its choice. A
+// component of its own, not one made inside the card -- made there, every redraw of PLACES was a new kind of row, and
+// React built each row and its pictures again
+function OwnRow({ k, label, own, set, children }: { k: string | string[]; label: string; own: object;
+                  set: (patch: Record<string, unknown>) => void; children: React.ReactNode }) {
+  const keys = Array.isArray(k) ? k : [k], mine = keys.some((x) => x in own);
+  return (
+    <YStack gap={4} marginTop={8}>
+      <XStack gap={8} alignItems="baseline" flexWrap="wrap">
+        <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{label}</Text>
+        {mine ? <Text fontSize={12} color="$color9" cursor="pointer" role="button"
+                      onPress={() => set(Object.fromEntries(keys.map((x) => [x, null])))}>{"this one's own · back to every device's"}</Text>
+              : <Text fontSize={12} color="$color10">as every device</Text>}
+      </XStack>
+      {children}
+    </YStack>
+  );
+}
+function OwnSettingsCard({ id, ink, daemon }: { id: string; ink: string; daemon?: Carried | null }) {
   const [s, setS] = useState<OwnSettings | null>(null);
   const [said, setSaid] = useState("");
   const path = `/api/devices/${encodeURIComponent(id)}/settings`;
@@ -66,40 +125,44 @@ function OwnSettingsCard({ id, ink }: { id: string; ink: string }) {
     catch (e) { setSaid((e as Error).message); }
   };
   const v = s.settings;
-  const Row = ({ k, label, children }: { k: string | string[]; label: string; children: React.ReactNode }) => {
-    const keys = Array.isArray(k) ? k : [k], own = keys.some((x) => x in s.own);
-    return (
-      <YStack gap={4} marginTop={8}>
-        <XStack gap={8} alignItems="baseline" flexWrap="wrap">
-          <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{label}</Text>
-          {own ? <Text fontSize={12} color="$color9" cursor="pointer" role="button"
-                       onPress={() => set(Object.fromEntries(keys.map((x) => [x, null])))}>{"this one's own · back to every device's"}</Text>
-               : <Text fontSize={12} color="$color10">as every device</Text>}
-        </XStack>
-        {children}
-      </YStack>
-    );
-  };
   return (
     <YStack backgroundColor="$color2" borderRadius={6} padding={12} gap={2} marginTop={6}>
       <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">ITS OWN SETTINGS</Text>
-      <Row k={["sound", "volume"]} label="SOUND">
+      <OwnRow own={s.own} set={set} k={["sound", "volume"]} label="SOUND">
         <Choice value={v.sound ? v.volume : 0} options={[[0, "Off"], [20, "Quiet"], [40, "Middle"], [70, "Loud"], [100, "Loudest"]]}
                 onPick={(x) => set(x === 0 ? { sound: false } : { sound: true, volume: x })} ink={ink} />
-      </Row>
-      <Row k="wakeSound" label="THE WAKE JINGLE">
+      </OwnRow>
+      <OwnRow own={s.own} set={set} k="wakeSound" label="THE WAKE JINGLE">
         <Choice value={v.wakeSound ?? "power"} options={[["power", "When it starts"], ["every", "Every time it wakes"]]}
                 onPick={(wakeSound) => set({ wakeSound })} ink={ink} />
-      </Row>
-      <Row k="home" label="HOME, WHERE IT WAKES">
+      </OwnRow>
+      <OwnRow own={s.own} set={set} k="home" label="HOME, WHERE IT WAKES">
         <Choice<DeviceSettings["home"]> value={v.home} options={[["daemon", "The daemon"], ["today", "Today's step"]]} onPick={(home) => set({ home })} ink={ink} />
-      </Row>
-      <Row k="sleepAfter" label="SLEEP WHEN LEFT ALONE">
+      </OwnRow>
+      <OwnRow own={s.own} set={set} k="sleepAfter" label="SLEEP WHEN LEFT ALONE">
         <Choice value={v.sleepAfter} options={[[30, "30 s"], [60, "1 min"], [120, "2 min"], [300, "5 min"], [0, "Never"]]} onPick={(sleepAfter) => set({ sleepAfter })} ink={ink} />
-      </Row>
-      <Row k="ring" label="THE RING AT REST">
+      </OwnRow>
+      <OwnRow own={s.own} set={set} k="ring" label="THE RING AT REST">
         <Choice value={v.ring} options={[[0, "Off"], [15, "Dim"], [33, "A third"], [60, "Bright"]]} onPick={(ring) => set({ ring })} ink={ink} />
-      </Row>
+      </OwnRow>
+      {ROUND_FACE.test(id) ? (<>
+        <OwnRow own={s.own} set={set} k="face" label="ITS FACE">
+          <XStack gap={2} flexWrap="wrap">
+            {FACES.map(([f, name, about]) => (
+              <YStack key={f} role="button" cursor="pointer" width={68} gap={3} padding={2} borderRadius={6} alignItems="center"
+                      borderWidth={2} borderColor={(v.face ?? "daemon") === f ? "$color9" : "transparent"} onPress={() => set({ face: f })}>
+                <FacePicture face={f} sky={v.faceSky ?? true} daemon={daemon} ring="#833131" />
+                <Text fontFamily="$mono" fontSize={12} fontWeight={(v.face ?? "daemon") === f ? "800" : "500"} color="$color12">{name}</Text>
+                <Text fontSize={10} lineHeight={13} textAlign="center" color="$color10">{about}</Text>
+              </YStack>
+            ))}
+          </XStack>
+        </OwnRow>
+        <OwnRow own={s.own} set={set} k="faceSky" label="SEASON AND WEATHER">
+          <Choice value={v.faceSky ?? true} options={[[true, "On"], [false, "Off"]]} onPick={(faceSky) => set({ faceSky })} ink={ink} />
+          <Small color="$color10">The season's sky behind the daemon and the weather in front, on the DAEMON and CLOCK faces.</Small>
+        </OwnRow>
+      </>) : null}
       {said ? <Small color="$color8">{said}</Small> : null}
     </YStack>
   );
@@ -212,7 +275,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
                     redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
-              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} /> : null}
+              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} /> : null}
             </YStack>
             </XStack>
           ))}

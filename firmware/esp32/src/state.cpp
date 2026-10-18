@@ -43,6 +43,8 @@ void takeSettings(JsonVariant s) {
 }
 
 // ---- the state, from the server's JSON ------------------------------------------------------------------------------
+// "#rrggbb" to its number -- 0 for anything shorter, or without the #, rather than reading past an empty string's end
+static long hexColour(const char *s, long otherwise = 0) { return s && s[0] == '#' && s[1] ? strtol(s + 1, nullptr, 16) : otherwise; }
 bool takeState(const String &json) { return takeState(json.c_str()); }
 // C-121: read where it lies -- a STATE line's own buffer, not a copy of it: on the M5GO (no PSRAM) the copy's 2.6 KB
 // was sometimes the difference between a state taken and one refused
@@ -74,7 +76,7 @@ bool takeState(const char *json) {
   netsRevSeen(doc["netsRev"] | -1L);         // C-93: another device learned or forgot a network
   st.menu = doc["day"]["menu"] | st.colour.c_str();     // C-37: the tamed rainbow week, else the game's trim
   st.led = doc["day"]["led"] | st.menu.c_str();
-  ledsDay(strtol(st.led.c_str() + 1, nullptr, 16));
+  ledsDay(hexColour(st.led.c_str()));
   if (doc["step"].isNull()) { st.step = -1; st.stepText = ""; st.goal = ""; }
   else {
     st.step = doc["step"]["id"] | -1; st.stepText = doc["step"]["text"] | ""; st.goal = doc["step"]["goal"] | "";
@@ -99,7 +101,7 @@ bool takeState(const char *json) {
   if (!hd.isNull()) {
     st.holiday.name = hd["name"] | ""; st.holiday.look = hd["look"] | "none"; st.holiday.hat = hd["hat"] | "none";
     st.holiday.quiet = hd["quiet"] | false; st.holiday.flip = hd["flip"] | false;
-    for (int i = 0; i < 2; i++) { const char *c = hd["colours"][i] | "#000000"; st.holiday.colour[i] = strtol(c + 1, nullptr, 16); }
+    for (int i = 0; i < 2; i++) { const char *c = hd["colours"][i] | "#000000"; st.holiday.colour[i] = hexColour(c); }
   }
   st.partyN = 0;                             // C-68: the party and its routines
   for (JsonVariant p : doc["party"].as<JsonArray>()) {
@@ -110,7 +112,7 @@ bool takeState(const char *json) {
     for (JsonVariant r : p["routines"].as<JsonArray>()) {
       if (m.n >= 4) break;
       m.routine[m.n] = r["name"] | "?"; m.type[m.n] = r["type"] | "";
-      const char *c = r["colour"] | "#ffffff"; m.colour[m.n++] = strtol(c + 1, nullptr, 16);
+      const char *c = r["colour"] | "#ffffff"; m.colour[m.n++] = hexColour(c, 0xFFFFFF);
     }
   }
   if (partyAt >= partyRows()) partyAt = 0;   // the party changed under the screen

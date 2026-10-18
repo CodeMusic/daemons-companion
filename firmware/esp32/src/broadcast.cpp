@@ -98,6 +98,7 @@ static void report(const Cast &c, bool out, uint8_t via) {
   if (reports.size() < 12) reports.push_back(s);
 }
 bool castTakeReport(String &json) { if (reports.empty()) return false; json = reports.front(); reports.pop_front(); return true; }
+void castPutBack(const String &json) { reports.push_front(json); }
 
 // ---- Bluetooth's pieces -----------------------------------------------------------------------------------------------
 static void sendPieces(const Cast &c) {

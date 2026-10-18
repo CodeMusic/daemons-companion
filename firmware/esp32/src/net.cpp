@@ -402,13 +402,21 @@ void reportNetworks() {
   if (ok) takeShared(got);
 }
 
+// C-134 (the code-health review, 2026-10-18): a report over Wi-Fi that fails is tried again 30 s later, doubling to five
+// minutes, never on the next pass of the loop -- with the companion asleep each try blocks for its connect timeout (or is
+// one relay run): the dial froze and the battery and the relay's runs drained. The first that works resets it.
+static uint32_t netRetryAt = 0, netBackoff = 0;
+static bool netMayTry(uint32_t now) { return !netBackoff || (int32_t)(now - netRetryAt) >= 0; }
+static void netFailed(uint32_t now) { netBackoff = netBackoff ? min(netBackoff * 2, 300000u) : 30000u; netRetryAt = now + netBackoff; }
+static void netWorked() { netBackoff = 0; }
+
 String artTold = "not asked";               // C-97: how the last fetch of the daemon's picture went
 bool routinesPosted = false;
 uint32_t commandsAt = 0;
 void pollCommands(uint32_t now) {
-  if (!routinesPosted) {
+  if (!routinesPosted && netMayTry(now)) {
     routinesPosted = !http("POST", "/api/device/routines", routinesJson()).isEmpty();
-    if (routinesPosted) { reportRemotes(); reportNetworks(); }
+    if (routinesPosted) { netWorked(); reportRemotes(); reportNetworks(); } else netFailed(now);
   }
   if (now - commandsAt < (viaRelay() ? 20000u : 2000u)) return;   // C-82: each one through the relay is an n8n run
   commandsAt = now;
@@ -587,10 +595,16 @@ void meetReport() {
     if (saidWaiting.size() < 8) saidWaiting.push_back(dir + " " + kind + " " + String(species) + " " + tag + " " + String(relayed) + " " + text);
   bool link = bridgeLive() || online();
   if (!link) return;
+  uint32_t now = millis();
+  bool wifi = !bridgeLive();
+  if (wifi && !netMayTry(now)) return;                            // a report failed lately: not on every pass (above)
+  auto failed = [&]() { netFailed(now); };
+  bool sent = false;                                              // one went through over Wi-Fi: the companion is there
   String cast;                                                    // C-134: a broadcast sent, or heard by radio
   while (castTakeReport(cast)) {
-    if (bridgeLive()) bridge("CAST " + cast);
-    else if (http("POST", "/api/device/broadcast", cast).isEmpty()) break;   // the companion will have it from another
+    if (!wifi) bridge("CAST " + cast);
+    else if (http("POST", "/api/device/broadcast", cast).isEmpty()) { castPutBack(cast); failed(); return; }   // kept, tried later
+    else sent = true;
   }
   String listen;
   if (meetTakeListen(listen)) {
@@ -604,7 +618,8 @@ void meetReport() {
   String own = meetOwnPeer();
   if (own.length() && own != beaconTold) {
     if (bridgeLive()) bridge("BEACON " + own);
-    else if (http("POST", "/api/device/beacon", "{\"peer\":\"" + own + "\"}").isEmpty()) return;
+    else if (http("POST", "/api/device/beacon", "{\"peer\":\"" + own + "\"}").isEmpty()) { failed(); return; }
+    else sent = true;
     beaconTold = own;
   }
   while (!metWaiting.empty()) {
@@ -615,7 +630,8 @@ void meetReport() {
       String peer = sp2 < 0 ? m.substring(sp + 1) : m.substring(sp + 1, sp2);
       String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + peer + "\"" +
                     (sp2 < 0 ? "" : ",\"how\":\"lora\",\"hops\":" + m.substring(m.lastIndexOf(' ') + 1)) + "}";
-      if (http("POST", "/api/device/met", body).isEmpty()) return;
+      if (http("POST", "/api/device/met", body).isEmpty()) { failed(); return; }
+      sent = true;
     }
     metWaiting.erase(metWaiting.begin());
   }
@@ -628,10 +644,12 @@ void meetReport() {
       for (int k = 0; k < 5; k++) { int b = m.indexOf(' ', a); d[keys[k]] = m.substring(a, b); a = b + 1; }
       d["hops"] = d["hops"].as<String>().toInt(); d["text"] = m.substring(a);
       String body; serializeJson(d, body);
-      if (http("POST", "/api/device/message", body).isEmpty()) return;
+      if (http("POST", "/api/device/message", body).isEmpty()) { failed(); return; }
+      sent = true;
     }
     saidWaiting.erase(saidWaiting.begin());
   }
+  if (wifi && sent) netWorked();                                  // the companion answered
 }
 
 void readPhone() {                                  // C-55

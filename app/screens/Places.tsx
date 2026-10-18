@@ -54,7 +54,7 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
 // any other device specific settings"): one device's own settings over the shared ones (GET/POST /api/devices/<id>/settings,
 // the CASINO session's) -- each row says whether it is this device's own or every device's, and goes back with one tap.
 // A board's own SOUND page reports here too. Every word DRAFT.
-type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean };
+type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24 };
 type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: Own; keys: string[] };
 
 // C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, and the season
@@ -62,6 +62,7 @@ type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: O
 // the CoreS3; the wide boards' face is another). Each face as a small picture, drawn here with the device's own daemon.
 type Face = "daemon" | "clock" | "virtue";
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
+const CLOCK_FACE = /^(t-watch-s3|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
 const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],
   ["clock", "CLOCK", "hands over it"],
@@ -164,6 +165,12 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
           <Small color="$color10">The season's sky behind the daemon and the weather in front, on the DAEMON and CLOCK faces.</Small>
         </OwnRow>
       </>) : null}
+      {/* C-166 (the user, 2026-10-18: "watch should have a setting on the site for 12 or 24h mode"), once the companion keeps it */}
+      {CLOCK_FACE.test(id) && s.keys?.includes("hours") ? (
+        <OwnRow own={s.own} set={set} k="hours" label="CLOCK">
+          <Choice value={v.hours ?? 24} options={[[12, "12 HOURS"], [24, "24 HOURS"]]} onPick={(hours) => set({ hours })} ink={ink} />
+        </OwnRow>
+      ) : null}
       {/* forgetting a device: it leaves the list (and its daemon goes back to none) until it next says hello (DRAFT) */}
       {forgetting ? (
         <YStack gap={2} marginTop={10}>

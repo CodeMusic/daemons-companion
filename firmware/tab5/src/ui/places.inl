@@ -177,6 +177,14 @@ static void drawOwnSettings(lv_obj_t *box, JsonDocument &d) {
   int rg = -1, rv = v["ring"] | 15; for (int i = 0; i < 4; i++) if (RG_V[i] == rv) rg = i;
   ownChoice(box, d, "THE RING AT REST", RG_K, 1, RG_N, RG_B, 4, rg);
   if (roundFace(ownId)) ownFaces(box, d);           // C-162, C-163
+  bool keepsHours = false;                          // C-166: the clock's hours, once the companion keeps them
+  for (JsonVariant k : d["keys"].as<JsonArray>()) if (!strcmp(k | "", "hours")) keepsHours = true;
+  if (keepsHours && (roundFace(ownId) || ownId.startsWith("t-display-pro-"))) {
+    static const char *const HR_K[] = { "hours" };
+    static const char *const HR_N[] = { "12 HOURS", "24 HOURS" };
+    static const char *const HR_B[] = { "{\"hours\":12}", "{\"hours\":24}" };
+    ownChoice(box, d, "CLOCK", HR_K, 1, HR_N, HR_B, 2, (int)(d["settings"]["hours"] | 24) == 12 ? 0 : 1);
+  }
 }
 static std::vector<String> ownIds;
 static void tapOwnSettings(lv_event_t *e) {

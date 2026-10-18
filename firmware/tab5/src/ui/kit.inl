@@ -164,6 +164,37 @@ static lv_obj_t *openOverlay() {
   return overlay;
 }
 
+// C-158, C-160: an overlay drawn from an answer the network watches while it is open (net.h netWatch) -- THE HOUSE, a
+// device's own settings -- drawn again each time the answer changes, or when a tap on it asks (watchAgain)
+typedef void (*WatchDraw)(lv_obj_t *box, JsonDocument &d);
+static WatchDraw watchDraw = nullptr;
+static lv_obj_t *watchBox = nullptr;
+static uint32_t watchSeen = 0;
+static bool watchForce = false;
+static void watchClosing() { netWatch(""); watchDraw = nullptr; watchBox = nullptr; }
+static void watchLook() {                            // from uiLoop -- never inside a tap on what it empties
+  if (!watchDraw || !watchBox || (!watchForce && watchSeen == watchRev)) return;
+  watchSeen = watchRev; watchForce = false;
+  String b = netWatched();
+  if (!b.length()) return;
+  JsonDocument d = newDoc();
+  if (deserializeJson(d, b)) return;
+  lv_obj_clean(watchBox);
+  watchDraw(watchBox, d);
+}
+static void watchAgain() { watchForce = true; }     // drawn again on the next pass
+static void openWatched(const String &title, const String &path, WatchDraw draw) {
+  lv_obj_t *o = openOverlay();
+  overlayClosing = watchClosing;
+  button(o, "CLOSE", closeOverlay, nullptr, false);
+  label(o, title, &lv_font_montserrat_28, DAY, LV_PCT(100));
+  watchBox = column(o);
+  label(watchBox, net.wifi && net.paired ? "Asking the companion..."                       // DRAFT
+                 : "This is asked of the companion as you look, so it shows once the Tab5 reaches it.", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  watchDraw = draw; watchSeen = watchRev;
+  netWatch(path);
+}
+
 // A text field and the on-screen keyboard; `done` gets the text when READY is pressed.
 typedef void (*Typed)(const String &);
 static Typed typedDone = nullptr;

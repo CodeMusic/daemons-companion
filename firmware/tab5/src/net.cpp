@@ -167,6 +167,18 @@ static String request(const char *method, const String &rawPath, const String &b
   return out;
 }
 
+// ---- C-158, C-160: the answer an open overlay watches (net.h) --------------------------------------------------------
+static SemaphoreHandle_t watchLock = xSemaphoreCreateMutex();
+static String watchPath, watchBody;
+static std::atomic<bool> watchDue{false};
+std::atomic<uint32_t> watchRev{0};
+void netWatch(const String &path) {
+  xSemaphoreTake(watchLock, portMAX_DELAY); bool moved = path != watchPath; watchPath = path; if (moved) watchBody = ""; xSemaphoreGive(watchLock);
+  watchDue = path.length() > 0;
+  if (moved) watchRev++;
+}
+String netWatched() { xSemaphoreTake(watchLock, portMAX_DELAY); String b = watchBody; xSemaphoreGive(watchLock); return b; }
+
 // ---- C-139: HOME -- Home Assistant, through the companion (server/src/home.ts) ----------------------------------------
 // A tap waits in RAM for this task, which sends it before anything else -- between any two downloads -- and NEVER keeps it
 // for later: the outbox (C-87) is for the companion's own records, and a light switched or a kettle started hours late is
@@ -321,6 +333,20 @@ static bool fetchKeep(const char *path, const char *name) {
   }
   changed(bitFor(name));
   return true;
+}
+
+// C-158, C-160: what the open overlay watches, asked now; held only if it is still the path watched, and whole
+static void fetchWatch() {
+  xSemaphoreTake(watchLock, portMAX_DELAY); String p = watchPath; xSemaphoreGive(watchLock);
+  if (!p.length()) return;
+  int code; String got = request("GET", p, "", code);
+  if (code != 200) return;
+  { JsonDocument whole = newDoc(); if (deserializeJson(whole, got)) return; }
+  bool moved = false;
+  xSemaphoreTake(watchLock, portMAX_DELAY);
+  if (p == watchPath && got != watchBody) { watchBody = got; moved = true; }
+  xSemaphoreGive(watchLock);
+  if (moved) watchRev++;
 }
 
 // Every INDEX picture in one request (as the phone does away), each kept as its own PNG.
@@ -592,7 +618,7 @@ static void gameSync() {
 static void netTask(void *) {
   WiFi.mode(WIFI_STA);
   joinKnown();
-  uint32_t lastSync = 0, lastToday = 0, lastHome = 0;
+  uint32_t lastSync = 0, lastToday = 0, lastHome = 0, lastWatch = 0;
   bool first = true;
   for (;;) {
     net.wifi = WiFi.status() == WL_CONNECTED;
@@ -607,7 +633,7 @@ static void netTask(void *) {
       WiFi.scanDelete(); changed(K_NETS);
     }
     else if (j == PAIR) pair(a, b);
-    else if (j == SYNC && net.paired) { flushOutbox(); keepEverything(!hasArt("s1")); }
+    else if (j == SYNC && net.paired) { flushOutbox(); fetchWatch(); keepEverything(!hasArt("s1")); }   // C-160: a write's answer first
     else if (j == GAME && net.paired) gameSync();
     else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { netSay("The voice needs the companion."); netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
     sendHome();                                               // C-139: HOME's taps, now and before anything else
@@ -615,6 +641,8 @@ static void netTask(void *) {
     if (!net.wifi && known && now - lastSync > 30000) { lastSync = now; joinKnown(); }
     if (net.wifi && net.paired) {
       if (homeOpen && (homeDue || now - lastHome > 30000)) { homeDue = false; lastHome = now; fetchHome(); }   // C-139: while open
+      { bool on; xSemaphoreTake(watchLock, portMAX_DELAY); on = watchPath.length() > 0; xSemaphoreGive(watchLock);   // C-158, C-160
+        if (on && (watchDue || now - lastWatch > 15000)) { watchDue = false; lastWatch = now; fetchWatch(); } }
       if (first || now - lastSync > 10 * 60000) {            // everything, now and then (the pictures the first time)
         first = false; lastSync = now; lastToday = now;
         flushOutbox(); keepEverything(!hasArt("s1"));      // the pictures only when none are kept

@@ -51,12 +51,69 @@ static String kindName(const String &kind) {
   return kind;
 }
 
+// C-160 (the user, 2026-10-18: "tap the device to open its specific settings -- sound style, volume (or mute), along with
+// any other device specific settings"): one device's own settings over every device's (GET/POST /api/devices/<id>/settings)
+// -- each row this one's own or as every device, and back to every device's in one tap. Every word DRAFT.
+static String ownPath, ownTaps[40]; static int ownTapN = 0;
+static void ownTap(lv_event_t *e) { netSend("POST", ownPath, ownTaps[(int)(long)lv_event_get_user_data(e)]); }
+static void ownChoice(lv_obj_t *box, JsonDocument &d, const char *head, const char *const keys[], int nk,
+                      const char *const names[], const char *const bodies[], int n, int on) {
+  bool own = false;
+  for (int k = 0; k < nk; k++) own |= !d["own"][keys[k]].isNull();
+  lv_obj_t *h = row(box);
+  label(h, head, &lv_font_montserrat_20, QUIET);
+  if (own && ownTapN < 40) {
+    String back = "{"; for (int k = 0; k < nk; k++) back += String(k ? "," : "") + "\"" + keys[k] + "\":null"; back += "}";
+    ownTaps[ownTapN] = back;
+    button(h, "this one's own - back to every device's", ownTap, (void *)(long)ownTapN++, false);
+  } else label(h, "as every device", &lv_font_montserrat_16, QUIET);
+  lv_obj_t *r = row(box);
+  for (int i = 0; i < n && ownTapN < 40; i++) { ownTaps[ownTapN] = bodies[i]; button(r, names[i], ownTap, (void *)(long)ownTapN++, i == on); }
+}
+static void drawOwnSettings(lv_obj_t *box, JsonDocument &d) {
+  ownTapN = 0;
+  JsonObject v = d["settings"];
+  static const char *const SND_K[] = { "sound", "volume" };
+  static const char *const SND_N[] = { "Off", "Quiet", "Middle", "Loud", "Loudest" };
+  static const char *const SND_B[] = { "{\"sound\":false}", "{\"sound\":true,\"volume\":20}", "{\"sound\":true,\"volume\":40}",
+                                       "{\"sound\":true,\"volume\":70}", "{\"sound\":true,\"volume\":100}" };
+  int vol = v["volume"] | 60, snd = !(v["sound"] | true) ? 0 : vol <= 20 ? 1 : vol <= 40 ? 2 : vol <= 70 ? 3 : 4;
+  ownChoice(box, d, "SOUND", SND_K, 2, SND_N, SND_B, 5, snd);
+  static const char *const WK_K[] = { "wakeSound" };
+  static const char *const WK_N[] = { "When it starts", "Every time it wakes" };
+  static const char *const WK_B[] = { "{\"wakeSound\":\"power\"}", "{\"wakeSound\":\"every\"}" };
+  ownChoice(box, d, "THE WAKE JINGLE", WK_K, 1, WK_N, WK_B, 2, String((const char *)(v["wakeSound"] | "power")) == "every" ? 1 : 0);
+  static const char *const HM_K[] = { "home" };
+  static const char *const HM_N[] = { "The daemon", "Today's step" };
+  static const char *const HM_B[] = { "{\"home\":\"daemon\"}", "{\"home\":\"today\"}" };
+  ownChoice(box, d, "HOME, WHERE IT WAKES", HM_K, 1, HM_N, HM_B, 2, String((const char *)(v["home"] | "daemon")) == "today" ? 1 : 0);
+  static const char *const SL_K[] = { "sleepAfter" };
+  static const char *const SL_N[] = { "30 s", "1 min", "2 min", "5 min", "Never" };
+  static const char *const SL_B[] = { "{\"sleepAfter\":30}", "{\"sleepAfter\":60}", "{\"sleepAfter\":120}", "{\"sleepAfter\":300}", "{\"sleepAfter\":0}" };
+  static const int SL_V[] = { 30, 60, 120, 300, 0 };
+  int sl = -1, sa = v["sleepAfter"] | 120; for (int i = 0; i < 5; i++) if (SL_V[i] == sa) sl = i;
+  ownChoice(box, d, "SLEEP WHEN LEFT ALONE", SL_K, 1, SL_N, SL_B, 5, sl);
+  static const char *const RG_K[] = { "ring" };
+  static const char *const RG_N[] = { "Off", "Dim", "A third", "Bright" };
+  static const char *const RG_B[] = { "{\"ring\":0}", "{\"ring\":15}", "{\"ring\":33}", "{\"ring\":60}" };
+  static const int RG_V[] = { 0, 15, 33, 60 };
+  int rg = -1, rv = v["ring"] | 15; for (int i = 0; i < 4; i++) if (RG_V[i] == rv) rg = i;
+  ownChoice(box, d, "THE RING AT REST", RG_K, 1, RG_N, RG_B, 4, rg);
+}
+static std::vector<String> ownIds;
+static void tapOwnSettings(lv_event_t *e) {
+  const String &id = ownIds[(int)(long)lv_event_get_user_data(e)];
+  String kind = id.lastIndexOf('-') > 0 ? id.substring(0, id.lastIndexOf('-')) : id;
+  ownPath = "/api/devices/" + id + "/settings";
+  openWatched(kindName(kind) + (id == deviceId() ? " (this one)" : "") + ": ITS OWN SETTINGS", ownPath, drawOwnSettings);
+}
+
 static void drawDevices(lv_obj_t *p) {
   JsonDocument dv = newDoc();
   if (!kept("devices", dv)) { label(p, "Your devices show here once the Tab5 is paired.", &lv_font_montserrat_28, QUIET); return; }
   label(p, "Each device hosts a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where.",
         &lv_font_montserrat_20, QUIET, LV_PCT(100));
-  carryN = 0;
+  carryN = 0; ownIds.clear();
   JsonArray away = dv["away"];
   // C-130: under each maker's name, and beside each device a picture of it
   static const char *const OTHER = "Other";
@@ -73,7 +130,10 @@ static void drawDevices(lv_obj_t *p) {
     lv_obj_t *c = column(outer, LV_SIZE_CONTENT);
     lv_obj_set_flex_grow(c, 1);
     String id = d["id"] | "";
-    label(c, kindName(d["kind"] | "") + (id == deviceId() ? "  (this one)" : "") + ((d["here"] | false) ? "" : "  (away)"), &lv_font_montserrat_28, INK);
+    lv_obj_t *nr = row(c);
+    label(nr, kindName(d["kind"] | "") + (id == deviceId() ? "  (this one)" : "") + ((d["here"] | false) ? "" : "  (away)"), &lv_font_montserrat_28, INK);
+    ownIds.push_back(id);                            // C-160: its own settings
+    button(nr, "ITS SETTINGS", tapOwnSettings, (void *)(long)(ownIds.size() - 1), false);
     String said = String((d["here"] | false) ? "here, by " : "last heard ") + ((d["here"] | false) ? (const char *)(d["via"] | "") : (const char *)(d["lastSeen"] | ""));
     if (!d["battery"].isNull()) said += "   battery " + String((int)(d["battery"]["percent"] | 0)) + "%";
     label(c, said + "   " + id, &lv_font_montserrat_16, QUIET);

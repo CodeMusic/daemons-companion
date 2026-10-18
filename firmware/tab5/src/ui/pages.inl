@@ -92,7 +92,9 @@ static void drawDaemonPage(lv_obj_t *p) {
   if (daemonSeg == 2) {
     lv_obj_t *c = card(p);
     label(c, "ROUTINES", &lv_font_montserrat_20, QUIET);
-    button(c, "THE CASINO", tapCasino);
+    lv_obj_t *rr = row(c);
+    button(rr, "THE CASINO", tapCasino);
+    button(rr, "THE HOUSE", tapHouse, nullptr, false);   // C-158
     return;
   }
   drawDaemon(p);

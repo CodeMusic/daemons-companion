@@ -181,6 +181,70 @@ static void tapCasino(lv_event_t *) {
   if (at.length()) label(o, "At the table: " + at + ".", &lv_font_montserrat_20, QUIET, LV_PCT(100));
   casinoShowCoins();
 }
+// C-158 (the user, 2026-10-18: "a casino admin section [app/site/tab5] where you can see who all is gambling and the current
+// odds ... clicking on it explains why those odds are active"): THE HOUSE, from GET /api/casino -- today's odds and why,
+// and everyone at the reels with the odds each last said; a tap on one opens its reasons. Every word DRAFT.
+static String kindName(const String &kind);         // places.inl's
+static String houseOpen;                            // the player whose reasons are open
+static String houseBack(float rtp) { char b[40]; snprintf(b, sizeof b, "%.1f back of every 100", rtp * 100); return b; }
+static void houseReasons(lv_obj_t *c, JsonArray reasons) {
+  for (JsonObject r : reasons) {
+    float e = r["effect"] | 0.0f; bool str = String((const char *)(r["source"] | "")) == "the string";
+    float pts = str ? e : e * 5;                    // the day's luck moves the return 5 a whole step (slots.ts RETURN_AT)
+    char p[12]; snprintf(p, sizeof p, "%+.1f", pts);
+    lv_obj_t *l = row(c);
+    label(l, p, &lv_font_montserrat_20, e > 0 ? lv_color_hex(0x3F8F4F) : e < 0 ? lv_color_hex(0xB0413E) : QUIET);
+    label(l, r["why"] | "", &lv_font_montserrat_20, INK, LV_PCT(80));
+  }
+}
+static void houseTap(lv_event_t *e) {
+  String d = (const char *)lv_event_get_user_data(e);
+  houseOpen = houseOpen == d ? String("") : d;
+  watchAgain();
+}
+static void drawHouse(lv_obj_t *box, JsonDocument &h) {
+  static std::vector<String> ids; ids.clear(); ids.reserve(16);
+  lv_obj_t *c = card(box);
+  label(c, "TODAY'S ODDS", &lv_font_montserrat_20, QUIET);
+  label(c, houseBack(h["context"]["rtp"] | 0.95f), &lv_font_montserrat_40, INK);
+  String day = (const char *)(h["holiday"]["name"] | "");
+  String watch = (const char *)(h["world"]["watch"] | ""); watch.toLowerCase();
+  day += (day.length() ? " - " : "") + watch;
+  JsonObject w = h["world"]["weather"];
+  day += w.isNull() ? String(" - no city set for the weather (the site's SETTINGS)")
+                    : " - " + String((const char *)(w["kind"] | "")) + ", " + String((int)(w["tempC"] | 0)) + " C in " + String((const char *)(w["city"] | ""));
+  label(c, day, &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  houseReasons(c, h["context"]["reasons"].as<JsonArray>());
+  label(box, "AT THE REELS", &lv_font_montserrat_20, QUIET);
+  JsonArray players = h["players"].as<JsonArray>();
+  if (!players.size()) label(box, "Nobody is playing just now.", &lv_font_montserrat_20, QUIET);
+  for (JsonObject p : players) { if (ids.size() < 16) ids.push_back((const char *)(p["device"] | "")); }
+  int i = 0;
+  for (JsonObject p : players) {
+    if (i >= (int)ids.size()) break;
+    const String &id = ids[i++];
+    lv_obj_t *pc = card(box);
+    lv_obj_add_flag(pc, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(pc, houseTap, LV_EVENT_CLICKED, (void *)id.c_str());
+    lv_obj_t *r = row(pc);
+    int sp = p["species"] | 0;
+    if (sp) picture(r, "s" + String(sp), 256);
+    lv_obj_t *col = column(r, LV_SIZE_CONTENT);
+    label(col, p["name"] | "", &lv_font_montserrat_28, INK);
+    String kind = id.startsWith("site-") ? String("A site") : kindName(id.substring(0, id.lastIndexOf('-') > 0 ? id.lastIndexOf('-') : id.length()));
+    JsonObject o = p["odds"];
+    label(col, kind + " - " + (o.isNull() ? String("the day's odds") : houseBack(o["rtp"] | 0.95f)), &lv_font_montserrat_20, QUIET);
+    if (houseOpen == id) {
+      if (!o.isNull()) label(pc, String((int)(o["dry"] | 0)) + " pulls since a win - " + String((int)(o["streak"] | 0)) + " wins running",
+                             &lv_font_montserrat_20, QUIET, LV_PCT(100));
+      houseReasons(pc, p["reasons"].as<JsonArray>());
+    } else label(pc, "Why >", &lv_font_montserrat_16, DAY);
+  }
+  label(box, "Every table keeps between 90 and 100 back of every 100 bet over many pulls: the day sets where, and each "
+             "player's run of luck moves a pull a little either way.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
+}
+static void tapHouse(lv_event_t *) { houseOpen = ""; openWatched("THE HOUSE", "/api/casino", drawHouse); }
+
 // C-154 (the user, 2026-10-18: "all devices (even if not in casino) should get the notifications"): what another daemon
 // says or does -- a word, an act, a JACKPOT -- as a banner over whatever page is open, for seven seconds, as it arrives in
 // what the Tab5 keeps (net.cpp asks every 30 s). The first look only learns what is already there. A tap opens NEARBY.
@@ -298,7 +362,7 @@ static void drawDaemon(lv_obj_t *p) {
   if (netMessage().length()) label(right, netMessage(), &lv_font_montserrat_20, DAY, LV_PCT(100));
   lv_obj_t *rc = card(right);                       // C-155: ROUTINES -- THE CASINO
   label(rc, "ROUTINES", &lv_font_montserrat_20, QUIET);
-  button(rc, "THE CASINO", tapCasino);
+  { lv_obj_t *rr = row(rc); button(rr, "THE CASINO", tapCasino); button(rr, "THE HOUSE", tapHouse, nullptr, false); }   // C-158
   drawNearby(right);
 }
 

@@ -52,3 +52,9 @@ void netHomeWatch(bool open);        // every pass of the screen: whether HOME i
 void netHomeAct(const String &id, const String &action, const String &before);
 void netHomeAsk(const String &text); // Home Assistant's own conversation agent answers
 void netHomeHeard(String &asked, String &answer);   // the last thing asked, and its answer ("" while it comes)
+// C-158, C-160: one answer an open overlay watches -- THE HOUSE (/api/casino), a device's own settings -- asked at once and
+// every 15 s while it stays open, and again after a write; held in memory only (it moves too often to keep on flash, and
+// means nothing away). "" stops. watchRev moves whenever what is held changes.
+void netWatch(const String &path);
+String netWatched();                 // the answer held for the path watched now ("" until it comes)
+extern std::atomic<uint32_t> watchRev;

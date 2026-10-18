@@ -110,6 +110,7 @@ static String todayLine;
 static int artStale = 0;                           // 1: pictures changed (reset when no overlay is open); 2: all, now
 void uiLoop() {
   casinoTick60();                                   // C-155
+  watchLook();                                      // C-158, C-160: THE HOUSE, a device's own settings
   newsLook();                                       // C-154
   static uint32_t imuAt = 0, heldSince = 0; static int heldWay = -1;   // C-96: AUTO, once a new way up has held 0.8 s
   if (orient == O_AUTO && !overlay && millis() - imuAt > 150) {

@@ -41,13 +41,13 @@ static uint16_t pal[4][16];
 static bool have[4] = {};
 static int topRow[4], midCol[4];                // where each picture's head is, for its hat
 static int friendSlot[3] = { -1, -1, -1 };
+static int friendSpecies[3] = { -1, -1, -1 };   // C-158: or by species -- daemons seen in the game, chosen by the companion
 
 // the result, decided at the pull from the table every player keeps (firmware/common/slots.h, server/src/slots.ts): its
 // chance in a thousand, and what it pays for each coin bet (the bet included) -- 94.4 back of every 100
 enum { O_LOSE, O_SEASON1, O_JACK2, O_SEASON3, O_COIN3, O_FRIEND3, O_JACK3, O_N };
 using slots::PAYS; using slots::BETS;
 static const int BET_N = slots::BET_N;
-static int draw1000() { return slots::draw(); }
 static void piecesFor(int o, int out[3]) { uint8_t p[3]; slots::piecesFor(o, p); for (int k = 0; k < 3; k++) out[k] = p[k]; }
 
 // ---- the reels -----------------------------------------------------------------------------------------------------
@@ -64,11 +64,18 @@ static void shuffle(Reel &r) {
   r.pos = esp_random() % STRIP; r.state = STILL; r.speed = 0;
 }
 static int pieceAt(const Reel &r, int i) { return r.strip[((i % STRIP) + STRIP) % STRIP]; }
+static int nearWanted = -1;                     // C-158: the piece to show one place off the line on the third reel, or none
 static void stopReel(int k) {
   Reel &r = reels[k];
   if (r.state != SPINNING) return;
   int at = (int)ceilf(r.pos + 0.7f);            // never back: on past the next piece to the wanted one
-  while (pieceAt(r, at) != want[k]) at++;
+  // C-158: the third reel of a near miss stops with the piece it wanted beside the line, where one such place comes round
+  int near = -1;
+  if (k == 2 && nearWanted >= 0)
+    for (int i = at; i < at + STRIP && near < 0; i++)
+      if (pieceAt(r, i) == want[2] && (pieceAt(r, i + 1) == nearWanted || pieceAt(r, i - 1) == nearWanted)) near = i;
+  if (near >= 0) at = near;
+  else while (pieceAt(r, at) != want[k]) at++;
   r.state = STOPPING; r.from = r.pos; r.to = at; r.at = millis();
   r.dur = (uint32_t)constrain((at - r.pos) / SPEED * 1000 * 1.6f, 220.0f, 900.0f);
 }
@@ -104,8 +111,12 @@ static void reportNow() {
 
 // ---- how it is dressed ---------------------------------------------------------------------------------------------
 static bool dressed() { return st.holiday.name.length() && !st.holiday.quiet; }
-static String lookNow() {                       // the holiday's look, else the season's own
+static String lookNow() {                       // the holiday's look, else the weather's, else the season's own
   if (dressed() && st.holiday.look != "none") return st.holiday.look;
+  // C-158: the real weather outside, when it is weather to notice; a clear night, its stars
+  if (st.sky == "rain" || st.sky == "storm" || st.sky == "fog") return st.sky;
+  if (st.sky == "snow") return "snow";
+  if (st.sky == "clear" && st.watch == "NIGHT") return "stars";
   if (st.season == "winter") return "snow";
   if (st.season == "spring") return "petals";
   if (st.season == "summer") return "sun";
@@ -318,6 +329,12 @@ static void drawn(const String &kind, int cx, int cy) {
   } else if (kind == "mark") {
     uint16_t day = hex565(st.menu);
     canvas.fillCircle(cx, cy, 19, day); canvas.drawCircle(cx, cy, 19, white); star(cx, cy, 11, white);
+  } else if (kind == "rain" || kind == "storm" || kind == "fog") {   // C-158: the weather's own piece, a cloud
+    uint16_t cloud = c565(kind == "fog" ? 0xB8BCC4 : 0xD8DCE4);
+    canvas.fillCircle(cx - 9, cy - 2, 10, cloud); canvas.fillCircle(cx + 6, cy - 6, 12, cloud); canvas.fillRoundRect(cx - 19, cy - 2, 38, 12, 6, cloud);
+    if (kind == "rain") for (int i = -12; i <= 12; i += 8) canvas.drawLine(cx + i, cy + 14, cx + i - 3, cy + 22, c565(0x60A8FF));
+    if (kind == "storm") { uint16_t y = c565(0xFFE040); canvas.fillTriangle(cx + 2, cy + 8, cx - 6, cy + 20, cx + 1, cy + 18, y); canvas.fillTriangle(cx + 1, cy + 16, cx + 7, cy + 16, cx - 3, cy + 28, y); }
+    if (kind == "fog") for (int i = 0; i < 3; i++) canvas.drawFastHLine(cx - 18 + i * 4, cy + 14 + i * 5, 30, cloud);
   } else star(cx, cy, 19, a);                   // stars, confetti, streamers: a star in the holiday's colour
 }
 
@@ -414,6 +431,8 @@ static String drawSlots(uint16_t day, uint16_t ink) {
     else if (l == "pumpkins") { canvas.fillCircle(x, y, 3, c565(0xFF7A1A)); canvas.drawFastVLine(x, y - 5, 2, c565(0x2E7D32)); }
     else if (l == "presents") { canvas.fillRect(x - 2, y - 2, 5, 5, c); canvas.drawFastVLine(x, y - 2, 5, PAPER); }
     else if (l == "fireworks") canvas.fillCircle(x, y, 1, c);
+    else if (l == "rain" || l == "storm") canvas.drawLine(x, y, x - 2, y + 6, c565(0x60A8FF));    // C-158: the weather over the reels
+    else if (l == "fog") canvas.drawFastHLine(x - 10, y, 20, c565(0x8A8E96));
     else {                                        // twinkling where they are: stars, the sun's glints, the frost
       float s = 0.5f + 0.5f * sinf(b.phase + t / 260.0f);
       int r = 1 + (int)(3 * s);
@@ -431,6 +450,7 @@ static String drawSlots(uint16_t day, uint16_t ink) {
     String row = typing.length() ? "SAY: " + typing + ((t / 400) % 2 ? "_" : " ")
                : t < tickerUntil ? ticker : tableText();
     if (!row.length() && board.keyboard) row = "type a word to the table";     // DRAFT
+    if (!row.length() && st.casino.why.length()) row = "TODAY: " + st.casino.why;   // C-158: the day's luck, its biggest reason; DRAFT
     canvas.setTextFont(1); canvas.setTextDatum(TL_DATUM);
     canvas.setTextColor(typing.length() || t < tickerUntil ? PAPER : QUIET);
     while (row.length() > 4 && canvas.textWidth(row) > W - 16) row.remove(row.length() - 1);
@@ -495,8 +515,8 @@ bool casinoTakeArt(const char *json) {
   JsonDocument filter, doc;
   filter["w"] = filter["h"] = filter["slot"] = filter["palette"] = true;
   if (deserializeJson(doc, json, DeserializationOption::Filter(filter)) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
-  int slot = doc["slot"] | -1, k = -1;
-  for (int i = 0; i < 3; i++) if (friendSlot[i] == slot && slot >= 0) k = i + 1;
+  int slot = doc["slot"] | -1, species = doc["species"] | -1, k = -1;
+  for (int i = 0; i < 3; i++) if ((friendSlot[i] == slot && slot >= 0) || (friendSpecies[i] == species && species >= 0)) k = i + 1;
   if (k < 0 || !pix[k]) return false;            // not one the reels asked for (or they have been put away)
   JsonArray p = doc["palette"].as<JsonArray>();
   for (int i = 0; i < 16; i++) pal[k][i] = i < (int)p.size() ? (uint16_t)(p[i] | 0) : 0;
@@ -553,31 +573,43 @@ static void loading(const String &what) {
 }
 
 static void fetchFriends() {
+  // C-158: the companion's choice of daemons seen in the game, where it gives one; else the party, as before
+  bool bySpecies = st.casino.reelN > 0;
   for (int i = 0; i < 3; i++) {
-    friendSlot[i] = i < st.casino.friendN ? st.casino.friends[i] : -1;
+    friendSpecies[i] = bySpecies && i < st.casino.reelN ? st.casino.reel[i] : -1;
+    friendSlot[i] = !bySpecies && i < st.casino.friendN ? st.casino.friends[i] : -1;
     have[i + 1] = false;
-    pix[i + 1] = friendSlot[i] >= 0 ? (uint8_t *)malloc(2048) : nullptr;
+    pix[i + 1] = friendSlot[i] >= 0 || friendSpecies[i] >= 0 ? (uint8_t *)malloc(2048) : nullptr;
   }
   // without PSRAM a request made while the speaker still holds its buffers runs out of memory (net.cpp): let it go first
   for (uint32_t t0 = millis(); !soundQuiet() && millis() - t0 < 1200; ) { soundIdle(); delay(20); }
   for (int i = 0; i < 3; i++) {
     if (!pix[i + 1]) continue;
-    loading("Setting the reels... " + String(i + 1) + " of " + String(min(3, st.casino.friendN)));   // DRAFT
+    loading("Setting the reels... " + String(i + 1) + " of " + String(min(3, bySpecies ? st.casino.reelN : st.casino.friendN)));   // DRAFT
+    String key = friendSpecies[i] >= 0 ? "s" + String(friendSpecies[i]) : String(friendSlot[i]);
+    String query = friendSpecies[i] >= 0 ? "species=" + String(friendSpecies[i]) : "slot=" + String(friendSlot[i]);
     // the cable, if a bridge has been heard on it lately -- the M5GO's loop does not always have the room to take a STATE,
     // so "lately" is two minutes, not usbLive's fifteen seconds -- else Wi-Fi
     if (usbSeen && millis() - usbSeen < 120000) {
-      Serial.printf("PARTYART? %d\n", friendSlot[i]);
+      Serial.printf("PARTYART? %s\n", key.c_str());
       for (uint32_t t0 = millis(); !have[i + 1] && millis() - t0 < 2500; ) { readCable(); delay(5); }
     }
     if (!have[i + 1] && online() && !bridgeLive()) {
-      bool ok; String got = http("GET", "/api/device/art?slot=" + String(friendSlot[i]), "", &ok);
+      bool ok; String got = http("GET", "/api/device/art?" + query, "", &ok);
       if (ok) casinoTakeArt(got.c_str());
     }
-    Serial.printf("CASINO ART %d %s heap %u largest %u\n", friendSlot[i], have[i + 1] ? "taken" : "missing",
+    Serial.printf("CASINO ART %s %s heap %u largest %u\n", key.c_str(), have[i + 1] ? "taken" : "missing",
                   (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMaxAllocHeap());   // for a check from the computer
   }
 }
-static void putAway() { for (int i = 1; i < 4; i++) { free(pix[i]); pix[i] = nullptr; have[i] = false; } for (int &s : friendSlot) s = -1; }
+static void putAway() { for (int i = 1; i < 4; i++) { free(pix[i]); pix[i] = nullptr; have[i] = false; } for (int &s : friendSlot) s = -1; for (int &s : friendSpecies) s = -1; }
+
+// C-158: the cat and the string -- the player's own reach, learning through the session and the next (slots.h)
+static slots::Cat cat;
+static String tableHere() {                     // "here <device> <return in a thousand> <reach in hundredths> <dry> <streak>"
+  return "here " + deviceId() + " " + String((int)lroundf(slots::pullReturn(st.casino.luck, cat) * 1000)) + " " +
+         String((int)lroundf(cat.reach * 100)) + " " + String(min(cat.dry, 99999)) + " " + String(min(cat.streak, 9999));
+}
 
 // ---- the routine ---------------------------------------------------------------------------------------------------
 String runSlots() {
@@ -604,7 +636,7 @@ String runSlots() {
   sitting = true; seatN = 0; ticker = callout = cheers = typing = ""; tickerUntil = calloutUntil = cheerAt = 0;
   meetSetTable(true);
   loraTable(true);
-  report("table", "here " + deviceId());
+  report("table", tableHere());                 // C-158: with the odds it plays at, for the admin page
   uint32_t tableAt = millis(), polledAt = millis(); int tableTicks = 0;
 
   // the buttons as they are now, so a press already down when it opened does nothing
@@ -624,7 +656,16 @@ String runSlots() {
     fitBet();
     if (balance() < bet || bet <= 0) { note = "NO MONEY LEFT"; return; }               // DRAFT
     rigged = rigNext >= 0;                      // C-151: a check from the computer -- this result, paid nothing
-    outcome = rigged ? rigNext : draw1000(); rigNext = -1; piecesFor(outcome, want);
+    // C-158: the day's luck and the string's reach decide this pull's table; a loss may fall near, and two JACKs show a
+    // third one place off the line -- almost the jackpot
+    int w[slots::OUTCOME_N]; slots::weightsFor(slots::pullReturn(st.casino.luck, cat), w);
+    outcome = rigged ? rigNext : slots::drawFrom(w); rigNext = -1; piecesFor(outcome, want);
+    nearWanted = -1;
+    if (outcome == O_LOSE && (float)(esp_random() % 1000) / 1000.0f < slots::nearChance(cat)) {
+      uint8_t p[3], wanted; slots::nearPieces(p, wanted);
+      for (int k = 0; k < 3; k++) want[k] = p[k];
+      nearWanted = wanted;
+    } else if (outcome == O_JACK2) nearWanted = P_JACK;
     unreported -= bet; sessionDelta -= bet; spins++; unreportedSpins++;
     shownBalance = balance();
     for (int k = 0; k < 3; k++) { reels[k].state = SPINNING; reels[k].speed = 0; }
@@ -732,7 +773,7 @@ String runSlots() {
     if (phase == ROLLING && !spinning()) {
       phase = SHOWING; shownAt = now;
       won = bet * PAYS[outcome];
-      if (!rigged) { unreported += won; sessionDelta += won; }   // a rigged pull is never paid
+      if (!rigged) { unreported += won; sessionDelta += won; slots::learn(cat, outcome); }   // a rigged pull is never paid, nor learned from
       Serial.printf("CASINO %d %ld %ld %ld\n", outcome, bet, won, balance());   // for a check from the computer: its result, bet, win, money
       draw();                                    // seen before it is heard: without PSRAM the phrase plays here
       if (outcome == O_LOSE) { note = "NO WIN"; soundSlots(1, lookNow()); }                    // DRAFT
@@ -770,7 +811,7 @@ String runSlots() {
     meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);
     meetCastLoop(now); castLoop(now);
     { int sp; uint32_t tg; while (meetTakeTable(sp, tg)) casinoHeard(tg, sp, "", true, 2); }
-    if (now - tableAt > 30000) { tableAt = now; loraTable(true); if (++tableTicks % 2 == 0) report("table", "here " + deviceId()); }
+    if (now - tableAt > 30000) { tableAt = now; loraTable(true); ++tableTicks; report("table", tableHere()); }   // C-158: each half minute
     for (int i = 0; i < seatN; ) if (now - seats[i].at > 75000) seats[i] = seats[--seatN]; else i++;
     // over Wi-Fi the state is asked for now and then, for our other boards at the table (the cable brings it itself);
     // not without PSRAM, where a state does not always fit beside the reels

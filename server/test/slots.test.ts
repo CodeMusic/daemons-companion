@@ -94,6 +94,16 @@ describe("THE CASINO in context: luck and the cat and the string (C-158)", () =>
     expect(Math.abs(back / bet - RETURN_AT(0))).toBeLessThan(0.012);
   });
 
+  it("plays the same engine on the boards (firmware/common/slots.h)", async () => {
+    const S = await import("../src/slots.js");
+    const h = readFileSync(new URL("../../firmware/common/slots.h", import.meta.url), "utf8");
+    const num = (name: string) => Number((new RegExp(`\\b${name}\\s*=\\s*([0-9.]+)f?`).exec(h) ?? [])[1]);
+    expect(num("REACH_SPAN")).toBe(S.REACH_SPAN); expect(num("LEARN")).toBe(S.LEARN); expect(num("NOISE")).toBe(S.NOISE);
+    expect(num("BASE_RETURN")).toBeCloseTo(S.RETURN, 6); expect(num("TARGET")).toBeCloseTo(S.TARGET, 6); expect(num("FINE")).toBe(S.FINE);
+    expect(h).toContain("0.95f + 0.05f * clampf(luck, -1, 1)");   // RETURN_AT
+    expect(h).toContain("0.25f + 0.35f *");                         // nearChance
+  });
+
   it("makes a near miss that does not pay, and stops the third reel with the wanted piece beside the line", async () => {
     const { nearPieces, stopNear, strip, STRIP: N } = await import("../src/slots.js");
     const r = dice(5);

@@ -106,11 +106,21 @@ bool takeState(const char *json) {
     st.casino.money = cs["money"] | 0L; st.casino.pending = cs["pending"] | 0L; st.casino.balance = cs["balance"] | 0L;
     st.casino.seen = cs["seen"] | ""; st.casino.friendN = 0;
     for (JsonVariant f : cs["friends"].as<JsonArray>()) if (st.casino.friendN < 5) st.casino.friends[st.casino.friendN++] = f | 0;
+    // C-158: the day's luck and its biggest reason; the reels' daemons, seen in the game
+    st.casino.luck = cs["context"]["luck"] | 0.0f; st.casino.why = "";
+    float most = 0;
+    for (JsonVariant r : cs["context"]["reasons"].as<JsonArray>()) {
+      float e = r["effect"] | 0.0f;
+      if (fabsf(e) > most) { most = fabsf(e); st.casino.why = r["why"] | ""; }
+    }
+    st.casino.reelN = 0;
+    for (JsonVariant r : cs["reel"].as<JsonArray>()) if (st.casino.reelN < 3) st.casino.reel[st.casino.reelN++] = r["species"] | 0;
     st.casino.tableN = 0;                                // C-151: our other boards at the reels
     for (JsonVariant t : cs["table"].as<JsonArray>()) if (st.casino.tableN < 4) {
       st.casino.tableSpecies[st.casino.tableN] = t["species"] | 0; st.casino.table[st.casino.tableN++] = t["name"] | "";
     }
   }
+  st.watch = doc["world"]["watch"] | ""; st.sky = doc["world"]["weather"]["kind"] | "";   // C-158: the real world
   JsonVariant hd = doc["holiday"];
   st.holiday = Holiday();
   if (!hd.isNull()) {

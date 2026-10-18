@@ -179,10 +179,12 @@ def bridge(a, port):
             elif msg.startswith("PARTYART? "):
                 # C-149: a party daemon's picture, for the CASINO's reels -- asked for by its slot as the reels are set
                 try:
-                    slot = int(msg.split()[1])
-                    art = server_json(a.server, "/api/device/art?slot=%d" % slot)
+                    key = msg.split()[1]          # C-158: a slot, or s<species> -- a daemon seen in the game
+                    slot = key
+                    art = server_json(a.server, "/api/device/art?species=%d" % int(key[1:]) if key.startswith("s")
+                                      else "/api/device/art?slot=%d" % int(key))
                     dev.write(("PARTYART " + json.dumps(art, separators=(",", ":")) + "\n").encode())
-                    print("usb_bridge: the CASINO's reel: party slot %d -> device" % slot, flush=True)
+                    print("usb_bridge: the CASINO's reel: %s -> device" % slot, flush=True)
                 except Exception as e:
                     print("usb_bridge: no picture for the CASINO's reel (%s)" % e, flush=True)
             elif msg.startswith("UNREAD "):

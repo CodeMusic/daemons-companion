@@ -37,6 +37,8 @@ struct Member { String name, types; int level = 0, n = 0; String routine[4], typ
 // the board dresses today: the holiday (server/data/holidays.json), its look, two colours and a hat; a QUIET day plain
 struct Casino { bool have = false, known = false;   // known: the companion sends `casino` at all (null: no save read)
                String table[4]; int tableSpecies[4] = {}; int tableN = 0;   // C-151: our other boards at the reels, by their daemons
+               float luck = 0; String why;                       // C-158: the day's luck (-1..+1), and its biggest reason in words
+               int reel[3] = {}; int reelN = 0;                  // C-158: the reels' other daemons by species (seen in the game)
                 long money = 0, pending = 0, balance = 0; String seen; int friends[5] = {}; int friendN = 0; };
 struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {
@@ -47,6 +49,7 @@ struct State {
   Member party[6]; int partyN = 0;          // C-68
   String companion, cardNote;               // C-124: whose cards are ours; a note waiting for a card
   Casino casino; Holiday holiday;           // C-149
+  String watch, sky;                        // C-158: the real world -- the hour (DAWN DAY DUSK NIGHT) and the weather's kind
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;

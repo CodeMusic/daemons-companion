@@ -42,6 +42,7 @@ struct Board {
   Power power = Power::None; int battAdc = -1;
   // radios beyond Wi-Fi and Bluetooth, and the rest
   bool ir = false, nfc = false, cc1101 = false, si4732 = false, lora = false, touch = false;
+  int irTx = -1, irRx = -1;                // C-150: the board's own IR pins (-1: none -- a board that only sends has no irRx)
   // C-102: a round screen (the Dial's): the screens are drawn in a square inside the circle, at this offset, and the
   // face comes first; and a passive buzzer in place of a speaker (its pin), which plays the tunes but not a voice
   bool round = false; int screenX = 0, screenY = 0; int buzzer = -1;

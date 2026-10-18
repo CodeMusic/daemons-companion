@@ -26,9 +26,9 @@ void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int 
 // setup(), sets both its pins' modes, and 17 taken as an input stopped the flash -- the board hung before it printed a
 // word. It is never used there, so it is given two input-only pins it can do nothing to (36 and 38, both free; 38 as
 // an output only logs that it cannot be one).
-static const int PIN_IR_TX = 2, PIN_IR_RX = 1, PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 36, PIN_NFC_RST = 38;
+static const int PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 36, PIN_NFC_RST = 38;
 #else
-static const int PIN_IR_TX = 2, PIN_IR_RX = 1, PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 17, PIN_NFC_RST = 45;
+static const int PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 17, PIN_NFC_RST = 45;
 #endif
 
 // Waits up to `ms`, a little at a time; false if the top button gave up first.
@@ -360,11 +360,18 @@ String runReadMyTag() {
 // handler is instruction RAM the original ESP32 has none of to spare. C-148: nor the StickC-Plus -- where PIN_IR_RX, 1, is
 // the UART's TX: IRrecv took the pin as it was made, before setup(), and the board ran with its cable silent.
 struct NoIrIn { void enableIRIn() {} void disableIRIn() {} bool decode(decode_results *) { return false; } void resume() {} };
-static NoIrIn irIn;
+static NoIrIn noIrIn;
+static NoIrIn &irIn() { return noIrIn; }
 #else
-static IRrecv irIn(PIN_IR_RX, 1024, 50, true);
+// C-150: made on first use from the board's own receiver pin (board.irRx) -- not before setup(), and not the T-Embed's
+// 1 on every board. The routines that listen are offered only where there is a receiver (routines.cpp).
+static IRrecv *irInMade = nullptr;
+static IRrecv &irIn() { if (!irInMade) irInMade = new IRrecv(board.irRx, 1024, 50, true); return *irInMade; }
 #endif
-static IRsend irOut(PIN_IR_TX);
+// C-150: the board's own IR out (board.irTx) -- the StickS3's 46, the StickC-Plus's 9 -- where it was the T-Embed's 2
+// on every board (the StickS3 sent on a pin with no LED; the StickC-Plus's 2 is its buzzer)
+static IRsend *irOutMade = nullptr;
+static IRsend &irOut() { if (!irOutMade) irOutMade = new IRsend(board.irTx); return *irOutMade; }
 static Preferences remotes;
 static const int MAX_REMOTES = 6;
 static const char *BUTTONS[3] = { "POWER", "VOLUME UP", "VOLUME DOWN" };
@@ -479,19 +486,19 @@ void flareBegin() {
 static bool listenFor(Button &out, int which) {
   progress("Point your remote at " + daemonName() + " and press " + BUTTONS[which] + ".\n\n" + daemonName() +
            " is listening.  (" + String(which + 1) + " of 3)\n\ntop button: give up");
-  irIn.enableIRIn();
+  irIn().enableIRIn();
   decode_results got;
   uint32_t until = millis() + 20000;
   bool heard = false;
   while (millis() < until && !heard) {
     if (giveUp()) break;
-    if (irIn.decode(&got)) {
-      if (got.repeat || (got.decode_type == UNKNOWN && got.rawlen < 12)) irIn.resume();   // a repeat, or noise
+    if (irIn().decode(&got)) {
+      if (got.repeat || (got.decode_type == UNKNOWN && got.rawlen < 12)) irIn().resume();   // a repeat, or noise
       else heard = true;
     }
     delay(5);
   }
-  irIn.disableIRIn();
+  irIn().disableIRIn();
   if (!heard) return false;
   out = Button();
   out.type = got.decode_type; out.bits = got.bits;
@@ -511,12 +518,13 @@ static bool listenFor(Button &out, int which) {
 // WHAT REMOTE IS THIS: point any of your remotes at the board and press its buttons -- each press is named: its
 // protocol (for most, the maker: SAMSUNG, SONY, LG ...), its bits and its code. It only listens, for a minute.
 String runWhatRemote() {
-  irIn.enableIRIn();
+  if (board.irRx < 0) return "This board has no IR receiver.";   // C-150 (not offered there: routines.cpp); DRAFT
+  irIn().enableIRIn();
   decode_results got;
   String heard[3]; int n = 0;
   uint32_t t0 = millis(), shown = 0;
   while (millis() - t0 < 60000 && !giveUp()) {
-    if (irIn.decode(&got)) {
+    if (irIn().decode(&got)) {
       if (!got.repeat && !(got.decode_type == UNKNOWN && got.rawlen < 12)) {
         String what = got.decode_type == UNKNOWN ? String("an unknown kind, ") + got.rawlen + " pulses"
                     : typeToString(got.decode_type, false) + "  " + String(got.bits) + " bits  0x" + uint64ToString(got.value, 16);
@@ -524,7 +532,7 @@ String runWhatRemote() {
         ledsFlash();
         shown = 0;
       }
-      irIn.resume();
+      irIn().resume();
     }
     if (millis() - shown > 500) {
       shown = millis();
@@ -534,13 +542,14 @@ String runWhatRemote() {
     ledsLoop();
     delay(5);
   }
-  irIn.disableIRIn();
+  irIn().disableIRIn();
   return n ? daemonName() + " heard " + String(n) + (n == 1 ? " press" : " presses") + "; the last: " + heard[0] + "."
            : daemonName() + " heard no remote.";                                                          // DRAFT
 }
 
 // TEACH A REMOTE: three buttons, one after another, then kept as a remote and chosen.
 String runTeachRemote() {
+  if (board.irRx < 0) return "This board has no IR receiver.";   // C-150; DRAFT
   if (flareCount() >= MAX_REMOTES) return daemonName() + " knows six remotes already.\nRemove one on the site first.";
   for (int b = 0; b < 3; b++) {
     if (!listenFor(scratch[b], b)) return giveUp() ? "Given up. " + daemonName() + " forgets this one."
@@ -560,9 +569,9 @@ static String sendButton(int which) {
   Button b;
   if (!loadButton(r, which, b))
     return flareName(r) + " has no " + BUTTONS[which] + " yet.\nTEACH A REMOTE teaches all three.";
-  irOut.begin();
-  if (b.type == UNKNOWN) irOut.sendRaw(b.raw, b.rawLen, 38);
-  else irOut.send((decode_type_t)b.type, b.value, b.bits, b.repeat);
+  irOut().begin();
+  if (b.type == UNKNOWN) irOut().sendRaw(b.raw, b.rawLen, 38);
+  else irOut().send((decode_type_t)b.type, b.value, b.bits, b.repeat);
   return daemonName() + " sent " + BUTTONS[which] + "  (" + flareName(r) + ").\n\nPress to send it again.";
 }
 String runPower()      { return sendButton(0); }
@@ -574,8 +583,8 @@ String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint1
   if (!board.ir) return "This board has no IR.";   // C-148: and PIN_IR_TX, 2, is the StickC-Plus's buzzer; DRAFT
   decode_type_t type = strToDecodeType(protocol.c_str());
   if (type == UNKNOWN) return "Could not send: this board does not know the protocol " + protocol + ".";
-  irOut.begin();
-  if (!irOut.send(type, value, bits, repeat)) return "Could not send " + protocol + " with " + String(bits) + " bits.";
+  irOut().begin();
+  if (!irOut().send(type, value, bits, repeat)) return "Could not send " + protocol + " with " + String(bits) + " bits.";
   return daemonName() + " sent " + protocol + " " + uint64ToString(value, 16) + ".";
 }
 

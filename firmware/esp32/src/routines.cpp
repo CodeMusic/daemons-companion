@@ -24,6 +24,9 @@ static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemot
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
                                                { "WHAT REMOTE IS THIS", runWhatRemote } };   // listening only, DRAFT
+// C-150: a board whose IR only sends (the T-Watch, the StickC-Plus) -- FLARE's sending routines, nothing that listens
+static const Routine FLARE_SEND_ROUTINES[] = { { "POWER", runPower }, { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
+                                               { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote } };
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
 static const Routine TOUCHSTONE_ROUTINES[] = { { "HOLD A CARD", runCard }, { "READ MY TAG", runReadMyTag } };   // C-124, DRAFT
@@ -44,7 +47,8 @@ int typeCount = 0;
 void routinesBegin() {
   typeCount = 0;
   if (board.hatSda >= 0) types[typeCount++] = { "GLOW",  "Thermal",   GLOW_ROUTINES,       4 };   // C-148: the board's own sense first; DRAFT
-  if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      7 };
+  if (board.ir)     types[typeCount++] = board.irRx >= 0 ? RoutineType{ "FLARE", "IR", FLARE_ROUTINES, 7 }
+                                                         : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 2 };

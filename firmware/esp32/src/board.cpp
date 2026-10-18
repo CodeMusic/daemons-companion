@@ -29,7 +29,7 @@ void boardBegin() {
   board.i2sBclk = 48; board.i2sLrclk = 15; board.i2sDout = 46;
   board.mic = Mic::Pdm; board.micData = 47; board.micClk = 44;
   board.power = Power::PmuAXP2101;
-  board.ir = true; board.lora = true; board.touch = true;
+  board.ir = true; board.irTx = 2; board.lora = true; board.touch = true;   // C-150: IR out on 2, no receiver
   // C-72: the SX1262 (433, 868 or 915 MHz by the watch bought), on a bus of its own (LilyGO's utilities.h)
   board.loraChip = LoraChip::SX1262; board.loraCs = 5; board.loraRst = 8; board.loraBusy = 7; board.loraDio1 = 9;
   board.loraSck = 3; board.loraMiso = 4; board.loraMosi = 1;
@@ -205,7 +205,7 @@ void boardBegin() {
   board.i2sMclk = 18; board.i2sBclk = 17; board.i2sLrclk = 15; board.i2sDout = 14;
   board.mic = Mic::Es8311; board.micData = 16;                            // the ES8311's microphone shares the speaker's clocks
   board.power = Power::PmuM5PM1;
-  board.ir = true;
+  board.ir = true; board.irTx = 46; board.irRx = 42;                     // C-150: its own, not the T-Embed's 2 and 1
   Wire.begin(board.sda, board.scl);
   pm1Write(0x09, 0x00);                // the M5PM1's I2C idle sleep off (it is always powered, and keeps what was set)
   pm1Write(0x0A, 0x00);                // and its watchdog
@@ -241,6 +241,7 @@ void boardBegin() {
   board.encKey = 37; board.sideKey = 39;                                  // A, the face; B, the side
   board.sda = 21; board.scl = 22;
   board.buzzer = 2;
+  board.ir = true; board.irTx = 9;                                     // C-150: IR out on 9, no receiver (2 is the buzzer)
   board.mic = Mic::Pdm; board.micData = 34; board.micClk = 0;
   board.power = Power::PmuAXP192;
   board.hatSda = 0; board.hatScl = 26;
@@ -540,7 +541,7 @@ static void cc1101() {
   board.mic = Mic::Pdm; board.micData = 42; board.micClk = 39;
   board.lights = Lights::WS2812; board.ledData = 14; board.ledCount = 8;
   board.power = Power::GaugeBQ27220;
-  board.ir = true; board.nfc = true; board.cc1101 = true;
+  board.ir = true; board.irTx = 2; board.irRx = 1; board.nfc = true; board.cc1101 = true;
 }
 
 static void tEmbed(bool si4732) {

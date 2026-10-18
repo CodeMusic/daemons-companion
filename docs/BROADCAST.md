@@ -35,8 +35,9 @@ adds that way to its `via` (L LoRa, B Bluetooth, N the companion) -- it is not s
 piece (3). The message they carry: SPECIES(2), the name's length and the name (up to 10), then the word, or the code,
 or for an answer the answered FROM(4) ID(2) and the code.
 
-**The phone** sends and hears through the companion only, for now; its Bluetooth (app/beacon.ts) could carry the same
-pieces later, since a service UUID is the one thing iOS lets an app advertise.
+**The phone** sends and hears through the companion, and over its own Bluetooth too (C-141): while MEET OTHERS NEARBY is
+on, app/beacon.ts sends a broadcast as the same pieces, each a 128-bit service UUID (the one thing iOS lets an app
+advertise), rotated every 200 ms for 12 s, and gathers the pieces it hears (server/src/blecast.ts, Node-free).
 
 ## On a board: CHORUS
 

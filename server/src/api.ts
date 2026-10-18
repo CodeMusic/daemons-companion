@@ -287,13 +287,14 @@ export function relaySecret(store: Store): string {
   if (!s) { s = randomBytes(24).toString("base64url"); store.setSetting("relay.secret", s); }
   return s;
 }
-const DEVICE_DOOR = [
+export const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
-     "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written"].includes(p),
+     "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
+     "/api/device/broadcast"].includes(p),   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/")),
   (m: string) => m === "OPTIONS",
 ];

@@ -120,10 +120,16 @@ function speciesPng(species: string): Buffer | null {
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
-async function body(req: IncomingMessage): Promise<any> {
-  let s = "";
-  for await (const chunk of req) s += chunk;
-  return s ? JSON.parse(s) : {};
+// A JSON body, at most `most` bytes (the review, 2026-10-18: there was no limit, and the device door is open to the LAN);
+// too big is 413 and not JSON is 400 -- the handler's catch answers with `status`
+async function body(req: IncomingMessage, most = 4 * 1024 * 1024): Promise<any> {
+  let s = "", n = 0;
+  for await (const chunk of req) {
+    n += (chunk as Buffer).length;
+    if (n > most) throw Object.assign(new Error("that is too big"), { status: 413 });
+    s += chunk;
+  }
+  try { return s ? JSON.parse(s) : {}; } catch { throw Object.assign(new Error("that is not JSON"), { status: 400 }); }
 }
 
 // The bytes of a request, up to a limit (a handheld's recording: C-66). null when it was larger.
@@ -273,6 +279,24 @@ function revealInFinder(p: string | null) {
 }
 
 const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
+// The review (2026-10-18): a web page open in the user's browser could drive this server -- this machine is trusted, and
+// every answer says access-control-allow-origin: *. Now a browser's request must come from a page of ours (an Origin
+// whose host is this machine, an address, a .local or .ts.net name, or a bare name on the LAN), and the Host it asked
+// for must be one of those too, so a look-alike name pointed at this machine (DNS rebinding) is refused. The phone app,
+// the boards, n8n and Home Assistant send no Origin.
+export function ourHost(hostOrUrl: string): boolean {
+  let name = hostOrUrl.trim().toLowerCase();
+  if (!name) return true;
+  if (name === "null") return false;                                            // a sandboxed page's Origin
+  try { name = new URL(name.includes("://") ? name : `http://${name}`).hostname; } catch { return false; }
+  name = name.replace(/^\[|\]$/g, "");
+  if (!name) return false;
+  if (/^[0-9.]+$/.test(name) || name.includes(":")) return true;               // an address, v4 or v6
+  return name === "localhost" || name === "host.docker.internal" || name.endsWith(".local") || name.endsWith(".ts.net") || !name.includes(".");
+}
+// What a board may log about itself over the network (INTERACT): its routines, the CASINO's coins and seat, and its cares.
+// SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake"];
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -402,6 +426,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
       const path = url.pathname;
+      if (req.headers.origin !== undefined && !ourHost(String(req.headers.origin)))
+        return send(res, 403, { error: "not from a page of the companion's" });
+      if (!ourHost(String(req.headers.host ?? ""))) return send(res, 403, { error: "not an address of the companion's" });
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
 
@@ -901,6 +928,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
         if (!kind) return send(res, 400, { error: "an interaction needs a kind" });
+        if (!phone && !isLoopback(req.socket.remoteAddress) && !NETWORK_KINDS.includes(kind))
+          return send(res, 403, { error: "a board does not log that" });
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
         return send(res, 200, { last: store.lastInteraction() });
       }
@@ -996,7 +1025,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       send(res, 404, { error: "not found" });
     } catch (e) {
-      send(res, 500, { error: (e as Error).message });
+      const status = (e as { status?: number }).status;
+      send(res, status === 413 || status === 400 ? status : 500, { error: (e as Error).message });
     }
   });
 }

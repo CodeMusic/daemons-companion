@@ -13,7 +13,7 @@
 #include "sound.h"
 #include "display.h"
 #include "den.h"
-#include "slots.h"
+#include "../../common/slots.h"                    // C-157: THE CASINO's table, the handhelds' too
 #include <Preferences.h>
 
 // ---- the look: paper, ink, and the day's colour (the app's, from /api/today) ------------------------------------------

@@ -1,6 +1,7 @@
 #pragma once
-// C-155: THE CASINO's table on the Tab5 -- server/src/slots.ts in C++ (the boards keep the same, firmware/esp32/src/casino.cpp),
-// and server/test/slots_tab5.test.ts holds the numbers here to slots.ts, so the Tab5's odds are every player's.
+// C-155: THE CASINO's table in C++ -- server/src/slots.ts's, one copy for every board: the handhelds
+// (firmware/esp32/src/casino.cpp) and the Tab5 (firmware/tab5/src/ui.cpp) both play by it (C-157: it was two copies), and
+// server/test/slots_tab5.test.ts holds the numbers here to slots.ts, so every player's odds are the same.
 // The result is decided at the pull, from WEIGHTS (in a thousand); each reel then slips on to its piece.
 #include <Arduino.h>
 

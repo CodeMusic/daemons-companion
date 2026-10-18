@@ -8,16 +8,22 @@
 // balance it is sent and which it must still add itself.
 import type { Store } from "./store.js";
 import { carrying } from "./carry.js";
+import { BETS, PAYS } from "./slots.js";
 
 export const MONEY_MAX = 999999;
 const DELTA_MAX = 1000000;
+// C-157 (the code review, 2026-10-18): a report claims no more than its pulls could come to -- each at most the biggest
+// bet lost, or the biggest bet times the jackpot less the bet won -- so a made-up INTERACT casino line cannot mint money
+const LOSS_PER_SPIN = Math.max(...BETS), WIN_PER_SPIN = Math.max(...BETS) * (Math.max(...PAYS) - 1);
 
 export interface CasinoResult { id: number; delta: number; boot: string; seq: number; device: string; spins: number }
 
 export function parseResult(id: number, detail: string | null): CasinoResult | null {
   const m = /^(-?\d{1,7}) ([0-9a-f]{1,8})\.(\d{1,9}) ([A-Za-z0-9-]{1,48})(?: (\d{1,6}))?$/.exec(detail ?? "");
   if (!m || Math.abs(Number(m[1])) > DELTA_MAX) return null;
-  return { id, delta: Number(m[1]), boot: m[2], seq: Number(m[3]), device: m[4], spins: Number(m[5] ?? 0) };
+  const delta = Number(m[1]), spins = Number(m[5] ?? 0);
+  if (delta < -LOSS_PER_SPIN * spins || delta > WIN_PER_SPIN * spins) return null;   // more than its pulls could come to
+  return { id, delta, boot: m[2], seq: Number(m[3]), device: m[4], spins };
 }
 
 // Every result once, oldest first -- a second copy of a report (the same device, boot and seq) left out

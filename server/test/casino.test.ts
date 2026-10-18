@@ -90,6 +90,15 @@ describe("the CASINO's coins (C-149)", () => {
     expect(casinoPending(store).delta).toBe(0);
   });
 
+  it("refuses a result its pulls could not come to (C-157)", () => {
+    expect(parseResult(1, "49000 a1.1 m5-core-1 1")).not.toBeNull();   // the biggest bet's jackpot, less the bet
+    expect(parseResult(1, "49001 a1.1 m5-core-1 1")).toBeNull();
+    expect(parseResult(1, "-1000 a1.1 m5-core-1 1")).not.toBeNull();   // the biggest bet, lost
+    expect(parseResult(1, "-1001 a1.1 m5-core-1 1")).toBeNull();
+    expect(parseResult(1, "500 a1.1 m5-core-1 0")).toBeNull();         // no pulls, no coins
+    expect(parseResult(1, "500 a1.1 m5-core-1")).toBeNull();           // nor a report that does not say how many
+  });
+
   it("refuses a result that is not one", () => {
     expect(parseResult(1, "lots a1.1 m5-core-1")).toBeNull();
     expect(parseResult(1, "99999999 a1.1 m5-core-1")).toBeNull();   // past what one report can carry

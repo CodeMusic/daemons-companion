@@ -20,12 +20,18 @@ describe("SLOTS (C-155)", () => {
     expect(RETURN).toBeCloseTo(0.944, 6);
   });
 
-  it("keeps the handhelds' table (firmware/esp32/src/casino.cpp) exactly", () => {
-    const c = readFileSync(new URL("../../firmware/esp32/src/casino.cpp", import.meta.url), "utf8");
-    const nums = (name: string) => (new RegExp(`${name}\\[[^\\]]*\\]\\s*=\\s*\\{([^}]*)\\}`).exec(c)?.[1] ?? "").split(",").map((n) => Number(n.trim()));
-    expect(nums("WEIGHT")).toEqual(WEIGHTS);
+  it("is the table the boards play by: the handhelds and the Tab5 both include firmware/common/slots.h (C-157)", () => {
+    const read = (p: string) => readFileSync(new URL("../../firmware/" + p, import.meta.url), "utf8");
+    const h = read("common/slots.h");
+    const nums = (name: string) => (new RegExp(`${name}\\[\\]\\s*=\\s*\\{([^}]*)\\}`).exec(h)?.[1] ?? "").split(",").map((n) => Number(n.trim()));
+    expect(nums("WEIGHTS")).toEqual(WEIGHTS);
     expect(nums("PAYS")).toEqual(PAYS);
     expect(nums("BETS")).toEqual(BETS);
+    for (const user of ["esp32/src/casino.cpp", "tab5/src/ui.cpp"]) {
+      const c = read(user);
+      expect(c).toContain('#include "../../common/slots.h"');
+      expect(c).not.toMatch(/WEIGHTS?\[[^\]]*\]\s*=\s*\{/);         // no table of its own beside it
+    }
   });
 
   it("draws three pieces that make exactly the result decided", () => {

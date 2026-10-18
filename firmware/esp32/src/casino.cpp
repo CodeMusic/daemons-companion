@@ -30,10 +30,11 @@
 #include "broadcast.h"                            // C-151: the table -- its big wins and its words
 #include "lora.h"
 #include "meet.h"
+#include "../../common/slots.h"                   // C-157: THE CASINO's table, one copy for every board (slots.ts's)
 
 
 // ---- the pieces --------------------------------------------------------------------------------------------------
-enum { P_JACK, P_F1, P_F2, P_F3, P_COIN, P_SEASON, P_N };
+enum { P_JACK, P_F1, P_F2, P_F3, P_COIN, P_SEASON, P_N };   // slots::Piece's order
 static const int STRIP = 12;                    // each piece twice round a reel, so a reel slips at most six
 static uint8_t *pix[4] = {};                    // the daemons' pictures: 0 the one carried (artPix), 1..3 the party's
 static uint16_t pal[4][16];
@@ -41,40 +42,13 @@ static bool have[4] = {};
 static int topRow[4], midCol[4];                // where each picture's head is, for its hat
 static int friendSlot[3] = { -1, -1, -1 };
 
-// the result, decided at the pull: its chance in a thousand, and what it pays for each coin bet (the bet included)
+// the result, decided at the pull from the table every player keeps (firmware/common/slots.h, server/src/slots.ts): its
+// chance in a thousand, and what it pays for each coin bet (the bet included) -- 94.4 back of every 100
 enum { O_LOSE, O_SEASON1, O_JACK2, O_SEASON3, O_COIN3, O_FRIEND3, O_JACK3, O_N };
-static const int WEIGHT[O_N] = { 694, 180, 40, 40, 30, 12, 4 };   // 1000 in all: 94.4 back of every 100 bet
-static const int PAYS[O_N]   = { 0, 1, 2, 4, 6, 12, 50 };
-static const long BETS[] = { 10, 20, 50, 100, 200, 500, 1000 };
-static const int BET_N = sizeof BETS / sizeof BETS[0];
-
-static int outcomeOf(int a, int b, int c) {
-  if (a == b && b == c) return a == P_JACK ? O_JACK3 : a == P_COIN ? O_COIN3 : a == P_SEASON ? O_SEASON3 : O_FRIEND3;
-  if (a == P_JACK && b == P_JACK) return O_JACK2;
-  if (a == P_SEASON) return O_SEASON1;
-  return O_LOSE;
-}
-static void piecesFor(int o, int out[3]) {      // three pieces that make exactly this result
-  auto any = []() { return (int)(esp_random() % P_N); };
-  switch (o) {
-    case O_JACK3: out[0] = out[1] = out[2] = P_JACK; return;
-    case O_FRIEND3: out[0] = out[1] = out[2] = P_F1 + esp_random() % 3; return;
-    case O_COIN3: out[0] = out[1] = out[2] = P_COIN; return;
-    case O_SEASON3: out[0] = out[1] = out[2] = P_SEASON; return;
-    case O_JACK2: out[0] = out[1] = P_JACK; do out[2] = any(); while (out[2] == P_JACK); return;
-    default:
-      for (int tries = 0; tries < 500; tries++) {
-        out[0] = o == O_SEASON1 ? P_SEASON : any(); out[1] = any(); out[2] = any();
-        if (outcomeOf(out[0], out[1], out[2]) == o) return;
-      }
-      out[0] = P_COIN; out[1] = P_F1; out[2] = P_F2;   // a loss, whatever the dice did
-  }
-}
-static int draw1000() {
-  int r = esp_random() % 1000;
-  for (int o = 0; o < O_N; o++) { if (r < WEIGHT[o]) return o; r -= WEIGHT[o]; }
-  return O_LOSE;
-}
+using slots::PAYS; using slots::BETS;
+static const int BET_N = slots::BET_N;
+static int draw1000() { return slots::draw(); }
+static void piecesFor(int o, int out[3]) { uint8_t p[3]; slots::piecesFor(o, p); for (int k = 0; k < 3; k++) out[k] = p[k]; }
 
 // ---- the reels -----------------------------------------------------------------------------------------------------
 struct Reel { int strip[STRIP]; float pos = 0, speed = 0; int state = 0; float from = 0, to = 0; uint32_t at = 0, dur = 0; };
@@ -766,7 +740,7 @@ String runSlots() {
       else soundSlots(outcome == O_JACK3 ? 4 : PAYS[outcome] >= 12 ? 3 : 2, lookNow());
       if (unreportedSpins >= 10) reportNow();
       // C-151: a big win is called to the table -- every daemon hears it; those at the reels cheer, and say so
-      if (PAYS[outcome] >= 12 && castSend(CAST_ACT, outcome == O_JACK3 ? "JACKPOT" : "BIGWIN")) cheers = "";
+      if (slots::tableAct(outcome) && castSend(CAST_ACT, slots::tableAct(outcome))) cheers = "";
     }
     // the money counted up (or down) to what it is now
     long target = balance();

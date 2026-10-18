@@ -783,7 +783,7 @@ static void batteryRules() {
 // first let cut the power once it is idle, so on their battery they are off and their power button starts them. On USB
 // a board cannot be off: it sleeps deeply, and that button wakes it.
 const char *startAgain() {
-  if (board.power == Power::PmuIP5306 || board.kind == BoardKind::M5CoreS3) return "Its power button starts it again.";   // DRAFT
+  if (board.power == Power::PmuIP5306 || board.power == Power::PmuAXP192 || board.kind == BoardKind::M5CoreS3) return "Its power button starts it again.";   // DRAFT; C-148 the StickC-Plus
   if (board.sideKey >= 0) return "The top button starts it again.";                // DRAFT
   if (board.kind == BoardKind::TDisplayPro) return "The bottom-right button starts it again.";   // DRAFT
   return board.threeKeys() ? "B starts it again." : "Its button starts it again."; // DRAFT

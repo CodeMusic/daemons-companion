@@ -214,6 +214,65 @@ void boardBegin() {
   delay(100);
 }
 
+#elif defined(BOARD_STICKC_PLUS)
+
+// C-148: the M5StickC-Plus 1.1 (K016-P) -- an ESP32-PICO-D4, the ORIGINAL ESP32 (4 MB flash, no PSRAM), as M5Stack's own
+// docs.m5stack.com/en/core/StickC-Plus and its M5StickC-Plus library (src/AXP192.cpp, src/M5StickCPlus.cpp) give it: an
+// ST7789v2, 135x240 (MOSI 15, SCK 13, DC 23, CS 5, RST 18; offsets 52/40, inverted, as the StickS3's), used on its side;
+// button A 37 (the face) and B 39 (the side), both pulled up on the board; a passive buzzer on 2; an SPM1423 PDM
+// microphone (CLK 0, DATA 34), powered by the AXP192's GPIO0 as an LDO; the red LED on 10 (lit low); IR out on 9; and an
+// AXP192 (I2C 0x34, SDA 21 / SCL 22) whose LDO2 is the screen's backlight, LDO3 the screen itself. The HAT header's I2C is
+// SDA 0 / SCL 26 (M5Stack's THERMAL_MLX90640 example) -- 0 is also the microphone's clock, so the two take turns on it.
+// Its IR has no receiver and radios.cpp's pins are the T-Embed's, so no FLARE yet.
+static const uint8_t AXP192 = 0x34;
+static void axpWrite(uint8_t reg, uint8_t v) { Wire.beginTransmission(AXP192); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
+static uint8_t axpRead(uint8_t reg) {
+  Wire.beginTransmission(AXP192); Wire.write(reg);
+  if (Wire.endTransmission(false) != 0 || Wire.requestFrom(AXP192, (uint8_t)1) != 1) return 0;
+  return Wire.read();
+}
+
+void boardBegin() {
+  board.kind = BoardKind::M5StickCPlus; board.id = "m5-stickc-plus"; board.name = "M5StickC-Plus";
+  board.width = 240; board.height = 135; board.rotation = 1;              // on its side, as M5Stack's own thermal example
+  board.lcdCs = 5; board.lcdDc = 23; board.lcdSclk = 13; board.lcdMosi = 15; board.lcdRst = 18;
+  board.lcdPanelW = 135; board.lcdPanelH = 240; board.lcdOffsetX = 52; board.lcdOffsetY = 40;
+  board.pmuBacklight = true;                                              // LDO2
+  board.encKey = 37; board.sideKey = 39;                                  // A, the face; B, the side
+  board.sda = 21; board.scl = 22;
+  board.buzzer = 2;
+  board.mic = Mic::Pdm; board.micData = 34; board.micClk = 0;
+  board.power = Power::PmuAXP192;
+  board.hatSda = 0; board.hatScl = 26;
+  pinMode(10, OUTPUT); digitalWrite(10, HIGH);                            // the red LED dark
+  // The HAT's lines held up whenever its port is not running (glow.cpp lets them go to this too): SCL left floating
+  // clocked the Thermal HAT's MLX90640 into holding SDA -- 0, a strapping pin -- low, and every reset after it came up in
+  // the ROM's download mode, the firmware never started (seen 2026-10-17). Held low already (a restart in the middle of
+  // a read): clocked until it lets go, as I2C's own bus clear does.
+  pinMode(board.hatSda, INPUT_PULLUP); pinMode(board.hatScl, INPUT_PULLUP);
+  if (!digitalRead(board.hatSda)) {
+    pinMode(board.hatScl, OUTPUT);
+    for (int i = 0; i < 16 && !digitalRead(board.hatSda); i++) {
+      digitalWrite(board.hatScl, LOW); delayMicroseconds(5); digitalWrite(board.hatScl, HIGH); delayMicroseconds(5);
+    }
+    pinMode(board.hatScl, INPUT_PULLUP);
+    Serial.printf("boot: the HAT's SDA was held low; %s\n", digitalRead(board.hatSda) ? "let go" : "still held");
+  }
+  Wire.begin(board.sda, board.scl);
+  // The AXP192 as M5Stack's AXP192::begin() starts it: LDO2 and LDO3 at 3.0 V, every ADC on, the cell charged to 4.2 V at
+  // 100 mA, EXTEN, LDO2, LDO3 and DCDC1 on, its key 128 ms to start and 4 s to switch off, the RTC's cell at 3.3 V, GPIO0
+  // an LDO (the microphone's power), VBUS's hold limit off, its temperature protection, the RTC cell's charge, and the
+  // cell's detection.
+  static const uint8_t R[][2] = { {0x28, 0xCC}, {0x82, 0xFF}, {0x33, 0xC0}, {0x36, 0x0C}, {0x91, 0xF0}, {0x90, 0x02},
+                                  {0x30, 0x80}, {0x39, 0xFC}, {0x35, 0xA2}, {0x32, 0x46} };
+  for (auto &w : R) axpWrite(w[0], w[1]);
+  axpWrite(0x12, axpRead(0x12) | 0x4D);
+  delay(50);
+}
+
+void pmuBacklight(bool on) { uint8_t v = axpRead(0x12); axpWrite(0x12, on ? v | 0x04 : v & ~0x04); }   // LDO2
+bool boardPowerOff() { axpWrite(0x32, axpRead(0x32) | 0x80); delay(200); return true; }               // 0x32 bit 7: off
+
 #elif defined(BOARD_CORES3)
 
 // C-75: the M5Stack CoreS3 (and the CoreS3 SE, the same board without a camera). Everything from M5Stack's own sources,
@@ -524,8 +583,10 @@ String speakerPinTry(const String &) { return "SPK only the Fire"; }
 #ifndef BOARD_CORES3
 void coreS3Speaker(bool, int) {}       // C-75: only the CoreS3 has these
 void coreS3Mic() {}
+#ifndef BOARD_STICKC_PLUS              // C-148: the StickC-Plus has its AXP192's backlight and off (above)
 void pmuBacklight(bool) {}
 #ifndef BOARD_DIAL
 bool boardPowerOff() { return watchPowerOff(); }   // the watch: its PMU (watch.cpp); elsewhere false, and a deep sleep
+#endif
 #endif
 #endif

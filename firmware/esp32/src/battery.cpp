@@ -132,6 +132,15 @@ bool batteryRead(Battery &b) {
     b.usb = vin > 4300; b.charging = b.usb && mv < 4150; b.full = b.usb && mv >= 4150;
     return b.present;
   }
+  if (board.power == Power::PmuAXP192) {         // C-148: the StickC-Plus's AXP192 (0x34): the cell's 12 bits at 0x78-0x79,
+    uint8_t w[2], st0, st1;                      // 1.1 mV each (M5Stack's GetBatVoltage); 0x00 bit 7 ACIN, bit 5 VBUS;
+    if (!readBytes(0x34, 0x78, w, 2) || !readBytes(0x34, 0x00, &st0, 1) || !readBytes(0x34, 0x01, &st1, 1)) { b.present = false; return false; }
+    int mv = ((w[0] << 4) | (w[1] & 0x0F)) * 11 / 10;   // 0x01 bit 6 charging, bit 5 a cell there (its datasheet)
+    b.present = (st1 & 0x20) && mv > 2500;
+    b.mv = mv; b.percent = percentFromMv(mv);
+    b.usb = st0 & 0xA0; b.charging = b.usb && (st1 & 0x40); b.full = b.usb && b.present && !b.charging;
+    return b.present;
+  }
   if (board.power == Power::PmuIP5306) {         // C-75: the M5GO and Fire's IP5306 (0x75), read as M5Unified reads it
     uint8_t r78, r70, r71;
     if (!readBytes(0x75, 0x78, &r78, 1)) { b.present = false; return false; }

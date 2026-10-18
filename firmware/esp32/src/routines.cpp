@@ -19,6 +19,7 @@ String runWhatRemote();                   // FLARE: radios.cpp
 String runListenFm(); String runStaticSynth(); String runListenAm(); String runLightning();   // C-69, C-70: radio.cpp
 String runNearby(); String runCallOut();   // C-72: MESH (LoRa), lora.cpp
 #include "broadcast.h"                    // C-134: CHORUS, broadcast.cpp
+String runSeeTheHeat(); String runWarmestThing(); String runSomeonesHere(); String runHowWarm();   // C-148: GLOW, glow.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
@@ -32,6 +33,8 @@ static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LI
 static const Routine LONGWAVE_ROUTINES[]   = { { "WHAT'S ON THE AIR", runWhatsOnTheAir }, { "FIND IT", runFindIt } };   // receive only, DRAFT
 static const Routine MESH_ROUTINES[]       = { { "NEARBY", runNearby }, { "CALL OUT", runCallOut } };   // C-72: LoRa, DRAFT (MESH was held for it, PLAN 10)
 static const Routine CHORUS_ROUTINES[]     = { { "TO EVERY DAEMON", runToEveryone }, { "WHAT CAME", runWhatCame } };   // C-134, DRAFT
+static const Routine GLOW_ROUTINES[]      = { { "SEE THE HEAT", runSeeTheHeat }, { "WARMEST THING", runWarmestThing },
+                                               { "SOMEONE'S HERE", runSomeonesHere }, { "HOW WARM IS THAT", runHowWarm } };   // C-148: the user's names, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
@@ -40,6 +43,7 @@ RoutineType types[10];
 int typeCount = 0;
 void routinesBegin() {
   typeCount = 0;
+  if (board.hatSda >= 0) types[typeCount++] = { "GLOW",  "Thermal",   GLOW_ROUTINES,       4 };   // C-148: the board's own sense first; DRAFT
   if (board.ir)     types[typeCount++] = { "FLARE",      "IR",        FLARE_ROUTINES,      7 };
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
@@ -55,7 +59,8 @@ void routinesBegin() {
 
 // C-68: GAME ROUTINES. A board with no radios of its own (the plain T-Embed; the SI4732 until its own types, C-69) opens
 // the party from ROUTINES, with its Bluetooth and Wi-Fi a row below; the CC1101 reaches the same screen as its PARTY type.
-bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732 && board.loraChip == LoraChip::None; }   // the SI4732 has its radio (C-69); LoRa is a radio too (C-72)
+// C-148: a board with a HAT header is not one -- GLOW is a sense of its own, so it opens on the types, GLOW first.
+bool partyFirst() { return !board.ir && !board.cc1101 && !board.nfc && !board.si4732 && board.loraChip == LoraChip::None && board.hatSda < 0; }   // the SI4732 has its radio (C-69); LoRa is a radio too (C-72)
 bool isPartyType(int i) { return i >= 0 && i < typeCount && !strcmp(types[i].name, "PARTY"); }
 int partyRows() { return st.partyN + (partyFirst() ? 1 : 0); }
 // The user, 2026-10-15, asking how WHISPER is reached on the M5GO and the Fire: below the whole party, about seven

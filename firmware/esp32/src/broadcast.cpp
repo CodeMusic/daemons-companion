@@ -224,7 +224,7 @@ void castFromState(JsonArrayConst casts) {
 // (+1, -1) and a press (1) or back (-1). The dial or the trackball; the M5GO's and the Pro's A and C (held A: back); a
 // two-button board's side (a tap turns, held goes back); the touch screen (a swipe turns, a tap presses, a hold goes
 // back); and the press, held half a second, goes back.
-static void routineInput(int &step, int &ev) {
+void routineInput(int &step, int &ev) {
   readDeck();
   step = dialStep(); ev = 0;
   int g = watchGesture();

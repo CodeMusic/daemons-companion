@@ -108,6 +108,7 @@ extern bool sideWas;
 void inputBegin();
 void readEncoder();
 int dialStep();                           // one detent, read and spent (a routine tuning a radio)
+void routineInput(int &step, int &ev);    // C-134 (broadcast.cpp): every board's controls inside a routine; C-148 GLOW too
 void readKey();
 void turn(int step);
 void press();

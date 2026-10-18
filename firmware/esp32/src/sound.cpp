@@ -332,6 +332,7 @@ void soundRoutine(const char *type) {
   else if (!strcmp(type, "WHISPER"))    { t = TUNE_WHISPER;    dance = DANCE_GLIMMER; }
   else if (!strcmp(type, "TOUCHSTONE")) { t = TUNE_TOUCHSTONE; dance = DANCE_PULSE; }
   else if (!strcmp(type, "LONGWAVE"))   { t = TUNE_LONGWAVE;   dance = DANCE_WAVE; }
+  else if (!strcmp(type, "GLOW"))       { t = TUNE_GLOW;       dance = DANCE_PULSE; }   // C-148
   play(t, 6, root, dance, 0.8f);
 }
 

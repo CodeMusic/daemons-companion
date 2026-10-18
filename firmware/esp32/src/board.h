@@ -5,12 +5,13 @@
 // The three T-Embeds are one build: they tell themselves apart at start by what answers on I2C (docs/HARDWARE.md).
 // The T-Watch S3 is its own build (env:t-watch-s3, BOARD_TWATCH_S3): its power, screen and input are different. So are
 // the M5StickS3 (env:m5-sticks3, C-74) and the M5Stack CoreS3 (env:m5-cores3, C-75), which shares the watch's watch.cpp,
-// as the M5Stack Dial does (env:m5-dial, C-102).
+// as the M5Stack Dial does (env:m5-dial, C-102). The M5StickC-Plus (env:m5-stickc-plus, C-148) is the StickS3's shape on
+// the ORIGINAL ESP32, with an AXP192 for its power.
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro, TDisplayAmoled, Cardputer, CardputerAdv };   // C-135, C-136   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro, TDisplayAmoled, Cardputer, CardputerAdv, M5StickCPlus };   // C-135, C-136; C-148 the StickC-Plus   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
-enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306, ChargerSY6970 };   // SY6970: C-105
+enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306, ChargerSY6970, PmuAXP192 };   // SY6970: C-105; AXP192: C-148
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
                                                                      // Analog: the M5GO base's, read by the ADC
 enum class Panel { ST7789, ILI9342C, ILI9342E, ST7796 };       // C-75: the CoreS3 has shipped with either ILI9342; C-105 the T-Display-S3 Pro's ST7796
@@ -53,6 +54,9 @@ struct Board {
   // C-136: the lowest band its LoRa antenna is made for (the Cardputer ADV's Cap LoRa-1262: 868-923 MHz) -- a lower band
   // chosen on the site is taken as 868 on this board, so a mixed set of boards still hears what it can
   int loraMinMhz = 0;
+  // C-148: a HAT's own I2C pins, where the board has a HAT header (the StickC-Plus: SDA 0, SCL 26) -- the Thermal HAT's
+  // MLX90640 is asked there (glow.cpp), on the second I2C port, only while a GLOW routine runs
+  int hatSda = -1, hatScl = -1;
   // C-74, C-75: the speaker and the microphone share one set of clocks, so the speaker lets go while it listens
   bool sharedClocks() const { return mic == Mic::Es8311 || mic == Mic::Es7210Shared; }
   bool hasSideKey() const { return sideKey >= 0; }

@@ -14,6 +14,7 @@ static const Note TUNE_FLARE[]      = { {0, 60}, {4, 60}, {7, 60}, {12, 60}, {16
 static const Note TUNE_WHISPER[]    = { {12, 110}, {7, 110}, {9, 110}, {4, 110}, {7, 110}, {0, 200} }; // said softly, settling
 static const Note TUNE_TOUCHSTONE[] = { {0, 70}, {127, 50}, {0, 70}, {7, 90}, {127, 40}, {12, 160} }; // a knock, and an answer
 static const Note TUNE_LONGWAVE[]   = { {0, 120}, {-5, 120}, {0, 120}, {-5, 120}, {0, 120}, {7, 200} }; // a long slow wave
+static const Note TUNE_GLOW[]       = { {0, 90}, {3, 90}, {7, 120}, {10, 120}, {7, 120}, {12, 260} };  // warmth rising, then held (C-148)
 static const Note TUNE_UPLINK[]     = { {0, 70}, {7, 70}, {12, 70}, {7, 70}, {14, 70}, {12, 160} };   // looking, finding
 
 // C-41: the title theme's opening phrase (mus_title.mid, its first track: C#4 held, up to G#4, then F#-D#-F#, onto a

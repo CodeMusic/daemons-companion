@@ -16,13 +16,14 @@ static const DeviceShape DEVICE_SHAPES_6[] = { {0, 90, 320, 140, 15, 0x141518}, 
 static const DeviceShape DEVICE_SHAPES_7[] = { {10, 50, 300, 220, 20, 0xD9DBD8}, {30, 70, 130, 80, 5, 0x22313F}, {36, 76, 118, 68, 0, 0x46A8E0}, {180, 70, 110, 50, 10, 0xF08A24}, {30, 165, 22, 22, 5, 0x2B2D32}, {59, 165, 22, 22, 5, 0x2B2D32}, {88, 165, 22, 22, 5, 0x2B2D32}, {117, 165, 22, 22, 5, 0x2B2D32}, {146, 165, 22, 22, 5, 0x2B2D32}, {175, 165, 22, 22, 5, 0x2B2D32}, {204, 165, 22, 22, 5, 0x2B2D32}, {233, 165, 22, 22, 5, 0x2B2D32}, {262, 165, 22, 22, 5, 0x2B2D32}, {30, 194, 22, 22, 5, 0x2B2D32}, {59, 194, 22, 22, 5, 0x2B2D32}, {88, 194, 22, 22, 5, 0x2B2D32}, {117, 194, 22, 22, 5, 0x2B2D32}, {146, 194, 22, 22, 5, 0x2B2D32}, {175, 194, 22, 22, 5, 0x2B2D32}, {204, 194, 22, 22, 5, 0x2B2D32}, {233, 194, 22, 22, 5, 0x2B2D32}, {262, 194, 22, 22, 5, 0x2B2D32}, {30, 223, 22, 22, 5, 0x2B2D32}, {59, 223, 22, 22, 5, 0x2B2D32}, {88, 223, 22, 22, 5, 0x2B2D32}, {117, 223, 22, 22, 5, 0x2B2D32}, {146, 223, 22, 22, 5, 0x2B2D32}, {175, 223, 22, 22, 5, 0x2B2D32}, {204, 223, 22, 22, 5, 0x2B2D32}, {233, 223, 22, 22, 5, 0x2B2D32}, {262, 223, 22, 22, 5, 0x2B2D32} };
 static const DeviceShape DEVICE_SHAPES_8[] = { {270, 0, 15, 60, 0, 0xB8BDC4}, {10, 50, 300, 220, 20, 0x34363B}, {30, 70, 130, 80, 5, 0x22313F}, {36, 76, 118, 68, 0, 0x46A8E0}, {180, 70, 110, 50, 10, 0xF08A24}, {30, 165, 22, 22, 5, 0x1A1B1E}, {59, 165, 22, 22, 5, 0x1A1B1E}, {88, 165, 22, 22, 5, 0x1A1B1E}, {117, 165, 22, 22, 5, 0x1A1B1E}, {146, 165, 22, 22, 5, 0x1A1B1E}, {175, 165, 22, 22, 5, 0x1A1B1E}, {204, 165, 22, 22, 5, 0x1A1B1E}, {233, 165, 22, 22, 5, 0x1A1B1E}, {262, 165, 22, 22, 5, 0x1A1B1E}, {30, 194, 22, 22, 5, 0x1A1B1E}, {59, 194, 22, 22, 5, 0x1A1B1E}, {88, 194, 22, 22, 5, 0x1A1B1E}, {117, 194, 22, 22, 5, 0x1A1B1E}, {146, 194, 22, 22, 5, 0x1A1B1E}, {175, 194, 22, 22, 5, 0x1A1B1E}, {204, 194, 22, 22, 5, 0x1A1B1E}, {233, 194, 22, 22, 5, 0x1A1B1E}, {262, 194, 22, 22, 5, 0x1A1B1E}, {30, 223, 22, 22, 5, 0x1A1B1E}, {59, 223, 22, 22, 5, 0x1A1B1E}, {88, 223, 22, 22, 5, 0x1A1B1E}, {117, 223, 22, 22, 5, 0x1A1B1E}, {146, 223, 22, 22, 5, 0x1A1B1E}, {175, 223, 22, 22, 5, 0x1A1B1E}, {204, 223, 22, 22, 5, 0x1A1B1E}, {233, 223, 22, 22, 5, 0x1A1B1E}, {262, 223, 22, 22, 5, 0x1A1B1E} };
 static const DeviceShape DEVICE_SHAPES_9[] = { {100, 20, 120, 280, 30, 0x2E3035}, {115, 40, 90, 140, 10, 0x22313F}, {125, 50, 70, 120, 5, 0x46A8E0}, {130, 210, 60, 50, 15, 0x1A1B1E}, {220, 90, 15, 60, 5, 0x2F7FE0} };
-static const DeviceShape DEVICE_SHAPES_10[] = { {30, 30, 260, 260, 30, 0x2B2D32}, {60, 80, 200, 160, 10, 0x22313F}, {70, 90, 180, 140, 5, 0x46A8E0}, {150, 45, 20, 20, 10, 0x0C0C0E} };
-static const DeviceShape DEVICE_SHAPES_11[] = { {20, 20, 280, 280, 40, 0xD63A2F}, {40, 40, 240, 240, 30, 0x3A3C42}, {60, 60, 200, 150, 10, 0x22313F}, {70, 70, 180, 130, 5, 0x46A8E0}, {75, 230, 40, 20, 10, 0x8B8F97}, {140, 230, 40, 20, 10, 0x8B8F97}, {205, 230, 40, 20, 10, 0x8B8F97} };
-static const DeviceShape DEVICE_SHAPES_12[] = { {20, 20, 280, 280, 40, 0xE4E4E2}, {26, 80, 12, 160, 6, 0xFF9A3C}, {282, 80, 12, 160, 6, 0xFF9A3C}, {40, 40, 240, 240, 30, 0x3A3C42}, {60, 60, 200, 150, 10, 0x22313F}, {70, 70, 180, 130, 5, 0x46A8E0}, {75, 230, 40, 20, 10, 0x8B8F97}, {140, 230, 40, 20, 10, 0x8B8F97}, {205, 230, 40, 20, 10, 0x8B8F97} };
-static const DeviceShape DEVICE_SHAPES_13[] = { {10, 10, 300, 300, 150, 0xE6E6E4}, {35, 35, 250, 250, 125, 0xF08A24}, {65, 65, 190, 190, 95, 0x22313F}, {75, 75, 170, 170, 85, 0x46A8E0} };
-static const DeviceShape DEVICE_SHAPES_14[] = { {0, 50, 320, 220, 30, 0x2A2C31}, {20, 70, 280, 180, 10, 0x22313F}, {26, 76, 268, 168, 5, 0x46A8E0}, {155, 55, 10, 10, 5, 0x0C0C0E} };
-static const DeviceShape DEVICE_SHAPES_15[] = { {10, 200, 300, 110, 20, 0x2EC4D8}, {30, 20, 260, 240, 40, 0xEFEFED}, {55, 45, 210, 155, 10, 0x22313F}, {65, 55, 190, 135, 5, 0x46A8E0}, {149, 217, 22, 22, 11, 0xE8463A}, {154, 222, 12, 12, 6, 0xEFEFED}, {86, 29, 7, 7, 4, 0x55585E}, {226, 29, 7, 7, 4, 0x55585E} };
-static const DeviceShape DEVICE_SHAPES_16[] = { {90, 10, 140, 300, 40, 0x1B1C20}, {100, 25, 120, 270, 30, 0x46A8E0}, {120, 60, 80, 80, 20, 0xFFFFFF}, {135, 75, 50, 50, 10, 0x46A8E0}, {140, 35, 40, 10, 5, 0x1B1C20} };
+static const DeviceShape DEVICE_SHAPES_10[] = { {100, 20, 120, 280, 30, 0xF26B21}, {115, 40, 90, 140, 10, 0x22313F}, {125, 50, 70, 120, 5, 0x46A8E0}, {125, 205, 70, 60, 15, 0xD4561A}, {220, 90, 15, 60, 5, 0xD4561A}, {85, 70, 15, 40, 5, 0xD4561A} };
+static const DeviceShape DEVICE_SHAPES_11[] = { {30, 30, 260, 260, 30, 0x2B2D32}, {60, 80, 200, 160, 10, 0x22313F}, {70, 90, 180, 140, 5, 0x46A8E0}, {150, 45, 20, 20, 10, 0x0C0C0E} };
+static const DeviceShape DEVICE_SHAPES_12[] = { {20, 20, 280, 280, 40, 0xD63A2F}, {40, 40, 240, 240, 30, 0x3A3C42}, {60, 60, 200, 150, 10, 0x22313F}, {70, 70, 180, 130, 5, 0x46A8E0}, {75, 230, 40, 20, 10, 0x8B8F97}, {140, 230, 40, 20, 10, 0x8B8F97}, {205, 230, 40, 20, 10, 0x8B8F97} };
+static const DeviceShape DEVICE_SHAPES_13[] = { {20, 20, 280, 280, 40, 0xE4E4E2}, {26, 80, 12, 160, 6, 0xFF9A3C}, {282, 80, 12, 160, 6, 0xFF9A3C}, {40, 40, 240, 240, 30, 0x3A3C42}, {60, 60, 200, 150, 10, 0x22313F}, {70, 70, 180, 130, 5, 0x46A8E0}, {75, 230, 40, 20, 10, 0x8B8F97}, {140, 230, 40, 20, 10, 0x8B8F97}, {205, 230, 40, 20, 10, 0x8B8F97} };
+static const DeviceShape DEVICE_SHAPES_14[] = { {10, 10, 300, 300, 150, 0xE6E6E4}, {35, 35, 250, 250, 125, 0xF08A24}, {65, 65, 190, 190, 95, 0x22313F}, {75, 75, 170, 170, 85, 0x46A8E0} };
+static const DeviceShape DEVICE_SHAPES_15[] = { {0, 50, 320, 220, 30, 0x2A2C31}, {20, 70, 280, 180, 10, 0x22313F}, {26, 76, 268, 168, 5, 0x46A8E0}, {155, 55, 10, 10, 5, 0x0C0C0E} };
+static const DeviceShape DEVICE_SHAPES_16[] = { {10, 200, 300, 110, 20, 0x2EC4D8}, {30, 20, 260, 240, 40, 0xEFEFED}, {55, 45, 210, 155, 10, 0x22313F}, {65, 55, 190, 135, 5, 0x46A8E0}, {149, 217, 22, 22, 11, 0xE8463A}, {154, 222, 12, 12, 6, 0xEFEFED}, {86, 29, 7, 7, 4, 0x55585E}, {226, 29, 7, 7, 4, 0x55585E} };
+static const DeviceShape DEVICE_SHAPES_17[] = { {90, 10, 140, 300, 40, 0x1B1C20}, {100, 25, 120, 270, 30, 0x46A8E0}, {120, 60, 80, 80, 20, 0xFFFFFF}, {135, 75, 50, 50, 10, 0x46A8E0}, {140, 35, 40, 10, 5, 0x1B1C20} };
 static const DeviceLook DEVICE_LOOKS[] = {
   { "t-embed-cc1101", "LilyGO", "T-Embed CC1101", DEVICE_SHAPES_0, 8 },
   { "t-embed", "LilyGO", "T-Embed", DEVICE_SHAPES_1, 6 },
@@ -34,14 +35,15 @@ static const DeviceLook DEVICE_LOOKS[] = {
   { "m5-cardputer", "M5Stack", "Cardputer", DEVICE_SHAPES_7, 31 },
   { "m5-cardputer-adv", "M5Stack", "Cardputer ADV", DEVICE_SHAPES_8, 32 },
   { "m5-sticks3", "M5Stack", "StickS3", DEVICE_SHAPES_9, 5 },
-  { "m5-cores3", "M5Stack", "CoreS3", DEVICE_SHAPES_10, 4 },
-  { "m5-fire", "M5Stack", "Fire", DEVICE_SHAPES_11, 7 },
-  { "m5go", "M5Stack", "M5GO", DEVICE_SHAPES_12, 9 },
-  { "m5-dial", "M5Stack", "Dial", DEVICE_SHAPES_13, 4 },
-  { "m5-tab5", "M5Stack", "Tab5", DEVICE_SHAPES_14, 4 },
-  { "esp32-s3-box-3", "Espressif", "ESP32-S3-BOX-3", DEVICE_SHAPES_15, 8 },
-  { "iphone-widget", "This phone", "This phone's widget", DEVICE_SHAPES_16, 5 },
+  { "m5-stickc-plus", "M5Stack", "StickC-Plus", DEVICE_SHAPES_10, 6 },
+  { "m5-cores3", "M5Stack", "CoreS3", DEVICE_SHAPES_11, 4 },
+  { "m5-fire", "M5Stack", "Fire", DEVICE_SHAPES_12, 7 },
+  { "m5go", "M5Stack", "M5GO", DEVICE_SHAPES_13, 9 },
+  { "m5-dial", "M5Stack", "Dial", DEVICE_SHAPES_14, 4 },
+  { "m5-tab5", "M5Stack", "Tab5", DEVICE_SHAPES_15, 4 },
+  { "esp32-s3-box-3", "Espressif", "ESP32-S3-BOX-3", DEVICE_SHAPES_16, 8 },
+  { "iphone-widget", "This phone", "This phone's widget", DEVICE_SHAPES_17, 5 },
 };
-static const int DEVICE_LOOK_N = 17;
+static const int DEVICE_LOOK_N = 18;
 static const char *const DEVICE_ALIASES[][2] = { { "t-deck-plus", "t-deck" } };
 static const int DEVICE_ALIAS_N = 1;

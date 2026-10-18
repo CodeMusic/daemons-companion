@@ -16,6 +16,7 @@
 | **the phone** | -- | touch | its mic | its speaker | -- | -- | -- | Wi-Fi at home, the relay away | runs |
 | **the phone's widget** (`iphone-widget-…`) | home screen, small or medium | FEED, WATER, TRAIN | -- | -- | -- | -- | -- | as the phone: Wi-Fi at home, the relay away | built (C-100) |
 | M5 StickS3, Cores, Tab5 | various | various | yes | yes | -- | -- | PMU | Wi-Fi | C-74, C-75 |
+| **M5StickC-Plus 1.1** | 240x135 | two buttons | PDM mic | buzzer (tunes only) | -- | **the Thermal HAT: GLOW** | AXP192 | Wi-Fi, USB cable, phone | runs (C-148) |
 | **ESP32-S3-BOX-3** (Espressif) | 320x240 touch | touch | two mics (ES7210) | speaker (ES8311) | -- | -- | on its dock | Wi-Fi; **runs ESPHome**: Home Assistant's voice assistant, its screen the daemon's face (`firmware/box3/`) | built (C-138) |
 | **LLM630** (behind a T-Embed) | none | none | none | none | -- | -- | own gauge | UART to its T-Embed | C-76: the offline brain, not a device of its own |
 

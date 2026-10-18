@@ -84,6 +84,54 @@ on it wakes). The speaker lets go of the codec's clocks while the microphone lis
 screen's power through the M5PM1); github.com/m5stack/M5Unified src/M5Unified.inl (the amplifier and the ES8311's
 speaker and microphone writes) and src/utility/power/M5PM1_Class.inl (its registers).*
 
+## The M5StickC-Plus 1.1 and its Thermal HAT (C-148)
+
+**The original ESP32 again**: an **ESP32-PICO-D4, 4 MB of flash, no PSRAM** (the user's: MAC 64:b7:08:80:cf:dc, chip
+revision 1.0, read by esptool 2026-10-17). Its own build, `env:m5-stickc-plus` (`BOARD_STICKC_PLUS`): PlatformIO's
+`m5stick-c` board, `huge_app` (no OTA), and none of the Fire's PSRAM flags. **USB is a USB-serial chip** with FTDI's id
+(0403, "M5stack" by Hades2001): `/dev/cu.usbserial-<serial>`. **It holds only 115200 baud** -- every faster speed tried,
+230400 to 1500000, lost the line -- so the upload is set to 115200 (a minute and a half).
+
+**ST7789v2, 135x240** (MOSI 15, SCK 13, DC 23, CS 5, RST 18; offsets 52/40, inverted, as the StickS3's), on its side as
+240x135 (rotation 1, as M5Stack's own thermal example turns it), in 16-bit colour (64 KB, which fits without PSRAM).
+**Button A 37 is the face, B 39 the side**, pulled up on the board -- the StickS3's two buttons, read the same way: the
+face presses (held at home it talks), the side turns (a tap), goes back (held half a second) and sleeps (two seconds).
+A **passive buzzer on 2** plays the tunes (LEDC, as the Dial's); no voice. **An SPM1423 PDM microphone, CLK 0 / DATA 34**,
+powered by the AXP192's GPIO0 as an LDO. The **red LED on 10** (lit low) is held dark. **IR out on 9** only -- no receiver,
+and `radios.cpp`'s IR pins are the T-Embed's -- so no FLARE yet.
+
+**AXP192 (0x34) on SDA 21 / SCL 22** (the MPU6886 at 0x68 and the BM8563 clock at 0x51 share it, unused): started as
+M5Stack's `AXP192::begin()` starts it -- LDO2 (the backlight) and LDO3 (the screen) at 3.0 V, the cell charged to 4.2 V at
+100 mA, EXTEN, LDO2, LDO3 and DCDC1 on, GPIO0 an LDO. The backlight is LDO2 (`0x12` bit 2); the cell is 12 bits at
+`0x78`-`0x79`, 1.1 mV each; `0x00` bit 7 / bit 5 say ACIN / VBUS, `0x01` bit 6 charging and bit 5 a cell there. **Off is
+`0x32` bit 7**, and its power button (on the AXP192, not a GPIO) starts it again; held 4 s it switches off by itself.
+
+**The HAT header's I2C is SDA 0 / SCL 26** (M5Stack's THERMAL_MLX90640 example: `Wire.begin(0, 26, 400000)`), on the
+second I2C port (`Wire1`). **The Thermal HAT (U062)** is an **MLX90640** -- 32x24 pixels across 110x75 degrees, -40 to
+300 C, +-1.5 C, I2C 0x33, 3.3 V, 23 mA -- read with Melexis's own driver (`lib/mlx90640`, unchanged, Apache 2.0) in chess
+mode at 8 subpages a second, four whole pictures. Its calibration (`MLX90640_ExtractParameters`) keeps three 768-float
+tables on the stack, more than the loop's 8 KB leaves inside a routine, so it runs in a task of its own. **0 is also the
+microphone's clock**: the HAT's port is up only while a GLOW routine runs and lets go of the pin after, so talk and
+GLOW take turns. The picture is mirrored left to right, as M5Stack's example draws it, and each pixel drawn is half
+itself and half its four neighbours: chess mode's two subpages differ a little, and stretched across a room's few
+degrees that showed as a chessboard (the temperatures shown stay the pixels' own).
+
+**Two things that cost a night (2026-10-17), both from code written for the S3s:**
+- **The firmware hung before printing a word.** Adafruit's PN532 object, made before `setup()`, sets its pins' modes,
+  and its IRQ pin, 17, is a line of the PICO-D4's own flash: taken as an input, the flash stopped. IRrecv's pin, 1, is the
+  UART's TX here. The stick has neither NFC nor an IR receiver, so it gives the PN532 two harmless input-only pins (36,
+  38) and IRrecv is the M5GO's stub (`src/radios.cpp`).
+- **Every reset came up in the ROM's download mode** (`boot:0x3`, "waiting for download"): the HAT's MLX90640 was holding
+  SDA -- G0, a strapping pin -- low. M5Stack's own firmware had been reading it when esptool reset the chip to flash it,
+  and with SCL left floating afterwards the sensor can be clocked into it again. Now both lines are pulled up from the
+  start and whenever GLOW is not running, and a start that finds SDA held clocks SCL until it lets go. But the ROM reads
+  G0 before any of that: a reset in the middle of a GLOW read can still strand it. **`firmware/esp32/hatfree.py`**
+  clocks it free from the ROM's loader and starts the firmware; by hand, hold the power button six seconds, then press it.
+
+*Sources: docs.m5stack.com/en/core/StickC-Plus (the pins); github.com/m5stack/M5StickC-Plus src/AXP192.cpp and
+examples/Hat/THERMAL_MLX90640 (the AXP192's start, the HAT's pins and its picture); docs.m5stack.com/en/products/sku/U062
+and shop.m5stack.com (the HAT); github.com/melexis/mlx90640-library (the driver); PlatformIO's board m5stick-c.json.*
+
 ## The M5Stack CoreS3 (C-75)
 
 ESP32-S3: **16 MB flash, 8 MB quad PSRAM** (PlatformIO's own `m5stack-cores3` board; not the octal PSRAM of the

@@ -115,6 +115,15 @@ DEVICES = {
         r(13, 21, 6, 5, "#1a1b1e", 1.5),
         r(22, 9, 1.5, 6, "#2f7fe0", 0.5),
     ]),
+    # the StickC-Plus (C-148): the StickS3's shape in orange, the big M5 button under the screen, B on one side and the
+    # power button on the other
+    "m5-stickc-plus": ("M5Stack", "StickC-Plus", [
+        r(10, 2, 12, 28, "#f26b21", 3),
+        r(11.5, 4, 9, 14, GLASS, 1), r(12.5, 5, 7, 12, SCREEN, 0.5),
+        r(12.5, 20.5, 7, 6, "#d4561a", 1.5),
+        r(22, 9, 1.5, 6, "#d4561a", 0.5),
+        r(8.5, 7, 1.5, 4, "#d4561a", 0.5),
+    ]),
     # the CoreS3: a dark square, the screen in its face, the camera above it
     "m5-cores3": ("M5Stack", "CoreS3", [
         r(3, 3, 26, 26, "#2b2d32", 3),

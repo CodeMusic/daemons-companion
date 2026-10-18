@@ -392,8 +392,9 @@ void draw() {
     wrap(partyFirst() ? String("Its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
          : !st.carrying ? String("Your party's routines, as the game plays them. Press to open.")   // C-68, DRAFT
          : st.carrying ? "The radios " + daemonName() + " can use. Press to open."
-                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round ? 2 : 4,
-         board.round ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits
+                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round || H < 160 ? 2 : 4,
+         board.round || H < 160 ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits; C-148 a
+                                                                           // 135-high screen too (it ran into the names)
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     String names;                                            // C-67: this board's own types
     for (int i = 0; i < typeCount; i++) names += String(i ? "  " : "") + types[i].name;

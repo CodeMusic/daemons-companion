@@ -267,6 +267,24 @@ Wi-Fi at home and the relay away.*
 - **Still *Looking...* after the app has opened?** Remove the widget and add it again: a widget kept from an older build
   can stay stuck.
 
+## 20. GLOW: the daemon sees heat (the M5StickC-Plus and its Thermal HAT, C-148)
+
+- Fit the **Thermal HAT** on top of the stick (its window facing out, away from the screen), then switch it on. Flash it
+  once: `./updateCompanion.sh --board m5-stickc-plus`. The **front** button presses; the **side** button turns (a tap),
+  goes back (held) and sleeps (held two seconds).
+- ROUTINES opens on the types, **GLOW (Thermal)** first. Point the top of the stick at things.
+  - **SEE THE HEAT**: the heat, live, black through red to white. **See:** a ring on the warmest spot and an x on the
+    coolest, and both temperatures. Press to stop: it says the warmest and coolest it saw.
+  - **WARMEST THING**: a ring that follows the warmest spot, and its temperature. A mug, a hand, a radiator.
+  - **SOMEONE'S HERE**: five seconds LEARNING THE ROOM -- keep out of its view -- then WATCHING, the room dimmed. Walk
+    into view. **See:** SOMEONE'S HERE, and you in colour. **Hear:** one note. It counts the times someone came.
+  - **HOW WARM IS THAT**: a thermometer at the middle of the view, the cross in the picture.
+- **If the stick will not start** (a black screen after it was reset with the HAT on): hold the power button six
+  seconds, then press it -- the HAT was holding a line the chip reads as it starts. Or from the computer,
+  `python3 firmware/esp32/hatfree.py`.
+- **Tell me** if the picture is the wrong way round (a warm hand on the left showing on the right), how warm a hand reads
+  (about 33-35 C at arm's length), and whether SOMEONE'S HERE notices you across the room. Every word is DRAFT.
+
 ## What to tell me
 
 - Anywhere the screen did not match "See".

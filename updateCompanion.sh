@@ -4,7 +4,7 @@
 #   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
 #   ./updateCompanion.sh --all            ... every board found, without asking which
 #   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet):
-#                                             t-embed, t-watch-s3, t-deck, t-display-pro, m5-sticks3, m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
+#                                             t-embed, t-watch-s3, t-deck, t-display-pro, m5-sticks3, m5-stickc-plus, m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
 #   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)
@@ -54,6 +54,7 @@ env_for() {                     # a board's id -> its build
     t-display-amoled*) echo t-display-amoled ;;   # C-135
     t-display*) echo t-display-pro ;;   # C-105: the T-Display-S3 Pro
     m5-sticks3) echo m5-sticks3 ;;
+    m5-stickc-plus) echo m5-stickc-plus ;;   # C-148: the original ESP32, its own build
     m5-cardputer*) echo m5-cardputer ;;   # C-136: the Cardputer and the ADV, one build
     m5-cores3)  echo m5-cores3 ;;
     m5-dial)    echo m5-dial ;;     # C-102
@@ -72,6 +73,7 @@ BOARDS=(
   "LilyGO|T-Display-S3 Pro|t-display-pro"
   "LilyGO|T-Display-S3 AMOLED 1.91|t-display-amoled"
   "M5Stack|StickS3|m5-sticks3"
+  "M5Stack|StickC-Plus|m5-stickc-plus"
   "M5Stack|Cardputer or Cardputer ADV|m5-cardputer"
   "M5Stack|CoreS3|m5-cores3"
   "M5Stack|M5GO or Fire|m5-core"

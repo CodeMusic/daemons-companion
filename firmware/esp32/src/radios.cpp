@@ -21,7 +21,15 @@ void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int 
 #include "sound.h"
 
 // LilyGO's pin map (examples/utilities.h): IR out and in, the PN532 on I2C with its IRQ and reset.
+#ifdef BOARD_STICKC_PLUS
+// C-148: the StickC-Plus has no NFC, and its ESP32-PICO-D4's own flash is wired to 17: the PN532's object, made before
+// setup(), sets both its pins' modes, and 17 taken as an input stopped the flash -- the board hung before it printed a
+// word. It is never used there, so it is given two input-only pins it can do nothing to (36 and 38, both free; 38 as
+// an output only logs that it cannot be one).
+static const int PIN_IR_TX = 2, PIN_IR_RX = 1, PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 36, PIN_NFC_RST = 38;
+#else
 static const int PIN_IR_TX = 2, PIN_IR_RX = 1, PIN_SDA = 8, PIN_SCL = 18, PIN_NFC_IRQ = 17, PIN_NFC_RST = 45;
+#endif
 
 // Waits up to `ms`, a little at a time; false if the top button gave up first.
 static bool waitALittle(uint32_t ms) {
@@ -347,9 +355,10 @@ String runReadMyTag() {
 // A REMOTE is three buttons -- POWER, VOLUME UP, VOLUME DOWN -- taught together ("press POWER: ARTSAI is listening"),
 // or added from the site by brand (a brand's three codes are known once its POWER is). Up to six are kept in the
 // board's flash; one is chosen, and FLARE's buttons send from it. They belong to the board -- the daemons share them.
-#ifdef BOARD_M5CORE
+#if defined(BOARD_M5CORE) || defined(BOARD_STICKC_PLUS)
 // C-75: the M5GO and Fire have no IR receiver (board.ir is false, so nothing here runs on them), and IRrecv's interrupt
-// handler is instruction RAM the original ESP32 has none of to spare.
+// handler is instruction RAM the original ESP32 has none of to spare. C-148: nor the StickC-Plus -- where PIN_IR_RX, 1, is
+// the UART's TX: IRrecv took the pin as it was made, before setup(), and the board ran with its cable silent.
 struct NoIrIn { void enableIRIn() {} void disableIRIn() {} bool decode(decode_results *) { return false; } void resume() {} };
 static NoIrIn irIn;
 #else
@@ -562,6 +571,7 @@ String runVolumeDown() { return sendButton(2); }
 
 // C-34: one code the site is trying (a brand's POWER), sent once.
 String runFlareCode(const String &protocol, uint64_t value, uint16_t bits, uint16_t repeat, bool) {
+  if (!board.ir) return "This board has no IR.";   // C-148: and PIN_IR_TX, 2, is the StickC-Plus's buzzer; DRAFT
   decode_type_t type = strToDecodeType(protocol.c_str());
   if (type == UNKNOWN) return "Could not send: this board does not know the protocol " + protocol + ".";
   irOut.begin();

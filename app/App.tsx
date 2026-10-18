@@ -23,6 +23,7 @@ import { ProfileScreen } from "./screens/You";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import { SHOWN_TABS, TABS, Today } from "./types";
 import { InkContext, onColour, Stuck } from "./ui";
+import { voiceFor } from "./tuneSound";
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void }) {
   const strip = useRef<any>(null);
@@ -65,7 +66,8 @@ function Shell() {
   const [today, setToday] = useState<Today | null>(null);
   const [error, setError] = useState("");
   const reload = useCallback(() => {
-    api<Today>("/api/today").then(setToday).catch((e) => setError(`${e.message} -- is the server running? (./bindCompanion.sh)`));
+    api<Today>("/api/today").then((t) => { setToday(t); voiceFor(t.edition); })   // T-425: the save's own instrument
+      .catch((e) => setError(`${e.message} -- is the server running? (./bindCompanion.sh)`));
   }, []);
   useEffect(reload, [reload]);
   // C-62: keep everything on the phone each time the app opens and reaches the companion; redraw when it goes away

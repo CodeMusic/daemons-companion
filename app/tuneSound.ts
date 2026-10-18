@@ -3,7 +3,7 @@
 // firmware/common/tunes.h by firmware/common/tunes.py -- never a copy of our own), on the day's note, on the square wave
 // they play. A file in the cache on the phone; a data URI on the site.
 import { Platform } from "react-native";
-import { sampledWav, type Instrument } from "./instrument";
+import { sampledWav, wavPcm, type Instrument } from "./instrument";
 import { wav } from "./squareWave";
 
 const TUNES: { tunes: Record<string, [number, number][]>; wakeBase: number } = require("../server/data/tunes.json");
@@ -23,6 +23,27 @@ export const soundLevel = (s: Hearing = mine) => (s?.sound === false ? 0 : Math.
 // wherever they cannot be, the boards' square wave on the same notes
 let voice: { name: string; pcm: Int16Array; ins: Instrument } | null = null;
 export const playWith = (v: typeof voice) => { voice = v; };
+// the instrument for a save's edition -- the harp for CONTENT, the flute for CONTEXT (server/data/sounds/, DAEMONS' own,
+// bundled with the app, so it plays away and hosting alone too); asked again for another edition, it changes
+const SOUNDS: Record<string, Instrument & { file: string; edition: string }> = require("../server/data/sounds/instruments.json");
+const WAVS: Record<string, number> = { harp: require("../server/data/sounds/harp.wav"), flute: require("../server/data/sounds/flute.wav") };
+let loading = "";
+export async function voiceFor(edition: string | null | undefined) {
+  const name = Object.keys(WAVS).find((n) => SOUNDS[n]?.edition === edition) ?? "harp";
+  if (voice?.name === name || loading === name) return;
+  loading = name;
+  try {
+    const { Asset }: typeof import("expo-asset") = require("expo-asset");
+    const a = Asset.fromModule(WAVS[name]);
+    await a.downloadAsync();
+    const uri = a.localUri ?? a.uri;
+    const bytes = Platform.OS === "web" ? new Uint8Array(await (await fetch(uri)).arrayBuffer())
+      : new Uint8Array(await new (require("expo-file-system") as typeof import("expo-file-system")).File(uri).arrayBuffer());
+    const pcm = wavPcm(bytes);
+    if (pcm.length) playWith({ name, pcm, ins: SOUNDS[name] });
+  } catch { /* the square wave, then */ }
+  finally { loading = ""; }
+}
 export const voiceName = () => voice?.name ?? "square";
 // any tune's bytes in the voice playing now (PLAY's songs too, songSound.ts)
 export const tuneWav = (notes: [number, number][], root: number, level = 1) =>

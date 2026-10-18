@@ -7,7 +7,7 @@
 import { pcmWav } from "./squareWave";
 
 export interface Instrument {
-  sample_rate: number; root_midi: number; loop_start: number; loop_end: number;
+  sample_rate: number; root_midi: number; loop_start: number | null; loop_end: number | null;   // null: no loop, played out
   attack_ms: number; decay_ms: number; sustain: number; release_ms: number;
 }
 const RATE = 22050;
@@ -17,11 +17,11 @@ function note(pcm: Int16Array, ins: Instrument, midi: number, ms: number): Float
   const held = Math.round((RATE * ms) / 1000), rel = Math.round((RATE * ins.release_ms) / 1000);
   const att = Math.max(1, Math.round((RATE * ins.attack_ms) / 1000)), dec = Math.max(1, Math.round((RATE * ins.decay_ms) / 1000));
   const step = 2 ** ((midi - ins.root_midi) / 12) * (ins.sample_rate / RATE);
-  const loops = ins.loop_end > ins.loop_start + 1 && ins.loop_end <= pcm.length;
+  const ls = ins.loop_start ?? 0, le = ins.loop_end ?? 0, loops = ins.loop_start !== null && le > ls + 1 && le <= pcm.length;
   const out = new Float32Array(held + rel);
   let pos = 0, level = 0;
   for (let i = 0; i < out.length; i++) {
-    if (pos >= (loops ? ins.loop_end : pcm.length - 1)) { if (!loops) break; pos -= ins.loop_end - ins.loop_start; }
+    if (pos >= (loops ? le : pcm.length - 1)) { if (!loops) break; pos -= le - ls; }
     const k = Math.floor(pos), f = pos - k, a = pcm[k] / 32768, b = pcm[Math.min(k + 1, pcm.length - 1)] / 32768;
     if (i < held) level = i < att ? i / att : i < att + dec ? 1 - (1 - ins.sustain) * ((i - att) / dec) : ins.sustain;
     const env = i < held ? level : level * (1 - (i - held) / Math.max(1, rel));

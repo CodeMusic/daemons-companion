@@ -1,5 +1,5 @@
 {
- "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. kind song (T-417, the SONGBOOK): drawn by the game as coloured note heads on a staff; song names the tune, key the major key it counts in, notes the motif as heard (C4 middle C, sharps or flats), heard the flag set once it is heard at its place (learned is flag). seen: the flag set once the page is opened in the game (unread until then, T-403); key_colours: the twelve note colours C..B and outline the notes' outline, as the GBA shows them (T-417); place: where it was found; link: the song or post its QR code opens (T-402).",
+ "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. kind song (T-417, the SONGBOOK): drawn by the game as coloured note heads on a staff; song names the tune, key the major key it counts in, notes the motif as heard (C4 middle C, sharps or flats), frames each note's length at 60 fps as the game plays it when heard, heard the flag set once it is heard at its place (learned is flag). seen: the flag set once the page is opened in the game (unread until then, T-403); key_colours: the twelve note colours C..B and outline the notes' outline, as the GBA shows them (T-417); place: where it was found; link: the song or post its QR code opens (T-402).",
  "sections": [
   "SCHOOL NOTES",
   "LOOSE PAGES",
@@ -744,6 +744,16 @@
     "D5",
     "D5"
    ],
+   "frames": [
+    30,
+    22,
+    8,
+    40,
+    18,
+    22,
+    8,
+    40
+   ],
    "heard": null
   },
   {
@@ -771,6 +781,18 @@
     "D#4",
     "E4"
    ],
+   "frames": [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    40
+   ],
    "heard": 2923
   },
   {
@@ -797,6 +819,18 @@
     "F4",
     "Eb4",
     "F4"
+   ],
+   "frames": [
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    48
    ],
    "heard": 2924
   },
@@ -826,6 +860,19 @@
     "B3",
     "A3"
    ],
+   "frames": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    48
+   ],
    "heard": 2925
   },
   {
@@ -852,6 +899,17 @@
     "B3",
     "A3"
    ],
+   "frames": [
+    17,
+    17,
+    17,
+    17,
+    17,
+    17,
+    17,
+    17,
+    44
+   ],
    "heard": 2926
   },
   {
@@ -877,6 +935,16 @@
     "F#4",
     "D4"
    ],
+   "frames": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    48
+   ],
    "heard": 2927
   },
   {
@@ -901,6 +969,16 @@
     "D4",
     "F#4",
     "E4"
+   ],
+   "frames": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    48
    ],
    "heard": 2928
   },
@@ -928,6 +1006,18 @@
     "C4",
     "B3",
     "G3"
+   ],
+   "frames": [
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    22,
+    48
    ],
    "heard": 2929
   }

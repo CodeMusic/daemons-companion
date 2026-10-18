@@ -228,7 +228,10 @@ const freshHeard = new Set<() => void>();
 // profile"): every changed answer re-made the whole screen (the ScrollView's key), and DEVICE asks every 1.5 s, so it
 // was torn down and built again every few seconds. Now the screen is drawn again only when it was drawn from what was
 // kept -- the live answer came too late (KEPT_FIRST_MS) -- and a screen that polls (POLLED) redraws itself.
-const POLLED = /^\/api\/device\/link$/;
+const POLLED = /^\/api\/(device\/(link|state|commands)|broadcasts)/;   // the review, 2026-10-18: news and the handheld's polls too
+// An answer the companion gives once and then forgets -- the board's waiting commands (taken as they are answered): never
+// kept, never served from what was kept, or an old command reaches the board again (the review, 2026-10-18)
+const ONE_SHOT = /^\/api\/device\/commands/;
 async function liveAndKeep<T>(path: string, servedKept: () => boolean): Promise<T> {
   const j = await apiLive<T>(path);
   const changed = JSON.stringify(KEPT.paths[path]) !== JSON.stringify(j);
@@ -246,7 +249,7 @@ function freshSoon() {                     // many answers at once (keepEverythi
 
 // C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
 async function api<T>(path: string, body?: unknown): Promise<T> {
-  if (ON_PHONE && body === undefined && !path.startsWith("/api/art") && path in KEPT.paths) {
+  if (ON_PHONE && body === undefined && !path.startsWith("/api/art") && !ONE_SHOT.test(path) && path in KEPT.paths) {
     let servedKept = false;
     const live = liveAndKeep<T>(path, () => servedKept).catch((e) => {
       if (!(e instanceof Unreachable)) throw e;                     // the companion answered "no"
@@ -259,14 +262,14 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
   try {
     const j = await apiLive<T>(path, body);
     if (ON_PHONE) {
-      if (body === undefined && !path.startsWith("/api/art")) { KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept(); }
+      if (body === undefined && !path.startsWith("/api/art") && !ONE_SHOT.test(path)) { KEPT.paths[path] = j; KEPT.at = new Date().toISOString(); saveKept(); }
       setOffline(null);
       if (KEPT.queue.length) sendHeld();
     }
     return j;
   } catch (e) {
     if (!ON_PHONE || !(e instanceof Unreachable)) throw e;           // the companion answered "no": that is not offline
-    if (body === undefined && path in KEPT.paths) { setOffline(KEPT.at); return KEPT.paths[path] as T; }
+    if (body === undefined && !ONE_SHOT.test(path) && path in KEPT.paths) { setOffline(KEPT.at); return KEPT.paths[path] as T; }
     if (body !== undefined && keepable(path)) {
       if (LATEST_ONLY.test(path)) KEPT.queue = KEPT.queue.filter((q) => q.path !== path);
       KEPT.queue.push({ path, body }); saveKept(); setOffline(KEPT.at);
@@ -660,7 +663,10 @@ function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Da
       catch { /* quiet is fine */ }
     }
     try { setL(await api<Life>(`/api/daemon/${what}`, {})); }   // its answer corrects the counts
-    catch { if (what !== "wake") WIDGET?.keepForLater(what); }  // C-122: out of reach, kept and sent from home (C-87)
+    catch (e) {                                            // out of reach, api() has kept it (C-62) -- once: the widget's
+      if (!/^Kept on this phone/.test((e as Error).message))   // queue would send it again (the review, 2026-10-18); refused,
+        api<Life>("/api/daemon/life").then(setL).catch(() => {});   // the companion's own counts replace the presumed ones
+    }
     if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
   };
   return (
@@ -3067,11 +3073,9 @@ function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (ty
 function Shell() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
   const [today, setToday] = useState<Today | null>(null);
-  const [goals, setGoals] = useState<Goal[]>([]);
   const [error, setError] = useState("");
   const reload = useCallback(() => {
     api<Today>("/api/today").then(setToday).catch((e) => setError(`${e.message} -- is the server running? (./bindCompanion.sh)`));
-    api<Goal[]>("/api/goals").then(setGoals).catch(() => {});
   }, []);
   useEffect(reload, [reload]);
   // C-62: keep everything on the phone each time the app opens and reaches the companion; redraw when it goes away
@@ -3176,7 +3180,7 @@ function Shell() {
 export default function App() {
   // C-53: on the phone, pair first; on the site, the server is this machine
   const [paired, setPaired] = useState<boolean | null>(ON_PHONE ? null : true);
-  useEffect(() => { unpaired = () => setPaired(false); loadConnection().then(setPaired); }, []);
+  useEffect(() => { unpaired = () => setPaired(false); loadConnection().then(setPaired).catch(() => setPaired(false)); }, []);
   // C-144: the paper or the night -- chosen, or AUTO as the phone or the computer is set
   const [look, seeLook] = useState(LOOK);
   useEffect(() => { const f = () => seeLook(LOOK); lookHeard.add(f); loadLook().then(f); return () => { lookHeard.delete(f); }; }, []);

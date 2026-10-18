@@ -294,15 +294,35 @@ void talkSpot(int &x, int &y) {
 
 // C-105: the face, wide -- the time large on the left, under it the date and the battery; on the right, beyond a line
 // in the day's colour, the day's theme, its virtue over its vice, its chakra and note, and the daemon carried, small.
+// C-166 (the user, 2026-10-18: "watch should have a setting on the site for 12 or 24h mode"): the time as the device's
+// own setting asks -- 13:05, or 1:05 with its PM said apart (the seven-segment font has no letters)
+static bool clockTime(char *hm, size_t n, const char **ampm) {
+  struct tm t; *ampm = "";
+  if (!watchLocalTime(t)) { snprintf(hm, n, "--:--"); return false; }
+  if (cfg.hours == 12) { int h = t.tm_hour % 12; snprintf(hm, n, "%d:%02d", h ? h : 12, t.tm_min); *ampm = t.tm_hour < 12 ? "AM" : "PM"; }
+  else snprintf(hm, n, "%02d:%02d", t.tm_hour, t.tm_min);
+  return true;
+}
+// the time centred at (x, y) in the font set, its AM or PM small beside it
+static void timeAt(const char *hm, const char *ampm, int x, int y, uint16_t colour) {
+  int w = canvas.textWidth(hm), font = canvas.getTextFont() == 7 ? 2 : 1;
+  edgedString(hm, x - (*ampm ? 8 : 0), y, colour);
+  if (!*ampm) return;
+  canvas.setTextFont(font); canvas.setTextDatum(ML_DATUM);
+  edgedString(ampm, x - 8 + w / 2 + 4, y + (font == 2 ? 10 : 4), colour);
+  canvas.setTextDatum(MC_DATUM);
+}
+
 static void drawFaceWide(uint16_t day, uint16_t ink) {
   const int split = 262;
   canvas.drawFastVLine(split, 40, H - 70, day);
-  struct tm t; char hm[6] = "--:--"; bool timed = watchLocalTime(t);
-  if (timed) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
+  struct tm t; char hm[6]; const char *ampm; bool timed = clockTime(hm, sizeof hm, &ampm);
   canvas.setTextDatum(TL_DATUM);
   canvas.setTextFont(7); canvas.setTextSize(1.5f); canvas.setTextColor(PAPER);
   canvas.drawString(hm, 18, 44);
+  int ampmX = 18 + canvas.textWidth(hm) + 6;
   canvas.setTextSize(1);
+  if (*ampm) { canvas.setTextFont(2); canvas.drawString(ampm, ampmX, 44 + 56); }   // C-166
   canvas.setTextFont(2); canvas.setTextColor(QUIET);
   if (timed) {
     static const char *DOW[] = { "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY" };
@@ -410,15 +430,14 @@ static void drawFaceDaemon(uint16_t day) {
   canvas.fillRect(0, 0, W, 26, INK);
   faceSky(186);
   faceRing(day);
-  struct tm t; char hm[6] = "--:--";
-  if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
+  char hm[6]; const char *ampm; clockTime(hm, sizeof hm, &ampm);
   canvas.setTextDatum(MC_DATUM);
   if (st.carrying) { faceDaemon(W / 2, 188, 2, 56, 72); faceListening(day); }
   faceWeather();
   canvas.setTextFont(2); edgedString(upper(st.theme.length() ? st.theme : st.day), W / 2, 34, readable(day));
-  if (st.carrying) { canvas.setTextFont(4); edgedString(hm, W / 2, 57, PAPER); }
+  if (st.carrying) { canvas.setTextFont(4); timeAt(hm, ampm, W / 2, 57, PAPER); }
   else {
-    canvas.setTextFont(7); edgedString(hm, W / 2, 96, PAPER);
+    canvas.setTextFont(7); timeAt(hm, ampm, W / 2, 96, PAPER);
     canvas.setTextFont(1); edgedString("NO DAEMON HERE", W / 2, 146, QUIET);   // DRAFT
   }
   faceLine(upper(st.virtue), 207, PAPER);
@@ -468,10 +487,9 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.setTextDatum(MC_DATUM);
   canvas.setTextFont(2); canvas.setTextColor(readable(day));
   canvas.drawString(upper(st.theme.length() ? st.theme : st.day), W / 2, 38);
-  struct tm t; char hm[6] = "--:--";
-  if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
-  canvas.setTextFont(7); canvas.setTextColor(PAPER);
-  canvas.drawString(hm, W / 2, 84);
+  char hm[6]; const char *ampm; clockTime(hm, sizeof hm, &ampm);
+  canvas.setTextFont(7);
+  timeAt(hm, ampm, W / 2, 84, PAPER);
   canvas.setTextFont(2); canvas.setTextColor(PAPER);
   canvas.drawString(upper(st.virtue), W / 2, 124);
   canvas.setTextColor(QUIET);

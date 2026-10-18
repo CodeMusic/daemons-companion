@@ -57,7 +57,8 @@ struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = tru
                   bool meet = true; int band = 433;   // meet: C-15, meeting others nearby; band: C-72, LoRa
                   bool wakeEvery = false;      // C-159: the wake jingle on every wake, not only at power-up
                   String face = "daemon";      // C-162: the round face -- daemon, clock or virtue
-                  bool faceSky = true; };      // C-163: the season behind the daemon's faces, and the weather in front
+                  bool faceSky = true;         // C-163: the season behind the daemon's faces, and the weather in front
+                  int hours = 24; };           // C-166: the clock in 12 or 24 hours
 extern State st;
 extern Settings cfg;
 extern bool dirty;

@@ -113,7 +113,8 @@ export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, v
                                  band: 433,     // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
                                  wakeSound: "power" as "power" | "every",     // C-159: the jingle at power-up, or on every wake
                                  face: "daemon" as Face,                      // C-162: the round face a watch shows first
-                                 faceSky: true };                             // C-163: the season behind its daemon, the weather in front
+                                 faceSky: true,                               // C-163: the season behind its daemon, the weather in front
+                                 hours: 24 as 12 | 24 };                      // C-166: the clock in 12 or 24 hours
 export type DeviceSettings = typeof DEVICE_SETTINGS;
 function parsed(store: Store, key: string): Partial<DeviceSettings> {
   try { return JSON.parse(store.getSetting(key) ?? "{}"); } catch { return {}; }
@@ -121,7 +122,7 @@ function parsed(store: Store, key: string): Partial<DeviceSettings> {
 // C-159 (the user, 2026-10-18: "tap the device to open its specific settings -- there you can adjust sound style, volume
 // (or mute), along with any other device specific settings"): each device's own over the shared ones. What a device may
 // keep for itself; the rest (the palette, the band, meeting others) is the companion's, the same for every board.
-export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face", "faceSky"] as const;   // face: C-162; faceSky: C-163
+export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face", "faceSky", "hours"] as const;   // face: C-162; faceSky: C-163; hours: C-166
 export function ownSettings(store: Store, deviceId: string): Partial<DeviceSettings> {
   return deviceId ? parsed(store, `device.${deviceId}`) : {};
 }
@@ -151,8 +152,9 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (!["power", "every"].includes(s.wakeSound)) return "wakeSound is power or every";   // C-159
   if (!FACES.includes(s.face)) return "face is daemon, clock or virtue";                 // C-162
   if (typeof s.faceSky !== "boolean") return "faceSky is on or off";                      // C-163
+  if (s.hours !== 12 && s.hours !== 24) return "hours is 12 or 24";                        // C-166
   return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band,
-           wakeSound: s.wakeSound, face: s.face, faceSky: s.faceSky };
+           wakeSound: s.wakeSound, face: s.face, faceSky: s.faceSky, hours: s.hours };
 }
 
 

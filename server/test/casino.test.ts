@@ -164,6 +164,10 @@ describe("each device's own settings (C-159)", () => {
     expect(deviceSettings(store, "t-watch-s3-77bef4").faceSky).toBe(true);
     expect(setOwnSettings(store, "t-watch-s3-77bef4", { faceSky: false })).toMatchObject({ faceSky: false, face: "clock" });
     expect(setOwnSettings(store, "t-watch-s3-77bef4", { faceSky: "yes" })).toBe("faceSky is on or off");
+    // C-166: 24 hours by default, a watch's own 12
+    expect(deviceSettings(store, "t-watch-s3-77bef4").hours).toBe(24);
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { hours: 12 })).toMatchObject({ hours: 12 });
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { hours: 13 })).toBe("hours is 12 or 24");
   });
 
   it("gives a device its own settings in its state", () => {

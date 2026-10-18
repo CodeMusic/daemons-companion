@@ -317,7 +317,13 @@ static void touchLoop(uint32_t now) {
   if (talking) { talking = false; dirty = true; return; }      // let go of TALK: C-66 sends what was heard
   if (asleep) return;                                          // only the crown wakes the watch (C-79)
   int dx = xNow - xFrom, dy = yNow - yFrom;
-  if (abs(dx) > SWIPE && abs(dx) > abs(dy)) turn(dx < 0 ? 1 : -1);  // swipe left: the next page, as the dial turned right
+  // swipe left: the next page, as the dial turned right -- on the watch the other way round (the user, 2026-10-18:
+  // "reverse the swipe tab order -- right to left swipe shows settings but the should be the left to right swipe")
+#if defined(BOARD_TWATCH_S3)
+  if (abs(dx) > SWIPE && abs(dx) > abs(dy)) turn(screen == HOME ? (dx < 0 ? -1 : 1) : (dx < 0 ? 1 : -1));
+#else
+  if (abs(dx) > SWIPE && abs(dx) > abs(dy)) turn(dx < 0 ? 1 : -1);
+#endif
   else if (abs(dy) > SWIPE) turn(dy < 0 ? 1 : -1);
   else if (now - downAt > 700) back();
   else {

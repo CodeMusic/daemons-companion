@@ -1476,7 +1476,8 @@ static void shotOut() {
     size_t n = 0;
     mbedtls_base64_encode(out, sizeof out, &n, bytes, w * 2);
     out[n] = 0;
-    Serial.println((const char *)out);
+    Serial.print('R'); Serial.print(y); Serial.print(' ');   // numbered: a log line from the network's task can split one,
+    Serial.println((const char *)out);                       // and it is asked again (printf would cut a line this long)
   }
   Serial.println("SHOT END");
 }

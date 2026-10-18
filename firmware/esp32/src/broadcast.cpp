@@ -182,8 +182,8 @@ void castIn(uint32_t from, uint16_t id, uint8_t kind, int species, const String 
     // a word cut for Bluetooth (43 letters) heard first, and the whole of it after by LoRa or the companion: the
     // longer is kept, and shown again if the cut one is still on the screen
     if (c && c->kind == CAST_SAY && kind == CAST_SAY && body.length() > c->body.length() && body.startsWith(c->body)) {
-      String from, was;
-      bool showing = loraMessage(from, was) && was == c->body;
+      String shownFrom, was;                              // (not castIn's `from`)
+      bool showing = loraMessage(shownFrom, was) && was == c->body;
       c->body = body; dirty = true;
       if (showing) loraPretendHeard(c->name, body);
     }

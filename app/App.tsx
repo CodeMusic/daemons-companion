@@ -2506,7 +2506,7 @@ async function sendTodaysSteps(): Promise<number | null> {
 
 // ---- C-53, on the site: open the companion to the network, show a code, see and forget paired phones ----
 function PairCard({ ink }: { ink: string }) {
-  const [net, setNet] = useState<{ open: boolean; now: boolean; address: string | null; port: number } | null>(null);
+  const [net, setNet] = useState<{ open: boolean; now: boolean; address: string | null; name?: string | null; port: number } | null>(null);
   const [code, setCode] = useState<string | null>(null);
   const [phones, setPhones] = useState<{ name: string; paired: string; seen: string | null }[]>([]);
   const load = useCallback(() => {
@@ -2515,7 +2515,9 @@ function PairCard({ ink }: { ink: string }) {
   }, []);
   useEffect(load, [load]);
   if (!net) return null;
-  const address = net.address ? `http://${net.address}:${net.port}` : "(no network address)";
+  // the computer's own name first: it stays the same on every network, where its address does not
+  const address = net.name ? `http://${net.name}:${net.port}` : net.address ? `http://${net.address}:${net.port}` : "(no network address)";
+  const fallback = net.name && net.address ? `http://${net.address}:${net.port}` : null;
   return (
     <Card>
       <Eyebrow>PAIR A PHONE</Eyebrow>
@@ -2532,6 +2534,7 @@ function PairCard({ ink }: { ink: string }) {
             <YStack gap={2} marginTop={4}>
               <Text fontFamily="$mono" fontSize={28} letterSpacing={6} fontWeight="700" color="$color12">{code}</Text>
               <Small>{`On the phone, type the address ${address} and this code. It works once, for ten minutes.`}</Small>
+              {fallback ? <Small color="$color10">{`The name finds this computer on any Wi-Fi it shares with the phone. If the phone cannot reach it, type ${fallback} instead (that one changes with the network).`}</Small> : null}
             </YStack>
           ) : null}
         </>

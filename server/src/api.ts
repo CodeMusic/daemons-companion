@@ -298,6 +298,18 @@ const DEVICE_DOOR = [
 ];
 
 // C-33: where a device on the Wi-Fi finds this server -- this machine's address on the local network.
+// The name this computer answers to on whatever network it is on (Bonjour: M2cBook.local), so a phone paired by it finds
+// the companion at home and away alike -- the address above changes with the network (seen 2026-10-17: paired at home,
+// the phone lost the companion at another house on the same Wi-Fi as the computer). Null where there is no such name.
+let bonjour: string | null | undefined;
+export function bonjourName(): string | null {
+  if (bonjour !== undefined) return bonjour;
+  try {
+    const n = process.platform === "darwin" ? execFileSync("/usr/sbin/scutil", ["--get", "LocalHostName"], { encoding: "utf8" }).trim() : "";
+    bonjour = /^[A-Za-z0-9-]+$/.test(n) ? `${n}.local` : null;
+  } catch { bonjour = null; }
+  return bonjour;
+}
 export function lanAddress(): string | null {
   for (const list of Object.values(networkInterfaces()))
     for (const a of list ?? []) if (a.family === "IPv4" && !a.internal) return a.address;
@@ -503,7 +515,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/settings/away") return send(res, 200, { url: store.getSetting("relay.url") });
       // the server listens on the network (for the phone and the board) -- kept here, read at the next start
       if (req.method === "GET" && path === "/api/settings/network")
-        return send(res, 200, { open: store.getSetting("host") === "0.0.0.0", now: cfg.host === "0.0.0.0", address: lanAddress(), port: cfg.port });
+        return send(res, 200, { open: store.getSetting("host") === "0.0.0.0", now: cfg.host === "0.0.0.0", address: lanAddress(), name: bonjourName(), port: cfg.port });
       if (req.method === "POST" && path === "/api/settings/network") {
         const b = await body(req);
         store.setSetting("host", b.open ? "0.0.0.0" : "127.0.0.1");

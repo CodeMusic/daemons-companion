@@ -383,6 +383,22 @@ static String faceFoot() {
   return upper(st.chakra) + (st.note.length() ? "  -  " + st.note : "");
 }
 
+// the battery, small: an outline filled to its charge and the percent -- red when low off the cable, + while charging
+// (the user, 2026-10-18: "we should also have the watch show its battery level")
+static void faceBattery(int cx, int cy) {
+  if (!bat.present) return;
+  bool low = !bat.usb && bat.percent <= 15;
+  uint16_t c = low ? 0xF800 : faceSkyOn() ? 0xCE59 : QUIET;
+  String t = String(bat.percent) + "%" + (bat.charging ? "+" : "");
+  canvas.setTextFont(1);
+  int w = canvas.textWidth(t), x = cx - (16 + w) / 2;
+  canvas.drawRect(x, cy - 3, 11, 7, c); canvas.fillRect(x + 11, cy - 1, 2, 3, c);
+  canvas.fillRect(x + 2, cy - 1, max(0, min(7, (int)roundf(7 * bat.percent / 100.0f))), 3, c);
+  canvas.setTextDatum(ML_DATUM);
+  edgedString(t, x + 16, cy, c);
+  canvas.setTextDatum(MC_DATUM);
+}
+
 static void faceRing(uint16_t day) {
   int r = min(W, H) / 2;
   canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
@@ -408,6 +424,7 @@ static void drawFaceDaemon(uint16_t day) {
   faceLine(upper(st.virtue), 207, PAPER);
   canvas.setTextFont(1);
   edgedString(faceFoot(), W / 2, 225, bat.present && !bat.usb && bat.percent <= 20 ? 0xF800 : faceSkyOn() ? 0xCE59 : QUIET);
+  faceBattery(W / 2, 16);                                    // at the top of the circle, over the day's theme
   canvas.setTextDatum(TL_DATUM);
 }
 
@@ -427,6 +444,7 @@ static void drawFaceClock(uint16_t day) {
   canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
   edgedString(upper(st.theme.length() ? st.theme : st.day), cx, 50, readable(day));
   edgedString(upper(st.virtue), cx, 196, PAPER);
+  faceBattery(cx, 208);                                      // between the day's words and the six
   struct tm t;
   if (watchLocalTime(t)) {                                   // the hands over the daemon, each edged in INK to stand off it
     float m = (t.tm_min + t.tm_sec / 60.0f) * PI / 30, h = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;

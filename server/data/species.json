@@ -2953,7 +2953,20 @@
    58,
    62
   ],
-  "native": null
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "AUTUMN"
+   ],
+   "hours": null,
+   "grove": null,
+   "weathers": [
+    "WIND"
+   ]
+  }
  },
  "84": {
   "constant": "DODUO",
@@ -5908,7 +5921,21 @@
    56,
    56
   ],
-  "native": null
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING",
+    "SUMMER"
+   ],
+   "hours": null,
+   "grove": null,
+   "weathers": [
+    "STORM"
+   ]
+  }
  },
  "171": {
   "constant": "LANTURN",
@@ -10861,7 +10888,20 @@
    46,
    41
   ],
-  "native": null
+  "native": {
+   "regions": [
+    "GAMUT"
+   ],
+   "editions": null,
+   "seasons": [
+    "SPRING"
+   ],
+   "hours": null,
+   "grove": null,
+   "weathers": [
+    "RAIN"
+   ]
+  }
  },
  "324": {
   "constant": "WHISCASH",

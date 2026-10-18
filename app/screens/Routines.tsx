@@ -1,6 +1,7 @@
 // ROUTINES -- THE CASINO (by server/src/slots.ts, the boards' table) and the party's game routines (C-155). (C-157: out of App.tsx.)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
+import { casinoDress, pieceArt, SeasonFalling } from "../casinoDress";
 import { dayRoot, hearSettings, soundLevel, tuneSound } from "../tuneSound";
 import { Text, XStack, YStack } from "tamagui";
 import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
@@ -13,7 +14,6 @@ export const CASINO_BOOT = Math.floor(Math.random() * 0x10000).toString(16).padS
    // this start of the app
 export let casinoSeq = 0;
 
-export const SEASON_INK: Record<string, string> = { winter: "#9cc3e6", spring: "#7cc47c", summer: "#e8c547", autumn: "#d9822b" };
 
 export function RoutinesCard({ ink }: { ink: string }) {
   const [open, setOpen] = useState<"casino" | "house" | "party" | null>(null);
@@ -78,6 +78,7 @@ export function Casino({ ink }: { ink: string }) {
   const [owed, setOwed] = useState(0);                      // what this player has won or lost that the companion has not heard
   const player = useAudioPlayer(null);
   const luck = useRef(0);                                   // the day's, from the state (context.ts), for the seat's line
+  const [reelsW, setReelsW] = useState(0);                  // the reels' width, for the season falling over them
   const load = useCallback(async (who: string) => { setSt(await api<PlayerState>(`/api/device/state?device=${who}`)); }, []);
   const report = useCallback(async (who: string) => {
     const u = unsent.current;
@@ -109,6 +110,7 @@ export function Casino({ ink }: { ink: string }) {
   const jack = st.daemon?.slot ?? st.casino.friends[0];
   const friends = st.daemon ? st.casino.friends : st.casino.friends.slice(1);
   const reel = st.casino.reel ?? [];                        // C-158: the reels' others, seen in the game, at home now first
+  const dress = casinoDress(st);                            // C-158: the holiday's, the weather's or the season's, as the boards
   const spinning = stopped.some((x) => !x);
   // C-160: the boards' own casino tunes (firmware/esp32/src/sound.cpp soundSlots), on the day's note: the lever, a loss, a
   // small win, a big one or the jackpot -- a big win on a holiday plays the holiday's own (Halloween, Christmas ...)
@@ -171,13 +173,14 @@ export function Casino({ ink }: { ink: string }) {
       });
     }, 70);
   };
+  // each piece as the boards show it: the daemons' pictures, the coin and the season's piece drawn as they draw them
+  // (casino_art.py), and a drawn stand-in where a daemon has no picture (casino.cpp drawPiece: a MARK, a berry, a gem)
   const piece = (p: Piece, size: number) => {
     if (p >= 1 && p <= 3 && reel[p - 1]) return <Art path={`/art/species/${reel[p - 1].species}.png`} size={size} />;
     const slot = p === 0 ? jack : p <= 3 ? friends[p - 1] : undefined;
     if (slot !== undefined) return <Art path={`/art/party/${slot}.png`} size={size} />;
-    if (p === 4) return <YStack width={size * 0.6} height={size * 0.6} borderRadius={size} backgroundColor="#f2c230" borderWidth={3} borderColor="#a07a10" />;
-    if (p === 5) return <Text fontFamily="$mono" fontSize={12} fontWeight="800" color={SEASON_INK[st.season] ?? "#fbfaf6"}>{(st.holiday?.name ?? st.season).toUpperCase()}</Text>;
-    return <Text fontFamily="$mono" fontSize={12} color="#9aa0aa">?</Text>;
+    const drawn = p === 4 ? "coin" : p === 5 ? dress.piece : (["mark", "berry", "gem", "mark"] as const)[p];
+    return <Art path={pieceArt(drawn, dress, ink)} size={size} />;
   };
   const bets = BETS.filter((b) => b <= Math.max(balance, BETS[0]));
   const betBy = (d: number) => { const i = Math.max(0, Math.min(bets.length - 1, bets.indexOf(bet) + d)); setBet(bets[i] ?? BETS[0]); };
@@ -192,7 +195,7 @@ export function Casino({ ink }: { ink: string }) {
       </XStack>
       {table.length ? <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{`AT THE TABLE: ${table[0].name}${table.length > 1 ? ` +${table.length - 1}` : ""}`}</Text> : null}
       {/* the reels: each shows three of its strip, the middle row the payline between the arrows */}
-      <YStack position="relative">
+      <YStack position="relative" onLayout={(e) => setReelsW(e.nativeEvent.layout.width)}>
         <XStack gap={8} justifyContent="center" alignItems="center">
           <Text fontSize={14} color="#f2c230">▶</Text>
           {[0, 1, 2].map((i) => (
@@ -207,6 +210,7 @@ export function Casino({ ink }: { ink: string }) {
           ))}
           <Text fontSize={14} color="#f2c230">◀</Text>
         </XStack>
+        <SeasonFalling dress={dress} w={reelsW} h={CELL * 3} />
         {banner ? (
           <XStack position="absolute" top={8} alignSelf="center" backgroundColor="#f6c445" paddingHorizontal={18} paddingVertical={6} borderRadius={10}>
             <Text fontFamily="$mono" fontSize={22} fontWeight="800" color="#2b2310">{banner}</Text>

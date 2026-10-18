@@ -988,6 +988,17 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);
       }
+      // C-158: THE CASINO's drawn pieces and hats as the boards draw them (firmware/common/casino_art.py), in the day's
+      // colours: ?a= and ?b= the holiday's or the season's two, ?day= the day's (each RRGGBB; left out, the picture's own)
+      const casinoArt = path.match(/^\/art\/casino\/([a-z_]{1,24})\.png$/);
+      if (req.method === "GET" && casinoArt) {
+        const file = join(ART_DIR, "casino", `${casinoArt[1]}.png`);
+        if (!existsSync(file)) return send(res, 404, { error: "no such piece" });
+        const hex = (k: string) => { const v = url.searchParams.get(k) ?? ""; return /^[0-9a-fA-F]{6}$/.test(v) ? [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16)) : null; };
+        const body = repaint(readFileSync(file), (pal) => [hex("a") ?? pal[1], hex("b") ?? pal[2], hex("day") ?? pal[3]], 1);
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(body);
+      }
       const speciesArt = path.match(/^\/art\/species\/(\d+)\.png$/);   // C-24: as the INDEX draws it, in its type's colours
       if (req.method === "GET" && speciesArt) {
         const body = speciesPng(speciesArt[1]);

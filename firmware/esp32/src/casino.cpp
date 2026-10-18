@@ -327,6 +327,7 @@ static String drawSlots(uint16_t day, uint16_t ink) {
     canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(ML_DATUM);
     String title = "CASINO";                                                       // DRAFT
     String dress = st.holiday.name.length() ? upper(st.holiday.name) : upper(st.season);
+    if (dress.indexOf(" (") > 0) dress = dress.substring(0, dress.indexOf(" ("));   // CHRISTMAS, not CHRISTMAS (EVE AND DAY)
     if (canvas.textWidth(title + "  " + dress) < W - 130) title += "  " + dress;
     canvas.drawString(title, 8, 13);
   }
@@ -392,7 +393,8 @@ static String drawSlots(uint16_t day, uint16_t ink) {
   canvas.setTextDatum(TC_DATUM); canvas.setTextColor(day);
   canvas.drawString("BET " + String(bet), W / 2 + (board.round ? 0 : 10), f.infoY);  // DRAFT
   canvas.setTextDatum(TR_DATUM); canvas.setTextColor(QUIET);
-  if (!board.round) canvas.drawString(note, right, f.infoY);
+  if (!board.round && note.length()) canvas.drawString(note, right, f.infoY);
+  else if (f.keys && phase != ROLLING) { canvas.setTextFont(1); canvas.drawString("hold A: leave", right, f.infoY + 4); }   // DRAFT
   canvas.setTextDatum(TL_DATUM);
   if (!f.keys) {                                 // the footer says what does what, in this board's own words
     if (board.touch && !board.threeKeys()) return phase == ROLLING ? "tap: stop" : "swipe: bet    tap: spin    hold: leave";   // DRAFT
@@ -410,8 +412,6 @@ static String drawSlots(uint16_t day, uint16_t ink) {
     canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM); canvas.setTextColor(roll && live ? ink : live ? PAPER : QUIET);
     canvas.drawString(word, bx + (bw - 8) / 2, H - 13);
   }
-  canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
-  if (phase != ROLLING) canvas.drawString("hold A: leave", f.x0, H - 28);           // DRAFT
   canvas.setTextDatum(TL_DATUM);
   return " ";                                    // its own words are drawn: no footer under them
 }
@@ -432,6 +432,7 @@ bool casinoTakeArt(const char *json) {
   return true;
 }
 
+// Each result is said down the cable too -- CASINO <result 0..6> <bet> <won> <money> -- so a check knows when to SHOT.
 // the cable, read here while the reels turn (the loop is not running): SHOT, the keys, and the bridge's own lines --
 // a STATE taken as ever (it keeps the bridge fresh), a party daemon's picture. Anything else waits for the loop.
 static String cableIn;
@@ -589,6 +590,7 @@ String runSlots() {
       if (ch) idleSince = now;
     }
     if (leave) break;
+    now = millis();                             // after the input: a pull or a stop above stamped its own time, later than the first
     // the reels: up to speed, on by themselves after a while, each slipping to its piece
     for (int k = 0; k < 3; k++) {
       Reel &r = reels[k];
@@ -610,6 +612,7 @@ String runSlots() {
       phase = SHOWING; shownAt = now;
       won = bet * PAYS[outcome];
       unreported += won; sessionDelta += won;
+      Serial.printf("CASINO %d %ld %ld %ld\n", outcome, bet, won, balance());   // for a check from the computer: its result, bet, win, money
       draw();                                    // seen before it is heard: without PSRAM the phrase plays here
       if (outcome == O_LOSE) { note = "NO WIN"; soundSlots(1, lookNow()); }                    // DRAFT
       else if (PAYS[outcome] == 1) { note = "BET BACK"; for (int i = 0; i < 4; i++) soundCoin(i); }   // DRAFT

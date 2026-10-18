@@ -117,6 +117,7 @@ int listRowsFit();                         // list rows a screen holds clear of 
 extern int entryTop, entryLines;   // C-99: the INDEX entry, scrolled this many lines; how many it has
 uint16_t hex565(const String &h);
 bool lightColour(const String &h);
+uint16_t readable(uint16_t c);             // the day's colour as text on the dark ground, lifted when dark
 
 // ---- input (input.cpp) ------------------------------------------------------------------------------------------------
 extern int8_t encLast, encSum;

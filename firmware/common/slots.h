@@ -74,11 +74,30 @@ inline void learn(Cat &c, int outcome) {
   c.dry = won > 0 ? 0 : c.dry + 1; c.streak = won > 0 ? c.streak + 1 : 0; c.pulls++;
 }
 inline float nearChance(const Cat &c) { return clampf(0.25f + 0.35f * (c.reach > 0 ? c.reach : 0), 0, 0.6f); }
-// three pieces for a loss that ALMOST won -- two alike (a friend or the coin: two JACKs would pay) and the third not;
-// `wanted`, the piece the third would have needed, is to show one place off the line
-inline void nearPieces(uint8_t out[3], uint8_t &wanted) {
-  uint8_t pick = 1 + esp_random() % 4, c;
-  do c = esp_random() % 6; while (c == pick || outcomeOf(pick, pick, c) != 0);
-  out[0] = out[1] = pick; out[2] = c; wanted = pick;
+// three pieces for a loss that ALMOST won -- two alike (a friend or the coin: two JACKs would pay) and the third not --
+// chosen from what the third reel really has: its piece sits beside the one it wanted, so that one shows one place off
+// the line. False where no such pair comes round (slots.ts's nearPieces, the same rule).
+static const int STRIP_N = 12;
+inline int besideOn(const uint8_t reel[STRIP_N], uint8_t wanted, uint8_t out[2 * STRIP_N]) {
+  int n = 0;
+  for (int i = 0; i < STRIP_N; i++) if (reel[i] == wanted) { out[n++] = reel[(i + STRIP_N - 1) % STRIP_N]; out[n++] = reel[(i + 1) % STRIP_N]; }
+  return n;
+}
+inline bool nearPieces(const uint8_t reel3[STRIP_N], uint8_t out[3], uint8_t &wanted) {
+  uint8_t order[4] = { 1, 2, 3, 4 };
+  for (int i = 3; i > 0; i--) { int j = esp_random() % (i + 1); uint8_t t = order[i]; order[i] = order[j]; order[j] = t; }
+  for (uint8_t pick : order) {
+    uint8_t near[2 * STRIP_N], ok[2 * STRIP_N]; int n = besideOn(reel3, pick, near), m = 0;
+    for (int k = 0; k < n; k++) if (near[k] != pick && outcomeOf(pick, pick, near[k]) == 0) ok[m++] = near[k];
+    if (m) { out[0] = out[1] = pick; out[2] = ok[esp_random() % m]; wanted = pick; return true; }
+  }
+  return false;
+}
+// two JACKs (a 2x): the third reel's piece one beside a JACK -- almost the jackpot. False where none comes round.
+inline bool almostThird(const uint8_t reel3[STRIP_N], uint8_t &c) {
+  uint8_t near[2 * STRIP_N], ok[2 * STRIP_N]; int n = besideOn(reel3, JACK, near), m = 0;
+  for (int k = 0; k < n; k++) if (near[k] != JACK) ok[m++] = near[k];
+  if (!m) return false;
+  c = ok[esp_random() % m]; return true;
 }
 }

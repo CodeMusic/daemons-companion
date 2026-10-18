@@ -69,6 +69,15 @@ uint16_t hex565(const String &h) {
   long v = strtol(h.c_str() + 1, nullptr, 16);
   return tft.color565((v >> 16) & 255, (v >> 8) & 255, v & 255);
 }
+// the user, 2026-10-18 ("the dark text on the black is hard to read, like it is hard to see bet"): the day's colour as
+// TEXT on the dark ground, lifted toward white when it is dark itself -- a Sunday's deep red, a Friday's indigo
+uint16_t readable(uint16_t c) {
+  int r = ((c >> 11) & 31) * 255 / 31, g = ((c >> 5) & 63) * 255 / 63, b = (c & 31) * 255 / 31;
+  float lum = (0.2126f * r + 0.7152f * g + 0.0722f * b) / 255.0f;
+  if (lum >= 0.45f) return c;
+  float t = min(0.75f, (0.45f - lum) / 0.45f + 0.3f);     // the darker, the more white mixed in
+  return tft.color565(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t);
+}
 bool lightColour(const String &h) {           // as the app decides (App.tsx onColour)
   long v = strtol(h.c_str() + 1, nullptr, 16);
   auto lin = [](double c) { c /= 255.0; return c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4); };
@@ -181,7 +190,7 @@ static String panelHint;
 void drawRoutines(uint16_t day) {
   uint16_t ink = lightColour(st.menu) ? INK : PAPER;
   const RoutineType &t = types[typeAt];
-  canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
   if (screen == PARTY) {                     // C-68: GAME ROUTINES -- the party, five rows at a time
     canvas.drawString("WHOSE ROUTINE?", 10, 32);                                  // DRAFT
     int rows = partyRows(), cur = partyRowOf(partyAt), fit = listRowsFit(), from = max(0, cur - (fit - 1));   // the RADIOS first on a party-first board
@@ -292,7 +301,7 @@ static void drawFaceWide(uint16_t day, uint16_t ink) {
   if (bat.present) under += (under.length() ? "    " : "") + String(bat.percent) + "%" + (bat.charging ? " +" : "");
   canvas.drawString(under, 20, 154);
   int x = split + 18, w = W - x - 10;
-  canvas.setTextColor(day);
+  canvas.setTextColor(readable(day));
   wrap(upper(st.theme.length() ? st.theme : st.day), x, 40, w, 4, 26, 2, day);
   wrap(upper(st.virtue), x, 96, w, 2, 16, 2, PAPER);
   canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
@@ -301,7 +310,7 @@ static void drawFaceWide(uint16_t day, uint16_t ink) {
     drawArt(x, H - 70, 1);
     canvas.setTextFont(2); canvas.setTextColor(PAPER);
     canvas.drawString(st.daemon.nickname, x + 72, H - 56);
-    if (st.daemon.word.length()) { canvas.setTextFont(1); canvas.setTextColor(day); canvas.drawString(st.daemon.word, x + 72, H - 36); }
+    if (st.daemon.word.length()) { canvas.setTextFont(1); canvas.setTextColor(readable(day)); canvas.drawString(st.daemon.word, x + 72, H - 36); }
   }
   if (talkCan()) {
     int cx, cy; talkSpot(cx, cy); bool talking = watchTalking();
@@ -321,7 +330,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.drawCircle(W / 2, H / 2, r - 2, day); canvas.drawCircle(W / 2, H / 2, r - 3, day);
   canvas.drawCircle(W / 2, H / 2, r - 4, day);
   canvas.setTextDatum(MC_DATUM);
-  canvas.setTextFont(2); canvas.setTextColor(day);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day));
   canvas.drawString(upper(st.theme.length() ? st.theme : st.day), W / 2, 38);
   struct tm t; char hm[6] = "--:--";
   if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
@@ -367,14 +376,14 @@ void draw() {
   }
 
   if (screen == CARE) {                                      // C-13
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);
     for (int i = 0; i < 5; i++) listRow(i, careAt, CARE_ITEMS[i], day, ink, W - 90);   // clear of its sprite
     drawArt(W - 70, 34, 1);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     footer(hint("turn: choose    press: do it    top button: back"));
   } else if (screen == CARE_KEYS) {                           // C-149: CARE from home -- a button each, then home
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);                   // DRAFT
     bool under = board.kind == BoardKind::M5Core;
     int sc = H >= 200 ? 2 : 1, side = 64 * sc;
@@ -386,7 +395,7 @@ void draw() {
     else { canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
            footer(st.daemon.tired == "drowsy" ? "A drink  B feed  C sleep    hold A: back" : "A drink  B feed  C train    hold A: back"); }   // DRAFT
   } else if (screen == INDEX_ENTRY) {                         // C-36: its INDEX entry, in the edition's voice
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("INDEX  " + st.daemon.name, 10, 32);
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.daemon.category) + "  " + st.daemon.types, 10, 50);
@@ -409,7 +418,7 @@ void draw() {
     else if (quickScreen()) footer(String(talkCan() ? "A: read aloud    " : "") + "B: more    C: home");   // C-149, DRAFT
     else footer(hint(more + (talkCan() ? "press: read aloud    " : "") + "top button: back"));   // C-65, DRAFT
   } else if (screen == TALK) {                               // C-66: what was heard, and the daemon's answer
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString(upper(st.carrying ? st.daemon.nickname : String("your daemon")), 10, 32);
     int y = 52;
     if (talkHeard.length()) y += min(2, wrap("\"" + talkHeard + "\"", 10, y, W - 20, 2, 16, 2, QUIET)) * 16 + 4;
@@ -421,7 +430,7 @@ void draw() {
   } else if (page == FACE_PAGE) {
     drawFace(day, ink);
   } else if (page == ROUTINES_PAGE) {
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
     wrap(partyFirst() ? String("The CASINO and its radios first -- WHISPER, UPLINK -- then your party's routines. Press to open.")   // DRAFT
          : !st.carrying ? String(board.nfc ? "No daemon here. TOUCHSTONE can take one off a card; the party's routines are here too."
@@ -443,7 +452,7 @@ void draw() {
     // C-73: the Xenith day -- its theme, its virtue over its shadow, its chakra and its note. Press: the day's note.
     canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("TODAY IS", 10, 32);
-    canvas.setTextFont(4); canvas.setTextColor(day);
+    canvas.setTextFont(4); canvas.setTextColor(readable(day));
     canvas.drawString(upper(st.theme.length() ? st.theme : st.day), 10, 50);
     canvas.setTextFont(2); canvas.setTextColor(PAPER);
     canvas.drawString(upper(st.virtue), 10, 86);
@@ -468,14 +477,14 @@ void draw() {
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
     footer(hint(cfg.sound ? "press: turn it off" : "press: turn it on"));          // DRAFT
   } else if (page == OFF_PAGE) {             // the user, 2026-10-15: "there is no way to turn it off"
-    canvas.setTextFont(4); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(4); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("SWITCH OFF", 10, 40);                                       // DRAFT
     wrap(String("Press to switch it off. ") + startAgain(), 10, 76, W - 20, 2, 18, 4, PAPER);   // DRAFT
     if (board.threeKeys()) wrap("Or hold C for five seconds, anywhere.", 10, 76 + 3 * 18, W - 20, 2, 18, 2, QUIET);   // DRAFT
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
     canvas.drawString(hint("press: switch off"), 10, H - 6);
   } else if (page == TODAY) {
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     // C-49: the step, and -- subtly -- the milestone it belongs to
     canvas.drawString(st.milestone.length() ? upper(st.milestone) + "  " + String(st.msAt) + "/" + String(st.msOf) : "THE ONE THING", 10, 34);
     int tw = wide() ? W - 200 : W - 20, tl = wide() ? 4 : 3;   // C-105: wide, the step keeps the left and the right is the daemon's
@@ -492,7 +501,7 @@ void draw() {
         drawArt(x + 16, 34, 2);
         canvas.setTextDatum(TC_DATUM); canvas.setTextFont(2); canvas.setTextColor(PAPER);
         canvas.drawString(st.daemon.nickname, x + 80, 166);
-        if (st.daemon.word.length()) { canvas.setTextFont(1); canvas.setTextColor(day); canvas.drawString(st.daemon.word, x + 80, 184); }
+        if (st.daemon.word.length()) { canvas.setTextFont(1); canvas.setTextColor(readable(day)); canvas.drawString(st.daemon.word, x + 80, 184); }
       } else {
         canvas.setTextDatum(TL_DATUM); canvas.setTextFont(2); canvas.setTextColor(QUIET);
         canvas.drawString("TODAY IS", x, 40);
@@ -508,7 +517,7 @@ void draw() {
       else canvas.drawString(st.step >= 0 ? hint("press: done") + "    " + day : day, 10, H - 6);   // C-105: in each board's own words
     }
   } else {
-    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+    canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     if (st.carrying) {
       // C-42: the board's home -- the daemon, large, and alive: it bobs as it breathes, and now and then hops.
       // C-113: and it lives in its den (den.cpp), walking it from side to side and facing the way it goes; asleep, it
@@ -560,8 +569,8 @@ void draw() {
       canvas.drawString((st.daemon.nickname == st.daemon.name ? String("") : st.daemon.name + "  ") + lv, x, 72);
       // C-13: how it is, and its day -- never more than this, and never a nag
       if (st.daemon.tired == "asleep") {                       // C-118: asleep, said large -- not the small word
-        canvas.setTextFont(4); canvas.setTextColor(day); canvas.drawString("ASLEEP", x, 88); canvas.setTextFont(2); canvas.setTextColor(QUIET);   // DRAFT
-      } else if (st.daemon.word.length()) { canvas.setTextColor(day); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
+        canvas.setTextFont(4); canvas.setTextColor(readable(day)); canvas.drawString("ASLEEP", x, 88); canvas.setTextFont(2); canvas.setTextColor(QUIET);   // DRAFT
+      } else if (st.daemon.word.length()) { canvas.setTextColor(readable(day)); canvas.drawString(st.daemon.word, x, 90); canvas.setTextColor(QUIET); }
       canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
       int cf = wide() ? 2 : 1, ch = wide() ? 16 : 11, cn = wide() ? 4 : 2;   // C-105: wide, the cue in a readable size
       if (H < 160) {}                                          // the StickS3: no room under its day for a cue

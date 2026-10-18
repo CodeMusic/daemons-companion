@@ -216,7 +216,7 @@ static bool cardAsk(const String &uid, const char *op, JsonDocument &out) {   //
 // The card's screen: what it holds, and what can be done with it here
 static String cardTitle, cardLines; static std::vector<String> cardOpts; static int cardAt = 0;
 static String drawCard(uint16_t day, uint16_t ink) {
-  canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM); canvas.setTextColor(day);
+  canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM); canvas.setTextColor(readable(day));
   canvas.drawString(cardTitle, 10, 30);
   wrap(cardLines, 10, 50, W - 20, 2, 16, 3, PAPER);
   for (int i = 0; i < (int)cardOpts.size(); i++) listRow(i + 3, cardAt, cardOpts[i], day, ink, W - 12);

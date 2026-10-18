@@ -105,13 +105,22 @@ describe("THE CASINO in context: luck and the cat and the string (C-158)", () =>
   });
 
   it("makes a near miss that does not pay, and stops the third reel with the wanted piece beside the line", async () => {
-    const { nearPieces, stopNear, strip, STRIP: N } = await import("../src/slots.js");
+    const { nearPieces, almostThird, stopNear, strip, STRIP: N } = await import("../src/slots.js");
     const r = dice(5);
-    for (let i = 0; i < 200; i++) {
-      const { pieces, wanted } = nearPieces(r);
+    let made = 0;
+    for (let i = 0; i < 300; i++) {
+      const s = strip(r), near = nearPieces(s, r);
+      if (!near) continue;
+      made++;
+      const { pieces, wanted } = near;
       expect(outcomeOf(...pieces)).toBe(0);
-      const s = strip(r), at = stopNear(s, 3.1, pieces[2], wanted);
+      const at = stopNear(s, 3.1, pieces[2], wanted);
       expect(s[at % N]).toBe(pieces[2]);
+      expect([s[(at + 1) % N], s[(at + N - 1) % N]]).toContain(wanted);   // truly beside the line, every time
+      const third = almostThird(s, r)!;
+      const at2 = stopNear(s, 3.1, third, 0);
+      expect([s[(at2 + 1) % N], s[(at2 + N - 1) % N]]).toContain(0);       // a JACK beside the line
     }
+    expect(made).toBeGreaterThan(280);                                     // a reel nearly always has such a pair
   });
 });

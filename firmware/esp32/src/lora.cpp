@@ -296,7 +296,7 @@ extern void listRow(int i, int at, const String &text, uint16_t day, uint16_t in
 static String ago(uint32_t at) { uint32_t s = (millis() - at) / 1000; return s < 60 ? String(s) + " s" : String(s / 60) + " min"; }
 
 static String drawMesh(uint16_t day, uint16_t ink) {
-  canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
   rowsN = loraNearby(rows, NEARBY_MAX);
   if (mode == M_LIST) {
     canvas.drawString(calledFor ? "WHO ANSWERS " + upper(daemonName()) + "'S CALL   " + String(max(0, calledFor - (int)((millis() - t0) / 1000))) + " s"
@@ -321,7 +321,7 @@ static String drawMesh(uint16_t day, uint16_t ink) {
     canvas.setTextColor(PAPER); canvas.drawString(typedWord + "_", 12, 60);
     canvas.setTextColor(QUIET); canvas.drawString(String(TEXT_MAX - typedWord.length()) + " letters left   enter: send", 12, 84);
   }
-  if (bannerUntil && millis() < bannerUntil) { canvas.setTextColor(day); canvas.drawString(banner, 10, H - 34); }
+  if (bannerUntil && millis() < bannerUntil) { canvas.setTextColor(readable(day)); canvas.drawString(banner, 10, H - 34); }
   return mode == M_TYPE ? "type    enter: send    hold: back" : mode == M_ACTS ? "turn: choose    press: send    hold: back"
                         : (board.hasSideKey() ? "turn: choose    press: open    top button: done" : "turn: choose    press: open    hold: done");
 }

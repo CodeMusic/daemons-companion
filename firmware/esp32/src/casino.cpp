@@ -478,7 +478,7 @@ static String drawSlots(uint16_t day, uint16_t ink) {
   // the money, the bet, and a word
   canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM); canvas.setTextColor(PAPER);
   canvas.drawString("MONEY " + String(shownBalance), f.x0, f.infoY);                // DRAFT
-  canvas.setTextDatum(TC_DATUM); canvas.setTextColor(day);
+  canvas.setTextDatum(TC_DATUM); canvas.setTextColor(readable(day));
   canvas.drawString("BET " + String(bet), W / 2 + (board.round ? 0 : 10), f.infoY);  // DRAFT
   canvas.setTextDatum(TR_DATUM); canvas.setTextColor(QUIET);
   if (!board.round && note.length()) canvas.drawString(note, right, f.infoY);
@@ -562,7 +562,7 @@ static void readCable() {
 
 static void loading(const String &what) {
   runPanel = [](uint16_t day, uint16_t ink) -> String {
-    canvas.setTextFont(4); canvas.setTextColor(day); canvas.setTextDatum(MC_DATUM);
+    canvas.setTextFont(4); canvas.setTextColor(readable(day)); canvas.setTextDatum(MC_DATUM);
     canvas.drawString("CASINO", W / 2, H / 2 - 18);                                // DRAFT
     canvas.setTextFont(2); canvas.setTextColor(QUIET);
     canvas.drawString(runResult, W / 2, H / 2 + 14);
@@ -661,11 +661,14 @@ String runSlots() {
     int w[slots::OUTCOME_N]; slots::weightsFor(slots::pullReturn(st.casino.luck, cat), w);
     outcome = rigged ? rigNext : slots::drawFrom(w); rigNext = -1; piecesFor(outcome, want);
     nearWanted = -1;
+    uint8_t third[STRIP]; for (int i = 0; i < STRIP; i++) third[i] = reels[2].strip[i];   // the third reel as it is
     if (outcome == O_LOSE && (float)(esp_random() % 1000) / 1000.0f < slots::nearChance(cat)) {
-      uint8_t p[3], wanted; slots::nearPieces(p, wanted);
-      for (int k = 0; k < 3; k++) want[k] = p[k];
-      nearWanted = wanted;
-    } else if (outcome == O_JACK2) nearWanted = P_JACK;
+      uint8_t p[3], wanted;
+      if (slots::nearPieces(third, p, wanted)) { for (int k = 0; k < 3; k++) want[k] = p[k]; nearWanted = wanted; }
+    } else if (outcome == O_JACK2) {
+      uint8_t c;
+      if (slots::almostThird(third, c)) { want[2] = c; nearWanted = P_JACK; }
+    }
     unreported -= bet; sessionDelta -= bet; spins++; unreportedSpins++;
     shownBalance = balance();
     for (int k = 0; k < 3; k++) { reels[k].state = SPINNING; reels[k].speed = 0; }

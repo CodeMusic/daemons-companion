@@ -305,7 +305,7 @@ static String rowName(int i) {
 extern void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width);
 
 static String drawToEveryone(uint16_t day, uint16_t ink) {
-  canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
   canvas.drawString(upper(daemonName()) + ", TO EVERY DAEMON", 10, 32);   // DRAFT
   if (rMode == R_TYPE) {
     wrap(rTyped + "_", 12, 58, W - 24, 2, 18, 4, PAPER);
@@ -314,7 +314,7 @@ static String drawToEveryone(uint16_t day, uint16_t ink) {
   int fit = max(1, (H - 70) / 19);
   if (rAt < rTop) rTop = rAt; if (rAt >= rTop + fit) rTop = rAt - fit + 1;
   for (int i = rTop; i < rowsAll() && i < rTop + fit; i++) listRow(i - rTop, rAt - rTop, rowName(i), day, ink, W - 12);
-  if (rWhat.length()) { canvas.setTextFont(1); canvas.setTextColor(day); canvas.setTextDatum(BL_DATUM); canvas.drawString(rWhat, 10, H - 18); }
+  if (rWhat.length()) { canvas.setTextFont(1); canvas.setTextColor(readable(day)); canvas.setTextDatum(BL_DATUM); canvas.drawString(rWhat, 10, H - 18); }
   return "turn: choose    press: send it    top button: back";             // DRAFT
 }
 
@@ -357,7 +357,7 @@ String runToEveryone() {
 }
 
 static String drawWhatCame(uint16_t day, uint16_t ink) {
-  canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
   canvas.drawString("WHAT CAME", 10, 32);                                // DRAFT
   if (!recentN) { wrap("Nothing yet. A broadcast from any daemon -- over LoRa, Bluetooth or the companion -- shows here.", 12, 58, W - 24, 2, 18, 4, QUIET); return "top button: back"; }
   int fit = max(1, (H - 70) / 19);

@@ -121,13 +121,31 @@ export function learn(cat: Cat, outcome: number, rand: () => number = Math.rando
 // a loss falls near (the winning piece one place off the line) this often -- oftener the nearer the string
 export const nearChance = (cat: Cat) => Math.min(0.6, 0.25 + 0.35 * Math.max(0, cat.reach));
 
-// near: three pieces for a loss that ALMOST won -- two alike and the third not, the piece the third wanted being the
-// one to show beside the line (stopNear)
-export function nearPieces(rand: () => number = Math.random): { pieces: [Piece, Piece, Piece]; wanted: Piece } {
-  const pick = [1, 2, 3, 4][Math.floor(rand() * 4)] as Piece;          // a friend or the coin: two JACKs would pay
-  let c = Math.floor(rand() * 6) as Piece;
-  while (c === pick || outcomeOf(pick, pick, c) !== 0) c = Math.floor(rand() * 6) as Piece;
-  return { pieces: [pick, pick, c], wanted: pick };
+// near: three pieces for a loss that ALMOST won -- two alike and the third not -- chosen from what the third reel
+// really has: its piece is one that sits beside the piece it wanted, so the wanted one shows one place off the line
+// (stopNear). Null where no such pair comes round on that reel (seen on the watch, 2026-10-18: a "SO CLOSE" whose
+// wanted piece was nowhere near the line).
+const besideOn = (reel: Piece[], wanted: Piece) =>
+  reel.flatMap((p, i) => p === wanted ? [reel[(i + STRIP - 1) % STRIP], reel[(i + 1) % STRIP]] : []);
+export function nearPieces(reel3?: Piece[], rand: () => number = Math.random): { pieces: [Piece, Piece, Piece]; wanted: Piece } | null {
+  if (!reel3) {                                   // an older caller, without the reel: as before -- not always truly near
+    const pick = ([1, 2, 3, 4] as Piece[])[Math.floor(rand() * 4)];
+    let c = Math.floor(rand() * 6) as Piece;
+    while (c === pick || outcomeOf(pick, pick, c) !== 0) c = Math.floor(rand() * 6) as Piece;
+    return { pieces: [pick, pick, c], wanted: pick };
+  }
+  const order = ([1, 2, 3, 4] as Piece[]).sort(() => rand() - 0.5);   // a friend or the coin: two JACKs would pay
+  for (const pick of order) {
+    const c = besideOn(reel3, pick).filter((x) => x !== pick && outcomeOf(pick, pick, x) === 0);
+    if (c.length) return { pieces: [pick, pick, c[Math.floor(rand() * c.length)]], wanted: pick };
+  }
+  return null;
+}
+// two JACKs (a 2x): the third reel's piece one that sits beside a JACK, so a JACK shows one place off the line --
+// almost the jackpot. Null where no such piece comes round.
+export function almostThird(reel3: Piece[], rand: () => number = Math.random): Piece | null {
+  const c = besideOn(reel3, JACK).filter((x) => x !== JACK);
+  return c.length ? c[Math.floor(rand() * c.length)] : null;
 }
 // where a reel stops for its piece with another piece beside it, one place off the line -- or, if no such place comes
 // round in one turn, where it would stop anyway

@@ -178,7 +178,7 @@ static String drawRadio(uint16_t day, uint16_t ink) {
     canvas.setTextColor(QUIET);
     canvas.drawString("KNOWS " + String(knownN) + "/" + String(KNOWN_MAX), 10, 104);   // DRAFT
     canvas.drawRect(10, 115, 62, 6, QUIET);
-    if (k >= 0) { canvas.fillRect(11, 116, 60, 4, day); canvas.setTextColor(day); canvas.drawString("KNOWN", 10, 124); }   // DRAFT
+    if (k >= 0) { canvas.fillRect(11, 116, 60, 4, day); canvas.setTextColor(readable(day)); canvas.drawString("KNOWN", 10, 124); }   // DRAFT
     else if (pn.attune) {
       canvas.fillRect(11, 116, 60 * pn.attune / 100, 4, PAPER);
       canvas.setTextColor(PAPER); canvas.drawString("ATTUNING", 10, 124);   // DRAFT
@@ -193,7 +193,7 @@ static String drawRadio(uint16_t day, uint16_t ink) {
   String num = freqNumber(pn.f, pn.fm);
   canvas.drawString(num, fx, 30);
   int tw = canvas.textWidth(num);
-  canvas.setTextFont(2); canvas.setTextColor(day);
+  canvas.setTextFont(2); canvas.setTextColor(readable(day));
   canvas.drawString(pn.fm ? "MHz" : "kHz", fx + tw + 4, 62);
   canvas.setTextFont(1); canvas.setTextColor(QUIET);
   canvas.drawString(pn.fm ? "CONTEXT" : "LATENT", fx + tw + 4, 34);

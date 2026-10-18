@@ -172,11 +172,13 @@ void turn(int step) {
     // C-159: SOUND before it, on or off on the board itself
     static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE };
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
-    const Page *order = face ? WATCH : EMBED; int n = face ? 7 : 6, at = 0;
+    // C-163: the watch has no SWITCH OFF -- its crown held sleeps, held longer switches it off (its power chip)
+    const Page *order = face ? WATCH : EMBED; int n = face ? (board.kind == BoardKind::TWatchS3 ? 6 : 7) : 6, at = 0;
     for (int i = 0; i < n; i++) if (order[i] == page) at = i;
     page = order[(at + n + step) % n];
   }
   else if (screen == TYPES) typeAt = (typeAt + typeCount + step) % typeCount;
+  else if (screen == CARE_GRID) gridAt = (gridAt + 4 + step) % 4;                // C-163: a swipe, tile to tile
   else if (screen == PARTY && partyRows()) partyAt = partyAtRow((partyRowOf(partyAt) + partyRows() + step) % partyRows());   // C-68
   else if (screen == MOVES && st.party[partyAt].n) moveAt = (moveAt + st.party[partyAt].n + step) % st.party[partyAt].n;
   else if (screen == CARE) careAt = (careAt + 5 + step) % 5;        // C-114: FEED WATER TRAIN SLEEP, its INDEX entry
@@ -238,6 +240,7 @@ void press() {
     else { screen = LIST; routineAt = 0; }
   }
   else if (screen == CARE_KEYS) { careDo(0); goHome(); }          // C-149: the cable's KEY PRESS is B, which feeds
+  else if (screen == CARE_GRID) { careDo(careGridKind(gridAt)); goHome(); }   // C-163: the tile chosen, then home
   else if (screen == PARTY) {
     if (partyAt >= st.partyN) { if (partyFirst()) { screen = TYPES; typeAt = 0; } }   // the radios' row
     else if (!st.party[partyAt].n) say("No routines yet");                         // DRAFT
@@ -286,6 +289,7 @@ void back() {
   if (screen == COMPOSE) { screen = HOME; composing = ""; dirty = true; return; }   // C-123: not sent
   else if (screen == INDEX_ENTRY) { if (quickScreen()) goHome(); else { screen = CARE; careAt = 4; } }   // C-149
   else if (screen == CARE_KEYS) goHome();                                    // C-149: nothing done
+  else if (screen == CARE_GRID) goHome();                                    // C-163: nothing done
   else if (screen == CARE) { screen = HOME; page = DAEMON; }
   else if (screen == TYPE_PASS) { if (typed.length()) typed.remove(typed.length() - 1); else screen = PICK_NET; }
   else if (screen == PICK_NET || screen == PICK_REMOTE) screen = LIST;

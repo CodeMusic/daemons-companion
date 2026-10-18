@@ -345,18 +345,21 @@ bool faceHasDaemon() { return !wide() && cfg.face != "virtue" && st.carrying; }
 int talkReach() { return faceHasDaemon() ? 56 : 30; }
 static int faceDaemonY() { return cfg.face == "clock" ? 120 : 130; }   // the middle of the daemon, for TALK
 
-// the daemon on a face, alive as at home (C-42, C-119): it breathes and now and then hops; no den, a shadow under it
-static void faceDaemon(int cx, int floorY, int sc) {
+// the daemon on a face, alive as at home (C-42, C-113, C-119): it breathes, now and then hops, and walks a little from
+// side to side, facing the way it goes -- in its expression, its eyes and its mark; no den, a shadow under it
+static void faceDaemon(int cx, int floorY, int sc, int room) {
   uint32_t t = millis();
   bool still = expression.still;
   int bob = still ? 0 : (int)roundf(3 * expression.bob * sinf(t / 420.0f));
   int hop = still ? 0 : (t % 7000) < 260 ? -(int)(10 * sinf((t % 7000) / 260.0f * PI)) : 0;
   if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
-  int side = 64 * sc, ax = cx - side / 2 + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
+  float walk = still ? 0.5f : 0.5f + 0.5f * sinf(t / 5200.0f);   // C-163: 0 the left of its room, 1 the right
+  bool right = !still && cosf(t / 5200.0f) > 0;                   // going right: the sprite mirrored
+  int side = 64 * sc, ax = cx - side / 2 + (int)(room * (walk - 0.5f)) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
   int ay = floorY - side + 4 * sc + bob + hop;
-  canvas.fillEllipse(cx, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
-  drawArt(ax, ay, sc);
-  drawMark(ax, ay, sc, false, 26);
+  canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
+  drawArt(ax, ay, sc, right);
+  drawMark(ax, ay, sc, right, 26);
 }
 
 // the daemon's ring while TALK listens
@@ -366,13 +369,12 @@ static void faceListening(uint16_t day) {
   for (int k = 0; k < 3; k++) canvas.drawCircle(W / 2, cy, 66 + k, day);
 }
 
-// a line of the day's words, as large as the circle leaves room for at that height
+// a line of the day's words, as large as the circle leaves room for at that height, edged over the sky
 static void faceLine(const String &text, int y, uint16_t colour) {
   int r = min(W, H) / 2 - 6, dy = abs(y - H / 2), room = 2 * (int)sqrtf(max(0, r * r - dy * dy));
   canvas.setTextFont(2);
   if (canvas.textWidth(text) > room) canvas.setTextFont(1);
-  canvas.setTextColor(colour);
-  canvas.drawString(text, W / 2, y);
+  edgedString(text, W / 2, y, colour);
 }
 
 // the bottom line: the chakra and note -- or the battery, when it runs low off the cable
@@ -387,44 +389,44 @@ static void faceRing(uint16_t day) {
   for (int k = 2; k <= 4; k++) canvas.drawCircle(W / 2, H / 2, r - k, day);
 }
 
+// C-163: the sky first, the daemon on its hill, the weather in front of it, the words over all of it
 static void drawFaceDaemon(uint16_t day) {
+  canvas.fillRect(0, 0, W, 26, INK);
+  faceSky(186);
   faceRing(day);
-  canvas.setTextDatum(MC_DATUM);
-  canvas.setTextFont(2); canvas.setTextColor(readable(day));
-  canvas.drawString(upper(st.theme.length() ? st.theme : st.day), W / 2, 34);
   struct tm t; char hm[6] = "--:--";
   if (watchLocalTime(t)) snprintf(hm, sizeof hm, "%02d:%02d", t.tm_hour, t.tm_min);
-  if (st.carrying) {
-    canvas.setTextFont(4); canvas.setTextColor(PAPER);
-    canvas.drawString(hm, W / 2, 57);
-    faceDaemon(W / 2, 188, 2);
-    faceListening(day);
-  } else {
-    canvas.setTextFont(7); canvas.setTextColor(PAPER);
-    canvas.drawString(hm, W / 2, 96);
-    canvas.setTextFont(1); canvas.setTextColor(QUIET);
-    canvas.drawString("NO DAEMON HERE", W / 2, 146);         // DRAFT
+  canvas.setTextDatum(MC_DATUM);
+  if (st.carrying) { faceDaemon(W / 2, 188, 2, 56); faceListening(day); }
+  faceWeather();
+  canvas.setTextFont(2); edgedString(upper(st.theme.length() ? st.theme : st.day), W / 2, 34, readable(day));
+  if (st.carrying) { canvas.setTextFont(4); edgedString(hm, W / 2, 57, PAPER); }
+  else {
+    canvas.setTextFont(7); edgedString(hm, W / 2, 96, PAPER);
+    canvas.setTextFont(1); edgedString("NO DAEMON HERE", W / 2, 146, QUIET);   // DRAFT
   }
   faceLine(upper(st.virtue), 207, PAPER);
-  canvas.setTextFont(1); canvas.setTextColor(bat.present && !bat.usb && bat.percent <= 20 ? 0xF800 : QUIET);
-  canvas.drawString(faceFoot(), W / 2, 225);
+  canvas.setTextFont(1);
+  edgedString(faceFoot(), W / 2, 225, bat.present && !bat.usb && bat.percent <= 20 ? 0xF800 : faceSkyOn() ? 0xCE59 : QUIET);
   canvas.setTextDatum(TL_DATUM);
 }
 
 static void drawFaceClock(uint16_t day) {
+  canvas.fillRect(0, 0, W, 26, INK);
+  faceSky(186);
   faceRing(day);
   int cx = W / 2, cy = H / 2;
+  uint16_t tick = faceSkyOn() ? readable(day) : day;
   for (int i = 0; i < 12; i++) {                             // the hours, longer at twelve, three, six and nine
     float a = i * PI / 6;
     int in = i % 3 ? 104 : 96;
-    canvas.drawWideLine(cx + in * sinf(a), cy - in * cosf(a), cx + 112 * sinf(a), cy - 112 * cosf(a), i % 3 ? 1.0f : 2.0f, day);   // r: half the width
+    canvas.drawWideLine(cx + in * sinf(a), cy - in * cosf(a), cx + 112 * sinf(a), cy - 112 * cosf(a), i % 3 ? 1.0f : 2.0f, tick);   // r: half the width
   }
-  canvas.setTextDatum(MC_DATUM);
-  canvas.setTextFont(1); canvas.setTextColor(readable(day));
-  canvas.drawString(upper(st.theme.length() ? st.theme : st.day), cx, 50);
-  if (st.carrying) { faceDaemon(cx, 176, 2); faceListening(day); }
-  canvas.setTextFont(1); canvas.setTextColor(PAPER);
-  canvas.drawString(upper(st.virtue), cx, 196);
+  if (st.carrying) { faceDaemon(cx, 176, 2, 48); faceListening(day); }
+  faceWeather();
+  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
+  edgedString(upper(st.theme.length() ? st.theme : st.day), cx, 50, readable(day));
+  edgedString(upper(st.virtue), cx, 196, PAPER);
   struct tm t;
   if (watchLocalTime(t)) {                                   // the hands over the daemon, each edged in INK to stand off it
     float m = (t.tm_min + t.tm_sec / 60.0f) * PI / 30, h = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;
@@ -500,6 +502,8 @@ void draw() {
     drawArt(W - 70, 34, 1);
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     footer(hint("turn: choose    press: do it    top button: back"));
+  } else if (screen == CARE_GRID) {                           // C-163: the watch's CARE, four tiles
+    drawCareGrid(day, ink);
   } else if (screen == CARE_KEYS) {                           // C-149: CARE from home -- a button each, then home
     canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);                   // DRAFT

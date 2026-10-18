@@ -56,7 +56,8 @@ struct State {
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
                   bool meet = true; int band = 433;   // meet: C-15, meeting others nearby; band: C-72, LoRa
                   bool wakeEvery = false;      // C-159: the wake jingle on every wake, not only at power-up
-                  String face = "daemon"; };   // C-162: the round face -- daemon, clock or virtue
+                  String face = "daemon";      // C-162: the round face -- daemon, clock or virtue
+                  bool faceSky = true; };      // C-163: the season behind the daemon's faces, and the weather in front
 extern State st;
 extern Settings cfg;
 extern bool dirty;
@@ -82,7 +83,8 @@ String daemonName();                      // C-51: the routines speak in its nam
 enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_PAGE };   // C-159: SOUND, on or off on the board   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE,   // TALK: C-66; COMPOSE: C-123
-              CARE_KEYS };                // C-149: the three-button boards' CARE -- a button each, then home
+              CARE_KEYS,                  // C-149: the three-button boards' CARE -- a button each, then home
+              CARE_GRID };                // C-163: the watch's CARE -- four tiles, a double tap on the face
 extern String composing;                  // C-123: the message being typed, to everyone nearby
 void keyboardIn(int c);                   // one key from the T-Deck's keyboard (or the cable's KEY TYPE)
 extern Page page;
@@ -142,6 +144,18 @@ bool wide();                              // C-105: a screen wide enough for two
 void talkSpot(int &x, int &y);            // where the face's TALK button is (drawn there, touched there)
 int talkReach();                          // C-162: how far from it a finger still talks -- the daemon is larger than a button
 bool faceHasDaemon();                     // C-162: the face shows the daemon (and holding it talks)
+// C-163 (faces.cpp): the faces' sky and weather, and the watch's CARE grid
+String seasonLook();                      // casino.cpp: the companion's dress -- leaves, petals, snow, rain, stars ...
+uint32_t seasonColour(int k);             // casino.cpp: its two colours, 0 and 1
+bool faceSkyOn();
+void faceSky(int hillTop);                // the season's sky in the face's circle, and the hill the daemon stands on
+void faceWeather();                       // the weather (or the season's own) falling in front
+void edgedString(const String &s, int x, int y, uint16_t colour);   // words edged in INK, over the sky
+extern int gridAt;
+int careGridAt(int x, int y);             // the tile at a point, or -1
+int careGridKind(int tile);               // careDo's kind for a tile
+void openCareGrid();
+void drawCareGrid(uint16_t day, uint16_t ink);
 bool tapRowAt(int y, int &off);           // C-161: the list row drawn at y, as an offset from the chosen one
 void goHomeNow();                         // C-161: the crown pressed twice
 void cableFlush(uint32_t ms = 60);       // C-105: send what was printed, waiting at most this long for a reader

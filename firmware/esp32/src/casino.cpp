@@ -859,3 +859,7 @@ String runSlots() {
   String how = sessionDelta > 0 ? "won " + String(sessionDelta) : sessionDelta < 0 ? "lost " + String(-sessionDelta) : "came out even";
   return daemonName() + " " + how + " in " + String(spins) + (spins == 1 ? " spin" : " spins") + ".\n\nThe game's money changes at the next SYNC.";   // DRAFT
 }
+
+// C-163: the look and its colours, for the watch's faces (faces.cpp) -- the same rule as the reels
+String seasonLook() { return lookNow(); }
+uint32_t seasonColour(int k) { return k ? colourB() : colourA(); }

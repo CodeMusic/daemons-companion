@@ -25,6 +25,7 @@ void loadSettings() {
   cfg.meet = p.getBool("meet", cfg.meet); cfg.band = p.getInt("band", cfg.band);
   cfg.wakeEvery = p.getBool("wake", cfg.wakeEvery);         // C-159
   cfg.face = p.getString("face", cfg.face);                 // C-162
+  cfg.faceSky = p.getBool("sky", cfg.faceSky);              // C-163
   p.end();
   applySettings();
 }
@@ -35,6 +36,7 @@ static void saveSettings() {
   p.putInt("volume", cfg.volume); p.putInt("ring", cfg.ring); p.putBool("meet", cfg.meet); p.putInt("band", cfg.band);
   p.putBool("wake", cfg.wakeEvery);                         // C-159
   p.putString("face", cfg.face);                            // C-162
+  p.putBool("sky", cfg.faceSky);                            // C-163
   p.end();
 }
 // C-159: SOUND changed on the board -- a state already on its way still says the old one, so for a little while the
@@ -52,9 +54,10 @@ void takeSettings(JsonVariant s) {
   got.meet = s["meet"] | cfg.meet; got.band = s["band"] | cfg.band;
   got.wakeEvery = String((const char *)(s["wakeSound"] | (cfg.wakeEvery ? "every" : "power"))) == "every";   // C-159
   got.face = s["face"] | cfg.face.c_str();                  // C-162
+  got.faceSky = s["faceSky"] | cfg.faceSky;                 // C-163
   if (soundHereAt && millis() - soundHereAt < 30000) got.sound = cfg.sound;
   if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
-      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery && got.face == cfg.face) return;
+      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery && got.face == cfg.face && got.faceSky == cfg.faceSky) return;
   cfg = got;
   saveSettings();
   applySettings();

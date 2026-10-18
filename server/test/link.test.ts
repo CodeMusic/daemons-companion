@@ -107,7 +107,7 @@ describe("the board's settings, set on the site (C-43)", () => {
   it("starts at the daemon, sleeps after two minutes, and carries them in the state", async () => {
     const s = await get("/api/device/settings");
     expect(s).toEqual({ home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
-                        palette: "checkpoint", band: 433, wakeSound: "power", face: "daemon" });   // band: C-72; wakeSound: C-159; face: C-162                                                       // C-90
+                        palette: "checkpoint", band: 433, wakeSound: "power", face: "daemon", faceSky: true });   // band: C-72; wakeSound: C-159; face: C-162; faceSky: C-163                                                       // C-90
     expect((await get("/api/device/state")).settings).toEqual(s);
   });
 

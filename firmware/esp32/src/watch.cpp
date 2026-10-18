@@ -295,9 +295,16 @@ static void touchLoop(uint32_t now) {
   if (abs(dx) > 50 && abs(dx) > abs(dy)) turn(dx < 0 ? 1 : -1);  // swipe left: the next page, as the dial turned right
   else if (abs(dy) > 50) turn(dy < 0 ? 1 : -1);
   else if (now - downAt > 700) back();
-  else {                                                       // C-161: a tap on a list's row opens that row
-    int off;
-    if (screen != HOME && tapRowAt(yFrom, off) && off) turn(off);
+  else {
+    int off, tile;
+    if (screen == CARE_GRID && (tile = careGridAt(xFrom, yFrom)) >= 0) { gridAt = tile; press(); return; }   // C-163
+    if (screen == HOME && page == FACE_PAGE) {                 // C-163: a double tap on the face opens CARE; one does nothing
+      static uint32_t tapAt = 0;
+      if (tapAt && now - tapAt < 450) { tapAt = 0; if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT
+      else tapAt = now;
+      return;
+    }
+    if (screen != HOME && tapRowAt(yFrom, off) && off) turn(off);   // C-161: a tap on a list's row opens that row
     press();
   }
 }

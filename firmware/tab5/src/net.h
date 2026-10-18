@@ -30,8 +30,10 @@ void netBegin();
 const String &deviceId();            // "m5-tab5-" and the end of its MAC (C-80)
 // What the screen asks for
 void netJoin(const String &ssid, const String &pass);
-void netScan();                      // fills netNetworks
-extern String netNetworks[16]; extern int netNetworkCount;
+void netScan();                      // the networks near, read with netNetworksNear
+// C-157 (the review: the scan's list was written on the network's task and read on the screen's, unlocked): a copy of the
+// networks the last scan found, up to 16; returns how many
+int netNetworksNear(String out[16]);
 void netPair(const String &server, const String &code);
 void netSyncNow();                   // download everything again
 void netGameSync();                  // SYNC with the game: only when the companion answers (it writes the save)

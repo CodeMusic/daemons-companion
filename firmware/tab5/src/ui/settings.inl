@@ -1,10 +1,10 @@
 // Part of ui.cpp (C-157): SETTINGS' pieces: Wi-Fi and pairing, which way up, LIGHT/DARK/AUTO. Included by ui.cpp in order -- not a file of its own: it
 // shares ui.cpp's statics and may use anything the parts before it declare.
 // ---- SETTINGS: Wi-Fi, pairing, what is kept ---------------------------------------------------------------------------
-static String pickedSsid, pairServer;
+static String pickedSsid, pairServer, shownNetworks[16];   // shownNetworks: the scan as SETTINGS drew it
 static void joinWith(const String &pass) { netJoin(pickedSsid, pass); }
 static void tapNetwork(lv_event_t *e) {
-  pickedSsid = netNetworks[(int)(long)lv_event_get_user_data(e)];
+  pickedSsid = shownNetworks[(int)(long)lv_event_get_user_data(e)];
   askText("The password for " + pickedSsid, "", true, false, joinWith);
 }
 static void tapScan(lv_event_t *) { netScan(); }

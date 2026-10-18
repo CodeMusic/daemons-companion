@@ -16,7 +16,8 @@ static void drawSettings(lv_obj_t *p) {
   label(w, net.wifi ? "Joined " + netNetworkName() : "Not on a network", &lv_font_montserrat_28, INK);
   button(w, "LOOK FOR NETWORKS", tapScan, nullptr, false);
   lv_obj_t *r = row(w);
-  for (int i = 0; i < netNetworkCount; i++) button(r, netNetworks[i], tapNetwork, (void *)(long)i, false);
+  int near = netNetworksNear(shownNetworks);         // C-157: a copy, taken under the network task's lock
+  for (int i = 0; i < near; i++) button(r, shownNetworks[i], tapNetwork, (void *)(long)i, false);
   lv_obj_t *c = card(p);
   label(c, "THE COMPANION", &lv_font_montserrat_20, QUIET);
   label(c, net.paired ? "Paired with " + serverAddress() : "Not paired yet", &lv_font_montserrat_28, INK);

@@ -39,7 +39,11 @@ static uint32_t bitFor(const char *name) {
   for (int i = 0; i < 7; i++) if (!strcmp(name, N[i])) return 1u << i;
   return 0;
 }
-String netNetworks[16]; int netNetworkCount = 0;
+static String netNetworks[16]; static int netNetworkCount = 0;   // the last scan's, under statusLock
+int netNetworksNear(String out[16]) {
+  lockStatus(); int n = netNetworkCount; for (int i = 0; i < n; i++) out[i] = netNetworks[i]; unlockStatus();
+  return n;
+}
 
 static String server, token, relay, ssids[5], passes[5];
 static int known = 0;
@@ -630,8 +634,9 @@ static void netTask(void *) {
     xSemaphoreGive(jobLock);
     if (j == JOIN) join(a, b);
     else if (j == SCAN) {
-      int n = WiFi.scanNetworks(); netNetworkCount = 0;
-      for (int i = 0; i < n && netNetworkCount < 16; i++) if (WiFi.SSID(i).length()) netNetworks[netNetworkCount++] = WiFi.SSID(i);
+      int n = WiFi.scanNetworks(); String found[16]; int k = 0;
+      for (int i = 0; i < n && k < 16; i++) if (WiFi.SSID(i).length()) found[k++] = WiFi.SSID(i);
+      lockStatus(); for (int i = 0; i < k; i++) netNetworks[i] = found[i]; netNetworkCount = k; unlockStatus();
       WiFi.scanDelete(); changed(K_NETS);
     }
     else if (j == PAIR) pair(a, b);

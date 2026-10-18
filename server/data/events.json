@@ -698,6 +698,162 @@
   },
   {
    "n": 51,
+   "name": "ROLLOVER",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3096
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_ROLLOVER"
+    ]
+   }
+  },
+  {
+   "n": 52,
+   "name": "EVEN LIGHT, SPRING",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3097
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_EVEN_LIGHT_SPRING"
+    ]
+   }
+  },
+  {
+   "n": 53,
+   "name": "EVEN LIGHT, AUTUMN",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3098
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_EVEN_LIGHT_AUTUMN"
+    ]
+   }
+  },
+  {
+   "n": 54,
+   "name": "DAWN VIGIL",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3099
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_DAWN_VIGIL"
+    ]
+   }
+  },
+  {
+   "n": 55,
+   "name": "FIRST FROST",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3100
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_FIRST_FROST"
+    ]
+   }
+  },
+  {
+   "n": 56,
+   "name": "DEN DAY",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3101
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_DEN_DAY"
+    ]
+   }
+  },
+  {
+   "n": 57,
+   "name": "FLEDGLING DAY",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3102
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_FLEDGLING_DAY"
+    ]
+   }
+  },
+  {
+   "n": 58,
+   "name": "LANTERN NIGHTS",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3103
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_LANTERN_NIGHTS"
+    ]
+   }
+  },
+  {
+   "n": 59,
+   "name": "SCIENCE FAIR",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3104
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_SCIENCE_FAIR"
+    ]
+   }
+  },
+  {
+   "n": 60,
+   "name": "TRUCE DAY",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3105
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_TRUCE_DAY"
+    ]
+   }
+  },
+  {
+   "n": 61,
+   "name": "MARIGOLD DAYS",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3106
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_MARIGOLD_DAYS"
+    ]
+   }
+  },
+  {
+   "n": 62,
+   "name": "GIVING THANKS",
+   "section": "THE YEAR",
+   "held": {
+    "all_flags": [
+     3107
+    ],
+    "flag_names": [
+     "FLAG_YEAR_LINE_GIVING_THANKS"
+    ]
+   }
+  },
+  {
+   "n": 63,
    "name": "STREAM AND HEARSAY",
    "section": "GAME EVENTS",
    "held": null,
@@ -714,7 +870,7 @@
    "note": "the page only gives this row (the STREAM and HEARSAY in the bag, every show told)"
   },
   {
-   "n": 52,
+   "n": 64,
    "name": "COMPANION LINKED",
    "section": "GAME EVENTS",
    "held": {

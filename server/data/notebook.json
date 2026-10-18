@@ -10,7 +10,8 @@
   "PROSPECTUS",
   "PEER REVIEW",
   "INSIGHT",
-  "SONGBOOK"
+  "SONGBOOK",
+  "THE YEAR"
  ],
  "pages": [
   {
@@ -1020,6 +1021,150 @@
     48
    ],
    "heard": 2929
+  },
+  {
+   "section": 10,
+   "title": "ROLLOVER",
+   "kind": "text",
+   "flag": 3096,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "The count ran out and began again. Nothing I learned was kept in the number.",
+   "seen": 2885,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "EVEN LIGHT, SPRING",
+   "kind": "text",
+   "flag": 3097,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "Day and night came out even. From here the light is the one that grows.",
+   "seen": 2886,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "EVEN LIGHT, AUTUMN",
+   "kind": "text",
+   "flag": 3098,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "Day and night came out even. From here the dark has its turn, and that is fair.",
+   "seen": 2887,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "DAWN VIGIL",
+   "kind": "text",
+   "flag": 3099,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "Others kept watch so this morning could be ordinary. I keep a minute of it for them.",
+   "seen": 2888,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "FIRST FROST",
+   "kind": "text",
+   "flag": 3100,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "The first frost says nothing new. It only says it clearly.",
+   "seen": 2889,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "DEN DAY",
+   "kind": "text",
+   "flag": 3101,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "It brought nothing home. It was already looking ahead for me.",
+   "seen": 2890,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "FLEDGLING DAY",
+   "kind": "text",
+   "flag": 3102,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "Everyone I met was new at this once. The best of them still say so.",
+   "seen": 2891,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "LANTERN NIGHTS",
+   "kind": "text",
+   "flag": 3103,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "A light left in the window is not for me. I leave it on anyway.",
+   "seen": 2892,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "SCIENCE FAIR",
+   "kind": "text",
+   "flag": 3104,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "The result I wanted and the result I got sat side by side. I wrote down the second.",
+   "seen": 2893,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "TRUCE DAY",
+   "kind": "text",
+   "flag": 3105,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "Nobody won today. Everyone went home. That was the whole of it.",
+   "seen": 2894,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "MARIGOLD DAYS",
+   "kind": "text",
+   "flag": 3106,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "Said out loud, they stay in the story. I said the names I have.",
+   "seen": 2895,
+   "place": null,
+   "link": null
+  },
+  {
+   "section": 10,
+   "title": "GIVING THANKS",
+   "kind": "text",
+   "flag": 3107,
+   "flag2": 0,
+   "about": "In your own words, on its day.",
+   "text": "I counted what I had. It came to more than I carried in.",
+   "seen": 2896,
+   "place": null,
+   "link": null
   }
  ],
  "key_colours": [

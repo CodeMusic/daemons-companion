@@ -526,7 +526,7 @@
  },
  "1.126": {
   "map": "Nexus",
-  "place": "S.S. ANNE"
+  "place": "THE NEXUS"
  },
  "2.0": {
   "map": "NavelRock_Exterior",
@@ -1079,6 +1079,10 @@
  "3.77": {
   "map": "SevenIsland_Grove",
   "place": "SEVEN ISLAND"
+ },
+ "3.78": {
+  "map": "Breathverse",
+  "place": "ROUTE 2"
  },
  "4.0": {
   "map": "PalletTown_PlayersHouse_1F",

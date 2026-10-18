@@ -3,6 +3,7 @@
 // firmware/common/tunes.h by firmware/common/tunes.py -- never a copy of our own), on the day's note, on the square wave
 // they play. A file in the cache on the phone; a data URI on the site.
 import { Platform } from "react-native";
+import { sampledWav, type Instrument } from "./instrument";
 import { wav } from "./squareWave";
 
 const TUNES: { tunes: Record<string, [number, number][]>; wakeBase: number } = require("../server/data/tunes.json");
@@ -18,16 +19,25 @@ let mine: Hearing = null;
 export const hearSettings = (s: Hearing) => { if (s) mine = s; };
 export const soundLevel = (s: Hearing = mine) => (s?.sound === false ? 0 : Math.min(1, (s?.volume ?? 60) / 70));
 
+// T-425: the game's own instrument for the save's edition (instrument.ts), once its samples are loaded -- until then, and
+// wherever they cannot be, the boards' square wave on the same notes
+let voice: { name: string; pcm: Int16Array; ins: Instrument } | null = null;
+export const playWith = (v: typeof voice) => { voice = v; };
+export const voiceName = () => voice?.name ?? "square";
+// any tune's bytes in the voice playing now (PLAY's songs too, songSound.ts)
+export const tuneWav = (notes: [number, number][], root: number, level = 1) =>
+  voice ? sampledWav(notes, root, voice.pcm, voice.ins, level) : wav(notes, root, level);
+
 export function tuneSound(name: string, root: number, level = 1): string | null {
   const notes = TUNES.tunes[name];
   if (!notes) return null;
-  const bytes = wav(notes, root, level);
+  const bytes = tuneWav(notes, root, level);
   if (Platform.OS === "web") {
     let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     return `data:audio/wav;base64,${btoa(bin)}`;
   }
   const { File, Paths }: typeof import("expo-file-system") = require("expo-file-system");
-  const f = new File(Paths.cache, `tune-${name}-${root}-${Math.round(level * 100)}.wav`);
+  const f = new File(Paths.cache, `tune-${voiceName()}-${name}-${root}-${Math.round(level * 100)}.wav`);
   if (!f.exists) { f.create(); f.write(bytes); }
   return f.uri;
 }

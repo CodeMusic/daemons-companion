@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { wav } from "./squareWave";
+import { tuneWav, voiceName } from "./tuneSound";
 // C-156: a SONGBOOK song played -- its notes as the game plays them when it is HEARD (C4 middle C), each held for its
 // frames (60 a second; 15, and 40 for the last, until DAEMONS exports a song's own), on the same square wave. On the
 // phone a file in the cache; on the site a data URI, as the web has no files.
@@ -10,13 +10,13 @@ const midiOf = (n: string) => {
 };
 export function songSound(name: string, notes: string[], frames?: number[] | null): string {
   const tune: [number, number][] = notes.map((n, i) => [midiOf(n) ?? 60, Math.round(((frames?.[i] ?? (i === notes.length - 1 ? 40 : 15)) * 1000) / 60)]);
-  const bytes = wav(tune, 0);
+  const bytes = tuneWav(tune, 0);                     // T-425: in the game's own instrument once it is loaded
   if (Platform.OS === "web") {                        // the site
     let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     return `data:audio/wav;base64,${btoa(bin)}`;
   }
   const { File, Paths }: typeof import("expo-file-system") = require("expo-file-system");
-  const f = new File(Paths.cache, `song-${name.replace(/[^A-Za-z0-9]/g, "_")}-${tune.length}.wav`);
+  const f = new File(Paths.cache, `song-${voiceName()}-${name.replace(/[^A-Za-z0-9]/g, "_")}-${tune.length}.wav`);
   if (!f.exists) { f.create(); f.write(bytes); }
   return f.uri;
 }

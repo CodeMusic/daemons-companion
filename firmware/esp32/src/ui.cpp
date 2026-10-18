@@ -218,10 +218,10 @@ void drawRoutines(uint16_t day) {
     for (int i = from; i < netCount && i < from + fit; i++)
       listRow(i - from, netAt - from, nets[i] + "  " + String(netRssi[i]) + " dBm", day, ink);
   } else if (screen == COMPOSE) {             // C-123: a message to everyone nearby, typed on the keyboard
-    canvas.drawString("A MESSAGE TO EVERYONE NEARBY", 10, 32);                    // DRAFT
+    canvas.drawString(W >= 300 ? "A WORD TO EVERY DAEMON" : "TO EVERY DAEMON", 10, 32);   // C-134: every way, DRAFT
     wrap(composing + "_", 10, 56, W - 20, 2, 18, 5, PAPER);
     canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
-    canvas.drawString(String(loraTextMax() - (int)composing.length()) + " letters left   from " + daemonName(), 10, H - 34);   // DRAFT
+    canvas.drawString(String(80 - (int)composing.length()) + " letters left   from " + daemonName(), 10, H - 34);   // DRAFT
   } else if (screen == TYPE_PASS) {
     canvas.drawString("TEACH " + upper(daemonName()) + "  " + nets[netAt], 10, 32);
     canvas.setTextColor(QUIET); canvas.drawString("PASSWORD", 10, 52);

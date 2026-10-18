@@ -5,6 +5,7 @@
 #include "radios.h"
 #include "leds.h"
 #include "sound.h"
+#include "broadcast.h"
 #include "lora.h"
 #include "broadcast.h"                    // C-154: what came while asleep, said on waking
 
@@ -31,7 +32,9 @@ static void sendComposed() {
   screen = HOME; composing = ""; dirty = true;
   if (!t.length()) return;
   if (!st.carrying) { say("No daemon here to carry it"); return; }                 // DRAFT
-  say(loraSay(t) ? "Sent to everyone nearby" : "The radio did not send it");      // DRAFT
+  // C-134 (the user, 2026-10-18: "we should not just ping over lora -- but also over bluetooth -- or over the internet"):
+  // a broadcast -- every way the board has, one id, shown once wherever it lands
+  say(castSend(CAST_SAY, t) ? "Sent to every daemon" : "It did not go");             // DRAFT
 }
 uint8_t keysHeld = 0;                     // C-121: the three buttons down right now (bit 0 A, 1 B, 2 C), lit on the screen
 // C-118: and wake, 4 -- only waking it, from any button while it sleeps
@@ -119,10 +122,10 @@ void keyboardIn(int c) {
   if (screen == COMPOSE) {
     if (c == 13 || c == 10) sendComposed();
     else if (c == 8) { if (composing.length()) composing.remove(composing.length() - 1); else screen = HOME; }
-    else if (c >= 32 && c < 127 && (int)composing.length() < loraTextMax()) composing += (char)c;
+    else if (c >= 32 && c < 127 && composing.length() < 80) composing += (char)c;   // C-134: a broadcast's word
     dirty = true; return;
   }
-  if (screen == HOME && c >= 32 && c < 127 && board.loraChip != LoraChip::None) { screen = COMPOSE; composing = String((char)c); dirty = true; return; }
+  if (screen == HOME && c >= 32 && c < 127) { screen = COMPOSE; composing = String((char)c); dirty = true; return; }   // C-134: any keyboard
   if (screen == TYPE_PASS && c != 13 && c != 10 && c != 8) { if (c >= 32 && c < 127) { typed += (char)c; dirty = true; } return; }
   if (c == 13 || c == 10) { if (screen == TYPE_PASS) wheelAt = 0; press(); }   // Enter on a password: OK
   else if (c == 8) back();

@@ -52,7 +52,6 @@ A device names itself with an `x-device` header, or `?device=` through the relay
 | `GET /api/groves` | the groves' universes, signs and who lives in each -- no save needed (*alone too*) |
 | `GET /api/school` | CALLOW SCHOOL's floors, syllabi, boards and the paper -- no save needed (*alone too*) |
 | `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time, and write in the meetings, the experience earned and what the boards' CASINO won or lost (the money kept between 0 and 999999) (*alone too*) |
-| `POST /api/away/answer` | answer the game's requests to send or bring home a daemon, after a backup |
 | `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |
 | `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines; `?expression=` shades it |
 | `GET /art/species/<id>.png` | a species as the INDEX draws it |

@@ -17,10 +17,15 @@ const KEY = "devices", KEYS = "device.keys";
 export const FRESH_MS = 60_000;
 
 
+// the review, 2026-10-18: one unreadable setting made every /api/device/* request a 500 -- it reads as nothing instead
+function parsed<T>(json: string | null | undefined): Record<string, T> {
+  try { const v = JSON.parse(json ?? "{}"); return v && typeof v === "object" ? v : {}; } catch { return {}; }
+}
+
 export class Devices {
   constructor(private store: Store) {}
 
-  private all(): Record<string, DeviceRow> { return JSON.parse(this.store.getSetting(KEY) ?? "{}"); }
+  private all(): Record<string, DeviceRow> { return parsed(this.store.getSetting(KEY)); }
   private save(rows: Record<string, DeviceRow>) { this.store.setSetting(KEY, JSON.stringify(rows)); }
 
   seen(id: string, via: Via, now = new Date()) {
@@ -57,7 +62,7 @@ export class Devices {
 
   // C-82: a key of its own, for a board away from home that reaches the relay on its own Wi-Fi. Made the first time the
   // board is linked by its cable, and handed to it only down that cable (api.ts); kept as a paired phone's key is.
-  private keys(): Record<string, string> { return JSON.parse(this.store.getSetting(KEYS) ?? "{}"); }
+  private keys(): Record<string, string> { return parsed(this.store.getSetting(KEYS)); }
   keyFor(id: string): string | null {
     if (!validDeviceId(id)) return null;
     const keys = this.keys();

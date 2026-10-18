@@ -8,7 +8,6 @@
 //   GET  /api/profile            C-23: the save's trainer, play time, INDEX counts, MARKS, progress and where it was saved
 //   GET  /api/species/:id        one daemon's name, types, category and its edition's INDEX entry
 //   GET  /api/index              C-24: the save's INDEX -- seen and bound, each entry in the edition's voice, OPUS's margins
-//   POST /api/away/answer        answer the game's AWAY requests in the configured save (C-10), after a backup
 //   POST /api/sync               C-21: the one SYNC -- read the save, receive or return a daemon if the game asked,
 //                                link the save, settle a daemon brought home without the app; the married save only
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
@@ -29,11 +28,10 @@
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform } from "node:os";
-import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
@@ -41,18 +39,11 @@ import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
-import { readProfile } from "./save/profile.js";
-import { readIndex } from "./save/index.js";
-import { answerRequests, syncSave } from "./save/writer.js";
-import { season } from "./seasons.js";
-import { deviceArt, gameRoutines, repaint, streakColours } from "./art.js";
-import { deviceDay, PALETTES, type Palette } from "./days.js";
-import { life } from "./life.js";
-import { levelFromExp } from "./save/growth.js";
+import { deviceArt, repaint, streakColours } from "./art.js";
 import { createConnection } from "node:net";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
-import { assign, carriedFor, carryView } from "./carry.js";
+import { assign, carryView } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { networkInterfaces } from "node:os";
 import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
@@ -65,8 +56,7 @@ import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
-import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, entry,
-         EXP_PER_STEP, daemonLife, grown, ownBeacons, type Host, type SaveFile } from "./core.js";
+import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
 export type { DeviceSettings };
@@ -82,7 +72,10 @@ function fileSave(path: string | null | undefined): SaveFile {
       mkdirSync(dir, { recursive: true });
       const backup = join(dir, `${basename(path)}.${now.toISOString().replace(/[:.]/g, "-")}`);
       copyFileSync(path, backup);
-      writeFileSync(path, bytes);
+      // the review, 2026-10-18: written beside it and renamed over it, so a crash mid-write never leaves half a save
+      const tmp = `${path}.companion-writing`;
+      writeFileSync(tmp, bytes);
+      renameSync(tmp, path);
       return backup;
     },
   };
@@ -90,8 +83,6 @@ function fileSave(path: string | null | undefined): SaveFile {
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
-const walk = (cfg: Config, store: Store, now = new Date()) => core.walk(hostOf(cfg), store, now);
-const setWalk = (cfg: Config, store: Store, b: { goal?: unknown; steps?: unknown }) => core.setWalk(hostOf(cfg), store, b);
 export const doStep = (cfg: Config, store: Store, id: number, from: "site" | "device", deviceId = "") =>
   core.doStep(hostOf(cfg), store, id, from, deviceId);
 const awayNow = (cfg: Config) => core.awayNow(hostOf(cfg));
@@ -192,19 +183,6 @@ function send(res: ServerResponse, status: number, data: unknown) {
 // C-10: answer the game's requests in the configured save. The game must be closed first -- an emulator that is still
 // running writes its own copy back over this one. A backup of the whole file goes beside it every time, and the file is
 // written only when something was asked.
-export function answerAway(cfg: Config, now = new Date()) {
-  if (!cfg.savePath || !existsSync(cfg.savePath)) throw new Error("no save is configured (savePath in config.json)");
-  const { save, answered } = answerRequests(new Uint8Array(readFileSync(cfg.savePath)));
-  let backup: string | null = null;
-  if (answered.length) {
-    const dir = join(dirname(cfg.savePath), "companion-backups");
-    mkdirSync(dir, { recursive: true });
-    backup = join(dir, `${basename(cfg.savePath)}.${now.toISOString().replace(/[:.]/g, "-")}`);
-    copyFileSync(cfg.savePath, backup);
-    writeFileSync(cfg.savePath, save);
-  }
-  return { answered, backup };
-}
 
 // C-09: THE SYNC PROTOCOL's server side (PLAN 4: HTTP + JSON over Wi-Fi, small enough for an ESP32). A device pulls
 // one document and pushes the steps ticked off on it. Its daemon is the party's AWAY one -- sending a daemon in the game
@@ -554,7 +532,6 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (handles(req.method ?? "", path))
         return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),
                                                        body: req.method === "POST" ? await body(req) : {} }));
-      if (req.method === "POST" && path === "/api/away/answer") return send(res, 200, answerAway(ecfg));
       if (req.method === "GET" && path === "/api/device/state") {
         hub.seen(via);
         const st = deviceState(ecfg, store, new Date(), deviceId, url.searchParams.get("expression"));   // C-121: ?expression= for bench.py

@@ -50,6 +50,9 @@ export class Home {
     if (url !== undefined) {
       const u = (url ?? "").trim().replace(/\/+$/, "");
       if (u && !/^https?:\/\/[^\s/]+(:\d+)?(\/[^\s]*)?$/.test(u)) throw new Error("Home Assistant's address starts http:// or https://");
+      // the review, 2026-10-18: a new address forgets the old token unless one comes with it -- or the token could be
+      // sent to wherever the address was changed to
+      if (u !== (this.keys.get("home.url") ?? "") && token === undefined) this.keys.set("home.token", null);
       this.keys.set("home.url", u || null);
     }
     if (token !== undefined) this.keys.set("home.token", (token ?? "").trim() || null);

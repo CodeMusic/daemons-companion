@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { readSave, readSlot } from "../src/save/reader.js";
 import { answerRequests } from "../src/save/writer.js";
-import { answerAway } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
 import { buildSave } from "./build_save.js";
 
 const SENDING = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, asked: true };
@@ -36,19 +31,5 @@ describe("answering the game's AWAY requests (C-10)", () => {
     const twice = answerRequests(once);
     expect(twice.answered).toEqual([]);
     expect(Buffer.compare(Buffer.from(twice.save), Buffer.from(once))).toBe(0);
-  });
-
-  it("keeps a backup and writes only when something was answered", () => {
-    const dir = mkdtempSync(join(tmpdir(), "away-"));
-    const path = join(dir, "copy.sav");
-    writeFileSync(path, save());
-    const cfg = { ...DEFAULTS, savePath: path };
-    const first = answerAway(cfg, new Date("2026-10-03T21:00:00Z"));
-    expect(first.answered).toHaveLength(2);
-    expect(readdirSync(join(dir, "companion-backups"))).toHaveLength(1);
-    expect(readSave(new Uint8Array(readFileSync(path))).party[0].away).toBe(true);
-    const second = answerAway(cfg, new Date("2026-10-03T21:01:00Z"));
-    expect(second).toEqual({ answered: [], backup: null });
-    expect(readdirSync(join(dir, "companion-backups"))).toHaveLength(1);
   });
 });

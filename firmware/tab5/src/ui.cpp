@@ -909,7 +909,9 @@ static void tapPage(lv_event_t *e) {
   JsonDocument nb = newDoc();
   if (!kept("notebook", nb)) return;
   JsonObject pg = nb["sections"][(int)(v >> 8)]["pages"][(int)(v & 0xFF)];
-  String text = pg["text"].isNull() ? String("Written by the game from your save each time you open it there.") : reflowed(pg["text"].as<String>());
+  String text = !pg["text"].isNull() ? reflowed(pg["text"].as<String>())
+               : String(pg["kind"] | "") == "song" ? String("The game draws its notes in the key you played it in.")   // T-417, DRAFT
+               : String("Written by the game from your save each time you open it there.");
   String place = pg["place"] | "";
   showWords(pg["title"] | "", text, place.length() ? "Found in " + place + "." : String(""));
   if (overlay) qrFor(overlay, pg["link"] | "", lv_color_black(), lv_color_white());

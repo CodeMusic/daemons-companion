@@ -900,7 +900,7 @@ type Profile = { name: string; trainerId: number; playTime: { hours: number; min
                  notebook: boolean; roots: boolean[]; visited?: string[]; groves?: string[];
                  wisdom?: { root: boolean; given: boolean; insight: boolean }[] };
 type Notebook = { held: boolean; sections: { name: string; pages: { title: string; about: string | null; text: string | null;
-                                                                   unread?: boolean; place?: string | null; link?: string | null }[] }[] };
+                                                                   unread?: boolean; place?: string | null; link?: string | null; kind?: string }[] }[] };
 
 // C-125: the player as the game draws them -- the trainer card's picture and the walking sprite (DAEMONS exports both)
 const PLAYER_ART = {
@@ -1462,7 +1462,7 @@ function NotebookPage({ page }: { page: Notebook["sections"][number]["pages"][nu
       </XStack>
       {open ? (page.text
         ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} marginBottom={4} color="$color12">{par.replace(/\n/g, " ")}</Text>)
-        : <Small>Written by the game from your save each time you open it there.</Small>) : null}
+        : <Small>{page.kind === "song" ? "The game draws its notes in the key you played it in." : "Written by the game from your save each time you open it there."}</Small>) : null}
       {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
       {open && page.link ? <Action label={linkLabel(page.link)} ink="#fbfaf6" onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
     </YStack>

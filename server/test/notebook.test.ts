@@ -15,7 +15,7 @@ describe("the NOTEBOOK", () => {
     expect(n.held).toBe(true);
     expect(n.sections).toEqual([{ name: nb.sections[page.section], pages: [{ title: page.title, about: page.about, text: page.text,
       unread: (page as { seen?: number | null }).seen != null, place: (page as { place?: string | null }).place ?? null,
-      link: (page as { link?: string | null }).link ?? null }] }]);
+      link: (page as { link?: string | null }).link ?? null, kind: page.kind }] }]);
   });
   it("wants both flags of a page that has two", () => {
     const page = nb.pages.find((p) => p.flag2);

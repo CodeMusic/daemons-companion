@@ -140,6 +140,14 @@ picture from DAEMONS' own art beside the clone, which arrives in Phase 2. `gener
 differently from the Mac's (11.1, zlib-ng), so it reports 25 files to write. The three skips include the two voice
 conversions, whose check looks for Homebrew's ffmpeg and not `/usr/bin/ffmpeg`.
 
+**Since fixed, and green on the hub** (the same day). The controller session gave the art test a folder of its own,
+made the voice tests skip on `voice.ts`'s own list of converters (so they find `/usr/bin/ffmpeg`), and made
+`toDevicePcm` read from a file, never a pipe: a phone's m4a with its index at the end reads as nothing from a pipe past
+ffmpeg's buffer, and the hub has no afconvert to rescue it (43b6cea). The casino session made `casino_art.py` compare
+decoded pictures, then refuse to check or write on a Pillow older than 11: Pillow 9.4 rounds one edge pixel
+differently in four of the pictures, so only the Mac redraws them (0069d02, 9a6f24d). At 43b6cea the hub passes the
+**whole suite: 311 passed, 1 skipped, all 45 files, in 5 min 18 s**; the voice tests run there now (6 in 11 s).
+
 **What it changes in the plan**
 
 - Memory is not the limit it looked like: the server runs in a sixth of what is free, with room for the bridges, the

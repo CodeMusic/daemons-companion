@@ -195,6 +195,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
   const [brands, setBrands] = useState<Brand[]>([]), [brand, setBrand] = useState<string>(""), [at, setAt] = useState(0);
   const [tried, setTried] = useState<number | null>(null), [kept, setKept] = useState<number | null>(null);
   const [managed, setManaged] = useState<number | null>(null), [forgot, setForgot] = useState<number | null>(null);
+  const [shared] = useApi<{ rev: number; remotes: string[] }>("/api/remotes");   // C-165: every device's remotes, by name
   const [renaming, setRenaming] = useState<number | null>(null), [newName, setNewName] = useState("");   // C-59
   useEffect(() => {
     // While this tab is open: every 1.5 s at home. Away, every 15 s, and never a second ask while one is out -- each is a
@@ -324,8 +325,8 @@ export function DeviceScreen({ ink }: { ink: string }) {
       <DeviceSettingsCard ink={ink} />
 
       <Card>
-        <Eyebrow>ITS REMOTES</Eyebrow>
-        <Small>{`The remotes the board has learned -- on the board, FLARE then TEACH A REMOTE (power, volume up, volume down), or add one here by its brand. FLARE's buttons send from the one in use.`}</Small>
+        <Eyebrow>EVERY DEVICE'S REMOTES</Eyebrow>
+        <Small>{`One list for every device with IR (C-165, DRAFT): a remote taught on any board -- FLARE then TEACH A REMOTE (power, volume up, volume down) -- or added here by its brand is taken by every board with IR the next time it is in touch, and one renamed or removed is renamed or removed on all of them. FLARE's buttons send from the one in use.`}</Small>
         {link.remotes.remotes.length === 0 ? <Small color="$color10">None learned yet.</Small> : null}
         {link.remotes.remotes.map((r, i) => (
           <XStack key={i} alignItems="center" gap={8} flexWrap="wrap" paddingVertical={4}>
@@ -344,6 +345,13 @@ export function DeviceScreen({ ink }: { ink: string }) {
                 <Action label="Cancel" onPress={() => setRenaming(null)} ink={ink} />
               </XStack>
             ) : null}
+          </XStack>
+        ))}
+        {/* learned on another device, and not yet taken by this one (it is, the next time it is in touch) */}
+        {(shared?.remotes ?? []).filter((n) => !link.remotes.remotes.some((r) => r.name === n)).map((n) => (
+          <XStack key={`shared-${n}`} alignItems="center" gap={8} paddingVertical={4}>
+            <Text flex={1} fontSize={15} color="$color11">{n}</Text>
+            <Small color="$color10">learned on another device; this one takes it when next in touch</Small>
           </XStack>
         ))}
         <Result link={link} id={managed} />

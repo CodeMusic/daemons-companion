@@ -378,8 +378,22 @@ void soundEdition(const String &edition) {
 
 static float hz(int midi) { return noteHz(midi); }
 
-// One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself).
-static void tone(int midi, int ms, float level = 1.0f) {
+// the chip's own voice, a square wave 4 ms in and 8 ms out, added into buf a block at a time
+struct Square { float period, phase; int amp, total, rise, fall, done; };
+static void squareAdd(Square &q, int16_t *buf, int n) {
+  for (int i = 0; i < n; i++, q.done++) {
+    float env = q.done < q.rise ? (float)q.done / q.rise : q.done > q.total - q.fall ? (float)(q.total - q.done) / q.fall : 1.0f;
+    int v = buf[i] + (int)((q.phase < q.period * duty ? q.amp : -q.amp) * env);
+    buf[i] = (int16_t)max(-32767, min(32767, v));
+    if ((q.phase += 1) >= q.period) q.phase -= q.period;
+  }
+}
+
+// One note: a square wave, 4 ms in and 8 ms out, at `level` of the volume (1.0 = the setting itself) -- or, C-164, a
+// voice of the save's instrument. `chip`: the square wave even where the instrument plays, over what it still rings --
+// the CASINO's reel ticks and coins (the user, 2026-10-19: "Click sounds good if the other sounds are still the flute
+// instrument": at 5 and 14 ms they were over before the flute's 80 ms attack let them be heard).
+static void tone(int midi, int ms, float level = 1.0f, bool chip = false) {
   if (!ready || !enabled || amplitude == 0) return;
   quiet();
   if (board.buzzer >= 0) {                     // C-102: the note itself, its loudness the share of each wave that is high
@@ -391,24 +405,26 @@ static void tone(int midi, int ms, float level = 1.0f) {
   }
   static int16_t buf[256];
   int total = RATE * ms / 1000, rise = RATE * 4 / 1000, fall = RATE * 8 / 1000;
+  Square q = { RATE / hz(midi), 0, (int)(amplitude * level), total, rise, fall, 0 };
 #if SAMPLED
-  if (sampled()) {                             // C-164: a voice of the instrument, mixed with what still rings
+  if (sampled()) {                             // C-164: a voice of the instrument (or the click), mixed with what still rings
     bool took = own();
-    voiceStart(midi, total, level);
-    for (int done = 0; done < total && !stopped(); done += 256) { int n = min(256, total - done); mix(buf, n); play(buf, n); }
+    if (!chip) voiceStart(midi, total, level);
+    for (int done = 0; done < total && !stopped(); done += 256) {
+      int n = min(256, total - done);
+      mix(buf, n);
+      if (chip) squareAdd(q, buf, n);
+      play(buf, n);
+    }
     if (took) xSemaphoreGive(voice);
     return;
   }
 #endif
-  float period = RATE / hz(midi), phase = 0;
-  int amp = (int)(amplitude * level);
   for (int done = 0; done < total && !stopped();) {
     int n = min(256, total - done);
-    for (int i = 0; i < n; i++, done++) {
-      float env = done < rise ? (float)done / rise : done > total - fall ? (float)(total - done) / fall : 1.0f;
-      buf[i] = (int16_t)((phase < period * duty ? amp : -amp) * env);
-      if ((phase += 1) >= period) phase -= period;
-    }
+    for (int i = 0; i < n; i++) buf[i] = 0;
+    squareAdd(q, buf, n);
+    done += n;
     play(buf, n);
   }
 }
@@ -566,11 +582,11 @@ void soundReelTick() {
   static uint32_t at = 0;
   if (millis() - at < 70) return;
   at = millis();
-  tone(root + 24, 5, 0.3f);
+  tone(root + 24, 5, 0.3f, true);              // a click, on every speaker (C-164's instrument plays the rest)
   ringLater();
 }
 void soundReelStop(int reel) { tone(root - 12 + 7 * reel, 34, 0.9f); ringLater(); }
-void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f); ringLater(); }
+void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f, true); ringLater(); }   // a click too
 void soundSlots(int what, const String &look) {   // 0 the lever, 1 a loss, 2 a small win, 3 a big one, 4 the jackpot, 5 a cheer (C-151)
   if (what == 0) { play(TUNE_SLOTS_PULL, 3, root, -1, 0.8f); return; }
   if (what == 5) { tuneLater(TUNE_SLOTS_CHEER, 6, root, DANCE_SPARKLE, 0.8f); return; }

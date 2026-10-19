@@ -20,6 +20,7 @@ fails) until the change is ported here and PORTED updated.
     python3 firmware/common/casino_art.py --write    write them
 """
 import hashlib, io, json, math, os, re, sys
+import PIL
 from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -327,8 +328,21 @@ def same(path, old, body):
         return False
 
 
+# The pictures are drawn by Pillow 11's ImageDraw. An older Pillow rounds some edges a pixel differently -- on the hub's
+# Pillow 9.4 (Debian 12) a filled shape's edge is a pixel wider on one row of the coin, the MARK, the star and the storm
+# (seen 2026-10-19) -- so there it neither checks nor writes, and says so: the committed art is the Mac's, and right.
+DRAWN_WITH = 11
+
+
 def main():
     write = "--write" in sys.argv
+    pillow = int(PIL.__version__.split(".")[0])
+    if pillow < DRAWN_WITH:
+        print(f"  casino_art: not checked here -- the pictures are drawn by Pillow {DRAWN_WITH}, and this is Pillow {PIL.__version__}, "
+              "which rounds some edges differently")
+        if write:
+            raise SystemExit(1)
+        return
     stale = [k for k, v in sources().items() if hashlib.sha1(v.encode()).hexdigest() != PORTED[k]]
     if stale and "--ported" not in sys.argv:
         print(f"  casino_art: would write -- casino.cpp's {', '.join(stale)} changed since it was ported: port the change into "

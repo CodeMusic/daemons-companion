@@ -7,7 +7,27 @@ import { Platform } from "react-native";
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
 // phone's secure storage; on the site, the server is this machine and needs no key.
-export let SERVER = process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
+// C-169: on the site, ?server= names another companion -- the DAEMONS playground shows its own this way, through its
+// server (http://mac:4740/companion/content). A link anyone can make chooses where the site sends what it writes, so only
+// this machine's kinds of address are taken: loopback, private and the tailnet's, localhost, .local, .ts.net or a bare
+// name. And it is never kept: a plain visit is back on the companion the site was built for.
+function nearServer(asked: string | null): string | null {
+  if (!asked) return null;
+  let u: URL;
+  try { u = new URL(asked); } catch { return null; }
+  if ((u.protocol !== "http:" && u.protocol !== "https:") || u.username || u.password || u.search || u.hash) return null;
+  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  const v4 = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(h);
+  const a = Number(v4?.[1]), b = Number(v4?.[2]);
+  const near = v4 ? a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) ||
+                    (a === 169 && b === 254) || (a === 100 && b >= 64 && b <= 127)                    // 100.64/10: the tailnet
+    : h.includes(":") ? h === "::1" || /^f[cd][0-9a-f]{2}:/.test(h) || /^fe[89ab][0-9a-f]:/.test(h)   // fc00::/7, fe80::/10
+    : h === "localhost" || h.endsWith(".local") || h.endsWith(".ts.net") || (!!h && !h.includes("."));
+  return near ? u.origin + u.pathname.replace(/\/+$/, "") : null;
+}
+const linked = Platform.OS === "web" && typeof window !== "undefined" && window.location
+  ? nearServer(new URLSearchParams(window.location.search).get("server")) : null;
+export let SERVER = linked ?? process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
 
 // C-111: the phone hosting on its own -- no computer; every request is answered on the phone (local.ts)
 export let ALONE = false;

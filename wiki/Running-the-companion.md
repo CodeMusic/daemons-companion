@@ -81,6 +81,23 @@ tail -f .logs/server.log
 
 It restarts itself when its code changes. Started with `always`, it writes to `.logs/server-always.log` instead.
 
+## Another companion beside yours
+
+`COMPANION_CONFIG` names the config file the server reads instead of `server/config.json`. Give it its own `port`,
+`database` and `savePath` and it shares nothing with yours. A file that is not there stops it, rather than letting it
+fall back on your database:
+
+```sh
+cd server && COMPANION_CONFIG=/path/to/other.json npx tsx src/main.ts
+```
+
+The site uses another server when its address says so: `http://localhost:8081/?server=http://localhost:4731`. Only
+this machine's kinds of address are taken (loopback, a private network, the tailnet, `localhost`, a `.local` or
+`.ts.net` name, or a bare one), and only for that visit: open the site plainly and it is back on yours. A second server
+still answers only this computer and a paired phone. To use it from a phone, something on this computer has to carry
+the phone's requests, as the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) does for the
+companions it runs, one for each build of the game.
+
 ## Keep it running
 
 Your phone reaches the companion only while the server **runs** and the computer is **awake**. One command makes both

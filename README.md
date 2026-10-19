@@ -122,6 +122,11 @@ On a Mac with Node 24:
 ./updateCompanion.sh          # flash any boards you have plugged in
 ```
 
+**A second companion beside yours.** `COMPANION_CONFIG=/path/to/config.json` starts the server on another config file
+-- its own port, database and save -- and the site takes `?server=http://host:port` to use it, for that visit only.
+The [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) runs one for each build of the game this way,
+so the daemons its testers send never meet yours.
+
 Every command and option: **[Running the companion](https://github.com/CodeMusic/daemons-companion/wiki/Running-the-companion)**.
 When something does not answer: **[Troubleshooting](https://github.com/CodeMusic/daemons-companion/wiki/Troubleshooting)**.
 
@@ -154,6 +159,7 @@ I would go back now and then. A daemon likes to know the way home.
 | [**CodeMusic/DAEMONS**](https://github.com/CodeMusic/DAEMONS) | **the game** -- its design bible, its tools, and patches for your own cartridge |
 | [CodeMusic/pokefirered-daemons](https://github.com/CodeMusic/pokefirered-daemons) | the game's engine |
 | [CodeMusic/gpt-play-pokemon-firered-daemons](https://github.com/CodeMusic/gpt-play-pokemon-firered-daemons) | the harness that lets a model play it |
+| [CodeMusic/daemons-playground](https://github.com/CodeMusic/daemons-playground) | the game in a browser, for demos and beta tests, with a companion of its own beside it |
 | **CodeMusic/daemons-companion** | this: where your daemon goes when it leaves the game |
 
 **Nothing of Nintendo's is in here.** The daemon art it shows is DAEMONS' own -- every sprite in

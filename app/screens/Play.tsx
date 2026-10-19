@@ -219,6 +219,24 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
     },
     onPanResponderRelease: () => { lastString.current = null; },
   }), [w, octave, keyAt]);   // eslint-disable-line react-hooks/exhaustive-deps
+  // on the phone, every finger its own: each touch plucks the string under it and every string it is drawn across, so
+  // a chord can be plucked and a strum made with more than one (the site, with a mouse, keeps the one pointer above)
+  const fingers = useRef(new Map<number, number>());
+  const touched = (e: any, start: boolean) => {
+    for (const t of e.nativeEvent.changedTouches ?? []) {
+      const d = stringAt(t.locationX), was = fingers.current.get(t.identifier);
+      if (start || was === undefined) { fingers.current.set(t.identifier, d); pluck(d, t.locationY); continue; }
+      if (d === was) continue;
+      const step = Math.sign(d - was);
+      for (let k = was + step; k !== d + step; k += step) pluck(k, t.locationY);
+      fingers.current.set(t.identifier, d);
+    }
+  };
+  const untouched = (e: any) => { for (const t of e.nativeEvent.changedTouches ?? []) fingers.current.delete(t.identifier); };
+  const harpTouch = Platform.OS === "web" ? harpPan.panHandlers
+    : { onTouchStart: (e: any) => touched(e, true), onTouchMove: (e: any) => touched(e, false), onTouchEnd: untouched, onTouchCancel: untouched,
+        // the harp keeps the gesture while it is played, so the page does not scroll under a strum
+        onStartShouldSetResponder: () => true, onMoveShouldSetResponder: () => true, onResponderTerminationRequest: () => false };
 
   // the flute: eight holes; a finger chooses the note, and breath into the microphone sounds it (with no microphone, the
   // finger alone)
@@ -269,7 +287,7 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
       </XStack>
       {/* the instrument */}
       <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ height: H, borderRadius: 8, backgroundColor: "#1d2026", overflow: "hidden" }}
-            {...(harp ? harpPan.panHandlers : flutePan.panHandlers)}>
+            {...(harp ? harpTouch : flutePan.panHandlers)}>
         {harp ? Array.from({ length: 8 }, (_, d) => (
           <View key={d} pointerEvents="none" style={{ position: "absolute", left: ((d + 0.5) * w) / 8 - (lit === d ? 2.5 : 1.5), top: 14, bottom: 14,
                                                      width: lit === d ? 5 : 3, borderRadius: 2, backgroundColor: p.keyColours[pc(midiAt(d))],

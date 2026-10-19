@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
-import { writeFileSync, mkdtempSync } from "node:fs";
+import { copyFileSync, mkdirSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer, today } from "../src/api.js";
@@ -14,7 +14,14 @@ const savePath = join(dir, "copy.sav");
 writeFileSync(savePath, buildSave({ player: "ROVER", trainerId: 7,
   slots: [{ counter: 1, party: [{ personality: 99, otId: 7, species: 1, nickname: "PIP", level: 5 }] },
           { counter: 0, party: [] }] }));
-const cfg = { ...DEFAULTS, database: ":memory:", savePath, edition: "CONTEXT" as const };
+// the art the server serves at /art/ is DAEMONS' own (gfx/daemons, beside this repo on the Mac and nowhere on the hub,
+// C-168), so the test gives it a folder of its own: one of our pictures under a daemon's name, and a file beside the
+// folder that a path must never reach
+const artDir = join(dir, "art");
+mkdirSync(artDir);
+copyFileSync(new URL("../data/art/rovercub.png", import.meta.url), join(artDir, "rovercub_front.png"));
+writeFileSync(join(dir, "secret.png"), "not for the asking");
+const cfg = { ...DEFAULTS, database: ":memory:", savePath, edition: "CONTEXT" as const, artDir };
 const server = makeServer(cfg);
 let base = "";
 
@@ -97,5 +104,7 @@ describe("the art (C-05)", () => {
     expect(ok.status).toBe(200);
     expect(ok.headers.get("content-type")).toBe("image/png");
     expect((await fetch(base + "/art/..%2F..%2Fsecret.png")).status).toBe(404);
+    expect((await fetch(base + "/art/..%2Fsecret.png")).status).toBe(404);                 // it is there, one up
+    expect((await fetch(base + "/art/nobody_front.png")).status).toBe(404);
   });
 });

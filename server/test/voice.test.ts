@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { asWav, Conversations, DEVICE_RATE, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { asWav, CAN_CONVERT, Conversations, DEVICE_RATE, FOUND_FFMPEG, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
 
 // A second of a 440 Hz tone as a WAV, at a rate the handheld does not play (the voice server's is 24 kHz).
 function wav(rate: number, seconds = 1): Buffer {
@@ -21,7 +24,7 @@ describe("the daemon's voice, for a handheld (C-66)", () => {
     expect(pcmOfWav(wavOf(pcm))!.equals(pcm)).toBe(true);          // and makes one the speech server takes
   });
 
-  it.skipIf(!existsSync("/opt/homebrew/bin/ffmpeg") && !existsSync("/usr/bin/afconvert"))(
+  it.skipIf(!CAN_CONVERT)(
     "converts the voice server's audio to the speaker's 16 kHz", async () => {
       const pcm = await toDevicePcm(wav(24000));
       expect(pcm).not.toBeNull();
@@ -68,8 +71,26 @@ function mulawWav(seconds = 1): Buffer {
   return out;
 }
 
+// The phone records m4a with its index (moov) after the samples, as ffmpeg writes one by default; past ffmpeg's buffer
+// (20 s at 32 kbps is enough) a pipe cannot read it, and the hub has no afconvert to fall back on (C-168).
+describe("a long recording from the phone (C-168)", () => {
+  it.skipIf(!FOUND_FFMPEG)("is read whole, its index at the end", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "voice-test-"));
+    try {
+      const m4a = join(dir, "long.m4a");
+      const made = spawnSync(FOUND_FFMPEG!, ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi",
+        "-i", "sine=frequency=440:duration=20:sample_rate=16000", "-ac", "1", "-c:a", "aac", "-b:a", "32k", m4a]);
+      expect(made.status).toBe(0);
+      const bytes = readFileSync(m4a);
+      expect(bytes.indexOf("moov")).toBeGreaterThan(bytes.indexOf("mdat"));      // the index really is at the end
+      const pcm = await toDevicePcm(bytes);
+      expect(Math.abs(pcm!.length / 2 - 20 * DEVICE_RATE)).toBeLessThan(DEVICE_RATE * 0.5);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }, 60_000);                                                    // two ffmpeg starts: about eleven seconds on the hub
+});
+
 describe("a recording over Bluetooth (C-82)", () => {
-  it.skipIf(!existsSync("/opt/homebrew/bin/ffmpeg") && !existsSync("/usr/bin/afconvert"))(
+  it.skipIf(!CAN_CONVERT)(
     "reaches speech to text as a 16 kHz WAV of the same length, and sounds like itself", async () => {
       const w = await asWav(mulawWav(1));
       expect(w?.mime).toBe("audio/wav");

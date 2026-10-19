@@ -22,19 +22,26 @@ function run(cmd: string, args: string[], input?: Buffer): Promise<Buffer | null
   });
 }
 
-const FFMPEG = ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"].find(existsSync) ?? "ffmpeg";
+export const FOUND_FFMPEG = ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"].find(existsSync);
+const FFMPEG = FOUND_FFMPEG ?? "ffmpeg";
+const AFCONVERT = "/usr/bin/afconvert";
+// whether a converter is where toDevicePcm looks for one (the tests skip on it; the hub's ffmpeg is /usr/bin's)
+export const CAN_CONVERT = FOUND_FFMPEG !== undefined || existsSync(AFCONVERT);
 
-// Any audio the converters read (mp3, wav) -> raw 16 kHz 16-bit little-endian mono. null when neither could.
+// Any audio the converters read (mp3, wav, the phone's m4a) -> raw 16 kHz 16-bit little-endian mono. null when neither
+// could. The audio goes to a file first, never a pipe: an m4a with its index (moov) at the end, as the phone and ffmpeg
+// both write them, cannot be read from a pipe once it is longer than ffmpeg's buffer (the hub has no afconvert to fall
+// back on, C-168).
 export async function toDevicePcm(audio: Buffer): Promise<Buffer | null> {
-  const viaFfmpeg = await run(FFMPEG, ["-hide_banner", "-loglevel", "error", "-i", "pipe:0",
-                                       "-f", "s16le", "-ac", "1", "-ar", String(DEVICE_RATE), "pipe:1"], audio);
-  if (viaFfmpeg && viaFfmpeg.length) return viaFfmpeg;
-  if (!existsSync("/usr/bin/afconvert")) return null;
   const dir = mkdtempSync(join(tmpdir(), "daemons-voice-"));
   try {
-    writeFileSync(join(dir, "in.mp3"), audio);
-    const ok = await run("/usr/bin/afconvert", ["-f", "WAVE", "-d", `LEI16@${DEVICE_RATE}`, "-c", "1",
-                                                join(dir, "in.mp3"), join(dir, "out.wav")]);
+    const input = join(dir, "in.mp3");                  // the name afconvert has always been given; both read the bytes
+    writeFileSync(input, audio);
+    const viaFfmpeg = await run(FFMPEG, ["-hide_banner", "-loglevel", "error", "-i", input,
+                                         "-f", "s16le", "-ac", "1", "-ar", String(DEVICE_RATE), "pipe:1"]);
+    if (viaFfmpeg && viaFfmpeg.length) return viaFfmpeg;
+    if (!existsSync(AFCONVERT)) return null;
+    const ok = await run(AFCONVERT, ["-f", "WAVE", "-d", `LEI16@${DEVICE_RATE}`, "-c", "1", input, join(dir, "out.wav")]);
     if (ok === null) return null;
     return pcmOfWav(readFileSync(join(dir, "out.wav")));
   } finally { rmSync(dir, { recursive: true, force: true }); }

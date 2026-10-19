@@ -7,7 +7,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 import { readAway, readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
-import { syncSave } from "./save/writer.js";
+import { HOUSE_AT, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
@@ -19,7 +19,7 @@ import { companionId, noteFor } from "./cards.js";
 import { levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
-import { casinoPending, coinsFor, tableFor } from "./casino.js";   // C-149, C-151
+import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./casino.js";   // C-149, C-151, C-167
 import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.js";   // C-158
 import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
@@ -82,7 +82,11 @@ export function sync(h: Host, store: Store, now = new Date()) {
   }
   // C-149: what the CASINO won or lost on the boards since the last SYNC, into the money
   const casino = casinoPending(store);
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta });
+  // C-167: and what the house has kept, into the save's own count (DAEMONS T-427): what it will have kept after this SYNC
+  // less what this companion has already added to the save -- so the first SYNC that finds the field brings the history
+  const houseAfter = houseTake(store).kept - (clampMoney(p.money + casino.delta) - p.money);
+  const house = HOUSE_AT != null ? houseAfter - Number(store.getSetting("casino.house.written") ?? 0) : 0;
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)
@@ -94,6 +98,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
     const moved = r.money ? r.money.to - r.money.from : 0;
     if ((casino.delta || casino.spins) && moved !== casino.delta)
       store.setSetting("casino.clamp", String(Number(store.getSetting("casino.clamp") ?? 0) + moved - casino.delta));
+    // C-167: what was added to the save's count, so the next SYNC adds only what is new
+    if (r.house) store.setSetting("casino.house.written", String(Number(store.getSetting("casino.house.written") ?? 0) + r.house.to - r.house.from));
   });
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),

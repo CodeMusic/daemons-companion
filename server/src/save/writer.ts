@@ -15,6 +15,10 @@
 //
 // C-149: and the CASINO's winnings and losses (`money`, a change): the money SaveBlock1 keeps, XOR SaveBlock2's
 // encryption key as the game keeps it, never below 0 or above 999999.
+//
+// C-167: and what the house kept (`house`, a change) into the save's own count of it (DAEMONS T-427, P.sb1.house_take):
+// a plain little-endian int32 in SaveBlock1, which the game's GAME CORNER adds to as well -- only ever added to, never
+// overwritten. Until the layout names the field, nothing is written.
 import P from "../../data/profile_layout.json" with { type: "json" };
 import speciesJson from "../../data/species.json" with { type: "json" };
 import { expFor, levelFromExp } from "./growth.js";
@@ -27,7 +31,7 @@ export interface Answer { slot: number; nickname: string; name: string; now: "aw
 export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
                               changed: boolean; newlySeen: number[]; friendship: { nickname: string; from: number; to: number } | null;
                               grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null;
-                              money: { from: number; to: number } | null }
+                              money: { from: number; to: number } | null; house: { from: number; to: number } | null }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
@@ -36,6 +40,9 @@ export interface Growth { personality: number; exp: number }
 
 
 const FOOTER_ID = 0xff4, FOOTER_CHECKSUM = 0xff6;
+// C-167: where SaveBlock1 keeps the house's take -- the layout's own entry (an offset, or {offset}), or null before the game has one
+const HOUSE = (P.sb1 as Record<string, unknown>).house_take as number | { offset: number } | undefined;
+export const HOUSE_AT: number | null = typeof HOUSE === "number" ? HOUSE : HOUSE?.offset ?? null;
 
 export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Uint8Array; answered: Answer[] } {
   const r = syncSave(save, { link: false }, l);
@@ -43,7 +50,8 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 }
 
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
-export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number }, l: Layout = LAYOUT): SyncResult {
+export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
+                                             house?: number; houseAt?: number | null }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -182,10 +190,22 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
       money = { from, to };
     }
   }
+  // C-167: the house's take, added to the save's count -- plain, signed, little-endian; kept inside an int32
+  let house: SyncResult["house"] = null;
+  const houseAt = opts.houseAt === undefined ? HOUSE_AT : opts.houseAt;
+  if (opts.house && houseAt != null) {
+    const bytes = [0, 1, 2, 3].map((k) => at(houseAt + k));
+    const from = bytes.reduce((n, b, k) => n | (out[b.byte] << (8 * k)), 0) | 0;
+    const to = Math.max(-2147483648, Math.min(2147483647, from + Math.round(opts.house)));
+    if (to !== from) {
+      bytes.forEach((b, k) => { out[b.byte] = (to >>> (8 * k)) & 0xff; touched.add(b.id); });
+      house = { from, to };
+    }
+  }
   for (const id of touched) {
     const off = where.get(id)!;
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house };
 }

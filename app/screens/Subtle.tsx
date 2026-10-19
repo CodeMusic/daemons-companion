@@ -71,10 +71,11 @@ export function SubtleBook({ b }: { b: SubtleT }) {
   let n = 0;
   return (
     <YStack backgroundColor={C.boards} borderRadius={4} padding={14} gap={14}>
-      {/* the cover, cut from the game's 240x160 screen (the book, x 54..185), its title in our own type over its top band */}
+      {/* the cover, cut from the game's 240x160 screen (the book, x 54..185), its title in our own type over its top band,
+          a little below the border (the user, 2026-10-19) */}
       <YStack width={132 * 2} height={160 * 2} overflow="hidden" alignSelf="center" borderRadius={2} position="relative">
         <YStack marginLeft={-54 * 2}><Art path="/art/subtle/cover.png" size={240 * 2} height={160 * 2} /></YStack>
-        <Text position="absolute" top={10 * 2} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={14} fontWeight="800"
+        <Text position="absolute" top={12 * 2} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={14} fontWeight="800"
               color={C.ink}>{b.title ?? "THE SUBTLE LAYER"}</Text>
         <Text position="absolute" top={25 * 2} left={0} right={0} textAlign="center" fontSize={11} fontStyle="italic" color={C.faint}>
           {b.subtitle ?? ""}</Text>

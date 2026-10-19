@@ -179,7 +179,7 @@ static lv_obj_t *subtleCover(lv_obj_t *parent, int k, JsonDocument &b) {
   }
   if (k >= 2) {
     lv_obj_t *t = lv_label_create(box); lv_label_set_text(t, b["title"] | "THE SUBTLE LAYER");
-    lv_obj_set_style_text_font(t, &lv_font_montserrat_28, 0); lv_obj_set_style_text_color(t, SUB_INK, 0); lv_obj_align(t, LV_ALIGN_TOP_MID, 0, 9 * k);
+    lv_obj_set_style_text_font(t, &lv_font_montserrat_28, 0); lv_obj_set_style_text_color(t, SUB_INK, 0); lv_obj_align(t, LV_ALIGN_TOP_MID, 0, 11 * k);   // below the border (the user, 2026-10-19)
     lv_obj_t *u = lv_label_create(box); lv_label_set_text(u, b["subtitle"] | "");
     lv_obj_set_style_text_font(u, &lv_font_montserrat_20, 0); lv_obj_set_style_text_color(u, SUB_FAINT, 0); lv_obj_align(u, LV_ALIGN_TOP_MID, 0, 24 * k);
   }

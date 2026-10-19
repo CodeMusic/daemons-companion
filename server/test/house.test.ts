@@ -1,18 +1,12 @@
-// C-167: what the house kept, written into the save's own count of it at SYNC (DAEMONS T-427, P.sb1.house_take) -- on
-// synthetic saves, never the user's own. The layout is given the field here, at a place the synthetic save leaves empty,
-// as companion_export.py will give it once the game has it.
-import { describe, expect, it, vi } from "vitest";
+// C-167: what the house kept, written into the save's own count of it at SYNC (DAEMONS T-427: SaveBlock2.houseTake, the
+// layout's sb2.house_take) -- on synthetic saves built as the game builds them, never the user's own.
+import { describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const AT = 0x2f00;
-vi.mock("../data/profile_layout.json", async (real) => {
-  const P = ((await real()) as { default: { sb1: Record<string, unknown> } }).default;
-  return { default: { ...P, sb1: { ...P.sb1, house_take: AT } } };
-});
-
-const P = (await import("../data/profile_layout.json")).default as { sb1: { money: number }; sb2: { encryption_key: number } };
+const P = (await import("../data/profile_layout.json")).default as { sb1: { money: number }; sb2: { encryption_key: number; house_take: number } };
+const AT = P.sb2.house_take;
 const { sync } = await import("../src/api.js");
 const { DEFAULTS } = await import("../src/config.js");
 const { Store } = await import("../src/db.js");
@@ -27,25 +21,29 @@ function saveFile(money: number, house = 0) {
     edit: (sb2, sb1) => {
       new DataView(sb2.buffer, sb2.byteOffset).setUint32(P.sb2.encryption_key, KEY, true);
       new DataView(sb1.buffer, sb1.byteOffset).setUint32(P.sb1.money, (money ^ KEY) >>> 0, true);
-      new DataView(sb1.buffer, sb1.byteOffset).setInt32(AT, house, true);
+      new DataView(sb2.buffer, sb2.byteOffset).setInt32(AT, house, true);
     } });
   const path = join(mkdtempSync(join(tmpdir(), "house-")), "copy.sav");
   writeFileSync(path, save);
   return { path, cfg: { ...DEFAULTS, savePath: path } };
 }
-const houseIn = (path: string) => { const { sb1 } = blocks(new Uint8Array(readFileSync(path))); return new DataView(sb1.buffer, sb1.byteOffset).getInt32(AT, true); };
+const houseIn = (path: string) => { const { sb2 } = blocks(new Uint8Array(readFileSync(path))); return new DataView(sb2.buffer, sb2.byteOffset).getInt32(AT, true); };
 const played = (store: InstanceType<typeof Store>, delta: number, seq: number, device = "m5-core-36f484", spins = 3) =>
   store.logInteraction("casino", `${delta} a1b2.${seq} ${device} ${spins}`);
 
 describe("the house's take in the save (C-167)", () => {
-  it("reads the field's place from the layout", () => expect(HOUSE_AT).toBe(AT));
+  it("reads the field's place from the layout: SaveBlock2's 3740, four bytes, signed", () => {
+    expect(HOUSE_AT).toBe(3740);
+    expect((P.sb2 as Record<string, unknown>).house_take_bytes).toBe(4);
+    expect((P.sb2 as Record<string, unknown>).house_take_signed).toBe(true);
+  });
 
   it("adds plainly, signed, little-endian, and the sector still checks", () => {
     const { path } = saveFile(3000, 40);
     const r = syncSave(new Uint8Array(readFileSync(path)), { link: false, house: -140 });
     expect(r.house).toEqual({ from: 40, to: -100 });
-    const { sb1 } = blocks(r.save);
-    expect(new DataView(sb1.buffer, sb1.byteOffset).getInt32(AT, true)).toBe(-100);
+    const { sb2 } = blocks(r.save);
+    expect(new DataView(sb2.buffer, sb2.byteOffset).getInt32(AT, true)).toBe(-100);
     expect(readSlot(r.save, 0) ?? readSlot(r.save, 1)).toBeTruthy();       // every sector it touched re-signed
     expect(syncSave(new Uint8Array(readFileSync(path)), { link: false, house: 50, houseAt: null }).house).toBeNull();   // no field, no write
   });

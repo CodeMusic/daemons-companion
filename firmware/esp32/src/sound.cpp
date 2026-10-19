@@ -563,7 +563,17 @@ void soundUndo(int species, int day) {                      // the step's own tu
 void soundWake() { tuneLater(TUNE_WAKE, 6, WAKE_BASE, DANCE_SWEEP, 0.8f); }   // C-121: from its task
 
 // C-121: a press, heard the moment it lands -- one short tick in the day's key, before anything it does
-void soundTap() { tone(root + 12, 16, 0.5f); ringLater(); }
+// the press tick: on an instrument whose attack is longer than it (the flute's 80 ms) it would end at a fifth of its
+// level -- so there it is a click, over what rings (the user, 2026-10-19: "If that one is barily audible too then it
+// should be a click"); the harp's pluck, heard at once, stays
+static bool swallowed(int ms) {
+#if SAMPLED
+  return sampled() && INSTRUMENTS[instrument].attackMs > ms;
+#else
+  return false;
+#endif
+}
+void soundTap() { tone(root + 12, 16, 0.5f, swallowed(16)); ringLater(); }
 
 // C-121: every pass of the loop -- the step of the dance the tune's task asked for, and the DAC let go when it is quiet
 void soundLoop() {

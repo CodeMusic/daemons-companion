@@ -24,14 +24,18 @@ def open_tab5(port):
     return s
 
 
-def take(dev, rows, timeout=90):
-    """One SHOT: every whole row that arrives goes into `rows` (y -> bytes). Returns (w, h)."""
+def take(dev, rows, quiet=15):
+    """One SHOT: every whole row that arrives goes into `rows` (y -> bytes). Returns (w, h). It waits as long as rows keep
+    coming -- the Tab5 sends them a few at a time between its own work, about ten a second (over two minutes for a whole
+    screen), so a fixed limit cut every shot short -- and gives up after `quiet` seconds with none."""
     dev.reset_input_buffer()
     dev.write(b"SHOT\n")
     w = h = 0
-    deadline = time.time() + timeout
-    while time.time() < deadline:
+    last = time.time()
+    while time.time() - last < quiet:
         line = dev.readline().decode(errors="replace").strip()
+        if line.startswith("R") or line.startswith("SHOT"):
+            last = time.time()
         if line.startswith("SHOT END"):
             break
         if line.startswith("SHOT "):

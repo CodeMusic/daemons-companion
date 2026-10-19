@@ -186,6 +186,9 @@ static void shotOut() {
     out[n] = 0;
     Serial.print('R'); Serial.print(y); Serial.print(' ');   // numbered: a log line from the network's task can split one,
     Serial.println((const char *)out);                       // and it is asked again (printf would cut a line this long)
+    Serial.flush();                                          // each row sent before the next: written faster than the
+                                                             // computer read, the cable's buffer (smaller than a row) dropped
+                                                             // rows and the SHOT END, and every shot came back short
   }
   Serial.println("SHOT END");
 }

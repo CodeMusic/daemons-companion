@@ -26,6 +26,8 @@
 # runs what you carry beside it.
 #
 # Node 24 (.nvmrc). If the node on your PATH is another version and Homebrew's node@24 is installed, it is used.
+# On Linux -- the hub, a 32-bit ARM board with no Node 24 (C-168, docs/HUB.md) -- Node 22.13 or later, and /opt/node22
+# first when it is there; `server` runs as one process (no watcher), and `always`/`never` are the hub's systemd unit.
 # The server reads no save until server/config.json names one (a COPY, never the save the game is using), and
 # calls no model until its AI is switched on -- see server/config.example.json.
 set -euo pipefail
@@ -50,9 +52,21 @@ case "${1:-web}" in
 esac
 case "$target" in web|ios|android) ;; *) echo "bindCompanion: the app runs as web, ios or android, not '$target'" >&2; exit 64 ;; esac
 
-# -- Node 24 -------------------------------------------------------------------------------------------------------
+# -- Node 24 (Linux: 22.13 or later) ---------------------------------------------------------------------------------
+LINUX=""; [[ $(uname -s) == Linux ]] && LINUX=1
+if [[ -n $LINUX ]]; then
+  # node:sqlite needs no flag from 22.13; the hub's Node is Node 22's armv7l build in /opt/node22 (hub/phase1.sh)
+  [[ -x /opt/node22/bin/node ]] && PATH="/opt/node22/bin:$PATH"
+  ver="$(node -v 2>/dev/null | sed 's/^v//' || true)"
+  major="${ver%%.*}" minor="${ver#*.}"; minor="${minor%%.*}"
+  if [[ -z "$ver" ]] || (( major < 22 || (major == 22 && minor < 13) )); then
+    echo "bindCompanion: needs Node 22.13 or later (found ${ver:-none}). On the hub it is /opt/node22 (hub/phase1.sh)." >&2
+    exit 1
+  fi
+fi
 want="$(tr -d '[:space:]v' < "$HERE/.nvmrc")"
 have="$(node -v 2>/dev/null | sed 's/^v//; s/\..*//' || true)"
+[[ -n $LINUX ]] && want="$have"
 if [[ "$have" != "$want" ]]; then
   for brew in /opt/homebrew/opt/node@"$want"/bin /usr/local/opt/node@"$want"/bin; do
     if [[ -x "$brew/node" ]]; then PATH="$brew:$PATH"; have="$want"; break; fi
@@ -61,6 +75,12 @@ fi
 if [[ "$have" != "$want" ]]; then
   echo "bindCompanion: needs Node $want (found ${have:-none}). Install it (brew install node@$want, or nvm use)." >&2
   exit 1
+fi
+
+if [[ -n $LINUX && ( $mode == always || $mode == never ) ]]; then
+  echo "bindCompanion: '$mode' is a Mac login agent. On Linux the server is kept running by a systemd unit (C-168" >&2
+  echo "               Phase 2, docs/HUB.md), not by this script." >&2
+  exit 64
 fi
 
 # -- dependencies, once ----------------------------------------------------------------------------------------------
@@ -180,6 +200,8 @@ fi
 if [[ $mode == test ]]; then
   cd "$HERE/server"
   npm run --silent typecheck
+  # one slow core: the hub's whole suite takes about five minutes, and some tests take longer than vitest's 5 s alone
+  [[ -n $LINUX ]] && exec npm test -- --maxWorkers=1 --testTimeout=120000 --hookTimeout=120000
   exec npm test
 fi
 
@@ -188,6 +210,8 @@ if [[ $mode == server ]]; then
   if answering; then echo "bindCompanion: a server is already answering on port $PORT." >&2; exit 1; fi
   [[ -f "$HERE/server/config.json" ]] || echo "bindCompanion: no server/config.json -- running on defaults (no save read, AI off)."
   cd "$HERE/server"
+  # Linux: one process, as the hub runs it (npm, tsx's watcher and the server would be three Node heaps: 65 MB is one)
+  [[ -n $LINUX ]] && exec node --disable-warning=ExperimentalWarning --import tsx src/main.ts
   exec npm run --silent dev          # tsx watch: restarts itself when a source file changes
 fi
 

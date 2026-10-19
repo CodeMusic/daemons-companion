@@ -254,7 +254,7 @@ export function StreamBook() {
 // the GUIDE as the game's reader keeps it: the cover, then CONTENTS (each part, its chapters), then a chapter on one page
 // with the next and the last a tap away
 // the GUIDE's title set over its cover as the game set it: two small lines, the last two words large, above the cyan rules
-// (y 50 of 160); the author at the foot (y 147) -- at the cover's 2x
+// (y 50 of 160); the author at the foot (y 148, clear of the art) -- at the cover's 2x
 function CoverTitle({ title, author }: { title: string; author: string }) {
   const words = title.split(" "), big = words.slice(-2).join(" "), rest = words.slice(0, -2);
   let cut = 1, best = Infinity;                        // the small lines split as evenly as the words allow
@@ -267,7 +267,7 @@ function CoverTitle({ title, author }: { title: string; author: string }) {
     <Text {...line} top={10} fontSize={13} lineHeight={16} letterSpacing={1} fontWeight="700">{rest.slice(0, cut).join(" ")}</Text>
     <Text {...line} top={27} fontSize={13} lineHeight={16} letterSpacing={1} fontWeight="700">{rest.slice(cut).join(" ")}</Text>
     <Text {...line} top={50} fontSize={29} lineHeight={34} letterSpacing={2} fontWeight="800">{big}</Text>
-    <Text {...line} top={288} fontSize={12} letterSpacing={1} fontWeight="700">{author}</Text>
+    <Text {...line} top={296} fontSize={12} letterSpacing={1} fontWeight="700">{author}</Text>{/* clear of the art (the user, 2026-10-19) */}
   </>);
 }
 export function GuideBook({ g }: { g: GuideBookT }) {

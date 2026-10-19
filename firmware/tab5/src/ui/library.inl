@@ -88,7 +88,7 @@ static lv_obj_t *guideCover(lv_obj_t *parent, int k) {
     put(cut > 0 ? rest.substring(0, cut) : rest, &lv_font_montserrat_20, 4 * k);
     put(cut > 0 ? rest.substring(cut + 1) : String(""), &lv_font_montserrat_20, 4 * k + 24);
     put(big, &lv_font_montserrat_40, 4 * k + 54);
-    put(author, &lv_font_montserrat_20, 144 * k);
+    put(author, &lv_font_montserrat_20, 148 * k);    // clear of the art (the user, 2026-10-19)
   }
   return box;
 }

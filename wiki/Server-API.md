@@ -51,7 +51,8 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /api/notebook` | the NOTEBOOK pages the save holds, by section: each page's words, its kind (a song is `song`, with its key, notes and frames), whether it is still unread in the game, where it was found, and its link where the game draws a QR code; and the twelve key colours and the outline the SONGBOOK's staff is drawn in (*alone too*) |
 | `GET /api/progress` | GAME EVENTS -- every row held, not yet (and then unnamed) or unknown -- and CALLOW SCHOOL: the floors stood on, the TEXTBOOK, the DIPLOMA, the best and last mark, the sittings and the grade (*alone too*) |
 | `GET /api/play` | the instrument the save's edition plays (the HARP for CONTENT, the FLUTE for CONTEXT), whether the save holds it yet, and each song learned or only heard; `?preview=1`, for a check, as if held with every song learned (*alone too*) |
-| `GET /api/guide` | whether the save has found THE GUIDE, and once it has, the book by part and chapter (*alone too*) |
+| `GET /api/guide` | whether the save has found THE GUIDE, and once it has, the book by part and chapter, with its title and author for a screen to set over the cover (*alone too*) |
+| `GET /api/subtle` | whether the save has found THE SUBTLE LAYER, and once it has, the book by section and page, each page's paragraphs in their voice (`telling` or `asking`) and its picture's frames; `?preview=1`, for a check, as if found (*alone too*) |
 | `GET /api/marks` | each MARK's and understanding's words, colours and towns -- no save needed (*alone too*) |
 | `GET /api/regions` | the two region maps' cells -- no save needed (*alone too*) |
 | `GET /api/groves` | the groves' universes, signs and who lives in each -- no save needed (*alone too*) |
@@ -74,6 +75,7 @@ the day's luck and dress
 |---|---|
 | `GET /api/casino` | THE HOUSE: the day's luck and return with every reason (`context`), the hour and the weather (`world`), the holiday, and everyone at the reels in the last two minutes -- each by its device and the daemon it hosts, with the odds it last said and its reasons, the string's among them (`players`) |
 | `GET`/`POST /api/weather` | the city whose real weather the devices follow (`{city}`; `""` forgets it), and the weather there now -- from Open-Meteo, asked every fifteen minutes while a city is set |
+| `GET /art/subtle/<picture>_<frame>.png` | one of THE SUBTLE LAYER's pictures (and `/art/subtle/cover.png`, its cover, without lettering); `GET /api/art?subtle=<picture>_<frame>` the same as base64, for the phone away |
 | `GET /art/head` | where a daemon's head is in its picture, for a holiday hat: `?slot=` (a party daemon) or `?species=` |
 | `GET /art/casino/<piece>.png` | one of the CASINO's drawn pieces or hats, as the boards draw them; `?a=` and `?b=` the holiday's or the season's two colours, `?day=` the day's (each `RRGGBB`) |
 

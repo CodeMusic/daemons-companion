@@ -52,6 +52,9 @@ Home Assistant's address and token are not in this file, and neither is THE WEAT
   and **Set**, or **Forget** it (C-158). The server asks [Open-Meteo](https://open-meteo.com) for it every fifteen
   minutes while a city is set -- no account, and only the city is kept, with the weather it last had. With none set,
   nothing is fetched ([The CASINO](The-CASINO#the-days-odds)).
+- **SETTINGS, PREVIEW** -- off unless you turn it on: PLAY and THE SUBTLE LAYER shown as if the game had already given
+  them, to try them before the game does. The companion is asked with `?preview=1` and your save is never touched; the
+  site also takes `?preview=1` (or `harp`, `flute`) in its address.
 - **SETTINGS, WHO ANSWERS WHEN YOU TALK** -- where your words go when you talk.
 - **SETTINGS, THIS PHONE** -- on the phone: the companion it is paired with, and **Leave this companion** (tap twice),
   to host your daemon on the phone alone or to pair with another. Nothing on the companion changes.

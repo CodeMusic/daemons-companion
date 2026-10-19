@@ -53,8 +53,9 @@ NEARBY.
   (drawn as the game draws it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN) and **Routines** (THE
   CASINO, THE HOUSE and the party's own -- [The CASINO](The-CASINO)).
 - **GOALS** -- one goal, its steps and milestones, and WALKING.
-- **LIBRARY** -- CALLOW SCHOOL, THE GUIDE once your save has found it, the **NOTEBOOK**, the **SONGBOOK** (the songs you
-  have learned, in their colours, and PLAY to hear one) and **STREAM** (every lesson a MARK or a ROOT has opened).
+- **LIBRARY** -- CALLOW SCHOOL, THE GUIDE and THE SUBTLE LAYER once your save has found them, the **NOTEBOOK**, the
+  **SONGBOOK** (your instrument to PLAY, and the songs you have learned, in their colours, with LISTEN to hear one) and
+  **STREAM** (every lesson a MARK or a ROOT has opened).
 - **YOU** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES and GAME
   EVENTS.
 - **PLACES** -- your devices under their makers (a picture of each, which daemon each hosts, batteries, ITS SETTINGS

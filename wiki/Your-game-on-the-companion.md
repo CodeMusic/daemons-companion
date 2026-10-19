@@ -13,7 +13,7 @@ the game's are.
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, and the **INDEX** |
-| **LIBRARY** | CALLOW SCHOOL, THE GUIDE, the NOTEBOOK, the SONGBOOK and STREAM |
+| **LIBRARY** | CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES and GAME EVENTS |
 
 ## YOU
@@ -67,9 +67,15 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
   board once you have stood on it (greyed and closed until then). And **THE PAPER, TO SIT AGAIN**: the whole paper, a
   question at a time, marked here with the letter and every miss shown with its answer. **It is practice: your save is
   never written.**
-- **THE GUIDE** -- only once your save has found it. Its 8-bit cover, CONTENTS by part, and each chapter on the book's
+- **THE GUIDE** -- only once your save has found it. Its 8-bit cover (its title and author set in the app's own type --
+  the art carries none of the game's lettering, which is Nintendo's), CONTENTS by part, and each chapter on the book's
   own dark page, with BACK, CONTENTS and NEXT; its last chapter ends on READ, the link its QR code opens. Nothing of it
   shows before it is found.
+- **THE SUBTLE LAYER** (DAEMONS T-423) -- a trainer's handbook, only once your save has found it. An open book in its
+  own purples: its cover (its title set in the app's own type), the contents, then each page with its picture on the
+  left and its words on the right (one above the other on a phone); a few pictures turn, and in TWO VOICES the second,
+  asking voice is printed faint. What the two books are: the DAEMONS wiki's
+  [Books](https://github.com/CodeMusic/DAEMONS/wiki/Books).
 - **The NOTEBOOK** -- every page your save holds (C-125), in the game's own sections, each tapped open and laid out as
   the game's NOTEBOOK lays it. A dot marks a page you have not yet read in the game; an open page says where it was
   found. A page the game writes from your save each time you open it there says so, rather than guessing. **A page that
@@ -77,7 +83,7 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
   it opens the link. On the Tab5, which has no browser, the code itself is drawn under the page, to scan with a phone.
 - **The SONGBOOK** -- every song your save has learned (C-152): its key, a dot in the key's colour, and its motif on a
   treble staff, each note's head in the colour of its pitch, as the game draws it -- the twelve key colours and the
-  outline exported from the game -- with a sharp or a flat beside it and ledger lines where needed. **PLAY** plays it,
+  outline exported from the game -- with a sharp or a flat beside it and ledger lines where needed. **LISTEN** plays it,
   each note held as long as the game holds it, on your game's own instrument: the HARP for a CONTENT save, the FLUTE for
   CONTEXT ([Settings](Settings#sound)).
 
@@ -87,11 +93,14 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
   holes held while you breathe into the microphone (a finger alone where there is none); an octave either way. Each
   note drifts up in its key's colour as the game draws it, and the companion listens as the game does: a learned song
   in its key joins on the staff and echoes, and the right notes in another key are ALMOST. A song only heard is to be
-  played back in the game. Seen on the site; not yet on the phone.
+  played back in the game. On the phone the harp takes every finger, for a chord or a strum. SETTINGS' **PREVIEW**
+  shows it (and THE SUBTLE LAYER) as if the game had given it, to try before then -- your save is never touched.
 - **STREAM** -- every lesson a MARK or a ROOT has opened, read as their pages read them: its first line leading and the
   rest as points, and where it was opened.
 
-On the Tab5 the LIBRARY holds the same five; THE GUIDE opens full screen, and the SONGBOOK's PLAY plays on its speaker.
+On the Tab5 the LIBRARY holds the same books; THE GUIDE and THE SUBTLE LAYER open full screen, the SONGBOOK's LISTEN
+plays on its speaker, and **PLAY THE HARP** (or FLUTE) is there by touch -- the strings touched or drawn across, the holes
+held (the finger alone: its microphones are TALK's), each note on a speaker channel of its own so plucks ring together.
 
 ## The INDEX
 

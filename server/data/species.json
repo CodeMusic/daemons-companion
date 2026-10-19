@@ -6498,7 +6498,7 @@
    "back": "gfx/daemons/goldset_back.png"
   },
   "bodyType": 12,
-  "streaks": false,
+  "streaks": true,
   "growth": 3,
   "base": [
    75,
@@ -6508,7 +6508,15 @@
    90,
    100
   ],
-  "native": null
+  "native": {
+   "regions": [
+    "THE MARGINS"
+   ],
+   "editions": null,
+   "seasons": null,
+   "hours": null,
+   "grove": null
+  }
  },
  "183": {
   "constant": "MARILL",

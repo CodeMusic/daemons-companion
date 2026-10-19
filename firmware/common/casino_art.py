@@ -298,6 +298,35 @@ def build():
     return files
 
 
+# A PNG is the same file when it is the same picture: zlib builds compress the same pixels to different bytes (the Mac's
+# Pillow 11 ships zlib-ng, Debian's 9.4 classic zlib -- every PNG read as changed on the CoreMP135 hub, C-168, 2026-10-19),
+# so a PNG is compared by what it shows -- mode, size, pixels (an RGBA's alpha among them), and for a palette picture
+# each index it uses, its colour and how transparent it is. The .json and the .h stay compared byte for byte.
+def picture(data):
+    im = Image.open(io.BytesIO(data))
+    im.load()
+    px, info = im.tobytes(), im.info.get("transparency")
+    if im.mode != "P":
+        return im.mode, im.size, px, info
+    pal = im.getpalette() or []
+    def alpha(i):
+        if isinstance(info, int):
+            return 0 if i == info else 255
+        return info[i] if isinstance(info, (bytes, bytearray)) and i < len(info) else 255
+    return im.mode, im.size, px, [(tuple(pal[3 * i:3 * i + 3]), alpha(i)) for i in sorted(set(px))]
+
+
+def same(path, old, body):
+    if old == body:
+        return True
+    if old is None or not path.endswith(".png"):
+        return False
+    try:
+        return picture(old) == picture(body)
+    except Exception:                                 # not a picture this Pillow can read: changed
+        return False
+
+
 def main():
     write = "--write" in sys.argv
     stale = [k for k, v in sources().items() if hashlib.sha1(v.encode()).hexdigest() != PORTED[k]]
@@ -315,7 +344,7 @@ def main():
     changed = []
     for path, body in build().items():
         old = open(path, "rb").read() if os.path.exists(path) else None
-        if old != body:
+        if not same(path, old, body):
             changed.append(os.path.relpath(path, ROOT))
             if write:
                 os.makedirs(os.path.dirname(path), exist_ok=True)

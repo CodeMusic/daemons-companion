@@ -90,6 +90,10 @@ export function sync(h: Host, store: Store, now = new Date()) {
     if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
     if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
     if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
+    // C-167: and what a clamp left unmoved, so what the house has kept is what the money really moved
+    const moved = r.money ? r.money.to - r.money.from : 0;
+    if ((casino.delta || casino.spins) && moved !== casino.delta)
+      store.setSetting("casino.clamp", String(Number(store.getSetting("casino.clamp") ?? 0) + moved - casino.delta));
   });
   return { sameGame, firstSave, married,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),

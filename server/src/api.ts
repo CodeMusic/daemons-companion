@@ -58,7 +58,7 @@ import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
-import { casinoAdmin } from "./casino.js";                     // C-158
+import { casinoAdmin, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
@@ -1045,7 +1045,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const st = deviceState(ecfg, store, new Date(), "") as any;
         const ctx = st.casino?.context ?? { luck: 0, rtp: 0.95, reasons: [] };
         let away: any[] = []; try { away = bytes ? readAway(bytes) : []; } catch { away = []; }
-        return send(res, 200, { ...casinoAdmin(store, away, ctx), world: st.world, holiday: st.holiday });
+        return send(res, 200, { ...casinoAdmin(store, away, ctx), world: st.world, holiday: st.holiday,
+                                house: houseTake(store) });   // C-167: what the house has kept
       }
       // C-158: the real weather -- the city set here (a place Open-Meteo knows), and the weather there now
       if (req.method === "GET" && path === "/api/weather") return send(res, 200, { place: weatherPlace(store), now: weatherNow(store) });

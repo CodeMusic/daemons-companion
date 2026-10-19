@@ -5,12 +5,12 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import P from "../data/profile_layout.json" with { type: "json" };
-import { deviceState, sync } from "../src/api.js";
+import { deviceState, makeServer, sync } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
 import { blocks } from "../src/save/reader.js";
 import { readProfile } from "../src/save/profile.js";
-import { casinoPending, casinoSeen, parseResult } from "../src/casino.js";
+import { casinoPending, casinoSeen, houseTake, parseResult } from "../src/casino.js";
 import { buildSave } from "./build_save.js";
 
 const KEY = 0x5a3c96e1;   // the save's encryption key: the money is kept XOR it, as the game keeps it
@@ -176,5 +176,51 @@ describe("each device's own settings (C-159)", () => {
     store.setSetting("device.m5-fire-a708a4", JSON.stringify({ sound: false }));
     expect((deviceState(cfg, store, new Date(), "m5-fire-a708a4") as any).settings.sound).toBe(false);
     expect((deviceState(cfg, store, new Date(), "t-deck-09ffa8") as any).settings.sound).toBe(true);
+  });
+});
+
+describe("what THE HOUSE keeps (C-167)", () => {
+  it("counts the house's take, net -- settled at a SYNC, and waiting for the next -- with each board's share", () => {
+    const { cfg } = saveFile(3000);
+    const store = new Store(":memory:");
+    played(store, -700, 1); played(store, 200, 1, "beef", "t-watch-s3-77bef4", 4);
+    sync(cfg, store);
+    played(store, -300, 2, "beef", "t-watch-s3-77bef4", 2);
+    expect(houseTake(store)).toEqual({ kept: 500, pending: 300, spins: 9, devices: [
+      { device: "m5-core-36f484", take: 700, spins: 3 }, { device: "t-watch-s3-77bef4", take: 100, spins: 6 }] });
+    sync(cfg, store);
+    expect(houseTake(store)).toMatchObject({ kept: 800, pending: 0 });
+  });
+
+  it("is negative while the player is ahead", () => {
+    const { cfg } = saveFile(3000);
+    const store = new Store(":memory:");
+    played(store, 1000, 1);
+    sync(cfg, store);
+    expect(houseTake(store)).toMatchObject({ kept: -1000, pending: 0 });
+  });
+
+  it("keeps only what the money really moved when a SYNC clamps it, at 0 or at 999999", () => {
+    const low = saveFile(200), store = new Store(":memory:");
+    played(store, -900, 1);
+    sync(low.cfg, store);
+    expect(houseTake(store).kept).toBe(200);                       // the house took the 200 there was, not the 900 bet
+    const high = saveFile(999000), rich = new Store(":memory:");
+    played(rich, 5000, 1);
+    sync(high.cfg, rich);
+    expect(houseTake(rich).kept).toBe(-999);                       // and paid only up to the game's 999999
+  });
+
+  it("is in THE HOUSE's listing (GET /api/casino)", async () => {
+    const { cfg } = saveFile(3000);
+    const server = makeServer({ ...cfg, database: ":memory:" });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+    try {
+      await fetch(base + "/api/device/interact", { method: "POST", headers: { "content-type": "application/json", "x-device": "m5-core-36f484" },
+                                                   body: JSON.stringify({ kind: "casino", detail: "-250 a1b2.1 m5-core-36f484 5" }) });
+      const house = (await fetch(base + "/api/casino").then((r) => r.json())).house;
+      expect(house).toMatchObject({ kept: 0, pending: 250, spins: 5 });
+    } finally { server.close(); }
   });
 });

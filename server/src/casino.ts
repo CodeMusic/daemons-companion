@@ -59,6 +59,25 @@ export function casinoSeen(store: Store, device: string): string {
 
 export const clampMoney = (n: number) => Math.max(0, Math.min(MONEY_MAX, Math.round(n)));
 
+// C-167 (the user, 2026-10-18: "It would be neat if the money lost to the casino is kept track of, and funds something
+// in the game"): what THE HOUSE has kept -- net, the pulls' bets less what they paid back -- settled (written into the
+// save's money at a SYNC, less what a SYNC's clamp at 0 or the game's 999999 left unmoved: "casino.clamp") and waiting
+// for the next, with each board's share (before any clamp). Negative while the player is ahead. The game spends it
+// (DAEMONS T-427); what it buys is the game's to show.
+export function houseTake(store: Store) {
+  const applied = Number(store.getSetting("casino.applied") ?? 0);
+  let kept = -Number(store.getSetting("casino.clamp") ?? 0), pending = 0, spins = 0;
+  const by = new Map<string, { device: string; take: number; spins: number }>();
+  for (const r of casinoResults(store)) {
+    if (r.id > applied) pending -= r.delta; else kept -= r.delta;
+    spins += r.spins;
+    const d = by.get(r.device) ?? { device: r.device, take: 0, spins: 0 };
+    d.take -= r.delta; d.spins += r.spins;
+    by.set(r.device, d);
+  }
+  return { kept, pending, spins, devices: [...by.values()].sort((a, b) => b.take - a.take) };
+}
+
 // C-151 (the user, 2026-10-17): THE TABLE -- the user's other boards at the reels now. A board says INTERACT table
 // "here <device>" as it sits down and each minute it stays, and "gone <device>" as it gets up; one heard from in the
 // last two minutes, and not gone since, is at the table. Each by the daemon it carries (read, never assigned here).

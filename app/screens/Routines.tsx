@@ -7,6 +7,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
          stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../server/src/slots";
 import { KIND_NAMES, playerId } from "../data";
+import { lookFor } from "../deviceSprites";
 import { api } from "../net";
 import { Cast, CasinoHouse, PlayerState, Reason } from "../types";
 import { Action, Art, Card, Eyebrow, Small } from "../ui";
@@ -301,10 +302,10 @@ export function Casino({ ink }: { ink: string }) {
 // C-158 (the user, 2026-10-18: "a casino admin section where you can see who all is gambling and the current odds the
 // instance is experiencing -- clicking on it explains why those odds are active (eg win streak, holiday, etc)"): THE HOUSE,
 // from GET /api/casino -- the day's odds and everyone at the reels, each opening on its reasons. Every word DRAFT.
-const seatName = (device: string) => {
+const seatName = (device: string) => {                  // every board's own name (devices.json), else the hand-kept list
   if (device.startsWith("site-")) return "A site";
   const kind = Object.keys(KIND_NAMES).filter((k) => device.startsWith(k)).sort((a, b) => b.length - a.length)[0];
-  return kind ? KIND_NAMES[kind] : device;
+  return lookFor(device)?.name ?? (kind ? KIND_NAMES[kind] : device);
 };
 const back = (rtp: number) => `${(rtp * 100).toFixed(1)} back of every 100`;
 // a reason's part in points of return: the day's luck moves it 5 a whole step (slots.ts RETURN_AT); the string's is said so

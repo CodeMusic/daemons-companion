@@ -62,7 +62,9 @@ export type CasinoHouse = { context: { luck: number; rtp: number; reasons: Reaso
                             players: { name: string; device: string; species: number; at: string;
                                        odds: { rtp: number; reach: number; dry: number; streak: number } | null; reasons: Reason[] }[];
                             world?: { watch: string; weather: { kind: string; tempC: number; city: string } | null };
-                            holiday?: { name: string } | null };
+                            holiday?: { name: string } | null;
+                            // C-167: what the house has kept, net -- settled at a SYNC, and waiting for the next -- and each board's share
+                            house?: { kept: number; pending: number; spins: number; devices: { device: string; take: number; spins: number }[] } };
 export type PlayerState = { season: string; day?: { note: string; menu?: string } | null; holiday?: { name: string; quiet?: boolean; look: string; colours: string[]; hat: string; flip: boolean } | null; daemon: { slot: number; nickname: string } | null;
                      world?: { watch: string; weather: { kind: string; tempC: number; city: string } | null };   // C-158: the real world outside
                      casino: { balance: number; friends: number[]; table: { name: string; device: string }[];

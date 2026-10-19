@@ -557,6 +557,32 @@ static void drawHouse(lv_obj_t *box, JsonDocument &h) {
                     : " - " + String((const char *)(w["kind"] | "")) + ", " + String((int)(w["tempC"] | 0)) + " C in " + String((const char *)(w["city"] | ""));
   label(c, day, &lv_font_montserrat_20, QUIET, LV_PCT(100));
   houseReasons(c, h["context"]["reasons"].as<JsonArray>());
+  // C-167 (the user, 2026-10-18: "the money lost to the casino is kept track of"): what the house has kept, net --
+  // settled at a SYNC, and what waits for the next -- a tap opening each board's share; the house owes while the
+  // player is ahead. Where it goes is the game's to show. Every word DRAFT.
+  JsonObject hk = h["house"];
+  if (!hk.isNull()) {
+    long kept = hk["kept"] | 0L, pending = hk["pending"] | 0L, spins = hk["spins"] | 0L;
+    lv_obj_t *k = card(box);
+    lv_obj_add_flag(k, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(k, houseTap, LV_EVENT_CLICKED, (void *)"house.keeps");
+    label(k, kept < 0 ? "THE HOUSE OWES" : "THE HOUSE KEEPS", &lv_font_montserrat_20, QUIET);
+    label(k, String(kept < 0 ? -kept : kept), &lv_font_montserrat_40, INK);
+    String waits = pending > 0 ? String(pending) + " more at the next SYNC" : pending < 0 ? String(-pending) + " back at the next SYNC"
+                                                                            : String("nothing waits for a SYNC");
+    label(k, waits + " - " + String(spins) + " pulls in all", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+    JsonArray devs = hk["devices"].as<JsonArray>();
+    if (houseOpen == "house.keeps") {
+      for (JsonObject d : devs) {
+        String id = (const char *)(d["device"] | "");
+        String kind = id.startsWith("site-") ? String("A site") : kindName(id.substring(0, id.lastIndexOf('-') > 0 ? id.lastIndexOf('-') : id.length()));
+        long take = d["take"] | 0L;
+        lv_obj_t *l = row(k);
+        label(l, String(take), &lv_font_montserrat_20, take > 0 ? lv_color_hex(0xB0413E) : take < 0 ? lv_color_hex(0x3F8F4F) : QUIET);
+        label(l, kind + " - " + String((long)(d["spins"] | 0L)) + " pulls", &lv_font_montserrat_20, INK, LV_PCT(80));
+      }
+    } else if (devs.size()) label(k, "By board >", &lv_font_montserrat_16, DAY);
+  }
   label(box, "AT THE REELS", &lv_font_montserrat_20, QUIET);
   JsonArray players = h["players"].as<JsonArray>();
   if (!players.size()) label(box, "Nobody is playing just now.", &lv_font_montserrat_20, QUIET);

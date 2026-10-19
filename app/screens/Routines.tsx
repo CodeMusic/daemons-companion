@@ -322,6 +322,35 @@ function Reasons({ reasons }: { reasons: Reason[] }) {
     </YStack>
   );
 }
+// C-167 (the user, 2026-10-18: "the money lost to the casino is kept track of"): what THE HOUSE has kept, net, the
+// bets less what they paid back -- settled at a SYNC, and what waits for the next -- and, opened, each board's share.
+// Negative while the player is ahead: then the house owes. Where it goes is the game's to show. Every word DRAFT.
+type Kept = NonNullable<CasinoHouse["house"]>;
+function Shares({ devices }: { devices: Kept["devices"] }) {
+  return (
+    <YStack gap={3} marginTop={6} paddingLeft={10} borderLeftWidth={2} borderColor="$color6">
+      {devices.map((d) => (
+        <XStack key={d.device} gap={8} alignItems="baseline">
+          <Text width={80} textAlign="right" fontFamily="$mono" fontSize={12} fontWeight="700"
+                color={d.take > 0 ? "#b0413e" : d.take < 0 ? "#3f8f4f" : "$color10"}>{d.take.toLocaleString()}</Text>
+          <Text flex={1} fontSize={14} color="$color12">{`${seatName(d.device)} · ${d.spins.toLocaleString()} pulls`}</Text>
+        </XStack>
+      ))}
+    </YStack>
+  );
+}
+function Keeps({ house, open, onToggle }: { house: Kept; open: boolean; onToggle: () => void }) {
+  const waits = house.pending > 0 ? `${house.pending.toLocaleString()} more at the next SYNC`
+              : house.pending < 0 ? `${(-house.pending).toLocaleString()} back at the next SYNC` : "nothing waits for a SYNC";
+  return (
+    <YStack padding={10} borderRadius={6} borderWidth={1} borderColor="$color6" cursor="pointer" role="button" onPress={onToggle}>
+      <Eyebrow>{house.kept < 0 ? "THE HOUSE OWES" : "THE HOUSE KEEPS"}</Eyebrow>
+      <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{Math.abs(house.kept).toLocaleString()}</Text>
+      <Small>{`${waits} · ${house.spins.toLocaleString()} pulls in all`}</Small>
+      {open ? <Shares devices={house.devices} /> : house.devices.length ? <Small color="$color11">By board ›</Small> : null}
+    </YStack>
+  );
+}
 export function House({ ink }: { ink: string }) {
   const [h, setH] = useState<CasinoHouse | null>(null);
   const [failed, setFailed] = useState(false);
@@ -341,8 +370,9 @@ export function House({ ink }: { ink: string }) {
         <Eyebrow>TODAY'S ODDS</Eyebrow>
         <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{back(h.context.rtp)}</Text>
         <Small>{`${h.holiday?.name ? `${h.holiday.name} · ` : ""}${(h.world?.watch ?? "").toLowerCase()}${w ? ` · ${w.kind}, ${Math.round(w.tempC)}°C in ${w.city}` : " · no city set for the weather (SETTINGS)"}`}</Small>
-        {open === "day" ? <Reasons reasons={h.context.reasons} /> : <Small color={ink}>Why ›</Small>}
+        {open === "day" ? <Reasons reasons={h.context.reasons} /> : <Small color="$color11">Why ›</Small>}
       </YStack>
+      {h.house ? <Keeps house={h.house} open={open === "house.keeps"} onToggle={() => setOpen(open === "house.keeps" ? null : "house.keeps")} /> : null}
       <Eyebrow>AT THE REELS</Eyebrow>
       {h.players.length === 0 ? <Small color="$color10">Nobody is playing just now.</Small> : null}
       {h.players.map((p) => (

@@ -32,7 +32,7 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 }
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
-      !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide")) return K_PROFILE;   // C-145: the LIBRARY's GUIDE
+      !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide") || !strcmp(name, "subtle")) return K_PROFILE;   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER
   if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
   if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
@@ -436,6 +436,18 @@ static void fetchProfileArt() {
   }
   for (int m = 1; m <= 8; m++) one("mark" + String(m), "mark=" + String(m));
   one("guide_cover_plain", "guide=cover");         // C-145: the GUIDE's 8-bit cover (named anew when it changed: a kept picture is never fetched again -- now without its lettering, 78cce6f)
+  {                                                 // T-423: THE SUBTLE LAYER's cover and every page's pictures, once it is held
+    JsonDocument sb = newDoc();
+    if (kept("subtle", sb) && (sb["held"] | false)) {
+      one("subtle_cover", "subtle=cover");
+      for (JsonObject s : sb["sections"].as<JsonArray>())
+        for (JsonObject e : s["entries"].as<JsonArray>())
+          for (int f = 0; f < max(1, (int)(e["frames"] | 1)); f++) {
+            String p = String((const char *)(e["picture"] | "")) + "_" + String(f);
+            one("subtle_" + p, "subtle=" + p);
+          }
+    }
+  }
   if (any) changed(K_ART | K_PROFILE);
 }
 
@@ -486,6 +498,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/notebook", "notebook");           // C-131: the PROFILE's NOTEBOOK, as the app reads it
     fetchKeep("/api/guide", "guide");                 // C-145: the GUIDE, once the save holds it
+    fetchKeep("/api/subtle", "subtle");               // T-423: THE SUBTLE LAYER, once the save holds it
     fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours
     fetchKeep("/api/regions", "regions");             // the two regions' maps, lit from the profile's visited (C-127)
     fetchKeep("/api/progress", "progress");           // C-137: GAME EVENTS, and CALLOW SCHOOL as the save has it

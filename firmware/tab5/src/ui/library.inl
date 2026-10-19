@@ -142,6 +142,105 @@ static void showGuide() {
   label(pg, String(guideAt + 1) + " / " + String(total), &lv_font_montserrat_16, BOOK_FAINT);
 }
 
+// ---- T-423: THE SUBTLE LAYER, a trainer's handbook, once the save holds it (GET /api/subtle, kept as "subtle"; its
+// pictures kept as subtle_<picture>_<frame>) -- an open book in its own purples, as the app reads it: the cover (its title
+// set here in the Tab5's own type: the art carries no game font), the contents, then each page with its picture on the
+// left and its words on the right, a turning picture a frame every 0.7 s, TWO VOICES' asking voice faint. Every word DRAFT.
+static const lv_color_t SUB_BOARDS = lv_color_hex(0x1B0F1F), SUB_PAGE = lv_color_hex(0x2C1C32), SUB_EDGE = lv_color_hex(0x4A3352),
+                        SUB_INK = lv_color_hex(0xF0E6F2), SUB_FAINT = lv_color_hex(0x9A86A0), SUB_PINK = lv_color_hex(0xE07AD0);
+static int subtleAt = -1, subtleFrames = 1, subtleFrame = 0;
+static lv_obj_t *subtleImg = nullptr;
+static String subtlePic;
+static lv_timer_t *subtleTimer = nullptr;
+static void showSubtle();
+static void tapSubtleAt(lv_event_t *e) { subtleAt = (int)(long)lv_event_get_user_data(e); showSubtle(); }
+static void subtleClosing() { subtleImg = nullptr; if (subtleTimer) { lv_timer_delete(subtleTimer); subtleTimer = nullptr; } }
+static void subtleTurn(lv_timer_t *) {
+  if (!subtleImg || subtleFrames < 2) return;
+  subtleFrame = (subtleFrame + 1) % subtleFrames;
+  if (lv_image_dsc_t *d = artDsc("subtle_" + subtlePic + "_" + String(subtleFrame))) lv_image_set_src(subtleImg, d);
+}
+static lv_obj_t *subtleLink(lv_obj_t *parent, const String &text, int to, bool on = true) {
+  lv_obj_t *b = lv_button_create(parent);
+  lv_obj_set_style_bg_opa(b, LV_OPA_TRANSP, 0); lv_obj_set_style_shadow_width(b, 0, 0); lv_obj_set_style_pad_all(b, 10, 0);
+  lv_obj_t *t = lv_label_create(b); lv_label_set_text(t, text.c_str());
+  lv_obj_set_style_text_font(t, &lv_font_montserrat_20, 0); lv_obj_set_style_text_color(t, on ? SUB_PINK : SUB_EDGE, 0);
+  if (on) lv_obj_add_event_cb(b, tapSubtleAt, LV_EVENT_CLICKED, (void *)(long)to);
+  return b;
+}
+static lv_obj_t *subtleCover(lv_obj_t *parent, int k, JsonDocument &b) {
+  lv_obj_t *box = lv_obj_create(parent);
+  lv_obj_set_size(box, 132 * k, 160 * k);
+  lv_obj_set_style_bg_color(box, SUB_BOARDS, 0); lv_obj_set_style_border_width(box, 0, 0); lv_obj_set_style_pad_all(box, 0, 0);
+  lv_obj_set_style_radius(box, 0, 0); lv_obj_remove_flag(box, LV_OBJ_FLAG_SCROLLABLE); lv_obj_remove_flag(box, LV_OBJ_FLAG_CLICKABLE);
+  if (lv_image_dsc_t *dsc = artDsc("subtle_cover")) {
+    lv_obj_t *img = lv_image_create(box); lv_image_set_src(img, dsc); lv_image_set_antialias(img, false);
+    lv_image_set_pivot(img, 0, 0); lv_image_set_scale(img, 256 * k); lv_obj_set_pos(img, -54 * k, 0);
+  }
+  if (k >= 2) {
+    lv_obj_t *t = lv_label_create(box); lv_label_set_text(t, b["title"] | "THE SUBTLE LAYER");
+    lv_obj_set_style_text_font(t, &lv_font_montserrat_28, 0); lv_obj_set_style_text_color(t, SUB_INK, 0); lv_obj_align(t, LV_ALIGN_TOP_MID, 0, 9 * k);
+    lv_obj_t *u = lv_label_create(box); lv_label_set_text(u, b["subtitle"] | "");
+    lv_obj_set_style_text_font(u, &lv_font_montserrat_20, 0); lv_obj_set_style_text_color(u, SUB_FAINT, 0); lv_obj_align(u, LV_ALIGN_TOP_MID, 0, 24 * k);
+  }
+  return box;
+}
+static void showSubtle() {
+  JsonDocument b = newDoc();
+  if (!kept("subtle", b) || !(b["held"] | false)) return;
+  JsonObject sec, ent; int total = 0;
+  for (JsonObject s : b["sections"].as<JsonArray>())
+    for (JsonObject e : s["entries"].as<JsonArray>()) { if (total == subtleAt) { sec = s; ent = e; } total++; }
+  lv_obj_t *o = openOverlay();
+  overlayClosing = subtleClosing;
+  lv_obj_set_style_bg_color(o, SUB_BOARDS, 0);
+  button(o, "CLOSE", closeOverlay, nullptr, false);
+  lv_obj_t *pg = column(o, LV_PCT(100));
+  lv_obj_set_style_bg_color(pg, SUB_PAGE, 0); lv_obj_set_style_bg_opa(pg, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_color(pg, SUB_EDGE, 0); lv_obj_set_style_border_width(pg, 1, 0);
+  lv_obj_set_style_pad_all(pg, 24, 0); lv_obj_set_style_pad_row(pg, 14, 0);
+  if (ent.isNull()) {                              // the cover, then CONTENTS
+    subtleAt = -1;
+    lv_obj_move_to_index(subtleCover(o, 3, b), 1);
+    label(pg, "CONTENTS", &lv_font_montserrat_20, SUB_PINK);
+    int n = 0;
+    for (JsonObject s : b["sections"].as<JsonArray>()) {
+      label(pg, s["label"] | "", &lv_font_montserrat_16, SUB_FAINT);
+      label(pg, s["heading"] | "", &lv_font_montserrat_28, SUB_INK, LV_PCT(100));
+      lv_obj_t *r = row(pg);
+      for (JsonObject e : s["entries"].as<JsonArray>()) subtleLink(r, e["short"] | "", n++);
+    }
+    return;
+  }
+  String head = String((const char *)(sec["label"] | ""));
+  String h2 = String((const char *)(sec["heading"] | "")); h2.toUpperCase();
+  label(pg, head == h2 ? head : head + "  -  " + h2, &lv_font_montserrat_16, SUB_FAINT, LV_PCT(100));
+  lv_obj_t *spread = row(pg);                      // the left page, the picture; the right, the words
+  lv_obj_set_flex_align(spread, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+  lv_obj_t *left = lv_obj_create(spread); lv_obj_remove_style_all(left); lv_obj_set_size(left, 196, 176);
+  lv_obj_set_style_bg_color(left, SUB_BOARDS, 0); lv_obj_set_style_bg_opa(left, LV_OPA_COVER, 0);
+  lv_obj_remove_flag(left, LV_OBJ_FLAG_SCROLLABLE);
+  subtlePic = String((const char *)(ent["picture"] | "")); subtleFrames = max(1, (int)(ent["frames"] | 1)); subtleFrame = 0;
+  subtleImg = nullptr;
+  if (lv_image_dsc_t *d = artDsc("subtle_" + subtlePic + "_0")) {
+    subtleImg = lv_image_create(left); lv_image_set_src(subtleImg, d); lv_image_set_antialias(subtleImg, false);
+    lv_image_set_pivot(subtleImg, 0, 0); lv_image_set_scale(subtleImg, 512); lv_obj_set_pos(subtleImg, 4, 4);
+  }
+  lv_obj_t *right = column(spread, 400);
+  label(right, ent["title"] | "", &lv_font_montserrat_28, SUB_INK, LV_PCT(100));
+  for (JsonObject para : ent["paragraphs"].as<JsonArray>()) {
+    bool asking = String((const char *)(para["voice"] | "")) == "asking";
+    label(right, para["text"] | "", &lv_font_montserrat_20, asking ? SUB_FAINT : SUB_INK, LV_PCT(100));
+  }
+  if (strlen(ent["caption"] | "")) label(pg, ent["caption"] | "", &lv_font_montserrat_16, SUB_FAINT, LV_PCT(100));
+  lv_obj_t *nav = row(pg);
+  subtleLink(nav, "< BACK", subtleAt - 1, subtleAt > 0);
+  subtleLink(nav, "CONTENTS", -1);
+  subtleLink(nav, "NEXT >", subtleAt + 1, subtleAt < total - 1);
+  label(pg, String(subtleAt + 1) + " / " + String(total), &lv_font_montserrat_16, SUB_FAINT);
+  if (subtleFrames > 1 && !subtleTimer) subtleTimer = lv_timer_create(subtleTurn, 700, nullptr);
+}
+
 static void drawLibrary(lv_obj_t *p) {
   JsonDocument gd = newDoc();
   if (kept("guide", gd) && (gd["held"] | false)) {
@@ -152,6 +251,16 @@ static void drawLibrary(lv_obj_t *p) {
     label(t, "THE GUIDE", &lv_font_montserrat_20, QUIET);
     label(t, gd["title"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
     button(t, "READ", tapGuideAt, (void *)(long)-1);
+  }
+  JsonDocument sd = newDoc();                       // T-423: THE SUBTLE LAYER, once found
+  if (kept("subtle", sd) && (sd["held"] | false)) {
+    lv_obj_t *sc = card(p);
+    lv_obj_t *r = row(sc);
+    subtleCover(r, 1, sd);
+    lv_obj_t *t = column(r, 460);
+    label(t, sd["title"] | "THE SUBTLE LAYER", &lv_font_montserrat_20, QUIET);
+    label(t, sd["subtitle"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+    button(t, "READ", tapSubtleAt, (void *)(long)-1);
   }
   JsonDocument pg = newDoc(), sc = newDoc(), pr = newDoc();
   if (!kept("progress", pg) || !kept("school", sc)) { label(p, "Nothing kept yet: CALLOW SCHOOL comes from your save, after a SYNC.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }

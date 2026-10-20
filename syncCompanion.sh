@@ -48,7 +48,7 @@ mkdir -p "$STATE"
 
 if [[ $mode == art ]]; then
   [[ -d "$ART" ]] || { echo "syncCompanion: no art at $ART (set ART in .hub)" >&2; exit 1; }
-  rsync -a --delete --chmod=Dg+rwxs,Fg+rw "$ART/" "$HUB:$SHARED/art/"
+  rsync -rlt --omit-dir-times --delete --delete-excluded --exclude .DS_Store "$ART/" "$HUB:$SHARED/art/"
   echo "syncCompanion: art sent ($(find "$ART" -type f | wc -l | tr -d ' ') files)"; exit 0
 fi
 if [[ $mode == backups ]]; then
@@ -96,7 +96,8 @@ if [[ $mode == pull ]]; then [[ -n "$theirs" ]] || { echo "syncCompanion: the hu
 
 if [[ "$mine" == "$theirs" ]]; then
   [[ -n "$mine" ]] && echo "$mine" > "$STATE/last.sha"
-  echo "syncCompanion: in step${mine:+ (both the same save)}${mine:- -- neither side has a save}"; exit 0
+  if [[ -n "$mine" ]]; then echo "syncCompanion: in step (both the same save)"; else echo "syncCompanion: in step -- neither side has a save"; fi
+  exit 0
 fi
 if [[ -z "$theirs" ]]; then what=push; why="the hub has no save yet"
 elif [[ -z "$mine" ]]; then what=pull; why="this computer has no save at $SAVE"

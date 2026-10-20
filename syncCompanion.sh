@@ -89,7 +89,7 @@ pull() {
   echo "syncCompanion: the hub's save -> this computer"
 }
 # keep a few of the kept-aside copies, not every one
-trap 'ls -t "$STATE"/kept/*.sav 2>/dev/null | tail -n +31 | while read -r f; do rm -f "$f"; done' EXIT
+trap '{ ls -t "$STATE"/kept/*.sav 2>/dev/null | tail -n +31 | while read -r f; do rm -f "$f"; done; } || true' EXIT
 
 if [[ $mode == push ]]; then [[ -n "$mine" ]] || { echo "syncCompanion: no save at $SAVE" >&2; exit 1; }; push; exit 0; fi
 if [[ $mode == pull ]]; then [[ -n "$theirs" ]] || { echo "syncCompanion: the hub has no save yet" >&2; exit 1; }; pull; exit 0; fi

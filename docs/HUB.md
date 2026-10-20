@@ -84,6 +84,14 @@ registered as its own before it ever transmits, so it never answers itself.
 
 **Phase 7 -- later.** The 868 module; Node after Node 22's end of life (2027-04-30).
 
+*The 868 module, chosen 2026-10-20:* M5Stack's **LoRaWAN EU868 Module** (SKU M148; an STM32WLE5, the RAK3172). It is
+driven over a **UART with AT commands** -- LoRaWAN 1.0.3 class A, B and C, and LoRa P2P -- so the hub talks to it like a
+modem, not through an SPI driver like the LoRa433's. The boards are split between 868 and 433 MHz (none on 915), and the
+hub relays both. Transmitting on 868 is fine for this use where the hub runs; a product would need a module for each
+region (US915 in North America, for one). When it arrives: set its UART DIP switches clear of the Module LLM's UART;
+and P2P hears the 868 boards only if frequency, spreading factor, bandwidth, coding rate, sync word and preamble all
+match theirs (docs/LORA.md).
+
 ## The cut-over (Phase 2)
 
 *Decided 2026-10-20: the hub takes **the Mac's store** (goals, ledgers, paired phones, board keys, secrets), and serves

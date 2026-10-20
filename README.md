@@ -122,6 +122,10 @@ On a Mac with Node 24:
 ./updateCompanion.sh          # flash any boards you have plugged in
 ```
 
+**Or on a hub that never sleeps** -- a small Linux board at home (an M5Stack CoreMP135 here) serving the companion
+while the computer sleeps: `hub/` sets it up, `./syncCompanion.sh` keeps the save in step, and
+[docs/HUB.md](docs/HUB.md) compares the two ways and has every step, the cut-over and the way back.
+
 **A second companion beside yours.** `COMPANION_CONFIG=/path/to/config.json` starts the server on another config file
 -- its own port, database and save -- and the site takes `?server=http://host:port` to use it, for that visit only.
 The [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) runs one for each build of the game this way,

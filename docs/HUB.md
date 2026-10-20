@@ -21,6 +21,23 @@ It can be the always-on home for everything the Mac does today while awake:
 | **the daemons' offline AI** | the Module LLM over the Mate's Ethernet on the second port, as a talk provider | 5 |
 | **a LoRa gateway** | the LoRa433 on SPI, a small userspace driver, relaying broadcasts (C-134) | 6 |
 
+## Two ways to run the companion
+
+Either works; choose by whether a computer is always on.
+
+| | **the Mac (or any computer) serves** | **the hub serves** |
+|---|---|---|
+| start | `./bindCompanion.sh always` (a login agent; the Mac kept awake on power) | `hub/phase0.sh`, `phase1.sh`, `phase2.sh` (below), once |
+| the store | `server/companion.sqlite` beside the code | `/var/lib/daemons-companion/` on the hub, backed up nightly |
+| the save | the file `savePath` names, read in place | a copy in the hub's shared folder; `./syncCompanion.sh` keeps it and the computer's in step, both ways |
+| when the computer sleeps | the phone, the boards and the relay lose the companion | nothing changes |
+| the site | `./bindCompanion.sh`, at localhost:8081 | the same command on the computer, through `ssh -N -L 4730:127.0.0.1:4730 <hub>`; later the hub itself (C-170) |
+| pairing a phone | the site's PAIR A PHONE | the same, through the tunnel; later the hub's own screen (C-170) |
+| linking a board by cable | `./linkCompanion.sh` | the same, through the tunnel (the board then finds the hub over Wi-Fi) |
+
+Moving from one to the other is "The cut-over" below, and the way back is at its end. `.hub`'s `SERVER_ON_HUB=1` is what
+tells a computer's scripts that the hub is the server.
+
 ## Decided (the user, 2026-10-18)
 
 - **The hub if it works well, roverbyteseer if it does not.** Either way the server stops depending on the Mac being
@@ -73,7 +90,11 @@ and `./bindCompanion.sh never` on the Mac.
 **Phase 3 -- cable bridges.** One bridge per board by its USB serial, per-device queues in the server so boards do not
 wait on each other.
 
-**Phase 4 -- the screen.** Status, the boards on the hub, and pairing.
+**Phase 4 -- the screen.** Status, the boards on the hub, and pairing. **C-170** (decided 2026-10-20): the hub's
+screen shows PAIR A PHONE -- a code and the address, after a hold and a confirm, so a visitor cannot pair themselves --
+and the hub serves the site itself, so a browser anywhere at home opens the hub's address and pairs once with a code
+from that screen, as a phone does. Until then the site runs on a computer, through the tunnel; a browser pointed at
+the hub's port gets "pair this phone first", by design.
 
 **Phase 5 -- the Module LLM.** The Mate's RJ45 to the hub's second port on its own small network; a module provider
 alongside n8n, extending the existing talk setting rather than adding a second one; the talk prompt rebuilt for the
@@ -123,6 +144,25 @@ off its card. Its settings are in `.hub` (see `.hub.example`; never committed).
 
 **Going back**: stop the hub's unit, `./syncCompanion.sh pull`, copy the hub's newest backup to the Mac's
 `server/companion.sqlite`, take `SERVER_ON_HUB` out of `.hub`, point the relay back, `./bindCompanion.sh always`.
+
+## Rebuilding the hub from nothing
+
+Everything that makes the hub is in this repo; what is not is listed after.
+
+1. **The card.** M5's `M5_CoreMP135_debian12_20260626.7z` (docs.m5stack.com/en/compute/coremp135/image; 235,054,081
+   bytes, SHA-256 `cb7ae58d22fdff062d67d446866f53c7d9810f5b9c5fa6b749f59204db73645a`), unpacked with 7-Zip and written
+   to a microSD card of 16 GB or more (`dd` to the raw disk, or balenaEtcher). Into the hub, Ethernet to the router.
+2. **Your key.** `ssh-copy-id debian@CoreMP135.local` (M5's default password, `temppwd`, once; phase 0 changes it).
+3. `scp hub/phase0.sh debian@CoreMP135.local:` then `ssh -t debian@CoreMP135.local 'sudo bash ~/phase0.sh Area/City'`
+   -- it reboots; `ssh-keygen -R CoreMP135.local` (new host keys), and the same command again.
+4. `hub/phase1.sh` (Node 22, the `daemons` user, the clone; the tests, as a check), detached as its header says.
+5. `hub/phase2.sh install`, then `sudo tailscale up` and approve it.
+6. On the computer: `.hub` from `.hub.example`, `./syncCompanion.sh art`, `./syncCompanion.sh push`.
+7. The store: a fresh hub starts from the newest backup (`./syncCompanion.sh backups` keeps them on the computer) --
+   `hub/phase2.sh cutover <it>` -- or, moving from a computer, "The cut-over" above.
+
+**Not in the repo, on purpose**: the store and its backups (every key and secret the companion has), `.hub`, your SSH
+key, the Tailscale login, the relay's Forward address, and the router's reservation for the hub's MAC.
 
 ## Measured on the board
 

@@ -47,6 +47,15 @@ if pgrep -f usb_bridge.py >/dev/null 2>&1; then
 fi
 
 # -- the server, unless one is already up ---------------------------------------------------------------------------
+# C-168: once the hub is the companion's server (.hub: SERVER_ON_HUB=1), this computer never starts a second one --
+# it would bring an old store back and split the phones between two. Through a tunnel the hub answers here instead.
+hub_is_server() { [[ $(uname -s) != Linux && -f "$HERE/.hub" ]] && grep -q '^SERVER_ON_HUB=1' "$HERE/.hub"; }
+refuse_for_hub() {
+  local hub; hub="$(sed -n 's/^HUB=//p' "$HERE/.hub" | head -1)"
+  echo "$1: the companion's server is the hub's now, so none is started here. Reach it first, in another terminal:" >&2
+  echo "      ssh -N -L $PORT:127.0.0.1:$PORT ${hub:-debian@<the hub>}      -- then run this again." >&2
+  exit 1
+}
 answering() { curl -fsS -o /dev/null --max-time 1 "http://127.0.0.1:$PORT/api/today" 2>/dev/null; }
 server_pid=""
 stop_server() {
@@ -61,6 +70,7 @@ stop_server() {
 if answering; then
   echo "linkCompanion: using the server already on port $PORT."
 else
+  hub_is_server && refuse_for_hub linkCompanion
   want="$(tr -d '[:space:]v' < "$HERE/.nvmrc")"
   for brew in /opt/homebrew/opt/node@"$want"/bin /usr/local/opt/node@"$want"/bin; do
     [[ -x "$brew/node" ]] && { PATH="$brew:$PATH"; break; }

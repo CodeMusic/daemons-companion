@@ -1,0 +1,10 @@
+[Unit]
+Description=Back up the DAEMONS companion's store, nightly
+
+[Timer]
+OnCalendar=*-*-* 03:30
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,32 @@
+# C-168: the companion's server on the hub, always on (hub/phase2.sh installs it). One process, as measured in Phase 1
+# (65 MB); its config, store, save and art live in /var/lib/daemons-companion, outside the clone.
+[Unit]
+Description=The DAEMONS companion's server
+# the day, the streaks and every watch's clock come from this clock: wait for NTP after a power cut (C-168 critic)
+Wants=network-online.target systemd-time-wait-sync.service
+After=network-online.target systemd-time-wait-sync.service time-sync.target
+
+[Service]
+Type=simple
+User=daemons
+Group=daemons
+UMask=0002
+WorkingDirectory=/opt/daemons-companion/server
+Environment=PATH=/opt/node22/bin:/usr/bin:/bin
+Environment=HOME=/var/lib/daemons-companion
+# tsx's compiled cache, kept between starts (a warm start answers in 7 s, a cold one in 15)
+Environment=TMPDIR=/var/lib/daemons-companion/tmp
+Environment=NODE_OPTIONS=--disable-warning=ExperimentalWarning
+# secrets the server reads from its environment (DEX_SHARED_SECRET), if any: root's, 0600, never in a repo
+EnvironmentFile=-/etc/daemons-companion.env
+ExecStart=/opt/node22/bin/node --import tsx src/main.ts
+Restart=always
+RestartSec=10
+MemoryMax=320M
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

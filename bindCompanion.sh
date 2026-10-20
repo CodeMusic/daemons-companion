@@ -96,6 +96,16 @@ for part in server app; do
 done
 
 answering() { curl -fsS -o /dev/null --max-time 1 "http://127.0.0.1:$PORT/api/today" 2>/dev/null; }
+# C-168: once the hub is the companion's server (.hub: SERVER_ON_HUB=1), this computer never starts a second one --
+# it would bring an old store back and split the phones between two. Through a tunnel the hub answers here instead.
+hub_is_server() { [[ $(uname -s) != Linux && -f "$HERE/.hub" ]] && grep -q '^SERVER_ON_HUB=1' "$HERE/.hub"; }
+refuse_for_hub() {
+  local hub; hub="$(sed -n 's/^HUB=//p' "$HERE/.hub" | head -1)"
+  echo "$1: the companion's server is the hub's now, so none is started here. Reach it first, in another terminal:" >&2
+  echo "      ssh -N -L $PORT:127.0.0.1:$PORT ${hub:-debian@<the hub>}      -- then run this again." >&2
+  exit 1
+}
+
 
 # -- phone: the app, built for a real iPhone and installed (C-27) -------------------------------------------------------
 # The native project is generated from app.json (expo prebuild) and is not committed. Signed by the team in app.json
@@ -160,6 +170,7 @@ fi
 # sleeping while it is on power (on battery it sleeps as usual). The server's log goes to .logs/server-always.log.
 AGENT="$HOME/Library/LaunchAgents/ca.codemusic.daemons-companion.plist"
 if [[ $mode == always ]]; then
+  hub_is_server && refuse_for_hub bindCompanion
   mkdir -p "$LOGS" "$(dirname "$AGENT")"
   cat > "$AGENT" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -208,6 +219,7 @@ fi
 # -- server only, in the foreground -------------------------------------------------------------------------------------
 if [[ $mode == server ]]; then
   if answering; then echo "bindCompanion: a server is already answering on port $PORT." >&2; exit 1; fi
+  hub_is_server && refuse_for_hub bindCompanion
   [[ -f "$HERE/server/config.json" ]] || echo "bindCompanion: no server/config.json -- running on defaults (no save read, AI off)."
   cd "$HERE/server"
   # Linux: one process, as the hub runs it (npm, tsx's watcher and the server would be three Node heaps: 65 MB is one)
@@ -230,6 +242,7 @@ if [[ $mode == both ]]; then
   if answering; then
     echo "bindCompanion: using the server already on port $PORT (it keeps running after this)."
   else
+    hub_is_server && refuse_for_hub bindCompanion
     mkdir -p "$LOGS"
     [[ -f "$HERE/server/config.json" ]] || echo "bindCompanion: no server/config.json -- running on defaults (no save read, AI off)."
     (cd "$HERE/server" && exec npx tsx watch src/main.ts) >"$SERVER_LOG" 2>&1 &

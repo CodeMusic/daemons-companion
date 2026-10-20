@@ -1,0 +1,8 @@
+# syncCompanion.sh's settings: copy to .hub (never committed) and fill in. C-168, docs/HUB.md.
+HUB=debian@CoreMP135.local
+# the save the emulator plays and the companion serves (on the hub it is shared/save.sav)
+SAVE=~/path/to/the/game.sav
+# DAEMONS' own art, for the hub's pictures (default: the DAEMONS checkout beside this repo)
+#ART=../DAEMONS/gfx/daemons
+# where the hub's nightly store backups land on this computer (kept 0700: they hold every key)
+#BACKUPS=~/.daemons-companion/backups

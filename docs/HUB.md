@@ -84,6 +84,38 @@ registered as its own before it ever transmits, so it never answers itself.
 
 **Phase 7 -- later.** The 868 module; Node after Node 22's end of life (2027-04-30).
 
+## The cut-over (Phase 2)
+
+*Decided 2026-10-20: the hub takes **the Mac's store** (goals, ledgers, paired phones, board keys, secrets), and serves
+**the same save the Mac does**. The playground (the game in a browser, T-428) stays on another computer: a demo site is
+a different job from this board's.*
+
+**The save, both ways: `./syncCompanion.sh`.** SYNC writes the save, so a copy that only went to the hub would lose
+what SYNC wrote at the next push. The script remembers the save as it was at the last sync and moves only the side that
+changed; if both did, it stops and keeps both (`push` or `pull` chooses). It refuses to bring the hub's copy back while
+the emulator has the save open. `art` sends DAEMONS' own pictures; `backups` brings the hub's nightly store snapshots
+off its card. Its settings are in `.hub` (see `.hub.example`; never committed).
+
+**In order:**
+
+1. On the hub: `sudo bash ~/phase2.sh install` -- starts nothing. Then `sudo tailscale up` and approve the link, so
+   talk reaches the voice server by its Tailscale name.
+2. On the Mac: fill in `.hub`; `./syncCompanion.sh art`; `./syncCompanion.sh push` (the first copy of the save).
+3. On the Mac: `./bindCompanion.sh never`, and stop any server still on 4730. Snapshot the store with the server
+   stopped (`sqlite3 server/companion.sqlite ".backup companion.sqlite.cutover"`), copy it to the hub's home, and rename
+   the Mac's to `companion.sqlite.migrated-<date>`.
+4. On the hub: `sudo bash ~/phase2.sh cutover ~/companion.sqlite` -- installs it, starts the server, clears the
+   store's own save path (a Mac path) so the shared save is read, and says so.
+5. On the Mac: `SERVER_ON_HUB=1` in `.hub`. From then on `bindCompanion`, `linkCompanion` and `updateCompanion --link`
+   start no server here; they say to open the tunnel (`ssh -N -L 4730:127.0.0.1:4730 <hub>`), through which the site,
+   the bench tools and a cable bridge on the Mac reach the hub as if it were local.
+6. Clients follow: the public relay's companion Forward to the hub's address (and a DHCP reservation for the hub's
+   pinned MAC, so the address stays); Wi-Fi boards take the hub's address from their next state; re-pair the phones and
+   the Tab5 (through the tunnel's site); the BOX-3's companion address and Home Assistant's `/ollama` URL.
+
+**Going back**: stop the hub's unit, `./syncCompanion.sh pull`, copy the hub's newest backup to the Mac's
+`server/companion.sqlite`, take `SERVER_ON_HUB` out of `.hub`, point the relay back, `./bindCompanion.sh always`.
+
 ## Measured on the board
 
 *Filled in as each phase runs. Raw output, addresses and serials stay out of this repo.*

@@ -10,3 +10,5 @@ __pycache__/
 config.json
 .logs/
 .DS_Store
+.hub
+.hub-sync/

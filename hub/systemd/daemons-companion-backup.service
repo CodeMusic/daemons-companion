@@ -1,0 +1,11 @@
+# C-168: a consistent snapshot of the companion's store (and the save beside it), kept on the hub; syncCompanion.sh
+# backups takes them off the card.
+[Unit]
+Description=Back up the DAEMONS companion's store
+
+[Service]
+Type=oneshot
+User=daemons
+Group=daemons
+UMask=0027
+ExecStart=/bin/bash /opt/daemons-companion/hub/backup.sh

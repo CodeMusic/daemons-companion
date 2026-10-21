@@ -2,6 +2,7 @@
 // with everything kept on it. The screens run here; the network on its own task (net.cpp).
 #include <M5Unified.h>
 #include <lvgl.h>
+#include <esp_heap_caps.h>
 #include "display.h"
 #include "store.h"
 #include "net.h"
@@ -33,5 +34,12 @@ void loop() {
   lv_timer_handler();
   static uint32_t helloAt = 0;                 // C-80: its name down the cable, as the handhelds say it
   if (millis() - helloAt > 3000) { helloAt = millis(); Serial.println("HELLO daemons-companion m5-tab5 3 " + deviceId()); }
+  static uint32_t memAt = 0;                   // C-177: internal RAM down the cable, so running low shows before it aborts
+  if (millis() - memAt > 30000) {
+    memAt = millis();
+    Serial.printf("MEM internal %u free, %u least, %u largest; psram %u free\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+                  heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
+                  heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+  }
   delay(5);
 }

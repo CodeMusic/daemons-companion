@@ -1,4 +1,5 @@
-// C-77: LVGL for the Tab5 -- only what the control center uses. Memory from the C library (PSRAM on the Tab5: 32 MB).
+// C-77: LVGL for the Tab5 -- only what the control center uses. Memory from PSRAM (32 MB), by lv_mem_psram.c (C-177: the C
+// library's malloc put everything below 16 KB in internal RAM).
 #ifndef LV_CONF_H
 #define LV_CONF_H
 #ifndef __ASSEMBLY__            // LVGL's assembly files include this too: C only beyond the defines
@@ -8,7 +9,7 @@
 #define LV_USE_DRAW_SW_ASM LV_DRAW_SW_ASM_NONE   // its blending assembly is ARM's (NEON, Helium); the P4 is RISC-V
 
 #define LV_COLOR_DEPTH 16
-#define LV_USE_STDLIB_MALLOC    LV_STDLIB_CLIB
+#define LV_USE_STDLIB_MALLOC    LV_STDLIB_CUSTOM
 #define LV_USE_STDLIB_STRING    LV_STDLIB_CLIB
 #define LV_USE_STDLIB_SPRINTF   LV_STDLIB_CLIB
 #define LV_DEF_REFR_PERIOD 16

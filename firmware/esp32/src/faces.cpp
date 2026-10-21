@@ -149,7 +149,7 @@ void drawCareGrid(uint16_t day, uint16_t ink) {
   bool bed = st.daemon.tired == "drowsy";
   for (int t = 0; t < 4; t++) {
     int x = GAP + (t & 1) * (tileW() + GAP), y = TOP + (t >> 1) * (tileH() + GAP), kind = careGridKind(t);
-    bool chosen = t == gridAt, lit = bed && t == 3;               // bedtime: SLEEP lit, as the buttons light it
+    bool chosen = false, lit = bed && t == 3;                    // a tap chooses; bedtime: SLEEP lit, as the buttons light it
     if (chosen) canvas.fillRoundRect(x, y, tileW(), tileH(), 8, day);
     canvas.drawRoundRect(x, y, tileW(), tileH(), 8, lit ? PAPER : day);
     if (chosen || lit) canvas.fillRoundRect(x + 10, y + 8, tileW() - 20, tileH() - 30, 6, INK);   // the icon's own ground
@@ -195,7 +195,7 @@ void drawTiles(int n, int sel, const String *words, const char *title, void (*ic
     int i = page * 4 + k;
     if (i >= n) break;
     int x = gap + (k & 1) * (tw + gap), y = top + (k >> 1) * (th + gap);
-    bool chosen = i == sel;
+    bool chosen = false;                                      // a tap chooses: none shown chosen (the user, 2026-10-21)
     if (chosen) canvas.fillRoundRect(x, y, tw, th, 8, day);
     canvas.drawRoundRect(x, y, tw, th, 8, day);
     if (chosen) canvas.fillRoundRect(x + 10, y + 6, tw - 20, th - 30, 6, INK);   // the icon's own ground

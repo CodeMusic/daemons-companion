@@ -262,7 +262,9 @@ static void touchTask(void *) {
     bool on = touchRead(xs, ys) > 0;
     uint32_t now = millis();
     if (on) {
-      int16_t x = W - 1 - xs[0], y = H - 1 - ys[0];
+      // the panel's own coordinates ARE the screen's (2026-10-21: a tap on the top-right tile opened the bottom-left one
+      // while they were turned half round -- the C-161 mirror was the mistake, and the "reversed" swipes with it)
+      int16_t x = xs[0], y = ys[0];
       if (!was) { was = true; fingerX0 = x; fingerY0 = y; fingerAt = now; fingerMoved = 0; swallowTouch = false; }
       fingerX = x; fingerY = y;
       int16_t m = max(abs(x - fingerX0), abs(y - fingerY0));
@@ -372,7 +374,7 @@ static void touchLoop(uint32_t now) {
       if (asleep) { touchDrop(); return; }                     // only the crown wakes the watch (C-79)
       if (g.kind == 2 && screen == HOME && page == FACE_PAGE) { wake(); openLaunch(0); }   // C-172: off the face, the tiles
       else if (g.kind == 2) {
-        if (abs(g.dx) > abs(g.dy)) turn(screen == HOME ? (g.dx < 0 ? -1 : 1) : (g.dx < 0 ? 1 : -1));
+        if (abs(g.dx) > abs(g.dy)) turn(g.dx < 0 ? 1 : -1);   // right to left: the next
         else turn(g.dy < 0 ? 1 : -1);
       } else if (g.kind == 3) back();
       else touchTap(g.x, g.y, g.at);

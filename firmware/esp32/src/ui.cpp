@@ -178,11 +178,20 @@ const char *linkName() {
 // C-161 (the user, 2026-10-18): on the watch a row is a finger's height, about four to the screen, and a tap on one
 // opens it -- each row drawn is kept, how far it lies from the chosen one, for watch.cpp's touch to find
 static int rowH() { return board.kind == BoardKind::TWatchS3 ? 42 : 19; }
-static int tapN = 0; static int16_t tapTop[8], tapOff[8];
-bool tapRowAt(int y, int &off) {
-  for (int k = 0; k < tapN; k++) if (y >= tapTop[k] && y < tapTop[k] + rowH()) { off = tapOff[k]; return true; }
+// C-172: a grid's tiles too -- each kept as a rectangle, and the grid's whole area, so a tap between tiles is nothing
+static int tapN = 0; static int16_t tapX[12], tapY[12], tapW[12], tapH[12], tapOff[12];
+static int16_t areaX = 0, areaY = 0, areaW = 0, areaH = 0;
+void tapRect(int x, int y, int w, int h, int off) {
+  if (tapN < 12) { tapX[tapN] = x; tapY[tapN] = y; tapW[tapN] = w; tapH[tapN] = h; tapOff[tapN] = off; tapN++; }
+}
+void tapArea(int x, int y, int w, int h) { areaX = x; areaY = y; areaW = w; areaH = h; }
+bool tapAt(int x, int y, int &off, bool area) {
+  if (area) return areaW && x >= areaX && x < areaX + areaW && y >= areaY && y < areaY + areaH;
+  for (int k = 0; k < tapN; k++)
+    if (x >= tapX[k] && x < tapX[k] + tapW[k] && y >= tapY[k] && y < tapY[k] + tapH[k]) { off = tapOff[k]; return true; }
   return false;
 }
+bool gridLists() { return board.kind == BoardKind::TWatchS3; }   // C-172: the watch's lists are 2x2 grids, tapped
 int listRowsFit() { return max(2, min(5, (H - 52 - 16) / rowH())); }
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width = W - 12) {
   int y = 52 + i * rowH();
@@ -190,7 +199,7 @@ void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int 
   canvas.setTextFont(2); canvas.setTextDatum(TL_DATUM);
   canvas.setTextColor(i == at ? ink : PAPER);
   canvas.drawString(text, 12, y + (rowH() - 19) / 2);
-  if (tapN < 8) { tapTop[tapN] = y - 2; tapOff[tapN] = i - at; tapN++; }
+  tapRect(6, y - 2, width, rowH(), i - at);
 }
 
 String (*runPanel)(uint16_t day, uint16_t ink) = nullptr;
@@ -220,6 +229,15 @@ void drawRoutines(uint16_t day) {
       canvas.fillRoundRect(W - 112, 52 + i * 19, 10, 14, 2, canvas.color565(c >> 16, (c >> 8) & 255, c & 255));
       canvas.setTextColor(i == moveAt ? ink : QUIET); canvas.drawString(m.type[i], W - 96, 52 + i * 19);
     }
+  } else if (screen == TYPES && gridLists()) {   // C-172: the types as tiles, four to a page
+    String words[10]; for (int i = 0; i < typeCount; i++) words[i] = types[i].name;
+    drawTiles(typeCount, typeAt, words, "ROUTINES", [](int i, int cx, int cy) { typeIcon(types[i].name, cx, cy); }, day, ink);
+  } else if (screen == LIST && gridLists() && t.count > 0) {   // C-172: a type's routines as tiles, its icon on each
+    String words[10]; for (int i = 0; i < t.count && i < 10; i++) words[i] = t.routines[i].name;
+    drawTiles(min(t.count, 10), routineAt, words, t.name, [](int, int cx, int cy) { typeIcon(types[typeAt].name, cx, cy); }, day, ink);
+  } else if (screen == LAUNCH) {             // C-172: the pages, as tiles
+    String words[LAUNCH_N]; for (int i = 0; i < LAUNCH_N; i++) words[i] = launchWord(i);
+    drawTiles(LAUNCH_N, launchAt, words, "", [](int i, int cx, int cy) { pageIcon(i, cx, cy); }, day, ink);
   } else if (screen == TYPES) {
     canvas.drawString("ROUTINE TYPE", 10, 32);
     int fit = listRowsFit(), from = max(0, typeAt - (fit - 1));   // the CC1101 has six types: as many rows as fit
@@ -509,7 +527,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
 
 void draw() {
   uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
-  tapN = 0;                                                 // C-161: the rows this frame draws
+  tapN = 0; areaW = 0;                                      // C-161, C-172: the rows and tiles this frame draws
   canvas.fillSprite(INK);
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
@@ -783,6 +801,10 @@ void draw() {
       canvas.drawString(flash, W / 2, H / 2);
     }
     canvas.setTextDatum(TL_DATUM);
+  }
+  if (gridLists() && screen == HOME && page != FACE_PAGE) {   // C-172: where a swipe goes, never on the face
+    int at = launchIndex(page);
+    if (at >= 0) pageDots(at, LAUNCH_N);
   }
   canvas.pushSprite(board.screenX, board.screenY);   // C-102: the Dial's square, inside its circle
   dirty = false;

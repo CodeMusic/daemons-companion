@@ -208,6 +208,14 @@ bool watchTalking() { return talking; }
 // 2026-10-09: at 5% the firmware slept until the BOOT pin -- which the watch has no way to press, so it would have looked
 // dead until its battery was pulled. Off through the PMU instead: the crown starts it again.
 bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; }
+// C-161: how far a finger moves to be a swipe -- on the watch's 240 px a swipe is short (29 and 49 px were read as taps,
+// 2026-10-18) and a tap moves under 10; the larger screens keep their 50
+#if defined(BOARD_TWATCH_S3)
+static const int SWIPE_PX = 20;
+#else
+static const int SWIPE_PX = 50;
+#endif
+#define SWIPE SWIPE_PX
 // One finger, in the screen's own coordinates. C-135: the AMOLED's CST816 repeats its last point while no finger is
 // down, so it is read only while its interrupt says one is (as LilyGO's own library reads it), and turned to the
 // landscape screen here: its panel is 240 wide and 536 tall.
@@ -234,18 +242,65 @@ static uint8_t touchRead(int16_t *x, int16_t *y) {
   return touchPanel.getPoint(x, y, 1);
 #endif
 }
+#if defined(BOARD_TWATCH_S3)
+// C-171 (the user, 2026-10-21: "on the watch any screen swipes or bet swipes were finicky"): the touch read on its own,
+// a hundred times a second, by a task of its own -- the loop stalls (the living face redrawn, a Wi-Fi call that blocks),
+// and a quick swipe inside one stall was a single point, a tap. The watch's touch has its own bus (Wire1), so nothing
+// else reads it once this runs. Each touch becomes one gesture as the finger lifts, in the screen's own coordinates
+// (the panel turned half round), kept in a little queue for whichever screen or routine reads next.
+struct Touch { uint8_t kind; int16_t x, y, dx, dy; uint32_t ms, at; };   // kind: 1 tap, 2 swipe, 3 hold
+static Touch touchQ[8]; static volatile uint8_t touchHead = 0, touchTail = 0;
+static portMUX_TYPE touchMux = portMUX_INITIALIZER_UNLOCKED;
+static volatile bool fingerDown = false, swallowTouch = false;
+static volatile int16_t fingerX0 = 0, fingerY0 = 0, fingerX = 0, fingerY = 0;
+static volatile uint32_t fingerAt = 0;
+static volatile int16_t fingerMoved = 0;                       // the farthest it has gone from where it came down
+static void touchTask(void *) {
+  bool was = false;
+  for (;;) {
+    int16_t xs[1], ys[1];
+    bool on = touchRead(xs, ys) > 0;
+    uint32_t now = millis();
+    if (on) {
+      int16_t x = W - 1 - xs[0], y = H - 1 - ys[0];
+      if (!was) { was = true; fingerX0 = x; fingerY0 = y; fingerAt = now; fingerMoved = 0; swallowTouch = false; }
+      fingerX = x; fingerY = y;
+      int16_t m = max(abs(x - fingerX0), abs(y - fingerY0));
+      if (m > fingerMoved) fingerMoved = m;
+      fingerDown = true;
+    } else if (was) {
+      was = false; fingerDown = false;
+      if (!swallowTouch) {
+        Touch t; t.x = fingerX0; t.y = fingerY0; t.dx = fingerX - fingerX0; t.dy = fingerY - fingerY0;
+        t.ms = now - fingerAt; t.at = now;
+        bool swipe = abs(t.dx) > SWIPE_PX || abs(t.dy) > SWIPE_PX;
+        t.kind = swipe ? 2 : t.ms > 700 ? 3 : 1;
+        portENTER_CRITICAL(&touchMux);
+        uint8_t next = (touchHead + 1) % 8;
+        if (next != touchTail) { touchQ[touchHead] = t; touchHead = next; }
+        portEXIT_CRITICAL(&touchMux);
+      }
+      swallowTouch = false;
+    }
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
+}
+static bool touchTake(Touch &t) {
+  portENTER_CRITICAL(&touchMux);
+  bool got = touchTail != touchHead;
+  if (got) { t = touchQ[touchTail]; touchTail = (touchTail + 1) % 8; }
+  portEXIT_CRITICAL(&touchMux);
+  return got;
+}
+static void touchDrop() { Touch t; while (touchTake(t)) {} }
+bool watchTouchDown() { return fingerDown; }
+#else
 bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchRead(x, y) > 0; }
+#endif
 
 // C-134: a routine's own screen reads the touch itself (the loop, and so touchLoop, waits while it runs): a swipe
 // either way turns, a tap presses, a hold goes back -- each reported when the finger lifts.
 static int crownPoll();                                        // below, beside crownLoop
-// C-161: how far a finger moves to be a swipe -- on the watch's 240 px a swipe is short (29 and 49 px were read as taps,
-// 2026-10-18) and a tap moves under 10; the larger screens keep their 50
-#if defined(BOARD_TWATCH_S3)
-static const int SWIPE = 20;
-#else
-static const int SWIPE = 50;
-#endif
 static bool across = false;                                    // the last swipe went across, not up or down
 bool watchGestureAcross() { return across; }
 int watchGesture() {
@@ -253,6 +308,14 @@ int watchGesture() {
   // C-161: inside a routine the loop waits, and crownLoop with it -- so the crown is read here, and goes back
   if (crownPoll() == 1) return -2;
   if (!haveTouch) return 0;
+#if defined(BOARD_TWATCH_S3)
+  Touch g;                                                     // C-171: the task's, in the screen's own coordinates
+  if (!touchTake(g)) return 0;
+  if (g.kind == 3) return -2;
+  if (g.kind == 1) return 2;
+  across = abs(g.dx) > abs(g.dy);                              // the axis of this very gesture, for watchGestureAcross
+  return across ? (g.dx < 0 ? 1 : -1) : (g.dy < 0 ? 1 : -1);
+#endif
   int16_t x[1], y[1];
   bool on = touchRead(x, y) > 0;
   if (on) { if (!was) { was = true; at = millis(); x0 = x[0]; y0 = y[0]; } x1 = x[0]; y1 = y[0]; return 0; }
@@ -270,19 +333,53 @@ int watchGesture() {
 
 String watchStatus() {
   int16_t x[1], y[1];
+#if defined(BOARD_TWATCH_S3)
+  bool on = fingerDown; x[0] = fingerX; y[0] = fingerY;        // C-171: the task's, in the screen's own coordinates
+#else
   bool on = haveTouch && touchRead(x, y) > 0;
+#endif
   return "WATCH pmu " + String(havePmu) + " clock " + String(haveRtc) + " steps " + String(haveAccel) + " touch " +
          String(haveTouch) + (on ? " finger " + String(x[0]) + "," + String(y[0]) : " no finger");
 }
 
 static bool onTalk(int x, int y) { int cx, cy, r = talkReach(); talkSpot(cx, cy); int dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= r * r; }
 
+static void touchTap(int x, int y, uint32_t now);
 static void touchLoop(uint32_t now) {
 #if defined(BOARD_TDISPLAY_AMOLED)
   // C-135: the CST816 asleep at start answers no one; the first finger wakes it, and the driver starts then
   if (!haveTouch && board.touch && !digitalRead(21)) haveTouch = touchPanel.begin(touchWire, 0x15, board.sda, board.scl);
 #endif
   if (!haveTouch) return;
+#if defined(BOARD_TWATCH_S3)
+  // C-171: the task reads the finger; here, TALK when held, then every gesture it has kept
+  {
+    static bool started = false;
+    if (!started) { started = true; xTaskCreatePinnedToCore(touchTask, "touch", 3072, nullptr, 2, nullptr, 0); }
+    bool atFace = screen == HOME && page == FACE_PAGE;
+    static bool heard = false;                                 // this touch already started a talk
+    if (!fingerDown) heard = false;
+    else if (!heard && !asleep && atFace && talkCan() && onTalk(fingerX0, fingerY0) &&
+             (!faceHasDaemon() || (millis() - fingerAt > 350 && fingerMoved < 20))) {   // the daemon held a beat; TALK at once
+      heard = true; swallowTouch = true;
+      talking = true; draw();
+      talkHold();                                              // returns once the finger lifts and the answer is said
+      talking = false; lastInput = millis(); dirty = true;
+      return;
+    }
+    Touch g;
+    while (touchTake(g)) {
+      if (asleep) { touchDrop(); return; }                     // only the crown wakes the watch (C-79)
+      if (g.kind == 2 && screen == HOME && page == FACE_PAGE) { wake(); openLaunch(0); }   // C-172: off the face, the tiles
+      else if (g.kind == 2) {
+        if (abs(g.dx) > abs(g.dy)) turn(screen == HOME ? (g.dx < 0 ? -1 : 1) : (g.dx < 0 ? 1 : -1));
+        else turn(g.dy < 0 ? 1 : -1);
+      } else if (g.kind == 3) back();
+      else touchTap(g.x, g.y, g.at);
+    }
+    return;
+  }
+#endif
   int16_t xs[1], ys[1];
   bool pressed = touchRead(xs, ys) > 0;
 #if defined(BOARD_TDISPLAY_PRO)
@@ -330,18 +427,22 @@ static void touchLoop(uint32_t now) {
 #endif
   else if (abs(dy) > SWIPE) turn(dy < 0 ? 1 : -1);
   else if (now - downAt > 700) back();
-  else {
-    int off, tile;
-    if (screen == CARE_GRID && (tile = careGridAt(xFrom, yFrom)) >= 0) { gridAt = tile; press(); return; }   // C-163
-    if (screen == HOME && page == FACE_PAGE) {                 // C-163: a double tap on the face opens CARE; one does nothing
-      static uint32_t tapAt = 0;
-      if (tapAt && now - tapAt < 450) { tapAt = 0; if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT
-      else tapAt = now;
-      return;
-    }
-    if (screen != HOME && tapRowAt(yFrom, off) && off) turn(off);   // C-161: a tap on a list's row opens that row
-    press();
+  else touchTap(xFrom, yFrom, now);
+}
+
+// a tap, where it came down: a CARE tile or a list's row or a grid's tile done where it is; on the face, two open CARE
+static void touchTap(int x, int y, uint32_t now) {
+  int off, tile;
+  if (screen == CARE_GRID && (tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); return; }   // C-163
+  if (screen == HOME && page == FACE_PAGE) {                   // C-163: a double tap on the face opens CARE; one does nothing
+    static uint32_t tappedAt = 0;
+    if (tappedAt && now - tappedAt < 450) { tappedAt = 0; if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT
+    else tappedAt = now;
+    return;
   }
+  if (tapAt(x, y, off)) { pick(off); press(); return; }        // C-161, C-172: a row or a tile, tapped, opens that one
+  if (tapAt(x, y, off, true)) return;                          // C-172: a tap between a grid's tiles does nothing
+  press();
 }
 
 // ---- the crown: a short press wakes the watch, or goes back; a long one, asleep (the PMU powers off on a longer hold)

@@ -163,9 +163,29 @@ int8_t encLast = 0, encSum = 0;
 // One step of the dial: +1 right, -1 left -- from the dial itself, or KEY RIGHT / KEY LEFT down the cable.
 int entryTop = 0, entryLines = 0;
 
+// C-172: the row or tile tapped -- that many from the chosen one -- chosen; a grid's pages turn by swipes, not by this
+void pick(int off) {
+  if (!off) return;
+  if (gridLists() && screen == LAUNCH) launchAt = constrain(launchAt + off, 0, LAUNCH_N - 1);
+  else if (gridLists() && screen == TYPES) typeAt = constrain(typeAt + off, 0, typeCount - 1);
+  else if (gridLists() && screen == LIST) routineAt = constrain(routineAt + off, 0, max(0, types[typeAt].count - 1));
+  else turn(off);
+  dirty = true;
+}
+// a grid's next or last page of four, round
+static int gridPage(int sel, int n, int step) { int pages = (n + 3) / 4, p = (sel / 4 + pages + (step > 0 ? 1 : -1)) % pages; return p * 4; }
+
 void turn(int step) {
   if (asleep) return;                   // C-79: asleep, the dial does nothing -- it turns in a pocket
   wake();                               // (awake, this only marks the input)
+  if (gridLists() && (screen == LAUNCH || screen == TYPES || (screen == LIST && types[typeAt].count > 0))) {   // C-172
+    soundTurn(step);
+    if (screen == LAUNCH) launchAt = gridPage(launchAt, LAUNCH_N, step);
+    else if (screen == TYPES) typeAt = gridPage(typeAt, typeCount, step);
+    else routineAt = gridPage(routineAt, types[typeAt].count, step);
+    dirty = true;
+    return;
+  }
   ledsSpin(step);                       // C-38: a light once round the ring, the way the dial turned
   soundTurn(step);                      // C-40: rising for right, falling for left
   if (screen == HOME) {                 // C-71: the watch has its face first
@@ -244,6 +264,11 @@ void press() {
   }
   else if (screen == CARE_KEYS) { careDo(0); goHome(); }          // C-149: the cable's KEY PRESS is B, which feeds
   else if (screen == CARE_GRID) { careDo(careGridKind(gridAt)); goHome(); }   // C-163: the tile chosen, then home
+  else if (screen == LAUNCH) {                                    // C-172: the page tapped -- ROUTINES straight to its types
+    Page p = LAUNCH_PAGES[launchAt];
+    screen = HOME; page = p;
+    if (p == ROUTINES_PAGE) { if (partyFirst()) { screen = PARTY; partyAt = st.partyN; } else { screen = TYPES; typeAt = 0; } }
+  }
   else if (screen == PARTY) {
     if (partyAt >= st.partyN) { if (partyFirst()) { screen = TYPES; typeAt = 0; } }   // the radios' row
     else if (!st.party[partyAt].n) say("No routines yet");                         // DRAFT
@@ -287,6 +312,9 @@ void back() {
   ledsDark();                                                   // C-38
   soundBack();                                                  // C-40
   if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
+  // C-172: on the watch a page goes back to the tiles it was opened from, and the tiles to the face
+  if (gridLists() && screen == HOME && page != FACE_PAGE && launchIndex(page) >= 0) { openLaunch(launchIndex(page)); return; }
+  if (screen == LAUNCH) { goHome(); dirty = true; return; }
   if (screen == HOME && menuOpen) { menuOpen = false; page = homePage(); dirty = true; return; }   // C-117: out of the menu
   if (screen == TALK) { screen = HOME; }                         // C-66
   if (screen == COMPOSE) { screen = HOME; composing = ""; dirty = true; return; }   // C-123: not sent
@@ -305,6 +333,7 @@ void back() {
   }
   else if (screen == TYPES && partyFirst()) { screen = PARTY; partyAt = st.partyN; }   // back to the radios' row
   else if (screen == TYPES && board.threeKeys() && !menuOpen) goHome();      // C-149: B opened them from home
+  else if (screen == TYPES && gridLists()) openLaunch(1);                    // C-172: back to the tiles
   else if (screen == TYPES) { screen = HOME; page = ROUTINES_PAGE; }
   dirty = true;
 }

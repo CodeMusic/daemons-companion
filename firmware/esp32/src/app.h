@@ -85,7 +85,8 @@ enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_P
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE,   // TALK: C-66; COMPOSE: C-123
               CARE_KEYS,                  // C-149: the three-button boards' CARE -- a button each, then home
-              CARE_GRID };                // C-163: the watch's CARE -- four tiles, a double tap on the face
+              CARE_GRID,                  // C-163: the watch's CARE -- four tiles, a double tap on the face
+              LAUNCH };                   // C-172: the watch's pages as tiles -- a swipe from the face
 extern String composing;                  // C-123: the message being typed, to everyone nearby
 void keyboardIn(int c);                   // one key from the T-Deck's keyboard (or the cable's KEY TYPE)
 extern Page page;
@@ -161,7 +162,21 @@ int careGridAt(int x, int y);             // the tile at a point, or -1
 int careGridKind(int tile);               // careDo's kind for a tile
 void openCareGrid();
 void drawCareGrid(uint16_t day, uint16_t ink);
-bool tapRowAt(int y, int &off);           // C-161: the list row drawn at y, as an offset from the chosen one
+bool tapAt(int x, int y, int &off, bool area = false);   // C-161, C-172: the row or tile tapped, as an offset from the chosen one
+void tapRect(int x, int y, int w, int h, int off);
+void tapArea(int x, int y, int w, int h);
+bool gridLists();                         // C-172: lists drawn as 2x2 grids (the watch)
+void pick(int off);                       // C-172: the row or tile that many from the chosen one, chosen (input.cpp)
+const int LAUNCH_N = 5;
+extern const Page LAUNCH_PAGES[LAUNCH_N];
+extern int launchAt;
+String launchWord(int i);
+int launchIndex(Page p);
+void openLaunch(int at = 0);
+void pageDots(int at, int n);
+void drawTiles(int n, int sel, const String *words, const char *title, void (*icon)(int, int, int), uint16_t day, uint16_t ink);
+void pageIcon(int i, int cx, int cy);
+void typeIcon(const char *name, int cx, int cy);
 void goHomeNow();                         // C-161: the crown pressed twice
 void cableFlush(uint32_t ms = 60);       // C-105: send what was printed, waiting at most this long for a reader
 int deckTakeKey();                        // C-104: the T-Deck's keyboard, one character read and spent (0: none)

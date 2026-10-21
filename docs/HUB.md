@@ -142,6 +142,10 @@ off its card. Its settings are in `.hub` (see `.hub.example`; never committed).
    pinned MAC, so the address stays); Wi-Fi boards take the hub's address from their next state; re-pair the phones and
    the Tab5 (through the tunnel's site); the BOX-3's companion address and Home Assistant's `/ollama` URL.
 
+**Updating the hub's server** after a push: `ssh -t debian@CoreMP135.local 'sudo bash /opt/daemons-companion/hub/deploy.sh'`
+-- it pulls main, runs npm ci only when the lockfile changed, restarts, and goes back to the commit it was on if the
+new one does not answer within a minute.
+
 **Going back**: stop the hub's unit, `./syncCompanion.sh pull`, copy the hub's newest backup to the Mac's
 `server/companion.sqlite`, take `SERVER_ON_HUB` out of `.hub`, point the relay back, `./bindCompanion.sh always`.
 

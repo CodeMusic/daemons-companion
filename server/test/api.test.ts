@@ -108,3 +108,19 @@ describe("the art (C-05)", () => {
     expect((await fetch(base + "/art/nobody_front.png")).status).toBe(404);
   });
 });
+
+describe("answering only what changed (C-177)", () => {
+  it("tags each answer, and answers 304 with no body when the tag sent is the answer's", async () => {
+    const first = await fetch(base + "/api/today");
+    const tag = first.headers.get("etag");
+    expect(first.status).toBe(200);
+    expect(tag).toMatch(/^"[A-Za-z0-9_-]{16}"$/);
+    const again = await fetch(base + "/api/today", { headers: { "if-none-match": tag! } });
+    expect(again.status).toBe(304);
+    expect(await again.text()).toBe("");
+    expect(again.headers.get("etag")).toBe(tag);
+    const stale = await fetch(base + "/api/today", { headers: { "if-none-match": '"not-this-one"' } });
+    expect(stale.status).toBe(200);
+    expect((await stale.json()).date).toBeDefined();
+  });
+});

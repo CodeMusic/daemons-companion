@@ -3,10 +3,20 @@
 // ---- DEVICES ----------------------------------------------------------------------------------------------------------
 struct Carry { String id; long long personality; };
 static Carry carries[64]; static int carryN = 0;
+// C-177 (the user, 2026-10-21: PLACES "seem to cause a soft-crash"): every device's card once drew a button for every
+// away daemon -- 20 devices and 9 daemons, a few hundred objects at once. Now each card has CHOOSE, and only the card
+// being chosen for shows the daemons.
+static String choosingFor;
 static void tapCarry(lv_event_t *e) {
   Carry &c = carries[(int)(long)lv_event_get_user_data(e)];
   String body = "{\"id\":\"" + c.id + "\",\"personality\":" + (c.personality < 0 ? String("null") : String((long long)c.personality)) + "}";
   netSend("POST", "/api/devices/carry", body);
+  choosingFor = ""; drawnAt[P_PLACES] = 0;
+}
+static std::vector<String> chooseIds;
+static void tapChoose(lv_event_t *e) {
+  String id = chooseIds[(int)(long)lv_event_get_user_data(e)];
+  choosingFor = choosingFor == id ? String() : id; drawnAt[P_PLACES] = 0;
 }
 // C-130: each device as it looks (firmware/common/device_sprites.py writes the list), and the maker it is listed under
 #include "../../common/device_sprites.h"
@@ -199,7 +209,7 @@ static void drawDevices(lv_obj_t *p) {
   if (!kept("devices", dv)) { label(p, "Your devices show here once the Tab5 is paired.", &lv_font_montserrat_28, QUIET); return; }
   label(p, "Each device hosts a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where.",
         &lv_font_montserrat_20, QUIET, LV_PCT(100));
-  carryN = 0; ownIds.clear();
+  carryN = 0; ownIds.clear(); chooseIds.clear();
   JsonArray away = dv["away"];
   // C-130: under each maker's name, and beside each device a picture of it
   static const char *const OTHER = "Other";
@@ -226,8 +236,12 @@ static void drawDevices(lv_obj_t *p) {
     JsonObject has = d["daemon"];
     label(c, has.isNull() ? "Hosts no daemon" : "Hosts " + String((const char *)(has["nickname"] | "")) + ", Lv. " + String((int)(has["level"] | 0)),
           &lv_font_montserrat_20, INK);
+    if (!away.size()) continue;
     lv_obj_t *r = row(c);
     long long mine = has.isNull() ? -1 : (long long)(has["personality"] | 0LL);
+    chooseIds.push_back(id);
+    button(r, choosingFor == id ? "CLOSE" : "CHOOSE", tapChoose, (void *)(long)(chooseIds.size() - 1), false);   // DRAFT
+    if (choosingFor != id) continue;
     for (JsonObject a : away) {
       if (carryN >= 63) break;
       long long pers = a["personality"] | 0LL;

@@ -35,7 +35,8 @@ void netScan();                      // the networks near, read with netNetworks
 // networks the last scan found, up to 16; returns how many
 int netNetworksNear(String out[16]);
 void netPair(const String &server, const String &code);
-void netSyncNow();                   // download everything again
+void netSyncNow();                   // send what waits, then bring what changed (C-177: asked by tag, 304 when not)
+void netDownloadAll();               // DOWNLOAD EVERYTHING AGAIN: every tag forgotten, so every answer comes whole
 void netGameSync();                  // SYNC with the game: only when the companion answers (it writes the save)
 void netSend(const char *method, const String &path, const String &body);   // a write: sent now, or kept and sent later
 // C-158: a write that changes nothing the Tab5 shows (the CASINO's seat at the table, a cheer) -- kept and sent as soon as

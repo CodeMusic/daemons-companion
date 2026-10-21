@@ -16,7 +16,7 @@ static void pairServerTyped(const String &s) {
 static void tapPair(lv_event_t *) {
   askText("The companion's address on this network (the site shows it beside the code)", serverAddress(), false, false, pairServerTyped);
 }
-static void tapSyncNow(lv_event_t *) { netSyncNow(); }
+static void tapSyncNow(lv_event_t *) { netDownloadAll(); }
 
 // ---- C-96: which way up. AUTO follows the Tab5's motion sensor (once it has held a new way up for a moment); PORTRAIT
 // and LANDSCAPE stay put. Kept on the Tab5. Portrait is the panel's own way up, so it is also the quicker to draw.

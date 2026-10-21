@@ -65,6 +65,8 @@ void netJoin(const String &s, const String &p) { ask(JOIN, s, p); }
 void netScan() { ask(SCAN); }
 void netPair(const String &srv, const String &code) { ask(PAIR, srv, code); }
 void netSyncNow() { ask(SYNC); }
+static std::atomic<bool> forgetDue{false};
+void netDownloadAll() { forgetDue = true; ask(SYNC); }   // C-177: every tag forgotten, so every answer comes whole
 void netGameSync() { ask(GAME); }
 std::atomic<int> netVoice{V_QUIET};
 static std::atomic<uint32_t> voiceGen{0};          // a stop moves it on: a voice made for an older one is dropped
@@ -143,7 +145,10 @@ static String reachable(const String &base) {
   return base.substring(0, h0) + namedIp + base.substring(h1);
 }
 
-static String request(const char *method, const String &rawPath, const String &body, int &code) {
+// C-177: `tag` is the ETag of what is kept; the companion answers 304 and no body when it is still its answer, and
+// `tagOut` takes the new one. Only from the companion itself -- the relay brings the whole answer.
+static String request(const char *method, const String &rawPath, const String &body, int &code,
+                      const String &tag = String(), String *tagOut = nullptr) {
   code = -1;
   if (WiFi.status() != WL_CONNECTED) return "";
   String path = withDevice(rawPath), out;
@@ -155,9 +160,12 @@ static String request(const char *method, const String &rawPath, const String &b
     h.begin(reachable(server) + path);
     if (token.length()) h.addHeader("authorization", "Bearer " + token);
     h.addHeader("x-device", deviceId());
+    if (tag.length()) h.addHeader("if-none-match", tag);
+    const char *keys[] = { "etag" }; h.collectHeaders(keys, 1);
     if (!strcmp(method, "POST")) { h.addHeader("content-type", "application/json"); code = h.POST(body.length() ? body : "{}"); }
     else code = h.GET();
-    out = code > 0 ? h.getString() : "";
+    out = code > 0 && code != 304 ? h.getString() : "";
+    if (tagOut) *tagOut = code == 200 || code == 304 ? h.header("etag") : String();
     h.end();
     if (code > 0) { awayAt = 0; net.home = true; net.away = false; }
     else namedAt = 0;                              // a name answered elsewhere now: ask again next time
@@ -314,7 +322,12 @@ bool localTime(struct tm &out) {
 
 static bool fetchKeep(const char *path, const char *name) {
   sendHome();                                      // C-139: a HOME tap waits for no download -- it goes between any two
-  int code; String got = request("GET", path, "", code);
+  // C-177: asked "changed since?" -- not the state, whose clock moves every time (its tag would be written to flash
+  // every half minute for nothing)
+  bool tagged = strcmp(name, "state") != 0;
+  String had = tagged && hasKept(name) ? keptTag(name) : String(), tag;
+  int code; String got = request("GET", path, "", code, had, &tag);
+  if (code == 304) return true;                    // nothing changed: nothing moved but the question
   if (code != 200) return false;
   {                                                 // the review, 2026-10-18: a body cut short (a read timeout over the
     JsonDocument whole = newDoc();                  // relay) is not kept -- it would replace the good copy offline
@@ -328,9 +341,9 @@ static bool fetchKeep(const char *path, const char *name) {
   int c0 = state ? got.indexOf("\"clock\":{") : -1, c1 = c0 >= 0 ? got.indexOf('}', c0) : -1;
   static std::map<String, uint32_t> sums;
   uint32_t sum = sumOf(got, c0, c1);
-  if (sums[name] == sum) return true;
+  if (sums[name] == sum) { if (tagged && tag != had) keepTag(name, tag); return true; }
   sums[name] = sum;
-  keep(name, got);
+  if (keep(name, got) && tagged && tag != had) keepTag(name, tag);
   if (state) {
     JsonDocument d = newDoc();                       // C-93: another device learned or forgot a network
     if (!deserializeJson(d, got) && (d["netsRev"] | -1L) >= 0 && (d["netsRev"] | -1L) != netsRev) netsDue = true;
@@ -386,15 +399,18 @@ static void fetchPartyArt() {
   if (kept("state", st) && !st["daemon"].isNull()) slots.push_back(st["daemon"]["slot"] | -1);
   for (int slot : slots) {
     if (slot < 0) continue;
-    int code; String got = request("GET", "/api/art?party=" + String(slot), "", code);
-    if (code != 200) continue;
+    String key = "p" + String(slot), had = hasArt(key) ? keptTag("art_" + key) : String(), tag;   // C-177
+    int code; String got = request("GET", "/api/art?party=" + String(slot), "", code, had, &tag);
+    if (code != 200) continue;                     // 304: the kept picture is still the one
     JsonDocument a = newDoc();
     if (deserializeJson(a, got)) continue;
     const char *b64 = a["png"] | "";
     uint32_t sum = sumOf(String(b64));
-    if (sums[slot] == sum && hasArt("p" + String(slot))) continue;
+    if (sums[slot] == sum && hasArt(key)) { if (tag != had) keepTag("art_" + key, tag); continue; }
     static uint8_t png[32 * 1024]; size_t n = 0;
-    if (!mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) { keepArt("p" + String(slot), png, n); sums[slot] = sum; any = true; }
+    if (!mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) {
+      keepArt(key, png, n); sums[slot] = sum; any = true; keepTag("art_" + key, tag);
+    }
   }
   // C-119: this Tab5's own daemon in its expression's shade, kept beside its plain picture as "p<slot>-<expression>"
   if (!st["daemon"].isNull()) {
@@ -402,7 +418,8 @@ static void fetchPartyArt() {
     String look = st["daemon"]["expression"]["name"] | "awake", key = "p" + String(slot) + "-" + look;
     static std::map<String, uint32_t> shaded;
     if (slot >= 0 && look != "awake") {
-      int code; String got = request("GET", "/api/art?party=" + String(slot) + "&expression=" + look, "", code);
+      String had = hasArt(key) ? keptTag("art_" + key) : String(), tag;   // C-177
+      int code; String got = request("GET", "/api/art?party=" + String(slot) + "&expression=" + look, "", code, had, &tag);
       JsonDocument a = newDoc();
       if (code == 200 && !deserializeJson(a, got)) {
         const char *b64 = a["png"] | "";
@@ -411,6 +428,7 @@ static void fetchPartyArt() {
         if ((shaded[key] != sum || !hasArt(key)) && !mbedtls_base64_decode(png, sizeof png, &n, (const unsigned char *)b64, strlen(b64))) {
           keepArt(key, png, n); shaded[key] = sum; any = true;
         }
+        if (tag != had) keepTag("art_" + key, tag);
       }
     }
   }
@@ -653,7 +671,7 @@ static void netTask(void *) {
       WiFi.scanDelete(); changed(K_NETS);
     }
     else if (j == PAIR) pair(a, b);
-    else if (j == SYNC && net.paired) { flushOutbox(); fetchWatch(); keepEverything(!hasArt("s1")); }   // C-160: a write's answer first
+    else if (j == SYNC && net.paired) { if (forgetDue.exchange(false)) forgetTags(); flushOutbox(); fetchWatch(); keepEverything(!hasArt("s1")); }   // C-160: a write's answer first
     else if (j == GAME && net.paired) gameSync();
     else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { netSay("The voice needs the companion."); netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
     sendHome();                                               // C-139: HOME's taps, now and before anything else

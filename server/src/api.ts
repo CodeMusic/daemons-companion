@@ -48,7 +48,7 @@ import { assign, carryView } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { networkInterfaces } from "node:os";
-import { randomBytes, randomInt, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { handles, route, type Reply } from "./routes.js";
@@ -182,9 +182,23 @@ function appChangedSince(build: string): boolean | null {
 }
 
 const reply = (res: ServerResponse, r: Reply) => send(res, r.status, r.body);
+// C-177 (the user, 2026-10-21: "once we download we should tx/rx minimal data"): every answer carries an ETag, the sum
+// of its body, and a GET that sends the one it already holds (If-None-Match) is answered 304 with no body -- so a device
+// that asks again and again for what has not changed moves a few hundred bytes, not the INDEX's 110 KB.
+export const etagOf = (body: string) => `"${createHash("sha1").update(body).digest("base64url").slice(0, 16)}"`;
 function send(res: ServerResponse, status: number, data: unknown) {
-  res.writeHead(status, { "content-type": "application/json", "access-control-allow-origin": "*" });
-  res.end(JSON.stringify(data));
+  const body = JSON.stringify(data);
+  const head: Record<string, string> = { "content-type": "application/json", "access-control-allow-origin": "*" };
+  if (status === 200) {
+    head.etag = etagOf(body);
+    const req = res.req as IncomingMessage | undefined;
+    if (req?.method === "GET" && req.headers["if-none-match"] === head.etag) {
+      res.writeHead(304, { etag: head.etag, "access-control-allow-origin": "*" });
+      return res.end();
+    }
+  }
+  res.writeHead(status, head);
+  res.end(body);
 }
 
 // C-10: answer the game's requests in the configured save. The game must be closed first -- an emulator that is still

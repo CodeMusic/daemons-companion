@@ -1,6 +1,7 @@
 #include "store.h"
 #include <LittleFS.h>
 #include <esp_heap_caps.h>
+#include <vector>
 
 void *PsramAllocator::allocate(size_t n) { return heap_caps_malloc(n, MALLOC_CAP_SPIRAM); }
 void PsramAllocator::deallocate(void *p) { heap_caps_free(p); }
@@ -13,7 +14,7 @@ struct Locked { Locked() { xSemaphoreTake(lock, portMAX_DELAY); } ~Locked() { xS
 bool storeBegin() {
   lock = xSemaphoreCreateMutex();
   if (!LittleFS.begin(true, "/store", 10, "store")) return false;   // formats the first time
-  LittleFS.mkdir("/k"); LittleFS.mkdir("/art");
+  LittleFS.mkdir("/k"); LittleFS.mkdir("/art"); LittleFS.mkdir("/t");
   return true;
 }
 
@@ -50,6 +51,30 @@ String keptAt() {
   return s;
 }
 void keptAtNow(const String &when) { Locked l; writeFile("/k/_at.txt", (const uint8_t *)when.c_str(), when.length()); }
+
+bool hasKept(const char *name) { Locked l; return LittleFS.exists(String("/k/") + name + ".json"); }
+
+// C-177: the companion's tag for each kept answer and picture, so it is asked "changed since?" and answers 304 when not
+String keptTag(const String &key) {
+  Locked l;
+  File f = LittleFS.open("/t/" + key + ".txt", "r");
+  if (!f) return "";
+  String s = f.readString(); f.close();
+  return s;
+}
+void keepTag(const String &key, const String &tag) {
+  Locked l;
+  if (!tag.length()) { LittleFS.remove("/t/" + key + ".txt"); return; }
+  writeFile("/t/" + key + ".txt", (const uint8_t *)tag.c_str(), tag.length());
+}
+void forgetTags() {
+  Locked l;
+  File d = LittleFS.open("/t");
+  std::vector<String> names;
+  for (File f = d.openNextFile(); f; f = d.openNextFile()) names.push_back(String("/t/") + f.name());
+  d.close();
+  for (const String &n : names) LittleFS.remove(n);
+}
 
 bool keepArt(const String &key, const uint8_t *png, size_t n) { Locked l; return writeFile("/art/" + key + ".png", png, n); }
 

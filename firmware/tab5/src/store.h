@@ -18,7 +18,13 @@ bool storeBegin();
 // The kept answers, by name ("today", "goals", "party", "profile", "index", "devices", "state")
 bool keep(const char *name, const String &json);
 bool kept(const char *name, JsonDocument &doc);          // false when nothing is kept yet
+bool hasKept(const char *name);                           // whether an answer is kept, without reading it
 String keptAt();                                          // when the last full download finished ("" never)
+// C-177: the companion's ETag for each kept answer ("today") and picture ("art_p3"), sent back so it answers 304 when
+// nothing changed; forgotten all at once by DOWNLOAD EVERYTHING AGAIN
+String keptTag(const String &key);
+void keepTag(const String &key, const String &tag);      // "" forgets it
+void forgetTags();
 void keptAtNow(const String &when);
 // The pictures: "s<species>" or "p<slot>"
 bool keepArt(const String &key, const uint8_t *png, size_t n);

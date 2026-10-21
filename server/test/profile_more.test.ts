@@ -21,7 +21,7 @@ function saveWith(flags: number[], opts: { vars?: [number, number][]; plugins?: 
       }
       const v1 = new DataView(sb1.buffer, sb1.byteOffset, sb1.byteLength);
       for (const [n, val] of opts.vars ?? []) v1.setUint16(EV.sb1_vars + 2 * (n - EV.vars_start), val, true);
-      (opts.plugins ?? []).forEach((id, i) => v1.setUint16((P.sb1 as Record<string, number>).tmhm + i * 4, id, true));
+      (opts.plugins ?? []).forEach((id, i) => v1.setUint16(P.sb1.tmhm + i * 4, id, true));
       if (opts.rival) sb1.set(encodeText(opts.rival, 7), P.sb1.rival_name);
     },
   });

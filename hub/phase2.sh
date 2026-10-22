@@ -52,7 +52,7 @@ if [ "$mode" = install ]; then
   say "the folders: the data (the daemons user's), shared (the save and the art: the server and $LOGIN write it)"
   usermod -aG daemons "$LOGIN"
   chgrp daemons "$DATA"; chmod 0710 "$DATA"                 # the group may pass through, not list or read
-  install -d -o daemons -g daemons -m 2770 "$SHARED" "$SHARED/art" "$SHARED/companion-backups"
+  install -d -o daemons -g daemons -m 2770 "$SHARED" "$SHARED/art" "$SHARED/site" "$SHARED/companion-backups"
   install -d -o daemons -g daemons -m 0750 "$DATA/backups"
   install -d -o daemons -g daemons -m 0700 "$DATA/tmp"
 
@@ -66,6 +66,7 @@ if [ "$mode" = install ]; then
   "edition": "CONTENT",
   "savePath": "$SHARED/save.sav",
   "artDir": "$SHARED/art",
+  "siteDir": "$SHARED/site",
   "talk": { "url": "http://roverbyteseer:5678/webhook" }
 }
 EOF

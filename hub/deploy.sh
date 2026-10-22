@@ -24,11 +24,24 @@ cd /
 
 was=$(git_ rev-parse HEAD); lock0=$(lock)
 git_ fetch -q origin main
-if [ "$(git_ rev-parse origin/main)" = "$was" ]; then echo "deploy: already on $(git_ log -1 --format='%h %s' | cut -c1-90)"; exit 0; fi
+site_waiting() { [ -f "$DATA/shared/site/index.html" ] && ! grep -q '"siteDir"' "$DATA/config.json"; }
+if [ "$(git_ rev-parse origin/main)" = "$was" ] && ! site_waiting; then
+  echo "deploy: already on $(git_ log -1 --format='%h %s' | cut -c1-90)"; exit 0
+fi
 git_ merge -q --ff-only origin/main
 echo "deploy: $(git_ log -1 --format='%h' "$was") -> $(git_ log -1 --format='%h %s' | cut -c1-90)"
 git_ log --format='  %h %s' "$was..HEAD" -- server | cut -c1-110 | head -12
 [ "$lock0" = "$(lock)" ] || { echo "deploy: the lockfile changed -- npm ci"; (cd "$CODE/server" && "${AS[@]}" npm ci --no-audit --no-fund); }
+
+# C-170: once a site has been sent (./syncCompanion.sh site), the config names it, so the hub serves it
+if site_waiting; then
+  python3 - "$DATA/config.json" "$DATA/shared/site" <<'PY'
+import json, sys
+p, d = sys.argv[1], sys.argv[2]; c = json.load(open(p)); c["siteDir"] = d
+open(p, "w").write(json.dumps(c, indent=2) + "\n")
+PY
+  echo "deploy: the config now serves the site from $DATA/shared/site"
+fi
 
 systemctl restart daemons-companion.service
 if answers; then

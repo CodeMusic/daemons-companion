@@ -6,6 +6,7 @@
 #   ./syncCompanion.sh push       this computer's save to the hub, over a change there (the hub's is kept aside)
 #   ./syncCompanion.sh pull       the hub's save to this computer, over a change here (this one is kept aside)
 #   ./syncCompanion.sh art        DAEMONS' own art (gfx/daemons) to the hub, for its pictures
+#   ./syncCompanion.sh site       the companion's site, built here, to the hub -- which serves it at its own address (C-170)
 #   ./syncCompanion.sh backups    the hub's nightly backups of its store, to this computer (off the hub's card)
 #   ./syncCompanion.sh --help
 #
@@ -31,7 +32,7 @@ REMOTE_SAVE="$SHARED/save.sav"
 REMOTE_BACKUPS=/var/lib/daemons-companion/backups
 
 usage() { awk 'NR >= 2 { if ($0 == "#" && ++blank == 2) exit; print }' "$0" | sed 's/^# \{0,1\}//'; }
-case "${1:-sync}" in -h|--help|help) usage; exit 0 ;; sync|status|push|pull|art|backups) mode="${1:-sync}" ;;
+case "${1:-sync}" in -h|--help|help) usage; exit 0 ;; sync|status|push|pull|art|backups|site) mode="${1:-sync}" ;;
   *) echo "syncCompanion: unknown '$1' (try --help)" >&2; exit 64 ;; esac
 
 [[ -f "$HERE/.hub" ]] || { echo "syncCompanion: no .hub -- copy .hub.example to .hub and fill it in" >&2; exit 1; }
@@ -50,6 +51,14 @@ if [[ $mode == art ]]; then
   [[ -d "$ART" ]] || { echo "syncCompanion: no art at $ART (set ART in .hub)" >&2; exit 1; }
   rsync -rlt --omit-dir-times --delete --delete-excluded --exclude .DS_Store "$ART/" "$HUB:$SHARED/art/"
   echo "syncCompanion: art sent ($(find "$ART" -type f | wc -l | tr -d ' ') files)"; exit 0
+fi
+if [[ $mode == site ]]; then
+  # built to talk to whatever serves it, so one build works at the hub's address, its .local name and its Tailscale name
+  (cd "$HERE/app" && EXPO_PUBLIC_DAEMONS_SERVER=origin npx expo export -p web --output-dir dist >/dev/null)
+  [[ -f "$HERE/app/dist/index.html" ]] || { echo "syncCompanion: the site did not build (app/dist/index.html)" >&2; exit 1; }
+  rsync -rlt --omit-dir-times --delete --delete-excluded --exclude .DS_Store "$HERE/app/dist/" "$HUB:$SHARED/site/"
+  echo "syncCompanion: the site sent ($(find "$HERE/app/dist" -type f | wc -l | tr -d ' ') files, $(du -sh "$HERE/app/dist" | cut -f1)); the hub serves it once its config names it (deploy.sh does)"
+  exit 0
 fi
 if [[ $mode == backups ]]; then
   mkdir -p "$BACKUPS"; chmod 700 "$BACKUPS"

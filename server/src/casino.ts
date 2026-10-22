@@ -59,6 +59,17 @@ export function casinoSeen(store: Store, device: string): string {
 
 export const clampMoney = (n: number) => Math.max(0, Math.min(MONEY_MAX, Math.round(n)));
 
+// Down the cable, only what a board draws (the hardware session, 2026-10-22: a state is read into a 4 KB buffer, and the
+// M5GO's was 3477 bytes): of the day's reasons the one with the biggest effect, which is all a board shows (its TODAY
+// line), and the reel's daemons by species alone. The phone, the site, the Tab5 and a board on Wi-Fi keep the whole.
+export function casinoForCable<T extends { context?: { reasons?: Reason[] }; reel?: { species: number }[] } | null>(casino: T): T {
+  if (!casino) return casino;
+  const reasons = casino.context?.reasons ?? [];
+  const top = reasons.reduce<Reason | null>((m, r) => !m || Math.abs(r.effect) > Math.abs(m.effect) ? r : m, null);
+  return { ...casino, ...(casino.context ? { context: { ...casino.context, reasons: top ? [top] : [] } } : {}),
+           ...(casino.reel ? { reel: casino.reel.map((r) => ({ species: r.species })) } : {}) };
+}
+
 // C-167 (the user, 2026-10-18: "It would be neat if the money lost to the casino is kept track of, and funds something
 // in the game"): what THE HOUSE has kept -- net, the pulls' bets less what they paid back -- settled (written into the
 // save's money at a SYNC, less what a SYNC's clamp at 0 or the game's 999999 left unmoved: "casino.clamp") and waiting

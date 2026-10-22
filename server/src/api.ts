@@ -60,7 +60,7 @@ import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
-import { casinoAdmin, houseTake } from "./casino.js";          // C-158, C-167
+import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
@@ -583,8 +583,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const st = deviceState(ecfg, store, new Date(), deviceId, url.searchParams.get("expression"));   // C-121: ?expression= for bench.py
         // C-82: down the cable only, the relay's address and the board's own key, for when it is away on its own Wi-Fi
         const relay = store.getSetting("relay.url");
-        if (via === "usb" && relay && validDeviceId(deviceId)) return send(res, 200, { ...st, away: { url: relay, key: devices.keyFor(deviceId) } });
-        return send(res, 200, st);
+        // C-167: and the CASINO down the cable only as much as a board draws -- its line is read into a 4 KB buffer
+        const out = via === "usb" ? { ...st, casino: casinoForCable(st.casino) } : st;
+        if (via === "usb" && relay && validDeviceId(deviceId)) return send(res, 200, { ...out, away: { url: relay, key: devices.keyFor(deviceId) } });
+        return send(res, 200, out);
       }
       // C-138: a device that shows only pictures (the BOX-3, on ESPHome): its face's revision, and each phase's picture
       if (req.method === "GET" && path === "/api/device/face") return send(res, 200, boxFace(ecfg, store, deviceId).info);

@@ -10,7 +10,7 @@ import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
 import { blocks } from "../src/save/reader.js";
 import { readProfile } from "../src/save/profile.js";
-import { casinoPending, casinoSeen, houseTake, parseResult } from "../src/casino.js";
+import { casinoForCable, casinoPending, casinoSeen, houseTake, parseResult } from "../src/casino.js";
 import { buildSave } from "./build_save.js";
 
 const KEY = 0x5a3c96e1;   // the save's encryption key: the money is kept XOR it, as the game keeps it
@@ -221,6 +221,33 @@ describe("what THE HOUSE keeps (C-167)", () => {
                                                    body: JSON.stringify({ kind: "casino", detail: "-250 a1b2.1 m5-core-36f484 5" }) });
       const house = (await fetch(base + "/api/casino").then((r) => r.json())).house;
       expect(house).toMatchObject({ kept: 0, pending: 250, spins: 5 });
+    } finally { server.close(); }
+  });
+});
+
+describe("THE CASINO down the cable (the hardware session, 2026-10-22: a 4 KB line)", () => {
+  it("keeps only what a board draws: the biggest reason, the reel by species", () => {
+    const c = { money: 10, context: { luck: 0.1, rtp: 0.955, reasons: [
+      { source: "time", effect: 0.1, why: "dawn" }, { source: "weather", effect: -0.4, why: "a storm" }, { source: "season", effect: 0, why: "autumn" }] },
+      reel: [{ species: 4, name: "LABEL" }, { species: 7, name: "X" }] };
+    expect(casinoForCable(c)).toEqual({ money: 10, context: { luck: 0.1, rtp: 0.955, reasons: [{ source: "weather", effect: -0.4, why: "a storm" }] },
+                                        reel: [{ species: 4 }, { species: 7 }] });
+    expect(c.context.reasons).toHaveLength(3);                       // the whole kept for everyone else
+    expect(casinoForCable(null)).toBeNull();
+  });
+
+  it("trims a board's state on ?via=usb only", async () => {
+    const { cfg } = saveFile(3000);
+    const server = makeServer({ ...cfg, database: ":memory:" });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+    try {
+      const get = (q: string) => fetch(base + "/api/device/state" + q, { headers: { "x-device": "m5-core-36f484" } }).then((r) => r.json());
+      const [wifi, usb] = [await get(""), await get("?via=usb")];
+      expect(wifi.casino.context.reasons.length).toBeGreaterThan(1);
+      expect(usb.casino.context.reasons).toHaveLength(1);
+      expect(usb.casino.dress).toEqual(wifi.casino.dress);
+      expect(JSON.stringify(usb).length).toBeLessThan(JSON.stringify(wifi).length);
     } finally { server.close(); }
   });
 });

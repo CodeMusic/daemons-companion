@@ -47,7 +47,7 @@ import { Devices, validDeviceId } from "./devices.js";
 import { assign, carryView } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
-import { networkInterfaces } from "node:os";
+import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -331,15 +331,25 @@ let bonjour: string | null | undefined;
 export function bonjourName(): string | null {
   if (bonjour !== undefined) return bonjour;
   try {
-    const n = process.platform === "darwin" ? execFileSync("/usr/sbin/scutil", ["--get", "LocalHostName"], { encoding: "utf8" }).trim() : "";
+    // C-170: on Linux the machine's own name, when avahi answers for it (the hub: CoreMP135.local)
+    const n = process.platform === "darwin" ? execFileSync("/usr/sbin/scutil", ["--get", "LocalHostName"], { encoding: "utf8" }).trim()
+            : existsSync("/run/avahi-daemon/pid") ? hostname().split(".")[0] : "";
     bonjour = /^[A-Za-z0-9-]+$/.test(n) ? `${n}.local` : null;
   } catch { bonjour = null; }
   return bonjour;
 }
+const tailnetAddress = (a: string) => { const [x, y] = a.split(".").map(Number); return x === 100 && y >= 64 && y <= 127; };   // 100.64/10
 export function lanAddress(): string | null {
   for (const list of Object.values(networkInterfaces()))
-    for (const a of list ?? []) if (a.family === "IPv4" && !a.internal) return a.address;
+    for (const a of list ?? []) if (a.family === "IPv4" && !a.internal && !tailnetAddress(a.address)) return a.address;   // C-170: never the tailnet's
   return null;
+}
+// C-170: on a tailnet (an address in 100.64/10), the name MagicDNS gives this machine -- its own, short: the hub is
+// http://coremp135:4730 from every device on the tailnet, home or away. Null when it is on none.
+export function tailnetName(): string | null {
+  const on = Object.values(networkInterfaces()).flat().some((a) => a && a.family === "IPv4" && tailnetAddress(a.address));
+  const n = hostname().split(".")[0].toLowerCase();
+  return on && /^[a-z0-9-]+$/.test(n) ? n : null;
 }
 
 // C-15: the beacon tags our own companions have used lately -- never a meeting
@@ -494,7 +504,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // ---- C-53: pairing ----
       if (req.method === "POST" && path === "/api/pair/code") {         // this machine only (the door above)
         const code = pairing.start();
-        return send(res, 200, { code, minutes: PAIR_MS / 60000, lan: { address: lanAddress(), port: cfg.port, open: cfg.host === "0.0.0.0" } });
+        return send(res, 200, { code, minutes: PAIR_MS / 60000, lan: { address: lanAddress(), name: bonjourName(), tailnet: tailnetName(), port: cfg.port, open: cfg.host === "0.0.0.0" } });
       }
       if (req.method === "POST" && path === "/api/pair") {
         const b = await body(req);
@@ -547,7 +557,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/settings/away") return send(res, 200, { url: store.getSetting("relay.url") });
       // the server listens on the network (for the phone and the board) -- kept here, read at the next start
       if (req.method === "GET" && path === "/api/settings/network")
-        return send(res, 200, { open: store.getSetting("host") === "0.0.0.0", now: cfg.host === "0.0.0.0", address: lanAddress(), name: bonjourName(), port: cfg.port });
+        return send(res, 200, { open: store.getSetting("host") === "0.0.0.0", now: cfg.host === "0.0.0.0", address: lanAddress(), name: bonjourName(), tailnet: tailnetName(), port: cfg.port });
       if (req.method === "POST" && path === "/api/settings/network") {
         const b = await body(req);
         store.setSetting("host", b.open ? "0.0.0.0" : "127.0.0.1");

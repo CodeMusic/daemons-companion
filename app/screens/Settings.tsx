@@ -205,7 +205,7 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
 
 // ---- C-53, on the site: open the companion to the network, show a code, see and forget paired phones ----
 export function PairCard({ ink }: { ink: string }) {
-  const [net, setNet] = useState<{ open: boolean; now: boolean; address: string | null; name?: string | null; port: number } | null>(null);
+  const [net, setNet] = useState<{ open: boolean; now: boolean; address: string | null; name?: string | null; tailnet?: string | null; port: number } | null>(null);
   const [code, setCode] = useState<string | null>(null);
   const [phones, setPhones] = useState<{ name: string; paired: string; seen: string | null }[]>([]);
   const load = useCallback(() => {
@@ -234,6 +234,7 @@ export function PairCard({ ink }: { ink: string }) {
               <Text fontFamily="$mono" fontSize={28} letterSpacing={6} fontWeight="700" color="$color12">{code}</Text>
               <Small>{`On the phone, type the address ${address} and this code. It works once, for ten minutes.`}</Small>
               {fallback ? <Small color="$color10">{`The name finds this computer on any Wi-Fi it shares with the phone. If the phone cannot reach it, type ${fallback} instead (that one changes with the network).`}</Small> : null}
+              {net.tailnet ? <Small color="$color10">{`On your tailnet, home or away, it is http://${net.tailnet}:${net.port} -- for a phone, or for this site in any browser there.`}</Small> : null}   {/* C-170, DRAFT */}
             </YStack>
           ) : null}
         </>

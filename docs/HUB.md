@@ -96,6 +96,15 @@ and the hub serves the site itself, so a browser anywhere at home opens the hub'
 from that screen, as a phone does. Until then the site runs on a computer, through the tunnel; a browser pointed at
 the hub's port gets "pair this phone first", by design.
 
+*The screen, built 2026-10-21* (`hub/screen.py`; every word on it DRAFT). Three pages, turned by a short touch anywhere:
+**DAEMONS** -- how many companions are linked (heard from in the last 15 minutes) and the daemons on them, in colour
+when linked and dimmed when asleep; **DEVICES** -- each one, how it is reached and when it was last heard; **THE HUB**
+-- its address, the server, uptime, heat and memory, and the day. **Hold anywhere for two seconds** and it shows a
+pairing code with the address, for ten minutes; a touch closes it. The touch is used without coordinates (its axes are
+swapped against the panel and not yet calibrated), so nothing needs a precise tap. It draws with Pillow alone (no
+numpy on the hub) into the panel's RGB565, only when what it shows has changed: 25 MB, about 4 s of CPU a minute.
+`hub/phase4.sh` makes it a service (`daemons-companion-screen`, as the daemons user with the video and input groups).
+
 **Phase 5 -- the Module LLM.** The Mate's RJ45 to the hub's second port on its own small network; a module provider
 alongside n8n, extending the existing talk setting rather than adding a second one; the talk prompt rebuilt for the
 module's short window.

@@ -1,0 +1,23 @@
+# C-168 Phase 4, C-170: the hub's own screen -- the companions linked, their daemons, and pairing by holding the glass.
+[Unit]
+Description=The DAEMONS companion's screen on the hub
+After=daemons-companion.service
+Wants=daemons-companion.service
+
+[Service]
+Type=simple
+User=daemons
+Group=daemons
+# the panel (/dev/fb1) and the touch (/dev/input/event0)
+SupplementaryGroups=video input
+ExecStart=/usr/bin/python3 /opt/daemons-companion/hub/screen.py
+Restart=always
+RestartSec=5
+MemoryMax=80M
+Nice=10
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

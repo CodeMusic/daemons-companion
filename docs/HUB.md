@@ -129,12 +129,19 @@ on it.*
 6. **Measured before it is trusted.** Time to the first word and words a second, for each model the AX630C can hold
    (around 0.5-1.5B), before it answers anyone. *(The hardware lane: the module, its network, its models, the numbers.
    The companion lane: the queue, the deadline, the written lines, and the waiting on every device.)*
-7. **Readings go to the module first** (the user, 2026-10-22: "for the 'read' commands that we currently use n8n for,
-   primarily we should use this ax630"). An INDEX entry or a set line read aloud needs only its voice, no model, so it is
-   the first work the module takes from n8n (the queue already calls it a *reading*).
+7. **Who speaks with which voice** (the user, 2026-10-22: "maybe we eventually make n8n for the index, and ax630 for
+   talking to the daemon since I presume it cannot have multiple cloned voices"). The module's voice is MeloTTS: a few
+   set voices a language, no cloning. So the INDEX keeps its cloned voice on n8n, and talking with a daemon moves to the
+   module -- its thinking, its voice and its hearing, all in the house. *Earlier the same day the user had readings
+   going to the module first; this takes its place until the benchmark says otherwise.*
 8. **More than one module, later.** The user has several; each would be one more worker on the same queue (it already
    runs a number of jobs at once), every one loaded and answering in turn. One first, measured; then a second if the
    queue is often long.
+9. **The benchmark** (`server/tools/ax630bench.ts`), run where the module can be reached -- on the hub, from the
+   clone: `node --import tsx tools/ax630bench.ts http://<module>:8000 --out /tmp/ax630`. It lists what the module
+   holds (`llm-openai-api` must be installed and restarted after each model), times each model thinking as a daemon
+   would (first words, the whole answer, words a second), saves every voice as a WAV to listen to, and hears those
+   voices back (and `--wav` a real recording). `report.md` holds the table. It only reads.
 
 **Phase 6 -- LoRa.** The 433 gateway on SPI (CS, IRQ and RST on the module's DIP switches). The hub's own broadcasts are
 registered as its own before it ever transmits, so it never answers itself.

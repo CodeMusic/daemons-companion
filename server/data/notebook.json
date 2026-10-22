@@ -196,6 +196,18 @@
    "link": "https://open.spotify.com/episode/1BvPzmV46drWhhePPiZvk1"
   },
   {
+   "section": 1,
+   "title": "THE PHOTO",
+   "kind": "text",
+   "flag": 3308,
+   "flag2": 0,
+   "about": "A photo of my daemon, in colour.",
+   "text": "A photograph, taken in HALFTONE\nby the KINGFISHER.\n\nIt came out in colour.",
+   "seen": 2919,
+   "place": "HALFTONE TOWN",
+   "link": null
+  },
+  {
    "section": 2,
    "title": "FIRST SESSION",
    "kind": "text",

@@ -46,6 +46,8 @@ fi
 systemctl restart daemons-companion.service
 if answers; then
   echo "deploy: the server answers on $(git_ log -1 --format=%h)"
+  systemctl is-enabled -q daemons-companion-screen.service 2>/dev/null && systemctl restart daemons-companion-screen.service \
+    && echo "deploy: the screen restarted on the new code"
 else
   echo "deploy: the new code did not answer in 60 s -- going back to $(git_ log -1 --format=%h "$was")" >&2
   journalctl -u daemons-companion --no-pager -n 20 >&2 || true

@@ -117,7 +117,10 @@ def page_devices(data):
 def page_hub(data):
     im = Image.new("RGB", (W, H), PAPER); d = ImageDraw.Draw(im)
     header(d, "THE HUB", data["day"])
-    rows = [("address", f"{data['address'] or '?'}:4730"), ("server", "answering" if data["ok"] else "NOT ANSWERING")]
+    rows = [("address", f"{data['address'] or '?'}:4730")]
+    if data.get("tailnet"):
+        rows.append(("tailnet", f"{data['tailnet']}:4730"))
+    rows.append(("server", "answering" if data["ok"] else "NOT ANSWERING"))
     try:
         up = float(open("/proc/uptime").read().split()[0])
         rows.append(("up", f"{int(up // 86400)}d {int(up % 86400 // 3600)}h {int(up % 3600 // 60)}m"))
@@ -144,14 +147,16 @@ def page_holding(frac):
     return im
 
 
-def page_code(code, address, until):
+def page_code(code, address, until, tailnet=None):
     im = Image.new("RGB", (W, H), PAPER); d = ImageDraw.Draw(im)
     header(d, "PAIR A PHONE", None)
     d.text((W // 2, 40), "ON THE APP, ENTER", font=F_SMALL, fill=DIM, anchor="ma")
     d.text((W // 2, 60), f"{address}:4730", font=F_MID, fill=INK, anchor="ma")
     d.text((W // 2, 92), code, font=F_CODE, fill=INK, anchor="ma")
     left = max(0, int(until - time.time()))
-    d.text((W // 2, 168), f"good for {left // 60}:{left % 60:02d}", font=F_SMALL, fill=DIM, anchor="ma")
+    if tailnet:
+        d.text((W // 2, 150), f"away, on the tailnet: {tailnet}:4730", font=F_SMALL, fill=DIM, anchor="ma")
+    d.text((W // 2, 172), f"good for {left // 60}:{left % 60:02d}", font=F_SMALL, fill=DIM, anchor="ma")
     footer(d, "TOUCH TO CLOSE")
     return im
 
@@ -185,13 +190,14 @@ def show(im, out=None):
 
 
 def fetch():
-    data = {"ok": False, "devices": [], "day": None, "address": None}
+    data = {"ok": False, "devices": [], "day": None, "address": None, "tailnet": None, "name": None}
     try:
         devs = get("/api/devices")
         data["devices"] = devs["devices"] if isinstance(devs, dict) else devs
         data["devices"] = list(data["devices"].values()) if isinstance(data["devices"], dict) else data["devices"]
         data["day"] = get("/api/today").get("day")
-        data["address"] = get("/api/settings/network").get("address")
+        net = get("/api/settings/network")
+        data["address"], data["tailnet"], data["name"] = net.get("address"), net.get("tailnet"), net.get("name")
         data["ok"] = True
     except Exception:
         pass
@@ -225,7 +231,7 @@ def main():
         if down_at is not None and now - down_at >= HOLD_S and not code:
             try:
                 r = get("/api/pair/code", "POST")
-                code = (r["code"], r["lan"]["address"], now + r.get("minutes", 10) * 60)
+                code = (r["code"], r["lan"]["address"], now + r.get("minutes", 10) * 60, r["lan"].get("tailnet"))
             except Exception:
                 code = None
             down_at = None

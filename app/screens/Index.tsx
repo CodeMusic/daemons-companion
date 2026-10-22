@@ -4,7 +4,7 @@ import { File, Paths } from "expo-file-system";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { Spinner, Text, XStack, YStack } from "tamagui";
-import { api, ON_PHONE } from "../net";
+import { api, apiLater, ON_PHONE } from "../net";
 import { Index, Reading, Spoken } from "../types";
 import { Art, Card, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
@@ -20,7 +20,7 @@ export function useIndexReader() {
     const mine = ++turn.current;
     setFailed(""); setReading({ species, phase: "making" });
     try {
-      const r = await api<Spoken>("/api/ai/speak", { species });
+      const r = await apiLater<Spoken>("/api/ai/speak", { species });   // C-180
       if (turn.current !== mine) return;
       if (!r.audioBase64) { setFailed(r.error ?? "No voice came back."); setReading(null); return; }
       let uri = `data:audio/mpeg;base64,${r.audioBase64}`;                      // the site plays it as it came

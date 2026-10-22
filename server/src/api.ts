@@ -49,6 +49,7 @@ import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
+import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
@@ -319,7 +320,7 @@ export const DEVICE_DOOR = [
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast"].includes(p),   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
-  (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/")),
+  (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
   (m: string) => m === "OPTIONS",
 ];
 
@@ -376,6 +377,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const remotesShared = new SharedRemotes(store);              // C-165: and of remotes
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
+  const talkJobs = new TalkJobs<Record<string, unknown>>(2);   // C-180: every talk and voice, queued; fetched by id
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
   const agentKey = (renew = false) => ollamaKey((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), renew);   // C-142
   // C-142: the address Home Assistant's Ollama integration is given -- this machine on the network, and the key
@@ -850,17 +852,32 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const w = await asWav(audio);
         return w ? { audioBase64: w.audio.toString("base64"), audioMime: w.mime } : { audioBase64: audio.toString("base64"), audioMime: mime };
       };
+      // C-180: ?async=1 -- answered at once, {id}, and the answer fetched from GET /api/device/talk/<id> when it is ready;
+      // without it the one request waits, as every board still does until the hardware lane moves it
+      const later = url.searchParams.get("async") === "1";
+      const answer = async (priority: number, work: () => Promise<Record<string, unknown>>) => {
+        if (!later) return send(res, 200, await work());
+        return send(res, 202, { id: talkJobs.start(who, priority, work), status: "waiting" });
+      };
+      if (req.method === "GET" && path.startsWith("/api/device/talk/")) {
+        const job = talkJobs.get(path.slice("/api/device/talk/".length));
+        if (!job) return send(res, 404, { error: "that answer is gone; ask again" });
+        return send(res, 200, { status: job.status, ahead: job.ahead ?? null, error: job.error ?? null, ...(job.result ?? {}) });
+      }
       if (req.method === "POST" && path === "/api/ai/talk") {
         const b = await body(req);
-        if (typeof b.audioBase64 === "string" && b.audioBase64)
-          Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
-        return send(res, 200, remember(b, await n8n(ecfg, "daemon/talk", talkPayload(b))));
+        return answer(PRIORITY.inHand, async () => {
+          if (typeof b.audioBase64 === "string" && b.audioBase64)
+            Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
+          return remember(b, await n8n(ecfg, "daemon/talk", talkPayload(b)));
+        });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
         const audio = await rawBody(req);
         if (!audio || audio.length < 44) return send(res, 400, { error: "talk takes a recording (up to 2 MB)" });
-        return send(res, 200, await forDevice(remember({}, await n8n(ecfg, "daemon/talk",
-          talkPayload(await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav")))))));
+        const mime = String(req.headers["content-type"] ?? "audio/wav");
+        return answer(PRIORITY.inHand, async () =>
+          forDevice(remember({}, await n8n(ecfg, "daemon/talk", talkPayload(await heardAs(audio, mime))))));
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does
@@ -868,8 +885,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const text = row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
         if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "host a daemon to hear its entry" });
-        const r = await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" });
-        return send(res, 200, await forDevice({ ...r, answer: text }));
+        return answer(PRIORITY.reading, async () =>          // C-180: a reading -- the hub's Module LLM's first work
+          forDevice({ ...await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }), answer: text }));
       }
       if (req.method === "GET" && path.startsWith("/api/device/voice/")) {
         const pcm = voices.get(path.slice("/api/device/voice/".length));
@@ -884,7 +901,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
         if (!text) return send(res, 400, { error: "speak {species} or {text}, or host a daemon" });
-        return send(res, 200, await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }));
+        return answer(PRIORITY.reading, () => n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }));
       }
       if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes
         const b = await body(req);

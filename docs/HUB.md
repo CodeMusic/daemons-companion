@@ -129,6 +129,12 @@ on it.*
 6. **Measured before it is trusted.** Time to the first word and words a second, for each model the AX630C can hold
    (around 0.5-1.5B), before it answers anyone. *(The hardware lane: the module, its network, its models, the numbers.
    The companion lane: the queue, the deadline, the written lines, and the waiting on every device.)*
+7. **Readings go to the module first** (the user, 2026-10-22: "for the 'read' commands that we currently use n8n for,
+   primarily we should use this ax630"). An INDEX entry or a set line read aloud needs only its voice, no model, so it is
+   the first work the module takes from n8n (the queue already calls it a *reading*).
+8. **More than one module, later.** The user has several; each would be one more worker on the same queue (it already
+   runs a number of jobs at once), every one loaded and answering in turn. One first, measured; then a second if the
+   queue is often long.
 
 **Phase 6 -- LoRa.** The 433 gateway on SPI (CS, IRQ and RST on the module's DIP switches). The hub's own broadcasts are
 registered as its own before it ever transmits, so it never answers itself.

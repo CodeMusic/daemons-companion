@@ -303,6 +303,24 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
   }
 }
 
+// C-180: a talk or a reading asked for later -- answered at once with an id, then fetched until it is ready, so nothing
+// waits on a model with a request held open (the phone's 8 s gave up on a slow one). `onWait` hears how it stands
+// (waiting, and how many are ahead; thinking). A companion that does not know ?async=1 answers in full, and that is used.
+export async function apiLater<T>(path: string, body: unknown, onWait?: (status: string, ahead: number | null) => void): Promise<T> {
+  if (ALONE) return api<T>(path, body);                     // the phone alone answers itself (local.ts)
+  const first = await api<T & { id?: string; status?: string }>(path + (path.includes("?") ? "&" : "?") + "async=1", body);
+  if (!first.id || first.status !== "waiting") return first;
+  const until = Date.now() + 120000;
+  for (let wait = 400; Date.now() < until; wait = Math.min(wait + 200, 1500)) {
+    await new Promise((ok) => setTimeout(ok, wait));
+    const r = await api<T & { status: string; ahead: number | null; error: string | null }>(`/api/device/talk/${first.id}`);
+    if (r.status === "done") return r;
+    if (r.status === "failed") throw new Error(r.error ?? "the answer did not come");
+    onWait?.(r.status, r.ahead);
+  }
+  throw new Unreachable("the answer took more than two minutes");
+}
+
 export let sending = false;
 
 export async function sendHeld() {

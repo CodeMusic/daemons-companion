@@ -605,13 +605,37 @@ static void pair(const String &srvIn, const String &code) {
 
 // C-99: an INDEX entry aloud. The companion makes the voice (POST /api/device/speak {species}) and keeps it as 16 kHz
 // PCM for a device to fetch -- at home only: the relay answers in JSON and carries no voice.
+// C-180: asked for later (?async=1) -- the companion answers at once with an id, and the network task goes on with
+// everything else, asking after the answer between its other work (speakPoll), instead of holding one request open
+// while the voice is made. A companion that does not know ?async=1 answers in full, and that is played as before.
+static String speakJob; static uint32_t speakGen = 0, speakNext = 0, speakUntil = 0;
+static void playVoice(JsonDocument &d, uint32_t gen);
+static void speakSaid(uint32_t gen, const String &m) { if (gen == voiceGen) { netSay(m); netVoice = V_QUIET; changed(K_VOICE); } }
 static void speak(int species) {
   uint32_t gen = voiceGen;
-  auto said = [&](const String &m) { if (gen == voiceGen) { netSay(m); netVoice = V_QUIET; changed(K_VOICE); } };
-  if (!net.home && net.away) return said("The voice is made at home: the INDEX is read aloud there.");   // DRAFT
-  int code; String got = request("POST", "/api/device/speak", "{\"species\":" + String(species) + "}", code);
+  if (!net.home && net.away) return speakSaid(gen, "The voice is made at home: the INDEX is read aloud there.");   // DRAFT
+  int code; String got = request("POST", "/api/device/speak?async=1", "{\"species\":" + String(species) + "}", code);
   JsonDocument d = newDoc();
-  if (code != 200 || deserializeJson(d, got)) return said(code < 0 ? "Nothing answered to make the voice." : "The voice did not come (" + String(code) + ").");   // DRAFT
+  if ((code != 200 && code != 202) || deserializeJson(d, got)) return speakSaid(gen, code < 0 ? "Nothing answered to make the voice." : "The voice did not come (" + String(code) + ").");   // DRAFT
+  if (code == 202) { speakJob = d["id"] | ""; speakGen = gen; speakNext = millis() + 400; speakUntil = millis() + 120000; return; }
+  playVoice(d, gen);
+}
+static void speakPoll() {
+  if (!speakJob.length() || (int32_t)(millis() - speakNext) < 0) return;
+  uint32_t gen = speakGen;
+  if (gen != voiceGen) { speakJob = ""; return; }                       // HUSH, or another entry asked for
+  if ((int32_t)(millis() - speakUntil) > 0) { speakJob = ""; return speakSaid(gen, "The voice took too long."); }   // DRAFT
+  int code; String got = request("GET", "/api/device/talk/" + speakJob, "", code);
+  JsonDocument d = newDoc();
+  if (code == 404) { speakJob = ""; return speakSaid(gen, "The voice was lost; ask again."); }   // DRAFT
+  if (code != 200 || deserializeJson(d, got)) { speakNext = millis() + 1000; return; }       // asked again in a moment
+  String status = d["status"] | "";
+  if (status == "done") { speakJob = ""; return playVoice(d, gen); }
+  if (status == "failed") { speakJob = ""; return speakSaid(gen, String((const char *)(d["error"] | "The voice did not come."))); }   // DRAFT
+  speakNext = millis() + 600;                                           // waiting, or thinking
+}
+static void playVoice(JsonDocument &d, uint32_t gen) {
+  auto said = [&](const String &m) { speakSaid(gen, m); };
   String audio = d["audio"] | "";
   if (!audio.length()) return said(String((const char *)(d["error"] | "The voice did not come.")));   // DRAFT
   if (gen != voiceGen || !net.home) return said(net.home ? "" : "The voice is made at home.");        // DRAFT
@@ -675,6 +699,7 @@ static void netTask(void *) {
     else if (j == GAME && net.paired) gameSync();
     else if (j == SPEAK) { if (net.paired && net.wifi) speak(a.toInt()); else { netSay("The voice needs the companion."); netVoice = V_QUIET; changed(K_VOICE); } }   // DRAFT
     sendHome();                                               // C-139: HOME's taps, now and before anything else
+    speakPoll();                                              // C-180: a voice asked for, fetched once it is made
     uint32_t now = millis();
     if (!net.wifi && known && now - lastSync > 30000) { lastSync = now; joinKnown(); }
     if (net.wifi && net.paired) {

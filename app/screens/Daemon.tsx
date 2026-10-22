@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ACTS, castLine, playerId } from "../data";
 import { DenStage } from "../Den";
-import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../net";
+import { ALONE, api, apiLater, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../net";
 import { Carried, Cast, Daemon, DeviceRow, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../types";
 import { Action, Art, Card, CareKey, careSound, Eyebrow, Segments, Small, whenSaid } from "../ui";
 import { hearSettings, soundLevel } from "../tuneSound";
@@ -119,7 +119,7 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
     setState("thinking");
     try {
       const audioBase64 = await new File(recorder.uri).base64();
-      const r = await api<Spoken>("/api/ai/talk", { audioBase64, audioMime: "audio/mp4" });
+      const r = await apiLater<Spoken>("/api/ai/talk", { audioBase64, audioMime: "audio/mp4" });   // C-180: never held open
       setSaid(r); speak(r.audioBase64);
     } catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
   };
@@ -148,7 +148,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   const [reading, setReading] = useState(false);
   const readAloud = async (species: number) => {           // C-65: the INDEX entry, in the INDEX voice
     setReading(true);
-    try { speak((await api<Spoken>("/api/ai/speak", { species })).audioBase64); } catch { /* the card says nothing new */ }
+    try { speak((await apiLater<Spoken>("/api/ai/speak", { species })).audioBase64); } catch { /* the card says nothing new */ }
     finally { setReading(false); }
   };
   const [note, setNote] = useState("");

@@ -124,3 +124,21 @@ describe("answering only what changed (C-177)", () => {
     expect((await stale.json()).date).toBeDefined();
   });
 });
+
+describe("talk that never makes a device wait (C-180)", () => {
+  it("answers ?async=1 at once with an id, and the answer is fetched by it", async () => {
+    const r = await fetch(base + "/api/ai/speak?async=1", { method: "POST", headers: { "content-type": "application/json" },
+                                                           body: JSON.stringify({ text: "A line to read." }) });
+    expect(r.status).toBe(202);
+    const { id, status } = await r.json();
+    expect(status).toBe("waiting");
+    let got: Record<string, unknown> = {};
+    for (let i = 0; i < 50; i++) {
+      got = await (await fetch(base + `/api/device/talk/${id}`)).json();
+      if (got.status === "done" || got.status === "failed") break;
+      await new Promise((ok) => setTimeout(ok, 20));
+    }
+    expect(["done", "failed"]).toContain(got.status);                // no n8n here: either way it ends, and says so
+    expect((await fetch(base + "/api/device/talk/nothing-like-it")).status).toBe(404);
+  });
+});

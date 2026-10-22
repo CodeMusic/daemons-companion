@@ -22,25 +22,36 @@ answers() {
 }
 cd /
 
-was=$(git_ rev-parse HEAD); lock0=$(lock)
+was=${WAS:-$(git_ rev-parse HEAD)}; lock0=${LOCK0:-$(lock)}
 git_ fetch -q origin main
-site_waiting() { [ -f "$DATA/shared/site/index.html" ] && ! grep -q '"siteDir"' "$DATA/config.json"; }
-if [ "$(git_ rev-parse origin/main)" = "$was" ] && ! site_waiting; then
+# settings the hub's config should carry; each is added once, never changed after (the config is the user's)
+config_waiting() {
+  { [ -f "$DATA/shared/site/index.html" ] && ! grep -q '"siteDir"' "$DATA/config.json"; } \
+    || ! grep -q '"lanInterface"' "$DATA/config.json"
+}
+if [ "$(git_ rev-parse origin/main)" = "$was" ] && ! config_waiting; then
   echo "deploy: already on $(git_ log -1 --format='%h %s' | cut -c1-90)"; exit 0
 fi
 git_ merge -q --ff-only origin/main
+# a newer deploy.sh came with the code: run that one instead, so its own steps apply on this same run
+if [ -z "${DEPLOY_REEXEC:-}" ] && ! cmp -s "$0" "$CODE/hub/deploy.sh"; then
+  echo "deploy: deploy.sh itself changed -- running the new one"; DEPLOY_REEXEC=1 WAS="$was" LOCK0="$lock0" exec bash "$CODE/hub/deploy.sh"
+fi
 echo "deploy: $(git_ log -1 --format='%h' "$was") -> $(git_ log -1 --format='%h %s' | cut -c1-90)"
 git_ log --format='  %h %s' "$was..HEAD" -- server | cut -c1-110 | head -12
 [ "$lock0" = "$(lock)" ] || { echo "deploy: the lockfile changed -- npm ci"; (cd "$CODE/server" && "${AS[@]}" npm ci --no-audit --no-fund); }
 
 # C-170: once a site has been sent (./syncCompanion.sh site), the config names it, so the hub serves it
-if site_waiting; then
+if config_waiting; then
   python3 - "$DATA/config.json" "$DATA/shared/site" <<'PY'
-import json, sys
-p, d = sys.argv[1], sys.argv[2]; c = json.load(open(p)); c["siteDir"] = d
+import json, os, sys
+p, site = sys.argv[1], sys.argv[2]; c = json.load(open(p))
+if os.path.exists(os.path.join(site, "index.html")) and "siteDir" not in c:
+    c["siteDir"] = site; print("deploy: the config now serves the site from", site)
+if "lanInterface" not in c:
+    c["lanInterface"] = "eth0"; print("deploy: the config now names eth0 as the address devices are given")
 open(p, "w").write(json.dumps(c, indent=2) + "\n")
 PY
-  echo "deploy: the config now serves the site from $DATA/shared/site"
 fi
 
 systemctl restart daemons-companion.service

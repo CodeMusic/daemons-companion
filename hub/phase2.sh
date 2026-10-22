@@ -67,6 +67,7 @@ if [ "$mode" = install ]; then
   "savePath": "$SHARED/save.sav",
   "artDir": "$SHARED/art",
   "siteDir": "$SHARED/site",
+  "lanInterface": "eth0",
   "talk": { "url": "http://roverbyteseer:5678/webhook" }
 }
 EOF

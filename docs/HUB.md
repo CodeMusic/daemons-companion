@@ -105,9 +105,30 @@ swapped against the panel and not yet calibrated), so nothing needs a precise ta
 numpy on the hub) into the panel's RGB565, only when what it shows has changed: 25 MB, about 4 s of CPU a minute.
 `hub/phase4.sh` makes it a service (`daemons-companion-screen`, as the daemons user with the video and input groups).
 
-**Phase 5 -- the Module LLM.** The Mate's RJ45 to the hub's second port on its own small network; a module provider
-alongside n8n, extending the existing talk setting rather than adding a second one; the talk prompt rebuilt for the
-module's short window.
+**Phase 5 -- the Module LLM (C-180).** The Mate's RJ45 to the hub's second port on its own small network; a module
+provider alongside n8n, extending the existing talk setting rather than adding a second one; the talk prompt rebuilt for
+the module's short window.
+
+*The rule it is built to (the user, 2026-10-22: "many boards connect to this device and we need it to be as quick as
+possible for replies to not lag the device ui"): one small model is shared by every board, so no screen may ever wait
+on it.*
+
+1. **No device waits on a reply.** A talk is answered at once with an id ("heard you"); the device shows its daemon
+   thinking and stays usable, and fetches the answer -- words, then voice -- when it is ready. The old one-request form
+   stays for boards not yet moved. *(Server, app, Tab5: first. Boards: the hardware lane, once it is in.)*
+2. **Most replies need no model.** Greetings, care (FEED, WATER, SLEEP), the CASINO's cheers and the like come from
+   written lines, chosen by the daemon's mood and the day, at once. The model is for talk only. The same question in
+   the same mood is answered from what was said before.
+3. **One model, one queue.** The model is loaded at start and kept loaded. One queue in the server, by priority: the
+   device in the user's hand first, daemons talking among themselves last. Replies for a board are a sentence or two
+   (a token cap), and the first sentence goes as soon as it is made.
+4. **A deadline, then the way it goes today.** If the module has not begun an answer within about two seconds, or its
+   queue is long, the talk goes to n8n (the user's own model, then OpenRouter). With no internet it waits for the module.
+5. **The voice on the module.** Text to speech made there, as the 16 kHz PCM the boards play -- no ffmpeg (5.5 s a call
+   here, the slowest thing on the hub). Speech to text there too, so a recording never leaves the house.
+6. **Measured before it is trusted.** Time to the first word and words a second, for each model the AX630C can hold
+   (around 0.5-1.5B), before it answers anyone. *(The hardware lane: the module, its network, its models, the numbers.
+   The companion lane: the queue, the deadline, the written lines, and the waiting on every device.)*
 
 **Phase 6 -- LoRa.** The 433 gateway on SPI (CS, IRQ and RST on the module's DIP switches). The hub's own broadcasts are
 registered as its own before it ever transmits, so it never answers itself.

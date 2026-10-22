@@ -27,7 +27,11 @@ function nearServer(asked: string | null): string | null {
 }
 const linked = Platform.OS === "web" && typeof window !== "undefined" && window.location
   ? nearServer(new URLSearchParams(window.location.search).get("server")) : null;
-export let SERVER = linked ?? process.env.EXPO_PUBLIC_DAEMONS_SERVER ?? "http://127.0.0.1:4730";
+// C-170: a site exported for the companion to serve itself (EXPO_PUBLIC_DAEMONS_SERVER=origin) asks whatever served it --
+// the hub at 10.0.0.69:4730, coremp135:4730 on the tailnet or CoreMP135.local -- so one export works at every address
+const built = process.env.EXPO_PUBLIC_DAEMONS_SERVER;
+const served = built === "origin" && Platform.OS === "web" && typeof window !== "undefined" && window.location ? window.location.origin : null;
+export let SERVER = linked ?? served ?? (built !== "origin" ? built : undefined) ?? "http://127.0.0.1:4730";
 
 // C-111: the phone hosting on its own -- no computer; every request is answered on the phone (local.ts)
 export let ALONE = false;
@@ -55,7 +59,8 @@ export let relayTrial: Promise<unknown> | null = null;
 export let unpaired: () => void = () => {};
 
 export async function pairAgain() {
-  for (const k of ["server", "token", "away", "alone"]) await SecureStore.deleteItemAsync(k, KEEP).catch(() => {});
+  if (ON_PHONE) for (const k of ["server", "token", "away", "alone"]) await SecureStore.deleteItemAsync(k, KEEP).catch(() => {});
+  else webStore.set(null);                                     // C-170: the site's key
   TOKEN = null; AWAY = null; route = { away: false, until: 0 }; ALONE = false;
   WIDGET?.shareWithWidget(null);
   unpaired();
@@ -115,6 +120,19 @@ export const keepable = (path: string) => !NOT_KEPT.test(path) && (!path.startsW
 
 export const ON_PHONE = Platform.OS !== "web";
 
+// C-170: the site is the companion's own computer's when the server it asks is this machine (a Metro site, or the hub's
+// through its tunnel) -- then it needs no key, and shows what only that machine may do (pairing codes, the network, the
+// relay). Anywhere else -- the hub's site from another computer or over the tailnet -- it pairs as a phone does.
+const LOOPBACK = /^(127\.\d+\.\d+\.\d+|localhost|\[::1\]|::1)$/i;
+export const SITE_HOME = !ON_PHONE && (() => { try { return LOOPBACK.test(new URL(SERVER).hostname); } catch { return false; } })();
+export const KEYED = ON_PHONE || !SITE_HOME;
+const WEB_TOKEN = "daemons-companion-token";               // the site's key, in this browser's own storage
+const webStore = {
+  get: () => { try { return window.localStorage.getItem(WEB_TOKEN); } catch { return null; } },
+  set: (t: string | null) => { try { if (t) window.localStorage.setItem(WEB_TOKEN, t); else window.localStorage.removeItem(WEB_TOKEN); } catch {} },
+};
+export const keepSiteToken = (t: string | null) => webStore.set(t);
+
 // C-57: readable after the phone's first unlock, not only while it is unlocked -- iOS may open the app in a locked
 // pocket when the handheld has something to say, and the app needs its key and the handheld's id then.
 export const KEEP = { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK };
@@ -129,7 +147,7 @@ export async function keepAfterFirstUnlock() {
 }
 
 export async function loadConnection(): Promise<boolean> {
-  if (!ON_PHONE) return true;
+  if (!ON_PHONE) { if (!KEYED) return true; TOKEN = webStore.get(); return !!TOKEN; }   // C-170
   await keepAfterFirstUnlock().catch(() => {});
   await loadKept();
   for (const [p, uri] of Object.entries(KEPT.art)) ART.set(p, uri);

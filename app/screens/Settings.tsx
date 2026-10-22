@@ -100,7 +100,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
         </Small>
         <XStack gap={8} flexWrap="wrap" marginTop={4}>
           {s.canPick ? <Action label="Choose a save…" onPress={pick} ink={ink} /> : null}
-          {s.dir ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}
+          {s.dir && s.canPick ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}   {/* C-170: this machine's Finder */}
         </XStack>
       </Card>
       <Card>

@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Image, Platform } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
-import { ALONE, ART, artByJson, isAway, ON_PHONE, pairAgain, SERVER } from "./net";
+import { ALONE, ART, artByJson, isAway, KEYED, ON_PHONE, pairAgain, SERVER } from "./net";
 import { Link } from "./types";
  // C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
 export const { careSound }: typeof import("./careSound") = ON_PHONE ? require("./careSound") : { careSound: () => "" };
@@ -39,8 +39,8 @@ export function Stuck({ error, ink }: { error: string; ink: string }) {
   return (
     <YStack gap={4}>
       <Small>{error}</Small>
-      {ON_PHONE ? <Small>Paired with {SERVER}. If the companion has moved, pair again from its site: SETTINGS, PAIR A PHONE.</Small> : null}
-      {ON_PHONE ? <Action label="Pair again" ink={ink} onPress={() => { pairAgain(); }} /> : null}
+      {KEYED ? <Small>Paired with {SERVER}. If the companion has moved, pair again from its site: SETTINGS, PAIR A PHONE.</Small> : null}
+      {KEYED ? <Action label="Pair again" ink={ink} onPress={() => { pairAgain(); }} /> : null}
     </YStack>
   );
 }

@@ -1,7 +1,7 @@
 // HOME -- Home Assistant's rooms, each a tap, and the house asked in words (C-139); its settings card. (C-157: out of App.tsx.)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
-import { api, apiLive, ON_PHONE } from "../net";
+import { api, apiLive, ON_PHONE, SITE_HOME } from "../net";
 import { HomeSettings, HomeView, Thing } from "../types";
 import { Action, Card, Choice, Eyebrow, Small } from "../ui";
    // C-142: the daemon as its agent
@@ -183,7 +183,7 @@ export function HomeScreen({ ink, goSettings }: { ink: string; goSettings: () =>
       <Small>{view.error ?? ""}</Small>
       {/not set up|token/i.test(view.error ?? "") ? <Small>{HOME_WORDS.setUp}</Small> : null}
       <XStack gap={8} flexWrap="wrap">
-        {!ON_PHONE ? <Action label={HOME_WORDS.goSettings} ink={ink} onPress={goSettings} /> : null}
+        {SITE_HOME ? <Action label={HOME_WORDS.goSettings} ink={ink} onPress={goSettings} /> : null}
         <Action label={HOME_WORDS.refresh} ink={ink} onPress={load} />
       </XStack>
     </Card>

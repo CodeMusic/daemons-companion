@@ -10,7 +10,7 @@ import { AppState, Platform, useColorScheme } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import { SCREEN } from "./data";
 import { loadLook, LOOK, lookHeard, PALETTE, paletteHeard, setPalette } from "./look";
-import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, keepEverything, KEPT, loadConnection, LOCAL, MEETING, OFFLINE, offlineHeard, ON_PHONE, onUnpaired, SERVER, setConnection, TOKEN, WIDGET } from "./net";
+import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, KEYED, keepEverything, KEPT, loadConnection, LOCAL, MEETING, OFFLINE, offlineHeard, ON_PHONE, onUnpaired, SERVER, setConnection, SITE_HOME, TOKEN, WIDGET } from "./net";
 import { DaemonScreen, useNews } from "./screens/Daemon";
 import { GoalsScreen } from "./screens/Goals";
 import { HomeAssistantCard, HomeScreen } from "./screens/Home";
@@ -151,7 +151,7 @@ function Shell() {
         {tab === "you" ? <ProfileScreen /> : null}
         {tab === "library" ? <LibraryScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
-        {tab === "settings" && !ON_PHONE ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
+        {tab === "settings" && SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
       </ScrollView>
       {newsBanner}
       {showToast ? (
@@ -174,7 +174,7 @@ function Shell() {
 
 export default function App() {
   // C-53: on the phone, pair first; on the site, the server is this machine
-  const [paired, setPaired] = useState<boolean | null>(ON_PHONE ? null : true);
+  const [paired, setPaired] = useState<boolean | null>(KEYED ? null : true);   // C-170: a site away from home pairs too
   useEffect(() => { onUnpaired(() => setPaired(false)); loadConnection().then(setPaired).catch(() => setPaired(false)); }, []);
   // C-144: the paper or the night -- chosen, or AUTO as the phone or the computer is set
   const [look, seeLook] = useState(LOOK);

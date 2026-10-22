@@ -3,11 +3,12 @@ import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Platform } from "react-native";
 import { Input, Text, YStack } from "tamagui";
-import { api, AWAY, hostAlone, KEEP, LOCAL, setConnection, WIDGET } from "../net";
+import { api, AWAY, hostAlone, KEEP, keepSiteToken, LOCAL, ON_PHONE, SERVER, setConnection, WIDGET } from "../net";
 import { Action, Choice, Small } from "../ui";
 
 export function PairScreen({ onPaired }: { onPaired: () => void }) {
-  const [server, setServer] = useState(""), [code, setCode] = useState(""), [name, setName] = useState("my phone");
+  // C-170: the site away from home pairs with the companion that served it -- no address to type, its key in the browser
+  const [server, setServer] = useState(ON_PHONE ? "" : SERVER), [code, setCode] = useState(""), [name, setName] = useState(ON_PHONE ? "my phone" : "a browser");
   const [error, setError] = useState("");
   const pair = async () => {
     try {
@@ -17,6 +18,7 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
                                                   body: JSON.stringify({ code: code.trim(), name: name.trim() }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? `the companion answered ${r.status}`);
+      if (!ON_PHONE) { keepSiteToken(j.token); setConnection({ server: base, token: j.token }); onPaired(); return; }   // C-170
       await SecureStore.setItemAsync("server", base, KEEP);
       await SecureStore.setItemAsync("token", j.token, KEEP);
       if (j.away) { await SecureStore.setItemAsync("away", j.away, KEEP); setConnection({ away: j.away }); }   // C-56
@@ -28,16 +30,18 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
   return (
     <YStack flex={1} backgroundColor="$color2" padding={24} paddingTop={80} gap={14}>
       <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
-      <Text fontSize={24} fontWeight="700" color="$color12">Pair this phone</Text>
-      <Small>On your computer, open the companion's site, then SETTINGS, PAIR A PHONE, and Show a code. Type its address and the code here.</Small>
-      <Input value={server} onChangeText={setServer} placeholder="http://10.0.0.100:4730" autoCapitalize="none" autoCorrect={false}
-             keyboardType="url" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+      <Text fontSize={24} fontWeight="700" color="$color12">{ON_PHONE ? "Pair this phone" : "Pair this browser"}</Text>
+      {ON_PHONE ? <Small>On your computer, open the companion's site, then SETTINGS, PAIR A PHONE, and Show a code. Type its address and the code here.</Small>
+        : <Small>{`This is the companion at ${SERVER}. Show a pairing code on the companion itself -- its own screen, or its site on the computer it runs on (SETTINGS, PAIR A PHONE) -- and type it here.`}</Small>}
+      {ON_PHONE ? <Input value={server} onChangeText={setServer} placeholder="http://10.0.0.100:4730" autoCapitalize="none" autoCorrect={false}
+             keyboardType="url" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} /> : null}
       <Input value={code} onChangeText={setCode} placeholder="six-digit code" keyboardType="number-pad" maxLength={6}
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
       <Input value={name} onChangeText={setName} placeholder="this phone's name" maxLength={40}
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
       <Action label="Pair" onPress={pair} />
       {error ? <Small color="$color9">{error}</Small> : null}
+      {!ON_PHONE ? <Small>DRAFT</Small> : null}
       {LOCAL ? <PhoneAlone onPaired={onPaired} /> : null}
     </YStack>
   );

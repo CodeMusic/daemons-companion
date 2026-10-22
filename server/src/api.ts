@@ -48,6 +48,7 @@ import { assign, carryView } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { networkInterfaces } from "node:os";
+import { isSitePath, serveSite } from "./site.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
@@ -247,7 +248,7 @@ function facePng(cfg: Config, f: ReturnType<typeof boxFace>, phase: Phase, frame
 
 // C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else
 // config.json. `source` tells the user which, so "it just worked" never leaves them wondering where it read from.
-function settingsView(cfg: Config, store: Store) {
+function settingsView(cfg: Config, store: Store, here = true) {   // here: asked on this machine (C-170: the site away cannot pick)
   const set = store.getSetting("savePath");
   const savePath = set ?? cfg.savePath ?? null;
   const exists = !!(savePath && existsSync(savePath));
@@ -256,7 +257,7 @@ function settingsView(cfg: Config, store: Store) {
   if (exists) { try { readSave(new Uint8Array(readFileSync(savePath!))); valid = true; } catch { valid = false; } }
   return { savePath, dir: savePath ? dirname(savePath) : null, exists, valid,
            source: set ? "settings" : cfg.savePath ? "config.json" : "none", edition: cfg.edition,
-           canPick: platform() === "darwin" };
+           canPick: platform() === "darwin" && here };
 }
 
 // A native "choose file" dialog on the user's own Mac, so they get a real path (a browser file picker hides it). Only
@@ -430,6 +431,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.headers.origin !== undefined && !ourHost(String(req.headers.origin)))
         return send(res, 403, { error: "not from a page of the companion's" });
       if (!ourHost(String(req.headers.host ?? ""))) return send(res, 403, { error: "not an address of the companion's" });
+      if (cfg.siteDir && isSitePath(req.method ?? "", path)) return serveSite(cfg.siteDir, req, res, path);   // C-170
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
 
@@ -964,12 +966,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { last: store.lastInteraction() });
       }
       // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.
-      if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store));
+      if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store, isLoopback(req.socket.remoteAddress)));
       if (req.method === "POST" && path === "/api/settings") {
         const b = await body(req);
         const p = typeof b.savePath === "string" ? b.savePath.trim() : "";
         store.setSetting("savePath", p || null);
-        return send(res, 200, settingsView({ ...cfg, savePath: p || cfg.savePath }, store));
+        return send(res, 200, settingsView({ ...cfg, savePath: p || cfg.savePath }, store, isLoopback(req.socket.remoteAddress)));
       }
       if (req.method === "POST" && path === "/api/settings/pick") {
         const picked = await pickSaveFile();

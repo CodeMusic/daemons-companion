@@ -80,3 +80,23 @@ describe("on the network, only the device's door answers", () => {
     expect((await from("/api/settings", undefined, "not-a-key")).status).toBe(403);
   });
 });
+
+describe("the address handed to phones and boards (C-170, C-180)", () => {
+  it("is the named interface's when one is named, and never a tailnet's or a point-to-point link's", async () => {
+    const { lanAddress, useLanInterface } = await import("../src/api.js");
+    const all = networkInterfaces();
+    useLanInterface(null);
+    const found = lanAddress();
+    if (found) {
+      const entry = Object.values(all).flat().find((a) => a?.address === found)!;
+      expect(found.startsWith("100.") && Number(found.split(".")[1]) >= 64 && Number(found.split(".")[1]) <= 127).toBe(false);
+      expect(Number(entry.cidr?.split("/")[1])).toBeLessThan(30);
+    }
+    const named = Object.entries(all).find(([, l]) => l?.some((a) => a.family === "IPv4" && !a.internal));
+    if (named) {
+      useLanInterface(named[0]);
+      expect(lanAddress()).toBe(named[1]!.find((a) => a.family === "IPv4" && !a.internal)!.address);
+    }
+    useLanInterface(null);
+  });
+});

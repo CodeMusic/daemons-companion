@@ -340,9 +340,17 @@ export function bonjourName(): string | null {
   return bonjour;
 }
 const tailnetAddress = (a: string) => { const [x, y] = a.split(".").map(Number); return x === 100 && y >= 64 && y <= 127; };   // 100.64/10
+// C-180: the hub's Module LLM sits on its own /30 on eth1 (HUB.md Phase 5) -- never the address handed to phones and
+// boards. config.json's lanInterface names the home network's interface outright; without it, the first address that
+// is not the tailnet's and not a point-to-point link (a /30 or narrower).
+let lanInterface: string | null = null;
+export function useLanInterface(name: string | null | undefined) { lanInterface = name || null; }
 export function lanAddress(): string | null {
-  for (const list of Object.values(networkInterfaces()))
-    for (const a of list ?? []) if (a.family === "IPv4" && !a.internal && !tailnetAddress(a.address)) return a.address;   // C-170: never the tailnet's
+  const all = networkInterfaces();
+  const ok = (a: { family: string; internal: boolean; address: string; cidr?: string | null }) =>
+    a.family === "IPv4" && !a.internal && !tailnetAddress(a.address) && !(Number(a.cidr?.split("/")[1]) >= 30);
+  if (lanInterface) for (const a of all[lanInterface] ?? []) if (a.family === "IPv4" && !a.internal) return a.address;
+  for (const list of Object.values(all)) for (const a of list ?? []) if (ok(a)) return a.address;
   return null;
 }
 // C-170: on a tailnet (an address in 100.64/10), the name MagicDNS gives this machine -- its own, short: the hub is
@@ -371,6 +379,7 @@ class Pairing {
 }
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
+  useLanInterface(cfg.lanInterface);                           // C-180: never the Module LLM's link
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
   weatherLoop(store);                                          // C-158: the real weather, while a city is set on the site
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device

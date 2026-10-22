@@ -54,7 +54,12 @@ if [[ $mode == art ]]; then
 fi
 if [[ $mode == site ]]; then
   # built to talk to whatever serves it, so one build works at the hub's address, its .local name and its Tailscale name
-  (cd "$HERE/app" && EXPO_PUBLIC_DAEMONS_SERVER=origin npx expo export -p web --output-dir dist >/dev/null)
+  # the app's own Node (.nvmrc), as bindCompanion.sh finds it; an old build is cleared first so a failure cannot hide
+  want="$(tr -d '[:space:]v' < "$HERE/.nvmrc")"
+  for brew in /opt/homebrew/opt/node@"$want"/bin /usr/local/opt/node@"$want"/bin; do [[ -x "$brew/node" ]] && { PATH="$brew:$PATH"; break; }; done
+  rm -rf "$HERE/app/dist"
+  (cd "$HERE/app" && EXPO_PUBLIC_DAEMONS_SERVER=origin npx expo export -p web --output-dir dist > "$STATE/site-build.log" 2>&1) \
+    || { echo "syncCompanion: the site did not build -- .hub-sync/site-build.log" >&2; tail -5 "$STATE/site-build.log" >&2; exit 1; }
   [[ -f "$HERE/app/dist/index.html" ]] || { echo "syncCompanion: the site did not build (app/dist/index.html)" >&2; exit 1; }
   rsync -rlt --omit-dir-times --delete --delete-excluded --exclude .DS_Store "$HERE/app/dist/" "$HUB:$SHARED/site/"
   echo "syncCompanion: the site sent ($(find "$HERE/app/dist" -type f | wc -l | tr -d ' ') files, $(du -sh "$HERE/app/dist" | cut -f1)); the hub serves it once its config names it (deploy.sh does)"

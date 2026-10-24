@@ -10,7 +10,7 @@
 #include <Preferences.h>
 
 int dayIndex();
-struct Act { String what; uint32_t at = 0; float from = 0, to = 0; bool grew = false; };
+struct Act { String what, shorter; uint32_t at = 0; float from = 0, to = 0; bool grew = false; };
 static Act act;
 static const uint32_t SHOW_MS = 2800, FILL_MS = 700;
 static int routinesToday = 0, caresToday = 0, doneToday = 0; static String countedDay;
@@ -26,13 +26,13 @@ void activity(int kind, const String &what, int expGain) {
   if (kind == 0) caresToday++; else if (kind == 1) routinesToday++; else doneToday++;
   if (!st.carrying) return;
   long span = max(1L, st.daemon.expNext - st.daemon.expFrom);
-  act.what = what; act.at = millis(); act.grew = false;
+  act.what = what; act.shorter = ""; act.at = millis(); act.grew = false;
   act.from = expFill(); act.to = min(1.0f, act.from + (float)expGain / span);
   dirty = true;
 }
 // a state that says it grew: the level, said large, and the milestone's tune
 void activityGrew(int to) {
-  act.what = upper(st.daemon.nickname) + " GREW TO Lv " + String(to) + "!";   // DRAFT
+  act.what = upper(st.daemon.nickname) + " GREW TO Lv " + String(to) + "!"; act.shorter = "";   // DRAFT
   act.at = millis(); act.grew = true; act.from = 0; act.to = expFill();
   soundAccomplish(1, st.daemon.species, dayIndex());
   dirty = true;
@@ -44,6 +44,7 @@ void activityEvolved(const String &from, const String &to, const String &at) {
   if (p.getString("evolved", "") == at) { p.end(); return; }
   p.putString("evolved", at); p.end();
   act.what = upper(from) + " EVOLVED INTO " + upper(to) + "!";   // DRAFT
+  act.shorter = "EVOLVED INTO " + upper(to) + "!";                // DRAFT: where the whole line will not fit
   act.at = millis(); act.grew = true; act.from = act.to = expFill();
   soundAccomplish(2, st.daemon.species, dayIndex());
   dirty = true;
@@ -56,7 +57,7 @@ void activityLoop(uint32_t now) {
   long s = watchSteps();
   if (s < 0) return;
   if (thousands >= 0 && s / 1000 > thousands && st.carrying) {
-    act.what = String(s / 1000) + ",000 STEPS TOGETHER"; act.at = millis(); act.grew = false; act.from = act.to = expFill(); dirty = true;   // DRAFT
+    act.what = String(s / 1000) + ",000 STEPS TOGETHER"; act.shorter = ""; act.at = millis(); act.grew = false; act.from = act.to = expFill(); dirty = true;   // DRAFT
   }
   thousands = s / 1000;
 }
@@ -71,6 +72,7 @@ void drawActivity(uint16_t day, uint16_t ink) {
   canvas.setTextDatum(TL_DATUM); canvas.setTextFont(2);
   canvas.setTextColor(act.grew ? readable(day) : PAPER);
   String what = act.what;
+  if (canvas.textWidth(what) > w - 16 && act.shorter.length()) what = act.shorter;
   while (what.length() > 4 && canvas.textWidth(what) > w - 16) what.remove(what.length() - 1);
   canvas.drawString(what, x + 8, y + 6);
   canvas.setTextFont(1); canvas.setTextColor(QUIET);
@@ -84,12 +86,15 @@ void drawActivity(uint16_t day, uint16_t ink) {
   dirty = true;                                                  // drawn again until it goes
 }
 
-// the day's tallies, for the DAY page
-String activityToday() {
+// the day's tallies, for the DAY page -- closer together where the screen is narrow (the watch's 240)
+String activityToday(int width) {
   dayRoll();
   long s = watchSteps();
   String out;
-  if (s >= 0) out += String(s) + " STEPS   ";
-  out += String(doneToday) + " DONE   " + String(caresToday) + " CARES   " + String(routinesToday) + " ROUTINES";   // DRAFT
+  for (const char *gap : {"   ", "  ", " "}) {
+    out = s >= 0 ? String(s) + " STEPS" + gap : String();
+    out += String(doneToday) + " DONE" + gap + String(caresToday) + " CARES" + gap + String(routinesToday) + " ROUTINES";   // DRAFT
+    if (canvas.textWidth(out) <= width) break;
+  }
   return out;
 }

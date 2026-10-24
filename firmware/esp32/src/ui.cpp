@@ -635,7 +635,7 @@ void draw() {
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
     canvas.setTextFont(1); canvas.setTextColor(PAPER);
-    canvas.drawString(activityToday(), 10, 132);                 // C-183: the day's tallies
+    canvas.drawString(activityToday(W - 20), 10, 132);                 // C-183: the day's tallies
     if (st.carrying) {                                           // and where the daemon stands in its level
       canvas.setTextColor(QUIET); canvas.drawString(upper(st.daemon.nickname) + "  Lv" + String(max(st.daemon.level, st.daemon.grownTo)) + "  EXP", 10, 150);
       canvas.drawRect(10, 162, W - 20, 6, QUIET);
@@ -645,8 +645,9 @@ void draw() {
     if (board.round) { canvas.setTextDatum(BC_DATUM); canvas.drawString(COMPANION_BUILD, W / 2, H - 14); footer(hint("press: the day's note")); }   // C-102
     else {
     canvas.drawString(hint("press: the day's note"), 10, H - 6);
+    bool fits = canvas.textWidth(hint("press: the day's note")) + canvas.textWidth(COMPANION_BUILD) + 26 <= W;
     canvas.setTextDatum(BR_DATUM);                             // C-91: which build this is, quietly
-    canvas.drawString(COMPANION_BUILD, W - 8, H - 6);
+    canvas.drawString(COMPANION_BUILD, W - 8, fits ? H - 6 : H - 18);   // a line up where both will not fit (the watch)
     }
     canvas.setTextDatum(BL_DATUM);
   } else if (page == SOUND_PAGE) {           // C-159 (the user, 2026-10-18): the board's sound, on or off on the board itself

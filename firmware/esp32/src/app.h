@@ -186,7 +186,7 @@ void activityLoop(uint32_t now);
 bool activityShowing();
 void drawActivity(uint16_t day, uint16_t ink);
 float expFill();
-String activityToday();
+String activityToday(int width);
 void goHomeNow();                         // C-161: the crown pressed twice
 void cableFlush(uint32_t ms = 60);       // C-105: send what was printed, waiting at most this long for a reader
 int deckTakeKey();                        // C-104: the T-Deck's keyboard, one character read and spent (0: none)

@@ -26,7 +26,15 @@
    65,
    65
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 2,
+    "judged": true
+   }
+  ]
  },
  "2": {
   "constant": "IVYSAUR",
@@ -55,7 +63,15 @@
    80,
    80
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 32,
+    "target": 3,
+    "judged": true
+   }
+  ]
  },
  "3": {
   "constant": "VENUSAUR",
@@ -85,7 +101,8 @@
    100,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "4": {
   "constant": "CHARMANDER",
@@ -114,7 +131,15 @@
    60,
    50
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 5,
+    "judged": true
+   }
+  ]
  },
  "5": {
   "constant": "CHARMELEON",
@@ -143,7 +168,15 @@
    80,
    65
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 6,
+    "judged": true
+   }
+  ]
  },
  "6": {
   "constant": "CHARIZARD",
@@ -173,7 +206,8 @@
    109,
    85
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "7": {
   "constant": "SQUIRTLE",
@@ -202,7 +236,15 @@
    50,
    64
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 8,
+    "judged": true
+   }
+  ]
  },
  "8": {
   "constant": "WARTORTLE",
@@ -231,7 +273,15 @@
    65,
    80
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 9,
+    "judged": true
+   }
+  ]
  },
  "9": {
   "constant": "BLASTOISE",
@@ -261,7 +311,8 @@
    85,
    105
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "10": {
   "constant": "CATERPIE",
@@ -298,7 +349,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 7,
+    "target": 11,
+    "judged": true
+   }
+  ]
  },
  "11": {
   "constant": "METAPOD",
@@ -336,7 +395,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 10,
+    "target": 12,
+    "judged": true
+   }
+  ]
  },
  "12": {
   "constant": "BUTTERFREE",
@@ -366,7 +433,8 @@
    80,
    80
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "13": {
   "constant": "WEEDLE",
@@ -404,7 +472,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 7,
+    "target": 14,
+    "judged": true
+   }
+  ]
  },
  "14": {
   "constant": "KAKUNA",
@@ -442,7 +518,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 10,
+    "target": 15,
+    "judged": true
+   }
+  ]
  },
  "15": {
   "constant": "BEEDRILL",
@@ -472,7 +556,8 @@
    45,
    80
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "16": {
   "constant": "PIDGEY",
@@ -511,7 +596,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 17,
+    "judged": true
+   }
+  ]
  },
  "17": {
   "constant": "PIDGEOTTO",
@@ -550,7 +643,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 18,
+    "judged": true
+   }
+  ]
  },
  "18": {
   "constant": "PIDGEOT",
@@ -580,7 +681,8 @@
    70,
    70
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "19": {
   "constant": "RATTATA",
@@ -617,7 +719,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 20,
+    "judged": true
+   }
+  ]
  },
  "20": {
   "constant": "RATICATE",
@@ -654,7 +764,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "21": {
   "constant": "SPEAROW",
@@ -693,7 +804,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 22,
+    "judged": true
+   }
+  ]
  },
  "22": {
   "constant": "FEAROW",
@@ -732,7 +851,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "23": {
   "constant": "EKANS",
@@ -771,7 +891,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 22,
+    "target": 24,
+    "judged": true
+   }
+  ]
  },
  "24": {
   "constant": "ARBOK",
@@ -810,7 +938,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "25": {
   "constant": "PIKACHU",
@@ -847,7 +976,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_THUNDER_STONE",
+    "target": 26,
+    "judged": false
+   }
+  ]
  },
  "26": {
   "constant": "RAICHU",
@@ -876,7 +1013,8 @@
    90,
    80
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "27": {
   "constant": "SANDSHREW",
@@ -915,7 +1053,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 22,
+    "target": 28,
+    "judged": true
+   }
+  ]
  },
  "28": {
   "constant": "SANDSLASH",
@@ -954,7 +1100,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "29": {
   "constant": "NIDORAN_F",
@@ -991,7 +1138,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 30,
+    "judged": true
+   }
+  ]
  },
  "30": {
   "constant": "NIDORINA",
@@ -1028,7 +1183,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_MOON_STONE",
+    "target": 31,
+    "judged": false
+   }
+  ]
  },
  "31": {
   "constant": "NIDOQUEEN",
@@ -1058,7 +1221,8 @@
    75,
    85
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "32": {
   "constant": "NIDORAN_M",
@@ -1095,7 +1259,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 33,
+    "judged": true
+   }
+  ]
  },
  "33": {
   "constant": "NIDORINO",
@@ -1132,7 +1304,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_MOON_STONE",
+    "target": 34,
+    "judged": false
+   }
+  ]
  },
  "34": {
   "constant": "NIDOKING",
@@ -1162,7 +1342,8 @@
    85,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "35": {
   "constant": "CLEFAIRY",
@@ -1199,7 +1380,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_MOON_STONE",
+    "target": 36,
+    "judged": false
+   }
+  ]
  },
  "36": {
   "constant": "CLEFABLE",
@@ -1228,7 +1417,8 @@
    85,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "37": {
   "constant": "VULPIX",
@@ -1267,7 +1457,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_FIRE_STONE",
+    "target": 38,
+    "judged": false
+   }
+  ]
  },
  "38": {
   "constant": "NINETALES",
@@ -1296,7 +1494,8 @@
    81,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "39": {
   "constant": "JIGGLYPUFF",
@@ -1333,7 +1532,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_MOON_STONE",
+    "target": 40,
+    "judged": false
+   }
+  ]
  },
  "40": {
   "constant": "WIGGLYTUFF",
@@ -1362,7 +1569,8 @@
    75,
    50
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "41": {
   "constant": "ZUBAT",
@@ -1401,7 +1609,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 22,
+    "target": 42,
+    "judged": true
+   }
+  ]
  },
  "42": {
   "constant": "GOLBAT",
@@ -1440,7 +1656,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 169,
+    "judged": true
+   }
+  ]
  },
  "43": {
   "constant": "ODDISH",
@@ -1481,7 +1705,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 21,
+    "target": 44,
+    "judged": true
+   }
+  ]
  },
  "44": {
   "constant": "GLOOM",
@@ -1522,7 +1754,21 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_LEAF_STONE",
+    "target": 45,
+    "judged": false
+   },
+   {
+    "method": "ITEM",
+    "param": "ITEM_SUN_STONE",
+    "target": 182,
+    "judged": false
+   }
+  ]
  },
  "45": {
   "constant": "VILEPLUME",
@@ -1552,7 +1798,8 @@
    100,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "46": {
   "constant": "PARAS",
@@ -1590,7 +1837,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 24,
+    "target": 47,
+    "judged": true
+   }
+  ]
  },
  "47": {
   "constant": "PARASECT",
@@ -1628,7 +1883,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "48": {
   "constant": "VENONAT",
@@ -1667,7 +1923,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 31,
+    "target": 49,
+    "judged": true
+   }
+  ]
  },
  "49": {
   "constant": "VENOMOTH",
@@ -1706,7 +1970,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "50": {
   "constant": "DIGLETT",
@@ -1743,7 +2008,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 26,
+    "target": 51,
+    "judged": true
+   }
+  ]
  },
  "51": {
   "constant": "DUGTRIO",
@@ -1780,7 +2053,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "52": {
   "constant": "MEOWTH",
@@ -1818,7 +2092,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 28,
+    "target": 53,
+    "judged": true
+   }
+  ]
  },
  "53": {
   "constant": "PERSIAN",
@@ -1855,7 +2137,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "54": {
   "constant": "PSYDUCK",
@@ -1895,7 +2178,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 33,
+    "target": 55,
+    "judged": true
+   }
+  ]
  },
  "55": {
   "constant": "GOLDUCK",
@@ -1935,7 +2226,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "56": {
   "constant": "MANKEY",
@@ -1972,7 +2264,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 28,
+    "target": 57,
+    "judged": true
+   }
+  ]
  },
  "57": {
   "constant": "PRIMEAPE",
@@ -2009,7 +2309,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "58": {
   "constant": "GROWLITHE",
@@ -2048,7 +2349,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_FIRE_STONE",
+    "target": 59,
+    "judged": false
+   }
+  ]
  },
  "59": {
   "constant": "ARCANINE",
@@ -2077,7 +2386,8 @@
    100,
    80
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "60": {
   "constant": "POLIWAG",
@@ -2115,7 +2425,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 61,
+    "judged": true
+   }
+  ]
  },
  "61": {
   "constant": "POLIWHIRL",
@@ -2153,7 +2471,21 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_WATER_STONE",
+    "target": 62,
+    "judged": false
+   },
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_KINGS_ROCK",
+    "target": 186,
+    "judged": false
+   }
+  ]
  },
  "62": {
   "constant": "POLIWRATH",
@@ -2183,7 +2515,8 @@
    70,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "63": {
   "constant": "ABRA",
@@ -2220,7 +2553,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 64,
+    "judged": true
+   }
+  ]
  },
  "64": {
   "constant": "KADABRA",
@@ -2257,7 +2598,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE",
+    "param": 0,
+    "target": 65,
+    "judged": false
+   }
+  ]
  },
  "65": {
   "constant": "ALAKAZAM",
@@ -2286,7 +2635,8 @@
    135,
    85
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "66": {
   "constant": "MACHOP",
@@ -2324,7 +2674,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 28,
+    "target": 67,
+    "judged": true
+   }
+  ]
  },
  "67": {
   "constant": "MACHOKE",
@@ -2362,7 +2720,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE",
+    "param": 0,
+    "target": 68,
+    "judged": false
+   }
+  ]
  },
  "68": {
   "constant": "MACHAMP",
@@ -2391,7 +2757,8 @@
    65,
    85
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "69": {
   "constant": "BELLSPROUT",
@@ -2432,7 +2799,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 21,
+    "target": 70,
+    "judged": true
+   }
+  ]
  },
  "70": {
   "constant": "WEEPINBELL",
@@ -2473,7 +2848,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_LEAF_STONE",
+    "target": 71,
+    "judged": false
+   }
+  ]
  },
  "71": {
   "constant": "VICTREEBEL",
@@ -2503,7 +2886,8 @@
    100,
    60
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "72": {
   "constant": "TENTACOOL",
@@ -2542,7 +2926,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 73,
+    "judged": true
+   }
+  ]
  },
  "73": {
   "constant": "TENTACRUEL",
@@ -2580,7 +2972,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "74": {
   "constant": "GEODUDE",
@@ -2619,7 +3012,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 75,
+    "judged": true
+   }
+  ]
  },
  "75": {
   "constant": "GRAVELER",
@@ -2658,7 +3059,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE",
+    "param": 0,
+    "target": 76,
+    "judged": false
+   }
+  ]
  },
  "76": {
   "constant": "GOLEM",
@@ -2688,7 +3097,8 @@
    55,
    65
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "77": {
   "constant": "PONYTA",
@@ -2725,7 +3135,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 40,
+    "target": 78,
+    "judged": true
+   }
+  ]
  },
  "78": {
   "constant": "RAPIDASH",
@@ -2762,7 +3180,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "79": {
   "constant": "SLOWPOKE",
@@ -2803,7 +3222,21 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 37,
+    "target": 80,
+    "judged": true
+   },
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_KINGS_ROCK",
+    "target": 199,
+    "judged": false
+   }
+  ]
  },
  "80": {
   "constant": "SLOWBRO",
@@ -2844,7 +3277,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "81": {
   "constant": "MAGNEMITE",
@@ -2882,7 +3316,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 82,
+    "judged": true
+   }
+  ]
  },
  "82": {
   "constant": "MAGNETON",
@@ -2920,7 +3362,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "83": {
   "constant": "FARFETCHD",
@@ -2963,7 +3406,8 @@
    "weathers": [
     "WIND"
    ]
-  }
+  },
+  "evolutions": []
  },
  "84": {
   "constant": "DODUO",
@@ -3001,7 +3445,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 31,
+    "target": 85,
+    "judged": true
+   }
+  ]
  },
  "85": {
   "constant": "DODRIO",
@@ -3031,7 +3483,8 @@
    60,
    60
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "86": {
   "constant": "SEEL",
@@ -3069,7 +3522,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 34,
+    "target": 87,
+    "judged": true
+   }
+  ]
  },
  "87": {
   "constant": "DEWGONG",
@@ -3108,7 +3569,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "88": {
   "constant": "GRIMER",
@@ -3145,7 +3607,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 38,
+    "target": 89,
+    "judged": true
+   }
+  ]
  },
  "89": {
   "constant": "MUK",
@@ -3184,7 +3654,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "90": {
   "constant": "SHELLDER",
@@ -3224,7 +3695,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_WATER_STONE",
+    "target": 91,
+    "judged": false
+   }
+  ]
  },
  "91": {
   "constant": "CLOYSTER",
@@ -3254,7 +3733,8 @@
    85,
    45
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "92": {
   "constant": "GASTLY",
@@ -3293,7 +3773,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 93,
+    "judged": true
+   }
+  ]
  },
  "93": {
   "constant": "HAUNTER",
@@ -3332,7 +3820,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE",
+    "param": 0,
+    "target": 94,
+    "judged": false
+   }
+  ]
  },
  "94": {
   "constant": "GENGAR",
@@ -3362,7 +3858,8 @@
    130,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "95": {
   "constant": "ONIX",
@@ -3401,7 +3898,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_METAL_COAT",
+    "target": 208,
+    "judged": false
+   }
+  ]
  },
  "96": {
   "constant": "DROWZEE",
@@ -3439,7 +3944,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 26,
+    "target": 97,
+    "judged": true
+   }
+  ]
  },
  "97": {
   "constant": "HYPNO",
@@ -3476,7 +3989,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "98": {
   "constant": "KRABBY",
@@ -3514,7 +4028,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 28,
+    "target": 99,
+    "judged": true
+   }
+  ]
  },
  "99": {
   "constant": "KINGLER",
@@ -3554,7 +4076,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "100": {
   "constant": "VOLTORB",
@@ -3591,7 +4114,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 101,
+    "judged": true
+   }
+  ]
  },
  "101": {
   "constant": "ELECTRODE",
@@ -3628,7 +4159,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "102": {
   "constant": "EXEGGCUTE",
@@ -3667,7 +4199,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_LEAF_STONE",
+    "target": 103,
+    "judged": false
+   }
+  ]
  },
  "103": {
   "constant": "EXEGGUTOR",
@@ -3697,7 +4237,8 @@
    125,
    65
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "104": {
   "constant": "CUBONE",
@@ -3735,7 +4276,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 28,
+    "target": 105,
+    "judged": true
+   }
+  ]
  },
  "105": {
   "constant": "MAROWAK",
@@ -3773,7 +4322,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "106": {
   "constant": "HITMONLEE",
@@ -3802,7 +4352,8 @@
    35,
    110
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "107": {
   "constant": "HITMONCHAN",
@@ -3831,7 +4382,8 @@
    35,
    110
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "108": {
   "constant": "LICKITUNG",
@@ -3860,7 +4412,8 @@
    60,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "109": {
   "constant": "KOFFING",
@@ -3897,7 +4450,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 35,
+    "target": 110,
+    "judged": true
+   }
+  ]
  },
  "110": {
   "constant": "WEEZING",
@@ -3936,7 +4497,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "111": {
   "constant": "RHYHORN",
@@ -3974,7 +4536,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 42,
+    "target": 112,
+    "judged": true
+   }
+  ]
  },
  "112": {
   "constant": "RHYDON",
@@ -4004,7 +4574,8 @@
    45,
    45
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "113": {
   "constant": "CHANSEY",
@@ -4041,7 +4612,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 242,
+    "judged": true
+   }
+  ]
  },
  "114": {
   "constant": "TANGELA",
@@ -4079,7 +4658,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "115": {
   "constant": "KANGASKHAN",
@@ -4116,7 +4696,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "116": {
   "constant": "HORSEA",
@@ -4154,7 +4735,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 32,
+    "target": 117,
+    "judged": true
+   }
+  ]
  },
  "117": {
   "constant": "SEADRA",
@@ -4194,7 +4783,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_DRAGON_SCALE",
+    "target": 230,
+    "judged": false
+   }
+  ]
  },
  "118": {
   "constant": "GOLDEEN",
@@ -4232,7 +4829,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 33,
+    "target": 119,
+    "judged": true
+   }
+  ]
  },
  "119": {
   "constant": "SEAKING",
@@ -4270,7 +4875,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "120": {
   "constant": "STARYU",
@@ -4310,7 +4916,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_WATER_STONE",
+    "target": 121,
+    "judged": false
+   }
+  ]
  },
  "121": {
   "constant": "STARMIE",
@@ -4340,7 +4954,8 @@
    100,
    85
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "122": {
   "constant": "MR_MIME",
@@ -4369,7 +4984,8 @@
    100,
    120
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "123": {
   "constant": "SCYTHER",
@@ -4409,7 +5025,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_METAL_COAT",
+    "target": 212,
+    "judged": false
+   }
+  ]
  },
  "124": {
   "constant": "JYNX",
@@ -4439,7 +5063,8 @@
    115,
    95
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "125": {
   "constant": "ELECTABUZZ",
@@ -4478,7 +5103,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "126": {
   "constant": "MAGMAR",
@@ -4517,7 +5143,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "127": {
   "constant": "PINSIR",
@@ -4556,7 +5183,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "128": {
   "constant": "TAUROS",
@@ -4593,7 +5221,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "129": {
   "constant": "MAGIKARP",
@@ -4631,7 +5260,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 130,
+    "judged": true
+   }
+  ]
  },
  "130": {
   "constant": "GYARADOS",
@@ -4670,7 +5307,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "131": {
   "constant": "LAPRAS",
@@ -4708,7 +5346,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "132": {
   "constant": "DITTO",
@@ -4745,7 +5384,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "133": {
   "constant": "EEVEE",
@@ -4774,7 +5414,39 @@
    45,
    65
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_THUNDER_STONE",
+    "target": 135,
+    "judged": false
+   },
+   {
+    "method": "ITEM",
+    "param": "ITEM_WATER_STONE",
+    "target": 134,
+    "judged": false
+   },
+   {
+    "method": "ITEM",
+    "param": "ITEM_FIRE_STONE",
+    "target": 136,
+    "judged": false
+   },
+   {
+    "method": "FRIENDSHIP_DAY",
+    "param": 0,
+    "target": 196,
+    "judged": true
+   },
+   {
+    "method": "FRIENDSHIP_NIGHT",
+    "param": 0,
+    "target": 197,
+    "judged": true
+   }
+  ]
  },
  "134": {
   "constant": "VAPOREON",
@@ -4803,7 +5475,8 @@
    110,
    95
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "135": {
   "constant": "JOLTEON",
@@ -4832,7 +5505,8 @@
    110,
    95
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "136": {
   "constant": "FLAREON",
@@ -4861,7 +5535,8 @@
    95,
    110
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "137": {
   "constant": "PORYGON",
@@ -4890,7 +5565,15 @@
    85,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_UP_GRADE",
+    "target": 233,
+    "judged": false
+   }
+  ]
  },
  "138": {
   "constant": "OMANYTE",
@@ -4920,7 +5603,15 @@
    90,
    55
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 40,
+    "target": 139,
+    "judged": true
+   }
+  ]
  },
  "139": {
   "constant": "OMASTAR",
@@ -4950,7 +5641,8 @@
    115,
    70
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "140": {
   "constant": "KABUTO",
@@ -4980,7 +5672,15 @@
    55,
    45
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 40,
+    "target": 141,
+    "judged": true
+   }
+  ]
  },
  "141": {
   "constant": "KABUTOPS",
@@ -5010,7 +5710,8 @@
    65,
    70
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "142": {
   "constant": "AERODACTYL",
@@ -5040,7 +5741,8 @@
    60,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "143": {
   "constant": "SNORLAX",
@@ -5069,7 +5771,8 @@
    65,
    110
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "144": {
   "constant": "ARTICUNO",
@@ -5099,7 +5802,8 @@
    95,
    125
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "145": {
   "constant": "ZAPDOS",
@@ -5129,7 +5833,8 @@
    125,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "146": {
   "constant": "MOLTRES",
@@ -5159,7 +5864,8 @@
    125,
    85
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "147": {
   "constant": "DRATINI",
@@ -5196,7 +5902,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 148,
+    "judged": true
+   }
+  ]
  },
  "148": {
   "constant": "DRAGONAIR",
@@ -5233,7 +5947,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 55,
+    "target": 149,
+    "judged": true
+   }
+  ]
  },
  "149": {
   "constant": "DRAGONITE",
@@ -5263,7 +5985,8 @@
    100,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "150": {
   "constant": "MEWTWO",
@@ -5293,7 +6016,8 @@
    154,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "151": {
   "constant": "MEW",
@@ -5322,7 +6046,8 @@
    100,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "152": {
   "constant": "CHIKORITA",
@@ -5359,7 +6084,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 153,
+    "judged": true
+   }
+  ]
  },
  "153": {
   "constant": "BAYLEEF",
@@ -5396,7 +6129,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 32,
+    "target": 154,
+    "judged": true
+   }
+  ]
  },
  "154": {
   "constant": "MEGANIUM",
@@ -5433,7 +6174,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "155": {
   "constant": "CYNDAQUIL",
@@ -5472,7 +6214,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 14,
+    "target": 156,
+    "judged": true
+   }
+  ]
  },
  "156": {
   "constant": "QUILAVA",
@@ -5511,7 +6261,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 157,
+    "judged": true
+   }
+  ]
  },
  "157": {
   "constant": "TYPHLOSION",
@@ -5550,7 +6308,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "158": {
   "constant": "TOTODILE",
@@ -5587,7 +6346,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 159,
+    "judged": true
+   }
+  ]
  },
  "159": {
   "constant": "CROCONAW",
@@ -5624,7 +6391,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 160,
+    "judged": true
+   }
+  ]
  },
  "160": {
   "constant": "FERALIGATR",
@@ -5661,7 +6436,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "161": {
   "constant": "SENTRET",
@@ -5699,7 +6475,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 15,
+    "target": 162,
+    "judged": true
+   }
+  ]
  },
  "162": {
   "constant": "FURRET",
@@ -5738,7 +6522,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "163": {
   "constant": "HOOTHOOT",
@@ -5778,7 +6563,15 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 164,
+    "judged": true
+   }
+  ]
  },
  "164": {
   "constant": "NOCTOWL",
@@ -5816,7 +6609,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "165": {
   "constant": "LEDYBA",
@@ -5855,7 +6649,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 166,
+    "judged": true
+   }
+  ]
  },
  "166": {
   "constant": "LEDIAN",
@@ -5895,7 +6697,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "167": {
   "constant": "SPINARAK",
@@ -5934,7 +6737,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 22,
+    "target": 168,
+    "judged": true
+   }
+  ]
  },
  "168": {
   "constant": "ARIADOS",
@@ -5972,7 +6783,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "169": {
   "constant": "CROBAT",
@@ -6012,7 +6824,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "170": {
   "constant": "CHINCHOU",
@@ -6056,7 +6869,15 @@
    "weathers": [
     "STORM"
    ]
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 27,
+    "target": 171,
+    "judged": true
+   }
+  ]
  },
  "171": {
   "constant": "LANTURN",
@@ -6094,7 +6915,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "172": {
   "constant": "PICHU",
@@ -6133,7 +6955,15 @@
     "DAWN"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 25,
+    "judged": true
+   }
+  ]
  },
  "173": {
   "constant": "CLEFFA",
@@ -6172,7 +7002,15 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 35,
+    "judged": true
+   }
+  ]
  },
  "174": {
   "constant": "IGGLYBUFF",
@@ -6211,7 +7049,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 39,
+    "judged": true
+   }
+  ]
  },
  "175": {
   "constant": "TOGEPI",
@@ -6250,7 +7096,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 176,
+    "judged": true
+   }
+  ]
  },
  "176": {
   "constant": "TOGETIC",
@@ -6288,7 +7142,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "177": {
   "constant": "NATU",
@@ -6327,7 +7182,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 178,
+    "judged": true
+   }
+  ]
  },
  "178": {
   "constant": "XATU",
@@ -6367,7 +7230,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "179": {
   "constant": "MAREEP",
@@ -6405,7 +7269,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 15,
+    "target": 180,
+    "judged": true
+   }
+  ]
  },
  "180": {
   "constant": "FLAAFFY",
@@ -6442,7 +7314,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 181,
+    "judged": true
+   }
+  ]
  },
  "181": {
   "constant": "AMPHAROS",
@@ -6479,7 +7359,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "182": {
   "constant": "BELLOSSOM",
@@ -6516,7 +7397,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "183": {
   "constant": "MARILL",
@@ -6556,7 +7438,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 184,
+    "judged": true
+   }
+  ]
  },
  "184": {
   "constant": "AZUMARILL",
@@ -6595,7 +7485,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "185": {
   "constant": "SUDOWOODO",
@@ -6634,7 +7525,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "186": {
   "constant": "POLITOED",
@@ -6671,7 +7563,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "187": {
   "constant": "HOPPIP",
@@ -6710,7 +7603,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 188,
+    "judged": true
+   }
+  ]
  },
  "188": {
   "constant": "SKIPLOOM",
@@ -6750,7 +7651,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 27,
+    "target": 189,
+    "judged": true
+   }
+  ]
  },
  "189": {
   "constant": "JUMPLUFF",
@@ -6790,7 +7699,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "190": {
   "constant": "AIPOM",
@@ -6828,7 +7738,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "191": {
   "constant": "SUNKERN",
@@ -6871,7 +7782,15 @@
     "DAWN"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_SUN_STONE",
+    "target": 192,
+    "judged": false
+   }
+  ]
  },
  "192": {
   "constant": "SUNFLORA",
@@ -6908,7 +7827,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "193": {
   "constant": "YANMA",
@@ -6947,7 +7867,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "194": {
   "constant": "WOOPER",
@@ -6988,7 +7909,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 195,
+    "judged": true
+   }
+  ]
  },
  "195": {
   "constant": "QUAGSIRE",
@@ -7028,7 +7957,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "196": {
   "constant": "ESPEON",
@@ -7067,7 +7997,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "197": {
   "constant": "UMBREON",
@@ -7104,7 +8035,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "198": {
   "constant": "MURKROW",
@@ -7145,7 +8077,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "199": {
   "constant": "SLOWKING",
@@ -7185,7 +8118,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "200": {
   "constant": "MISDREAVUS",
@@ -7225,7 +8159,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "201": {
   "constant": "UNOWN",
@@ -7262,7 +8197,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "202": {
   "constant": "WOBBUFFET",
@@ -7300,7 +8236,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "203": {
   "constant": "GIRAFARIG",
@@ -7340,7 +8277,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "204": {
   "constant": "PINECO",
@@ -7378,7 +8316,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 31,
+    "target": 205,
+    "judged": true
+   }
+  ]
  },
  "205": {
   "constant": "FORRETRESS",
@@ -7416,7 +8362,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "206": {
   "constant": "DUNSPARCE",
@@ -7453,7 +8400,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "207": {
   "constant": "GLIGAR",
@@ -7493,7 +8441,8 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "208": {
   "constant": "STEELIX",
@@ -7533,7 +8482,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "209": {
   "constant": "SNUBBULL",
@@ -7572,7 +8522,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 23,
+    "target": 210,
+    "judged": true
+   }
+  ]
  },
  "210": {
   "constant": "GRANBULL",
@@ -7611,7 +8569,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "211": {
   "constant": "QWILFISH",
@@ -7651,7 +8610,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "212": {
   "constant": "SCIZOR",
@@ -7691,7 +8651,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "213": {
   "constant": "SHUCKLE",
@@ -7730,7 +8691,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "214": {
   "constant": "HERACROSS",
@@ -7768,7 +8730,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "215": {
   "constant": "SNEASEL",
@@ -7809,7 +8772,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "216": {
   "constant": "TEDDIURSA",
@@ -7847,7 +8811,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 217,
+    "judged": true
+   }
+  ]
  },
  "217": {
   "constant": "URSARING",
@@ -7886,7 +8858,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "218": {
   "constant": "SLUGMA",
@@ -7923,7 +8896,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 38,
+    "target": 219,
+    "judged": true
+   }
+  ]
  },
  "219": {
   "constant": "MAGCARGO",
@@ -7961,7 +8942,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "220": {
   "constant": "SWINUB",
@@ -8000,7 +8982,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 33,
+    "target": 221,
+    "judged": true
+   }
+  ]
  },
  "221": {
   "constant": "PILOSWINE",
@@ -8040,7 +9030,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "222": {
   "constant": "CORSOLA",
@@ -8080,7 +9071,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "223": {
   "constant": "REMORAID",
@@ -8119,7 +9111,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 224,
+    "judged": true
+   }
+  ]
  },
  "224": {
   "constant": "OCTILLERY",
@@ -8156,7 +9156,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "225": {
   "constant": "DELIBIRD",
@@ -8197,7 +9198,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "226": {
   "constant": "MANTINE",
@@ -8237,7 +9239,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "227": {
   "constant": "SKARMORY",
@@ -8277,7 +9280,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "228": {
   "constant": "HOUNDOUR",
@@ -8316,7 +9320,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 24,
+    "target": 229,
+    "judged": true
+   }
+  ]
  },
  "229": {
   "constant": "HOUNDOOM",
@@ -8356,7 +9368,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "230": {
   "constant": "KINGDRA",
@@ -8394,7 +9407,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "231": {
   "constant": "PHANPY",
@@ -8432,7 +9446,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 232,
+    "judged": true
+   }
+  ]
  },
  "232": {
   "constant": "DONPHAN",
@@ -8471,7 +9493,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "233": {
   "constant": "PORYGON2",
@@ -8510,7 +9533,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "234": {
   "constant": "STANTLER",
@@ -8548,7 +9572,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "235": {
   "constant": "SMEARGLE",
@@ -8585,7 +9610,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "236": {
   "constant": "TYROGUE",
@@ -8624,7 +9650,27 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL_ATK_LT_DEF",
+    "param": 20,
+    "target": 107,
+    "judged": true
+   },
+   {
+    "method": "LEVEL_ATK_GT_DEF",
+    "param": 20,
+    "target": 106,
+    "judged": true
+   },
+   {
+    "method": "LEVEL_ATK_EQ_DEF",
+    "param": 20,
+    "target": 237,
+    "judged": true
+   }
+  ]
  },
  "237": {
   "constant": "HITMONTOP",
@@ -8663,7 +9709,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "238": {
   "constant": "SMOOCHUM",
@@ -8703,7 +9750,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 124,
+    "judged": true
+   }
+  ]
  },
  "239": {
   "constant": "ELEKID",
@@ -8740,7 +9795,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 125,
+    "judged": true
+   }
+  ]
  },
  "240": {
   "constant": "MAGBY",
@@ -8779,7 +9842,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 126,
+    "judged": true
+   }
+  ]
  },
  "241": {
   "constant": "MILTANK",
@@ -8818,7 +9889,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "242": {
   "constant": "BLISSEY",
@@ -8857,7 +9929,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "243": {
   "constant": "RAIKOU",
@@ -8886,7 +9959,8 @@
    115,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "244": {
   "constant": "ENTEI",
@@ -8915,7 +9989,8 @@
    90,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "245": {
   "constant": "SUICUNE",
@@ -8944,7 +10019,8 @@
    90,
    115
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "246": {
   "constant": "LARVITAR",
@@ -8982,7 +10058,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 247,
+    "judged": true
+   }
+  ]
  },
  "247": {
   "constant": "PUPITAR",
@@ -9022,7 +10106,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 55,
+    "target": 248,
+    "judged": true
+   }
+  ]
  },
  "248": {
   "constant": "TYRANITAR",
@@ -9062,7 +10154,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "249": {
   "constant": "LUGIA",
@@ -9092,7 +10185,8 @@
    90,
    154
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "250": {
   "constant": "HO_OH",
@@ -9122,7 +10216,8 @@
    110,
    154
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "251": {
   "constant": "CELEBI",
@@ -9152,7 +10247,8 @@
    100,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "252": {
   "constant": "OLD_UNOWN_B",
@@ -9190,7 +10286,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "253": {
   "constant": "OLD_UNOWN_C",
@@ -9219,7 +10316,8 @@
    75,
    60
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "254": {
   "constant": "OLD_UNOWN_D",
@@ -9249,7 +10347,8 @@
    100,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "255": {
   "constant": "OLD_UNOWN_E",
@@ -9278,7 +10377,8 @@
    115,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "256": {
   "constant": "OLD_UNOWN_F",
@@ -9307,7 +10407,8 @@
    90,
    75
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "257": {
   "constant": "OLD_UNOWN_G",
@@ -9336,7 +10437,15 @@
    10,
    55
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 258,
+    "judged": true
+   }
+  ]
  },
  "258": {
   "constant": "OLD_UNOWN_H",
@@ -9365,7 +10474,8 @@
    100,
    125
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "259": {
   "constant": "OLD_UNOWN_I",
@@ -9394,7 +10504,15 @@
    35,
    35
   ],
-  "native": null
+  "native": null,
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_MOON_STONE",
+    "target": 260,
+    "judged": false
+   }
+  ]
  },
  "260": {
   "constant": "OLD_UNOWN_J",
@@ -9423,7 +10541,8 @@
    55,
    55
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "261": {
   "constant": "OLD_UNOWN_K",
@@ -9443,7 +10562,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "262": {
   "constant": "OLD_UNOWN_L",
@@ -9463,7 +10583,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "263": {
   "constant": "OLD_UNOWN_M",
@@ -9483,7 +10604,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "264": {
   "constant": "OLD_UNOWN_N",
@@ -9503,7 +10625,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "265": {
   "constant": "OLD_UNOWN_O",
@@ -9523,7 +10646,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "266": {
   "constant": "OLD_UNOWN_P",
@@ -9543,7 +10667,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
@@ -9563,7 +10688,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "268": {
   "constant": "OLD_UNOWN_R",
@@ -9583,7 +10709,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "269": {
   "constant": "OLD_UNOWN_S",
@@ -9603,7 +10730,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "270": {
   "constant": "OLD_UNOWN_T",
@@ -9623,7 +10751,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "271": {
   "constant": "OLD_UNOWN_U",
@@ -9643,7 +10772,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "272": {
   "constant": "OLD_UNOWN_V",
@@ -9663,7 +10793,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "273": {
   "constant": "OLD_UNOWN_W",
@@ -9683,7 +10814,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "274": {
   "constant": "OLD_UNOWN_X",
@@ -9703,7 +10835,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "275": {
   "constant": "OLD_UNOWN_Y",
@@ -9723,7 +10856,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "276": {
   "constant": "OLD_UNOWN_Z",
@@ -9743,7 +10877,8 @@
   "streaks": false,
   "growth": 0,
   "base": null,
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "277": {
   "constant": "TREECKO",
@@ -9780,7 +10915,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 278,
+    "judged": true
+   }
+  ]
  },
  "278": {
   "constant": "GROVYLE",
@@ -9817,7 +10960,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 279,
+    "judged": true
+   }
+  ]
  },
  "279": {
   "constant": "SCEPTILE",
@@ -9854,7 +11005,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "280": {
   "constant": "TORCHIC",
@@ -9891,7 +11043,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 281,
+    "judged": true
+   }
+  ]
  },
  "281": {
   "constant": "COMBUSKEN",
@@ -9929,7 +11089,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 282,
+    "judged": true
+   }
+  ]
  },
  "282": {
   "constant": "BLAZIKEN",
@@ -9967,7 +11135,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "283": {
   "constant": "MUDKIP",
@@ -10006,7 +11175,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 16,
+    "target": 284,
+    "judged": true
+   }
+  ]
  },
  "284": {
   "constant": "MARSHTOMP",
@@ -10046,7 +11223,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 285,
+    "judged": true
+   }
+  ]
  },
  "285": {
   "constant": "SWAMPERT",
@@ -10086,7 +11271,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "286": {
   "constant": "POOCHYENA",
@@ -10125,7 +11311,15 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 287,
+    "judged": true
+   }
+  ]
  },
  "287": {
   "constant": "MIGHTYENA",
@@ -10162,7 +11356,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "288": {
   "constant": "ZIGZAGOON",
@@ -10201,7 +11396,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 289,
+    "judged": true
+   }
+  ]
  },
  "289": {
   "constant": "LINOONE",
@@ -10240,7 +11443,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "290": {
   "constant": "WURMPLE",
@@ -10277,7 +11481,21 @@
    "seasons": null,
    "hours": null,
    "grove": "THE SEEDVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL_SILCOON",
+    "param": 7,
+    "target": 291,
+    "judged": true
+   },
+   {
+    "method": "LEVEL_CASCOON",
+    "param": 7,
+    "target": 293,
+    "judged": true
+   }
+  ]
  },
  "291": {
   "constant": "SILCOON",
@@ -10314,7 +11532,15 @@
    "seasons": null,
    "hours": null,
    "grove": "THE SEEDVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 10,
+    "target": 292,
+    "judged": true
+   }
+  ]
  },
  "292": {
   "constant": "BEAUTIFLY",
@@ -10352,7 +11578,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE SEEDVERSE"
-  }
+  },
+  "evolutions": []
  },
  "293": {
   "constant": "CASCOON",
@@ -10389,7 +11616,15 @@
    "seasons": null,
    "hours": null,
    "grove": "THE SEEDVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 10,
+    "target": 294,
+    "judged": true
+   }
+  ]
  },
  "294": {
   "constant": "DUSTOX",
@@ -10427,7 +11662,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE SEEDVERSE"
-  }
+  },
+  "evolutions": []
  },
  "295": {
   "constant": "LOTAD",
@@ -10467,7 +11703,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 14,
+    "target": 296,
+    "judged": true
+   }
+  ]
  },
  "296": {
   "constant": "LOMBRE",
@@ -10505,7 +11749,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_WATER_STONE",
+    "target": 297,
+    "judged": false
+   }
+  ]
  },
  "297": {
   "constant": "LUDICOLO",
@@ -10543,7 +11795,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "298": {
   "constant": "SEEDOT",
@@ -10582,7 +11835,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 14,
+    "target": 299,
+    "judged": true
+   }
+  ]
  },
  "299": {
   "constant": "NUZLEAF",
@@ -10620,7 +11881,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_LEAF_STONE",
+    "target": 300,
+    "judged": false
+   }
+  ]
  },
  "300": {
   "constant": "SHIFTRY",
@@ -10658,7 +11927,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "301": {
   "constant": "NINCADA",
@@ -10696,7 +11966,21 @@
    "seasons": null,
    "hours": null,
    "grove": "THE HUSKVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL_NINJASK",
+    "param": 20,
+    "target": 302,
+    "judged": true
+   },
+   {
+    "method": "LEVEL_SHEDINJA",
+    "param": 20,
+    "target": 303,
+    "judged": false
+   }
+  ]
  },
  "302": {
   "constant": "NINJASK",
@@ -10734,7 +12018,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE HUSKVERSE"
-  }
+  },
+  "evolutions": []
  },
  "303": {
   "constant": "SHEDINJA",
@@ -10774,7 +12059,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "304": {
   "constant": "TAILLOW",
@@ -10818,7 +12104,15 @@
     "DAWN"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 22,
+    "target": 305,
+    "judged": true
+   }
+  ]
  },
  "305": {
   "constant": "SWELLOW",
@@ -10856,7 +12150,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "306": {
   "constant": "SHROOMISH",
@@ -10895,7 +12190,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 23,
+    "target": 307,
+    "judged": true
+   }
+  ]
  },
  "307": {
   "constant": "BRELOOM",
@@ -10935,7 +12238,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "308": {
   "constant": "SPINDA",
@@ -10972,7 +12276,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "309": {
   "constant": "WINGULL",
@@ -11014,7 +12319,15 @@
     "DAWN"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 25,
+    "target": 310,
+    "judged": true
+   }
+  ]
  },
  "310": {
   "constant": "PELIPPER",
@@ -11054,7 +12367,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "311": {
   "constant": "SURSKIT",
@@ -11094,7 +12408,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 22,
+    "target": 312,
+    "judged": true
+   }
+  ]
  },
  "312": {
   "constant": "MASQUERAIN",
@@ -11134,7 +12456,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "313": {
   "constant": "WAILMER",
@@ -11173,7 +12496,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE",
+    "param": 0,
+    "target": 314,
+    "judged": false
+   }
+  ]
  },
  "314": {
   "constant": "WAILORD",
@@ -11213,7 +12544,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "315": {
   "constant": "SKITTY",
@@ -11252,7 +12584,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "ITEM",
+    "param": "ITEM_MOON_STONE",
+    "target": 316,
+    "judged": false
+   }
+  ]
  },
  "316": {
   "constant": "DELCATTY",
@@ -11291,7 +12631,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "317": {
   "constant": "KECLEON",
@@ -11329,7 +12670,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "318": {
   "constant": "BALTOY",
@@ -11367,7 +12709,15 @@
    "seasons": null,
    "hours": null,
    "grove": "THE CLAYVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 319,
+    "judged": true
+   }
+  ]
  },
  "319": {
   "constant": "CLAYDOL",
@@ -11405,7 +12755,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE CLAYVERSE"
-  }
+  },
+  "evolutions": []
  },
  "320": {
   "constant": "NOSEPASS",
@@ -11442,7 +12793,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE COMPASSVERSE"
-  }
+  },
+  "evolutions": []
  },
  "321": {
   "constant": "TORKOAL",
@@ -11481,7 +12833,8 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "322": {
   "constant": "SABLEYE",
@@ -11521,7 +12874,8 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "323": {
   "constant": "BARBOACH",
@@ -11564,7 +12918,15 @@
    "weathers": [
     "RAIN"
    ]
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 324,
+    "judged": true
+   }
+  ]
  },
  "324": {
   "constant": "WHISCASH",
@@ -11604,7 +12966,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "325": {
   "constant": "LUVDISC",
@@ -11641,7 +13004,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "326": {
   "constant": "CORPHISH",
@@ -11678,7 +13042,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 327,
+    "judged": true
+   }
+  ]
  },
  "327": {
   "constant": "CRAWDAUNT",
@@ -11716,7 +13088,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "328": {
   "constant": "FEEBAS",
@@ -11753,7 +13126,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "BEAUTY",
+    "param": 170,
+    "target": 329,
+    "judged": false
+   }
+  ]
  },
  "329": {
   "constant": "MILOTIC",
@@ -11790,7 +13171,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "330": {
   "constant": "CARVANHA",
@@ -11828,7 +13210,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 331,
+    "judged": true
+   }
+  ]
  },
  "331": {
   "constant": "SHARPEDO",
@@ -11866,7 +13256,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "332": {
   "constant": "TRAPINCH",
@@ -11905,7 +13296,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 35,
+    "target": 333,
+    "judged": true
+   }
+  ]
  },
  "333": {
   "constant": "VIBRAVA",
@@ -11945,7 +13344,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 45,
+    "target": 334,
+    "judged": true
+   }
+  ]
  },
  "334": {
   "constant": "FLYGON",
@@ -11985,7 +13392,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "335": {
   "constant": "MAKUHITA",
@@ -12024,7 +13432,15 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 24,
+    "target": 336,
+    "judged": true
+   }
+  ]
  },
  "336": {
   "constant": "HARIYAMA",
@@ -12063,7 +13479,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "337": {
   "constant": "ELECTRIKE",
@@ -12100,7 +13517,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 26,
+    "target": 338,
+    "judged": true
+   }
+  ]
  },
  "338": {
   "constant": "MANECTRIC",
@@ -12137,7 +13562,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "339": {
   "constant": "NUMEL",
@@ -12177,7 +13603,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 33,
+    "target": 340,
+    "judged": true
+   }
+  ]
  },
  "340": {
   "constant": "CAMERUPT",
@@ -12215,7 +13649,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "341": {
   "constant": "SPHEAL",
@@ -12252,7 +13687,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE",
+    "param": 0,
+    "target": 314,
+    "judged": false
+   }
+  ]
  },
  "342": {
   "constant": "SEALEO",
@@ -12290,7 +13733,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 44,
+    "target": 343,
+    "judged": true
+   }
+  ]
  },
  "343": {
   "constant": "WALREIN",
@@ -12328,7 +13779,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "344": {
   "constant": "CACNEA",
@@ -12367,7 +13819,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 32,
+    "target": 345,
+    "judged": true
+   }
+  ]
  },
  "345": {
   "constant": "CACTURNE",
@@ -12405,7 +13865,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "346": {
   "constant": "SNORUNT",
@@ -12444,7 +13905,15 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 42,
+    "target": 347,
+    "judged": true
+   }
+  ]
  },
  "347": {
   "constant": "GLALIE",
@@ -12481,7 +13950,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "348": {
   "constant": "LUNATONE",
@@ -12519,7 +13989,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "349": {
   "constant": "SOLROCK",
@@ -12557,7 +14028,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "350": {
   "constant": "AZURILL",
@@ -12596,7 +14068,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "FRIENDSHIP",
+    "param": 0,
+    "target": 183,
+    "judged": true
+   }
+  ]
  },
  "351": {
   "constant": "SPOINK",
@@ -12634,7 +14114,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 32,
+    "target": 352,
+    "judged": true
+   }
+  ]
  },
  "352": {
   "constant": "GRUMPIG",
@@ -12673,7 +14161,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "353": {
   "constant": "PLUSLE",
@@ -12714,7 +14203,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "354": {
   "constant": "MINUN",
@@ -12755,7 +14245,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "355": {
   "constant": "MAWILE",
@@ -12794,7 +14285,8 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "356": {
   "constant": "MEDITITE",
@@ -12833,7 +14325,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 37,
+    "target": 357,
+    "judged": true
+   }
+  ]
  },
  "357": {
   "constant": "MEDICHAM",
@@ -12871,7 +14371,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "358": {
   "constant": "SWABLU",
@@ -12909,7 +14410,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 35,
+    "target": 359,
+    "judged": true
+   }
+  ]
  },
  "359": {
   "constant": "ALTARIA",
@@ -12947,7 +14456,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "360": {
   "constant": "WYNAUT",
@@ -12986,7 +14496,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 15,
+    "target": 202,
+    "judged": true
+   }
+  ]
  },
  "361": {
   "constant": "DUSKULL",
@@ -13024,7 +14542,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 37,
+    "target": 362,
+    "judged": true
+   }
+  ]
  },
  "362": {
   "constant": "DUSCLOPS",
@@ -13063,7 +14589,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "363": {
   "constant": "ROSELIA",
@@ -13107,7 +14634,8 @@
     "DAWN"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "364": {
   "constant": "SLAKOTH",
@@ -13145,7 +14673,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 18,
+    "target": 365,
+    "judged": true
+   }
+  ]
  },
  "365": {
   "constant": "VIGOROTH",
@@ -13183,7 +14719,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 36,
+    "target": 366,
+    "judged": true
+   }
+  ]
  },
  "366": {
   "constant": "SLAKING",
@@ -13222,7 +14766,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "367": {
   "constant": "GULPIN",
@@ -13259,7 +14804,15 @@
    "seasons": null,
    "hours": null,
    "grove": "THE HUNGERVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 26,
+    "target": 368,
+    "judged": true
+   }
+  ]
  },
  "368": {
   "constant": "SWALOT",
@@ -13296,7 +14849,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE HUNGERVERSE"
-  }
+  },
+  "evolutions": []
  },
  "369": {
   "constant": "TROPIUS",
@@ -13336,7 +14890,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "370": {
   "constant": "WHISMUR",
@@ -13375,7 +14930,15 @@
     "DAWN"
    ],
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 371,
+    "judged": true
+   }
+  ]
  },
  "371": {
   "constant": "LOUDRED",
@@ -13414,7 +14977,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 40,
+    "target": 372,
+    "judged": true
+   }
+  ]
  },
  "372": {
   "constant": "EXPLOUD",
@@ -13453,7 +15024,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "373": {
   "constant": "CLAMPERL",
@@ -13490,7 +15062,21 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_DEEP_SEA_TOOTH",
+    "target": 374,
+    "judged": false
+   },
+   {
+    "method": "TRADE_ITEM",
+    "param": "ITEM_DEEP_SEA_SCALE",
+    "target": 375,
+    "judged": false
+   }
+  ]
  },
  "374": {
   "constant": "HUNTAIL",
@@ -13527,7 +15113,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "375": {
   "constant": "GOREBYSS",
@@ -13564,7 +15151,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "376": {
   "constant": "ABSOL",
@@ -13603,7 +15191,8 @@
     "NIGHT"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "377": {
   "constant": "SHUPPET",
@@ -13641,7 +15230,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 37,
+    "target": 378,
+    "judged": true
+   }
+  ]
  },
  "378": {
   "constant": "BANETTE",
@@ -13680,7 +15277,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "379": {
   "constant": "SEVIPER",
@@ -13721,7 +15319,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "380": {
   "constant": "ZANGOOSE",
@@ -13762,7 +15361,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "381": {
   "constant": "RELICANTH",
@@ -13802,7 +15402,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "382": {
   "constant": "ARON",
@@ -13842,7 +15443,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 32,
+    "target": 383,
+    "judged": true
+   }
+  ]
  },
  "383": {
   "constant": "LAIRON",
@@ -13882,7 +15491,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 42,
+    "target": 384,
+    "judged": true
+   }
+  ]
  },
  "384": {
   "constant": "AGGRON",
@@ -13922,7 +15539,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "385": {
   "constant": "CASTFORM",
@@ -13959,7 +15577,8 @@
    "seasons": null,
    "hours": null,
    "grove": "THE WEATHERVERSE"
-  }
+  },
+  "evolutions": []
  },
  "386": {
   "constant": "VOLBEAT",
@@ -14000,7 +15619,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "387": {
   "constant": "ILLUMISE",
@@ -14041,7 +15661,8 @@
     "DUSK"
    ],
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "388": {
   "constant": "LILEEP",
@@ -14081,7 +15702,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 40,
+    "target": 389,
+    "judged": true
+   }
+  ]
  },
  "389": {
   "constant": "CRADILY",
@@ -14121,7 +15750,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "390": {
   "constant": "ANORITH",
@@ -14161,7 +15791,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 40,
+    "target": 391,
+    "judged": true
+   }
+  ]
  },
  "391": {
   "constant": "ARMALDO",
@@ -14201,7 +15839,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "392": {
   "constant": "RALTS",
@@ -14239,7 +15878,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 393,
+    "judged": true
+   }
+  ]
  },
  "393": {
   "constant": "KIRLIA",
@@ -14277,7 +15924,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 394,
+    "judged": true
+   }
+  ]
  },
  "394": {
   "constant": "GARDEVOIR",
@@ -14316,7 +15971,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "395": {
   "constant": "BAGON",
@@ -14355,7 +16011,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 30,
+    "target": 396,
+    "judged": true
+   }
+  ]
  },
  "396": {
   "constant": "SHELGON",
@@ -14394,7 +16058,15 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 50,
+    "target": 397,
+    "judged": true
+   }
+  ]
  },
  "397": {
   "constant": "SALAMENCE",
@@ -14434,7 +16106,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "398": {
   "constant": "BELDUM",
@@ -14472,7 +16145,15 @@
    "seasons": null,
    "hours": null,
    "grove": "THE MECHAVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 20,
+    "target": 399,
+    "judged": true
+   }
+  ]
  },
  "399": {
   "constant": "METANG",
@@ -14510,7 +16191,15 @@
    "seasons": null,
    "hours": null,
    "grove": "THE MECHAVERSE"
-  }
+  },
+  "evolutions": [
+   {
+    "method": "LEVEL",
+    "param": 45,
+    "target": 400,
+    "judged": true
+   }
+  ]
  },
  "400": {
   "constant": "METAGROSS",
@@ -14550,7 +16239,8 @@
    "seasons": null,
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  },
  "401": {
   "constant": "REGIROCK",
@@ -14579,7 +16269,8 @@
    50,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "402": {
   "constant": "REGICE",
@@ -14608,7 +16299,8 @@
    100,
    200
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "403": {
   "constant": "REGISTEEL",
@@ -14637,7 +16329,8 @@
    75,
    150
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "404": {
   "constant": "KYOGRE",
@@ -14666,7 +16359,8 @@
    150,
    140
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "405": {
   "constant": "GROUDON",
@@ -14695,7 +16389,8 @@
    100,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "406": {
   "constant": "RAYQUAZA",
@@ -14725,7 +16420,8 @@
    150,
    90
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "407": {
   "constant": "LATIAS",
@@ -14755,7 +16451,8 @@
    110,
    130
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "408": {
   "constant": "LATIOS",
@@ -14785,7 +16482,8 @@
    130,
    110
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "409": {
   "constant": "JIRACHI",
@@ -14815,7 +16513,8 @@
    100,
    100
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "410": {
   "constant": "DEOXYS",
@@ -14844,7 +16543,8 @@
    150,
    50
   ],
-  "native": null
+  "native": null,
+  "evolutions": []
  },
  "411": {
   "constant": "CHIMECHO",
@@ -14883,6 +16583,7 @@
    ],
    "hours": null,
    "grove": null
-  }
+  },
+  "evolutions": []
  }
 }

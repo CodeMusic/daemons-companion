@@ -10252,7 +10252,7 @@
  },
  "252": {
   "constant": "OLD_UNOWN_B",
-  "national": 395,
+  "national": 398,
   "name": "MISSINGNO",
   "types": [
    "CORRUPT",
@@ -10546,70 +10546,112 @@
  },
  "261": {
   "constant": "OLD_UNOWN_K",
-  "national": 404,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 395,
+  "name": "HANDSHAKE",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "GREETING",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It holds one paw out to whoever lifts\nit, and keeps it out until it is taken.\nNobody has found one already grown.",
+   "CONTEXT": "It asks once, and waits to be asked\nback. An answer that comes back is all\nit needs to ask again tomorrow."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/handshake_front.png",
+   "back": "gfx/daemons/handshake_back.png"
   },
-  "bodyType": null,
-  "streaks": false,
+  "bodyType": 13,
+  "streaks": true,
   "growth": 0,
-  "base": null,
+  "base": [
+   40,
+   35,
+   30,
+   60,
+   45,
+   40
+  ],
   "native": null,
-  "evolutions": []
+  "evolutions": [
+   {
+    "method": "CARRIED",
+    "param": 60,
+    "target": 262,
+    "judged": true
+   }
+  ]
  },
  "262": {
   "constant": "OLD_UNOWN_L",
-  "national": 405,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 396,
+  "name": "TETHERING",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "CARRIED",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It rides along and counts the steps it\nis carried. Left in a box it stays as it\nwas. Walked a long way, it changes.",
+   "CONTEXT": "Ask it where it has been and it does not\nname the places. It names the walks, and\nwho was walking."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/tethering_front.png",
+   "back": "gfx/daemons/tethering_back.png"
   },
-  "bodyType": null,
-  "streaks": false,
+  "bodyType": 13,
+  "streaks": true,
   "growth": 0,
-  "base": null,
+  "base": [
+   60,
+   50,
+   45,
+   85,
+   65,
+   55
+  ],
   "native": null,
-  "evolutions": []
+  "evolutions": [
+   {
+    "method": "CARRIED",
+    "param": 160,
+    "target": 263,
+    "judged": true
+   }
+  ]
  },
  "263": {
   "constant": "OLD_UNOWN_M",
-  "national": 406,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 397,
+  "name": "COROUTINE",
+  "types": [
+   "SIGNAL",
+   "STRATUM"
+  ],
+  "category": "TURNTAKER",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It glides off the shoulder it rides and\nlands on it again a few steps on. It\npicks up exactly where it left off.",
+   "CONTEXT": "One rests while the other goes on, then\nthey change. Neither one started it, and\nneither could finish it alone."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/coroutine_front.png",
+   "back": "gfx/daemons/coroutine_back.png"
   },
-  "bodyType": null,
-  "streaks": false,
+  "bodyType": 13,
+  "streaks": true,
   "growth": 0,
-  "base": null,
+  "base": [
+   75,
+   70,
+   75,
+   100,
+   85,
+   80
+  ],
   "native": null,
   "evolutions": []
  },
  "264": {
   "constant": "OLD_UNOWN_N",
-  "national": 407,
+  "national": 410,
   "name": "?",
   "types": [],
   "category": null,
@@ -10630,7 +10672,7 @@
  },
  "265": {
   "constant": "OLD_UNOWN_O",
-  "national": 408,
+  "national": 411,
   "name": "?",
   "types": [],
   "category": null,
@@ -10651,7 +10693,7 @@
  },
  "266": {
   "constant": "OLD_UNOWN_P",
-  "national": 409,
+  "national": 412,
   "name": "?",
   "types": [],
   "category": null,
@@ -10672,7 +10714,7 @@
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
-  "national": 410,
+  "national": 413,
   "name": "?",
   "types": [],
   "category": null,
@@ -10693,7 +10735,7 @@
  },
  "268": {
   "constant": "OLD_UNOWN_R",
-  "national": 411,
+  "national": 414,
   "name": "?",
   "types": [],
   "category": null,
@@ -10714,7 +10756,7 @@
  },
  "269": {
   "constant": "OLD_UNOWN_S",
-  "national": 412,
+  "national": 415,
   "name": "?",
   "types": [],
   "category": null,
@@ -10735,7 +10777,7 @@
  },
  "270": {
   "constant": "OLD_UNOWN_T",
-  "national": 413,
+  "national": 416,
   "name": "?",
   "types": [],
   "category": null,
@@ -10756,7 +10798,7 @@
  },
  "271": {
   "constant": "OLD_UNOWN_U",
-  "national": 414,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,
@@ -10777,7 +10819,7 @@
  },
  "272": {
   "constant": "OLD_UNOWN_V",
-  "national": 415,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,
@@ -10798,7 +10840,7 @@
  },
  "273": {
   "constant": "OLD_UNOWN_W",
-  "national": 416,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,

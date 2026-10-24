@@ -25156,8 +25156,8 @@
   },
   "252": {
    "constant": "OLD_UNOWN_B",
-   "national": 395,
-   "number": "395",
+   "national": 398,
+   "number": "398",
    "name": "MISSINGNO",
    "types": [
     "CORRUPT",
@@ -25900,6 +25900,295 @@
     "instinctNeglected": null
    },
    "shares_type_with_understandings": []
+  },
+  "261": {
+   "constant": "OLD_UNOWN_K",
+   "national": 395,
+   "number": "395",
+   "name": "HANDSHAKE",
+   "types": [
+    "SIGNAL"
+   ],
+   "type_colours": [
+    "#296262"
+   ],
+   "category": "GREETING",
+   "height_dm": 2,
+   "weight_hg": 10,
+   "height": "0'08\"",
+   "weight": "2.2 lbs.",
+   "entry": {
+    "CONTENT": "It holds one paw out to whoever lifts\nit, and keeps it out until it is taken.\nNobody has found one already grown.",
+    "CONTEXT": "It asks once, and waits to be asked\nback. An answer that comes back is all\nit needs to ask again tomorrow."
+   },
+   "art": {
+    "front": "gfx/daemons/handshake_front.png",
+    "back": "gfx/daemons/handshake_back.png",
+    "party": "art/handshake.png"
+   },
+   "native": null,
+   "evolutions": [
+    {
+     "method": "CARRIED",
+     "param": 60,
+     "target": 262,
+     "judged": true
+    }
+   ],
+   "learnset": [
+    {
+     "level": 1,
+     "move": 84,
+     "name": "PULSE"
+    },
+    {
+     "level": 1,
+     "move": 45,
+     "name": "DERATE"
+    },
+    {
+     "level": 4,
+     "move": 270,
+     "name": "DELEGATE"
+    },
+    {
+     "level": 8,
+     "move": 98,
+     "name": "FAST PATH"
+    },
+    {
+     "level": 12,
+     "move": 86,
+     "name": "BROWNOUT"
+    },
+    {
+     "level": 17,
+     "move": 209,
+     "name": "ARC"
+    },
+    {
+     "level": 22,
+     "move": 266,
+     "name": "REDIRECT"
+    },
+    {
+     "level": 28,
+     "move": 351,
+     "name": "CARRIER"
+    },
+    {
+     "level": 34,
+     "move": 216,
+     "name": "RAPPORT"
+    }
+   ],
+   "margins": null,
+   "shares_type_with_understandings": [
+    3
+   ]
+  },
+  "262": {
+   "constant": "OLD_UNOWN_L",
+   "national": 396,
+   "number": "396",
+   "name": "TETHERING",
+   "types": [
+    "SIGNAL"
+   ],
+   "type_colours": [
+    "#296262"
+   ],
+   "category": "CARRIED",
+   "height_dm": 3,
+   "weight_hg": 25,
+   "height": "1'00\"",
+   "weight": "5.5 lbs.",
+   "entry": {
+    "CONTENT": "It rides along and counts the steps it\nis carried. Left in a box it stays as it\nwas. Walked a long way, it changes.",
+    "CONTEXT": "Ask it where it has been and it does not\nname the places. It names the walks, and\nwho was walking."
+   },
+   "art": {
+    "front": "gfx/daemons/tethering_front.png",
+    "back": "gfx/daemons/tethering_back.png",
+    "party": "art/tethering.png"
+   },
+   "native": null,
+   "evolutions": [
+    {
+     "method": "CARRIED",
+     "param": 160,
+     "target": 263,
+     "judged": true
+    }
+   ],
+   "learnset": [
+    {
+     "level": 1,
+     "move": 84,
+     "name": "PULSE"
+    },
+    {
+     "level": 1,
+     "move": 45,
+     "name": "DERATE"
+    },
+    {
+     "level": 1,
+     "move": 270,
+     "name": "DELEGATE"
+    },
+    {
+     "level": 1,
+     "move": 98,
+     "name": "FAST PATH"
+    },
+    {
+     "level": 12,
+     "move": 86,
+     "name": "BROWNOUT"
+    },
+    {
+     "level": 17,
+     "move": 209,
+     "name": "ARC"
+    },
+    {
+     "level": 22,
+     "move": 266,
+     "name": "REDIRECT"
+    },
+    {
+     "level": 28,
+     "move": 351,
+     "name": "CARRIER"
+    },
+    {
+     "level": 34,
+     "move": 228,
+     "name": "TAIL"
+    },
+    {
+     "level": 40,
+     "move": 216,
+     "name": "RAPPORT"
+    },
+    {
+     "level": 46,
+     "move": 97,
+     "name": "REFRAME"
+    },
+    {
+     "level": 52,
+     "move": 85,
+     "name": "DISCHARGE"
+    }
+   ],
+   "margins": null,
+   "shares_type_with_understandings": [
+    3
+   ]
+  },
+  "263": {
+   "constant": "OLD_UNOWN_M",
+   "national": 397,
+   "number": "397",
+   "name": "COROUTINE",
+   "types": [
+    "SIGNAL",
+    "STRATUM"
+   ],
+   "type_colours": [
+    "#296262",
+    "#524129"
+   ],
+   "category": "TURNTAKER",
+   "height_dm": 6,
+   "weight_hg": 60,
+   "height": "2'00\"",
+   "weight": "13.2 lbs.",
+   "entry": {
+    "CONTENT": "It glides off the shoulder it rides and\nlands on it again a few steps on. It\npicks up exactly where it left off.",
+    "CONTEXT": "One rests while the other goes on, then\nthey change. Neither one started it, and\nneither could finish it alone."
+   },
+   "art": {
+    "front": "gfx/daemons/coroutine_front.png",
+    "back": "gfx/daemons/coroutine_back.png",
+    "party": "art/coroutine.png"
+   },
+   "native": null,
+   "evolutions": [],
+   "learnset": [
+    {
+     "level": 1,
+     "move": 84,
+     "name": "PULSE"
+    },
+    {
+     "level": 1,
+     "move": 270,
+     "name": "DELEGATE"
+    },
+    {
+     "level": 1,
+     "move": 98,
+     "name": "FAST PATH"
+    },
+    {
+     "level": 1,
+     "move": 86,
+     "name": "BROWNOUT"
+    },
+    {
+     "level": 17,
+     "move": 209,
+     "name": "ARC"
+    },
+    {
+     "level": 22,
+     "move": 266,
+     "name": "REDIRECT"
+    },
+    {
+     "level": 28,
+     "move": 351,
+     "name": "CARRIER"
+    },
+    {
+     "level": 30,
+     "move": 226,
+     "name": "HANDOFF"
+    },
+    {
+     "level": 34,
+     "move": 341,
+     "name": "SEDIMENT"
+    },
+    {
+     "level": 40,
+     "move": 216,
+     "name": "RAPPORT"
+    },
+    {
+     "level": 46,
+     "move": 97,
+     "name": "REFRAME"
+    },
+    {
+     "level": 52,
+     "move": 85,
+     "name": "DISCHARGE"
+    },
+    {
+     "level": 58,
+     "move": 89,
+     "name": "UPHEAVAL"
+    }
+   ],
+   "margins": null,
+   "shares_type_with_understandings": [
+    1,
+    3
+   ]
   },
   "277": {
    "constant": "TREECKO",

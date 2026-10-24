@@ -19,7 +19,7 @@
   "margin_rule": "as margins.json: no margin without OPUS (item opus in the bag); CARRIED once any of the species in the party or a box has gained levels_carried levels since met; NEGLECTED if only boxed without; else none. INSTINCT's lines when player_gender is instinct_gender and the species has them. SELECT turns the entry to the margin on the card.",
   "levels_carried": 5,
   "instinct_gender": 1,
-  "guide_margin_rule": "an understanding's note shows under its GUIDE chapter once its flag is held; its balance under the note once mark_flag is held too. arrives_when is the game's own condition (all flags held, checked on a map load); null: set where it happens."
+  "guide_margin_rule": "an understanding's note shows under its GUIDE chapter once its flag is held; its balance under the note once mark_flag is held too."
  },
  "type_colours": {
   "CONTENT": "#62625a",
@@ -56,8 +56,6 @@
    "hex": "#9c7b4a",
    "lobe": "brainstem",
    "lobe_type": "STRATUM",
-   "found": "TANOBY CHAMBERS, its last inscription",
-   "arrives_when": null,
    "guide_margin": {
     "entry": 19,
     "section": "P5",
@@ -85,17 +83,6 @@
    "hex": "#637b9c",
    "lobe": "temporal",
    "lobe_type": "LOGIC",
-   "found": "CALLOW SCHOOL: the TEXTBOOK and the DIPLOMA",
-   "arrives_when": {
-    "all_flags": [
-     788,
-     785
-    ],
-    "flag_names": [
-     "FLAG_GOT_DIPLOMA",
-     "FLAG_SCHOOL_GOT_TEXTBOOK"
-    ]
-   },
    "guide_margin": {
     "entry": 1,
     "section": "INTRO",
@@ -123,17 +110,6 @@
    "hex": "#52bdbd",
    "lobe": "occipital",
    "lobe_type": "SIGNAL",
-   "found": "BRAZEN's READING ROOM, with REVEAL",
-   "arrives_when": {
-    "all_flags": [
-     788,
-     789
-    ],
-    "flag_names": [
-     "FLAG_GOT_DIPLOMA",
-     "FLAG_GOT_REVEAL"
-    ]
-   },
    "guide_margin": {
     "entry": 9,
     "section": "P2",
@@ -161,17 +137,6 @@
    "hex": "#de9c29",
    "lobe": "frontal",
    "lobe_type": "ENTROPY",
-   "found": "QUICKSILVER's notes: the run logs and THE FILE",
-   "arrives_when": {
-    "all_flags": [
-     803,
-     800
-    ],
-    "flag_names": [
-     "FLAG_NOTEBOOK_FILE_COMPLETE",
-     "FLAG_NOTEBOOK_RUN_FATAL"
-    ]
-   },
    "guide_margin": {
     "entry": 6,
     "section": "P1",
@@ -199,15 +164,6 @@
    "hex": "#525a31",
    "lobe": "parietal",
    "lobe_type": "CORRUPT",
-   "found": "SCORN beaten, the eighth MARK",
-   "arrives_when": {
-    "all_flags": [
-     2087
-    ],
-    "flag_names": [
-     "FLAG_BADGE08_GET"
-    ]
-   },
    "guide_margin": {
     "entry": 8,
     "section": "P2",
@@ -235,17 +191,6 @@
    "hex": "#ad529c",
    "lobe": "limbic",
    "lobe_type": "CONTEXT",
-   "found": "TY met, and CRYSTAL found",
-   "arrives_when": {
-    "all_flags": [
-     2337,
-     2336
-    ],
-    "flag_names": [
-     "FLAG_CRYSTAL_READ_PAYLOAD",
-     "FLAG_TY_GAVE_PAYLOAD"
-    ]
-   },
    "guide_margin": {
     "entry": 14,
     "section": "P4",
@@ -273,17 +218,6 @@
    "hex": "#5a9c63",
    "lobe": "cerebellum",
    "lobe_type": "GROWTH",
-   "found": "THE GUIDE, read to its end",
-   "arrives_when": {
-    "all_flags": [
-     2400,
-     2407
-    ],
-    "flag_names": [
-     "FLAG_GOT_GUIDE",
-     "FLAG_GUIDE_READ"
-    ]
-   },
    "guide_margin": {
     "entry": 24,
     "section": "END",

@@ -8,6 +8,7 @@
 import profileJson from "../../data/profile_layout.json" with { type: "json" };
 import speciesJson from "../../data/species.json" with { type: "json" };
 import marginsJson from "../../data/margins.json" with { type: "json" };
+import cardsJson from "../../data/index_cards.json" with { type: "json" };
 import { blocks, readBoxes, readSave, LAYOUT, type Layout } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
@@ -18,7 +19,24 @@ const M = marginsJson as unknown as { levels_carried: number; instinct_gender: n
   margins: Record<string, { carried: string; neglected: string; instinctCarried?: string | null; instinctNeglected?: string | null }> };
 
 export type IndexEntry = { national: number; species: number; name: string; seen: boolean; bound: boolean; art: string | null;
-  category?: string; types?: string[]; entry?: string; margin?: { state: "carried" | "neglected"; text: string }; native?: string[] };
+  category?: string; types?: string[]; entry?: string; margin?: { state: "carried" | "neglected"; text: string }; native?: string[];
+  colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null };
+
+// C-186 (the user, 2026-10-24: "full INDEX cards with margins (coloured by understanding gleaned)"; their rule, through
+// the game session: type match). A card stays grey until the save holds the understanding whose lobe shares one of the
+// daemon's types, and then takes that understanding's colour; a daemon that shares no type with any understanding takes
+// its own type's colour once BOUND. index_cards.json carries both; the understandings' flags are profile.roots, in order.
+type Understanding = { name: string; flag: number; hex: string; lobe_type: string };
+const UNDERSTANDINGS = (cardsJson as { understandings: Understanding[] }).understandings;
+const TYPE_COLOURS = (cardsJson as { type_colours: Record<string, string> }).type_colours;
+export function cardColour(types: string[], held: boolean[]): IndexEntry["colour"] {
+  const sharing = UNDERSTANDINGS.map((u, i) => ({ u, held: !!held[i] })).filter(({ u }) => types.includes(u.lobe_type));
+  const lit = sharing.find((s) => s.held);
+  if (lit) return { hex: lit.u.hex, by: "understanding", understanding: lit.u.name };
+  if (sharing.length) return null;                                  // its understanding not yet gleaned: grey
+  const hex = types.map((t) => TYPE_COLOURS[t]).find(Boolean);
+  return hex ? { hex, by: "bound" } : null;
+}
 
 // T-407: what a daemon is NATIVE to, in the game's own words and order (pokedex_screen.c DexScreen_PrintNative): its region
 // or its grove's universe (without its THE; the INDEX lists only daemons seen, so never "A GROVE"), its edition, its hours, its seasons -- each only when it keeps to some. All DRAFT, as in the game.
@@ -61,7 +79,8 @@ export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: L
     const art = row.art?.front ? `/art/species/${id}.png` : null;
     const e: IndexEntry = { national: row.national, species: Number(id), name: row.name, seen: true, bound, art, native: nativeLines(row.native) };
     if (bound) {
-      Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: row.entry?.[edition] ?? "" });
+      Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: row.entry?.[edition] ?? "",
+                         colour: cardColour(row.types ?? [], profile.roots) });
       const m = profile.opus ? M.margins[id] : undefined;
       const state = !m ? null : grown.get(Number(id)) ? "carried" : boxed.has(Number(id)) ? "neglected" : null;
       if (m && state) {

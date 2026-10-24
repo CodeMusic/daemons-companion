@@ -90,7 +90,9 @@ export function IndexScreen({ ink }: { ink: string }) {
         {ix.opus ? <Small>OPUS is in your bag: where it has written beside an entry, it is shown.</Small> : null}
       </Card>
       {ix.entries.map((e) => (
+        // C-186: the card in its colour once gleaned (the user's rule: type match, server/src/save/index.ts), grey till then
         <Card key={e.national} padding={12} cursor={e.bound && !busy ? "pointer" : "default"}
+              borderLeftWidth={6} borderLeftColor={e.colour?.hex ?? "$color6"}
               opacity={busy && open !== e.national ? 0.45 : 1}
               onPress={() => e.bound && !busy && setOpen(open === e.national ? null : e.national)}>
           <XStack gap={12} alignItems="center">
@@ -117,7 +119,7 @@ export function IndexScreen({ ink }: { ink: string }) {
                 </YStack>
               ) : null}
               {e.margin ? (
-                <YStack borderLeftWidth={3} borderLeftColor="$color9" paddingLeft={10}>
+                <YStack borderLeftWidth={3} borderLeftColor={e.colour?.hex ?? "$color6"} paddingLeft={10}>
                   <Text fontSize={14} lineHeight={21} fontStyle="italic" color="$color11">{flat(e.margin.text)}</Text>
                 </YStack>
               ) : null}

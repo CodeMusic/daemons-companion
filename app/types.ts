@@ -131,7 +131,8 @@ export type GuideBookT = { held: boolean; title?: string; author?: string; secti
 // ---- C-24: the save's own INDEX -- what was seen and bound, as the game shows it, each entry in the save's edition's
 // voice; and OPUS's margin beside an entry, when the save holds OPUS and the game would show one.
 export type IndexEntry = { national: number; species: number; name: string; bound: boolean; art: string | null;
-                    category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string }; native?: string[] };
+                    category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string }; native?: string[];
+  colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null };   // C-186: grey until gleaned
 
 export type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
 

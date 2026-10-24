@@ -10,6 +10,9 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
   // C-170: the site away from home pairs with the companion that served it -- no address to type, its key in the browser
   const [server, setServer] = useState(ON_PHONE ? "" : SERVER), [code, setCode] = useState(""), [name, setName] = useState(ON_PHONE ? "my phone" : "a browser");
   const [error, setError] = useState("");
+  // hosting alone is folded away (2026-10-24: on the user's mom's iPad, its "choose a save" under the pairing boxes read
+  // as the app wanting a save, when all it needed was the code)
+  const [alone, setAlone] = useState(false);
   const pair = async () => {
     try {
       setError("");
@@ -42,7 +45,9 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
       <Action label="Pair" onPress={pair} />
       {error ? <Small color="$color9">{error}</Small> : null}
       {!ON_PHONE ? <Small>DRAFT</Small> : null}
-      {LOCAL ? <PhoneAlone onPaired={onPaired} /> : null}
+      {LOCAL && !alone ? <Text fontSize={14} color="$color10" marginTop={18} textDecorationLine="underline" role="button"
+                                onPress={() => setAlone(true)}>No computer? Host the daemon on this device alone</Text> : null}   {/* DRAFT */}
+      {LOCAL && alone ? <PhoneAlone onPaired={onPaired} /> : null}
     </YStack>
   );
 }

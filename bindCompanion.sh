@@ -148,7 +148,7 @@ PY
   # COMPANION_DEVICE (a name or a UDID, as `xcrun devicectl list devices` shows it) chooses which iPhone or iPad gets the
   # app -- the user's mom's iPad beside their own iPhone (2026-10-24); without it, the first one paired and available
   want="${COMPANION_DEVICE:-}"
-  phone_id="$(xcrun devicectl list devices 2>/dev/null | awk -v want="$want" '/available \(paired\)/ && $0 !~ /simulated/ && (want == "" || index($0, want)) { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }' || true)"   # awk stops reading at the first phone: under pipefail that SIGPIPE (141) would end the script
+  phone_id="$(xcrun devicectl list devices 2>/dev/null | awk -v want="$want" '/available \(paired\)|connected/ && $0 !~ /simulated/ && (want == "" || index($0, want)) { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }' || true)"   # awk stops reading at the first phone: under pipefail that SIGPIPE (141) would end the script
   [[ -n "$phone_id" ]] || { echo "bindCompanion: no ${want:+"$want, "}iPhone or iPad found -- plug it in (and trust this Mac), or put it on the same Wi-Fi with developer mode on." >&2; exit 1; }
   # a device named is built for itself, and registered with the team if it is new to it (its first install)
   destination="generic/platform=iOS"; register=()

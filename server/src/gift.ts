@@ -3,10 +3,11 @@
 // companion gives the first one: offered the first time a goal is finished while a daemon is carried, told on the boards,
 // and written by the next SYNC into the PC's first empty box slot, already AWAY -- so it is carried from the moment it
 // arrives, and the game finishes it on load (the C-184 marker: its moves, its ability, the INDEX).
-import { randomInt } from "node:crypto";
 import type { Store } from "./store.js";
 import type { Gift } from "./save/writer.js";
 
+// No node:crypto here: core.ts brings this file onto the phone hosting alone (app/local.ts), where there is none, and a
+// daemon's personality and IVs need no secret randomness.
 export const HANDSHAKE = { species: 261, name: "HANDSHAKE", level: 5 };   // DRAFT: the name is T-450's, for the user
 export const LINE = [261, 262, 263];
 export interface GiftState { state: "offered" | "written"; personality: number; ivs: number; at: string }
@@ -16,7 +17,7 @@ export function giftOf(store: Store): GiftState | null {
   try { return JSON.parse(store.getSetting(KEY) ?? "null"); } catch { return null; }
 }
 // one a save: never offered twice, nor to a save that already holds one of the line
-export function offerGift(store: Store, saveHolds: number[], now = new Date(), rand = (n: number) => randomInt(0, n)): GiftState | null {
+export function offerGift(store: Store, saveHolds: number[], now = new Date(), rand = (n: number) => Math.floor(Math.random() * n)): GiftState | null {
   if (giftOf(store) || saveHolds.some((sp) => LINE.includes(sp))) return null;
   const g: GiftState = { state: "offered", personality: (rand(0x10000) * 0x10000 + rand(0x10000)) >>> 0,
                          ivs: (rand(0x8000) * 0x8000 + rand(0x8000)) >>> 0, at: now.toISOString() };

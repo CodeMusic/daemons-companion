@@ -7,6 +7,7 @@
 #include "display.h"
 #include "sound.h"
 #include "watch.h"
+#include <Preferences.h>
 
 int dayIndex();
 struct Act { String what; uint32_t at = 0; float from = 0, to = 0; bool grew = false; };
@@ -34,6 +35,17 @@ void activityGrew(int to) {
   act.what = upper(st.daemon.nickname) + " GREW TO Lv " + String(to) + "!";   // DRAFT
   act.at = millis(); act.grew = true; act.from = 0; act.to = expFill();
   soundAccomplish(1, st.daemon.species, dayIndex());
+  dirty = true;
+}
+// C-184: it evolved on the companion -- said large, with the whole goal's tune; told once for each evolution (kept, so
+// a restart does not tell it again)
+void activityEvolved(const String &from, const String &to, const String &at) {
+  Preferences p; p.begin("activity", false);
+  if (p.getString("evolved", "") == at) { p.end(); return; }
+  p.putString("evolved", at); p.end();
+  act.what = upper(from) + " EVOLVED INTO " + upper(to) + "!";   // DRAFT
+  act.at = millis(); act.grew = true; act.from = act.to = expFill();
+  soundAccomplish(2, st.daemon.species, dayIndex());
   dirty = true;
 }
 // a thousand steps walked, each time (the watch's step counter)

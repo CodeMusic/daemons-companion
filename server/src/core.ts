@@ -17,6 +17,7 @@ import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./save/growth.js";
+import { evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./casino.js";   // C-149, C-151, C-167
@@ -86,13 +87,16 @@ export function sync(h: Host, store: Store, now = new Date()) {
   // less what this companion has already added to the save -- so the first SYNC that finds the field brings the history
   const houseAfter = houseTake(store).kept - (clampMoney(p.money + casino.delta) - p.money);
   const house = HOUSE_AT != null ? houseAfter - Number(store.getSetting("casino.house.written") ?? 0) : 0;
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house });
+  // C-184: what evolved on the devices, written for each daemon that is home
+  const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to }] : []; });
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)
   store.together(() => {
     if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
     if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
+    for (const e of r.evolved) evolutionWritten(store, e.personality);   // C-184: the save holds it now
     if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
     // C-167: and what a clamp left unmoved, so what the house has kept is what the money really moved
     const moved = r.money ? r.money.to - r.money.from : 0;
@@ -288,16 +292,24 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
+    // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
+    const g = d ? grown(d, store) : null;
+    const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality }, now) : null;
+    const was = d && ev ? SPECIES[String(ev.from)]?.name ?? d.name : "";
+    const now_ = d && ev ? { species: ev.to, name: SPECIES[String(ev.to)]?.name ?? d.name,
+                             nickname: d.nickname === d.name ? SPECIES[String(ev.to)]?.name ?? d.nickname : d.nickname } : null;
+    if (d && now_) Object.assign(d, now_);
     const row = d && SPECIES[String(d.species)];
     // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
     // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
     if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
-                      holding: d.holding, art: `/art/party/${d.slot}.png`, mood: null,
+                      holding: d.holding, art: ev ? `/art/${artName(d.species)}.png` : `/art/party/${d.slot}.png`, mood: null,   // C-184: its new face
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
                       expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
-                      grown: grown(d, store), margin };
+                      grown: grown(d, store), margin,
+                      evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all

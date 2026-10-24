@@ -181,6 +181,7 @@ void typeIcon(const char *name, int cx, int cy);
 // C-183 (activity.cpp): what was just done, shown at once as the game would, and the day's tallies
 void activity(int kind, const String &what, int expGain);   // kind 0 a care, 1 a routine, 2 a step done
 void activityGrew(int to);
+void activityEvolved(const String &from, const String &to, const String &at);   // C-184
 void activityLoop(uint32_t now);
 bool activityShowing();
 void drawActivity(uint16_t day, uint16_t ink);

@@ -177,6 +177,8 @@ bool takeState(const char *json) {
       st.daemon.expTotal = doc["daemon"]["grown"]["total"] | 0L; st.daemon.expFrom = doc["daemon"]["grown"]["from"] | 0L;
       st.daemon.expNext = doc["daemon"]["grown"]["next"] | 0L;
       if (was > 0 && now > was) activityGrew(now); }
+    { JsonVariant ev = doc["daemon"]["evolved"];             // C-184: it evolved here -- told once
+      if (!ev.isNull()) activityEvolved(ev["from"] | "", ev["to"] | "", ev["at"] | ""); }
     st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
     st.daemon.tired = lf["tired"] | "awake";
     takeExpression(doc["daemon"]["expression"]);         // C-119: how it looks now, decided on the server

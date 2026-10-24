@@ -91,6 +91,14 @@ export function newer(a: Slot, b: Slot): boolean {
   return a.counter >= b.counter;
 }
 
+// C-184: the other way -- a name in the game's own characters, padded with 0xFF to its field (a letter it lacks: "?")
+const BYTES = new Map(Object.entries(CHARS).map(([hex, ch]) => [ch, parseInt(hex, 16)]));
+export function encodeText(s: string, size: number): Uint8Array {
+  const out = new Uint8Array(size).fill(0xff);
+  [...s].slice(0, size).forEach((ch, i) => { out[i] = BYTES.get(ch) ?? BYTES.get("?") ?? 0xac; });
+  return out;
+}
+
 export function decodeText(bytes: Uint8Array): string {
   let s = "";
   for (const b of bytes) {

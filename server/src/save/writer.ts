@@ -25,18 +25,21 @@ import { expFor, levelFromExp } from "./growth.js";
 import { calcStats, unpackIVs } from "./stats.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
-import { LAYOUT, type Layout, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize } from "./reader.js";
+import { LAYOUT, type Layout, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
 
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }
 export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
                               changed: boolean; newlySeen: number[]; friendship: { nickname: string; from: number; to: number } | null;
                               grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null;
-                              money: { from: number; to: number } | null; house: { from: number; to: number } | null }
+                              money: { from: number; to: number } | null; house: { from: number; to: number } | null;
+                              evolved: { nickname: string; personality: number; from: number; to: number }[] }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
 // C-45: the experience a daemon gained on the device, for it by its personality, written when it is home
 export interface Growth { personality: number; exp: number }
+// C-184: a daemon that evolved on the device -- its new species, written when it is home (with the game's marker)
+export interface Evolve { personality: number; species: number }
 
 
 const FOOTER_ID = 0xff4, FOOTER_CHECKSUM = 0xff6;
@@ -51,7 +54,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
-                                             house?: number; houseAt?: number | null }, l: Layout = LAYOUT): SyncResult {
+                                             house?: number; houseAt?: number | null; evolve?: Evolve[] }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -177,6 +180,34 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     for (let k = 28; k < l.pokemon_size; k++) { const b = at(home.recStart + k); if (out[b.byte] !== rec[k]) { out[b.byte] = rec[k]; touched.add(b.id); } }
     grew = { nickname: home.d.nickname, personality: g.personality, exp: exp - was, from, to };
   }
+  // C-184: what evolved on the device, once it is HOME -- the species only, in its growth substruct; its nickname renamed
+  // if it was its old species' own name (as the evolution scene does); the game's marker set -- unusedRibbons bit 2 (the
+  // u32 at Misc+8, bit 29; feelings keep bits 0 and 1) -- for the game to finish it on load (DAEMONS T-448: its stats, the
+  // INDEX, its moves, its ability) and clear. Its stats are not recomputed here.
+  const evolved: SyncResult["evolved"] = [];
+  for (const ev of opts.evolve ?? []) {
+    const home = party.find((p) => p.d && p.d.personality === ev.personality && !awayAfter(p));
+    if (!home || !home.d || !SPECIES[String(ev.species)] || home.d.species === ev.species) continue;
+    const rec = new Uint8Array(l.pokemon_size);
+    for (let k = 0; k < l.pokemon_size; k++) rec[k] = out[at(home.recStart + k).byte];
+    const v = new DataView(rec.buffer);
+    const key = (ev.personality ^ v.getUint32(4, true)) >>> 0;
+    const plain = new DataView(new ArrayBuffer(48));
+    for (let k = 0; k < 48; k += 4) plain.setUint32(k, (v.getUint32(32 + k, true) ^ key) >>> 0, true);
+    const order = ORDERS[ev.personality % 24];
+    const growth = order.indexOf("G") * 12, misc = order.indexOf("M") * 12;
+    const from = plain.getUint16(growth, true);
+    plain.setUint16(growth, ev.species, true);
+    plain.setUint32(misc + 8, (plain.getUint32(misc + 8, true) | (1 << 29)) >>> 0, true);
+    let sum = 0;
+    for (let k = 0; k < 48; k += 2) sum = (sum + plain.getUint16(k, true)) & 0xffff;
+    v.setUint16(28, sum, true);
+    for (let k = 0; k < 48; k += 4) v.setUint32(32 + k, (plain.getUint32(k, true) ^ key) >>> 0, true);
+    const oldName = SPECIES[String(from)]?.name ?? "", newName = SPECIES[String(ev.species)]?.name ?? "";
+    if (home.d.nickname === oldName && newName) rec.set(encodeText(newName, 10), 8);   // its own name, not one given it
+    for (let k = 0; k < l.pokemon_size; k++) { const b = at(home.recStart + k); if (out[b.byte] !== rec[k]) { out[b.byte] = rec[k]; touched.add(b.id); } }
+    evolved.push({ nickname: home.d.nickname, personality: ev.personality, from, to: ev.species });
+  }
   // C-149: the CASINO's change to the money -- the key is SaveBlock2's, the money SaveBlock1's (each where its sector sits)
   let money: SyncResult["money"] = null;
   if (opts.money) {
@@ -205,5 +236,5 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved };
 }

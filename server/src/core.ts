@@ -5,7 +5,7 @@ import { den } from "./dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
-import { readAway, readSave } from "./save/reader.js";
+import { readAway, readBoxes, readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { HOUSE_AT, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
@@ -17,6 +17,7 @@ import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./save/growth.js";
+import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
 import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
@@ -89,7 +90,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const house = HOUSE_AT != null ? houseAfter - Number(store.getSetting("casino.house.written") ?? 0) : 0;
   // C-184: what evolved on the devices, written for each daemon that is home
   const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to }] : []; });
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve });
+  const gift = giftToWrite(store, h.edition) ?? undefined;     // C-185: HANDSHAKE, once, into the PC, already away
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)
@@ -97,6 +99,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
     if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
     if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
     for (const e of r.evolved) evolutionWritten(store, e.personality);   // C-184: the save holds it now
+    if (r.gifted) giftWritten(store);                              // C-185: and the gift
     if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
     // C-167: and what a clamp left unmoved, so what the house has kept is what the money really moved
     const moved = r.money ? r.money.to - r.money.from : 0;
@@ -110,6 +113,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
            met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship },
+           gifted: r.gifted ? HANDSHAKE.name : null,
            grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null,
            casino: casino.delta || casino.spins ? { won: casino.delta, spins: casino.spins, from: r.money?.from ?? p.money, to: r.money?.to ?? p.money } : null };
 }
@@ -210,8 +214,18 @@ export const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim
 export function doStep(h: Host, store: Store, id: number, from: "site" | "device", deviceId = "") {
   const r = store.completeStep(id);
   if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(h, store, id, deviceId); }
-  if (r.fresh && r.goal) { const d = carriedDaemon(h, store, deviceId); if (d) bondAdd(store, d.personality, "goals"); }   // C-185
+  if (r.fresh && r.goal) {                                       // C-185: a goal finished together -- the bond's, and the gift's
+    const d = carriedDaemon(h, store, deviceId);
+    if (d) { bondAdd(store, d.personality, "goals"); offerGift(store, speciesHeld(h)); }
+  }
   return r;
+}
+const giftNews = (store: Store) => { const g = giftOf(store); return g ? { gift: { name: HANDSHAKE.name, at: g.at, home: g.state === "written" } } : {}; };
+// every species the save holds, party and PC -- so the gift is never given to a save that already has the line
+export function speciesHeld(h: Host): number[] {
+  const bytes = h.save.read();
+  if (!bytes) return [];
+  try { return [...readSave(bytes).party, ...readBoxes(bytes)].map((d) => d.species); } catch { return []; }
 }
 // C-185: a care given -- feeding, watering, training -- is the bond's, for the daemon this device carries
 export function careGiven(h: Host, store: Store, kind: string, deviceId = "") {
@@ -327,6 +341,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
            settings: deviceSettings(store, deviceId),   // C-159: its own over the shared
            holiday: today_, casino,                           // C-149: how a board dresses today; the CASINO's coins
+           ...giftNews(store),                                // C-185: the HANDSHAKE given, told once on each board
            world: { watch: context.watch, weather: weather && { kind: weather.kind, tempC: weather.tempC, city: weather.city } },   // C-158
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them

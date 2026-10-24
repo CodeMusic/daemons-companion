@@ -137,6 +137,8 @@ bool takeState(const char *json) {
       st.casino.tableSpecies[st.casino.tableN] = t["species"] | 0; st.casino.table[st.casino.tableN++] = t["name"] | "";
     }
   }
+  { JsonVariant gf = doc["gift"];                            // C-185: the HANDSHAKE given -- told once
+    if (!gf.isNull()) activityGift(gf["name"] | "", gf["at"] | "", gf["home"] | false); }
   st.watch = doc["world"]["watch"] | ""; st.sky = doc["world"]["weather"]["kind"] | "";   // C-158: the real world
   JsonVariant hd = doc["holiday"];
   st.holiday = Holiday();

@@ -182,6 +182,7 @@ void typeIcon(const char *name, int cx, int cy);
 void activity(int kind, const String &what, int expGain);   // kind 0 a care, 1 a routine, 2 a step done
 void activityGrew(int to);
 void activityEvolved(const String &from, const String &to, const String &at);   // C-184
+void activityGift(const String &name, const String &at, bool home);   // C-185
 void activityLoop(uint32_t now);
 bool activityShowing();
 void drawActivity(uint16_t day, uint16_t ink);

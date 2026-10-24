@@ -32,7 +32,8 @@ export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: str
                               changed: boolean; newlySeen: number[]; friendship: { nickname: string; from: number; to: number } | null;
                               grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null;
                               money: { from: number; to: number } | null; house: { from: number; to: number } | null;
-                              evolved: { nickname: string; personality: number; from: number; to: number }[] }
+                              evolved: { nickname: string; personality: number; from: number; to: number }[];
+                              gifted: { box: number; pos: number; personality: number; species: number } | null }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
@@ -40,6 +41,9 @@ export interface Meetings { seen: number[]; friendship: number }
 export interface Growth { personality: number; exp: number }
 // C-184: a daemon that evolved on the device -- its new species, written when it is home (with the game's marker)
 export interface Evolve { personality: number; species: number }
+// C-185: a daemon the companion gives (HANDSHAKE, DAEMONS T-450) -- written into the PC's first empty box slot, already
+// AWAY, so it is carried from the moment it arrives
+export interface Gift { species: number; name: string; level: number; personality: number; ivs: number; game: number }
 
 
 const FOOTER_ID = 0xff4, FOOTER_CHECKSUM = 0xff6;
@@ -54,7 +58,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
-                                             house?: number; houseAt?: number | null; evolve?: Evolve[] }, l: Layout = LAYOUT): SyncResult {
+                                             house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -208,6 +212,49 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     for (let k = 0; k < l.pokemon_size; k++) { const b = at(home.recStart + k); if (out[b.byte] !== rec[k]) { out[b.byte] = rec[k]; touched.add(b.id); } }
     evolved.push({ nickname: home.d.nickname, personality: ev.personality, from, to: ev.species });
   }
+  // C-185: a gift, into the first empty box slot -- a whole BoxPokemon made here: the player's own trainer (name, id,
+  // gender), its species' own name, the level's experience, its IVs; AWAY set in the flags byte, and the game's marker
+  // (unusedRibbons bit 2, as C-184) for the game to finish it on load: its moves, its ability, the INDEX (DAEMONS T-450).
+  // A full PC, or a personality already in the save, writes nothing -- the gift waits for the next SYNC.
+  let gifted: SyncResult["gifted"] = null;
+  if (opts.gift) {
+    const g = opts.gift, sb2 = where.get(0)!;
+    const box = (off: number) => { const id = 5 + Math.floor(off / l.sector_data_size); return { id, byte: where.get(id)! + (off % l.sector_data_size) }; };
+    let free = -1, clash = party.some((p) => p.d?.personality === g.personality);
+    for (let i = 0; i < 14 * 30 && !clash; i++) {
+      const start = 4 + i * l.box_pokemon_size;
+      const flags = out[box(start + l.flags_byte).byte];
+      if (flags & 0b10) { if (new DataView(Uint8Array.from([0, 1, 2, 3].map((k) => out[box(start + k).byte])).buffer).getUint32(0, true) === g.personality >>> 0) clash = true; }
+      else if (free < 0) free = i;
+    }
+    if (free >= 0 && !clash) {
+      const rec = new Uint8Array(l.box_pokemon_size), v = new DataView(rec.buffer);
+      const otId = new DataView(out.buffer, sb2 + P.sb2.trainer_id).getUint32(0, true);
+      v.setUint32(0, g.personality >>> 0, true); v.setUint32(4, otId, true);
+      rec.set(encodeText(g.name, 10), 8);
+      rec[18] = 2;                                                  // its language: English, as the game's own
+      rec[l.flags_byte] = 0b10 | (1 << l.away_bit);                 // hasSpecies, and AWAY
+      rec.set(out.subarray(sb2 + P.sb2.player_name, sb2 + P.sb2.player_name + 7), 20);   // its trainer's name, as the save keeps it
+      const plain = new DataView(new ArrayBuffer(48)), order = ORDERS[(g.personality >>> 0) % 24];
+      const growth = order.indexOf("G") * 12, misc = order.indexOf("M") * 12;
+      plain.setUint16(growth, g.species, true);
+      plain.setUint32(growth + 4, expFor(SPECIES[String(g.species)]?.growth ?? 0, g.level), true);
+      plain.setUint8(growth + 9, 70);                               // the friendship a daemon is met with
+      const female = out[sb2 + P.sb2.player_gender] & 1;
+      plain.setUint16(misc + 2, (g.level & 0x7f) | ((g.game & 0xf) << 7) | (4 << 11) | (female << 15), true);   // met at its level, in this edition, in a ball
+      plain.setUint8(misc + 1, 0xff);                               // met: no map (the companion's, for the game to name)
+      plain.setUint32(misc + 4, (g.ivs & 0x3fffffff) >>> 0, true);
+      plain.setUint32(misc + 8, (1 << 29) >>> 0, true);            // the marker: the game finishes it
+      let sum = 0;
+      for (let k = 0; k < 48; k += 2) sum = (sum + plain.getUint16(k, true)) & 0xffff;
+      v.setUint16(28, sum, true);
+      const key = ((g.personality >>> 0) ^ otId) >>> 0;
+      for (let k = 0; k < 48; k += 4) v.setUint32(32 + k, (plain.getUint32(k, true) ^ key) >>> 0, true);
+      const start = 4 + free * l.box_pokemon_size;
+      for (let k = 0; k < l.box_pokemon_size; k++) { const b = box(start + k); out[b.byte] = rec[k]; touched.add(b.id); }
+      gifted = { box: Math.floor(free / 30), pos: free % 30, personality: g.personality >>> 0, species: g.species };
+    }
+  }
   // C-149: the CASINO's change to the money -- the key is SaveBlock2's, the money SaveBlock1's (each where its sector sits)
   let money: SyncResult["money"] = null;
   if (opts.money) {
@@ -236,5 +283,5 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved, gifted };
 }

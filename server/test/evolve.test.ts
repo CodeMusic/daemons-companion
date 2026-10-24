@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/save/growth.js";
 import { syncSave } from "../src/save/writer.js";
-import { readSave, blocks, ORDERS } from "../src/save/reader.js";
+import { readSave, readBoxes, readAway, blocks, ORDERS } from "../src/save/reader.js";
 import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen } from "../src/evolve.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
@@ -68,5 +68,29 @@ describe("a bond built while carried (C-185)", () => {
       expect(evolveTarget({ species: 1, level: 2, friendship: 0, personality: 1, bond: 60 }, 12)).toBe(2);
       expect(evolveTarget({ species: 1, level: 2, friendship: 0, personality: 1 }, 12)).toBeNull();
     } finally { SPECIES["1"].evolutions = evos; }
+  });
+});
+
+describe("the HANDSHAKE the companion gives (C-185)", () => {
+  it("is offered once a save, and never to a save that holds the line", async () => {
+    const { offerGift, giftOf } = await import("../src/gift.js");
+    const store = new Store(":memory:");
+    expect(offerGift(store, [262])).toBeNull();
+    expect(offerGift(store, [1], new Date(), () => 7)).toMatchObject({ state: "offered", personality: 7 * 0x10000 + 7 });
+    expect(offerGift(store, [1])).toBeNull();
+    expect(giftOf(store)?.state).toBe("offered");
+  });
+
+  it("is written into the first empty box slot, away, with the game's marker", () => {
+    const d: DaemonSpec = { personality: 4200, otId: 7, species: 1, nickname: "ROVERCUB", level: 16, exp: expFor(curve, 16), hp: 40, maxHP: 40 };
+    const bytes = buildSave({ player: "ROVER", trainerId: 7, slots: [{ counter: 2, party: [d] }, { counter: 1, party: [] }] });
+    const gift = { species: 261, name: "HANDSHAKE", level: 5, personality: 0x12345678, ivs: 0x1234567, game: 4 };
+    const r = syncSave(bytes, { link: false, gift });
+    expect(r.gifted).toMatchObject({ box: 0, pos: 0, species: 261 });
+    const boxed = readBoxes(r.save);                               // the save still reads whole: every sector re-signed
+    expect(boxed).toHaveLength(1);
+    expect(boxed[0]).toMatchObject({ species: 261, personality: 0x12345678, otId: 7, nickname: "HANDSHAKE", away: true, metLevel: 5 });
+    expect(readAway(r.save).map((x) => x.personality)).toContain(0x12345678);   // carried from the moment it arrives
+    expect(syncSave(r.save, { link: false, gift }).gifted).toBeNull();          // the same one is never written twice
   });
 });

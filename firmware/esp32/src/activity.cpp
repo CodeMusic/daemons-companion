@@ -49,6 +49,19 @@ void activityEvolved(const String &from, const String &to, const String &at) {
   soundAccomplish(2, st.daemon.species, dayIndex());
   dirty = true;
 }
+// C-185: the HANDSHAKE the companion gives -- told once on each board (kept, so a restart does not tell it again):
+// found when the first goal was finished together, and in the PC, already carried, once SYNC has written it
+void activityGift(const String &name, const String &at, bool home) {
+  Preferences p; p.begin("activity", false);
+  String seen = String(home ? "home " : "found ") + at;
+  if (p.getString("gift", "") == seen) { p.end(); return; }
+  p.putString("gift", seen); p.end();
+  act.what = home ? upper(name) + " IS IN YOUR PC, AND WITH YOU" : "A " + upper(name) + " FOUND YOU!";   // DRAFT
+  act.shorter = home ? upper(name) + " IS WITH YOU" : upper(name) + " FOUND YOU!";                    // DRAFT
+  act.at = millis(); act.grew = true; act.from = act.to = expFill();
+  soundAccomplish(2, st.daemon.species, dayIndex());
+  dirty = true;
+}
 // a thousand steps walked, each time (the watch's step counter)
 void activityLoop(uint32_t now) {
   static uint32_t at = 0; static long thousands = -1;

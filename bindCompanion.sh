@@ -145,16 +145,22 @@ PY
     printf '%s' "$targets_now" > ios/.prebuilt-targets
   fi
   (cd ios && pod install)
-  phone_id="$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && $0 !~ /simulated/ { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }' || true)"   # awk stops reading at the first phone: under pipefail that SIGPIPE (141) would end the script
-  [[ -n "$phone_id" ]] || { echo "bindCompanion: no iPhone found -- plug it in (and trust this Mac), or put it on the same Wi-Fi with developer mode on." >&2; exit 1; }
+  # COMPANION_DEVICE (a name or a UDID, as `xcrun devicectl list devices` shows it) chooses which iPhone or iPad gets the
+  # app -- the user's mom's iPad beside their own iPhone (2026-10-24); without it, the first one paired and available
+  want="${COMPANION_DEVICE:-}"
+  phone_id="$(xcrun devicectl list devices 2>/dev/null | awk -v want="$want" '/available \(paired\)/ && $0 !~ /simulated/ && (want == "" || index($0, want)) { for (i=1;i<=NF;i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }' || true)"   # awk stops reading at the first phone: under pipefail that SIGPIPE (141) would end the script
+  [[ -n "$phone_id" ]] || { echo "bindCompanion: no ${want:+"$want, "}iPhone or iPad found -- plug it in (and trust this Mac), or put it on the same Wi-Fi with developer mode on." >&2; exit 1; }
+  # a device named is built for itself, and registered with the team if it is new to it (its first install)
+  destination="generic/platform=iOS"; register=()
+  if [[ -n "$want" ]]; then destination="id=$phone_id"; register=(-allowProvisioningDeviceRegistration); fi
   team="$(python3 -c "import json; print(json.load(open('app.json'))['expo']['ios']['appleTeamId'])")"
   # C-91: a build anyone can read -- the commit it was made from and when (SETTINGS shows it, and whether the app has
   # changed since), and the commit count as iOS's own build number, where every build used to say 1
   export EXPO_PUBLIC_BUILD="$(git -C "$HERE" rev-parse --short HEAD) $(date '+%Y-%m-%d %H:%M')"
   plutil -replace CFBundleVersion -string "$(git -C "$HERE" rev-list --count HEAD)" ios/DAEMONScompanion/Info.plist
-  echo "bindCompanion: building for the iPhone $phone_id (team $team), build $EXPO_PUBLIC_BUILD"
+  echo "bindCompanion: building for $phone_id (team $team), build $EXPO_PUBLIC_BUILD"
   xcodebuild -workspace ios/DAEMONScompanion.xcworkspace -scheme DAEMONScompanion -configuration Release \
-    -destination "generic/platform=iOS" -derivedDataPath ios/build -allowProvisioningUpdates \
+    -destination "$destination" -derivedDataPath ios/build -allowProvisioningUpdates ${register[@]+"${register[@]}"} \
     DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic build | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
   # built for any iPhone, so a locked phone does not stop the build; installing needs it unlocked
   until xcrun devicectl device install app --device "$phone_id" ios/build/Build/Products/Release-iphoneos/DAEMONScompanion.app; do

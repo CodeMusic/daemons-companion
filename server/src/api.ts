@@ -1001,6 +1001,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { settings: r });
         }
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
+        core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's
         return send(res, 200, { last: store.lastInteraction() });
       }
       // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.

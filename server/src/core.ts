@@ -17,7 +17,7 @@ import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./save/growth.js";
-import { evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
+import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./casino.js";   // C-149, C-151, C-167
@@ -210,7 +210,14 @@ export const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim
 export function doStep(h: Host, store: Store, id: number, from: "site" | "device", deviceId = "") {
   const r = store.completeStep(id);
   if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(h, store, id, deviceId); }
+  if (r.fresh && r.goal) { const d = carriedDaemon(h, store, deviceId); if (d) bondAdd(store, d.personality, "goals"); }   // C-185
   return r;
+}
+// C-185: a care given -- feeding, watering, training -- is the bond's, for the daemon this device carries
+export function careGiven(h: Host, store: Store, kind: string, deviceId = "") {
+  if (!["feed", "water", "train"].includes(kind)) return;
+  const d = carriedDaemon(h, store, deviceId);
+  if (d) bondAdd(store, d.personality, "cares");
 }
 
 // C-45, C-47: experience gained on the device. LIMITED LEVELING (the user, 2026-10-04): one step completed is one
@@ -294,7 +301,8 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
     // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
     const g = d ? grown(d, store) : null;
-    const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality }, now) : null;
+    const bond = d ? bondScore(bondSeen(store, d.personality, walk(h, store, now).date, walk(h, store, now).steps)) : 0;   // C-185
+    const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality, bond }, now) : null;
     const was = d && ev ? SPECIES[String(ev.from)]?.name ?? d.name : "";
     const now_ = d && ev ? { species: ev.to, name: SPECIES[String(ev.to)]?.name ?? d.name,
                              nickname: d.nickname === d.name ? SPECIES[String(ev.to)]?.name ?? d.nickname : d.nickname } : null;

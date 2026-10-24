@@ -21,7 +21,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { awayNow, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
+import { awayNow, careGiven, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -102,7 +102,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     if (path === "/api/sync") return ok(sync(h, store, now));
     const care = path.match(CARE);                      // C-13: care -- feed, water, train, and SLEEP (C-114) -- kept as the device's are
-    if (care) { store.logInteraction(care[1], "site"); return lifeNow(h, store, deviceId, now); }
+    if (care) { store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId); return lifeNow(h, store, deviceId, now); }
     const step = path.match(STEP);
     if (step) {
       if (step[2] === "undo") return store.undoStep(Number(step[1])) ? ok({ next: store.nextStep() }) : no(404, "no such step");

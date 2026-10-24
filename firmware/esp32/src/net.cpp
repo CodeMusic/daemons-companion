@@ -11,6 +11,7 @@
 #include <freertos/semphr.h>
 #include <vector>
 #include "app.h"
+#include "watch.h"
 #include "broadcast.h"
 #include "talk.h"
 #include "brain.h"
@@ -836,6 +837,17 @@ void switchOff(const String &word) {
 }
 
 void batteryLoop(uint32_t now) {
+  // C-182 (the user, 2026-10-24: "it should make a tone the moment u plug it in so u know it has contact"): the cable
+  // going in a rising pair, coming out a falling one -- asked of the PMU three times a second where there is one, else
+  // as the battery's reading sees it
+  static int cableWas = -1; static uint32_t cableAt = 0;
+  if (now - cableAt > 300) {
+    cableAt = now;
+    int in = watchCableIn();
+    if (in < 0) in = bat.present ? (bat.usb ? 1 : 0) : -1;
+    if (in >= 0 && cableWas >= 0 && in != cableWas && !batFakeUntil) { soundTurn(in ? 1 : -1); batAt = 0; }   // and read it now
+    if (in >= 0) cableWas = in;
+  }
   if (batAt == 0 || now - batAt > 20000) {                   // C-63: the battery, and the server told when it matters
     batAt = now;
     Battery was = bat;

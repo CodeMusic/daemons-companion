@@ -20,6 +20,7 @@ bool watchTouchDown() { return false; }
 int watchGesture() { return 0; }
 bool watchGestureAcross() { return false; }
 bool watchPowerOff() { return false; }
+int watchCableIn() { return -1; }
 String watchStatus() { return "WATCH none"; }
 
 #else
@@ -208,6 +209,8 @@ bool watchTalking() { return talking; }
 // 2026-10-09: at 5% the firmware slept until the BOOT pin -- which the watch has no way to press, so it would have looked
 // dead until its battery was pulled. Off through the PMU instead: the crown starts it again.
 bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; }
+// C-182: the cable, as the PMU sees it -- 1 in, 0 out, -1 no PMU to ask (a quick read, for the tone when it goes in)
+int watchCableIn() { return havePmu ? (pmu.isVbusIn() ? 1 : 0) : -1; }
 // C-161: how far a finger moves to be a swipe -- on the watch's 240 px a swipe is short (29 and 49 px were read as taps,
 // 2026-10-18) and a tap moves under 10; the larger screens keep their 50
 #if defined(BOARD_TWATCH_S3)

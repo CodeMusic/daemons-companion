@@ -172,7 +172,11 @@ bool takeState(const char *json) {
     st.daemon.margin.replace("\n", " ");
     JsonVariant lf = doc["daemon"]["life"];
     st.daemon.word = lf["word"] | ""; st.daemon.cue = lf["cue"] | "";
-    st.daemon.grownTo = doc["daemon"]["grown"]["level"] | 0;
+    { int was = st.daemon.grownTo, now = doc["daemon"]["grown"]["level"] | 0;   // C-183: it grew while here
+      st.daemon.grownTo = now;
+      st.daemon.expTotal = doc["daemon"]["grown"]["total"] | 0L; st.daemon.expFrom = doc["daemon"]["grown"]["from"] | 0L;
+      st.daemon.expNext = doc["daemon"]["grown"]["next"] | 0L;
+      if (was > 0 && now > was) activityGrew(now); }
     st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
     st.daemon.tired = lf["tired"] | "awake";
     takeExpression(doc["daemon"]["expression"]);         // C-119: how it looks now, decided on the server

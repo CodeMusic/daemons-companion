@@ -76,6 +76,7 @@ void loop() {
   batteryLoop(now);                         // C-63
   reportLoop();                             // C-121: the outbox's answer, and the cable carrying what waits
   remotesLoop(now);                         // C-165: the remotes every device shares
+  activityLoop(now);                        // C-183: a thousand steps walked, shown
   if (!bridgeLive() && online() && !netBusy()) {   // C-121: not while the outbox sends -- the state comes back with it
     if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
     pollCommands(now);                        // C-32: what the site sent, over Wi-Fi

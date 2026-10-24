@@ -28,6 +28,7 @@ struct Den { String motif = "nest", wall = "#67625a", deep = "#3b3832", floor = 
 struct Daemon { String name, nickname, holding, category, entry, types, artKey; int level = 0, friendship = 0, species = 0;
                 String word, cue; int fed = 0, watered = 0, due = 0;              // C-13: its life, as the server reads it
                 int grownTo = 0;                                                  // C-45: the level it has grown to here
+                long expTotal = 0, expFrom = 0, expNext = 0;                      // C-183: where it stands in that level
                 String tired = "awake"; Den den;                                  // C-113: asleep it stays put; its den
                 String margin; };                                                 // C-149: OPUS's margin, if the save holds OPUS
 // C-68: a party daemon, and its routines as the game names them, each with the colour its streak takes on this body
@@ -177,6 +178,14 @@ void pageDots(int at, int n);
 void drawTiles(int n, int sel, const String *words, const char *title, void (*icon)(int, int, int), uint16_t day, uint16_t ink);
 void pageIcon(int i, int cx, int cy);
 void typeIcon(const char *name, int cx, int cy);
+// C-183 (activity.cpp): what was just done, shown at once as the game would, and the day's tallies
+void activity(int kind, const String &what, int expGain);   // kind 0 a care, 1 a routine, 2 a step done
+void activityGrew(int to);
+void activityLoop(uint32_t now);
+bool activityShowing();
+void drawActivity(uint16_t day, uint16_t ink);
+float expFill();
+String activityToday();
 void goHomeNow();                         // C-161: the crown pressed twice
 void cableFlush(uint32_t ms = 60);       // C-105: send what was printed, waiting at most this long for a reader
 int deckTakeKey();                        // C-104: the T-Deck's keyboard, one character read and spent (0: none)

@@ -109,6 +109,7 @@ void runRoutine() {
   while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
   sideWas = true;
   report("routine", String(t.name) + "/" + t.routines[routineAt].name);
+  activity(1, String(t.routines[routineAt].name), 0);           // C-183
   dirty = true;
 }
 

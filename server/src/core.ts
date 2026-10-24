@@ -16,7 +16,7 @@ import { life } from "./life.js";
 import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
-import { levelFromExp } from "./save/growth.js";
+import { expFor, levelFromExp } from "./save/growth.js";
 import { carriedFor } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./casino.js";   // C-149, C-151, C-167
@@ -248,8 +248,10 @@ export function daemonExpression(store: Store, now = new Date(), lifeNow = daemo
 
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
 export function grown(d: { species: number; exp: number; level: number; personality: number }, store: Store) {
-  const exp = pendingExp(store, d.personality).exp;
-  return { exp, level: Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp + exp)) };
+  const exp = pendingExp(store, d.personality).exp, curve = SPECIES[String(d.species)]?.growth ?? 0;
+  const level = Math.max(d.level, levelFromExp(curve, d.exp + exp));
+  // C-183: where it stands in this level, for the boards' EXP bar -- its experience in all, this level's and the next's
+  return { exp, level, total: d.exp + exp, from: expFor(curve, level), next: level >= 100 ? null : expFor(curve, level + 1) };
 }
 
 // `as`: an expression to draw it in instead of its own (GET /api/device/state?expression=, for a bench check)

@@ -52,6 +52,7 @@ void careDo(int kind) {
   st.daemon.tired = kind == 3 ? "asleep" : kind == 4 || st.daemon.tired == "asleep" ? "awake" : st.daemon.tired;
   if (kind == 0) st.daemon.fed = min(3, st.daemon.fed + 1);
   if (kind == 1) st.daemon.watered = min(3, st.daemon.watered + 1);
+  activity(0, String(CARE_SAID[kind]) + (kind == 0 ? "  FED " + String(st.daemon.fed) + "/3" : kind == 1 ? "  WATER " + String(st.daemon.watered) + "/3" : ""), 0);   // C-183
   dirty = true;
   draw();
   if (kind == 4) soundWake(); else soundCare(kind);   // from its task -- or, without PSRAM, played here (sound.cpp)
@@ -139,6 +140,7 @@ void tick() {
   if (!st.have || st.step < 0) { say("Nothing yet"); return; }
   long id = st.step;
   lastDone = id; lastDoneText = st.stepText; lastDoneAt = millis();
+  activity(2, "DONE: " + st.stepText, 1);                        // C-183: a step done is one EXP (C-47)
   if (bridgeLive()) { bridge("TICK " + String(id)); return; }       // the bridge answers CELEBRATE, then STATE
   bool ok;
   String got = http("POST", "/api/device/ticks", "{\"steps\":[" + String(id) + "]}", &ok);

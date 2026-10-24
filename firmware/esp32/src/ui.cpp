@@ -634,6 +634,13 @@ void draw() {
     canvas.drawString(upper(st.virtue), 10, 86);
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
+    canvas.setTextFont(1); canvas.setTextColor(PAPER);
+    canvas.drawString(activityToday(), 10, 132);                 // C-183: the day's tallies
+    if (st.carrying) {                                           // and where the daemon stands in its level
+      canvas.setTextColor(QUIET); canvas.drawString(upper(st.daemon.nickname) + "  Lv" + String(max(st.daemon.level, st.daemon.grownTo)) + "  EXP", 10, 150);
+      canvas.drawRect(10, 162, W - 20, 6, QUIET);
+      canvas.fillRect(11, 163, (int)((W - 22) * expFill()), 4, canvas.color565(0x40, 0xA8, 0xF8));
+    }
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM);
     if (board.round) { canvas.setTextDatum(BC_DATUM); canvas.drawString(COMPANION_BUILD, W / 2, H - 14); footer(hint("press: the day's note")); }   // C-102
     else {
@@ -802,7 +809,8 @@ void draw() {
     }
     canvas.setTextDatum(TL_DATUM);
   }
-  if (gridLists() && screen == HOME && page != FACE_PAGE) {   // C-172: where a swipe goes, never on the face
+  drawActivity(day, ink);                                     // C-183: what was just done, over everything but a word
+  if (gridLists() && screen == HOME && page != FACE_PAGE && !activityShowing()) {   // C-172: where a swipe goes, never on the face
     int at = launchIndex(page);
     if (at >= 0) pageDots(at, LAUNCH_N);
   }

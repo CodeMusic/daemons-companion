@@ -50,7 +50,8 @@ export function SubtleBook({ b }: { b: SubtleT }) {
             {e.caption ? <Text fontSize={12} lineHeight={17} color={C.faint} textAlign="center">{e.caption}</Text> : null}
           </YStack>
           {/* the right page: the words, the asking voice faint */}
-          <YStack flex={wide ? 1 : undefined} gap={10}>
+          {/* the right page: as wide as the card leaves beside the picture, in points (a flexed width ran off on the iPad) */}
+          <YStack width={wide ? Math.max(0, w - 2 * 18 - 94 * 3 - 18) : "100%"} gap={10}>
             <Text fontSize={20} lineHeight={27} fontWeight="700" color={C.ink}>{e.title}</Text>
             <YStack height={2} backgroundColor={C.pink} width={48} />
             {e.paragraphs.map((p, i) => (

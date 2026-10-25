@@ -6,7 +6,7 @@
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Platform, useColorScheme } from "react-native";
+import { AppState, Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import { SCREEN } from "./data";
 import { loadLook, LOOK, lookHeard, PALETTE, paletteHeard, setPalette } from "./look";
@@ -63,6 +63,10 @@ function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (ty
 }
 
 function Shell() {
+  // the page's width in points, never "100%": inside a vertical ScrollView on iOS a percentage is not resolved, and on an
+  // iPad (wider than the 720 cap) every line of the books was laid out at its full length and ran off the right edge
+  // (the user's mom's iPad, 2026-10-25)
+  const pageWidth = Math.min(720, useWindowDimensions().width);
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
   const [today, setToday] = useState<Today | null>(null);
   const [error, setError] = useState("");
@@ -142,7 +146,7 @@ function Shell() {
         </XStack>
         <TabStrip tab={tab} setTab={setTab} />
       </YStack>
-      <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, maxWidth: 720, width: "100%", alignSelf: "center" }}>
+      <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
         {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}

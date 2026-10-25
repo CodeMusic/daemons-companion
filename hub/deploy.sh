@@ -1,7 +1,8 @@
 #!/bin/bash
 # C-168: bring the hub's server up to date with the companion's main branch, from a computer:
 #
-#   ssh -t debian@<hub> 'sudo bash /opt/daemons-companion/hub/deploy.sh'
+#   ssh -t debian@<hub> 'sudo bash /opt/daemons-companion/hub/deploy.sh'      (your password)
+#   ssh debian@<hub> 'sudo -n /usr/local/sbin/daemons-companion-deploy'       (no password, once deploy-setup.sh ran)
 #
 # Pulls the clone (as the daemons user), runs npm ci only when the lockfile changed, restarts the server, and checks it
 # answers on the same commit. If the new code does not answer within a minute it goes back to the commit it was on and
@@ -33,8 +34,11 @@ if [ "$(git_ rev-parse origin/main)" = "$was" ] && ! config_waiting; then
   echo "deploy: already on $(git_ log -1 --format='%h %s' | cut -c1-90)"; exit 0
 fi
 git_ merge -q --ff-only origin/main
-# a newer deploy.sh came with the code: run that one instead, so its own steps apply on this same run
-if [ -z "${DEPLOY_REEXEC:-}" ] && ! cmp -s "$0" "$CODE/hub/deploy.sh"; then
+# a newer deploy.sh came with the code: run that one instead, so its own steps apply on this same run -- but never from
+# the root-owned installed copy (the passwordless one): the clone belongs to the daemons user, and running its copy as
+# root would let anything that can write the clone run as root. That copy only says a newer one is waiting.
+INSTALLED=/usr/local/sbin/daemons-companion-deploy
+if [ "$0" != "$INSTALLED" ] && [ -z "${DEPLOY_REEXEC:-}" ] && ! cmp -s "$0" "$CODE/hub/deploy.sh"; then
   echo "deploy: deploy.sh itself changed -- running the new one"; DEPLOY_REEXEC=1 WAS="$was" LOCK0="$lock0" exec bash "$CODE/hub/deploy.sh"
 fi
 echo "deploy: $(git_ log -1 --format='%h' "$was") -> $(git_ log -1 --format='%h %s' | cut -c1-90)"
@@ -57,6 +61,8 @@ fi
 systemctl restart daemons-companion.service
 if answers; then
   echo "deploy: the server answers on $(git_ log -1 --format=%h)"
+  [ "$0" = "$INSTALLED" ] && ! cmp -s "$0" "$CODE/hub/deploy.sh" && \
+    echo "deploy: a newer deploy.sh came with the code; install it (your password): sudo bash $CODE/hub/deploy-setup.sh"
   systemctl is-enabled -q daemons-companion-screen.service 2>/dev/null && systemctl restart daemons-companion-screen.service \
     && echo "deploy: the screen restarted on the new code"
 else

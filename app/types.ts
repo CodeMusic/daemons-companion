@@ -93,7 +93,7 @@ export type MarksData = { marks: { n: number; title: string; lesson: string[]; f
                              wisdom?: { leader: string; virtue: string; without: string[]; with: string[]; explain: string[];
                                         union_plugin: string; union_routine: string; insight: string } }[];
                    understandings: { n: number; name: string; name_is_working: boolean; rgb: number[]; lobe: string;
-                                     found: string; lesson: string[] | null }[] };
+                                     lesson: string[] | null }[] };   // no "found": not published (2026-10-24)
 
 // C-140 (the user, 2026-10-16: "the text isnt organized in a way or styled to make it easy to read"): a MARK or a ROOT,
 // opened, reads as a small page -- its own heading (a MARK's in ink beside its badge, a ROOT's in its own colour), the

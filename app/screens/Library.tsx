@@ -225,7 +225,7 @@ export function StreamBook() {
   if (!p) return <Small>Reading your save…</Small>;
   const items = [
     ...MARKS.marks.map((m, i) => ({ id: `m${i}`, held: !!p.marks?.[i], title: m.title.toUpperCase(), from: `the BENCHMARK in ${m.found}`, paras: lessonParas(m.lesson, m.title) })),
-    ...MARKS.understandings.map((u, i) => ({ id: `u${i}`, held: !!p.roots?.[i], title: u.name, from: u.found, paras: lessonParas(u.lesson, u.name) })),
+    ...MARKS.understandings.map((u, i) => ({ id: `u${i}`, held: !!p.roots?.[i], title: u.name, from: null, paras: lessonParas(u.lesson, u.name) })),   // where it was found: no longer published (the user, 2026-10-24)
   ].filter((x) => x.held && x.paras.length);
   return (
     <Card>
@@ -235,7 +235,7 @@ export function StreamBook() {
           <XStack onPress={() => setOpen(open === x.id ? null : x.id)} justifyContent="space-between" alignItems="center" cursor="pointer">
             <YStack flex={1}>
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{x.title}</Text>
-              <Small>{x.from}</Small>
+              {x.from ? <Small>{x.from}</Small> : null}
             </YStack>
             <Text fontSize={18} color="$color10">{open === x.id ? "−" : "+"}</Text>
           </XStack>

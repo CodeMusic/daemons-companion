@@ -65,7 +65,6 @@ export function RootPage({ i, marks, wisdom }: { i: number; marks: boolean[]; wi
       <Text fontFamily="$mono" fontSize={17} fontWeight="800" letterSpacing={1} color={rgbOf(dark ? onNight(u.rgb) : u.rgb)}>{u.name}</Text>
       {paras.length ? <Para lead>{paras[0]}</Para> : <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color10">Its lesson is still being written.</Text>}
       {paras.length > 1 ? <Points lines={paras.slice(1)} /> : null}
-      <Small color="$color10">{`Arrived at: ${u.found}.`}</Small>
       {m && marks[n] ? (
         <YStack gap={6}>
           <SubHead>PAIRED WITH</SubHead>

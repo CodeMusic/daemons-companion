@@ -101,7 +101,6 @@ static void tapRoot(lv_event_t *e) {
     if (first.length()) label(o, first, &lv_font_montserrat_28, INK, LV_PCT(100));
     points(o, std::vector<String>(ps.begin() + next, ps.end()));
   }
-  label(o, "Arrived at: " + String((const char *)(u["found"] | "")) + ".", &lv_font_montserrat_20, DAY, LV_PCT(100));
   int n = -1;
   for (int k = 0; k < (int)m["marks"].size(); k++) if (rootOfMark(m, k) == i) n = k;
   if (n < 0 || !(pr["marks"][n] | false)) return;

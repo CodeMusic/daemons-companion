@@ -7,7 +7,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyBps, PatchError } from "../src/game/bps.js";
-import { crc32, crc32Hex, sha1 } from "../src/game/hash.js";
+import { crc32Hex, sha1 } from "../src/game/hash.js";
 import { patchFor, releaseOf, releasedAs } from "../src/game/patches.js";
 
 describe("the hashes (C-187)", () => {

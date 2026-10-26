@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 // The companion's answers, as the app and the site read them -- one type a route's answer (C-157: out of App.tsx).
 
 // C-73: the Xenith day -- the virtue over its shadow (cue), the chakra, the theme word
@@ -181,6 +182,6 @@ export type HomeSettings = { url: string | null; hasToken: boolean; ok: boolean;
 
 // C-156 (the user, 2026-10-18, B of the mockup): six tabs, SETTINGS behind the gear. The INDEX is DAEMON's, the NOTEBOOK
 // LIBRARY's, PROFILE is YOU, and DEVICE and HOME are PLACES together. ("settings" is a screen, not a tab.)
-export const TABS = ["today", "daemon", "goals", "library", "you", "places", "settings"] as const;
+export const TABS = ["today", "game", "daemon", "goals", "library", "you", "places", "settings"] as const;   // C-187: GAME, on the phone and iPad
 
-export const SHOWN_TABS = TABS.filter((t) => t !== "settings");
+export const SHOWN_TABS = TABS.filter((t) => t !== "settings" && (t !== "game" || Platform.OS !== "web"));   // the site has the playground

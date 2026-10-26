@@ -16,6 +16,7 @@ import { GoalsScreen } from "./screens/Goals";
 import { HomeAssistantCard, HomeScreen } from "./screens/Home";
 import { LibraryScreen } from "./screens/Library";
 import { PairScreen, sendTodaysSteps } from "./screens/Pair";
+import { GameView } from "./screens/Game";
 import { DeviceScreen } from "./screens/Places";
 import { PairCard, RelayCard, SettingsScreen } from "./screens/Settings";
 import { TodayScreen } from "./screens/Today";
@@ -146,7 +147,9 @@ function Shell() {
         </XStack>
         <TabStrip tab={tab} setTab={setTab} />
       </YStack>
-      <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
+      {/* C-187: the game stays mounted (hidden and paused on the other tabs), beside the page, never inside its scroll */}
+      {ON_PHONE ? <GameView active={tab === "game"} ink={ink} /> : null}
+      {tab !== "game" ? <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
         {error ? <Stuck error={error} ink={ink} /> : null}
         {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
         {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
@@ -156,7 +159,7 @@ function Shell() {
         {tab === "library" ? <LibraryScreen /> : null}
         {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
         {tab === "settings" && SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
-      </ScrollView>
+      </ScrollView> : null}
       {newsBanner}
       {showToast ? (
         <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}

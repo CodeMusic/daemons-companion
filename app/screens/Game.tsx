@@ -23,6 +23,11 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>html,body{margin:0;height:100%;background:#0f1115;overflow:hidden}#game{width:100%;height:100%}</style></head>
 <body><div id="game"></div><script>
+const ctxs = []; const AC = window.AudioContext || window.webkitAudioContext;   // every sound context, to wake on a touch
+if (AC) { const W = function (...a) { const c = new AC(...a); ctxs.push(c); return c; }; W.prototype = AC.prototype;
+  window.AudioContext = W; window.webkitAudioContext = W; }
+const wake = () => ctxs.forEach((c) => { if (c.state !== "running") c.resume().catch(() => {}); });
+["touchstart", "touchend", "mousedown", "keydown"].forEach((e) => document.addEventListener(e, wake, true));
 const say = (m) => window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(m));
 const b64 = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const unb64 = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
@@ -40,7 +45,16 @@ setInterval(() => window.takeSave("tick"), 15000);
 window.EJS_player = "#game"; window.EJS_core = "gba"; window.EJS_gameUrl = "daemons.gba"; window.EJS_gameName = "daemons";
 window.EJS_pathtodata = "${CDN}"; window.EJS_startOnLoaded = true; window.EJS_backgroundColor = "#0f1115";
 window.EJS_Buttons = { netplay: false, exitEmulation: false, saveState: false, loadState: false };
-window.EJS_onGameStart = () => say({ kind: "started" });
+window.EJS_defaultOptions = { webgl2Enabled: "enabled" };
+window.EJS_onGameStart = () => { say({ kind: "started" }); speed(); };
+// How fast it runs: frames drawn a second (the screen's pace; Low Power Mode holds it at 30) and frames the core ran
+const speed = () => { let drawn = 0, t0 = performance.now(), f0 = null;
+  const tick = () => { drawn++; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
+  setInterval(() => { const t = performance.now(), s = (t - t0) / 1000; let f = null;
+    try { f = g().getFrameNum(); } catch (e) {}
+    say({ kind: "speed", drawn: Math.round(drawn / s), ran: f !== null && f0 !== null ? Math.round((f - f0) / s) : null,
+          sound: ctxs.map((c) => c.state).join(",") });
+    drawn = 0; t0 = t; f0 = f; wake(); }, 3000); };
 window.onerror = (m) => say({ kind: "error", text: String(m) });
 const s = document.createElement("script"); s.src = "${CDN}loader.js"; document.body.appendChild(s);
 </script></body></html>`;
@@ -69,6 +83,7 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
   const started = useRef(false);
   const given = useRef("");                              // the save as the game last had it (put in, or written out)
   const [update, setUpdate] = useState<ReturnType<typeof updateFor>>(null);
+  const [pace, setPace] = useState<{ drawn: number; ran: number | null; sound: string } | null>(null);   // the speed readout
 
   useEffect(() => {                                       // a newer release, as published now
     if (game) freshPatches().then(() => setUpdate(updateFor(game)));
@@ -121,7 +136,7 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
     } catch (e) { setError((e as Error).message); } finally { setStep(null); }
   };
   const heard = (data: string) => {
-    let m: { kind: string; b64?: string; text?: string; why?: string };
+    let m: { kind: string; b64?: string; text?: string; why?: string; drawn?: number; ran?: number | null; sound?: string };
     try { m = JSON.parse(data); } catch { return; }
     if (m.kind === "started") {
       started.current = true;
@@ -132,7 +147,8 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
       const f = saveFile(), bytes = bytesOf(m.b64);
       if (bytes.length >= 0x10000) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; }   // a whole save, never a blank start
       if (m.why === "leave") handed.current?.();
-    } else if (m.kind === "error" && m.text) setError(m.text);
+    } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
+    else if (m.kind === "error" && m.text) setError(m.text);
   };
 
   if (!active && !game) return null;
@@ -164,7 +180,13 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
       <WebView key={game.sha1} ref={web} source={{ uri: page }} originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}
                allowingReadAccessToURL={new Directory(Paths.document, "game").uri} allowFileAccess allowFileAccessFromFileURLs
                allowUniversalAccessFromFileURLs allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false}
-               scrollEnabled={false} bounces={false} onMessage={(e) => heard(e.nativeEvent.data)} />
+               scrollEnabled={false} bounces={false} onMessage={(e) => heard(e.nativeEvent.data)}
+               applicationNameForUserAgent="Version/18.0 Mobile/15E148 Safari/604.1" />
+      {pace && active ? (
+        <Small color={pace.ran !== null && pace.ran < 55 ? "$color9" : "$color8"}>
+          {`${pace.ran ?? "?"} game frames a second · ${pace.drawn} drawn · sound ${pace.sound || "none"}`
+            + (pace.drawn > 0 && pace.drawn <= 35 ? " -- the screen is held at 30: is Low Power Mode on?" : "")}
+        </Small>) : null}
       {error ? <Small color="$color9">{error}</Small> : null}
     </YStack>
   );

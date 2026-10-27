@@ -51,6 +51,7 @@ import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
+import { discoveryLoop } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
@@ -391,6 +392,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const talks = new Conversations();                           // C-66: the last few things said, per device
   const talkJobs = new TalkJobs<Record<string, unknown>>(2);   // C-180: every talk and voice, queued; fetched by id
   const house = new House(() => modulesIn((k) => store.getSetting(k)));   // C-180: the modules in the house (ai/house.ts)
+  discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's

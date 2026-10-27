@@ -1,0 +1,6251 @@
+{
+ "_draft": "DRAFT: a record with draft: true carries the planner's own wording (a gate's reason, a renamed step label), which awaits the user's approval.",
+ "_about": "T-453: the planner. step on every record = how many of the story's steps are done before it is reachable; show a record when the save has done at least that many (count the done_flag of each step in planner_story.json, bits as profile_layout explains). Each map (by its folder, as maps.json names it) with its place, its type, its size in tiles, its edges (the maps beside it) and joins (every map a warp, edge, script or the ferry leads to, both ways); gate says what holds it until step. join_gates hold the way between two maps instead. Left out on purpose: every place the game means to be found by playing, the islands only a ticket reaches, what lives in DOLDRUM CAVE, hidden items, fixed encounters, the GUIDE and the UNDERSTANDINGS, the NOTEBOOK and its books, and any line of the game's text.",
+ "start": "PalletTown_PlayersHouse_2F",
+ "join_gates": [
+  {
+   "between": [
+    "Route2",
+    "DiglettsCave_NorthEntrance"
+   ],
+   "step": 8,
+   "why": "a tree only PRUNE clears (DRIVER01)",
+   "draft": true
+  },
+  {
+   "between": [
+    "Route11",
+    "Route12"
+   ],
+   "step": 14,
+   "why": "the sleeper across ROUTE 12, woken by the INTERRUPT",
+   "draft": true
+  },
+  {
+   "between": [
+    "Route12",
+    "Route13"
+   ],
+   "step": 14,
+   "why": "the sleeper across ROUTE 12, woken by the INTERRUPT",
+   "draft": true
+  }
+ ],
+ "maps": {
+  "PalletTown": {
+   "id": "MAP_PALLET_TOWN",
+   "place": "BLANCHE TOWN",
+   "section": "MAPSEC_PALLET_TOWN",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 0,
+   "edges": {
+    "up": "Route1",
+    "down": "Route21_North"
+   },
+   "joins": [
+    "PalletTown_PlayersHouse_1F",
+    "PalletTown_ProfessorOaksLab",
+    "PalletTown_RivalsHouse",
+    "Route1",
+    "Route21_North"
+   ]
+  },
+  "PalletTown_PlayersHouse_1F": {
+   "id": "MAP_PALLET_TOWN_PLAYERS_HOUSE_1F",
+   "place": "BLANCHE TOWN",
+   "section": "MAPSEC_PALLET_TOWN",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "PalletTown",
+    "PalletTown_PlayersHouse_2F"
+   ]
+  },
+  "PalletTown_PlayersHouse_2F": {
+   "id": "MAP_PALLET_TOWN_PLAYERS_HOUSE_2F",
+   "place": "BLANCHE TOWN",
+   "section": "MAPSEC_PALLET_TOWN",
+   "type": "indoor",
+   "width": 12,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "PalletTown_PlayersHouse_1F"
+   ]
+  },
+  "PalletTown_ProfessorOaksLab": {
+   "id": "MAP_PALLET_TOWN_PROFESSOR_OAKS_LAB",
+   "place": "BLANCHE TOWN",
+   "section": "MAPSEC_PALLET_TOWN",
+   "type": "indoor",
+   "width": 13,
+   "height": 14,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "PalletTown"
+   ]
+  },
+  "PalletTown_RivalsHouse": {
+   "id": "MAP_PALLET_TOWN_RIVALS_HOUSE",
+   "place": "BLANCHE TOWN",
+   "section": "MAPSEC_PALLET_TOWN",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "PalletTown"
+   ]
+  },
+  "Route1": {
+   "id": "MAP_ROUTE1",
+   "place": "ROUTE 1",
+   "section": "MAPSEC_ROUTE_1",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 0,
+   "edges": {
+    "up": "ViridianCity",
+    "down": "PalletTown"
+   },
+   "joins": [
+    "PalletTown",
+    "ViridianCity"
+   ]
+  },
+  "Route22": {
+   "id": "MAP_ROUTE22",
+   "place": "ROUTE 22",
+   "section": "MAPSEC_ROUTE_22",
+   "type": "route",
+   "width": 48,
+   "height": 24,
+   "step": 0,
+   "edges": {
+    "up": "Route23",
+    "right": "ViridianCity"
+   },
+   "joins": [
+    "Route22_NorthEntrance",
+    "Route23",
+    "ViridianCity"
+   ]
+  },
+  "Route22_NorthEntrance": {
+   "id": "MAP_ROUTE22_NORTH_ENTRANCE",
+   "place": "ROUTE 22",
+   "section": "MAPSEC_ROUTE_22",
+   "type": "indoor",
+   "width": 15,
+   "height": 12,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "Route22",
+    "Route23"
+   ]
+  },
+  "ViridianCity": {
+   "id": "MAP_VIRIDIAN_CITY",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 0,
+   "edges": {
+    "up": "Route2",
+    "down": "Route1",
+    "left": "Route22"
+   },
+   "joins": [
+    "Route1",
+    "Route2",
+    "Route22",
+    "ViridianCity_Gym",
+    "ViridianCity_House",
+    "ViridianCity_Mart",
+    "ViridianCity_PokemonCenter_1F",
+    "ViridianCity_School"
+   ]
+  },
+  "ViridianCity_House": {
+   "id": "MAP_VIRIDIAN_CITY_HOUSE",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity"
+   ]
+  },
+  "ViridianCity_Mart": {
+   "id": "MAP_VIRIDIAN_CITY_MART",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity"
+   ]
+  },
+  "ViridianCity_PokemonCenter_1F": {
+   "id": "MAP_VIRIDIAN_CITY_POKEMON_CENTER_1F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity",
+    "ViridianCity_PokemonCenter_2F"
+   ]
+  },
+  "ViridianCity_PokemonCenter_2F": {
+   "id": "MAP_VIRIDIAN_CITY_POKEMON_CENTER_2F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_PokemonCenter_1F"
+   ]
+  },
+  "ViridianCity_School": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity",
+    "ViridianCity_School_2F"
+   ]
+  },
+  "ViridianCity_School_2F": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL_2F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_School",
+    "ViridianCity_School_3F"
+   ]
+  },
+  "ViridianCity_School_3F": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL_3F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_School_2F",
+    "ViridianCity_School_4F"
+   ]
+  },
+  "ViridianCity_School_4F": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL_4F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_School_3F",
+    "ViridianCity_School_5F"
+   ]
+  },
+  "ViridianCity_School_5F": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL_5F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_School_4F",
+    "ViridianCity_School_6F"
+   ]
+  },
+  "ViridianCity_School_6F": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL_6F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_School_5F",
+    "ViridianCity_School_7F"
+   ]
+  },
+  "ViridianCity_School_7F": {
+   "id": "MAP_VIRIDIAN_CITY_SCHOOL_7F",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 0,
+   "edges": {},
+   "joins": [
+    "ViridianCity_School_6F"
+   ]
+  },
+  "PewterCity": {
+   "id": "MAP_PEWTER_CITY",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 2,
+   "edges": {
+    "down": "Route2",
+    "right": "Route3"
+   },
+   "joins": [
+    "PewterCity_Gym",
+    "PewterCity_House1",
+    "PewterCity_House2",
+    "PewterCity_Mart",
+    "PewterCity_Museum_1F",
+    "PewterCity_PokemonCenter_1F",
+    "Route2",
+    "Route3"
+   ]
+  },
+  "PewterCity_Gym": {
+   "id": "MAP_PEWTER_CITY_GYM",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 16,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity"
+   ]
+  },
+  "PewterCity_House1": {
+   "id": "MAP_PEWTER_CITY_HOUSE1",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity"
+   ]
+  },
+  "PewterCity_House2": {
+   "id": "MAP_PEWTER_CITY_HOUSE2",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity"
+   ]
+  },
+  "PewterCity_Mart": {
+   "id": "MAP_PEWTER_CITY_MART",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity"
+   ]
+  },
+  "PewterCity_Museum_1F": {
+   "id": "MAP_PEWTER_CITY_MUSEUM_1F",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 28,
+   "height": 11,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity",
+    "PewterCity_Museum_2F"
+   ]
+  },
+  "PewterCity_Museum_2F": {
+   "id": "MAP_PEWTER_CITY_MUSEUM_2F",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 19,
+   "height": 10,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity_Museum_1F"
+   ]
+  },
+  "PewterCity_PokemonCenter_1F": {
+   "id": "MAP_PEWTER_CITY_POKEMON_CENTER_1F",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity",
+    "PewterCity_PokemonCenter_2F"
+   ]
+  },
+  "PewterCity_PokemonCenter_2F": {
+   "id": "MAP_PEWTER_CITY_POKEMON_CENTER_2F",
+   "place": "SLATE CITY",
+   "section": "MAPSEC_PEWTER_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "PewterCity_PokemonCenter_1F"
+   ]
+  },
+  "Route2": {
+   "id": "MAP_ROUTE2",
+   "place": "ROUTE 2",
+   "section": "MAPSEC_ROUTE_2",
+   "type": "route",
+   "width": 24,
+   "height": 80,
+   "step": 2,
+   "edges": {
+    "up": "PewterCity",
+    "down": "ViridianCity"
+   },
+   "joins": [
+    "DiglettsCave_NorthEntrance",
+    "PewterCity",
+    "Route2_EastBuilding",
+    "Route2_House",
+    "Route2_ViridianForest_NorthEntrance",
+    "Route2_ViridianForest_SouthEntrance",
+    "ViridianCity"
+   ],
+   "gate": "the old man across CALLOW's north road until the parcel is home",
+   "draft": true
+  },
+  "Route2_EastBuilding": {
+   "id": "MAP_ROUTE2_EAST_BUILDING",
+   "place": "ROUTE 2",
+   "section": "MAPSEC_ROUTE_2",
+   "type": "indoor",
+   "width": 15,
+   "height": 12,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "Route2"
+   ]
+  },
+  "Route2_House": {
+   "id": "MAP_ROUTE2_HOUSE",
+   "place": "ROUTE 2",
+   "section": "MAPSEC_ROUTE_2",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "Route2"
+   ]
+  },
+  "Route2_ViridianForest_NorthEntrance": {
+   "id": "MAP_ROUTE2_VIRIDIAN_FOREST_NORTH_ENTRANCE",
+   "place": "ROUTE 2",
+   "section": "MAPSEC_ROUTE_2",
+   "type": "indoor",
+   "width": 15,
+   "height": 12,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "Route2",
+    "ViridianForest"
+   ]
+  },
+  "Route2_ViridianForest_SouthEntrance": {
+   "id": "MAP_ROUTE2_VIRIDIAN_FOREST_SOUTH_ENTRANCE",
+   "place": "ROUTE 2",
+   "section": "MAPSEC_ROUTE_2",
+   "type": "indoor",
+   "width": 15,
+   "height": 12,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "Route2",
+    "ViridianForest"
+   ]
+  },
+  "ViridianForest": {
+   "id": "MAP_VIRIDIAN_FOREST",
+   "place": "THE UNDERTONE",
+   "section": "MAPSEC_VIRIDIAN_FOREST",
+   "type": "route",
+   "width": 54,
+   "height": 69,
+   "step": 2,
+   "edges": {},
+   "joins": [
+    "Route2_ViridianForest_NorthEntrance",
+    "Route2_ViridianForest_SouthEntrance"
+   ]
+  },
+  "CeruleanCity": {
+   "id": "MAP_CERULEAN_CITY",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 5,
+   "edges": {
+    "up": "Route24",
+    "down": "Route5",
+    "left": "Route4",
+    "right": "Route9"
+   },
+   "joins": [
+    "CeruleanCave_1F",
+    "CeruleanCity_BikeShop",
+    "CeruleanCity_Gym",
+    "CeruleanCity_House1",
+    "CeruleanCity_House2",
+    "CeruleanCity_House3",
+    "CeruleanCity_House4",
+    "CeruleanCity_House5",
+    "CeruleanCity_Mart",
+    "CeruleanCity_PokemonCenter_1F",
+    "Route24",
+    "Route4",
+    "Route5",
+    "Route9"
+   ]
+  },
+  "CeruleanCity_BikeShop": {
+   "id": "MAP_CERULEAN_CITY_BIKE_SHOP",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_Gym": {
+   "id": "MAP_CERULEAN_CITY_GYM",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 17,
+   "height": 20,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_House1": {
+   "id": "MAP_CERULEAN_CITY_HOUSE1",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_House2": {
+   "id": "MAP_CERULEAN_CITY_HOUSE2",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_House3": {
+   "id": "MAP_CERULEAN_CITY_HOUSE3",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_House4": {
+   "id": "MAP_CERULEAN_CITY_HOUSE4",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_House5": {
+   "id": "MAP_CERULEAN_CITY_HOUSE5",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_Mart": {
+   "id": "MAP_CERULEAN_CITY_MART",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity"
+   ]
+  },
+  "CeruleanCity_PokemonCenter_1F": {
+   "id": "MAP_CERULEAN_CITY_POKEMON_CENTER_1F",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity",
+    "CeruleanCity_PokemonCenter_2F"
+   ]
+  },
+  "CeruleanCity_PokemonCenter_2F": {
+   "id": "MAP_CERULEAN_CITY_POKEMON_CENTER_2F",
+   "place": "DOLDRUM CITY",
+   "section": "MAPSEC_CERULEAN_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "CeruleanCity_PokemonCenter_1F"
+   ]
+  },
+  "DiglettsCave_B1F": {
+   "id": "MAP_DIGLETTS_CAVE_B1F",
+   "place": "TAPPOINT'S CAVE",
+   "section": "MAPSEC_DIGLETTS_CAVE",
+   "type": "underground",
+   "width": 85,
+   "height": 80,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "DiglettsCave_NorthEntrance",
+    "DiglettsCave_SouthEntrance"
+   ]
+  },
+  "DiglettsCave_NorthEntrance": {
+   "id": "MAP_DIGLETTS_CAVE_NORTH_ENTRANCE",
+   "place": "TAPPOINT'S CAVE",
+   "section": "MAPSEC_DIGLETTS_CAVE",
+   "type": "underground",
+   "width": 10,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "DiglettsCave_B1F",
+    "Route2"
+   ]
+  },
+  "DiglettsCave_SouthEntrance": {
+   "id": "MAP_DIGLETTS_CAVE_SOUTH_ENTRANCE",
+   "place": "TAPPOINT'S CAVE",
+   "section": "MAPSEC_DIGLETTS_CAVE",
+   "type": "underground",
+   "width": 10,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "DiglettsCave_B1F",
+    "Route11"
+   ]
+  },
+  "MtMoon_1F": {
+   "id": "MAP_MT_MOON_1F",
+   "place": "DEADSTACK",
+   "section": "MAPSEC_MT_MOON",
+   "type": "underground",
+   "width": 48,
+   "height": 40,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "MtMoon_B1F",
+    "Route4"
+   ]
+  },
+  "MtMoon_B1F": {
+   "id": "MAP_MT_MOON_B1F",
+   "place": "DEADSTACK",
+   "section": "MAPSEC_MT_MOON",
+   "type": "underground",
+   "width": 49,
+   "height": 40,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "MtMoon_1F",
+    "MtMoon_B2F",
+    "Route4"
+   ]
+  },
+  "MtMoon_B2F": {
+   "id": "MAP_MT_MOON_B2F",
+   "place": "DEADSTACK",
+   "section": "MAPSEC_MT_MOON",
+   "type": "underground",
+   "width": 48,
+   "height": 40,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "MtMoon_B1F"
+   ]
+  },
+  "Route11": {
+   "id": "MAP_ROUTE11",
+   "place": "ROUTE 11",
+   "section": "MAPSEC_ROUTE_11",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 5,
+   "edges": {
+    "left": "VermilionCity",
+    "right": "Route12"
+   },
+   "joins": [
+    "DiglettsCave_SouthEntrance",
+    "Route11_EastEntrance_1F",
+    "Route12",
+    "VermilionCity"
+   ]
+  },
+  "Route11_EastEntrance_1F": {
+   "id": "MAP_ROUTE11_EAST_ENTRANCE_1F",
+   "place": "ROUTE 11",
+   "section": "MAPSEC_ROUTE_11",
+   "type": "indoor",
+   "width": 13,
+   "height": 12,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route11",
+    "Route11_EastEntrance_2F"
+   ]
+  },
+  "Route11_EastEntrance_2F": {
+   "id": "MAP_ROUTE11_EAST_ENTRANCE_2F",
+   "place": "ROUTE 11",
+   "section": "MAPSEC_ROUTE_11",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route11_EastEntrance_1F"
+   ]
+  },
+  "Route24": {
+   "id": "MAP_ROUTE24",
+   "place": "ROUTE 24",
+   "section": "MAPSEC_ROUTE_24",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 5,
+   "edges": {
+    "down": "CeruleanCity",
+    "right": "Route25"
+   },
+   "joins": [
+    "CeruleanCity",
+    "Route25"
+   ]
+  },
+  "Route25": {
+   "id": "MAP_ROUTE25",
+   "place": "ROUTE 25",
+   "section": "MAPSEC_ROUTE_25",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 5,
+   "edges": {
+    "left": "Route24"
+   },
+   "joins": [
+    "Route24",
+    "Route25_SeaCottage"
+   ]
+  },
+  "Route25_SeaCottage": {
+   "id": "MAP_ROUTE25_SEA_COTTAGE",
+   "place": "ROUTE 25",
+   "section": "MAPSEC_ROUTE_25",
+   "type": "indoor",
+   "width": 15,
+   "height": 11,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route25"
+   ]
+  },
+  "Route3": {
+   "id": "MAP_ROUTE3",
+   "place": "ROUTE 3",
+   "section": "MAPSEC_ROUTE_3",
+   "type": "route",
+   "width": 84,
+   "height": 20,
+   "step": 5,
+   "edges": {
+    "up": "Route4",
+    "left": "PewterCity"
+   },
+   "joins": [
+    "PewterCity",
+    "Route4"
+   ],
+   "gate": "SLATE's east road is held until CAIRN's MARK",
+   "draft": true
+  },
+  "Route4": {
+   "id": "MAP_ROUTE4",
+   "place": "ROUTE 4",
+   "section": "MAPSEC_ROUTE_4",
+   "type": "route",
+   "width": 108,
+   "height": 20,
+   "step": 5,
+   "edges": {
+    "down": "Route3",
+    "right": "CeruleanCity"
+   },
+   "joins": [
+    "CeruleanCity",
+    "MtMoon_1F",
+    "MtMoon_B1F",
+    "Route3",
+    "Route4_PokemonCenter_1F"
+   ]
+  },
+  "Route4_PokemonCenter_1F": {
+   "id": "MAP_ROUTE4_POKEMON_CENTER_1F",
+   "place": "ROUTE 4",
+   "section": "MAPSEC_ROUTE_4",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route4",
+    "Route4_PokemonCenter_2F"
+   ]
+  },
+  "Route4_PokemonCenter_2F": {
+   "id": "MAP_ROUTE4_POKEMON_CENTER_2F",
+   "place": "ROUTE 4",
+   "section": "MAPSEC_ROUTE_4",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route4_PokemonCenter_1F"
+   ]
+  },
+  "Route5": {
+   "id": "MAP_ROUTE5",
+   "place": "ROUTE 5",
+   "section": "MAPSEC_ROUTE_5",
+   "type": "route",
+   "width": 48,
+   "height": 40,
+   "step": 5,
+   "edges": {
+    "up": "CeruleanCity",
+    "down": "SaffronCity_Connection"
+   },
+   "joins": [
+    "CeruleanCity",
+    "Route5_PokemonDayCare",
+    "Route5_SouthEntrance",
+    "SaffronCity",
+    "SaffronCity_Connection",
+    "UndergroundPath_NorthEntrance"
+   ]
+  },
+  "Route5_PokemonDayCare": {
+   "id": "MAP_ROUTE5_POKEMON_DAY_CARE",
+   "place": "ROUTE 5",
+   "section": "MAPSEC_ROUTE_5",
+   "type": "indoor",
+   "width": 12,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route5"
+   ]
+  },
+  "Route5_SouthEntrance": {
+   "id": "MAP_ROUTE5_SOUTH_ENTRANCE",
+   "place": "ROUTE 5",
+   "section": "MAPSEC_ROUTE_5",
+   "type": "indoor",
+   "width": 9,
+   "height": 11,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route5",
+    "SaffronCity"
+   ]
+  },
+  "Route6": {
+   "id": "MAP_ROUTE6",
+   "place": "ROUTE 6",
+   "section": "MAPSEC_ROUTE_6",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 5,
+   "edges": {
+    "up": "SaffronCity_Connection",
+    "down": "VermilionCity"
+   },
+   "joins": [
+    "Route6_NorthEntrance",
+    "SaffronCity",
+    "SaffronCity_Connection",
+    "UndergroundPath_SouthEntrance",
+    "VermilionCity"
+   ]
+  },
+  "Route6_NorthEntrance": {
+   "id": "MAP_ROUTE6_NORTH_ENTRANCE",
+   "place": "ROUTE 6",
+   "section": "MAPSEC_ROUTE_6",
+   "type": "indoor",
+   "width": 9,
+   "height": 11,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route6",
+    "SaffronCity"
+   ]
+  },
+  "SSAnne_1F_Corridor": {
+   "id": "MAP_SSANNE_1F_CORRIDOR",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 31,
+   "height": 21,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Room1",
+    "SSAnne_1F_Room2",
+    "SSAnne_1F_Room3",
+    "SSAnne_1F_Room4",
+    "SSAnne_1F_Room5",
+    "SSAnne_1F_Room6",
+    "SSAnne_1F_Room7",
+    "SSAnne_2F_Corridor",
+    "SSAnne_B1F_Corridor",
+    "SSAnne_Exterior",
+    "SSAnne_Kitchen"
+   ]
+  },
+  "SSAnne_1F_Room1": {
+   "id": "MAP_SSANNE_1F_ROOM1",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_1F_Room2": {
+   "id": "MAP_SSANNE_1F_ROOM2",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_1F_Room3": {
+   "id": "MAP_SSANNE_1F_ROOM3",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_1F_Room4": {
+   "id": "MAP_SSANNE_1F_ROOM4",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_1F_Room5": {
+   "id": "MAP_SSANNE_1F_ROOM5",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_1F_Room6": {
+   "id": "MAP_SSANNE_1F_ROOM6",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_1F_Room7": {
+   "id": "MAP_SSANNE_1F_ROOM7",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 8,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "SSAnne_2F_Corridor": {
+   "id": "MAP_SSANNE_2F_CORRIDOR",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 34,
+   "height": 16,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor",
+    "SSAnne_2F_Room1",
+    "SSAnne_2F_Room2",
+    "SSAnne_2F_Room3",
+    "SSAnne_2F_Room4",
+    "SSAnne_2F_Room5",
+    "SSAnne_2F_Room6",
+    "SSAnne_3F_Corridor",
+    "SSAnne_CaptainsOffice"
+   ]
+  },
+  "SSAnne_2F_Room1": {
+   "id": "MAP_SSANNE_2F_ROOM1",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_2F_Room2": {
+   "id": "MAP_SSANNE_2F_ROOM2",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_2F_Room3": {
+   "id": "MAP_SSANNE_2F_ROOM3",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_2F_Room4": {
+   "id": "MAP_SSANNE_2F_ROOM4",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_2F_Room5": {
+   "id": "MAP_SSANNE_2F_ROOM5",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_2F_Room6": {
+   "id": "MAP_SSANNE_2F_ROOM6",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_3F_Corridor": {
+   "id": "MAP_SSANNE_3F_CORRIDOR",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 22,
+   "height": 7,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor",
+    "SSAnne_Deck"
+   ]
+  },
+  "SSAnne_B1F_Corridor": {
+   "id": "MAP_SSANNE_B1F_CORRIDOR",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 23,
+   "height": 7,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor",
+    "SSAnne_B1F_Room1",
+    "SSAnne_B1F_Room2",
+    "SSAnne_B1F_Room3",
+    "SSAnne_B1F_Room4",
+    "SSAnne_B1F_Room5"
+   ]
+  },
+  "SSAnne_B1F_Room1": {
+   "id": "MAP_SSANNE_B1F_ROOM1",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_B1F_Corridor"
+   ]
+  },
+  "SSAnne_B1F_Room2": {
+   "id": "MAP_SSANNE_B1F_ROOM2",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_B1F_Corridor"
+   ]
+  },
+  "SSAnne_B1F_Room3": {
+   "id": "MAP_SSANNE_B1F_ROOM3",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_B1F_Corridor"
+   ]
+  },
+  "SSAnne_B1F_Room4": {
+   "id": "MAP_SSANNE_B1F_ROOM4",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_B1F_Corridor"
+   ]
+  },
+  "SSAnne_B1F_Room5": {
+   "id": "MAP_SSANNE_B1F_ROOM5",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 6,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_B1F_Corridor"
+   ]
+  },
+  "SSAnne_CaptainsOffice": {
+   "id": "MAP_SSANNE_CAPTAINS_OFFICE",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 9,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_2F_Corridor"
+   ]
+  },
+  "SSAnne_Deck": {
+   "id": "MAP_SSANNE_DECK",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 24,
+   "height": 19,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_3F_Corridor"
+   ]
+  },
+  "SSAnne_Exterior": {
+   "id": "MAP_SSANNE_EXTERIOR",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 70,
+   "height": 32,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor",
+    "VermilionCity"
+   ]
+  },
+  "SSAnne_Kitchen": {
+   "id": "MAP_SSANNE_KITCHEN",
+   "place": "S.S. ANNE",
+   "section": "MAPSEC_S_S_ANNE",
+   "type": "indoor",
+   "width": 16,
+   "height": 14,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "SSAnne_1F_Corridor"
+   ]
+  },
+  "UndergroundPath_NorthEntrance": {
+   "id": "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE",
+   "place": "UNDERGROUND PATH",
+   "section": "MAPSEC_UNDERGROUND_PATH",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route5",
+    "UndergroundPath_NorthSouthTunnel"
+   ]
+  },
+  "UndergroundPath_NorthSouthTunnel": {
+   "id": "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL",
+   "place": "UNDERGROUND PATH",
+   "section": "MAPSEC_UNDERGROUND_PATH",
+   "type": "indoor",
+   "width": 8,
+   "height": 63,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "UndergroundPath_NorthEntrance",
+    "UndergroundPath_SouthEntrance"
+   ]
+  },
+  "UndergroundPath_SouthEntrance": {
+   "id": "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE",
+   "place": "UNDERGROUND PATH",
+   "section": "MAPSEC_UNDERGROUND_PATH",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "Route6",
+    "UndergroundPath_NorthSouthTunnel"
+   ]
+  },
+  "VermilionCity": {
+   "id": "MAP_VERMILION_CITY",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 5,
+   "edges": {
+    "up": "Route6",
+    "right": "Route11"
+   },
+   "joins": [
+    "FiveIsland_Harbor",
+    "FourIsland_Harbor",
+    "OneIsland_Harbor",
+    "Route11",
+    "Route6",
+    "SSAnne_Exterior",
+    "SevenIsland_Harbor",
+    "SixIsland_Harbor",
+    "ThreeIsland_Harbor",
+    "TwoIsland_Harbor",
+    "VermilionCity_Gym",
+    "VermilionCity_House1",
+    "VermilionCity_House2",
+    "VermilionCity_House3",
+    "VermilionCity_Mart",
+    "VermilionCity_PokemonCenter_1F",
+    "VermilionCity_PokemonFanClub"
+   ]
+  },
+  "VermilionCity_House1": {
+   "id": "MAP_VERMILION_CITY_HOUSE1",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity"
+   ]
+  },
+  "VermilionCity_House2": {
+   "id": "MAP_VERMILION_CITY_HOUSE2",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity"
+   ]
+  },
+  "VermilionCity_House3": {
+   "id": "MAP_VERMILION_CITY_HOUSE3",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity"
+   ]
+  },
+  "VermilionCity_Mart": {
+   "id": "MAP_VERMILION_CITY_MART",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity"
+   ]
+  },
+  "VermilionCity_PokemonCenter_1F": {
+   "id": "MAP_VERMILION_CITY_POKEMON_CENTER_1F",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity",
+    "VermilionCity_PokemonCenter_2F"
+   ]
+  },
+  "VermilionCity_PokemonCenter_2F": {
+   "id": "MAP_VERMILION_CITY_POKEMON_CENTER_2F",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity_PokemonCenter_1F"
+   ]
+  },
+  "VermilionCity_PokemonFanClub": {
+   "id": "MAP_VERMILION_CITY_POKEMON_FAN_CLUB",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 12,
+   "height": 12,
+   "step": 5,
+   "edges": {},
+   "joins": [
+    "VermilionCity"
+   ]
+  },
+  "CeladonCity": {
+   "id": "MAP_CELADON_CITY",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "town",
+   "width": 60,
+   "height": 40,
+   "step": 8,
+   "edges": {
+    "left": "Route16",
+    "right": "Route7"
+   },
+   "joins": [
+    "CeladonCity_Condominiums_1F",
+    "CeladonCity_DepartmentStore_1F",
+    "CeladonCity_GameCorner",
+    "CeladonCity_GameCorner_PrizeRoom",
+    "CeladonCity_Gym",
+    "CeladonCity_Hotel",
+    "CeladonCity_House1",
+    "CeladonCity_PokemonCenter_1F",
+    "CeladonCity_Restaurant",
+    "Route16",
+    "Route7"
+   ]
+  },
+  "CeladonCity_Condominiums_1F": {
+   "id": "MAP_CELADON_CITY_CONDOMINIUMS_1F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity",
+    "CeladonCity_Condominiums_2F"
+   ]
+  },
+  "CeladonCity_Condominiums_2F": {
+   "id": "MAP_CELADON_CITY_CONDOMINIUMS_2F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_Condominiums_1F",
+    "CeladonCity_Condominiums_3F"
+   ]
+  },
+  "CeladonCity_Condominiums_3F": {
+   "id": "MAP_CELADON_CITY_CONDOMINIUMS_3F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_Condominiums_2F",
+    "CeladonCity_Condominiums_Roof"
+   ]
+  },
+  "CeladonCity_Condominiums_Roof": {
+   "id": "MAP_CELADON_CITY_CONDOMINIUMS_ROOF",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 14,
+   "height": 23,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_Condominiums_3F",
+    "CeladonCity_Condominiums_RoofRoom"
+   ]
+  },
+  "CeladonCity_Condominiums_RoofRoom": {
+   "id": "MAP_CELADON_CITY_CONDOMINIUMS_ROOF_ROOM",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_Condominiums_Roof"
+   ]
+  },
+  "CeladonCity_DepartmentStore_1F": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_1F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 16,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity",
+    "CeladonCity_DepartmentStore_2F",
+    "CeladonCity_DepartmentStore_Elevator"
+   ]
+  },
+  "CeladonCity_DepartmentStore_2F": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_2F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 15,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_DepartmentStore_1F",
+    "CeladonCity_DepartmentStore_3F",
+    "CeladonCity_DepartmentStore_Elevator"
+   ]
+  },
+  "CeladonCity_DepartmentStore_3F": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_3F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 15,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_DepartmentStore_2F",
+    "CeladonCity_DepartmentStore_4F",
+    "CeladonCity_DepartmentStore_Elevator"
+   ]
+  },
+  "CeladonCity_DepartmentStore_4F": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_4F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 15,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_DepartmentStore_3F",
+    "CeladonCity_DepartmentStore_5F",
+    "CeladonCity_DepartmentStore_Elevator"
+   ]
+  },
+  "CeladonCity_DepartmentStore_5F": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_5F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 15,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_DepartmentStore_4F",
+    "CeladonCity_DepartmentStore_Elevator",
+    "CeladonCity_DepartmentStore_Roof"
+   ]
+  },
+  "CeladonCity_DepartmentStore_Elevator": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 5,
+   "height": 7,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_DepartmentStore_1F",
+    "CeladonCity_DepartmentStore_2F",
+    "CeladonCity_DepartmentStore_3F",
+    "CeladonCity_DepartmentStore_4F",
+    "CeladonCity_DepartmentStore_5F"
+   ]
+  },
+  "CeladonCity_DepartmentStore_Roof": {
+   "id": "MAP_CELADON_CITY_DEPARTMENT_STORE_ROOF",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 19,
+   "height": 14,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_DepartmentStore_5F"
+   ]
+  },
+  "CeladonCity_GameCorner": {
+   "id": "MAP_CELADON_CITY_GAME_CORNER",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 18,
+   "height": 15,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity",
+    "RocketHideout_B1F"
+   ]
+  },
+  "CeladonCity_GameCorner_PrizeRoom": {
+   "id": "MAP_CELADON_CITY_GAME_CORNER_PRIZE_ROOM",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 9,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity"
+   ]
+  },
+  "CeladonCity_Gym": {
+   "id": "MAP_CELADON_CITY_GYM",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity"
+   ]
+  },
+  "CeladonCity_Hotel": {
+   "id": "MAP_CELADON_CITY_HOTEL",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 17,
+   "height": 11,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity"
+   ]
+  },
+  "CeladonCity_House1": {
+   "id": "MAP_CELADON_CITY_HOUSE1",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity"
+   ]
+  },
+  "CeladonCity_PokemonCenter_1F": {
+   "id": "MAP_CELADON_CITY_POKEMON_CENTER_1F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity",
+    "CeladonCity_PokemonCenter_2F"
+   ]
+  },
+  "CeladonCity_PokemonCenter_2F": {
+   "id": "MAP_CELADON_CITY_POKEMON_CENTER_2F",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_PokemonCenter_1F"
+   ]
+  },
+  "CeladonCity_Restaurant": {
+   "id": "MAP_CELADON_CITY_RESTAURANT",
+   "place": "VERDIGRIS CITY",
+   "section": "MAPSEC_CELADON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 11,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity"
+   ]
+  },
+  "LavenderTown": {
+   "id": "MAP_LAVENDER_TOWN",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {
+    "up": "Route10",
+    "down": "Route12",
+    "left": "Route8"
+   },
+   "joins": [
+    "LavenderTown_House1",
+    "LavenderTown_House2",
+    "LavenderTown_Mart",
+    "LavenderTown_PokemonCenter_1F",
+    "LavenderTown_VolunteerPokemonHouse",
+    "PokemonTower_1F",
+    "Route10",
+    "Route12",
+    "Route8"
+   ]
+  },
+  "LavenderTown_House1": {
+   "id": "MAP_LAVENDER_TOWN_HOUSE1",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown"
+   ]
+  },
+  "LavenderTown_House2": {
+   "id": "MAP_LAVENDER_TOWN_HOUSE2",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown"
+   ]
+  },
+  "LavenderTown_Mart": {
+   "id": "MAP_LAVENDER_TOWN_MART",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown"
+   ]
+  },
+  "LavenderTown_PokemonCenter_1F": {
+   "id": "MAP_LAVENDER_TOWN_POKEMON_CENTER_1F",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown",
+    "LavenderTown_PokemonCenter_2F"
+   ]
+  },
+  "LavenderTown_PokemonCenter_2F": {
+   "id": "MAP_LAVENDER_TOWN_POKEMON_CENTER_2F",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown_PokemonCenter_1F"
+   ]
+  },
+  "LavenderTown_VolunteerPokemonHouse": {
+   "id": "MAP_LAVENDER_TOWN_VOLUNTEER_POKEMON_HOUSE",
+   "place": "HALFTONE TOWN",
+   "section": "MAPSEC_LAVENDER_TOWN",
+   "type": "indoor",
+   "width": 12,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown",
+    "PokemonTower_7F"
+   ]
+  },
+  "PokemonTower_1F": {
+   "id": "MAP_POKEMON_TOWER_1F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "LavenderTown",
+    "PokemonTower_2F"
+   ]
+  },
+  "PokemonTower_2F": {
+   "id": "MAP_POKEMON_TOWER_2F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "PokemonTower_1F",
+    "PokemonTower_3F"
+   ]
+  },
+  "PokemonTower_3F": {
+   "id": "MAP_POKEMON_TOWER_3F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "PokemonTower_2F",
+    "PokemonTower_4F"
+   ]
+  },
+  "PokemonTower_4F": {
+   "id": "MAP_POKEMON_TOWER_4F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "PokemonTower_3F",
+    "PokemonTower_5F"
+   ]
+  },
+  "PokemonTower_5F": {
+   "id": "MAP_POKEMON_TOWER_5F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "PokemonTower_4F",
+    "PokemonTower_6F"
+   ]
+  },
+  "PokemonTower_6F": {
+   "id": "MAP_POKEMON_TOWER_6F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "PokemonTower_5F",
+    "PokemonTower_7F"
+   ]
+  },
+  "RockTunnel_1F": {
+   "id": "MAP_ROCK_TUNNEL_1F",
+   "place": "THE BLACKOUT",
+   "section": "MAPSEC_ROCK_TUNNEL",
+   "type": "underground",
+   "width": 48,
+   "height": 40,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "RockTunnel_B1F",
+    "Route10"
+   ]
+  },
+  "RockTunnel_B1F": {
+   "id": "MAP_ROCK_TUNNEL_B1F",
+   "place": "THE BLACKOUT",
+   "section": "MAPSEC_ROCK_TUNNEL",
+   "type": "underground",
+   "width": 48,
+   "height": 40,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "RockTunnel_1F"
+   ]
+  },
+  "RocketHideout_B1F": {
+   "id": "MAP_ROCKET_HIDEOUT_B1F",
+   "place": "CORPUS HIDEOUT",
+   "section": "MAPSEC_ROCKET_HIDEOUT",
+   "type": "indoor",
+   "width": 28,
+   "height": 34,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "CeladonCity_GameCorner",
+    "RocketHideout_B2F",
+    "RocketHideout_Elevator"
+   ]
+  },
+  "RocketHideout_B2F": {
+   "id": "MAP_ROCKET_HIDEOUT_B2F",
+   "place": "CORPUS HIDEOUT",
+   "section": "MAPSEC_ROCKET_HIDEOUT",
+   "type": "indoor",
+   "width": 32,
+   "height": 22,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "RocketHideout_B1F",
+    "RocketHideout_B3F",
+    "RocketHideout_Elevator"
+   ]
+  },
+  "RocketHideout_B3F": {
+   "id": "MAP_ROCKET_HIDEOUT_B3F",
+   "place": "CORPUS HIDEOUT",
+   "section": "MAPSEC_ROCKET_HIDEOUT",
+   "type": "indoor",
+   "width": 22,
+   "height": 27,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "RocketHideout_B2F",
+    "RocketHideout_B4F"
+   ]
+  },
+  "RocketHideout_B4F": {
+   "id": "MAP_ROCKET_HIDEOUT_B4F",
+   "place": "CORPUS HIDEOUT",
+   "section": "MAPSEC_ROCKET_HIDEOUT",
+   "type": "indoor",
+   "width": 24,
+   "height": 26,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "RocketHideout_B3F",
+    "RocketHideout_Elevator"
+   ]
+  },
+  "RocketHideout_Elevator": {
+   "id": "MAP_ROCKET_HIDEOUT_ELEVATOR",
+   "place": "CORPUS HIDEOUT",
+   "section": "MAPSEC_ROCKET_HIDEOUT",
+   "type": "indoor",
+   "width": 5,
+   "height": 7,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "RocketHideout_B1F",
+    "RocketHideout_B2F",
+    "RocketHideout_B4F"
+   ]
+  },
+  "Route10": {
+   "id": "MAP_ROUTE10",
+   "place": "ROUTE 10",
+   "section": "MAPSEC_ROUTE_10",
+   "type": "route",
+   "width": 24,
+   "height": 80,
+   "step": 8,
+   "edges": {
+    "down": "LavenderTown",
+    "left": "Route9"
+   },
+   "joins": [
+    "LavenderTown",
+    "PowerPlant",
+    "RockTunnel_1F",
+    "Route10_PokemonCenter_1F",
+    "Route9"
+   ]
+  },
+  "Route10_PokemonCenter_1F": {
+   "id": "MAP_ROUTE10_POKEMON_CENTER_1F",
+   "place": "ROUTE 10",
+   "section": "MAPSEC_ROUTE_10",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route10",
+    "Route10_PokemonCenter_2F"
+   ]
+  },
+  "Route10_PokemonCenter_2F": {
+   "id": "MAP_ROUTE10_POKEMON_CENTER_2F",
+   "place": "ROUTE 10",
+   "section": "MAPSEC_ROUTE_10",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route10_PokemonCenter_1F"
+   ]
+  },
+  "Route12": {
+   "id": "MAP_ROUTE12",
+   "place": "ROUTE 12",
+   "section": "MAPSEC_ROUTE_12",
+   "type": "route",
+   "width": 24,
+   "height": 120,
+   "step": 8,
+   "edges": {
+    "up": "LavenderTown",
+    "down": "Route13",
+    "left": "Route11"
+   },
+   "joins": [
+    "LavenderTown",
+    "Route11",
+    "Route12_FishingHouse",
+    "Route12_NorthEntrance_1F",
+    "Route13"
+   ]
+  },
+  "Route12_FishingHouse": {
+   "id": "MAP_ROUTE12_FISHING_HOUSE",
+   "place": "ROUTE 12",
+   "section": "MAPSEC_ROUTE_12",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route12"
+   ]
+  },
+  "Route12_NorthEntrance_1F": {
+   "id": "MAP_ROUTE12_NORTH_ENTRANCE_1F",
+   "place": "ROUTE 12",
+   "section": "MAPSEC_ROUTE_12",
+   "type": "indoor",
+   "width": 11,
+   "height": 13,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route12",
+    "Route12_NorthEntrance_2F"
+   ]
+  },
+  "Route12_NorthEntrance_2F": {
+   "id": "MAP_ROUTE12_NORTH_ENTRANCE_2F",
+   "place": "ROUTE 12",
+   "section": "MAPSEC_ROUTE_12",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route12_NorthEntrance_1F"
+   ]
+  },
+  "Route7": {
+   "id": "MAP_ROUTE7",
+   "place": "ROUTE 7",
+   "section": "MAPSEC_ROUTE_7",
+   "type": "route",
+   "width": 24,
+   "height": 20,
+   "step": 8,
+   "edges": {
+    "left": "CeladonCity",
+    "right": "SaffronCity_Connection"
+   },
+   "joins": [
+    "CeladonCity",
+    "Route7_EastEntrance",
+    "SaffronCity",
+    "SaffronCity_Connection",
+    "UndergroundPath_WestEntrance"
+   ]
+  },
+  "Route7_EastEntrance": {
+   "id": "MAP_ROUTE7_EAST_ENTRANCE",
+   "place": "ROUTE 7",
+   "section": "MAPSEC_ROUTE_7",
+   "type": "indoor",
+   "width": 13,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route7",
+    "SaffronCity"
+   ]
+  },
+  "Route8": {
+   "id": "MAP_ROUTE8",
+   "place": "ROUTE 8",
+   "section": "MAPSEC_ROUTE_8",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 8,
+   "edges": {
+    "left": "SaffronCity_Connection",
+    "right": "LavenderTown"
+   },
+   "joins": [
+    "LavenderTown",
+    "Route8_WestEntrance",
+    "SaffronCity",
+    "SaffronCity_Connection",
+    "UndergroundPath_EastEntrance"
+   ]
+  },
+  "Route8_WestEntrance": {
+   "id": "MAP_ROUTE8_WEST_ENTRANCE",
+   "place": "ROUTE 8",
+   "section": "MAPSEC_ROUTE_8",
+   "type": "indoor",
+   "width": 13,
+   "height": 9,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route8",
+    "SaffronCity"
+   ]
+  },
+  "Route9": {
+   "id": "MAP_ROUTE9",
+   "place": "ROUTE 9",
+   "section": "MAPSEC_ROUTE_9",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 8,
+   "edges": {
+    "left": "CeruleanCity",
+    "right": "Route10"
+   },
+   "joins": [
+    "CeruleanCity",
+    "Route10"
+   ],
+   "gate": "a tree only PRUNE clears (DRIVER01)",
+   "draft": true
+  },
+  "UndergroundPath_EastEntrance": {
+   "id": "MAP_UNDERGROUND_PATH_EAST_ENTRANCE",
+   "place": "UNDERGROUND PATH",
+   "section": "MAPSEC_UNDERGROUND_PATH_2",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route8",
+    "UndergroundPath_EastWestTunnel"
+   ]
+  },
+  "UndergroundPath_EastWestTunnel": {
+   "id": "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL",
+   "place": "UNDERGROUND PATH",
+   "section": "MAPSEC_UNDERGROUND_PATH_2",
+   "type": "indoor",
+   "width": 80,
+   "height": 7,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "UndergroundPath_EastEntrance",
+    "UndergroundPath_WestEntrance"
+   ]
+  },
+  "UndergroundPath_WestEntrance": {
+   "id": "MAP_UNDERGROUND_PATH_WEST_ENTRANCE",
+   "place": "UNDERGROUND PATH",
+   "section": "MAPSEC_UNDERGROUND_PATH_2",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "Route7",
+    "UndergroundPath_EastWestTunnel"
+   ]
+  },
+  "VermilionCity_Gym": {
+   "id": "MAP_VERMILION_CITY_GYM",
+   "place": "ARDOR CITY",
+   "section": "MAPSEC_VERMILION_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 21,
+   "step": 8,
+   "edges": {},
+   "joins": [
+    "VermilionCity"
+   ],
+   "gate": "a tree only PRUNE clears (DRIVER01)",
+   "draft": true
+  },
+  "SaffronCity": {
+   "id": "MAP_SAFFRON_CITY",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "town",
+   "width": 66,
+   "height": 55,
+   "step": 11,
+   "edges": {
+    "up": "Route5",
+    "down": "Route6",
+    "left": "Route7",
+    "right": "Route8"
+   },
+   "joins": [
+    "Route5",
+    "Route5_SouthEntrance",
+    "Route6",
+    "Route6_NorthEntrance",
+    "Route7",
+    "Route7_EastEntrance",
+    "Route8",
+    "Route8_WestEntrance",
+    "SaffronCity_CopycatsHouse_1F",
+    "SaffronCity_Dojo",
+    "SaffronCity_Gym",
+    "SaffronCity_House",
+    "SaffronCity_Mart",
+    "SaffronCity_MrPsychicsHouse",
+    "SaffronCity_PokemonCenter_1F",
+    "SaffronCity_PokemonTrainerFanClub",
+    "SilphCo_1F"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_Connection": {
+   "id": "MAP_SAFFRON_CITY_CONNECTION",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 11,
+   "edges": {
+    "up": "Route5",
+    "down": "Route6",
+    "left": "Route7",
+    "right": "Route8"
+   },
+   "joins": [
+    "Route5",
+    "Route6",
+    "Route7",
+    "Route8"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_CopycatsHouse_1F": {
+   "id": "MAP_SAFFRON_CITY_COPYCATS_HOUSE_1F",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 10,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity",
+    "SaffronCity_CopycatsHouse_2F"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_CopycatsHouse_2F": {
+   "id": "MAP_SAFFRON_CITY_COPYCATS_HOUSE_2F",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 12,
+   "height": 9,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity_CopycatsHouse_1F"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_Dojo": {
+   "id": "MAP_SAFFRON_CITY_DOJO",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 16,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_House": {
+   "id": "MAP_SAFFRON_CITY_HOUSE",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_Mart": {
+   "id": "MAP_SAFFRON_CITY_MART",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_MrPsychicsHouse": {
+   "id": "MAP_SAFFRON_CITY_MR_PSYCHICS_HOUSE",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_PokemonCenter_1F": {
+   "id": "MAP_SAFFRON_CITY_POKEMON_CENTER_1F",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity",
+    "SaffronCity_PokemonCenter_2F"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_PokemonCenter_2F": {
+   "id": "MAP_SAFFRON_CITY_POKEMON_CENTER_2F",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity_PokemonCenter_1F"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SaffronCity_PokemonTrainerFanClub": {
+   "id": "MAP_SAFFRON_CITY_POKEMON_TRAINER_FAN_CLUB",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 17,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity"
+   ],
+   "gate": "BRAZEN's gate guards, until they have TEA",
+   "draft": true
+  },
+  "SilphCo_10F": {
+   "id": "MAP_SILPH_CO_10F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 17,
+   "height": 19,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_11F",
+    "SilphCo_4F",
+    "SilphCo_9F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_11F": {
+   "id": "MAP_SILPH_CO_11F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 17,
+   "height": 20,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_10F",
+    "SilphCo_7F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_1F": {
+   "id": "MAP_SILPH_CO_1F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 36,
+   "height": 22,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SaffronCity",
+    "SilphCo_2F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_2F": {
+   "id": "MAP_SILPH_CO_2F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 36,
+   "height": 22,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_1F",
+    "SilphCo_3F",
+    "SilphCo_6F",
+    "SilphCo_8F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_3F": {
+   "id": "MAP_SILPH_CO_3F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 36,
+   "height": 22,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_2F",
+    "SilphCo_4F",
+    "SilphCo_5F",
+    "SilphCo_7F",
+    "SilphCo_9F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_4F": {
+   "id": "MAP_SILPH_CO_4F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 36,
+   "height": 22,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_10F",
+    "SilphCo_3F",
+    "SilphCo_5F",
+    "SilphCo_6F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_5F": {
+   "id": "MAP_SILPH_CO_5F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 36,
+   "height": 22,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_3F",
+    "SilphCo_4F",
+    "SilphCo_6F",
+    "SilphCo_7F",
+    "SilphCo_9F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_6F": {
+   "id": "MAP_SILPH_CO_6F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 31,
+   "height": 19,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_2F",
+    "SilphCo_4F",
+    "SilphCo_5F",
+    "SilphCo_7F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_7F": {
+   "id": "MAP_SILPH_CO_7F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 31,
+   "height": 19,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_11F",
+    "SilphCo_3F",
+    "SilphCo_5F",
+    "SilphCo_6F",
+    "SilphCo_8F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_8F": {
+   "id": "MAP_SILPH_CO_8F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 31,
+   "height": 19,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_2F",
+    "SilphCo_7F",
+    "SilphCo_9F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_9F": {
+   "id": "MAP_SILPH_CO_9F",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 31,
+   "height": 19,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_10F",
+    "SilphCo_3F",
+    "SilphCo_5F",
+    "SilphCo_8F",
+    "SilphCo_Elevator"
+   ]
+  },
+  "SilphCo_Elevator": {
+   "id": "MAP_SILPH_CO_ELEVATOR",
+   "place": "FOUNDRY CO.",
+   "section": "MAPSEC_SILPH_CO",
+   "type": "indoor",
+   "width": 5,
+   "height": 7,
+   "step": 11,
+   "edges": {},
+   "joins": [
+    "SilphCo_10F",
+    "SilphCo_11F",
+    "SilphCo_1F",
+    "SilphCo_2F",
+    "SilphCo_3F",
+    "SilphCo_4F",
+    "SilphCo_5F",
+    "SilphCo_6F",
+    "SilphCo_7F",
+    "SilphCo_8F",
+    "SilphCo_9F"
+   ]
+  },
+  "PokemonTower_7F": {
+   "id": "MAP_POKEMON_TOWER_7F",
+   "place": "DAEMON TOWER",
+   "section": "MAPSEC_POKEMON_TOWER",
+   "type": "indoor",
+   "width": 24,
+   "height": 20,
+   "step": 13,
+   "edges": {},
+   "joins": [
+    "LavenderTown_VolunteerPokemonHouse",
+    "PokemonTower_6F"
+   ],
+   "gate": "the RESOLVER, to see what haunts the stair",
+   "draft": true
+  },
+  "FuchsiaCity": {
+   "id": "MAP_FUCHSIA_CITY",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 14,
+   "edges": {
+    "down": "Route19",
+    "left": "Route18",
+    "right": "Route15"
+   },
+   "joins": [
+    "FuchsiaCity_Gym",
+    "FuchsiaCity_House1",
+    "FuchsiaCity_House2",
+    "FuchsiaCity_House3",
+    "FuchsiaCity_Mart",
+    "FuchsiaCity_PokemonCenter_1F",
+    "FuchsiaCity_SafariZone_Entrance",
+    "FuchsiaCity_SafariZone_Office",
+    "FuchsiaCity_WardensHouse",
+    "Route15",
+    "Route18",
+    "Route19"
+   ]
+  },
+  "FuchsiaCity_Gym": {
+   "id": "MAP_FUCHSIA_CITY_GYM",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 23,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "FuchsiaCity_House1": {
+   "id": "MAP_FUCHSIA_CITY_HOUSE1",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "FuchsiaCity_House2": {
+   "id": "MAP_FUCHSIA_CITY_HOUSE2",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 10,
+   "height": 10,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "FuchsiaCity_House3": {
+   "id": "MAP_FUCHSIA_CITY_HOUSE3",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "FuchsiaCity_Mart": {
+   "id": "MAP_FUCHSIA_CITY_MART",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "FuchsiaCity_PokemonCenter_1F": {
+   "id": "MAP_FUCHSIA_CITY_POKEMON_CENTER_1F",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity",
+    "FuchsiaCity_PokemonCenter_2F"
+   ]
+  },
+  "FuchsiaCity_PokemonCenter_2F": {
+   "id": "MAP_FUCHSIA_CITY_POKEMON_CENTER_2F",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity_PokemonCenter_1F"
+   ]
+  },
+  "FuchsiaCity_SafariZone_Entrance": {
+   "id": "MAP_FUCHSIA_CITY_SAFARI_ZONE_ENTRANCE",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 9,
+   "height": 9,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity",
+    "SafariZone_Center"
+   ]
+  },
+  "FuchsiaCity_SafariZone_Office": {
+   "id": "MAP_FUCHSIA_CITY_SAFARI_ZONE_OFFICE",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 20,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "FuchsiaCity_WardensHouse": {
+   "id": "MAP_FUCHSIA_CITY_WARDENS_HOUSE",
+   "place": "LURID CITY",
+   "section": "MAPSEC_FUCHSIA_CITY",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity"
+   ]
+  },
+  "Route13": {
+   "id": "MAP_ROUTE13",
+   "place": "ROUTE 13",
+   "section": "MAPSEC_ROUTE_13",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 14,
+   "edges": {
+    "up": "Route12",
+    "left": "Route14"
+   },
+   "joins": [
+    "Route12",
+    "Route14"
+   ]
+  },
+  "Route14": {
+   "id": "MAP_ROUTE14",
+   "place": "ROUTE 14",
+   "section": "MAPSEC_ROUTE_14",
+   "type": "route",
+   "width": 24,
+   "height": 60,
+   "step": 14,
+   "edges": {
+    "left": "Route15",
+    "right": "Route13"
+   },
+   "joins": [
+    "Route13",
+    "Route15"
+   ]
+  },
+  "Route15": {
+   "id": "MAP_ROUTE15",
+   "place": "ROUTE 15",
+   "section": "MAPSEC_ROUTE_15",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 14,
+   "edges": {
+    "left": "FuchsiaCity",
+    "right": "Route14"
+   },
+   "joins": [
+    "FuchsiaCity",
+    "Route14",
+    "Route15_WestEntrance_1F"
+   ]
+  },
+  "Route15_WestEntrance_1F": {
+   "id": "MAP_ROUTE15_WEST_ENTRANCE_1F",
+   "place": "ROUTE 15",
+   "section": "MAPSEC_ROUTE_15",
+   "type": "indoor",
+   "width": 13,
+   "height": 12,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route15",
+    "Route15_WestEntrance_2F"
+   ]
+  },
+  "Route15_WestEntrance_2F": {
+   "id": "MAP_ROUTE15_WEST_ENTRANCE_2F",
+   "place": "ROUTE 15",
+   "section": "MAPSEC_ROUTE_15",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route15_WestEntrance_1F"
+   ]
+  },
+  "Route16": {
+   "id": "MAP_ROUTE16",
+   "place": "ROUTE 16",
+   "section": "MAPSEC_ROUTE_16",
+   "type": "route",
+   "width": 48,
+   "height": 20,
+   "step": 14,
+   "edges": {
+    "down": "Route17",
+    "right": "CeladonCity"
+   },
+   "joins": [
+    "CeladonCity",
+    "Route16_House",
+    "Route16_NorthEntrance_1F",
+    "Route17"
+   ],
+   "gate": "the sleeper across ROUTE 16, woken by the INTERRUPT",
+   "draft": true
+  },
+  "Route16_House": {
+   "id": "MAP_ROUTE16_HOUSE",
+   "place": "ROUTE 16",
+   "section": "MAPSEC_ROUTE_16",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route16"
+   ]
+  },
+  "Route16_NorthEntrance_1F": {
+   "id": "MAP_ROUTE16_NORTH_ENTRANCE_1F",
+   "place": "ROUTE 16",
+   "section": "MAPSEC_ROUTE_16",
+   "type": "indoor",
+   "width": 13,
+   "height": 18,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route16",
+    "Route16_NorthEntrance_2F"
+   ]
+  },
+  "Route16_NorthEntrance_2F": {
+   "id": "MAP_ROUTE16_NORTH_ENTRANCE_2F",
+   "place": "ROUTE 16",
+   "section": "MAPSEC_ROUTE_16",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route16_NorthEntrance_1F"
+   ]
+  },
+  "Route17": {
+   "id": "MAP_ROUTE17",
+   "place": "ROUTE 17",
+   "section": "MAPSEC_ROUTE_17",
+   "type": "route",
+   "width": 24,
+   "height": 160,
+   "step": 14,
+   "edges": {
+    "up": "Route16",
+    "down": "Route18"
+   },
+   "joins": [
+    "Route16",
+    "Route18"
+   ]
+  },
+  "Route18": {
+   "id": "MAP_ROUTE18",
+   "place": "ROUTE 18",
+   "section": "MAPSEC_ROUTE_18",
+   "type": "route",
+   "width": 60,
+   "height": 20,
+   "step": 14,
+   "edges": {
+    "up": "Route17",
+    "right": "FuchsiaCity"
+   },
+   "joins": [
+    "FuchsiaCity",
+    "Route17",
+    "Route18_EastEntrance_1F"
+   ]
+  },
+  "Route18_EastEntrance_1F": {
+   "id": "MAP_ROUTE18_EAST_ENTRANCE_1F",
+   "place": "ROUTE 18",
+   "section": "MAPSEC_ROUTE_18",
+   "type": "indoor",
+   "width": 13,
+   "height": 12,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route18",
+    "Route18_EastEntrance_2F"
+   ]
+  },
+  "Route18_EastEntrance_2F": {
+   "id": "MAP_ROUTE18_EAST_ENTRANCE_2F",
+   "place": "ROUTE 18",
+   "section": "MAPSEC_ROUTE_18",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "Route18_EastEntrance_1F"
+   ]
+  },
+  "SafariZone_Center": {
+   "id": "MAP_SAFARI_ZONE_CENTER",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "route",
+   "width": 51,
+   "height": 36,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "FuchsiaCity_SafariZone_Entrance",
+    "SafariZone_Center_RestHouse",
+    "SafariZone_East",
+    "SafariZone_North",
+    "SafariZone_West"
+   ]
+  },
+  "SafariZone_Center_RestHouse": {
+   "id": "MAP_SAFARI_ZONE_CENTER_REST_HOUSE",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_Center"
+   ]
+  },
+  "SafariZone_East": {
+   "id": "MAP_SAFARI_ZONE_EAST",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "route",
+   "width": 54,
+   "height": 35,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_Center",
+    "SafariZone_East_RestHouse",
+    "SafariZone_North"
+   ]
+  },
+  "SafariZone_East_RestHouse": {
+   "id": "MAP_SAFARI_ZONE_EAST_REST_HOUSE",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_East"
+   ]
+  },
+  "SafariZone_North": {
+   "id": "MAP_SAFARI_ZONE_NORTH",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "route",
+   "width": 57,
+   "height": 40,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_Center",
+    "SafariZone_East",
+    "SafariZone_North_RestHouse",
+    "SafariZone_West"
+   ]
+  },
+  "SafariZone_North_RestHouse": {
+   "id": "MAP_SAFARI_ZONE_NORTH_REST_HOUSE",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_North"
+   ]
+  },
+  "SafariZone_SecretHouse": {
+   "id": "MAP_SAFARI_ZONE_SECRET_HOUSE",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_West"
+   ]
+  },
+  "SafariZone_West": {
+   "id": "MAP_SAFARI_ZONE_WEST",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "route",
+   "width": 48,
+   "height": 36,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_Center",
+    "SafariZone_North",
+    "SafariZone_SecretHouse",
+    "SafariZone_West_RestHouse"
+   ]
+  },
+  "SafariZone_West_RestHouse": {
+   "id": "MAP_SAFARI_ZONE_WEST_REST_HOUSE",
+   "place": "SAFARI ZONE",
+   "section": "MAPSEC_KANTO_SAFARI_ZONE",
+   "type": "indoor",
+   "width": 13,
+   "height": 11,
+   "step": 14,
+   "edges": {},
+   "joins": [
+    "SafariZone_West"
+   ]
+  },
+  "CinnabarIsland": {
+   "id": "MAP_CINNABAR_ISLAND",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 16,
+   "edges": {
+    "up": "Route21_South",
+    "right": "Route20"
+   },
+   "joins": [
+    "CinnabarIsland_Gym",
+    "CinnabarIsland_Mart",
+    "CinnabarIsland_PokemonCenter_1F",
+    "CinnabarIsland_PokemonLab_Entrance",
+    "FiveIsland_Harbor",
+    "FourIsland_Harbor",
+    "OneIsland_Harbor",
+    "PokemonMansion_1F",
+    "Route20",
+    "Route21_South",
+    "SevenIsland_Harbor",
+    "SixIsland_Harbor",
+    "ThreeIsland_Harbor",
+    "TwoIsland_Harbor"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_Mart": {
+   "id": "MAP_CINNABAR_ISLAND_MART",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_PokemonCenter_1F": {
+   "id": "MAP_CINNABAR_ISLAND_POKEMON_CENTER_1F",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "CinnabarIsland_PokemonCenter_2F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_PokemonCenter_2F": {
+   "id": "MAP_CINNABAR_ISLAND_POKEMON_CENTER_2F",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland_PokemonCenter_1F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_PokemonLab_Entrance": {
+   "id": "MAP_CINNABAR_ISLAND_POKEMON_LAB_ENTRANCE",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 28,
+   "height": 11,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "CinnabarIsland_PokemonLab_ExperimentRoom",
+    "CinnabarIsland_PokemonLab_Lounge",
+    "CinnabarIsland_PokemonLab_ResearchRoom"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_PokemonLab_ExperimentRoom": {
+   "id": "MAP_CINNABAR_ISLAND_POKEMON_LAB_EXPERIMENT_ROOM",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 11,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland_PokemonLab_Entrance"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_PokemonLab_Lounge": {
+   "id": "MAP_CINNABAR_ISLAND_POKEMON_LAB_LOUNGE",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 11,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland_PokemonLab_Entrance"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_PokemonLab_ResearchRoom": {
+   "id": "MAP_CINNABAR_ISLAND_POKEMON_LAB_RESEARCH_ROOM",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 11,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland_PokemonLab_Entrance"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "PokemonMansion_1F": {
+   "id": "MAP_POKEMON_MANSION_1F",
+   "place": "DAEMON MANSION",
+   "section": "MAPSEC_POKEMON_MANSION",
+   "type": "indoor",
+   "width": 38,
+   "height": 35,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "PokemonMansion_2F",
+    "PokemonMansion_3F",
+    "PokemonMansion_B1F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "PokemonMansion_2F": {
+   "id": "MAP_POKEMON_MANSION_2F",
+   "place": "DAEMON MANSION",
+   "section": "MAPSEC_POKEMON_MANSION",
+   "type": "indoor",
+   "width": 38,
+   "height": 38,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "PokemonMansion_1F",
+    "PokemonMansion_3F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "PokemonMansion_3F": {
+   "id": "MAP_POKEMON_MANSION_3F",
+   "place": "DAEMON MANSION",
+   "section": "MAPSEC_POKEMON_MANSION",
+   "type": "indoor",
+   "width": 38,
+   "height": 35,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "PokemonMansion_1F",
+    "PokemonMansion_2F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "PokemonMansion_B1F": {
+   "id": "MAP_POKEMON_MANSION_B1F",
+   "place": "DAEMON MANSION",
+   "section": "MAPSEC_POKEMON_MANSION",
+   "type": "indoor",
+   "width": 38,
+   "height": 35,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "PokemonMansion_1F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "PowerPlant": {
+   "id": "MAP_POWER_PLANT",
+   "place": "KEEPALIVE PLANT",
+   "section": "MAPSEC_POWER_PLANT",
+   "type": "indoor",
+   "width": 49,
+   "height": 40,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "Route10"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "Route19": {
+   "id": "MAP_ROUTE19",
+   "place": "ROUTE 19",
+   "section": "MAPSEC_ROUTE_19",
+   "type": "route",
+   "width": 24,
+   "height": 60,
+   "step": 16,
+   "edges": {
+    "up": "FuchsiaCity",
+    "left": "Route20"
+   },
+   "joins": [
+    "FuchsiaCity",
+    "Route20"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "Route20": {
+   "id": "MAP_ROUTE20",
+   "place": "ROUTE 20",
+   "section": "MAPSEC_ROUTE_20",
+   "type": "route",
+   "width": 120,
+   "height": 20,
+   "step": 16,
+   "edges": {
+    "left": "CinnabarIsland",
+    "right": "Route19"
+   },
+   "joins": [
+    "CinnabarIsland",
+    "Route19",
+    "SeafoamIslands_1F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "Route21_North": {
+   "id": "MAP_ROUTE21_NORTH",
+   "place": "ROUTE 21",
+   "section": "MAPSEC_ROUTE_21",
+   "type": "route",
+   "width": 24,
+   "height": 50,
+   "step": 16,
+   "edges": {
+    "up": "PalletTown",
+    "down": "Route21_South"
+   },
+   "joins": [
+    "PalletTown",
+    "Route21_South"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "Route21_South": {
+   "id": "MAP_ROUTE21_SOUTH",
+   "place": "ROUTE 21",
+   "section": "MAPSEC_ROUTE_21",
+   "type": "route",
+   "width": 24,
+   "height": 50,
+   "step": 16,
+   "edges": {
+    "up": "Route21_North",
+    "down": "CinnabarIsland"
+   },
+   "joins": [
+    "CinnabarIsland",
+    "Route21_North"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "SeafoamIslands_1F": {
+   "id": "MAP_SEAFOAM_ISLANDS_1F",
+   "place": "GLAUCOUS ISLES",
+   "section": "MAPSEC_SEAFOAM_ISLANDS",
+   "type": "underground",
+   "width": 38,
+   "height": 24,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "Route20",
+    "SeafoamIslands_B1F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "SeafoamIslands_B1F": {
+   "id": "MAP_SEAFOAM_ISLANDS_B1F",
+   "place": "GLAUCOUS ISLES",
+   "section": "MAPSEC_SEAFOAM_ISLANDS",
+   "type": "underground",
+   "width": 38,
+   "height": 23,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "SeafoamIslands_1F",
+    "SeafoamIslands_B2F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "SeafoamIslands_B2F": {
+   "id": "MAP_SEAFOAM_ISLANDS_B2F",
+   "place": "GLAUCOUS ISLES",
+   "section": "MAPSEC_SEAFOAM_ISLANDS",
+   "type": "underground",
+   "width": 38,
+   "height": 24,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "SeafoamIslands_B1F",
+    "SeafoamIslands_B3F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "SeafoamIslands_B3F": {
+   "id": "MAP_SEAFOAM_ISLANDS_B3F",
+   "place": "GLAUCOUS ISLES",
+   "section": "MAPSEC_SEAFOAM_ISLANDS",
+   "type": "underground",
+   "width": 38,
+   "height": 24,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "SeafoamIslands_B2F",
+    "SeafoamIslands_B4F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "SeafoamIslands_B4F": {
+   "id": "MAP_SEAFOAM_ISLANDS_B4F",
+   "place": "GLAUCOUS ISLES",
+   "section": "MAPSEC_SEAFOAM_ISLANDS",
+   "type": "underground",
+   "width": 38,
+   "height": 24,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "SeafoamIslands_B3F"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "SaffronCity_Gym": {
+   "id": "MAP_SAFFRON_CITY_GYM",
+   "place": "BRAZEN CITY",
+   "section": "MAPSEC_SAFFRON_CITY",
+   "type": "indoor",
+   "width": 29,
+   "height": 25,
+   "step": 17,
+   "edges": {},
+   "joins": [
+    "SaffronCity"
+   ],
+   "gate": "CORPUS at the BENCHMARK's door until FOUNDRY CO. is free",
+   "draft": true
+  },
+  "CinnabarIsland_Gym": {
+   "id": "MAP_CINNABAR_ISLAND_GYM",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 30,
+   "height": 25,
+   "step": 19,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland"
+   ],
+   "gate": "the SECRET KEY from the MANSION's cellar",
+   "draft": true
+  },
+  "MtEmber_Exterior": {
+   "id": "MAP_MT_EMBER_EXTERIOR",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "route",
+   "width": 57,
+   "height": 54,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_1F",
+    "MtEmber_Summit",
+    "MtEmber_SummitPath_1F",
+    "MtEmber_SummitPath_3F",
+    "OneIsland_KindleRoad"
+   ]
+  },
+  "MtEmber_RubyPath_1F": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_1F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 27,
+   "height": 19,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_Exterior",
+    "MtEmber_RubyPath_B1F",
+    "MtEmber_RubyPath_B2F_Stairs"
+   ]
+  },
+  "MtEmber_RubyPath_B1F": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B1F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 11,
+   "height": 23,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_1F",
+    "MtEmber_RubyPath_B2F"
+   ]
+  },
+  "MtEmber_RubyPath_B1F_Stairs": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B1F_STAIRS",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 6,
+   "height": 7,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_B2F_Stairs",
+    "MtEmber_RubyPath_B3F"
+   ]
+  },
+  "MtEmber_RubyPath_B2F": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B2F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 16,
+   "height": 11,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_B1F",
+    "MtEmber_RubyPath_B3F"
+   ]
+  },
+  "MtEmber_RubyPath_B2F_Stairs": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B2F_STAIRS",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 8,
+   "height": 6,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_1F",
+    "MtEmber_RubyPath_B1F_Stairs"
+   ]
+  },
+  "MtEmber_RubyPath_B3F": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B3F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 31,
+   "height": 23,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_B1F_Stairs",
+    "MtEmber_RubyPath_B2F",
+    "MtEmber_RubyPath_B4F"
+   ]
+  },
+  "MtEmber_RubyPath_B4F": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B4F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 18,
+   "height": 16,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_B3F",
+    "MtEmber_RubyPath_B5F"
+   ]
+  },
+  "MtEmber_RubyPath_B5F": {
+   "id": "MAP_MT_EMBER_RUBY_PATH_B5F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 16,
+   "height": 15,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_RubyPath_B4F"
+   ]
+  },
+  "MtEmber_Summit": {
+   "id": "MAP_MT_EMBER_SUMMIT",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 19,
+   "height": 22,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_Exterior"
+   ]
+  },
+  "MtEmber_SummitPath_1F": {
+   "id": "MAP_MT_EMBER_SUMMIT_PATH_1F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 15,
+   "height": 18,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_Exterior",
+    "MtEmber_SummitPath_2F"
+   ]
+  },
+  "MtEmber_SummitPath_2F": {
+   "id": "MAP_MT_EMBER_SUMMIT_PATH_2F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 48,
+   "height": 46,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_SummitPath_1F",
+    "MtEmber_SummitPath_3F"
+   ]
+  },
+  "MtEmber_SummitPath_3F": {
+   "id": "MAP_MT_EMBER_SUMMIT_PATH_3F",
+   "place": "MT. SMOULDER",
+   "section": "MAPSEC_MT_EMBER",
+   "type": "underground",
+   "width": 15,
+   "height": 11,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "MtEmber_Exterior",
+    "MtEmber_SummitPath_2F"
+   ]
+  },
+  "OneIsland": {
+   "id": "MAP_ONE_ISLAND",
+   "place": "ONE ISLAND",
+   "section": "MAPSEC_ONE_ISLAND",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 20,
+   "edges": {
+    "down": "OneIsland_TreasureBeach",
+    "right": "OneIsland_KindleRoad"
+   },
+   "joins": [
+    "OneIsland_Harbor",
+    "OneIsland_House1",
+    "OneIsland_House2",
+    "OneIsland_KindleRoad",
+    "OneIsland_PokemonCenter_1F",
+    "OneIsland_TreasureBeach"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_Harbor": {
+   "id": "MAP_ONE_ISLAND_HARBOR",
+   "place": "ONE ISLAND",
+   "section": "MAPSEC_ONE_ISLAND",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "OneIsland",
+    "VermilionCity"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_House1": {
+   "id": "MAP_ONE_ISLAND_HOUSE1",
+   "place": "ONE ISLAND",
+   "section": "MAPSEC_ONE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "OneIsland"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_House2": {
+   "id": "MAP_ONE_ISLAND_HOUSE2",
+   "place": "ONE ISLAND",
+   "section": "MAPSEC_ONE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "OneIsland"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_KindleRoad": {
+   "id": "MAP_ONE_ISLAND_KINDLE_ROAD",
+   "place": "SMOKE ROAD",
+   "section": "MAPSEC_KINDLE_ROAD",
+   "type": "route",
+   "width": 24,
+   "height": 140,
+   "step": 20,
+   "edges": {
+    "left": "OneIsland"
+   },
+   "joins": [
+    "MtEmber_Exterior",
+    "OneIsland",
+    "OneIsland_KindleRoad_EmberSpa"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_KindleRoad_EmberSpa": {
+   "id": "MAP_ONE_ISLAND_KINDLE_ROAD_EMBER_SPA",
+   "place": "KETTLE SPRING",
+   "section": "MAPSEC_EMBER_SPA",
+   "type": "underground",
+   "width": 27,
+   "height": 39,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "OneIsland_KindleRoad"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_PokemonCenter_1F": {
+   "id": "MAP_ONE_ISLAND_POKEMON_CENTER_1F",
+   "place": "ONE ISLAND",
+   "section": "MAPSEC_ONE_ISLAND",
+   "type": "indoor",
+   "width": 19,
+   "height": 11,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "OneIsland",
+    "OneIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_PokemonCenter_2F": {
+   "id": "MAP_ONE_ISLAND_POKEMON_CENTER_2F",
+   "place": "ONE ISLAND",
+   "section": "MAPSEC_ONE_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "OneIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "OneIsland_TreasureBeach": {
+   "id": "MAP_ONE_ISLAND_TREASURE_BEACH",
+   "place": "FINDERS BEACH",
+   "section": "MAPSEC_TREASURE_BEACH",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 20,
+   "edges": {
+    "up": "OneIsland"
+   },
+   "joins": [
+    "OneIsland"
+   ],
+   "gate": "the ferry, once QUICKSILVER's MARK is held",
+   "draft": true
+  },
+  "Prototype_SeviiIsle_6": {
+   "id": "MAP_PROTOTYPE_SEVII_ISLE_6",
+   "place": "MARGIN ISLE 6",
+   "section": "MAPSEC_SEVII_ISLE_6",
+   "type": "route",
+   "width": 1,
+   "height": 1,
+   "step": 20,
+   "edges": {
+    "up": "ThreeIsland"
+   },
+   "joins": [
+    "ThreeIsland"
+   ]
+  },
+  "Prototype_SeviiIsle_7": {
+   "id": "MAP_PROTOTYPE_SEVII_ISLE_7",
+   "place": "MARGIN ISLE 7",
+   "section": "MAPSEC_SEVII_ISLE_7",
+   "type": "route",
+   "width": 1,
+   "height": 1,
+   "step": 20,
+   "edges": {
+    "up": "ThreeIsland"
+   },
+   "joins": [
+    "ThreeIsland"
+   ]
+  },
+  "ThreeIsland": {
+   "id": "MAP_THREE_ISLAND",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "town",
+   "width": 24,
+   "height": 40,
+   "step": 20,
+   "edges": {
+    "down": "ThreeIsland_Port",
+    "left": "ThreeIsland_BondBridge"
+   },
+   "joins": [
+    "Prototype_SeviiIsle_6",
+    "Prototype_SeviiIsle_7",
+    "ThreeIsland_BondBridge",
+    "ThreeIsland_House1",
+    "ThreeIsland_House2",
+    "ThreeIsland_House3",
+    "ThreeIsland_House4",
+    "ThreeIsland_House5",
+    "ThreeIsland_Mart",
+    "ThreeIsland_PokemonCenter_1F",
+    "ThreeIsland_Port"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_BerryForest": {
+   "id": "MAP_THREE_ISLAND_BERRY_FOREST",
+   "place": "DENSE WOOD",
+   "section": "MAPSEC_BERRY_FOREST",
+   "type": "route",
+   "width": 57,
+   "height": 47,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland_BondBridge",
+    "TwoIsland_JoyfulGameCorner"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_BondBridge": {
+   "id": "MAP_THREE_ISLAND_BOND_BRIDGE",
+   "place": "LONGCROSS",
+   "section": "MAPSEC_BOND_BRIDGE",
+   "type": "route",
+   "width": 96,
+   "height": 20,
+   "step": 20,
+   "edges": {
+    "right": "ThreeIsland"
+   },
+   "joins": [
+    "ThreeIsland",
+    "ThreeIsland_BerryForest"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_DunsparceTunnel": {
+   "id": "MAP_THREE_ISLAND_DUNSPARCE_TUNNEL",
+   "place": "THREE ISLE PATH",
+   "section": "MAPSEC_THREE_ISLE_PATH",
+   "type": "underground",
+   "width": 30,
+   "height": 7,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland_Port"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_Harbor": {
+   "id": "MAP_THREE_ISLAND_HARBOR",
+   "place": "THREE ISLE PORT",
+   "section": "MAPSEC_THREE_ISLE_PORT",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "ThreeIsland_Port",
+    "VermilionCity"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_House1": {
+   "id": "MAP_THREE_ISLAND_HOUSE1",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_House2": {
+   "id": "MAP_THREE_ISLAND_HOUSE2",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_House3": {
+   "id": "MAP_THREE_ISLAND_HOUSE3",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_House4": {
+   "id": "MAP_THREE_ISLAND_HOUSE4",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_House5": {
+   "id": "MAP_THREE_ISLAND_HOUSE5",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_Mart": {
+   "id": "MAP_THREE_ISLAND_MART",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_PokemonCenter_1F": {
+   "id": "MAP_THREE_ISLAND_POKEMON_CENTER_1F",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland",
+    "ThreeIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_PokemonCenter_2F": {
+   "id": "MAP_THREE_ISLAND_POKEMON_CENTER_2F",
+   "place": "THREE ISLAND",
+   "section": "MAPSEC_THREE_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ThreeIsland_Port": {
+   "id": "MAP_THREE_ISLAND_PORT",
+   "place": "THREE ISLE PORT",
+   "section": "MAPSEC_THREE_ISLE_PORT",
+   "type": "route",
+   "width": 48,
+   "height": 20,
+   "step": 20,
+   "edges": {
+    "up": "ThreeIsland"
+   },
+   "joins": [
+    "ThreeIsland",
+    "ThreeIsland_DunsparceTunnel",
+    "ThreeIsland_Harbor"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland": {
+   "id": "MAP_TWO_ISLAND",
+   "place": "TWO ISLAND",
+   "section": "MAPSEC_TWO_ISLAND",
+   "type": "town",
+   "width": 48,
+   "height": 20,
+   "step": 20,
+   "edges": {
+    "up": "TwoIsland_CapeBrink"
+   },
+   "joins": [
+    "TwoIsland_CapeBrink",
+    "TwoIsland_Harbor",
+    "TwoIsland_House",
+    "TwoIsland_JoyfulGameCorner",
+    "TwoIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_CapeBrink": {
+   "id": "MAP_TWO_ISLAND_CAPE_BRINK",
+   "place": "THE OVERLOOK",
+   "section": "MAPSEC_CAPE_BRINK",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 20,
+   "edges": {
+    "down": "TwoIsland"
+   },
+   "joins": [
+    "TwoIsland",
+    "TwoIsland_CapeBrink_House"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_CapeBrink_House": {
+   "id": "MAP_TWO_ISLAND_CAPE_BRINK_HOUSE",
+   "place": "THE OVERLOOK",
+   "section": "MAPSEC_CAPE_BRINK",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "TwoIsland_CapeBrink"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_Harbor": {
+   "id": "MAP_TWO_ISLAND_HARBOR",
+   "place": "TWO ISLAND",
+   "section": "MAPSEC_TWO_ISLAND",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "TwoIsland",
+    "VermilionCity"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_House": {
+   "id": "MAP_TWO_ISLAND_HOUSE",
+   "place": "TWO ISLAND",
+   "section": "MAPSEC_TWO_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "TwoIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_JoyfulGameCorner": {
+   "id": "MAP_TWO_ISLAND_JOYFUL_GAME_CORNER",
+   "place": "TWO ISLAND",
+   "section": "MAPSEC_TWO_ISLAND",
+   "type": "indoor",
+   "width": 12,
+   "height": 10,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ThreeIsland_BerryForest",
+    "TwoIsland"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_PokemonCenter_1F": {
+   "id": "MAP_TWO_ISLAND_POKEMON_CENTER_1F",
+   "place": "TWO ISLAND",
+   "section": "MAPSEC_TWO_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "TwoIsland",
+    "TwoIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "TwoIsland_PokemonCenter_2F": {
+   "id": "MAP_TWO_ISLAND_POKEMON_CENTER_2F",
+   "place": "TWO ISLAND",
+   "section": "MAPSEC_TWO_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "TwoIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry",
+   "draft": true
+  },
+  "ViridianCity_Gym": {
+   "id": "MAP_VIRIDIAN_CITY_GYM",
+   "place": "CALLOW CITY",
+   "section": "MAPSEC_VIRIDIAN_CITY",
+   "type": "indoor",
+   "width": 20,
+   "height": 24,
+   "step": 20,
+   "edges": {},
+   "joins": [
+    "ViridianCity"
+   ],
+   "gate": "CALLOW's BENCHMARK opens to seven MARKS",
+   "draft": true
+  },
+  "IndigoPlateau_Exterior": {
+   "id": "MAP_INDIGO_PLATEAU_EXTERIOR",
+   "place": "UMBRA PLATEAU",
+   "section": "MAPSEC_INDIGO_PLATEAU",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 21,
+   "edges": {
+    "down": "Route23"
+   },
+   "joins": [
+    "IndigoPlateau_PokemonCenter_1F",
+    "Route23"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "IndigoPlateau_PokemonCenter_1F": {
+   "id": "MAP_INDIGO_PLATEAU_POKEMON_CENTER_1F",
+   "place": "UMBRA PLATEAU",
+   "section": "MAPSEC_INDIGO_PLATEAU",
+   "type": "indoor",
+   "width": 25,
+   "height": 18,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "IndigoPlateau_Exterior",
+    "IndigoPlateau_PokemonCenter_2F",
+    "PokemonLeague_LoreleisRoom"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "IndigoPlateau_PokemonCenter_2F": {
+   "id": "MAP_INDIGO_PLATEAU_POKEMON_CENTER_2F",
+   "place": "UMBRA PLATEAU",
+   "section": "MAPSEC_INDIGO_PLATEAU",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "IndigoPlateau_PokemonCenter_1F"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "PokemonLeague_AgathasRoom": {
+   "id": "MAP_POKEMON_LEAGUE_AGATHAS_ROOM",
+   "place": "DAEMON LEAGUE",
+   "section": "MAPSEC_POKEMON_LEAGUE",
+   "type": "indoor",
+   "width": 13,
+   "height": 13,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "PokemonLeague_BrunosRoom",
+    "PokemonLeague_LancesRoom"
+   ]
+  },
+  "PokemonLeague_BrunosRoom": {
+   "id": "MAP_POKEMON_LEAGUE_BRUNOS_ROOM",
+   "place": "DAEMON LEAGUE",
+   "section": "MAPSEC_POKEMON_LEAGUE",
+   "type": "indoor",
+   "width": 13,
+   "height": 13,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "PokemonLeague_AgathasRoom",
+    "PokemonLeague_LoreleisRoom"
+   ]
+  },
+  "PokemonLeague_ChampionsRoom": {
+   "id": "MAP_POKEMON_LEAGUE_CHAMPIONS_ROOM",
+   "place": "DAEMON LEAGUE",
+   "section": "MAPSEC_POKEMON_LEAGUE",
+   "type": "indoor",
+   "width": 13,
+   "height": 20,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "PokemonLeague_HallOfFame",
+    "PokemonLeague_LancesRoom"
+   ]
+  },
+  "PokemonLeague_HallOfFame": {
+   "id": "MAP_POKEMON_LEAGUE_HALL_OF_FAME",
+   "place": "DAEMON LEAGUE",
+   "section": "MAPSEC_POKEMON_LEAGUE",
+   "type": "indoor",
+   "width": 11,
+   "height": 13,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "PokemonLeague_ChampionsRoom"
+   ]
+  },
+  "PokemonLeague_LancesRoom": {
+   "id": "MAP_POKEMON_LEAGUE_LANCES_ROOM",
+   "place": "DAEMON LEAGUE",
+   "section": "MAPSEC_POKEMON_LEAGUE",
+   "type": "indoor",
+   "width": 28,
+   "height": 24,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "PokemonLeague_AgathasRoom",
+    "PokemonLeague_ChampionsRoom"
+   ]
+  },
+  "PokemonLeague_LoreleisRoom": {
+   "id": "MAP_POKEMON_LEAGUE_LORELEIS_ROOM",
+   "place": "DAEMON LEAGUE",
+   "section": "MAPSEC_POKEMON_LEAGUE",
+   "type": "indoor",
+   "width": 13,
+   "height": 13,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "IndigoPlateau_PokemonCenter_1F",
+    "PokemonLeague_BrunosRoom"
+   ]
+  },
+  "Route23": {
+   "id": "MAP_ROUTE23",
+   "place": "ROUTE 23",
+   "section": "MAPSEC_ROUTE_23",
+   "type": "route",
+   "width": 24,
+   "height": 160,
+   "step": 21,
+   "edges": {
+    "up": "IndigoPlateau_Exterior",
+    "down": "Route22"
+   },
+   "joins": [
+    "IndigoPlateau_Exterior",
+    "Route22",
+    "Route22_NorthEntrance",
+    "VictoryRoad_1F",
+    "VictoryRoad_2F"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "VictoryRoad_1F": {
+   "id": "MAP_VICTORY_ROAD_1F",
+   "place": "UMBRAL ASCENT",
+   "section": "MAPSEC_KANTO_VICTORY_ROAD",
+   "type": "underground",
+   "width": 48,
+   "height": 22,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "Route23",
+    "VictoryRoad_2F"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "VictoryRoad_2F": {
+   "id": "MAP_VICTORY_ROAD_2F",
+   "place": "UMBRAL ASCENT",
+   "section": "MAPSEC_KANTO_VICTORY_ROAD",
+   "type": "underground",
+   "width": 51,
+   "height": 22,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "Route23",
+    "VictoryRoad_1F",
+    "VictoryRoad_3F"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "VictoryRoad_3F": {
+   "id": "MAP_VICTORY_ROAD_3F",
+   "place": "UMBRAL ASCENT",
+   "section": "MAPSEC_KANTO_VICTORY_ROAD",
+   "type": "underground",
+   "width": 45,
+   "height": 22,
+   "step": 21,
+   "edges": {},
+   "joins": [
+    "VictoryRoad_2F"
+   ],
+   "gate": "a gate for every MARK",
+   "draft": true
+  },
+  "CeruleanCave_1F": {
+   "id": "MAP_CERULEAN_CAVE_1F",
+   "place": "DOLDRUM CAVE",
+   "section": "MAPSEC_CERULEAN_CAVE",
+   "type": "underground",
+   "width": 40,
+   "height": 23,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CeruleanCave_2F",
+    "CeruleanCave_B1F",
+    "CeruleanCity"
+   ],
+   "gate": "the guard lets only the champion in",
+   "draft": true
+  },
+  "CeruleanCave_2F": {
+   "id": "MAP_CERULEAN_CAVE_2F",
+   "place": "DOLDRUM CAVE",
+   "section": "MAPSEC_CERULEAN_CAVE",
+   "type": "underground",
+   "width": 40,
+   "height": 23,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CeruleanCave_1F"
+   ],
+   "gate": "the guard lets only the champion in",
+   "draft": true
+  },
+  "CeruleanCave_B1F": {
+   "id": "MAP_CERULEAN_CAVE_B1F",
+   "place": "DOLDRUM CAVE",
+   "section": "MAPSEC_CERULEAN_CAVE",
+   "type": "underground",
+   "width": 40,
+   "height": 23,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CeruleanCave_1F"
+   ],
+   "gate": "the guard lets only the champion in",
+   "draft": true
+  },
+  "FiveIsland": {
+   "id": "MAP_FIVE_ISLAND",
+   "place": "FIVE ISLAND",
+   "section": "MAPSEC_FIVE_ISLAND",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 24,
+   "edges": {
+    "up": "FiveIsland_WaterLabyrinth",
+    "right": "FiveIsland_Meadow"
+   },
+   "joins": [
+    "FiveIsland_Harbor",
+    "FiveIsland_House1",
+    "FiveIsland_House2",
+    "FiveIsland_Meadow",
+    "FiveIsland_PokemonCenter_1F",
+    "FiveIsland_WaterLabyrinth"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_Harbor": {
+   "id": "MAP_FIVE_ISLAND_HARBOR",
+   "place": "FIVE ISLAND",
+   "section": "MAPSEC_FIVE_ISLAND",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "FiveIsland",
+    "VermilionCity"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_House1": {
+   "id": "MAP_FIVE_ISLAND_HOUSE1",
+   "place": "FIVE ISLAND",
+   "section": "MAPSEC_FIVE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_House2": {
+   "id": "MAP_FIVE_ISLAND_HOUSE2",
+   "place": "FIVE ISLAND",
+   "section": "MAPSEC_FIVE_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Entrance": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ENTRANCE",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_ResortGorgeous"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room1": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM1",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Entrance",
+    "FiveIsland_LostCave_Room10",
+    "FiveIsland_LostCave_Room11",
+    "FiveIsland_LostCave_Room12",
+    "FiveIsland_LostCave_Room13",
+    "FiveIsland_LostCave_Room14",
+    "FiveIsland_LostCave_Room2",
+    "FiveIsland_LostCave_Room3",
+    "FiveIsland_LostCave_Room4",
+    "FiveIsland_LostCave_Room5",
+    "FiveIsland_LostCave_Room6",
+    "FiveIsland_LostCave_Room7",
+    "FiveIsland_LostCave_Room8",
+    "FiveIsland_LostCave_Room9"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room10": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM10",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room9",
+    "FiveIsland_ResortGorgeous"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room11": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM11",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room2"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room12": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM12",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room4"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room13": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM13",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room6"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room14": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM14",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room8"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room2": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM2",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room11",
+    "FiveIsland_LostCave_Room3"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room3": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM3",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room2",
+    "FiveIsland_LostCave_Room4"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room4": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM4",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room12",
+    "FiveIsland_LostCave_Room3",
+    "FiveIsland_LostCave_Room5"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room5": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM5",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room4",
+    "FiveIsland_LostCave_Room6"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room6": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM6",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room13",
+    "FiveIsland_LostCave_Room5",
+    "FiveIsland_LostCave_Room7"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room7": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM7",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room6",
+    "FiveIsland_LostCave_Room8"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room8": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM8",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room14",
+    "FiveIsland_LostCave_Room7",
+    "FiveIsland_LostCave_Room9"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_LostCave_Room9": {
+   "id": "MAP_FIVE_ISLAND_LOST_CAVE_ROOM9",
+   "place": "THE WRONG WAY",
+   "section": "MAPSEC_LOST_CAVE",
+   "type": "underground",
+   "width": 11,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_LostCave_Room1",
+    "FiveIsland_LostCave_Room10",
+    "FiveIsland_LostCave_Room8"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_Meadow": {
+   "id": "MAP_FIVE_ISLAND_MEADOW",
+   "place": "FIVE ISLE MEADOW",
+   "section": "MAPSEC_FIVE_ISLE_MEADOW",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 24,
+   "edges": {
+    "left": "FiveIsland",
+    "right": "FiveIsland_MemorialPillar"
+   },
+   "joins": [
+    "FiveIsland",
+    "FiveIsland_MemorialPillar",
+    "FiveIsland_RocketWarehouse"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_MemorialPillar": {
+   "id": "MAP_FIVE_ISLAND_MEMORIAL_PILLAR",
+   "place": "SOMEONE'S STONE",
+   "section": "MAPSEC_MEMORIAL_PILLAR",
+   "type": "route",
+   "width": 24,
+   "height": 60,
+   "step": 24,
+   "edges": {
+    "left": "FiveIsland_Meadow"
+   },
+   "joins": [
+    "FiveIsland_Meadow"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_PokemonCenter_1F": {
+   "id": "MAP_FIVE_ISLAND_POKEMON_CENTER_1F",
+   "place": "FIVE ISLAND",
+   "section": "MAPSEC_FIVE_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland",
+    "FiveIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_PokemonCenter_2F": {
+   "id": "MAP_FIVE_ISLAND_POKEMON_CENTER_2F",
+   "place": "FIVE ISLAND",
+   "section": "MAPSEC_FIVE_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_ResortGorgeous": {
+   "id": "MAP_FIVE_ISLAND_RESORT_GORGEOUS",
+   "place": "RESORT SUBLIME",
+   "section": "MAPSEC_RESORT_GORGEOUS",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 24,
+   "edges": {
+    "down": "FiveIsland_WaterLabyrinth"
+   },
+   "joins": [
+    "FiveIsland_LostCave_Entrance",
+    "FiveIsland_LostCave_Room10",
+    "FiveIsland_ResortGorgeous_House",
+    "FiveIsland_WaterLabyrinth"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_ResortGorgeous_House": {
+   "id": "MAP_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE",
+   "place": "RESORT SUBLIME",
+   "section": "MAPSEC_RESORT_GORGEOUS",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_ResortGorgeous"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_RocketWarehouse": {
+   "id": "MAP_FIVE_ISLAND_ROCKET_WAREHOUSE",
+   "place": "CORPUS WAREHOUSE",
+   "section": "MAPSEC_ROCKET_WAREHOUSE",
+   "type": "indoor",
+   "width": 29,
+   "height": 27,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FiveIsland_Meadow"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FiveIsland_WaterLabyrinth": {
+   "id": "MAP_FIVE_ISLAND_WATER_LABYRINTH",
+   "place": "TANGLEWATER",
+   "section": "MAPSEC_WATER_LABYRINTH",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 24,
+   "edges": {
+    "up": "FiveIsland_ResortGorgeous",
+    "down": "FiveIsland"
+   },
+   "joins": [
+    "FiveIsland",
+    "FiveIsland_ResortGorgeous"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland": {
+   "id": "MAP_FOUR_ISLAND",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "town",
+   "width": 48,
+   "height": 40,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland_Harbor",
+    "FourIsland_House1",
+    "FourIsland_House2",
+    "FourIsland_IcefallCave_Entrance",
+    "FourIsland_LoreleisHouse",
+    "FourIsland_Mart",
+    "FourIsland_PokemonCenter_1F",
+    "FourIsland_PokemonDayCare"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_Harbor": {
+   "id": "MAP_FOUR_ISLAND_HARBOR",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "FourIsland",
+    "VermilionCity"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_House1": {
+   "id": "MAP_FOUR_ISLAND_HOUSE1",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_House2": {
+   "id": "MAP_FOUR_ISLAND_HOUSE2",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_IcefallCave_1F": {
+   "id": "MAP_FOUR_ISLAND_ICEFALL_CAVE_1F",
+   "place": "STILLFALL CAVE",
+   "section": "MAPSEC_ICEFALL_CAVE",
+   "type": "underground",
+   "width": 20,
+   "height": 20,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland_IcefallCave_B1F",
+    "FourIsland_IcefallCave_Back",
+    "FourIsland_IcefallCave_Entrance"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_IcefallCave_B1F": {
+   "id": "MAP_FOUR_ISLAND_ICEFALL_CAVE_B1F",
+   "place": "STILLFALL CAVE",
+   "section": "MAPSEC_ICEFALL_CAVE",
+   "type": "underground",
+   "width": 24,
+   "height": 20,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland_IcefallCave_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_IcefallCave_Back": {
+   "id": "MAP_FOUR_ISLAND_ICEFALL_CAVE_BACK",
+   "place": "STILLFALL CAVE",
+   "section": "MAPSEC_ICEFALL_CAVE",
+   "type": "underground",
+   "width": 25,
+   "height": 26,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland_IcefallCave_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_IcefallCave_Entrance": {
+   "id": "MAP_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE",
+   "place": "STILLFALL CAVE",
+   "section": "MAPSEC_ICEFALL_CAVE",
+   "type": "underground",
+   "width": 30,
+   "height": 36,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland",
+    "FourIsland_IcefallCave_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_LoreleisHouse": {
+   "id": "MAP_FOUR_ISLAND_LORELEIS_HOUSE",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_Mart": {
+   "id": "MAP_FOUR_ISLAND_MART",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_PokemonCenter_1F": {
+   "id": "MAP_FOUR_ISLAND_POKEMON_CENTER_1F",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland",
+    "FourIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_PokemonCenter_2F": {
+   "id": "MAP_FOUR_ISLAND_POKEMON_CENTER_2F",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "FourIsland_PokemonDayCare": {
+   "id": "MAP_FOUR_ISLAND_POKEMON_DAY_CARE",
+   "place": "FOUR ISLAND",
+   "section": "MAPSEC_FOUR_ISLAND",
+   "type": "indoor",
+   "width": 12,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "FourIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland": {
+   "id": "MAP_SEVEN_ISLAND",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "town",
+   "width": 24,
+   "height": 20,
+   "step": 24,
+   "edges": {
+    "up": "SevenIsland_TrainerTower",
+    "down": "SevenIsland_SevaultCanyon_Entrance"
+   },
+   "joins": [
+    "SevenIsland_Harbor",
+    "SevenIsland_House_Room1",
+    "SevenIsland_Mart",
+    "SevenIsland_PokemonCenter_1F",
+    "SevenIsland_SevaultCanyon_Entrance",
+    "SevenIsland_TrainerTower"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_Harbor": {
+   "id": "MAP_SEVEN_ISLAND_HARBOR",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "SevenIsland",
+    "VermilionCity"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_House_Room1": {
+   "id": "MAP_SEVEN_ISLAND_HOUSE_ROOM1",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland",
+    "SevenIsland_House_Room2"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_House_Room2": {
+   "id": "MAP_SEVEN_ISLAND_HOUSE_ROOM2",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "indoor",
+   "width": 12,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_House_Room1"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_Mart": {
+   "id": "MAP_SEVEN_ISLAND_MART",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_PokemonCenter_1F": {
+   "id": "MAP_SEVEN_ISLAND_POKEMON_CENTER_1F",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland",
+    "SevenIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_PokemonCenter_2F": {
+   "id": "MAP_SEVEN_ISLAND_POKEMON_CENTER_2F",
+   "place": "SEVEN ISLAND",
+   "section": "MAPSEC_SEVEN_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_SevaultCanyon": {
+   "id": "MAP_SEVEN_ISLAND_SEVAULT_CANYON",
+   "place": "LONG DROP",
+   "section": "MAPSEC_SEVAULT_CANYON",
+   "type": "route",
+   "width": 24,
+   "height": 80,
+   "step": 24,
+   "edges": {
+    "down": "SevenIsland_TanobyRuins",
+    "left": "SevenIsland_SevaultCanyon_Entrance"
+   },
+   "joins": [
+    "SevenIsland_SevaultCanyon_Entrance",
+    "SevenIsland_SevaultCanyon_House",
+    "SevenIsland_SevaultCanyon_TanobyKey",
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_SevaultCanyon_Entrance": {
+   "id": "MAP_SEVEN_ISLAND_SEVAULT_CANYON_ENTRANCE",
+   "place": "THE WAY IN",
+   "section": "MAPSEC_CANYON_ENTRANCE",
+   "type": "route",
+   "width": 24,
+   "height": 40,
+   "step": 24,
+   "edges": {
+    "up": "SevenIsland",
+    "right": "SevenIsland_SevaultCanyon"
+   },
+   "joins": [
+    "SevenIsland",
+    "SevenIsland_SevaultCanyon"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_SevaultCanyon_House": {
+   "id": "MAP_SEVEN_ISLAND_SEVAULT_CANYON_HOUSE",
+   "place": "LONG DROP",
+   "section": "MAPSEC_SEVAULT_CANYON",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_SevaultCanyon"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_SevaultCanyon_TanobyKey": {
+   "id": "MAP_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY",
+   "place": "TANOBY KEY",
+   "section": "MAPSEC_TANOBY_KEY",
+   "type": "underground",
+   "width": 15,
+   "height": 16,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_SevaultCanyon"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS",
+   "place": "TANOBY RUINS",
+   "section": "MAPSEC_TANOBY_RUINS",
+   "type": "route",
+   "width": 144,
+   "height": 20,
+   "step": 24,
+   "edges": {
+    "up": "SevenIsland_SevaultCanyon"
+   },
+   "joins": [
+    "SevenIsland_SevaultCanyon",
+    "SevenIsland_TanobyRuins_DilfordChamber",
+    "SevenIsland_TanobyRuins_LiptooChamber",
+    "SevenIsland_TanobyRuins_MoneanChamber",
+    "SevenIsland_TanobyRuins_RixyChamber",
+    "SevenIsland_TanobyRuins_ScufibChamber",
+    "SevenIsland_TanobyRuins_ViapoisChamber",
+    "SevenIsland_TanobyRuins_WeepthChamber"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_DilfordChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_DILFORD_CHAMBER",
+   "place": "DILFORD CHAMBER",
+   "section": "MAPSEC_DILFORD_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_LiptooChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_LIPTOO_CHAMBER",
+   "place": "LIPTOO CHAMBER",
+   "section": "MAPSEC_LIPTOO_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_MoneanChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_MONEAN_CHAMBER",
+   "place": "MONEAN CHAMBER",
+   "section": "MAPSEC_MONEAN_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_RixyChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_RIXY_CHAMBER",
+   "place": "RIXY CHAMBER",
+   "section": "MAPSEC_RIXY_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_ScufibChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_SCUFIB_CHAMBER",
+   "place": "SCUFIB CHAMBER",
+   "section": "MAPSEC_SCUFIB_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_ViapoisChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_VIAPOIS_CHAMBER",
+   "place": "VIAPOIS CHAMBER",
+   "section": "MAPSEC_VIAPOIS_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TanobyRuins_WeepthChamber": {
+   "id": "MAP_SEVEN_ISLAND_TANOBY_RUINS_WEEPTH_CHAMBER",
+   "place": "WEEPTH CHAMBER",
+   "section": "MAPSEC_WEEPTH_CHAMBER",
+   "type": "underground",
+   "width": 23,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TanobyRuins"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SevenIsland_TrainerTower": {
+   "id": "MAP_SEVEN_ISLAND_TRAINER_TOWER",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER",
+   "type": "route",
+   "width": 120,
+   "height": 40,
+   "step": 24,
+   "edges": {
+    "down": "SevenIsland"
+   },
+   "joins": [
+    "SevenIsland",
+    "TrainerTower_Lobby"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland": {
+   "id": "MAP_SIX_ISLAND",
+   "place": "SIX ISLAND",
+   "section": "MAPSEC_SIX_ISLAND",
+   "type": "town",
+   "width": 24,
+   "height": 30,
+   "step": 24,
+   "edges": {
+    "right": "SixIsland_WaterPath"
+   },
+   "joins": [
+    "SixIsland_Harbor",
+    "SixIsland_House",
+    "SixIsland_Mart",
+    "SixIsland_PokemonCenter_1F",
+    "SixIsland_WaterPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_AlteringCave": {
+   "id": "MAP_SIX_ISLAND_ALTERING_CAVE",
+   "place": "OTHER CAVE",
+   "section": "MAPSEC_ALTERING_CAVE",
+   "type": "underground",
+   "width": 32,
+   "height": 24,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_OutcastIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_DottedHole_1F": {
+   "id": "MAP_SIX_ISLAND_DOTTED_HOLE_1F",
+   "place": "THE DOTS",
+   "section": "MAPSEC_DOTTED_HOLE",
+   "type": "underground",
+   "width": 16,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_DottedHole_B1F",
+    "SixIsland_DottedHole_B2F",
+    "SixIsland_DottedHole_B3F",
+    "SixIsland_DottedHole_B4F",
+    "SixIsland_DottedHole_SapphireRoom",
+    "SixIsland_RuinValley"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_DottedHole_B1F": {
+   "id": "MAP_SIX_ISLAND_DOTTED_HOLE_B1F",
+   "place": "THE DOTS",
+   "section": "MAPSEC_DOTTED_HOLE",
+   "type": "underground",
+   "width": 13,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_DottedHole_1F",
+    "SixIsland_DottedHole_B2F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_DottedHole_B2F": {
+   "id": "MAP_SIX_ISLAND_DOTTED_HOLE_B2F",
+   "place": "THE DOTS",
+   "section": "MAPSEC_DOTTED_HOLE",
+   "type": "underground",
+   "width": 13,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_DottedHole_1F",
+    "SixIsland_DottedHole_B1F",
+    "SixIsland_DottedHole_B3F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_DottedHole_B3F": {
+   "id": "MAP_SIX_ISLAND_DOTTED_HOLE_B3F",
+   "place": "THE DOTS",
+   "section": "MAPSEC_DOTTED_HOLE",
+   "type": "underground",
+   "width": 13,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_DottedHole_1F",
+    "SixIsland_DottedHole_B2F",
+    "SixIsland_DottedHole_B4F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_DottedHole_B4F": {
+   "id": "MAP_SIX_ISLAND_DOTTED_HOLE_B4F",
+   "place": "THE DOTS",
+   "section": "MAPSEC_DOTTED_HOLE",
+   "type": "underground",
+   "width": 13,
+   "height": 11,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_DottedHole_1F",
+    "SixIsland_DottedHole_B3F",
+    "SixIsland_DottedHole_SapphireRoom"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_DottedHole_SapphireRoom": {
+   "id": "MAP_SIX_ISLAND_DOTTED_HOLE_SAPPHIRE_ROOM",
+   "place": "THE DOTS",
+   "section": "MAPSEC_DOTTED_HOLE",
+   "type": "underground",
+   "width": 16,
+   "height": 15,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_DottedHole_1F",
+    "SixIsland_DottedHole_B4F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_GreenPath": {
+   "id": "MAP_SIX_ISLAND_GREEN_PATH",
+   "place": "SLOW WALK",
+   "section": "MAPSEC_GREEN_PATH",
+   "type": "route",
+   "width": 72,
+   "height": 20,
+   "step": 24,
+   "edges": {
+    "up": "SixIsland_OutcastIsland",
+    "right": "SixIsland_WaterPath"
+   },
+   "joins": [
+    "SixIsland_OutcastIsland",
+    "SixIsland_PatternBush",
+    "SixIsland_WaterPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_Harbor": {
+   "id": "MAP_SIX_ISLAND_HARBOR",
+   "place": "SIX ISLAND",
+   "section": "MAPSEC_SIX_ISLAND",
+   "type": "indoor",
+   "width": 17,
+   "height": 13,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland",
+    "SixIsland",
+    "VermilionCity"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_House": {
+   "id": "MAP_SIX_ISLAND_HOUSE",
+   "place": "SIX ISLAND",
+   "section": "MAPSEC_SIX_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_Mart": {
+   "id": "MAP_SIX_ISLAND_MART",
+   "place": "SIX ISLAND",
+   "section": "MAPSEC_SIX_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_OutcastIsland": {
+   "id": "MAP_SIX_ISLAND_OUTCAST_ISLAND",
+   "place": "NOBODY'S ISLE",
+   "section": "MAPSEC_OUTCAST_ISLAND",
+   "type": "route",
+   "width": 24,
+   "height": 80,
+   "step": 24,
+   "edges": {
+    "down": "SixIsland_GreenPath"
+   },
+   "joins": [
+    "SixIsland_AlteringCave",
+    "SixIsland_GreenPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_PatternBush": {
+   "id": "MAP_SIX_ISLAND_PATTERN_BUSH",
+   "place": "THE SAME BUSH",
+   "section": "MAPSEC_PATTERN_BUSH",
+   "type": "route",
+   "width": 60,
+   "height": 32,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_GreenPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_PokemonCenter_1F": {
+   "id": "MAP_SIX_ISLAND_POKEMON_CENTER_1F",
+   "place": "SIX ISLAND",
+   "section": "MAPSEC_SIX_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland",
+    "SixIsland_PokemonCenter_2F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_PokemonCenter_2F": {
+   "id": "MAP_SIX_ISLAND_POKEMON_CENTER_2F",
+   "place": "SIX ISLAND",
+   "section": "MAPSEC_SIX_ISLAND",
+   "type": "indoor",
+   "width": 15,
+   "height": 10,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_PokemonCenter_1F"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_RuinValley": {
+   "id": "MAP_SIX_ISLAND_RUIN_VALLEY",
+   "place": "WHAT REMAINS",
+   "section": "MAPSEC_RUIN_VALLEY",
+   "type": "route",
+   "width": 48,
+   "height": 40,
+   "step": 24,
+   "edges": {
+    "right": "SixIsland_WaterPath"
+   },
+   "joins": [
+    "SixIsland_DottedHole_1F",
+    "SixIsland_WaterPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_WaterPath": {
+   "id": "MAP_SIX_ISLAND_WATER_PATH",
+   "place": "LONG WADE",
+   "section": "MAPSEC_WATER_PATH",
+   "type": "route",
+   "width": 24,
+   "height": 100,
+   "step": 24,
+   "edges": {
+    "left": "SixIsland_RuinValley"
+   },
+   "joins": [
+    "SixIsland",
+    "SixIsland_GreenPath",
+    "SixIsland_RuinValley",
+    "SixIsland_WaterPath_House1",
+    "SixIsland_WaterPath_House2"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_WaterPath_House1": {
+   "id": "MAP_SIX_ISLAND_WATER_PATH_HOUSE1",
+   "place": "LONG WADE",
+   "section": "MAPSEC_WATER_PATH",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_WaterPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "SixIsland_WaterPath_House2": {
+   "id": "MAP_SIX_ISLAND_WATER_PATH_HOUSE2",
+   "place": "LONG WADE",
+   "section": "MAPSEC_WATER_PATH",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SixIsland_WaterPath"
+   ],
+   "gate": "the ferry's later pass",
+   "draft": true
+  },
+  "TrainerTower_1F": {
+   "id": "MAP_TRAINER_TOWER_1F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_2F",
+    "TrainerTower_Lobby"
+   ]
+  },
+  "TrainerTower_2F": {
+   "id": "MAP_TRAINER_TOWER_2F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_1F",
+    "TrainerTower_3F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_3F": {
+   "id": "MAP_TRAINER_TOWER_3F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_2F",
+    "TrainerTower_4F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_4F": {
+   "id": "MAP_TRAINER_TOWER_4F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_3F",
+    "TrainerTower_5F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_5F": {
+   "id": "MAP_TRAINER_TOWER_5F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_4F",
+    "TrainerTower_6F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_6F": {
+   "id": "MAP_TRAINER_TOWER_6F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_5F",
+    "TrainerTower_7F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_7F": {
+   "id": "MAP_TRAINER_TOWER_7F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_6F",
+    "TrainerTower_8F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_8F": {
+   "id": "MAP_TRAINER_TOWER_8F",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_7F",
+    "TrainerTower_Elevator",
+    "TrainerTower_Roof"
+   ]
+  },
+  "TrainerTower_Elevator": {
+   "id": "MAP_TRAINER_TOWER_ELEVATOR",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 5,
+   "height": 7,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_2F",
+    "TrainerTower_3F",
+    "TrainerTower_4F",
+    "TrainerTower_5F",
+    "TrainerTower_6F",
+    "TrainerTower_7F",
+    "TrainerTower_8F",
+    "TrainerTower_Lobby",
+    "TrainerTower_Roof"
+   ]
+  },
+  "TrainerTower_Lobby": {
+   "id": "MAP_TRAINER_TOWER_LOBBY",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 19,
+   "height": 17,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "SevenIsland_TrainerTower",
+    "TrainerTower_1F",
+    "TrainerTower_Elevator"
+   ]
+  },
+  "TrainerTower_Roof": {
+   "id": "MAP_TRAINER_TOWER_ROOF",
+   "place": "USER TOWER",
+   "section": "MAPSEC_TRAINER_TOWER_2",
+   "type": "indoor",
+   "width": 18,
+   "height": 16,
+   "step": 24,
+   "edges": {},
+   "joins": [
+    "TrainerTower_8F",
+    "TrainerTower_Elevator"
+   ]
+  }
+ }
+}

@@ -1,0 +1,8125 @@
+{
+ "_about": "T-453: the planner. step on every record = how many of the story's steps are done before it is reachable; show a record when the save has done at least that many (count the done_flag of each step in planner_story.json, bits as profile_layout explains). Every trainer a map's scripts battle, with our class and name, party (species and level), and flag (set once beaten; bits as profile_layout explains). A rival battle is three rows, one per starter the rival may hold (rival_starter); its name is the save's. boss marks leaders, rivals, the REVIEW BOARD, the champion and CORPUS's boss; rematch, a second round after the story. Left out on purpose: every place the game means to be found by playing, the islands only a ticket reaches, what lives in DOLDRUM CAVE, hidden items, fixed encounters, the GUIDE and the UNDERSTANDINGS, the NOTEBOOK and its books, and any line of the game's text.",
+ "trainers": [
+  {
+   "trainer": "TRAINER_RIVAL_OAKS_LAB_SQUIRTLE",
+   "number": 326,
+   "flag": 1606,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 7,
+     "name": "CLUSTER",
+     "level": 5
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "PalletTown_ProfessorOaksLab",
+   "place": "BLANCHE TOWN",
+   "spot": "trigger",
+   "x": 5,
+   "y": 8,
+   "area": "centre",
+   "step": 0
+  },
+  {
+   "trainer": "TRAINER_RIVAL_OAKS_LAB_CHARMANDER",
+   "number": 328,
+   "flag": 1608,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 4,
+     "name": "LABEL",
+     "level": 5
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "PalletTown_ProfessorOaksLab",
+   "place": "BLANCHE TOWN",
+   "spot": "trigger",
+   "x": 5,
+   "y": 8,
+   "area": "centre",
+   "step": 0
+  },
+  {
+   "trainer": "TRAINER_RIVAL_OAKS_LAB_BULBASAUR",
+   "number": 327,
+   "flag": 1607,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 1,
+     "name": "ROVERCUB",
+     "level": 5
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "PalletTown_ProfessorOaksLab",
+   "place": "BLANCHE TOWN",
+   "spot": "trigger",
+   "x": 5,
+   "y": 8,
+   "area": "centre",
+   "step": 0
+  },
+  {
+   "trainer": "TRAINER_RIVAL_ROUTE22_EARLY_SQUIRTLE",
+   "number": 329,
+   "flag": 1609,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 9
+    },
+    {
+     "species": 7,
+     "name": "CLUSTER",
+     "level": 9
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "Route22",
+   "place": "ROUTE 22",
+   "spot": "trigger",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 0
+  },
+  {
+   "trainer": "TRAINER_RIVAL_ROUTE22_EARLY_BULBASAUR",
+   "number": 330,
+   "flag": 1610,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 9
+    },
+    {
+     "species": 1,
+     "name": "ROVERCUB",
+     "level": 9
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "Route22",
+   "place": "ROUTE 22",
+   "spot": "trigger",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 0
+  },
+  {
+   "trainer": "TRAINER_RIVAL_ROUTE22_EARLY_CHARMANDER",
+   "number": 331,
+   "flag": 1611,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 9
+    },
+    {
+     "species": 4,
+     "name": "LABEL",
+     "level": 9
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "Route22",
+   "place": "ROUTE 22",
+   "spot": "trigger",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 0
+  },
+  {
+   "trainer": "TRAINER_RIVAL_ROUTE22_LATE_SQUIRTLE",
+   "number": 435,
+   "flag": 1715,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 47
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 45
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 45
+    },
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 45
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 47
+    },
+    {
+     "species": 9,
+     "name": "MANIFOLD",
+     "level": 53
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "Route22",
+   "place": "ROUTE 22",
+   "spot": "trigger",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_RIVAL_ROUTE22_LATE_BULBASAUR",
+   "number": 436,
+   "flag": 1716,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 47
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 45
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 45
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 45
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 47
+    },
+    {
+     "species": 3,
+     "name": "ROVERBYTE",
+     "level": 53
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "Route22",
+   "place": "ROUTE 22",
+   "spot": "trigger",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_RIVAL_ROUTE22_LATE_CHARMANDER",
+   "number": 437,
+   "flag": 1717,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 47
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 45
+    },
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 45
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 45
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 47
+    },
+    {
+     "species": 6,
+     "name": "CANON",
+     "level": 53
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "Route22",
+   "place": "ROUTE 22",
+   "spot": "trigger",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_LEADER_BROCK",
+   "number": 414,
+   "flag": 1694,
+   "class": "LEADER",
+   "name": "CAIRN",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 12
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 14
+    }
+   ],
+   "boss": true,
+   "map": "PewterCity_Gym",
+   "place": "SLATE CITY",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "north",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_CAMPER_LIAM",
+   "number": 142,
+   "flag": 1422,
+   "class": "FIELDHAND",
+   "name": "LIAM",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 10
+    },
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 11
+    }
+   ],
+   "boss": false,
+   "map": "PewterCity_Gym",
+   "place": "SLATE CITY",
+   "spot": "person",
+   "x": 3,
+   "y": 8,
+   "area": "west",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_RICK",
+   "number": 102,
+   "flag": 1382,
+   "class": "FORAGER",
+   "name": "RICK",
+   "double": false,
+   "party": [
+    {
+     "species": 13,
+     "name": "SCRAPER",
+     "level": 6
+    },
+    {
+     "species": 10,
+     "name": "CRAWLER",
+     "level": 6
+    }
+   ],
+   "boss": false,
+   "map": "ViridianForest",
+   "place": "THE UNDERTONE",
+   "spot": "person",
+   "x": 47,
+   "y": 45,
+   "area": "east",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_DOUG",
+   "number": 103,
+   "flag": 1383,
+   "class": "FORAGER",
+   "name": "DOUG",
+   "double": false,
+   "party": [
+    {
+     "species": 13,
+     "name": "SCRAPER",
+     "level": 7
+    },
+    {
+     "species": 14,
+     "name": "BUFFER",
+     "level": 7
+    },
+    {
+     "species": 13,
+     "name": "SCRAPER",
+     "level": 7
+    }
+   ],
+   "boss": false,
+   "map": "ViridianForest",
+   "place": "THE UNDERTONE",
+   "spot": "person",
+   "x": 47,
+   "y": 29,
+   "area": "east",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_SAMMY",
+   "number": 104,
+   "flag": 1384,
+   "class": "FORAGER",
+   "name": "SAMMY",
+   "double": false,
+   "party": [
+    {
+     "species": 13,
+     "name": "SCRAPER",
+     "level": 9
+    }
+   ],
+   "boss": false,
+   "map": "ViridianForest",
+   "place": "THE UNDERTONE",
+   "spot": "person",
+   "x": 7,
+   "y": 22,
+   "area": "north-west",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_ANTHONY",
+   "number": 531,
+   "flag": 1811,
+   "class": "FORAGER",
+   "name": "ANTHONY",
+   "double": false,
+   "party": [
+    {
+     "species": 10,
+     "name": "CRAWLER",
+     "level": 7
+    },
+    {
+     "species": 10,
+     "name": "CRAWLER",
+     "level": 8
+    }
+   ],
+   "boss": false,
+   "map": "ViridianForest",
+   "place": "THE UNDERTONE",
+   "spot": "person",
+   "x": 43,
+   "y": 6,
+   "area": "north-east",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_CHARLIE",
+   "number": 532,
+   "flag": 1812,
+   "class": "FORAGER",
+   "name": "CHARLIE",
+   "double": false,
+   "party": [
+    {
+     "species": 11,
+     "name": "PENDING",
+     "level": 7
+    },
+    {
+     "species": 10,
+     "name": "CRAWLER",
+     "level": 7
+    },
+    {
+     "species": 11,
+     "name": "PENDING",
+     "level": 7
+    }
+   ],
+   "boss": false,
+   "map": "ViridianForest",
+   "place": "THE UNDERTONE",
+   "spot": "person",
+   "x": 16,
+   "y": 5,
+   "area": "north-west",
+   "step": 2
+  },
+  {
+   "trainer": "TRAINER_RIVAL_CERULEAN_SQUIRTLE",
+   "number": 332,
+   "flag": 1612,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 17
+    },
+    {
+     "species": 63,
+     "name": "HUNCH",
+     "level": 16
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 15
+    },
+    {
+     "species": 7,
+     "name": "CLUSTER",
+     "level": 18
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "CeruleanCity",
+   "place": "DOLDRUM CITY",
+   "spot": "trigger",
+   "x": 22,
+   "y": 6,
+   "area": "north",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_RIVAL_CERULEAN_BULBASAUR",
+   "number": 333,
+   "flag": 1613,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 17
+    },
+    {
+     "species": 63,
+     "name": "HUNCH",
+     "level": 16
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 15
+    },
+    {
+     "species": 1,
+     "name": "ROVERCUB",
+     "level": 18
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "CeruleanCity",
+   "place": "DOLDRUM CITY",
+   "spot": "trigger",
+   "x": 22,
+   "y": 6,
+   "area": "north",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_RIVAL_CERULEAN_CHARMANDER",
+   "number": 334,
+   "flag": 1614,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 17
+    },
+    {
+     "species": 63,
+     "name": "HUNCH",
+     "level": 16
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 15
+    },
+    {
+     "species": 4,
+     "name": "LABEL",
+     "level": 18
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "CeruleanCity",
+   "place": "DOLDRUM CITY",
+   "spot": "trigger",
+   "x": 22,
+   "y": 6,
+   "area": "north",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_5",
+   "number": 355,
+   "flag": 1635,
+   "class": "CORPUS STAFF",
+   "name": "NEWT",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 17
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "CeruleanCity",
+   "place": "DOLDRUM CITY",
+   "spot": "person",
+   "x": 33,
+   "y": 6,
+   "area": "north-east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_LEADER_MISTY",
+   "number": 415,
+   "flag": 1695,
+   "class": "LEADER",
+   "name": "BASIN",
+   "double": false,
+   "party": [
+    {
+     "species": 120,
+     "name": "BEACON",
+     "level": 18
+    },
+    {
+     "species": 121,
+     "name": "CRON",
+     "level": 21
+    }
+   ],
+   "boss": true,
+   "map": "CeruleanCity_Gym",
+   "place": "DOLDRUM CITY",
+   "spot": "person",
+   "x": 8,
+   "y": 6,
+   "area": "north",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_DIANA",
+   "number": 150,
+   "flag": 1430,
+   "class": "RAMBLER",
+   "name": "DIANA",
+   "double": false,
+   "party": [
+    {
+     "species": 118,
+     "name": "SPAWN",
+     "level": 19
+    }
+   ],
+   "boss": false,
+   "map": "CeruleanCity_Gym",
+   "place": "DOLDRUM CITY",
+   "spot": "person",
+   "x": 4,
+   "y": 7,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SWIMMER_MALE_LUIS",
+   "number": 234,
+   "flag": 1514,
+   "class": "SWIMMER♂",
+   "name": "LUIS",
+   "double": false,
+   "party": [
+    {
+     "species": 116,
+     "name": "BOTTLENECK",
+     "level": 16
+    },
+    {
+     "species": 90,
+     "name": "CAPSULE",
+     "level": 16
+    }
+   ],
+   "boss": false,
+   "map": "CeruleanCity_Gym",
+   "place": "DOLDRUM CITY",
+   "spot": "person",
+   "x": 10,
+   "y": 12,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_HIKER_MARCOS",
+   "number": 181,
+   "flag": 1461,
+   "class": "HIKER",
+   "name": "MARCOS",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 10
+    },
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 10
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 10
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 7,
+   "y": 10,
+   "area": "north-west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_YOUNGSTER_JOSH",
+   "number": 91,
+   "flag": 1371,
+   "class": "NOVICE",
+   "name": "JOSH",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 10
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 10
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 10
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 13,
+   "y": 17,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_LASS_MIRIAM",
+   "number": 120,
+   "flag": 1400,
+   "class": "APPRENTICE",
+   "name": "MIRIAM",
+   "double": false,
+   "party": [
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 11
+    },
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 11
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 33,
+   "y": 4,
+   "area": "north-east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_LASS_IRIS",
+   "number": 121,
+   "flag": 1401,
+   "class": "APPRENTICE",
+   "name": "IRIS",
+   "double": false,
+   "party": [
+    {
+     "species": 35,
+     "name": "ANOMALY",
+     "level": 14
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 20,
+   "y": 26,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SUPER_NERD_JOVAN",
+   "number": 169,
+   "flag": 1449,
+   "class": "TINKERER",
+   "name": "JOVAN",
+   "double": false,
+   "party": [
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 11
+    },
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 11
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 30,
+   "y": 35,
+   "area": "south",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_KENT",
+   "number": 108,
+   "flag": 1388,
+   "class": "FORAGER",
+   "name": "KENT",
+   "double": false,
+   "party": [
+    {
+     "species": 13,
+     "name": "SCRAPER",
+     "level": 11
+    },
+    {
+     "species": 14,
+     "name": "BUFFER",
+     "level": 11
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 7,
+   "y": 26,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_ROBBY",
+   "number": 109,
+   "flag": 1389,
+   "class": "FORAGER",
+   "name": "ROBBY",
+   "double": false,
+   "party": [
+    {
+     "species": 10,
+     "name": "CRAWLER",
+     "level": 10
+    },
+    {
+     "species": 11,
+     "name": "PENDING",
+     "level": 10
+    },
+    {
+     "species": 10,
+     "name": "CRAWLER",
+     "level": 10
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_1F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 36,
+   "y": 30,
+   "area": "south-east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SUPER_NERD_MIGUEL",
+   "number": 170,
+   "flag": 1450,
+   "class": "TINKERER",
+   "name": "MIGUEL",
+   "double": false,
+   "party": [
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 12
+    },
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 12
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 12
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_B2F",
+   "place": "DEADSTACK",
+   "spot": "trigger",
+   "x": 14,
+   "y": 11,
+   "area": "north-west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT",
+   "number": 351,
+   "flag": 1631,
+   "class": "CORPUS STAFF",
+   "name": "WREN",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 13
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 13
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_B2F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 12,
+   "y": 20,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_2",
+   "number": 352,
+   "flag": 1632,
+   "class": "CORPUS STAFF",
+   "name": "MOLE",
+   "double": false,
+   "party": [
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 11
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 11
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 11
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_B2F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 18,
+   "y": 27,
+   "area": "south",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_3",
+   "number": 353,
+   "flag": 1633,
+   "class": "CORPUS STAFF",
+   "name": "STOAT",
+   "double": false,
+   "party": [
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 11
+    },
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 11
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_B2F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 35,
+   "y": 12,
+   "area": "north-east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_4",
+   "number": 354,
+   "flag": 1634,
+   "class": "CORPUS STAFF",
+   "name": "VOLE",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 13
+    },
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 13
+    }
+   ],
+   "boss": false,
+   "map": "MtMoon_B2F",
+   "place": "DEADSTACK",
+   "spot": "person",
+   "x": 37,
+   "y": 21,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_6",
+   "number": 356,
+   "flag": 1636,
+   "class": "CORPUS STAFF",
+   "name": "SHREW",
+   "double": false,
+   "party": [
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 15
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 15
+    }
+   ],
+   "boss": false,
+   "map": "Route24",
+   "place": "ROUTE 24",
+   "spot": "person",
+   "x": 12,
+   "y": 15,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_LASS_ANN",
+   "number": 126,
+   "flag": 1406,
+   "class": "APPRENTICE",
+   "name": "ANN",
+   "double": false,
+   "party": [
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 18
+    },
+    {
+     "species": 29,
+     "name": "FORK",
+     "level": 18
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_1F_Room2",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 5,
+   "y": 3,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_YOUNGSTER_TYLER",
+   "number": 96,
+   "flag": 1376,
+   "class": "NOVICE",
+   "name": "TYLER",
+   "double": false,
+   "party": [
+    {
+     "species": 32,
+     "name": "BRANCH",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_1F_Room2",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 0,
+   "y": 4,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_GENTLEMAN_ARTHUR",
+   "number": 422,
+   "flag": 1702,
+   "class": "GENTLEMAN",
+   "name": "ARTHUR",
+   "double": false,
+   "party": [
+    {
+     "species": 32,
+     "name": "BRANCH",
+     "level": 19
+    },
+    {
+     "species": 29,
+     "name": "FORK",
+     "level": 19
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_1F_Room5",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 2,
+   "y": 6,
+   "area": "south",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_GENTLEMAN_THOMAS",
+   "number": 421,
+   "flag": 1701,
+   "class": "GENTLEMAN",
+   "name": "THOMAS",
+   "double": false,
+   "party": [
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 18
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 18
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_1F_Room7",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 4,
+   "y": 3,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_RIVAL_SS_ANNE_SQUIRTLE",
+   "number": 426,
+   "flag": 1706,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 19
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 16
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 18
+    },
+    {
+     "species": 8,
+     "name": "LOCUS",
+     "level": 20
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "SSAnne_2F_Corridor",
+   "place": "S.S. ANNE",
+   "spot": "trigger",
+   "x": 30,
+   "y": 6,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_RIVAL_SS_ANNE_BULBASAUR",
+   "number": 427,
+   "flag": 1707,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 19
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 16
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 18
+    },
+    {
+     "species": 2,
+     "name": "ROVERSEER",
+     "level": 20
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "SSAnne_2F_Corridor",
+   "place": "S.S. ANNE",
+   "spot": "trigger",
+   "x": 30,
+   "y": 6,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_RIVAL_SS_ANNE_CHARMANDER",
+   "number": 428,
+   "flag": 1708,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 19
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 16
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 18
+    },
+    {
+     "species": 5,
+     "name": "RUBRIC",
+     "level": 20
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "SSAnne_2F_Corridor",
+   "place": "S.S. ANNE",
+   "spot": "trigger",
+   "x": 30,
+   "y": 6,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_FISHERMAN_DALE",
+   "number": 223,
+   "flag": 1503,
+   "class": "FISHERMAN",
+   "name": "DALE",
+   "double": false,
+   "party": [
+    {
+     "species": 118,
+     "name": "SPAWN",
+     "level": 17
+    },
+    {
+     "species": 72,
+     "name": "DRIFTNET",
+     "level": 17
+    },
+    {
+     "species": 118,
+     "name": "SPAWN",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_2F_Room2",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 5,
+   "y": 5,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_GENTLEMAN_BROOKS",
+   "number": 482,
+   "flag": 1762,
+   "class": "GENTLEMAN",
+   "name": "BROOKS",
+   "double": false,
+   "party": [
+    {
+     "species": 25,
+     "name": "SPIKE",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_2F_Room2",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 1,
+   "y": 4,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_GENTLEMAN_LAMAR",
+   "number": 483,
+   "flag": 1763,
+   "class": "GENTLEMAN",
+   "name": "LAMAR",
+   "double": false,
+   "party": [
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 17
+    },
+    {
+     "species": 77,
+     "name": "HOTPATH",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_2F_Room4",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 0,
+   "y": 5,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_LASS_DAWN",
+   "number": 127,
+   "flag": 1407,
+   "class": "APPRENTICE",
+   "name": "DAWN",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 18
+    },
+    {
+     "species": 25,
+     "name": "SPIKE",
+     "level": 18
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_2F_Room4",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 3,
+   "y": 3,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_FISHERMAN_BARNY",
+   "number": 224,
+   "flag": 1504,
+   "class": "FISHERMAN",
+   "name": "BARNY",
+   "double": false,
+   "party": [
+    {
+     "species": 72,
+     "name": "DRIFTNET",
+     "level": 17
+    },
+    {
+     "species": 120,
+     "name": "BEACON",
+     "level": 17
+    },
+    {
+     "species": 90,
+     "name": "CAPSULE",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_B1F_Room1",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 5,
+   "y": 2,
+   "area": "north-east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_PHILLIP",
+   "number": 140,
+   "flag": 1420,
+   "class": "SAILOR",
+   "name": "PHILLIP",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_B1F_Room1",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 3,
+   "y": 2,
+   "area": "north",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_HUEY",
+   "number": 138,
+   "flag": 1418,
+   "class": "SAILOR",
+   "name": "HUEY",
+   "double": false,
+   "party": [
+    {
+     "species": 72,
+     "name": "DRIFTNET",
+     "level": 18
+    },
+    {
+     "species": 120,
+     "name": "BEACON",
+     "level": 18
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_B1F_Room2",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 3,
+   "y": 5,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_DYLAN",
+   "number": 139,
+   "flag": 1419,
+   "class": "SAILOR",
+   "name": "DYLAN",
+   "double": false,
+   "party": [
+    {
+     "species": 116,
+     "name": "BOTTLENECK",
+     "level": 17
+    },
+    {
+     "species": 116,
+     "name": "BOTTLENECK",
+     "level": 17
+    },
+    {
+     "species": 116,
+     "name": "BOTTLENECK",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_B1F_Room3",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 4,
+   "y": 4,
+   "area": "east",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_LEONARD",
+   "number": 136,
+   "flag": 1416,
+   "class": "SAILOR",
+   "name": "LEONARD",
+   "double": false,
+   "party": [
+    {
+     "species": 90,
+     "name": "CAPSULE",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_B1F_Room4",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 2,
+   "y": 6,
+   "area": "south",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_DUNCAN",
+   "number": 137,
+   "flag": 1417,
+   "class": "SAILOR",
+   "name": "DUNCAN",
+   "double": false,
+   "party": [
+    {
+     "species": 116,
+     "name": "BOTTLENECK",
+     "level": 17
+    },
+    {
+     "species": 90,
+     "name": "CAPSULE",
+     "level": 17
+    },
+    {
+     "species": 72,
+     "name": "DRIFTNET",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_B1F_Room4",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 3,
+   "y": 3,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_EDMOND",
+   "number": 134,
+   "flag": 1414,
+   "class": "SAILOR",
+   "name": "EDMOND",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 18
+    },
+    {
+     "species": 90,
+     "name": "CAPSULE",
+     "level": 18
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_Deck",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 6,
+   "y": 9,
+   "area": "west",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_SAILOR_TREVOR",
+   "number": 135,
+   "flag": 1415,
+   "class": "SAILOR",
+   "name": "TREVOR",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 17
+    },
+    {
+     "species": 72,
+     "name": "DRIFTNET",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "SSAnne_Deck",
+   "place": "S.S. ANNE",
+   "spot": "person",
+   "x": 12,
+   "y": 10,
+   "area": "centre",
+   "step": 5
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_7",
+   "number": 357,
+   "flag": 1637,
+   "class": "CORPUS STAFF",
+   "name": "MARTEN",
+   "double": false,
+   "party": [
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 20
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_GameCorner",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 11,
+   "y": 2,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_LEADER_ERIKA",
+   "number": 417,
+   "flag": 1697,
+   "class": "LEADER",
+   "name": "TRELLIS",
+   "double": false,
+   "party": [
+    {
+     "species": 114,
+     "name": "SPAGHETTI",
+     "level": 27
+    },
+    {
+     "species": 71,
+     "name": "TARPIT",
+     "level": 27
+    },
+    {
+     "species": 45,
+     "name": "BADSEED",
+     "level": 27
+    },
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 29
+    }
+   ],
+   "boss": true,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 6,
+   "y": 4,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_LASS_KAY",
+   "number": 132,
+   "flag": 1412,
+   "class": "APPRENTICE",
+   "name": "KAY",
+   "double": false,
+   "party": [
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 23
+    },
+    {
+     "species": 70,
+     "name": "HONEYPOT",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 3,
+   "y": 11,
+   "area": "west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_LASS_LISA",
+   "number": 133,
+   "flag": 1413,
+   "class": "APPRENTICE",
+   "name": "LISA",
+   "double": false,
+   "party": [
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 23
+    },
+    {
+     "species": 44,
+     "name": "SKEW",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 7,
+   "y": 4,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_TINA",
+   "number": 160,
+   "flag": 1440,
+   "class": "RAMBLER",
+   "name": "TINA",
+   "double": false,
+   "party": [
+    {
+     "species": 1,
+     "name": "ROVERCUB",
+     "level": 24
+    },
+    {
+     "species": 2,
+     "name": "ROVERSEER",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 10,
+   "y": 7,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_BEAUTY_BRIDGET",
+   "number": 265,
+   "flag": 1545,
+   "class": "STYLIST",
+   "name": "BRIDGET",
+   "double": false,
+   "party": [
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 21
+    },
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 21
+    },
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 21
+    },
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 9,
+   "y": 10,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_BEAUTY_TAMIA",
+   "number": 266,
+   "flag": 1546,
+   "class": "STYLIST",
+   "name": "TAMIA",
+   "double": false,
+   "party": [
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 24
+    },
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 2,
+   "y": 6,
+   "area": "north-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_BEAUTY_LORI",
+   "number": 267,
+   "flag": 1547,
+   "class": "STYLIST",
+   "name": "LORI",
+   "double": false,
+   "party": [
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 5,
+   "y": 4,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_MARY",
+   "number": 402,
+   "flag": 1682,
+   "class": "OPERATOR",
+   "name": "MARY",
+   "double": false,
+   "party": [
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 22
+    },
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 22
+    },
+    {
+     "species": 70,
+     "name": "HONEYPOT",
+     "level": 22
+    },
+    {
+     "species": 44,
+     "name": "SKEW",
+     "level": 22
+    },
+    {
+     "species": 2,
+     "name": "ROVERSEER",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "CeladonCity_Gym",
+   "place": "VERDIGRIS CITY",
+   "spot": "person",
+   "x": 8,
+   "y": 7,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_RIVAL_POKEMON_TOWER_SQUIRTLE",
+   "number": 429,
+   "flag": 1709,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 25
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 23
+    },
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 22
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 20
+    },
+    {
+     "species": 8,
+     "name": "LOCUS",
+     "level": 25
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "PokemonTower_2F",
+   "place": "DAEMON TOWER",
+   "spot": "trigger",
+   "x": 17,
+   "y": 5,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_RIVAL_POKEMON_TOWER_BULBASAUR",
+   "number": 430,
+   "flag": 1710,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 25
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 23
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 22
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 20
+    },
+    {
+     "species": 2,
+     "name": "ROVERSEER",
+     "level": 25
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "PokemonTower_2F",
+   "place": "DAEMON TOWER",
+   "spot": "trigger",
+   "x": 17,
+   "y": 5,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_RIVAL_POKEMON_TOWER_CHARMANDER",
+   "number": 431,
+   "flag": 1711,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 17,
+     "name": "RELAY",
+     "level": 25
+    },
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 23
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 22
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 20
+    },
+    {
+     "species": 5,
+     "name": "RUBRIC",
+     "level": 25
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "PokemonTower_2F",
+   "place": "DAEMON TOWER",
+   "spot": "trigger",
+   "x": 17,
+   "y": 5,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_PATRICIA",
+   "number": 441,
+   "flag": 1721,
+   "class": "MEDIUM",
+   "name": "PATRICIA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_3F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 10,
+   "y": 14,
+   "area": "south",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_CARLY",
+   "number": 442,
+   "flag": 1722,
+   "class": "MEDIUM",
+   "name": "CARLY",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_3F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 9,
+   "y": 9,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_HOPE",
+   "number": 443,
+   "flag": 1723,
+   "class": "MEDIUM",
+   "name": "HOPE",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_3F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 12,
+   "y": 4,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_PAULA",
+   "number": 444,
+   "flag": 1724,
+   "class": "MEDIUM",
+   "name": "PAULA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_4F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 4,
+   "y": 12,
+   "area": "west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_LAUREL",
+   "number": 445,
+   "flag": 1725,
+   "class": "MEDIUM",
+   "name": "LAUREL",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 23
+    },
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_4F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 17,
+   "y": 7,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_JODY",
+   "number": 446,
+   "flag": 1726,
+   "class": "MEDIUM",
+   "name": "JODY",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_4F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 15,
+   "y": 13,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_TAMMY",
+   "number": 447,
+   "flag": 1727,
+   "class": "MEDIUM",
+   "name": "TAMMY",
+   "double": false,
+   "party": [
+    {
+     "species": 93,
+     "name": "RESPAWN",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_5F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 19,
+   "y": 7,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_RUTH",
+   "number": 448,
+   "flag": 1728,
+   "class": "MEDIUM",
+   "name": "RUTH",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_5F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 11,
+   "y": 4,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_KARINA",
+   "number": 449,
+   "flag": 1729,
+   "class": "MEDIUM",
+   "name": "KARINA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_5F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 7,
+   "y": 12,
+   "area": "west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_JANAE",
+   "number": 450,
+   "flag": 1730,
+   "class": "MEDIUM",
+   "name": "JANAE",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_5F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 11,
+   "y": 16,
+   "area": "south",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_ANGELICA",
+   "number": 451,
+   "flag": 1731,
+   "class": "MEDIUM",
+   "name": "ANGELICA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    },
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    },
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_6F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 13,
+   "y": 10,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_EMILIA",
+   "number": 452,
+   "flag": 1732,
+   "class": "MEDIUM",
+   "name": "EMILIA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_6F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 9,
+   "y": 6,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_JENNIFER",
+   "number": 453,
+   "flag": 1733,
+   "class": "MEDIUM",
+   "name": "JENNIFER",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 24
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_6F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 18,
+   "y": 6,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_HIKER_LENNY",
+   "number": 192,
+   "flag": 1472,
+   "class": "HIKER",
+   "name": "LENNY",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 19
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 19
+    },
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 19
+    },
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 19
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 7,
+   "y": 5,
+   "area": "north-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_HIKER_OLIVER",
+   "number": 193,
+   "flag": 1473,
+   "class": "HIKER",
+   "name": "OLIVER",
+   "double": false,
+   "party": [
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 20
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 20
+    },
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 5,
+   "y": 20,
+   "area": "west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_HIKER_LUCAS",
+   "number": 194,
+   "flag": 1474,
+   "class": "HIKER",
+   "name": "LUCAS",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 21
+    },
+    {
+     "species": 75,
+     "name": "STACK",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 20,
+   "y": 17,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_POKEMANIAC_ASHTON",
+   "number": 168,
+   "flag": 1448,
+   "class": "ARCHIVIST",
+   "name": "ASHTON",
+   "double": false,
+   "party": [
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 23
+    },
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 27,
+   "y": 10,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_LEAH",
+   "number": 476,
+   "flag": 1756,
+   "class": "RAMBLER",
+   "name": "LEAH",
+   "double": false,
+   "party": [
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 22
+    },
+    {
+     "species": 35,
+     "name": "ANOMALY",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 45,
+   "y": 24,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_ARIANA",
+   "number": 475,
+   "flag": 1755,
+   "class": "RAMBLER",
+   "name": "ARIANA",
+   "double": false,
+   "party": [
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 19
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 19
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 19
+    },
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 19
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 39,
+   "y": 27,
+   "area": "south-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_DANA",
+   "number": 474,
+   "flag": 1754,
+   "class": "RAMBLER",
+   "name": "DANA",
+   "double": false,
+   "party": [
+    {
+     "species": 52,
+     "name": "COOKIE",
+     "level": 20
+    },
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 20
+    },
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 26,
+   "y": 28,
+   "area": "south",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_SOFIA",
+   "number": 158,
+   "flag": 1438,
+   "class": "RAMBLER",
+   "name": "SOFIA",
+   "double": false,
+   "party": [
+    {
+     "species": 39,
+     "name": "SUSPEND",
+     "level": 21
+    },
+    {
+     "species": 16,
+     "name": "PACKET",
+     "level": 21
+    },
+    {
+     "species": 52,
+     "name": "COOKIE",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 11,
+   "y": 15,
+   "area": "west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_MARTHA",
+   "number": 159,
+   "flag": 1439,
+   "class": "RAMBLER",
+   "name": "MARTHA",
+   "double": false,
+   "party": [
+    {
+     "species": 43,
+     "name": "SPRAWL",
+     "level": 22
+    },
+    {
+     "species": 1,
+     "name": "ROVERCUB",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 15,
+   "y": 33,
+   "area": "south-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_HIKER_DUDLEY",
+   "number": 189,
+   "flag": 1469,
+   "class": "HIKER",
+   "name": "DUDLEY",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 21
+    },
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 21
+    },
+    {
+     "species": 75,
+     "name": "STACK",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 5,
+   "y": 11,
+   "area": "north-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_HIKER_ALLEN",
+   "number": 190,
+   "flag": 1470,
+   "class": "HIKER",
+   "name": "ALLEN",
+   "double": false,
+   "party": [
+    {
+     "species": 74,
+     "name": "HEAP",
+     "level": 25
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 36,
+   "y": 11,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_HIKER_ERIC",
+   "number": 191,
+   "flag": 1471,
+   "class": "HIKER",
+   "name": "ERIC",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 20
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 41,
+   "y": 5,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_POKEMANIAC_COOPER",
+   "number": 164,
+   "flag": 1444,
+   "class": "ARCHIVIST",
+   "name": "COOPER",
+   "double": false,
+   "party": [
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 20
+    },
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 20
+    },
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 2,
+   "y": 6,
+   "area": "north-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_POKEMANIAC_STEVE",
+   "number": 165,
+   "flag": 1445,
+   "class": "ARCHIVIST",
+   "name": "STEVE",
+   "double": false,
+   "party": [
+    {
+     "species": 4,
+     "name": "LABEL",
+     "level": 22
+    },
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 23,
+   "y": 23,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_POKEMANIAC_WINSTON",
+   "number": 166,
+   "flag": 1446,
+   "class": "ARCHIVIST",
+   "name": "WINSTON",
+   "double": false,
+   "party": [
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 25
+    }
+   ],
+   "boss": false,
+   "map": "RockTunnel_B1F",
+   "place": "THE BLACKOUT",
+   "spot": "person",
+   "x": 29,
+   "y": 35,
+   "area": "south",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_8",
+   "number": 358,
+   "flag": 1638,
+   "class": "CORPUS STAFF",
+   "name": "FERRET",
+   "double": false,
+   "party": [
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 21
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B1F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 24,
+   "y": 12,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_9",
+   "number": 359,
+   "flag": 1639,
+   "class": "CORPUS STAFF",
+   "name": "BADGER",
+   "double": false,
+   "party": [
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 21
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B1F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 4,
+   "y": 9,
+   "area": "north-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_10",
+   "number": 360,
+   "flag": 1640,
+   "class": "CORPUS STAFF",
+   "name": "OTTER",
+   "double": false,
+   "party": [
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 20
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 20
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B1F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 10,
+   "y": 22,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_11",
+   "number": 361,
+   "flag": 1641,
+   "class": "CORPUS STAFF",
+   "name": "HERON",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 19
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 19
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 19
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 19
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B1F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 6,
+   "y": 32,
+   "area": "south-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_12",
+   "number": 362,
+   "flag": 1642,
+   "class": "CORPUS STAFF",
+   "name": "EGRET",
+   "double": false,
+   "party": [
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 22
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 22
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B1F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 21,
+   "y": 27,
+   "area": "south-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_13",
+   "number": 363,
+   "flag": 1643,
+   "class": "CORPUS STAFF",
+   "name": "RAVEN",
+   "double": false,
+   "party": [
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 17
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 17
+    },
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 17
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 17
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 17
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B2F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 20,
+   "y": 6,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_14",
+   "number": 364,
+   "flag": 1644,
+   "class": "CORPUS STAFF",
+   "name": "ROOK",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 20
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 20
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 20
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B3F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 2,
+   "y": 20,
+   "area": "south-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_15",
+   "number": 365,
+   "flag": 1645,
+   "class": "CORPUS STAFF",
+   "name": "JAY",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 21
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B3F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 19,
+   "y": 9,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_BOSS_GIOVANNI",
+   "number": 348,
+   "flag": 1628,
+   "class": "BOSS",
+   "name": "SCORN",
+   "double": false,
+   "party": [
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 25
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 24
+    },
+    {
+     "species": 115,
+     "name": "KEEPER",
+     "level": 29
+    }
+   ],
+   "boss": true,
+   "map": "RocketHideout_B4F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 19,
+   "y": 4,
+   "area": "north-east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_18",
+   "number": 368,
+   "flag": 1648,
+   "class": "CORPUS STAFF",
+   "name": "FINCH",
+   "double": false,
+   "party": [
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 21
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B4F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 4,
+   "y": 2,
+   "area": "north-west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_16",
+   "number": 366,
+   "flag": 1646,
+   "class": "CORPUS STAFF",
+   "name": "MAGPIE",
+   "double": false,
+   "party": [
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 23
+    },
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 23
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B4F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 16,
+   "y": 14,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_17",
+   "number": 367,
+   "flag": 1647,
+   "class": "CORPUS STAFF",
+   "name": "STARLING",
+   "double": false,
+   "party": [
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 23
+    },
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 23
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "RocketHideout_B4F",
+   "place": "CORPUS HIDEOUT",
+   "spot": "person",
+   "x": 19,
+   "y": 14,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_LEADER_LT_SURGE",
+   "number": 416,
+   "flag": 1696,
+   "class": "LEADER",
+   "name": "GAUGE",
+   "double": false,
+   "party": [
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 21
+    },
+    {
+     "species": 25,
+     "name": "SPIKE",
+     "level": 18
+    },
+    {
+     "species": 26,
+     "name": "SURGE",
+     "level": 24
+    }
+   ],
+   "boss": true,
+   "map": "VermilionCity_Gym",
+   "place": "ARDOR CITY",
+   "spot": "person",
+   "x": 5,
+   "y": 2,
+   "area": "north",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_SAILOR_DWAYNE",
+   "number": 141,
+   "flag": 1421,
+   "class": "SAILOR",
+   "name": "DWAYNE",
+   "double": false,
+   "party": [
+    {
+     "species": 25,
+     "name": "SPIKE",
+     "level": 21
+    },
+    {
+     "species": 25,
+     "name": "SPIKE",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "VermilionCity_Gym",
+   "place": "ARDOR CITY",
+   "spot": "person",
+   "x": 8,
+   "y": 13,
+   "area": "east",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_ENGINEER_BAILY",
+   "number": 220,
+   "flag": 1500,
+   "class": "ENGINEER",
+   "name": "BAILY",
+   "double": false,
+   "party": [
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 21
+    },
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 21
+    }
+   ],
+   "boss": false,
+   "map": "VermilionCity_Gym",
+   "place": "ARDOR CITY",
+   "spot": "person",
+   "x": 2,
+   "y": 11,
+   "area": "west",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_GENTLEMAN_TUCKER",
+   "number": 423,
+   "flag": 1703,
+   "class": "GENTLEMAN",
+   "name": "TUCKER",
+   "double": false,
+   "party": [
+    {
+     "species": 25,
+     "name": "SPIKE",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "VermilionCity_Gym",
+   "place": "ARDOR CITY",
+   "spot": "person",
+   "x": 7,
+   "y": 8,
+   "area": "centre",
+   "step": 8
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_HITOSHI",
+   "number": 321,
+   "flag": 1601,
+   "class": "FORMALIST",
+   "name": "HITOSHI",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 31
+    },
+    {
+     "species": 56,
+     "name": "PREEMPT",
+     "level": 31
+    },
+    {
+     "species": 57,
+     "name": "LIVELOCK",
+     "level": 31
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Dojo",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 11,
+   "y": 10,
+   "area": "east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_HIDEKI",
+   "number": 319,
+   "flag": 1599,
+   "class": "FORMALIST",
+   "name": "HIDEKI",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 32
+    },
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 32
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Dojo",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 1,
+   "y": 10,
+   "area": "west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_AARON",
+   "number": 320,
+   "flag": 1600,
+   "class": "FORMALIST",
+   "name": "AARON",
+   "double": false,
+   "party": [
+    {
+     "species": 57,
+     "name": "LIVELOCK",
+     "level": 36
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Dojo",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 11,
+   "y": 8,
+   "area": "east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_MIKE",
+   "number": 318,
+   "flag": 1598,
+   "class": "FORMALIST",
+   "name": "MIKE",
+   "double": false,
+   "party": [
+    {
+     "species": 56,
+     "name": "PREEMPT",
+     "level": 31
+    },
+    {
+     "species": 56,
+     "name": "PREEMPT",
+     "level": 31
+    },
+    {
+     "species": 57,
+     "name": "LIVELOCK",
+     "level": 31
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Dojo",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 1,
+   "y": 8,
+   "area": "west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_KOICHI",
+   "number": 317,
+   "flag": 1597,
+   "class": "FORMALIST",
+   "name": "KOICHI",
+   "double": false,
+   "party": [
+    {
+     "species": 106,
+     "name": "AXIOMKICK",
+     "level": 37
+    },
+    {
+     "species": 107,
+     "name": "REBUTTAL",
+     "level": 37
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Dojo",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "north",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_TRAVIS",
+   "number": 345,
+   "flag": 1625,
+   "class": "SCIENTIST",
+   "name": "TRAVIS",
+   "double": false,
+   "party": [
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 29
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_10F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 2,
+   "y": 7,
+   "area": "west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_39",
+   "number": 389,
+   "flag": 1669,
+   "class": "CORPUS STAFF",
+   "name": "GOPHER",
+   "double": false,
+   "party": [
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_10F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 0,
+   "y": 13,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_BOSS_GIOVANNI_2",
+   "number": 349,
+   "flag": 1629,
+   "class": "BOSS",
+   "name": "SCORN",
+   "double": false,
+   "party": [
+    {
+     "species": 33,
+     "name": "PREDICTOR",
+     "level": 37
+    },
+    {
+     "species": 115,
+     "name": "KEEPER",
+     "level": 35
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 37
+    },
+    {
+     "species": 31,
+     "name": "SCHEDULER",
+     "level": 41
+    }
+   ],
+   "boss": true,
+   "map": "SilphCo_11F",
+   "place": "FOUNDRY CO.",
+   "spot": "trigger",
+   "x": 5,
+   "y": 15,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_40",
+   "number": 390,
+   "flag": 1670,
+   "class": "CORPUS STAFF",
+   "name": "HARE",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 25
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 25
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 25
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 25
+    },
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 25
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_11F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 16,
+   "y": 12,
+   "area": "east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_41",
+   "number": 391,
+   "flag": 1671,
+   "class": "CORPUS STAFF",
+   "name": "PIKA",
+   "double": false,
+   "party": [
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 32
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 32
+    },
+    {
+     "species": 105,
+     "name": "COREFILE",
+     "level": 32
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_11F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 2,
+   "y": 19,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_CONNOR",
+   "number": 336,
+   "flag": 1616,
+   "class": "SCIENTIST",
+   "name": "CONNOR",
+   "double": false,
+   "party": [
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 26
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 26
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 26
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 26
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_2F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 5,
+   "y": 19,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_JERRY",
+   "number": 337,
+   "flag": 1617,
+   "class": "SCIENTIST",
+   "name": "JERRY",
+   "double": false,
+   "party": [
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 28
+    },
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 28
+    },
+    {
+     "species": 82,
+     "name": "QUORUM",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_2F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 28,
+   "y": 18,
+   "area": "south-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_23",
+   "number": 373,
+   "flag": 1653,
+   "class": "CORPUS STAFF",
+   "name": "PLOVER",
+   "double": false,
+   "party": [
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 29
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_2F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 20,
+   "y": 14,
+   "area": "centre",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_24",
+   "number": 374,
+   "flag": 1654,
+   "class": "CORPUS STAFF",
+   "name": "CURLEW",
+   "double": false,
+   "party": [
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 25
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 25
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 25
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 25
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 25
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_2F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 29,
+   "y": 12,
+   "area": "east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_JOSE",
+   "number": 338,
+   "flag": 1618,
+   "class": "SCIENTIST",
+   "name": "JOSE",
+   "double": false,
+   "party": [
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 29
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_3F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 4,
+   "y": 12,
+   "area": "west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_25",
+   "number": 375,
+   "flag": 1655,
+   "class": "CORPUS STAFF",
+   "name": "DUNLIN",
+   "double": false,
+   "party": [
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 28
+    },
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 28
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_3F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 25,
+   "y": 9,
+   "area": "east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_RODNEY",
+   "number": 339,
+   "flag": 1619,
+   "class": "SCIENTIST",
+   "name": "RODNEY",
+   "double": false,
+   "party": [
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_4F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 14,
+   "y": 8,
+   "area": "centre",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_26",
+   "number": 376,
+   "flag": 1656,
+   "class": "CORPUS STAFF",
+   "name": "TERN",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 29
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_4F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 10,
+   "y": 19,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_27",
+   "number": 377,
+   "flag": 1657,
+   "class": "CORPUS STAFF",
+   "name": "GANNET",
+   "double": false,
+   "party": [
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 28
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 28
+    },
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_4F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 33,
+   "y": 16,
+   "area": "south-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_BEAU",
+   "number": 340,
+   "flag": 1620,
+   "class": "SCIENTIST",
+   "name": "BEAU",
+   "double": false,
+   "party": [
+    {
+     "species": 82,
+     "name": "QUORUM",
+     "level": 26
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 26
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 26
+    },
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 26
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_5F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 11,
+   "y": 6,
+   "area": "north-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_28",
+   "number": 378,
+   "flag": 1658,
+   "class": "CORPUS STAFF",
+   "name": "PETREL",
+   "double": false,
+   "party": [
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_5F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 9,
+   "y": 21,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_29",
+   "number": 379,
+   "flag": 1659,
+   "class": "CORPUS STAFF",
+   "name": "LOON",
+   "double": false,
+   "party": [
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_5F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 35,
+   "y": 7,
+   "area": "north-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_DALTON",
+   "number": 286,
+   "flag": 1566,
+   "class": "JUGGLER",
+   "name": "DALTON",
+   "double": false,
+   "party": [
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 29
+    },
+    {
+     "species": 122,
+     "name": "MIME",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_5F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 23,
+   "y": 13,
+   "area": "centre",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_TAYLOR",
+   "number": 341,
+   "flag": 1621,
+   "class": "SCIENTIST",
+   "name": "TAYLOR",
+   "double": false,
+   "party": [
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 25
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 25
+    },
+    {
+     "species": 82,
+     "name": "QUORUM",
+     "level": 25
+    },
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 25
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 25
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_6F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 9,
+   "y": 11,
+   "area": "west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_30",
+   "number": 380,
+   "flag": 1660,
+   "class": "CORPUS STAFF",
+   "name": "GREBE",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 29
+    },
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_6F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 21,
+   "y": 5,
+   "area": "north-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_31",
+   "number": 381,
+   "flag": 1661,
+   "class": "CORPUS STAFF",
+   "name": "COOT",
+   "double": false,
+   "party": [
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 28
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 28
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_6F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 18,
+   "y": 17,
+   "area": "south",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_RIVAL_SILPH_SQUIRTLE",
+   "number": 432,
+   "flag": 1712,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 37
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 38
+    },
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 35
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 35
+    },
+    {
+     "species": 9,
+     "name": "MANIFOLD",
+     "level": 40
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "trigger",
+   "x": 2,
+   "y": 4,
+   "area": "north-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_RIVAL_SILPH_BULBASAUR",
+   "number": 433,
+   "flag": 1713,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 37
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 38
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 35
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 35
+    },
+    {
+     "species": 3,
+     "name": "ROVERBYTE",
+     "level": 40
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "trigger",
+   "x": 2,
+   "y": 4,
+   "area": "north-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_RIVAL_SILPH_CHARMANDER",
+   "number": 434,
+   "flag": 1714,
+   "class": "RIVAL",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 37
+    },
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 38
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 35
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 35
+    },
+    {
+     "species": 6,
+     "name": "CANON",
+     "level": 40
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "trigger",
+   "x": 2,
+   "y": 4,
+   "area": "north-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_JOSHUA",
+   "number": 342,
+   "flag": 1622,
+   "class": "SCIENTIST",
+   "name": "JOSHUA",
+   "double": false,
+   "party": [
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 29
+    },
+    {
+     "species": 89,
+     "name": "LANDFILL",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 3,
+   "y": 13,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_33",
+   "number": 383,
+   "flag": 1663,
+   "class": "CORPUS STAFF",
+   "name": "WIGEON",
+   "double": false,
+   "party": [
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 29
+    },
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 24,
+   "y": 5,
+   "area": "north-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_34",
+   "number": 384,
+   "flag": 1664,
+   "class": "CORPUS STAFF",
+   "name": "SHRIKE",
+   "double": false,
+   "party": [
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 29
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 24,
+   "y": 15,
+   "area": "south-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_35",
+   "number": 385,
+   "flag": 1665,
+   "class": "CORPUS STAFF",
+   "name": "OUSEL",
+   "double": false,
+   "party": [
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 26
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 26
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 26
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 26
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_7F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 13,
+   "y": 4,
+   "area": "north",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_PARKER",
+   "number": 343,
+   "flag": 1623,
+   "class": "SCIENTIST",
+   "name": "PARKER",
+   "double": false,
+   "party": [
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 29
+    },
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_8F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 9,
+   "y": 4,
+   "area": "north-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_32",
+   "number": 382,
+   "flag": 1662,
+   "class": "CORPUS STAFF",
+   "name": "TEAL",
+   "double": false,
+   "party": [
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 26
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 26
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 26
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 26
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_8F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 28,
+   "y": 5,
+   "area": "north-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_36",
+   "number": 386,
+   "flag": 1666,
+   "class": "CORPUS STAFF",
+   "name": "KESTREL",
+   "double": false,
+   "party": [
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 28
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 28
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_8F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 10,
+   "y": 17,
+   "area": "south-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_ED",
+   "number": 344,
+   "flag": 1624,
+   "class": "SCIENTIST",
+   "name": "ED",
+   "double": false,
+   "party": [
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 28
+    },
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 28
+    },
+    {
+     "species": 82,
+     "name": "QUORUM",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_9F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 26,
+   "y": 16,
+   "area": "south-east",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_37",
+   "number": 387,
+   "flag": 1667,
+   "class": "CORPUS STAFF",
+   "name": "LEMMING",
+   "double": false,
+   "party": [
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 28
+    },
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 28
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_9F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 1,
+   "y": 6,
+   "area": "north-west",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_38",
+   "number": 388,
+   "flag": 1668,
+   "class": "CORPUS STAFF",
+   "name": "MARMOT",
+   "double": false,
+   "party": [
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 28
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 28
+    },
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 28
+    }
+   ],
+   "boss": false,
+   "map": "SilphCo_9F",
+   "place": "FOUNDRY CO.",
+   "spot": "person",
+   "x": 15,
+   "y": 18,
+   "area": "south",
+   "step": 11
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_19",
+   "number": 369,
+   "flag": 1649,
+   "class": "CORPUS STAFF",
+   "name": "LINNET",
+   "double": false,
+   "party": [
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 25
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 25
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 25
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_7F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 9,
+   "y": 10,
+   "area": "centre",
+   "step": 13
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_20",
+   "number": 370,
+   "flag": 1650,
+   "class": "CORPUS STAFF",
+   "name": "PIPIT",
+   "double": false,
+   "party": [
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 26
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 26
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_7F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 13,
+   "y": 8,
+   "area": "centre",
+   "step": 13
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_21",
+   "number": 371,
+   "flag": 1651,
+   "class": "CORPUS STAFF",
+   "name": "DUNNOCK",
+   "double": false,
+   "party": [
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 23
+    },
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 23
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 23
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 23
+    }
+   ],
+   "boss": false,
+   "map": "PokemonTower_7F",
+   "place": "DAEMON TOWER",
+   "spot": "person",
+   "x": 9,
+   "y": 6,
+   "area": "north",
+   "step": 13
+  },
+  {
+   "trainer": "TRAINER_LEADER_KOGA",
+   "number": 418,
+   "flag": 1698,
+   "class": "LEADER",
+   "name": "TILT",
+   "double": false,
+   "party": [
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 37
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 38
+    },
+    {
+     "species": 89,
+     "name": "LANDFILL",
+     "level": 39
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 43
+    }
+   ],
+   "boss": true,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 7,
+   "y": 13,
+   "area": "centre",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_TAMER_PHIL",
+   "number": 294,
+   "flag": 1574,
+   "class": "BINDER",
+   "name": "PHIL",
+   "double": false,
+   "party": [
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 34
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 4,
+   "y": 6,
+   "area": "north-west",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_TAMER_EDGAR",
+   "number": 295,
+   "flag": 1575,
+   "class": "BINDER",
+   "name": "EDGAR",
+   "double": false,
+   "party": [
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 33
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 33
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 13,
+   "y": 4,
+   "area": "north-east",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_KIRK",
+   "number": 288,
+   "flag": 1568,
+   "class": "JUGGLER",
+   "name": "KIRK",
+   "double": false,
+   "party": [
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 31
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 31
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 31
+    },
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 31
+    }
+   ],
+   "boss": false,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 11,
+   "y": 11,
+   "area": "east",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_SHAWN",
+   "number": 289,
+   "flag": 1569,
+   "class": "JUGGLER",
+   "name": "SHAWN",
+   "double": false,
+   "party": [
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 34
+    },
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 2,
+   "y": 9,
+   "area": "west",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_KAYDEN",
+   "number": 292,
+   "flag": 1572,
+   "class": "JUGGLER",
+   "name": "KAYDEN",
+   "double": false,
+   "party": [
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 12,
+   "y": 16,
+   "area": "south-east",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_NATE",
+   "number": 293,
+   "flag": 1573,
+   "class": "JUGGLER",
+   "name": "NATE",
+   "double": false,
+   "party": [
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 34
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "FuchsiaCity_Gym",
+   "place": "LURID CITY",
+   "spot": "person",
+   "x": 2,
+   "y": 16,
+   "area": "south-west",
+   "step": 14
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_TED",
+   "number": 335,
+   "flag": 1615,
+   "class": "SCIENTIST",
+   "name": "TED",
+   "double": false,
+   "party": [
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 29
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 29
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_1F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 22,
+   "y": 24,
+   "area": "south",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_YOUNGSTER_JOHNSON",
+   "number": 534,
+   "flag": 1814,
+   "class": "NOVICE",
+   "name": "JOHNSON",
+   "double": false,
+   "party": [
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 33
+    },
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 33
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_1F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 8,
+   "y": 8,
+   "area": "north-west",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_BURGLAR_ARNIE",
+   "number": 216,
+   "flag": 1496,
+   "class": "LOOTER",
+   "name": "ARNIE",
+   "double": false,
+   "party": [
+    {
+     "species": 4,
+     "name": "LABEL",
+     "level": 34
+    },
+    {
+     "species": 5,
+     "name": "RUBRIC",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_2F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 5,
+   "y": 23,
+   "area": "west",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_BURGLAR_SIMON",
+   "number": 218,
+   "flag": 1498,
+   "class": "LOOTER",
+   "name": "SIMON",
+   "double": false,
+   "party": [
+    {
+     "species": 38,
+     "name": "OVERRUN",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_3F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 7,
+   "y": 13,
+   "area": "west",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_BRAYDON",
+   "number": 346,
+   "flag": 1626,
+   "class": "SCIENTIST",
+   "name": "BRAYDON",
+   "double": false,
+   "party": [
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 33
+    },
+    {
+     "species": 82,
+     "name": "QUORUM",
+     "level": 33
+    },
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_3F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 22,
+   "y": 13,
+   "area": "centre",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_BURGLAR_LEWIS",
+   "number": 219,
+   "flag": 1499,
+   "class": "LOOTER",
+   "name": "LEWIS",
+   "double": false,
+   "party": [
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 34
+    },
+    {
+     "species": 77,
+     "name": "HOTPATH",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_B1F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 20,
+   "y": 25,
+   "area": "south",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_IVAN",
+   "number": 347,
+   "flag": 1627,
+   "class": "SCIENTIST",
+   "name": "IVAN",
+   "double": false,
+   "party": [
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 34
+    },
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "PokemonMansion_B1F",
+   "place": "DAEMON MANSION",
+   "spot": "person",
+   "x": 34,
+   "y": 13,
+   "area": "east",
+   "step": 16
+  },
+  {
+   "trainer": "TRAINER_LEADER_SABRINA",
+   "number": 420,
+   "flag": 1700,
+   "class": "LEADER",
+   "name": "MATTE",
+   "double": false,
+   "party": [
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 38
+    },
+    {
+     "species": 122,
+     "name": "MIME",
+     "level": 37
+    },
+    {
+     "species": 49,
+     "name": "SPYWARE",
+     "level": 38
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 43
+    }
+   ],
+   "boss": true,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 14,
+   "y": 11,
+   "area": "centre",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_PSYCHIC_JOHAN",
+   "number": 280,
+   "flag": 1560,
+   "class": "INTERPRETER",
+   "name": "JOHAN",
+   "double": false,
+   "party": [
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 31
+    },
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 31
+    },
+    {
+     "species": 122,
+     "name": "MIME",
+     "level": 31
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 31
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 24,
+   "y": 2,
+   "area": "north-east",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_PSYCHIC_TYRON",
+   "number": 281,
+   "flag": 1561,
+   "class": "INTERPRETER",
+   "name": "TYRON",
+   "double": false,
+   "party": [
+    {
+     "species": 122,
+     "name": "MIME",
+     "level": 34
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 24,
+   "y": 10,
+   "area": "east",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_PSYCHIC_CAMERON",
+   "number": 282,
+   "flag": 1562,
+   "class": "INTERPRETER",
+   "name": "CAMERON",
+   "double": false,
+   "party": [
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 33
+    },
+    {
+     "species": 79,
+     "name": "LATENCY",
+     "level": 33
+    },
+    {
+     "species": 80,
+     "name": "SHELL",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 24,
+   "y": 18,
+   "area": "south-east",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_PSYCHIC_PRESTON",
+   "number": 283,
+   "flag": 1563,
+   "class": "INTERPRETER",
+   "name": "PRESTON",
+   "double": false,
+   "party": [
+    {
+     "species": 80,
+     "name": "SHELL",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 4,
+   "y": 2,
+   "area": "north-west",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_AMANDA",
+   "number": 462,
+   "flag": 1742,
+   "class": "MEDIUM",
+   "name": "AMANDA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 34
+    },
+    {
+     "species": 93,
+     "name": "RESPAWN",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 14,
+   "y": 2,
+   "area": "north",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_STACY",
+   "number": 463,
+   "flag": 1743,
+   "class": "MEDIUM",
+   "name": "STACY",
+   "double": false,
+   "party": [
+    {
+     "species": 93,
+     "name": "RESPAWN",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 4,
+   "y": 10,
+   "area": "west",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_CHANNELER_TASHA",
+   "number": 464,
+   "flag": 1744,
+   "class": "MEDIUM",
+   "name": "TASHA",
+   "double": false,
+   "party": [
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 33
+    },
+    {
+     "species": 92,
+     "name": "DANGLING",
+     "level": 33
+    },
+    {
+     "species": 93,
+     "name": "RESPAWN",
+     "level": 33
+    }
+   ],
+   "boss": false,
+   "map": "SaffronCity_Gym",
+   "place": "BRAZEN CITY",
+   "spot": "person",
+   "x": 4,
+   "y": 18,
+   "area": "south-west",
+   "step": 17
+  },
+  {
+   "trainer": "TRAINER_LEADER_BLAINE",
+   "number": 419,
+   "flag": 1699,
+   "class": "LEADER",
+   "name": "ANNEAL",
+   "double": false,
+   "party": [
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 42
+    },
+    {
+     "species": 77,
+     "name": "HOTPATH",
+     "level": 40
+    },
+    {
+     "species": 78,
+     "name": "OVERDRIVE",
+     "level": 42
+    },
+    {
+     "species": 59,
+     "name": "GUARDIAN",
+     "level": 47
+    }
+   ],
+   "boss": true,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 5,
+   "y": 4,
+   "area": "north-west",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_SUPER_NERD_ERIK",
+   "number": 177,
+   "flag": 1457,
+   "class": "TINKERER",
+   "name": "ERIK",
+   "double": false,
+   "party": [
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 36
+    },
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 36
+    },
+    {
+     "species": 38,
+     "name": "OVERRUN",
+     "level": 36
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 25,
+   "y": 4,
+   "area": "north-east",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_SUPER_NERD_AVERY",
+   "number": 178,
+   "flag": 1458,
+   "class": "TINKERER",
+   "name": "AVERY",
+   "double": false,
+   "party": [
+    {
+     "species": 77,
+     "name": "HOTPATH",
+     "level": 34
+    },
+    {
+     "species": 4,
+     "name": "LABEL",
+     "level": 34
+    },
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 34
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 34
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 17,
+   "y": 5,
+   "area": "north",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_SUPER_NERD_DEREK",
+   "number": 179,
+   "flag": 1459,
+   "class": "TINKERER",
+   "name": "DEREK",
+   "double": false,
+   "party": [
+    {
+     "species": 78,
+     "name": "OVERDRIVE",
+     "level": 41
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 16,
+   "y": 18,
+   "area": "south",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_SUPER_NERD_ZAC",
+   "number": 180,
+   "flag": 1460,
+   "class": "TINKERER",
+   "name": "ZAC",
+   "double": false,
+   "party": [
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 37
+    },
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 37
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 4,
+   "y": 11,
+   "area": "west",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_BURGLAR_QUINN",
+   "number": 213,
+   "flag": 1493,
+   "class": "LOOTER",
+   "name": "QUINN",
+   "double": false,
+   "party": [
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 36
+    },
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 36
+    },
+    {
+     "species": 38,
+     "name": "OVERRUN",
+     "level": 36
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 25,
+   "y": 11,
+   "area": "east",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_BURGLAR_RAMON",
+   "number": 214,
+   "flag": 1494,
+   "class": "LOOTER",
+   "name": "RAMON",
+   "double": false,
+   "party": [
+    {
+     "species": 77,
+     "name": "HOTPATH",
+     "level": 41
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 16,
+   "y": 11,
+   "area": "centre",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_BURGLAR_DUSTY",
+   "number": 215,
+   "flag": 1495,
+   "class": "LOOTER",
+   "name": "DUSTY",
+   "double": false,
+   "party": [
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 37
+    },
+    {
+     "species": 58,
+     "name": "SENTRY",
+     "level": 37
+    }
+   ],
+   "boss": false,
+   "map": "CinnabarIsland_Gym",
+   "place": "QUICKSILVER IS.",
+   "spot": "person",
+   "x": 4,
+   "y": 19,
+   "area": "south-west",
+   "step": 19
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_43",
+   "number": 537,
+   "flag": 1817,
+   "class": "CORPUS STAFF",
+   "name": "WEASEL",
+   "double": false,
+   "party": [
+    {
+     "species": 104,
+     "name": "ARTEFACT",
+     "level": 37
+    },
+    {
+     "species": 105,
+     "name": "COREFILE",
+     "level": 37
+    }
+   ],
+   "boss": false,
+   "map": "MtEmber_Exterior",
+   "place": "MT. SMOULDER",
+   "spot": "person",
+   "x": 41,
+   "y": 40,
+   "area": "south-east",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_44",
+   "number": 538,
+   "flag": 1818,
+   "class": "CORPUS STAFF",
+   "name": "TAPIR",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 35
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 35
+    },
+    {
+     "species": 27,
+     "name": "SECTOR",
+     "level": 35
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 35
+    }
+   ],
+   "boss": false,
+   "map": "MtEmber_Exterior",
+   "place": "MT. SMOULDER",
+   "spot": "person",
+   "x": 42,
+   "y": 40,
+   "area": "south-east",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_PKMN_RANGER_LOGAN",
+   "number": 595,
+   "flag": 1875,
+   "class": "RANGER",
+   "name": "LOGAN",
+   "double": false,
+   "party": [
+    {
+     "species": 102,
+     "name": "BOOTSTRAP",
+     "level": 37
+    },
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 40
+    }
+   ],
+   "boss": false,
+   "map": "MtEmber_Exterior",
+   "place": "MT. SMOULDER",
+   "spot": "person",
+   "x": 15,
+   "y": 28,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_PKMN_RANGER_BETH",
+   "number": 597,
+   "flag": 1877,
+   "class": "RANGER",
+   "name": "BETH",
+   "double": false,
+   "party": [
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 38
+    },
+    {
+     "species": 44,
+     "name": "SKEW",
+     "level": 38
+    },
+    {
+     "species": 44,
+     "name": "SKEW",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "MtEmber_Exterior",
+   "place": "MT. SMOULDER",
+   "spot": "person",
+   "x": 14,
+   "y": 42,
+   "area": "south-west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_CRUSH_GIRL_JOCELYN",
+   "number": 592,
+   "flag": 1872,
+   "class": "GRAPPLER",
+   "name": "JOCELYN",
+   "double": false,
+   "party": [
+    {
+     "species": 107,
+     "name": "REBUTTAL",
+     "level": 38
+    },
+    {
+     "species": 107,
+     "name": "REBUTTAL",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "MtEmber_Exterior",
+   "place": "MT. SMOULDER",
+   "spot": "person",
+   "x": 22,
+   "y": 35,
+   "area": "centre",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_BIKER_GOON",
+   "number": 527,
+   "flag": 1807,
+   "class": "COURIER",
+   "name": "GOON",
+   "double": false,
+   "party": [
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 37
+    },
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 37
+    }
+   ],
+   "boss": false,
+   "map": "ThreeIsland",
+   "place": "THREE ISLAND",
+   "spot": "trigger",
+   "x": 7,
+   "y": 26,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_BIKER_GOON_2",
+   "number": 528,
+   "flag": 1808,
+   "class": "COURIER",
+   "name": "GOON",
+   "double": false,
+   "party": [
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "ThreeIsland",
+   "place": "THREE ISLAND",
+   "spot": "trigger",
+   "x": 7,
+   "y": 26,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_BIKER_GOON_3",
+   "number": 529,
+   "flag": 1809,
+   "class": "COURIER",
+   "name": "GOON",
+   "double": false,
+   "party": [
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "ThreeIsland",
+   "place": "THREE ISLAND",
+   "spot": "trigger",
+   "x": 7,
+   "y": 26,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_CUE_BALL_PAXTON",
+   "number": 742,
+   "flag": 2022,
+   "class": "CUE BOX",
+   "name": "PAXTON",
+   "double": false,
+   "party": [
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 39
+    },
+    {
+     "species": 89,
+     "name": "LANDFILL",
+     "level": 39
+    }
+   ],
+   "boss": false,
+   "map": "ThreeIsland",
+   "place": "THREE ISLAND",
+   "spot": "trigger",
+   "x": 7,
+   "y": 26,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_LEADER_GIOVANNI",
+   "number": 350,
+   "flag": 1630,
+   "class": "LEADER",
+   "name": "SCORN",
+   "double": false,
+   "party": [
+    {
+     "species": 31,
+     "name": "SCHEDULER",
+     "level": 47
+    },
+    {
+     "species": 115,
+     "name": "KEEPER",
+     "level": 47
+    },
+    {
+     "species": 128,
+     "name": "STAMPEDE",
+     "level": 48
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 48
+    },
+    {
+     "species": 112,
+     "name": "MIGRATE",
+     "level": 50
+    }
+   ],
+   "boss": true,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 2,
+   "y": 2,
+   "area": "north-west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_TAMER_JASON",
+   "number": 296,
+   "flag": 1576,
+   "class": "BINDER",
+   "name": "JASON",
+   "double": false,
+   "party": [
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 43
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 10,
+   "y": 10,
+   "area": "centre",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_TAMER_COLE",
+   "number": 297,
+   "flag": 1577,
+   "class": "BINDER",
+   "name": "COLE",
+   "double": false,
+   "party": [
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 39
+    },
+    {
+     "species": 128,
+     "name": "STAMPEDE",
+     "level": 39
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 2,
+   "y": 21,
+   "area": "south-west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_ATSUSHI",
+   "number": 322,
+   "flag": 1602,
+   "class": "FORMALIST",
+   "name": "ATSUSHI",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 40
+    },
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 40
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 11,
+   "y": 14,
+   "area": "centre",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_KIYO",
+   "number": 323,
+   "flag": 1603,
+   "class": "FORMALIST",
+   "name": "KIYO",
+   "double": false,
+   "party": [
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 43
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 3,
+   "y": 11,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_TAKASHI",
+   "number": 324,
+   "flag": 1604,
+   "class": "FORMALIST",
+   "name": "TAKASHI",
+   "double": false,
+   "party": [
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 38
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 38
+    },
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 10,
+   "y": 2,
+   "area": "north",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_SAMUEL",
+   "number": 392,
+   "flag": 1672,
+   "class": "OPERATOR",
+   "name": "SAMUEL",
+   "double": false,
+   "party": [
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 37
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 37
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 38
+    },
+    {
+     "species": 33,
+     "name": "PREDICTOR",
+     "level": 39
+    },
+    {
+     "species": 34,
+     "name": "PIPELINE",
+     "level": 39
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 6,
+   "y": 8,
+   "area": "west",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_YUJI",
+   "number": 400,
+   "flag": 1680,
+   "class": "OPERATOR",
+   "name": "YUJI",
+   "double": false,
+   "party": [
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 38
+    },
+    {
+     "species": 75,
+     "name": "STACK",
+     "level": 38
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 38
+    },
+    {
+     "species": 75,
+     "name": "STACK",
+     "level": 38
+    },
+    {
+     "species": 105,
+     "name": "COREFILE",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 12,
+   "y": 10,
+   "area": "centre",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_WARREN",
+   "number": 401,
+   "flag": 1681,
+   "class": "OPERATOR",
+   "name": "WARREN",
+   "double": false,
+   "party": [
+    {
+     "species": 105,
+     "name": "COREFILE",
+     "level": 37
+    },
+    {
+     "species": 105,
+     "name": "COREFILE",
+     "level": 37
+    },
+    {
+     "species": 111,
+     "name": "HARDCODE",
+     "level": 38
+    },
+    {
+     "species": 30,
+     "name": "THREAD",
+     "level": 39
+    },
+    {
+     "species": 31,
+     "name": "SCHEDULER",
+     "level": 39
+    }
+   ],
+   "boss": false,
+   "map": "ViridianCity_Gym",
+   "place": "CALLOW CITY",
+   "spot": "person",
+   "x": 13,
+   "y": 7,
+   "area": "north",
+   "step": 20
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_AGATHA",
+   "number": 412,
+   "flag": 1692,
+   "class": "REVIEW BOARD",
+   "name": "MELANCHOLIC",
+   "double": false,
+   "party": [
+    {
+     "species": 94,
+     "name": "HAUNTPROC",
+     "level": 54
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 54
+    },
+    {
+     "species": 93,
+     "name": "RESPAWN",
+     "level": 53
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 56
+    },
+    {
+     "species": 94,
+     "name": "HAUNTPROC",
+     "level": 58
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_AgathasRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "centre",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_AGATHA_2",
+   "number": 737,
+   "flag": 2017,
+   "class": "REVIEW BOARD",
+   "name": "MELANCHOLIC",
+   "double": false,
+   "party": [
+    {
+     "species": 94,
+     "name": "HAUNTPROC",
+     "level": 66
+    },
+    {
+     "species": 169,
+     "name": "MULTICAST",
+     "level": 66
+    },
+    {
+     "species": 200,
+     "name": "DREAD",
+     "level": 65
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 68
+    },
+    {
+     "species": 94,
+     "name": "HAUNTPROC",
+     "level": 70
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_AgathasRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "centre",
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_BRUNO",
+   "number": 411,
+   "flag": 1691,
+   "class": "REVIEW BOARD",
+   "name": "CHOLERIC",
+   "double": false,
+   "party": [
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 51
+    },
+    {
+     "species": 107,
+     "name": "REBUTTAL",
+     "level": 53
+    },
+    {
+     "species": 106,
+     "name": "AXIOMKICK",
+     "level": 53
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 54
+    },
+    {
+     "species": 68,
+     "name": "LEMMA MIND",
+     "level": 56
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_BrunosRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "centre",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_BRUNO_2",
+   "number": 736,
+   "flag": 2016,
+   "class": "REVIEW BOARD",
+   "name": "CHOLERIC",
+   "double": false,
+   "party": [
+    {
+     "species": 208,
+     "name": "HARDLINE",
+     "level": 65
+    },
+    {
+     "species": 107,
+     "name": "REBUTTAL",
+     "level": 65
+    },
+    {
+     "species": 106,
+     "name": "AXIOMKICK",
+     "level": 65
+    },
+    {
+     "species": 208,
+     "name": "HARDLINE",
+     "level": 66
+    },
+    {
+     "species": 68,
+     "name": "LEMMA MIND",
+     "level": 68
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_BrunosRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "centre",
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_CHAMPION_FIRST_SQUIRTLE",
+   "number": 438,
+   "flag": 1718,
+   "class": "CHAMPION",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 59
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 57
+    },
+    {
+     "species": 112,
+     "name": "MIGRATE",
+     "level": 59
+    },
+    {
+     "species": 59,
+     "name": "GUARDIAN",
+     "level": 59
+    },
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 61
+    },
+    {
+     "species": 9,
+     "name": "MANIFOLD",
+     "level": 63
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "PokemonLeague_ChampionsRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_CHAMPION_FIRST_BULBASAUR",
+   "number": 439,
+   "flag": 1719,
+   "class": "CHAMPION",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 59
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 57
+    },
+    {
+     "species": 112,
+     "name": "MIGRATE",
+     "level": 59
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 59
+    },
+    {
+     "species": 59,
+     "name": "GUARDIAN",
+     "level": 61
+    },
+    {
+     "species": 3,
+     "name": "ROVERBYTE",
+     "level": 63
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "PokemonLeague_ChampionsRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_CHAMPION_FIRST_CHARMANDER",
+   "number": 440,
+   "flag": 1720,
+   "class": "CHAMPION",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 18,
+     "name": "BROADCAST",
+     "level": 59
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 57
+    },
+    {
+     "species": 112,
+     "name": "MIGRATE",
+     "level": 59
+    },
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 59
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 61
+    },
+    {
+     "species": 6,
+     "name": "CANON",
+     "level": 63
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "PokemonLeague_ChampionsRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_CHAMPION_REMATCH_SQUIRTLE",
+   "number": 739,
+   "flag": 2019,
+   "class": "CHAMPION",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 214,
+     "name": "DRIVE",
+     "level": 72
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 73
+    },
+    {
+     "species": 248,
+     "name": "GRIEVANCE",
+     "level": 72
+    },
+    {
+     "species": 59,
+     "name": "GUARDIAN",
+     "level": 73
+    },
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 73
+    },
+    {
+     "species": 9,
+     "name": "MANIFOLD",
+     "level": 75
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "CLUSTER",
+   "map": "PokemonLeague_ChampionsRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_CHAMPION_REMATCH_BULBASAUR",
+   "number": 740,
+   "flag": 2020,
+   "class": "CHAMPION",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 214,
+     "name": "DRIVE",
+     "level": 72
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 73
+    },
+    {
+     "species": 248,
+     "name": "GRIEVANCE",
+     "level": 72
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 73
+    },
+    {
+     "species": 59,
+     "name": "GUARDIAN",
+     "level": 73
+    },
+    {
+     "species": 3,
+     "name": "ROVERBYTE",
+     "level": 75
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "ROVERCUB",
+   "map": "PokemonLeague_ChampionsRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_CHAMPION_REMATCH_CHARMANDER",
+   "number": 741,
+   "flag": 2021,
+   "class": "CHAMPION",
+   "name": null,
+   "double": false,
+   "party": [
+    {
+     "species": 214,
+     "name": "DRIVE",
+     "level": 72
+    },
+    {
+     "species": 65,
+     "name": "CONJECTURE",
+     "level": 73
+    },
+    {
+     "species": 248,
+     "name": "GRIEVANCE",
+     "level": 72
+    },
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 73
+    },
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 73
+    },
+    {
+     "species": 6,
+     "name": "CANON",
+     "level": 75
+    }
+   ],
+   "boss": true,
+   "rival": true,
+   "rival_starter": "LABEL",
+   "map": "PokemonLeague_ChampionsRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_LANCE",
+   "number": 413,
+   "flag": 1693,
+   "class": "REVIEW BOARD",
+   "name": "SANGUINE",
+   "double": false,
+   "party": [
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 56
+    },
+    {
+     "species": 148,
+     "name": "EMERGENCE",
+     "level": 54
+    },
+    {
+     "species": 148,
+     "name": "EMERGENCE",
+     "level": 54
+    },
+    {
+     "species": 142,
+     "name": "FOSSILNET",
+     "level": 58
+    },
+    {
+     "species": 149,
+     "name": "SINGULAR",
+     "level": 60
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_LancesRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 8,
+   "area": "west",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_LANCE_2",
+   "number": 738,
+   "flag": 2018,
+   "class": "REVIEW BOARD",
+   "name": "SANGUINE",
+   "double": false,
+   "party": [
+    {
+     "species": 130,
+     "name": "ESCALATE",
+     "level": 68
+    },
+    {
+     "species": 149,
+     "name": "SINGULAR",
+     "level": 66
+    },
+    {
+     "species": 230,
+     "name": "TURBULENCE",
+     "level": 66
+    },
+    {
+     "species": 142,
+     "name": "FOSSILNET",
+     "level": 70
+    },
+    {
+     "species": 149,
+     "name": "SINGULAR",
+     "level": 72
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_LancesRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 8,
+   "area": "west",
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_LORELEI",
+   "number": 410,
+   "flag": 1690,
+   "class": "REVIEW BOARD",
+   "name": "PHLEGMATIC",
+   "double": false,
+   "party": [
+    {
+     "species": 87,
+     "name": "ARCHIVER",
+     "level": 52
+    },
+    {
+     "species": 91,
+     "name": "COLDVAULT",
+     "level": 51
+    },
+    {
+     "species": 80,
+     "name": "SHELL",
+     "level": 52
+    },
+    {
+     "species": 124,
+     "name": "COLDREAD",
+     "level": 54
+    },
+    {
+     "species": 131,
+     "name": "FERRY",
+     "level": 54
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_LoreleisRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "centre",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_ELITE_FOUR_LORELEI_2",
+   "number": 735,
+   "flag": 2015,
+   "class": "REVIEW BOARD",
+   "name": "PHLEGMATIC",
+   "double": false,
+   "party": [
+    {
+     "species": 87,
+     "name": "ARCHIVER",
+     "level": 64
+    },
+    {
+     "species": 91,
+     "name": "COLDVAULT",
+     "level": 63
+    },
+    {
+     "species": 221,
+     "name": "IMPULSE",
+     "level": 63
+    },
+    {
+     "species": 124,
+     "name": "COLDREAD",
+     "level": 66
+    },
+    {
+     "species": 131,
+     "name": "FERRY",
+     "level": 66
+    }
+   ],
+   "boss": true,
+   "map": "PokemonLeague_LoreleisRoom",
+   "place": "DAEMON LEAGUE",
+   "spot": "person",
+   "x": 6,
+   "y": 5,
+   "area": "centre",
+   "step": 24,
+   "rematch": true
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_NAOMI",
+   "number": 406,
+   "flag": 1686,
+   "class": "OPERATOR",
+   "name": "NAOMI",
+   "double": false,
+   "party": [
+    {
+     "species": 53,
+     "name": "TRACKER",
+     "level": 42
+    },
+    {
+     "species": 77,
+     "name": "HOTPATH",
+     "level": 42
+    },
+    {
+     "species": 78,
+     "name": "OVERDRIVE",
+     "level": 42
+    },
+    {
+     "species": 37,
+     "name": "FLICKER",
+     "level": 42
+    },
+    {
+     "species": 38,
+     "name": "OVERRUN",
+     "level": 42
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_1F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 14,
+   "y": 6,
+   "area": "north-west",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_ROLANDO",
+   "number": 396,
+   "flag": 1676,
+   "class": "OPERATOR",
+   "name": "ROLANDO",
+   "double": false,
+   "party": [
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 42
+    },
+    {
+     "species": 2,
+     "name": "ROVERSEER",
+     "level": 42
+    },
+    {
+     "species": 8,
+     "name": "LOCUS",
+     "level": 42
+    },
+    {
+     "species": 5,
+     "name": "RUBRIC",
+     "level": 42
+    },
+    {
+     "species": 6,
+     "name": "CANON",
+     "level": 42
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_1F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 5,
+   "y": 2,
+   "area": "north-west",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_POKEMANIAC_DAWSON",
+   "number": 167,
+   "flag": 1447,
+   "class": "ARCHIVIST",
+   "name": "DAWSON",
+   "double": false,
+   "party": [
+    {
+     "species": 5,
+     "name": "RUBRIC",
+     "level": 40
+    },
+    {
+     "species": 131,
+     "name": "FERRY",
+     "level": 40
+    },
+    {
+     "species": 108,
+     "name": "SLURP",
+     "level": 40
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_2F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 7,
+   "y": 4,
+   "area": "north-west",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_BLACK_BELT_DAISUKE",
+   "number": 325,
+   "flag": 1605,
+   "class": "FORMALIST",
+   "name": "DAISUKE",
+   "double": false,
+   "party": [
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 43
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 43
+    },
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 43
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_2F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 20,
+   "y": 11,
+   "area": "centre",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_NELSON",
+   "number": 287,
+   "flag": 1567,
+   "class": "JUGGLER",
+   "name": "NELSON",
+   "double": false,
+   "party": [
+    {
+     "species": 96,
+     "name": "LULL",
+     "level": 41
+    },
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 41
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 41
+    },
+    {
+     "species": 64,
+     "name": "INFERENCE",
+     "level": 41
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_2F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 31,
+   "y": 16,
+   "area": "south",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_JUGGLER_GREGORY",
+   "number": 290,
+   "flag": 1570,
+   "class": "JUGGLER",
+   "name": "GREGORY",
+   "double": false,
+   "party": [
+    {
+     "species": 122,
+     "name": "MIME",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_2F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 36,
+   "y": 5,
+   "area": "north-east",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_TAMER_VINCENT",
+   "number": 298,
+   "flag": 1578,
+   "class": "BINDER",
+   "name": "VINCENT",
+   "double": false,
+   "party": [
+    {
+     "species": 53,
+     "name": "TRACKER",
+     "level": 44
+    },
+    {
+     "species": 55,
+     "name": "HANDLER",
+     "level": 44
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_2F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 26,
+   "y": 6,
+   "area": "north",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_GEORGE",
+   "number": 393,
+   "flag": 1673,
+   "class": "OPERATOR",
+   "name": "GEORGE",
+   "double": false,
+   "party": [
+    {
+     "species": 103,
+     "name": "ENSEMBLE",
+     "level": 42
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 42
+    },
+    {
+     "species": 91,
+     "name": "COLDVAULT",
+     "level": 42
+    },
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 42
+    },
+    {
+     "species": 59,
+     "name": "GUARDIAN",
+     "level": 42
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_3F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 40,
+   "y": 7,
+   "area": "north-east",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_COLBY",
+   "number": 394,
+   "flag": 1674,
+   "class": "OPERATOR",
+   "name": "COLBY",
+   "double": false,
+   "party": [
+    {
+     "species": 99,
+     "name": "LOCKUP",
+     "level": 41
+    },
+    {
+     "species": 61,
+     "name": "SPINLOCK",
+     "level": 42
+    },
+    {
+     "species": 73,
+     "name": "DRAGNET",
+     "level": 42
+    },
+    {
+     "species": 117,
+     "name": "BACKPRESS",
+     "level": 42
+    },
+    {
+     "species": 9,
+     "name": "MANIFOLD",
+     "level": 43
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_3F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 10,
+   "y": 17,
+   "area": "south-west",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_CAROLINE",
+   "number": 403,
+   "flag": 1683,
+   "class": "OPERATOR",
+   "name": "CAROLINE",
+   "double": false,
+   "party": [
+    {
+     "species": 69,
+     "name": "SNARE",
+     "level": 42
+    },
+    {
+     "species": 70,
+     "name": "HONEYPOT",
+     "level": 42
+    },
+    {
+     "species": 71,
+     "name": "TARPIT",
+     "level": 42
+    },
+    {
+     "species": 46,
+     "name": "PAYLOAD",
+     "level": 42
+    },
+    {
+     "species": 47,
+     "name": "ROOTKIT",
+     "level": 42
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_3F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 11,
+   "y": 16,
+   "area": "south-west",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_COOLTRAINER_ALEXA",
+   "number": 404,
+   "flag": 1684,
+   "class": "OPERATOR",
+   "name": "ALEXA",
+   "double": false,
+   "party": [
+    {
+     "species": 35,
+     "name": "ANOMALY",
+     "level": 42
+    },
+    {
+     "species": 39,
+     "name": "SUSPEND",
+     "level": 42
+    },
+    {
+     "species": 53,
+     "name": "TRACKER",
+     "level": 42
+    },
+    {
+     "species": 87,
+     "name": "ARCHIVER",
+     "level": 42
+    },
+    {
+     "species": 113,
+     "name": "UPTIME",
+     "level": 42
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_3F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 21,
+   "y": 5,
+   "area": "north",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_COOL_COUPLE_RAY_TYRA",
+   "number": 485,
+   "flag": 1765,
+   "class": "PARTNERS",
+   "name": "RAY & TYRA",
+   "double": true,
+   "party": [
+    {
+     "species": 31,
+     "name": "SCHEDULER",
+     "level": 45
+    },
+    {
+     "species": 34,
+     "name": "PIPELINE",
+     "level": 45
+    }
+   ],
+   "boss": false,
+   "map": "VictoryRoad_3F",
+   "place": "UMBRAL ASCENT",
+   "spot": "person",
+   "x": 38,
+   "y": 13,
+   "area": "east",
+   "step": 21
+  },
+  {
+   "trainer": "TRAINER_RUIN_MANIAC_LAWSON",
+   "number": 607,
+   "flag": 1887,
+   "class": "SALVAGER",
+   "name": "LAWSON",
+   "double": false,
+   "party": [
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 47
+    },
+    {
+     "species": 75,
+     "name": "STACK",
+     "level": 48
+    },
+    {
+     "species": 105,
+     "name": "COREFILE",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_LostCave_Room1",
+   "place": "THE WRONG WAY",
+   "spot": "person",
+   "x": 5,
+   "y": 4,
+   "area": "centre",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_LADY_SELPHY",
+   "number": 606,
+   "flag": 1886,
+   "class": "LADY",
+   "name": "SELPHY",
+   "double": false,
+   "party": [
+    {
+     "species": 53,
+     "name": "TRACKER",
+     "level": 49
+    },
+    {
+     "species": 53,
+     "name": "TRACKER",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_LostCave_Room10",
+   "place": "THE WRONG WAY",
+   "spot": "arrival",
+   "x": null,
+   "y": null,
+   "area": null,
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_PSYCHIC_LAURA",
+   "number": 608,
+   "flag": 1888,
+   "class": "INTERPRETER",
+   "name": "LAURA",
+   "double": false,
+   "party": [
+    {
+     "species": 177,
+     "name": "VIGILANCE",
+     "level": 48
+    },
+    {
+     "species": 177,
+     "name": "VIGILANCE",
+     "level": 48
+    },
+    {
+     "species": 178,
+     "name": "PRESCIENCE",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_LostCave_Room4",
+   "place": "THE WRONG WAY",
+   "spot": "person",
+   "x": 6,
+   "y": 4,
+   "area": "centre",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_49",
+   "number": 567,
+   "flag": 1847,
+   "class": "CORPUS STAFF",
+   "name": "PERCH",
+   "double": false,
+   "party": [
+    {
+     "species": 19,
+     "name": "NIBBLE",
+     "level": 48
+    },
+    {
+     "species": 88,
+     "name": "DEADLETTER",
+     "level": 48
+    },
+    {
+     "species": 89,
+     "name": "LANDFILL",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_Meadow",
+   "place": "FIVE ISLE MEADOW",
+   "spot": "person",
+   "x": 17,
+   "y": 5,
+   "area": "north-east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_50",
+   "number": 568,
+   "flag": 1848,
+   "class": "CORPUS STAFF",
+   "name": "SMELT",
+   "double": false,
+   "party": [
+    {
+     "species": 109,
+     "name": "EXHAUST",
+     "level": 49
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_Meadow",
+   "place": "FIVE ISLE MEADOW",
+   "spot": "person",
+   "x": 11,
+   "y": 27,
+   "area": "south",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_51",
+   "number": 569,
+   "flag": 1849,
+   "class": "CORPUS STAFF",
+   "name": "DACE",
+   "double": false,
+   "party": [
+    {
+     "species": 23,
+     "name": "WORM",
+     "level": 48
+    },
+    {
+     "species": 44,
+     "name": "SKEW",
+     "level": 48
+    },
+    {
+     "species": 44,
+     "name": "SKEW",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_Meadow",
+   "place": "FIVE ISLE MEADOW",
+   "spot": "person",
+   "x": 18,
+   "y": 18,
+   "area": "east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_SCIENTIST_GIDEON",
+   "number": 545,
+   "flag": 1825,
+   "class": "SCIENTIST",
+   "name": "TY",
+   "double": false,
+   "party": [
+    {
+     "species": 100,
+     "name": "FUSE",
+     "level": 46
+    },
+    {
+     "species": 101,
+     "name": "BREAKER",
+     "level": 46
+    },
+    {
+     "species": 81,
+     "name": "SENTINEL",
+     "level": 46
+    },
+    {
+     "species": 82,
+     "name": "QUORUM",
+     "level": 46
+    },
+    {
+     "species": 137,
+     "name": "SUBSTRATE",
+     "level": 46
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_RocketWarehouse",
+   "place": "CORPUS WAREHOUSE",
+   "spot": "person",
+   "x": 27,
+   "y": 4,
+   "area": "north-east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_47",
+   "number": 541,
+   "flag": 1821,
+   "class": "CORPUS STAFF",
+   "name": "TOAD",
+   "double": false,
+   "party": [
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 48
+    },
+    {
+     "species": 66,
+     "name": "PROOF",
+     "level": 48
+    },
+    {
+     "species": 67,
+     "name": "THEOREM",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_RocketWarehouse",
+   "place": "CORPUS WAREHOUSE",
+   "spot": "person",
+   "x": 15,
+   "y": 11,
+   "area": "centre",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_48",
+   "number": 542,
+   "flag": 1822,
+   "class": "CORPUS STAFF",
+   "name": "CARP",
+   "double": false,
+   "party": [
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 49
+    },
+    {
+     "species": 97,
+     "name": "BUSYWAIT",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_RocketWarehouse",
+   "place": "CORPUS WAREHOUSE",
+   "spot": "person",
+   "x": 17,
+   "y": 15,
+   "area": "centre",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_ADMIN_2",
+   "number": 544,
+   "flag": 1824,
+   "class": "CORPUS STAFF",
+   "name": "ADMIN",
+   "double": false,
+   "party": [
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 53
+    },
+    {
+     "species": 110,
+     "name": "SMOGSTACK",
+     "level": 54
+    },
+    {
+     "species": 229,
+     "name": "OBSESSION",
+     "level": 55
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_RocketWarehouse",
+   "place": "CORPUS WAREHOUSE",
+   "spot": "person",
+   "x": 25,
+   "y": 11,
+   "area": "east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_42",
+   "number": 516,
+   "flag": 1796,
+   "class": "CORPUS STAFF",
+   "name": "MINK",
+   "double": false,
+   "party": [
+    {
+     "species": 228,
+     "name": "FIXATION",
+     "level": 49
+    },
+    {
+     "species": 228,
+     "name": "FIXATION",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_RocketWarehouse",
+   "place": "CORPUS WAREHOUSE",
+   "spot": "person",
+   "x": 6,
+   "y": 6,
+   "area": "north-west",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_ADMIN",
+   "number": 543,
+   "flag": 1823,
+   "class": "CORPUS STAFF",
+   "name": "ADMIN",
+   "double": false,
+   "party": [
+    {
+     "species": 89,
+     "name": "LANDFILL",
+     "level": 52
+    },
+    {
+     "species": 24,
+     "name": "OUTBREAK",
+     "level": 53
+    },
+    {
+     "species": 45,
+     "name": "BADSEED",
+     "level": 54
+    }
+   ],
+   "boss": false,
+   "map": "FiveIsland_RocketWarehouse",
+   "place": "CORPUS WAREHOUSE",
+   "spot": "person",
+   "x": 27,
+   "y": 16,
+   "area": "east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_45",
+   "number": 539,
+   "flag": 1819,
+   "class": "CORPUS STAFF",
+   "name": "GECKO",
+   "double": false,
+   "party": [
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 38
+    },
+    {
+     "species": 41,
+     "name": "ECHO",
+     "level": 38
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 38
+    }
+   ],
+   "boss": false,
+   "map": "FourIsland_IcefallCave_Back",
+   "place": "STILLFALL CAVE",
+   "spot": "trigger",
+   "x": 11,
+   "y": 18,
+   "area": "south",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_TEAM_ROCKET_GRUNT_46",
+   "number": 540,
+   "flag": 1820,
+   "class": "CORPUS STAFF",
+   "name": "SKINK",
+   "double": false,
+   "party": [
+    {
+     "species": 89,
+     "name": "LANDFILL",
+     "level": 48
+    },
+    {
+     "species": 42,
+     "name": "TRACER",
+     "level": 48
+    },
+    {
+     "species": 20,
+     "name": "OVERFLOW",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_OutcastIsland",
+   "place": "NOBODY'S ISLE",
+   "spot": "person",
+   "x": 9,
+   "y": 24,
+   "area": "north",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_PKMN_BREEDER_BETHANY",
+   "number": 609,
+   "flag": 1889,
+   "class": "BREEDER",
+   "name": "BETHANY",
+   "double": false,
+   "party": [
+    {
+     "species": 113,
+     "name": "UPTIME",
+     "level": 50
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 48,
+   "y": 15,
+   "area": "east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_PKMN_BREEDER_ALLISON",
+   "number": 610,
+   "flag": 1890,
+   "class": "BREEDER",
+   "name": "ALLISON",
+   "double": false,
+   "party": [
+    {
+     "species": 35,
+     "name": "ANOMALY",
+     "level": 48
+    },
+    {
+     "species": 35,
+     "name": "ANOMALY",
+     "level": 48
+    },
+    {
+     "species": 36,
+     "name": "OUTLIER",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 10,
+   "y": 5,
+   "area": "north-west",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_GARRET",
+   "number": 611,
+   "flag": 1891,
+   "class": "FORAGER",
+   "name": "GARRET",
+   "double": false,
+   "party": [
+    {
+     "species": 214,
+     "name": "DRIVE",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 51,
+   "y": 6,
+   "area": "north-east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_JONAH",
+   "number": 612,
+   "flag": 1892,
+   "class": "FORAGER",
+   "name": "JONAH",
+   "double": false,
+   "party": [
+    {
+     "species": 193,
+     "name": "PERIPHERY",
+     "level": 45
+    },
+    {
+     "species": 15,
+     "name": "INJECTOR",
+     "level": 45
+    },
+    {
+     "species": 193,
+     "name": "PERIPHERY",
+     "level": 46
+    },
+    {
+     "species": 15,
+     "name": "INJECTOR",
+     "level": 47
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 12,
+   "y": 13,
+   "area": "west",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_BUG_CATCHER_VANCE",
+   "number": 613,
+   "flag": 1893,
+   "class": "FORAGER",
+   "name": "VANCE",
+   "double": false,
+   "party": [
+    {
+     "species": 48,
+     "name": "RESIDENT",
+     "level": 48
+    },
+    {
+     "species": 49,
+     "name": "SPYWARE",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 37,
+   "y": 23,
+   "area": "south",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_YOUNGSTER_NASH",
+   "number": 614,
+   "flag": 1894,
+   "class": "NOVICE",
+   "name": "NASH",
+   "double": false,
+   "party": [
+    {
+     "species": 70,
+     "name": "HONEYPOT",
+     "level": 47
+    },
+    {
+     "species": 70,
+     "name": "HONEYPOT",
+     "level": 47
+    },
+    {
+     "species": 71,
+     "name": "TARPIT",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 32,
+   "y": 5,
+   "area": "north",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_YOUNGSTER_CORDELL",
+   "number": 615,
+   "flag": 1895,
+   "class": "NOVICE",
+   "name": "CORDELL",
+   "double": false,
+   "party": [
+    {
+     "species": 83,
+     "name": "EDGECASE",
+     "level": 48
+    },
+    {
+     "species": 83,
+     "name": "EDGECASE",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 52,
+   "y": 20,
+   "area": "east",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_LASS_DALIA",
+   "number": 616,
+   "flag": 1896,
+   "class": "APPRENTICE",
+   "name": "DALIA",
+   "double": false,
+   "party": [
+    {
+     "species": 187,
+     "name": "WHIM",
+     "level": 46
+    },
+    {
+     "species": 187,
+     "name": "WHIM",
+     "level": 47
+    },
+    {
+     "species": 188,
+     "name": "CAPRICE",
+     "level": 47
+    },
+    {
+     "species": 188,
+     "name": "CAPRICE",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 8,
+   "y": 21,
+   "area": "west",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_LASS_JOANA",
+   "number": 617,
+   "flag": 1897,
+   "class": "APPRENTICE",
+   "name": "JOANA",
+   "double": false,
+   "party": [
+    {
+     "species": 209,
+     "name": "WARNING",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 39,
+   "y": 6,
+   "area": "north",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_CAMPER_RILEY",
+   "number": 618,
+   "flag": 1898,
+   "class": "FIELDHAND",
+   "name": "RILEY",
+   "double": false,
+   "party": [
+    {
+     "species": 127,
+     "name": "BLOCKING",
+     "level": 49
+    },
+    {
+     "species": 214,
+     "name": "DRIVE",
+     "level": 50
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 3,
+   "y": 9,
+   "area": "north-west",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_PICNICKER_MARCY",
+   "number": 619,
+   "flag": 1899,
+   "class": "RAMBLER",
+   "name": "MARCY",
+   "double": false,
+   "party": [
+    {
+     "species": 46,
+     "name": "PAYLOAD",
+     "level": 48
+    },
+    {
+     "species": 46,
+     "name": "PAYLOAD",
+     "level": 48
+    },
+    {
+     "species": 47,
+     "name": "ROOTKIT",
+     "level": 49
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 19,
+   "y": 24,
+   "area": "south-west",
+   "step": 24
+  },
+  {
+   "trainer": "TRAINER_RUIN_MANIAC_LAYTON",
+   "number": 620,
+   "flag": 1900,
+   "class": "SALVAGER",
+   "name": "LAYTON",
+   "double": false,
+   "party": [
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 48
+    },
+    {
+     "species": 95,
+     "name": "BACKBONE",
+     "level": 48
+    },
+    {
+     "species": 28,
+     "name": "PARTITION",
+     "level": 48
+    }
+   ],
+   "boss": false,
+   "map": "SixIsland_PatternBush",
+   "place": "THE SAME BUSH",
+   "spot": "person",
+   "x": 30,
+   "y": 19,
+   "area": "centre",
+   "step": 24
+  }
+ ]
+}

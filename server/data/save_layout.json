@@ -15,6 +15,7 @@
  "flags_byte": 19,
  "away_bit": 4,
  "asked_bit": 5,
+ "sounding_shift": 6,
  "natures": [
   [
    0,

@@ -35,7 +35,7 @@ import { platform } from "node:os";
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE } from "./ai/voice.js";
+import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
@@ -50,6 +50,9 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
+import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
+import { LATE } from "./ai/module.js";
+import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
@@ -387,6 +390,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
   const talkJobs = new TalkJobs<Record<string, unknown>>(2);   // C-180: every talk and voice, queued; fetched by id
+  const house = new House(() => modulesIn((k) => store.getSetting(k)));   // C-180: the modules in the house (ai/house.ts)
+  // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
+  const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
+  // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
+  const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
   const agentKey = (renew = false) => ollamaKey((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), renew);   // C-142
   // C-142: the address Home Assistant's Ollama integration is given -- this machine on the network, and the key
@@ -665,13 +673,23 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-66: who answers when you talk -- "auto" (this computer's model, OpenRouter when it is busy), "local" only (the
       // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
-      if (req.method === "GET" && path === "/api/talk/settings")
-        return send(res, 200, { provider: store.getSetting("talk.provider") ?? "auto", connected: !!ecfg.talk.url });
+      // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
+      const talkView = async () => ({ provider: talkProvider(), connected: !!ecfg.talk.url, indexVoice: indexVoice(),
+                                      modules: await house.view() });
+      if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       if (req.method === "POST" && path === "/api/talk/settings") {
         const b = await body(req);
-        if (!["auto", "local", "openrouter"].includes(b.provider)) return send(res, 400, { error: "provider is auto, local or openrouter" });
-        store.setSetting("talk.provider", b.provider);
-        return send(res, 200, { provider: b.provider, connected: !!ecfg.talk.url });
+        if (b.provider !== undefined && !["module", "auto", "local", "openrouter"].includes(b.provider))
+          return send(res, 400, { error: "provider is module, auto, local or openrouter" });
+        if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
+        if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
+        if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);
+        return send(res, 200, await talkView());
+      }
+      if (req.method === "POST" && path === "/api/ai/modules") {   // C-180: the modules, by hand or from the hub's discovery
+        const list = checkModules((await body(req)).modules);
+        if (typeof list === "string") return send(res, 400, { error: list });
+        return send(res, 200, { ...await setModules(store, list), ...await talkView() });
       }
       if (req.method === "GET" && path === "/api/device/settings") return send(res, 200, deviceSettings(store));   // C-43
       // C-159: one device's own settings, over the shared -- for the app, the site and the Tab5's DEVICES (the device's
@@ -834,13 +852,37 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
           history: Array.isArray(b.history) ? b.history.slice(-6) : talks.history(who),
-          provider: b.provider ?? store.getSetting("talk.provider") ?? "auto", speak: b.speak !== false, voice: "index",
+          provider: b.provider ?? talkProvider(), speak: b.speak !== false, voice: "index",
           localModel: ecfg.talk.localModel,
           daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry }
                     : { nickname: "your daemon" },
           day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
           goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
         };
+      };
+      // C-180: a talk on the module, answered in n8n's shape; LATE (none free, no first words in time) or a module that
+      // fails goes to n8n, and when n8n cannot be reached either (no internet) the module is waited on after all
+      const talkOn = async (p: ReturnType<typeof talkPayload>): Promise<Record<string, unknown>> => {
+        if (p.provider !== "module" || !house.any) return n8n(ecfg, "daemon/talk", p.provider === "module" ? { ...p, provider: "auto" } : p);
+        const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
+          history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
+          daemon: p.daemon, day: p.day, goal: p.goal, speak: p.speak };
+        const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
+          ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
+        try { return shaped(await house.talk(ask)); }
+        catch (e) {
+          const other = await n8n(ecfg, "daemon/talk", { ...p, provider: "auto" });
+          if (!other.error) return other;
+          try { return shaped(await house.talk(ask, null)); } catch { return (e as Error).message === LATE ? other : { error: (e as Error).message }; }
+        }
+      };
+      // An INDEX reading (or any line in the INDEX voice), from where index.voice says, n8n when the module cannot
+      const readAloud = async (text: string): Promise<Record<string, unknown>> => {
+        if (indexVoice() === "module") {
+          try { const v = await house.voice(text); if (v) return { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: "audio/wav", provider: v.provider }; }
+          catch { /* to n8n */ }
+        }
+        return n8n(ecfg, "daemon/voice", { text, voice: "index" });
       };
       // who is talking: the device by its own name (C-80), else the phone, else this machine
       const who = validDeviceId(deviceId) ? deviceId : phone ? "phone" : "here";
@@ -853,13 +895,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const forDevice = async (r: Record<string, unknown>) => {
         let audio: string | null = null, ms = 0;
         if (typeof r.audioBase64 === "string" && r.audioBase64) {
-          const pcm = await toDevicePcm(Buffer.from(r.audioBase64, "base64"));
+          const raw = Buffer.from(r.audioBase64, "base64"), quick = devicePcmOf(raw);   // C-180: a WAV needs no ffmpeg
+          const pcm = quick ? Buffer.from(quick) : await toDevicePcm(raw);
           if (pcm) { audio = `/api/device/voice/${voices.put(pcm)}`; ms = Math.round(pcm.length / 2 / DEVICE_RATE * 1000); }
         }
         return { answer: r.answer ?? null, heard: r.heard ?? null, provider: r.provider ?? null, error: r.error ?? null, audio, ms };
       };
       // Whatever was recorded (the phone's AAC, the handheld's WAV) goes on as a 16 kHz WAV, so speech to text is sent one kind.
       const heardAs = async (audio: Buffer, mime: string) => {
+        const quick = devicePcmOf(audio);                    // C-180: a WAV (the handhelds') is made 16 kHz here, no ffmpeg
+        if (quick) return { audioBase64: wavOf(Buffer.from(quick)).toString("base64"), audioMime: "audio/wav" };
         const w = await asWav(audio);
         return w ? { audioBase64: w.audio.toString("base64"), audioMime: w.mime } : { audioBase64: audio.toString("base64"), audioMime: mime };
       };
@@ -880,7 +925,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return answer(PRIORITY.inHand, async () => {
           if (typeof b.audioBase64 === "string" && b.audioBase64)
             Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
-          return remember(b, await n8n(ecfg, "daemon/talk", talkPayload(b)));
+          return remember(b, await talkOn(talkPayload(b)));
         });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
@@ -888,7 +933,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!audio || audio.length < 44) return send(res, 400, { error: "talk takes a recording (up to 2 MB)" });
         const mime = String(req.headers["content-type"] ?? "audio/wav");
         return answer(PRIORITY.inHand, async () =>
-          forDevice(remember({}, await n8n(ecfg, "daemon/talk", talkPayload(await heardAs(audio, mime))))));
+          forDevice(remember({}, await talkOn(talkPayload(await heardAs(audio, mime))))));
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does
@@ -897,7 +942,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const text = row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
         if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "host a daemon to hear its entry" });
         return answer(PRIORITY.reading, async () =>          // C-180: a reading -- the hub's Module LLM's first work
-          forDevice({ ...await n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }), answer: text }));
+          forDevice({ ...await readAloud(String(text).replace(/\n/g, " ").slice(0, 600)), answer: text }));
       }
       if (req.method === "GET" && path.startsWith("/api/device/voice/")) {
         const pcm = voices.get(path.slice("/api/device/voice/".length));
@@ -912,7 +957,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
         if (!text) return send(res, 400, { error: "speak {species} or {text}, or host a daemon" });
-        return answer(PRIORITY.reading, () => n8n(ecfg, "daemon/voice", { text: String(text).replace(/\n/g, " ").slice(0, 600), voice: "index" }));
+        return answer(PRIORITY.reading, () => readAloud(String(text).replace(/\n/g, " ").slice(0, 600)));
       }
       if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes
         const b = await body(req);

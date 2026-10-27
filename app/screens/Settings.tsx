@@ -185,20 +185,42 @@ export function VersionCard({ ink }: { ink: string }) {
   );
 }
 
-// C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly.
+// C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly. C-180: or the modules in the
+// house (the hub's Module LLM, an AX630 board), and, beside it, the one voice that reads the INDEX aloud.
+type Provider = "module" | "auto" | "local" | "openrouter";
+type HouseModule = { url: string; name: string; busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null };
 export function TalkSettingsCard({ ink }: { ink: string }) {
-  const [t, setT] = useApi<{ provider: "auto" | "local" | "openrouter"; connected: boolean }>("/api/talk/settings");
+  const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[] }>("/api/talk/settings");
   if (!t) return null;
-  const pick = async (provider: "auto" | "local" | "openrouter") => setT(await api<typeof t>("/api/talk/settings", { provider }));
+  const pick = async (provider: Provider) => setT(await api<typeof t>("/api/talk/settings", { provider }));
+  const voice = async (indexVoice: "n8n" | "module") => setT(await api<typeof t>("/api/talk/settings", { indexVoice }));
+  const modules = t.modules ?? [], house = modules.length > 0 || t.provider === "module";
   return (
     <Card>
       <Eyebrow>WHO ANSWERS WHEN YOU TALK</Eyebrow>
-      <Choice value={t.provider} options={[["auto", "Mine, then OpenRouter"], ["local", "Only mine"], ["openrouter", "OpenRouter"]]}
-              onPick={pick} ink={ink} />
-      <Small>{t.provider === "local" ? "Your words stay on your own machines. If your model is busy or off, the daemon says it cannot answer."
+      <Choice value={t.provider} onPick={pick} ink={ink}
+              options={[...(house ? [["module", "In the house"] as [Provider, string]] : []),
+                        ["auto", "Mine, then OpenRouter"], ["local", "Only mine"], ["openrouter", "OpenRouter"]]} />
+      <Small>{t.provider === "module" ? "The daemons think, speak and listen on the AI boards in your house; nothing you say leaves it. "
+          + "When every board is busy, the talk goes to your own model so nobody waits."   /* DRAFT */
+        : t.provider === "local" ? "Your words stay on your own machines. If your model is busy or off, the daemon says it cannot answer."
         : t.provider === "openrouter" ? "The words heard go to OpenRouter to be answered. The recording itself never leaves home."
         : "Your own model answers; when it is busy, the words heard go to OpenRouter so nobody waits. The recording never leaves home."}</Small>
-      {!t.connected ? <Small color="$color8">Talking is not set up yet: add "talk" to server/config.json (README, Talk to your daemon).</Small> : null}
+      {modules.map((m) => (
+        <Small key={m.url} color={m.error ? "$color9" : "$color10"}>
+          {`${m.name}: ${m.error ? "not answering" : [m.llm ? "thinks" : "", m.tts ? "speaks" : "", m.stt ? "listens" : ""].filter(Boolean).join(", ") || "holds no model yet"}${m.busy ? " (answering now)" : ""}`}
+        </Small>   /* DRAFT */
+      ))}
+      {house ? (
+        <YStack gap={6} marginTop={6}>
+          <Eyebrow>THE INDEX READS IN</Eyebrow>
+          <Choice value={t.indexVoice ?? "n8n"} onPick={voice} ink={ink}
+                  options={[["n8n", "Its own voice"], ["module", "A house voice"]]} />
+          <Small>{(t.indexVoice ?? "n8n") === "n8n" ? "The INDEX keeps the voice made for it, from your voice server."
+            : "The INDEX reads in one of the house boards' voices, without the voice server."}</Small>{/* DRAFT */}
+        </YStack>
+      ) : null}
+      {!t.connected && t.provider !== "module" ? <Small color="$color8">Talking is not set up yet: add "talk" to server/config.json (README, Talk to your daemon).</Small> : null}
     </Card>
   );
 }

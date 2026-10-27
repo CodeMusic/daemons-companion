@@ -28,10 +28,15 @@ export async function listModels(base: string, timeoutMs = 5000): Promise<Module
 
 // A chat, streamed: the time to its first words (what a device waits on) and to its last
 export async function chat(base: string, model: string, messages: { role: string; content: string }[],
-                           opts: { maxTokens?: number; timeoutMs?: number; onPiece?: (s: string) => void } = {}): Promise<Said> {
+                           opts: { maxTokens?: number; timeoutMs?: number; firstWithinMs?: number; onPiece?: (s: string) => void } = {}): Promise<Said> {
   const t0 = performance.now();
+  // firstWithinMs: no first words by then and the chat is given up, as LATE (HUB.md Phase 5 item 4: the talk goes elsewhere)
+  const stop = new AbortController(), whole = setTimeout(() => stop.abort(), opts.timeoutMs ?? 120000);
+  let late = false;
+  const first = opts.firstWithinMs ? setTimeout(() => { late = true; stop.abort(); }, opts.firstWithinMs) : undefined;
+  try {
   const r = await fetch(`${trim(base)}/v1/chat/completions`, {
-    method: "POST", headers: { "content-type": "application/json" }, signal: AbortSignal.timeout(opts.timeoutMs ?? 120000),
+    method: "POST", headers: { "content-type": "application/json" }, signal: stop.signal,
     body: JSON.stringify({ model, messages, stream: true, max_tokens: opts.maxTokens ?? 80 }),
   });
   if (!r.ok || !r.body) throw new Error(`the module's chat answered ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`);
@@ -45,7 +50,7 @@ export async function chat(base: string, model: string, messages: { role: string
       const j = JSON.parse(body);
       const piece: string = j.choices?.[0]?.delta?.content ?? j.choices?.[0]?.message?.content ?? "";
       if (j.usage?.completion_tokens) tokens = j.usage.completion_tokens;
-      if (piece) { if (firstMs === null) firstMs = performance.now() - t0; text += piece; pieces++; opts.onPiece?.(piece); }
+      if (piece) { if (firstMs === null) { firstMs = performance.now() - t0; clearTimeout(first); } text += piece; pieces++; opts.onPiece?.(piece); }
     } catch { /* a line that is not JSON: skipped */ }
   };
   const reader = r.body.getReader(), dec = new TextDecoder();
@@ -58,7 +63,9 @@ export async function chat(base: string, model: string, messages: { role: string
   }
   take(rest);
   return { text, firstMs, totalMs: performance.now() - t0, pieces, tokens };
+  } catch (e) { throw late ? new Error(LATE) : e; } finally { clearTimeout(whole); clearTimeout(first); }
 }
+export const LATE = "the module had not begun an answer in time";
 
 // Words to a voice: whatever the module sends back (WAV or raw PCM, by its content type)
 export async function speak(base: string, model: string, text: string, voice?: string, timeoutMs = 60000): Promise<Spoken> {

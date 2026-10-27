@@ -143,6 +143,14 @@ on it.*
    would (first words, the whole answer, words a second), saves every voice as a WAV to listen to, and hears those
    voices back (and `--wav` a real recording). `report.md` holds the table. It only reads.
 
+10. **Built (2026-10-27): the house provider** (`server/src/ai/house.ts`). Every module listed in the store's
+   `ai.modules` -- the hub's own on its link, the standalone AX630 board on the network, more later -- is one worker,
+   one talk at a time each. `talk.provider` "module" asks the first free one (hearing, thinking, voice); none free, or
+   no first words in 2 s, and the talk goes to n8n; with n8n unreachable the module is waited on. One global
+   `index.voice` chooses the INDEX's reader: n8n's cloned voice (the default) or the module. The list is written by the
+   hub's discovery (`ai/discover.ts`, the hardware lane) through `setModules`, which keeps only modules that answer; the
+   server never scans the network.
+
 **Phase 6 -- LoRa.** The 433 gateway on SPI (CS, IRQ and RST on the module's DIP switches). The hub's own broadcasts are
 registered as its own before it ever transmits, so it never answers itself.
 

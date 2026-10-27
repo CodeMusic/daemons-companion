@@ -57,6 +57,7 @@ import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
+import { isLineKind, writtenLine, type LineKind } from "./lines.js";
 import { handles, route, type Reply } from "./routes.js";
 import { EXPRESSIONS, SHADED, faceOf, shadePalette } from "./expressions.js";
 import { FRAMES, PHASES, faceRev, renderFace, type Phase } from "./face.js";
@@ -317,7 +318,7 @@ export function relaySecret(store: Store): string {
   return s;
 }
 export const DEVICE_DOOR = [
-  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face"].includes(p),
+  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face", "/api/device/greet"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
@@ -454,6 +455,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       return res.end(chatReply(String(b.model ?? DEFAULT_MODEL), answer, stream));
     }
     return send(res, 404, { error: `not here: ${method} ${sub}` });
+  }
+  // C-180: a written line for a care or a hello -- the mood as it is now, and how many of that care came today
+  function careLine(kind: LineKind, now = new Date()) {
+    const l = daemonLife(store, now), day = now.toLocaleDateString("en-CA");
+    const before = kind === "feed" ? l.fed.today : kind === "water" ? l.watered.today : 0;
+    return writtenLine(kind, l.mood, day, before);
   }
   return createServer(async (req, res) => {
     try {
@@ -1038,6 +1045,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const t = keepNote(store, typeof b.text === "string" ? b.text : "", deviceId || "board");
         return send(res, t ? 200 : 400, t ? { ok: true, note: t } : { error: "note {text}" });
       }
+      // C-180: a hello from the daemon, from the written lines (no model), by its mood and the day
+      if (req.method === "GET" && path === "/api/device/greet") return send(res, 200, { said: careLine("hello") });
       if (req.method === "POST" && path === "/api/device/note/written") { noteWritten(store); return send(res, 200, { ok: true }); }
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
@@ -1055,7 +1064,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
         core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's
-        return send(res, 200, { last: store.lastInteraction() });
+        return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? { said: careLine(kind) } : {}) });   // C-180: its answer, at once
       }
       // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.
       if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store, isLoopback(req.socket.remoteAddress)));

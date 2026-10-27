@@ -190,8 +190,16 @@ export function VersionCard({ ink }: { ink: string }) {
 type Provider = "module" | "auto" | "local" | "openrouter";
 type HouseModule = { url: string; name: string; busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null };
 export function TalkSettingsCard({ ink }: { ink: string }) {
-  const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[] }>("/api/talk/settings");
+  const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
+                            moduleAddresses?: string }>("/api/talk/settings");
+  const [typed, setTyped] = useState<string | null>(null);
+  const [looking, setLooking] = useState("");
   if (!t) return null;
+  const look = async () => {
+    setLooking("Looking...");   // DRAFT
+    try { setT(await api<typeof t>("/api/talk/settings", { moduleAddresses: typed ?? t.moduleAddresses ?? "" })); setTyped(null); setLooking(""); }
+    catch (e) { setLooking((e as Error).message); }
+  };
   const pick = async (provider: Provider) => setT(await api<typeof t>("/api/talk/settings", { provider }));
   const voice = async (indexVoice: "n8n" | "module") => setT(await api<typeof t>("/api/talk/settings", { indexVoice }));
   const modules = t.modules ?? [], house = modules.length > 0 || t.provider === "module";
@@ -211,6 +219,17 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
           {`${m.name}: ${m.error ? "not answering" : [m.llm ? "thinks" : "", m.tts ? "speaks" : "", m.stt ? "listens" : ""].filter(Boolean).join(", ") || "holds no model yet"}${m.busy ? " (answering now)" : ""}`}
         </Small>   /* DRAFT */
       ))}
+      {t.moduleAddresses !== undefined ? (
+        <YStack gap={6} marginTop={6}>
+          <Eyebrow>AN AI BOARD ON YOUR NETWORK</Eyebrow>
+          <XStack gap={8} flexWrap="wrap" alignItems="center">
+            <Input flexGrow={1} minWidth={180} value={typed ?? t.moduleAddresses} onChangeText={setTyped} onSubmitEditing={look}
+                   placeholder="10.0.0.40" autoCapitalize="none" autoCorrect={false} keyboardType="url" />
+            <Action label="Look for it" ink={ink} onPress={look} />
+          </XStack>
+          <Small>{looking || "Its address on your network (more than one: commas). The hub's own board is found by itself."}</Small>{/* DRAFT */}
+        </YStack>
+      ) : null}
       {house ? (
         <YStack gap={6} marginTop={6}>
           <Eyebrow>THE INDEX READS IN</Eyebrow>

@@ -51,7 +51,7 @@ import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
-import { discoveryLoop } from "./ai/discover.js";
+import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
@@ -677,7 +677,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
       const talkView = async () => ({ provider: talkProvider(), connected: !!ecfg.talk.url, indexVoice: indexVoice(),
-                                      modules: await house.view() });
+                                      modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "" });
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       if (req.method === "POST" && path === "/api/talk/settings") {
         const b = await body(req);
@@ -686,6 +686,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);
+        if (typeof b.moduleAddresses === "string") {          // a board's address, given by hand (ai/discover.ts), looked for now
+          const list = b.moduleAddresses.split(",").map((a: string) => a.trim()).filter(Boolean);
+          if (list.length > 8 || list.some((a: string) => !moduleUrl(a))) return send(res, 400, { error: "addresses like 10.0.0.40, or http://10.0.0.40:8000" });
+          store.setSetting("ai.moduleAddresses", list.join(","));
+          await discoverModules(store);
+        }
         return send(res, 200, await talkView());
       }
       if (req.method === "POST" && path === "/api/ai/modules") {   // C-180: the modules, by hand or from the hub's discovery

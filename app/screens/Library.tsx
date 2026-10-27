@@ -398,8 +398,8 @@ export function SongStaff({ keyName, notes, colours, outline }: { keyName: strin
 
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
-export function NotebookPage({ page, colours, outline }: { page: Notebook["sections"][number]["pages"][number]; colours?: string[]; outline?: string }) {
-  const [open, setOpen] = useState(false);
+export function NotebookPage({ page, colours, outline, open: startOpen = false }: { page: Notebook["sections"][number]["pages"][number]; colours?: string[]; outline?: string; open?: boolean }) {
+  const [open, setOpen] = useState(startOpen);
   return (
     <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
       <XStack onPress={() => setOpen((o) => !o)} justifyContent="space-between" alignItems="center" gap={10} cursor="pointer">

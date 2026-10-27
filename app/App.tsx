@@ -17,6 +17,7 @@ import { HomeAssistantCard, HomeScreen } from "./screens/Home";
 import { LibraryScreen } from "./screens/Library";
 import { PairScreen, sendTodaysSteps } from "./screens/Pair";
 import { GameView } from "./screens/Game";
+import { FoundBeside, useFound } from "./screens/Found";
 import { DeviceScreen } from "./screens/Places";
 import { PairCard, RelayCard, SettingsScreen } from "./screens/Settings";
 import { TodayScreen } from "./screens/Today";
@@ -134,6 +135,8 @@ function Shell() {
   const ink = onColour(day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c");
   const showToast = !!OFFLINE && toastGone !== OFFLINE;
   const newsBanner = useNews(() => setTab("daemon"), ink);  // C-154
+  const [saved, setSaved] = useState(0);                    // C-189: each save the game writes, read again beside it
+  const found = useFound(saved);
 
   // C-187, C-189: the game is mounted once, in one place, whatever the shape (never inside the page's scroll, and never
   // remounted by turning the iPad, which would lose what was played since the last save): on its side the game is on the
@@ -142,7 +145,7 @@ function Shell() {
     <YStack flex={1} backgroundColor="$color2" flexDirection={beside ? "row" : "column-reverse"}>
       {ON_PHONE ? <YStack flex={1} display={beside || tab === "game" ? "flex" : "none"}
                               paddingTop={beside ? 24 : 0} backgroundColor="#0f1115">
-        <GameView active={beside || tab === "game"} ink={ink} /></YStack> : null}
+        <GameView active={beside || tab === "game"} ink={ink} onSaved={() => setSaved((n) => n + 1)} /></YStack> : null}
       <YStack flex={!beside && tab !== "game" ? 1 : undefined} width={beside ? besideWidth : undefined}
               borderLeftWidth={beside ? 3 : 0} borderLeftColor="$color9">
         <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
@@ -162,6 +165,7 @@ function Shell() {
           </XStack>
           <TabStrip tab={tab} setTab={setTab} tabs={beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS} />
         </YStack>
+        {beside ? <FoundBeside {...found} /> : null}
         {tab !== "game" ? <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
           {error ? <Stuck error={error} ink={ink} /> : null}
           {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}

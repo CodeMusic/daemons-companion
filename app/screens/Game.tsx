@@ -74,7 +74,7 @@ const STEPS: Record<Step, string> = { reading: "Reading your game...", checking:
   fetching: "Fetching the DAEMONS patch...", patching: "Making DAEMONS from it...", keeping: "Keeping it on this device..." };
 
 // The game, kept mounted while the app runs (hidden, and paused, on the other tabs)
-export function GameView({ active, ink }: { active: boolean; ink: string }) {
+export function GameView({ active, ink, onSaved }: { active: boolean; ink: string; onSaved?: () => void }) {
   const [game, setGame] = useState<Game | null>(() => heldGame());
   const [step, setStep] = useState<Step | null>(null);
   const [error, setError] = useState("");
@@ -145,7 +145,7 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
       if (!active) web.current?.injectJavaScript("window.pauseGame(); true;");
     } else if (m.kind === "save" && m.b64) {
       const f = saveFile(), bytes = bytesOf(m.b64);
-      if (bytes.length >= 0x10000) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; }   // a whole save, never a blank start
+      if (bytes.length >= 0x10000) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; onSaved?.(); }   // a whole save, never a blank start; C-189: what it holds now is read beside the game
       if (m.why === "leave") handed.current?.();
     } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
     else if (m.kind === "error" && m.text) setError(m.text);

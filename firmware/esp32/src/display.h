@@ -1,7 +1,19 @@
 #pragma once
 // C-67: the screen, configured from `board` at start (LovyanGFX takes its pins at run time, which TFT_eSPI cannot), and
 // the sprite everything is drawn into whole and then pushed, so nothing flickers.
-#if BOARD_TDISPLAY_AMOLED
+#if BOARD_TWATCH_ULTRA
+// C-173: the T-Watch Ultra's 2.06" CO5300 AMOLED on QSPI -- LovyanGFX 1.2.19's Panel_CO5300, which it wrote for this
+// watch; portrait, 410x502, its glass 22 columns into the chip's memory (LilyGO's LilyGoDispQSPI). Its brightness is a
+// register (0x51), as the T-Display AMOLED's.
+#define LGFX_USE_V1
+#include <LovyanGFX.hpp>
+class Display : public lgfx::LGFX_Device {
+  lgfx::Bus_SPI bus;
+  lgfx::Panel_CO5300 panel;
+ public:
+  void configure();
+};
+#elif BOARD_TDISPLAY_AMOLED
 // C-135: the T-Display-S3 AMOLED 1.91 -- an RM67162 AMOLED on a QSPI bus, which LovyanGFX drives from 1.2.19 (this
 // build's alone; the others stay on 1.1.16). Pins from LovyanGFX's own lgfx_user/Lilygo_T_Display_S3_AMOLED.hpp and
 // LilyGO's LilyGo-AMOLED-Series. Its brightness is a register (0x51), not a backlight pin. It ignores a window whose x

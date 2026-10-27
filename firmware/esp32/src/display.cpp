@@ -5,7 +5,26 @@ Display tft;
 LGFX_Sprite canvas(&tft);
 int W = 320, H = 170;
 
-#if BOARD_TDISPLAY_AMOLED
+#if BOARD_TWATCH_ULTRA
+void Display::configure() {                 // C-173: LilyGO's pins (pins_arduino.h for lilygo_twatch_ultra)
+  {
+    auto cfg = bus.config();
+    cfg.freq_write = 80000000; cfg.freq_read = 20000000;
+    cfg.pin_sclk = 40; cfg.pin_io0 = 38; cfg.pin_io1 = 39; cfg.pin_io2 = 42; cfg.pin_io3 = 45;
+    cfg.spi_host = SPI2_HOST; cfg.spi_mode = SPI_MODE0; cfg.dma_channel = SPI_DMA_CH_AUTO;
+    bus.config(cfg);
+    panel.setBus(&bus);
+  }
+  {
+    auto cfg = panel.config();
+    cfg.pin_cs = 41; cfg.pin_rst = -1;                // LilyGO starts it without its reset line
+    cfg.panel_width = 410; cfg.panel_height = 502; cfg.memory_width = 480; cfg.memory_height = 502;
+    cfg.offset_x = 22; cfg.offset_y = 0; cfg.readable = false;
+    panel.config(cfg);
+  }
+  setPanel(&panel);
+}
+#elif BOARD_TDISPLAY_AMOLED
 void Display::configure() {                 // C-135: LovyanGFX 1.2.19's own settings for this board
   {
     auto cfg = bus.config();
@@ -93,8 +112,8 @@ void backlight(bool on) {
 #if BOARD_DIAL
   tft.setBrightness(on ? 160 : 0); return;                // C-102: M5GFX's PWM on GPIO 9
 #endif
-#if BOARD_TDISPLAY_AMOLED
-  tft.setBrightness(on ? 200 : 0); return;                // C-135: the AMOLED's own register (0x51)
+#if BOARD_TDISPLAY_AMOLED || BOARD_TWATCH_ULTRA
+  tft.setBrightness(on ? 200 : 0); return;                // C-135: the AMOLED's own register (0x51); C-173 the Ultra's
 #endif
   if (board.lcdBl >= 0) { pinMode(board.lcdBl, OUTPUT); digitalWrite(board.lcdBl, on ? HIGH : LOW); }
 }

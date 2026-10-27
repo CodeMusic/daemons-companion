@@ -33,6 +33,10 @@ String watchStatus() { return "WATCH none"; }
 #include <SensorBMA423.hpp>
 #include <SensorPCF8563.hpp>
 #include <TouchDrvFT6X36.hpp>
+#if defined(BOARD_TWATCH_ULTRA)
+#include <SensorPCF85063.hpp>                              // C-173: the Ultra's clock is a PCF85063A
+#include <TouchDrvCSTXXX.hpp>                              // and its touch a CST9217
+#endif
 
 // Pins and rails from LilyGO's TTGO_TWatch_Library (t-watch-s3 branch, src/utilities.h); docs/HARDWARE.md.
 // C-75: the CoreS3 shares all of this but the rails, the steps and the touch's bus: its touch is on the main bus, the
@@ -40,13 +44,21 @@ String watchStatus() { return "WATCH none"; }
 #ifdef MAIN_BUS_TOUCH
 static const int PMU_IRQ = -1;
 static TwoWire &touchWire = Wire;
+#elif defined(BOARD_TWATCH_ULTRA)
+// C-173: the Ultra's touch is on the main bus (3, 2), its interrupt on 12; the power chip's on 7
+static const int PMU_IRQ = 7, TOUCH_INT = 12;
+static TwoWire &touchWire = Wire;
 #else
 static const int PMU_IRQ = 21, TOUCH_SDA = 39, TOUCH_SCL = 40;
 static TwoWire &touchWire = Wire1;
 #endif
 
 static XPowersAXP2101 pmu;
+#if defined(BOARD_TWATCH_ULTRA)
+static SensorPCF85063 rtc;
+#else
 static SensorPCF8563 rtc;
+#endif
 static SensorBMA423 accel;
 #if defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
 // C-135: the AMOLED's touch version has a CST816 (0x15), read by the same driver. C-105: the T-Display-S3 Pro's CST226SE (0x5A, RST 13, INT 21), set up as LilyGO's CapacitiveTouch example sets it for
@@ -73,6 +85,8 @@ struct DirectFT {
   TwoWire *wire = nullptr;
 };
 static DirectFT touchPanel;
+#elif defined(BOARD_TWATCH_ULTRA)
+static TouchDrvCST92xx touchPanel;
 #else
 static TouchDrvFT6X36 touchPanel;
 #endif
@@ -81,13 +95,41 @@ static volatile bool pmuIrq = false;
 static int offsetMin = 0;                 // the local offset from UTC, kept for when the server is away
 static bool clockSet = false;
 
+#if defined(BOARD_TWATCH_ULTRA)
+// C-173: the XL9555 (0x20) -- outputs high: the haptic driver's enable (6), the screen's power (7), the touch out of
+// reset (8, after a low pulse) and the LoRa antenna to the watch's own (11; low gives it to the USB-C). Its registers:
+// outputs at 2 and 3, directions at 6 and 7 (a 0 is an output); pins 0-7 the first port, 8-15 the second.
+static void xlWrite(uint8_t reg, uint8_t v) { Wire.beginTransmission(0x20); Wire.write(reg); Wire.write(v); Wire.endTransmission(); }
+static void ultraExpander() {
+  const uint8_t port0 = (1 << 6) | (1 << 7), port1 = (1 << 3);    // 6, 7; 11 -- the touch's reset (8) held low first
+  xlWrite(0x02, port0); xlWrite(0x03, port1);
+  xlWrite(0x06, (uint8_t)~port0); xlWrite(0x07, (uint8_t)~(port1 | 1));
+  delay(20);
+  xlWrite(0x03, port1 | 1);                                        // the touch out of reset
+  delay(60);
+}
+#endif
+
 void watchPower() {
 #ifdef BOARD_DIAL
   return;                                         // C-102: no power chip -- GPIO 46 holds it on (board.cpp)
 #endif
   havePmu = pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, board.sda, board.scl);
   if (!havePmu) return;
-#ifndef BOARD_CORES3                              // the CoreS3's rails are set in boardBegin(), as M5Unified sets them
+#if defined(BOARD_TWATCH_ULTRA)
+  // C-173: the Ultra's rails, as LilyGO's LilyGoUltra::initPMU sets them -- ALDO4 is the BHI260AP's and is 1.8 V, never
+  // the S3's 3.3. The GNSS (BLDO1) and the NFC reader (DLDO1) stay off until C-174 and C-176 use them. Charged at 500 mA:
+  // LilyGO's warning (more heats the PMU; 0.5 C of its 1100 mAh).
+  pmu.setALDO1Voltage(3300); pmu.enableALDO1();   // the SD card
+  pmu.setALDO2Voltage(3300); pmu.enableALDO2();   // the screen
+  pmu.setALDO3Voltage(3300); pmu.enableALDO3();   // the LoRa radio
+  pmu.setALDO4Voltage(1800); pmu.enableALDO4();   // the sensor hub (1.8 V)
+  pmu.setBLDO2Voltage(3300); pmu.enableBLDO2();   // the speaker's amplifier
+  pmu.disableBLDO1(); pmu.disableDLDO1();
+  pmu.disableDC2(); pmu.disableDC3(); pmu.disableDC4(); pmu.disableDC5(); pmu.disableCPUSLDO();
+  pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+  ultraExpander();
+#elif !defined(BOARD_CORES3)                      // the CoreS3's rails are set in boardBegin(), as M5Unified sets them
   pmu.setALDO1Voltage(3300); pmu.enableALDO1();   // the clock's backup
   pmu.setALDO2Voltage(3300); pmu.enableALDO2();   // the backlight
   pmu.setALDO3Voltage(3300); pmu.enableALDO3();   // the screen and the touch
@@ -135,6 +177,15 @@ void watchBegin() {
 #endif
     touchPanel.setHomeButtonCallback([](void *) { homeKey = true; });
   }
+#elif defined(BOARD_TWATCH_ULTRA)
+  // C-173: the CST9217 answers at 0x1A (some at 0x5A, as LilyGO asks); its coordinates are the portrait screen's own.
+  // No step counter yet: the BHI260AP needs its firmware loaded first (a later ticket).
+  touchPanel.setPins(-1, TOUCH_INT);
+  pinMode(TOUCH_INT, INPUT_PULLUP);
+  Wire.beginTransmission(0x1A);
+  uint8_t addr = Wire.endTransmission() == 0 ? 0x1A : 0x5A;
+  haveTouch = touchPanel.begin(touchWire, addr, board.sda, board.scl);
+  if (haveTouch) touchPanel.setMaxCoordinates(board.width, board.height);
 #elif defined(MAIN_BUS_TOUCH)
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, board.sda, board.scl);   // no step counter: a BMI270
 #else
@@ -213,7 +264,9 @@ bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; 
 int watchCableIn() { return havePmu ? (pmu.isVbusIn() ? 1 : 0) : -1; }
 // C-161: how far a finger moves to be a swipe -- on the watch's 240 px a swipe is short (29 and 49 px were read as taps,
 // 2026-10-18) and a tap moves under 10; the larger screens keep their 50
-#if defined(BOARD_TWATCH_S3)
+#if defined(BOARD_TWATCH_ULTRA)
+static const int SWIPE_PX = 34;                                // C-173: the same reach on a screen 1.7 times as wide
+#elif defined(BOARD_TWATCH_S3)
 static const int SWIPE_PX = 20;
 #else
 static const int SWIPE_PX = 50;
@@ -235,7 +288,7 @@ static uint8_t touchRead(int16_t *x, int16_t *y) {
   // point is not taken: the last real one stands, and the lift after it ends the touch there.
   static int16_t lastX = -1, lastY = -1;
   if (touchPanel.getPoint(x, y, 1) <= 0) { lastX = -1; return 0; }
-  if (x[0] <= 0 || x[0] >= 239 || y[0] <= 0 || y[0] >= 239) {
+  if (x[0] <= 0 || x[0] >= W - 1 || y[0] <= 0 || y[0] >= H - 1) {
     if (lastX < 0) return 0;
     x[0] = lastX; y[0] = lastY; return 1;
   }

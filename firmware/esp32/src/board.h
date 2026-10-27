@@ -9,7 +9,7 @@
 // the ORIGINAL ESP32, with an AXP192 for its power.
 #include <Arduino.h>
 
-enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro, TDisplayAmoled, Cardputer, CardputerAdv, M5StickCPlus };   // C-135, C-136; C-148 the StickC-Plus   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
+enum class BoardKind { TEmbedCC1101, TEmbed, TEmbedSI4732, TWatchS3, TWatchUltra, M5StickS3, M5CoreS3, M5Core, M5Dial, TDeck, TDisplayPro, TDisplayAmoled, Cardputer, CardputerAdv, M5StickCPlus };   // C-135, C-136; C-148 the StickC-Plus   // TDisplayPro: C-105   // TDeck: C-104   // M5Dial: C-102   // M5Core: the M5GO and the Fire (C-75)
 enum class Lights { None, WS2812, APA102 };
 enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP5306, ChargerSY6970, PmuAXP192 };   // SY6970: C-105; AXP192: C-148
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
@@ -66,6 +66,8 @@ struct Board {
 };
 
 extern Board board;
+// C-173: the watches -- the S3 and the Ultra share the touch, the crown and the 2x2 grids
+inline bool isWatch() { return board.kind == BoardKind::TWatchS3 || board.kind == BoardKind::TWatchUltra; }
 void boardBegin();   // first thing in setup(): find the board and switch on its peripherals
 const String &deviceId();   // C-80: this board's own name, its kind and the end of its MAC ("t-embed-cc1101-36f484")
 // C-74: the StickS3's power chip (the M5PM1, I2C 0x6E) drives the screen's power (its GPIO 2) and the speaker's

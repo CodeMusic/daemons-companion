@@ -16,6 +16,7 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 | **LilyGO T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | `t-embed` | **runs** |
 | **LilyGO T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, moving with the radio | AM/FM: **CHANNEL**, a move it learns | voltage | `t-embed` | **runs** |
 | **LilyGO T-Watch S3** | 240x240 touch | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | **runs** |
+| **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH) | power chip | `t-watch-ultra` | **built**, not yet run on one: its GNSS, NFC, haptics, SD card and step counter come later (C-174 to C-176) |
 | **LilyGO T-Deck, T-Deck Plus** | 320x240 | keyboard and trackball -- it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus, not yet used | voltage | `t-deck` | **runs** |
 | **LilyGO T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- (no microphone) | -- | -- | charger (voltage) | `t-display-pro` | **runs** |
 | **LilyGO T-Display-S3 AMOLED 1.91** | 536x240, touch on the touch version | touch and BOOT, or two buttons | -- (no microphone) | -- | -- | voltage | `t-display-amoled` | **runs** |

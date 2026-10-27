@@ -56,7 +56,7 @@ static void deviceSprite(lv_obj_t *parent, const String &kind, int px, bool dim)
 static String kindName(const String &kind) {
   if (const DeviceLook *l = lookFor(kind)) return l->name;
   if (kind == "t-embed-cc1101") return "T-Embed CC1101"; if (kind == "t-embed") return "T-Embed"; if (kind == "t-embed-si4732") return "T-Embed SI4732";
-  if (kind == "t-watch-s3") return "T-Watch S3"; if (kind == "m5-sticks3") return "M5StickS3"; if (kind == "m5-cores3") return "M5Stack CoreS3";
+  if (kind == "t-watch-s3") return "T-Watch S3"; if (kind == "t-watch-ultra") return "T-Watch Ultra"; if (kind == "m5-sticks3") return "M5StickS3"; if (kind == "m5-cores3") return "M5Stack CoreS3";
   if (kind == "m5-fire") return "M5Stack Fire"; if (kind == "m5go") return "M5GO"; if (kind == "m5-tab5") return "M5Stack Tab5"; if (kind == "m5-dial") return "M5Stack Dial";
   return kind;
 }

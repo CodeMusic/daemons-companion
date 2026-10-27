@@ -17,7 +17,29 @@ const String &deviceId() {
   return id;
 }
 
-#ifdef BOARD_TWATCH_S3
+#if defined(BOARD_TWATCH_ULTRA)
+
+// C-173: the T-Watch Ultra (platformio.ini has the parts). Portrait, 410 wide and 502 tall, as LilyGO's own launcher.
+// Its rails come from the AXP2101 (watchPower, watch.cpp, with the expander's), its buttons are the crown (the AXP2101's
+// power key, as on the S3) and BOOT (0). The SPI bus on 35/33/34 is the LoRa radio's, the NFC reader's and the SD
+// card's: the two not yet used are held deselected.
+void boardBegin() {
+  board.kind = BoardKind::TWatchUltra; board.id = "t-watch-ultra"; board.name = "T-Watch Ultra";
+  board.width = 410; board.height = 502; board.rotation = 0;
+  board.encKey = 0;                                  // BOOT; the crown is read through the AXP2101
+  board.sda = 3; board.scl = 2;
+  board.i2sBclk = 9; board.i2sLrclk = 10; board.i2sDout = 11;
+  board.mic = Mic::Pdm; board.micData = 18; board.micClk = 17;
+  board.power = Power::PmuAXP2101;
+  board.touch = true; board.lora = true;
+  board.loraChip = LoraChip::SX1262; board.loraCs = 36; board.loraRst = 47; board.loraBusy = 48; board.loraDio1 = 14;
+  board.loraSck = 35; board.loraMiso = 33; board.loraMosi = 34;
+  for (int cs : {4, 21}) { pinMode(cs, OUTPUT); digitalWrite(cs, HIGH); }   // the NFC reader and the SD card, not asked
+  Wire.begin(board.sda, board.scl);
+  watchPower();                                      // the rails, then the expander: the screen's power before the screen
+}
+
+#elif defined(BOARD_TWATCH_S3)
 
 void boardBegin() {
   board.kind = BoardKind::TWatchS3; board.id = "t-watch-s3"; board.name = "T-Watch S3";

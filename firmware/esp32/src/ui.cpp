@@ -177,7 +177,7 @@ const char *linkName() {
 // its fourth and fifth ran into the footer)
 // C-161 (the user, 2026-10-18): on the watch a row is a finger's height, about four to the screen, and a tap on one
 // opens it -- each row drawn is kept, how far it lies from the chosen one, for watch.cpp's touch to find
-static int rowH() { return board.kind == BoardKind::TWatchS3 ? 42 : 19; }
+static int rowH() { return board.kind == BoardKind::TWatchUltra ? 72 : board.kind == BoardKind::TWatchS3 ? 42 : 19; }   // C-173: the Ultra's finger, at its size
 // C-172: a grid's tiles too -- each kept as a rectangle, and the grid's whole area, so a tap between tiles is nothing
 static int tapN = 0; static int16_t tapX[12], tapY[12], tapW[12], tapH[12], tapOff[12];
 static int16_t areaX = 0, areaY = 0, areaW = 0, areaH = 0;
@@ -191,7 +191,7 @@ bool tapAt(int x, int y, int &off, bool area) {
     if (x >= tapX[k] && x < tapX[k] + tapW[k] && y >= tapY[k] && y < tapY[k] + tapH[k]) { off = tapOff[k]; return true; }
   return false;
 }
-bool gridLists() { return board.kind == BoardKind::TWatchS3; }   // C-172: the watch's lists are 2x2 grids, tapped
+bool gridLists() { return isWatch(); }   // C-172: the watch's lists are 2x2 grids, tapped
 int listRowsFit() { return max(2, min(5, (H - 52 - 16) / rowH())); }
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width = W - 12) {
   int y = 52 + i * rowH();

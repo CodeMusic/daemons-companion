@@ -62,7 +62,7 @@ type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: O
 // the CoreS3; the wide boards' face is another). Each face as a small picture, drawn here with the device's own daemon.
 type Face = "daemon" | "clock" | "virtue";
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
-const CLOCK_FACE = /^(t-watch-s3|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
+const CLOCK_FACE = /^(t-watch-s3|t-watch-ultra|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
 const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],
   ["clock", "CLOCK", "hands over it"],

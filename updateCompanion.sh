@@ -4,7 +4,7 @@
 #   ./updateCompanion.sh                  find the boards plugged in, ask each what it is, flash the right build
 #   ./updateCompanion.sh --all            ... every board found, without asking which
 #   ./updateCompanion.sh --board t-watch-s3   say what it is (a board with no companion firmware on it yet):
-#                                             t-embed, t-watch-s3, t-deck, t-display-pro, t-display-amoled, m5-sticks3, m5-stickc-plus, m5-cardputer (and ADV), m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
+#                                             t-embed, t-watch-s3, t-watch-ultra, t-deck, t-display-pro, t-display-amoled, m5-sticks3, m5-stickc-plus, m5-cardputer (and ADV), m5-cores3, m5-core (M5GO, Fire), m5-dial, m5-tab5
 #   ./updateCompanion.sh --port /dev/cu.usbmodem1101   only this one
 #   ./updateCompanion.sh --link           ... then link it to the server (./linkCompanion.sh)
 #   ./updateCompanion.sh --build          only build every board's firmware, to check it compiles (no board needed)
@@ -50,6 +50,7 @@ env_for() {                     # a board's id -> its build
   case "$1" in
     t-embed*)   echo t-embed ;;
     t-watch-s3) echo t-watch-s3 ;;
+    t-watch-ultra) echo t-watch-ultra ;;   # C-173
     t-deck*)    echo t-deck ;;      # C-104: the T-Deck and T-Deck Plus
     t-display-amoled*) echo t-display-amoled ;;   # C-135
     t-display*) echo t-display-pro ;;   # C-105: the T-Display-S3 Pro
@@ -69,6 +70,7 @@ env_for() {                     # a board's id -> its build
 BOARDS=(
   "LilyGO|T-Embed (CC1101, plain or SI4732)|t-embed"
   "LilyGO|T-Watch S3|t-watch-s3"
+  "LilyGO|T-Watch Ultra|t-watch-ultra"
   "LilyGO|T-Deck or T-Deck Plus|t-deck"
   "LilyGO|T-Display-S3 Pro|t-display-pro"
   "LilyGO|T-Display-S3 AMOLED 1.91|t-display-amoled"

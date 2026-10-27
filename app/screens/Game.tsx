@@ -4,11 +4,13 @@
 // The save is the companion's (C-188's one save): hosting alone's daemons.sav. It is put into the game when the game
 // starts, and taken out of the game every 15 s while it changes and whenever the game is left -- so what the game
 // writes is what TODAY, the widget and the INDEX read. The game is paused whenever another tab is shown.
+// A newer release, once published, shows as a strip above the game: one tap makes it from the player's original kept
+// here, and the game starts again from the same save.
 import { useEffect, useRef, useState } from "react";
 import { Directory, File, Paths } from "expo-file-system";
 import { WebView } from "react-native-webview";
-import { Text, YStack } from "tamagui";
-import { heldGame, makeGame, type Game, type Step } from "../game/rom";
+import { Text, XStack, YStack } from "tamagui";
+import { freshPatches, heldGame, makeGame, updateFor, updateGame, type Game, type Step } from "../game/rom";
 import { LOCAL } from "../net";
 import { Action, Card, Eyebrow, Small } from "../ui";
 
@@ -65,6 +67,11 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
   const web = useRef<WebView>(null);
   const started = useRef(false);
   const given = useRef("");                              // the save as the game last had it (put in, or written out)
+  const [update, setUpdate] = useState<ReturnType<typeof updateFor>>(null);
+
+  useEffect(() => {                                       // a newer release, as published now
+    if (game) freshPatches().then(() => setUpdate(updateFor(game)));
+  }, [game]);
 
   useEffect(() => {                                       // the page beside the ROM
     if (!game) return;
@@ -88,6 +95,14 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
     try {
       const g = await makeGame(setStep);
       if (g) { LOCAL?.setEdition(g.edition); setGame(g); }      // the companion keeps the game's edition
+    } catch (e) { setError((e as Error).message); } finally { setStep(null); }
+  };
+  const renew = async () => {
+    setError("");
+    try {
+      if (started.current) { web.current?.injectJavaScript("window.pauseGame(); true;"); await new Promise((r) => setTimeout(r, 800)); }
+      const g = update?.needs === "ready" ? await updateGame(setStep) : await makeGame(setStep);
+      if (g) { started.current = false; LOCAL?.setEdition(g.edition); setGame(g); }   // the page reloads; the save goes back in
     } catch (e) { setError((e as Error).message); } finally { setStep(null); }
   };
   const heard = (data: string) => {
@@ -122,7 +137,15 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
   }
   return (
     <YStack flex={active ? 1 : undefined} display={active ? "flex" : "none"} backgroundColor="#0f1115">
-      <WebView ref={web} source={{ uri: page }} originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}
+      {update ? (
+        <XStack padding={10} gap={10} alignItems="center" backgroundColor="$color3">
+          <YStack flex={1}><Small>{step ? STEPS[step] : update.needs === "ready"
+            ? `A new DAEMONS is out (v${update.release}). Your save comes with it.`
+            : `A new DAEMONS is out (v${update.release}). Choose your FireRed or LeafGreen again to make it.`}  DRAFT</Small></YStack>
+          {step ? null : <Action label={update.needs === "ready" ? "Update" : "Choose"} ink={ink} onPress={renew} />}
+        </XStack>
+      ) : null}
+      <WebView key={game.sha1} ref={web} source={{ uri: page }} originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}
                allowingReadAccessToURL={new Directory(Paths.document, "game").uri} allowFileAccess allowFileAccessFromFileURLs
                allowUniversalAccessFromFileURLs allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false}
                scrollEnabled={false} bounces={false} onMessage={(e) => heard(e.nativeEvent.data)} />

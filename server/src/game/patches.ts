@@ -7,7 +7,19 @@ export type Patch = { edition: "CONTENT" | "CONTEXT"; file: string; url: string;
   source: { game: string; region: string; revision: string; name: string; sha1: string; crc32: string };
   target: { sha1: string; crc32: string }; patch: { size: number; sha1: string } };
 type Release = { version: string; tag: string; patches: Patch[] };
-const DATA = patchesJson as unknown as { latest: string; releases: Release[] };
+type Data = { latest: string; releases: Release[] };
+let DATA = patchesJson as unknown as Data;
+// The list as published now (the app fetches it from this repository on GitHub), in place of the one built in --
+// taken only if it has the shape, and never one older than the built-in list
+export function usePatches(fresh: unknown): boolean {
+  const d = fresh as Data;
+  if (!d || typeof d.latest !== "string" || !Array.isArray(d.releases) || !d.releases.some((r) => r.version === d.latest)) return false;
+  const n = (v: string) => v.split(".").map(Number);
+  const [a, b] = [n(d.latest), n(DATA.latest)];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) if ((a[i] ?? 0) !== (b[i] ?? 0)) { if ((a[i] ?? 0) < (b[i] ?? 0)) return false; break; }
+  DATA = d;
+  return true;
+}
 
 export const latestRelease = () => DATA.latest;
 export function releaseOf(name = DATA.latest): Release | null {

@@ -52,3 +52,18 @@ describe.skipIf(!local)("on this machine's own retail build and release (C-187)"
     expect(() => applyBps(leaf, new Uint8Array(readFileSync(local!.bps)))).toThrow(/not the ROM/);
   }, 60_000);
 });
+
+describe("the live patch list (usePatches)", () => {
+  it("takes a newer list, never a broken or older one", async () => {
+    const m = await import("../src/game/patches.js");
+    const now = m.latestRelease(), r = m.releaseOf()!;
+    expect(m.usePatches({ nope: 1 })).toBe(false);
+    expect(m.usePatches({ latest: "1.0.0", releases: [{ ...r, version: "1.0.0" }] })).toBe(false);
+    expect(m.latestRelease()).toBe(now);
+    const next = now.split(".").map(Number); next[next.length - 1]++;
+    const v = next.join(".");
+    expect(m.usePatches({ latest: v, releases: [{ ...r, version: v }, r] })).toBe(true);
+    expect(m.latestRelease()).toBe(v);
+    expect(m.patchFor(r.patches[0].source.sha1)?.file).toBe(r.patches[0].file);
+  });
+});

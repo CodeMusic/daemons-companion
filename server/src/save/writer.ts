@@ -25,7 +25,7 @@ import { expFor, levelFromExp } from "./growth.js";
 import { calcStats, unpackIVs } from "./stats.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
-import { LAYOUT, type Layout, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
+import { LAYOUT, type Layout, soundingShift, type Sounding, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
 
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }
 export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
@@ -33,7 +33,8 @@ export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: str
                               grew: { nickname: string; personality: number; exp: number; from: number; to: number } | null;
                               money: { from: number; to: number } | null; house: { from: number; to: number } | null;
                               evolved: { nickname: string; personality: number; from: number; to: number }[];
-                              gifted: { box: number; pos: number; personality: number; species: number } | null }
+                              gifted: { box: number; pos: number; personality: number; species: number } | null;
+                              sounded: { personality: number; level: Sounding }[] }   // C-195: each carried daemon given a level
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
@@ -58,7 +59,8 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
-                                             house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift }, l: Layout = LAYOUT): SyncResult {
+                                             house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift;
+                                             sounding?: Sounding }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -255,6 +257,30 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
       gifted = { box: Math.floor(free / 30), pos: free % 30, personality: g.personality >>> 0, species: g.species };
     }
   }
+  // C-195: SOUNDINGS -- each carried daemon's level, in the party and the boxes; home, or just gone, it is 0
+  const sounded: SyncResult["sounded"] = [];
+  if (opts.sounding !== undefined) {
+    const shift = soundingShift(l), mask = 3 << shift;
+    const put = (f: { id: number; byte: number }, level: Sounding, personality: number) => {
+      const next = (out[f.byte] & ~mask & 0xff) | (level << shift);
+      if (level) sounded.push({ personality: personality >>> 0, level });
+      if (next !== out[f.byte]) { out[f.byte] = next; touched.add(f.id); }
+    };
+    for (const p of party) {
+      if (!p.d) continue;
+      const left = answered.some((a) => a.slot === p.i && a.now === "away");
+      put(at(p.recStart + l.flags_byte), awayAfter(p) && !left ? opts.sounding : 0, p.d.personality);
+    }
+    const box = (off: number) => { const id = 5 + Math.floor(off / l.sector_data_size); return { id, byte: where.get(id)! + (off % l.sector_data_size) }; };
+    const giftAt = gifted ? gifted.box * 30 + gifted.pos : -1;
+    for (let i = 0; i < 14 * 30; i++) {
+      const start = 4 + i * l.box_pokemon_size, f = box(start + l.flags_byte);
+      if (!(out[f.byte] & 0b10)) continue;                        // an empty slot
+      const away = !!(out[f.byte] & (1 << l.away_bit));
+      const personality = [0, 1, 2, 3].reduce((n, k) => n | (out[box(start + k).byte] << (8 * k)), 0);
+      if (away || out[f.byte] & mask) put(f, away && i !== giftAt ? opts.sounding : 0, personality);   // a gift has only just arrived
+    }
+  }
   // C-149: the CASINO's change to the money -- the key is SaveBlock2's, the money SaveBlock1's (each where its sector sits)
   let money: SyncResult["money"] = null;
   if (opts.money) {
@@ -283,5 +309,5 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved, gifted };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved, gifted, sounded };
 }

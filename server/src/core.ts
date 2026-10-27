@@ -5,14 +5,14 @@ import { den } from "./dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
-import { readAway, readBoxes, readSave } from "./save/reader.js";
+import { readAway, readBoxes, readSave, type Sounding } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { HOUSE_AT, syncSave } from "./save/writer.js";
 import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
 import { castsForDevice } from "./broadcast.js";   // C-134
-import { life } from "./life.js";
+import { life, type Life } from "./life.js";
 import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
@@ -91,7 +91,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
   // C-184: what evolved on the devices, written for each daemon that is home
   const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to }] : []; });
   const gift = giftToWrite(store, h.edition) ?? undefined;     // C-185: HANDSHAKE, once, into the PC, already away
-  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift });
+  const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
+                              sounding: soundingOf(daemonLife(store, now)) });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)
@@ -100,6 +101,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
     if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
     for (const e of r.evolved) evolutionWritten(store, e.personality);   // C-184: the save holds it now
     if (r.gifted) giftWritten(store);                              // C-185: and the gift
+    if (r.sounded.length) checkedIn(store, r.sounded, now);        // C-195: SOUNDINGS, each one's last check-in
     if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
     // C-167: and what a clamp left unmoved, so what the house has kept is what the money really moved
     const moved = r.money ? r.money.to - r.money.from : 0;
@@ -255,6 +257,28 @@ export function growFromStep(h: Host, store: Store, stepId: number, deviceId = "
   const curve = SPECIES[String(d.species)]?.growth ?? 0;
   if (levelFromExp(curve, d.exp + pendingExp(store, d.personality).exp) >= 100) return;
   store.logInteraction("exp", `${d.personality} ${EXP_PER_STEP} step ${stepId}`);   // the step's id, so an undo takes it back
+}
+
+// C-195: SOUNDINGS (DAEMONS 4.37) -- how a carried daemon is doing, as the game's receiver hears it: read gently from its
+// life (PLAN 7), so the worst it can be is quiet, never an alarm. Each SYNC that finds it away writes this, and keeps when.
+export function soundingOf(l: Life): Exclude<Sounding, 0> { return l.mood >= 72 ? 3 : l.mood >= 55 ? 2 : 1; }
+export type CheckIn = { at: string; level: Sounding };
+export function checkIns(store: Store): Record<string, CheckIn> {
+  try { const m = JSON.parse(store.getSetting("soundings") ?? "{}"); return m && typeof m === "object" ? m : {}; } catch { return {}; }
+}
+function checkedIn(store: Store, sounded: { personality: number; level: Sounding }[], now: Date) {
+  const m = checkIns(store);
+  for (const s of sounded) m[String(s.personality)] = { at: now.toISOString(), level: s.level };
+  store.setSetting("soundings", JSON.stringify(m));
+}
+// SOUNDINGS, for the app: every daemon away now, its last check-in (null: no signal yet) and how it was doing then
+export function soundings(h: Host, store: Store) {
+  const m = checkIns(store);
+  return awayNow(h).map((d) => {
+    const c = m[String(d.personality)];
+    return { personality: d.personality, nickname: d.nickname, name: d.name, species: d.species,
+             level: c?.level ?? d.sounding, at: c?.at ?? null };
+  });
 }
 
 // C-13: the carried daemon's life, read from two weeks of what was done together.

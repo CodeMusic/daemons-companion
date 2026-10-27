@@ -18,6 +18,11 @@ const SPECIES = speciesJson as unknown as Record<string, SpeciesRow>;
 const CHARS = (charmapJson as { bytes: Record<string, string> }).bytes;
 const ITEMS = itemsJson as unknown as Record<string, { name: string; description: string }>;
 
+// C-195: SOUNDINGS (DAEMONS 4.37) -- how a carried daemon is doing, two bits of its flags byte at the exported layout's
+// `sounding_shift` (bits 6-7 until the export carries it): 3 doing well, 2 doing fine, 1 quiet today, 0 no signal yet
+export type Sounding = 0 | 1 | 2 | 3;
+export const soundingShift = (l: Layout) => { const s = (l as Record<string, unknown>).sounding_shift; return typeof s === "number" ? s : 6; };
+
 export interface PartyDaemon {
   slot: number;            // 0-5 in the party
   personality: number;     // with otId, the daemon's identity -- never the slot
@@ -34,6 +39,7 @@ export interface PartyDaemon {
   holding: string | null;  // that item's name, as the game names it
   away: boolean;           // on the companion's device (T-358)
   asked: boolean;          // the game's half of a send or return, waiting for the app
+  sounding: Sounding;      // C-195: how it was doing at the last SYNC that found it away
 }
 
 export interface SaveRead {
@@ -144,6 +150,7 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
     holding: heldItem ? ITEMS[String(heldItem)]?.name ?? `item #${heldItem}` : null,
     away: !!(flags & (1 << l.away_bit)),
     asked: !!(flags & (1 << l.asked_bit)),
+    sounding: ((flags >> soundingShift(l)) & 3) as Sounding,
   };
 }
 

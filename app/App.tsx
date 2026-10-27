@@ -27,7 +27,8 @@ import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
 import { loadPreview } from "./preview";
 // and takes you to them, and goes once the last is in view
-function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void }) {
+function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void;
+                                                         tabs?: readonly (typeof TABS)[number][] }) {
   const strip = useRef<any>(null);
   const size = useRef({ seen: 0, whole: 0, at: 0 });
   const [more, setMore] = useState(false);
@@ -42,7 +43,7 @@ function TabStrip({ tab, setTab }: { tab: (typeof TABS)[number]; setTab: (t: (ty
                   onScroll={(e: any) => { size.current.at = e.nativeEvent.contentOffset.x; measure(); }}>
         <XStack gap={narrow ? 10 : 20} marginTop={12} paddingRight={more ? 28 : 0} role="tablist"
                 flexGrow={narrow ? 1 : 0} justifyContent={narrow ? "space-between" : "flex-start"}>
-          {SHOWN_TABS.map((t) => (
+          {tabs.map((t) => (
             <YStack key={t} paddingVertical={10} borderBottomWidth={3} cursor="pointer" role="tab"
                     aria-selected={tab === t} borderBottomColor={tab === t ? "$color9" : "transparent"}
                     onPress={() => setTab(t)}>
@@ -67,8 +68,14 @@ function Shell() {
   // the page's width in points, never "100%": inside a vertical ScrollView on iOS a percentage is not resolved, and on an
   // iPad (wider than the 720 cap) every line of the books was laid out at its full length and ran off the right edge
   // (the user's mom's iPad, 2026-10-25)
-  const pageWidth = Math.min(720, useWindowDimensions().width);
+  const { width, height } = useWindowDimensions();
+  // C-189: an iPad on its side is one screen -- the game on the left, always playing, and the companion beside it on the
+  // right (GAME is no longer a tab there); upright, and on a phone, GAME is one more tab
+  const beside = ON_PHONE && width > height && Math.min(width, height) >= 700;   // an iPad; a big phone on its side is 440 high
+  const besideWidth = Math.round(Math.min(480, width * 0.42));
+  const pageWidth = beside ? besideWidth : Math.min(720, width);
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
+  useEffect(() => { if (beside && tab === "game") setTab("today"); }, [beside, tab]);
   const [today, setToday] = useState<Today | null>(null);
   const [error, setError] = useState("");
   const reload = useCallback(() => {
@@ -128,50 +135,57 @@ function Shell() {
   const showToast = !!OFFLINE && toastGone !== OFFLINE;
   const newsBanner = useNews(() => setTab("daemon"), ink);  // C-154
 
+  // C-187, C-189: the game is mounted once, in one place, whatever the shape (never inside the page's scroll, and never
+  // remounted by turning the iPad, which would lose what was played since the last save): on its side the game is on the
+  // left and the companion -- its header, tabs and page -- on the right; upright, the header sits above the game on GAME
   const page = (
-    <YStack flex={1} backgroundColor="$color2">
-      <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
-        <XStack alignItems="center">
-          <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
-          {OFFLINE && !showToast ? (
-            <YStack marginLeft="auto" role="button" cursor="pointer" onPress={() => setToastGone(null)}
-                    paddingHorizontal={10} paddingVertical={2} borderRadius={999} borderWidth={1.5}
-                    borderColor="$color11" backgroundColor="$color3">
-              <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
+    <YStack flex={1} backgroundColor="$color2" flexDirection={beside ? "row" : "column-reverse"}>
+      {ON_PHONE ? <YStack flex={1} display={beside || tab === "game" ? "flex" : "none"}
+                              paddingTop={beside ? 24 : 0} backgroundColor="#0f1115">
+        <GameView active={beside || tab === "game"} ink={ink} /></YStack> : null}
+      <YStack flex={!beside && tab !== "game" ? 1 : undefined} width={beside ? besideWidth : undefined}
+              borderLeftWidth={beside ? 3 : 0} borderLeftColor="$color9">
+        <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
+          <XStack alignItems="center">
+            <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+            {OFFLINE && !showToast ? (
+              <YStack marginLeft="auto" role="button" cursor="pointer" onPress={() => setToastGone(null)}
+                      paddingHorizontal={10} paddingVertical={2} borderRadius={999} borderWidth={1.5}
+                      borderColor="$color11" backgroundColor="$color3">
+                <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
+              </YStack>
+            ) : null}
+            <YStack marginLeft={OFFLINE && !showToast ? 10 : "auto"} padding={4} cursor="pointer" role="button" aria-label="settings"
+                    onPress={() => setTab(tab === "settings" ? "today" : "settings")}>
+              <Text fontSize={20} lineHeight={22} color={tab === "settings" ? "$color12" : "$color10"}>⚙</Text>
             </YStack>
-          ) : null}
-          <YStack marginLeft={OFFLINE && !showToast ? 10 : "auto"} padding={4} cursor="pointer" role="button" aria-label="settings"
-                  onPress={() => setTab(tab === "settings" ? "today" : "settings")}>
-            <Text fontSize={20} lineHeight={22} color={tab === "settings" ? "$color12" : "$color10"}>⚙</Text>
-          </YStack>
-        </XStack>
-        <TabStrip tab={tab} setTab={setTab} />
+          </XStack>
+          <TabStrip tab={tab} setTab={setTab} tabs={beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS} />
+        </YStack>
+        {tab !== "game" ? <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
+          {error ? <Stuck error={error} ink={ink} /> : null}
+          {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
+          {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
+          {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
+          {tab === "places" ? <YStack gap={14}><DeviceScreen ink={ink} /><HomeScreen ink={ink} goSettings={() => setTab("settings")} /></YStack> : null}
+          {tab === "you" ? <ProfileScreen /> : null}
+          {tab === "library" ? <LibraryScreen /> : null}
+          {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
+          {tab === "settings" && SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
+        </ScrollView> : null}
+        {newsBanner}
+        {showToast ? (
+          <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}
+                  padding={14} borderRadius={10} backgroundColor="$color12" maxWidth={720} alignSelf="center">
+            <Text flex={1} fontSize={13} color="$color1">
+              {`Away from the companion: this is what the phone kept on ${new Date(OFFLINE!).toLocaleString()}.${KEPT.queue.length ? ` ${KEPT.queue.length} kept to send.` : ""}`}
+            </Text>
+            <YStack role="button" cursor="pointer" padding={6} onPress={() => setToastGone(OFFLINE)}>
+              <Text fontSize={16} fontWeight="700" color="$color1">✕</Text>
+            </YStack>
+          </XStack>
+        ) : null}
       </YStack>
-      {/* C-187: the game stays mounted (hidden and paused on the other tabs), beside the page, never inside its scroll */}
-      {ON_PHONE ? <GameView active={tab === "game"} ink={ink} /> : null}
-      {tab !== "game" ? <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
-        {error ? <Stuck error={error} ink={ink} /> : null}
-        {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
-        {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
-        {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
-        {tab === "places" ? <YStack gap={14}><DeviceScreen ink={ink} /><HomeScreen ink={ink} goSettings={() => setTab("settings")} /></YStack> : null}
-        {tab === "you" ? <ProfileScreen /> : null}
-        {tab === "library" ? <LibraryScreen /> : null}
-        {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
-        {tab === "settings" && SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
-      </ScrollView> : null}
-      {newsBanner}
-      {showToast ? (
-        <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}
-                padding={14} borderRadius={10} backgroundColor="$color12" maxWidth={720} alignSelf="center">
-          <Text flex={1} fontSize={13} color="$color1">
-            {`Away from the companion: this is what the phone kept on ${new Date(OFFLINE!).toLocaleString()}.${KEPT.queue.length ? ` ${KEPT.queue.length} kept to send.` : ""}`}
-          </Text>
-          <YStack role="button" cursor="pointer" padding={6} onPress={() => setToastGone(OFFLINE)}>
-            <Text fontSize={16} fontWeight="700" color="$color1">✕</Text>
-          </YStack>
-        </XStack>
-      ) : null}
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
     </YStack>
   );

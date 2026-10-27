@@ -3,6 +3,7 @@
 // (server/src/core.ts and routes.ts -- the same code the server runs) over the phone's own SQLite, and a COPY of the
 // save Delta shared through Files, kept in the app's documents. SYNC writes that copy (the one before it kept beside
 // it), and the phone hands it back to Delta through the share sheet. Delta's own save is never touched.
+import { GATE } from "./game/gate";
 import * as SQLite from "expo-sqlite";
 import * as DocumentPicker from "expo-document-picker";
 import * as Sharing from "expo-sharing";
@@ -67,7 +68,8 @@ export async function importSave(): Promise<string | null> {
   if (r.canceled || !r.assets?.length) return null;
   const bytes = new File(r.assets[0].uri).bytesSync();
   try { readSave(bytes); } catch { throw new Error("That file is not a DAEMONS save. In Delta, choose the game, then Export Save File."); }
-  phoneSave.write(bytes, new Date());
+  await GATE.hold();
+  try { phoneSave.write(bytes, new Date()); } finally { GATE.release(); }
   return r.assets[0].name;
 }
 
@@ -132,6 +134,10 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
   const method = body === undefined ? "GET" : "POST";
   const deviceId = query.get("device") ?? "";
   const s = store(), h = host();
+  if (method === "POST" && path === "/api/sync") {          // C-189: the game paused, its save handed over, around SYNC
+    await GATE.hold();
+    try { return route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) }); } finally { GATE.release(); }
+  }
   if (handles(method, path)) return route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) });
   if (method === "GET") {
     if (path === "/api/devices") return ok(devicesView());

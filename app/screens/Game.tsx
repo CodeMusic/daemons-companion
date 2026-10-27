@@ -11,6 +11,7 @@ import { Directory, File, Paths } from "expo-file-system";
 import { WebView } from "react-native-webview";
 import { Text, XStack, YStack } from "tamagui";
 import { freshPatches, heldGame, makeGame, updateFor, updateGame, type Game, type Step } from "../game/rom";
+import { GATE } from "../game/gate";
 import { LOCAL } from "../net";
 import { Action, Card, Eyebrow, Small } from "../ui";
 
@@ -80,14 +81,28 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
     f.write(PAGE);
     setPage(f.uri);
   }, [game]);
-  useEffect(() => {                                       // paused while another tab is shown
-    if (!started.current) return;
-    if (!active) { web.current?.injectJavaScript("window.pauseGame(); true;"); return; }
-    // C-188: back to the game -- if the companion wrote the save meanwhile (a SYNC, a daemon sent or come home), the
-    // game starts again from it (CONTINUE), as the playground does; otherwise it simply goes on
+  const handed = useRef<(() => void) | null>(null);       // waiting on the save the game hands over on leaving
+  // C-188: back to the game -- if the companion wrote the save meanwhile (a SYNC, a daemon sent or come home), the
+  // game starts again from it (CONTINUE), as the playground does; otherwise it simply goes on
+  const resume = () => {
     const f = saveFile(), now = f.exists ? b64Of(f.bytesSync()) : "";
     if (now && now !== given.current) { given.current = now; web.current?.injectJavaScript(`window.putSave(${JSON.stringify(now)}); true;`); }
     web.current?.injectJavaScript("window.playGame(); true;");
+  };
+  useEffect(() => {                                       // paused while another tab is shown
+    if (!started.current) return;
+    if (!active) { web.current?.injectJavaScript("window.pauseGame(); true;"); return; }
+    resume();
+  }, [active]);
+  useEffect(() => {                                       // C-189: while it plays, SYNC holds it (game/gate.ts)
+    if (!active) return;
+    GATE.hold = () => !started.current ? Promise.resolve() : new Promise<void>((done) => {
+      const t = setTimeout(() => { handed.current = null; done(); }, 1500);   // a game that does not answer: the file as it is
+      handed.current = () => { clearTimeout(t); handed.current = null; done(); };
+      web.current?.injectJavaScript("window.pauseGame(); true;");
+    });
+    GATE.release = () => { if (started.current) resume(); };
+    return () => { GATE.hold = async () => {}; GATE.release = () => {}; };
   }, [active]);
 
   const bring = async () => {
@@ -106,7 +121,7 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
     } catch (e) { setError((e as Error).message); } finally { setStep(null); }
   };
   const heard = (data: string) => {
-    let m: { kind: string; b64?: string; text?: string };
+    let m: { kind: string; b64?: string; text?: string; why?: string };
     try { m = JSON.parse(data); } catch { return; }
     if (m.kind === "started") {
       started.current = true;
@@ -116,6 +131,7 @@ export function GameView({ active, ink }: { active: boolean; ink: string }) {
     } else if (m.kind === "save" && m.b64) {
       const f = saveFile(), bytes = bytesOf(m.b64);
       if (bytes.length >= 0x10000) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; }   // a whole save, never a blank start
+      if (m.why === "leave") handed.current?.();
     } else if (m.kind === "error" && m.text) setError(m.text);
   };
 

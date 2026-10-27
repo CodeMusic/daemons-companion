@@ -6,6 +6,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 import { readAway, readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
+import { readPlan, readWild } from "./planner.js";   // C-191
 import { casinoPending, clampMoney, tableFor } from "./casino.js";
 import actsJson from "../data/acts.json" with { type: "json" };
 import { readGuide } from "./save/guide.js";
@@ -30,7 +31,7 @@ export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -88,6 +89,11 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));   // T-423: THE SUBTLE LAYER, once found (?preview=1, a bench check)
     if (path === "/api/index") return ok(readIndex(save, h.edition));   // C-24: the save's own INDEX, OPUS's margins with it
     if (path === "/api/party") return ok(readSave(save));
+    if (path === "/api/planner") return ok(readPlan(save));             // C-191: up to the next step, nothing past it
+    if (path === "/api/planner/wild") {                                  // C-191: one place's wild daemons, once it is open
+      const w = readWild(save, String(a.query?.place ?? ""), h.edition);
+      return w ? ok(w) : no(404, "That place is not open yet.");
+    }
   }
   if (method === "POST") {
     // C-134: a broadcast from the app, the site or the Tab5, as one of our daemons

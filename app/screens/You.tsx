@@ -7,6 +7,7 @@ import { useDark } from "../look";
 import { Profile, Progress, RegionsData, Wis } from "../types";
 import { Card, Eyebrow, Fact, Panel, Para, Points, Quote, Small, SubHead } from "../ui";
 import { useApi } from "../useApi";
+import { PlannerCard } from "./Planner";
  // C-144: the badges are drawn for the paper -- in the dark each sits on a chip of it
 export function Badge({ n, size }: { n: number; size: number }) {
   const dark = useDark();
@@ -263,6 +264,7 @@ export function ProfileScreen() {
         {p.gameClear ? <Fact label="THE STORY">told to the end</Fact> : null}
         {p.roots ? <RootsRow held={p.roots} marks={p.marks} wisdom={p.wisdom} /> : null}
       </Card>
+      {p.thisGame !== false ? <PlannerCard /> : null}
       {p.groves ? <GrovesCard found={p.groves} /> : null}
       <EventsCard />
     </YStack>

@@ -12,8 +12,10 @@ export type ModuleAt = { url: string; name: string; found?: string };
 export type TalkAsk = {
   text?: string; wav?: Uint8Array;                        // what was said: words, or a 16 kHz WAV to hear
   history: { said: string; answer: string }[];
-  daemon: { nickname: string; name?: string; types?: string; category?: string; entry?: string };
+  daemon: { nickname: string; name?: string; types?: string; category?: string; entry?: string;
+            level?: number | null; mood?: string; fed?: string; dream?: string };   // the user, 2026-10-28: its game, so they can ask
   day?: { day: string; theme?: string; cue?: string } | null;
+  season?: string;
   goal?: { goal: string; step: string } | null;
   speak: boolean;
   guide?: (heard: string) => string;                      // C-209: asked of the GUIDE -- who answers, from the pages nearest what was heard
@@ -40,18 +42,28 @@ export function checkModules(list: unknown): ModuleAt[] | string {
 
 // A daemon's turn, for a model with a short window: who it is, the day, and a sentence or two (DRAFT: the companion's
 // own words to the model, never shown)
+// Who the daemon is, for one talk -- sent at the head of the user's own message, never as the system message: M5's
+// plugin keeps a pooled client's FIRST system prompt for every later talk (the hardware lane, 2026-10-28: a daemon
+// answered as the benchmark's ROVERCUB), so the system message is the same every time (TALK_SYSTEM) and this rides with
+// each question. Short: qwen2.5-0.5B's window is small -- under ~350 tokens, the question included.
+export const TALK_SYSTEM = "You are a character in the game DAEMONS, speaking with the person who carries you. " +
+  "Become exactly who the note in brackets at the start of their message describes, and answer as them. " +
+  "One or two short sentences, warm, in character. Never say you are an AI or a model.";
 export function persona(a: TalkAsk, heard = ""): string {
   if (a.guide) return a.guide(heard);                     // C-209: the GUIDE answers, not the daemon
   const d = a.daemon;
-  const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon"]
-    .filter(Boolean).join(", ");
-  return [`${who}, who lives with the user and keeps them company.`,
-          d.entry ? `About you: ${d.entry.replace(/\s+/g, " ").slice(0, 240)}` : "",
-          a.day ? `Today is ${a.day.day}${a.day.theme ? ` (${a.day.theme})` : ""}.` : "",
-          a.goal ? `The user is working on: ${a.goal.goal} -- next, ${a.goal.step}.` : "",
-          "Answer in one or two short sentences, warmly, in character. Never say you are an AI or a model."]
+  const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
+               d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
+  return [`${who}, from the INDEX, who lives with the user.`,
+          d.entry ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 160)}` : "",
+          d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
+          d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 120)}` : "",
+          a.day ? `Today is ${a.day.day}${a.day.theme ? ` (${a.day.theme})` : ""}${a.season ? `, in ${a.season}` : ""}.` : "",
+          a.goal ? `The user is working on: ${a.goal.goal} -- next, ${a.goal.step}.` : ""]
     .filter(Boolean).join(" ");
 }
+// the user's message as the module is sent it: who it is, then what they said
+export const askedAs = (a: TalkAsk, said: string) => `[${persona(a, said)}]\nThey say: ${said.slice(0, 500)}`;
 
 type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: string };
 
@@ -117,9 +129,9 @@ export class House {
         text = heard;
         if (!text) return { answer: "", heard: "", audio: null, provider: `module:${m.name}`, firstMs: null };
       }
-      const messages = [{ role: "system", content: persona(a, text) },
-        ...a.history.slice(-4).flatMap((x) => [{ role: "user", content: x.said }, { role: "assistant", content: x.answer }]),
-        { role: "user", content: text.slice(0, 500) }];
+      const messages = [{ role: "system", content: TALK_SYSTEM },
+        ...a.history.slice(-2).flatMap((x) => [{ role: "user", content: x.said.slice(0, 150) }, { role: "assistant", content: x.answer.slice(0, 150) }]),   // the small window
+        { role: "user", content: askedAs(a, text) }];
       let r: Awaited<ReturnType<typeof chat>>;
       try { r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) }); }
       catch (e) { if (/task full/i.test((e as Error).message)) this.fault("taskFull"); throw e; }

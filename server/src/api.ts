@@ -946,9 +946,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           history: Array.isArray(b.history) ? b.history.slice(-6) : talks.history(who),
           provider: b.provider ?? talkProvider(), speak: b.speak !== false, voice: "index",
           localModel: ecfg.talk.localModel,
-          daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry }
+          daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry,
+                        level: d.level ?? null, mood: d.life?.word,                                  // the user: its game, to ask about
+                        fed: d.life ? `fed ${d.life.fed.today}, watered ${d.life.watered.today} today` : undefined,
+                        dream: (st as { dream?: { text: string } }).dream?.text }
                     : { nickname: "your daemon" },
-          day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
+          day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue }, season: st.season,
           goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
           ...(typeof b.guide === "function" ? { guide: b.guide as (heard: string) => string, history: [] } : {}),   // C-209: the GUIDE answers, afresh each time
         };

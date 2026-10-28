@@ -77,6 +77,20 @@ describe("the house", () => {
     expect(JSON.parse(kept["ai.modules"])).toHaveLength(1);
     expect(checkModules([{ url: "ftp://x" }])).toMatch(/url/);
   });
+  it("sends the same system message every time, and who the daemon is with each question (M5's pool keeps the first)", async () => {
+    const asked: any[] = [], m = fakeModule({ asked }), url = await up(m);
+    try {
+      const h = new House(() => [{ url, name: "m" }]);
+      await h.talk({ ...ask, daemon: { nickname: "SEEKMUSAI", types: "VECTOR", level: 50, mood: "happy", dream: "a library whose books read themselves aloud" } });
+      await h.talk({ ...ask, daemon: { nickname: "STARR", types: "SIGNAL" } });
+      expect(asked[0][0]).toEqual(asked[1][0]);                      // the system message: identical
+      expect(asked[0][0].content).not.toMatch(/SEEKMUSAI|STARR/);
+      const last = (i: number) => asked[i][asked[i].length - 1].content as string;
+      expect(last(0)).toMatch(/^\[You are SEEKMUSAI, a VECTOR daemon, level 50.*dreamt: a library.*\]\nThey say: Good morning$/s);
+      expect(last(1)).toMatch(/^\[You are STARR/);
+      expect(last(1)).not.toMatch(/SEEKMUSAI/);
+    } finally { m.close(); }
+  });
   it("tells the model who it is, briefly", () => {
     const p = persona(ask);
     expect(p).toContain("ROVERCUB");

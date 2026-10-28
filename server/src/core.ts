@@ -94,7 +94,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const houseAfter = houseTake(store).kept - (clampMoney(p.money + casino.delta) - p.money);
   const house = HOUSE_AT != null ? houseAfter - Number(store.getSetting("casino.house.written") ?? 0) : 0;
   // C-184: what evolved on the devices, written for each daemon that is home
-  const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to }] : []; });
+  const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to, from: e.from }] : []; });
   const gift = giftToWrite(store, h.edition) ?? undefined;     // C-185: HANDSHAKE, once, into the PC, already away
   const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
@@ -245,10 +245,19 @@ export function speciesHeld(h: Host): number[] {
   try { return [...readSave(bytes).party, ...readBoxes(bytes)].map((d) => d.species); } catch { return []; }
 }
 // C-185: a care given -- feeding, watering, training -- is the bond's, for the daemon this device carries
-export function careGiven(h: Host, store: Store, kind: string, deviceId = "") {
+// at most the day's own cares count toward the bond -- three meals, three drinks, three trainings -- however many are sent
+// (the review: care needs no key, and sixty of them evolved a daemon)
+export const CARES_A_DAY = 9;
+export function careGiven(h: Host, store: Store, kind: string, deviceId = "", now = new Date()) {
   if (!["feed", "water", "train"].includes(kind)) return;
   const d = carriedDaemon(h, store, deviceId);
-  if (d) bondAdd(store, d.personality, "cares");
+  if (!d) return;
+  const k = `bond.caresToday.${d.personality >>> 0}`, day = now.toLocaleDateString("en-CA");
+  let t: { day: string; n: number } = { day, n: 0 };
+  try { const was = JSON.parse(store.getSetting(k) ?? "null"); if (was?.day === day) t = was; } catch { /* a new day */ }
+  if (t.n >= CARES_A_DAY) return;
+  store.setSetting(k, JSON.stringify({ day, n: t.n + 1 }));
+  bondAdd(store, d.personality, "cares");
 }
 
 // C-45, C-47: experience gained on the device. LIMITED LEVELING (the user, 2026-10-04): one step completed is one

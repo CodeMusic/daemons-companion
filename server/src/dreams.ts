@@ -78,9 +78,10 @@ export function dreamVars(store: Store): { vars: Record<number, number>; last: n
   const applied = Number(store.getSetting("dream.applied") ?? 0);
   const fresh = dreamsOf(store).filter((d) => d.id > applied);
   if (!fresh.length) return null;
-  const d = fresh[0], q = { broken: 1, quiet: 2, vivid: 3 }[d.quality] | (d.tucked ? 4 : 0);
+  // the latest NIGHT, by when it ended -- an outbox may tell an older night late (the review; thrive.ts reads it so too)
+  const d = [...fresh].sort((a, b) => Date.parse(b.to) - Date.parse(a.to))[0], q = { broken: 1, quiet: 2, vivid: 3 }[d.quality] | (d.tucked ? 4 : 0);
   const nights = Math.min(255, fresh.length), restedN = Math.min(255, fresh.filter(rested).length);
-  return { last: d.id, vars: { [DREAM_VARS.dream]: (dreamImage(d) << 8) | q, [DREAM_VARS.hours]: Math.min(0xffff, Math.round(d.hours * 10)),
+  return { last: Math.max(...fresh.map((x) => x.id)), vars: { [DREAM_VARS.dream]: (dreamImage(d) << 8) | q, [DREAM_VARS.hours]: Math.min(0xffff, Math.round(d.hours * 10)),
                                [DREAM_VARS.nights]: (restedN << 8) | nights, [DREAM_VARS.day]: dreamDay(d) } };
 }
 

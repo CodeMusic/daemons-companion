@@ -222,8 +222,10 @@ export function takeNight(h: Host, store: Store, detail: string, deviceId: strin
   if (typeof n === "string") return n;
   const d = carriedDaemon(h, store, deviceId);
   const dream = keepNight(store, n, { nickname: d?.nickname ?? "", species: d?.species ?? 0, personality: d?.personality ?? null, device: deviceId });
-  if (d && rested(n) && !store.getSetting(`dream.rested.${dream.id}`)) {
-    bondAdd(store, d.personality, "nights"); store.setSetting(`dream.rested.${dream.id}`, "1");
+  // one rested night a day toward the bond, by the day it ended -- nights sent without a key cannot pump it (the review)
+  const restedDay = `dream.restedDay.${d?.personality ?? 0}.${new Date(n.to).toLocaleDateString("en-CA")}`;
+  if (d && rested(n) && !store.getSetting(`dream.rested.${dream.id}`) && !store.getSetting(restedDay)) {
+    bondAdd(store, d.personality, "nights"); store.setSetting(`dream.rested.${dream.id}`, "1"); store.setSetting(restedDay, "1");
   }
   return { dream, carried: !!d };
 }

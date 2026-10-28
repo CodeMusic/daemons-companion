@@ -57,6 +57,15 @@ describe("C-200: the last dream, into the save at SYNC", () => {
       dreamImage({ to: new Date(Date.parse("2026-10-01T11:00:00Z") + i * 86400000).toISOString(), personality: 0x2f, quality: "vivid" })));
     expect(seen.size).toBeGreaterThanOrEqual(8);
   });
+  it("writes the latest NIGHT, not the last told -- an older night told late is not the new dream", () => {
+    const h = host(), store = new Store(":memory:");
+    sync(h, store);
+    const newer = keepNight(store, night("2026-10-30T11:00:00Z", 8, 1), who);
+    keepNight(store, night("2026-10-29T11:00:00Z", 3, 0), who);          // told after it, from an outbox
+    sync(h, store);
+    expect(varOf(h.bytes, 0x40d7)).toBe(dreamDay(newer));
+    expect(varOf(h.bytes, 0x40d4) & 3).toBe(3);                          // vivid, the newer night's
+  });
   it("picks the image the written dream told, from sixteen", () => {
     const d = { to: "2026-10-29T11:00:00Z", personality: 0x2f, quality: "quiet" as const };
     expect(dreamImage(d)).toBeGreaterThanOrEqual(0);

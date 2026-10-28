@@ -42,7 +42,7 @@ export interface Meetings { seen: number[]; friendship: number }
 // C-45: the experience a daemon gained on the device, for it by its personality, written when it is home
 export interface Growth { personality: number; exp: number }
 // C-184: a daemon that evolved on the device -- its new species, written when it is home (with the game's marker)
-export interface Evolve { personality: number; species: number }
+export interface Evolve { personality: number; species: number; from?: number }   // from: what it was when it evolved here
 // C-185: a daemon the companion gives (HANDSHAKE, DAEMONS T-450) -- written into the PC's first empty box slot, already
 // AWAY, so it is carried from the moment it arrives
 export interface Gift { species: number; name: string; level: number; personality: number; ivs: number; game: number }
@@ -195,7 +195,12 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
   const evolved: SyncResult["evolved"] = [];
   for (const ev of opts.evolve ?? []) {
     const home = party.find((p) => p.d && p.d.personality === ev.personality && !awayAfter(p));
-    if (!home || !home.d || !SPECIES[String(ev.species)] || home.d.species === ev.species) continue;
+    if (!home || !home.d || !SPECIES[String(ev.species)]) continue;
+    // already that species, or the game has made it something else since (evolved it further): nothing written -- and
+    // told as written, so the companion lets it go and never writes the older species back over it (the review)
+    if (home.d.species === ev.species || (ev.from !== undefined && home.d.species !== ev.from)) {
+      evolved.push({ nickname: home.d.nickname, personality: ev.personality, from: home.d.species, to: home.d.species }); continue;
+    }
     const rec = new Uint8Array(l.pokemon_size);
     for (let k = 0; k < l.pokemon_size; k++) rec[k] = out[at(home.recStart + k).byte];
     const v = new DataView(rec.buffer);

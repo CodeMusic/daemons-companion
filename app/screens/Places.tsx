@@ -9,7 +9,7 @@ import { ALONE, api, HANDHELD, HandheldNow, isAway, OFFLINE, redrawWidgetNow, WI
 import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../types";
 import { Action, Art, Card, Choice, Eyebrow, Result, Small } from "../ui";
 import { useApi } from "../useApi";
-import { HubCard } from "./Hub";   // C-190
+import { HubCard, TalkFirstRow } from "./Hub";   // C-190; C-211
 // a shared setting's row (a component of its own, so a redraw never builds the rows again)
 const Row = (p: { label: string; children: React.ReactNode }) =>
   <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
@@ -238,6 +238,7 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
           })}
         </OwnRow>
       ) : null}
+      {/^t-watch-/.test(id) && !ALONE ? <TalkFirstRow ink={ink} /> : null}   {/* C-211: on the watch's own settings too */}
       {GNSS.test(id) ? <WhereRow id={id} ink={ink} /> : null}
       {/* the user, 2026-10-28: "a debug preview mode should be in settings to switch instruments for testing" */}
       {PLAYS.test(id) && s.keys?.includes("instrument") ? (

@@ -2,10 +2,10 @@
 // phone alone: the save it mirrors (C-188), its AI (the modules, C-180) and its LoRa (the boards that carry one, and
 // when one was last heard). A phone alone says so plainly: everything works here but the AI. Every word is DRAFT.
 import { useState } from "react";
-import { Text, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { api } from "../net";
 import { KIND_NAMES } from "../data";
-import { Action, Card, Eyebrow, Small } from "../ui";
+import { Action, Card, Choice, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
 
 type Hub = { hub: false } | {
@@ -14,6 +14,36 @@ type Hub = { hub: false } | {
   ai: { provider: string; modules: { name: string; llm: string | null; answering: boolean }[] };
   lora: { boards: { id: string; kind: string; here: boolean }[]; heard: string | null };
 };
+
+// C-211 (the user, 2026-10-28: "configure the primary source (module or n8n ... green/red health indicator dots"): who
+// answers a talk first -- the hub's module or n8n, the other after it -- with a dot for whether each can now (checked by
+// the companion every minute). One choice for the whole companion: set here, on a watch's own settings, or on the watch.
+type TalkSettings = { first: "module" | "n8n"; health: { n8n: { ok: boolean } | null; modules: { name: string; ok: boolean }[] } };
+const Dot = ({ ok }: { ok: boolean | null }) =>
+  <YStack width={10} height={10} borderRadius={5} backgroundColor={ok === null ? "$color6" : ok ? "#3fb950" : "#e5534b"} />;
+export function TalkFirstRow({ ink }: { ink?: string }) {
+  const [t, setT] = useApi<TalkSettings>("/api/talk/settings");
+  const [said, setSaid] = useState("");
+  if (!t) return null;
+  const moduleOk = t.health.modules.length ? t.health.modules.some((m) => m.ok) : null;
+  const n8nOk = t.health.n8n ? t.health.n8n.ok : null;
+  const pick = async (first: "module" | "n8n") => {
+    try { setT(await api<TalkSettings>("/api/talk/settings", { first })); setSaid(""); } catch (e) { setSaid((e as Error).message); }
+  };
+  return (
+    <YStack gap={6} paddingVertical={6}>
+      <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">WHO ANSWERS FIRST WHEN YOU TALK</Text>
+      <Choice value={t.first} options={[["module", "The hub's AI board"], ["n8n", "n8n"]]} onPick={pick} ink={ink} />
+      <XStack gap={14} alignItems="center" flexWrap="wrap">
+        <XStack gap={6} alignItems="center"><Dot ok={moduleOk} /><Small>{moduleOk === null ? "AI board: none known" : moduleOk ? "AI board: answering" : "AI board: not answering"}</Small></XStack>
+        <XStack gap={6} alignItems="center"><Dot ok={n8nOk} /><Small>{n8nOk === null ? "n8n: not set" : n8nOk ? "n8n: reachable" : "n8n: out of reach"}</Small></XStack>
+      </XStack>
+      <Small>{t.first === "module" ? "The other answers when the first cannot, or is slow." : "The AI board answers when n8n cannot."}</Small>
+      {said ? <Small color="$color8">{said}</Small> : null}
+      <Small color="$color8">DRAFT</Small>
+    </YStack>
+  );
+}
 
 const when = (at: string) => new Date(at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
@@ -50,6 +80,7 @@ export function HubCard({ ink }: { ink?: string }) {
         ? `THE AI: ${answering.map((m) => m.name).join(", ")}, answering.`
         : h.ai.modules.length ? "THE AI: its modules are not answering just now." : `THE AI: no module on the hub; talk goes to ${h.ai.provider}.`}</Small>
       <Action label={looking ? "Looking…" : "LOOK FOR AI BOARDS AGAIN"} ink={ink} onPress={lookAgain} />
+      <TalkFirstRow ink={ink} />
       <Small>{h.lora.boards.length
         ? `LORA: ${h.lora.boards.map((b) => `${KIND_NAMES[b.kind] ?? b.kind}${b.here ? "" : " (away)"}`).join(", ")}` +
           (h.lora.heard ? ` · last heard ${when(h.lora.heard)}` : " · nothing heard yet")

@@ -180,5 +180,37 @@
  },
  "items": {
   "opus": 375
+ },
+ "reads": {
+  "_about": "C-203: THE LOG's vars, each u16 at sb1 vars + (var - vars_start) * 2. where: newest first, log of them -- the map section in the low byte (first_met_places names it; 0: an empty row, the log ends), the phrase at phrase_shift (phrase_mask wide), landed at landed_bit. thing: the flag that says that read's thing was found, 0 for a read about nothing; a read whose flag is set has landed even before the game marks it (the game marks it, and counts it, on the next arrival or when the page is opened). Lines: reads and leans with {1} {2}, then each read '<place><colon><phrase>' and landed after it when it has.",
+  "vars": 4096,
+  "vars_start": 16384,
+  "given": 16584,
+  "landed": 16585,
+  "leans_told": 16582,
+  "leans_landed": 16583,
+  "where": 16586,
+  "thing": 16592,
+  "log": 4,
+  "landed_bit": 15,
+  "phrase_shift": 8,
+  "phrase_mask": 15,
+  "phrases": [
+   "something by the water.",
+   "something in the grass.",
+   "something in the sand.",
+   "something in here.",
+   "something close by.",
+   "something to the north.",
+   "something to the south.",
+   "something to the east.",
+   "something to the west."
+  ],
+  "words": {
+   "reads": "Reads: {1} given, {2} landed.",
+   "leans": "Leans: {1} told, {2} landed.",
+   "colon": ": ",
+   "landed": " Landed."
+  }
  }
 }

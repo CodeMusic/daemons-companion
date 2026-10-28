@@ -31,8 +31,12 @@ export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild"];
-const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove"];
+import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js";   // C-200
+import { askFind, checkFix, fixesOf, keepFix, type Fix } from "./where.js";   // C-174
+import { bondAdd } from "./evolve.js";
+import { validDeviceId } from "./deviceid.js";
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where"];
+const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -65,7 +69,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/regions") return ok(REGIONS);   // C-131: the two regions' maps, for the Tab5 (no save needed)
     if (path === "/api/groves") return ok(GROVES);     // C-137: the groves' universes and signs, for the Tab5 (no save needed)
     if (path === "/api/school") return ok(SCHOOL);     // C-137: CALLOW SCHOOL's floors and the paper, for the Tab5
-    if (path === "/api/marks") return ok(MARKS);   // C-131: each MARK's and understanding's words, for the Tab5 (no save needed)
+    if (path === "/api/marks") return ok(MARKS);
+    if (path === "/api/dreams") return ok({ dreams: dreamsOf(store) });   // C-200: the dream journal, the newest first
+    if (path === "/api/where") return ok({ fixes: fixesOf(store, a.query?.device || undefined) });   // C-174: the newest first   // C-131: each MARK's and understanding's words, for the Tab5 (no save needed)
     const save = h.save.read();
     if (!save) return no(404, NO_SAVE);
     if (path === "/api/profile") {
@@ -96,6 +102,11 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
   }
   if (method === "POST") {
+    // C-174: FIND -- one device asked to say where it is, and to sound
+    if (path === "/api/where/find") {
+      if (!validDeviceId(b?.id)) return no(400, "find {id}");
+      askFind(store, b.id, now); return ok({ asked: true });
+    }
     // C-134: a broadcast from the app, the site or the Tab5, as one of our daemons
     if (path === "/api/broadcast") {
       const r = sendCast(store, awayNow(h), b, now);
@@ -152,4 +163,25 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const d = carriedDaemon(h, store, deviceId);
   const lf = daemonLife(store, now);
   return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null });   // C-119
+}
+
+// C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's
+// interact and a phone hosting alone (app/local.ts) both take it here.
+export function takeFix(store: Store, detail: string, deviceId: string, now = new Date()): Fix | string {
+  const f = checkFix(detail);
+  return typeof f === "string" ? f : keepFix(store, f, deviceId, now);
+}
+// C-200: a night ended on the watch -- "night <from> <to> <stirs> <tucked>" (seconds since 1970), so it travels as every
+// interaction does (Wi-Fi, the outbox, the cable's INTERACT, the phone). Kept with a written dream at once; a rested night
+// is the bond's. Not logged as tending: sleeping is not a care. The module's own telling, after, is the server's (api.ts).
+export function takeNight(h: Host, store: Store, detail: string, deviceId: string): { dream: Dream; carried: boolean } | string {
+  const [from, to, stirs, tucked] = detail.split(" ").map(Number);
+  const n = checkNight({ from: new Date(from * 1000), to: new Date(to * 1000), stirs, tucked: tucked === 1 });
+  if (typeof n === "string") return n;
+  const d = carriedDaemon(h, store, deviceId);
+  const dream = keepNight(store, n, { nickname: d?.nickname ?? "", species: d?.species ?? 0, personality: d?.personality ?? null, device: deviceId });
+  if (d && rested(n) && !store.getSetting(`dream.rested.${dream.id}`)) {
+    bondAdd(store, d.personality, "nights"); store.setSetting(`dream.rested.${dream.id}`, "1");
+  }
+  return { dream, carried: !!d };
 }

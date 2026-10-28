@@ -51,9 +51,7 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
-import { checkNight, dreamAsk, dreamsOf, keepNight, rested, rewriteDream } from "./dreams.js";   // C-200
-import { bondAdd } from "./evolve.js";
-import { askFind, checkFix, fixesOf, keepFix } from "./where.js";   // C-174
+import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
@@ -62,7 +60,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind } from "./lines.js";
-import { handles, route, type Reply } from "./routes.js";
+import { handles, route, takeFix, takeNight, type Reply } from "./routes.js";
 import { EXPRESSIONS, SHADED, faceOf, shadePalette } from "./expressions.js";
 import { FRAMES, PHASES, faceRev, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
@@ -1086,15 +1084,6 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
         }
       }
-      // C-174: where the watches have been (?device= one of them), the newest first; and FIND, for one device
-      if (req.method === "GET" && path === "/api/where") return send(res, 200, { fixes: fixesOf(store, url.searchParams.get("device") ?? undefined) });
-      if (req.method === "POST" && path === "/api/where/find") {
-        const b = await body(req);
-        if (!validDeviceId(b.id)) return send(res, 400, { error: "find {id}" });
-        askFind(store, b.id); return send(res, 200, { asked: true });
-      }
-      // C-200: the dream journal, the newest first
-      if (req.method === "GET" && path === "/api/dreams") return send(res, 200, { dreams: dreamsOf(store) });
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
@@ -1115,21 +1104,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // state); a rested night is the bond's. Not logged as tending: sleeping is not a care.
         // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending
         if (kind === "where") {
-          const f = checkFix(typeof b.detail === "string" ? b.detail : "");
-          if (typeof f === "string") return send(res, 400, { error: f });
-          return send(res, 200, { fix: keepFix(store, f, deviceId) });
+          const f = takeFix(store, typeof b.detail === "string" ? b.detail : "", deviceId);
+          return typeof f === "string" ? send(res, 400, { error: f }) : send(res, 200, { fix: f });
         }
         if (kind === "night") {
-          const [from, to, stirs, tucked] = (typeof b.detail === "string" ? b.detail : "").split(" ").map(Number);
-          const n = checkNight({ from: new Date(from * 1000), to: new Date(to * 1000), stirs, tucked: tucked === 1 });
-          if (typeof n === "string") return send(res, 400, { error: n });
-          const d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
-          const dream = keepNight(store, n, { nickname: d?.nickname ?? "", species: d?.species ?? 0, personality: d?.personality ?? null, device: deviceId });
-          if (d && rested(n) && !store.getSetting(`dream.rested.${dream.id}`)) {
-            bondAdd(store, d.personality, "nights"); store.setSetting(`dream.rested.${dream.id}`, "1");
-          }
+          const r = takeNight(hostOf(ecfg), store, typeof b.detail === "string" ? b.detail : "", deviceId);
+          if (typeof r === "string") return send(res, 400, { error: r });
+          const { dream } = r, d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
           if (house.any && d && dream.by === "words") {
-            house.talk({ text: dreamAsk(n), history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)
+            house.talk({ text: dreamAsk(dream), history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)
               .then((a) => { if (a.answer) rewriteDream(store, dream.id, a.answer); }).catch(() => {});
           }
           return send(res, 200, { dream: { id: dream.id, text: dream.text, by: dream.by, quality: dream.quality } });

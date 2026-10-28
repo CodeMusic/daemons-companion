@@ -11,7 +11,7 @@ import { Asset } from "expo-asset";
 import { Directory, File, Paths } from "expo-file-system";
 import speciesJson from "../server/data/species.json";
 import { Store, type Db } from "../server/src/store";
-import { handles, route, type Reply } from "../server/src/routes";
+import { handles, route, takeFix, takeNight, type Reply } from "../server/src/routes";
 import { awayNow, deviceSettings, deviceState, type Edition, type Host, type SaveFile } from "../server/src/core";
 import { assign, carryView } from "../server/src/carry";
 import { kindOf, validDeviceId } from "../server/src/deviceid";
@@ -161,6 +161,15 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
         return png ? ok({ png }) : no(404, "no art for that species");
       }
     }
+  }
+  // C-200, C-174: a watch's night and its fixes, carried here over its cable or Bluetooth; the written dream, never the
+  // module's (there is none on a phone alone)
+  if (method === "POST" && path === "/api/device/interact" && (body?.kind === "night" || body?.kind === "where")) {
+    const detail = typeof body.detail === "string" ? body.detail : "";
+    if (body.kind === "where") { const f = takeFix(s, detail, deviceId); return typeof f === "string" ? no(400, f) : ok({ fix: f }); }
+    const r = takeNight(h, s, detail, deviceId);
+    if (typeof r === "string") return no(400, r);
+    return ok({ dream: { id: r.dream.id, text: r.dream.text, by: r.dream.by, quality: r.dream.quality } });
   }
   if (method === "POST" && path === "/api/devices/carry") {
     const p = body?.personality === null ? null : Number(body?.personality);

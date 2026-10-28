@@ -212,5 +212,67 @@
    "colon": ": ",
    "landed": " Landed."
   }
+ },
+ "its_dreams": {
+  "_about": "T-462 / C-200: ITS DREAMS. Each var is a u16 (little-endian) in SaveBlock1 at the sb1 offset given (vars + (var - vars_start) * 2). The COMPANION writes the four under 'write' at a SYNC that brings a new dream and leaves them as they are when there is none: dream = quality (1 broken, 2 quiet, 3 vivid) | 4 if tucked in | image << 8; hours in tenths; nights = nights since the last SYNC | rested nights << 8 (each capped 255); day = days since 2026-01-01. The GAME treats a day it has not filed as a new dream and files it at the first dawn after it sees it (or on the first load on a later day). The rest is the game's and never written by a writer: filed = the day + 1 of the last dream filed (0 none); kinds / kinds_2 = the quality last filed for images 0-7 / 8-15, two bits each, image 0 lowest (0 never filed); and image n is filed when DAEMONS flag filed_flag_first + n is set (a bit in sb2 daemons_flags, as profile_layout explains). titles: each image's title in the NOTEBOOK, in image order. DRAFT.",
+  "vars_start": 16384,
+  "vars": 4096,
+  "write": {
+   "dream": {
+    "var": 16596,
+    "sb1": 4520
+   },
+   "hours": {
+    "var": 16597,
+    "sb1": 4522
+   },
+   "nights": {
+    "var": 16598,
+    "sb1": 4524
+   },
+   "day": {
+    "var": 16599,
+    "sb1": 4526
+   }
+  },
+  "game": {
+   "filed": {
+    "var": 16600,
+    "sb1": 4528
+   },
+   "stamp": {
+    "var": 16601,
+    "sb1": 4530
+   },
+   "kinds": {
+    "var": 16602,
+    "sb1": 4532
+   },
+   "kinds_2": {
+    "var": 16603,
+    "sb1": 4534
+   }
+  },
+  "filed_flag_first": 3280,
+  "filed_flag_sb2_bit": 976,
+  "daemons_flags_sb2": 3744,
+  "titles": [
+   "THE HUMMING GRASS",
+   "THE LIT CITY",
+   "THE NAMED WAVES",
+   "THE BOOKS ALOUD",
+   "THE OPEN DOOR",
+   "FALLING UPWARD",
+   "LEAVES FOR ROADS",
+   "A NAME ON WATER",
+   "THE SUNLIT SHELF",
+   "THE LONG WALK",
+   "RAIN FALLING UP",
+   "THE MOONLIT BRIDGE",
+   "A WAVE FROM FAR",
+   "THE WORD GARDEN",
+   "THE HOUSE HUMMING",
+   "THE WALKING MAP"
+  ]
  }
 }

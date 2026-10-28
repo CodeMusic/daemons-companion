@@ -1,5 +1,5 @@
 {
- "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. kind song (T-417, the SONGBOOK): drawn by the game as coloured note heads on a staff; song names the tune, key the major key it counts in, notes the motif as heard (C4 middle C, sharps or flats), frames each note's length at 60 fps as the game plays it when heard, heard the flag set once it is heard at its place (learned is flag). seen: the flag set once the page is opened in the game (unread until then, T-403); key_colours: the twelve note colours C..B and outline the notes' outline, as the GBA shows them (T-417); place: where it was found; link: the song or post its QR code opens (T-402). kind her_dream (T-412): one of the CHECKPOINT attendant's dreams, under HER DREAMS after YOUR DREAMS in the DREAM LOG; led is where it led, shown under it once the save holds led_flag (its step done).",
+ "_about": "C-125: the NOTEBOOK's pages in the game's own order, read from src/notebook.c and the headers it includes. A page is held when the save has flag and (if not 0) flag2 -- notebook.c's own rule. {RIVAL} and {PLAYER} are the names from the save. kind exam/choices: written by the game from the save when opened; no words here. kind song (T-417, the SONGBOOK): drawn by the game as coloured note heads on a staff; song names the tune, key the major key it counts in, notes the motif as heard (C4 middle C, sharps or flats), frames each note's length at 60 fps as the game plays it when heard, heard the flag set once it is heard at its place (learned is flag). seen: the flag set once the page is opened in the game (unread until then, T-403); key_colours: the twelve note colours C..B and outline the notes' outline, as the GBA shows them (T-417); place: where it was found; link: the song or post its QR code opens (T-402). kind her_dream (T-412): one of the CHECKPOINT attendant's dreams, under HER DREAMS after YOUR DREAMS in the DREAM LOG; led is where it led, shown under it once the save holds led_flag (its step done). kind its_dream (T-462): one of the carried daemon's dreams, under ITS DREAMS after HER DREAMS; text is its opening, and its page ends with endings[quality - 1] -- broken, quiet, vivid -- for the quality last filed for its image (profile_layout's its_dreams.kinds; quiet when none).",
  "sections": [
   "SCHOOL NOTES",
   "LOOSE PAGES",
@@ -1815,6 +1815,294 @@
    "link": null,
    "led": "Of course it was {RIVAL}. And of\ncourse it was you, at the end.",
    "led_flag": 1212
+  },
+  {
+   "section": 11,
+   "title": "THE HUMMING GRASS",
+   "kind": "its_dream",
+   "flag": 3280,
+   "flag2": 0,
+   "about": null,
+   "text": "It runs beside you through grass\ntaller than both of you.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 0,
+   "endings": [
+    "The grass parts, and you are not\nbeside it. The note stops short.",
+    "The grass hums one low note, and\nit hums the same note back.",
+    "Every blade hums, and it can hear\nyou humming too, a step ahead."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE LIT CITY",
+   "kind": "its_dream",
+   "flag": 3281,
+   "flag2": 0,
+   "about": null,
+   "text": "A city at night, and every window\nin it is lit.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 1,
+   "endings": [
+    "It comes to a door, and the lights\ngo out a street at a time.",
+    "Every door stands open. Nobody is\nin, and nobody is out.",
+    "Every door stands open, and behind\neach one is a room it knows."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE NAMED WAVES",
+   "kind": "its_dream",
+   "flag": 3282,
+   "flag2": 0,
+   "about": null,
+   "text": "The sea comes in, and says each\nwave's name as it arrives.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 2,
+   "endings": [
+    "The sea starts a name and loses\nit, and the wave goes back out.",
+    "It listens for its own name. The\nsea is in no hurry to get there.",
+    "Then the sea says its name, and\nthe wave comes all the way in."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE BOOKS ALOUD",
+   "kind": "its_dream",
+   "flag": 3283,
+   "flag2": 0,
+   "about": null,
+   "text": "A library where the books read\nthemselves aloud, all at once.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 3,
+   "endings": [
+    "Every book loses its place, and\nstarts again, and loses it again.",
+    "It finds a book reading quietly,\nand sits down beside it.",
+    "It hears every book at once, and\nevery book makes sense."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE OPEN DOOR",
+   "kind": "its_dream",
+   "flag": 3284,
+   "flag2": 0,
+   "about": null,
+   "text": "A door it has never been through\nstands open in an empty field.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 4,
+   "endings": [
+    "It goes to step through, and the\ndoor is shut, and was always shut.",
+    "Through it, the same field, the\nsame wind. It goes through anyway.",
+    "Through it, a field it has never\nseen, and it walks right in."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "FALLING UPWARD",
+   "kind": "its_dream",
+   "flag": 3285,
+   "flag2": 0,
+   "about": null,
+   "text": "It falls slowly upward, past the\ntrees, past the clouds.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 5,
+   "endings": [
+    "Partway up it stops, and hangs\nthere, SUSPENDED, until it resumes.",
+    "The stars come close and do not\nmind it. It keeps falling, gently.",
+    "The stars open to let it through,\nand close again behind it."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "LEAVES FOR ROADS",
+   "kind": "its_dream",
+   "flag": 3286,
+   "flag2": 0,
+   "about": null,
+   "text": "Wherever you have walked, a tree\ngrows up behind you.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 6,
+   "endings": [
+    "The wind takes the leaves before\nit can read them.",
+    "It sits under the tree. Each leaf\nis a road you took. It knows them.",
+    "It climbs to the top, and sees\nall your roads at once, green."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "A NAME ON WATER",
+   "kind": "its_dream",
+   "flag": 3287,
+   "flag2": 0,
+   "about": null,
+   "text": "Its own name, written in light on\nstill water.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 7,
+   "endings": [
+    "A wind comes, and the letters run\ninto each other.",
+    "It does not touch it. It watches\nthe name ripple and stay.",
+    "It steps out onto the water, and\nthe name holds it up."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE SUNLIT SHELF",
+   "kind": "its_dream",
+   "flag": 3288,
+   "flag2": 0,
+   "about": null,
+   "text": "A small room, warm, with sun on\nthe floor and a shelf by the window.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 8,
+   "endings": [
+    "It reaches the shelf, and the sun\ngoes, and the room is grey and cold.",
+    "The shelf is where it used to wait.\nIt is still warm there.",
+    "It lies on the shelf in the sun,\nand the whole room hums around it."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE LONG WALK",
+   "kind": "its_dream",
+   "flag": 3289,
+   "flag2": 0,
+   "about": null,
+   "text": "A long walk, on a road that does\nnot end, and it does not mind.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 9,
+   "endings": [
+    "The road folds up under it, and it\nis back where it began.",
+    "It stops when it likes, and when it\nlikes, it resumes.",
+    "You are walking it too, a little\nahead, and you keep looking back."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "RAIN FALLING UP",
+   "kind": "its_dream",
+   "flag": 3290,
+   "flag2": 0,
+   "about": null,
+   "text": "Rain that falls upward, slowly,\nout of the puddles.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 10,
+   "endings": [
+    "The rain changes its mind halfway,\nand comes down cold.",
+    "Each drop rings like glass on its\nway up to the clouds.",
+    "It goes up with the rain, and comes\ndown again, dry, and laughing."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE MOONLIT BRIDGE",
+   "kind": "its_dream",
+   "flag": 3291,
+   "flag2": 0,
+   "about": null,
+   "text": "A bridge of lit stones, over a\nriver made of moonlight.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 11,
+   "endings": [
+    "A stone goes dark under its foot,\nand it is back on the near bank.",
+    "Each stone chimes as it steps on\nit. It crosses, chiming back.",
+    "The moon waits on the far bank,\nand the river carries it home."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "A WAVE FROM FAR",
+   "kind": "its_dream",
+   "flag": 3292,
+   "flag2": 0,
+   "about": null,
+   "text": "You, small and far away, at the\nedge of a wide field, waving.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 12,
+   "endings": [
+    "It waves back, but the field grows\nwider, and you do not see it.",
+    "It waves back with its whole self\nuntil you are too small to see.",
+    "It waves back, and you see it, and\nyou start to run toward it."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE WORD GARDEN",
+   "kind": "its_dream",
+   "flag": 3293,
+   "flag2": 0,
+   "about": null,
+   "text": "A garden where every seed is a\nword, pressed into the earth.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 13,
+   "endings": [
+    "Nothing comes up. It forgets which\nwords it planted.",
+    "It waters them. A few come up as\nthe words they were.",
+    "They all come up at once, and the\ngarden says something kind."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE HOUSE HUMMING",
+   "kind": "its_dream",
+   "flag": 3294,
+   "flag2": 0,
+   "about": null,
+   "text": "The house at night, everything in\nit paused, humming low.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 14,
+   "endings": [
+    "The hum stops. The house is still,\nand it cannot find the song again.",
+    "Inside the hum there is a song. It\nknows the tune, and hums along.",
+    "The song grows, and the whole house\nis singing it, softly, to it."
+   ]
+  },
+  {
+   "section": 11,
+   "title": "THE WALKING MAP",
+   "kind": "its_dream",
+   "flag": 3295,
+   "flag2": 0,
+   "about": null,
+   "text": "A map that draws itself as it\nwalks, a little way ahead of it.",
+   "seen": null,
+   "place": null,
+   "link": null,
+   "image": 15,
+   "endings": [
+    "The ink runs. The map forgets where\nit has been, and starts again.",
+    "Where it has been is inked in.\nWhere it is going is still white.",
+    "The map draws a road it has never\ntaken, and it takes it."
+   ]
   },
   {
    "section": 12,

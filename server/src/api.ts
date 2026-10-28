@@ -51,6 +51,7 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
+import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
@@ -106,17 +107,30 @@ function fileSave(path: string | null | undefined): SaveFile {
 export const mirrorPath = (cfg: Config) => join(cfg.database === ":memory:" ? tmpdir() : dirname(cfg.database), "mirror.sav");
 export const savePathOf = (cfg: Config, store: Store) =>
   store.getSetting("save.mirror") === "on" ? mirrorPath(cfg) : store.getSetting("savePath") ?? cfg.savePath;
+// The save the companion was given, when it is not the mirror -- the one a device's game may take in, and must not lose
+const givenSave = (cfg: Config, store: Store) => store.getSetting("savePath") ?? cfg.savePath ?? null;
+const gameOf = (bytes: Uint8Array) => { const p = readProfile(bytes); return `${p.name}/${p.trainerId}/${p.secretId}`; };
+export class OtherGame extends Error {}
 export function putMirror(cfg: Config, store: Store, bytes: Uint8Array): string {
   readSave(bytes);                                         // a whole save, or it throws
+  // Another game's save never takes the companion's place (2026-10-28: a new game begun in the app replaced the hub's
+  // save, and every daemon was gone): while the companion reads a save it was given, only that game is mirrored
+  const given = store.getSetting("save.mirror") === "on" ? null : givenSave(cfg, store);
+  if (given && existsSync(given)) {
+    try { if (gameOf(new Uint8Array(readFileSync(given))) !== gameOf(bytes)) throw new OtherGame("the companion holds another game's save"); }
+    catch (e) { if (e instanceof OtherGame) throw e; /* the given save unreadable: the device's is better than none */ }
+  }
   const path = mirrorPath(cfg), tmp = `${path}.companion-writing`;
   writeFileSync(tmp, bytes); renameSync(tmp, path);
   store.setSetting("save.mirror", "on");
   return sha1(bytes);
 }
+// The mirror -- or, before there is one, the save the companion was given, so a device's game starts from it
 export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uint8Array } | null {
-  const path = mirrorPath(cfg);
-  if (store.getSetting("save.mirror") !== "on" || !existsSync(path)) return null;
+  const path = store.getSetting("save.mirror") === "on" ? mirrorPath(cfg) : givenSave(cfg, store);
+  if (!path || !existsSync(path)) return null;
   const bytes = new Uint8Array(readFileSync(path));
+  try { readSave(bytes); } catch { return null; }
   return { sha1: sha1(bytes), bytes };
 }
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
@@ -1150,7 +1164,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
           if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "a mirror is {b64}, a whole save" });
           try { return send(res, 200, { sha1: putMirror(cfg, store, bytes) }); }
-          catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
+          catch (e) { return e instanceof OtherGame ? send(res, 409, { error: e.message }) : send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
         }
       }
       if (req.method === "POST" && path === "/api/device/interact") {

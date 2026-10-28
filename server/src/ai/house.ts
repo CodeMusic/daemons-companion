@@ -82,7 +82,7 @@ const wide = (model: string) => /p256/i.test(model);  // a thinker with room: 25
 const SAY_SENTENCES = 2;                                  // a talk's answer: two sentences, then spoken (HUB.md Phase 5 item 3)
 const MINDS = 2;
 const WARM_KEEP_MS = 30 * 60_000;                         // a thinker talked to this lately is not let go to warm another
-type Mind = { gen: number; held: { key: string; work: string; used: number }[] };                                           // thinkers alive on a module at once: the llm unit's two slots
+export type Mind = { gen: number; held: { key: string; work: string; used: number }[] };                                           // thinkers alive on a module at once: the llm unit's two slots
 export type Faults = { empty: number; taskFull: number; garbled: number; last: { kind: string; at: string } | null };
 export class House {
   // C-180: the module's signs of leaked task slots (empty answers, "task full") and garbled words, counted since the
@@ -95,7 +95,12 @@ export class House {
   private held = new Map<string, Held>();
   // thinker: a module's StackFlow (ai/stackflow.ts, given by api.ts), where its persona can reach the model; none, or one
   // that cannot be reached, and the OpenAI plugin thinks as before (a stand-in server, the tests)
-  constructor(private modules: () => ModuleAt[], private now = () => Date.now(), private thinker?: (m: ModuleAt) => StackFlow | null) {}
+  // kept: the thinkers this server set up, remembered across its restarts (a deploy), so they are taken up again rather
+  // than let go and set up anew -- each setup leaks the module's llm unit ~26 files that only its restart gives back
+  // (the hardware lane, 2026-10-28: 63 -> 169 in five minutes of setups; pauses clean)
+  constructor(private modules: () => ModuleAt[], private now = () => Date.now(), private thinker?: (m: ModuleAt) => StackFlow | null,
+              private kept?: { load: (url: string) => Mind["held"]; save: (url: string, held: Mind["held"]) => void }) {}
+  private keep(url: string, mind: Mind) { try { this.kept?.save(url, mind.held); } catch { /* remembered next time */ } }
   private minds = new Map<string, Mind>();
   private settingUp = new Map<string, Promise<string>>();
   private noFlowUntil = new Map<string, number>();
@@ -119,19 +124,28 @@ export class House {
       // it back, every thinker gone): this one is forgotten, a silent connection dropped, and the talk set up again once
       const why = (e as Error).message;
       if (why === LATE || again || !/silent|closed|StackFlow:/.test(why)) throw e;
-      mind.held = mind.held.filter((x) => x.work !== work);
+      mind.held = mind.held.filter((x) => x.work !== work); this.keep(m.url, mind);
       if (/silent/.test(why)) sf.reset();
       return this.think(sf, m, model, prompt, said, deadlineMs, most, true);
     }
   }
   // What is alive on a module's StackFlow, as this server knows it -- on a new connection (this server started, or the
-  // link dropped) what is alive there is not ours, and is let go first
+  // link dropped) the thinkers it remembers setting up and still alive are taken up again; anything else alive is not
+  // ours, and is let go
   private async mindOf(sf: StackFlow, m: ModuleAt): Promise<Mind> {
     let mind = this.minds.get(m.url);
     if (!mind || mind.gen !== sf.generation) {
       mind = { gen: sf.generation, held: [] }; this.minds.set(m.url, mind);
       const fresh = mind;
-      this.clearing = sf.clearOrphans(new Set()).then(() => { fresh.gen = sf.generation; }).catch(() => {});
+      this.clearing = (async () => {
+        let alive: string[];
+        try { alive = await sf.taskinfo(); } catch { await new Promise((r) => setTimeout(r, 1500)); alive = await sf.taskinfo(); }   // llm-sys busy: once more
+        const saved = (() => { try { return this.kept?.load(m.url) ?? []; } catch { return []; } })();
+        fresh.held = saved.filter((x) => alive.includes(x.work)).slice(-MINDS);
+        for (const w of alive) if (!fresh.held.some((x) => x.work === w)) await sf.exit(w);
+        this.keep(m.url, fresh);
+        fresh.gen = sf.generation;
+      })().catch(() => {});
     }
     await this.clearing;
     return mind;
@@ -146,7 +160,7 @@ export class House {
         // room first: the llm unit holds two; the one of ours talked to longest ago is let go before another is set up
         while (mm.held.length >= MINDS) {
           const i = mm.held.reduce((b, x, j) => (x.used < mm.held[b].used ? j : b), 0);
-          await sf.exit(mm.held.splice(i, 1)[0].work);
+          await sf.exit(mm.held.splice(i, 1)[0].work); this.keep(m.url, mm);
         }
         // a slot just let go is free on the module a moment later, not at once: on "task full", what is not ours let go,
         // and asked again after a pause -- three times (the hardware lane: the first talk after a new persona failed)
@@ -160,7 +174,7 @@ export class House {
             await new Promise((r) => setTimeout(r, 600 * (tries + 1)));
           }
         }
-        mm.held.push({ key: prompt, work: w, used: this.now() });
+        mm.held.push({ key: prompt, work: w, used: this.now() }); this.keep(m.url, mm);
         return w;
       })().finally(() => this.settingUp.delete(k));
       this.settingUp.set(k, ready);

@@ -136,6 +136,17 @@ describe("thinking through StackFlow (C-180)", () => {
     alive.clear();                                                           // systemd brought llm-llm back: nothing alive
     expect((await h.talk(ask("PHOENIX"), null)).answer).toBe("I am PHOENIX.");
   });
+  it("after its own restart (a deploy) takes up the thinkers it set up, instead of setting them up again", async () => {
+    const kept = new Map<string, any>();
+    const store = { load: (u: string) => kept.get(u) ?? [], save: (u: string, h: any) => kept.set(u, JSON.parse(JSON.stringify(h))) };
+    const first = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf1, store), sf1 = new StackFlow("127.0.0.1", port);
+    expect((await first.talk(ask("KEEPER"), null)).answer).toBe("I am KEEPER.");
+    sf1.reset();                                                            // the server went away
+    const before = seen.filter((x) => x.action === "setup").length;
+    const sf2 = new StackFlow("127.0.0.1", port), again = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf2, store);
+    expect((await again.talk(ask("KEEPER"))).answer).toBe("I am KEEPER.");   // within the deadline: no setup, no LATE
+    expect(seen.filter((x) => x.action === "setup").length).toBe(before);
+  });
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));
     expect((await h.talk(ask("SEEKMUSAI"), null)).answer).toBe("Good morning!");

@@ -516,6 +516,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const host = new URL(m.url).hostname;
     if (!flows.has(host)) flows.set(host, new StackFlow(host));
     return flows.get(host)!;
+  }, {                                                         // the thinkers set up, kept across a restart (a deploy)
+    load: (url) => { try { return JSON.parse(store.getSetting(`module.minds.${url}`) ?? "[]"); } catch { return []; } },
+    save: (url, held) => store.setSetting(`module.minds.${url}`, JSON.stringify(held)),
   });
   discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
   const checkTalk = async () => {                              // C-211: each talk source's health, every minute

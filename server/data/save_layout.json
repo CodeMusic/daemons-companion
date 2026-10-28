@@ -16,6 +16,10 @@
  "away_bit": 4,
  "asked_bit": 5,
  "sounding_shift": 6,
+ "trading_bit": 3,
+ "trade_flags_offset": 30,
+ "loan_mask": 1,
+ "traded_in_mask": 2,
  "natures": [
   [
    0,

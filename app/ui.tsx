@@ -8,7 +8,11 @@ import { Link } from "./types";
 export const { careSound }: typeof import("./careSound") = ON_PHONE ? require("./careSound") : { careSound: () => "" };
 
 export const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
-export function Art({ path, size, height, fit }: { path: string; size: number; height?: number; fit?: "contain" }) {   // C-158: height, for a hat; T-423: fit, for pictures of differing heights
+// A new path is a new picture: drawn afresh, never the one held for the path before (the user, 2026-10-28: TODAY kept
+// OVERLOADED's picture after it learned the phone carries SEEKMUSAI)
+type ArtProps = { path: string; size: number; height?: number; fit?: "contain" };
+export const Art = (p: ArtProps) => <ArtOf key={p.path} {...p} />;
+function ArtOf({ path, size, height, fit }: ArtProps) {   // C-158: height, for a hat; T-423: fit, for pictures of differing heights
   const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && (isAway() || ALONE) ? null : SERVER + path));
   const viaJson = useCallback(() => { artByJson(path).then(setUri).catch(() => {}); }, [path]);
   useEffect(() => { if (!uri || (path.startsWith("/art/party/") && uri.startsWith("data:") && !FRESH_ART.has(path))) viaJson(); }, [uri, viaJson, path]);

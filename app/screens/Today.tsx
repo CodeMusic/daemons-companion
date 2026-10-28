@@ -43,9 +43,9 @@ export function TodayMore({ goTo, ink }: { goTo: (t: (typeof TABS)[number]) => v
   const [nb, setNb] = useState<Notebook | null>(null);
   const [last, setLast] = useState<Cast | null>(null);
   const [said, setSaid] = useState("");
-  const [own, setOwn] = useState<{ slot: number; nickname: string } | null>(null);   // this player's own (a box's, C-103)
+  const [own, setOwn] = useState<{ slot: number; nickname: string } | null | undefined>(undefined);   // this player's own (a box's, C-103); undefined: not heard yet
   const load = useCallback(() => {
-    playerId().then((id) => api<PlayerState>(`/api/device/state?device=${id}`)).then((st) => setOwn(st.daemon)).catch(() => {});
+    playerId().then((id) => api<PlayerState>(`/api/device/state?device=${id}`)).then((st) => setOwn(st.daemon ?? null)).catch(() => setOwn(null));
     api<typeof life>("/api/daemon/life").then(setLife).catch(() => {});
     api<{ party: typeof party }>("/api/party").then((r) => setParty(r.party)).catch(() => {});
     api<Profile>("/api/profile").then(setP).catch(() => {});
@@ -53,7 +53,8 @@ export function TodayMore({ goTo, ink }: { goTo: (t: (typeof TABS)[number]) => v
     api<{ items: Cast[] }>("/api/broadcasts").then((r) => setLast([...r.items].reverse().find((c) => !c.mine) ?? null)).catch(() => {});
   }, []);
   useEffect(load, [load]);
-  const d = own ?? party?.find((x) => x.away) ?? null;
+  // the phone's own; only once it is known to have none, the first away -- never another daemon shown first, then swapped
+  const d = own === undefined ? null : own ?? party?.find((x) => x.away) ?? null;
   const care = async (c: "feed" | "water" | "train") => {
     try { await api(`/api/daemon/${c}`, {}); setSaid(c === "feed" ? "Eaten." : c === "water" ? "Drunk." : "Trained."); load(); }
     catch (e) { setSaid((e as Error).message); }

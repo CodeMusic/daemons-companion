@@ -356,7 +356,7 @@ static void drawFaceWide(uint16_t day, uint16_t ink) {
   canvas.setTextFont(1);
   String under;
   long steps = watchSteps();
-  if (steps >= 0) under = String(steps) + " STEPS";                                          // DRAFT
+  if (steps >= 0) under = stepsWords(steps);
   if (bat.present) under += (under.length() ? "    " : "") + String(bat.percent) + "%" + (bat.charging ? " +" : "");
   canvas.drawString(under, 20, 154);
   int x = split + 18, w = W - x - 10;
@@ -524,7 +524,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.drawString(upper(st.chakra) + (st.note.length() ? "  -  " + st.note : ""), W / 2, 144);
   long steps = watchSteps();
   canvas.setTextFont(1);
-  if (steps >= 0) canvas.drawString(String(steps) + " STEPS", W / 2, 164);   // DRAFT
+  if (steps >= 0) canvas.drawString(stepsWords(steps), W / 2, 164);
   if (bat.present) canvas.drawString(String(bat.percent) + "%" + (bat.charging ? " +" : ""), W / 2, 176);
   if (!talkCan()) { canvas.setTextDatum(TL_DATUM); return; }   // C-102: the Dial has no microphone, so no TALK
   bool talking = watchTalking();                             // TALK: a button in the day's colour, full while held
@@ -533,6 +533,14 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.setTextFont(2); canvas.setTextColor(talking ? ink : day);
   canvas.drawString(talking ? "..." : "TALK", cx, cy);       // DRAFT
   canvas.setTextDatum(TL_DATUM);
+}
+
+// C-174: the steps, and on the Ultra the distance its GNSS walked beside them
+String stepsWords(long steps) {
+  String s = String(steps) + " STEPS";                                                      // DRAFT
+  long m = gpsMetresToday();
+  if (m >= 100) s += "  " + String(m / 1000.0f, 1) + " KM";                                 // DRAFT
+  return s;
 }
 
 void draw() {

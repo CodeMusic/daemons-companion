@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { askFind, checkFix, findAsked, fixesOf, keepFix } from "../src/where.js";
+import { askFind, checkFix, findAsked, fixesOf, keepFix, walkedSince } from "../src/where.js";
+import { weatherSpot } from "../src/weather.js";
 import { Store } from "../src/db.js";
 
 describe("C-174: where a watch has been, and FIND", () => {
@@ -24,5 +25,27 @@ describe("C-174: where a watch has been, and FIND", () => {
     expect(findAsked(store, "t-watch-ultra-a1", new Date(now.getTime() + 11 * 60000))).toBeNull();
     keepFix(store, { lat: 1, lon: 2, metres: 3 }, "t-watch-ultra-a1");
     expect(findAsked(store, "t-watch-ultra-a1", now)).toBeNull();
+  });
+});
+
+describe("C-174: the distance walked, and the weather where it is", () => {
+  const at = (min: number) => new Date(Date.UTC(2026, 9, 29, 12, min)).toISOString();
+  const fix = (min: number, lat: number, lon: number) => ({ at: at(min), lat, lon, metres: 5, device: "t-watch-ultra-f351d4" });
+  it("joins the legs of a walk, leaving out the wander and the gaps", () => {
+    const fixes = [fix(0, 45, -75), fix(1, 45.001, -75), fix(2, 45.00101, -75), fix(3, 45.002, -75), fix(40, 45.003, -75), fix(41, 45.1, -75)];
+    const m = walkedSince(fixes, new Date(at(0)));
+    expect(m).toBeGreaterThan(215);                          // two legs of ~111 m; the wander, the gap and the jump left out
+    expect(m).toBeLessThan(230);
+    expect(walkedSince(fixes, new Date(at(39)))).toBe(0);
+  });
+  it("takes the weather where the watch is, named for the city while it is near", () => {
+    const store = new Store(":memory:");
+    store.setSetting("weather.city", JSON.stringify({ name: "Ottawa", country: "Canada", latitude: 45.42, longitude: -75.69 }));
+    expect(weatherSpot(store)?.latitude).toBe(45.42);
+    keepFix(store, { lat: 45.4, lon: -75.7, metres: 5 }, "t-watch-ultra-f351d4");
+    expect(weatherSpot(store)).toMatchObject({ name: "Ottawa", latitude: 45.4 });
+    keepFix(store, { lat: 43.65, lon: -79.38, metres: 5 }, "t-watch-ultra-f351d4");
+    expect(weatherSpot(store)).toMatchObject({ name: "AWAY", latitude: 43.65 });
+    expect(weatherSpot(store, new Date(Date.now() + 3 * 3600000))?.latitude).toBe(45.42);
   });
 });

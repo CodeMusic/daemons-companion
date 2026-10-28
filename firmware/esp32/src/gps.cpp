@@ -19,11 +19,13 @@
 
 void gpsLoop(uint32_t) {}
 void gpsFromState(JsonVariantConst) {}
+long gpsMetresToday() { return -1; }
 String gpsStatus() { return "GPS none"; }
 
 #else
 
 #include <TinyGPSPlus.h>
+#include <Preferences.h>
 void watchGnssPower(bool on);                             // watch.cpp: BLDO1
 
 enum Why : uint8_t { OFF, WALK, POLL, FIND };
@@ -39,6 +41,32 @@ static void power(Why w) {
   why = w;
 }
 static bool goodFix() { return gps.location.isValid() && gps.location.age() < 2000 && gps.hdop.isValid() && gps.hdop.hdop() < 5; }
+// the distance walked today: the walk's fixes joined, each leg between eight metres (the receiver's own wander) and two
+// kilometres (a gap, not a stride), at most ten minutes apart. Kept in flash by the day, so a restart keeps it.
+static double lastLat = 0, lastLon = 0; static uint32_t lastAt = 0;
+static long metres = -1; static int metresDay = -1;
+static int today() { struct tm t; return watchLocalTime(t) ? t.tm_year * 400 + t.tm_yday : -1; }
+long gpsMetresToday() {
+  int d = today();
+  if (metres < 0 || d != metresDay) {
+    Preferences p; p.begin("gps", true);
+    metresDay = d; metres = p.getInt("day", -2) == d ? p.getLong("metres", 0) : 0; p.end();
+  }
+  return metres;
+}
+static void walked() {
+  double la = gps.location.lat(), lo = gps.location.lng();
+  uint32_t now = millis();
+  if (lastAt && now - lastAt < 10UL * 60000) {
+    double m = TinyGPSPlus::distanceBetween(lastLat, lastLon, la, lo);
+    if (m < 8) return;                                     // standing still: keep the first fix as the leg's start
+    if (m < 2000 && gpsMetresToday() >= 0) {
+      metres += (long)m;
+      Preferences p; p.begin("gps", false); p.putInt("day", metresDay); p.putLong("metres", metres); p.end();
+    }
+  }
+  lastLat = la; lastLon = lo; lastAt = now;
+}
 static void tell() {
   char d[48];
   snprintf(d, sizeof d, "%.6f %.6f %d", gps.location.lat(), gps.location.lng(), (int)(gps.hdop.hdop() * 5));   // HDOP x 5 m, roughly
@@ -59,7 +87,7 @@ void gpsLoop(uint32_t now) {
   }
   if (moving && why != WALK) power(WALK);
   if (why == WALK) {
-    if (goodFix() && now - toldAt > 30000) tell();
+    if (goodFix() && now - toldAt > 30000) { walked(); tell(); }
     if (stillSince && now - stillSince > 5UL * 60000) power(OFF);
     return;
   }
@@ -83,7 +111,7 @@ String gpsStatus() {
   static const char *W[] = { "off", "walk", "poll", "find" };
   return String("GPS ") + W[why] + " sats " + String(gps.satellites.isValid() ? gps.satellites.value() : 0) +
          (gps.location.isValid() ? " at " + String(gps.location.lat(), 5) + "," + String(gps.location.lng(), 5) : " no fix") +
-         " told " + String(told) + " chars " + String(gps.charsProcessed());
+         " told " + String(told) + " walked " + String(gpsMetresToday()) + "m" + " chars " + String(gps.charsProcessed());
 }
 
 #endif

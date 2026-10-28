@@ -122,10 +122,33 @@ function OwnRow({ k, label, own, set, children }: { k: string | string[]; label:
 // C-174 (the user: "track its location on the iphone app -- also a where am I ping that also makes an audible tone on the
 // watch"): where it was last, opened in Maps; FIND IT makes it say HERE and sound until it has a fix to tell (DRAFT)
 type Fix = { at: string; lat: number; lon: number; metres: number };
+// C-174: today's walk, sketched -- the day's fixes as dots in a box, north up, no map under them (no map tiles to fetch)
+function Trail({ fixes, ink }: { fixes: Fix[]; ink: string }) {
+  if (fixes.length < 2) return null;
+  const lats = fixes.map((f) => f.lat), lons = fixes.map((f) => f.lon);
+  const k = Math.cos((lats[0] * Math.PI) / 180);                       // a degree east is shorter than a degree north
+  const n = Math.max(...lats), s = Math.min(...lats), w = Math.min(...lons), e = Math.max(...lons);
+  const span = Math.max(n - s, (e - w) * k, 0.0005), BOX = 160;
+  return (
+    <YStack width={BOX + 12} height={BOX + 12} backgroundColor="$color3" borderRadius={6} position="relative">
+      {fixes.map((f, i) => (
+        <YStack key={f.at} position="absolute" width={i === 0 ? 9 : 5} height={i === 0 ? 9 : 5} borderRadius={5}
+                backgroundColor={i === 0 ? ink : "$color10"}
+                left={4 + ((f.lon - w) * k / span) * BOX} top={4 + ((n - f.lat) / span) * BOX} />
+      ))}
+    </YStack>
+  );
+}
 function WhereRow({ id, ink }: { id: string; ink: string }) {
-  const [fix, setFix] = useState<Fix | null | undefined>(undefined);
+  const [where, setWhere] = useState<{ fixes: Fix[]; walked: number | null; last?: Fix } | null | undefined>(undefined);
   const [asked, setAsked] = useState(false);
-  useEffect(() => { api<{ fixes: Fix[] }>(`/api/where?device=${encodeURIComponent(id)}`).then((r) => setFix(r.fixes[0] ?? null)).catch(() => setFix(null)); }, [id, asked]);
+  useEffect(() => {
+    const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    api<{ fixes: Fix[]; walked?: number | null }>(`/api/where?device=${encodeURIComponent(id)}&since=${encodeURIComponent(midnight.toISOString())}`)
+      .then((r) => setWhere({ fixes: r.fixes.filter((f) => new Date(f.at) >= midnight), walked: r.walked ?? null, last: r.fixes[0] }))
+      .catch(() => setWhere(null));
+  }, [id, asked]);
+  const fix = where?.last;
   return (
     <YStack gap={4} paddingVertical={6}>
       <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">WHERE IT IS</Text>
@@ -133,7 +156,12 @@ function WhereRow({ id, ink }: { id: string; ink: string }) {
         <Small>{`Last seen ${new Date(fix.at).toLocaleString()} · within ${fix.metres} m`}</Small>
         <Text fontSize={13} color="$color10" textDecorationLine="underline"
               onPress={() => Linking.openURL(`https://maps.apple.com/?ll=${fix.lat},${fix.lon}&q=${encodeURIComponent("The watch")}`)}>{"Open in Maps"}</Text>
-      </>) : fix === null ? <Small color="$color10">{"No place yet: it takes a fix on a walk, and every quarter hour."}</Small> : null}
+        {where && where.fixes.length > 1 ? (<>
+          <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11" marginTop={6}>TODAY'S WALK</Text>
+          <Trail fixes={where.fixes} ink={ink} />
+          {where.walked ? <Small>{`${(where.walked / 1000).toFixed(1)} km walked together`}</Small> : null}
+        </>) : null}
+      </>) : where !== undefined ? <Small color="$color10">{"No place yet: it takes a fix on a walk, and every quarter hour."}</Small> : null}
       <XStack gap={8}>
         <Action label={asked ? "Asked -- listen for it" : "FIND IT"} ink={ink}
                 onPress={async () => { await api("/api/where/find", { id }); setAsked(true); setTimeout(() => setAsked(false), 60000); }} />

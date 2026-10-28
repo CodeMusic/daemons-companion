@@ -32,3 +32,22 @@ export function findAsked(store: Store, device: string, now = new Date()): strin
   const at = device ? store.getSetting(`find.${device}`) : null;
   return at && now.getTime() - new Date(at).getTime() < 10 * 60000 ? at : null;
 }
+
+// C-174: the distance walked since a time (the app's own midnight), from one device's fixes: the legs between fixes ten minutes or less apart, each
+// between eight metres (the receiver's wander) and two kilometres (a gap, not a walk) -- the watch's own rule (gps.cpp)
+export function walkedSince(fixes: Fix[], since: Date): number {
+  const l = fixes.filter((f) => new Date(f.at) >= since).sort((a, b) => a.at.localeCompare(b.at));
+  let m = 0;
+  for (let i = 1, from = l[0]; i < l.length; i++) {
+    const f = l[i], gap = new Date(f.at).getTime() - new Date(from.at).getTime();
+    const leg = metresBetween(from, f);
+    if (leg < 8 && gap <= 10 * 60000) continue;           // standing: the leg still starts where it did
+    if (gap <= 10 * 60000 && leg < 2000) m += leg;
+    from = f;
+  }
+  return Math.round(m);
+}
+function metresBetween(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+  const r = Math.PI / 180, x = Math.sin((b.lat - a.lat) * r / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin((b.lon - a.lon) * r / 2) ** 2;
+  return 12742000 * Math.asin(Math.sqrt(x));
+}

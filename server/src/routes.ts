@@ -33,7 +33,7 @@ export type Reply = { status: number; body: unknown };
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
 import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js";   // C-200
-import { askFind, checkFix, fixesOf, keepFix, type Fix } from "./where.js";   // C-174
+import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
 import { validDeviceId } from "./deviceid.js";
 const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads"];
@@ -72,7 +72,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/school") return ok(SCHOOL);     // C-137: CALLOW SCHOOL's floors and the paper, for the Tab5
     if (path === "/api/marks") return ok(MARKS);
     if (path === "/api/dreams") return ok({ dreams: dreamsOf(store) });   // C-200: the dream journal, the newest first
-    if (path === "/api/where") return ok({ fixes: fixesOf(store, a.query?.device || undefined) });   // C-174: the newest first   // C-131: each MARK's and understanding's words, for the Tab5 (no save needed)
+    if (path === "/api/where") {                          // C-174: the newest first; walked since the asker's midnight
+      const fixes = fixesOf(store, a.query?.device || undefined), since = new Date(a.query?.since ?? "");
+      return ok({ fixes, walked: isNaN(since.getTime()) ? null : walkedSince(fixes, since) });
+    }   // C-174: the newest first   // C-131: each MARK's and understanding's words, for the Tab5 (no save needed)
     const save = h.save.read();
     if (!save) return no(404, NO_SAVE);
     if (path === "/api/profile") {

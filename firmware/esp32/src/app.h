@@ -72,9 +72,12 @@ void leanPull(bool pays, bool may = true); void leanResult(bool paid); void draw
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();
+long gpsMetresToday();                                     // C-174: walked today by the GNSS, -1 none
+String stepsWords(long steps);                             // "1234 STEPS", and the distance beside them where there is one
 void nightBegin(); void nightLoop(uint32_t now); void nightTuck(); void nightWake();
 void nightFromState(JsonVariantConst d); String nightStatus();
 bool dreamShowing(); void dreamDismiss(); void drawDream(uint16_t day);       // play.cpp: an instrument forced for testing (and PLAY open), or "default"
+bool dreamTap(int x, int y);                                // the dream's LISTEN tapped: read aloud
 extern State st;
 extern Settings cfg;
 extern bool dirty;

@@ -4,6 +4,7 @@
 // minutes while a city is set. Node's own fetch; the phone hosting alone has no weather of its own.
 import type { Store } from "./store.js";
 import { skyOf, type Weather } from "./context.js";
+import { fixesOf } from "./where.js";
 
 export interface Place { name: string; country: string; latitude: number; longitude: number }
 const GEO = "https://geocoding-api.open-meteo.com/v1/search", NOW = "https://api.open-meteo.com/v1/forecast";
@@ -24,8 +25,21 @@ export async function setWeatherCity(store: Store, name: string, get: typeof fet
   return place;
 }
 
+// C-174: the weather where the daemon is -- a watch's GNSS fix of the last two hours, if one was told, over the city set on
+// the site; named for the city while it is within thirty kilometres of it, AWAY otherwise (DRAFT)
+export function weatherSpot(store: Store, now = new Date()): Place | null {
+  const city = weatherPlace(store), fix = fixesOf(store)[0];
+  if (!fix || now.getTime() - new Date(fix.at).getTime() > 2 * 3600000) return city;
+  const near = city && kmBetween(city.latitude, city.longitude, fix.lat, fix.lon) < 30;
+  return { name: near ? city!.name : "AWAY", country: near ? city!.country : "", latitude: fix.lat, longitude: fix.lon };
+}
+export function kmBetween(a: number, b: number, c: number, d: number) {
+  const r = Math.PI / 180, x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(x));
+}
+
 export async function refreshWeather(store: Store, get: typeof fetch = fetch): Promise<Weather | null> {
-  const p = weatherPlace(store);
+  const p = weatherSpot(store);
   if (!p) return null;
   const r = await get(`${NOW}?latitude=${p.latitude}&longitude=${p.longitude}&current=weather_code,temperature_2m`);
   const c = (await r.json() as { current?: { weather_code: number; temperature_2m: number } }).current;
@@ -35,7 +49,7 @@ export async function refreshWeather(store: Store, get: typeof fetch = fetch): P
   return w;
 }
 
-// every fifteen minutes while a city is set (the server's own clock; nothing is fetched without a city)
+// every fifteen minutes while a city is set or a watch has told where it is (nothing is fetched with neither)
 export function weatherLoop(store: Store): () => void {
   const tick = () => { refreshWeather(store).catch(() => {}); };
   tick();

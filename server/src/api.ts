@@ -63,8 +63,8 @@ import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind } from "./lines.js";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
 import { noteClose, outlookLoop } from "./intuition.js";   // C-203
-import { EXPRESSIONS, SHADED, faceOf, shadePalette } from "./expressions.js";
-import { FRAMES, PHASES, faceRev, renderFace, type Phase } from "./face.js";
+import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressions.js";
+import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
@@ -272,6 +272,14 @@ function send(res: ServerResponse, status: number, data: unknown) {
 // is what puts it on the device. Its mood is C-13's, whose rules are open, so it is null until they are written. This
 // is on the local network only and carries no secret; accounts are C-11's.
 // A party daemon's front sprite as the game draws it, its streaks painted for its routines (C-18); null if none.
+// C-213: a party slot's face (its eyes and mouth, faces.json), for its mouth while it speaks
+function partyFace(cfg: Config, slot: number): Face | null {
+  if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
+  const bytes = new Uint8Array(readFileSync(cfg.savePath));
+  const d = [...readSave(bytes).party, ...readAway(bytes)].find((p: any) => p.slot === slot);
+  const f = d ? faceOf(core.artName(d.species)) : null;
+  return f?.mouth ? f : null;
+}
 function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
   const bytes = new Uint8Array(readFileSync(cfg.savePath));
@@ -1372,7 +1380,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const partyArt = path.match(/^\/art\/party\/(\d{1,3})\.png$/);   // C-103: a box's away daemon is 100 on
       if (req.method === "GET" && partyArt) {
         const raw = partyPng(ecfg, (p) => p.slot === Number(partyArt[1])), e = EXPRESSIONS[url.searchParams.get("expression") ?? ""];
-        const body = raw && e ? repaint(raw, (pal) => shadePalette(pal, e), SHADED.first) : raw;   // C-119: in its shade
+        const face = url.searchParams.get("mouth") === "open" ? partyFace(ecfg, Number(partyArt[1])) : null;   // C-213: speaking
+        const body = raw && face ? mouthPng(raw, e ?? EXPRESSIONS.awake, face)
+                   : raw && e ? repaint(raw, (pal) => shadePalette(pal, e), SHADED.first) : raw;   // C-119: in its shade
         if (!body) return send(res, 404, { error: "no art for that slot" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*" });
         return res.end(body);

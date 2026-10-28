@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import { deflateSync } from "node:zlib";
 import { decodeIndexedPng } from "./art.js";
 import { crc32 } from "./paint.js";
-import { EXPRESSIONS, SHADED, eyePatch, shade, type Expression, type Eyes, type Face, type Mark } from "./expressions.js";
+import { EXPRESSIONS, SHADED, eyePatch, mouthPatch, shade, type Expression, type Eyes, type Face, type Mark } from "./expressions.js";
 
 export const SCREEN = { w: 320, h: 240 };
 export const PHASES = ["idle", "listening", "thinking", "replying", "error", "muted", "timer"] as const;
@@ -116,12 +116,9 @@ export function renderFace(sprite: Buffer | null, own: Expression, face: Face | 
   const px: (number[] | null)[] = Array.from({ length: 64 * 64 }, (_, i) => (d!.px[i] ? pal[d!.px[i]] : null));
   if (face) for (const p of eyePatch(face, { ...e, eyes: look.eyes }))
     for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (px[y * 64 + x]) px[y * 64 + x] = p.rgb;
-  if (face?.mouth && look.mouth === "open") {
-    // Open: the mouth's box in the eye's own dark colour, a row deeper, and red inside when there is room for it
-    const [mx, my, mw, mh] = face.mouth, line = shade(face.lineRgb ?? [16, 16, 16], e.shade), tall = mh + 1;
-    for (let y = my; y < my + tall; y++) for (let x = mx; x < mx + mw; x++) if (y < 64 && px[y * 64 + x]) px[y * 64 + x] = line;
-    if (mw >= 3 && tall >= 3) for (let y = my + 1; y < my + tall - 1; y++) for (let x = mx + 1; x < mx + mw - 1; x++) if (px[y * 64 + x]) px[y * 64 + x] = shade([200, 70, 90], e.shade);
-  }
+  if (face && look.mouth === "open")                // C-213: the one open mouth (expressions.ts mouthPatch)
+    for (const p of mouthPatch(face, e))
+      for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (y < 64 && px[y * 64 + x]) px[y * 64 + x] = p.rgb;
   // The pose at rest (expressions.ts: squashed toward its feet, lifted or lowered), and the phase's nudge
   const dy = e.pose.dy + look.dy, rowOf = (y: number) => bottom - Math.round((bottom - y) * e.pose.squash) + dy;
   for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) {
@@ -146,6 +143,22 @@ function chunk(type: string, data: Buffer) {
   const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(new Uint8Array(Buffer.concat([head.subarray(4), data]))) >>> 0);
   return Buffer.concat([head, data, crc]);
 }
+// C-213: a party daemon's picture for the app with its mouth open -- the indexed PNG in its expression's shade, the
+// mouth painted, as RGBA (index 0 clear)
+export function mouthPng(sprite: Buffer, e: Expression, face: Face): Buffer {
+  const d = decodeIndexedPng(sprite);
+  const pal = d.palette.map((p, i) => (i >= SHADED.first && i < SHADED.first + SHADED.count ? shade(p, e.shade) : p));
+  const rgba = new Uint8Array(d.w * d.h * 4);
+  for (let i = 0; i < d.w * d.h; i++) if (d.px[i]) rgba.set([...pal[d.px[i]].slice(0, 3), 255], i * 4);
+  for (const p of mouthPatch(face, e))
+    for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (x < d.w && y < d.h && rgba[(y * d.w + x) * 4 + 3]) rgba.set([...p.rgb, 255], (y * d.w + x) * 4);
+  const raw = Buffer.alloc((d.w * 4 + 1) * d.h);
+  for (let y = 0; y < d.h; y++) Buffer.from(rgba.buffer, y * d.w * 4, d.w * 4).copy(raw, y * (d.w * 4 + 1) + 1);
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(d.w, 0); ihdr.writeUInt32BE(d.h, 4); ihdr[8] = 8; ihdr[9] = 6;
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw, { level: 9 })),
+                        chunk("IEND", Buffer.alloc(0))]);
+}
+
 export function encodeRgb(w: number, h: number, rgb: Uint8Array): Buffer {
   const raw = Buffer.alloc((w * 3 + 1) * h);
   for (let y = 0; y < h; y++) Buffer.from(rgb.buffer, rgb.byteOffset + y * w * 3, w * 3).copy(raw, y * (w * 3 + 1) + 1);

@@ -24,7 +24,7 @@ export type Expression = { name: string; shade: Shade; pose: Pose; mark: Mark | 
 // What a host paints over the sprite for the eyes: rectangles in the 64x64 sprite's own pixels (mirrored with it when it
 // faces the other way), each one colour, already shaded. A host needs no rule of its own to close an eye.
 export type Patch = { x: number; y: number; w: number; h: number; rgb: [number, number, number] };
-export type Drawn = Expression & { patch: Patch[] };
+export type Drawn = Expression & { patch: Patch[]; mouth?: Patch[] };   // C-213: mouth, painted over it while its voice plays
 // A daemon's eyes, checked by a person (data/faces.json; tools/faces.ts suggests): boxes, and the colours around and of them
 export type Face = { eyes: [number, number, number, number][]; fill: number; line: number; fillRgb?: number[]; lineRgb?: number[];
                      mouth?: [number, number, number, number] };   // C-138: where it speaks from, when a person has found it
@@ -76,7 +76,7 @@ function choose(life: Pick<Life, "tired">, f: Feelings | null): Expression {
 // The expression showing, with what to paint over this daemon's eyes (none when its eyes have not been checked)
 export function expressionFor(life: Pick<Life, "tired">, f: Feelings | null, face: Face | null = null): Drawn {
   const e = choose(life, f);
-  return { ...e, patch: face ? eyePatch(face, e) : [] };
+  return { ...e, patch: face ? eyePatch(face, e) : [], mouth: face ? mouthPatch(face, e) : [] };
 }
 
 // One expression by name, whatever it feels -- for a check down the cable (firmware/esp32/bench.py), never chosen by a host
@@ -101,6 +101,17 @@ export function eyePatch(face: Face, e: Expression): Patch[] {
       if (lw > 2) out.push({ x: lx + 1, y: top, w: lw - 2, h: 1, rgb: line });
     }
   }
+  return out;
+}
+
+// C-213 (the user, 2026-10-28: "the active daemon's mouth to animate when he talks"): the mouth open, where a person has
+// found it (faces.json `mouth`) -- its box in the eye's own dark colour, a row deeper, and red inside when there is room.
+// Painted over the sprite while its voice plays, every other beat; the boards, the app and the BOX-3 alike (face.ts).
+export function mouthPatch(face: Face, e: Expression): Patch[] {
+  if (!face.mouth) return [];
+  const [x, y, w, h] = face.mouth, line = shade(face.lineRgb ?? [16, 16, 16], e.shade), tall = h + 1;
+  const out: Patch[] = [{ x, y, w, h: Math.min(tall, 64 - y), rgb: line }];
+  if (w >= 3 && tall >= 3) out.push({ x: x + 1, y: y + 1, w: w - 2, h: tall - 2, rgb: shade([200, 70, 90], e.shade) });
   return out;
 }
 

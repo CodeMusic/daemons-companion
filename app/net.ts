@@ -194,8 +194,12 @@ export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
   let r: Response | undefined;
   // C-61: home is always asked with a time limit on the phone. Without one, a phone off the home network (or holding
   // an old address for it) waited on iOS's own timeout and every screen said "Loading..." for good (2026-10-06).
+  // a talk or a voice answers only once it is whole -- the module setting a daemon up, hearing it, thinking: seconds more
+  // than 8 on LTE, and the watch's talk through the phone came back "the phone did not answer" (the user, 2026-10-28).
+  // Never cut short and tried again by the relay either: that would ask the same talk twice.
+  const slow = /^\/api\/ai\//.test(path) ? 45000 : 0;
   const homeWithin = (ms: number) => async () => {
-    const stop = new AbortController(), t = setTimeout(() => stop.abort(), ms);
+    const stop = new AbortController(), t = setTimeout(() => stop.abort(), Math.max(ms, slow));
     try { return await fetch(SERVER + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
   };
   if (!ON_PHONE) r = await fetch(SERVER + path, init);

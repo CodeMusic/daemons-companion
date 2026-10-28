@@ -172,7 +172,17 @@ export const WIDGET: typeof import("./widget") | null = Platform.OS === "ios" ? 
 
 // C-111: the companion's own rules on the phone, for a phone hosting on its own
 export const LOCAL: typeof import("./local") | null = ON_PHONE ? require("./local") : null;
+// C-80: the phone says which device it is on every request -- its widget's id, as ?device= (the relay passes the query on,
+// not headers) -- so talk, its voice, care and life are for the daemon this phone carries, never the companion's first
+// away (the user, 2026-10-28: SEEKMUSAI carried, OVERLOADED answered)
+let MY_ID: string | null = null;
+async function asThisDevice(path: string): Promise<string> {
+  if (!ON_PHONE || !WIDGET || /[?&]device=/.test(path)) return path;
+  try { MY_ID ??= await WIDGET.widgetId(); } catch { return path; }
+  return MY_ID ? `${path}${path.includes("?") ? "&" : "?"}device=${encodeURIComponent(MY_ID)}` : path;
+}
 export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
+  path = await asThisDevice(path);
   if (ALONE && LOCAL) {                                                  // C-111: answered here, by the same rules
     const r = await LOCAL.localApi(path, body);
     if (r.status >= 400) throw new Error((r.body as { error?: string })?.error ?? `the phone answered ${r.status}`);

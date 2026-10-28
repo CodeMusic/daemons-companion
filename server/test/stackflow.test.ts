@@ -12,6 +12,7 @@ const seen: { action: string; data?: any; work_id?: string }[] = [];
 let n = 1000;
 const alive = new Set<string>(["llm.0999"]);              // an orphan, left by a server before a restart (a deploy)
 const prompts = new Map<string, string>();
+let slowFree = false;                                     // an exit's slot free only a moment later, as on the module
 const flow: Server = createServer((s) => {
   let buf = "";
   s.on("data", (c) => {
@@ -32,7 +33,11 @@ const flow: Server = createServer((s) => {
         out({ work_id: o.work_id, data: { delta: `I am ${who}`, index: 0, finish: false }, error: { code: 0 } });
         out({ work_id: o.work_id, data: { delta: ".", index: 1, finish: true }, error: { code: 0 } });
       }
-      if (o.action === "exit") { alive.delete(o.work_id); out({ work_id: o.work_id, error: { code: 0 } }); }
+      if (o.action === "exit") {
+        const w = o.work_id;
+        if (slowFree) setTimeout(() => alive.delete(w), 300); else alive.delete(w);
+        out({ work_id: w, error: { code: 0 } });
+      }
     }
   });
 });
@@ -80,6 +85,20 @@ describe("thinking through StackFlow (C-180)", () => {
     alive.add("llm.0998"); alive.add("llm.0997");            // then two strays take the slots (another server, the plugin)
     expect((await h.talk(ask("EMBER"), null)).answer).toBe("I am EMBER.");
     expect(h.faults.taskFull).toBe(1);
+  });
+  it("a new daemon after two: the slot let go is asked for again until it is free -- never n8n's error at once", async () => {
+    slowFree = true;
+    try {
+      const sf = new StackFlow("127.0.0.1", port);
+      const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf);
+      for (const who of ["SEEKMUSAI", "CODEMUSAI", "STARR", "EMBER"]) expect((await h.talk(ask(who), null)).answer).toBe(`I am ${who}.`);
+    } finally { slowFree = false; }
+  });
+  it("with nowhere else to go, two talks at once both answer: the second waits for the module", async () => {
+    const sf = new StackFlow("127.0.0.1", port);
+    const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf);
+    const [a, b] = await Promise.all([h.talk(ask("SEEKMUSAI"), null), h.talk(ask("CODEMUSAI"), null)]);
+    expect([a.answer, b.answer]).toEqual(["I am SEEKMUSAI.", "I am CODEMUSAI."]);
   });
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));

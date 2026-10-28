@@ -111,13 +111,17 @@ export class House {
       const ready = this.settingUp.get(k) ?? (async () => {
         // room first: the llm unit holds two; the oldest of ours is let go before another is set up, never after
         while (mm.held.length >= MINDS) await sf.exit(mm.held.shift()!.work);
-        let w: string;
-        try { w = await sf.setup(model, prompt); }
-        catch (e) {
-          if (!/task full/i.test((e as Error).message)) throw e;
-          this.fault("taskFull");                              // slots held elsewhere: let go what is not ours, once more
-          await sf.clearOrphans(new Set(mm.held.map((x) => x.work)));
-          w = await sf.setup(model, prompt);
+        // a slot just let go is free on the module a moment later, not at once: on "task full", what is not ours let go,
+        // and asked again after a pause -- three times (the hardware lane: the first talk after a new persona failed)
+        let w = "";
+        for (let tries = 0; ; tries++) {
+          try { w = await sf.setup(model, prompt); break; }
+          catch (e) {
+            if (!/task full/i.test((e as Error).message) || tries >= 3) throw e;
+            this.fault("taskFull");
+            await sf.clearOrphans(new Set(mm.held.map((x) => x.work)));
+            await new Promise((r) => setTimeout(r, 600 * (tries + 1)));
+          }
         }
         mm.held.push({ key: prompt, work: w });
         return w;
@@ -163,7 +167,13 @@ export class House {
   // A daemon's talk on a module. Throws LATE (none free, or no first words in time) for the caller to go elsewhere;
   // deadlineMs null waits as long as it takes (no internet: the module is all there is).
   async talk(a: TalkAsk, deadlineMs: number | null = DEADLINE_MS): Promise<TalkAnswer> {
-    const got = await this.free(!a.text && !!a.wav);
+    // with nowhere else to go (deadlineMs null), a busy module is waited on -- behind the setup or talk it is on -- never
+    // LATE at once (the hardware lane, 2026-10-28: n8n down, the first talk after a new persona answered n8n's error)
+    let got = await this.free(!a.text && !!a.wav);
+    for (const until = this.now() + 60_000; !got && !deadlineMs && this.modules().length && this.now() < until; ) {
+      await new Promise((r) => setTimeout(r, 250));
+      got = await this.free(!a.text && !!a.wav);
+    }
     if (!got) throw new Error(LATE);
     const { m, h } = got;
     this.busy.add(m.url);

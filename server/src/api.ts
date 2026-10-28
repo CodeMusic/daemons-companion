@@ -1092,7 +1092,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         catch (e) {
           const other = await n8n(ecfg, "daemon/talk", { ...p, provider: "auto" });
           if (!other.error) return other;
-          try { return shaped(await house.talk(ask, null)); } catch { return (e as Error).message === LATE ? other : { error: (e as Error).message }; }
+          // the module waited on: its own failure said, not n8n's (out of reach) -- unless the module was never there
+          try { return shaped(await house.talk(ask, null)); }
+          catch (e2) { const m = (e2 as Error).message; return m === LATE ? other : { error: `The hub's AI board: ${m}` }; }   // DRAFT
         }
       };
       // An INDEX reading (or any line in the INDEX voice), from where index.voice says -- and each falls back on the

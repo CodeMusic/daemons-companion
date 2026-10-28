@@ -30,8 +30,11 @@ export function guidePassages(g: Guide, question: string, most = 2, chars = 700)
 // the 0.5B's window, so it lost who it was and wandered (an answer about Middle-earth).
 export const GUIDE_SETUP = "You are THE GUIDE, a small book the user carries. Answer only from the page given with the question, " +
   "in one to three short plain sentences. If the page does not answer it, say the book does not cover that. Never say you are an AI.";
+// plain words only: a quote or a line break in what StackFlow is sent turned the 0.5B's answers to noise (2026-10-28 --
+// "(No page ...)" answered well, every "Page \"...\"" one wandered into maths)
+const plain = (t: string) => t.replace(/["\u201c\u201d]/g, "").replace(/\s+/g, " ").trim();
 export function guidePages(passages: Passage[]): string {
-  return passages.length ? passages.map((p) => `Page "${p.title}": ${p.text}`).join("\n") : "(No page of the book touches this.)";
+  return passages.length ? passages.map((p) => `The page ${plain(p.title)} says: ${plain(p.text)}`).join(" ") : "No page of the book touches this.";
 }
-export const guideQuestion = (pages: string, question: string) => `${pages}\nQuestion: ${question.slice(0, 200)}`;
+export const guideQuestion = (pages: string, question: string) => `${pages} Question: ${plain(question).slice(0, 200)}`;
 export function guidePersona(passages: Passage[]): string { return `${GUIDE_SETUP} ${guidePages(passages)}`; }

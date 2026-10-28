@@ -111,7 +111,7 @@ describe("thinking through StackFlow (C-180)", () => {
     const setups = seen.filter((x) => x.action === "setup").slice(before);
     expect(setups).toHaveLength(1);
     expect(setups[0].data.prompt).toBe(GUIDE_SETUP);
-    expect(seen.filter((x) => x.action === "inference").at(-1)!.data).toBe('Page "dreams": words\nQuestion: dreams');
+    expect(seen.filter((x) => x.action === "inference").at(-1)!.data).toBe('Page "dreams": words Question: dreams');
   });
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));

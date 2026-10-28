@@ -1,14 +1,16 @@
 // the LIBRARY -- CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK, STREAM (C-145, C-156). (C-157: out of App.tsx.)
-import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
+import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
+import { File } from "expo-file-system";
 import { useEffect, useState } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../data";
 import { useSubtleInk } from "../look";   // C-203
-import { api } from "../net";
+import { api, apiLater, ON_PHONE } from "../net";
 import { songSound } from "../songSound";
-import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
-import { Action, Art, Card, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
+import { GuideBookT, Notebook, Profile, Progress, SchoolData, Spoken } from "../types";
+import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
+import { useVoice } from "./Daemon";   // C-209
 import { useApi } from "../useApi";
 import { previewQuery } from "../preview";
 import { PlayBook } from "./Play";
@@ -298,6 +300,59 @@ function CoverTitle({ title, author }: { title: string; author: string }) {
     <Text {...line} top={296} fontSize={12} letterSpacing={1} fontWeight="700">{author}</Text>{/* clear of the art (the user, 2026-10-19) */}
   </>);
 }
+// C-209: ASK THE GUIDE -- a question typed, or held and spoken, answered by the GUIDE from its own pages (on the hub's
+// module; the hub says so when it cannot), and said aloud. Every word is DRAFT.
+function AskGuide() {
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const speak = useVoice();
+  const [q, setQ] = useState("");
+  const [state, setState] = useState<"" | "listening" | "thinking">("");
+  const [said, setSaid] = useState<Spoken | null>(null);
+  const ask = async (b: Record<string, unknown>) => {
+    setState("thinking");
+    try { const r = await apiLater<Spoken>("/api/ai/talk", { ...b, guide: true }); setSaid(r); speak(r.audioBase64); }
+    catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
+  };
+  const typed = () => { const t = q.trim(); if (t && !state) { setSaid({ heard: t }); setQ(""); ask({ text: t }); } };
+  const start = async () => {
+    const ok = await requestRecordingPermissionsAsync();
+    if (!ok.granted) { setSaid({ error: "The microphone is off for this app (Settings, then DAEMONS)." }); return; }
+    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+    await recorder.prepareToRecordAsync(); recorder.record(); setState("listening");
+  };
+  const stop = async () => {
+    if (state !== "listening") return;
+    await recorder.stop();
+    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
+    if (!recorder.uri) { setState(""); return; }
+    ask({ audioBase64: await new File(recorder.uri).base64(), audioMime: "audio/mp4" });
+  };
+  const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
+  return (
+    <YStack backgroundColor={BOOK.page} borderColor={BOOK.edge} borderWidth={1} borderRadius={4} padding={16} gap={8}>
+      <Text {...mono} fontSize={12} color={BOOK.cyan}>ASK THE GUIDE</Text>
+      <Small color={BOOK.faint}>Ask it anything; it answers from its own pages.  DRAFT</Small>
+      <XStack gap={8} alignItems="center" flexWrap="wrap">
+        <Entry value={q} onChange={setQ} onSubmit={typed} placeholder="What do you want to know?" limit={120} />
+        <Button size="$3" onPress={typed} disabled={!!state || !q.trim()} backgroundColor={BOOK.cyan}>
+          <Text {...mono} fontSize={12} color={BOOK.page}>ASK</Text>
+        </Button>
+      </XStack>
+      {ON_PHONE ? (
+        <Button onPressIn={start} onPressOut={stop} disabled={state === "thinking"} borderColor={BOOK.cyan}
+                backgroundColor={state === "listening" ? BOOK.cyan : BOOK.page}>
+          <Text {...mono} fontSize={12} color={state === "listening" ? BOOK.page : BOOK.cyan}>
+            {state === "listening" ? "LISTENING…" : state === "thinking" ? "LOOKING THROUGH ITS PAGES…" : "HOLD TO ASK ALOUD"}
+          </Text>
+        </Button>
+      ) : state === "thinking" ? <Small color={BOOK.faint}>Looking through its pages…</Small> : null}
+      {said?.heard ? <Small color={BOOK.faint}>{`“${said.heard}”`}</Small> : null}
+      {said?.answer ? <Text fontSize={16} lineHeight={24} color={BOOK.ink}>{said.answer}</Text> : null}
+      {said?.error ? <Small color={BOOK.faint}>{said.error}</Small> : null}
+    </YStack>
+  );
+}
+
 export function GuideBook({ g }: { g: GuideBookT }) {
   const flat = (g.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
   const [at, setTo] = useState<number | null>(null);
@@ -340,6 +395,7 @@ export function GuideBook({ g }: { g: GuideBookT }) {
                resizeMode="stretch" accessibilityLabel={g.title ?? "the GUIDE"} />
         <CoverTitle title={g.title ?? ""} author={g.author ?? ""} />
       </YStack>
+      <AskGuide />
       <YStack backgroundColor={BOOK.page} borderColor={BOOK.edge} borderWidth={1} borderRadius={4} padding={16} gap={4}>
         <Text {...mono} fontSize={12} color={BOOK.cyan}>CONTENTS</Text>
         {(g.sections ?? []).map((sec) => (

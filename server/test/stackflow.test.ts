@@ -7,6 +7,7 @@ import { House, type TalkAsk } from "../src/ai/house.js";
 import { LATE } from "../src/ai/module.js";
 import { StackFlow } from "../src/ai/stackflow.js";
 import { fakeModule } from "./fake_module.js";
+import { GUIDE_SETUP } from "../src/guideask.js";
 
 const seen: { action: string; data?: any; work_id?: string }[] = [];
 let n = 1000;
@@ -99,6 +100,18 @@ describe("thinking through StackFlow (C-180)", () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf);
     const [a, b] = await Promise.all([h.talk(ask("SEEKMUSAI"), null), h.talk(ask("CODEMUSAI"), null)]);
     expect([a.answer, b.answer]).toEqual(["I am SEEKMUSAI.", "I am CODEMUSAI."]);
+  });
+  it("C-209: one GUIDE thinker, set up once with a short prompt; the pages ride with each question", async () => {
+    const sf = new StackFlow("127.0.0.1", port);
+    const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf);
+    const before = seen.filter((x) => x.action === "setup").length;
+    const guide = (q: string) => ({ ...ask("SEEKMUSAI"), text: q, guide: (heard: string) => `Page "${heard}": words` });
+    await h.talk(guide("sleep"), null);
+    await h.talk(guide("dreams"), null);
+    const setups = seen.filter((x) => x.action === "setup").slice(before);
+    expect(setups).toHaveLength(1);
+    expect(setups[0].data.prompt).toBe(GUIDE_SETUP);
+    expect(seen.filter((x) => x.action === "inference").at(-1)!.data).toBe('Page "dreams": words\nQuestion: dreams');
   });
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));

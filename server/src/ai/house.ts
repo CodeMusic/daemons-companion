@@ -8,6 +8,7 @@
 // (n8n, the way it goes today). No node: imports -- the words and the WAV are plain bytes.
 import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } from "./module.js";
 import type { StackFlow } from "./stackflow.js";
+import { GUIDE_SETUP, guideQuestion } from "../guideask.js";   // C-209
 
 export type ModuleAt = { url: string; name: string; found?: string };
 export type TalkAsk = {
@@ -19,7 +20,7 @@ export type TalkAsk = {
   season?: string;
   goal?: { goal: string; step: string } | null;
   speak: boolean;
-  guide?: (heard: string) => string;                      // C-209: asked of the GUIDE -- who answers, from the pages nearest what was heard
+  guide?: (heard: string) => string;                      // C-209: asked of the GUIDE -- its pages nearest what was heard (guidePages)
 };
 export type TalkAnswer = { answer: string; heard: string | null; audio: Uint8Array | null; provider: string; firstMs: number | null };
 
@@ -51,7 +52,7 @@ export function checkModules(list: unknown): ModuleAt[] | string {
 // one (50 words) leaves that client answering nothing, for good, until its services restart; 15 words answer (2026-10-28)
 export const TALK_SYSTEM = "You are a character in the game DAEMONS. Become who the note in brackets describes.";
 export function persona(a: TalkAsk, heard = ""): string {
-  if (a.guide) return a.guide(heard);                     // C-209: the GUIDE answers, not the daemon
+  if (a.guide) return `${GUIDE_SETUP} ${a.guide(heard)}`;   // C-209: the GUIDE answers, not the daemon (its pages, a.guide)
   const d = a.daemon;
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
                d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
@@ -96,7 +97,7 @@ export class House {
 
   // A thinker set up with this persona on that module -- once (3.4 s), then reused; at most two alive, the oldest let go.
   // Not set up yet and a deadline to keep: set up in the background, and this talk is LATE (it goes elsewhere).
-  private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null) {
+  private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null, most = 300) {
     let mind = this.minds.get(m.url);
     if (!mind || mind.gen !== sf.generation) {
       // a new connection (this server started, or the link dropped): what is alive there is not ours -- let it go first
@@ -130,7 +131,7 @@ export class House {
       if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
       work = await ready;
     }
-    return sf.infer(work, said.slice(0, 300), deadlineMs ? { firstWithinMs: deadlineMs } : {});
+    return sf.infer(work, said.slice(0, most), deadlineMs ? { firstWithinMs: deadlineMs } : {});
   }
 
   // Each module, what it holds, whether it is answering now
@@ -195,7 +196,8 @@ export class House {
       const sf = (this.noFlowUntil.get(m.url) ?? 0) > this.now() ? null : this.thinker?.(m) ?? null;
       try {
         if (sf) {
-          try { r = await this.think(sf, m, h.llm!, persona(steady(a), text), text, deadlineMs); }
+          try { r = a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text), text), deadlineMs, 700)   // C-209: one GUIDE thinker
+                            : await this.think(sf, m, h.llm!, persona(steady(a), text), text, deadlineMs); }
           catch (e) {
             if (!/ECONNREFUSED|EHOSTUNREACH|did not answer/.test((e as Error).message)) throw e;
             this.noFlowUntil.set(m.url, this.now() + DEAF_MS);    // no StackFlow there: the plugin thinks, as before

@@ -24,10 +24,14 @@ export function guidePassages(g: Guide, question: string, most = 2, chars = 700)
   return scored.map(({ e }) => ({ title: e.title, text: e.paragraphs.join(" ").replace(/\s+/g, " ").slice(0, per) }));
 }
 
-// what the model is told (never shown): who answers, from what, and how
-export function guidePersona(passages: Passage[]): string {
-  return ["You are THE GUIDE, a small book the user found and carries. You answer their question as the book would,",
-          "only from your own pages below, in one to three short plain sentences. If the pages do not answer it, say the",
-          "book does not cover that, and point to the nearest page by its title. Never say you are an AI or a model.",
-          ...passages.map((p) => `Page "${p.title}": ${p.text}`)].join(" ");
+// what the model is told (never shown). The GUIDE is set up once with GUIDE_SETUP -- short and the same every time, so a
+// thinker on the module is set up once and reused (C-180) -- and the pages nearest each question ride with the question.
+// 2026-10-28: the pages in the setup prompt made a new thinker for every question, pushed the daemon's out, and ran past
+// the 0.5B's window, so it lost who it was and wandered (an answer about Middle-earth).
+export const GUIDE_SETUP = "You are THE GUIDE, a small book the user carries. Answer only from the page given with the question, " +
+  "in one to three short plain sentences. If the page does not answer it, say the book does not cover that. Never say you are an AI.";
+export function guidePages(passages: Passage[]): string {
+  return passages.length ? passages.map((p) => `Page "${p.title}": ${p.text}`).join("\n") : "(No page of the book touches this.)";
 }
+export const guideQuestion = (pages: string, question: string) => `${pages}\nQuestion: ${question.slice(0, 200)}`;
+export function guidePersona(passages: Passage[]): string { return `${GUIDE_SETUP} ${guidePages(passages)}`; }

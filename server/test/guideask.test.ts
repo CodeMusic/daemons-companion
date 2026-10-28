@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { guidePassages, guidePersona } from "../src/guideask.js";
+import { guidePages, guidePassages, guidePersona } from "../src/guideask.js";
 import { persona } from "../src/ai/house.js";
 import { guideOf } from "../src/save/guide.js";
 
@@ -16,7 +16,7 @@ describe("C-209: asking the GUIDE", () => {
     expect(guidePersona(p)).toMatch(/^You are THE GUIDE/);
   });
   it("answers as the GUIDE, from what was heard, when asked of it", () => {
-    const ask = { history: [], daemon: { nickname: "SPARKY" }, speak: false, guide: (heard: string) => guidePersona(guidePassages(g, heard)) };
+    const ask = { history: [], daemon: { nickname: "SPARKY" }, speak: false, guide: (heard: string) => guidePages(guidePassages(g, heard)) };
     expect(persona(ask, "the mind as code")).toMatch(/^You are THE GUIDE/);
     expect(persona({ ...ask, guide: undefined })).toMatch(/^You are SPARKY/);
   });

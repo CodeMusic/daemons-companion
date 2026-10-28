@@ -159,6 +159,32 @@ export class House {
     }
     return null;
   }
+
+  // C-212: background work -- a meeting heard and written up. It waits its turn rather than going elsewhere: the first
+  // module free that can do it, asked again every two seconds for up to `waitMs` while every one is busy.
+  private async turn<T>(can: (h: Held) => boolean, job: (m: ModuleAt, h: Held) => Promise<T>, waitMs = 300000): Promise<T | null> {
+    const until = this.now() + waitMs;
+    for (;;) {
+      for (const m of this.modules()) {
+        if (this.busy.has(m.url)) continue;
+        const h = await this.models(m);
+        if (!can(h) || this.busy.has(m.url)) continue;
+        this.busy.add(m.url);
+        try { return await job(m, h); } finally { this.busy.delete(m.url); }
+      }
+      if (!this.modules().some((m) => this.held.get(m.url) && can(this.held.get(m.url)!)) || this.now() > until) return null;
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+  // a recording's words (a part of a meeting: half a minute, 16 kHz); null when no module can hear
+  async transcribe(wav: Uint8Array): Promise<string | null> {
+    return this.turn((h) => !!h.stt, async (m, h) => (await hear(m.url, h.stt!, Buffer.from(wav), 120000)).text.trim());
+  }
+  // words written to a prompt, at length (a write-up, a day-dream); null when no module can think
+  async write(system: string, user: string, maxTokens = 400): Promise<string | null> {
+    return this.turn((h) => !!h.llm, async (m, h) =>
+      (await chat(m.url, h.llm!, [{ role: "system", content: system }, { role: "user", content: user }], { maxTokens, timeoutMs: 180000 })).text.trim());
+  }
 }
 
 // The list, written for the House to use -- by the hub's discovery (ai/discover.ts, the hardware lane) or the settings

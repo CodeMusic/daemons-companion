@@ -73,6 +73,7 @@ import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          /
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePassages, guidePersona } from "./guideask.js";   // C-209
+import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
@@ -380,9 +381,9 @@ export const DEVICE_DOOR = [
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
-     "/api/device/broadcast"].includes(p),   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
+     "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
-  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book"),   // C-208: the Ultra reads the books held
+  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting"),   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
 ];
 
@@ -1057,6 +1058,92 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (!asGuide(b)) return { error: "Find the GUIDE first." };                                 // DRAFT
           return forDevice({ ...await talkOn(talkPayload(b)), heard: b.text });
         });
+      }
+      // ---- C-212: a meeting, from the watch's RECORD to its write-up -------------------------------------------------------
+      // The recording comes in parts (half a minute of 16 kHz WAV each), kept on disk beside the database (meetings/<id>/<n>.wav)
+      // and heard one by one as they arrive; when every part is heard and the meeting has ended, it is written up. All on
+      // the hub's module (hearing and thinking); without one it waits, failed, to be tried again (POST /api/meeting/retry).
+      const meetDir = (id: number) => join(dirname(cfg.database), "meetings", String(id));
+      const meetWho = (device: string) => { const d = deviceState(ecfg, store, new Date(), device).daemon;
+        return d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/") } : { nickname: "your daemon" }; };
+      const meetHear = async (id: number, n: number) => {
+        const f = join(meetDir(id), `${n}.wav`);
+        if (!existsSync(f)) return;
+        const words = await house.transcribe(new Uint8Array(readFileSync(f)));
+        if (words === null) { setState(store, id, "failed", "No module can hear: the hub's module is needed."); return; }   // DRAFT
+        partHeard(store, id, n, words);
+        await meetWriteIfReady(id);
+      };
+      const meetWriteIfReady = async (id: number) => {
+        const m = meetingOf(store, id);
+        if (!m || !allHeard(m) || m.state !== "hearing") return;
+        await writeUp(store, id, async (system, user, most) => {
+          const t = await house.write(system, user, most);
+          if (t === null) throw new Error("No module can write: the hub's module is needed.");   // DRAFT
+          return t;
+        }, meetWho(m.device));
+        meetTidy();
+      };
+      // the recordings kept to 1.5 GB: the oldest meetings' audio goes first (their words stay)
+      const meetTidy = () => {
+        const root = join(dirname(cfg.database), "meetings");
+        if (!existsSync(root)) return;
+        const size = (d: string) => readdirSync(d).reduce((t, f) => t + statSync(join(d, f)).size, 0);
+        const ids = readdirSync(root).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+        let total = ids.reduce((t, i) => t + size(join(root, String(i))), 0);
+        for (const i of ids) {
+          if (total <= 1.5 * 1024 ** 3) break;
+          const d = join(root, String(i)); total -= size(d);
+          for (const f of readdirSync(d)) unlinkSync(join(d, f));
+          audioGone(store, i);
+        }
+      };
+      if (req.method === "POST" && path === "/api/device/meeting/start") {
+        const m = startMeeting(store, validDeviceId(deviceId) ? deviceId : "here", meetWho(deviceId).nickname);
+        mkdirSync(meetDir(m.id), { recursive: true });
+        return send(res, 200, { id: m.id });
+      }
+      if (req.method === "POST" && path === "/api/device/meeting/part") {
+        const id = Number(url.searchParams.get("id")), n = Number(url.searchParams.get("n"));
+        if (!meetingOf(store, id) || !Number.isInteger(n) || n < 0 || n > 2000) return send(res, 404, { error: "no such meeting" });
+        const wav = await rawBody(req);
+        if (!wav || wav.length < 44) return send(res, 400, { error: "a part is a WAV of up to 2 MB" });
+        mkdirSync(meetDir(id), { recursive: true });
+        writeFileSync(join(meetDir(id), `${n}.wav`), wav);
+        meetHear(id, n).catch((e) => setState(store, id, "failed", (e as Error).message));   // heard in the background
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === "POST" && path === "/api/device/meeting/end") {
+        const b = await body(req), id = Number(b.id);
+        if (!endMeeting(store, id, Number(b.parts) || 0)) return send(res, 404, { error: "no such meeting" });
+        meetWriteIfReady(id).catch((e) => setState(store, id, "failed", (e as Error).message));
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === "GET" && path === "/api/device/meeting") {
+        const m = url.searchParams.get("id") ? meetingOf(store, Number(url.searchParams.get("id"))) : meetingsOf(store)[0];
+        return m ? send(res, 200, meetingForWatch(m)) : send(res, 404, { error: "no meeting yet" });
+      }
+      if (req.method === "GET" && path === "/api/meetings") return send(res, 200, { meetings: meetingsOf(store) });   // the app's list
+      if (req.method === "GET" && path === "/api/meeting/audio") {    // one part's recording, while it is kept
+        const f = join(meetDir(Number(url.searchParams.get("id"))), `${Number(url.searchParams.get("n"))}.wav`);
+        if (!existsSync(f)) return send(res, 404, { error: "that recording is gone" });
+        const wav = readFileSync(f);
+        res.writeHead(200, { "content-type": "audio/wav", "content-length": wav.length });
+        return res.end(wav);
+      }
+      if (req.method === "POST" && path === "/api/meeting/retry") {   // heard again where it was not, then written up
+        const id = Number((await body(req)).id), m = meetingOf(store, id);
+        if (!m) return send(res, 404, { error: "no such meeting" });
+        setState(store, id, "hearing");
+        (async () => { for (let n = 0; n < m.parts.length; n++) if (m.parts[n] === null) await meetHear(id, n); await meetWriteIfReady(id); })()
+          .catch((e) => setState(store, id, "failed", (e as Error).message));
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === "POST" && path === "/api/meeting/forget") {  // the meeting and its recording, gone
+        const id = Number((await body(req)).id);
+        if (existsSync(meetDir(id))) for (const f of readdirSync(meetDir(id))) unlinkSync(join(meetDir(id), f));
+        forgetMeeting(store, id);
+        return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does

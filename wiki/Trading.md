@@ -10,7 +10,8 @@ trades is a **player** there.
 
 - **On the hub's own companion**, open **YOU**, TRADE, choose a player name, and JOIN. That is all.
 - **Anyone else** -- another person's phone, or a second companion -- first sets **THE HUB** to the hub's address
-  (for example `http://coremp135:4730`), then joins with an **invite code**. Make one on the hub's TRADE, **INVITE A
+  (for example `http://coremp135:4730` -- the plain name or the 100.x address; on an iPhone, a `.ts.net` name over
+  http is blocked), then joins with an **invite code**. Make one on the hub's TRADE, **INVITE A
   PLAYER**: eight letters, used once, good for fifteen minutes.
 - **A password is optional.** Set one on TRADE, **A PASSWORD**, and the same player can join from another device. No
   email is ever asked for.

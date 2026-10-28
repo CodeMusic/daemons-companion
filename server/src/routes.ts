@@ -100,7 +100,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/guide") return ok(readGuide(save));              // C-145: the GUIDE, once found
     if (path === "/api/books" || path === "/api/book") {               // C-208: the books held -- their chapters, or one chapter
-      const books = booksOf(readSubtle(save, undefined, a.query?.preview === "1"), readGuide(save), readNotebook(save));
+      const books = booksOf(readSubtle(save), readGuide(save), readNotebook(save));   // never ?preview: the boards read what the save holds
       if (path === "/api/books") return ok({ books: bookList(books) });
       const c = chapterOf(books, a.query?.book ?? "", Number(a.query?.n));
       return c ? ok(c) : no(404, "no such chapter");

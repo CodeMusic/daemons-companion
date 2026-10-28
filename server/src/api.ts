@@ -670,6 +670,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
           !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
         return send(res, 403, { error: "only the device's endpoints answer the network -- pair this phone first" });
+      // C-212 (the review, 2026-10-28): what was said in a meeting, or to a voice note, is private -- through the device's
+      // door only with the board's own key (handed down its cable), a paired phone carrying it, or this machine; never on
+      // an x-device anyone on the network could claim
+      const privateDoor = path.startsWith("/api/device/meeting") || path === "/api/device/voicenote";
+      if (privateDoor && !board && !phone && !isLoopback(req.socket.remoteAddress))
+        return send(res, 403, { error: "a meeting is taken only from a linked board -- link it by its cable at home first" });   // DRAFT
       if (!isLoopback(req.socket.remoteAddress) && LOCAL_ONLY.includes(path))
         return send(res, 403, { error: "that is done on the computer the companion runs on" });
       if (req.method === "OPTIONS") {
@@ -768,7 +774,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const relay = store.getSetting("relay.url");
         // C-167: and the CASINO down the cable only as much as a board draws -- its line is read into a 4 KB buffer
         const out = via === "usb" ? { ...st, casino: casinoForCable(st.casino) } : st;
-        if (via === "usb" && relay && validDeviceId(deviceId)) return send(res, 200, { ...out, away: { url: relay, key: devices.keyFor(deviceId) } });
+        // C-212: and the key even with no relay -- a meeting or a voice note is taken only from a board that proves itself
+        if (via === "usb" && validDeviceId(deviceId)) return send(res, 200, { ...out, away: { url: relay ?? "", key: devices.keyFor(deviceId) } });
         return send(res, 200, out);
       }
       // C-138: a device that shows only pictures (the BOX-3, on ESPHome): its face's revision, and each phase's picture
@@ -1204,22 +1211,27 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       if (req.method === "POST" && path === "/api/device/meeting/part") {
         const id = Number(url.searchParams.get("id")), n = Number(url.searchParams.get("n"));
-        if (!meetingOf(store, id) || !Number.isInteger(n) || n < 0 || n > 2000) return send(res, 404, { error: "no such meeting" });
+        // at most four hours of half-minute parts, and a meeting's recordings at most 500 MB, refused as they come
+        if (!meetingOf(store, id) || !Number.isInteger(n) || n < 0 || n >= 480) return send(res, 404, { error: "no such meeting, or past four hours" });
+        if (existsSync(meetDir(id)) && readdirSync(meetDir(id)).reduce((t, f) => t + statSync(join(meetDir(id), f)).size, 0) > 500 * 1024 ** 2)
+          return send(res, 413, { error: "this meeting's recording is full" });                                              // DRAFT
         const wav = await rawBody(req);
         if (!wav || wav.length < 44) return send(res, 400, { error: "a part is a WAV of up to 2 MB" });
         mkdirSync(meetDir(id), { recursive: true });
         writeFileSync(join(meetDir(id), `${n}.wav`), wav);
+        meetTidy();                                                     // kept to its limit as it comes, not only after a write-up
         meetHear(id, n).catch((e) => setState(store, id, "failed", (e as Error).message));   // heard in the background
         return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/device/meeting/end") {
         const b = await body(req), id = Number(b.id);
-        if (!endMeeting(store, id, Number(b.parts) || 0)) return send(res, 404, { error: "no such meeting" });
+        if (!endMeeting(store, id, Number(b.parts) || 0, new Date(), Array.isArray(b.lost) ? b.lost.map(Number) : [])) return send(res, 404, { error: "no such meeting" });
         meetWriteIfReady(id).catch((e) => setState(store, id, "failed", (e as Error).message));
         return send(res, 200, { ok: true });
       }
       if (req.method === "GET" && path === "/api/device/meeting") {
-        const m = url.searchParams.get("id") ? meetingOf(store, Number(url.searchParams.get("id"))) : meetingsOf(store)[0];
+        const mine = meetingsOf(store).filter((x) => x.device === deviceId || (phone !== null && !board));   // a board sees its own
+        const m = url.searchParams.get("id") ? mine.find((x) => x.id === Number(url.searchParams.get("id"))) : mine[0];
         return m ? send(res, 200, meetingForWatch(m)) : send(res, 404, { error: "no meeting yet" });
       }
       if (req.method === "GET" && path === "/api/meeting/list") return send(res, 200, { meetings: meetingsOf(store) });   // the app's list (/api/meetings is C-60's: who was met nearby)

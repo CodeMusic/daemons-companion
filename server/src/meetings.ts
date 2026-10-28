@@ -45,8 +45,13 @@ export function startMeeting(store: Store, device: string, daemon: string, now =
 export function partHeard(store: Store, id: number, n: number, words: string) {
   return update(store, id, (m) => { while (m.parts.length <= n) m.parts.push(null); m.parts[n] = words.trim(); });
 }
-export function endMeeting(store: Store, id: number, parts: number, now = new Date()) {
-  return update(store, id, (m) => { m.endedAt = now.toISOString(); while (m.parts.length < parts) m.parts.push(null); m.state = "hearing"; });
+// `lost`: parts the watch could neither send nor keep (no card, no network) -- heard as nothing, so the rest is written up
+export function endMeeting(store: Store, id: number, parts: number, now = new Date(), lost: number[] = []) {
+  return update(store, id, (m) => {
+    m.endedAt = now.toISOString(); while (m.parts.length < parts) m.parts.push(null);
+    for (const n of lost) if (Number.isInteger(n) && n >= 0 && n < m.parts.length && m.parts[n] === null) m.parts[n] = "";
+    m.state = "hearing";
+  });
 }
 export const transcriptOf = (m: Meeting) => m.parts.filter((p): p is string => !!p).join(" ").replace(/\s+/g, " ").trim();
 export const allHeard = (m: Meeting) => m.endedAt !== null && m.parts.every((p) => p !== null);

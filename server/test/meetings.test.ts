@@ -46,3 +46,15 @@ describe("C-212: a meeting, recorded and written up", () => {
     expect(r).toMatchObject({ state: "failed", error: "No module can write" });
   });
 });
+
+describe("C-212: a part lost on the way", () => {
+  it("is heard as nothing, so the rest is written up", () => {
+    const store = new Store(":memory:");
+    const m = startMeeting(store, "w", "SPARKY");
+    partHeard(store, m.id, 0, "First.");
+    partHeard(store, m.id, 2, "Third.");
+    endMeeting(store, m.id, 3, new Date(), [1]);
+    expect(allHeard(meetingOf(store, m.id)!)).toBe(true);
+    expect(transcriptOf(meetingOf(store, m.id)!)).toBe("First. Third.");
+  });
+});

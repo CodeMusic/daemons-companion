@@ -94,7 +94,7 @@ built and run on the tailnet first.*
 
 - **Homes, not people.** A hub registers its home once (THE COMMONS card on the hub's TRADE: the commons' address
   and the home's name). It waits until **the keeper approves it on the commons' own machine**
-  (`curl -s localhost:4750/commons/keeper`, then `curl -s -XPOST localhost:4750/commons/approve -d '{"id":"h1"}'`).
+  (`hub/commons.sh homes`, then `hub/commons.sh approve h1`).
 - **The hub vouches for its players.** The first time a player trades on the commons, the hub asks for a token for
   them, and they appear there as "KIT · KIT HOUSE". No password, nothing personal.
 - **Friends only.** Each approved home has a friend code. One home asks with the other's code, and the other accepts
@@ -110,12 +110,16 @@ built and run on the tailnet first.*
 
 ### Running the commons on roverbyteseer
 
-```sh
-git clone https://github.com/CodeMusic/daemons-companion && cd daemons-companion/server && npm ci
-COMMONS_HOST=0.0.0.0 COMMONS_PORT=4750 npm run commons     # Node 22+; COMMONS_DB names its database
-```
+It runs as roverbyteseer's `roverbyte` user, beside its other services, from a checkout at
+`~/Projects/daemons-companion`, under the LaunchAgent `ca.codemusic.daemons.commons`. It listens on the machine's
+tailnet address only (port 4750): neither the internet nor the house's network reaches it, until accounts and abuse
+are decided (C-226).
 
-Keep the port closed to the internet: only the tailnet reaches it, until accounts and abuse are decided (C-226).
+```sh
+hub/commons.sh install      # once: npm ci, the LaunchAgent, started now and at login
+hub/commons.sh update       # pull, npm ci, restart
+hub/commons.sh homes        # the keeper's list;  hub/commons.sh approve h1  lets a home in
+```
 
 ### Where it goes next (the user, 2026-10-28)
 

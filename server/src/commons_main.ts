@@ -1,7 +1,8 @@
 // THE COMMONS, on its own machine (roverbyteseer, the tailnet only for now): npm run commons (Node 22+).
 // COMMONS_DB names its database (default commons.sqlite beside this folder), COMMONS_PORT its port (4750), COMMONS_HOST
-// where it listens (0.0.0.0: the tailnet reaches it; the machine's firewall keeps the internet out).
-//   approve a home:  curl -s localhost:4750/commons/keeper   then   curl -s -XPOST localhost:4750/commons/approve -d '{"id":"h1"}'
+// where it listens -- on roverbyteseer, its tailnet address only (hub/commons.sh), so neither the internet nor the house's
+// own network reaches it.
+//   approve a home, on that machine:  hub/commons.sh homes   then   hub/commons.sh approve h1
 import { fileURLToPath } from "node:url";
 import { makeCommons } from "./commons_api.js";
 import { Store } from "./db.js";

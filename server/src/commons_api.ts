@@ -37,7 +37,8 @@ export function makeCommons(store: Store): Server {
     try {
       const path = new URL(req.url ?? "/", "http://localhost").pathname, method = req.method ?? "GET";
       const b = method === "POST" ? await body(req) : {};
-      const here = isLoopback(req.socket.remoteAddress), who = req.socket.remoteAddress ?? "";
+      // the keeper's machine: loopback, or the machine's own address when the commons listens only on the tailnet's
+      const here = isLoopback(req.socket.remoteAddress) || req.socket.remoteAddress === req.socket.localAddress, who = req.socket.remoteAddress ?? "";
       const tried = () => { const now = Date.now(), t = (TRIES.get(who) ?? []).filter((x) => now - x < WINDOW_MS); TRIES.set(who, [...t, now]); return t.length >= MOST; };
       if (method === "GET" && path === "/commons/keeper") return here ? send(res, 200, { homes: C.homes(store) }) : send(res, 403, { error: "the keeper's, on the commons' machine" });
       if (method === "POST" && path === "/commons/approve") {

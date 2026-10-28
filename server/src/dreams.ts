@@ -47,12 +47,36 @@ const IMAGES = [
 const WAKES = ["bright", "rested", "humming", "glad of you", "ready for the day"];
 // the same night, the same dream: chosen by the night's end and the daemon
 function pickFrom<T>(list: T[], seed: number, k: number) { return list[Math.abs((seed * 2654435761 + k * 40503) | 0) % list.length]; }
-const seedOf = (n: Night, personality: number | null) => Math.floor(new Date(n.to).getTime() / 3600000) ^ ((personality ?? 7) >>> 0);
+const seedOf = (n: { to: string }, personality: number | null) => Math.floor(new Date(n.to).getTime() / 3600000) ^ ((personality ?? 7) >>> 0);
 export function dreamWords(n: Night, nickname: string, personality: number | null = null): string {
   const s = seedOf(n, personality), q = quality(n), name = nickname || "Your daemon";
   if (q === "vivid") return `${name} dreamt of ${pickFrom(IMAGES, s, 1)}. It woke ${pickFrom(WAKES, s, 2)}.`;
   if (q === "broken") return `${name} dreamt in pieces: ${pickFrom(IMAGES, s, 3)}... then ${pickFrom(IMAGES, s, 4)}.`;
   return `${name} dreamt of ${pickFrom(IMAGES, s, 5)}, and slept on.`;
+}
+
+// C-200 (DAEMONS T-462): the image the written dream told first -- its number in the game's own list of sixteen
+export function dreamImage(d: { to: string; personality: number | null; quality: Quality }): number {
+  const k = d.quality === "vivid" ? 1 : d.quality === "broken" ? 3 : 5;
+  return IMAGES.indexOf(pickFrom(IMAGES, seedOf(d, d.personality), k));
+}
+// the dream's day, as the game counts it: days since 2026-01-01 by the local date the night ended
+export function dreamDay(d: { to: string }): number {
+  const t = new Date(d.to);
+  return Math.round((Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) - Date.UTC(2026, 0, 1)) / 86400000);
+}
+// The four vars the game reads (T-462), when a dream has come since the last SYNC (null: leave them as they are) --
+// 0x40D4 quality (1 broken, 2 quiet, 3 vivid; bit 2 tucked in) and the image above it, 0x40D5 the hours in tenths,
+// 0x40D6 nights and rested nights since, 0x40D7 the day. `last` is what the next SYNC counts from.
+export const DREAM_VARS = { dream: 0x40d4, hours: 0x40d5, nights: 0x40d6, day: 0x40d7 } as const;
+export function dreamVars(store: Store): { vars: Record<number, number>; last: number } | null {
+  const applied = Number(store.getSetting("dream.applied") ?? 0);
+  const fresh = dreamsOf(store).filter((d) => d.id > applied);
+  if (!fresh.length) return null;
+  const d = fresh[0], q = { broken: 1, quiet: 2, vivid: 3 }[d.quality] | (d.tucked ? 4 : 0);
+  const nights = Math.min(255, fresh.length), restedN = Math.min(255, fresh.filter(rested).length);
+  return { last: d.id, vars: { [DREAM_VARS.dream]: (dreamImage(d) << 8) | q, [DREAM_VARS.hours]: Math.min(0xffff, Math.round(d.hours * 10)),
+                               [DREAM_VARS.nights]: (restedN << 8) | nights, [DREAM_VARS.day]: dreamDay(d) } };
 }
 
 // what the daemon is asked, as the user would hear it: the night, and what kind of telling (never shown)

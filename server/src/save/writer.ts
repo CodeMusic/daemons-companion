@@ -25,6 +25,7 @@ import { expFor, levelFromExp } from "./growth.js";
 import { calcStats, unpackIVs } from "./stats.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
+import eventsJson from "../../data/events.json" with { type: "json" };
 import { LAYOUT, type Layout, soundingShift, type Sounding, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
 
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }
@@ -47,6 +48,7 @@ export interface Evolve { personality: number; species: number }
 export interface Gift { species: number; name: string; level: number; personality: number; ivs: number; game: number }
 
 
+const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
 const FOOTER_ID = 0xff4, FOOTER_CHECKSUM = 0xff6;
 // C-167: where SaveBlock2 keeps the house's take (DAEMONS T-427: 3740, four bytes, signed), or null in a layout without it
 const HOUSE = (P.sb2 as Record<string, unknown>).house_take;
@@ -60,7 +62,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
                                              house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift;
-                                             sounding?: Sounding }, l: Layout = LAYOUT): SyncResult {
+                                             sounding?: Sounding; vars?: Record<number, number> }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -303,6 +305,12 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const from = v.getInt32(0, true);
     const to = Math.max(-2147483648, Math.min(2147483647, from + Math.round(opts.house)));
     if (to !== from) { v.setInt32(0, to, true); touched.add(0); house = { from, to }; }
+  }
+  // C-200: the game's vars the companion owns (DAEMONS T-462's dream), u16s in SaveBlock1 at sb1_vars + 2 * (var - vars_start)
+  for (const [n, value] of Object.entries(opts.vars ?? {})) {
+    const o = EV.sb1_vars + 2 * (Number(n) - EV.vars_start), lo = at(o), hi = at(o + 1), v = value & 0xffff;
+    if (out[lo.byte] === (v & 0xff) && out[hi.byte] === v >> 8) continue;
+    out[lo.byte] = v & 0xff; out[hi.byte] = v >> 8; touched.add(lo.id); touched.add(hi.id);
   }
   for (const id of touched) {
     const off = where.get(id)!;

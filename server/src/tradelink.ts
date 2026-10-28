@@ -12,6 +12,7 @@ import type { TradeIn } from "./save/writer.js";
 import { readAway } from "./save/reader.js";
 import { fromB64, gameId, gameOf, toB64, tradeRecord, type GameKey } from "./save/trade.js";
 import * as X from "./exchange.js";
+import { homeRoute } from "./commonslink.js";
 
 export interface Link {
   hub: string;                                                            // "" -- the exchange is this companion's own
@@ -21,7 +22,7 @@ export interface Link {
 }
 
 // The exchange on this companion: the hub's own player (no invite needed -- it is the hub)
-export function localLink(store: Store, keys: X.Keys): Link {
+export function localLink(store: Store, keys: X.Keys, f: typeof fetch = fetch): Link {
   const token = () => store.getSetting("trade.token") ?? "";
   const me = () => X.playerFor(store, keys, token());
   return {
@@ -36,7 +37,7 @@ export function localLink(store: Store, keys: X.Keys): Link {
     async call(path, body) {
       const p = me();
       if (!p) return { error: "join the exchange first" };                // DRAFT
-      return exchangeRoute(store, keys, p, path, body ?? {});
+      return homeRoute(store, keys, p, path, body ?? {}, f);   // THE COMMONS: its friends' trades beside the home's
     },
   };
 }
@@ -68,12 +69,12 @@ export function remoteLink(store: Store, hub: string, f: typeof fetch = fetch): 
 
 // The exchange's requests, by name, as one player -- the same for the hub's own companion and for one over the network
 // (api.ts answers /api/exchange/<name> with this)
-export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: string, b: any): any {
+export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: string, b: any, reach?: X.Reach): any {
   const shown = (r: X.Result<X.Offer>) => (X.failed(r) ? r : X.shown(store, p.id, r));
   switch (name) {
-    case "board": return X.board(store, p.id);
-    case "offer": return shown(X.offer(store, p.id, b));
-    case "accept": return shown(X.accept(store, p.id, String(b.id ?? ""), b));
+    case "board": return X.board(store, p.id, reach);
+    case "offer": return shown(X.offer(store, p.id, b, new Date(), reach));
+    case "accept": return shown(X.accept(store, p.id, String(b.id ?? ""), b, new Date(), reach));
     case "withdraw": return shown(X.withdraw(store, p.id, String(b.id ?? "")));
     case "recall": return shown(X.recall(store, p.id, String(b.id ?? "")));
     case "inbox": return X.inbox(store, p.id, b.game);
@@ -167,7 +168,7 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
     const t = tradeRecord(save, Number(b.personality));
     if (typeof t === "string") return no(400, t);
     const sent = { game: gameOf(save), edition, record: toB64(t.record) };
-    return answer(path.endsWith("offer") ? await link.call("offer", { ...sent, kind: b.kind, to: b.to })
+    return answer(path.endsWith("offer") ? await link.call("offer", { ...sent, kind: b.kind, to: b.to, scope: b.scope })
                                          : await link.call("accept", { ...sent, id: b.offer }));
   }
   return no(404, "not found");

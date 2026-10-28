@@ -81,3 +81,46 @@ which relates to the profile feature". Decided the same day by multiple choice; 
    - **Battles** (C-224): one player's daemons against another's, through the hub, outside the link cable as well.
 
 Every word the player reads is DRAFT.
+
+## THE COMMONS: trading between homes (C-222, first round built 2026-10-28)
+
+*Decided by multiple choice, 2026-10-28: through the home hub; the home hub vouches for its players; friends only;
+built and run on the tailnet first.*
+
+```
+ a player's phone / device ──> its HOME HUB (CoreMP135) ──> THE COMMONS (roverbyteseer:4750, tailnet only)
+                                players, saves, devices      homes, friends, the trades between homes
+```
+
+- **Homes, not people.** A hub registers its home once (THE COMMONS card on the hub's TRADE: the commons' address
+  and the home's name). It waits until **the keeper approves it on the commons' own machine**
+  (`curl -s localhost:4750/commons/keeper`, then `curl -s -XPOST localhost:4750/commons/approve -d '{"id":"h1"}'`).
+- **The hub vouches for its players.** The first time a player trades on the commons, the hub asks for a token for
+  them, and they appear there as "KIT · KIT HOUSE". No password, nothing personal.
+- **Friends only.** Each approved home has a friend code. One home asks with the other's code, and the other accepts
+  on its hub. Until then neither sees the other's players or offers.
+- **Devices never change address.** Phones and boards go on talking only to their hub. The hub's exchange shows the
+  friends' offers beside the home's own (their ids begin `c:`), and passes every request for one to the commons. An
+  offer is made to THIS HOME or to FRIENDS' HOMES. SYNC fetches both inboxes.
+- **If the commons does not answer**, the home's own trading goes on as before.
+- **Code:** `server/src/commons.ts` (homes, approval, friends, reach), `commons_api.ts` and `commons_main.ts` (its
+  own HTTP server and database), `commonslink.ts` (the hub's side), and `keys.ts`. Trades are `exchange.ts`'s, with a
+  reach rule. Tested end to end in `server/test/commons.test.ts`: two homes over HTTP, approved, friends, traded, each
+  SYNC writing its own save.
+
+### Running the commons on roverbyteseer
+
+```sh
+git clone https://github.com/CodeMusic/daemons-companion && cd daemons-companion/server && npm ci
+COMMONS_HOST=0.0.0.0 COMMONS_PORT=4750 npm run commons     # Node 22+; COMMONS_DB names its database
+```
+
+Keep the port closed to the internet: only the tailnet reaches it, until accounts and abuse are decided (C-226).
+
+### Where it goes next (the user, 2026-10-28)
+
+- **No Tailscale for a player** (C-228): install the app, choose your ROM, make an account, and it all works. Devices
+  ship pre-flashed, and the app updates their firmware over the air.
+- **Personal accounts** (C-226), once security allows, most likely on a cloud service with security groups. The
+  commons moves there from roverbyteseer, which first serves internal testing with the Tiiny AI.
+- **A lobby like Nintendo's** (C-227): friends, invite codes and players detected nearby, safe for kids.

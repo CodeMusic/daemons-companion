@@ -10,10 +10,14 @@ import { Action, Card, Choice, Entry, Eyebrow, Small, useInk } from "../ui";
 import { useApi } from "../useApi";
 
 type Brief = { player: string; personality: number; species: number; nickname: string; level: number; edition: string } | null;
-type Offer = { id: string; at: string; kind: "full" | "loan"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean };
+type Offer = { id: string; at: string; kind: "full" | "loan"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean;
+               side?: "from" | "with" | null; commons?: boolean };
 type Mine = { personality: number; species: number; name: string; nickname: string; level: number; busy: boolean };
 type View = { hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
-              board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string }[] } | null; pending: number; waiting: number };
+              board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean } | null;
+              pending: number; waiting: number };
+type Named = { id: string; name: string };
+type Commons = { url: string | null; error?: string; home: { id: string; name: string; approved: boolean; code: string; friends: Named[]; asks: Named[]; asked: Named[] } | null };
 
 const who = (b: Brief) => (b ? `${b.nickname} · LV ${b.level}${b.edition ? ` · ${b.edition}` : ""}` : "");
 const STATE: Record<string, string> = { agreed: "agreed -- each side's next SYNC brings it", done: "traded", returning: "on its way home -- each side's next SYNC",
@@ -26,6 +30,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
   const [said, setSaid] = useState("");
   const [name, setName] = useState(""), [code, setCode] = useState(""), [pw, setPw] = useState(""), [hub, setHub] = useState("");
   const [kind, setKind] = useState<"full" | "loan">("full");
+  const [scope, setScope] = useState<"home" | "friends">("home");   // C-222: this home, or friends' homes on THE COMMONS
   const [to, setTo] = useState<string>("");
   const [giving, setGiving] = useState<string | null>(null);   // the offer being taken
   const [invite, setInvite] = useState<{ code: string; until: string } | null>(null);
@@ -66,6 +71,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
   );
 
   const b = v.board;
+  const targets = (b?.players ?? []).filter((p) => p.id !== v.me!.id && !!p.commons === (scope === "friends"));
   const theirs = (b?.open ?? []).filter((o) => !o.mine), ours = (b?.open ?? []).filter((o) => o.mine);
   return (
     <YStack gap={14}>
@@ -81,13 +87,14 @@ export function TradeScreen({ ink }: { ink?: string }) {
         {free.length ? (<>
           <Choice value={kind} ink={ink} onPick={setKind} options={[["full", "TRADE IT"], ["loan", "LEND IT"]]} />
           <Small>{kind === "full" ? "It becomes theirs, and theirs yours." : "You each lend one. Either of you can call yours home, and both come back."}</Small>
-          {(b?.players ?? []).length > 1 ? (
-            <Choice value={to} ink={ink} onPick={setTo} options={[["", "ANYONE"], ...(b?.players ?? []).filter((p) => p.id !== v.me!.id).map((p) => [p.id, p.name] as [string, string])]} />
+          {b?.commons ? <Choice value={scope} ink={ink} onPick={(x) => { setScope(x as "home" | "friends"); setTo(""); }} options={[["home", "THIS HOME"], ["friends", "FRIENDS' HOMES"]] as ["home" | "friends", string][]} /> : null}
+          {targets.length ? (
+            <Choice value={to} ink={ink} onPick={setTo} options={[["", "ANYONE"], ...targets.map((p) => [p.id, p.name] as [string, string])]} />
           ) : null}
           {free.map((d) => (
             <XStack key={d.personality} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="center">
               <YStack flex={1}><Text fontSize={15} color="$color12">{`${d.nickname} · LV ${d.level}`}</Text><Small>{d.name}</Small></YStack>
-              <Action label="OFFER" ink={ink} onPress={() => act("/api/trade/offer", { personality: d.personality, kind, to: to || undefined }, `${d.nickname} is on offer.`)} />
+              <Action label="OFFER" ink={ink} onPress={() => act("/api/trade/offer", { personality: d.personality, kind, to: to || undefined, scope }, `${d.nickname} is on offer${scope === "friends" ? " to friends' homes" : ""}.`)} />
             </XStack>
           ))}
         </>) : <Small>No daemon is AWAY and free to offer.</Small>}
@@ -127,7 +134,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
           {b!.trades.map((o) => (
             <YStack key={o.id} gap={2} paddingVertical={6} borderTopWidth={1} borderColor="$color5">
               <Text fontSize={15} color="$color12">{`${who(o.from)}  ⇄  ${who(o.with)}`}</Text>
-              <Small>{`${o.kind === "loan" ? "Loan" : "Trade"} with ${o.from?.player === v.me!.name ? o.with?.player : o.from?.player}: ${o.state === "agreed" && o.held ? "lent -- each of you holds the other's" : STATE[o.state] ?? o.state}`}</Small>
+              <Small>{`${o.kind === "loan" ? "Loan" : "Trade"} with ${o.side === "from" ? o.with?.player : o.from?.player}: ${o.state === "agreed" && o.held ? "lent -- each of you holds the other's" : STATE[o.state] ?? o.state}`}</Small>
               {o.kind === "loan" && o.state === "agreed" ? <Action label="CALL MINE HOME" ink={ink} onPress={() => act("/api/trade/recall", { id: o.id }, "Called home. Each side's next SYNC brings its own back.")} /> : null}
             </YStack>
           ))}
@@ -142,6 +149,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
           {invite ? <Text fontFamily="$mono" fontSize={22} letterSpacing={4} color="$color12">{invite.code}</Text> : null}
         </Card>
       ) : null}
+      {!v.hub ? <CommonsCard ink={ink} /> : null}
       {!v.me.password ? (
         <Card gap={6}>
           <Eyebrow>A PASSWORD</Eyebrow>
@@ -155,5 +163,54 @@ export function TradeScreen({ ink }: { ink?: string }) {
       {hubCard}
       <Small color="$color8">DRAFT</Small>
     </YStack>
+  );
+}
+
+// C-222: THE COMMONS, on the hub only -- this home linked to the commons (it waits for the keeper to let it in), its
+// friend code, a friend added by theirs, asks to accept, friends to forget. Every word DRAFT.
+function CommonsCard({ ink }: { ink: string }) {
+  const [c, setC, error] = useApi<Commons>("/api/commons");
+  const [url, setUrl] = useState(""), [name, setName] = useState(""), [code, setCode] = useState(""), [said, setSaid] = useState("");
+  const again = async () => setC(await api<Commons>("/api/commons"));
+  const friend = async (what: string, body: unknown, done: string) => { await api(`/api/commons/${what}`, body); setSaid(done); await again(); };
+  if (error) return null;                                   // a companion that is not the hub has no commons of its own
+  if (!c) return null;
+  const h = c.home;
+  return (
+    <Card gap={6}>
+      <Eyebrow>THE COMMONS</Eyebrow>
+      {!c.url ? (<>
+        <Small>Link this home to the commons, and trade with friends' homes. Your players and devices still talk only to this hub.</Small>
+        <Entry value={url} onChange={setUrl} onSubmit={() => {}} placeholder="http://roverbyteseer:4750" limit={80} />
+        <Entry value={name} onChange={setName} onSubmit={() => {}} placeholder="this home's name, as friends see it" limit={16} />
+        <Action label="LINK" ink={ink} onPress={async () => { setC(await api<Commons>("/api/commons", { url, name })); setSaid("Linked. The commons' keeper lets this home in."); }} />
+      </>) : !h ? (
+        <Small>{`The commons at ${c.url} did not answer${c.error ? `: ${c.error}` : "."}`}</Small>
+      ) : !h.approved ? (
+        <Small>{`${h.name} is waiting for the commons' keeper to let it in.`}</Small>
+      ) : (<>
+        <Small>{`${h.name} on the commons. Give a friend this code; enter theirs to ask.`}</Small>
+        <Text fontFamily="$mono" fontSize={22} letterSpacing={4} color="$color12">{h.code}</Text>
+        <XStack gap={8} flexWrap="wrap" alignItems="center">
+          <Entry value={code} onChange={(x) => setCode(x.toUpperCase())} onSubmit={() => {}} placeholder="a friend's code" limit={8} />
+          <Action label="ASK" ink={ink} onPress={() => friend("friend", { code }, "Asked. They accept on their hub.")} />
+        </XStack>
+        {h.asks.map((a) => (
+          <XStack key={a.id} gap={10} alignItems="center" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>
+            <Small>{`${a.name} asks to be friends.`}</Small>
+            <Action label="ACCEPT" ink={ink} onPress={() => friend("friend/accept", { id: a.id }, `${a.name} is a friend.`)} />
+          </XStack>
+        ))}
+        {h.asked.map((a) => <Small key={a.id}>{`Waiting for ${a.name} to accept.`}</Small>)}
+        {h.friends.map((f) => (
+          <XStack key={f.id} gap={10} alignItems="center" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>
+            <Text flex={1} fontSize={15} color="$color12">{f.name}</Text>
+            <Action label="FORGET" ink={ink} onPress={() => friend("friend/forget", { id: f.id }, `${f.name} is not a friend now.`)} />
+          </XStack>
+        ))}
+      </>)}
+      {c.url ? <Action label="UNLINK" ink={ink} onPress={async () => { setC(await api<Commons>("/api/commons", { url: "" })); setSaid("Unlinked."); }} /> : null}
+      {said ? <Small>{said}</Small> : null}
+    </Card>
   );
 }

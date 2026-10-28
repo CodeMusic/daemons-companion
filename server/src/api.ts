@@ -63,9 +63,11 @@ import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/h
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
-import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
-import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
+import { KEYS } from "./keys.js";
+import { commonsFriend, commonsHome, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
+import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
@@ -177,21 +179,6 @@ const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
 
-// C-218: the exchange's keys -- a player's token (kept only as its SHA-256), a password as scrypt (salted, never kept
-// itself), and an invite code to read aloud (no 0/O or 1/I)
-const INVITE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export const KEYS: X.Keys = {
-  token: () => randomBytes(24).toString("base64url"),
-  hash: (t) => createHash("sha256").update(t).digest("base64url"),
-  password(pw) { const salt = randomBytes(16); return `scrypt$${salt.toString("base64url")}$${scryptSync(pw, salt, 32).toString("base64url")}`; },
-  check(pw, kept) {
-    const [kind, salt, hash] = kept.split("$");
-    if (kind !== "scrypt" || !salt || !hash) return false;
-    const want = Buffer.from(hash, "base64url"), got = scryptSync(pw, Buffer.from(salt, "base64url"), want.length);
-    return got.length === want.length && timingSafeEqual(got, want);
-  },
-  code: () => Array.from({ length: 8 }, () => INVITE_LETTERS[randomInt(INVITE_LETTERS.length)]).join(""),
-};
 const JOIN_TRIES = new Map<string, number[]>(), JOIN_MOST = 8, JOIN_WINDOW_MS = 10 * 60 * 1000;   // C-218
 // C-219: this companion's way to the exchange -- the hub's address in SETTINGS (`trade.hub`), or none: it is the hub
 export const tradeLink = (store: Store): Link => {
@@ -698,7 +685,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const player = X.playerFor(store, KEYS, String(req.headers["x-daemons-player"] ?? ""));
         if (!player) return send(res, 401, { error: "join the exchange first" });
         if (name === "me") return send(res, 200, X.players(store).find((v) => v.id === player.id));
-        const r = exchangeRoute(store, KEYS, player, name, req.method === "GET" ? {} : b);
+        const r = await homeRoute(store, KEYS, player, name, req.method === "GET" ? {} : b);   // and THE COMMONS through it
         return send(res, r?.error === "not found" ? 404 : r?.error ? 400 : 200, r);
       }
       if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
@@ -783,6 +770,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/trade/hub") {
         const r = setHub(store, (await body(req)).url);
         return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, r);
+      }
+      // C-222: THE COMMONS -- this home linked to it (registered, then approved by its keeper), and its friends
+      if (path === "/api/commons" || path.startsWith("/api/commons/friend")) {
+        if (req.method === "GET" && path === "/api/commons") return send(res, 200, await commonsHome(store));
+        const b = await body(req);
+        if (path === "/api/commons") {                               // {url, name}: register this home; {url: ""}: unlink
+          const r = await linkCommons(store, b);
+          return "error" in r && r.error !== "unlinked" ? send(res, 400, r) : send(res, 200, await commonsHome(store));
+        }
+        const what = path.slice("/api/commons/".length);
+        if (what !== "friend" && what !== "friend/accept" && what !== "friend/forget") return send(res, 404, { error: "not found" });
+        const r = await commonsFriend(store, what, b);
+        return send(res, r?.error ? 400 : 200, r);
       }
       if (TRADE_PATHS.includes(path)) {
         const h = hostOf(ecfg);

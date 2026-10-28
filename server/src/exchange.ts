@@ -22,7 +22,12 @@ import type { Store } from "./store.js";
 import { describe, fromB64, gameId, type GameKey } from "./save/trade.js";
 
 export interface Keys { token(): string; hash(token: string): string; password(pw: string): string; check(pw: string, kept: string): boolean; code(): string }
-export interface Player { id: string; name: string; at: string; tokens: string[]; password: string | null }
+export interface Player { id: string; name: string; at: string; tokens: string[]; password: string | null;
+                          home?: string; label?: string }   // THE COMMONS (commons.ts): the home that vouches for it, and "KIT · ITS HOME"
+// THE COMMONS: whether two players may see and trade with each other -- on a home hub, everyone; on the commons, the
+// same home or homes that are friends
+export type Reach = (a: string, b: string) => boolean;
+const everyone: Reach = () => true;
 export type Kind = "full" | "loan";
 export interface Side { player: string; game: GameKey; edition: string; personality: number; species: number; nickname: string; level: number; record: string }
 export type OfferState = "open" | "agreed" | "done" | "withdrawn" | "returning" | "returned";   // done: a full trade both SYNCs wrote
@@ -56,14 +61,18 @@ export function invite(store: Store, keys: Keys, now = new Date()): { code: stri
 }
 // a new player (with an invite), or the same player from another device (with its password); `local` is the hub's own
 // companion, which needs no invite
-export function join(store: Store, keys: Keys, b: { name?: unknown; code?: unknown; password?: unknown }, local = false, now = new Date()):
-    Result<{ token: string; player: PlayerView; created: boolean }> {
+export function join(store: Store, keys: Keys, b: { name?: unknown; code?: unknown; password?: unknown }, local = false, now = new Date(),
+                     home?: { id: string; name: string }): Result<{ token: string; player: PlayerView; created: boolean }> {
   const name = typeof b.name === "string" ? b.name.trim().toUpperCase() : "";
   if (!NAME.test(name)) return fail("a player's name is 2 to 12 letters or numbers");       // DRAFT
   const pw = typeof b.password === "string" && b.password ? b.password : null;
   if (pw && pw.length < 6) return fail("a password is at least 6 letters");                  // DRAFT
   return change(store, (s) => {
-    const was = s.players.find((p) => p.name === name);
+    const was = s.players.find((p) => p.name === name && p.home === home?.id);   // on the commons a name is its home's
+    if (was && home) {                               // the commons: its home vouches for it -- a token, no password
+      const token = keys.token(); was.tokens.push(keys.hash(token));
+      return { token, player: view(was), created: false };
+    }
     if (was) {
       if (!pw || !was.password || !keys.check(pw, was.password)) return fail("that name is taken -- its password joins it from another device");   // DRAFT
       const token = keys.token(); was.tokens.push(keys.hash(token));
@@ -74,7 +83,8 @@ export function join(store: Store, keys: Keys, b: { name?: unknown; code?: unkno
     if (!local && inv < 0) return fail("that invite code is not right, or has run out -- ask for a new one on the hub");   // DRAFT
     if (inv >= 0) s.invites.splice(inv, 1);
     const token = keys.token();
-    const p: Player = { id: `p${s.next++}`, name, at: now.toISOString(), tokens: [keys.hash(token)], password: pw ? keys.password(pw) : null };
+    const p: Player = { id: `p${s.next++}`, name, at: now.toISOString(), tokens: [keys.hash(token)], password: pw ? keys.password(pw) : null,
+                        ...(home ? { home: home.id, label: `${name} · ${home.name}` } : {}) };
     s.players.push(p);
     return { token, player: view(p), created: true };
   });
@@ -89,7 +99,8 @@ export function setPassword(store: Store, keys: Keys, player: string, pw: unknow
   return change(store, (s) => { const p = s.players.find((x) => x.id === player); if (!p) return fail("no such player"); p.password = keys.password(pw); return view(p); });
 }
 export type PlayerView = { id: string; name: string; at: string; password: boolean };
-const view = (p: Player): PlayerView => ({ id: p.id, name: p.name, at: p.at, password: !!p.password });
+const view = (p: Player): PlayerView => ({ id: p.id, name: p.label ?? p.name, at: p.at, password: !!p.password });
+export const homeOf = (store: Store, player: string) => load(store).players.find((p) => p.id === player)?.home ?? null;
 export const players = (store: Store) => load(store).players.map(view);
 
 // ---- trades ----
@@ -109,7 +120,8 @@ const borrowed = (s: State, game: GameKey, personality: number) =>
     ((gameId(o.with.game) === gameId(game) && o.from.personality === personality) || (gameId(o.from.game) === gameId(game) && o.with.personality === personality)));
 const gone = (s: State, game: GameKey, personality: number) => (s.ledger[gameId(game)] ?? []).includes(personality >>> 0);
 
-export function offer(store: Store, player: string, b: { game: GameKey; edition: string; record: string; kind?: unknown; to?: unknown }, now = new Date()): Result<Offer> {
+export function offer(store: Store, player: string, b: { game: GameKey; edition: string; record: string; kind?: unknown; to?: unknown }, now = new Date(),
+                      reach: Reach = everyone): Result<Offer> {
   const kind: Kind = b.kind === "loan" ? "loan" : "full";
   return change(store, (s) => {
     const sd = side(player, b.game, b.edition, b.record);
@@ -118,17 +130,18 @@ export function offer(store: Store, player: string, b: { game: GameKey; edition:
     if (holds(s, b.game, sd.personality)) return fail(`${sd.nickname} is already in a trade`);                  // DRAFT
     if (borrowed(s, b.game, sd.personality)) return fail(`${sd.nickname} is on loan -- it goes home before it can be traded`);   // DRAFT
     const to = typeof b.to === "string" && b.to ? b.to : null;
-    if (to && (to === player || !s.players.some((p) => p.id === to))) return fail("no such player to offer to");
+    if (to && (to === player || !s.players.some((p) => p.id === to) || !reach(player, to))) return fail("no such player to offer to");
     const o: Offer = { id: `t${s.next++}`, at: now.toISOString(), kind, to, state: "open", from: sd, with: null, agreedAt: null, written: [], handback: {} };
     s.offers.push(o);
     return o;
   });
 }
 // the swap, agreed at once: both daemons leave their games' hands together
-export function accept(store: Store, player: string, id: string, b: { game: GameKey; edition: string; record: string }, now = new Date()): Result<Offer> {
+export function accept(store: Store, player: string, id: string, b: { game: GameKey; edition: string; record: string }, now = new Date(),
+                       reach: Reach = everyone): Result<Offer> {
   return change(store, (s) => {
     const o = s.offers.find((x) => x.id === id);
-    if (!o || o.state !== "open") return fail("that offer is not open any more");               // DRAFT
+    if (!o || o.state !== "open" || !reach(player, o.from.player)) return fail("that offer is not open any more");   // DRAFT
     if (o.from.player === player) return fail("that is your own offer");                        // DRAFT
     if (o.to && o.to !== player) return fail("that offer is for someone else");                 // DRAFT
     const sd = side(player, b.game, b.edition, b.record);
@@ -178,7 +191,7 @@ export function inbox(store: Store, player: string, game: GameKey): { deliveries
     if (o.state === "open" || ((o.state === "agreed" || o.state === "returning") && !o.written.includes(`${player}:swap`))) locked.push(mine.personality);
     else if (o.state === "returning" && theirs && !o.written.includes(`${player}:return`)) locked.push(theirs.personality);
   }
-  const name = (id: string) => s.players.find((p) => p.id === id)?.name ?? "?";
+  const name = (id: string) => { const p = s.players.find((x) => x.id === id); return p?.label ?? p?.name ?? "?"; };
   for (const o of s.offers) {
     if (!o.with || (o.state !== "agreed" && o.state !== "returning")) continue;
     const mine = [o.from, o.with].find((x) => x.player === player && gameId(x.game) === me);
@@ -236,17 +249,18 @@ export function written(store: Store, player: string, ids: string[]) {
 // what a player sees: every open offer (theirs, to everyone, or to them) and their own trades, without records
 // an offer as a player may see it: names, never a record or a game's secret id
 export function shown(store: Store, player: string, o: Offer, s = load(store)) {
-  const name = (id: string | null) => (id ? s.players.find((p) => p.id === id)?.name ?? "?" : null);
+  const name = (id: string | null) => { const p = id ? s.players.find((x) => x.id === id) : null; return id ? p?.label ?? p?.name ?? "?" : null; };
   const brief = (x: Side | null) => x && { player: name(x.player), personality: x.personality, species: x.species, nickname: x.nickname, level: x.level, edition: x.edition };
   return { id: o.id, at: o.at, kind: o.kind, state: o.state, to: name(o.to), mine: o.from.player === player || o.with?.player === player,
+           side: o.from.player === player ? "from" : o.with?.player === player ? "with" : null,   // which of the two is this player's
            from: brief(o.from), with: brief(o.with), agreedAt: o.agreedAt, done: o.state === "returned" || o.state === "done",
            held: o.written.filter((w) => w.endsWith(":swap")).length === 2 };   // both SYNCs wrote the swap
 }
-export function board(store: Store, player: string) {
+export function board(store: Store, player: string, reach: Reach = everyone) {
   const s = load(store), show = (o: Offer) => shown(store, player, o, s);
   return {
-    open: s.offers.filter((o) => o.state === "open" && (o.from.player === player || !o.to || o.to === player)).map(show),
+    open: s.offers.filter((o) => o.state === "open" && (o.from.player === player || ((!o.to || o.to === player) && reach(player, o.from.player)))).map(show),
     trades: s.offers.filter((o) => o.state !== "open" && o.state !== "withdrawn" && (o.from.player === player || o.with?.player === player)).map(show),
-    players: s.players.map(view),
+    players: s.players.filter((p) => p.id === player || reach(player, p.id)).map(view),
   };
 }

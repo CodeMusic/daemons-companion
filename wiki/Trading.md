@@ -55,6 +55,18 @@ CONTENT and CONTEXT trade with each other freely.
 - **A daemon that has left your game in a trade cannot be offered again** from that game -- an older copy of your save
   still holding it is refused. One that comes back to you by trade is yours again.
 
+## Friends' homes: THE COMMONS
+
+A home can trade with **friends' homes** through **THE COMMONS**, a server the project runs. It is on the tailnet only
+for now.
+
+- **On the hub's TRADE, THE COMMONS:** give the commons' address and your home's name, and LINK. The commons' keeper
+  lets your home in.
+- **Friends:** your hub shows a **friend code**. Give it to a friend, or enter theirs and ASK; the other home ACCEPTS.
+  Strangers never see your players or daemons.
+- **Offering:** choose **THIS HOME** or **FRIENDS' HOMES**. Your phone and devices still talk only to your hub, which
+  passes your friends' trades through. A friend's player shows as "KIT · KIT HOUSE".
+
 ## On a phone hosting alone
 
 Set THE HUB on TRADE to the hub's address and join with an invite code, as any other companion does. SYNC fetches what

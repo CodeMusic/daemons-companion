@@ -117,6 +117,8 @@ export class House {
         { role: "user", content: text.slice(0, 500) }];
       const r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) });
       const answer = r.text.trim();
+      // a module that says nothing has failed (2026-10-28: its LLM answering "" after an update) -- never silence
+      if (!answer) throw new Error("the hub's AI board answered nothing");
       const audio = a.speak && h.tts && answer ? new Uint8Array((await speak(m.url, h.tts, answer)).audio) : null;
       return { answer, heard, audio, provider: `module:${m.name}`, firstMs: r.firstMs };
     } finally { this.busy.delete(m.url); }

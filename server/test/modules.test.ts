@@ -39,6 +39,11 @@ describe("the house", () => {
       expect((await h.talk(ask)).answer).toBe("Good morning!");                                         // words still thought
     } finally { deafSrv.close(); }
   });
+  it("fails, never answers silence, when the module says nothing (its LLM after an update)", async () => {
+    const quiet = fakeModule({ silent: true }), url = await up(quiet);
+    try { await expect(new House(() => [{ url, name: "quiet" }]).talk(ask)).rejects.toThrow("answered nothing"); }
+    finally { quiet.close(); }
+  });
   it("is LATE when no first words come before the deadline, and waits when told to", async () => {
     const h = new House(() => [{ url: sUrl, name: "slow" }]);
     await expect(h.talk(ask, 100)).rejects.toThrow(LATE);

@@ -48,7 +48,7 @@ export function subtleLine(s: Subtle, question: string, seed: string): Line | nu
   const near = all.filter((x) => score(x) === best);
   const line = near[hash(seed + question) % near.length];
   return { title: e.title, line: line.length > 180 ? line.slice(0, 177).replace(/\s+\S*$/, "") + "..." : line,
-           page: told(e).join(" ").slice(0, 380) };
+           page: told(e).join(" ") };                         // whole: what the module is given is cut (subtlePages)
 }
 
 // ---- the question back, and the asking voice ----------------------------------------------------------------------------
@@ -109,6 +109,14 @@ export function answerOf(s: Subtle, text: string, mode: "ask" | "voices", turn: 
   if (mode === "voices") return { mode, title: null, line: "", back: "", asking: askingVoice(text, turn, day) };
   const l = subtleLine(s, text, date);
   return { mode, title: l?.title ?? null, line: l?.line ?? "", back: questionBack(text, day, date), asking: "" };
+}
+// the module's words are kept only when they are the page's: most of what it says found there, and nothing about the book
+// itself (2026-10-28, on the hub: "Di is a small demon from the book The Subtle Layer designed to teach" -- the 0.5B riffing
+// on the book's name, nowhere in it). Otherwise the book's own sentence stands.
+export function groundedIn(said: string, page: string): boolean {
+  const p = new Set(wordsOf(page)), w = wordsOf(said).filter((x) => !FILLER.has(x));
+  if (!w.length || /subtle layer|\bbook\b/i.test(said)) return false;
+  return w.filter((x) => p.has(x)).length / w.length >= 0.6;
 }
 // the module's thinker is shared by the books (guideask.ts GUIDE_SETUP): THE SUBTLE LAYER's nearest page rides in the input
 export const subtlePages = (s: Subtle) => (heard: string, chars = 170) => {

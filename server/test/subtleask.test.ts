@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Store } from "../src/db.js";
-import { answerOf, askingVoice, guideAside, journalOf, keepAnswer, questionBack, subtleLine, subtlePages, todaysQuestion, type Day } from "../src/subtleask.js";
+import { answerOf, askingVoice, groundedIn, guideAside, journalOf, keepAnswer, questionBack, subtleLine, subtlePages, todaysQuestion, type Day } from "../src/subtleask.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { buildSave } from "./build_save.js";
@@ -32,6 +32,15 @@ describe("C-229: a line from its nearest page", () => {
   it("gives the shared thinker one page, under the window", () => {
     expect(subtlePages(book)("telling a read from imagination", 170)).toMatch(/^The page .+ says: /);
     expect(subtlePages(book)("telling a read from imagination", 170).length).toBeLessThan(260);
+  });
+});
+
+describe("C-229: the module's words, only when they are the page's", () => {
+  const page = subtleLine(book, "How do I tell a read from imagination?", "2026-10-30")!.page;
+  it("keeps a line said from the page, and refuses one about the book, or from nowhere", () => {
+    expect(groundedIn("Keep a log of each read with the day and the centre.", page)).toBe(true);
+    expect(groundedIn("Di is a small demon from the book The Subtle Layer designed to teach.", page)).toBe(false);
+    expect(groundedIn("Paris is the capital of France.", page)).toBe(false);
   });
 });
 

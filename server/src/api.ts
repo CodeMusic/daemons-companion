@@ -83,7 +83,7 @@ import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          /
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages } from "./guideask.js";   // C-209
-import { answerOf, dayOf, guideAside, keepAnswer, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
+import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
@@ -1197,13 +1197,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           text = (await house.transcribe(new Uint8Array(Buffer.from(b.audioBase64, "base64"))).catch(() => null)) ?? "";
         if (!text) return { error: "Nothing was heard." };                                             // DRAFT
         const a = answerOf(s, text.slice(0, 200), b.mode === "voices" ? "voices" : "ask", Number(b.turn) || 0, day, t.date);
+        let provider = "book";                                                                         // whose words the line is
         if (a.mode === "ask" && house.any && talkProvider() === "module") {
           const r = await talkOn(talkPayload({ text, guide: subtlePages(s), book: "THE SUBTLE LAYER", speak: false })).catch(() => null);
-          if (r && !r.error && typeof r.answer === "string" && r.answer.trim()) a.line = r.answer.trim();
+          const page = subtleLine(s, text.slice(0, 200), t.date)?.page ?? "";
+          if (r && !r.error && typeof r.answer === "string" && groundedIn(r.answer, page)) { a.line = r.answer.trim(); provider = String(r.provider ?? "module"); }
         }
         const said = a.mode === "voices" ? a.asking : `${a.line} ${a.back}`.trim();
         const v = b.speak === false ? {} : await readAloud(said).catch(() => ({} as Record<string, unknown>));
-        return { ...a, heard: text, answer: said, ...(typeof v.audioBase64 === "string" ? { audioBase64: v.audioBase64, audioMime: v.audioMime ?? "audio/wav" } : {}) };
+        return { ...a, heard: text, answer: said, provider, ...(typeof v.audioBase64 === "string" ? { audioBase64: v.audioBase64, audioMime: v.audioMime ?? "audio/wav" } : {}) };
       };
       // C-230: today's question answered aloud on the watch -- heard, and kept in the journal with the day and the centre
       const keepSpoken = async (b: Record<string, any>): Promise<Record<string, unknown>> => {

@@ -7,6 +7,7 @@
 #   ./syncCompanion.sh pull       the hub's save to this computer, over a change here (this one is kept aside)
 #   ./syncCompanion.sh art        DAEMONS' own art (gfx/daemons) to the hub, for its pictures
 #   ./syncCompanion.sh site       the companion's site, built here, to the hub -- which serves it at its own address (C-170)
+#   ./syncCompanion.sh debug      the newest DEBUG patches from DAEMONS' ROM RELEASE to the hub -- private (C-216)
 #   ./syncCompanion.sh backups    the hub's nightly backups of its store, to this computer (off the hub's card)
 #   ./syncCompanion.sh --help
 #
@@ -32,7 +33,7 @@ REMOTE_SAVE="$SHARED/save.sav"
 REMOTE_BACKUPS=/var/lib/daemons-companion/backups
 
 usage() { awk 'NR >= 2 { if ($0 == "#" && ++blank == 2) exit; print }' "$0" | sed 's/^# \{0,1\}//'; }
-case "${1:-sync}" in -h|--help|help) usage; exit 0 ;; sync|status|push|pull|art|backups|site) mode="${1:-sync}" ;;
+case "${1:-sync}" in -h|--help|help) usage; exit 0 ;; sync|status|push|pull|art|backups|site|debug) mode="${1:-sync}" ;;
   *) echo "syncCompanion: unknown '$1' (try --help)" >&2; exit 64 ;; esac
 
 [[ -f "$HERE/.hub" ]] || { echo "syncCompanion: no .hub -- copy .hub.example to .hub and fill it in" >&2; exit 1; }
@@ -52,6 +53,18 @@ if [[ $mode == art ]]; then
   rsync -rlt --omit-dir-times --delete --delete-excluded --exclude .DS_Store "$ART/" "$HUB:$SHARED/art/"
   echo "syncCompanion: art sent ($(find "$ART" -type f | wc -l | tr -d ' ') files)"; exit 0
 fi
+# C-216: the testing builds' patches -- never on GitHub (the user's choice); the hub gives them to a paired phone only.
+# The newest DEBUG/PATCHES under DAEMONS' ROM RELEASE (a release's own, or a sealed group's), whole, over what was there.
+if [[ $mode == debug ]]; then
+  ROMREL="${ROMREL:-$HERE/../DAEMONS/ROM RELEASE}"
+  newest="$(find "$ROMREL" -path '*/DEBUG/PATCHES/debug_patches.json' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)"
+  [[ -n $newest ]] || { echo "syncCompanion: no DEBUG patches under $ROMREL (a release writes them: DEBUG/PATCHES/)" >&2; exit 1; }
+  from="$(dirname "$newest")"
+  rsync -rlt --omit-dir-times --delete --exclude .DS_Store "$from/" "$HUB:$SHARED/debug/"
+  echo "syncCompanion: the testing builds sent from ${from#$ROMREL/} ($(find "$from" -name '*.bps' | wc -l | tr -d ' ') patches); the app's GAME offers TESTING BUILD to a paired phone"
+  exit 0
+fi
+
 if [[ $mode == site ]]; then
   # built to talk to whatever serves it, so one build works at the hub's address, its .local name and its Tailscale name
   # the app's own Node (.nvmrc), as bindCompanion.sh finds it; an old build is cleared first so a failure cannot hide

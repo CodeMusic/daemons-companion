@@ -11,8 +11,9 @@ import { Directory, File, Paths } from "expo-file-system";
 import { applyBps } from "../../server/src/game/bps";
 import { sha1 } from "../../server/src/game/hash";
 import { latestRelease, patchFor, releasedAs, usePatches, type Patch } from "../../server/src/game/patches";
+import { api } from "../net";
 
-export type Game = { edition: "CONTENT" | "CONTEXT"; release: string; sha1: string; from: string; at: string };
+export type Game = { edition: "CONTENT" | "CONTEXT"; release: string; sha1: string; from: string; at: string; testing?: boolean };   // testing: C-216
 
 const dir = () => new Directory(Paths.document, "game");
 const romFile = () => new File(dir(), "daemons.gba");
@@ -38,7 +39,7 @@ export async function freshPatches(): Promise<boolean> {
 }
 // A newer DAEMONS than the one held: "ready" when it can be made here, "original" when the player's ROM is needed again
 export function updateFor(g: Game | null): { release: string; needs: "ready" | "original" } | null {
-  if (!g || g.release === latestRelease()) return null;
+  if (!g || g.testing || g.release === latestRelease()) return null;   // a testing build is left as it is until put back
   return { release: latestRelease(), needs: stockFile().exists ? "ready" : "original" };
 }
 export const romBytes = () => romFile().bytesSync();
@@ -61,7 +62,7 @@ async function patched(rom: Uint8Array, id: string, onStep: (s: Step) => void): 
   if (sha1(out) !== p.target.sha1) throw new Error("The patched game did not check out. Nothing was kept.");   // DRAFT
   return { out, edition: p.edition };
 }
-function keep(out: Uint8Array, made: { edition: Game["edition"]; release: string }, from: string, stock?: Uint8Array): Game {
+function keep(out: Uint8Array, made: { edition: Game["edition"]; release: string; testing?: boolean }, from: string, stock?: Uint8Array): Game {
   if (!dir().exists) dir().create();
   put(romFile(), out);
   if (stock) put(stockFile(), stock);
@@ -101,6 +102,34 @@ export async function updateGame(onStep: (s: Step) => void = () => {}): Promise<
   const { out, edition } = await patched(rom, sha1(rom), onStep);
   onStep("keeping");
   return keep(out, { edition, release: latestRelease() }, g.from);
+}
+
+// C-216 (the user, 2026-10-28: "I have no way to get debug mode"; by multiple choice, the DEBUG patches stay private):
+// the TESTING BUILD, made from the player's original kept here with the DEBUG patch the paired companion holds -- never
+// from GitHub. What it offers, or null (none there, or not paired at home).
+type DebugPatch = { file: string; edition: Game["edition"]; version: string; source: { sha1: string };
+                    target: { sha1: string }; patch: { size: number; sha1: string } };
+export async function testingBuilds(): Promise<{ version: string; patches: DebugPatch[] } | null> {
+  try { return await api<{ version: string; patches: DebugPatch[] }>("/api/game/debug"); } catch { return null; }
+}
+export async function makeTestingBuild(onStep: (s: Step) => void = () => {}): Promise<Game> {
+  const g = heldGame();
+  if (!g || !stockFile().exists) throw new Error("Choose your FireRed or LeafGreen first: the testing build is made from it.");   // DRAFT
+  onStep("reading");
+  const rom = stockFile().bytesSync(), id = sha1(rom);
+  onStep("checking");
+  const m = await testingBuilds();
+  const p = m?.patches.find((x) => x.source.sha1.toLowerCase() === id.toLowerCase());
+  if (!p) throw new Error("The companion has no testing build for this game. Send them to the hub (./syncCompanion.sh debug).");   // DRAFT
+  onStep("fetching");
+  const { b64 } = await api<{ b64: string }>(`/api/game/debug/file?file=${encodeURIComponent(p.file)}`);
+  const patch = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  if (patch.length !== p.patch.size || sha1(patch) !== p.patch.sha1) throw new Error("The testing build came down damaged. Try again.");   // DRAFT
+  onStep("patching");
+  const out = applyBps(rom, patch);
+  if (sha1(out) !== p.target.sha1) throw new Error("The testing build did not check out. Nothing was kept.");   // DRAFT
+  onStep("keeping");
+  return keep(out, { edition: p.edition, release: p.version, testing: true }, g.from);
 }
 
 // The game made here, forgotten (its save is the companion's and stays)

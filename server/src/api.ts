@@ -107,6 +107,8 @@ function fileSave(path: string | null | undefined): SaveFile {
 export const mirrorPath = (cfg: Config) => join(cfg.database === ":memory:" ? tmpdir() : dirname(cfg.database), "mirror.sav");
 export const savePathOf = (cfg: Config, store: Store) =>
   store.getSetting("save.mirror") === "on" ? mirrorPath(cfg) : store.getSetting("savePath") ?? cfg.savePath;
+// C-216: where the DEBUG patches are kept -- named in the config, or beside the site (the hub's shared/debug)
+const debugDirOf = (cfg: Config) => cfg.debugDir ?? (cfg.siteDir ? join(dirname(cfg.siteDir), "debug") : null);
 // The save the companion was given, when it is not the mirror -- the one a device's game may take in, and must not lose
 const givenSave = (cfg: Config, store: Store) => store.getSetting("savePath") ?? cfg.savePath ?? null;
 const gameOf = (bytes: Uint8Array) => { const p = readProfile(bytes); return `${p.name}/${p.trainerId}/${p.secretId}`; };
@@ -1157,6 +1159,20 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/device/greet") return send(res, 200, { said: careLine("hello") });
       if (req.method === "POST" && path === "/api/device/note/written") { noteWritten(store); return send(res, 200, { ok: true }); }
       // C-188: the paired app's save, mirrored here (a paired phone only, never a board)
+      // C-216 (the user, by multiple choice: the DEBUG patches stay private): the testing builds' patches, kept on this
+      // companion only (./syncCompanion.sh debug), given to a paired phone or this machine -- never a board, never
+      // through the relay, never published. The manifest, then one patch by its file name as the manifest names it.
+      if (path.startsWith("/api/game/debug") && req.method === "GET") {
+        if (!(phone || isLoopback(req.socket.remoteAddress)) || board || relayed) return send(res, 403, { error: "the testing builds are for a paired phone at home" });
+        const dir = debugDirOf(cfg), manifest = dir ? join(dir, "debug_patches.json") : null;
+        if (!manifest || !existsSync(manifest)) return send(res, 404, { error: "no testing builds on this companion" });
+        const m = JSON.parse(readFileSync(manifest, "utf8")) as { patches?: { file: string }[] };
+        if (path === "/api/game/debug") return send(res, 200, m);
+        const name = url.searchParams.get("file") ?? "";
+        if (path !== "/api/game/debug/file" || !(m.patches ?? []).some((x) => x.file === name) || name.includes("/") || name.includes(".."))
+          return send(res, 404, { error: "no such testing build" });
+        return send(res, 200, { b64: readFileSync(join(dir!, name)).toString("base64") });
+      }
       if (path === "/api/save/mirror" && (phone || isLoopback(req.socket.remoteAddress)) && !board) {
         if (req.method === "GET") {
           const m = getMirror(cfg, store);

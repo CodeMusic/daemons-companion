@@ -12,6 +12,7 @@ export interface Config {
   savePath: string | null;          // a COPY of the DAEMONS save to read -- never the one the game is using
   artDir: string;                   // DAEMONS' own art (gfx/daemons/), served at /art/
   siteDir?: string | null;
+  debugDir?: string | null;         // C-216: the DEBUG patches, private, sent by ./syncCompanion.sh debug (beside siteDir when unset)
   lanInterface?: string | null;     // C-180: the home network's interface (the hub: eth0), when another could be taken          // C-170: the site, exported (app/: EXPO_PUBLIC_DAEMONS_SERVER=origin npx expo export -p web)
   ai: { enabled: boolean; baseUrl: string; model: string; apiKeyEnv: string | null };
   // C-64: the user's n8n, where daemon/talk and daemon/voice run (DAEMONS ai/n8n). At home, the internal one; the

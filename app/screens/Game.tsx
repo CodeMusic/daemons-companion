@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { Directory, File, Paths } from "expo-file-system";
 import { WebView } from "react-native-webview";
 import { Text, XStack, YStack } from "tamagui";
-import { freshPatches, heldGame, makeGame, updateFor, updateGame, type Game, type Step } from "../game/rom";
+import { freshPatches, heldGame, makeGame, makeTestingBuild, testingBuilds, updateFor, updateGame, type Game, type Step } from "../game/rom";
 import { GATE } from "../game/gate";
 import { ALONE, api, LOCAL, TOKEN } from "../net";
 import { sha1 } from "../../server/src/game/hash";
@@ -111,6 +111,8 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
   useEffect(() => {                                       // a newer release, as published now
     if (game) freshPatches().then(() => setUpdate(updateFor(game)));
   }, [game]);
+  const [testing, setTesting] = useState<string | null>(null);   // C-216: the paired companion's testing build, by version
+  useEffect(() => { if (paired()) testingBuilds().then((m) => setTesting(m?.version ?? null)); }, []);
 
   useEffect(() => {                                       // the page beside the ROM
     if (!game) return;
@@ -157,6 +159,15 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
       if (started.current) { web.current?.injectJavaScript("window.pauseGame(); true;"); await new Promise((r) => setTimeout(r, 800)); }
       const g = update?.needs === "ready" ? await updateGame(setStep) : await makeGame(setStep);
       if (g) { started.current = false; LOCAL?.setEdition(g.edition); setGame(g); }   // the page reloads; the save goes back in
+    } catch (e) { setError((e as Error).message); } finally { setStep(null); }
+  };
+  // C-216: to the TESTING BUILD, or back to the release -- the same save goes in either way
+  const swap = async (toTesting: boolean) => {
+    setError("");
+    try {
+      if (started.current) { web.current?.injectJavaScript("window.pauseGame(); true;"); await new Promise((r) => setTimeout(r, 800)); }
+      const g = toTesting ? await makeTestingBuild(setStep) : await updateGame(setStep);
+      started.current = false; LOCAL?.setEdition(g.edition); setGame(g);
     } catch (e) { setError((e as Error).message); } finally { setStep(null); }
   };
   const heard = (data: string) => {
@@ -207,6 +218,12 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
             ? `A new DAEMONS is out (v${update.release}). Your save comes with it.`
             : `A new DAEMONS is out (v${update.release}). Choose your FireRed or LeafGreen again to make it.`}  DRAFT</Small></YStack>
           {step ? null : <Action label={update.needs === "ready" ? "Update" : "Choose"} ink={ink} onPress={renew} />}
+        </XStack>
+      ) : null}
+      {game.testing || testing ? (                            /* C-216 (DRAFT) */
+        <XStack padding={8} gap={10} alignItems="center" backgroundColor="$color3">
+          <YStack flex={1}><Small>{step ? STEPS[step] : game.testing ? `TESTING BUILD (v${game.release}): the DEBUG build, with its DEBUG menu.` : `A TESTING BUILD is on the companion (v${testing}).`}  DRAFT</Small></YStack>
+          {step ? null : <Action label={game.testing ? "Back to the release" : "Play it"} ink={ink} onPress={() => swap(!game.testing)} />}
         </XStack>
       ) : null}
       <WebView key={game.sha1} ref={web} source={{ uri: page }} originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}

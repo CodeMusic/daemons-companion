@@ -75,6 +75,7 @@ export const askedAs = (a: TalkAsk, said: string) => `[${persona(a, said)}]\nThe
 type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: string };
 
 const HEAR_MS = 8000, DEAF_MS = 10 * 60_000;
+const MINDS = 2;                                           // thinkers alive on a module at once: the llm unit's two slots
 export type Faults = { empty: number; taskFull: number; garbled: number; last: { kind: string; at: string } | null };
 export class House {
   // C-180: the module's signs of leaked task slots (empty answers, "task full") and garbled words, counted since the
@@ -91,20 +92,36 @@ export class House {
   private minds = new Map<string, { gen: number; held: { key: string; work: string }[] }>();
   private settingUp = new Map<string, Promise<string>>();
   private noFlowUntil = new Map<string, number>();
+  private clearing: Promise<unknown> = Promise.resolve();
 
   // A thinker set up with this persona on that module -- once (3.4 s), then reused; at most two alive, the oldest let go.
   // Not set up yet and a deadline to keep: set up in the background, and this talk is LATE (it goes elsewhere).
   private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null) {
     let mind = this.minds.get(m.url);
-    if (!mind || mind.gen !== sf.generation) { mind = { gen: sf.generation, held: [] }; this.minds.set(m.url, mind); }
+    if (!mind || mind.gen !== sf.generation) {
+      // a new connection (this server started, or the link dropped): what is alive there is not ours -- let it go first
+      mind = { gen: sf.generation, held: [] }; this.minds.set(m.url, mind);
+      const fresh = mind;
+      this.clearing = sf.clearOrphans(new Set()).then(() => { fresh.gen = sf.generation; }).catch(() => {});
+    }
+    await this.clearing;
     let work = mind.held.find((x) => x.key === prompt)?.work;
     if (!work) {
       const k = `${m.url}\n${prompt}`, mm = mind;
-      const ready = this.settingUp.get(k) ?? sf.setup(model, prompt).then((w) => {
+      const ready = this.settingUp.get(k) ?? (async () => {
+        // room first: the llm unit holds two; the oldest of ours is let go before another is set up, never after
+        while (mm.held.length >= MINDS) await sf.exit(mm.held.shift()!.work);
+        let w: string;
+        try { w = await sf.setup(model, prompt); }
+        catch (e) {
+          if (!/task full/i.test((e as Error).message)) throw e;
+          this.fault("taskFull");                              // slots held elsewhere: let go what is not ours, once more
+          await sf.clearOrphans(new Set(mm.held.map((x) => x.work)));
+          w = await sf.setup(model, prompt);
+        }
         mm.held.push({ key: prompt, work: w });
-        while (mm.held.length > 2) sf.exit(mm.held.shift()!.work).catch(() => {});
         return w;
-      }).finally(() => this.settingUp.delete(k));
+      })().finally(() => this.settingUp.delete(k));
       this.settingUp.set(k, ready);
       if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
       work = await ready;

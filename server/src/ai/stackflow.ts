@@ -83,6 +83,19 @@ export class StackFlow {
     }
     return { text, firstMs, totalMs: Date.now() - t0 };
   }); }
+  // The llm instances alive on the module ("llm.1000", ...), whoever made them
+  taskinfo(ms = 5000): Promise<string[]> { return this.locked(async () => {
+    await this.send({ request_id: "taskinfo", work_id: "llm", action: "taskinfo" });
+    const r = await this.next(ms), d = r.data;
+    return Array.isArray(d) ? d.filter((x): x is string => typeof x === "string" && /^llm\.\d+$/.test(x)) : [];
+  }); }
+  // Every instance this server did not make let go -- left by a server before a restart (a deploy), each holding one of
+  // the llm unit's two slots until nothing more can be set up ("task full", the hardware lane 2026-10-28)
+  async clearOrphans(mine: Set<string>): Promise<number> {
+    let n = 0;
+    for (const w of await this.taskinfo().catch(() => [] as string[])) if (!mine.has(w)) { await this.exit(w); n++; }
+    return n;
+  }
   exit(workId: string): Promise<void> { return this.locked(async () => {
     try { await this.send({ request_id: "exit", work_id: workId, action: "exit" }); await this.next(5000); } catch { /* gone already */ }
   }); }

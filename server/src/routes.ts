@@ -10,6 +10,7 @@ import { readPlan, readWild } from "./planner.js";   // C-191
 import { casinoPending, clampMoney, tableFor } from "./casino.js";
 import actsJson from "../data/acts.json" with { type: "json" };
 import { readGuide } from "./save/guide.js";
+import { bookList, booksOf, chapterOf } from "./books.js";   // C-208: the books held, as a board reads them
 import { readNotebook } from "./save/notebook.js";
 import { readProgress } from "./save/progress.js";
 import { readPlay } from "./save/play.js";
@@ -37,7 +38,7 @@ import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./wh
 import { bondAdd } from "./evolve.js";
 import { thriveOf } from "./thrive.js";   // C-207
 import { validDeviceId } from "./deviceid.js";
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -97,6 +98,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/guide") return ok(readGuide(save));              // C-145: the GUIDE, once found
+    if (path === "/api/books" || path === "/api/book") {               // C-208: the books held -- their chapters, or one chapter
+      const books = booksOf(readSubtle(save, undefined, a.query?.preview === "1"), readGuide(save), readNotebook(save));
+      if (path === "/api/books") return ok({ books: bookList(books) });
+      const c = chapterOf(books, a.query?.book ?? "", Number(a.query?.n));
+      return c ? ok(c) : no(404, "no such chapter");
+    }
     if (path === "/api/reads") return ok({ held: readSubtle(save, undefined, a.query?.preview === "1").held, ...readsView(store, now) });   // C-203: the companion's own log
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));   // T-423: THE SUBTLE LAYER, once found (?preview=1, a bench check)
     if (path === "/api/index") return ok(readIndex(save, h.edition));   // C-24: the save's own INDEX, OPUS's margins with it

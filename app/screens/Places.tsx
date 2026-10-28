@@ -67,7 +67,7 @@ const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
 const CLOCK_FACE = /^(t-watch-s3|t-watch-ultra|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
 const PLAYS = /^(t-watch-s3|t-watch-ultra|t-deck|m5-cardputer)/;
 const QUICKS: [string, string][] = [["care", "CARE"], ["talk", "TALK"], ["music", "MUSIC"], ["hours", "HOURS"], ["casino", "CASINO"],
-                                    ["routines", "ROUTINES"], ["dream", "LAST DREAM"], ["index", "INDEX"]];   // C-206, DRAFT
+                                    ["routines", "ROUTINES"], ["dream", "LAST DREAM"], ["index", "INDEX"], ["books", "BOOKS"]];   // C-206, DRAFT
 const GNSS = /^t-watch-ultra-/;   // C-174: the boards that know where they are   // the boards with MUSIC: the watches' strings and holes, the number keys
 const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],

@@ -264,7 +264,7 @@ void press() {
     }
   } else if (screen == TYPES) {
     if (isPartyType(typeAt)) { screen = PARTY; partyAt = 0; }     // C-68: the CC1101's way in
-    else if (!strcmp(types[typeAt].name, "CASINO")) { routineAt = 0; runRoutine(); }   // C-149: its one routine, at once
+    else if (!strcmp(types[typeAt].name, "CASINO") || !strcmp(types[typeAt].name, "BOOKS")) { routineAt = 0; runRoutine(); }   // C-149: its one routine, at once (C-208 BOOKS too)
     else { screen = LIST; routineAt = 0; }
   }
   else if (screen == CARE_KEYS) { careDo(0); goHome(); }          // C-149: the cable's KEY PRESS is B, which feeds

@@ -351,6 +351,7 @@ export const DEVICE_DOOR = [
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast"].includes(p),   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
+  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book"),   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
 ];
 

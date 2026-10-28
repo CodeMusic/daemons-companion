@@ -542,12 +542,12 @@ static void drawFace(uint16_t day, uint16_t ink) {
 // Under the face's 240 square, the 40 rows the tall glass has left: a heads-up line -- a dream waiting first, then last
 // night (told as SUSPENDED, the game's word for sleep), then what the wrist is doing and the steps -- and three buttons,
 // each opening the view chosen in the app (`quick`). Every word DRAFT.
-static const char *QUICK_IDS[] = { "care", "talk", "music", "hours", "casino", "routines", "dream", "index" };
-static const char *QUICK_NAMES[] = { "CARE", "TALK", "MUSIC", "HOURS", "CASINO", "ROUTINES", "DREAM", "INDEX" };   // DRAFT
+static const char *QUICK_IDS[] = { "care", "talk", "music", "hours", "casino", "routines", "dream", "index", "books" };
+static const char *QUICK_NAMES[] = { "CARE", "TALK", "MUSIC", "HOURS", "CASINO", "ROUTINES", "DREAM", "INDEX", "BOOKS" };   // DRAFT
 static int quickOf(int slot) {                              // the slot's view, as an index of QUICK_IDS; -1 none
   String q = cfg.quick + ",";
   for (int i = 0, from = 0, at; (at = q.indexOf(',', from)) >= 0; i++, from = at + 1)
-    if (i == slot) { String id = q.substring(from, at); for (int k = 0; k < 8; k++) if (id == QUICK_IDS[k]) return k; return -1; }
+    if (i == slot) { String id = q.substring(from, at); for (int k = 0; k < 9; k++) if (id == QUICK_IDS[k]) return k; return -1; }
   return -1;
 }
 static String headsUp() {
@@ -588,11 +588,11 @@ bool quickTap(int x, int y) {
   switch (k) {
     case 0: if (st.carrying) openCareGrid(); else say("No daemon here"); break;                   // DRAFT
     case 1: if (talkCan()) talkHold(5000); break;
-    case 2: case 3: case 4:
-      t = typeNamed(k == 2 ? "MUSIC" : k == 3 ? "HOURS" : "CASINO");
+    case 2: case 3: case 4: case 8:
+      t = typeNamed(k == 2 ? "MUSIC" : k == 3 ? "HOURS" : k == 4 ? "CASINO" : "BOOKS");
       if (t < 0) break;
       typeAt = t; routineAt = 0;
-      if (k == 4) runRoutine(); else screen = LIST;
+      if (k == 4 || k == 8) runRoutine(); else screen = LIST;
       break;
     case 5: screen = TYPES; typeAt = 0; break;
     case 6: if (!dreamAgain()) say("No dream yet"); break;                                         // DRAFT

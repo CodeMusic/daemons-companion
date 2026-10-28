@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { SCREEN } from "../data";
 import { Art } from "../ui";
+import { ReadAloud } from "../readAloud";   // C-208
 
 type Para = { text: string; voice: "telling" | "asking" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
@@ -54,6 +55,7 @@ export function SubtleBook({ b }: { b: SubtleT }) {
           <YStack width={wide ? Math.max(0, w - 2 * 18 - 94 * 3 - 18) : "100%"} gap={10}>
             <Text fontSize={20} lineHeight={27} fontWeight="700" color={C.ink}>{e.title}</Text>
             <YStack height={2} backgroundColor={C.pink} width={48} />
+            <ReadAloud id={`subtle-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={C.pink} />
             {e.paragraphs.map((p, i) => (
               <Text key={i} fontSize={16} lineHeight={25} color={p.voice === "asking" ? C.faint : C.ink}
                     fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>

@@ -132,7 +132,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
 // above it (the default), the daemon under a clock's hands, or the day's words alone (the watch's first face)
 export const FACES = ["daemon", "clock", "virtue"] as const;
 // C-206 (the user, 2026-10-28): the Ultra's three quick-launch buttons, under its face -- each opens one view
-export const QUICKS = ["care", "talk", "music", "hours", "casino", "routines", "dream", "index"] as const;
+export const QUICKS = ["care", "talk", "music", "hours", "casino", "routines", "dream", "index", "books"] as const;   // books: C-208
 export type Face = typeof FACES[number];
 
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board

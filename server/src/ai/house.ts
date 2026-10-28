@@ -56,7 +56,9 @@ export function persona(a: TalkAsk, heard = ""): string {
   const d = a.daemon;
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
                d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
-  return [`${who}, from the INDEX, who lives with the user.`,
+  // said positively, and never the word AI: a 0.5B loses the "never" and keeps the word (the hardware lane, 2026-10-28:
+  // OVERLOADED answered "I'm OVERLOADED, an AI ... no body" under "Never say you are an AI")
+  return [`${who}: a small living creature with a body of your own, from the INDEX of the game DAEMONS, who travels with the person who carries you.`,
           d.entry ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
           d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
           d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 90)}` : "",
@@ -64,7 +66,7 @@ export function persona(a: TalkAsk, heard = ""): string {
           a.goal ? `The user is working on: ${a.goal.goal} -- next, ${a.goal.step}.` : "",
           // the style rides here, not in the system message: a long system message at a pooled client's setup made every
           // answer from it empty (the hardware lane, 2026-10-28); the name said again, the 0.5B drifts from it
-          `Answer as ${d.nickname}, in one or two short warm sentences. Never say you are an AI.`]
+          `Speak as ${d.nickname}, warmly, in one or two short sentences, about your own life: your food, your sleep, your dreams, the weather.`]
     .filter(Boolean).join(" ");
 }
 // The persona a thinker is set up with: what changes within a day (mood, fed and watered, the goal's next step) left out,

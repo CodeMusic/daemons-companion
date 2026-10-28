@@ -167,10 +167,31 @@ void drawLean(int y) {
   canvas.setTextDatum(TL_DATUM);
 }
 
+// ---- words under words (C-204) ----------------------------------------------------------------------------------------------
+// The user chose four of the daemon's own lines (server/src/lines.ts); once the save holds the book the server sends the
+// words under them, and they come where the line was, as it goes: dark, edged in the hue, the words lit. Never a feeling.
+static String underText; static uint32_t underFrom = 0, underUntil = 0;
+void intuitionUnder(const String &words, uint32_t after) {
+  underText = words; underFrom = millis() + after; underUntil = underFrom + 3500; dirty = true;
+}
+void drawUnder() {
+  uint32_t n = millis();
+  if (!underUntil || (int32_t)(n - underFrom) < 0 || (int32_t)(underUntil - n) <= 0) return;
+  canvas.setTextFont(4);
+  if (canvas.textWidth(underText) > W - 40) canvas.setTextFont(2);
+  int bw = min(W - 16, max(140, (int)canvas.textWidth(underText) + 32));
+  canvas.fillRoundRect(W / 2 - bw / 2, H / 2 - 22, bw, 44, 6, INK);
+  canvas.drawRoundRect(W / 2 - bw / 2, H / 2 - 22, bw, 44, 6, HUE);
+  canvas.setTextColor(LIT); canvas.setTextDatum(MC_DATUM);
+  canvas.drawString(underText, W / 2, H / 2);
+  canvas.setTextDatum(TL_DATUM);
+}
+
 // ---- every pass ------------------------------------------------------------------------------------------------------------
 void intuitionLoop(uint32_t now) {
   static uint32_t rainAt = 0; static bool wasAsleep = true;
   if (readShowing()) { static uint32_t at = 0; if (now - at > 250) { at = now; dirty = true; } }
+  if (underUntil && (int32_t)(underUntil - now) > -300) { static uint32_t at = 0; if (now - at > 250) { at = now; dirty = true; } }   // C-204
   if (noticeUntil && (int32_t)(noticeUntil - now) > -300) { static uint32_t at = 0; if (now - at > 60) { at = now; dirty = true; } }
   bool woke = wasAsleep && !asleep;
   wasAsleep = asleep;

@@ -699,10 +699,18 @@ static String *stateMail = nullptr;                    // from the task, for the
 static String *saidMail = nullptr;                     // C-196: the daemon's own line after a care, for the loop
 static const uint32_t SAID_MS = 3500;                  // long enough to read 36 characters
 // C-196 (C-180 (2)): a care's answer carries `said`, a line written for the daemon's mood and the day (no model)
+// C-204: and `under`, once the save holds THE SUBTLE LAYER -- carried after it, past a unit separator
 static String saidIn(const String &answer) {
   JsonDocument d;
   if (!answer.length() || deserializeJson(d, answer)) return "";
-  return d["said"] | "";
+  String said = d["said"] | "", under = d["under"] | "";
+  return said.length() && under.length() ? said + '\x1f' + under : said;
+}
+// the line, then the words under it in the book's purple (intuition.cpp)
+static void sayMail(const String &m) {
+  int cut = m.indexOf('\x1f');
+  say(cut < 0 ? m : m.substring(0, cut), SAID_MS);
+  if (cut >= 0) intuitionUnder(m.substring(cut + 1), SAID_MS);
 }
 static portMUX_TYPE mailMux = portMUX_INITIALIZER_UNLOCKED;
 bool netBusy() { return sending || (outbox && uxQueueMessagesWaiting(outbox)); }
@@ -779,7 +787,7 @@ void report(const String &kind, const String &detail) {
     String answer = http("POST", "/api/device/interact", body);
     if (answer.length()) {
       String said = saidIn(answer);
-      if (said.length()) say(said, SAID_MS);
+      if (said.length()) sayMail(said);
       httpState("GET", "/api/device/state", "");   // its new life
     }
     return;
@@ -823,7 +831,7 @@ void reportLoop() {
     delete m;
   }
   portENTER_CRITICAL(&mailMux); String *s = saidMail; saidMail = nullptr; portEXIT_CRITICAL(&mailMux);
-  if (s) { say(*s, SAID_MS); delete s; }
+  if (s) { sayMail(*s); delete s; }
   if (outbox && uxQueueMessagesWaiting(outbox) && bridgeLive() && (!netLock || xSemaphoreTakeRecursive(netLock, 0) == pdTRUE)) {
     Told t;
     while (xQueueReceive(outbox, &t, 0) == pdTRUE) bridge(String("INTERACT ") + t.kind + " " + t.detail);

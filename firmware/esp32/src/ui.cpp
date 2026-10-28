@@ -996,6 +996,7 @@ void draw() {
   drawActivity(day, ink);                                     // C-183: what was just done, over everything but a word
   drawDream(day);                                             // C-200: the night's dream, over all of it
   if (!dreamShowing()) drawRead(day);                         // C-203: a read, after the daemon has noticed
+  drawUnder();                                                // C-204: what it meant, under what it said
   if (gridLists() && screen == HOME && page != FACE_PAGE && !activityShowing()) {   // C-172: where a swipe goes, never on the face
     int at = launchIndex(page);
     if (at >= 0) pageDots(at, LAUNCH_N);

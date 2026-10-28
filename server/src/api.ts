@@ -68,7 +68,7 @@ import * as X from "./exchange.js";                               // C-218, C-21
 import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
-import { isLineKind, writtenLine, type LineKind } from "./lines.js";
+import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
 import { noteClose, outlookLoop } from "./intuition.js";   // C-203
 import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressions.js";
@@ -85,6 +85,7 @@ import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond'
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
+import { readSubtle } from "./save/subtle.js";   // C-204
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
@@ -158,6 +159,8 @@ export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uin
   return { sha1: sha1(bytes), bytes };
 }
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
+// C-204: the save holds THE SUBTLE LAYER -- words under words may be said
+const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!s && readSubtle(s).held; };
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
 
@@ -1394,7 +1397,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, t ? 200 : 400, t ? { ok: true, note: t } : { error: "note {text}" });
       }
       // C-180: a hello from the daemon, from the written lines (no model), by its mood and the day
-      if (req.method === "GET" && path === "/api/device/greet") return send(res, 200, { said: careLine("hello") });
+      if (req.method === "GET" && path === "/api/device/greet") return send(res, 200, saying(careLine("hello"), bookHeld(ecfg)));   // C-204: and under it
       if (req.method === "POST" && path === "/api/device/note/written") { noteWritten(store); return send(res, 200, { ok: true }); }
       // C-188: the paired app's save, mirrored here (a paired phone only, never a board)
       // C-216 (the user, by multiple choice: the DEBUG patches stay private): the testing builds' patches, kept on this
@@ -1491,7 +1494,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
         core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's
-        return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? { said: careLine(kind) } : {}) });   // C-180: its answer, at once
+        return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? saying(careLine(kind), bookHeld(ecfg)) : {}) });   // C-180: its answer, at once; C-204: and under it
       }
       // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.
       if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store, isLoopback(req.socket.remoteAddress)));

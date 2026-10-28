@@ -7,6 +7,7 @@ import { api, ON_PHONE } from "../net";
 import { hearSettings, soundLevel } from "../tuneSound";
 import { Cast, Notebook, PlayerState, Profile, TABS, Today } from "../types";
 import { Action, Art, Card, careSound, Eyebrow, Small } from "../ui";
+import { Under } from "./Reads";   // C-204
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
   const done = async () => { if (today.next) { await api(`/api/steps/${today.next.step.id}/done`, {}); reload(); } };
@@ -45,6 +46,7 @@ export function TodayMore({ goTo, ink, note }: { goTo: (t: (typeof TABS)[number]
   const [nb, setNb] = useState<Notebook | null>(null);
   const [last, setLast] = useState<Cast | null>(null);
   const [said, setSaid] = useState("");
+  const [under, setUnder] = useState("");                 // C-204: words under words, once the book is held
   const [own, setOwn] = useState<{ slot: number; nickname: string } | null | undefined>(undefined);   // this player's own (a box's, C-103); undefined: not heard yet
   const player = useAudioPlayer(null);
   useEffect(() => {                                         // C-160: this phone's own SOUND, as the DAEMON page reads it
@@ -64,12 +66,12 @@ export function TodayMore({ goTo, ink, note }: { goTo: (t: (typeof TABS)[number]
   const d = own === undefined ? null : own ?? party?.find((x) => x.away) ?? null;
   // as the DAEMON page and the boards tend it: the day's phrase (C-114), the boards' word, then the daemon's own line (C-196)
   const care = async (c: "feed" | "water" | "train") => {
-    setSaid(c === "feed" ? "Eaten." : c === "water" ? "Drank." : "Trained.");
+    setSaid(c === "feed" ? "Eaten." : c === "water" ? "Drank." : "Trained."); setUnder("");
     if (ON_PHONE && soundLevel() > 0) {
       try { await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(c, note) }); player.volume = soundLevel(); player.play(); }
       catch { /* quiet is fine */ }
     }
-    try { const r = await api<{ said?: string }>(`/api/daemon/${c}`, {}); if (r.said) setSaid(r.said); load(); }
+    try { const r = await api<{ said?: string; under?: string }>(`/api/daemon/${c}`, {}); if (r.said) setSaid(r.said); setUnder(r.under ?? ""); load(); }
     catch (e) { setSaid((e as Error).message); }
   };
   const unread = nb?.sections.flatMap((s) => s.pages).filter((x) => x.unread).length ?? 0;
@@ -95,6 +97,7 @@ export function TodayMore({ goTo, ink, note }: { goTo: (t: (typeof TABS)[number]
             <Action label="Train" ink={ink} onPress={() => care("train")} />
           </XStack>
           {said ? <Small>{said}</Small> : null}
+          <Under words={under} />
         </Card>
       ) : null}
       {last ? (

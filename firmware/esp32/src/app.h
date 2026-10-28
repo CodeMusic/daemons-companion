@@ -74,6 +74,7 @@ void intuitionMoment(int about); void intuitionHeard(const String &tag, bool lor
 bool intuitionNoticing(bool &right, float &phase); void intuitionRipple(int cx, int cy, int side, float phase);
 bool readShowing(); void readDismiss(); void drawRead(uint16_t day);
 void leanPull(bool pays, bool may = true); void leanResult(bool paid); void drawLean(int y);
+void intuitionUnder(const String &words, uint32_t after); void drawUnder();   // C-204: words under words
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();

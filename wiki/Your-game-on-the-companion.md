@@ -83,6 +83,10 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
   lean:"** while they turn. Some reads are about nothing, worded the same. The companion judges each by what happens
   after and keeps the count on the DAEMON page's **READS**; it never says a read was right before it lands. The NOTEBOOK's
   **READS -> THE LOG** is the game's own, written here from your save as the game writes it. Every word DRAFT.
+- **Words under words** (C-204) -- with the book held, four of the daemon's own lines carry a second, in purple, after
+  it: what it means beneath what it says. You chose them: under "Hi! I missed you!", *I counted.*; under "Goodnight.
+  Stay near?", *Don't go far.*; under "Again! Again!", *Watch me.*; under "Five more minutes?", *Stay with me.* On the
+  boards it comes where the line was, as it goes; in the app, under it. Every word DRAFT.
 - **The NOTEBOOK** -- every page your save holds (C-125), in the game's own sections, each tapped open and laid out as
   the game's NOTEBOOK lays it. A dot marks a page you have not yet read in the game; an open page says where it was
   found. A page the game writes from your save each time you open it there says so, rather than guessing. **A page that

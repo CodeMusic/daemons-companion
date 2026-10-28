@@ -49,3 +49,18 @@ export function writtenLine(kind: LineKind, mood: number, day: string, before = 
   return list[(h + before) % list.length];
 }
 export const isLineKind = (k: string): k is LineKind => (LINE_KINDS as string[]).includes(k);
+
+// C-204 (the user, 2026-10-28, by multiple choice): words under words -- once the save holds THE SUBTLE LAYER, a purple
+// line under four of the daemon's own, what it means beneath what it says, as DAEMONS T-459 D puts one under four
+// people's. Never a feeling named. DRAFT.
+const UNDER: Record<string, string> = {
+  "Hi! I missed you!": "I counted.",
+  "Goodnight. Stay near?": "Don't go far.",
+  "Again! Again!": "Watch me.",
+  "Five more minutes?": "Stay with me.",
+};
+export const UNDER_LINES = Object.keys(UNDER);
+// a written line as an answer carries it: `said`, and `under` when there is one and the book is held
+export function saying(said: string, held: boolean): { said: string; under?: string } {
+  return held && UNDER[said] ? { said, under: UNDER[said] } : { said };
+}

@@ -29,3 +29,10 @@ export function ReadsCard() {
     </Card>
   );
 }
+
+// C-204: words under words -- the line the companion sends under one of the daemon's own (only once the book is held),
+// in the book's purple, under what it said. Never a feeling. DRAFT.
+export function Under({ words }: { words: string }) {
+  const ink = useSubtleInk();
+  return words ? <Text fontSize={15} lineHeight={20} color={ink}>{words}</Text> : null;
+}

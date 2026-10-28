@@ -15,7 +15,7 @@ import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
 import { followVoice, useMouth } from "../speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
-import { ReadsCard } from "./Reads";   // C-203
+import { ReadsCard, Under } from "./Reads";   // C-203, C-204
 import { useApi } from "../useApi";
  // C-119: how it looks now, decided on the server
 
@@ -34,6 +34,7 @@ export function presumed(l: Life, what: "feed" | "water" | "train" | "sleep" | "
 export function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Daemon }) {
   const [l, setL] = useState<Life | null>(null);
   const [said, setSaid] = useState("");
+  const [under, setUnder] = useState("");                   // C-204: words under words, once the book is held
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
@@ -47,7 +48,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   }, []);
   if (!l) return null;
   const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
-    setSaid(word); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
+    setSaid(word); setUnder(""); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
     setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
     if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
       try {
@@ -58,7 +59,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       }
       catch { /* quiet is fine */ }
     }
-    try { const r = await api<Life & { said?: string }>(`/api/daemon/${what}`, {}); setL(r); if (r.said) setSaid(r.said); }   // its answer corrects the counts; C-196: its own line
+    try { const r = await api<Life & { said?: string; under?: string }>(`/api/daemon/${what}`, {}); setL(r); if (r.said) setSaid(r.said); setUnder(r.under ?? ""); }   // its answer corrects the counts; C-196: its own line
     catch (e) {                                            // out of reach, api() has kept it (C-62) -- once: the widget's
       if (!/^Kept on this phone/.test((e as Error).message))   // queue would send it again (the review, 2026-10-18); refused,
         api<Life>("/api/daemon/life").then(setL).catch(() => {});   // the companion's own counts replace the presumed ones
@@ -91,6 +92,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
         </XStack>
       )}
       {said ? <Small>{said}</Small> : null}
+      <Under words={under} />
     </Card>
   );
 }

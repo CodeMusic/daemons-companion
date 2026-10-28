@@ -160,6 +160,19 @@ export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uin
 }
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
 // C-204: the save holds THE SUBTLE LAYER -- words under words may be said
+// Who a talk is with, for the module's persona: the daemon a device carries, its day and the user's next step (C-180)
+function talkWho(ecfg: Config, store: Store, deviceId: string) {
+  const st = deviceState(ecfg, store, new Date(), deviceId), d = st.daemon;
+  return {
+    daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry,
+                  level: d.level ?? null, mood: d.life?.word,                                  // the user: its game, to ask about
+                  fed: d.life ? `fed ${d.life.fed.today}, watered ${d.life.watered.today} today` : undefined,
+                  dream: (st as { dream?: { text: string } }).dream?.text }
+              : { nickname: "your daemon" },
+    day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue }, season: st.season,
+    goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
+  };
+}
 const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!s && readSubtle(s).held; };
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
@@ -526,6 +539,17 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   };
   checkTalk().catch(() => {});
   setInterval(() => { checkTalk().catch(() => {}); }, 60_000).unref();
+  // The first talk of the day was a ~15 s setup on the module (p256, the hardware lane 2026-10-28): the daemon carried and,
+  // once found, the GUIDE are set up ahead -- a minute after starting, then every ten (a no-op while their thinkers hold)
+  const warmTalk = () => {
+    if (!house.any) return;
+    const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, save = hostOf(ecfg).save.read();
+    const asks: TalkAsk[] = [{ history: [], speak: false, ...talkWho(ecfg, store, "") }];
+    if (save && readGuide(save).held) asks.push({ history: [], speak: false, daemon: { nickname: "THE GUIDE" }, guide: () => "" });
+    house.warm(asks).catch(() => {});
+  };
+  setTimeout(warmTalk, 60_000).unref();
+  setInterval(warmTalk, 10 * 60_000).unref();
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
@@ -1056,20 +1080,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-66: push to talk -- text or audio in, an answer and its voice out. The daemon carried and the day go with it.
       const talkPayload = (b: Record<string, any>) => {
-        const st = deviceState(ecfg, store, new Date(), deviceId), d = st.daemon;
         return {
           text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
           history: Array.isArray(b.history) ? b.history.slice(-6) : talks.history(who),
           provider: b.provider ?? talkProvider(), speak: b.speak !== false, voice: "index",
           localModel: ecfg.talk.localModel,
-          daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry,
-                        level: d.level ?? null, mood: d.life?.word,                                  // the user: its game, to ask about
-                        fed: d.life ? `fed ${d.life.fed.today}, watered ${d.life.watered.today} today` : undefined,
-                        dream: (st as { dream?: { text: string } }).dream?.text }
-                    : { nickname: "your daemon" },
-          day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue }, season: st.season,
-          goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
+          ...talkWho(ecfg, store, deviceId),
           ...(typeof b.guide === "function" ? { guide: b.guide as (heard: string) => string, history: [] } : {}),   // C-209: the GUIDE answers, afresh each time
         };
       };

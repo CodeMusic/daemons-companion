@@ -113,6 +113,21 @@ describe("thinking through StackFlow (C-180)", () => {
     expect(setups[0].data.prompt).toBe(GUIDE_SETUP);
     expect(seen.filter((x) => x.action === "inference").at(-1)!.data).toBe('Page "dreams": words Question: dreams');
   });
+  it("warms the daemon carried and the GUIDE ahead, so the first talk keeps its deadline; never over one talked to lately", async () => {
+    const sf = new StackFlow("127.0.0.1", port);
+    let t = 1_000_000;
+    const h = new House(() => [{ url: modUrl, name: "m" }], () => t, () => sf);
+    await h.warm([ask("WARMED"), { ...ask("x"), guide: () => "" }]);
+    t += 1000;
+    expect((await h.talk(ask("WARMED"))).answer).toBe("I am WARMED.");        // within the deadline: no LATE
+    expect((await h.talk(ask("OTHER"), null)).answer).toBe("I am OTHER.");    // the GUIDE, never talked to, let go
+    const before = seen.filter((x) => x.action === "setup").length;
+    await h.warm([{ ...ask("x"), guide: () => "" }]);                       // both talked to just now: left be
+    expect(seen.filter((x) => x.action === "setup").length).toBe(before);
+    t += 31 * 60_000;
+    await h.warm([{ ...ask("x"), guide: () => "" }]);                       // half an hour on: the GUIDE warmed again
+    expect(seen.filter((x) => x.action === "setup").length).toBe(before + 1);
+  });
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));
     expect((await h.talk(ask("SEEKMUSAI"), null)).answer).toBe("Good morning!");

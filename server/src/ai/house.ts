@@ -77,7 +77,9 @@ type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: stri
 
 const HEAR_MS = 8000, DEAF_MS = 10 * 60_000;
 const wide = (model: string) => /p256/i.test(model);  // a thinker with room: 256 tokens a turn, not ~128
-const MINDS = 2;                                           // thinkers alive on a module at once: the llm unit's two slots
+const MINDS = 2;
+const WARM_KEEP_MS = 30 * 60_000;                         // a thinker talked to this lately is not let go to warm another
+type Mind = { gen: number; held: { key: string; work: string; used: number }[] };                                           // thinkers alive on a module at once: the llm unit's two slots
 export type Faults = { empty: number; taskFull: number; garbled: number; last: { kind: string; at: string } | null };
 export class House {
   // C-180: the module's signs of leaked task slots (empty answers, "task full") and garbled words, counted since the
@@ -91,7 +93,7 @@ export class House {
   // thinker: a module's StackFlow (ai/stackflow.ts, given by api.ts), where its persona can reach the model; none, or one
   // that cannot be reached, and the OpenAI plugin thinks as before (a stand-in server, the tests)
   constructor(private modules: () => ModuleAt[], private now = () => Date.now(), private thinker?: (m: ModuleAt) => StackFlow | null) {}
-  private minds = new Map<string, { gen: number; held: { key: string; work: string }[] }>();
+  private minds = new Map<string, Mind>();
   private settingUp = new Map<string, Promise<string>>();
   private noFlowUntil = new Map<string, number>();
   private clearing: Promise<unknown> = Promise.resolve();
@@ -99,20 +101,41 @@ export class House {
   // A thinker set up with this persona on that module -- once (3.4 s), then reused; at most two alive, the oldest let go.
   // Not set up yet and a deadline to keep: set up in the background, and this talk is LATE (it goes elsewhere).
   private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null, most = 300) {
+    const mind = await this.mindOf(sf, m);
+    const had = mind.held.find((x) => x.key === prompt);
+    if (had) had.used = this.now();
+    let work = had?.work;
+    if (!work) {
+      const ready = this.ready(sf, mind, m, model, prompt);
+      if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
+      work = await ready;
+    }
+    return sf.infer(work, said.slice(0, most), deadlineMs ? { firstWithinMs: deadlineMs } : {});
+  }
+  // What is alive on a module's StackFlow, as this server knows it -- on a new connection (this server started, or the
+  // link dropped) what is alive there is not ours, and is let go first
+  private async mindOf(sf: StackFlow, m: ModuleAt): Promise<Mind> {
     let mind = this.minds.get(m.url);
     if (!mind || mind.gen !== sf.generation) {
-      // a new connection (this server started, or the link dropped): what is alive there is not ours -- let it go first
       mind = { gen: sf.generation, held: [] }; this.minds.set(m.url, mind);
       const fresh = mind;
       this.clearing = sf.clearOrphans(new Set()).then(() => { fresh.gen = sf.generation; }).catch(() => {});
     }
     await this.clearing;
-    let work = mind.held.find((x) => x.key === prompt)?.work;
-    if (!work) {
+    return mind;
+  }
+  // A thinker for this persona on that module: the one held, or one being set up, or a new one (room made first)
+  private ready(sf: StackFlow, mind: Mind, m: ModuleAt, model: string, prompt: string): Promise<string> {
+    const held = mind.held.find((x) => x.key === prompt)?.work;
+    if (held) return Promise.resolve(held);
+    {
       const k = `${m.url}\n${prompt}`, mm = mind;
       const ready = this.settingUp.get(k) ?? (async () => {
-        // room first: the llm unit holds two; the oldest of ours is let go before another is set up, never after
-        while (mm.held.length >= MINDS) await sf.exit(mm.held.shift()!.work);
+        // room first: the llm unit holds two; the one of ours talked to longest ago is let go before another is set up
+        while (mm.held.length >= MINDS) {
+          const i = mm.held.reduce((b, x, j) => (x.used < mm.held[b].used ? j : b), 0);
+          await sf.exit(mm.held.splice(i, 1)[0].work);
+        }
         // a slot just let go is free on the module a moment later, not at once: on "task full", what is not ours let go,
         // and asked again after a pause -- three times (the hardware lane: the first talk after a new persona failed)
         let w = "";
@@ -125,14 +148,30 @@ export class House {
             await new Promise((r) => setTimeout(r, 600 * (tries + 1)));
           }
         }
-        mm.held.push({ key: prompt, work: w });
+        mm.held.push({ key: prompt, work: w, used: this.now() });
         return w;
       })().finally(() => this.settingUp.delete(k));
       this.settingUp.set(k, ready);
-      if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
-      work = await ready;
+      return ready;
     }
-    return sf.infer(work, said.slice(0, most), deadlineMs ? { firstWithinMs: deadlineMs } : {});
+  }
+
+  // Set these up ahead, so no one waits on a setup (p256's ~15 s): the daemon carried, the GUIDE -- at most two, on
+  // each module that thinks through StackFlow and is not busy. Nothing is said; a thinker already held is left be.
+  async warm(asks: TalkAsk[]) {
+    for (const m of this.modules()) {
+      if (this.busy.has(m.url) || (this.noFlowUntil.get(m.url) ?? 0) > this.now()) continue;
+      const h = await this.models(m), sf = this.thinker?.(m);
+      if (!h.llm || !sf) continue;
+      const mind = await this.mindOf(sf, m);
+      for (const a of asks.slice(0, MINDS)) {
+        const prompt = a.guide ? GUIDE_SETUP : persona(steady(a));
+        if (mind.held.some((x) => x.key === prompt)) continue;
+        // never make room by letting go a thinker someone talked to lately (another device's daemon, say)
+        if (mind.held.length >= MINDS && mind.held.every((x) => this.now() - x.used < WARM_KEEP_MS)) break;
+        await this.ready(sf, mind, m, h.llm, prompt);
+      }
+    }
   }
 
   // Each module, what it holds, whether it is answering now

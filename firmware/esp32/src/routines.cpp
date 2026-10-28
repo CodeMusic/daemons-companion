@@ -34,9 +34,10 @@ static const Routine FLARE_SEND_ROUTINES[] = { { "POWER", runPower }, { "VOLUME 
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote } };
 static const Routine WHISPER_ROUTINES[]    = { { "PAIR MY PHONE", runPairMyPhone }, { "OPEN TO MY PHONE", runOpenToMyPhone },
                                                { "FORGET MY PHONES", runForgetPhones } };
-String runTeachTag(); String runTapTag();   // C-176: tags as routines, radios.cpp
+String runTeachTag(); String runTapTag(); String runTouch();   // C-176: tags as routines; TOUCH, radios.cpp
 static const Routine TOUCHSTONE_ROUTINES[] = { { "HOLD A CARD", runCard }, { "READ MY TAG", runReadMyTag },
-                                               { "TAP A TAG", runTapTag }, { "TEACH A TAG", runTeachTag } };   // C-124; C-176, DRAFT
+                                               { "TAP A TAG", runTapTag }, { "TEACH A TAG", runTeachTag },
+                                               { "TOUCH", runTouch } };   // C-124; C-176, DRAFT (TOUCH on the Ultra only)
 static const Routine NOTE_ROUTINES[]       = { { "A NOTE FOR A CARD", runCardNote } };   // C-124: the T-Deck, DRAFT
 static const Routine CONTEXT_ROUTINES[]    = { { "CHANNEL", runListenFm }, { "STATIC SYNTH", runStaticSynth } };   // C-69: FM, DRAFT
 static const Routine LATENT_ROUTINES[]     = { { "CHANNEL", runListenAm }, { "LIGHTNING", runLightning } };      // C-69: AM, DRAFT
@@ -68,7 +69,7 @@ void routinesBegin() {
   if (isWatch()) types[typeCount++] = { "HOURS", "the daemon keeps time", HOURS_ROUTINES, 7 };   // C-205, DRAFT
   if (board.keyboard || isWatch()) types[typeCount++] = { "MUSIC", "the game's instrument", MUSIC_ROUTINES, 2 };   // T-426: the boards with number keys; the watches' strings and holes, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
-  if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 4 };
+  if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, board.kind == BoardKind::TWatchUltra ? 5 : 4 };
   else if (board.keyboard) types[typeCount++] = { "TOUCHSTONE", "a card, through a reader", NOTE_ROUTINES, 1 };   // C-124
   if (board.cc1101) types[typeCount++] = { "LONGWAVE",   "Sub-GHz",   LONGWAVE_ROUTINES,   2 };
   if (board.loraChip != LoraChip::None) types[typeCount++] = { "MESH", "LoRa", MESH_ROUTINES, 2 };   // C-72, DRAFT

@@ -81,6 +81,7 @@ import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          /
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePassages, guidePersona } from "./guideask.js";   // C-209
+import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
@@ -1336,8 +1337,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // C-72: over LoRa the frame says how many boards passed it on (0: heard directly); Bluetooth is always direct
         const lora = b.how === "lora", hops = lora ? Math.min(2, Math.max(0, Number(b.hops) || 0)) : 0;
         const card = b.how === "card";                            // C-124: a stranger's daemon, on a card held to the board
-        store.logInteraction("met", `${species} ${peer}${lora ? ` lora ${hops}` : card ? " card" : ""}`);
-        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : card ? "card" : "ble", hops });
+        const touch = b.how === "nfc";                            // C-176: two companions touched -- a meeting, closer
+        store.logInteraction("met", `${species} ${peer}${lora ? ` lora ${hops}` : card ? " card" : touch ? " nfc" : ""}`);
+        if (touch) { const d = core.carriedDaemon(hostOf(ecfg), store, deviceId); if (d) bondAdd(store, d.personality, "cares"); }   // the bond, a little
+        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : card ? "card" : touch ? "nfc" : "ble", hops });
       }
       // C-72: a wave or a word over LoRa -- heard ("in") from a daemon nearby, or sent ("out") to one (or to everyone,
       // peer 00000000). Kept as the daemon's life is kept, and shown under MET NEARBY. A word is forty letters at most.

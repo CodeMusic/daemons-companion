@@ -603,6 +603,7 @@ void readUsb() {
 // lines) or over Wi-Fi; kept a while when there is neither. A meeting is a small event: a flash and a word, never a
 // sound and never on a sleeping board (it must never pester).
 std::vector<String> metWaiting, saidWaiting;
+void meetNfc(int species, const String &tag) { if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag + " nfc"); }   // C-176
 String beaconTold;
 void meetReport() {
   int species; String tag; bool mine;
@@ -654,8 +655,8 @@ void meetReport() {
     else {
       int sp = m.indexOf(' '), sp2 = m.indexOf(' ', sp + 1);
       String peer = sp2 < 0 ? m.substring(sp + 1) : m.substring(sp + 1, sp2);
-      String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + peer + "\"" +
-                    (sp2 < 0 ? "" : ",\"how\":\"lora\",\"hops\":" + m.substring(m.lastIndexOf(' ') + 1)) + "}";
+      String how = sp2 < 0 ? "" : m.endsWith(" nfc") ? ",\"how\":\"nfc\"" : ",\"how\":\"lora\",\"hops\":" + m.substring(m.lastIndexOf(' ') + 1);   // C-176: nfc
+      String body = "{\"species\":\"" + m.substring(0, sp) + "\",\"peer\":\"" + peer + "\"" + how + "}";
       if (http("POST", "/api/device/met", body).isEmpty()) { failed(); return; }
       sent = true;
     }

@@ -114,6 +114,10 @@ String runIndex() {
   return "";
 }
 
+// C-176: a species' picture, for TOUCH's meeting (the companion's, or the card's)
+bool indexArtFor(int species) { return takeIxArt(fetchKept("/api/device/art?species=" + String(species), "index/" + String(species) + ".art.json")); }
+void indexDrawArt(int x, int y, int sc) { drawIxArt(x, y, sc); }
+
 // C-199: every entry and picture onto the card (KEEP ON THE CARD, books.cpp) -- how many kept
 int indexKeepAll() {
   bool ok; String got = http("GET", "/api/index/list", "", &ok);

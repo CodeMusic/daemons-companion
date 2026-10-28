@@ -126,6 +126,7 @@ static bool writePage(uint8_t page, const uint8_t *in4) {
 #include <rfal_rfst25r3916.h>
 #include <rfal_nfc.h>
 void watchNfcPower(bool on);                              // watch.cpp: DLDO1
+#include <demo_ce.h>
 namespace st25 {
 static RfalRfST25R3916Class rf(&SPI, 4, 5);
 static RfalNfcClass reader(&rf);
@@ -152,6 +153,52 @@ static int readUid(uint8_t *uid) {
 }
 static bool readPages(uint8_t page, uint8_t *out16) { uint16_t n = 0; return reader.rfalT2TPollerRead(page, out16, 16, &n) == ST_ERR_NONE && n >= 16; }
 static bool writePage(uint8_t page, const uint8_t *four) { return reader.rfalT2TPollerWrite(page, four) == ST_ERR_NONE; }
+
+// C-176 (the user, 2026-10-28, by multiple choice: "the watch shows, the phone taps"; "a meeting, closer"): the watch as a
+// tag -- an NFC Forum Type 4 tag, as the ST25R3916 emulates it (RFAL's demo_ce answers the reader's APDUs) -- holding one
+// NDEF record, a link the phone opens; its 10-byte identifier says who it is to any of our readers: 'D' 'M', its hourly
+// meeting tag, its daemon's species, so a board that touches it knows a companion at once
+static uint8_t ndefFile[160]; static uint8_t ceF[8] = { 0x02, 0xFE, 0, 0, 0, 0, 0, 0 };
+static void ndefFor(const String &uri) {
+  int ul = min((int)uri.length(), 120), n = 0;
+  uint8_t *m = ndefFile + 2;                               // a T4T NDEF file: its length, then the message
+  m[n++] = 0xD1; m[n++] = 1; m[n++] = ul + 1; m[n++] = 'U'; m[n++] = 0x00;   // one short URI record, no prefix
+  memcpy(m + n, uri.c_str(), ul); n += ul;
+  ndefFile[0] = n >> 8; ndefFile[1] = n & 0xFF;
+  demoCeSetNdefFile(ndefFile, n + 2);
+  demoCeInit(ceF);
+}
+// as a tag for `ms` (longer while a reader is still talking); true when a reader asked for the link (a phone)
+static bool listen(uint32_t ms, const uint8_t *id10) {
+  static rfalNfcDiscoverParam p; static uint8_t *rxD; static uint16_t *rxL; static uint8_t tx[RFAL_NFC_RF_BUF_LEN];
+  memset(&p, 0, sizeof p);
+  p.compMode = RFAL_COMPLIANCE_MODE_NFC; p.techs2Find = RFAL_NFC_LISTEN_TECH_A; p.totalDuration = ms; p.devLimit = 1;
+  p.nfcfBR = RFAL_BR_212; p.ap2pBR = RFAL_BR_424;
+  p.lmConfigPA.nfcidLen = RFAL_LM_NFCID_LEN_10; memcpy(p.lmConfigPA.nfcid, id10, 10);
+  p.lmConfigPA.SENS_RES[0] = 0x84; p.lmConfigPA.SENS_RES[1] = 0x00;   // a triple-size identifier, bit-frame anticollision
+  p.lmConfigPA.SEL_RES = 0x20;                                        // ISO-DEP: a Type 4 tag
+  reader.rfalNfcDeactivate(false);
+  if (reader.rfalNfcDiscover(&p) != ST_ERR_NONE) return false;
+  bool primed = false, asked = false; uint32_t t0 = millis(), lastTalk = 0;
+  while (millis() - t0 < ms || (lastTalk && millis() - lastTalk < 600)) {
+    reader.rfalNfcWorker();
+    rfalNfcState st = reader.rfalNfcGetState();
+    if (st == RFAL_NFC_STATE_ACTIVATED && !primed) primed = reader.rfalNfcDataExchangeStart(nullptr, 0, &rxD, &rxL, RFAL_FWT_NONE) == ST_ERR_NONE;
+    else if (st == RFAL_NFC_STATE_DATAEXCHANGE_DONE) {
+      ReturnCode e = reader.rfalNfcDataExchangeGetStatus();
+      if (e == ST_ERR_BUSY) continue;
+      if (e != ST_ERR_NONE || !rxD || !rxL) { primed = false; reader.rfalNfcDeactivate(true); continue; }
+      uint16_t n = demoCeT4T(rxD, *rxL, tx, sizeof tx);
+      lastTalk = millis();
+      if (*rxL >= 2 && rxD[1] == 0xB0) asked = true;       // READ BINARY: the link itself was read
+      if (!n || reader.rfalNfcDataExchangeStart(tx, n, &rxD, &rxL, RFAL_FWT_NONE) != ST_ERR_NONE) { primed = false; reader.rfalNfcDeactivate(true); }
+    }
+    else if (st == RFAL_NFC_STATE_IDLE) break;
+    delay(1);
+  }
+  reader.rfalNfcDeactivate(false);
+  return asked;
+}
 }  // namespace st25
 #endif
 // C-102, C-176: the readers that are not a PN532 -- the Dial's RC522 and the Ultra's ST25R3916, both answering alike
@@ -172,6 +219,18 @@ static const char *holdIt() {                             // where a card is hel
        : "Hold a card flat to the Dial's face.\n\nhold the dial: give up";
 }
 
+// C-176: a companion's watch held to this reader -- its identifier 'D' 'M', its hourly tag, its daemon's species (above):
+// a meeting, closer. True (and the meeting told) when it was one.
+void meetNfc(int species, const String &tag);                 // net.cpp
+static int closeSpecies = -1;                                 // the last one met by touch, for the screen
+static bool companionTouch(const uint8_t *uid, int len) {
+  if (len != 10 || uid[0] != 'D' || uid[1] != 'M') return false;
+  char tag[9]; snprintf(tag, sizeof tag, "%02x%02x%02x%02x", uid[2], uid[3], uid[4], uid[5]);
+  closeSpecies = (uid[6] << 8) | uid[7];
+  meetNfc(closeSpecies, tag);
+  soundAccomplish(1, closeSpecies, 0); haptic(27);
+  return true;
+}
 static String tagSays(const uint8_t *uid, int len) {
   String id;
   for (int i = 0; i < len; i++) { char b[4]; snprintf(b, sizeof b, i ? ":%02X" : "%02X", uid[i]); id += b; }
@@ -381,6 +440,7 @@ String runReadMyTag() {
     while (millis() < until) {
       if (giveUp()) return "Given up.";
       int len = altUid(uid);
+      if (len && companionTouch(uid, len)) return "A companion, close!\nThe two daemons met.";             // DRAFT
       if (len) { soundSelect(); return tagSays(uid, len); }
       delay(60);
     }
@@ -837,3 +897,53 @@ String runTapTag() {
   }
   return what + " is not on this board.";                                                                     // DRAFT
 }
+
+// ---- C-176: TOUCH (the Ultra) -- for half a minute the watch is a tag a moment and a reader the next, so held to a phone
+// the phone reads its link (and opens the app on LINK for this watch), and held to another companion each finds the other
+// (a meeting, closer: both told, both bonds a little more). The daemon met is shown, as it was drawn on the other board.
+#if defined(BOARD_TWATCH_ULTRA)
+bool indexArtFor(int species); void indexDrawArt(int x, int y, int sc);   // index.cpp
+uint32_t meetTag();                                                        // meet.cpp
+static String touchLine; static bool touchMet = false;
+static String drawTouch(uint16_t day, uint16_t ink) {
+  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(2); canvas.setTextColor(readable(day));
+  if (touchMet) { indexDrawArt(W / 2 - 64, 40, 2); canvas.drawString("A MEETING, CLOSE", W / 2, 186); }                 // DRAFT
+  else {
+    for (int k = 0; k < 3; k++) canvas.drawCircle(W / 2, 100, 20 + 16 * k + (millis() / 200) % 16, day);              // the field, rippling
+    canvas.drawString("TOUCH", W / 2, 100);                                                                           // DRAFT
+  }
+  canvas.setTextColor(PAPER);
+  wrap(touchLine, 12, 200, W - 24, 2, 18, 3, PAPER);
+  canvas.setTextDatum(TL_DATUM);
+  return "hold: done";                                                                                                 // DRAFT
+}
+String runTouch() {
+  String why;
+  if (!readerUp(why)) return why;
+  uint32_t tag = meetTag(); int sp = st.carrying ? st.daemon.species : 0;
+  if (!tag) tag = esp_random();                            // meeting off: pairing still works, the tag only a number
+  uint8_t id10[10] = { 'D', 'M', (uint8_t)(tag >> 24), (uint8_t)(tag >> 16), (uint8_t)(tag >> 8), (uint8_t)tag,
+                       (uint8_t)(sp >> 8), (uint8_t)sp, 0x01, 0x00 };
+  st25::ndefFor("daemons://link?device=" + deviceId());
+  touchMet = false; touchLine = "Hold the watch's face to your phone to pair it, or to another companion to meet.";   // DRAFT
+  runPanel = drawTouch; progress("");
+  uint32_t until = millis() + 30000, drawnAt = 0;
+  String result;
+  while (millis() < until) {
+    if (st25::listen(700, id10)) { haptic(16); touchLine = "Your phone has the link -- it opens LINK for this watch."; result = "Paired by touch."; until = millis() + 4000; }   // DRAFT
+    uint8_t uid[10]; int n = st25::readUid(uid);
+    if (n && companionTouch(uid, n)) {
+      touchMet = indexArtFor(closeSpecies);
+      touchLine = "Met, close. Both daemons will remember it."; result = "A meeting, close.";                          // DRAFT
+      until = millis() + 4000;
+    }
+    int step, ev; routineInput(step, ev);
+    if (ev == -1 || giveUp()) break;
+    if (millis() - drawnAt > 300) { drawnAt = millis(); progress(""); }
+  }
+  runPanel = nullptr;
+  return result.length() ? result : "Nothing touched.";                                                                // DRAFT
+}
+#else
+String runTouch() { return "This board cannot be a tag."; }                                                            // DRAFT
+#endif

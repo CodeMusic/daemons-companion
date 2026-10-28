@@ -284,8 +284,9 @@ class Link {
       const [started, devices, beacons] = rest.split(" ").map(Number);
       await this.ask("/api/device/listen", { started, devices, beacons }).catch(() => this.later("/api/device/listen", { started, devices, beacons }));
     } else if (word === "MET") {                            // C-15: a companion the board heard nearby
-      const [species, peer] = rest.split(" ");
-      try { await this.ask("/api/device/met", { species, peer }); } catch { await this.later("/api/device/met", { species, peer }); }
+      const [species, peer, how, hops] = rest.split(" ");      // C-72: over LoRa, and how far; C-176: by touch (nfc)
+      const met = { species, peer, ...(how ? { how } : {}), ...(hops ? { hops: Number(hops) } : {}) };
+      try { await this.ask("/api/device/met", met); } catch { await this.later("/api/device/met", met); }
     } else if (word === "BATTERY") {                        // C-104: the board's charge, through the phone
       const [percent, mv, ch, full, usb] = rest.split(" ").map(Number);
       const b = { percent, mv, charging: ch === 1, full: full === 1, usb: usb === 1 };

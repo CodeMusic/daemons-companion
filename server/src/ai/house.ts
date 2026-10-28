@@ -143,7 +143,7 @@ export class House {
         // and asked again after a pause -- three times (the hardware lane: the first talk after a new persona failed)
         let w = "";
         for (let tries = 0; ; tries++) {
-          try { w = wide(model) ? await sf.setup(model, prompt, 256, 40000) : await sf.setup(model, prompt); break; }   // p256: 256 tokens, a ~15 s setup
+          try { w = wide(model) ? await sf.setup(model, prompt, 96, 40000) : await sf.setup(model, prompt); break; }   // p256: a ~15 s setup; TRIAL 96
           catch (e) {
             if (!/task full/i.test((e as Error).message) || tries >= 3) throw e;
             this.fault("taskFull");

@@ -38,6 +38,6 @@ describe("who answers a talk first, and whether each can (C-211)", () => {
     const post = await fetch(`${base}/api/talk/settings`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ first: "n8n" }) });
     const v = await post.json();
     expect(v.first).toBe("n8n");
-    expect(v.health).toEqual({ n8n: null, modules: [] });
+    expect(v.health).toEqual({ n8n: null, modules: [], faults: { empty: 0, taskFull: 0, garbled: 0, last: null } });
   });
 });

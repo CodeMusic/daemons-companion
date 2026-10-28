@@ -41,8 +41,15 @@ describe("the house", () => {
   });
   it("fails, never answers silence, when the module says nothing (its LLM after an update)", async () => {
     const quiet = fakeModule({ silent: true }), url = await up(quiet);
-    try { await expect(new House(() => [{ url, name: "quiet" }]).talk(ask)).rejects.toThrow("answered nothing"); }
+    const h = new House(() => [{ url, name: "quiet" }]);
+    try { await expect(h.talk(ask)).rejects.toThrow("answered nothing"); expect(h.faults.empty).toBe(1); }
     finally { quiet.close(); }
+  });
+  it("keeps the words before the plugin's pasted parse error, and counts it", async () => {
+    const g = fakeModule({ garbled: true }), url = await up(g);
+    const h = new House(() => [{ url, name: "garbled" }]);
+    try { expect((await h.talk(ask)).answer).toBe("Hello, RO"); expect(h.faults.garbled).toBe(1); }
+    finally { g.close(); }
   });
   it("is LATE when no first words come before the deadline, and waits when told to", async () => {
     const h = new House(() => [{ url: sUrl, name: "slow" }]);

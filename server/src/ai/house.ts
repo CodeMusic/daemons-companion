@@ -56,7 +56,12 @@ export function persona(a: TalkAsk, heard = ""): string {
 type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: string };
 
 const HEAR_MS = 8000, DEAF_MS = 10 * 60_000;
+export type Faults = { empty: number; taskFull: number; garbled: number; last: { kind: string; at: string } | null };
 export class House {
+  // C-180: the module's signs of leaked task slots (empty answers, "task full") and garbled words, counted since the
+  // server started -- in /api/talk/settings health, so the hardware lane knows when a watchdog is due
+  readonly faults: Faults = { empty: 0, taskFull: 0, garbled: 0, last: null };
+  private fault(kind: "empty" | "taskFull" | "garbled") { this.faults[kind]++; this.faults.last = { kind, at: new Date(this.now()).toISOString() }; }
   private deafUntil = new Map<string, number>();
   private deaf(url: string) { return (this.deafUntil.get(url) ?? 0) > this.now(); }
   private busy = new Set<string>();
@@ -115,10 +120,16 @@ export class House {
       const messages = [{ role: "system", content: persona(a, text) },
         ...a.history.slice(-4).flatMap((x) => [{ role: "user", content: x.said }, { role: "assistant", content: x.answer }]),
         { role: "user", content: text.slice(0, 500) }];
-      const r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) });
-      const answer = r.text.trim();
-      // a module that says nothing has failed (2026-10-28: its LLM answering "" after an update) -- never silence
-      if (!answer) throw new Error("the hub's AI board answered nothing");
+      let r: Awaited<ReturnType<typeof chat>>;
+      try { r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) }); }
+      catch (e) { if (/task full/i.test((e as Error).message)) this.fault("taskFull"); throw e; }
+      // the plugin pastes its own JSON parse error into the words when two of StackFlow's messages share a chunk
+      // ("Hello, RO[ERROR: Extra data: ...]", the hardware lane): what came before it is kept
+      const cut = r.text.indexOf("[ERROR:");
+      if (cut >= 0) this.fault("garbled");
+      const answer = (cut >= 0 ? r.text.slice(0, cut) : r.text).trim();
+      // a module that says nothing has failed (2026-10-28: its LLM answering "" with its slots leaked) -- never silence
+      if (!answer) { this.fault("empty"); throw new Error("the hub's AI board answered nothing"); }
       const audio = a.speak && h.tts && answer ? new Uint8Array((await speak(m.url, h.tts, answer)).audio) : null;
       return { answer, heard, audio, provider: `module:${m.name}`, firstMs: r.firstMs };
     } finally { this.busy.delete(m.url); }

@@ -2,7 +2,7 @@
 // tools/ax630bench.ts run against it by hand)
 import { createServer, type Server } from "node:http";
 
-export function fakeModule(opts: { firstDelayMs?: number; busyHearing?: boolean; silent?: boolean } = {}): Server {
+export function fakeModule(opts: { firstDelayMs?: number; busyHearing?: boolean; silent?: boolean; garbled?: boolean } = {}): Server {
   return createServer(async (req, res) => {
     const chunks: Buffer[] = []; for await (const c of req) chunks.push(c as Buffer);
     const body = Buffer.concat(chunks);
@@ -11,7 +11,7 @@ export function fakeModule(opts: { firstDelayMs?: number; busyHearing?: boolean;
     if (req.url === "/v1/chat/completions") {
       res.writeHead(200, { "content-type": "text/event-stream" });
       if (opts.firstDelayMs) await new Promise((r) => setTimeout(r, opts.firstDelayMs));
-      for (const w of opts.silent ? [""] : ["Good ", "morning", "!"]) { res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: w } }] })}\n\n`); await new Promise((r) => setTimeout(r, 5)); }
+      for (const w of opts.silent ? [""] : opts.garbled ? ["Hello, RO", "[ERROR: Extra data: line 2 column 1 (char 207)]"] : ["Good ", "morning", "!"]) { res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: w } }] })}\n\n`); await new Promise((r) => setTimeout(r, 5)); }
       return res.end("data: [DONE]\n\n");
     }
     if (req.url === "/v1/audio/speech") {

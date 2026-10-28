@@ -758,7 +758,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-66: who answers when you talk -- "auto" (this computer's model, OpenRouter when it is busy), "local" only (the
       // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
-      const talkView = async () => ({ provider: talkProvider(), first: talkFirst(store), health: TALK_HEALTH, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
+      const talkView = async () => ({ provider: talkProvider(), first: talkFirst(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "" });
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       if (req.method === "POST" && path === "/api/talk/settings") {

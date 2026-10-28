@@ -76,7 +76,7 @@ static void end(long at) {
   report("night", d);
   if (st.carrying) { showDream(dreamOf(hours, stirs), false); soundWake(); }
 }
-void nightTuck() { long t = epochNow(); if (t && !on) start(t, true); }   // CARE, SLEEP
+void nightTuck() { long t = epochNow(); if (t && !on) { start(t, true); intuitionMoment(READ_NIGHT); } }   // CARE, SLEEP; C-203: perhaps a read of the night
 void nightWake() { long t = epochNow(); if (t) end(t); }                  // CARE, WAKE
 
 void nightLoop(uint32_t now) {

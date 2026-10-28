@@ -245,6 +245,7 @@ bool giveUp() {                        // the watch: a touch anywhere
 // The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
 void press() {
   if (dreamShowing()) { dreamDismiss(); lastInput = millis(); return; }   // C-200: good morning
+  if (readShowing()) { readDismiss(); lastInput = millis(); return; }     // C-203: the read, put away
   if (screen == COMPOSE) { sendComposed(); return; }            // C-123: the trackball's press sends it too
   lastInput = millis();
   ledsFlash();                                                  // C-38

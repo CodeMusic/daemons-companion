@@ -473,6 +473,7 @@ static String drawSlots(uint16_t day, uint16_t ink) {
     canvas.drawRoundRect(W / 2 - bw / 2, by, bw, 36, 8, PAPER);
     canvas.setTextColor(lit ? INK : ink); canvas.drawString(callout, W / 2, by + 19);
   }
+  if (phase == ROLLING) drawLean(f.top + 2);    // C-203: a lean, while the reels turn
   // a win, said large -- across the top of the reels, so the pieces that won stay in sight
   if (phase == SHOWING && won > 0 && t - shownAt < 2600) {
     String w = outcome == O_JACK3 ? "JACKPOT!  " + String(won) : "WIN  " + String(won);   // DRAFT
@@ -677,6 +678,7 @@ String runSlots() {
       if (slots::almostThird(third, c)) { want[2] = c; nearWanted = P_JACK; }
     }
     unreported -= bet; sessionDelta -= bet; spins++; unreportedSpins++;
+    leanPull(PAYS[outcome] > 0, !rigged);         // C-203: a lean, read from what is drawn (never on a check's pull)
     shownBalance = balance();
     for (int k = 0; k < 3; k++) { reels[k].state = SPINNING; reels[k].speed = 0; }
     pulledAt = millis(); phase = ROLLING; won = 0; note = "";
@@ -786,6 +788,7 @@ String runSlots() {
       phase = SHOWING; shownAt = now;
       won = bet * PAYS[outcome];
       if (!rigged) { unreported += won; sessionDelta += won; slots::learn(cat, outcome); }   // a rigged pull is never paid, nor learned from
+      if (!rigged) leanResult(won > 0);           // C-203: told, and whether it landed
       Serial.printf("CASINO %d %ld %ld %ld %d\n", outcome, bet, won, balance(), nearWanted >= 0 ? 1 : 0);   // for a check from the computer: its result, bet, win, money, and whether it fell near
       draw();                                    // seen before it is heard: without PSRAM the phrase plays here
       // C-158: the words the phone says too -- a near miss is SO CLOSE, two JACKs ALMOST THE JACKPOT

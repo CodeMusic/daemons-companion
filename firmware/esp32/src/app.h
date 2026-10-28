@@ -62,6 +62,13 @@ struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = tru
                   int hours = 24;              // C-166: the clock in 12 or 24 hours
                   String instrument = "default"; };   // PLAY to test: the save's ("default"), or "harp" or "flute" forced
 void playForce(const String &name);
+// C-203 (intuition.cpp): THE SUBTLE LAYER on the watches -- the daemon noticing, a read now and then, a lean at the reels
+enum ReadAbout { READ_NEAR, READ_RAIN, READ_NIGHT, READ_WALK };
+void intuitionFromState(JsonVariantConst s); void intuitionLoop(uint32_t now); bool intuitionOn(); String intuitionStatus();
+void intuitionMoment(int about); void intuitionHeard(const String &tag, bool lora, bool mine);
+bool intuitionNoticing(bool &right, float &phase); void intuitionRipple(int cx, int cy, int side, float phase);
+bool readShowing(); void readDismiss(); void drawRead(uint16_t day);
+void leanPull(bool pays, bool may = true); void leanResult(bool paid); void drawLean(int y);
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();

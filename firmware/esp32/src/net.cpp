@@ -563,6 +563,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "CASTS?" && !fromPhone) reply(castStatus());
   else if (line == "MOTION?" && !fromPhone) reply(motionStatus());
   else if (line == "NIGHT?" && !fromPhone) reply(nightStatus());     // C-200
+  else if (line == "SUBTLE?" && !fromPhone) reply(intuitionStatus());   // C-203
   else if (line == "GPS?" && !fromPhone) reply(gpsStatus());         // C-174   // C-201: the Ultra's motion sensor, for a check
   else if (line == "PLAY?" && !fromPhone) reply(playStatus());      // T-426: the instrument, its lock, the songs
   else if (line == "PLAY UNLOCK" && !fromPhone) { playBenchUnlock(); reply(playStatus()); }   // T-426: a bench check
@@ -605,11 +606,13 @@ void meetReport() {
   while (meetTakeHeard(species, tag, mine)) {
     if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag);
     if (!mine && !asleep) { ledsFlash(); say("A daemon nearby"); }
+    intuitionHeard(tag, false, mine);                             // C-203: close, on Bluetooth
   }
   int relayed; String dir, kind, text;                            // C-72: the same over LoRa, with how far it came
   while (loraTakeHeard(species, tag, relayed, mine)) {
     if (metWaiting.size() < 8) metWaiting.push_back(String(species) + " " + tag + " lora " + String(relayed));
     if (!mine && !asleep) { ledsFlash(); say("A daemon nearby"); }
+    intuitionHeard(tag, true, mine);                              // C-203: far off, on LoRa -- a read's NEAR
   }
   while (loraTakeSaid(dir, kind, species, tag, relayed, text))
     if (saidWaiting.size() < 8) saidWaiting.push_back(dir + " " + kind + " " + String(species) + " " + tag + " " + String(relayed) + " " + text);

@@ -143,6 +143,7 @@ bool takeState(const char *json) {
   }
   gpsFromState(doc["find"]);                               // C-174: the app asked where it is
   nightFromState(doc["dream"]);                            // C-200: the module's telling of the night
+  intuitionFromState(doc["subtle"]);                       // C-203: once the save holds THE SUBTLE LAYER
   { JsonVariant gf = doc["gift"];                            // C-185: the HANDSHAKE given -- told once
     if (!gf.isNull()) activityGift(gf["name"] | "", gf["at"] | "", gf["home"] | false); }
   st.watch = doc["world"]["watch"] | ""; st.sky = doc["world"]["weather"]["kind"] | "";   // C-158: the real world

@@ -399,11 +399,15 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   if (t < hopUntil) hop = -(int)(14 * fabsf(sinf((hopUntil - t) / 160.0f * PI)));   // C-13: glad of it
   float walk = still ? 0.5f : 0.5f + 0.5f * sinf(t / 5200.0f);   // C-163: 0 the left of its room, 1 the right
   bool right = !still && cosf(t / 5200.0f) > 0;                   // going right: the sprite mirrored
+  bool nRight; float nPhase; bool noticing = intuitionNoticing(nRight, nPhase);   // C-203: it stops and turns toward it
+  static float heldWalk = 0.5f; static bool held = false;
+  if (noticing) { if (!held) { heldWalk = walk; held = true; } walk = heldWalk; right = nRight; hop = 0; } else held = false;
   int side = 64 * sc, ax = cx - side / 2 + (int)(room * (walk - 0.5f)) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
   int ay = floorY - side + 4 * sc + bob + hop;
   canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
   drawArt(ax, ay, sc, right);
   drawMark(ax, ay, sc, right, markTop);
+  if (noticing) intuitionRipple(ax + side / 2, ay + side / 2, side, nPhase);   // C-203: the purple ripple, rising
 }
 
 // the daemon's ring while TALK listens
@@ -823,6 +827,7 @@ void draw() {
   }
   drawActivity(day, ink);                                     // C-183: what was just done, over everything but a word
   drawDream(day);                                             // C-200: the night's dream, over all of it
+  if (!dreamShowing()) drawRead(day);                         // C-203: a read, after the daemon has noticed
   if (gridLists() && screen == HOME && page != FACE_PAGE && !activityShowing()) {   // C-172: where a swipe goes, never on the face
     int at = launchIndex(page);
     if (at >= 0) pageDots(at, LAUNCH_N);

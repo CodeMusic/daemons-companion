@@ -70,6 +70,7 @@ void loop() {
   watchLoop(now);                           // C-71
   nightLoop(now);                           // C-200
   gpsLoop(now);                             // C-174
+  intuitionLoop(now);                       // C-203
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); dirty = true; }   // C-80: its own name
   static uint32_t phoneHelloAt = 0;          // C-80: the phone carries the board's name on, so it hears it now and then
   if (linkPhoneHere() && (phoneHelloAt == 0 || now - phoneHelloAt > 30000)) {

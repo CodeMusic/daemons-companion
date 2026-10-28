@@ -561,6 +561,7 @@ static void touchLoop(uint32_t now) {
 static void touchTap(int x, int y, uint32_t now) {
   int off, tile;
   if (dreamShowing()) { dreamDismiss(); lastInput = now; return; }   // C-200: good morning
+  if (readShowing()) { readDismiss(); lastInput = now; return; }     // C-203: the read, put away
   if (screen == CARE_GRID && (tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); return; }   // C-163
   if (screen == HOME && page == FACE_PAGE) {                   // C-163: a double tap on the face opens CARE; one does nothing
     static uint32_t tappedAt = 0;
@@ -608,10 +609,13 @@ static void motionLoop(uint32_t now) {
   }
   if (motionTakeDoubleTap() && st.carrying) { wake(); lastInput = now; openCareGrid(); }
   MotionKind k; static uint32_t saidAt = 0;
-  if (motionTakeKindChange(k) && !asleep && st.carrying && now - saidAt > 60000) {
-    const char *word = k == M_WALKING ? "WALKING TOGETHER" : k == M_RUNNING ? "RUNNING!" : k == M_CYCLING ? "WHEELS!"
-                     : k == M_VEHICLE ? "ALONG FOR THE RIDE" : nullptr;   // DRAFT
-    if (word) { saidAt = now; say(word); hopUntil = now + 480; }
+  if (motionTakeKindChange(k)) {
+    if (k == M_WALKING || k == M_RUNNING) intuitionMoment(READ_WALK);   // C-203: a walk begun -- perhaps a read of the way
+    if (!asleep && st.carrying && now - saidAt > 60000) {
+      const char *word = k == M_WALKING ? "WALKING TOGETHER" : k == M_RUNNING ? "RUNNING!" : k == M_CYCLING ? "WHEELS!"
+                       : k == M_VEHICLE ? "ALONG FOR THE RIDE" : nullptr;   // DRAFT
+      if (word) { saidAt = now; say(word); hopUntil = now + 480; }
+    }
   }
 }
 #endif

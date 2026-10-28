@@ -12,7 +12,8 @@
   "INSIGHT",
   "SONGBOOK",
   "THE YEAR",
-  "DREAM LOG"
+  "DREAM LOG",
+  "READS"
  ],
  "pages": [
   {
@@ -1814,6 +1815,18 @@
    "link": null,
    "led": "Of course it was {RIVAL}. And of\ncourse it was you, at the end.",
    "led_flag": 1212
+  },
+  {
+   "section": 12,
+   "title": "THE LOG",
+   "kind": "reads",
+   "flag": 3296,
+   "flag2": 0,
+   "about": null,
+   "text": null,
+   "seen": null,
+   "place": null,
+   "link": null
   }
  ],
  "key_colours": [

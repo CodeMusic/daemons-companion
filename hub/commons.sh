@@ -40,6 +40,7 @@ case "${1:-}" in
 PL
     launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
     launchctl bootstrap "gui/$(id -u)" "$PLIST"
+    launchctl kickstart "gui/$(id -u)/$LABEL"    # bootstrapped over ssh, it waits for a kick (seen 2026-10-28)
     sleep 3; echo "commons: $(url)"; tail -2 "$LOG" ;;
   update)
     git -C "$HERE" pull --ff-only

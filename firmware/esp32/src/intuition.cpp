@@ -87,7 +87,7 @@ static const char *WAYS[] = { "north", "east", "south", "west" };
 static String readLine; static uint32_t readFrom = 0, readUntil = 0;
 static String faintTag; static uint32_t faintAt = 0;
 
-static long lastGiven() { Preferences p; p.begin("subtle", true); long t = p.getLong("last", 0); p.end(); return t; }
+static long lastGiven() { Preferences p; p.begin("subtle", false); long t = p.getLong("last", 0); p.end(); return t; }   // read-write: a first read makes the namespace (read-only logged nvs NOT_FOUND)
 static void keepGiven(long t) { Preferences p; p.begin("subtle", false); p.putLong("last", t); p.end(); }
 
 static String lineOf(About a, const String &w) {     // DRAFT, as server/src/intuition.ts words them

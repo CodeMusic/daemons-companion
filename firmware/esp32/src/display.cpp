@@ -11,13 +11,13 @@ void Display::configure() {                 // C-173: LilyGO's pins (pins_arduin
     auto cfg = bus.config();
     cfg.freq_write = 80000000; cfg.freq_read = 20000000;
     cfg.pin_sclk = 40; cfg.pin_io0 = 38; cfg.pin_io1 = 39; cfg.pin_io2 = 42; cfg.pin_io3 = 45;
-    cfg.spi_host = SPI2_HOST; cfg.spi_mode = SPI_MODE0; cfg.dma_channel = SPI_DMA_CH_AUTO;
+    cfg.spi_host = SPI3_HOST;               // SPI2 is the LoRa radio's (FSPI, lora.cpp): shared, it took the screen's pins cfg.spi_mode = SPI_MODE0; cfg.dma_channel = SPI_DMA_CH_AUTO;
     bus.config(cfg);
     panel.setBus(&bus);
   }
   {
     auto cfg = panel.config();
-    cfg.pin_cs = 41; cfg.pin_rst = 37;                // DISP_RST, as the Arduino variant names it
+    cfg.pin_cs = 41; cfg.pin_rst = -1;                // LilyGO starts it without its reset line (DISP_RST, 37, unused)
     cfg.panel_width = 410; cfg.panel_height = 502; cfg.memory_width = 480; cfg.memory_height = 502;
     cfg.offset_x = 22; cfg.offset_y = 0; cfg.readable = false;
     panel.config(cfg);

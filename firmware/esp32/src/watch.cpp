@@ -96,6 +96,19 @@ static int offsetMin = 0;                 // the local offset from UTC, kept for
 static bool clockSet = false;
 
 #if defined(BOARD_TWATCH_ULTRA)
+// C-173: the fuel gauge's model of the Ultra's 1100 mAh cell, LilyGO's (LilyGoWatchUltra.cpp, BATTER_PARAMS). Without it
+// the AXP2101 reports 255% -- it is written once and kept by the chip while the battery holds it.
+static uint8_t GAUGE[128] = {
+    0x01, 0xf5, 0x40, 0x00, 0x1b, 0x1e, 0x28, 0x0f, 0x0c, 0x1e, 0x32, 0x02, 0x14, 0x05, 0x0a, 0x04,
+    0x74, 0xfc, 0xf4, 0x0d, 0x43, 0x10, 0x52, 0xfb, 0xa6, 0x01, 0xea, 0x04, 0x64, 0x06, 0x52, 0x06,
+    0x18, 0x0a, 0xe7, 0x0f, 0x9f, 0x0f, 0x51, 0x09, 0xf7, 0x0e, 0x89, 0x0e, 0x71, 0x04, 0x58, 0x04,
+    0x43, 0x09, 0x32, 0x0e, 0x1c, 0x0e, 0x14, 0x09, 0x04, 0x0d, 0xe9, 0x0d, 0xde, 0x03, 0xc8, 0x03,
+    0xb3, 0x08, 0x9d, 0x0d, 0x79, 0x0d, 0x3a, 0x07, 0xf5, 0x9e, 0x56, 0x47, 0x36, 0x20, 0x24, 0x17,
+    0xc5, 0x98, 0x7e, 0x66, 0x4e, 0x44, 0x38, 0x1a, 0x12, 0x0a, 0xf6, 0x00, 0x00, 0xf6, 0x00, 0xf6,
+    0x00, 0xfb, 0x00, 0x00, 0xfb, 0x00, 0x00, 0xfb, 0x00, 0x00, 0xf6, 0x00, 0x00, 0xf6, 0x00, 0xf6,
+    0x00, 0xfb, 0x00, 0x00, 0xfb, 0x00, 0x00, 0xfb, 0x00, 0x00, 0xf6, 0x00, 0x00, 0xf6, 0x00, 0xf6,
+};
+
 // C-173: the XL9555 (0x20) -- outputs high: the haptic driver's enable (6), the screen's power (7), the touch out of
 // reset (8, after a low pulse) and the LoRa antenna to the watch's own (11; low gives it to the USB-C). Its registers:
 // outputs at 2 and 3, directions at 6 and 7 (a 0 is an output); pins 0-7 the first port, 8-15 the second.
@@ -128,6 +141,8 @@ void watchPower() {
   pmu.disableBLDO1(); pmu.disableDLDO1();
   pmu.disableDC2(); pmu.disableDC3(); pmu.disableDC4(); pmu.disableDC5(); pmu.disableCPUSLDO();
   pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+  pmu.setButtonBatteryChargeVoltage(3300); pmu.enableButtonBatteryCharge();   // the clock's coin cell
+  if (!pmu.compareGaugeData(GAUGE, sizeof GAUGE)) Serial.printf("watch: gauge written %d\n", pmu.writeGaugeData(GAUGE, sizeof GAUGE));
   ultraExpander();
 #elif !defined(BOARD_CORES3)                      // the CoreS3's rails are set in boardBegin(), as M5Unified sets them
   pmu.setALDO1Voltage(3300); pmu.enableALDO1();   // the clock's backup
@@ -201,6 +216,7 @@ bool watchBattery(Battery &b) {
   if (!havePmu) { b.present = false; return false; }
   b.present = pmu.isBatteryConnect();
   b.percent = b.present ? pmu.getBatteryPercent() : -1;
+  if (b.percent > 100) { b.present = false; b.percent = -1; }   // C-173: a gauge with no model of its cell says 255
   b.mv = pmu.getBattVoltage();
   b.usb = pmu.isVbusIn();
   b.charging = pmu.isCharging();

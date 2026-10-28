@@ -20,7 +20,7 @@ export type TalkAsk = {
   season?: string;
   goal?: { goal: string; step: string } | null;
   speak: boolean;
-  guide?: (heard: string) => string;                      // C-209: asked of the GUIDE -- its pages nearest what was heard (guidePages)
+  guide?: (heard: string, chars?: number) => string;      // C-209: asked of the GUIDE -- its pages nearest what was heard (guidePages), cut to chars
 };
 export type TalkAnswer = { answer: string; heard: string | null; audio: Uint8Array | null; provider: string; firstMs: number | null };
 
@@ -76,6 +76,7 @@ export const askedAs = (a: TalkAsk, said: string) => `[${persona(a, said)}]\nThe
 type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: string };
 
 const HEAR_MS = 8000, DEAF_MS = 10 * 60_000;
+const wide = (model: string) => /p256/i.test(model);  // a thinker with room: 256 tokens a turn, not ~128
 const MINDS = 2;                                           // thinkers alive on a module at once: the llm unit's two slots
 export type Faults = { empty: number; taskFull: number; garbled: number; last: { kind: string; at: string } | null };
 export class House {
@@ -116,7 +117,7 @@ export class House {
         // and asked again after a pause -- three times (the hardware lane: the first talk after a new persona failed)
         let w = "";
         for (let tries = 0; ; tries++) {
-          try { w = await sf.setup(model, prompt); break; }
+          try { w = wide(model) ? await sf.setup(model, prompt, 256, 40000) : await sf.setup(model, prompt); break; }   // p256: 256 tokens, a ~15 s setup
           catch (e) {
             if (!/task full/i.test((e as Error).message) || tries >= 3) throw e;
             this.fault("taskFull");
@@ -196,7 +197,7 @@ export class House {
       const sf = (this.noFlowUntil.get(m.url) ?? 0) > this.now() ? null : this.thinker?.(m) ?? null;
       try {
         if (sf) {
-          try { r = a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text), text), deadlineMs, 700)   // C-209: one GUIDE thinker
+          try { r = a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text, wide(h.llm!) ? 380 : 170), text), deadlineMs, 700)   // C-209: one GUIDE thinker
                             : await this.think(sf, m, h.llm!, persona(steady(a), text), text, deadlineMs); }
           catch (e) {
             if (!/ECONNREFUSED|EHOSTUNREACH|did not answer/.test((e as Error).message)) throw e;

@@ -35,7 +35,9 @@ export function pickModels(list: ModuleModel[]): { llm?: string; tts?: string; s
   };
   const thinkers = ids("llm").filter((x) => { const n = x.toLowerCase(), b = sizeB(n); return !/deepseek-r1/.test(n) && (b === null || b < 1); });
   return {
-    llm: best(thinkers, [/qwen2\.5-0\.5b-prefill/, /qwen2\.5-0\.5b/, /^(?!.*qwen3)/, /./]),
+    // p256 first (the hardware lane, 2026-10-28): prefill-20e takes ~128 tokens a turn and past that answers noise; p256
+    // keeps a long question and the GUIDE's page in character, for ~0.7 s more to the first word and a longer setup
+    llm: best(thinkers, [/qwen2\.5-0\.5b-p256/, /qwen2\.5-0\.5b-prefill/, /qwen2\.5-0\.5b/, /^(?!.*qwen3)/, /./]),
     tts: best(ids("tts").filter((x) => !/zh|cn|chinese/.test(x.toLowerCase())), [/melotts[-_]en/, /single_speaker_english/, /en/, /./]),
     stt: best(ids("stt"), [/whisper/]),
   };

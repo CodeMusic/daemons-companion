@@ -23,6 +23,7 @@ describe("the Module LLM's API (C-180)", () => {
                   "qwen2.5-0.5B-prefill-20e", "melotts_zh-cn", "melotts-en-us", "single_speaker_english_fast",
                   "sherpa-ncnn-streaming-zipformer-20M-2023-02-17", "whisper-tiny"].map((id) => ({ id, kind: kindOf(id) }));
     expect(pickModels(list)).toEqual({ llm: "qwen2.5-0.5B-prefill-20e", tts: "melotts-en-us", stt: "whisper-tiny" });
+    expect(pickModels([...list, { id: "qwen2.5-0.5B-p256-ax630c", kind: kindOf("qwen2.5-0.5B-p256-ax630c") }]).llm).toBe("qwen2.5-0.5B-p256-ax630c");   // room for a long question
     const bare = ["llama3.2-1B-prefill-ax630c", "deepseek-r1-1.5B-ax630c", "qwen3-0.6B-ax630c", "melotts_zh-cn",
                   "sherpa-ncnn-streaming-zipformer-20M-2023-02-17"].map((id) => ({ id, kind: kindOf(id) }));
     expect(pickModels(bare)).toEqual({ llm: "qwen3-0.6B-ax630c", tts: undefined, stt: undefined });   // never slow, Chinese or sherpa

@@ -28,8 +28,9 @@ export function guidePassages(g: Guide, question: string, most = 2, chars = 700)
 // thinker on the module is set up once and reused (C-180) -- and the pages nearest each question ride with the question.
 // 2026-10-28: the pages in the setup prompt made a new thinker for every question, pushed the daemon's out, and ran past
 // the 0.5B's window, so it lost who it was and wandered (an answer about Middle-earth).
-export const GUIDE_SETUP = "You are THE GUIDE, a small book the user carries. Answer only from the page given with the question, " +
-  "in one to three short plain sentences. If the page does not answer it, say the book does not cover that. Never say you are an AI.";
+// Short throughout: the module's qwen2.5-0.5B-prefill takes about 128 tokens a turn, setup and input together; past that
+// it answers noise (2026-10-28: 80 words of page in the input, every answer arXiv or calculus)
+export const GUIDE_SETUP = "You are THE GUIDE, a small book. Answer in one or two short sentences, only from the page given.";
 // plain words only: a quote or a line break in what StackFlow is sent turned the 0.5B's answers to noise (2026-10-28 --
 // "(No page ...)" answered well, every "Page \"...\"" one wandered into maths)
 const plain = (t: string) => t.replace(/["\u201c\u201d]/g, "").replace(/\s+/g, " ").trim();

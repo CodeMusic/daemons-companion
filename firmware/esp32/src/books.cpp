@@ -3,10 +3,12 @@
 // GUIDE and the NOTEBOOK): BOOKS, on the watches. The books the save holds come from the companion (GET /api/books,
 // server/src/books.ts -- a book not yet found is not there), then a chapter at a time (GET /api/book): its words, a page
 // a swipe, and LISTEN -- the chapter read aloud in the INDEX voice, a paragraph at a time (talkReadText; a tap or the
-// crown stops it between paragraphs). Nothing is kept on the watch yet (the SD card is C-199). Every word DRAFT.
+// crown stops it between paragraphs). C-199: on the Ultra each is kept on its SD card as it is read (or all at once,
+// KEEP ON THE CARD), so away from any network BOOKS opens from the card -- only LISTEN needs the companion. Every word DRAFT.
 #include "app.h"
 #include "talk.h"
 #include "sound.h"
+#include "card.h"
 
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width);   // ui.cpp
 int rowH();                                                                                // ui.cpp
@@ -17,15 +19,19 @@ static JsonDocument shelf;                                // the books and their
 static JsonDocument chap;                                 // the chapter open: { title, paragraphs[] }
 static String pageText;
 static String bWhy;                                       // why there is nothing to show
+static bool fromCard = false;                             // C-199: the shelf came off the card (no network)
+// C-199: KEEP ON THE CARD ends the shelf, where there is a card and the companion answered
+static int keeps() { return !fromCard && cardReady() ? 1 : 0; }
 
 // C-209: ASK THE GUIDE heads the shelf once the GUIDE is held -- a question by voice, answered from its pages
 static bool guideHeld() { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == "guide") return true; return false; }
-static int asks() { return guideHeld() && talkCan() ? 1 : 0; }
+static int asks() { return guideHeld() && talkCan() && !fromCard ? 1 : 0; }
 static int listN() {
-  if (bMode == B_BOOKS) return asks() + shelf["books"].size();
+  if (bMode == B_BOOKS) return asks() + shelf["books"].size() + keeps();
   return shelf["books"][bBook]["chapters"].size();
 }
 static String listName(int i) {
+  if (bMode == B_BOOKS && i >= asks() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                         // DRAFT
   if (bMode == B_BOOKS) return i < asks() ? String("ASK THE GUIDE") : String((const char *)(shelf["books"][i - asks()]["title"] | ""));   // DRAFT
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
 }
@@ -46,7 +52,7 @@ static String drawBooks(uint16_t day, uint16_t ink) {
     canvas.setTextDatum(TL_DATUM);
     return " ";
   }
-  canvas.drawString(bMode == B_BOOKS ? "BOOKS" : String((const char *)(shelf["books"][bBook]["title"] | "")), 10, 30);   // DRAFT
+  canvas.drawString(bMode == B_BOOKS ? (fromCard ? "BOOKS  (FROM THE CARD)" : "BOOKS") : String((const char *)(shelf["books"][bBook]["title"] | "")), 10, 30);   // DRAFT
   if (bMode == B_BOOKS && asks() && bAt == 0) {           // what ASK THE GUIDE does, under the list
     canvas.setTextFont(1); canvas.setTextColor(QUIET);
     canvas.drawString("tap, then ask your question", 10, H - 50);                                                         // DRAFT
@@ -58,12 +64,15 @@ static String drawBooks(uint16_t day, uint16_t ink) {
   return "swipe: choose   tap: open   hold: back";                                                // DRAFT
 }
 
+static String chapterFile(const String &id, int n) { return "book/" + id + "/" + String(n) + ".json"; }
 static bool fetchChapter() {
-  bool ok; String id = shelf["books"][bBook]["id"] | "";
+  bool ok = false; String id = shelf["books"][bBook]["id"] | "";
   progress("");
-  String got = http("GET", "/api/book?book=" + id + "&n=" + String(bChapter), "", &ok);
+  String got = fromCard ? "" : http("GET", "/api/book?book=" + id + "&n=" + String(bChapter), "", &ok);
+  if (ok) cardWrite(chapterFile(id, bChapter), got);         // C-199: kept as it is read
+  else got = cardRead(chapterFile(id, bChapter));            // away: the card's, if it was kept
   chap.clear();
-  if (!ok || deserializeJson(chap, got)) return false;
+  if (!got.length() || deserializeJson(chap, got)) return false;
   pageText = "";
   for (JsonVariant p : chap["paragraphs"].as<JsonArray>()) pageText += (pageText.length() ? "\n\n" : "") + String((const char *)(p | ""));
   bSkip = 0;
@@ -90,11 +99,29 @@ static void listen() {
   screen = RUN;
 }
 
+// C-199: every chapter of every book onto the card, the shelf with them -- read away from any network after
+static void keepAll() {
+  int all = 0, kept = 0;
+  for (JsonVariant b : shelf["books"].as<JsonArray>()) all += b["chapters"].size();
+  for (JsonVariant b : shelf["books"].as<JsonArray>()) {
+    String id = b["id"] | "";
+    for (int n = 0; n < (int)b["chapters"].size(); n++) {
+      bool ok; String got = http("GET", "/api/book?book=" + id + "&n=" + String(n), "", &ok);
+      if (ok && cardWrite(chapterFile(id, n), got)) kept++;
+      if (kept % 5 == 0) { bWhy = ""; say("KEPT " + String(kept) + " OF " + String(all)); progress(""); }   // DRAFT
+      if (giveUp()) { say("STOPPED AT " + String(kept)); return; }                                       // DRAFT
+    }
+  }
+  say(kept == all ? "ALL " + String(all) + " ON THE CARD" : "KEPT " + String(kept) + " OF " + String(all));   // DRAFT
+}
+
 String runBooks() {
-  bMode = B_BOOKS; bAt = 0; bTop = 0; bWhy = "";
+  bMode = B_BOOKS; bAt = 0; bTop = 0; bWhy = ""; fromCard = false;
   runPanel = drawBooks;
   progress("");
   bool ok; String got = http("GET", "/api/books", "", &ok);
+  if (ok) cardWrite("books.json", got);                      // C-199: the shelf, for away
+  else if ((got = cardRead("books.json")).length()) { ok = true; fromCard = true; }
   shelf.clear();
   if (!ok || deserializeJson(shelf, got)) bWhy = online() ? "The companion did not answer." : "NEEDS WI-FI";   // DRAFT
   else if (!shelf["books"].size()) bWhy = "No book yet. In the game, find THE SUBTLE LAYER, the GUIDE or the NOTEBOOK -- then they open here.";   // DRAFT
@@ -120,6 +147,7 @@ String runBooks() {
           while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || giveUp()) break; delay(10); }   // read it, then on
           screen = RUN;
         }
+        else if (bMode == B_BOOKS && bAt >= asks() + (int)shelf["books"].size()) keepAll();                  // C-199
         else if (bMode == B_BOOKS) { bBook = bAt - asks(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
         else { bChapter = bAt; if (fetchChapter()) bMode = B_PAGE; else say("Not found"); }          // DRAFT
         progress("");

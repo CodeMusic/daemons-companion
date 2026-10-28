@@ -27,19 +27,27 @@ static int keeps() { return !fromCard && cardReady() ? 1 : 0; }
 // once THE SUBTLE LAYER is, its three: ASK (a line from its pages and a question back), TWO VOICES (only the asking voice)
 // and TODAY'S QUESTION (asked, then answered by voice, and kept in its journal)
 static bool held(const char *id) { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == id) return true; return false; }
-enum AskKind { ASK_GUIDE, ASK_SUBTLE, ASK_VOICES, ASK_TODAY };
-static const char *const ASK_NAMES[] = { "ASK THE GUIDE", "ASK THE SUBTLE LAYER", "TWO VOICES", "TODAY'S QUESTION" };   // DRAFT
+// C-232: and its cards -- THE DAY'S CARD, DRAW A CARD, PAST PRESENT FUTURE (arcana.cpp), which need no voice
+enum AskKind { ASK_GUIDE, ASK_SUBTLE, ASK_VOICES, ASK_TODAY, ASK_CARD, ASK_DRAW, ASK_SPREAD };
+static const char *const ASK_NAMES[] = { "ASK THE GUIDE", "ASK THE SUBTLE LAYER", "TWO VOICES", "TODAY'S QUESTION",
+                                         "THE DAY'S CARD", "DRAW A CARD", "PAST PRESENT FUTURE" };                          // DRAFT
 static const char *const ASK_HINTS[] = { "tap, then ask your question", "tap, then ask: a line, and a question back",
-                                         "tap, then say a thing", "tap: its question, then tap to answer" };              // DRAFT
+                                         "tap, then say a thing", "tap: its question, then tap to answer",
+                                         "tap: the card for today", "tap: a card -- tap again for another", "tap: three cards, swipe between" };   // DRAFT
 static int askKinds(AskKind *k) {
   int n = 0;
-  if (!talkCan() || fromCard) return 0;
-  if (held("guide")) k[n++] = ASK_GUIDE;
-  if (held("subtle")) { k[n++] = ASK_SUBTLE; k[n++] = ASK_VOICES; k[n++] = ASK_TODAY; }
+  if (fromCard) return 0;
+  const bool talk = talkCan();
+  if (held("guide") && talk) k[n++] = ASK_GUIDE;
+  if (held("subtle")) {
+    if (talk) { k[n++] = ASK_SUBTLE; k[n++] = ASK_VOICES; k[n++] = ASK_TODAY; }
+    k[n++] = ASK_CARD; k[n++] = ASK_DRAW; k[n++] = ASK_SPREAD;
+  }
   return n;
 }
-static int asks() { AskKind k[4]; return askKinds(k); }
-static AskKind askAt(int i) { AskKind k[4]; askKinds(k); return k[i]; }
+static int asks() { AskKind k[8]; return askKinds(k); }
+static AskKind askAt(int i) { AskKind k[8]; askKinds(k); return k[i]; }
+String runArcana(int mode);                               // arcana.cpp
 // C-199 (3): THE INDEX heads the shelf (index.cpp), after ASK THE GUIDE
 String runIndex(); int indexKeepAll();
 static int heads() { return asks() + 1; }
@@ -179,10 +187,12 @@ String runBooks() {
       if (ev == 1 && n) {
         if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the book's answer
           AskKind k = askAt(bAt);
-          if (k == ASK_TODAY) todaysQuestion();
+          if (k >= ASK_CARD) { String r = runArcana(k - ASK_CARD); runPanel = drawBooks; if (r.length()) say(r); }   // C-232
+          else if (k == ASK_TODAY) todaysQuestion();
           else if (k == ASK_GUIDE) { talkToGuide = true; talkHold(6000); talkToGuide = false; }
           else { talkToSubtle = k == ASK_VOICES ? 2 : 1; talkHold(6000); talkToSubtle = 0; }   // C-229
-          while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }   // read it, then on
+          if (k < ASK_CARD)                                    // a spoken answer: read it, then on (the cards are their own page)
+            while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }
           screen = RUN;
         }
         else if (bMode == B_BOOKS && bAt < heads()) { String r = runIndex(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3)

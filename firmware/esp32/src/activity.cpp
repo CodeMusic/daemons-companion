@@ -74,6 +74,8 @@ void activityLoop(uint32_t now) {
   }
   thousands = s / 1000;
 }
+// C-206: the day's tallies as numbers, for the TOGETHER face's rings
+void activityCounts(int &cares, int &done, int &routines) { dayRoll(); cares = caresToday; done = doneToday; routines = routinesToday; }
 bool activityShowing() { return act.at && millis() - act.at < SHOW_MS; }
 
 // the panel: what happened, then the daemon and its EXP bar, filling

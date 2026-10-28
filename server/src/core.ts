@@ -130,7 +130,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
 
 // C-162 (the user, 2026-10-18): the faces a round screen can show at home -- the daemon in the middle with the time
 // above it (the default), the daemon under a clock's hands, or the day's words alone (the watch's first face)
-export const FACES = ["daemon", "clock", "virtue"] as const;
+export const FACES = ["daemon", "clock", "virtue", "together", "orbit", "suspend"] as const;   // C-206: the last three drafted
 // C-206 (the user, 2026-10-28): the Ultra's three quick-launch buttons, under its face -- each opens one view
 export const QUICKS = ["care", "talk", "music", "hours", "casino", "routines", "dream", "index", "books"] as const;   // books: C-208
 export type Face = typeof FACES[number];
@@ -181,7 +181,7 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
   if (![433, 868, 915].includes(s.band)) return "band is 433, 868 or 915";
   if (!["power", "every"].includes(s.wakeSound)) return "wakeSound is power or every";   // C-159
-  if (!FACES.includes(s.face)) return "face is daemon, clock or virtue";                 // C-162
+  if (!FACES.includes(s.face)) return `face is one of ${FACES.join(", ")}`;                 // C-162
   if (typeof s.faceSky !== "boolean") return "faceSky is on or off";                      // C-163
   if (s.hours !== 12 && s.hours !== 24) return "hours is 12 or 24";                        // C-166
   if (!["default", "harp", "flute"].includes(s.instrument)) return "instrument is default, harp or flute";

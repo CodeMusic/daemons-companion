@@ -159,7 +159,7 @@ describe("each device's own settings (C-159)", () => {
     expect(deviceSettings(store, "t-watch-s3-77bef4").face).toBe("daemon");
     expect(setOwnSettings(store, "t-watch-s3-77bef4", { face: "clock" })).toMatchObject({ face: "clock" });
     expect(deviceSettings(store, "m5-dial-3a1b24").face).toBe("daemon");               // another's untouched
-    expect(setOwnSettings(store, "t-watch-s3-77bef4", { face: "sundial" })).toBe("face is daemon, clock or virtue");
+    expect(setOwnSettings(store, "t-watch-s3-77bef4", { face: "sundial" })).toBe("face is one of daemon, clock, virtue, together, orbit, suspend");
     // C-163: the season and the weather on its faces, on by default, a watch's own to turn off
     expect(deviceSettings(store, "t-watch-s3-77bef4").faceSky).toBe(true);
     expect(setOwnSettings(store, "t-watch-s3-77bef4", { faceSky: false })).toMatchObject({ faceSky: false, face: "clock" });

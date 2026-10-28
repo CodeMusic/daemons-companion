@@ -507,9 +507,71 @@ static void drawFaceClock(uint16_t day) {
   canvas.setTextDatum(TL_DATUM);
 }
 
+// ---- C-206 (the user, 2026-10-28: "support for additional watch faces"): three more, drafted for the user to choose ------
+//   TOGETHER  three rings round the edge -- the steps toward ten thousand, the cares (six a day: fed and watered three
+//             times), what was done -- the daemon in the middle, the time over it
+//   ORBIT     the daemon in the middle, the hour a bead of the day's colour going round it, the minutes filling the edge
+//   SUSPEND   for the night (the AMOLED's black costs nothing): the time dim and large, the moon, last night's line
+void activityCounts(int &cares, int &done, int &routines);   // activity.cpp
+static void ringArc(int cx, int cy, int r, int w, float f, uint16_t c) {
+  canvas.drawArc(cx, cy, r, r - w, 0, 360, canvas.color565(40, 44, 52));              // the track
+  if (f > 0) canvas.drawArc(cx, cy, r, r - w, 270, 270 + 360 * min(1.0f, f), c);       // from the top, clockwise
+}
+static void drawFaceTogether(uint16_t day) {
+  canvas.fillRect(0, 0, W, H, INK);
+  int cx = W / 2, cy = H / 2, cares, done, routines; activityCounts(cares, done, routines);
+  long steps = watchSteps();
+  ringArc(cx, cy, 114, 9, steps > 0 ? steps / 10000.0f : 0, day);
+  ringArc(cx, cy, 102, 9, (st.daemon.fed + st.daemon.watered) / 6.0f, canvas.color565(0x40, 0xA8, 0xF8));
+  ringArc(cx, cy, 90, 9, done / 3.0f, canvas.color565(0xF8, 0xB8, 0x40));
+  char hm[6]; const char *ampm; clockTime(hm, sizeof hm, &ampm);
+  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(4); timeAt(hm, ampm, cx, 64, PAPER);
+  if (st.carrying) faceDaemon(cx, 178, 1, 30, 120);
+  canvas.setTextFont(1); canvas.setTextColor(QUIET);
+  canvas.drawString(String(steps >= 0 ? steps : 0) + " STEPS  " + String(cares) + " CARES  " + String(done) + " DONE", cx, 196);   // DRAFT
+  canvas.setTextDatum(TL_DATUM);
+}
+static void drawFaceOrbit(uint16_t day) {
+  canvas.fillRect(0, 0, W, 26, INK);
+  faceSky(186);
+  int cx = W / 2, cy = H / 2;
+  struct tm t; bool timed = watchLocalTime(t);
+  float m = timed ? t.tm_min / 60.0f : 0;
+  canvas.drawArc(cx, cy, 116, 112, 0, 360, canvas.color565(40, 44, 52));
+  if (m > 0) canvas.drawArc(cx, cy, 116, 112, 270, 270 + 360 * m, day);                // the minutes, filling the edge
+  if (st.carrying) faceDaemon(cx, 170, 2, 24, 56);
+  if (timed) {                                                                         // the hour, a bead going round
+    float a = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;
+    int bx = cx + 92 * sinf(a), by = cy - 92 * cosf(a);
+    canvas.fillCircle(bx, by, 9, day); canvas.drawCircle(bx, by, 9, INK);
+    canvas.setTextFont(1); canvas.setTextDatum(MC_DATUM); canvas.setTextColor(lightColour(st.menu) ? INK : PAPER);
+    canvas.drawString(String(t.tm_hour % 12 ? t.tm_hour % 12 : 12), bx, by);
+  }
+  faceWeather();
+  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
+  edgedString(upper(st.theme.length() ? st.theme : st.day), cx, 196, readable(day));
+  canvas.setTextDatum(TL_DATUM);
+}
+static void drawFaceSuspend(uint16_t day) {
+  canvas.fillRect(0, 0, W, H, TFT_BLACK);
+  int cx = W / 2;
+  char hm[6]; const char *ampm; clockTime(hm, sizeof hm, &ampm);
+  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(7);
+  timeAt(hm, ampm, cx, 104, canvas.color565(110, 110, 120));                            // dim: the night's
+  canvas.fillCircle(cx + 70, 44, 10, canvas.color565(200, 196, 170)); canvas.fillCircle(cx + 75, 41, 9, TFT_BLACK);   // a crescent
+  float h; String q; long to;
+  canvas.setTextFont(2); canvas.setTextColor(canvas.color565(90, 90, 100));
+  if (lastNight(h, q, to)) canvas.drawString("SUSPENDED " + String(h, 1) + " H  -  " + q, cx, 150);                  // DRAFT
+  if (st.carrying) canvas.drawString(upper(st.daemon.nickname) + (st.daemon.tired == "asleep" ? " IS SUSPENDED" : " IS AWAKE"), cx, 172);   // DRAFT
+  canvas.setTextDatum(TL_DATUM);
+}
+
 static void drawFace(uint16_t day, uint16_t ink) {
   if (wide()) { drawFaceWide(day, ink); return; }
   if (cfg.face == "clock") { drawFaceClock(day); return; }   // C-162
+  if (cfg.face == "together") { drawFaceTogether(day); return; }   // C-206
+  if (cfg.face == "orbit") { drawFaceOrbit(day); return; }
+  if (cfg.face == "suspend") { drawFaceSuspend(day); return; }
   if (cfg.face != "virtue") { drawFaceDaemon(day); return; }
   canvas.fillRect(0, 0, W, 26, INK);                         // the face draws its own top
   int r = min(W, H) / 2;                                     // C-75: round on the watch, and inside the CoreS3's 320x240

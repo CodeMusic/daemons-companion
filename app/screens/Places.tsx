@@ -63,7 +63,7 @@ type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: O
 // C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, and the season
 // behind its daemon with the weather in front -- only for the boards that draw the round face (the T-Watch S3, the Dial,
 // the CoreS3; the wide boards' face is another). Each face as a small picture, drawn here with the device's own daemon.
-type Face = "daemon" | "clock" | "virtue";
+type Face = "daemon" | "clock" | "virtue" | "together" | "orbit" | "suspend";   // C-206
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
 const CLOCK_FACE = /^(t-watch-s3|t-watch-ultra|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
 const PLAYS = /^(t-watch-s3|t-watch-ultra|t-deck|m5-cardputer)/;
@@ -74,9 +74,18 @@ const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],
   ["clock", "CLOCK", "hands over it"],
   ["virtue", "VIRTUE", "the day's words"],
+  ["together", "TOGETHER", "rings for the day"],   // C-206: drafted for the user to choose
+  ["orbit", "ORBIT", "the hour going round"],
+  ["suspend", "SUSPEND", "dark, for the night"],
 ];
 function FacePicture({ face, sky, daemon, ring }: { face: Face; sky: boolean; daemon: Carried | null | undefined; ring: string }) {
-  const S = 56, seasonal = sky && face !== "virtue";
+  const S = 56, seasonal = sky && (face === "daemon" || face === "clock" || face === "orbit");
+  if (face === "together" || face === "suspend") return (       // C-206
+    <YStack width={S} height={S} borderRadius={S} backgroundColor={face === "suspend" ? "#000" : "#16181d"} borderWidth={face === "together" ? 4 : 2}
+            borderColor={face === "together" ? ring : "#333"} alignItems="center" justifyContent="center">
+      <Text fontFamily="$mono" fontSize={face === "suspend" ? 13 : 10} fontWeight="800" color={face === "suspend" ? "#6e6e78" : "#f3f1ea"}>13:06</Text>
+    </YStack>
+  );
   return (
     <YStack position="relative" width={S} height={S} borderRadius={S} overflow="hidden" backgroundColor="#16181d" borderWidth={2}
             borderColor={ring} alignItems="center" justifyContent="center">

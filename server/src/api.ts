@@ -399,7 +399,7 @@ export const DEVICE_DOOR = [
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
-  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting"),   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
+  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry"),   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
 ];
 

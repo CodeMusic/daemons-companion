@@ -26,13 +26,18 @@ static int keeps() { return !fromCard && cardReady() ? 1 : 0; }
 // C-209: ASK THE GUIDE heads the shelf once the GUIDE is held -- a question by voice, answered from its pages
 static bool guideHeld() { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == "guide") return true; return false; }
 static int asks() { return guideHeld() && talkCan() && !fromCard ? 1 : 0; }
+// C-199 (3): THE INDEX heads the shelf (index.cpp), after ASK THE GUIDE
+String runIndex(); int indexKeepAll();
+static int heads() { return asks() + 1; }
 static int listN() {
-  if (bMode == B_BOOKS) return asks() + shelf["books"].size() + keeps();
+  if (bMode == B_BOOKS) return heads() + shelf["books"].size() + keeps();
   return shelf["books"][bBook]["chapters"].size();
 }
 static String listName(int i) {
-  if (bMode == B_BOOKS && i >= asks() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                         // DRAFT
-  if (bMode == B_BOOKS) return i < asks() ? String("ASK THE GUIDE") : String((const char *)(shelf["books"][i - asks()]["title"] | ""));   // DRAFT
+  if (bMode == B_BOOKS && i >= heads() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                        // DRAFT
+  if (bMode == B_BOOKS && i < asks()) return "ASK THE GUIDE";                                                         // DRAFT
+  if (bMode == B_BOOKS && i < heads()) return "THE INDEX";                                                            // DRAFT
+  if (bMode == B_BOOKS) return String((const char *)(shelf["books"][i - heads()]["title"] | ""));
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
 }
 static int pageLines() { return (H - 50 - 40) / 18; }
@@ -112,7 +117,8 @@ static void keepAll() {
       if (giveUp()) { say("STOPPED AT " + String(kept)); return; }                                       // DRAFT
     }
   }
-  say(kept == all ? "ALL " + String(all) + " ON THE CARD" : "KEPT " + String(kept) + " OF " + String(all));   // DRAFT
+  int ix = indexKeepAll();                                   // C-199 (3): and THE INDEX
+  say(String(kept == all ? "ALL " + String(all) : "KEPT " + String(kept) + " OF " + String(all)) + " + " + String(ix) + " INDEX ON THE CARD");   // DRAFT
 }
 
 String runBooks() {
@@ -131,7 +137,7 @@ String runBooks() {
     if (giveUp()) ev = -1;
     if (ev == -1) {
       if (bWhy.length() || bMode == B_BOOKS) break;
-      if (bMode == B_PAGE) { bMode = B_CHAPTERS; bAt = bChapter; } else { bMode = B_BOOKS; bAt = bBook + asks(); }
+      if (bMode == B_PAGE) { bMode = B_CHAPTERS; bAt = bChapter; } else { bMode = B_BOOKS; bAt = bBook + heads(); }
       bTop = 0; progress(""); continue;
     }
     if (bWhy.length()) { delay(10); continue; }
@@ -147,8 +153,9 @@ String runBooks() {
           while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || giveUp()) break; delay(10); }   // read it, then on
           screen = RUN;
         }
-        else if (bMode == B_BOOKS && bAt >= asks() + (int)shelf["books"].size()) keepAll();                  // C-199
-        else if (bMode == B_BOOKS) { bBook = bAt - asks(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
+        else if (bMode == B_BOOKS && bAt < heads()) { String r = runIndex(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3)
+        else if (bMode == B_BOOKS && bAt >= heads() + (int)shelf["books"].size()) keepAll();                 // C-199
+        else if (bMode == B_BOOKS) { bBook = bAt - heads(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
         else { bChapter = bAt; if (fetchChapter()) bMode = B_PAGE; else say("Not found"); }          // DRAFT
         progress("");
       }

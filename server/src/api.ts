@@ -1078,7 +1078,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const asGuide = (b: Record<string, any>): boolean => {
         const save = hostOf(ecfg).save.read(), g = save ? readGuide(save) : { held: false };
         if (!g.held) return false;
-        b.guide = (heard: string) => guidePages(guidePassages(g, heard || String(b.text ?? ""), 2, 420));
+        b.guide = (heard: string) => guidePages(guidePassages(g, heard || String(b.text ?? ""), 1, 260));
         return true;
       };
       // C-180: a talk on the module, answered in n8n's shape; LATE (none free, no first words in time) or a module that

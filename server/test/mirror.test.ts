@@ -50,6 +50,13 @@ describe("the save mirror (C-188)", () => {
     expect((await (await fetch(`${base}/api/settings`)).json()).source).toBe("mirror");
     expect(readFileSync(own).equals(before)).toBe(true);
   });
+  it("refuses a write made on a copy that has moved on since (a late save after a SYNC)", async () => {
+    const was = (await (await fetch(`${base}/api/save/mirror`)).json()).sha1;
+    const moved = buildSave({ player: "ROVER", trainerId: 7, slots: [{ counter: 3, party: [{ personality: 99, otId: 7, species: 1, nickname: "PIP", level: 7 }] }, { counter: 0, party: [] }] });
+    expect((await post(moved)).status).toBe(200);            // the companion's copy moves on (as a SYNC would write it)
+    const late = await fetch(`${base}/api/save/mirror`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ b64: b64(later()), base: was }) });
+    expect(late.status).toBe(409);
+  });
   it("ends when a save path is chosen, and offers that save again", async () => {
     await fetch(`${base}/api/settings`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ savePath: own }) });
     const r = await (await fetch(`${base}/api/save/mirror`)).json();

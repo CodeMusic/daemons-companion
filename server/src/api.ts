@@ -116,8 +116,14 @@ const debugDirOf = (cfg: Config) => cfg.debugDir ?? (cfg.siteDir ? join(dirname(
 const givenSave = (cfg: Config, store: Store) => store.getSetting("savePath") ?? cfg.savePath ?? null;
 const gameOf = (bytes: Uint8Array) => { const p = readProfile(bytes); return `${p.name}/${p.trainerId}/${p.secretId}`; };
 export class OtherGame extends Error {}
-export function putMirror(cfg: Config, store: Store, bytes: Uint8Array): string {
+export function putMirror(cfg: Config, store: Store, bytes: Uint8Array, base?: string): string {
   readSave(bytes);                                         // a whole save, or it throws
+  // base: the copy the device last agreed with. The companion's moved on since (a SYNC wrote it while the game's save
+  // was still on its way) -- a late write would undo it; the device takes the companion's at its next look instead
+  if (base && store.getSetting("save.mirror") === "on" && existsSync(mirrorPath(cfg))) {
+    const now = sha1(new Uint8Array(readFileSync(mirrorPath(cfg))));
+    if (now !== base && now !== sha1(bytes)) throw new OtherGame("the companion's copy moved on since this device last had it");
+  }
   // Another game's save never takes the companion's place (2026-10-28: a new game begun in the app replaced the hub's
   // save, and every daemon was gone): while the companion reads a save it was given, only that game is mirrored
   const given = store.getSetting("save.mirror") === "on" ? null : givenSave(cfg, store);
@@ -1305,7 +1311,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const b = await body(req);
           const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
           if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "a mirror is {b64}, a whole save" });
-          try { return send(res, 200, { sha1: putMirror(cfg, store, bytes) }); }
+          try { return send(res, 200, { sha1: putMirror(cfg, store, bytes, typeof b.base === "string" ? b.base : undefined) }); }
           catch (e) { return e instanceof OtherGame ? send(res, 409, { error: e.message }) : send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
         }
       }

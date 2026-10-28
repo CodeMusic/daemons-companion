@@ -376,9 +376,11 @@ static volatile bool fingerDown = false, swallowTouch = false;
 static volatile int16_t fingerX0 = 0, fingerY0 = 0, fingerX = 0, fingerY = 0;
 static volatile uint32_t fingerAt = 0;
 static volatile int16_t fingerMoved = 0;                       // the farthest it has gone from where it came down
+bool motionHoldsBus();                                         // motion.cpp
 static void touchTask(void *) {
   bool was = false;
   for (;;) {
+    if (motionHoldsBus()) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }   // the motion sensor's upload has the bus
     int16_t xs[1], ys[1];
     bool on = touchRead(xs, ys) > 0;
     uint32_t now = millis();

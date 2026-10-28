@@ -16,6 +16,7 @@
 
 void motionBegin() {}
 bool motionReady() { return false; }
+bool motionHoldsBus() { return false; }
 long motionSteps() { return -1; }
 MotionKind motionKind() { return M_UNKNOWN; }
 uint32_t motionStillFor() { return 0; }
@@ -86,10 +87,19 @@ static void onAccel(uint8_t, uint8_t *data, uint32_t, uint64_t *, void *) {
   last = g;
 }
 
+// the firmware's upload holds the I2C bus for some seconds: the touch task stands aside meanwhile (on the glass, 2026-10-28:
+// with the touch read every 10 ms between its chunks the upload failed with an IO error after a minute)
+static volatile bool uploading = false;
+bool motionHoldsBus() { return uploading; }
 static void motionTask(void *) {
   bhy.setFirmware(bosch_firmware_image, bosch_firmware_size, false);
   bhy.setBootFromFlash(false);
-  if (!bhy.begin(Wire, BHI260AP_SLAVE_ADDRESS_L)) { why = String("not found: ") + bhy.getError(); Serial.println("motion: " + why); vTaskDelete(nullptr); return; }
+  uploading = true; vTaskDelay(pdMS_TO_TICKS(30));           // the touch task's read in hand finishes first
+  uint32_t t0 = millis();
+  bool up = bhy.begin(Wire, BHI260AP_SLAVE_ADDRESS_L);
+  uploading = false;
+  Serial.printf("motion: upload %s in %lu ms\n", up ? "done" : "failed", (unsigned long)(millis() - t0));
+  if (!up) { why = String("not found: ") + bhy.getError(); Serial.println("motion: " + why); vTaskDelete(nullptr); return; }
   bhy.setRemapAxes(SensorBHI260AP::TOP_LAYER_BOTTOM_RIGHT_CORNER);   // as LilyGO's own library places it on the Ultra
   accelScale = bhy.getScaling(SensorBHI260AP::ACCEL_PASSTHROUGH);
   if (accelScale <= 0) accelScale = 1.0f / 4096;

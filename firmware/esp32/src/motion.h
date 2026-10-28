@@ -17,3 +17,4 @@ bool motionTakeShake();             // it was shaken
 bool motionTakeDoubleTap();         // it was tapped twice
 bool motionTakeKindChange(MotionKind &now);   // the kind of moving changed (since last asked)
 String motionStatus();              // MOTION? down the cable
+bool motionHoldsBus();              // the sensor's firmware is going up: other I2C readers wait

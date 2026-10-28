@@ -1,9 +1,11 @@
 // C-190 (C-186 step 5, docs/ONEAPP.md): THE HUB in DEVICES -- what the companion this app is paired with gives beyond a
 // phone alone: the save it mirrors (C-188), its AI (the modules, C-180) and its LoRa (the boards that carry one, and
 // when one was last heard). A phone alone says so plainly: everything works here but the AI. Every word is DRAFT.
+import { useState } from "react";
 import { Text, YStack } from "tamagui";
+import { api } from "../net";
 import { KIND_NAMES } from "../data";
-import { Card, Eyebrow, Small } from "../ui";
+import { Action, Card, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
 
 type Hub = { hub: false } | {
@@ -15,8 +17,18 @@ type Hub = { hub: false } | {
 
 const when = (at: string) => new Date(at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-export function HubCard() {
-  const [h] = useApi<Hub>("/api/hub");
+export function HubCard({ ink }: { ink?: string }) {
+  const [h, setH] = useApi<Hub>("/api/hub");
+  const [looking, setLooking] = useState(false);
+  // the AI's boards looked for again now, not at the next five-minute round (ai/discover.ts), with the addresses kept
+  const lookAgain = async () => {
+    setLooking(true);
+    try {
+      const t = await api<{ moduleAddresses: string }>("/api/talk/settings");
+      await api("/api/talk/settings", { moduleAddresses: t.moduleAddresses });
+      setH(await api<Hub>("/api/hub"));
+    } finally { setLooking(false); }
+  };
   if (!h) return null;
   if (!h.hub) return (
     <Card borderLeftWidth={6} borderLeftColor="$color5" gap={4}>
@@ -37,6 +49,7 @@ export function HubCard() {
       <Small>{answering.length
         ? `THE AI: ${answering.map((m) => m.name).join(", ")}, answering.`
         : h.ai.modules.length ? "THE AI: its modules are not answering just now." : `THE AI: no module on the hub; talk goes to ${h.ai.provider}.`}</Small>
+      <Action label={looking ? "Looking…" : "LOOK FOR AI BOARDS AGAIN"} ink={ink} onPress={lookAgain} />
       <Small>{h.lora.boards.length
         ? `LORA: ${h.lora.boards.map((b) => `${KIND_NAMES[b.kind] ?? b.kind}${b.here ? "" : " (away)"}`).join(", ")}` +
           (h.lora.heard ? ` · last heard ${when(h.lora.heard)}` : " · nothing heard yet")

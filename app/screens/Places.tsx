@@ -314,7 +314,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
   return (
     <YStack gap={14}>
       {error ? <Small color="$color10">{`Not updated just now: ${error}`}</Small> : null}
-      <HubCard />
+      <HubCard ink={ink} />
       {HANDHELD && !ALONE ? <HandheldCard ink={ink} /> : null}
       {ALONE ? null : (   /* C-111: a handheld links to a companion on a computer */
       <Card borderLeftWidth={6} borderLeftColor={link.linked ? "$color9" : "$color5"}>

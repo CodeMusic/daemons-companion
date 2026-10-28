@@ -37,6 +37,7 @@ import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
 import { thriveOf } from "./thrive.js";   // C-207
+import { writtenLine, type LineKind } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find"];
@@ -136,7 +137,14 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     if (path === "/api/sync") return ok(sync(h, store, now));
     const care = path.match(CARE);                      // C-13: care -- feed, water, train, and SLEEP (C-114) -- kept as the device's are
-    if (care) { store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId); return lifeNow(h, store, deviceId, now); }
+    if (care) {
+      // C-196: the daemon's written line for it, as the boards show (chosen before the care counts, as api.ts's careLine)
+      const l = daemonLife(store, now), kind = care[1] as LineKind;
+      const said = writtenLine(kind, l.mood, now.toLocaleDateString("en-CA"), kind === "feed" ? l.fed.today : kind === "water" ? l.watered.today : 0);
+      store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId);
+      const r = lifeNow(h, store, deviceId, now);
+      return { ...r, body: { ...(r.body as object), said } };
+    }
     const step = path.match(STEP);
     if (step) {
       if (step[2] === "undo") return store.undoStep(Number(step[1])) ? ok({ next: store.nextStep() }) : no(404, "no such step");

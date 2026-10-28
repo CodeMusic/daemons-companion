@@ -58,7 +58,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       }
       catch { /* quiet is fine */ }
     }
-    try { setL(await api<Life>(`/api/daemon/${what}`, {})); }   // its answer corrects the counts
+    try { const r = await api<Life & { said?: string }>(`/api/daemon/${what}`, {}); setL(r); if (r.said) setSaid(r.said); }   // its answer corrects the counts; C-196: its own line
     catch (e) {                                            // out of reach, api() has kept it (C-62) -- once: the widget's
       if (!/^Kept on this phone/.test((e as Error).message))   // queue would send it again (the review, 2026-10-18); refused,
         api<Life>("/api/daemon/life").then(setL).catch(() => {});   // the companion's own counts replace the presumed ones

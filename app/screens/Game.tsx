@@ -12,11 +12,34 @@ import { WebView } from "react-native-webview";
 import { Text, XStack, YStack } from "tamagui";
 import { freshPatches, heldGame, makeGame, updateFor, updateGame, type Game, type Step } from "../game/rom";
 import { GATE } from "../game/gate";
-import { LOCAL } from "../net";
+import { ALONE, api, LOCAL, TOKEN } from "../net";
+import { sha1 } from "../../server/src/game/hash";
+import { mirrorChoice } from "../../server/src/game/mirror";
 import { Action, Card, Eyebrow, Small } from "../ui";
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version
 const saveFile = () => new File(Paths.document, "daemons.sav");
+// C-188: paired with a companion (the Mac, the hub), the device's save is the real one and the companion keeps a mirror
+// of it. `agreed` is the save both last held, so a SYNC the companion wrote since is taken back only while the device's
+// save has not moved; when both moved, the device's wins and goes out at the next save.
+const paired = () => !ALONE && !!TOKEN;
+const agreedFile = () => new File(new Directory(Paths.document, "game"), "mirror.json");
+function agreed(): string { try { const f = agreedFile(); return f.exists ? String(JSON.parse(f.textSync()).sha1 ?? "") : ""; } catch { return ""; } }
+function agree(s: string) { try { const f = agreedFile(); if (!f.exists) f.create(); f.write(JSON.stringify({ sha1: s })); } catch { /* asked again next time */ } }
+async function mirrorOut(b64: string) {
+  if (!paired()) return;
+  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64 })).sha1); } catch { /* the companion away: the next save goes */ }
+}
+async function mirrorIn() {
+  if (!paired()) return;
+  try {
+    const m = await api<{ sha1: string; b64: string }>("/api/save/mirror");
+    const f = saveFile(), mine = f.exists ? sha1(f.bytesSync()) : "", last = agreed();
+    const choice = mirrorChoice(m.sha1, mine, last);
+    if (choice === "same") agree(m.sha1);
+    else if (choice === "take") { if (!f.exists) f.create(); f.write(bytesOf(m.b64)); agree(m.sha1); }
+  } catch { /* no mirror yet, or the companion away: the device's save as it is */ }
+}
 
 // The page: the emulator, and a few words to and from the app
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">
@@ -99,7 +122,8 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
   const handed = useRef<(() => void) | null>(null);       // waiting on the save the game hands over on leaving
   // C-188: back to the game -- if the companion wrote the save meanwhile (a SYNC, a daemon sent or come home), the
   // game starts again from it (CONTINUE), as the playground does; otherwise it simply goes on
-  const resume = () => {
+  const resume = async () => {
+    await mirrorIn();                                     // C-188: a SYNC the paired companion wrote comes back first
     const f = saveFile(), now = f.exists ? b64Of(f.bytesSync()) : "";
     if (now && now !== given.current) { given.current = now; web.current?.injectJavaScript(`window.putSave(${JSON.stringify(now)}); true;`); }
     web.current?.injectJavaScript("window.playGame(); true;");
@@ -112,7 +136,7 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
   useEffect(() => {                                       // C-189: while it plays, SYNC holds it (game/gate.ts)
     if (!active) return;
     GATE.hold = () => !started.current ? Promise.resolve() : new Promise<void>((done) => {
-      const t = setTimeout(() => { handed.current = null; done(); }, 1500);   // a game that does not answer: the file as it is
+      const t = setTimeout(() => { handed.current = null; done(); }, paired() ? 8000 : 1500);   // a game that does not answer: the file as it is (paired, its save also crosses to the companion)
       handed.current = () => { clearTimeout(t); handed.current = null; done(); };
       web.current?.injectJavaScript("window.pauseGame(); true;");
     });
@@ -140,13 +164,21 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
     try { m = JSON.parse(data); } catch { return; }
     if (m.kind === "started") {
       started.current = true;
-      const f = saveFile();
-      if (f.exists) { given.current = b64Of(f.bytesSync()); web.current?.injectJavaScript(`window.putSave(${JSON.stringify(given.current)}); true;`); }
-      if (!active) web.current?.injectJavaScript("window.pauseGame(); true;");
+      (async () => {
+        await mirrorIn();                                 // C-188: what the paired companion wrote while the app was shut
+        const f = saveFile();
+        if (f.exists) {
+          given.current = b64Of(f.bytesSync()); web.current?.injectJavaScript(`window.putSave(${JSON.stringify(given.current)}); true;`);
+          if (paired() && sha1(f.bytesSync()) !== agreed()) mirrorOut(given.current);   // and the device's, to it
+        }
+        if (!active) web.current?.injectJavaScript("window.pauseGame(); true;");
+      })();
     } else if (m.kind === "save" && m.b64) {
       const f = saveFile(), bytes = bytesOf(m.b64);
-      if (bytes.length >= 0x10000) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; onSaved?.(); }   // a whole save, never a blank start; C-189: what it holds now is read beside the game
-      if (m.why === "leave") handed.current?.();
+      const whole = bytes.length >= 0x10000;                // a whole save, never a blank start
+      if (whole) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; onSaved?.(); }   // C-189: read beside the game
+      // C-188: to the paired companion's mirror -- and a SYNC waiting on the game's save waits for that too
+      (whole ? mirrorOut(m.b64) : Promise.resolve()).finally(() => { if (m.why === "leave") handed.current?.(); });
     } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
     else if (m.kind === "error" && m.text) setError(m.text);
   };

@@ -31,7 +31,7 @@ import { createServer, type IncomingMessage, type ServerResponse, type Server } 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
-import { platform } from "node:os";
+import { platform, tmpdir } from "node:os";
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
@@ -39,6 +39,7 @@ import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE, wavOf } fro
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
+import { sha1 } from "./game/hash.js";
 import { deviceArt, headOf, repaint, streakColours } from "./art.js";
 import { prunable } from "./backups.js";
 import { createConnection } from "node:net";
@@ -93,6 +94,26 @@ function fileSave(path: string | null | undefined): SaveFile {
       return backup;
     },
   };
+}
+// C-188: a paired app that plays the game keeps its save on the device -- the real one -- and sends a copy after each
+// game save. The copy is kept beside the companion's database as mirror.sav (never the save path the user set), and while
+// the mirror is on it is the save everything here reads and SYNC writes; the app takes it back before the game goes on.
+// Setting a save path in SETTINGS turns the mirror off.
+export const mirrorPath = (cfg: Config) => join(cfg.database === ":memory:" ? tmpdir() : dirname(cfg.database), "mirror.sav");
+export const savePathOf = (cfg: Config, store: Store) =>
+  store.getSetting("save.mirror") === "on" ? mirrorPath(cfg) : store.getSetting("savePath") ?? cfg.savePath;
+export function putMirror(cfg: Config, store: Store, bytes: Uint8Array): string {
+  readSave(bytes);                                         // a whole save, or it throws
+  const path = mirrorPath(cfg), tmp = `${path}.companion-writing`;
+  writeFileSync(tmp, bytes); renameSync(tmp, path);
+  store.setSetting("save.mirror", "on");
+  return sha1(bytes);
+}
+export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uint8Array } | null {
+  const path = mirrorPath(cfg);
+  if (store.getSetting("save.mirror") !== "on" || !existsSync(path)) return null;
+  const bytes = new Uint8Array(readFileSync(path));
+  return { sha1: sha1(bytes), bytes };
 }
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
@@ -255,14 +276,14 @@ function facePng(cfg: Config, f: ReturnType<typeof boxFace>, phase: Phase, frame
 // C-29: the save path and what the Settings screen shows about it. The effective path is the one Settings set, else
 // config.json. `source` tells the user which, so "it just worked" never leaves them wondering where it read from.
 function settingsView(cfg: Config, store: Store, here = true) {   // here: asked on this machine (C-170: the site away cannot pick)
-  const set = store.getSetting("savePath");
-  const savePath = set ?? cfg.savePath ?? null;
+  const set = store.getSetting("savePath"), mirror = store.getSetting("save.mirror") === "on";
+  const savePath = mirror ? mirrorPath(cfg) : set ?? cfg.savePath ?? null;
   const exists = !!(savePath && existsSync(savePath));
   // A file is only a save if one of its two slots checks out -- so a wrong pick is said at once, not at SYNC.
   let valid = false;
   if (exists) { try { readSave(new Uint8Array(readFileSync(savePath!))); valid = true; } catch { valid = false; } }
   return { savePath, dir: savePath ? dirname(savePath) : null, exists, valid,
-           source: set ? "settings" : cfg.savePath ? "config.json" : "none", edition: cfg.edition,
+           source: mirror ? "mirror" : set ? "settings" : cfg.savePath ? "config.json" : "none", edition: cfg.edition,
            canPick: platform() === "darwin" && here };
 }
 
@@ -475,7 +496,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
 
       // C-29: the save path the user set in Settings (stored in the db) overrides config.json; everything that reads
       // or writes a save uses `ecfg`, so the user never edits a file by hand.
-      const ecfg: Config = { ...cfg, savePath: store.getSetting("savePath") ?? cfg.savePath };
+      const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };   // C-188: the device's mirror, while it is on
       // C-80: every device heard, each with the daemon it carries; every daemon away; and those away in no device yet
       const devicesView = () => {
         const away = awayNow(ecfg), { byDevice, unplaced } = carryView(store, away);
@@ -1048,6 +1069,20 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-180: a hello from the daemon, from the written lines (no model), by its mood and the day
       if (req.method === "GET" && path === "/api/device/greet") return send(res, 200, { said: careLine("hello") });
       if (req.method === "POST" && path === "/api/device/note/written") { noteWritten(store); return send(res, 200, { ok: true }); }
+      // C-188: the paired app's save, mirrored here (a paired phone only, never a board)
+      if (path === "/api/save/mirror" && (phone || isLoopback(req.socket.remoteAddress)) && !board) {
+        if (req.method === "GET") {
+          const m = getMirror(cfg, store);
+          return m ? send(res, 200, { sha1: m.sha1, b64: Buffer.from(m.bytes).toString("base64") }) : send(res, 404, { error: "no mirror here" });
+        }
+        if (req.method === "POST") {
+          const b = await body(req);
+          const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
+          if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "a mirror is {b64}, a whole save" });
+          try { return send(res, 200, { sha1: putMirror(cfg, store, bytes) }); }
+          catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
+        }
+      }
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
@@ -1071,12 +1106,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/settings") {
         const b = await body(req);
         const p = typeof b.savePath === "string" ? b.savePath.trim() : "";
-        store.setSetting("savePath", p || null);
+        store.setSetting("savePath", p || null); store.setSetting("save.mirror", null);   // C-188: a path chosen ends the mirror
         return send(res, 200, settingsView({ ...cfg, savePath: p || cfg.savePath }, store, isLoopback(req.socket.remoteAddress)));
       }
       if (req.method === "POST" && path === "/api/settings/pick") {
         const picked = await pickSaveFile();
-        if (picked) store.setSetting("savePath", picked);
+        if (picked) { store.setSetting("savePath", picked); store.setSetting("save.mirror", null); }
         return send(res, 200, { picked, ...settingsView({ ...cfg, savePath: picked ?? ecfg.savePath }, store) });
       }
       if (req.method === "POST" && path === "/api/settings/reveal") {

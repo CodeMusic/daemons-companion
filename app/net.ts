@@ -3,6 +3,7 @@
 import { File, Paths } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import { GATE } from "./game/gate";
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
@@ -110,7 +111,7 @@ export class Unreachable extends Error { name = "Unreachable"; }
 // the companion cannot be reached, and sent in order when it answers. Only what needs an answer NOW is not kept --
 // talking, a voice, a SYNC of the save, the Mac's own dialogs, pairing, and the handheld told to do something this
 // moment (run a routine, send a remote, join a network). A setting is kept once: only the latest of each is sent.
-export const NOT_KEPT = /^\/api\/(ai\/|sync|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
+export const NOT_KEPT = /^\/api\/(ai\/|sync|save\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
 
 export const LATEST_ONLY = /^\/api\/(settings|talk\/settings|device\/settings|profile)$/;
 
@@ -247,7 +248,7 @@ export const POLLED = /^\/api\/(device\/(link|state|commands)|broadcasts)/;
    // the review, 2026-10-18: news and the handheld's polls too
 // An answer the companion gives once and then forgets -- the board's waiting commands (taken as they are answered): never
 // kept, never served from what was kept, or an old command reaches the board again (the review, 2026-10-18)
-export const ONE_SHOT = /^\/api\/device\/commands/;
+export const ONE_SHOT = /^\/api\/(device\/commands|save\/)/;   // C-188: a save is never kept
 
 export async function liveAndKeep<T>(path: string, servedKept: () => boolean): Promise<T> {
   const j = await apiLive<T>(path);
@@ -269,6 +270,12 @@ export function freshSoon() {                     // many answers at once (keepE
 
 // C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
 export async function api<T>(path: string, body?: unknown): Promise<T> {
+  // C-188: paired, SYNC writes the companion's mirror of the game's save -- the game hands its save over and pauses first,
+  // and takes back what SYNC wrote before it goes on (game/gate.ts; hosting alone, local.ts holds it the same way)
+  if (path === "/api/sync" && body !== undefined && !ALONE && ON_PHONE) {
+    await GATE.hold();
+    try { return await apiLive<T>(path, body); } finally { GATE.release(); }
+  }
   if (ON_PHONE && body === undefined && !path.startsWith("/api/art") && !ONE_SHOT.test(path) && path in KEPT.paths) {
     let servedKept = false;
     const live = liveAndKeep<T>(path, () => servedKept).catch((e) => {

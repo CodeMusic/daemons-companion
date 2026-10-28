@@ -23,6 +23,14 @@ game's save memory, SYNCs, and gives it back; **the game restarts from it** (CON
 The device's save is the real one. The hub, when paired, keeps a mirror (as the Mac's copy is today) so the boards at
 home and the hub's AI see the same daemons.
 
+**The mirror (C-188, the user's choice 2026-10-27).** A paired app that plays the game sends its save after each game
+save (`POST /api/save/mirror`); the companion keeps it beside its database as `mirror.sav` -- never the save path the
+user set -- and while the mirror is on, everything there reads it and SYNC writes it. A SYNC from the app pauses the game
+and waits for its save to cross first; the app takes the mirror back (`GET /api/save/mirror`) before the game goes on,
+and when the app opens. The two are known by SHA-1 with the one both last held: the mirror comes back only while the
+device's save has not moved since; when both moved, the device's wins (`server/src/game/mirror.ts`). Choosing a save
+path in SETTINGS ends the mirror.
+
 ## The steps, in order
 
 1. **The game in the app (C-187).** The player gives their own FireRed or LeafGreen once (from Files). The app

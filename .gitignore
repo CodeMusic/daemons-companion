@@ -12,3 +12,6 @@ config.json
 .DS_Store
 .hub
 .hub-sync/
+
+# C-188: the mirror save's backups (server/companion-backups/mirror.sav.<time>) -- a save holds the player's name
+companion-backups/

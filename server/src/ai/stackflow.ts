@@ -72,8 +72,8 @@ export class StackFlow {
   }); }
   // what was said, to that thinker; its words as they stream. firstWithinMs: no first words by then is LATE for the caller.
   // sentences: the answer is the first that many sentences, given back the moment they are written -- p256 runs on for
-  // six (the hardware lane, 2026-10-28: 39-50 s a spoken talk, past the watch's wait); the rest is read and let go
-  // here, holding the connection, since StackFlow cannot be stopped mid-answer
+  // six (the hardware lane, 2026-10-28: 39-50 s a spoken talk, past the watch's wait) -- and the thinker paused there;
+  // what it sends until it stops is read and let go here, holding the connection
   infer(workId: string, said: string, opts: { firstWithinMs?: number; totalMs?: number; sentences?: number } = {}): Promise<Thought> {
     let early: ((t: Thought) => void) | null = null;
     const answered = new Promise<Thought>((r) => { early = r; });
@@ -90,10 +90,14 @@ export class StackFlow {
       catch (e) { if (firstMs === null && opts.firstWithinMs) { this.sock?.destroy(); throw new Error(LATE); } throw e; }
       if (r.error?.code) throw new Error(`the module's StackFlow: ${r.error.message ?? r.error.code}`);
       const d = r.data as { delta?: string; finish?: boolean } | string | undefined;
+      if (r.request_id === "pause") continue;               // the pause's own reply
       if (!d || typeof d !== "object") break;
       if (d.delta) { if (firstMs === null) firstMs = Date.now() - t0; text += d.delta; }
       const cut = opts.sentences ? firstSentences(text, opts.sentences) : null;
-      if (early && cut !== null) { (early as (t: Thought) => void)({ text: cut, firstMs, totalMs: Date.now() - t0 }); early = null; }
+      if (early && cut !== null) {
+        (early as (t: Thought) => void)({ text: cut, firstMs, totalMs: Date.now() - t0 }); early = null;
+        await this.send({ request_id: "pause", work_id: workId, action: "pause" });   // it stops within 0.1 s (measured 2026-10-28)
+      }
       if (d.finish) break;
     }
     return { text: opts.sentences ? firstSentences(text, opts.sentences, true)! : text, firstMs, totalMs: Date.now() - t0 };

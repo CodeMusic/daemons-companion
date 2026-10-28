@@ -9,6 +9,7 @@
 // ever shown while PAIR MY PHONE is open; the rest of the time it is a random number nobody sees, so nobody else can
 // pair. A connection that has not authenticated within half a minute is dropped, so a stranger cannot sit on a slot.
 #include "link.h"
+#include "board.h"                                         // C-176: deviceId(), for the name
 #include <NimBLEDevice.h>
 #include <deque>
 

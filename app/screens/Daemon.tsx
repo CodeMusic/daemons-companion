@@ -13,6 +13,7 @@ import { IndexScreen } from "./Index";
 import { RoutinesCard } from "./Routines";
 import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
+import { followVoice, useMouth } from "../speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard } from "./Reads";   // C-203
 import { useApi } from "../useApi";
@@ -34,6 +35,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const [l, setL] = useState<Life | null>(null);
   const [said, setSaid] = useState("");
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
+  const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
   const player = useAudioPlayer(null);
   useEffect(() => {
@@ -67,8 +69,8 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
       <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={l.expression} thrive={l.thrive}   // C-113, C-119
-                art={<Art key={l.expression?.name ?? "awake"}
-                          path={`/art/party/${daemon.slot}.png${l.expression && l.expression.name !== "awake" ? `?expression=${l.expression.name}` : ""}`} size={144} />} height={180} />
+                art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
+                          path={`/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
       {l.tired === "asleep"                                 // C-118: asleep, said plainly -- not the small word
         ? <Text fontSize={28} fontWeight="800" letterSpacing={2} color="$color12">ASLEEP</Text>
         : <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>}
@@ -92,6 +94,11 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     </Card>
   );
 }
+// C-119, C-213: the picture's query -- its expression's shade, and the mouth open while it speaks
+const artQuery = (expression: string | undefined, mouth: boolean) => {
+  const q = [expression && expression !== "awake" ? `expression=${expression}` : "", mouth ? "mouth=open" : ""].filter(Boolean).join("&");
+  return q ? `?${q}` : "";
+};
 export function useVoice() {
   const player = useAudioPlayer(null);
   return (b64?: string | null) => {
@@ -99,6 +106,7 @@ export function useVoice() {
     const f = new File(Paths.cache, `voice-${Date.now()}.mp3`);
     f.create(); f.write(b64, { encoding: "base64" });
     player.replace({ uri: f.uri }); player.play();
+    followVoice(player);                                   // C-213: its mouth moves while it speaks
   };
 }
 

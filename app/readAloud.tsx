@@ -7,6 +7,7 @@ import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { File, Paths } from "expo-file-system";
 import { useEffect, useRef, useState } from "react";
 import { apiLater, ON_PHONE } from "./net";
+import { followVoice, setSpeaking } from "./speaking";   // C-213
 import { Spoken } from "./types";
 import { Action } from "./ui";
 
@@ -33,7 +34,7 @@ export function useReadAloud() {
   const ended = () => new Promise<void>((done) => {
     const sub = player.addListener("playbackStatusUpdate", (s) => { if (s.didJustFinish) { sub.remove(); done(); } });
   });
-  const stop = () => { run.current++; try { player.pause(); } catch { /* nothing playing */ } setReading(null); };
+  const stop = () => { run.current++; try { player.pause(); } catch { /* nothing playing */ } setReading(null); setSpeaking(false); };
   const read = async (key: string, paragraphs: string[]) => {
     if (reading === key) return stop();
     const mine = ++run.current;
@@ -48,7 +49,7 @@ export function useReadAloud() {
         if (run.current !== mine || !spoken?.audioBase64) break;
         const f = new File(Paths.cache, `read-${Date.now()}.mp3`);
         f.create(); f.write(spoken.audioBase64, { encoding: "base64" });
-        player.replace({ uri: f.uri }); player.play();
+        player.replace({ uri: f.uri }); player.play(); followVoice(player);
         await ended();
       }
     } catch { /* the voice is not here: the button says nothing new */ }

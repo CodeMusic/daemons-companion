@@ -21,7 +21,7 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
                                                   body: JSON.stringify({ code: code.trim(), name: name.trim() }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? `the companion answered ${r.status}`);
-      if (!ON_PHONE) { keepSiteToken(j.token); setConnection({ server: base, token: j.token }); onPaired(); return; }   // C-170
+      if (!ON_PHONE) { keepSiteToken(j.token, base); setConnection({ server: base, token: j.token }); onPaired(); return; }   // C-170: kept under the server it was paired with
       await SecureStore.setItemAsync("server", base, KEEP);
       await SecureStore.setItemAsync("token", j.token, KEEP);
       if (j.away) { await SecureStore.setItemAsync("away", j.away, KEEP); setConnection({ away: j.away }); }   // C-56

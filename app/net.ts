@@ -126,13 +126,33 @@ export const ON_PHONE = Platform.OS !== "web";
 // relay). Anywhere else -- the hub's site from another computer or over the tailnet -- it pairs as a phone does.
 const LOOPBACK = /^(127\.\d+\.\d+\.\d+|localhost|\[::1\]|::1)$/i;
 export const SITE_HOME = !ON_PHONE && (() => { try { return LOOPBACK.test(new URL(SERVER).hostname); } catch { return false; } })();
-export const KEYED = ON_PHONE || !SITE_HOME;
-const WEB_TOKEN = "daemons-companion-token";               // the site's key, in this browser's own storage
+// The review (2026-10-28, with C-169's ?server=): the site's key is kept PER SERVER, under the address it was paired
+// with -- one key for the whole browser went to whatever a ?server= link named. And a site away from the companion's
+// machine pairs only when its server asks for a key: one that answers without (the DAEMONS playground's companion,
+// through the playground's own server) is used as it is (loadConnection), and KEYED turns false.
+export let KEYED = ON_PHONE || !SITE_HOME;
+const tokenKey = (server: string) => `daemons-companion-token@${server.replace(/\/+$/, "")}`;
+const OLD_WEB_TOKEN = "daemons-companion-token";           // C-170's one key, before it was per server
 const webStore = {
-  get: () => { try { return window.localStorage.getItem(WEB_TOKEN); } catch { return null; } },
-  set: (t: string | null) => { try { if (t) window.localStorage.setItem(WEB_TOKEN, t); else window.localStorage.removeItem(WEB_TOKEN); } catch {} },
+  get: () => {
+    try {
+      const t = window.localStorage.getItem(tokenKey(SERVER));
+      if (t || linked) return t;                           // a ?server= site never inherits the old key
+      const old = window.localStorage.getItem(OLD_WEB_TOKEN);   // it was paired with the site's own server: this one
+      if (old) { window.localStorage.setItem(tokenKey(SERVER), old); window.localStorage.removeItem(OLD_WEB_TOKEN); }
+      return old;
+    } catch { return null; }
+  },
+  set: (t: string | null, server = SERVER) => {
+    try { if (t) window.localStorage.setItem(tokenKey(server), t); else window.localStorage.removeItem(tokenKey(server)); } catch {}
+  },
 };
-export const keepSiteToken = (t: string | null) => webStore.set(t);
+export const keepSiteToken = (t: string | null, server = SERVER) => webStore.set(t, server);
+// Whether the server answers this site with no key at all -- once, at load, and briefly
+async function answersWithoutKey(): Promise<boolean> {
+  const stop = new AbortController(), t = setTimeout(() => stop.abort(), 4000);
+  try { return (await fetch(SERVER + "/api/today", { signal: stop.signal })).ok; } catch { return false; } finally { clearTimeout(t); }
+}
 
 // C-57: readable after the phone's first unlock, not only while it is unlocked -- iOS may open the app in a locked
 // pocket when the handheld has something to say, and the app needs its key and the handheld's id then.
@@ -148,7 +168,13 @@ export async function keepAfterFirstUnlock() {
 }
 
 export async function loadConnection(): Promise<boolean> {
-  if (!ON_PHONE) { if (!KEYED) return true; TOKEN = webStore.get(); return !!TOKEN; }   // C-170
+  if (!ON_PHONE) {                                                                       // C-170
+    if (!KEYED) return true;
+    TOKEN = webStore.get();
+    if (TOKEN) return true;
+    if (await answersWithoutKey()) { KEYED = false; return true; }                         // the review: keyless
+    return false;
+  }
   await keepAfterFirstUnlock().catch(() => {});
   await loadKept();
   for (const [p, uri] of Object.entries(KEPT.art)) ART.set(p, uri);

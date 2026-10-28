@@ -302,7 +302,7 @@ void drawRoutines(uint16_t day) {
 }
 
 // C-105: a screen wide enough for two columns -- the T-Display-S3 Pro's 480x222. The narrow pages are drawn for 320.
-bool wide() { return W >= 400 && !board.round; }
+bool wide() { return W >= 400 && W > H && !board.round; }   // landscape only: the Ultra is 410 wide but taller still
 bool faceHasDaemon(); static int faceDaemonY();   // C-162: below
 void talkSpot(int &x, int &y) {
   if (wide()) { x = W - 46; y = H - 40; }
@@ -334,7 +334,7 @@ static void timeAt(const char *hm, const char *ampm, int x, int y, uint16_t colo
 static void drawFaceWide(uint16_t day, uint16_t ink) {
   const int split = 262;
   canvas.drawFastVLine(split, 40, H - 70, day);
-  struct tm t; char hm[6]; const char *ampm; bool timed = clockTime(hm, sizeof hm, &ampm);
+  struct tm t; char hm[6]; const char *ampm; bool timed = clockTime(hm, sizeof hm, &ampm) && watchLocalTime(t);
   canvas.setTextDatum(TL_DATUM);
   canvas.setTextFont(7); canvas.setTextSize(1.5f); canvas.setTextColor(PAPER);
   canvas.drawString(hm, 18, 44);

@@ -49,3 +49,19 @@ describe("C-174: the distance walked, and the weather where it is", () => {
     expect(weatherSpot(store, new Date(Date.now() + 3 * 3600000))?.latitude).toBe(45.42);
   });
 });
+
+describe("C-199: a fix told late, from the card", () => {
+  it("is filed when it was taken, in its place among the rest", async () => {
+    const { takeFix } = await import("../src/routes.js");
+    const store = new Store(":memory:");
+    const now = new Date();
+    takeFix(store, "45.1 -75.1 5", "w", now);
+    const then = Math.floor(now.getTime() / 1000) - 3600;
+    takeFix(store, `45.2 -75.2 5 ${then}`, "w", now);
+    const l = fixesOf(store);
+    expect(l[0].lat).toBe(45.1);                               // the newest still first
+    expect(l[1]).toMatchObject({ lat: 45.2, at: new Date(then * 1000).toISOString() });
+    takeFix(store, `45.3 -75.3 5 ${then + 999999}`, "w", now);   // from the future: taken as now
+    expect(new Date(fixesOf(store)[0].at).getTime()).toBe(now.getTime());
+  });
+});

@@ -183,7 +183,12 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
 // interact and a phone hosting alone (app/local.ts) both take it here.
 export function takeFix(store: Store, detail: string, deviceId: string, now = new Date()): Fix | string {
   const f = checkFix(detail);
-  return typeof f === "string" ? f : keepFix(store, f, deviceId, now);
+  if (typeof f === "string") return f;
+  // C-199: a fix told late (kept on the Ultra's card while nothing was in reach) carries when it was taken -- its fourth
+  // number, seconds since 1970; one from the future, or from before the GNSS could have run, is taken as now
+  const taken = Number(detail.split(" ")[3]) * 1000;
+  const at = Number.isFinite(taken) && taken > Date.UTC(2026, 0) && taken <= now.getTime() + 60000 ? new Date(taken) : now;
+  return keepFix(store, f, deviceId, at);
 }
 // C-200: a night ended on the watch -- "night <from> <to> <stirs> <tucked>" (seconds since 1970), so it travels as every
 // interaction does (Wi-Fi, the outbox, the cable's INTERACT, the phone). Kept with a written dream at once; a rested night

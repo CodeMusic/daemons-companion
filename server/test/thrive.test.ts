@@ -27,6 +27,12 @@ describe("C-207: the daemon looks how the week has gone", () => {
     expect(e.shade.sat).toBeGreaterThan(1);
     expect(e.pose.dy).toBe(-1);
   });
+  it("reads the latest night, even when an older one is told after it", () => {
+    const store = new Store(":memory:");
+    keepNight(store, night(1, 8, 1), who);                    // this morning's, vivid
+    keepNight(store, night(49, 3, 9), who);                   // an old broken one, told late from the outbox
+    expect(thriveOf(store)).toMatchObject({ moon: true, rested: true, broken: false });
+  });
   it("is drowsy until noon and paler after a broken night", () => {
     const store = new Store(":memory:");
     keepNight(store, night(1, 3, 9), who);

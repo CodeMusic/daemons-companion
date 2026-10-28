@@ -53,15 +53,15 @@ export function evolutionWritten(store: Store, personality: number) { store.setS
 // 160, are both counted from the first day). steps/1000 + days carried x 5 + cares + goals done x 3, as the game
 // session weighed it; a day carried counted once a calendar day, and no one day's steps past 20,000 -- one long walk
 // is not a bond.
-export const BOND = { stepsPer: 1000, day: 5, care: 1, goal: 3, dayStepsCap: 20000 };
-export interface Bond { days: number; lastDay: string; stepsBanked: number; stepsToday: number; cares: number; goals: number }
+export const BOND = { stepsPer: 1000, day: 5, care: 1, goal: 3, night: 2, dayStepsCap: 20000 };   // night: C-200, a rested one
+export interface Bond { days: number; lastDay: string; stepsBanked: number; stepsToday: number; cares: number; goals: number; nights: number }
 const bondKey = (personality: number) => `bond.${personality >>> 0}`;
-const NO_BOND: Bond = { days: 0, lastDay: "", stepsBanked: 0, stepsToday: 0, cares: 0, goals: 0 };
+const NO_BOND: Bond = { days: 0, lastDay: "", stepsBanked: 0, stepsToday: 0, cares: 0, goals: 0, nights: 0 };
 export function bondOf(store: Store, personality: number): Bond {
   try { return { ...NO_BOND, ...JSON.parse(store.getSetting(bondKey(personality)) ?? "{}") }; } catch { return { ...NO_BOND }; }
 }
 export function bondScore(b: Bond) {
-  return Math.floor((b.stepsBanked + b.stepsToday) / BOND.stepsPer) + b.days * BOND.day + b.cares * BOND.care + b.goals * BOND.goal;
+  return Math.floor((b.stepsBanked + b.stepsToday) / BOND.stepsPer) + b.days * BOND.day + b.cares * BOND.care + b.goals * BOND.goal + b.nights * BOND.night;
 }
 // seen carried today, with the day's steps so far: a new day counts once, and its steps (capped) replace the day's
 // before -- the walking count only ever rises through a day
@@ -72,7 +72,7 @@ export function bondSeen(store: Store, personality: number, date: string, steps:
   store.setSetting(bondKey(personality), JSON.stringify(b));
   return b;
 }
-export function bondAdd(store: Store, personality: number, what: "cares" | "goals") {
+export function bondAdd(store: Store, personality: number, what: "cares" | "goals" | "nights") {
   const b = bondOf(store, personality);
   b[what] += 1;
   store.setSetting(bondKey(personality), JSON.stringify(b));

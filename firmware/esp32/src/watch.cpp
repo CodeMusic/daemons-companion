@@ -524,6 +524,7 @@ static void touchLoop(uint32_t now) {
 // a tap, where it came down: a CARE tile or a list's row or a grid's tile done where it is; on the face, two open CARE
 static void touchTap(int x, int y, uint32_t now) {
   int off, tile;
+  if (dreamShowing()) { dreamDismiss(); lastInput = now; return; }   // C-200: good morning
   if (screen == CARE_GRID && (tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); return; }   // C-163
   if (screen == HOME && page == FACE_PAGE) {                   // C-163: a double tap on the face opens CARE; one does nothing
     static uint32_t tappedAt = 0;

@@ -43,6 +43,7 @@ void setup() {
   inputBegin();                               // the dial and the buttons this board has
   step("display"); displayBegin();
   watchBegin();                               // C-71: the watch's clock, steps, touch and crown (nothing elsewhere)
+  nightBegin();                               // C-200: a night under way when it restarted
   step("wifi");    loadWifi();                // C-52: uplinkLoop joins the strongest known network in range
   reportBegin();                              // C-121: the outbox's task
   step("lights");  ledsBegin();
@@ -67,6 +68,7 @@ void loop() {
   readDeck();                               // C-104: the T-Deck's keyboard and trackball
   uint32_t now = millis();
   watchLoop(now);                           // C-71
+  nightLoop(now);                           // C-200
   if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); dirty = true; }   // C-80: its own name
   static uint32_t phoneHelloAt = 0;          // C-80: the phone carries the board's name on, so it hears it now and then
   if (linkPhoneHere() && (phoneHelloAt == 0 || now - phoneHelloAt > 30000)) {

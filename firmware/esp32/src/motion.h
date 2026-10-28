@@ -11,6 +11,7 @@ bool motionReady();                 // the firmware is running and the sensors a
 long motionSteps();                 // steps counted, rising, kept across restarts (cars left out); -1 not yet
 MotionKind motionKind();            // what the wrist is doing now
 uint32_t motionStillFor();          // how long the wrist has been still, ms (C-200: the night)
+uint32_t motionStirs();             // C-200: every stir counted, rising -- moving off stillness, or the wrist lifted
 bool motionTakeRaise();             // the wrist was lifted to look (since last asked)
 bool motionTakeShake();             // it was shaken
 bool motionTakeDoubleTap();         // it was tapped twice

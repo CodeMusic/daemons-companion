@@ -51,6 +51,8 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
+import { checkNight, dreamAsk, dreamsOf, keepNight, rested, rewriteDream } from "./dreams.js";   // C-200
+import { bondAdd } from "./evolve.js";
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
@@ -323,7 +325,7 @@ export function ourHost(hostOrUrl: string): boolean {
 }
 // What a board may log about itself over the network (INTERACT): its routines, the CASINO's coins and seat, and its cares.
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting"];   // C-159: setting
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night"];   // C-159: setting; C-200: night
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -1083,6 +1085,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
         }
       }
+      // C-200: the dream journal, the newest first
+      if (req.method === "GET" && path === "/api/dreams") return send(res, 200, { dreams: dreamsOf(store) });
       if (req.method === "POST" && path === "/api/device/interact") {
         const b = await body(req);
         const kind = typeof b.kind === "string" ? b.kind.slice(0, 32) : "";
@@ -1096,6 +1100,25 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (!m || !validDeviceId(who)) return send(res, 400, { error: "a setting is sound on|off, from a device" });
           const r = setOwnSettings(store, who, { sound: m[2] === "on" });
           return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { settings: r });
+        }
+        // C-200: a night ended on the watch -- "night <from> <to> <stirs> <tucked>" (seconds since 1970), so it travels as
+        // every interaction does (Wi-Fi, the outbox, the cable's INTERACT, the phone). Kept with a written dream at once;
+        // the module asked for its own telling after (it replaces the written one, and the watch shows it from its next
+        // state); a rested night is the bond's. Not logged as tending: sleeping is not a care.
+        if (kind === "night") {
+          const [from, to, stirs, tucked] = (typeof b.detail === "string" ? b.detail : "").split(" ").map(Number);
+          const n = checkNight({ from: new Date(from * 1000), to: new Date(to * 1000), stirs, tucked: tucked === 1 });
+          if (typeof n === "string") return send(res, 400, { error: n });
+          const d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
+          const dream = keepNight(store, n, { nickname: d?.nickname ?? "", species: d?.species ?? 0, personality: d?.personality ?? null, device: deviceId });
+          if (d && rested(n) && !store.getSetting(`dream.rested.${dream.id}`)) {
+            bondAdd(store, d.personality, "nights"); store.setSetting(`dream.rested.${dream.id}`, "1");
+          }
+          if (house.any && d && dream.by === "words") {
+            house.talk({ text: dreamAsk(n), history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)
+              .then((a) => { if (a.answer) rewriteDream(store, dream.id, a.answer); }).catch(() => {});
+          }
+          return send(res, 200, { dream: { id: dream.id, text: dream.text, by: dream.by, quality: dream.quality } });
         }
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
         core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's

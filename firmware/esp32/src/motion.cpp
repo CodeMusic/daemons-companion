@@ -19,6 +19,7 @@ bool motionReady() { return false; }
 long motionSteps() { return -1; }
 MotionKind motionKind() { return M_UNKNOWN; }
 uint32_t motionStillFor() { return 0; }
+uint32_t motionStirs() { return 0; }
 bool motionTakeRaise() { return false; }
 bool motionTakeShake() { return false; }
 bool motionTakeDoubleTap() { return false; }
@@ -35,7 +36,7 @@ String motionStatus() { return "MOTION none"; }
 
 static SensorBHI260AP bhy;
 static volatile bool ready = false, raised = false, shaken = false, tapped2 = false, kindChanged = false;
-static volatile uint32_t rawSteps = 0, stillSince = 0;
+static volatile uint32_t rawSteps = 0, stillSince = 0, stirs = 0;
 static volatile MotionKind kind = M_UNKNOWN;
 static long before = 0, excluded = 0;                      // the steps kept when rawBase was the count; car steps since
 static uint32_t rawBase = 0;                               // the sensor's count when `before` was last kept
@@ -57,11 +58,12 @@ static void onActivity(uint8_t, uint8_t *data, uint32_t size, uint64_t *, void *
   if (k == kind) return;
   if (k == M_VEHICLE) { inVehicle = true; vehicleFrom = rawSteps; }
   else if (inVehicle) { excluded += (long)rawSteps - (long)vehicleFrom; inVehicle = false; }
+  if (kind == M_STILL && k != M_STILL) stirs++;           // C-200: off stillness, a stir
   stillSince = k == M_STILL ? millis() : 0;
   kind = k; kindChanged = true;
 }
 
-static void onTilt(uint8_t, uint8_t *, uint32_t, uint64_t *, void *) { raised = true; }
+static void onTilt(uint8_t, uint8_t *, uint32_t, uint64_t *, void *) { raised = true; stirs++; }
 
 // a shake: four swings past 2.2 g inside a second; a double tap: two knocks (a jump of 0.9 g from one sample to the
 // next) 120-450 ms apart, with no other knock for 250 ms before the first -- and no shake around them
@@ -123,6 +125,7 @@ long motionSteps() {
 }
 MotionKind motionKind() { return kind; }
 uint32_t motionStillFor() { return kind == M_STILL && stillSince ? millis() - stillSince : 0; }
+uint32_t motionStirs() { return stirs; }
 bool motionTakeRaise() { bool r = raised; raised = false; return r; }
 bool motionTakeShake() { bool r = shaken; shaken = false; return r; }
 bool motionTakeDoubleTap() { bool r = tapped2; tapped2 = false; return r; }

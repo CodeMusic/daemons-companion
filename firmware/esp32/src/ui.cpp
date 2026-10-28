@@ -533,7 +533,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
 
 void draw() {
   // C-173: on the Ultra a face keeps the 240 square it was drawn for, centred in the taller canvas (present)
-  const bool faceShown = board.zoom != 1 && screen == HOME && page == FACE_PAGE;
+  const bool faceShown = board.zoom != 1 && screen == HOME && page == FACE_PAGE && !dreamShowing();
   const int fullH = H;
   if (faceShown) H = 240;
   uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
@@ -822,6 +822,7 @@ void draw() {
     canvas.setTextDatum(TL_DATUM);
   }
   drawActivity(day, ink);                                     // C-183: what was just done, over everything but a word
+  drawDream(day);                                             // C-200: the night's dream, over all of it
   if (gridLists() && screen == HOME && page != FACE_PAGE && !activityShowing()) {   // C-172: where a swipe goes, never on the face
     int at = launchIndex(page);
     if (at >= 0) pageDots(at, LAUNCH_N);

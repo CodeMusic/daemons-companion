@@ -58,6 +58,7 @@ void careDo(int kind) {
   if (kind == 4) soundWake(); else soundCare(kind);   // from its task -- or, without PSRAM, played here (sound.cpp)
   if (kind != 3) { hopUntil = millis() + 480; dirty = true; }   // after it, so where the tune is played here the hop still shows
   report(CARE_KIND[kind], "device");
+  if (kind == 3) nightTuck(); else if (kind == 4) nightWake();   // C-200: tucked in, the night begins; woken, it ends
 }
 
 void inputBegin() {
@@ -243,6 +244,7 @@ bool giveUp() {                        // the watch: a touch anywhere
 
 // The encoder's press: in, or run. On TODAY it ticks the step off, as it always has.
 void press() {
+  if (dreamShowing()) { dreamDismiss(); lastInput = millis(); return; }   // C-200: good morning
   if (screen == COMPOSE) { sendComposed(); return; }            // C-123: the trackball's press sends it too
   lastInput = millis();
   ledsFlash();                                                  // C-38

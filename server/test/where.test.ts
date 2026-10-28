@@ -23,7 +23,7 @@ describe("C-174: where a watch has been, and FIND", () => {
     expect(findAsked(store, "t-watch-ultra-a1", now)).toBe(now.toISOString());
     expect(findAsked(store, "t-watch-s3-b2", now)).toBeNull();
     expect(findAsked(store, "t-watch-ultra-a1", new Date(now.getTime() + 11 * 60000))).toBeNull();
-    keepFix(store, { lat: 1, lon: 2, metres: 3 }, "t-watch-ultra-a1");
+    keepFix(store, { lat: 1, lon: 2, metres: 3 }, "t-watch-ultra-a1", new Date(now.getTime() + 60000));   // a fix since the ask
     expect(findAsked(store, "t-watch-ultra-a1", now)).toBeNull();
   });
 });
@@ -51,6 +51,12 @@ describe("C-174: the distance walked, and the weather where it is", () => {
 });
 
 describe("C-199: a fix told late, from the card", () => {
+  it("does not answer a FIND asked after it was taken", () => {
+    const store = new Store(":memory:"), now = new Date("2026-10-29T08:00:00Z");
+    askFind(store, "w", now);
+    keepFix(store, { lat: 1, lon: 2, metres: 3 }, "w", new Date(now.getTime() - 3600000));   // from the card, an hour old
+    expect(findAsked(store, "w", now)).toBe(now.toISOString());
+  });
   it("is filed when it was taken, in its place among the rest", async () => {
     const { takeFix } = await import("../src/routes.js");
     const store = new Store(":memory:");

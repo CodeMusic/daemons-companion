@@ -82,7 +82,7 @@ export function expressionFor(life: Pick<Life, "tired">, f: Feelings | null, fac
 // One expression by name, whatever it feels -- for a check down the cable (firmware/esp32/bench.py), never chosen by a host
 export function drawnAs(name: string, face: Face | null = null): Drawn | null {
   const e = EXPRESSIONS[name];
-  return e ? { ...e, patch: face ? eyePatch(face, e) : [] } : null;
+  return e ? { ...e, patch: face ? eyePatch(face, e) : [], mouth: face ? mouthPatch(face, e) : [] } : null;   // C-213: as a host receives it
 }
 
 // Closed: the eye filled with what is around it, and one line of the eye's own colour across it (at least two pixels

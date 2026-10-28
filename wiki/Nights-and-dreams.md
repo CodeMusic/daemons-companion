@@ -15,7 +15,9 @@ A night begins either way:
 
 It ends when you wake the daemon (CARE, WAKE), after three minutes on the move, or after sixteen hours. Every stir in
 between is counted. A night of an hour or more is told to the companion, over the cable, the phone or Wi-Fi alike. The
-watch keeps it in flash, so a restart in the night does not lose it.
+watch keeps it in flash, so a restart in the night does not lose it. Out of reach of all three, a watch with LoRa also
+puts it on the air, and one of your LoRa boards that can reach home tells the companion for it (C-175, built, not yet on
+the air -- [Meeting others nearby](Meeting-others-nearby#the-relay-a-watch-out-of-reach)).
 
 **The night's shape is its quality**: **VIVID** (long and still), **QUIET**, or **BROKEN** (short, or restless). The
 app shows them as *A deep night*, *A quiet night* and *A restless night*.

@@ -19,6 +19,13 @@ requests a phone hosting on its own answers the same way (C-111) -- marked *alon
   `/api/settings/network`, `/api/settings/pick`, `/api/settings/reveal`, `/api/settings/relay`, `/api/settings/home`.
 - **Home Assistant's door**, `/ollama/<key>/...`, answers only the key in its address, and never through the relay
   ([below](#home-assistants-conversation-agent)).
+- **A meeting or a voice note** (`/api/device/meeting/...`, `/api/device/voicenote`) is taken only from a board with
+  its own key (handed to it down its cable), a paired phone, or this machine -- never on an `x-device` anyone on the
+  network could claim.
+- **YOUR SAVES, the mirror and the testing builds** (`/api/saves...`, `/api/save/mirror`, `/api/game/debug...`) answer
+  this machine or a paired phone, never a board; the testing builds never through the relay either.
+- **THE EXCHANGE**, `/api/exchange/...`, answers the home network and the tailnet, never the relay
+  ([below](#trading)).
 
 A device names itself with an `x-device` header, or `?device=` through the relay.
 
@@ -39,6 +46,8 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `POST /api/goal/remove` | `{step}` or `{milestone}` (*alone too*) |
 | `POST /api/steps/:id/done` (`/undo`) | tick a step off, or undo it (*alone too*) |
 | `GET`/`POST /api/walk` | the walking goal and today's steps (*alone too*) |
+| `GET /api/where` | C-174: a watch's fixes, the newest first (`?device=`), and the distance walked since `?since=` (*alone too*) |
+| `POST /api/where/find` | `{id, stop?}` -- FIND IT: that watch asked to say HERE and sound until it has a fix; `stop: true` takes the ask back (*alone too*) |
 
 ## The game
 
@@ -52,13 +61,18 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /api/progress` | GAME EVENTS -- every row held, not yet (and then unnamed) or unknown -- and CALLOW SCHOOL: the floors stood on, the TEXTBOOK, the DIPLOMA, the best and last mark, the sittings and the grade (*alone too*) |
 | `GET /api/play` | the instrument the save's edition plays (the HARP for CONTENT, the FLUTE for CONTEXT), whether the save holds it yet, and each song learned or only heard; `?preview=1`, for a check, as if held with every song learned (*alone too*) |
 | `GET /api/guide` | whether the save has found THE GUIDE, and once it has, the book by part and chapter, with its title and author for a screen to set over the cover (*alone too*) |
+| `GET /api/books`, `GET /api/book?book=&n=` | C-208: the books the save holds, as a watch's BOOKS reads them -- the shelf and its chapters, then one chapter; never `?preview` (*alone too*) |
+| `GET /api/index/list`, `GET /api/index/entry?species=` | C-199: THE INDEX as a watch reads it -- every daemon met, a line each, with the counts seen and bound; then one entry, its kind, types, words and OPUS's margin (*alone too*) |
+| `GET /api/dreams` | C-200: the dream journal, the newest first (*alone too*) |
+| `GET /api/soundings` | C-195: each daemon away, when it was last heard and how it was doing (*alone too*) |
+| `GET /api/planner`, `GET /api/planner/wild?place=` | C-191: THE ROAD AHEAD, up to the next step and nothing past it; then one open place's wild daemons (*alone too*) |
 | `GET /api/reads` | C-203: the companion's own log of THE SUBTLE LAYER's reads and leans -- `held` (the save has found the book; nothing else matters before), how many reads were given and landed, leans told and landed, and the last ten reads, each with its line, when it landed, or `open` while it still can (*alone too*) |
 | `GET /api/subtle` | whether the save has found THE SUBTLE LAYER, and once it has, the book by section and page, each page's paragraphs in their voice (`telling` or `asking`) and its picture's frames; `?preview=1`, for a check, as if found (*alone too*) |
 | `GET /api/marks` | each MARK's and understanding's words, colours and towns -- no save needed (*alone too*) |
 | `GET /api/regions` | the two region maps' cells -- no save needed (*alone too*) |
 | `GET /api/groves` | the groves' universes, signs and who lives in each -- no save needed (*alone too*) |
 | `GET /api/school` | CALLOW SCHOOL's floors, syllabi, boards and the paper -- no save needed (*alone too*) |
-| `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time, and write in the meetings, the experience earned and what the boards' CASINO won or lost (the money kept between 0 and 999999) (*alone too*) |
+| `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time, and write in the meetings, the experience earned and what the boards' CASINO won or lost (the money kept between 0 and 999999); and the trades -- what the exchange sent fetched first, each written into the slot its own left, TRADING set on every daemon in a trade, the exchange told after ([Trading](#trading)) (*alone too*) |
 | `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |
 | `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines; `?expression=` shades it |
 | `GET /art/species/<id>.png` | a species as the INDEX draws it |
@@ -134,9 +148,11 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 | `POST /api/device/beacon` | `{peer}` -- one of our own beacon tags, so it is never counted as a meeting |
 | `GET /api/beacons` | what the phone needs for its beacon, our own tags, and the last listen |
 | `POST /api/device/listen` | a board's last Bluetooth listen, for the check |
-| `POST /api/device/met` | `{species, peer, how?, hops?}` -- a meeting nearby, by Bluetooth, LoRa or a card |
+| `POST /api/device/met` | `{species, peer, how?, hops?}` -- a meeting nearby, by Bluetooth, LoRa, a card, or a T-Watch Ultra's TOUCH (`how: nfc`: the bond grows a little) |
 | `POST /api/device/message` | a wave or a word over LoRa, heard or sent (eighty letters at most) |
-| `GET /api/meetings` | the meetings, and the latest waves and words |
+| `GET /api/meetings` | C-60: who the daemon met nearby and whether a SYNC has written each in, and the latest waves and words. A meeting recorded on a watch is [below](#meetings-and-voice-notes-c-212-c-199) |
+| `GET /api/device/greet` | the hosted daemon's hello, from its written lines (C-196) |
+| `GET /api/remotes` | the names of the remotes every board shares |
 | `POST /api/device/card` | `{uid, op}` -- a card held to a board: `read` what each holds, `put` the board's daemon on it, `take` the card's, or `swap` |
 | `POST /api/device/note` | `{text}` -- a note for a card, typed on the T-Deck, kept until a reader writes it |
 | `POST /api/device/note/written` | a reader has written the note onto a card |
@@ -147,26 +163,34 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 
 | route | what it does |
 |---|---|
-| `POST /api/device/talk` | a board's recording (a WAV, raw): the daemon's answer, and a link to its voice |
+| `POST /api/device/talk` | a board's recording (a WAV, raw): the daemon's answer, and a link to its voice. With `?async=1` (and on `/api/ai/talk`), answered at once with an `id` |
+| `GET /api/device/talk/<id>` | that answer, when it is ready: `waiting`, then the words and the voice. Fetched once; the phone never keeps it |
 | `POST /api/device/speak` | the hosted daemon's INDEX entry -- or `{species}`, any entry -- aloud: a link to its voice |
 | `GET /api/device/voice/:id` | that voice, as 16 kHz 16-bit mono samples, for a board to stream (kept ten minutes) |
 | `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
 | `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |
 | `GET`/`POST /api/talk/settings` | who answers: `auto`, `local` or `openrouter` |
+| `POST /api/ai/modules` | the AI boards to ask, set by hand (AN AI BOARD ON YOUR NETWORK) or from the hub's own search ([The hub and its AI](The-hub-and-its-AI)) |
 
-## Meetings recorded (C-212)
+## Meetings and voice notes (C-212, C-199)
 
 A watch records a meeting in parts; the companion hears each part on the hub's module as it arrives, writes the
-meeting up and has the daemon day-dream about it ([The T-Watch Ultra](The-T-Watch-Ultra)). The device routes are on the
-device's own door.
+meeting up and has the daemon day-dream about it. A voice note is one recording of up to a minute, heard the same way
+([The T-Watch Ultra](The-T-Watch-Ultra)). The device routes are on the device's own door, and take a recording only
+from a board with its own key, a paired phone or this machine ([above](#who-may-ask)). A board's LAST MEETING is
+only its own.
 
 | route | what it does |
 |---|---|
-| `POST /api/device/meeting/start`, `/part`, `/end` | a watch's recording: begun, a half-minute part (raw audio), finished |
+| `POST /api/device/meeting/start`, `/part`, `/end` | a watch's recording: begun, a half-minute part (raw audio), finished -- with how many parts there were and which were lost on the way, heard as nothing. 480 parts (four hours) and 500 MB a meeting at most |
 | `GET /api/device/meeting` | the latest write-up, for the watch's LAST MEETING |
+| `GET /api/meeting/list` | every meeting recorded, for the app's MEETINGS. (`GET /api/meetings` is C-60's: who was met nearby) |
 | `GET /api/meeting/audio` | one part's recording, while it is kept (1.5 GB at most, the oldest cleared first) |
 | `POST /api/meeting/retry` | hear again what was not heard, then write it up |
 | `POST /api/meeting/forget` | the meeting and its recording, gone |
+| `POST /api/device/voicenote?at=` | a watch's voice note, a WAV of up to 2 MB; `at` is when it was said, for a note kept on the card and sent later |
+| `GET /api/voicenotes` | the voice notes and their words, for the app's VOICE NOTES |
+| `POST /api/voicenote/retry`, `/api/voicenote/forget` | `{id}` -- hear it again, or forget it and its recording |
 
 ## HOME: Home Assistant
 
@@ -200,3 +224,34 @@ SETTINGS, Home Assistant card; see [Home Assistant and the BOX-3](Home-Assistant
 | `POST /api/pair` | `{code, name}` -- pair a phone: answers with its key and the relay's address |
 | `GET /api/pair/phones`, `POST /api/pair/forget` | the paired phones, and forgetting one |
 | `GET /api/version` | the server's commit, and whether the app has changed since a build |
+
+## YOUR SAVES, the mirror and the hub
+
+| route | what it does |
+|---|---|
+| `GET /api/saves` | C-215: every save the companion knows -- the one given, the mirror, those kept by name -- who each is (trainer, play time, MARKS, seen, where it was saved) and which it reads now; never a path |
+| `POST /api/saves/choose` | `{id}` -- the save the companion reads, syncs and mirrors from now on; nothing is written |
+| `POST /api/saves/keep` | `{b64, label?}` -- a whole save kept on the companion as one of its own, filed by its game, so the same game kept again replaces its copy |
+| `GET`/`POST /api/save/mirror` | C-188: the one app's save -- the companion's mirror, and the device's sent to it (`{b64, base}`, `base` the copy the device last agreed with). 409 when it is another game's, or when the mirror has moved on since `base` |
+| `GET /api/hub` | C-190: what this companion adds beyond a phone alone -- the save it mirrors, its AI boards and whether each answers, its LoRa boards and when one was last heard |
+| `GET /api/game/debug`, `/api/game/debug/file?file=` | C-216: the testing builds' patches this companion keeps, if any, for this machine or a paired phone at home |
+
+## Trading
+
+[Trading](Trading) has how it works, and
+[docs/TRADING.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TRADING.md) the design. The app and
+the site ask their own companion (`/api/trade...`); it asks THE EXCHANGE -- its own, on the hub, or the hub's over the
+network -- as the player it joined as. A phone hosting alone answers the same, through the hub named in THE HUB.
+
+| route | what it does |
+|---|---|
+| `GET /api/trade` | this companion's player, its game and edition, its AWAY daemons and which are free to offer, the offers and its trades, and how many deliveries wait for the next SYNC (*alone too*) |
+| `POST /api/trade/hub` | `{url}` -- THE HUB: the hub's address, `http://<hub>:4730`; `""` makes this companion the hub. A new hub forgets the old player (*alone too*) |
+| `POST /api/trade/join` | `{name, code?, password?}` -- join as a player, with an invite code unless this is the hub (*alone too*) |
+| `POST /api/trade/offer` | `{personality, kind, to?}` -- offer an AWAY daemon, `full` (TRADE IT) or `loan` (LEND IT), to anyone or to one player (*alone too*) |
+| `POST /api/trade/accept` | `{offer, personality}` -- take an offer, giving one of yours (*alone too*) |
+| `POST /api/trade/withdraw`, `/recall`, `/password` | `{id}` -- take back an offer; `{id}` -- CALL MINE HOME on a loan; `{password}` -- set one (*alone too*) |
+| `POST /api/exchange/invite` | on the hub, from this machine or a paired phone: an invite code, eight letters, once, for fifteen minutes |
+| `POST /api/exchange/join` | `{name, code}` or `{name, password}`: a player's token. Eight wrong tries from one address in ten minutes, then 429 |
+| `GET /api/exchange/players` | the players, for this machine or a paired phone |
+| `/api/exchange/me`, `board`, `offer`, `accept`, `withdraw`, `recall`, `inbox`, `handback`, `written`, `password` | as a player (`x-daemons-player`): the exchange's own side -- who you are, the offers and trades, and at SYNC what arrives, a loan handed back, and what was written |

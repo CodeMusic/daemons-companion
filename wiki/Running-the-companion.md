@@ -103,6 +103,10 @@ still answers only this computer and a paired phone. To use it from a phone, som
 the phone's requests, as the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) does for the
 companions it runs, one for each build of the game.
 
+A browser keeps the site's key **for each server**, under the address it was paired with, so a `?server=` link never
+carries one companion's key to another. A server that answers without a key -- the playground's, through its own
+server -- is used as it is; one that asks for a key is paired as a phone is.
+
 ## Keep it running
 
 Your phone reaches the companion only while the server **runs** and the computer is **awake**. One command makes both

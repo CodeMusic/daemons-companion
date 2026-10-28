@@ -21,6 +21,21 @@ works.
 A phone hosting on its own keeps its own copy of the save instead, taken from Files
 ([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)).
 
+## YOUR SAVES
+
+**A companion can know more than one save** (C-215): the one you gave it (the save path above, or `config.json`'s), the
+**mirror** of a device playing the game in [the one app](The-one-app#one-save-c-188), and saves kept on the companion by
+name. With two or more, SETTINGS shows **YOUR SAVES**: each save's trainer and where it comes from, its play time,
+MARKS, the daemons seen and where it was saved, and **READING** beside the one the companion reads now. Tap another
+(**READ THIS**) to have the companion read, SYNC and mirror that one instead. Choosing writes nothing into any save;
+choosing one that is not the mirror ends the mirror, as setting a save path does.
+
+**A game the mirror refuses.** The mirror never takes another game's place -- a new game begun in the app, say, would
+otherwise replace the companion's. The app's GAME then offers, once a session, to **Keep it** on the companion as a
+save of its own; told to, it keeps that game there each time it saves, and the same game kept again replaces its own
+copy rather than piling up. Choose it in YOUR SAVES when you want the companion to follow it. Both were built on
+2026-10-28.
+
 ## `server/config.json`
 
 Everything else is in `server/config.json` -- copy
@@ -56,6 +71,8 @@ Home Assistant's address and token are not in this file, and neither is THE WEAT
   them, to try them before the game does. The companion is asked with `?preview=1` and your save is never touched; the
   site also takes `?preview=1` (or `harp`, `flute`) in its address.
 - **SETTINGS, WHO ANSWERS WHEN YOU TALK** -- where your words go when you talk.
+- **SETTINGS, YOUR SAVES** -- every save the companion knows, and which it reads; tap one to read it
+  ([above](#your-saves)).
 - **SETTINGS, THIS PHONE** -- on the phone: the companion it is paired with, and **Leave this companion** (tap twice),
   to host your daemon on the phone alone or to pair with another. Nothing on the companion changes.
 - **SETTINGS, THIS PHONE HOSTS ON ITS OWN** -- on a phone hosting alone: **Take a newer save from Files** and **Give

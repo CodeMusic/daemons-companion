@@ -29,3 +29,4 @@
 - [README](https://github.com/CodeMusic/daemons-companion/blob/main/README.md)
 - [TODO](https://github.com/CodeMusic/daemons-companion/blob/main/TODO.md)
 - [DAEMONS, the game](https://github.com/CodeMusic/DAEMONS)
+- [The player's manual (PDF)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf)

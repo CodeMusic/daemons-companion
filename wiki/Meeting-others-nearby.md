@@ -17,6 +17,14 @@ every hour**, nothing about you -- and listen for others a few seconds every few
   ([Boards](Boards#routines)).
 - **Switch it off** in PLACES, EVERY DEVICE'S SETTINGS, **MEET OTHERS NEARBY**.
 
+## By touch: a meeting, closer
+
+On the T-Watch Ultra, TOUCHSTONE, **TOUCH** (C-176) makes the watch a tag one moment and a reader the next, for half a
+minute. Held to another companion -- another Ultra on TOUCH, or a board with a reader on READ MY TAG -- each knows the
+other by the same hourly tag its beacon sends, and the species it hosts, and nothing more. It is a meeting as passing
+is, but certain: each is told, each daemon's bond grows a little, and the watch shows the daemon it met. Built, not yet
+tried by hand ([The T-Watch Ultra](The-T-Watch-Ultra)).
+
 ## Broadcasts: a word or an act to every daemon
 
 A broadcast (C-134) is sent **as a daemon** -- the one a board hosts, or from the app, the site or the Tab5, one of the
@@ -81,6 +89,7 @@ the time. A daemon heard on both radios in an hour is one meeting.
 | **M5GO / M5Stack Fire** | an **M5 LoRa433** module stacked on it (an SX1278, 433 MHz), its pins found by itself | runs on the Fire |
 | **T-Watch S3** | an SX1262 on the board | the watch runs; its LoRa not yet heard by another board |
 | **Cardputer ADV** | the **Cap LoRa-1262**, made for 868-923 MHz: a 433 setting is taken as 868 | the ADV runs, listening at 868 MHz; not yet heard by another board |
+| **T-Watch Ultra** | an SX1262 on the board, the 868 MHz version | built; not yet heard by another board |
 
 Its **MESH** routines:
 
@@ -98,6 +107,14 @@ and that key does nothing else. A board not yet updated keeps the first forty le
 Both routines need the board to be hosting a daemon. DAEMON, Yours keeps every wave and word under MET NEARBY, WAVES
 AND WORDS. Every board passes on what it hears once (two hops at most), so a daemon out of range is still heard through
 a board between.
+
+### The relay: a watch out of reach
+
+A watch away from Wi-Fi and from the phone still has its walk and its night to tell (C-175). Its fixes and its nights
+go on the air too, and **any of your own boards** that hears one and can reach the companion tells it, for that watch.
+When the watch is back in reach it sends them again itself, and the companion keeps a thing told twice once. A board
+passes on only what comes from your own devices. Built, not yet on the air; the hub hearing it with a LoRa radio of its
+own is still to come.
 
 **The band** is set once, in PLACES, EVERY DEVICE'S SETTINGS, **LORA BAND**: 433 (the default), 868 or 915 MHz --
 whatever your boards were bought for; every board takes the one setting, so they agree. LoRa reaches only boards on the

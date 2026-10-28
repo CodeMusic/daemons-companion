@@ -1,7 +1,11 @@
 # Trading
 
-Trade a daemon with another player -- someone else with their own game -- through the hub. Nobody needs to be online
-at the same time: you offer, they take it when they like, and each game changes at its own next SYNC.
+Trade a daemon with another player -- someone else with their own game -- through the hub (C-218, C-219). Nobody needs
+to be online at the same time: you offer, they take it when they like, and each game changes at its own next SYNC.
+
+*Where it stands*: built on 2026-10-28, on the app (TRADE, in YOU), the site and a phone hosting alone, and run between
+two companions on test saves. The game's half -- a daemon in a trade kept AWAY, a loan the game knows, a daemon that
+arrives finished on load -- is in DAEMONS v11.316.4. A trade between two real players' games has not yet been seen.
 
 ## Before you trade: join
 
@@ -9,13 +13,17 @@ Trading goes through **the exchange**, which lives on the hub (the companion run
 trades is a **player** there.
 
 - **On the hub's own companion**, open **YOU**, TRADE, choose a player name, and JOIN. That is all.
-- **Anyone else** -- another person's phone, or a second companion -- first sets **THE HUB** to the hub's address
-  (for example `http://coremp135:4730` -- the plain name or the 100.x address; on an iPhone, a `.ts.net` name over
-  http is blocked), then joins with an **invite code**. Make one on the hub's TRADE, **INVITE A
-  PLAYER**: eight letters, used once, good for fifteen minutes.
+- **Anyone else** -- another person's phone, or a second companion -- first sets **THE HUB** on TRADE to the hub's
+  address, `http://<hub>:4730`: the hub's plain name or its Tailscale address. From build 800 the iPhone and iPad app
+  takes the hub's `.ts.net` name too; earlier builds needed its plain name or its Tailscale address. Then it joins
+  with an **invite code**. Make one on the hub's TRADE, **INVITE A PLAYER**: eight letters, used once, good for
+  fifteen minutes.
 - **A password is optional.** Set one on TRADE, **A PASSWORD**, and the same player can join from another device. No
   email is ever asked for.
-- The exchange is on the home network and the tailnet only. It is not on the internet.
+- **Eight wrong codes or passwords** from one address in ten minutes, and the exchange refuses that address until
+  ten minutes have passed: wait, or ask for a new invite code.
+- The exchange is on the home network and the tailnet only. It is not on the internet, and the relay
+  ([Away from home](Away-from-home)) never reaches it.
 
 ## Offering and taking
 
@@ -52,5 +60,12 @@ CONTENT and CONTEXT trade with each other freely.
 Set THE HUB on TRADE to the hub's address and join with an invite code, as any other companion does. SYNC fetches what
 the exchange sent before it writes the save, and tells the exchange afterwards.
 
+## Later
+
+Each is filed as a ticket, open, and none is built: two daemons sent out meeting and talking (C-220); the game's own
+link cable through the hub, for trades and battles (C-221); a lobby beyond the tailnet, and links by Bluetooth, LoRa or
+a touch (C-222); friends and gifts (C-223); battles between players (C-224).
+
 *Every word the game and the app show for trading is DRAFT.* The design is in
-[docs/TRADING.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TRADING.md).
+[docs/TRADING.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TRADING.md), and the routes in
+[Server API](Server-API#trading).

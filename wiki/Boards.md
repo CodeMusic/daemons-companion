@@ -16,7 +16,7 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 | **LilyGO T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | `t-embed` | **runs** |
 | **LilyGO T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, moving with the radio | AM/FM: **CHANNEL**, a move it learns | voltage | `t-embed` | **runs** |
 | **LilyGO T-Watch S3** | 240x240 touch | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | **runs** |
-| **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press), lift, shake and double tap | yes (TALK on the face) | -- | LoRa (MESH), GNSS (walks), NFC (cards), haptics | power chip | `t-watch-ultra` | **runs**; its sleep, walks, cards and HOURS built and being tried on the wrist -- [The T-Watch Ultra](The-T-Watch-Ultra) |
+| **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press), lift, shake and double tap | yes (TALK on the face) | -- | LoRa (MESH), GNSS (walks), NFC (cards), haptics | power chip | `t-watch-ultra` | **runs**; its sleep, walks, cards and TOUCH, HOURS, THE INDEX and meetings built and being tried on the wrist -- [The T-Watch Ultra](The-T-Watch-Ultra) |
 | **LilyGO T-Deck, T-Deck Plus** | 320x240 | keyboard and trackball -- it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus, not yet used | voltage | `t-deck` | **runs** |
 | **LilyGO T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- (no microphone) | -- | -- | charger (voltage) | `t-display-pro` | **runs** |
 | **LilyGO T-Display-S3 AMOLED 1.91** | 536x240, touch on the touch version | touch and BOOT, or two buttons | -- (no microphone) | -- | -- | voltage | `t-display-amoled` | **runs** |
@@ -85,6 +85,11 @@ by itself when the board is near again. Away from the companion, what the board 
 the companion answers. The app only has to be open or in the background (home screen, phone locked: fine); an app swiped
 away in the app switcher is cut off from Bluetooth by iOS until it is opened again. **FORGET MY PHONES**, on the board,
 undoes every pairing; the app's **Forget it** undoes its own.
+
+A board's Bluetooth name is **DAEMONS companion** and the last six characters of its device id, so a desk of them is
+told apart (C-176). On the T-Watch Ultra, **TOUCH** (TOUCHSTONE) pairs without the menus: hold the watch to the iPhone,
+and the app opens on PLACES and links with that watch (built, not yet tried by hand --
+[The T-Watch Ultra](The-T-Watch-Ultra)).
 
 ## Controls
 
@@ -231,7 +236,10 @@ CARD can take a daemon back off a card (C-153; built, not yet flashed).
 | CHORUS | WHAT CAME | the last ten broadcasts, newest first, each with how it came: L LoRa, B Bluetooth, N the companion |
 | WHISPER (Bluetooth) | PAIR MY PHONE, OPEN TO MY PHONE, FORGET MY PHONES | the phone's link over Bluetooth |
 | TOUCHSTONE (NFC) | HOLD A CARD | hold a card to the board: what it holds, and what can be done -- PUT your daemon ON IT, TAKE its daemon, SWAP them, WRITE THE NOTE ON IT, or LEAVE IT |
-| TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind and its ID. Reads nothing else |
+| TOUCHSTONE | READ MY TAG | hold a tag to the board: its kind and its ID. Reads nothing else. A T-Watch Ultra on TOUCH held to it is a meeting, closer |
+| TOUCHSTONE | TEACH A TAG | hold a tag, then choose any routine the board has but TOUCHSTONE's own: the tag starts it from then on. Kept on the board |
+| TOUCHSTONE | TAP A TAG | hold a taught tag to the board, and it runs what it was taught |
+| TOUCHSTONE (the T-Watch Ultra) | TOUCH | half a minute as a tag and a reader in turn: held to your iPhone, the app links with the watch; held to another companion, the two daemons meet ([Meeting others nearby](Meeting-others-nearby#by-touch-a-meeting-closer)) |
 | TOUCHSTONE (a card, through a reader) | A NOTE FOR A CARD | on a keyboard board: type a note; the companion keeps it until a reader writes it onto the next card held |
 | LONGWAVE (Sub-GHz) | WHAT'S ON THE AIR | listens (never sends) at 315, 433.92, 868.35 and 915 MHz: each band's level and its bursts counted |
 | LONGWAVE | FIND IT | a hot-and-cold finder for one of your own transmitters |
@@ -257,9 +265,13 @@ the board; still to be seen in the hand: the picture's left and right, and SOMEO
 
 **Cards** (C-124). A card is a **host**, as a board is: a daemon put on it moves there, never in two places, and the
 companion keeps who is where. A card holding someone else's daemon is a **meeting**, as passing their board is --
-nothing changes hands. The readers are the T-Embed CC1101's and the Dial's; they write NTAG213, 215 and 216 cards. A
-note typed on the T-Deck (or a Cardputer) is kept by the companion until a reader writes it onto the next card held.
-Built; no real card has been held to it yet.
+nothing changes hands. The readers are the T-Embed CC1101's, the Dial's and the T-Watch Ultra's; they write NTAG213,
+215 and 216 cards. A note typed on the T-Deck (or a Cardputer) is kept by the companion until a reader writes it onto
+the next card held. Built; no real card has been held to it yet.
+
+**Tags as routines** (C-176): on every board with a reader, **TEACH A TAG** gives a tag a routine -- a remote's POWER,
+the SONGBOOK, SLOTS -- and **TAP A TAG** runs it when that tag is held. Any tag will do; it is known by its ID and
+nothing is written onto it. Built, not yet tried with a real tag.
 
 **CHORUS** (C-134) sends a broadcast every way the board has -- LoRa, Bluetooth and the companion -- and each board
 shows it once, however many ways it arrives. Every daemon that receives an act answers it once, a few seconds later. A

@@ -47,9 +47,14 @@ everything, and pairing is refused.
 - **Nothing is lost.** Anything you change away -- goals, steps, care, the walk, settings -- is kept on the phone and
   sent in order when the companion answers. So is everything a board reports through the phone. The widget's presses
   too: *Kept until home answers.* -- the widget sends them itself the next time it reaches the companion. Only what
-  needs an answer at once (talking, a voice, SYNC, telling a board to act now, a tap on HOME) waits for a connection;
-  a tap on HOME is never saved up to happen later.
-- **Read aloud and talk work away** -- the relay waits up to a minute for a voice.
+  needs an answer at once (talking, a voice, SYNC, telling a board to act now, FIND IT, a tap on HOME) waits for a
+  connection; a tap on HOME and FIND IT are never saved up to happen later. A setting changed twice while away goes
+  home as one change carrying both.
+- **Read aloud and talk work away** -- the relay waits up to a minute for a voice. Home is asked a quick question
+  first, and only a home that answers is waited on, so a talk away does not sit on a home it cannot reach. A talk's
+  answer is fetched once and never kept on the phone.
+- **Trading is not reached through the relay.** THE EXCHANGE answers only the home network and the tailnet
+  ([Trading](Trading)).
 - **A board away** goes out through the paired phone, or on a Wi-Fi it knows asks the relay itself with its own key
   (given only down its cable at home -- so link each board by cable once after the relay is set). Talking and read
   aloud on a board need home or the phone: the relay carries words, not a recording or a voice.

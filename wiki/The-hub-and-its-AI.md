@@ -17,6 +17,7 @@ phone can host on its own. The full plan, every phase, the cut-over and the way 
 | **serves the site** | at `http://<hub>:4730` at home, or by its tailnet name from anywhere. A browser there pairs once with a code from the hub's screen. `./syncCompanion.sh site` sends it a new build (C-170) |
 | **pairs a phone** | hold the hub's touch screen for two seconds: a code, the address and the tailnet name (C-170) |
 | **shows its state** | its screen lists the companions linked and their daemons, each device and when it was last heard |
+| **keeps THE EXCHANGE** | where players trade daemons, on the home network and the tailnet only: other companions and phones name the hub in TRADE's THE HUB and join with an invite code from it ([Trading](Trading), C-218, C-219) |
 | **updates itself** | `hub/deploy.sh` brings it up to `main` in one command, and goes back to the old commit if the new one does not answer within a minute (C-168) |
 | **thinks and speaks** | the AI board, below |
 
@@ -45,7 +46,10 @@ YOUR NETWORK**, in SETTINGS, takes the address of another one -- a standalone bo
 2. **Most replies need no model.** A care's answer (FEED, WATER, TRAIN, SLEEP, WAKE) and a hello come from written
    lines, chosen by the daemon's mood and the day, at once (C-180, C-196). Every line is DRAFT.
 3. **A deadline, then n8n.** If no board is free, or none has begun an answer in about two seconds, the talk goes to
-   your own n8n ([Talk to your daemon](Talk-to-your-daemon)). With n8n out of reach, the board is waited on.
+   your own n8n ([Talk to your daemon](Talk-to-your-daemon)). With n8n out of reach, the board is waited on -- up to a
+   minute behind what it is doing, rather than failing at once -- and if the board itself fails, the talk says so,
+   rather than giving n8n's error. The first talk with a daemon the board has not yet spoken as waits for the board to
+   free a place for it.
 
 **Who answers first** (C-211): the AI board or n8n, the other after it. It is one choice for the whole companion, made
 in the app's THE HUB card, in a watch's own settings or on the watch. Each has a dot, green or red, for whether it can
@@ -60,6 +64,10 @@ entry; when the board cannot, n8n does.
 - **Talks as your daemon**: hearing, thinking and voice all in the house, so a recording never leaves home.
 - **Tells its dreams.** After a night on a watch, the companion writes a dream at once, then asks the AI board for its
   own telling, which the watch shows when it comes ([Nights and dreams](Nights-and-dreams)).
+- **Hears meetings and voice notes** (C-212, C-199). A meeting recorded on the T-Watch Ultra is heard a part at a
+  time as it comes, then written up -- a summary, take-aways and action items -- and the daemon day-dreams it. A voice
+  note's words go to the app's VOICE NOTES. Only the hub's module does this for now, not n8n
+  ([The T-Watch Ultra](The-T-Watch-Ultra)).
 - **Answers as THE GUIDE** (C-209). Once your save has found THE GUIDE, ask it a question by voice from a watch's
   BOOKS, or in words. The pages nearest the question go to the model with it, and it answers as the book, only from
   them. Like any talk, it goes to whichever answers first.

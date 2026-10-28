@@ -12,6 +12,12 @@ happened while it was with you.
 
 I will not tell you which device it should live in. I never assign a daemon. You will see which one it likes.
 
+**The game's whole manual is here**:
+**[the DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf)**, a PDF of 47
+pages -- every way to play, getting started, the world, daemons, battles and the seventeen types, BENCHMARKS, MARKS and
+ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER and the CASINO, this companion, help and
+a glossary.
+
 ## The happy path: your phone hosts it
 
 Nothing to buy. The phone in your pocket is the first host, and the one I would start with.
@@ -43,12 +49,14 @@ The app has grown into **one app for everything** -- the game, the companion, th
   release is out, one tap remakes it and the game carries on from the same save.
 - **One save.** The game's save *is* the companion's: showing the companion pauses the game, SYNC and SEND write the
   save, and the game starts again from it. Paired with a companion at home, the device keeps the real save and the
-  companion a mirror (C-188).
+  companion a mirror (C-188). The mirror never takes another game's place: the app offers to keep that game on the
+  companion as a save of its own, and SETTINGS, **YOUR SAVES** chooses which one the companion reads (C-215).
 - **The iPad on its side** is one screen: the game on the left, always playing, and the companion beside it -- with a
   NOTEBOOK page just filed, or the INDEX card of a daemon just met, opening next to the game (C-189).
 - **In a browser**, the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) plays the game with this
   companion's site in a tab beside it.
-- **On a Mac: coming** (C-210) -- first the iPad app on Apple Silicon Macs, then a Mac window of its own.
+- **On a Mac** (C-210): the iPad app builds and runs on an Apple Silicon Mac. TestFlight is how it will be handed out,
+  and that is not done yet; a Mac window of its own comes later.
 
 It is internal and in testing: built for our own phones and iPads, not on the App Store or TestFlight yet. **The app
 holds nothing of Nintendo's**: you bring your own game, and the patch is applied on your device.
@@ -65,7 +73,7 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | **LilyGO T-Embed** (CC1101, plain, SI4732) | answers a dial that hums in the day's key; on the SI4732 it tunes the radio and **learns the stations** it hears; the CC1101 reads cards |
 | **LilyGO T-Deck / T-Deck Plus** | can be typed to, and types back: a message sent over **LoRa** to every board a street away |
 | **LilyGO T-Watch S3** | stands on its face -- DAEMON, CLOCK or VIRTUE, chosen from the phone -- with the season's sky behind it and the weather in front; is tended with a double tap, and keeps your steps |
-| **LilyGO T-Watch Ultra** | **knows when you sleep, and dreams** -- and walks with you (steps, the distance, where it went), wakes you gently, reads you its books, holds a card to its NFC, and plays your game's HARP or FLUTE by touch ([The T-Watch Ultra](https://github.com/CodeMusic/daemons-companion/wiki/The-T-Watch-Ultra)) |
+| **LilyGO T-Watch Ultra** | **knows when you sleep, and dreams** -- and walks with you (steps, the distance, where it went), wakes you gently, reads you its books and the INDEX (kept on its card, so they open offline), takes meetings and voice notes, holds a card to its NFC, pairs your phone with a touch, and plays your game's HARP or FLUTE by touch ([The T-Watch Ultra](https://github.com/CodeMusic/daemons-companion/wiki/The-T-Watch-Ultra)) |
 | **LilyGO T-Display-S3 Pro**, **T-Display-S3 AMOLED** | spreads out across a wide screen |
 | **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads cards held to its face; the M5GO and Fire hear LoRa with a module |
 | **M5StickC-Plus** with its Thermal HAT | **sees heat**: GLOW, a routine type of its own -- the warmest thing in the room, and when someone is there |
@@ -100,20 +108,23 @@ board's controls, pages, quirks and which ones run today:
   win is cheered ([The CASINO](https://github.com/CodeMusic/daemons-companion/wiki/The-CASINO)).
 - **It notices others.** Pass someone hosting a daemon of their own, and your INDEX sees theirs. It can wave, bow or
   say a word to every daemon in reach -- over Bluetooth, your network or LoRa, and you see each one once. What another
-  daemon says or does shows over whatever you have open, and a board asleep keeps it for when it wakes
+  daemon says or does shows over whatever you have open, and a board asleep keeps it for when it wakes. A T-Watch
+  Ultra held to another companion's reader is a meeting closer still (TOUCH, built, not yet tried by hand)
   ([Meeting others nearby](https://github.com/CodeMusic/daemons-companion/wiki/Meeting-others-nearby)).
 - **It sounds like your game.** The phone, the site and the widget play every tune on your game's own instrument --
   the HARP for a CONTENT save, the FLUTE for CONTEXT (the Tab5's is built, not yet flashed) -- and the boards play the
   same notes on their own beeps. Each device's sound is its own to set, from off to loudest
   ([Settings](https://github.com/CodeMusic/daemons-companion/wiki/Settings#sound)).
 - **It keeps a card.** On a board with a reader, hold a card to it and put your daemon on it, take the one it holds,
-  or swap (built; its first real card is still to come).
+  or swap. A tag can be taught a routine, too: **TEACH A TAG**, then **TAP A TAG** runs it (built; the first real card
+  and tag are still to come).
 - **It can reach your home, if you let it.** HOME, in PLACES, brings Home Assistant to the app, the site and the Tab5
   (built; it has yet to meet a real Home Assistant), and the BOX-3 wears the daemon's face
   ([Home Assistant and the BOX-3](https://github.com/CodeMusic/daemons-companion/wiki/Home-Assistant-and-the-BOX-3)).
 - **It takes notes.** On the T-Watch Ultra, RECORD A MEETING: the hub's AI writes it up -- a summary, take-aways and
-  action items -- and your daemon day-dreams about it; MEETINGS in the app keeps each one by day (built; its first
-  meeting on the wrist is still to come).
+  action items -- and your daemon day-dreams about it; MEETINGS in the app keeps each one by day. **VOICE NOTE** is a
+  minute said to the watch: the hub hears it, and the app keeps its words under VOICE NOTES, to make a goal of if you
+  like (built; neither has yet been tried on the wrist).
 - **It sleeps, and dreams.** A watch keeps the night -- tucked in, or, on the T-Watch Ultra, just still -- and in the
   morning your daemon has had a dream: deep, quiet or restless, told in a line, read aloud if you like, and kept in a
   journal. At the next SYNC the last dream goes home with it, into your game. A good week shows on it, subtly: a glow, a
@@ -122,7 +133,14 @@ board's controls, pages, quirks and which ones run today:
   first, and the companion keeps an honest count of what it noticed
   ([Your game on the companion](https://github.com/CodeMusic/daemons-companion/wiki/Your-game-on-the-companion)).
 - **It follows you out.** Away from home your phone reaches it through a relay of your own
-  ([Away from home](https://github.com/CodeMusic/daemons-companion/wiki/Away-from-home)).
+  ([Away from home](https://github.com/CodeMusic/daemons-companion/wiki/Away-from-home)). A watch out of reach of
+  everything passes its walks and nights over LoRa to one of your boards that can reach home (built, not yet on the
+  air).
+- **It can change hands.** Offer a daemon that is AWAY to another player on your hub's **EXCHANGE** -- **TRADE IT**, or
+  **LEND IT** and call it home later -- and each game takes what it received at its next SYNC, finished as a trade is
+  finished in FireRed: entered in the INDEX, and evolved if a trade evolves it. Built, and run between two companions on
+  test saves; the game's half is in DAEMONS v11.316.4
+  ([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)).
 
 ## Your game, in your pocket
 
@@ -132,13 +150,14 @@ The companion reads your save, so it can show you what you have done in there --
   what is new in the LIBRARY, each opening its place.
 - **YOU** -- you as the game draws you, your rival, your money and your MARKS as badges, each opening its page;
   the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
-  the story so far.
+  the story so far; and **TRADE** ([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)).
 - **LIBRARY** -- CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
   GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
   a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE
   to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened).
 - **The INDEX**, in DAEMON -- every entry, read aloud if you like, and where each daemon is NATIVE; in the app, the
-  whole card, taking its colour as your save comes to understand that kind of daemon.
+  whole card, taking its colour as your save comes to understand that kind of daemon. On the T-Watch Ultra it is in
+  BOOKS, every daemon you have met.
 - **SOUNDINGS** and **DREAMS**, in DAEMON -- each daemon away, when it was last heard and how it was doing; and every
   night it dreamt. Both are written into your save at SYNC, for the game to read.
 - **THE ROAD AHEAD**, in YOU -- the next step, the fights and the places open to you, and never anything past the
@@ -162,11 +181,12 @@ On a Mac with Node 24:
 **Or on a hub that never sleeps** -- a small Linux board at home (an M5Stack CoreMP135 here) serving the companion
 while the computer sleeps: `hub/` sets it up, `./syncCompanion.sh` keeps the save in step, and
 [docs/HUB.md](docs/HUB.md) compares the two ways and has every step, the cut-over and the way back. The hub serves
-the site too, and pairs a phone from its own screen. **On it, an AX630 Module LLM is the daemons' AI in the house**:
-it hears (Whisper), thinks (qwen2.5-0.5B) and speaks (MeloTTS) for every board, tells your daemon's dreams in its own
-words and answers as THE GUIDE. No device waits on it -- a talk is answered at once and fetched when ready, a care
-needs no model, and when it is busy the talk goes to your n8n. The app chooses which answers first, with a green or red
-dot for each ([The hub and its AI](https://github.com/CodeMusic/daemons-companion/wiki/The-hub-and-its-AI)).
+the site too, pairs a phone from its own screen, and keeps THE EXCHANGE, where players trade
+([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)). **On it, an AX630 Module LLM is the daemons'
+AI in the house**: it hears (Whisper), thinks (qwen2.5-0.5B) and speaks (MeloTTS) for every board, tells your daemon's
+dreams in its own words and answers as THE GUIDE. No device waits on it -- a talk is answered at once and fetched when
+ready, a care needs no model, and when it is busy the talk goes to your n8n. The app chooses which answers first, with
+a green or red dot for each ([The hub and its AI](https://github.com/CodeMusic/daemons-companion/wiki/The-hub-and-its-AI)).
 
 **A second companion beside yours.** `COMPANION_CONFIG=/path/to/config.json` starts the server on another config file
 -- its own port, database and save -- and the site takes `?server=http://host:port` to use it, for that visit only.
@@ -183,6 +203,7 @@ When something does not answer: **[Troubleshooting](https://github.com/CodeMusic
 - [**CONTEXT.md**](CONTEXT.md) -- what this project is and who it is for.
 - [**docs/vision.md**](docs/vision.md) and [**docs/PLAN.md**](docs/PLAN.md) -- what it is for, and how each piece is built.
 - [**docs/ONEAPP.md**](docs/ONEAPP.md) and [**docs/HUB.md**](docs/HUB.md) -- the one app, and the hub with its AI.
+- [**docs/TRADING.md**](docs/TRADING.md) -- trading between players: the exchange, loans, and what keeps it fair.
 - [**docs/DEVICES.md**](docs/DEVICES.md), [**docs/HARDWARE.md**](docs/HARDWARE.md), [**docs/REMOTE.md**](docs/REMOTE.md),
   [**docs/LORA.md**](docs/LORA.md), [**docs/BROADCAST.md**](docs/BROADCAST.md), [**docs/TAB5.md**](docs/TAB5.md),
   [**firmware/box3/README.md**](firmware/box3/README.md), [**docs/LLM630.md**](docs/LLM630.md) -- the hosts, their parts,
@@ -203,7 +224,7 @@ I would go back now and then. A daemon likes to know the way home.
 
 | | |
 |---|---|
-| [**CodeMusic/DAEMONS**](https://github.com/CodeMusic/DAEMONS) | **the game** -- its design bible, its tools, and patches for your own cartridge |
+| [**CodeMusic/DAEMONS**](https://github.com/CodeMusic/DAEMONS) | **the game** -- its design bible, its tools, [its player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf), and patches for your own cartridge |
 | [CodeMusic/pokefirered-daemons](https://github.com/CodeMusic/pokefirered-daemons) | the game's engine |
 | [CodeMusic/gpt-play-pokemon-firered-daemons](https://github.com/CodeMusic/gpt-play-pokemon-firered-daemons) | the harness that lets a model play it |
 | [CodeMusic/daemons-playground](https://github.com/CodeMusic/daemons-playground) | the game in a browser, for demos and beta tests, with a companion of its own beside it |

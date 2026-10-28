@@ -4,6 +4,10 @@ The companion reads your save copy, so it can show you what you have done in the
 Tab5 alike. **It never spells out what your save has not reached**: a MARK not yet earned, a grove not yet found, a
 story event still to come or a book not yet in your hands shows as not yet, and nothing more.
 
+How the game itself is played -- the world, daemons, battles and the types, MARKS and ROOTS, the INDEX, the NOTEBOOK,
+the books -- is in
+[the DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf).
+
 A phone hosting on its own reads its own copy the same way
 ([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)), and a paired phone keeps all of it, so YOU
 and the LIBRARY open away from home too ([Away from home](Away-from-home)). Every word on these screens is a draft, as
@@ -14,7 +18,7 @@ the game's are.
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
 | **LIBRARY** | CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
-| **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS and **THE ROAD AHEAD** |
+| **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
 ## YOU
 
@@ -127,6 +131,9 @@ CONTENT ONLY or CONTEXT ONLY, its hours, its seasons, NOT AT or NOT IN, or NOT I
 **The cards in their colours** (C-186): in the app, an INDEX card is the whole card -- number, types and their
 colours, height and weight, both editions' entries, NATIVE, OPUS's margins -- and it takes its colour as your save comes
 to understand that kind of daemon. Until then it stays grey.
+
+**On the T-Watch Ultra**, THE INDEX is first in BOOKS (C-199): every daemon your save has met, its picture, kind and
+entry, and LISTEN -- kept on the watch's card, so it opens with no network ([The T-Watch Ultra](The-T-Watch-Ultra)).
 
 ## SOUNDINGS
 

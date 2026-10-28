@@ -14,9 +14,11 @@ Whether and how it is published is decided later.
 | **iPhone** | GAME, a tab | every tab |
 | **iPad** | upright, GAME is a tab; **on its side, the game on the left and the companion beside it** | every tab |
 | **a browser** | the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground): the game with the companion's site in a tab | the companion's site (`./bindCompanion.sh`, or served by [the hub](The-hub-and-its-AI)) -- everything but GAME |
-| **a Mac** | **coming** (C-210): first the iPad app on Apple Silicon Macs, then a native Mac window | the site, today |
+| **a Mac** | **the iPad app** (C-210): it builds for an Apple Silicon Mac and has run on one, launched by hand; a native Mac window comes later | the same app's tabs; or the site |
 
-TestFlight for the iPhone, the iPad and the Mac from one build is decided and not done (C-210).
+**TestFlight** for the iPhone, the iPad and the Mac from one build is decided and not done (C-210). It is how a Mac will
+get the app to open like any other; the copy that ran by hand was not a way to ship it. Until then, a developer runs it
+from Xcode, on My Mac (Designed for iPad).
 
 ## The game in the app (C-187)
 
@@ -41,6 +43,13 @@ each game save the app sends it to the companion, which keeps it as a **mirror**
 never the save path you set). Boards at home and the hub's AI then see the same daemons. A SYNC from the app pauses the
 game, waits for the save to cross, and takes the mirror back before play goes on. Each side is known by SHA-1: when both
 have moved, the device wins. Choosing a save path in SETTINGS ends the mirror. *Still to check on an iPad, paired.*
+
+- **A late save never undoes a SYNC.** The app sends the copy it last agreed with; a save arriving after the companion
+  has moved on (a SYNC wrote it while the game's save was still on its way) is refused, and the device takes the
+  companion's copy at its next look.
+- **Another game never takes the mirror's place** -- a new game begun in the app, say. The app offers to keep that
+  game on the companion as a save of its own instead, and SETTINGS, **YOUR SAVES** chooses which save the companion
+  reads ([Settings](Settings#your-saves), C-215).
 
 ## The iPad on its side (C-189)
 

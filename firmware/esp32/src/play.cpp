@@ -13,6 +13,11 @@
 // while it is held and breath reaches the microphone. Under them the octave, - and +; above, the song's notes (tapped:
 // heard through once). The crown goes back.
 //
+// C-202 (the user, 2026-10-28): every note sounds the moment it is played (begun and left ringing, sound.cpp); the octave
+// is the whole foot of the screen, - left and + right, and between them SMART -- on, the octave follows the song: in the
+// songbook the next note's, playing freely the song the last notes are the start of. A song played right comes back in
+// ECHO, as the game plays it (src/play.c): the song again, and under it the same a few frames behind and quieter.
+//
 // The keys: 1-7 the scale's seven degrees (the game's buttons, clockwise from Down, then B, A, SELECT); ~ or ` an octave
 // down, - or = an octave up (the user's choice); Backspace back. The songs and colours are firmware/common/play.h (from
 // server/data/play.json); what the save holds comes in the state (`play`, playFromState). Every word is DRAFT.
@@ -52,7 +57,7 @@ String playStatus() {
 static const int SCALE[7] = { 0, 2, 4, 5, 7, 9, 11 };    // the major scale's degrees, in semitones
 static int tonic(int key) { return 60 + key; }            // C4..B4
 static uint16_t colourOf(int midi) { uint32_t c = PLAY_COLOURS[((midi % 12) + 12) % 12]; return tft.color565(c >> 16, (c >> 8) & 255, c & 255); }
-static void sound(int midi, int ms) { soundInstrumentNote(midi, ms); }   // C-164: the save's harp or flute (a square wave without a speaker for it)
+static void sound(int midi, int ms) { soundInstrumentStart(midi, ms); }   // C-202: begun, not waited for   // C-164: the save's harp or flute (a square wave without a speaker for it)
 // a song's note as a degree (0..6, -1 off the scale) and an octave, both against its own key
 static void degreeOf(const PlaySong &s, int n, int &deg, int &oct) {
   int rel = s.notes[n] - tonic(s.key);
@@ -148,6 +153,7 @@ static String drawPlay(uint16_t day, uint16_t ink) {
   return W >= 300 ? "1-7: play   ~ -: octave   del: back" : "1-7 play  ~ - octave  del back";
 }
 
+static void echoSong(int i, int base);                     // C-202: below
 // the game's ear: the last notes against each song -- the same notes (octave and tempo aside) in its own key is the
 // song; the same shape in another key is ALMOST. A song neither learned nor heard is not named.
 static void listen() {
@@ -162,9 +168,31 @@ static void listen() {
       if (n && (((a - played[playedN - s.n]) - (b - s.notes[0])) % 12 + 12) % 12) shape = false;
     }
     bool known = isLearned(i) || (heard >> i & 1);
-    if (same) { heardLine = known ? String(PLAY_SONGS[i].title) + "!" : "Something the game knows..."; ledsFlash(); return; }   // DRAFT
+    if (same) {
+      heardLine = known ? String(PLAY_SONGS[i].title) + "!" : "Something the game knows..."; ledsFlash();   // DRAFT
+      if (known) { progress(""); echoSong(i, played[playedN - s.n]); playedN = 0; }                        // C-202
+      return;
+    }
     if (shape && known) heardLine = "ALMOST -- " + String(PLAY_SONGS[i].title) + ", in another key";                             // DRAFT
   }
+}
+
+// C-202: a song played right, back in ECHO as the game does it (src/play.c): the song, and eight frames behind it the
+// same at two-fifths. Its own key and octave, as it was played.
+static bool smart = true;
+static void echoSong(int i, int base) {
+  const PlaySong &s = PLAY_SONGS[i];
+  uint32_t t0 = millis(), at = 0;
+  for (int n = 0; n <= s.n; n++) {
+    uint32_t echoAt = n ? at - s.frames[n - 1] * 1000 / 60 + 133 : 0;    // the last note's echo, eight frames after it
+    while (n && millis() - t0 < echoAt) delay(2);
+    if (n) soundInstrumentStart(base + s.notes[n - 1] - s.notes[0], min(s.frames[n - 1] * 1000 / 60 + 300, 1600), 0.28f);
+    if (n == s.n) break;
+    while (millis() - t0 < at) delay(2);
+    soundInstrumentStart(base + s.notes[n] - s.notes[0], min(s.frames[n] * 1000 / 60 + 300, 1600));
+    at += s.frames[n] * 1000 / 60;
+  }
+  delay(600);
 }
 
 static void hearSong() {
@@ -174,7 +202,7 @@ static void hearSong() {
     int midi = tonic(key) + (deg >= 0 ? SCALE[deg] : 0) + 12 * oct;
     nextAt = n; progress("");
     int ms = s.frames[n] * 1000 / 60;
-    sound(midi, min(ms, 600)); delay(max(0, ms - min(ms, 600)));
+    sound(midi, min(ms + 300, 1600)); delay(ms);           // C-202: sound() no longer waits, so the tune keeps its own time
   }
   nextAt = 0; progress("");
 }
@@ -185,7 +213,7 @@ static int breath = 0, still = 0;                         // the microphone's le
 static bool earOpen = false;
 static bool harp() { return inst() != "flute"; }
 static int surfTop() { return 92; }
-static int surfBottom() { return H - 36; }
+static int surfBottom() { return H - 50; }                // C-202: the foot is the octave's, bigger to hit
 // degree d of eight (the eighth the tonic an octave up) as MIDI, in the octave chosen
 static int midiOfDeg(int d) { return tonic(key) + SCALE[d % 7] + 12 * (octave + d / 7); }
 static int holeAt(int x, int y) {                          // the flute's holes: two columns of four
@@ -218,11 +246,15 @@ static void drawSurface(uint16_t day) {
     int bw = constrain(breath * 60 / max(1, still * 4), 0, 60);
     canvas.drawRect(W - 72, 34, 62, 8, QUIET); canvas.fillRect(W - 71, 35, bw, 6, breath > 0 ? day : QUIET);
   }
-  // the octave: - and + at the foot, the octave between them
+  // the octave: - and + at the foot, each a third of it, and between them the octave -- SMART when it follows the song
+  int fy = H - 44, fh = 40;
+  canvas.drawRoundRect(4, fy, W / 3 - 8, fh, 8, QUIET); canvas.drawRoundRect(2 * W / 3 + 4, fy, W / 3 - 8, fh, 8, QUIET);
   canvas.setTextFont(4); canvas.setTextDatum(MC_DATUM); canvas.setTextColor(PAPER);
-  canvas.drawString("-", W / 6, H - 18); canvas.drawString("+", 5 * W / 6, H - 18);
-  canvas.setTextFont(2); canvas.setTextColor(QUIET);
-  canvas.drawString("OCTAVE " + String(octave > 0 ? "+" : "") + String(octave), W / 2, H - 18);   // DRAFT
+  canvas.drawString("-", W / 6, fy + fh / 2); canvas.drawString("+", 5 * W / 6, fy + fh / 2);
+  canvas.setTextFont(2); canvas.setTextColor(smart ? day : QUIET);
+  canvas.drawString(smart ? "SMART" : "OCTAVE", W / 2, fy + 11);                                 // DRAFT
+  canvas.setTextColor(PAPER);
+  canvas.drawString(String(octave > 0 ? "+" : "") + String(octave), W / 2, fy + 29);
   canvas.setTextDatum(TL_DATUM);
 }
 
@@ -242,18 +274,48 @@ static bool blowing() {
   return breath > 0;
 }
 
+// C-202: SMART, playing freely -- the longest start of a learned song the last notes are (shape only, as the ear hears),
+// and the octave moved to where that song's next note lies
+static void followSong() {
+  int best = 0, target = 0;
+  for (int i = 0; i < PLAY_SONG_N; i++) {
+    if (!isLearned(i)) continue;
+    const PlaySong &s = PLAY_SONGS[i];
+    for (int k = min(playedN, s.n - 1); k >= 2 && k > best; k--) {
+      int b = played[playedN - k]; bool ok = true;
+      for (int j = 1; j < k && ok; j++) ok = (((played[playedN - k + j] - b) - (s.notes[j] - s.notes[0])) % 12 + 12) % 12 == 0;
+      if (ok) { best = k; target = b + s.notes[k] - s.notes[0]; break; }
+    }
+  }
+  if (!best) return;
+  int rel = target - tonic(key);
+  octave = constrain(rel >= 0 ? rel / 12 : -((11 - rel) / 12), -2, 2);
+}
+// C-202: SMART in the songbook -- the octave the next note wants
+static void followNext() {
+  if (!smart || mode != P_GUIDE || nextAt >= PLAY_SONGS[song].n) return;
+  int want, wantOct; degreeOf(PLAY_SONGS[song], nextAt, want, wantOct);
+  octave = constrain(wantOct, -2, 2);
+}
+
 // a note played: the songbook's next one if it was right, PLAY FREELY's ear either way
 static void noteIn(int d, String &result) {
   int deg = d % 7, oct = octave + d / 7, midi = midiOfDeg(d);
   if (mode == P_GUIDE && !doneAt) {
     int want, wantOct; degreeOf(PLAY_SONGS[song], nextAt, want, wantOct);
     if (deg == want && oct == wantOct) {                     // the right note in the right octave: on to the next
-      if (++nextAt >= PLAY_SONGS[song].n) { doneAt = millis(); ledsFlash(); result = daemonName() + " played " + PLAY_SONGS[song].title + "."; }   // DRAFT
+      if (++nextAt >= PLAY_SONGS[song].n) {
+        doneAt = millis(); ledsFlash(); result = daemonName() + " played " + PLAY_SONGS[song].title + ".";   // DRAFT
+        progress(""); echoSong(song, PLAY_SONGS[song].notes[0] + tonic(key) - tonic(PLAY_SONGS[song].key));   // C-202
+        doneAt = millis();
+      }
+      followNext();
     }
   }
   if (mode == P_FREE) {
     if (playedN == PLAY_LISTEN) { for (int i = 1; i < PLAY_LISTEN; i++) played[i - 1] = played[i]; playedN--; }
     played[playedN++] = midi; listen();
+    if (smart && playedN) followSong();
   }
 }
 
@@ -285,35 +347,41 @@ static String runPlay(bool songbook) {
       if (!isLearned(s)) { say("Heard, not learned yet"); continue; }                                    // DRAFT
       song = s; mode = P_KEYS; at = PLAY_SONGS[s].key; top = 0; progress(""); continue;
     }
-    if (ev == 1 && mode == P_KEYS) { key = at; octave = 0; nextAt = 0; doneAt = 0; playedN = 0; heardLine = ""; mode = songbook ? P_GUIDE : P_FREE; lit = -1; if (touch) earBegin(); progress(""); continue; }
+    if (ev == 1 && mode == P_KEYS) { key = at; octave = 0; nextAt = 0; doneAt = 0; playedN = 0; heardLine = ""; mode = songbook ? P_GUIDE : P_FREE; lit = -1; followNext(); if (touch) earBegin(); progress(""); continue; }
     if (mode == P_GUIDE && (ch == 13 || ch == 10)) { hearSong(); continue; }
     if (!listing && ch) {
-      if (ch == '~' || ch == '`') { octave = max(-2, octave - 1); progress(""); }
-      else if (ch == '-' || ch == '=' || ch == '_') { octave = min(2, octave + 1); progress(""); }
+      if (ch == '~' || ch == '`') { octave = max(-2, octave - 1); smart = false; progress(""); }   // by hand: SMART lets go
+      else if (ch == '-' || ch == '=' || ch == '_') { octave = min(2, octave + 1); smart = false; progress(""); }
+      else if (ch == 's' || ch == 'S') { smart = !smart; followNext(); progress(""); }
       else if (ch >= '1' && ch <= '7') { sound(midiOfDeg(ch - '1'), 260); noteIn(ch - '1', result); progress(""); }
     }
     // the watches: the surface -- a string plucked (or drawn across), a hole held and blown; - and + the octave
     if (touch && !listing) {
       int x, y; bool down = watchFinger(x, y);
       static bool was = false; static int last = -1; static uint32_t soundedAt = 0;
-      if (down && !was && y >= H - 40) {                       // the octave
-        if (x < W / 3) octave = max(-2, octave - 1); else if (x > 2 * W / 3) octave = min(2, octave + 1);
-        progress("");
+      if (down && !was && y >= H - 48) {                       // the octave: by hand, SMART lets go; the middle turns it on or off
+        if (x < W / 3) { octave = max(-2, octave - 1); smart = false; }
+        else if (x > 2 * W / 3) { octave = min(2, octave + 1); smart = false; }
+        else { smart = !smart; followNext(); }
+        haptic(1); progress("");
       } else if (down && !was && mode == P_GUIDE && y >= 52 && y < 90) { hearSong(); }
       else if (harp()) {
         int d = down ? stringAt(x, y) : -1;
-        if (d >= 0 && d != last) { sound(midiOfDeg(d), 1600); haptic(24); lit = d; litAt = millis(); noteIn(d, result); progress(""); }
+        if (d >= 0 && d != last) { sound(midiOfDeg(d), 1600); haptic(24); lit = d; litAt = millis(); noteIn(d, result); progress(""); }   // sounding before it is drawn
         last = d;
         if (lit >= 0 && millis() - litAt > 220) { lit = -1; progress(""); }
       } else {
         int d = down ? holeAt(x, y) : -1;
         bool blown = d >= 0 && blowing();
-        if (blown && (d != last || millis() - soundedAt > 330)) {   // a held note: sounded again while breath lasts
-          sound(midiOfDeg(d), 420);
+        // C-202: a breathed note begins at once and is held while the breath lasts (up to four seconds, then breathed
+        // again), and let go into its release when the breath stops or the hole is lifted -- no gap, no stutter
+        if (blown && (d != last || millis() - soundedAt > 3800)) {
+          if (last >= 0) soundInstrumentRelease();
+          sound(midiOfDeg(d), 4000);
           if (d != last) noteIn(d, result);
           soundedAt = millis(); last = d;
         }
-        if (!blown) last = -1;
+        if (!blown && last >= 0) { soundInstrumentRelease(); last = -1; }
         int wasLit = lit; lit = d;
         static uint32_t drawnAt = 0;
         if (lit != wasLit || millis() - drawnAt > 120) { drawnAt = millis(); progress(""); }   // the breath bar too

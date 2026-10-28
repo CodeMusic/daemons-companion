@@ -441,6 +441,35 @@ static void tone(int midi, int ms, float level = 1.0f, bool chip = false) {
 
 void playNoteSemis(int semis, int ms) { tone(root + semis, ms, 0.7f); ringLater(); }
 void soundInstrumentNote(int midi, int ms) { tone(midi, ms, 0.7f); ringLater(); }   // C-164, for T-426's PLAY
+// C-202 (the user, 2026-10-28: no lag when a note is played): a note begun and left to ring -- the voice started and the
+// tune task given it to play out, so the loop returns at once and the next pluck sounds over this one. tone() above
+// plays the whole note before it returns (1.6 s for a harp string), which is what held every pluck behind the last.
+void soundInstrumentStart(int midi, int ms, float level) {
+#if SAMPLED
+  if (sampled() && tuneTask) {
+    if (!ready || !enabled || amplitude == 0) return;
+    quiet();
+    if (!own()) { tone(midi, ms, level); ringLater(); return; }
+    if (!sounding()) queuedUntil = esp_timer_get_time();   // from silence: the speaker's clock starts now (ringSome)
+    voiceStart(midi, RATE * ms / 1000, level);
+    xSemaphoreGive(voice);
+    ringLater();
+    return;
+  }
+#endif
+  tone(midi, ms, level); ringLater();
+}
+// the flute's note let go (its breath stopped, the hole lifted): every held voice into its release, which rings out
+void soundInstrumentRelease() {
+#if SAMPLED
+  if (!sampled() || !tuneTask || !sounding()) return;
+  quiet();
+  if (!own()) return;
+  for (Voice &v : voices) if (v.on && v.i < v.held) v.held = v.i;
+  xSemaphoreGive(voice);
+  ringLater();
+#endif
+}
 
 // C-66: a voice, as 16 kHz samples, at the volume set. It plays even with the board's sounds off: it was asked for.
 // C-95: a check from the computer (RATETEST down the cable) -- how long the speaker takes to play two seconds of

@@ -46,9 +46,9 @@ export function checkModules(list: unknown): ModuleAt[] | string {
 // plugin keeps a pooled client's FIRST system prompt for every later talk (the hardware lane, 2026-10-28: a daemon
 // answered as the benchmark's ROVERCUB), so the system message is the same every time (TALK_SYSTEM) and this rides with
 // each question. Short: qwen2.5-0.5B's window is small -- under ~350 tokens, the question included.
-export const TALK_SYSTEM = "You are a character in the game DAEMONS, speaking with the person who carries you. " +
-  "Become exactly who the note in brackets at the start of their message describes, and answer as them. " +
-  "One or two short sentences, warm, in character. Never say you are an AI or a model.";
+// Short on purpose: M5's plugin sets a pooled client up with the first system message it sees, and on the module a long
+// one (50 words) leaves that client answering nothing, for good, until its services restart; 15 words answer (2026-10-28)
+export const TALK_SYSTEM = "You are a character in the game DAEMONS. Become who the note in brackets describes.";
 export function persona(a: TalkAsk, heard = ""): string {
   if (a.guide) return a.guide(heard);                     // C-209: the GUIDE answers, not the daemon
   const d = a.daemon;

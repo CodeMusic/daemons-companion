@@ -7,6 +7,7 @@
 // first idle module; with none idle, or no first words within the deadline, it is LATE and the caller takes it elsewhere
 // (n8n, the way it goes today). No node: imports -- the words and the WAV are plain bytes.
 import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } from "./module.js";
+import type { StackFlow } from "./stackflow.js";
 
 export type ModuleAt = { url: string; name: string; found?: string };
 export type TalkAsk = {
@@ -65,6 +66,9 @@ export function persona(a: TalkAsk, heard = ""): string {
           `Answer as ${d.nickname}, in one or two short warm sentences. Never say you are an AI.`]
     .filter(Boolean).join(" ");
 }
+// The persona a thinker is set up with: what changes within a day (mood, fed and watered, the goal's next step) left out,
+// so one daemon's thinker is set up about once a day rather than at every meal
+const steady = (a: TalkAsk): TalkAsk => ({ ...a, goal: null, daemon: { ...a.daemon, mood: undefined, fed: undefined } });
 // the user's message as the module is sent it: who it is, then what they said
 export const askedAs = (a: TalkAsk, said: string) => `[${persona(a, said)}]\nThey say: ${said.slice(0, 500)}`;
 
@@ -81,7 +85,32 @@ export class House {
   private deaf(url: string) { return (this.deafUntil.get(url) ?? 0) > this.now(); }
   private busy = new Set<string>();
   private held = new Map<string, Held>();
-  constructor(private modules: () => ModuleAt[], private now = () => Date.now()) {}
+  // thinker: a module's StackFlow (ai/stackflow.ts, given by api.ts), where its persona can reach the model; none, or one
+  // that cannot be reached, and the OpenAI plugin thinks as before (a stand-in server, the tests)
+  constructor(private modules: () => ModuleAt[], private now = () => Date.now(), private thinker?: (m: ModuleAt) => StackFlow | null) {}
+  private minds = new Map<string, { gen: number; held: { key: string; work: string }[] }>();
+  private settingUp = new Map<string, Promise<string>>();
+  private noFlowUntil = new Map<string, number>();
+
+  // A thinker set up with this persona on that module -- once (3.4 s), then reused; at most two alive, the oldest let go.
+  // Not set up yet and a deadline to keep: set up in the background, and this talk is LATE (it goes elsewhere).
+  private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null) {
+    let mind = this.minds.get(m.url);
+    if (!mind || mind.gen !== sf.generation) { mind = { gen: sf.generation, held: [] }; this.minds.set(m.url, mind); }
+    let work = mind.held.find((x) => x.key === prompt)?.work;
+    if (!work) {
+      const k = `${m.url}\n${prompt}`, mm = mind;
+      const ready = this.settingUp.get(k) ?? sf.setup(model, prompt).then((w) => {
+        mm.held.push({ key: prompt, work: w });
+        while (mm.held.length > 2) sf.exit(mm.held.shift()!.work).catch(() => {});
+        return w;
+      }).finally(() => this.settingUp.delete(k));
+      this.settingUp.set(k, ready);
+      if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
+      work = await ready;
+    }
+    return sf.infer(work, said.slice(0, 300), deadlineMs ? { firstWithinMs: deadlineMs } : {});
+  }
 
   // Each module, what it holds, whether it is answering now
   async view(): Promise<(ModuleAt & { busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null })[]> {
@@ -135,8 +164,18 @@ export class House {
       const messages = [{ role: "system", content: TALK_SYSTEM },
         ...a.history.slice(-2).flatMap((x) => [{ role: "user", content: x.said.slice(0, 150) }, { role: "assistant", content: x.answer.slice(0, 150) }]),   // the small window
         { role: "user", content: askedAs(a, text) }];
-      let r: Awaited<ReturnType<typeof chat>>;
-      try { r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) }); }
+      let r: { text: string; firstMs: number | null };
+      const sf = (this.noFlowUntil.get(m.url) ?? 0) > this.now() ? null : this.thinker?.(m) ?? null;
+      try {
+        if (sf) {
+          try { r = await this.think(sf, m, h.llm!, persona(steady(a), text), text, deadlineMs); }
+          catch (e) {
+            if (!/ECONNREFUSED|EHOSTUNREACH|did not answer/.test((e as Error).message)) throw e;
+            this.noFlowUntil.set(m.url, this.now() + DEAF_MS);    // no StackFlow there: the plugin thinks, as before
+            r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) });
+          }
+        } else r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) });
+      }
       catch (e) { if (/task full/i.test((e as Error).message)) this.fault("taskFull"); throw e; }
       // the plugin pastes its own JSON parse error into the words when two of StackFlow's messages share a chunk
       // ("Hello, RO[ERROR: Extra data: ...]", the hardware lane): what came before it is kept

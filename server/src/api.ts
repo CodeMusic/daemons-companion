@@ -51,6 +51,7 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
+import { StackFlow } from "./ai/stackflow.js";
 import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
@@ -459,7 +460,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
   const talkJobs = new TalkJobs<Record<string, unknown>>(2);   // C-180: every talk and voice, queued; fetched by id
-  const house = new House(() => modulesIn((k) => store.getSetting(k)));   // C-180: the modules in the house (ai/house.ts)
+  // C-180: the modules in the house (ai/house.ts); each one's thinking through its own StackFlow (ai/stackflow.ts)
+  const flows = new Map<string, StackFlow>();
+  const house = new House(() => modulesIn((k) => store.getSetting(k)), undefined, (m) => {
+    const host = new URL(m.url).hostname;
+    if (!flows.has(host)) flows.set(host, new StackFlow(host));
+    return flows.get(host)!;
+  });
   discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
   const checkTalk = async () => {                              // C-211: each talk source's health, every minute
     const at = new Date().toISOString();

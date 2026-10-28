@@ -118,6 +118,60 @@ static bool writePage(uint8_t page, const uint8_t *in4) {
 }
 }
 
+#if defined(BOARD_TWATCH_ULTRA)
+// C-176: the T-Watch Ultra's ST25R3916, through ST's RFAL (lewisxhe's ESP32 build of it, as LilyGO's own library): on the
+// SPI bus the LoRa radio shares (Arduino's own SPI, lora.cpp; its chip select 4, its interrupt 5), powered from DLDO1.
+// It answers as the Dial's RC522 does -- a card selected, its identifier; NTAG pages read four at a time, written one
+// at a time -- so TOUCHSTONE and THE CARD run on it unchanged.
+#include <rfal_rfst25r3916.h>
+#include <rfal_nfc.h>
+void watchNfcPower(bool on);                              // watch.cpp: DLDO1
+namespace st25 {
+static RfalRfST25R3916Class rf(&SPI, 4, 5);
+static RfalNfcClass reader(&rf);
+static bool begin() {
+  watchNfcPower(true); delay(10);
+  SPI.begin(35, 33, 34);                                  // the shared bus (lora.cpp opens the same, with its own select)
+  pinMode(36, OUTPUT); digitalWrite(36, HIGH);            // the LoRa radio and the SD card deselected while it starts
+  pinMode(21, OUTPUT); digitalWrite(21, HIGH);
+  return reader.rfalNfcInitialize() == ST_ERR_NONE;
+}
+// one round of looking for an NFC-A card (a fifth of a second): its identifier, or 0
+static int readUid(uint8_t *uid) {
+  rfalNfcDiscoverParam p; memset(&p, 0, sizeof p);
+  p.compMode = RFAL_COMPLIANCE_MODE_NFC; p.techs2Find = RFAL_NFC_POLL_TECH_A; p.totalDuration = 200; p.devLimit = 1;
+  p.nfcfBR = RFAL_BR_212; p.ap2pBR = RFAL_BR_424; p.wakeupConfigDefault = true;
+  reader.rfalNfcDeactivate(false);
+  if (reader.rfalNfcDiscover(&p) != ST_ERR_NONE) return 0;
+  uint32_t t = millis();
+  while (millis() - t < 300 && reader.rfalNfcGetState() != RFAL_NFC_STATE_ACTIVATED) { reader.rfalNfcWorker(); delay(1); }
+  rfalNfcDevice *d = nullptr;
+  if (reader.rfalNfcGetState() != RFAL_NFC_STATE_ACTIVATED || reader.rfalNfcGetActiveDevice(&d) != ST_ERR_NONE || !d) return 0;
+  int n = min<int>(d->nfcidLen, 10); memcpy(uid, d->nfcid, n);
+  return n;                                               // left selected: its pages are read next
+}
+static bool readPages(uint8_t page, uint8_t *out16) { uint16_t n = 0; return reader.rfalT2TPollerRead(page, out16, 16, &n) == ST_ERR_NONE && n >= 16; }
+static bool writePage(uint8_t page, const uint8_t *four) { return reader.rfalT2TPollerWrite(page, four) == ST_ERR_NONE; }
+}  // namespace st25
+#endif
+// C-102, C-176: the readers that are not a PN532 -- the Dial's RC522 and the Ultra's ST25R3916, both answering alike
+static bool altReader() { return board.kind == BoardKind::M5Dial || board.kind == BoardKind::TWatchUltra; }
+#if defined(BOARD_TWATCH_ULTRA)
+static bool altBegin() { return st25::begin(); }
+static int altUid(uint8_t *uid) { return st25::readUid(uid); }
+static bool altPages(uint8_t page, uint8_t *out16) { return st25::readPages(page, out16); }
+static bool altWrite(uint8_t page, const uint8_t *four) { return st25::writePage(page, four); }
+#else
+static bool altBegin() { return rc522::begin(); }
+static int altUid(uint8_t *uid) { return rc522::readUid(uid); }
+static bool altPages(uint8_t page, uint8_t *out16) { return rc522::readPages(page, out16); }
+static bool altWrite(uint8_t page, const uint8_t *four) { return rc522::writePage(page, four); }
+#endif
+static const char *holdIt() {                             // where a card is held, said on the screen (DRAFT)
+  return board.kind == BoardKind::TWatchUltra ? "Hold a card to the watch.\n\nhold: give up"
+       : "Hold a card flat to the Dial's face.\n\nhold the dial: give up";
+}
+
 static String tagSays(const uint8_t *uid, int len) {
   String id;
   for (int i = 0; i < len; i++) { char b[4]; snprintf(b, sizeof b, i ? ":%02X" : "%02X", uid[i]); id += b; }
@@ -140,9 +194,9 @@ static const int CARD_PAGE = 4, CARD_HEAD = 20, CARD_NOTE_MAX = 80;
 struct CardSeen { bool dmnc = false; uint8_t kind = 0; uint32_t owner = 0, personality = 0; int species = 0, level = 0; String name, note; };
 
 static bool readerUp(String &why) {
-  if (board.kind == BoardKind::M5Dial) {
+  if (altReader()) {
     static bool up = false;
-    if (!up && !(up = rc522::begin())) { why = "The RFID reader did not answer.\nPress to try again."; return false; }   // DRAFT
+    if (!up && !(up = altBegin())) { why = "The RFID reader did not answer.\nPress to try again."; return false; }   // DRAFT
     return true;
   }
   if (!nfcReady) {
@@ -155,13 +209,13 @@ static bool readerUp(String &why) {
   return true;
 }
 static int cardSelect(uint8_t *uid) {                  // a card in the field, selected: its identifier's length, or 0
-  if (board.kind == BoardKind::M5Dial) return rc522::readUid(uid);
+  if (altReader()) return altUid(uid);
   uint8_t len = 0;
   return nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &len, 150) ? len : 0;
 }
 static bool cardRead(int pages, uint8_t *out) {        // from page 4, `pages` of them
   for (int p = 0; p < pages; ) {
-    if (board.kind == BoardKind::M5Dial) { uint8_t b[16]; if (!rc522::readPages(CARD_PAGE + p, b)) return false; memcpy(out + p * 4, b, min(16, (pages - p) * 4)); p += 4; }
+    if (altReader()) { uint8_t b[16]; if (!altPages(CARD_PAGE + p, b)) return false; memcpy(out + p * 4, b, min(16, (pages - p) * 4)); p += 4; }
     else { if (!nfc.ntag2xx_ReadPage(CARD_PAGE + p, out + p * 4)) return false; p++; }
   }
   return true;
@@ -169,7 +223,7 @@ static bool cardRead(int pages, uint8_t *out) {        // from page 4, `pages` o
 static bool cardWrite(const uint8_t *in, int bytes) {
   for (int p = 0; p * 4 < bytes; p++) {
     uint8_t four[4] = { 0, 0, 0, 0 }; memcpy(four, in + p * 4, min(4, bytes - p * 4));
-    bool ok = board.kind == BoardKind::M5Dial ? rc522::writePage(CARD_PAGE + p, four) : nfc.ntag2xx_WritePage(CARD_PAGE + p, four);
+    bool ok = altReader() ? altWrite(CARD_PAGE + p, four) : nfc.ntag2xx_WritePage(CARD_PAGE + p, four);
     if (!ok) return false;
   }
   return true;
@@ -225,7 +279,7 @@ static String drawCard(uint16_t day, uint16_t ink) {
 
 String runCard() {
   String why; if (!readerUp(why)) return why;
-  progress(board.kind == BoardKind::M5Dial ? "Hold a card flat to the Dial's face.\n\nhold the dial: give up"
+  progress(altReader() ? holdIt()
                                            : "Hold a card to the back of the board.\n\ntop button: give up");   // DRAFT
   uint8_t uid[10]; int len = 0;
   for (uint32_t until = millis() + 20000; !(len = cardSelect(uid)); delay(40)) {
@@ -318,15 +372,15 @@ String runCardNote() {
 }
 
 String runReadMyTag() {
-  if (board.kind == BoardKind::M5Dial) {               // C-102
+  if (altReader()) {                                   // C-102, C-176
     static bool up = false;
-    if (!up && !(up = rc522::begin())) return "The RFID reader did not answer.\nPress to try again.";   // DRAFT
-    progress("Hold your tag flat to the Dial's face.\n\nhold the dial: give up");               // DRAFT
+    if (!up && !(up = altBegin())) return "The RFID reader did not answer.\nPress to try again.";   // DRAFT
+    progress(holdIt());                                                                         // DRAFT
     uint8_t uid[10];
     uint32_t until = millis() + 15000;
     while (millis() < until) {
       if (giveUp()) return "Given up.";
-      int len = rc522::readUid(uid);
+      int len = altUid(uid);
       if (len) { soundSelect(); return tagSays(uid, len); }
       delay(60);
     }

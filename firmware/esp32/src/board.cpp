@@ -35,7 +35,7 @@ void boardBegin() {
   board.i2sBclk = 9; board.i2sLrclk = 10; board.i2sDout = 11;
   board.mic = Mic::Pdm; board.micData = 18; board.micClk = 17;
   board.power = Power::PmuAXP2101;
-  board.touch = true; board.lora = true;
+  board.touch = true; board.lora = true; board.nfc = true;   // C-176: TOUCHSTONE on its ST25R3916 (radios.cpp)
   board.loraChip = LoraChip::SX1262; board.loraMinMhz = 850;   // the 868 MHz version (the user, 2026-10-27)
   board.loraCs = 36; board.loraRst = 47; board.loraBusy = 48; board.loraDio1 = 14;
   board.loraSck = 35; board.loraMiso = 33; board.loraMosi = 34;

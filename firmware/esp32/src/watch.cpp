@@ -168,6 +168,10 @@ void watchPower() {
 
 #if defined(BOARD_TWATCH_ULTRA)
 // C-174: the GNSS's rail (BLDO1), on only while gps.cpp wants a fix; its backup (VRTC) is always on
+void watchNfcPower(bool on) {                          // C-176: the ST25R3916's rail (DLDO1)
+  if (!havePmu) return;
+  if (on) { pmu.setDLDO1Voltage(3300); pmu.enableDLDO1(); delay(5); } else pmu.disableDLDO1();
+}
 void watchGnssPower(bool on) {
   if (!havePmu) return;
   if (on) { pmu.setBLDO1Voltage(3300); pmu.enableBLDO1(); delay(5); } else pmu.disableBLDO1();

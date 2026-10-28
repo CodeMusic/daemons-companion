@@ -126,6 +126,11 @@ static bool radioOn() {
     // and its chip select left to RadioLib: given to the bus, the host raised it between bytes, and every read came
     // back empty (the LoRa433's on G0, seen 2026-10-15) -- the finder (board.cpp), which gave it none, read it fine
     bus->begin(board.loraSck, board.loraMiso, board.loraMosi, -1);
+#elif defined(BOARD_TWATCH_ULTRA)
+    // C-176: the Ultra's NFC reader is on this bus too (radios.cpp): both on Arduino's own SPI, as LilyGO's library has
+    // them -- two SPIClass objects on one host would take it from each other
+    bus = &SPI;
+    bus->begin(board.loraSck, board.loraMiso, board.loraMosi, -1);
 #else
     bus = new SPIClass(shared ? HSPI : FSPI);
     bus->begin(board.loraSck, board.loraMiso, board.loraMosi, board.loraCs);

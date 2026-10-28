@@ -200,6 +200,21 @@ class Link {
     catch (e) { this.set({ companion: false }); throw e; }
   }
 
+  // C-181: a talk asked for, then fetched by id -- no request held open past the app's 45 s, however long the module takes;
+  // the board waits up to 150 s for TALKED (the hardware lane, 2026-10-28). A companion that answers at once is taken as is.
+  private async askLater<T>(path: string, body: unknown): Promise<T> {
+    const first = await this.ask<T & { id?: string; status?: string }>(path + "?async=1", body);
+    if (!first.id || first.status !== "waiting") return first;
+    const until = Date.now() + 140000;
+    for (let wait = 400; Date.now() < until; wait = Math.min(wait + 200, 1500)) {
+      await new Promise((ok) => setTimeout(ok, wait));
+      const r = await this.ask<T & { status: string; error: string | null }>(`/api/device/talk/${first.id}`);
+      if (r.status === "done") return r;
+      if (r.status === "failed") return { error: r.error ?? "The answer did not come." } as T;
+    }
+    return { error: "The answer took too long." } as T;
+  }
+
   private async sendState() {
     // away, n8n runs once a request: the state every half minute rather than every five seconds (docs/REMOTE.md)
     if (this.away() && Date.now() - this.stateAt < 30000) { if (this.lastState) this.say("STATE " + this.lastState); return; }
@@ -246,7 +261,7 @@ class Link {
       const parts = this.talkParts; this.talkParts = null;
       if (!parts) return;
       let r: { answer?: string | null; heard?: string | null; error?: string | null; audioBase64?: string | null };
-      try { r = await this.ask("/api/ai/talk", { audioBase64: parts.join(""), audioMime: "audio/wav" }); }
+      try { r = await this.askLater("/api/ai/talk", { audioBase64: parts.join(""), audioMime: "audio/wav" }); }
       catch { r = { error: "The companion did not answer." }; }
       this.say("TALKED " + JSON.stringify({ answer: r.answer ?? null, heard: r.heard ?? null, error: r.error ?? null, audio: false }));
       if (r.audioBase64) await sayOnPhone(r.audioBase64).catch(() => {});

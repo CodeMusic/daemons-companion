@@ -46,6 +46,7 @@ struct Board {
   // C-102: a round screen (the Dial's): the screens are drawn in a square inside the circle, at this offset, and the
   // face comes first; and a passive buzzer in place of a speaker (its pin), which plays the tunes but not a voice
   bool round = false; int screenX = 0, screenY = 0; int buzzer = -1;
+  float zoom = 1;          // C-173: the canvas drawn this much larger on the panel (the Ultra: 240x280 at 1.6, inside its corners)
   // C-72: the LoRa radio -- its chip and pins. On the watch it has an SPI bus of its own; on the T-Deck it shares the
   // screen's (loraSck is the screen's SCLK then), as the CC1101 does on the T-Embed.
   LoraChip loraChip = LoraChip::None; int loraCs = -1, loraRst = -1, loraBusy = -1, loraDio1 = -1, loraSck = -1, loraMiso = -1, loraMosi = -1;

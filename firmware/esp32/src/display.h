@@ -58,6 +58,8 @@ class Display : public lgfx::LGFX_Device {
 
 extern Display tft;
 extern LGFX_Sprite canvas;
+extern volatile int screenOY;     // C-173: how far down the canvas a face was shown, for the touch (watch.cpp)
+void present(int faceRows = 0);   // the canvas to the panel -- C-173: faceRows, a 240-high face centred in the canvas
 extern int W, H;      // the screen as the app draws it (landscape on the T-Embeds, square on the watch)
 
 void displayBegin();          // configure, init, rotate, clear, and make the sprite

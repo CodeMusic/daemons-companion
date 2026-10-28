@@ -200,7 +200,7 @@ void watchBegin() {
   Wire.beginTransmission(0x1A);
   uint8_t addr = Wire.endTransmission() == 0 ? 0x1A : 0x5A;
   haveTouch = touchPanel.begin(touchWire, addr, board.sda, board.scl);
-  if (haveTouch) touchPanel.setMaxCoordinates(board.width, board.height);
+  if (haveTouch) touchPanel.setMaxCoordinates(410, 502);   // the glass's own pixels; touchRead turns them into the canvas's
 #elif defined(MAIN_BUS_TOUCH)
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, board.sda, board.scl);   // no step counter: a BMI270
 #else
@@ -280,9 +280,7 @@ bool watchPowerOff() { if (!havePmu) return false; pmu.shutdown(); return true; 
 int watchCableIn() { return havePmu ? (pmu.isVbusIn() ? 1 : 0) : -1; }
 // C-161: how far a finger moves to be a swipe -- on the watch's 240 px a swipe is short (29 and 49 px were read as taps,
 // 2026-10-18) and a tap moves under 10; the larger screens keep their 50
-#if defined(BOARD_TWATCH_ULTRA)
-static const int SWIPE_PX = 34;                                // C-173: the same reach on a screen 1.7 times as wide
-#elif defined(BOARD_TWATCH_S3)
+#if defined(BOARD_TWATCH_S3)                                     // the Ultra too: its touch is turned into the S3's canvas
 static const int SWIPE_PX = 20;
 #else
 static const int SWIPE_PX = 50;
@@ -304,6 +302,10 @@ static uint8_t touchRead(int16_t *x, int16_t *y) {
   // point is not taken: the last real one stands, and the lift after it ends the touch there.
   static int16_t lastX = -1, lastY = -1;
   if (touchPanel.getPoint(x, y, 1) <= 0) { lastX = -1; return 0; }
+#if defined(BOARD_TWATCH_ULTRA)
+  // C-173: the glass's pixels to the canvas's -- shown 1.6 times larger, inset, a face lowered by screenOY (present)
+  x[0] = (int16_t)((x[0] - board.screenX) / board.zoom); y[0] = (int16_t)((y[0] - board.screenY) / board.zoom) - screenOY;
+#endif
   if (x[0] <= 0 || x[0] >= W - 1 || y[0] <= 0 || y[0] >= H - 1) {
     if (lastX < 0) return 0;
     x[0] = lastX; y[0] = lastY; return 1;

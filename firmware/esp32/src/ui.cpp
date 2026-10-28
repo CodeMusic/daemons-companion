@@ -177,7 +177,7 @@ const char *linkName() {
 // its fourth and fifth ran into the footer)
 // C-161 (the user, 2026-10-18): on the watch a row is a finger's height, about four to the screen, and a tap on one
 // opens it -- each row drawn is kept, how far it lies from the chosen one, for watch.cpp's touch to find
-static int rowH() { return board.kind == BoardKind::TWatchUltra ? 72 : board.kind == BoardKind::TWatchS3 ? 42 : 19; }   // C-173: the Ultra's finger, at its size
+static int rowH() { return isWatch() ? 42 : 19; }   // C-173: the Ultra draws the S3's screens, larger (board.zoom)
 // C-172: a grid's tiles too -- each kept as a rectangle, and the grid's whole area, so a tap between tiles is nothing
 static int tapN = 0; static int16_t tapX[12], tapY[12], tapW[12], tapH[12], tapOff[12];
 static int16_t areaX = 0, areaY = 0, areaW = 0, areaH = 0;
@@ -526,6 +526,10 @@ static void drawFace(uint16_t day, uint16_t ink) {
 }
 
 void draw() {
+  // C-173: on the Ultra a face keeps the 240 square it was drawn for, centred in the taller canvas (present)
+  const bool faceShown = board.zoom != 1 && screen == HOME && page == FACE_PAGE;
+  const int fullH = H;
+  if (faceShown) H = 240;
   uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
   tapN = 0; areaW = 0;                                      // C-161, C-172: the rows and tiles this frame draws
   canvas.fillSprite(INK);
@@ -815,7 +819,8 @@ void draw() {
     int at = launchIndex(page);
     if (at >= 0) pageDots(at, LAUNCH_N);
   }
-  canvas.pushSprite(board.screenX, board.screenY);   // C-102: the Dial's square, inside its circle
+  H = fullH;
+  present(faceShown ? 240 : 0);   // C-102: the Dial's square, inside its circle; C-173 the Ultra's, larger
   dirty = false;
 }
 

@@ -118,6 +118,38 @@ void backlight(bool on) {
   if (board.lcdBl >= 0) { pinMode(board.lcdBl, OUTPUT); digitalWrite(board.lcdBl, on ? HIGH : LOW); }
 }
 
+volatile int screenOY = 0;
+
+// The canvas to the panel. C-173: on the Ultra (board.zoom) every panel pixel takes the canvas pixel under it, a band of
+// rows at a time while the band before goes out by DMA; a face (faceRows high) is centred in the canvas's height, and
+// what lies above and below it is the face's own black.
+void present(int faceRows) {
+  if (board.zoom == 1) { canvas.pushSprite(board.screenX, board.screenY); return; }
+  const int PW = (int)(W * board.zoom + 0.5f), PH = (int)(H * board.zoom + 0.5f), BAND = 16;
+  static lgfx::swap565_t *buf[2]; static int16_t *xmap; static int mapW = 0;
+  if (!buf[0]) for (auto &b : buf) b = (lgfx::swap565_t *)heap_caps_malloc(PW * BAND * 2, MALLOC_CAP_DMA);
+  if (mapW != PW) { free(xmap); xmap = (int16_t *)malloc(PW * 2); for (int x = 0; x < PW; x++) xmap[x] = x * W / PW; mapW = PW; }
+  if (!buf[0] || !buf[1] || !xmap) { canvas.pushSprite(board.screenX, board.screenY); return; }
+  int oy = faceRows ? (H - faceRows) / 2 : 0, rows = faceRows ? faceRows : H;
+  screenOY = oy;
+  const lgfx::swap565_t *src = (const lgfx::swap565_t *)canvas.getBuffer();
+  tft.startWrite();
+  for (int y0 = 0, k = 0; y0 < PH; y0 += BAND, k ^= 1) {
+    int n = min(BAND, PH - y0);
+    lgfx::swap565_t *out = buf[k];
+    for (int r = 0; r < n; r++, out += PW) {
+      int ly = (y0 + r) * H / PH - oy;
+      if (ly < 0 || ly >= rows) { memset(out, 0, PW * 2); continue; }
+      const lgfx::swap565_t *row = src + ly * W;
+      for (int x = 0; x < PW; x++) out[x] = row[xmap[x]];
+    }
+    tft.waitDMA();                                    // the other band has gone, so this one may follow it
+    tft.pushImageDMA(board.screenX, board.screenY + y0, PW, n, buf[k]);
+  }
+  tft.waitDMA();
+  tft.endWrite();
+}
+
 void displayBegin() {
   W = board.width; H = board.height;
   tft.configure();
@@ -134,7 +166,7 @@ void displayBegin() {
   Wire.end(); Wire.begin(board.sda, board.scl);
 #endif
   tft.setRotation(board.rotation);
-  tft.fillScreen(0x18E4);                // INK, so it does not flash white
+  tft.fillScreen(board.zoom == 1 ? 0x18E4 : TFT_BLACK);   // INK, so it does not flash white -- C-173: the Ultra's corners black
   backlight(true);
   // C-75: the M5GO has no PSRAM, and a whole 320x240 screen at 16 bits (150 KB) will not fit beside Wi-Fi and Bluetooth:
   // there it draws in 256 colours (75 KB). Every other board has PSRAM.

@@ -347,7 +347,7 @@ bool chorded = false;
 
 void sleepNow() {
   asleep = true;
-  canvas.fillSprite(TFT_BLACK); canvas.pushSprite(board.screenX, board.screenY);
+  canvas.fillSprite(TFT_BLACK); present();
   backlight(false);
   ledsSleep(true);
 }

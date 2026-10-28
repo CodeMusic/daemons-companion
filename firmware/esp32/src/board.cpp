@@ -25,7 +25,11 @@ const String &deviceId() {
 // card's: the two not yet used are held deselected.
 void boardBegin() {
   board.kind = BoardKind::TWatchUltra; board.id = "t-watch-ultra"; board.name = "T-Watch Ultra";
-  board.width = 410; board.height = 502; board.rotation = 0;
+  // the user, 2026-10-28: "due to the rounded corners some text is cut off ... make font bigger and center the daemon":
+  // the screens are the T-Watch S3's, drawn on a 240x280 canvas and shown 1.6 times larger (384x448), 12 and 26 in from
+  // the glass's edges so its rounded corners cut nothing (even, as the AMOLED wants its windows)
+  board.width = 240; board.height = 280; board.rotation = 0;
+  board.zoom = 1.6f; board.screenX = 12; board.screenY = 26;
   board.encKey = 0;                                  // BOOT; the crown is read through the AXP2101
   board.sda = 3; board.scl = 2;
   board.i2sBclk = 9; board.i2sLrclk = 10; board.i2sDout = 11;

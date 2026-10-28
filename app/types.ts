@@ -28,7 +28,8 @@ export type Settings = { savePath: string | null; dir: string | null; exists: bo
 export type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
               trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null;
-              expression?: import("../server/src/expressions").Drawn };
+              expression?: import("../server/src/expressions").Drawn;
+              thrive?: import("../server/src/thrive").Thrive };   // C-207
 
 // C-66, C-65: the daemon's voice on the phone. Its answer (and an INDEX entry read aloud) comes back as mp3 in base64 --
 // through the relay too, which carries only JSON -- so it is written to the cache and played from there.

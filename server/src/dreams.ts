@@ -46,7 +46,12 @@ const IMAGES = [
 ];
 const WAKES = ["bright", "rested", "humming", "glad of you", "ready for the day"];
 // the same night, the same dream: chosen by the night's end and the daemon
-function pickFrom<T>(list: T[], seed: number, k: number) { return list[Math.abs((seed * 2654435761 + k * 40503) | 0) % list.length]; }
+// (a whole mix of the bits: a plain multiply kept the low bits, and nights a day apart -- 24 hours -- told one dream)
+function pickFrom<T>(list: T[], seed: number, k: number) {
+  let h = Math.imul(seed ^ Math.imul(k, 0x9e3779b9), 0x85ebca6b);
+  h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return list[(h >>> 0) % list.length];
+}
 const seedOf = (n: { to: string }, personality: number | null) => Math.floor(new Date(n.to).getTime() / 3600000) ^ ((personality ?? 7) >>> 0);
 export function dreamWords(n: Night, nickname: string, personality: number | null = null): string {
   const s = seedOf(n, personality), q = quality(n), name = nickname || "Your daemon";

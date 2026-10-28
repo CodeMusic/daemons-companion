@@ -65,7 +65,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={l.expression}   // C-113, C-119
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={l.expression} thrive={l.thrive}   // C-113, C-119
                 art={<Art key={l.expression?.name ?? "awake"}
                           path={`/art/party/${daemon.slot}.png${l.expression && l.expression.name !== "awake" ? `?expression=${l.expression.name}` : ""}`} size={144} />} height={180} />
       {l.tired === "asleep"                                 // C-118: asleep, said plainly -- not the small word

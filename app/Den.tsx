@@ -2,6 +2,7 @@
 // the Tab5 draw it, from the same description (server/src/dens.ts). No SVG here: the wall is bands, the motif small
 // views (a line is a thin rotated bar), so it needs nothing native and draws the same on the site. The daemon walks it
 // side to side and faces the way it goes; asleep, it stays put with a z; `hop` changes when it is tended.
+import type { Thrive } from "../server/src/thrive";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import speciesJson from "../server/data/species.json";
@@ -82,8 +83,8 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression }:
-  { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null }) {
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive }:
+  { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null }) {
   const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
@@ -130,10 +131,14 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression }
         <View key={i} style={{ position: "absolute", left: 0, right: 0, top: (fy * i) / 16, height: fy / 16 + 1, backgroundColor: mix(d.wall, d.deep, i / 15) }} />
       ))}
       <View style={[StyleSheet.absoluteFill, { opacity: 0.22 }]}>{shapes.map((s, i) => <ShapeView key={i} s={s} ink={ink} />)}</View>
+      {thrive ? <WeekMarks thrive={thrive} w={w} fy={fy} ink={d.glow} /> : null}
       <View style={{ position: "absolute", left: 0, right: 0, top: fy, bottom: 0, backgroundColor: d.floor, borderTopWidth: 1.5, borderTopColor: mix(d.floor, faintInk, 0.25) }} />
       {w ? (
         <Animated.View style={{ position: "absolute", left: 0, top: fy - side + side * 0.06, width: side, height: side,
                                 transform: [{ translateX: Animated.add(x.interpolate({ inputRange: [0, 1], outputRange: [0, room] }), shake) }, { translateY: Animated.add(bob, up) }] }}>
+          {thrive && thrive.glow > 0 ? [0.84, 0.68, 0.52].map((r, i) => (   // C-207: a good week, a soft light about it -- rings
+            <View key={i} style={{ position: "absolute", left: side * (0.5 - r / 2), top: side * (0.52 - r / 2), width: side * r, height: side * r,   // that fade
+                                   borderRadius: side, backgroundColor: ink, opacity: 0.045 * Math.min(1, thrive.glow / 100) }} />)) : null}
           <View style={{ position: "absolute", left: side * 0.22, top: side * 0.9, width: side * 0.55, height: side * 0.09, borderRadius: side, backgroundColor: "rgba(0,0,0,0.28)" }} />
           <View style={[{ width: side, height: side, transform: [{ translateY: ((pose?.dy ?? 0) * side) / 64 + (side * (1 - (pose?.squash ?? 1))) / 2 },
                                                                   { scaleY: pose?.squash ?? 1 }, { scaleX: right ? -1 : 1 }] }, PIXELATED as any]}>
@@ -147,6 +152,31 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression }
             : asleep && !expression ? <Text style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
         </Animated.View>
       ) : null}
+    </View>
+  );
+}
+
+// C-207 (the user, 2026-10-28: "it reflects in the way your daemon appears ... subtly"): the week, on the den's wall -- a
+// small star for each goal finished (at most five), and a crescent after a vivid night. Pixels in the den's own light.
+const STAR = ["..#..", ".###.", "#####", ".###.", "..#.."], MOON = ["..###.", ".##...", "##....", "##....", ".##...", "..###."];
+function Pixels({ rows, px, colour, style }: { rows: string[]; px: number; colour: string; style: object }) {
+  return (
+    <View style={[{ position: "absolute", width: rows[0].length * px, height: rows.length * px }, style]}>
+      {rows.flatMap((row, y) => [...row].map((c, x) => c === "." ? null :
+        <View key={`${x}-${y}`} style={{ position: "absolute", left: x * px, top: y * px, width: px + 0.3, height: px + 0.3, backgroundColor: colour }} />))}
+    </View>
+  );
+}
+function WeekMarks({ thrive, w, fy, ink }: { thrive: Thrive; w: number; fy: number; ink: string }) {
+  if (!w) return null;
+  const px = Math.max(1.5, Math.round(fy / 70));
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {thrive.moon ? <Pixels rows={MOON} px={px} colour={ink} style={{ left: w * 0.08, top: fy * 0.12, opacity: 0.7 }} /> : null}
+      {Array.from({ length: thrive.stars }, (_, i) => (
+        <Pixels key={i} rows={STAR} px={px * 0.8} colour={ink}
+                style={{ left: w * (0.62 + 0.07 * i), top: fy * (0.1 + 0.07 * (i % 2)), opacity: 0.55 }} />
+      ))}
     </View>
   );
 }

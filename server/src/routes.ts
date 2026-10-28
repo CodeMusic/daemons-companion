@@ -35,6 +35,7 @@ import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";
 import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js";   // C-200
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
+import { thriveOf } from "./thrive.js";   // C-207
 import { validDeviceId } from "./deviceid.js";
 const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find"];
@@ -167,7 +168,8 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
 function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const d = carriedDaemon(h, store, deviceId);
   const lf = daemonLife(store, now);
-  return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null });   // C-119
+  return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null,
+            thrive: thriveOf(store, now) });   // C-119; C-207: the week, for the den's glow and marks
 }
 
 // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's

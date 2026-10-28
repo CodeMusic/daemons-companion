@@ -52,6 +52,11 @@ describe("C-200: the last dream, into the save at SYNC", () => {
     const game = Object.values((P as any).its_dreams.game).map((g: any) => g.var);
     expect(Object.values(DREAM_VARS).some((v) => game.includes(v))).toBe(false);
   });
+  it("tells different dreams on different nights (nights a day apart once all told the same one)", () => {
+    const seen = new Set(Array.from({ length: 16 }, (_, i) =>
+      dreamImage({ to: new Date(Date.parse("2026-10-01T11:00:00Z") + i * 86400000).toISOString(), personality: 0x2f, quality: "vivid" })));
+    expect(seen.size).toBeGreaterThanOrEqual(8);
+  });
   it("picks the image the written dream told, from sixteen", () => {
     const d = { to: "2026-10-29T11:00:00Z", personality: 0x2f, quality: "quiet" as const };
     expect(dreamImage(d)).toBeGreaterThanOrEqual(0);

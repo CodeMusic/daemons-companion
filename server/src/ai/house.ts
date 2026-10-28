@@ -6,7 +6,7 @@
 // One talk at a time on each module (one small model; a second waits rather than slowing the first). A talk asks the
 // first idle module; with none idle, or no first words within the deadline, it is LATE and the caller takes it elsewhere
 // (n8n, the way it goes today). No node: imports -- the words and the WAV are plain bytes.
-import { chat, hear, LATE, listModels, speak, type ModuleModel } from "./module.js";
+import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } from "./module.js";
 
 export type ModuleAt = { url: string; name: string; found?: string };
 export type TalkAsk = {
@@ -75,8 +75,7 @@ export class House {
     let next: Held;
     try {
       const list: ModuleModel[] = await listModels(m.url, 3000);
-      const first = (k: ModuleModel["kind"]) => list.find((x) => x.kind === k)?.id;
-      next = { at: this.now(), llm: first("llm"), tts: first("tts"), stt: first("stt") };
+      next = { at: this.now(), ...pickModels(list) };                // the fast thinker, an English voice, Whisper (module.ts)
     } catch (e) { next = { at: this.now(), error: (e as Error).message }; }
     this.held.set(m.url, next);
     return next;

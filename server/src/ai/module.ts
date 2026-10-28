@@ -10,13 +10,35 @@ export type Heard = { text: string; ms: number };
 
 const trim = (base: string) => base.replace(/\/+$/, "").replace(/\/v1$/, "");
 
-// A model's kind, from its name: MeloTTS speaks, Whisper / SenseVoice / sherpa-ncnn's ASR hear, the rest think
+// A model's kind, from its name: MeloTTS (and the module's single speaker) speaks, Whisper / SenseVoice hear, the rest
+// think. sherpa-ncnn, KWS and VAD take a live microphone, never a file: one recording sent to sherpa hung the module's
+// whole OpenAI server (the hardware lane, 2026-10-28), so they are "other" and never asked to hear.
 export function kindOf(id: string): ModuleModel["kind"] {
   const n = id.toLowerCase();
-  if (/tts|melo|piper|kokoro/.test(n)) return "tts";
-  if (/whisper|asr|sense ?voice|sensevoice|sherpa|kws|vad/.test(n)) return "stt";
+  if (/sherpa|kws|vad|streaming/.test(n)) return "other";
+  if (/tts|melo|piper|kokoro|single_speaker/.test(n)) return "tts";
+  if (/whisper|asr|sense ?voice|sensevoice/.test(n)) return "stt";
   if (/qwen|llama|deepseek|gemma|phi|smol|internlm|minicpm|llm|chat|instruct/.test(n)) return "llm";
   return "other";
+}
+
+// Which of each kind to use, from the module's benchmark (2026-10-28, three runs each, over the hub's link):
+// thinking -- qwen2.5-0.5B answers in ~0.65 s; qwen3 thinks aloud first; anything a billion parameters or more, and
+// deepseek-r1, takes ~30 s to its first words, so never. Voice -- English MeloTTS, else the single English speaker;
+// never a Chinese voice reading English (21 s). Hearing -- Whisper only.
+const sizeB = (n: string) => { const m = /(\d+(?:\.\d+)?)b(?![a-z])/.exec(n); return m ? Number(m[1]) : null; };
+export function pickModels(list: ModuleModel[]): { llm?: string; tts?: string; stt?: string } {
+  const ids = (k: ModuleModel["kind"]) => list.filter((m) => m.kind === k).map((m) => m.id);
+  const best = (xs: string[], order: RegExp[]) => {
+    for (const r of order) { const hit = xs.find((x) => r.test(x.toLowerCase())); if (hit) return hit; }
+    return undefined;
+  };
+  const thinkers = ids("llm").filter((x) => { const n = x.toLowerCase(), b = sizeB(n); return !/deepseek-r1/.test(n) && (b === null || b < 1); });
+  return {
+    llm: best(thinkers, [/qwen2\.5-0\.5b-prefill/, /qwen2\.5-0\.5b/, /^(?!.*qwen3)/, /./]),
+    tts: best(ids("tts").filter((x) => !/zh|cn|chinese/.test(x.toLowerCase())), [/melotts[-_]en/, /single_speaker_english/, /en/, /./]),
+    stt: best(ids("stt"), [/whisper/]),
+  };
 }
 
 export async function listModels(base: string, timeoutMs = 5000): Promise<ModuleModel[]> {

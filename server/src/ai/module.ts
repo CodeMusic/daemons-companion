@@ -105,6 +105,7 @@ export async function hear(base: string, model: string, wav: Buffer, timeoutMs =
   const t0 = performance.now();
   const form = new FormData();
   form.append("model", model);
+  form.append("language", "en");   // without it M5's whisper fails to load ("Model loading failed") and holds its slot: busy after
   form.append("file", new Blob([new Uint8Array(wav)], { type: "audio/wav" }), "said.wav");
   const r = await fetch(`${trim(base)}/v1/audio/transcriptions`, { method: "POST", body: form, signal: AbortSignal.timeout(timeoutMs) });
   if (!r.ok) throw new Error(`the module's hearing answered ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`);

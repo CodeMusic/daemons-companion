@@ -85,8 +85,12 @@ class UartHeard : public NimBLECharacteristicCallbacks {
 };
 }  // namespace
 
+// C-176: its name ends with its device id's last six (t-watch-ultra-f351d4: "... f351d4"), so the phone pairing by a
+// watch's tapped link (daemons://link?device=) picks this board out of those nearby at once
+static String bleName() { String id = deviceId(); return "DAEMONS companion " + id.substring(max(0, (int)id.length() - 6)); }
+
 void linkBegin() {
-  NimBLEDevice::init("DAEMONS companion");
+  NimBLEDevice::init(bleName().c_str());
   NimBLEDevice::setMTU(247);
   NimBLEDevice::setSecurityAuth(true, true, true);            // bond, man-in-the-middle protection, secure connections
   NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);      // the board shows the code; the phone types it
@@ -143,7 +147,7 @@ void linkSetBeacon(const char *uuid) {
   NimBLEAdvertising *adv = NimBLEDevice::getAdvertising();
   NimBLEAdvertisementData sr;
   if (uuid) sr.setCompleteServices(NimBLEUUID(uuid));
-  else sr.setName("DAEMONS companion");
+  else sr.setName(bleName().c_str());
   bool was = adv->isAdvertising();
   if (was) adv->stop();
   adv->setScanResponseData(sr);

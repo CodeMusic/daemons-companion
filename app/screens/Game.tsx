@@ -26,9 +26,21 @@ const paired = () => !ALONE && !!TOKEN;
 const agreedFile = () => new File(new Directory(Paths.document, "game"), "mirror.json");
 function agreed(): string { try { const f = agreedFile(); return f.exists ? String(JSON.parse(f.textSync()).sha1 ?? "") : ""; } catch { return ""; } }
 function agree(s: string) { try { const f = agreedFile(); if (!f.exists) f.create(); f.write(JSON.stringify({ sha1: s })); } catch { /* asked again next time */ } }
-async function mirrorOut(b64: string) {
+// C-215: the companion refuses to mirror another game (a new game begun here, a testing build's): the device can keep it
+// there as a save of its own instead, and once told to, keeps it each time it saves. `refused` hears the first refusal.
+const keptFile = () => new File(new Directory(Paths.document, "game"), "kept.json");
+function keeping(): boolean { try { const f = keptFile(); return f.exists && !!JSON.parse(f.textSync()).keep; } catch { return false; } }
+function keepHere(on: boolean) { try { const f = keptFile(); if (!f.exists) f.create(); f.write(JSON.stringify({ keep: on })); } catch { /* asked again */ } }
+const keepThere = (b64: string) => api("/api/saves/keep", { b64, label: "This device's other game" });   // DRAFT
+async function mirrorOut(b64: string, refused?: (b64: string, why: string) => void) {
   if (!paired()) return;
-  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64, base: agreed() || undefined })).sha1); } catch { /* the companion away, or its copy moved on (base: never undo a SYNC's writes): the next look settles it */ }
+  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64, base: agreed() || undefined })).sha1); }
+  catch (e) {                                             // the companion away, or its copy moved on (base: never undo a SYNC's writes): the next look settles it
+    const why = (e as Error).message;
+    if (!/another game/.test(why)) return;
+    if (keeping()) keepThere(b64).catch(() => { /* the next save tries again */ });
+    else refused?.(b64, why);
+  }
 }
 async function mirrorIn() {
   if (!paired()) return;
@@ -106,6 +118,15 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
   const started = useRef(false);
   const given = useRef("");                              // the save as the game last had it (put in, or written out)
   const [update, setUpdate] = useState<ReturnType<typeof updateFor>>(null);
+  const [refused, setRefused] = useState<{ b64: string; why: string } | null>(null);   // C-215: the mirror said another game
+  const [keptSaid, setKeptSaid] = useState("");
+  const offered = useRef(false);                          // asked once a session; "Not now" is not asked again
+  const onRefused = (b64: string, why: string) => { if (offered.current) return; offered.current = true; setRefused({ b64, why }); };
+  const keepIt = async () => {
+    if (!refused) return;
+    try { await keepThere(refused.b64); keepHere(true); setRefused(null); setKeptSaid("Kept on the companion as its own save; each save here keeps it there too. Choose it in SETTINGS, YOUR SAVES."); }
+    catch (e) { setKeptSaid((e as Error).message); }
+  };
   const [pace, setPace] = useState<{ drawn: number; ran: number | null; sound: string } | null>(null);   // the speed readout
 
   useEffect(() => {                                       // a newer release, as published now
@@ -180,7 +201,7 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
         const f = saveFile();
         if (f.exists) {
           given.current = b64Of(f.bytesSync()); web.current?.injectJavaScript(`window.putSave(${JSON.stringify(given.current)}); true;`);
-          if (paired() && sha1(f.bytesSync()) !== agreed()) mirrorOut(given.current);   // and the device's, to it
+          if (paired() && sha1(f.bytesSync()) !== agreed()) mirrorOut(given.current, onRefused);   // and the device's, to it
         }
         if (!active) web.current?.injectJavaScript("window.pauseGame(); true;");
       })();
@@ -189,7 +210,7 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
       const whole = bytes.length >= 0x10000;                // a whole save, never a blank start
       if (whole) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; onSaved?.(); }   // C-189: read beside the game
       // C-188: to the paired companion's mirror -- and a SYNC waiting on the game's save waits for that too
-      (whole ? mirrorOut(m.b64) : Promise.resolve()).finally(() => { if (m.why === "leave") handed.current?.(); });
+      (whole ? mirrorOut(m.b64, onRefused) : Promise.resolve()).finally(() => { if (m.why === "leave") handed.current?.(); });
     } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
     else if (m.kind === "error" && m.text) setError(m.text);
   };
@@ -225,6 +246,15 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
           <YStack flex={1}><Small>{step ? STEPS[step] : game.testing ? `TESTING BUILD (v${game.release}): the DEBUG build, with its DEBUG menu.` : `A TESTING BUILD is on the companion (v${testing}).`}  DRAFT</Small></YStack>
           {step ? null : <Action label={game.testing ? "Back to the release" : "Play it"} ink={ink} onPress={() => swap(!game.testing)} />}
         </XStack>
+      ) : null}
+      {refused ? (                                            /* C-215 (DRAFT) */
+        <XStack padding={8} gap={10} alignItems="center" backgroundColor="$color3">
+          <YStack flex={1}><Small>{`This game isn't the one the companion follows (${refused.why}), so it isn't mirrored. Keep it on the companion as a save of its own?  DRAFT`}</Small></YStack>
+          <Action label="Keep it" ink={ink} onPress={keepIt} />
+          <Action label="Not now" ink={ink} onPress={() => setRefused(null)} />
+        </XStack>
+      ) : keptSaid ? (
+        <XStack padding={8} backgroundColor="$color3" onPress={() => setKeptSaid("")}><Small>{`${keptSaid}  DRAFT`}</Small></XStack>
       ) : null}
       <WebView key={game.sha1} ref={web} source={{ uri: page }} originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}
                allowingReadAccessToURL={new Directory(Paths.document, "game").uri} allowFileAccess allowFileAccessFromFileURLs

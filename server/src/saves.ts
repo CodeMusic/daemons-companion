@@ -47,14 +47,16 @@ export function listSaves(cfg: Config, store: Store, current: string | null, mir
   return { saves: out, paths };
 }
 
-// A save kept here by name -- a copy, written whole (temp, then renamed); its file is named for its bytes
+// A save kept here by name -- a copy, written whole (temp, then renamed); its file is named for the game (trainer, ids),
+// so the same game kept again replaces its own copy rather than piling up beside it
 export function keepSave(cfg: Config, store: Store, bytes: Uint8Array, label: string): string {
   readSave(bytes);                                         // a whole save, or it throws
   const dir = savesDir(cfg);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  const file = `${createHash("sha1").update(bytes).digest("hex").slice(0, 12)}.sav`, path = join(dir, file);
+  const p = readProfile(bytes), game = `${p.name}/${p.trainerId}/${p.secretId}`;
+  const file = `${createHash("sha1").update(game).digest("hex").slice(0, 12)}.sav`, path = join(dir, file);
   writeFileSync(`${path}.companion-writing`, bytes); renameSync(`${path}.companion-writing`, path);
-  const l = labels(store); l[file] = label.trim().slice(0, 40) || readProfile(bytes).name;
+  const l = labels(store); l[file] = label.trim().slice(0, 40) || l[file] || p.name;
   store.setSetting("saves.labels", JSON.stringify(l));
   return idOf(path);
 }

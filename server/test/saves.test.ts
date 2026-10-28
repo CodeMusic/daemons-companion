@@ -37,6 +37,12 @@ describe("the saves (C-215)", () => {
     expect(after.saves.find((x: any) => x.current).name).toBe("ROVER");
     expect(readFileSync(own).equals(before)).toBe(true);
   });
+  it("keeps the same game again in its own place, its name kept", async () => {
+    const again = mk("NEWGAME", 42); again[0x10] ^= 1;          // the same game, saved on
+    const k = await (await post("/api/saves/keep", { b64: b64(again) })).json();
+    expect(k.saves.filter((x: any) => x.name === "NEWGAME")).toHaveLength(1);
+    expect(k.saves.find((x: any) => x.name === "NEWGAME").label).toBe("The iPad's new game");
+  });
   it("refuses what is not a save, and an id it does not know", async () => {
     expect((await post("/api/saves/keep", { b64: b64(new Uint8Array(0x20000)) })).status).toBe(400);
     expect((await post("/api/saves/choose", { id: "nope" })).status).toBe(404);

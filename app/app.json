@@ -13,7 +13,10 @@
       "appleTeamId": "DR37K85CJL",
       "infoPlist": {
         "NSAppTransportSecurity": {
-          "NSAllowsLocalNetworking": true
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "ts.net": { "NSIncludesSubdomains": true, "NSExceptionAllowsInsecureHTTPLoads": true }
+          }
         },
         "NSLocalNetworkUsageDescription": "To reach your DAEMONS companion on your computer, at home.",
         "ITSAppUsesNonExemptEncryption": false

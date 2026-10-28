@@ -67,6 +67,9 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /api/soundings` | C-195: each daemon away, when it was last heard and how it was doing (*alone too*) |
 | `GET /api/planner`, `GET /api/planner/wild?place=` | C-191: THE ROAD AHEAD, up to the next step and nothing past it; then one open place's wild daemons (*alone too*) |
 | `GET /api/reads` | C-203: the companion's own log of THE SUBTLE LAYER's reads and leans -- `held` (the save has found the book; nothing else matters before), how many reads were given and landed, leans told and landed, and the last ten reads, each with its line, when it landed, or `open` while it still can (*alone too*) |
+| `POST /api/subtle/ask` | C-229: `{text, mode: ask|voices, turn}` (or `audioBase64`) -- THE SUBTLE LAYER answers: `line` (its nearest page's own sentence, or the hub's module saying it), `back` (a question back), or `asking` (TWO VOICES); `answer` the whole, read aloud where the voice is (*a phone alone: the book's own line*) |
+| `GET /api/subtle/today`, `POST /api/subtle/today` | C-230: the book's question of the day (`question`, `centre`, `note`, `word`, today's `answer`); POST `{text}` keeps the answer in the journal, one a day (*alone too*) |
+| `GET /api/subtle/journal` | C-230: what was answered, newest first, with the day and the centre (*alone too*) |
 | `GET /api/subtle` | whether the save has found THE SUBTLE LAYER, and once it has, the book by section and page, each page's paragraphs in their voice (`telling` or `asking`) and its picture's frames; `?preview=1`, for a check, as if found (*alone too*) |
 | `GET /api/marks` | each MARK's and understanding's words, colours and towns -- no save needed (*alone too*) |
 | `GET /api/regions` | the two region maps' cells -- no save needed (*alone too*) |

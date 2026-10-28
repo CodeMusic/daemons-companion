@@ -16,6 +16,7 @@ import { readProgress } from "./save/progress.js";
 import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
 import { readsView, takeLean, takeRead } from "./intuition.js";   // C-203
+import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
@@ -39,8 +40,8 @@ import { bondAdd } from "./evolve.js";
 import { thriveOf } from "./thrive.js";   // C-207
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry"];
-const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal"];
+const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -106,7 +107,13 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       return c ? ok(c) : no(404, "no such chapter");
     }
     if (path === "/api/reads") return ok({ held: readSubtle(save, undefined, a.query?.preview === "1").held, ...readsView(store, now) });   // C-203: the companion's own log
-    if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));   // T-423: THE SUBTLE LAYER, once found (?preview=1, a bench check)
+    if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));
+    if (path === "/api/subtle/today" || path === "/api/subtle/journal") {   // C-230: the book's question of the day, and what was answered
+      if (!readSubtle(save).held) return ok({ held: false });
+      const t = today(h, store, now), q = todaysQuestion(t.date, dayOf(t));
+      return ok(path.endsWith("journal") ? { held: true, entries: journalOf(store).slice(0, 60) }
+                                          : { held: true, ...q, answer: journalOf(store).find((x) => x.date === t.date)?.answer ?? null });
+    }   // T-423: THE SUBTLE LAYER, once found (?preview=1, a bench check)
     if (path === "/api/index") return ok(readIndex(save, h.edition));   // C-24: the save's own INDEX, OPUS's margins with it
     // C-199 (3): the INDEX as a watch reads it -- every daemon met, in a line each; then one entry at a time (its picture
     // is /api/device/art?species=, its voice the reading's, kept on the card once heard)
@@ -128,6 +135,16 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
   }
   if (method === "POST") {
+    // C-229: ASK THE SUBTLE LAYER -- its own line and a question back, or TWO VOICES' asking voice (the hub's module may say
+    // the line in its own words instead: api.ts); C-230: the day's question answered, kept in the journal
+    if (path === "/api/subtle/ask" || path === "/api/subtle/today") {
+      const save = h.save.read(), s = save ? readSubtle(save) : null;
+      if (!s?.held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
+      const t = today(h, store, now), day = dayOf(t), text = typeof b?.text === "string" ? b.text.trim().slice(0, 500) : "";
+      if (path.endsWith("today")) { const k = keepAnswer(store, todaysQuestion(t.date, day), text, now); return typeof k === "string" ? no(400, k) : ok({ kept: k }); }
+      if (!text) return no(400, "ask it something");
+      return ok(answerOf(s, text.slice(0, 200), b?.mode === "voices" ? "voices" : "ask", Number(b?.turn) || 0, day, t.date));
+    }
     // C-174: FIND -- one device asked to say where it is, and to sound
     if (path === "/api/where/find") {
       if (!validDeviceId(b?.id)) return no(400, "find {id}");

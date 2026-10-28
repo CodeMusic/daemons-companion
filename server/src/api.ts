@@ -83,6 +83,7 @@ import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          /
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages } from "./guideask.js";   // C-209
+import { answerOf, dayOf, guideAside, keepAnswer, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
@@ -442,7 +443,7 @@ export const DEVICE_DOOR = [
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
-  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry"),   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
+  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
 ];
 
@@ -800,7 +801,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return reply(res, r);
       }
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
-      if (handles(req.method ?? "", path))
+      if (handles(req.method ?? "", path) && path !== "/api/subtle/ask")   // C-229: answered below, with the module and the voice
         return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),
                                                        body: req.method === "POST" ? await body(req) : {} }));
       if (req.method === "GET" && path === "/api/device/state") {
@@ -1092,6 +1093,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           localModel: ecfg.talk.localModel,
           ...talkWho(ecfg, store, deviceId),
           ...(typeof b.guide === "function" ? { guide: b.guide as (heard: string) => string, history: [] } : {}),   // C-209: the GUIDE answers, afresh each time
+          ...(typeof b.book === "string" ? { book: b.book } : {}),                                             // C-229: which book (the GUIDE by default)
         };
       };
       // C-209: a question asked of the GUIDE -- its persona from the pages nearest the question, or why not (not found yet)
@@ -1109,7 +1111,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (asked && (p.provider !== "module" || !house.any)) return { error: "Asking the GUIDE needs the hub." };   // DRAFT
         const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
-          daemon: p.daemon, day: p.day, season: p.season, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide };
+          daemon: p.daemon, day: p.day, season: p.season, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide,
+          book: (p as { book?: string }).book };                                                                // C-229
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
         if (p.provider !== "module" || !house.any) {              // n8n first -- and, C-211, the module when n8n cannot answer
@@ -1175,13 +1178,57 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!job) return send(res, 404, { error: "that answer is gone; ask again" });
         return send(res, 200, { status: job.status, ahead: job.ahead ?? null, error: job.error ?? null, ...(job.result ?? {}) });
       }
+      // C-229: ASK THE SUBTLE LAYER -- its line and a question back (the module says the line in its own words where it is,
+      // the book's own sentence where it is not), or TWO VOICES' asking voice; heard first when it was spoken, and the whole
+      // of what it says read aloud in the INDEX voice. The GUIDE, once found, sets some answers in the day's virtue (guideAside).
+      // C-229: the GUIDE's part of the day -- now and then its answer ends on the day's virtue over its shadow (shown; the
+      // voice says the answer only)
+      const withAside = (b: Record<string, any>, r: Record<string, unknown>): Record<string, unknown> => {
+        if (typeof r.answer !== "string" || !r.answer || r.error) return r;
+        const t = today(ecfg, store), aside = guideAside(String(r.heard ?? b.text ?? ""), t.day.cue ?? "", t.date);
+        return aside ? { ...r, answer: `${r.answer} ${aside}` } : r;
+      };
+      const askSubtle = async (b: Record<string, any>): Promise<Record<string, unknown>> => {
+        const save = hostOf(ecfg).save.read(), s = save ? readSubtle(save) : null;
+        if (!s?.held) return { error: "Find THE SUBTLE LAYER first." };                               // DRAFT
+        const t = today(ecfg, store), day = dayOf(t);
+        let text = typeof b.text === "string" ? b.text.trim() : "";
+        if (!text && typeof b.audioBase64 === "string" && house.any)
+          text = (await house.transcribe(new Uint8Array(Buffer.from(b.audioBase64, "base64"))).catch(() => null)) ?? "";
+        if (!text) return { error: "Nothing was heard." };                                             // DRAFT
+        const a = answerOf(s, text.slice(0, 200), b.mode === "voices" ? "voices" : "ask", Number(b.turn) || 0, day, t.date);
+        if (a.mode === "ask" && house.any && talkProvider() === "module") {
+          const r = await talkOn(talkPayload({ text, guide: subtlePages(s), book: "THE SUBTLE LAYER", speak: false })).catch(() => null);
+          if (r && !r.error && typeof r.answer === "string" && r.answer.trim()) a.line = r.answer.trim();
+        }
+        const said = a.mode === "voices" ? a.asking : `${a.line} ${a.back}`.trim();
+        const v = b.speak === false ? {} : await readAloud(said).catch(() => ({} as Record<string, unknown>));
+        return { ...a, heard: text, answer: said, ...(typeof v.audioBase64 === "string" ? { audioBase64: v.audioBase64, audioMime: v.audioMime ?? "audio/wav" } : {}) };
+      };
+      // C-230: today's question answered aloud on the watch -- heard, and kept in the journal with the day and the centre
+      const keepSpoken = async (b: Record<string, any>): Promise<Record<string, unknown>> => {
+        const save = hostOf(ecfg).save.read();
+        if (!save || !readSubtle(save).held) return { error: "Find THE SUBTLE LAYER first." };     // DRAFT
+        const text = typeof b.audioBase64 === "string" && house.any
+          ? (await house.transcribe(new Uint8Array(Buffer.from(b.audioBase64, "base64"))).catch(() => null)) ?? "" : "";
+        const t = today(ecfg, store), k = keepAnswer(store, todaysQuestion(t.date, dayOf(t)), text);
+        return typeof k === "string" ? { error: "Nothing was heard.", heard: text } : { heard: text, answer: "Kept, with the day and the centre." };   // DRAFT
+      };
+      if (req.method === "POST" && path === "/api/subtle/ask") {
+        const b = await body(req);
+        return answer(PRIORITY.inHand, async () => {
+          if (typeof b.audioBase64 === "string" && b.audioBase64)
+            Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
+          return askSubtle(b);
+        });
+      }
       if (req.method === "POST" && path === "/api/ai/talk") {
         const b = await body(req);
         return answer(PRIORITY.inHand, async () => {
           if (typeof b.audioBase64 === "string" && b.audioBase64)
             Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
           if (b.guide === true && !asGuide(b)) return { error: "Find the GUIDE first." };            // C-209, DRAFT
-          return b.guide ? await talkOn(talkPayload(b)) : remember(b, await talkOn(talkPayload(b)));
+          return b.guide ? withAside(b, await talkOn(talkPayload(b))) : remember(b, await talkOn(talkPayload(b)));
         });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
@@ -1189,11 +1236,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!audio || audio.length < 44) return send(res, 400, { error: "talk takes a recording (up to 2 MB)" });
         const mime = String(req.headers["content-type"] ?? "audio/wav");
         const guide = url.searchParams.get("guide") === "1";            // C-209: ASK THE GUIDE, from the watch
+        const subtle = url.searchParams.get("subtle") === "1";          // C-229: ASK THE SUBTLE LAYER, from the watch
         return answer(PRIORITY.inHand, async () => {
           const b: Record<string, any> = await heardAs(audio, mime);
+          if (subtle && url.searchParams.get("today") === "1") return forDevice(await keepSpoken(b));   // C-230: today's answer, aloud
+          if (subtle) return forDevice(await askSubtle({ ...b, mode: url.searchParams.get("mode") === "voices" ? "voices" : "ask",
+                                                         turn: Number(url.searchParams.get("turn")) || 0 }));
           if (!guide) return forDevice(remember({}, await talkOn(talkPayload(b))));
           if (!asGuide(b)) return { error: "Find the GUIDE first." };                                 // DRAFT
-          return forDevice({ ...await talkOn(talkPayload(b)), heard: b.text });
+          return forDevice(withAside(b, { ...await talkOn(talkPayload(b)), heard: b.text }));
         });
       }
       // ---- C-212: a meeting, from the watch's RECORD to its write-up -------------------------------------------------------

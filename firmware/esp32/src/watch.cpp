@@ -1,6 +1,8 @@
 #include "watch.h"
 #include "app.h"
 #include "talk.h"
+#include "motion.h"                                         // C-201: the Ultra's motion sensor
+#include "casino.h"
 
 #if defined(BOARD_CORES3) || defined(BOARD_DIAL) || defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
 #define MAIN_BUS_TOUCH 1                                  // C-102: the Dial reads its touch as the CoreS3 does; C-105 the T-Display-S3 Pro
@@ -211,6 +213,9 @@ void watchBegin() {
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL);
 #endif
   Serial.printf("watch: pmu %d clock %d steps %d touch %d\n", havePmu, haveRtc, haveAccel, haveTouch);
+#if defined(BOARD_TWATCH_ULTRA)
+  motionBegin();                                       // C-201: its steps come from the BHI260AP, once its firmware is up
+#endif
 }
 
 bool watchBattery(Battery &b) {
@@ -252,8 +257,13 @@ bool watchLocalTime(struct tm &out) {
 // Today's steps: the counter runs on while the watch has power, so the count at the start of each local day is kept,
 // and today is what it has counted since.
 long watchSteps() {
+#if defined(BOARD_TWATCH_ULTRA)
+  long count = motionSteps();                          // C-201: rising, kept across restarts, cars left out
+  if (count < 0) return -1;
+#else
   if (!haveAccel) return -1;
   long count = accel.getPedometerCounter();
+#endif
   struct tm t;
   if (!watchLocalTime(t)) return count;
   static int dayWas = -1; static long base = -1;
@@ -551,9 +561,30 @@ static void crownLoop(uint32_t now) {
   else if (longPress && !asleep) sleepNow();
 }
 
+#if defined(BOARD_TWATCH_ULTRA)
+// C-201: what the motion sensor noticed -- the wrist lifted wakes the screen; a shake wakes the daemon (or, awake, it
+// hops: glad of it); a double tap opens CARE; and the daemon answers a change in how you move (once a minute at most)
+static void motionLoop(uint32_t now) {
+  if (motionTakeRaise() && asleep) wake();
+  if (!casinoAtTable() && motionTakeShake()) {           // at the reels a shake pulls the lever (casino.cpp)
+    if (asleep) wake(); else { hopUntil = now + 480; lastInput = now; dirty = true; }
+  }
+  if (motionTakeDoubleTap() && st.carrying) { wake(); lastInput = now; openCareGrid(); }
+  MotionKind k; static uint32_t saidAt = 0;
+  if (motionTakeKindChange(k) && !asleep && st.carrying && now - saidAt > 60000) {
+    const char *word = k == M_WALKING ? "WALKING TOGETHER" : k == M_RUNNING ? "RUNNING!" : k == M_CYCLING ? "WHEELS!"
+                     : k == M_VEHICLE ? "ALONG FOR THE RIDE" : nullptr;   // DRAFT
+    if (word) { saidAt = now; say(word); hopUntil = now + 480; }
+  }
+}
+#endif
+
 void watchLoop(uint32_t now) {
   touchLoop(now);
   crownLoop(now);
+#if defined(BOARD_TWATCH_ULTRA)
+  motionLoop(now);
+#endif
   static uint32_t tickAt = 0;                                   // the face's clock and steps: once a second is enough
   if (!asleep && screen == HOME && page == FACE_PAGE && now - tickAt > 1000) { tickAt = now; dirty = true; }
 }

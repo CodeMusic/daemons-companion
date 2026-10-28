@@ -23,6 +23,7 @@
 // A touch screen: swipe the bet, tap, hold to leave. The cable: KEY PRESS, KEY RIGHT / LEFT, KEY A|B|C, KEY BACK.
 #include <WiFi.h>
 #include <mbedtls/base64.h>
+#include "motion.h"
 #include "app.h"
 #include "casino.h"
 #include "leds.h"
@@ -698,6 +699,7 @@ String runSlots() {
     readCable(); readDeck();
     // the input, as this board has it
     int ev = cableEvent; cableEvent = 0;
+    if (!ev && motionTakeShake()) ev = 1;                 // C-201: the Ultra shaken pulls the lever
     if (ev == 1) stopOrPull(-1); else if (ev == 2) betBy(1); else if (ev == 3) betBy(-1); else if (ev == -1) leave = true;
     else if (ev >= 10) { int k = ev - 10; if (phase == ROLLING) stopOrPull(k); else if (k == 0) betBy(-1); else if (k == 1) pull(); else betBy(1); }
     if (board.threeKeys()) {                    // A B C: the bet, the lever, the bet -- and while turning, each its reel

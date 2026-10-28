@@ -16,6 +16,7 @@ export type TalkAsk = {
   day?: { day: string; theme?: string; cue?: string } | null;
   goal?: { goal: string; step: string } | null;
   speak: boolean;
+  guide?: (heard: string) => string;                      // C-209: asked of the GUIDE -- who answers, from the pages nearest what was heard
 };
 export type TalkAnswer = { answer: string; heard: string | null; audio: Uint8Array | null; provider: string; firstMs: number | null };
 
@@ -39,7 +40,8 @@ export function checkModules(list: unknown): ModuleAt[] | string {
 
 // A daemon's turn, for a model with a short window: who it is, the day, and a sentence or two (DRAFT: the companion's
 // own words to the model, never shown)
-export function persona(a: TalkAsk): string {
+export function persona(a: TalkAsk, heard = ""): string {
+  if (a.guide) return a.guide(heard);                     // C-209: the GUIDE answers, not the daemon
   const d = a.daemon;
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon"]
     .filter(Boolean).join(", ");
@@ -104,7 +106,7 @@ export class House {
         text = heard;
         if (!text) return { answer: "", heard: "", audio: null, provider: `module:${m.name}`, firstMs: null };
       }
-      const messages = [{ role: "system", content: persona(a) },
+      const messages = [{ role: "system", content: persona(a, text) },
         ...a.history.slice(-4).flatMap((x) => [{ role: "user", content: x.said }, { role: "assistant", content: x.answer }]),
         { role: "user", content: text.slice(0, 500) }];
       const r = await chat(m.url, h.llm!, messages, { maxTokens: 60, ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}) });

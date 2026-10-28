@@ -71,6 +71,8 @@ import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
+import { guidePassages, guidePersona } from "./guideask.js";   // C-209
+import { readGuide } from "./save/guide.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
@@ -911,15 +913,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                     : { nickname: "your daemon" },
           day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
           goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
+          ...(typeof b.guide === "function" ? { guide: b.guide as (heard: string) => string, history: [] } : {}),   // C-209: the GUIDE answers, afresh each time
         };
+      };
+      // C-209: a question asked of the GUIDE -- its persona from the pages nearest the question, or why not (not found yet)
+      // (heard first where it was spoken: the module hears, then asks with the pages nearest what it heard)
+      const asGuide = (b: Record<string, any>): boolean => {
+        const save = hostOf(ecfg).save.read(), g = save ? readGuide(save) : { held: false };
+        if (!g.held) return false;
+        b.guide = (heard: string) => guidePersona(guidePassages(g, heard || String(b.text ?? "")));
+        return true;
       };
       // C-180: a talk on the module, answered in n8n's shape; LATE (none free, no first words in time) or a module that
       // fails goes to n8n, and when n8n cannot be reached either (no internet) the module is waited on after all
       const talkOn = async (p: ReturnType<typeof talkPayload>): Promise<Record<string, unknown>> => {
+        const asked = (p as { guide?: unknown }).guide;           // C-209: the GUIDE is answered on the hub's module only (n8n knows the daemon)
+        if (asked && (p.provider !== "module" || !house.any)) return { error: "Asking the GUIDE needs the hub." };   // DRAFT
         if (p.provider !== "module" || !house.any) return n8n(ecfg, "daemon/talk", p.provider === "module" ? { ...p, provider: "auto" } : p);
         const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
-          daemon: p.daemon, day: p.day, goal: p.goal, speak: p.speak };
+          daemon: p.daemon, day: p.day, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide };
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
         try { return shaped(await house.talk(ask)); }
@@ -978,15 +991,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return answer(PRIORITY.inHand, async () => {
           if (typeof b.audioBase64 === "string" && b.audioBase64)
             Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
-          return remember(b, await talkOn(talkPayload(b)));
+          if (b.guide === true && !asGuide(b)) return { error: "Find the GUIDE first." };            // C-209, DRAFT
+          return b.guide ? await talkOn(talkPayload(b)) : remember(b, await talkOn(talkPayload(b)));
         });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
         const audio = await rawBody(req);
         if (!audio || audio.length < 44) return send(res, 400, { error: "talk takes a recording (up to 2 MB)" });
         const mime = String(req.headers["content-type"] ?? "audio/wav");
-        return answer(PRIORITY.inHand, async () =>
-          forDevice(remember({}, await talkOn(talkPayload(await heardAs(audio, mime))))));
+        const guide = url.searchParams.get("guide") === "1";            // C-209: ASK THE GUIDE, from the watch
+        return answer(PRIORITY.inHand, async () => {
+          const b: Record<string, any> = await heardAs(audio, mime);
+          if (!guide) return forDevice(remember({}, await talkOn(talkPayload(b))));
+          if (!asGuide(b)) return { error: "Find the GUIDE first." };                                 // DRAFT
+          return forDevice({ ...await talkOn(talkPayload(b)), heard: b.text });
+        });
       }
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does

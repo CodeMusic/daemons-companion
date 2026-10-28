@@ -18,12 +18,15 @@ static JsonDocument chap;                                 // the chapter open: {
 static String pageText;
 static String bWhy;                                       // why there is nothing to show
 
+// C-209: ASK THE GUIDE heads the shelf once the GUIDE is held -- a question by voice, answered from its pages
+static bool guideHeld() { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == "guide") return true; return false; }
+static int asks() { return guideHeld() && talkCan() ? 1 : 0; }
 static int listN() {
-  if (bMode == B_BOOKS) return shelf["books"].size();
+  if (bMode == B_BOOKS) return asks() + shelf["books"].size();
   return shelf["books"][bBook]["chapters"].size();
 }
 static String listName(int i) {
-  if (bMode == B_BOOKS) return String((const char *)(shelf["books"][i]["title"] | ""));
+  if (bMode == B_BOOKS) return i < asks() ? String("ASK THE GUIDE") : String((const char *)(shelf["books"][i - asks()]["title"] | ""));   // DRAFT
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
 }
 static int pageLines() { return (H - 50 - 40) / 18; }
@@ -44,6 +47,11 @@ static String drawBooks(uint16_t day, uint16_t ink) {
     return " ";
   }
   canvas.drawString(bMode == B_BOOKS ? "BOOKS" : String((const char *)(shelf["books"][bBook]["title"] | "")), 10, 30);   // DRAFT
+  if (bMode == B_BOOKS && asks() && bAt == 0) {           // what ASK THE GUIDE does, under the list
+    canvas.setTextFont(1); canvas.setTextColor(QUIET);
+    canvas.drawString("tap, then ask your question", 10, H - 50);                                                         // DRAFT
+    canvas.setTextFont(2);
+  }
   int n = listN(), fit = listRowsFit();
   if (bAt < bTop) bTop = bAt; if (bAt >= bTop + fit) bTop = bAt - fit + 1;
   for (int i = bTop; i < n && i < bTop + fit; i++) listRow(i - bTop, bAt - bTop, listName(i), day, ink, W - 12);
@@ -96,7 +104,7 @@ String runBooks() {
     if (giveUp()) ev = -1;
     if (ev == -1) {
       if (bWhy.length() || bMode == B_BOOKS) break;
-      if (bMode == B_PAGE) { bMode = B_CHAPTERS; bAt = bChapter; } else { bMode = B_BOOKS; bAt = bBook; }
+      if (bMode == B_PAGE) { bMode = B_CHAPTERS; bAt = bChapter; } else { bMode = B_BOOKS; bAt = bBook + asks(); }
       bTop = 0; progress(""); continue;
     }
     if (bWhy.length()) { delay(10); continue; }
@@ -107,7 +115,12 @@ String runBooks() {
       int n = listN();
       if (step && n) { bAt = (bAt + n + step) % n; progress(""); }
       if (ev == 1 && n) {
-        if (bMode == B_BOOKS) { bBook = bAt; bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
+        if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the GUIDE's answer
+          talkToGuide = true; talkHold(6000); talkToGuide = false;
+          while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || giveUp()) break; delay(10); }   // read it, then on
+          screen = RUN;
+        }
+        else if (bMode == B_BOOKS) { bBook = bAt - asks(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
         else { bChapter = bAt; if (fetchChapter()) bMode = B_PAGE; else say("Not found"); }          // DRAFT
         progress("");
       }

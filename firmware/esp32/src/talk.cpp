@@ -293,8 +293,10 @@ static void offline(uint8_t *rec, size_t n) {
   lastInput = millis();
 }
 
+bool talkToGuide = false;                                 // C-209: the next talk is asked of the GUIDE (books.cpp)
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
+  if (talkToGuide && !atHome()) { say("ASK THE GUIDE AT HOME"); return; }   // DRAFT -- the hub's module answers it
   // C-82: talk sends a recording and streams a voice back, which the relay (JSON only) does not carry: home, or a bridge
   if (!atHome() && !usbLive() && !linkPhoneHere() && !brainConfigured()) { say(online() ? "TALK NEEDS HOME OR PHONE" : "TALK NEEDS WI-FI"); return; }   // DRAFT
   // C-75: eight seconds where there is PSRAM; on the M5GO as much as the heap will give, down to two
@@ -342,7 +344,7 @@ void talkHold(uint32_t forMs) {
   if (!atHome()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
   HTTPClient h;
   h.setTimeout(65535);           // a local model's first turn loads it. HTTPClient's timeout is 16 bits: 120000 was 54 s
-  h.begin(serverUrl + "/api/device/talk");
+  h.begin(serverUrl + (talkToGuide ? "/api/device/talk?guide=1" : "/api/device/talk"));   // C-209
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "audio/wav");
   int code = h.POST(rec, 44 + n * 2);

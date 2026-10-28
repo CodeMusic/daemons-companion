@@ -126,6 +126,14 @@ int talkEarLevel() {
   return n >= 32 ? (int)sqrt((double)sq / n) : -1;
 }
 void talkEarClose() { i2s_driver_uninstall(MIC); soundResume(); }
+// C-212: the microphone's samples as they come (the ear open), up to `most`, waiting at most `waitMs`; how many
+size_t talkMicRead(int16_t *buf, size_t most, uint32_t waitMs) {
+  size_t got = 0;
+  if (i2s_read(MIC, buf, most * 2, &got, pdMS_TO_TICKS(waitMs)) != ESP_OK) return 0;
+  return got / 2;
+}
+static void wavHeader(uint8_t *h, uint32_t samples);
+void talkWavHeader(uint8_t *h, uint32_t samples) { wavHeader(h, samples); }
 
 static void wavHeader(uint8_t *h, uint32_t samples) {
   uint32_t bytes = samples * 2;

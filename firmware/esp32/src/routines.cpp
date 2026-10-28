@@ -23,6 +23,7 @@ String runSongbook(); String runPlayFreely();   // T-426: MUSIC, play.cpp
 String runSeeTheHeat(); String runWarmestThing(); String runSomeonesHere(); String runHowWarm();   // C-148: GLOW, glow.cpp
 #include "casino.h"                       // C-149: CASINO, casino.cpp
 String runWakeMe(); String runStopwatch(); String runCountdown();   // C-205: HOURS, clock.cpp
+String runMeeting(); String runLastMeeting(); String runSendKept();  // C-212: meeting.cpp
 String runBooks();                        // C-208: BOOKS, books.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
@@ -43,7 +44,9 @@ static const Routine MUSIC_ROUTINES[]      = { { "SONGBOOK", runSongbook }, { "P
 static const Routine CHORUS_ROUTINES[]     = { { "TO EVERY DAEMON", runToEveryone }, { "WHAT CAME", runWhatCame } };   // C-134, DRAFT
 static const Routine GLOW_ROUTINES[]      = { { "SEE THE HEAT", runSeeTheHeat }, { "WARMEST THING", runWarmestThing },
                                                { "SOMEONE'S HERE", runSomeonesHere }, { "HOW WARM IS THAT", runHowWarm } };   // C-148: the user's names, DRAFT
-static const Routine HOURS_ROUTINES[]      = { { "WAKE ME", runWakeMe }, { "STOPWATCH", runStopwatch }, { "COUNTDOWN", runCountdown } };   // C-205, DRAFT
+static const Routine HOURS_ROUTINES[]      = { { "WAKE ME", runWakeMe }, { "STOPWATCH", runStopwatch }, { "COUNTDOWN", runCountdown },
+                                               { "RECORD A MEETING", runMeeting }, { "LAST MEETING", runLastMeeting },
+                                               { "SEND KEPT MEETINGS", runSendKept } };   // C-205; C-212, DRAFT
 static const Routine BOOKS_ROUTINES[]      = { { "READ", runBooks } };   // C-208, DRAFT
 static const Routine CASINO_ROUTINES[]     = { { "SLOTS", runSlots } };   // C-149, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
@@ -60,7 +63,7 @@ void routinesBegin() {
                                                          : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   if (isWatch()) types[typeCount++] = { "BOOKS", "the books the save holds", BOOKS_ROUTINES, 1 };   // C-208, DRAFT
-  if (isWatch()) types[typeCount++] = { "HOURS", "the daemon keeps time", HOURS_ROUTINES, 3 };   // C-205, DRAFT
+  if (isWatch()) types[typeCount++] = { "HOURS", "the daemon keeps time", HOURS_ROUTINES, 6 };   // C-205, DRAFT
   if (board.keyboard || isWatch()) types[typeCount++] = { "MUSIC", "the game's instrument", MUSIC_ROUTINES, 2 };   // T-426: the boards with number keys; the watches' strings and holes, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
   if (board.nfc)    types[typeCount++] = { "TOUCHSTONE", "NFC",       TOUCHSTONE_ROUTINES, 2 };

@@ -40,6 +40,6 @@ export function weatherLoop(store: Store): () => void {
   const tick = () => { refreshWeather(store).catch(() => {}); };
   tick();
   const t = setInterval(tick, 15 * 60000);
-  t.unref?.();                                                 // never what keeps the process running
+  (t as { unref?: () => void }).unref?.();                     // never what keeps the process running (a number on the phone)
   return () => clearInterval(t);
 }

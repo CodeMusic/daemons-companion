@@ -12,7 +12,7 @@ import { useApi } from "../useApi";
 type Brief = { player: string; personality: number; species: number; nickname: string; level: number; edition: string } | null;
 type Offer = { id: string; at: string; kind: "full" | "loan"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean };
 type Mine = { personality: number; species: number; name: string; nickname: string; level: number; busy: boolean };
-type View = { hub: string; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
+type View = { hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
               board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string }[] } | null; pending: number; waiting: number };
 
 const who = (b: Brief) => (b ? `${b.nickname} · LV ${b.level}${b.edition ? ` · ${b.edition}` : ""}` : "");
@@ -39,13 +39,14 @@ export function TradeScreen({ ink }: { ink?: string }) {
   const hubCard = (
     <Card gap={6}>
       <Eyebrow>THE HUB</Eyebrow>
-      <Small>{v.hub ? `Trading through ${v.hub}.` : "This companion is the hub: other players trade here."}</Small>
+      <Small>{v.needsHub ? "Trading goes through a hub. Name its address here, then join." : v.hub ? `Trading through ${v.hub}.` : "This companion is the hub: other players trade here."}</Small>
       <XStack gap={8} flexWrap="wrap" alignItems="center">
         <Entry value={hub} onChange={setHub} onSubmit={() => {}} placeholder="http://coremp135:4730 (empty: this one)" limit={80} />
         <Action label="SET" ink={ink} onPress={() => act("/api/trade/hub", { url: hub }, hub ? `Trading through ${hub}. Join there.` : "This companion is the hub again.")} />
       </XStack>
     </Card>
   );
+  if (v.needsHub) return <YStack gap={14}>{hubCard}{said ? <Small>{said}</Small> : null}<Small color="$color8">DRAFT</Small></YStack>;
   if (!v.me) return (
     <YStack gap={14}>
       <Card gap={6}>

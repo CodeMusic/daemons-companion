@@ -65,7 +65,7 @@ import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
-import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
+import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind } from "./lines.js";
@@ -176,6 +176,7 @@ export const KEYS: X.Keys = {
   },
   code: () => Array.from({ length: 8 }, () => INVITE_LETTERS[randomInt(INVITE_LETTERS.length)]).join(""),
 };
+const JOIN_TRIES = new Map<string, number[]>(), JOIN_MOST = 8, JOIN_WINDOW_MS = 10 * 60 * 1000;   // C-218
 // C-219: this companion's way to the exchange -- the hub's address in SETTINGS (`trade.hub`), or none: it is the hub
 export const tradeLink = (store: Store): Link => {
   const hub = store.getSetting("trade.hub");
@@ -657,7 +658,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return send(res, 200, X.invite(store, KEYS));
         }
         if (req.method === "POST" && name === "join") {
+          // C-218: a few wrong codes or passwords from one address, then a pause -- an invite code or a short password
+          // is not guessed through the tailnet (in memory: a restart forgets, which only ever lets a player back in)
+          const who = req.socket.remoteAddress ?? "", now = Date.now();
+          const tries = (JOIN_TRIES.get(who) ?? []).filter((t) => now - t < JOIN_WINDOW_MS);
+          if (tries.length >= JOIN_MOST) return send(res, 429, { error: "too many tries -- wait ten minutes, or ask for a new invite code" });   // DRAFT
           const r = X.join(store, KEYS, b);
+          if (X.failed(r)) JOIN_TRIES.set(who, [...tries, now]); else JOIN_TRIES.delete(who);
           return send(res, X.failed(r) ? 400 : 200, r);
         }
         if (req.method === "GET" && name === "players" && (phone || isLoopback(req.socket.remoteAddress))) return send(res, 200, { players: X.players(store) });
@@ -747,10 +754,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-219: TRADE -- this companion's player on the exchange (tradelink.ts), and the hub's address
       if (req.method === "POST" && path === "/api/trade/hub") {
-        const b = await body(req), url = typeof b.url === "string" ? b.url.trim() : "";
-        if (url && !/^https?:\/\/[^\s/]+(:\d+)?\/?$/.test(url)) return send(res, 400, { error: "the hub's address, as http://coremp135:4730" });
-        if (url !== (store.getSetting("trade.hub") ?? "")) { store.setSetting("trade.hub", url || null); store.setSetting("trade.token", null); }
-        return send(res, 200, { hub: url });
+        const r = setHub(store, (await body(req)).url);
+        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, r);
       }
       if (TRADE_PATHS.includes(path)) {
         const h = hostOf(ecfg);

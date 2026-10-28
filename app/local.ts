@@ -18,6 +18,7 @@ import { kindOf, validDeviceId } from "../server/src/deviceid";
 import { repaint, streakColours } from "../server/src/paint";
 import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../server/src/expressions";
 import { readSave } from "../server/src/save/reader";
+import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../server/src/tradelink";   // C-219
 import { SPECIES_ART } from "./speciesArt";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -134,9 +135,19 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
   const method = body === undefined ? "GET" : "POST";
   const deviceId = query.get("device") ?? "";
   const s = store(), h = host();
+  // C-219: TRADE through the hub named in THE HUB -- the phone is a player like any companion, its exchange the hub's
+  const hub = s.getSetting("trade.hub"), link = hub ? remoteLink(s, hub) : null;
+  if (method === "POST" && path === "/api/trade/hub") { const r = setHub(s, body?.url); return typeof r === "string" ? no(400, r) : ok(r); }
+  if (TRADE_PATHS.includes(path)) return tradeRoute(link, s, phoneSave.read(), h.edition, method, path, body ?? {});
   if (method === "POST" && path === "/api/sync") {          // C-189: the game paused, its save handed over, around SYNC
     await GATE.hold();
-    try { return route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) }); } finally { GATE.release(); }
+    try {
+      const traded = s.getSetting("trade.token") ? link : null;   // C-219: what the hub sent, fetched first; told after
+      await beforeSync(traded, s, phoneSave.read());
+      const r = route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) });
+      await afterSync(traded, s);
+      return r;
+    } finally { GATE.release(); }
   }
   if (handles(method, path)) return route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) });
   if (method === "GET") {

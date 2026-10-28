@@ -60,8 +60,8 @@ which relates to the profile feature". Decided the same day by multiple choice; 
    synthetic saves. Still needed:
    - **The game's half (DAEMONS T-467)**: the lock while a daemon is offered, a received daemon finished on load (the
      INDEX, "FIRST MET: A TRADE"), and trade evolutions, with none for a loan.
-   - **The phone hosting alone** (`app/local.ts`): it does not answer `/api/trade` yet.
-   - **Rate limits** on the exchange's join.
+   - ~~The phone hosting alone~~ (built: `app/local.ts` trades through the hub named in THE HUB).
+   - ~~Rate limits on join~~ (built: eight wrong tries from one address in ten minutes, then a pause).
 2. **Pair trade evolutions** (DAEMONS T-468): two species that each evolve only when traded for the other. Design
    first, in the game's bible.
 3. **Later**, each with its own ticket:

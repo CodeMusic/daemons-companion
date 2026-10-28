@@ -141,7 +141,10 @@ const no = (status: number, error: string): Reply => ({ status, body: { error } 
 const answer = (r: any): Reply => (r?.error ? no(400, r.error) : ok(r));
 
 export async function tradeRoute(link: Link | null, store: Store, save: Uint8Array | null, edition: string, method: string, path: string, b: any): Promise<Reply> {
-  if (!link) return no(404, "trading needs the hub -- set its address in SETTINGS");      // DRAFT
+  // no exchange in reach (a phone hosting alone with no hub named): TRADE asks for the hub's address and nothing else
+  if (!link) return method === "GET" && path === "/api/trade"
+    ? ok({ hub: null, needsHub: true, me: null, game: save ? gameOf(save).name : null, edition, away: [], board: null, pending: 0, waiting: 0 })
+    : no(400, "set the hub's address first -- trading goes through the hub");          // DRAFT
   if (method === "GET" && path === "/api/trade") {
     const me = await link.me();
     const board = me ? await link.call("board") : null;
@@ -168,5 +171,12 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
                                          : await link.call("accept", { ...sent, id: b.offer }));
   }
   return no(404, "not found");
+}
+// The hub's address as TRADE's THE HUB sets it: http(s)://name[:port], or "" for none. A new hub forgets the old token.
+export function setHub(store: Store, raw: unknown): { hub: string } | string {
+  const url = typeof raw === "string" ? raw.trim().replace(/\/+$/, "") : "";
+  if (url && !/^https?:\/\/[^\s/]+(:\d+)?$/.test(url)) return "the hub's address, as http://coremp135:4730";   // DRAFT
+  if (url !== (store.getSetting("trade.hub") ?? "")) { store.setSetting("trade.hub", url || null); store.setSetting("trade.token", null); }
+  return { hub: url };
 }
 export const TRADE_PATHS = ["/api/trade", "/api/trade/join", "/api/trade/offer", "/api/trade/accept", "/api/trade/withdraw", "/api/trade/recall", "/api/trade/password"];

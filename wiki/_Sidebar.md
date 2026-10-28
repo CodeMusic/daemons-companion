@@ -20,6 +20,7 @@
 - [Away from home](Away-from-home)
 - [Talk to your daemon](Talk-to-your-daemon)
 - [Meeting others nearby](Meeting-others-nearby)
+- [Trading](Trading)
 - [Settings](Settings)
 - [Server API](Server-API)
 - [Troubleshooting](Troubleshooting)

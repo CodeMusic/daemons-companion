@@ -126,7 +126,7 @@ static void showWriteUp(int id) {
     String state = shown["state"] | "";
     if (state != "done" && state != "failed" && millis() - askedAt > 5000) { askedAt = millis(); fetchWriteUp(id ? id : (int)(shown["id"] | 0)); progress(""); }
     int step, ev; routineInput(step, ev);
-    if (ev == -1 || giveUp()) break;
+    if (ev == -1 || routineQuit()) break;
     if (state == "done" && step) {
       int fit = (H - 50 - 44) / 18;
       if (step > 0 && wSkip + fit >= wLines && wPage == 0) { wPage = 1; wSkip = 0; }
@@ -159,7 +159,7 @@ String runMeeting() {
     if (ready >= 0) { int b = ready; partDone(b, PART_N); ready = -1; }
     meetLine = String(sent) + " sent" + (kept ? ", " + String(kept) + " on the card" : String(""));          // DRAFT
     int step, ev; routineInput(step, ev);
-    if (ev == 1 || ev == -1 || giveUp()) break;
+    if (ev == 1 || ev == -1 || routineQuit()) break;
     if (millis() - drawnAt > 500) { drawnAt = millis(); progress(""); }
     delay(10);
   }
@@ -218,7 +218,7 @@ String runVoiceNote() {
   while (noteGot < (size_t)NOTE_N) {
     noteGot += talkMicRead(pcm + noteGot, min((size_t)1024, (size_t)(NOTE_N - noteGot)), 20);
     int step, ev; routineInput(step, ev);
-    if (ev || giveUp()) break;
+    if (ev || routineQuit()) break;
     if (millis() - drawnAt > 1000) { drawnAt = millis(); progress(""); }
   }
   talkEarClose(); haptic(16);

@@ -28,7 +28,7 @@ function agreed(): string { try { const f = agreedFile(); return f.exists ? Stri
 function agree(s: string) { try { const f = agreedFile(); if (!f.exists) f.create(); f.write(JSON.stringify({ sha1: s })); } catch { /* asked again next time */ } }
 async function mirrorOut(b64: string) {
   if (!paired()) return;
-  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64 })).sha1); } catch { /* the companion away: the next save goes */ }
+  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64, base: agreed() || undefined })).sha1); } catch { /* the companion away, or its copy moved on (base: never undo a SYNC's writes): the next look settles it */ }
 }
 async function mirrorIn() {
   if (!paired()) return;

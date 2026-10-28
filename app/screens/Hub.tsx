@@ -18,15 +18,16 @@ type Hub = { hub: false } | {
 // C-211 (the user, 2026-10-28: "configure the primary source (module or n8n ... green/red health indicator dots"): who
 // answers a talk first -- the hub's module or n8n, the other after it -- with a dot for whether each can now (checked by
 // the companion every minute). One choice for the whole companion: set here, on a watch's own settings, or on the watch.
-type TalkSettings = { first: "module" | "n8n"; health: { n8n: { ok: boolean } | null; modules: { name: string; ok: boolean }[] } };
+type TalkSettings = { first: "module" | "n8n"; health?: { n8n: { ok: boolean } | null; modules: { name: string; ok: boolean }[] } };
 const Dot = ({ ok }: { ok: boolean | null }) =>
   <YStack width={10} height={10} borderRadius={5} backgroundColor={ok === null ? "$color6" : ok ? "#3fb950" : "#e5534b"} />;
 export function TalkFirstRow({ ink }: { ink?: string }) {
   const [t, setT] = useApi<TalkSettings>("/api/talk/settings");
   const [said, setSaid] = useState("");
   if (!t) return null;
-  const moduleOk = t.health.modules.length ? t.health.modules.some((m) => m.ok) : null;
-  const n8nOk = t.health.n8n ? t.health.n8n.ok : null;
+  // an older companion (or a kept answer) has no health: grey dots, never a crash (the review)
+  const mods = t.health?.modules ?? [], moduleOk = mods.length ? mods.some((m) => m.ok) : null;
+  const n8nOk = t.health?.n8n ? t.health.n8n.ok : null;
   const pick = async (first: "module" | "n8n") => {
     try { setT(await api<TalkSettings>("/api/talk/settings", { first })); setSaid(""); } catch (e) { setSaid((e as Error).message); }
   };

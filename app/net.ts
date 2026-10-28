@@ -111,7 +111,7 @@ export class Unreachable extends Error { name = "Unreachable"; }
 // the companion cannot be reached, and sent in order when it answers. Only what needs an answer NOW is not kept --
 // talking, a voice, a SYNC of the save, the Mac's own dialogs, pairing, and the handheld told to do something this
 // moment (run a routine, send a remote, join a network). A setting is kept once: only the latest of each is sent.
-export const NOT_KEPT = /^\/api\/(ai\/|sync|save\/|game\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
+export const NOT_KEPT = /^\/api\/(ai\/|sync|save\/|game\/|where\/find|device\/talk\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
 
 export const LATEST_ONLY = /^\/api\/(settings|talk\/settings|device\/settings|profile)$/;
 
@@ -199,16 +199,23 @@ export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
   // Never cut short and tried again by the relay either: that would ask the same talk twice.
   const slow = /^\/api\/ai\//.test(path) ? 45000 : 0;
   const homeWithin = (ms: number) => async () => {
-    const stop = new AbortController(), t = setTimeout(() => stop.abort(), Math.max(ms, slow));
+    const stop = new AbortController(), t = setTimeout(() => stop.abort(), ms);
     try { return await fetch(SERVER + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
+  };
+  // away with the relay set, home is first asked a quick question: only a home that answers it is given the long wait
+  // (the review: every talk away waited 45 s on an unreachable home before the relay)
+  const longHome = async () => {
+    const stop = new AbortController(), t = setTimeout(() => stop.abort(), 2500);
+    try { await fetch(`${SERVER}/api/version`, { headers: auth, signal: stop.signal }); } finally { clearTimeout(t); }
+    return homeWithin(slow)();
   };
   if (!ON_PHONE) r = await fetch(SERVER + path, init);
   else if (!AWAY) {
-    try { r = await homeWithin(8000)(); }
+    try { r = await homeWithin(slow || 8000)(); }
     catch { throw new Unreachable(`The companion at ${SERVER} did not answer. Is this phone on the home Wi-Fi, and the companion running?`); }
   }
   else {
-    const home = homeWithin(2500);
+    const home = slow ? longHome : homeWithin(2500);
     const resting = () => new Unreachable("the companion did not answer the relay a moment ago");
     const away = async () => {
       if (Date.now() < relayDownUntil) throw resting();
@@ -231,7 +238,7 @@ export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
     // first so a phone away does not wait on it -- but at home a slow answer (a .local name looked up) lost that race
     // and the relay could not reach the companion either. When the relay fails, home is asked once more, in full.
     if (!r || (viaAway && [502, 503, 504].includes(r.status))) {
-      try { r = await homeWithin(8000)(); viaAway = false; route = { away: false, until: Date.now() + 60000 }; } catch {}
+      try { r = await (slow ? longHome : homeWithin(8000))(); viaAway = false; route = { away: false, until: Date.now() + 60000 }; } catch {}
     }
     if (!r) throw new Unreachable(`Neither the companion at ${SERVER} nor the way from away answered.`);
     // C-86: the relay answered, but for the companion -- "not answering", a gateway timeout -- so the companion is
@@ -264,7 +271,7 @@ export const POLLED = /^\/api\/(device\/(link|state|commands)|broadcasts)/;
    // the review, 2026-10-18: news and the handheld's polls too
 // An answer the companion gives once and then forgets -- the board's waiting commands (taken as they are answered): never
 // kept, never served from what was kept, or an old command reaches the board again (the review, 2026-10-18)
-export const ONE_SHOT = /^\/api\/(device\/commands|save\/|game\/)/;   // C-188: a save is never kept; C-216: nor a testing build
+export const ONE_SHOT = /^\/api\/(device\/commands|device\/talk\/|save\/|game\/)/;   // C-188: a save is never kept; C-216: nor a testing build; a talk's answer (the review: kept, then served first, mid-talk)
 
 export async function liveAndKeep<T>(path: string, servedKept: () => boolean): Promise<T> {
   const j = await apiLive<T>(path);
@@ -319,7 +326,13 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
     if (!ON_PHONE || !(e instanceof Unreachable)) throw e;           // the companion answered "no": that is not offline
     if (body === undefined && !ONE_SHOT.test(path) && path in KEPT.paths) { setOffline(KEPT.at); return KEPT.paths[path] as T; }
     if (body !== undefined && keepable(path)) {
-      if (LATEST_ONLY.test(path)) KEPT.queue = KEPT.queue.filter((q) => q.path !== path);
+      // the same settings changed twice while away: one change carrying both (the review: {provider} then {first} kept
+      // only {first}), the later word for any field changed both times
+      if (LATEST_ONLY.test(path)) {
+        const was = KEPT.queue.filter((q) => q.path === path).reduce((m, q) => ({ ...m, ...(q.body as object) }), {});
+        KEPT.queue = KEPT.queue.filter((q) => q.path !== path);
+        body = { ...was, ...(body as object) };
+      }
       KEPT.queue.push({ path, body }); saveKept(); setOffline(KEPT.at);
       throw new Error("Kept on this phone. It goes to the companion the next time it answers.");
     }
@@ -407,7 +420,7 @@ export async function artByJson(path: string): Promise<string> {
     keepArt(path, `data:image/png;base64,${png}`);
     return ART.get(path)!;
   }
-  const m = /^\/art\/(party|species)\/(\d+)\.png(?:\?expression=(\w+))?$/.exec(path);   // C-119: in an expression's shade
+  const m = /^\/art\/(party|species)\/(\d+)\.png(?:\?(expression|mouth)=(\w+))?$/.exec(path);   // C-119: in an expression's shade; C-213: the open mouth
   if (!m) throw new Error("no such picture");
   if (m[1] === "species" && ALONE) {                   // C-111: painted on the phone, one at a time as the INDEX asks
     const { png } = await api<{ png: string }>(`/api/art?species=${m[2]}`);
@@ -418,7 +431,7 @@ export async function artByJson(path: string): Promise<string> {
     }).catch((e) => { everySpecies = null; throw e; });
     await everySpecies;
   } else {
-    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}${m[3] ? `&expression=${m[3]}` : ""}`);
+    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}${m[3] ? `&${m[3]}=${m[4]}` : ""}`);
     keepArt(path, `data:image/png;base64,${png}`);
   }
   const uri = ART.get(path);

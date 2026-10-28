@@ -1419,7 +1419,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (q.has("party")) {
           // C-119: in an expression's shade -- the body's colours only, so it is the same daemon, feeling something
           const e = EXPRESSIONS[q.get("expression") ?? ""], raw = partyPng(ecfg, (p) => p.slot === Number(q.get("party")));
-          const png = b64(raw && e ? repaint(raw, (pal) => shadePalette(pal, e), SHADED.first) : raw);
+          const face = q.get("mouth") === "open" ? partyFace(ecfg, Number(q.get("party"))) : null;   // C-213: speaking, away too
+          const png = b64(raw && face ? mouthPng(raw, e ?? EXPRESSIONS.awake, face)
+                          : raw && e ? repaint(raw, (pal) => shadePalette(pal, e), SHADED.first) : raw);
           return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that slot" });
         }
         if (q.has("species")) {

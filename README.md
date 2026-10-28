@@ -34,6 +34,26 @@ ON ITS OWN) -- your save comes over from Delta through Files and goes back by th
 in the simulator; a whole round trip on a real phone, with a SEND, I have not yet seen. Until I have, the computer is
 the way I would start.*
 
+## Or: the game and the companion in one app
+
+The app has grown into **one app for everything** -- the game, the companion, the LIBRARY and the NOTEBOOK (C-186):
+
+- **On an iPhone or an iPad**, give it your own FireRed or LeafGreen once, from Files. It fetches our patch from the
+  DAEMONS release, makes the game on the device and checks it by SHA-1, and plays it in a GAME tab. When a newer
+  release is out, one tap remakes it and the game carries on from the same save.
+- **One save.** The game's save *is* the companion's: showing the companion pauses the game, SYNC and SEND write the
+  save, and the game starts again from it. Paired with a companion at home, the device keeps the real save and the
+  companion a mirror (C-188).
+- **The iPad on its side** is one screen: the game on the left, always playing, and the companion beside it -- with a
+  NOTEBOOK page just filed, or the INDEX card of a daemon just met, opening next to the game (C-189).
+- **In a browser**, the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) plays the game with this
+  companion's site in a tab beside it.
+- **On a Mac: coming** (C-210) -- first the iPad app on Apple Silicon Macs, then a Mac window of its own.
+
+It is internal and in testing: built for our own phones and iPads, not on the App Store or TestFlight yet. **The app
+holds nothing of Nintendo's**: you bring your own game, and the patch is applied on your device.
+**[The one app](https://github.com/CodeMusic/daemons-companion/wiki/The-one-app)**.
+
 ## Any device can host one
 
 The phone is enough. The rest are **companions** -- extra hosts, for the people who like to hold things. **Most LilyGO
@@ -45,6 +65,7 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | **LilyGO T-Embed** (CC1101, plain, SI4732) | answers a dial that hums in the day's key; on the SI4732 it tunes the radio and **learns the stations** it hears; the CC1101 reads cards |
 | **LilyGO T-Deck / T-Deck Plus** | can be typed to, and types back: a message sent over **LoRa** to every board a street away |
 | **LilyGO T-Watch S3** | stands on its face -- DAEMON, CLOCK or VIRTUE, chosen from the phone -- with the season's sky behind it and the weather in front; is tended with a double tap, and keeps your steps |
+| **LilyGO T-Watch Ultra** | **knows when you sleep, and dreams** -- and walks with you (steps, the distance, where it went), wakes you gently, reads you its books, holds a card to its NFC, and plays your game's HARP or FLUTE by touch ([The T-Watch Ultra](https://github.com/CodeMusic/daemons-companion/wiki/The-T-Watch-Ultra)) |
 | **LilyGO T-Display-S3 Pro**, **T-Display-S3 AMOLED** | spreads out across a wide screen |
 | **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads cards held to its face; the M5GO and Fire hear LoRa with a module |
 | **M5StickC-Plus** with its Thermal HAT | **sees heat**: GLOW, a routine type of its own -- the warmest thing in the room, and when someone is there |
@@ -90,6 +111,13 @@ board's controls, pages, quirks and which ones run today:
 - **It can reach your home, if you let it.** HOME, in PLACES, brings Home Assistant to the app, the site and the Tab5
   (built; it has yet to meet a real Home Assistant), and the BOX-3 wears the daemon's face
   ([Home Assistant and the BOX-3](https://github.com/CodeMusic/daemons-companion/wiki/Home-Assistant-and-the-BOX-3)).
+- **It sleeps, and dreams.** A watch keeps the night -- tucked in, or, on the T-Watch Ultra, just still -- and in the
+  morning your daemon has had a dream: deep, quiet or restless, told in a line, read aloud if you like, and kept in a
+  journal. At the next SYNC the last dream goes home with it, into your game. A good week shows on it, subtly: a glow, a
+  star for each goal, a moon after a deep night ([Nights and dreams](https://github.com/CodeMusic/daemons-companion/wiki/Nights-and-dreams)).
+- **It notices.** Once your game has given you THE SUBTLE LAYER, the daemon on a watch sometimes notices something
+  first, and the companion keeps an honest count of what it noticed
+  ([Your game on the companion](https://github.com/CodeMusic/daemons-companion/wiki/Your-game-on-the-companion)).
 - **It follows you out.** Away from home your phone reaches it through a relay of your own
   ([Away from home](https://github.com/CodeMusic/daemons-companion/wiki/Away-from-home)).
 
@@ -106,7 +134,13 @@ The companion reads your save, so it can show you what you have done in there --
   GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
   a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE
   to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened).
-- **The INDEX**, in DAEMON -- every entry, read aloud if you like, and where each daemon is NATIVE.
+- **The INDEX**, in DAEMON -- every entry, read aloud if you like, and where each daemon is NATIVE; in the app, the
+  whole card, taking its colour as your save comes to understand that kind of daemon.
+- **SOUNDINGS** and **DREAMS**, in DAEMON -- each daemon away, when it was last heard and how it was doing; and every
+  night it dreamt. Both are written into your save at SYNC, for the game to read.
+- **THE ROAD AHEAD**, in YOU -- the next step, the fights and the places open to you, and never anything past the
+  next step.
+- **READ ALOUD** on every chapter and NOTEBOOK page.
 
 LIGHT, DARK or AUTO on every screen. It never shows what your save has not reached yet
 ([Your game on the companion](https://github.com/CodeMusic/daemons-companion/wiki/Your-game-on-the-companion)).
@@ -124,7 +158,12 @@ On a Mac with Node 24:
 
 **Or on a hub that never sleeps** -- a small Linux board at home (an M5Stack CoreMP135 here) serving the companion
 while the computer sleeps: `hub/` sets it up, `./syncCompanion.sh` keeps the save in step, and
-[docs/HUB.md](docs/HUB.md) compares the two ways and has every step, the cut-over and the way back.
+[docs/HUB.md](docs/HUB.md) compares the two ways and has every step, the cut-over and the way back. The hub serves
+the site too, and pairs a phone from its own screen. **On it, an AX630 Module LLM is the daemons' AI in the house**:
+it hears (Whisper), thinks (qwen2.5-0.5B) and speaks (MeloTTS) for every board, tells your daemon's dreams in its own
+words and answers as THE GUIDE. No device waits on it -- a talk is answered at once and fetched when ready, a care
+needs no model, and when it is busy the talk goes to your n8n. The app chooses which answers first, with a green or red
+dot for each ([The hub and its AI](https://github.com/CodeMusic/daemons-companion/wiki/The-hub-and-its-AI)).
 
 **A second companion beside yours.** `COMPANION_CONFIG=/path/to/config.json` starts the server on another config file
 -- its own port, database and save -- and the site takes `?server=http://host:port` to use it, for that visit only.
@@ -140,6 +179,7 @@ When something does not answer: **[Troubleshooting](https://github.com/CodeMusic
 - [**docs/FIELD-GUIDE.md**](docs/FIELD-GUIDE.md) -- a walk through every feature, with what you should see.
 - [**CONTEXT.md**](CONTEXT.md) -- what this project is and who it is for.
 - [**docs/vision.md**](docs/vision.md) and [**docs/PLAN.md**](docs/PLAN.md) -- what it is for, and how each piece is built.
+- [**docs/ONEAPP.md**](docs/ONEAPP.md) and [**docs/HUB.md**](docs/HUB.md) -- the one app, and the hub with its AI.
 - [**docs/DEVICES.md**](docs/DEVICES.md), [**docs/HARDWARE.md**](docs/HARDWARE.md), [**docs/REMOTE.md**](docs/REMOTE.md),
   [**docs/LORA.md**](docs/LORA.md), [**docs/BROADCAST.md**](docs/BROADCAST.md), [**docs/TAB5.md**](docs/TAB5.md),
   [**firmware/box3/README.md**](firmware/box3/README.md), [**docs/LLM630.md**](docs/LLM630.md) -- the hosts, their parts,

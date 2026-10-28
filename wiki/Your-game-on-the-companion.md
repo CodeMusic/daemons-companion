@@ -12,9 +12,9 @@ the game's are.
 | tab | what of your game it holds |
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
-| **DAEMON** | the party as the game draws it, and the **INDEX** |
+| **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
 | **LIBRARY** | CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
-| **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES and GAME EVENTS |
+| **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS and **THE ROAD AHEAD** |
 
 ## YOU
 
@@ -105,6 +105,10 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
 - **STREAM** -- every lesson a MARK or a ROOT has opened, read as their pages read them: its first line leading and the
   rest as points, and where it was opened.
 
+**READ ALOUD** (C-208) is on every chapter of THE SUBTLE LAYER and THE GUIDE and every NOTEBOOK page with words: a
+paragraph at a time, in the INDEX voice, the next asked for while one plays. The voice needs the companion; a phone
+alone has none. A watch reads the same books from its BOOKS ([The T-Watch Ultra](The-T-Watch-Ultra)).
+
 On the Tab5 the LIBRARY holds the same books; THE GUIDE and THE SUBTLE LAYER open full screen, the SONGBOOK's LISTEN
 plays on its speaker, and **PLAY THE HARP** (or FLUTE) is there by touch -- the strings touched or drawn across, the holes
 held (the finger alone: its microphones are TALK's), each note on a speaker channel of its own so plucks ring together.
@@ -115,6 +119,29 @@ In DAEMON, **INDEX**: every entry your save has seen, in your edition's voice, w
 ([Talk to your daemon](Talk-to-your-daemon)), and OPUS's margin beside it where your save holds OPUS. Each entry also
 says what its daemon is **NATIVE** to, in the game's own words and order (C-143): a region or a grove's universe,
 CONTENT ONLY or CONTEXT ONLY, its hours, its seasons, NOT AT or NOT IN, or NOT IN THE WILD.
+
+**The cards in their colours** (C-186): in the app, an INDEX card is the whole card -- number, types and their
+colours, height and weight, both editions' entries, NATIVE, OPUS's margins -- and it takes its colour as your save comes
+to understand that kind of daemon. Until then it stays grey.
+
+## SOUNDINGS
+
+In DAEMON, **SOUNDINGS** (C-195; the game's T-457 and T-458): one quiet card for each daemon away, with when it was last
+heard and how it was doing then -- *No signal yet*, *Quiet today*, *Doing fine*, *Doing well* (DRAFT). Each SYNC writes
+it into your save, in the spare bits of that daemon's own record, for the game to read. Nothing to fix, no score and no
+streak: only what was heard.
+
+## DREAMS
+
+In DAEMON, **DREAMS**: the journal of every night a watch told the companion, and the dream your daemon had. At a SYNC
+the last one goes into your save for the game. All of it: [Nights and dreams](Nights-and-dreams).
+
+## THE ROAD AHEAD
+
+In YOU, **THE ROAD AHEAD** (C-191): from where your save is, the next step and where; the fights and trainers not yet
+met, by place; the levels so far; the places open to you, and each one's wild daemons in your edition. **Nothing past
+the next step** -- it counts the story's steps your save has done and shows only what is at or under that count, and
+holds no secret and no hidden book. Its words are DRAFT.
 
 ## The CASINO's coins
 

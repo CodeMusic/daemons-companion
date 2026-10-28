@@ -1,6 +1,7 @@
 **[DAEMONS companion](Home)**
 
 **Start here**
+- [The one app](The-one-app)
 - [Host on your phone](Host-on-your-phone)
 - [Running the companion](Running-the-companion)
 - [Your game on the companion](Your-game-on-the-companion)
@@ -8,11 +9,14 @@
 
 **More hosts**
 - [Boards](Boards)
+- [The T-Watch Ultra](The-T-Watch-Ultra)
+- [The hub and its AI](The-hub-and-its-AI)
 - [Flashing and linking](Flashing-and-linking)
 - [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)
 
 **Further**
 - [Feelings and expressions](Feelings-and-expressions)
+- [Nights and dreams](Nights-and-dreams)
 - [Away from home](Away-from-home)
 - [Talk to your daemon](Talk-to-your-daemon)
 - [Meeting others nearby](Meeting-others-nearby)

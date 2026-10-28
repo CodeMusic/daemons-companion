@@ -16,7 +16,7 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 | **LilyGO T-Embed** (plain) | 320x170 | dial and its press | yes (two mics) | ring of 7 | -- | voltage | `t-embed` | **runs** |
 | **LilyGO T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, moving with the radio | AM/FM: **CHANNEL**, a move it learns | voltage | `t-embed` | **runs** |
 | **LilyGO T-Watch S3** | 240x240 touch | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | **runs** |
-| **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH) | power chip | `t-watch-ultra` | **built**, not yet run on one: its GNSS, NFC, haptics, SD card and step counter come later (C-174 to C-176) |
+| **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press), lift, shake and double tap | yes (TALK on the face) | -- | LoRa (MESH), GNSS (walks), NFC (cards), haptics | power chip | `t-watch-ultra` | **runs**; its sleep, walks, cards and HOURS built and being tried on the wrist -- [The T-Watch Ultra](The-T-Watch-Ultra) |
 | **LilyGO T-Deck, T-Deck Plus** | 320x240 | keyboard and trackball -- it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus, not yet used | voltage | `t-deck` | **runs** |
 | **LilyGO T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- (no microphone) | -- | -- | charger (voltage) | `t-display-pro` | **runs** |
 | **LilyGO T-Display-S3 AMOLED 1.91** | 536x240, touch on the touch version | touch and BOOT, or two buttons | -- (no microphone) | -- | -- | voltage | `t-display-amoled` | **runs** |
@@ -33,7 +33,7 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 looks at what answers on its I2C bus and knows which board it is. The Cardputer and the Cardputer ADV share one too, and
 tell themselves apart the same way. The Cardputer ADV first ran on 2026-10-18 (C-136): it knew itself as the ADV, its
 chips answered, its LoRa cap listened at 868 MHz and it linked by its cable; its keys and speaker are not yet tried by
-hand. The T-Watch S3 ran the same day ([below](#the-t-watch-s3)). Every other board has a build of its own; the M5GO and
+hand. The T-Watch S3 ran the same day ([below](#the-t-watch-s3)). The T-Watch Ultra has a page of its own: [The T-Watch Ultra](The-T-Watch-Ultra). Every other board has a build of its own; the M5GO and
 the Fire share one. The M5GO, the Fire and the StickC-Plus are the original ESP32, the Tab5 an ESP32-P4, the BOX-3 and
 the rest ESP32-S3. Without the Fire's extra memory, the M5GO draws in 256 colours, and it has too little memory to reach
 the relay away from home over HTTPS. The StickC-Plus has no extra memory either: GLOW is written to fit beside the

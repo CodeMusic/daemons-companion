@@ -28,15 +28,27 @@ The phone can also host on its own, with no computer: the save comes over from D
 share sheet (C-111). That is built and has run in the iOS Simulator; a whole round trip on a real phone has not yet
 been seen, so the computer is the way to start ([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)).
 
+## Or: the one app
+
+**The game and the companion in one app** (C-186): on an iPhone or an iPad, bring your own FireRed or LeafGreen, and
+the app makes DAEMONS from it on the device, plays it, and shares its one save with the companion. On an iPad on its
+side, the game and the companion sit side by side. In a browser, the [DAEMONS
+playground](https://github.com/CodeMusic/daemons-playground) does the same, and a Mac app is coming. Internal and in
+testing for now -- [The one app](The-one-app).
+
 ## Every page
 
 | page | what it covers |
 |---|---|
+| [The one app](The-one-app) | the game, the companion and the books in one app: iPhone, iPad, the browser, and the Mac to come; your own ROM patched on the device, one save, the iPad side by side, THE ROAD AHEAD |
 | [Host on your phone](Host-on-your-phone) | the happy path, step by step: the save, SEND and SYNC, the iPhone app, pairing, the widget -- and the phone on its own |
 | [Running the companion](Running-the-companion) | `bindCompanion.sh`, the site and its six tabs, the server, its logs, keeping it running, Node 24 |
-| [Your game on the companion](Your-game-on-the-companion) | TODAY's game, YOU (MARKS and ROOTS, the region maps, GROVES, GAME EVENTS), the LIBRARY (CALLOW SCHOOL, THE GUIDE, the NOTEBOOK, the SONGBOOK, STREAM), the INDEX and NATIVE, the CASINO's coins |
+| [Your game on the companion](Your-game-on-the-companion) | TODAY's game, YOU (MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, THE ROAD AHEAD), the LIBRARY (CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK, STREAM, READ ALOUD), the INDEX and NATIVE, SOUNDINGS, DREAMS, the CASINO's coins |
 | [The CASINO](The-CASINO) | SLOTS on every board, the phone, the site and the Tab5: the reels, the coins, the day's odds and THE HOUSE, the dress and the holidays, the table and its cheers |
+| [Nights and dreams](Nights-and-dreams) | the night a watch keeps, the daemon's dream, the journal, the dream written into your save for the game, how the week shows on the daemon, WAKE ME |
+| [The hub and its AI](The-hub-and-its-AI) | the CoreMP135 as the companion's server; the AX630 AI board that talks, tells dreams and answers as THE GUIDE; who answers first |
 | [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, the T-Watch S3's faces, care, routines (GLOW, the CASINO, CHORUS, cards), sounds, battery, settings |
+| [The T-Watch Ultra](The-T-Watch-Ultra) | the biggest watch: sleep, steps and walks, cards, haptics, HOURS, BOOKS, the instrument, and what is coming -- the SD card, meetings, DAEMONS on the wrist |
 | [Flashing and linking](Flashing-and-linking) | `updateCompanion.sh`, `linkCompanion.sh` and `box3.sh`, checks down the cable, and what to do when a board looks dead |
 | [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3) | HOME in PLACES on the app, the site and the Tab5; the BOX-3 as the home's voice assistant with the daemon for a face; the daemon as Home Assistant's conversation agent |
 | [Away from home](Away-from-home) | the relay through your own n8n, reading its executions, and keeping your computer reachable |
@@ -59,8 +71,9 @@ been seen, so the computer is the way to start ([Host on your phone](Host-on-you
   [docs/LORA.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/LORA.md),
   [docs/BROADCAST.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/BROADCAST.md),
   [docs/TAB5.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TAB5.md),
-  [firmware/box3/README.md](https://github.com/CodeMusic/daemons-companion/blob/main/firmware/box3/README.md) -- the
-  designs behind these pages.
+  [firmware/box3/README.md](https://github.com/CodeMusic/daemons-companion/blob/main/firmware/box3/README.md),
+  [docs/ONEAPP.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/ONEAPP.md),
+  [docs/HUB.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/HUB.md) -- the designs behind these pages.
 - [TODO.md](https://github.com/CodeMusic/daemons-companion/blob/main/TODO.md) -- the work, decided and not done. The
   `C-` numbers on these pages are its tickets.
 

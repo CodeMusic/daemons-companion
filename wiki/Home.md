@@ -48,7 +48,7 @@ testing for now -- [The one app](The-one-app).
 | [Nights and dreams](Nights-and-dreams) | the night a watch keeps, the daemon's dream, the journal, the dream written into your save for the game, how the week shows on the daemon, WAKE ME |
 | [The hub and its AI](The-hub-and-its-AI) | the CoreMP135 as the companion's server; the AX630 AI board that talks, tells dreams and answers as THE GUIDE; who answers first |
 | [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, the T-Watch S3's faces, care, routines (GLOW, the CASINO, CHORUS, cards), sounds, battery, settings |
-| [The T-Watch Ultra](The-T-Watch-Ultra) | the biggest watch: sleep, steps and walks, cards, haptics, HOURS, BOOKS, the instrument, and what is coming -- the SD card, meetings, DAEMONS on the wrist |
+| [The T-Watch Ultra](The-T-Watch-Ultra) | the biggest watch: sleep, steps and walks, cards, haptics, HOURS, BOOKS and its SD card, meetings, its mouth, the instrument, and what is coming -- DAEMONS on the wrist |
 | [Flashing and linking](Flashing-and-linking) | `updateCompanion.sh`, `linkCompanion.sh` and `box3.sh`, checks down the cable, and what to do when a board looks dead |
 | [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3) | HOME in PLACES on the app, the site and the Tab5; the BOX-3 as the home's voice assistant with the daemon for a face; the daemon as Home Assistant's conversation agent |
 | [Away from home](Away-from-home) | the relay through your own n8n, reading its executions, and keeping your computer reachable |

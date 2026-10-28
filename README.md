@@ -111,6 +111,9 @@ board's controls, pages, quirks and which ones run today:
 - **It can reach your home, if you let it.** HOME, in PLACES, brings Home Assistant to the app, the site and the Tab5
   (built; it has yet to meet a real Home Assistant), and the BOX-3 wears the daemon's face
   ([Home Assistant and the BOX-3](https://github.com/CodeMusic/daemons-companion/wiki/Home-Assistant-and-the-BOX-3)).
+- **It takes notes.** On the T-Watch Ultra, RECORD A MEETING: the hub's AI writes it up -- a summary, take-aways and
+  action items -- and your daemon day-dreams about it; MEETINGS in the app keeps each one by day (built; its first
+  meeting on the wrist is still to come).
 - **It sleeps, and dreams.** A watch keeps the night -- tucked in, or, on the T-Watch Ultra, just still -- and in the
   morning your daemon has had a dream: deep, quiet or restless, told in a line, read aloud if you like, and kept in a
   journal. At the next SYNC the last dream goes home with it, into your game. A good week shows on it, subtly: a glow, a

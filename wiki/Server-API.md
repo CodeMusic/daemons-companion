@@ -154,6 +154,20 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 | `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |
 | `GET`/`POST /api/talk/settings` | who answers: `auto`, `local` or `openrouter` |
 
+## Meetings recorded (C-212)
+
+A watch records a meeting in parts; the companion hears each part on the hub's module as it arrives, writes the
+meeting up and has the daemon day-dream about it ([The T-Watch Ultra](The-T-Watch-Ultra)). The device routes are on the
+device's own door.
+
+| route | what it does |
+|---|---|
+| `POST /api/device/meeting/start`, `/part`, `/end` | a watch's recording: begun, a half-minute part (raw audio), finished |
+| `GET /api/device/meeting` | the latest write-up, for the watch's LAST MEETING |
+| `GET /api/meeting/audio` | one part's recording, while it is kept (1.5 GB at most, the oldest cleared first) |
+| `POST /api/meeting/retry` | hear again what was not heard, then write it up |
+| `POST /api/meeting/forget` | the meeting and its recording, gone |
+
 ## HOME: Home Assistant
 
 | route | what it does |

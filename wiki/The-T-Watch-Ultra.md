@@ -38,6 +38,9 @@ ROUTINES, DREAM and the INDEX.
 | **haptics** (C-176) | a tap for a care, a step, a milestone, a goal, a CASINO win, a harp string -- quiet when the sound is off. The T-Watch S3 has them too | built |
 | **the instrument** (C-202) | your game's HARP or FLUTE by touch: strings plucked, holes held and blown, with no lag; the octave at the foot of the screen, and **SMART** to choose it for you; a song played right comes back as an ECHO, as in the game | built |
 | **BOOKS** (C-208) | THE SUBTLE LAYER, THE GUIDE and the NOTEBOOK, each once your save holds it; a page a swipe, and **LISTEN** reads it aloud | built |
+| **the SD card** (C-199) | BOOKS kept as they are read, or all at once (**KEEP ON THE CARD**), and opened **FROM THE CARD** away from any network; a reading heard once kept and played from the card after, anywhere; walks and nights the full outbox cannot hold wait on the card and go back as there is room; a meeting's parts kept until sent | built; flashed, no card in it yet |
+| **meetings** (C-212) | **RECORD A MEETING**: half-minute parts onto the card and to the companion as each finishes, RECORDING in red the whole time. The hub's AI hears each part as it comes and writes it up -- a summary, take-aways and action items -- and the daemon has a day-dream about it; **LAST MEETING** shows them, and **SEND KEPT MEETINGS** sends what was recorded away. In the app, **MEETINGS** in DAEMON, by day | built, not yet on the wrist |
+| **its mouth** (C-213) | on TALK it mouths its words, on the beat of its own voice or for as long as the phone speaks them; while it listens it stands large with its ears up | flashed, not yet heard |
 | **ASK THE GUIDE** (C-209) | once THE GUIDE is found, ask it a question by voice from BOOKS ([The hub and its AI](The-hub-and-its-AI)) | built |
 | **THE SUBTLE LAYER's sense** (C-203) | once your save holds the book: now and then the daemon notices something first, a read, a lean at the reels ([Your game on the companion](Your-game-on-the-companion)) | **seen on the wrist** |
 | **who answers first** (C-211) | the hub's AI board or n8n, chosen on the watch too | built |
@@ -47,10 +50,8 @@ Down the cable, `MOTION?`, `GPS?`, `ALARM?` and `SUBTLE?` report each part's sta
 
 ## Coming
 
-- **The SD card** (C-199, decided): the books and every chapter, voices kept so READ ALOUD and LISTEN work offline,
-  the whole INDEX with its art and voices, the songs, walks and nights kept when nothing is in reach, and voice notes.
-- **Meetings** (C-212): record one, have it summed up, and see it on the watch and in the app.
-- **The daemon's mouth** moving as it talks (C-213).
+- **The rest of the SD card** (C-199): the whole INDEX with its art and voices, and the songs, offline; voice notes.
+- **Meetings written by n8n too**, not only the hub's module; a phone hosting alone has none yet (C-212).
 - **The CASINO, enhanced** for the tall screen (C-198, to ask).
 - **Its voice with the phone alone**, away from the hub (C-197).
 - **DAEMONS on the wrist** (C-214, a spike): the classic Game Boy build in a GB emulator, from the SD card, at 2.5x,

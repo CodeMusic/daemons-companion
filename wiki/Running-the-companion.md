@@ -49,18 +49,23 @@ NEARBY.
   THING**, the one next step; then your daemon and its care (FEED, DRINK, TRAIN), NEARBY's latest, your game (where you
   saved, MARKS, coins, the CASINO's waiting for SYNC) and what waits in the LIBRARY. Each weekday has its own colours
   (`?day=tuesday` on the site previews another).
-- **DAEMON** -- four parts: **Yours** (its day and care, on the phone HOLD TO TALK, SYNC, NEARBY, MET NEARBY), **Party**
-  (drawn as the game draws it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN) and **Routines** (THE
-  CASINO, THE HOUSE and the party's own -- [The CASINO](The-CASINO)).
+- **DAEMON** -- **Yours** (its day and care, on the phone HOLD TO TALK, SYNC, NEARBY, MET NEARBY), **Party** (drawn as
+  the game draws it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN), **Routines** (THE CASINO, THE
+  HOUSE and the party's own -- [The CASINO](The-CASINO)), **SOUNDINGS** and **DREAMS**
+  ([Your game on the companion](Your-game-on-the-companion), [Nights and dreams](Nights-and-dreams)) and **MEETINGS**
+  (each one recorded on a watch, by day: its summary, take-aways, action items and the daemon's day-dream, read aloud if
+  you like, and the whole transcript -- [The T-Watch Ultra](The-T-Watch-Ultra)).
+  While its voice plays -- TALK, LISTEN, READ ALOUD -- the daemon's mouth opens and shuts with it.
 - **GOALS** -- one goal, its steps and milestones, and WALKING.
 - **LIBRARY** -- CALLOW SCHOOL, THE GUIDE and THE SUBTLE LAYER once your save has found them, the **NOTEBOOK**, the
   **SONGBOOK** (your instrument to PLAY, and the songs you have learned, in their colours, with LISTEN to hear one) and
   **STREAM** (every lesson a MARK or a ROOT has opened).
 - **YOU** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES and GAME
   EVENTS.
-- **PLACES** -- your devices under their makers (a picture of each, which daemon each hosts, batteries, ITS SETTINGS
-  for each one, routines, remotes, every device's settings and networks) and your home: Home Assistant's rooms, each a
-  tap, and the house asked in words ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
+- **PLACES** -- your devices (a picture of each, which daemon each hosts, batteries, ITS SETTINGS for each one,
+  routines, remotes, every device's settings and networks), listed **LAST USED** first -- the one in your hand, then the
+  most recently heard -- or **BY MAKER** or by **NAME**, as this phone or browser remembers (C-217); and your home: Home
+  Assistant's rooms, each a tap, and the house asked in words ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
 - **SETTINGS** (the gear) -- the app's build and LIGHT OR DARK, your save, THE WEATHER, who answers when you talk; on
   the phone THIS PHONE; on the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
 

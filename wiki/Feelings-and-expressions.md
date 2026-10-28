@@ -83,6 +83,11 @@ On the BOX-3 the daemon speaks Home Assistant's answers, and its mouth moves -- 
 person has checked is drawn** (`mouth` in `faces.json`). `tools/mouths.ts` suggests one, looking only below checked eyes
 (`server/data/mouths.suggested.json`). 24 daemons have checked mouths today; the rest speak with a speech bubble.
 
+**One open mouth for every host** (C-213): the same open mouth is in the expression the boards receive, the BOX-3's
+face and the app's picture (`/art/party/N.png?mouth=open`). The app opens and shuts it on a beat while TALK, LISTEN or
+READ ALOUD plays, and the T-Watch Ultra mouths its words on TALK. A daemon with no checked mouth bobs on the beat
+instead.
+
 ```sh
 cd server
 npx tsx tools/mouths.ts --sheet /tmp/mouths.png      # each suggestion boxed, and the mouth open

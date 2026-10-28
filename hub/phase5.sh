@@ -7,12 +7,20 @@
 #   ssh -t debian@coremp135 'sudo bash /opt/daemons-companion/hub/phase5.sh'
 #
 # The module takes its address by DHCP from the hub (M5's image asks for one on the Mate's port); the /30 leaves it
-# only .2, which is where server/src/ai/discover.ts looks. Safe to run again. Not yet run on the hub (2026-10-28).
+# only .2, which is where server/src/ai/discover.ts looks. Safe to run again. Run on the hub 2026-10-28: the link and
+# the address work; the sharing does not -- this kernel has no nftables NAT, so the module fetches its packages through
+# the hub's SSH instead (ssh -R 1080, apt's Acquire::https::Proxy socks5h://127.0.0.1:1080).
 set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "phase5: run it with sudo" >&2; exit 1; }
 CON=module-link
 # the default profile NetworkManager made for eth1 would ask the module's side for an address; this one answers instead
-nmcli -t -f NAME,DEVICE con show | grep -q '^Wired connection 2:' && nmcli con mod "Wired connection 2" connection.autoconnect no
+# only a profile bound to eth1 by name: never the one that carries the home network (eth0)
+nmcli -t -f NAME con show | while read -r name; do
+  [ "$name" = "$CON" ] && continue
+  if [ "$(nmcli -g connection.interface-name con show "$name" 2>/dev/null)" = eth1 ]; then
+    nmcli con mod "$name" connection.autoconnect no
+  fi
+done
 nmcli -t -f NAME con show | grep -qx "$CON" || nmcli con add type ethernet ifname eth1 con-name "$CON"
 nmcli con mod "$CON" connection.autoconnect yes connection.autoconnect-priority 10 \
   ipv4.method shared ipv4.addresses 192.168.50.1/30 ipv4.never-default yes ipv6.method disabled

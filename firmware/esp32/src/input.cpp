@@ -199,7 +199,9 @@ void turn(int step) {
     static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, ROUTINES_PAGE, DAEMON, DAY_PAGE, TALK_PAGE, SOUND_PAGE, OFF_PAGE };   // C-211: TALK on the watches
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
     // C-163: the watch has no SWITCH OFF -- its crown held sleeps, held longer switches it off (its power chip)
-    const Page *order = face ? WATCH : EMBED; int n = face ? (isWatch() ? 6 : 7) : 6, at = 0;
+    // counted from the lists, so a page added to one cannot strand the last (C-211 added TALK and SWITCH OFF fell off)
+    const int nWatch = sizeof WATCH / sizeof WATCH[0], nEmbed = sizeof EMBED / sizeof EMBED[0];
+    const Page *order = face ? WATCH : EMBED; int n = face ? (isWatch() ? nWatch - 1 : nWatch) : nEmbed, at = 0;   // the watch: no SWITCH OFF
     for (int i = 0; i < n; i++) if (order[i] == page) at = i;
     page = order[(at + n + step) % n];   // round either way (the user, 2026-10-18: "so u can swipe either direction")
   }

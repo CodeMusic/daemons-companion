@@ -422,7 +422,7 @@ void talkReadText(const String &text) {
   h.begin(serverUrl + "/api/device/speak");
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "application/json");
-  JsonDocument q; if (text.length()) q["text"] = text;
+  JsonDocument q; q.to<JsonObject>(); if (text.length()) q["text"] = text;   // {} not null: the INDEX entry is the server's to find
   String req; serializeJson(q, req);
   int code = h.POST(req);
   String body = code == 200 ? h.getString() : "";

@@ -111,6 +111,7 @@ String cardRead(const String &name) {
   if (!cardReady()) return "";
   File f = SD.open("/daemons/" + name, FILE_READ);
   if (!f) return "";
+  f.setTimeout(0);                                       // at the end of the file readString would wait its full second
   String s = f.readString(); f.close();
   return s;
 }

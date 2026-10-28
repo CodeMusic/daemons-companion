@@ -760,3 +760,80 @@ String runOpenToMyPhone() {
   if (said.length()) return "Both ways work.\n\nSent: " + hello + "\nHeard: " + said;
   return "Your phone connected and the hello went out, but no word came back.\nPress to try again.";
 }
+
+// ---- C-176 (the user, 2026-10-27, by multiple choice: "tags as routines"): a tag taught a routine, and tapped to run it --
+// TEACH A TAG takes a tag and then the routine it is to start (any this board has but TOUCHSTONE's own); TAP A TAG waits for
+// a tag and runs what it was taught. Kept on the board, by the tag's identifier (Preferences "tags"). Every word DRAFT.
+#include <Preferences.h>
+void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width);   // ui.cpp
+static String tagKey(const uint8_t *uid, int len) {        // a tag's identifier as a key (NVS keys are 15 characters at most)
+  String k; for (int i = 0; i < len && k.length() < 14; i++) { char b[3]; snprintf(b, sizeof b, "%02X", uid[i]); k += b; }
+  return k;
+}
+static int waitTag(uint8_t *uid, String &why) {             // a tag held to the board within fifteen seconds: its length, or 0
+  if (!readerUp(why)) return 0;
+  uint32_t until = millis() + 15000;
+  while (millis() < until) {
+    if (giveUp()) { why = "Given up."; return 0; }          // DRAFT
+    int len = cardSelect(uid);
+    if (len) { soundSelect(); return len; }
+    delay(60);
+  }
+  why = "No tag in 15 seconds.\nPress to try again.";      // DRAFT
+  return 0;
+}
+// every routine but TOUCHSTONE's, as "TYPE/ROUTINE"
+static int pickN = 0; static int pickT[48], pickR[48]; static int pickAt = 0, pickTop = 0;
+static String drawPick(uint16_t day, uint16_t ink) {
+  canvas.setTextDatum(TL_DATUM); canvas.setTextFont(2); canvas.setTextColor(readable(day));
+  canvas.drawString("WHAT IT STARTS", 10, 30);                                                                // DRAFT
+  int fit = listRowsFit();
+  if (pickAt < pickTop) pickTop = pickAt; if (pickAt >= pickTop + fit) pickTop = pickAt - fit + 1;
+  for (int i = pickTop; i < pickN && i < pickTop + fit; i++)
+    listRow(i - pickTop, pickAt - pickTop, String(types[pickT[i]].name) + ": " + types[pickT[i]].routines[pickR[i]].name, day, ink, W - 12);
+  return "turn: choose   press: this one   top button: back";                                               // DRAFT
+}
+String runTeachTag() {
+  uint8_t uid[10]; String why;
+  progress(holdIt());
+  int len = waitTag(uid, why);
+  if (!len) return why;
+  pickN = 0;
+  for (int t = 0; t < typeCount && pickN < 48; t++)
+    if (types[t].routines && strcmp(types[t].name, "TOUCHSTONE"))
+      for (int r = 0; r < types[t].count && pickN < 48; r++) { pickT[pickN] = t; pickR[pickN] = r; pickN++; }
+  if (!pickN) return "No routines to teach it.";                                                              // DRAFT
+  pickAt = 0; pickTop = 0;
+  runPanel = drawPick; progress("");
+  int chosen = -1;
+  while (true) {
+    int step, ev; routineInput(step, ev);
+    if (ev == -1 || giveUp()) break;
+    if (step) { pickAt = (pickAt + pickN + step) % pickN; progress(""); }
+    if (ev == 1) { chosen = pickAt; break; }
+    delay(10);
+  }
+  runPanel = nullptr;
+  if (chosen < 0) return "Nothing taught.";                                                                   // DRAFT
+  String what = String(types[pickT[chosen]].name) + "/" + types[pickT[chosen]].routines[pickR[chosen]].name;
+  Preferences p; p.begin("tags", false); p.putString(tagKey(uid, len).c_str(), what); p.end();
+  return "This tag starts " + what + " now.\nTAP A TAG to run it.";                                           // DRAFT
+}
+String runTapTag() {
+  uint8_t uid[10]; String why;
+  progress(holdIt());
+  int len = waitTag(uid, why);
+  if (!len) return why;
+  Preferences p; p.begin("tags", true); String what = p.getString(tagKey(uid, len).c_str(), ""); p.end();
+  if (!what.length()) return "This tag has not been taught.\nTEACH A TAG first.";                             // DRAFT
+  int slash = what.indexOf('/');
+  String tn = what.substring(0, slash), rn = what.substring(slash + 1);
+  for (int t = 0; t < typeCount; t++) {
+    if (tn != types[t].name || !types[t].routines) continue;
+    for (int r = 0; r < types[t].count; r++) if (rn == types[t].routines[r].name) {
+      report("routine", what);
+      return types[t].routines[r].run();
+    }
+  }
+  return what + " is not on this board.";                                                                     // DRAFT
+}

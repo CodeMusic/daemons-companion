@@ -834,7 +834,7 @@ static int waitTag(uint8_t *uid, String &why) {             // a tag held to the
   if (!readerUp(why)) return 0;
   uint32_t until = millis() + 15000;
   while (millis() < until) {
-    if (giveUp()) { why = "Given up."; return 0; }          // DRAFT
+    if (routineQuit()) { why = "Given up."; return 0; }     // DRAFT
     int len = cardSelect(uid);
     if (len) { soundSelect(); return len; }
     delay(60);
@@ -868,7 +868,7 @@ String runTeachTag() {
   int chosen = -1;
   while (true) {
     int step, ev; routineInput(step, ev);
-    if (ev == -1 || giveUp()) break;
+    if (ev == -1 || routineQuit()) break;
     if (step) { pickAt = (pickAt + pickN + step) % pickN; progress(""); }
     if (ev == 1) { chosen = pickAt; break; }
     delay(10);
@@ -938,7 +938,7 @@ String runTouch() {
       until = millis() + 4000;
     }
     int step, ev; routineInput(step, ev);
-    if (ev == -1 || giveUp()) break;
+    if (ev == -1 || routineQuit()) break;
     if (millis() - drawnAt > 300) { drawnAt = millis(); progress(""); }
   }
   runPanel = nullptr;

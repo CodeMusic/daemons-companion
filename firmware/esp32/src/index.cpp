@@ -98,7 +98,7 @@ String runIndex() {
   progress("");
   while (true) {
     int step, ev; routineInput(step, ev);
-    if (giveUp()) ev = -1;
+    if (routineQuit()) ev = -1;
     if (ev == -1) { if (ixOpen) { ixOpen = false; progress(""); continue; } break; }
     if (!ixOpen) {
       int n = ixList["entries"].size();
@@ -131,7 +131,7 @@ int indexKeepAll() {
     String p = http("GET", "/api/device/art?species=" + String(s), "", &ok);
     if (ok && cardWrite("index/" + String(s) + ".art.json", p)) kept++;
     if (kept % 10 == 0) { say("INDEX " + String(kept)); progress(""); }                                      // DRAFT
-    if (giveUp()) break;
+    if (routineQuit()) break;
   }
   return kept;
 }

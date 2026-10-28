@@ -239,6 +239,9 @@ int dialStep() {
 void readEncoder() { int step = dialStep(); if (step) turn(step); }
 
 // The top button, pressed while a routine waits -- or, on a board without one, the dial held (C-67).
+// the review, 2026-10-28: inside a routine that reads swipes and taps itself, a touch is not giving up -- the watches go
+// back by a hold or the crown (routineInput's -1); the boards with buttons, by their own
+bool routineQuit() { return board.touch ? false : giveUp(); }
 bool giveUp() {                        // the watch: a touch anywhere
   if (board.threeKeys()) return !digitalRead(board.keyLeft) || (board.touch && watchTouchDown());   // C-75: A, which goes back; C-105 or a touch
   return board.touch ? watchTouchDown() : board.hasSideKey() ? !digitalRead(board.sideKey) : !digitalRead(board.encKey);

@@ -114,7 +114,7 @@ static void keepAll() {
       bool ok; String got = http("GET", "/api/book?book=" + id + "&n=" + String(n), "", &ok);
       if (ok && cardWrite(chapterFile(id, n), got)) kept++;
       if (kept % 5 == 0) { bWhy = ""; say("KEPT " + String(kept) + " OF " + String(all)); progress(""); }   // DRAFT
-      if (giveUp()) { say("STOPPED AT " + String(kept)); return; }                                       // DRAFT
+      if (routineQuit()) { say("STOPPED AT " + String(kept)); return; }                                       // DRAFT
     }
   }
   int ix = indexKeepAll();                                   // C-199 (3): and THE INDEX
@@ -134,7 +134,7 @@ String runBooks() {
   progress("");
   while (true) {
     int step, ev; routineInput(step, ev);
-    if (giveUp()) ev = -1;
+    if (routineQuit()) ev = -1;
     if (ev == -1) {
       if (bWhy.length() || bMode == B_BOOKS) break;
       if (bMode == B_PAGE) { bMode = B_CHAPTERS; bAt = bChapter; } else { bMode = B_BOOKS; bAt = bBook + heads(); }
@@ -150,7 +150,7 @@ String runBooks() {
       if (ev == 1 && n) {
         if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the GUIDE's answer
           talkToGuide = true; talkHold(6000); talkToGuide = false;
-          while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || giveUp()) break; delay(10); }   // read it, then on
+          while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }   // read it, then on
           screen = RUN;
         }
         else if (bMode == B_BOOKS && bAt < heads()) { String r = runIndex(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3)

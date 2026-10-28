@@ -52,24 +52,32 @@ static String drawRing(uint16_t day, uint16_t ink) {
   canvas.setTextDatum(TL_DATUM);
   return snoozes < 3 ? "tap: I'M UP   swipe: FIVE MORE MINUTES" : "tap: I'M UP";   // DRAFT
 }
-// rings until answered: true a tap (up), false a swipe (snooze) or five minutes unanswered
-static bool ring(const String &title, bool canSnooze) {
+// rings until answered: 1 a tap (up), 0 a swipe (five more minutes), -1 five minutes unanswered (it gives up). It runs as
+// a routine of HOURS does (the review, 2026-10-28): routineRunning, and HOURS the type, so the RUN screen never draws the
+// routines of whatever type was open (the PARTY's have none)
+static int typeNamed(const char *n) { for (int i = 0; i < typeCount; i++) if (!strcmp(types[i].name, n)) return i; return -1; }
+static int ring(const String &title, bool canSnooze) {
   wake();
-  Screen was = screen; screen = RUN; ringTitle = title; ringRound = 0;
+  Screen was = screen; int wasType = typeAt, wasRoutine = routineAt; bool wasRunning = routineRunning;
+  int hours = typeNamed("HOURS");
+  if (hours >= 0) { typeAt = hours; routineAt = 0; }
+  routineRunning = true;
+  screen = RUN; ringTitle = title; ringRound = 0;
   runPanel = drawRing; progress("");
-  uint32_t t0 = millis(), roundAt = 0; bool up = false;
+  uint32_t t0 = millis(), roundAt = 0; int answer = -1;
   while (millis() - t0 < 5UL * 60000) {
     if (millis() - roundAt > 3000) {
       roundAt = millis(); ringRound++;
       soundWake(); haptic(ringRound > 6 ? 47 : 16); progress("");
     }
     int step, ev; routineInput(step, ev);
-    if (ev == 1 || ev == -1 || giveUp()) { up = true; break; }
-    if (step && canSnooze && snoozes < 3) break;
+    if (ev == 1 || ev == -1 || routineQuit()) { answer = 1; break; }
+    if (step && canSnooze && snoozes < 3) { answer = 0; break; }
     delay(10);
   }
-  runPanel = nullptr; screen = was; lastInput = millis(); dirty = true;
-  return up;
+  runPanel = nullptr; screen = was; typeAt = wasType; routineAt = wasRoutine; routineRunning = wasRunning;
+  lastInput = millis(); dirty = true;
+  return answer;
 }
 
 // from the loop: the alarm's minute, or a stir in GENTLE's window before it; and a snooze run out
@@ -79,7 +87,9 @@ void clockLoop(uint32_t now) {
   at = now;
   if (snoozeUntil && (int32_t)(now - snoozeUntil) >= 0) {
     snoozeUntil = 0;
-    if (ring("FIVE MINUTES ARE UP", true)) { snoozes = 0; nightWake(); } else { snoozes++; snoozeUntil = millis() + 5UL * 60000; }   // DRAFT
+    int r = ring("FIVE MINUTES ARE UP", true);                                                    // DRAFT
+    if (r == 1) { snoozes = 0; nightWake(); }
+    else if (r == 0 && snoozes < 3) { snoozes++; snoozeUntil = millis() + 5UL * 60000; }        // unanswered, or snoozed out: done
     return;
   }
   if (cdRunning && !cdNow() && !routineRunning) {          // a countdown left running behind the routine
@@ -97,8 +107,9 @@ void clockLoop(uint32_t now) {
   } else inWindow = false;
   if (!due) return;
   firedDay = day; inWindow = false; snoozes = 0;
-  if (ring("GOOD MORNING  " + hhmm(t.tm_hour, t.tm_min), true)) nightWake();   // DRAFT
-  else { snoozes++; snoozeUntil = millis() + 5UL * 60000; }
+  int r = ring("GOOD MORNING  " + hhmm(t.tm_hour, t.tm_min), true);                             // DRAFT
+  if (r == 1) nightWake();
+  else if (r == 0) { snoozes++; snoozeUntil = millis() + 5UL * 60000; }                          // unanswered five minutes: done
 }
 String clockStatus() {
   return String("ALARM ") + (alarmOn ? "on " : "off ") + hhmm(alarmH, alarmM) + (gentle ? " gentle" : "") +
@@ -129,7 +140,7 @@ String runWakeMe() {
   field = 0; runPanel = drawWake; progress("");
   while (true) {
     int step, ev; routineInput(step, ev);
-    if (ev == -1 || giveUp()) break;
+    if (ev == -1 || routineQuit()) break;
     if (ev == 1) field = (field + 1) % 4;
     if (step) {
       if (field == 0) alarmH = (alarmH + step + 24) % 24;
@@ -173,7 +184,7 @@ String runStopwatch() {
   uint32_t drawnAt = 0;
   while (true) {
     int step, ev; routineInput(step, ev);
-    if (ev == -1 || giveUp()) break;
+    if (ev == -1 || routineQuit()) break;
     if (ev == 1) {
       if (swRunning) { swHeld = swNow(); swRunning = false; } else { swStart = millis(); swRunning = true; }
       haptic(1); progress("");
@@ -205,7 +216,7 @@ String runCountdown() {
   uint32_t drawnAt = 0; String result = "";
   while (true) {
     int step, ev; routineInput(step, ev);
-    if (ev == -1 || giveUp()) break;
+    if (ev == -1 || routineQuit()) break;
     if (ev == 1) {
       if (cdRunning) { cdLeft = cdNow(); cdRunning = false; } else { cdFrom = millis(); cdRunning = true; }
       haptic(1); progress("");

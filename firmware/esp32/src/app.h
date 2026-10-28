@@ -173,6 +173,7 @@ void sleepNow();
 void tick();
 void untick();
 bool giveUp();                            // the top button (or the held dial) while a routine waits
+bool routineQuit();                       // the same, but never a touch: for routines that read swipes and taps themselves
 int buttonEvent();                        // a routine running the dial itself: 1 a tap, 2 two taps, -1 held (or the cable's KEY)
 void touchStep(int step);                 // C-161: a swipe, for dialStep() to give a routine (input.cpp)
 bool wide();                              // C-105: a screen wide enough for two columns (the T-Display-S3 Pro's 480)

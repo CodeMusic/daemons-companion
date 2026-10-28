@@ -1,4 +1,5 @@
 // The companion on a handheld: setup and the loop. What each part does is in app.h.
+#include "talk.h"
 #include <WiFi.h>
 #include "app.h"
 #include "brain.h"
@@ -91,6 +92,7 @@ void loop() {
   if (!netBusy()) askForArt();
   uplinkLoop(now);
   linkLoop(now);                            // C-55
+  talkLoop(now);                            // C-181: a talk's answer, when the hub has it
   meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-15
   loraLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-72: the same switch, the same tag
   meetCastLoop(now); castLoop(now);         // C-134: broadcasts -- Bluetooth's pieces, answers due

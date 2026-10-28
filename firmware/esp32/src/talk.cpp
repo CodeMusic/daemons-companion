@@ -148,6 +148,8 @@ static void wavHeader(uint8_t *h, uint32_t samples) {
 // The answer's voice, streamed from the server into the speaker a little at a time.
 // C-199: a voice kept on the card under `keepAs` (16 kHz PCM, as it streams); "" keeps nothing
 static String keepAs;
+static String talkJob;                                  // C-181: the talk asked and not yet answered
+static uint32_t talkJobAt = 0, talkPollAt = 0, talkPollGap = 400;
 static void mouthBeat(const int16_t *buf, int n);
 static void playVoice(const String &path) {
   HTTPClient h;
@@ -393,19 +395,64 @@ void talkHold(uint32_t forMs) {
   if ((!atHome() || talkByCable) && usbLive()) { overCable(rec, n); return; } // C-66: the cable's bridge carries it
   if (!atHome() && linkPhoneHere() && !brainConfigured()) { overPhone(rec, n); return; }   // C-82: the phone carries it
   if (!atHome()) { offline(rec, n); return; }                                 // C-76: no network -- the LLM630, if there is one
+  // C-181: asked, and answered at once with an id (202); the answer is fetched by talkLoop when it is ready, so the watch
+  // stays in use while the hub's module thinks -- however long that is. An older server answers the one request (200).
   HTTPClient h;
-  h.setTimeout(65535);           // a local model's first turn loads it. HTTPClient's timeout is 16 bits: 120000 was 54 s
-  h.begin(serverUrl + (talkToGuide ? "/api/device/talk?guide=1" : "/api/device/talk"));   // C-209
+  h.setTimeout(20000);
+  h.begin(serverUrl + (talkToGuide ? "/api/device/talk?guide=1&async=1" : "/api/device/talk?async=1"));   // C-209
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "audio/wav");
   int code = h.POST(rec, 44 + n * 2);
+  String body = code == 200 || code == 202 ? h.getString() : "";
+  h.end();
+  if (code != 200 && code != 202 && brainConfigured()) { offline(rec, n); return; }   // the server did not answer: the LLM630
+  free(rec);
+  lastInput = millis();
+  if (code == 202) {
+    JsonDocument d;
+    if (!deserializeJson(d, body) && (d["id"] | "")[0]) {
+      talkJob = d["id"] | ""; talkJobAt = millis(); talkPollGap = 400; talkPollAt = talkJobAt + talkPollGap;
+      talkStatus = "Thinking..."; draw();                                       // DRAFT
+      return;
+    }
+    code = -1;
+  }
+  answer(code, body);
+}
+
+// C-181: the answer to a talk asked with ?async=1, asked for every 0.4 s at first and then less often (up to 1.5 s); when
+// it comes the TALK screen shows it, from wherever the watch was. Kept five minutes on the hub (404 after: gone).
+static const uint32_t TALK_GIVE_UP_MS = 180000;
+void talkLoop(uint32_t now) {
+  if (!talkJob.length() || (int32_t)(now - talkPollAt) < 0 || netBusy()) return;
+  if (now - talkJobAt > TALK_GIVE_UP_MS) {
+    talkJob = ""; screen = TALK; talkAnswer = ""; talkStatus = "No answer came. Ask again."; dirty = true; return;   // DRAFT
+  }
+  HTTPClient h;
+  h.setTimeout(5000);
+  h.begin(serverUrl + "/api/device/talk/" + talkJob);
+  h.addHeader("x-device", deviceId());
+  int code = h.GET();
   String body = code == 200 ? h.getString() : "";
   h.end();
-  if (code != 200 && brainConfigured()) { offline(rec, n); return; }        // the server did not answer: the LLM630
-  free(rec);
-  answer(code, body);
-  lastInput = millis();
+  talkPollGap = min((uint32_t)1500, talkPollGap + 250); talkPollAt = millis() + talkPollGap;
+  if (code == 404) { talkJob = ""; screen = TALK; talkAnswer = ""; talkStatus = "The answer was lost. Ask again."; dirty = true; return; }   // DRAFT
+  if (code != 200) return;                                                    // no answer this time: ask again in a while
+  JsonDocument d;
+  if (deserializeJson(d, body)) return;
+  String status = d["status"] | "";
+  if (status == "waiting" || status == "thinking") {
+    int ahead = d["ahead"] | 0;
+    String said = ahead > 0 ? "Waiting its turn (" + String(ahead) + " ahead)..." : String("Thinking...");   // DRAFT
+    if (said != talkStatus) { talkStatus = said; if (screen == TALK) dirty = true; }
+    return;
+  }
+  talkJob = "";
+  screen = TALK; lastInput = millis();
+  if (status == "failed" && !(d["error"] | "")[0]) { d["error"] = "The hub could not answer."; body = ""; serializeJson(d, body); }   // DRAFT
+  answer(200, body);
 }
+bool talkWaiting() { return talkJob.length() > 0; }
 
 static uint32_t hashOf(const String &s) { uint32_t h = 2166136261u; for (unsigned i = 0; i < s.length(); i++) h = (h ^ (uint8_t)s[i]) * 16777619u; return h; }   // FNV-1a
 void talkReadEntry() { talkReadText(""); }

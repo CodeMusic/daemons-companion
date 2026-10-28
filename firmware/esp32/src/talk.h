@@ -19,5 +19,7 @@ bool talkEarOpen();
 int talkEarLevel();             // the loudness since it was last asked (RMS), or -1 when nothing new was heard
 void talkEarClose();
 extern String talkHeard, talkAnswer, talkStatus;   // what the TALK screen shows
+void talkLoop(uint32_t now);    // C-181: the answer to the talk asked, fetched when it is ready
+bool talkWaiting();             // C-181: a talk is out, its answer not yet back
 extern int talkPeak, talkRms;                       // the last recording's loudness, for the check from the computer
 extern bool talkByCable;                            // the check from the computer: TALK <ms> cable

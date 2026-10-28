@@ -151,6 +151,18 @@ on it.*
    hub's discovery (`ai/discover.ts`, the hardware lane) through `setModules`, which keeps only modules that answer; the
    server never scans the network.
 
+**The module as it stands (2026-10-28).** On the hub's own link (`hub/phase5.sh`): the hub 192.168.50.1/30, the module
+.2 by DHCP. The hub cannot share its internet (no nftables NAT in its kernel), so the module fetches packages through the
+hub's SSH: `ssh -R 1080 root@192.168.50.2` and apt's `Acquire::https::Proxy socks5h://127.0.0.1:1080` (set its clock
+from the hub first, or apt refuses the lists). The hub's key logs in as root. Installed on M5's v1.4 image: the core
+llm-* units brought up to lib-llm 1.10, `llm-openai-api` (port 8000), MeloTTS `melotts-en-us`, `whisper-tiny` (needs
+`language=en`), `qwen2.5-0.5B-p256-ax630c` (the thinker, over StackFlow on 10001 with the persona as its setup prompt --
+the OpenAI plugin keeps a pooled client's first system message and returns nothing for a user turn past ~70 characters).
+**llm-llm leaks about 26 file handles a setup** (exit does not close the model's files): its limit is raised
+(`/etc/systemd/system/llm-llm.service.d/nofile.conf`, 65536) and `llm-nightly.timer` restarts the AI units at 04:00
+the hub's time (16:00 on the module's CST clock; the user approved it). Restart them together, never llm-openai-api
+alone (it leaks the llm unit's slots): llm-sys, then llm-llm, llm-melotts, llm-whisper, llm-openai-api.
+
 **Phase 6 -- LoRa.** The 433 gateway on SPI (CS, IRQ and RST on the module's DIP switches). The hub's own broadcasts are
 registered as its own before it ever transmits, so it never answers itself.
 

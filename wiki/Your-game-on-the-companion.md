@@ -76,6 +76,13 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
   left and its words on the right (one above the other on a phone); a few pictures turn, and in TWO VOICES the second,
   asking voice is printed faint. What the two books are: the DAEMONS wiki's
   [Books](https://github.com/CodeMusic/DAEMONS/wiki/Books).
+- **Reads and leans** (C-203, the game's T-459) -- once your save holds THE SUBTLE LAYER, the watches start to notice.
+  Now and then the daemon on the face stops, turns, and a purple ripple rises from it: something is there (a stranger's
+  daemon heard far off, rain on the way). Now and then a purple **"A read:"** comes with a soft tap -- someone close by,
+  rain before long, a long still night, something to the north on a walk -- and at the CASINO's reels, sometimes, **"A
+  lean:"** while they turn. Some reads are about nothing, worded the same. The companion judges each by what happens
+  after and keeps the count on the DAEMON page's **READS**; it never says a read was right before it lands. The NOTEBOOK's
+  **READS -> THE LOG** is the game's own, written here from your save as the game writes it. Every word DRAFT.
 - **The NOTEBOOK** -- every page your save holds (C-125), in the game's own sections, each tapped open and laid out as
   the game's NOTEBOOK lays it. A dot marks a page you have not yet read in the game; an open page says where it was
   found. A page the game writes from your save each time you open it there says so, rather than guessing. **A page that

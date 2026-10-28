@@ -14,6 +14,7 @@ import { readNotebook } from "./save/notebook.js";
 import { readProgress } from "./save/progress.js";
 import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
+import { readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
@@ -35,7 +36,7 @@ import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js
 import { askFind, checkFix, fixesOf, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
 import { validDeviceId } from "./deviceid.js";
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -92,6 +93,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/guide") return ok(readGuide(save));              // C-145: the GUIDE, once found
+    if (path === "/api/reads") return ok({ held: readSubtle(save, undefined, a.query?.preview === "1").held, ...readsView(store, now) });   // C-203: the companion's own log
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));   // T-423: THE SUBTLE LAYER, once found (?preview=1, a bench check)
     if (path === "/api/index") return ok(readIndex(save, h.edition));   // C-24: the save's own INDEX, OPUS's margins with it
     if (path === "/api/party") return ok(readSave(save));
@@ -184,4 +186,13 @@ export function takeNight(h: Host, store: Store, detail: string, deviceId: strin
     bondAdd(store, d.personality, "nights"); store.setSetting(`dream.rested.${dream.id}`, "1");
   }
   return { dream, carried: !!d };
+}
+
+// C-203: a read given on a watch -- "read <near|rain|night|walk> <0|1> [way]" -- or a lean told at the CASINO's reels --
+// "lean <pays|not> <0|1>". Kept for the log (intuition.ts), never logged as tending. The server's interact and a phone
+// hosting alone (app/local.ts) both take them here.
+export function takeSubtle(store: Store, kind: string, detail: string, deviceId: string, now = new Date()): Reply {
+  if (kind === "read") { const r = takeRead(store, detail, deviceId, now); return typeof r === "string" ? no(400, r) : ok({ read: r }); }
+  const l = takeLean(store, detail, now);
+  return typeof l === "string" ? no(400, l) : ok({ leans: { told: l.told, landed: l.landed } });
 }

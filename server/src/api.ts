@@ -60,7 +60,8 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind } from "./lines.js";
-import { handles, route, takeFix, takeNight, type Reply } from "./routes.js";
+import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
+import { noteClose, outlookLoop } from "./intuition.js";   // C-203
 import { EXPRESSIONS, SHADED, faceOf, shadePalette } from "./expressions.js";
 import { FRAMES, PHASES, faceRev, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
@@ -326,7 +327,7 @@ export function ourHost(hostOrUrl: string): boolean {
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
 // C-190: the boards with a LoRa radio (docs/DEVICES.md)
 const LORA_KINDS = /^(t-deck|t-watch-s3|t-watch-ultra)/;
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where"];   // C-159: setting; C-200: night; C-174: where
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean"];   // C-159: setting; C-200: night; C-174: where; C-203: read, lean
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -411,6 +412,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   useLanInterface(cfg.lanInterface);                           // C-180: never the Module LLM's link
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
   weatherLoop(store);                                          // C-158: the real weather, while a city is set on the site
+  outlookLoop(store);                                          // C-203: rain in the next hours, for a read
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
   const remotesShared = new SharedRemotes(store);              // C-165: and of remotes
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
@@ -1039,6 +1041,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                                                  by: phone ? "phone" : "board" }));
           return send(res, 200, { counted: false, why: "one of yours" });
         }
+        if (b.how !== "lora" && b.how !== "card") noteClose(store, peer);   // C-203: a stranger heard close -- a read's landing
         const hour = new Date(Date.now() - 3600000);
         if (store.interactionsSince(hour).some((i) => i.kind === "met" && i.detail?.split(" ")[1] === peer))
           return send(res, 200, { counted: false, why: "already met this hour" });
@@ -1116,6 +1119,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // the module asked for its own telling after (it replaces the written one, and the watch shows it from its next
         // state); a rested night is the bond's. Not logged as tending: sleeping is not a care.
         // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending
+        if (kind === "read" || kind === "lean") {                 // C-203: a read given, a lean told -- the log's, not tending
+          const r = takeSubtle(store, kind, typeof b.detail === "string" ? b.detail : "", deviceId);
+          return send(res, r.status, r.body);
+        }
         if (kind === "where") {
           const f = takeFix(store, typeof b.detail === "string" ? b.detail : "", deviceId);
           return typeof f === "string" ? send(res, 400, { error: f }) : send(res, 200, { fix: f });

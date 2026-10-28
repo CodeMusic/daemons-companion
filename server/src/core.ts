@@ -28,6 +28,8 @@ import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.j
 import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
 import { readPlay } from "./save/play.js";            // T-426: the instrument, on the boards with keys
+import { readSubtle } from "./save/subtle.js";
+import { senseFor, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -316,6 +318,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   // T-426: what the save holds of the instrument -- which, unlocked or not, the songs learned and heard (the songs
   // themselves are built into the boards, firmware/common/play.h)
   let play: { i: string; u: boolean; l: string[]; h: string[] } | null = null;
+  let subtle: Sense | null = null;                         // C-203: only once the save holds the book, and a daemon is carried
   // C-158: the world the devices live in -- the real one: the hour (the game's watches), the weather of the city set
   // on the site -- and the CASINO's luck in it, with its reasons
   const weather = weatherNow(store, now), today_ = holiday(t.edition, now);
@@ -362,6 +365,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
+    if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now);
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
@@ -379,6 +383,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them
            casts: castsForDevice(store, now),            // C-134: the last ten minutes' broadcasts; a board drops ids it has
            play,                                         // T-426: the instrument, on the boards with keys
+           ...(subtle ? { subtle } : {}),                // C-203: what there is to read, and how often a lean is right
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },

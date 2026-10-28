@@ -8,6 +8,7 @@ import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER } from 
 import { Settings } from "../types";
 import { Action, Card, Choice, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
+import { SavesCard } from "./Saves";   // C-215
 import { PREVIEW_ON, setPreview } from "../preview";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
@@ -103,6 +104,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
           {s.dir && s.canPick ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}   {/* C-170: this machine's Finder */}
         </XStack>
       </Card>
+      <SavesCard onChosen={load} />
       <Card>
         <Eyebrow>OR TYPE THE PATH</Eyebrow>
         <Small>From an emulator, the .sav beside the ROM. From a cartridge, pull the save to your computer first. Point the emulator and the app at the same file and it just works.</Small>

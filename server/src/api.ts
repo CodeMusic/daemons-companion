@@ -128,10 +128,23 @@ const awayNow = (cfg: Config) => core.awayNow(hostOf(cfg));
 const carriedDaemon = (cfg: Config, store: Store, deviceId = "") => core.carriedDaemon(hostOf(cfg), store, deviceId);
 export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId = "") =>
   core.growFromStep(hostOf(cfg), store, stepId, deviceId);
+// C-211 (the user, 2026-10-28: "configure the primary source (module or n8n ... green/red health indicator dots"): who
+// answers a talk first, and whether each can -- n8n's voice server reachable, a module answering with a thinker. Checked
+// on a minute's timer by the server (makeServer), never per request; every board's state carries it, so a watch draws
+// its dots without asking. Unset, the module is first once one is known (as talkProvider).
+export type TalkHealth = { n8n: { ok: boolean; at: string } | null; modules: { name: string; ok: boolean; at: string }[] };
+let TALK_HEALTH: TalkHealth = { n8n: null, modules: [] };
+export const talkFirst = (store: Store): "module" | "n8n" => {
+  const p = store.getSetting("talk.provider");
+  return p ? (p === "module" ? "module" : "n8n") : TALK_HEALTH.modules.length ? "module" : "n8n";
+};
+const setTalkFirst = (store: Store, first: "module" | "n8n") => store.setSetting("talk.provider", first === "module" ? "module" : "auto");
+const talkNow = (store: Store) => ({ first: talkFirst(store), n8n: !!TALK_HEALTH.n8n?.ok, module: TALK_HEALTH.modules.some((m) => m.ok) });
+
 // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
 export const deviceState = (cfg: Config, store: Store, now = new Date(), deviceId = "", as: string | null = null) => {
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
-  return core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null, as);
+  return { ...core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null, as), talk: talkNow(store) };
 };
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));
@@ -329,7 +342,7 @@ export function ourHost(hostOrUrl: string): boolean {
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
 // C-190: the boards with a LoRa radio (docs/DEVICES.md)
 const LORA_KINDS = /^(t-deck|t-watch-s3|t-watch-ultra)/;
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean"];   // C-159: setting; C-200: night; C-174: where; C-203: read, lean
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean", "talkfirst"];   // C-159: setting; C-200: night; C-174: where; C-203: read, lean; C-211: talkfirst
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -423,6 +436,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const talkJobs = new TalkJobs<Record<string, unknown>>(2);   // C-180: every talk and voice, queued; fetched by id
   const house = new House(() => modulesIn((k) => store.getSetting(k)));   // C-180: the modules in the house (ai/house.ts)
   discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
+  const checkTalk = async () => {                              // C-211: each talk source's health, every minute
+    const at = new Date().toISOString();
+    const n8nOk = cfg.talk.url ? { ok: await reachable(cfg.talk.url), at } : null;
+    const modules = (await house.view()).map((m) => ({ name: m.name, ok: !m.error && !!m.llm, at }));
+    TALK_HEALTH = { n8n: n8nOk, modules };
+  };
+  checkTalk().catch(() => {});
+  setInterval(() => { checkTalk().catch(() => {}); }, 60_000).unref();
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
@@ -723,7 +744,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-66: who answers when you talk -- "auto" (this computer's model, OpenRouter when it is busy), "local" only (the
       // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
-      const talkView = async () => ({ provider: talkProvider(), connected: !!ecfg.talk.url, indexVoice: indexVoice(),
+      const talkView = async () => ({ provider: talkProvider(), first: talkFirst(store), health: TALK_HEALTH, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "" });
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       if (req.method === "POST" && path === "/api/talk/settings") {
@@ -731,7 +752,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.provider !== undefined && !["module", "auto", "local", "openrouter"].includes(b.provider))
           return send(res, 400, { error: "provider is module, auto, local or openrouter" });
         if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
+        if (b.first !== undefined && !["n8n", "module"].includes(b.first)) return send(res, 400, { error: "first is module or n8n" });
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
+        if (b.first !== undefined) setTalkFirst(store, b.first);   // C-211
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);
         if (typeof b.moduleAddresses === "string") {          // a board's address, given by hand (ai/discover.ts), looked for now
           const list = b.moduleAddresses.split(",").map((a: string) => a.trim()).filter(Boolean);
@@ -929,12 +952,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const talkOn = async (p: ReturnType<typeof talkPayload>): Promise<Record<string, unknown>> => {
         const asked = (p as { guide?: unknown }).guide;           // C-209: the GUIDE is answered on the hub's module only (n8n knows the daemon)
         if (asked && (p.provider !== "module" || !house.any)) return { error: "Asking the GUIDE needs the hub." };   // DRAFT
-        if (p.provider !== "module" || !house.any) return n8n(ecfg, "daemon/talk", p.provider === "module" ? { ...p, provider: "auto" } : p);
         const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
           daemon: p.daemon, day: p.day, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide };
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
+        if (p.provider !== "module" || !house.any) {              // n8n first -- and, C-211, the module when n8n cannot answer
+          const r = await n8n(ecfg, "daemon/talk", p.provider === "module" ? { ...p, provider: "auto" } : p);
+          if (!r.error || !house.any || asked) return r;
+          try { return shaped(await house.talk(ask, null)); } catch { return r; }
+        }
         try { return shaped(await house.talk(ask)); }
         catch (e) {
           const other = await n8n(ecfg, "daemon/talk", { ...p, provider: "auto" });
@@ -1148,6 +1175,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (kind === "read" || kind === "lean") {                 // C-203: a read given, a lean told -- the log's, not tending
           const r = takeSubtle(store, kind, typeof b.detail === "string" ? b.detail : "", deviceId);
           return send(res, r.status, r.body);
+        }
+        // C-211: who answers a talk first, chosen on a board -- "talkfirst module|n8n"
+        if (kind === "talkfirst") {
+          if (b.detail !== "module" && b.detail !== "n8n") return send(res, 400, { error: "talkfirst is module or n8n" });
+          setTalkFirst(store, b.detail);
+          return send(res, 200, { talk: talkNow(store) });
         }
         if (kind === "where") {
           const f = takeFix(store, typeof b.detail === "string" ? b.detail : "", deviceId);

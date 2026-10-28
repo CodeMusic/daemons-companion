@@ -564,6 +564,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "MOTION?" && !fromPhone) reply(motionStatus());
   else if (line == "NIGHT?" && !fromPhone) reply(nightStatus());     // C-200
   else if (line == "SUBTLE?" && !fromPhone) reply(intuitionStatus());   // C-203
+  else if (line == "ALARM?" && !fromPhone) reply(clockStatus());     // C-205
   else if (line == "GPS?" && !fromPhone) reply(gpsStatus());         // C-174   // C-201: the Ultra's motion sensor, for a check
   else if (line == "PLAY?" && !fromPhone) reply(playStatus());      // T-426: the instrument, its lock, the songs
   else if (line == "PLAY UNLOCK" && !fromPhone) { playBenchUnlock(); reply(playStatus()); }   // T-426: a bench check

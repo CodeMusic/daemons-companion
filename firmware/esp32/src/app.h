@@ -72,6 +72,8 @@ void leanPull(bool pays, bool may = true); void leanResult(bool paid); void draw
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();
+void clockBegin(); void clockLoop(uint32_t now); String clockStatus();   // C-205: HOURS (clock.cpp)
+String alarmWords();                                       // C-205: the alarm's time, "" off
 long gpsMetresToday();                                     // C-174: walked today by the GNSS, -1 none
 String stepsWords(long steps);                             // "1234 STEPS", and the distance beside them where there is one
 void nightBegin(); void nightLoop(uint32_t now); void nightTuck(); void nightWake();
@@ -256,7 +258,7 @@ void batteryFake(int pct);                // C-63: BATTEST <pct> down the cable 
 typedef String (*RoutineFn)();
 struct Routine { const char *name; RoutineFn run; };
 struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
-extern RoutineType types[10];
+extern RoutineType types[12];
 extern int typeCount;
 void routinesBegin();                     // the types this board can run
 bool partyFirst();                        // C-68: ROUTINES opens the party (a board with no radios of its own)

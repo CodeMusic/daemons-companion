@@ -451,7 +451,7 @@ export const DEVICE_DOOR = [
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
-  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
+  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
 ];
 
@@ -1614,9 +1614,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
         // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
-        if (q.has("player") || q.has("mark") || q.has("guide") || q.has("subtle")) {   // C-145: ?guide=cover; T-423: ?subtle=<picture>_<frame>|cover
-          const sub = q.get("subtle") ?? "";
-          const name = q.has("subtle") ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `subtle_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
+        if (q.has("player") || q.has("mark") || q.has("guide") || q.has("subtle") || q.has("arcana")) {   // C-145: ?guide=cover; T-423: ?subtle=<picture>_<frame>|cover; C-232: ?arcana=<face>
+          const sub = q.get("subtle") ?? "", face = q.get("arcana") ?? "";
+          const name = q.has("arcana") ? (/^(reason|instinct)(_shiny)?$/.test(face) ? `arcana_${face}.png` : "") : q.has("subtle") ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `subtle_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
             ? `player_${q.get("player") === "instinct" ? "instinct" : "reason"}${q.get("walk") ? "_walk" : ""}.png`
             : `mark_${Math.max(1, Math.min(8, Number(q.get("mark")) || 1))}.png`;
           const file = join(ART_DIR, name);
@@ -1640,9 +1640,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return res.end(body);
       }
       // T-423: THE SUBTLE LAYER's pictures -- /art/subtle/<picture>_<frame>.png, and /art/subtle/cover.png
-      const subtleArt = path.match(/^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/);
+      const subtleArt = path.match(/^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/) ?? path.match(/^\/art\/(arcana)\/((?:reason|instinct)(?:_shiny)?)\.png$/);   // C-232: a card's face
       if (req.method === "GET" && subtleArt) {
-        const file = join(ART_DIR, `subtle_${subtleArt[1]}.png`);
+        const file = join(ART_DIR, subtleArt[1] === "arcana" ? `arcana_${subtleArt[2]}.png` : `subtle_${subtleArt[1]}.png`);
         if (!existsSync(file)) return send(res, 404, { error: "no such picture" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(readFileSync(file));

@@ -127,3 +127,23 @@ describe("C-229, C-230: through the server", () => {
     expect((await get("held", "/api/subtle/journal")).entries).toHaveLength(1);
   });
 });
+
+describe("C-232: the cards, through the server", () => {
+  it("draws only once the book is held: the day's card, a card, a spread", async () => {
+    expect((await get("not", "/api/arcana/today")).held).toBe(false);
+    expect((await fetch(base.not + "/api/arcana/draw")).status).toBe(403);
+    const t = await get("held", "/api/arcana/today");
+    expect(t.held).toBe(true);
+    expect(t.card).toMatchObject({ face: expect.stringMatching(/^\/art\/arcana\/(reason|instinct)(_shiny)?\.png$/), art: expect.stringMatching(/^\/art\/species\/\d+\.png$/) });
+    expect((await get("held", "/api/arcana/today")).card).toEqual(t.card);
+    expect((await get("held", "/api/arcana/draw?count=3")).cards.map((c: any) => c.at)).toEqual(["PAST", "PRESENT", "FUTURE"]);
+    expect((await get("held", "/api/arcana/draw")).cards).toHaveLength(1);
+  });
+  it("serves a card's face, and keeps the day's card beside the day's answer", async () => {
+    const r = await fetch(base.held + "/art/arcana/reason_shiny.png");
+    expect(r.status).toBe(200);
+    expect(r.headers.get("content-type")).toBe("image/png");
+    const kept = (await post("held", "/api/subtle/today", { text: "the card said steady" })).json.kept;
+    expect(kept.card).toMatchObject({ keyword: (await get("held", "/api/arcana/today")).card.keyword });
+  });
+});

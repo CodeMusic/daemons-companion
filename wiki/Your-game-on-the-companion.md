@@ -101,6 +101,13 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   centre. Typed, or held and spoken; read aloud where the voice is. On a phone alone the line is the book's own sentence;
   with the hub, its module may say it in its own words. The GUIDE, for its part, ends some answers on the day's virtue
   over its shadow. Every word DRAFT.
+- **THE SUBTLE LAYER's cards** (C-232) -- twenty-two, our own arcana, each with two faces on the book's purple: **REASON**,
+  a circuit board under green with a daemon of the mainland (where the game teaches computer science and machine
+  learning), and **INSTINCT**, a living net under gold with a daemon of the islands (where it teaches the mind) -- a
+  keyword at the top, a phrase under the daemon; now and then a **shiny** one, its colours inverted, a gold foil edge.
+  **THE DAY'S CARD** (the same all day, kept beside the day's answer in the journal), **DRAW A CARD** whenever you want
+  one -- one each, with a friend -- and **PAST · PRESENT · FUTURE**. In the book and on the watches' BOOKS. A card points
+  you toward something to notice; it never says what will happen. Every word DRAFT.
 - **Words under words** (C-204) -- with the book held, four of the daemon's own lines carry a second, in purple, after
   it: what it means beneath what it says. You chose them: under "Hi! I missed you!", *I counted.*; under "Goodnight.
   Stay near?", *Don't go far.*; under "Again! Again!", *Watch me.*; under "Five more minutes?", *Stay with me.* On the

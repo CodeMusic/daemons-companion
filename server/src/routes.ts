@@ -17,6 +17,7 @@ import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
 import { readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
+import { cardOfDay, draw } from "./arcana.js";   // C-232
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
@@ -40,7 +41,7 @@ import { bondAdd } from "./evolve.js";
 import { thriveOf } from "./thrive.js";   // C-207
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -108,6 +109,15 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     if (path === "/api/reads") return ok({ held: readSubtle(save, undefined, a.query?.preview === "1").held, ...readsView(store, now) });   // C-203: the companion's own log
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));
+    if (path === "/api/arcana/draw") {                                   // C-232: a card, or a spread of three (a GET: the watch may ask it)
+      if (!readSubtle(save).held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
+      return ok({ cards: draw(a.query?.count === "3" ? 3 : 1) });
+    }
+    if (path === "/api/arcana/today") {                                  // C-232: the day's card, the same all day for this trainer
+      if (!readSubtle(save).held) return ok({ held: false });
+      const p = readProfile(save);
+      return ok({ held: true, card: cardOfDay(today(h, store, now).date, `${p.name}${p.trainerId}`) });
+    }
     if (path === "/api/subtle/today" || path === "/api/subtle/journal") {   // C-230: the book's question of the day, and what was answered
       if (!readSubtle(save).held) return ok({ held: false });
       const t = today(h, store, now), q = todaysQuestion(t.date, dayOf(t));
@@ -141,7 +151,11 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const save = h.save.read(), s = save ? readSubtle(save) : null;
       if (!s?.held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
       const t = today(h, store, now), day = dayOf(t), text = typeof b?.text === "string" ? b.text.trim().slice(0, 500) : "";
-      if (path.endsWith("today")) { const k = keepAnswer(store, todaysQuestion(t.date, day), text, now); return typeof k === "string" ? no(400, k) : ok({ kept: k }); }
+      if (path.endsWith("today")) {
+        const p = readProfile(save!), c = cardOfDay(t.date, `${p.name}${p.trainerId}`);
+        const k = keepAnswer(store, { ...todaysQuestion(t.date, day), card: { n: c.n, side: c.side, keyword: c.keyword, shiny: c.shiny } }, text, now);
+        return typeof k === "string" ? no(400, k) : ok({ kept: k });
+      }
       if (!text) return no(400, "ask it something");
       return ok(answerOf(s, text.slice(0, 200), b?.mode === "voices" ? "voices" : "ask", Number(b?.turn) || 0, day, t.date));
     }

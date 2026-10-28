@@ -85,7 +85,8 @@ const DAILY = [                                                     // DRAFT -- 
   "Before you steer anything today: what do you want, under what you want?",
   "What read came to you today, and did it land?",
 ];
-export type Today = { date: string; question: string; centre: string; note: string; word: string };
+export type Today = { date: string; question: string; centre: string; note: string; word: string;
+                      card?: { n: number; side: string; keyword: string; shiny: boolean } };   // C-232: the day's card, kept beside the answer
 export function todaysQuestion(date: string, day: Day): Today {
   return { date, question: fill(DAILY[hash(date) % DAILY.length], day), centre: day.chakra, note: day.note, word: day.theme };
 }

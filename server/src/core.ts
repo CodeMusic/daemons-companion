@@ -367,6 +367,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
+                                     slot: p.slot, artKey: `${p.species}-${p.moves.join(".")}`,   // a device fetches their pictures ahead
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
     // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
     const g = d ? grown(d, store) : null;

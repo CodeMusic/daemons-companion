@@ -332,6 +332,14 @@ function partyFace(cfg: Config, slot: number): Face | null {
   const f = d ? faceOf(core.artName(d.species)) : null;
   return f?.mouth ? f : null;
 }
+// the key a device files a daemon's picture under -- the same as the state's `artKey` (core.ts), so the reply names whose it is
+const artKeyOf = (d: { species: number; moves: number[] }) => `${d.species}-${d.moves.join(".")}`;
+function partyArtKey(cfg: Config, which: (p: any) => boolean): string | null {
+  if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
+  const bytes = new Uint8Array(readFileSync(cfg.savePath));
+  const d = [...readSave(bytes).party, ...readAway(bytes)].find(which);
+  return d ? artKeyOf(d) : null;
+}
 function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
   const bytes = new Uint8Array(readFileSync(cfg.savePath));
@@ -1692,12 +1700,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const n = Number(slot);
           const body = /^[0-5]$/.test(slot) ? partyPng(ecfg, (p) => p.slot === n) : null;
           if (!body) return send(res, 404, { error: "no daemon in that party slot" });
-          return send(res, 200, { slot: n, ...deviceArt(body) });
+          return send(res, 200, { slot: n, artKey: partyArtKey(ecfg, (p) => p.slot === n), ...deviceArt(body) });
         }
         const mine = carriedDaemon(ecfg, store, deviceId);                  // C-80: this device's own
         const body = mine && partyPng(ecfg, (p) => p.away && p.personality === mine.personality);
         if (!body) return send(res, 404, { error: "no daemon is on the device" });
-        return send(res, 200, deviceArt(body));
+        return send(res, 200, { artKey: partyArtKey(ecfg, (p) => p.away && p.personality === mine.personality), ...deviceArt(body) });
       }
       if (req.method === "POST" && path === "/api/goals") {
         const b = await body(req);

@@ -2,6 +2,7 @@
 #include <Preferences.h>
 #include <mbedtls/base64.h>
 #include "app.h"
+#include "card.h"
 #include "broadcast.h"
 #include "expression.h"
 #include "sound.h"
@@ -169,6 +170,7 @@ bool takeState(const char *json) {
     if (st.partyN >= 6) break;
     Member &m = st.party[st.partyN++];
     m.name = p["name"] | ""; m.level = p["level"] | 0; m.types = ""; m.n = 0;
+    m.artKey = p["artKey"] | ""; m.slot = p["slot"] | -1;   // its picture, fetched ahead (askForArt)
     for (JsonVariant t : p["types"].as<JsonArray>()) m.types += (m.types.length() ? " / " : "") + String((const char *)(t | ""));
     for (JsonVariant r : p["routines"].as<JsonArray>()) {
       if (m.n >= 4) break;
@@ -222,18 +224,59 @@ uint8_t artPix[2048];
 String artKeyHave;                 // whose art is in artPix; the device asks again when the state's artKey differs
 uint32_t artAskedAt = 0;
 
+// The pictures already fetched, by artKey, so a daemon changed on the board shows at once (the user, 2026-10-28: "if I
+// change the daemon that's on it the sprite doesn't load, you just see the shadow; eventually it usually loads"): the
+// party's are fetched ahead (askForArt), and on the Ultra each is kept on the card too. Seven where there is PSRAM (the
+// party and one away in a box), two elsewhere (the one before, back at once).
+struct KeptArt { String key; uint16_t pal[16]; uint8_t *pix = nullptr; uint32_t used = 0; };
+static KeptArt kept[7];
+static int keptN() { return psramFound() ? 7 : 2; }
+static KeptArt *keptFor(const String &key) {
+  for (int i = 0; i < keptN(); i++) if (kept[i].pix && kept[i].key == key) return &kept[i];
+  return nullptr;
+}
+bool artCached(const String &key) { return keptFor(key) != nullptr; }
+static void keep(const String &key, const uint16_t *pal, const uint8_t *pix) {
+  KeptArt *k = keptFor(key);
+  if (!k) {
+    k = &kept[0];
+    for (int i = 0; i < keptN(); i++) { if (!kept[i].pix || kept[i].used < k->used) k = &kept[i]; if (!kept[i].pix) break; }
+    if (!k->pix) k->pix = (uint8_t *)(psramFound() ? ps_malloc(sizeof artPix) : malloc(sizeof artPix));
+    if (!k->pix) return;
+  }
+  k->key = key; memcpy(k->pal, pal, sizeof k->pal); memcpy(k->pix, pix, sizeof artPix); k->used = millis();
+}
+static void show(const String &key, const uint16_t *pal, const uint8_t *pix) {
+  memcpy(artPal, pal, sizeof artPal); memcpy(artPix, pix, sizeof artPix);
+  artKeyHave = key; dirty = true;
+}
+
+// A picture as the server sends it. The reply names whose it is (`artKey`; a server before 2026-10-28 does not, and the
+// one asked for is assumed): one fetched for a daemon since changed is kept, not shown under the new one's name.
 bool takeArt(const String &json) {
   JsonDocument doc;
   if (deserializeJson(doc, json) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
-  JsonArray pal = doc["palette"].as<JsonArray>();
-  for (int i = 0; i < 16; i++) artPal[i] = i < (int)pal.size() ? (uint16_t)(pal[i] | 0) : 0;
+  uint16_t pal[16]; static uint8_t pix[2048];
+  JsonArray pa = doc["palette"].as<JsonArray>();
+  for (int i = 0; i < 16; i++) pal[i] = i < (int)pa.size() ? (uint16_t)(pa[i] | 0) : 0;
   const char *b64 = doc["pixels"] | "";
   size_t got = 0;
-  if (mbedtls_base64_decode(artPix, sizeof artPix, &got, (const unsigned char *)b64, strlen(b64)) || got != sizeof artPix)
+  if (mbedtls_base64_decode(pix, sizeof pix, &got, (const unsigned char *)b64, strlen(b64)) || got != sizeof pix)
     return false;
-  artKeyHave = st.daemon.artKey;
-  dirty = true;
+  String key = doc["artKey"] | "";
+  if (!key.length()) key = doc["slot"].isNull() ? st.daemon.artKey : String("");
+  if (!key.length()) return false;
+  bool fresh = !artCached(key);
+  keep(key, pal, pix);
+  if (fresh) cardWrite("art/" + key + ".json", json);                // C-199: on the Ultra's card, for the next time
+  if (key == st.daemon.artKey) show(key, pal, pix);
   return true;
+}
+// the picture kept in memory, or on the card -- shown now if it is the one carried
+bool artFromCache(const String &key) {
+  if (KeptArt *k = keptFor(key)) { k->used = millis(); if (key == st.daemon.artKey) show(key, k->pal, k->pix); return true; }
+  String c = cardRead("art/" + key + ".json");
+  return c.length() && takeArt(c) && artCached(key);
 }
 
 // Index 0 is transparent, as in the game.

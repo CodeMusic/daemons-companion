@@ -32,7 +32,7 @@ struct Daemon { String name, nickname, holding, category, entry, types, artKey; 
                 String tired = "awake"; Den den;                                  // C-113: asleep it stays put; its den
                 String margin; };                                                 // C-149: OPUS's margin, if the save holds OPUS
 // C-68: a party daemon, and its routines as the game names them, each with the colour its streak takes on this body
-struct Member { String name, types; int level = 0, n = 0; String routine[4], type[4]; uint32_t colour[4] = {}; };
+struct Member { String name, types, artKey; int level = 0, n = 0, slot = -1; String routine[4], type[4]; uint32_t colour[4] = {}; };
 // C-149: THE CASINO's coins -- the save's money and what waits for SYNC (server/src/casino.ts), `seen` the newest of this
 // board's reports counted in it ("<boot>.<seq>"), and the party's other daemons by slot, the reels' pictures -- and how
 // the board dresses today: the holiday (server/data/holidays.json), its look, two colours and a hat; a QUIET day plain
@@ -102,6 +102,8 @@ void soundSetHere(bool on);               // C-159: SOUND turned on or off on th
 bool takeState(const String &json);
 bool takeState(const char *json);
 bool takeArt(const String &json);
+bool artFromCache(const String &key);   // the picture kept for that daemon, made the one shown
+bool artCached(const String &key);
 void drawDen(int x, int y, int w, int h, int floorY);   // C-113, den.cpp
 int dayIndex();                           // C-50: Sunday 0, for its tunes
 String daemonName();                      // C-51: the routines speak in its name

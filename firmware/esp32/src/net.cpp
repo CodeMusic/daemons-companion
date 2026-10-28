@@ -847,13 +847,33 @@ void reportLoop() {
     retryAt = millis() + 10000;
 }
 
-// C-36: the device asks for its daemon's art when the state names art it does not have -- through the bridge (ART?),
-// or over Wi-Fi itself. At most every five seconds, so a missing server is not asked in a loop.
+// C-36: the device asks for its daemon's art when the state names art it does not have -- first from the pictures it
+// keeps (state.cpp), then through the bridge (ART?), then over Wi-Fi itself. A daemon newly carried is asked for at once;
+// a bridge that has not answered in 2.5 s is passed over for Wi-Fi where there is Wi-Fi (the phone, asleep in a pocket,
+// left the shadow there for minutes); a failure is asked again after five seconds, so a missing server is not asked in
+// a loop. With nothing wanted, the party's pictures are fetched ahead, one every three seconds, so a change shows at once.
+static void fetchPartyArt() {
+  static uint32_t nextAt = 0;
+  if (!psramFound() || bridgeLive() || !online() || (int32_t)(millis() - nextAt) < 0) return;
+  for (int i = 0; i < st.partyN; i++) {
+    const Member &m = st.party[i];
+    if (m.slot < 0 || !m.artKey.length() || artCached(m.artKey)) continue;
+    if (artFromCache(m.artKey)) { nextAt = millis() + 200; return; }          // on the card
+    bool ok; String got = http("GET", "/api/device/art?slot=" + String(m.slot), "", &ok);
+    nextAt = millis() + (ok && takeArt(got) ? 3000 : 30000);
+    return;
+  }
+}
 void askForArt() {
-  if (!st.carrying || !st.daemon.artKey.length() || st.daemon.artKey == artKeyHave) return;
-  if (artAskedAt && millis() - artAskedAt < 5000) return;
+  const String &key = st.daemon.artKey;
+  if (!st.carrying || !key.length() || key == artKeyHave) { fetchPartyArt(); return; }
+  static String wanted; static bool bridged = false;
+  if (wanted != key) { wanted = key; artAskedAt = 0; bridged = false; if (artFromCache(key)) { artTold = "kept"; return; } }
+  if (artAskedAt && millis() - artAskedAt < (bridged && online() ? 2500u : 5000u)) return;
   artAskedAt = millis();
-  if (bridgeLive()) { bridge("ART?"); return; }
+  if (bridgeLive() && !bridged) { bridged = true; bridge("ART?"); return; }
+  bridged = false;
+  if (!online()) { if (bridgeLive()) { bridged = true; bridge("ART?"); } return; }
   bool ok;
   String got = http("GET", "/api/device/art", "", &ok);
   artTold = !ok ? "fetch failed (" + String(got.length()) + " bytes)" : takeArt(got) ? "taken" : "unread (" + String(got.length()) + " bytes)";

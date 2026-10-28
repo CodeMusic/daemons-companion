@@ -166,8 +166,8 @@ function WhereRow({ id, ink }: { id: string; ink: string }) {
         </>) : null}
       </>) : where !== undefined ? <Small color="$color10">{"No place yet: it takes a fix on a walk, and every quarter hour."}</Small> : null}
       <XStack gap={8}>
-        <Action label={asked ? "Asked -- listen for it" : "FIND IT"} ink={ink}
-                onPress={async () => { await api("/api/where/find", { id }); setAsked(true); setTimeout(() => setAsked(false), 60000); }} />
+        <Action label={asked ? "Found it -- stop the sound" : "FIND IT"} ink={ink}
+                onPress={async () => { await api("/api/where/find", asked ? { id, stop: true } : { id }); setAsked(!asked); }} />
       </XStack>
     </YStack>
   );

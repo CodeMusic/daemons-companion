@@ -118,6 +118,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     // C-174: FIND -- one device asked to say where it is, and to sound
     if (path === "/api/where/find") {
       if (!validDeviceId(b?.id)) return no(400, "find {id}");
+      // found, or heard enough: the ask taken back, so the watch stops at its next state (the user, 2026-10-28: it beeped
+      // and buzzed on indoors, where no fix comes to answer it)
+      if (b.stop === true) { store.setSetting(`find.${b.id}`, null); return ok({ asked: false }); }
       askFind(store, b.id, now); return ok({ asked: true });
     }
     // C-134: a broadcast from the app, the site or the Tab5, as one of our daemons

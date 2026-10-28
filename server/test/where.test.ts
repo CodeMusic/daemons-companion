@@ -71,3 +71,16 @@ describe("C-199: a fix told late, from the card", () => {
     expect(new Date(fixesOf(store)[0].at).getTime()).toBe(now.getTime());
   });
 });
+
+describe("FIND taken back (the user, 2026-10-28)", () => {
+  it("stops when the app says it was found", async () => {
+    const { Store } = await import("../src/db.js");
+    const { route } = await import("../src/routes.js");
+    const store = new Store(":memory:"), h = { edition: "CONTENT" as const, save: { read: () => null, write: () => null } };
+    const post = (body: object) => route(h, store, { method: "POST", path: "/api/where/find", body, deviceId: "" });
+    expect(post({ id: "t-watch-ultra-f351d4" }).body).toEqual({ asked: true });
+    expect(store.getSetting("find.t-watch-ultra-f351d4")).toBeTruthy();
+    expect(post({ id: "t-watch-ultra-f351d4", stop: true }).body).toEqual({ asked: false });
+    expect(store.getSetting("find.t-watch-ultra-f351d4")).toBeFalsy();
+  });
+});

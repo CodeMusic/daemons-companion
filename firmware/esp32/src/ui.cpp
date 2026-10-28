@@ -753,6 +753,26 @@ void draw() {
          " The rest is set on the site, the app or the Tab5.", 10, 88, W - 20, 2, 18, 4, PAPER);   // DRAFT
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
     footer(hint(cfg.sound ? "press: turn it off" : "press: turn it on"));          // DRAFT
+  } else if (page == TALK_PAGE) {            // C-211 (the user, 2026-10-28): who answers first, a dot for each: answering or not
+    canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString("WHO ANSWERS FIRST", 10, 32);                                // DRAFT
+    if (!st.talk.have) wrap("Not known yet. The companion has not said.", 10, 56, W - 20, 2, 18, 3, PAPER);   // DRAFT
+    else {
+      const char *name[2] = { "MODULE", "N8N" }, *what[2] = { "the hub's own", "your voice" };   // DRAFT
+      bool ok[2] = { st.talk.module, st.talk.n8n }, first[2] = { st.talk.first == "module", st.talk.first != "module" };
+      for (int i = 0; i < 2; i++) {
+        int y = 58 + i * 46;
+        canvas.fillCircle(18, y + 12, 6, ok[i] ? 0x07E0 : 0xF800);                  // green answering, red not
+        canvas.setTextFont(4); canvas.setTextColor(first[i] ? readable(day) : QUIET);
+        canvas.drawString(name[i], 34, y);
+        int x = 34 + canvas.textWidth(name[i]) + 8;
+        canvas.setTextFont(1); canvas.setTextColor(QUIET);
+        canvas.drawString(first[i] ? "first" : what[i], x, y + 10);
+      }
+      wrap("The other answers if the first is slow.", 10, 154, W - 20, 2, 18, 2, PAPER);   // DRAFT
+    }
+    canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+    footer(hint(!st.talk.have ? "" : st.talk.first == "module" ? "press: n8n first" : "press: module first"));   // DRAFT
   } else if (page == OFF_PAGE) {             // the user, 2026-10-15: "there is no way to turn it off"
     canvas.setTextFont(4); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("SWITCH OFF", 10, 40);                                       // DRAFT

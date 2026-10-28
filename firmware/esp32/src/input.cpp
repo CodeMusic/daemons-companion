@@ -196,7 +196,7 @@ void turn(int step) {
     // C-159: SOUND before it, on or off on the board itself
     // C-161 (the user, 2026-10-18: "the first tabs should be the most used ones (goals, routines, etc... and finally
     // settings"): on the face boards TODAY, then ROUTINES, then the daemon, the day, and SETTINGS (SOUND_PAGE) last
-    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, ROUTINES_PAGE, DAEMON, DAY_PAGE, SOUND_PAGE, OFF_PAGE };
+    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, ROUTINES_PAGE, DAEMON, DAY_PAGE, TALK_PAGE, SOUND_PAGE, OFF_PAGE };   // C-211: TALK on the watches
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
     // C-163: the watch has no SWITCH OFF -- its crown held sleeps, held longer switches it off (its power chip)
     const Page *order = face ? WATCH : EMBED; int n = face ? (isWatch() ? 6 : 7) : 6, at = 0;
@@ -255,6 +255,11 @@ void press() {
     else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
     else if (page == OFF_PAGE) switchOff("Off.");                                // the user, 2026-10-15; DRAFT
     else if (page == SOUND_PAGE) { soundSetHere(!cfg.sound); if (cfg.sound) soundSelect(); }   // C-159
+    else if (page == TALK_PAGE && st.talk.have) {               // C-211: the other one first, at once; the server is told
+      st.talk.first = st.talk.first == "module" ? "n8n" : "module";
+      report("talkfirst", st.talk.first);
+      dirty = true;
+    }
     else if (page == DAEMON && st.carrying) { screen = CARE; careAt = 0; }   // C-13
     else if (page == ROUTINES_PAGE) {
       if (partyFirst()) { screen = PARTY; partyAt = st.partyN; }    // C-68: the party's routines, on a board with no radios -- its RADIOS first

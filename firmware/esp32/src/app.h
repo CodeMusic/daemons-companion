@@ -42,6 +42,9 @@ struct Casino { bool have = false, known = false;   // known: the companion send
                int reel[3] = {}; int reelN = 0;                  // C-158: the reels' other daemons by species (seen in the game)
                String look, hat; uint32_t colour[2] = { 0, 0 };   // C-158: how it is dressed, the companion's one rule (empty: an older one)
                 long money = 0, pending = 0, balance = 0; String seen; int friends[5] = {}; int friendN = 0; };
+// C-211: who answers a talk first -- the hub's module or n8n, the other after the deadline -- and whether each answered
+// the server's last check (a minute apart); `have` false from a companion that does not send it
+struct Talk { bool have = false; String first = "n8n"; bool n8n = false, module = false; };
 struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {
   bool have = false;
@@ -51,6 +54,7 @@ struct State {
   Member party[6]; int partyN = 0;          // C-68
   String companion, cardNote;               // C-124: whose cards are ours; a note waiting for a card
   Casino casino; Holiday holiday;           // C-149
+  Talk talk;                                // C-211
   String watch, sky;                        // C-158: the real world -- the hour (DAWN DAY DUSK NIGHT) and the weather's kind
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
@@ -106,7 +110,7 @@ String daemonName();                      // C-51: the routines speak in its nam
 // routine RUNs. INDEX_ENTRY: the carried daemon's (C-36). PICK_NET, TYPE_PASS: joining a network on the board (C-33).
 // CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51. PARTY, MOVES: GAME ROUTINES (C-68) -- the
 // party, then a daemon's routines; picking one plays it, the ring lit its colour.
-enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_PAGE };   // C-159: SOUND, on or off on the board   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_PAGE, TALK_PAGE };   // C-211: TALK, who answers first   // C-159: SOUND, on or off on the board   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE,   // TALK: C-66; COMPOSE: C-123
               CARE_KEYS,                  // C-149: the three-button boards' CARE -- a button each, then home

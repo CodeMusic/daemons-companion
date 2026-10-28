@@ -120,6 +120,9 @@ bool takeState(const char *json) {
     st.milestone = doc["step"]["milestone"]["title"] | ""; st.msAt = doc["step"]["milestone"]["at"] | 0;
     st.msOf = doc["step"]["milestone"]["of"] | 0;
   }
+  JsonVariant tk = doc["talk"];                              // C-211
+  st.talk.have = !tk.isNull();
+  if (st.talk.have) { st.talk.first = tk["first"] | "n8n"; st.talk.n8n = tk["n8n"] | false; st.talk.module = tk["module"] | false; }
   // C-149: the CASINO's coins, and the holiday (none: an ordinary day)
   JsonVariant cs = doc["casino"];
   st.casino.have = !cs.isNull();

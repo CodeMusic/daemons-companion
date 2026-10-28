@@ -145,6 +145,7 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
     if (path === "/api/device/state") return ok(deviceState(h, s, new Date(), deviceId, null));
     if (path === "/api/device/settings") return ok(deviceSettings(s));
     if (path === "/api/version") return ok({ server: null, appChanged: null });
+    if (path === "/api/hub") return ok({ hub: false });                // C-190: no hub; everything here but the AI
     if (path === "/api/settings/away") return ok({ url: null });
     if (path === "/api/settings")
       return ok({ savePath: hasSave() ? "On this phone" : null, dir: null, exists: hasSave(), valid: hasSave(), source: "phone", canPick: false });

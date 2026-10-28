@@ -9,6 +9,7 @@ import { ALONE, api, HANDHELD, HandheldNow, isAway, OFFLINE, redrawWidgetNow, WI
 import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../types";
 import { Action, Art, Card, Choice, Eyebrow, Result, Small } from "../ui";
 import { useApi } from "../useApi";
+import { HubCard } from "./Hub";   // C-190
 // a shared setting's row (a component of its own, so a redraw never builds the rows again)
 const Row = (p: { label: string; children: React.ReactNode }) =>
   <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
@@ -272,6 +273,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
   return (
     <YStack gap={14}>
       {error ? <Small color="$color10">{`Not updated just now: ${error}`}</Small> : null}
+      <HubCard />
       {HANDHELD && !ALONE ? <HandheldCard ink={ink} /> : null}
       {ALONE ? null : (   /* C-111: a handheld links to a companion on a computer */
       <Card borderLeftWidth={6} borderLeftColor={link.linked ? "$color9" : "$color5"}>

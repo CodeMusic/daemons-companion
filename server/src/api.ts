@@ -28,7 +28,7 @@
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
@@ -324,6 +324,8 @@ export function ourHost(hostOrUrl: string): boolean {
 }
 // What a board may log about itself over the network (INTERACT): its routines, the CASINO's coins and seat, and its cares.
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
+// C-190: the boards with a LoRa radio (docs/DEVICES.md)
+const LORA_KINDS = /^(t-deck|t-watch-s3|t-watch-ultra)/;
 export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where"];   // C-159: setting; C-200: night; C-174: where
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
@@ -669,6 +671,17 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                 devices: v.devices, away: v.away });
       }
       if (req.method === "GET" && path === "/api/devices") return send(res, 200, devicesView());   // C-80
+      // C-190: what this companion gives the one app beyond a phone alone -- the save it mirrors, its AI, its LoRa
+      if (req.method === "GET" && path === "/api/hub") {
+        const mirrored = store.getSetting("save.mirror") === "on" && existsSync(mirrorPath(ecfg));
+        const modules = (await house.view()).map((m) => ({ name: m.name, llm: m.llm, answering: !m.error && !!m.llm }));
+        const since = new Date(Date.now() - 14 * 86400000);
+        const heard = store.interactionsSince(since).filter((i) => i.kind === "msg" || (i.kind === "met" && / lora /.test(i.detail ?? ""))).at(-1)?.at ?? null;
+        return send(res, 200, { hub: true, server: REPO_COMMIT, onHub: process.platform === "linux",
+                                mirror: { on: mirrored, at: mirrored ? statSync(mirrorPath(ecfg)).mtime.toISOString() : null },
+                                ai: { provider: talkProvider(), modules },
+                                lora: { boards: devices.list().filter((d) => LORA_KINDS.test(d.kind)).map((d) => ({ id: d.id, kind: d.kind, here: d.here })), heard } });
+      }
       // C-91: which build the companion is, and -- given the phone's build -- whether the app has changed since it
       if (req.method === "GET" && path === "/api/version") {
         const build = url.searchParams.get("build") ?? "";

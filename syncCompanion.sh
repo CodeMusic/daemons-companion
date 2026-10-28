@@ -57,7 +57,14 @@ fi
 # The newest DEBUG/PATCHES under DAEMONS' ROM RELEASE (a release's own, or a sealed group's), whole, over what was there.
 if [[ $mode == debug ]]; then
   ROMREL="${ROMREL:-$HERE/../DAEMONS/ROM RELEASE}"
-  newest="$(find "$ROMREL" -path '*/DEBUG/PATCHES/debug_patches.json' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)"
+  # the newest RELEASE, by the version its manifest names -- not the newest file (a back-filled older release, the review)
+  newest="$(find "$ROMREL" -path '*/DEBUG/PATCHES/debug_patches.json' -type f -print0 2>/dev/null | xargs -0 python3 -c '
+import json, sys
+def v(p):
+    try: return tuple(int(x) for x in str(json.load(open(p)).get("version", "0")).split("."))
+    except Exception: return (0,)
+ps = sys.argv[1:]
+print(max(ps, key=v) if ps else "")' 2>/dev/null)"
   [[ -n $newest ]] || { echo "syncCompanion: no DEBUG patches under $ROMREL (a release writes them: DEBUG/PATCHES/)" >&2; exit 1; }
   from="$(dirname "$newest")"
   rsync -rlt --omit-dir-times --delete --exclude .DS_Store "$from/" "$HUB:$SHARED/debug/"

@@ -132,7 +132,12 @@ export function putMirror(cfg: Config, store: Store, bytes: Uint8Array, base?: s
     try { if (gameOf(new Uint8Array(readFileSync(given))) !== gameOf(bytes)) throw new OtherGame("the companion holds another game's save"); }
     catch (e) { if (e instanceof OtherGame) throw e; /* the given save unreadable: the device's is better than none */ }
   }
+  // the mirror on, the game the companion is married to is the one mirrored -- a new game or a fresh TESTING BUILD begun
+  // in the app never replaces it (the review); keep that one by name (C-215) and choose it, if it is wanted
+  const wed = store.married();
+  if (wed && gameOf(bytes) !== `${wed.name}/${wed.trainerId}/${wed.secretId}`) throw new OtherGame("the companion is another game's companion");
   const path = mirrorPath(cfg), tmp = `${path}.companion-writing`;
+  if (existsSync(path)) copyFileSync(path, `${path}.before`);   // the one before it, kept beside it (as SYNC's backups are)
   writeFileSync(tmp, bytes); renameSync(tmp, path);
   store.setSetting("save.mirror", "on");
   return sha1(bytes);
@@ -164,7 +169,12 @@ export const talkFirst = (store: Store): "module" | "n8n" => {
   const p = store.getSetting("talk.provider");
   return p ? (p === "module" ? "module" : "n8n") : TALK_HEALTH.modules.length ? "module" : "n8n";
 };
-const setTalkFirst = (store: Store, first: "module" | "n8n") => store.setSetting("talk.provider", first === "module" ? "module" : "auto");
+// n8n first keeps the user's own choice of which (C-66: "local", the words never leaving home; "openrouter") -- only the
+// module's turn is set over it (the review: a watch's talkfirst had set "auto" over "local")
+const setTalkFirst = (store: Store, first: "module" | "n8n") => {
+  const was = store.getSetting("talk.provider");
+  store.setSetting("talk.provider", first === "module" ? "module" : was === "local" || was === "openrouter" ? was : "auto");
+};
 const talkNow = (store: Store) => ({ first: talkFirst(store), n8n: !!TALK_HEALTH.n8n?.ok, module: TALK_HEALTH.modules.some((m) => m.ok) });
 
 // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all

@@ -23,6 +23,7 @@ import P from "../../data/profile_layout.json" with { type: "json" };
 import speciesJson from "../../data/species.json" with { type: "json" };
 import { expFor, levelFromExp } from "./growth.js";
 import { calcStats, unpackIVs } from "./stats.js";
+import { arriving } from "./trade.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 import eventsJson from "../../data/events.json" with { type: "json" };
@@ -35,7 +36,9 @@ export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: str
                               money: { from: number; to: number } | null; house: { from: number; to: number } | null;
                               evolved: { nickname: string; personality: number; from: number; to: number }[];
                               gifted: { box: number; pos: number; personality: number; species: number } | null;
-                              sounded: { personality: number; level: Sounding }[] }   // C-195: each carried daemon given a level
+                              sounded: { personality: number; level: Sounding }[];   // C-195: each carried daemon given a level
+                              traded: { id: string; out: number; in: number; species: number; nickname: string; where: "party" | "box" }[];   // C-219
+                              tradeWaits: { id: string; why: string }[] }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
 export interface Meetings { seen: number[]; friendship: number }
@@ -46,6 +49,8 @@ export interface Evolve { personality: number; species: number; from?: number } 
 // C-185: a daemon the companion gives (HANDSHAKE, DAEMONS T-450) -- written into the PC's first empty box slot, already
 // AWAY, so it is carried from the moment it arrives
 export interface Gift { species: number; name: string; level: number; personality: number; ivs: number; game: number }
+// C-219: a trade -- the daemon going (by its personality, AWAY here) and the whole record of the one coming in its place
+export interface TradeIn { id: string; out: number; record: Uint8Array }
 
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
@@ -62,7 +67,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
                                              house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift;
-                                             sounding?: Sounding; vars?: Record<number, number> }, l: Layout = LAYOUT): SyncResult {
+                                             sounding?: Sounding; vars?: Record<number, number>; trade?: TradeIn[] }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -264,6 +269,50 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
       gifted = { box: Math.floor(free / 30), pos: free % 30, personality: g.personality >>> 0, species: g.species };
     }
   }
+  // C-219: TRADES -- the daemon another player sent, into the slot the one traded for it left. The one going must still
+  // be here and AWAY after this SYNC's answers (one the game brought home is the game's again: the trade waits); the
+  // one coming is written whole -- its own trainer, its own record -- AWAY, and marked for the game to finish on load
+  // (save/trade.ts arriving). In the party it is given its level and stats as CalculateMonStats would, at full health.
+  // A personality already in the save writes nothing.
+  const traded: SyncResult["traded"] = [], tradeWaits: SyncResult["tradeWaits"] = [];
+  if (opts.trade?.length) {
+    const box = (off: number) => { const id = 5 + Math.floor(off / l.sector_data_size); return { id, byte: where.get(id)! + (off % l.sector_data_size) }; };
+    const boxPersonality = (i: number) => [0, 1, 2, 3].reduce((n, k) => n | (out[box(4 + i * l.box_pokemon_size + k).byte] << (8 * k)), 0) >>> 0;
+    const boxFlags = (i: number) => out[box(4 + i * l.box_pokemon_size + l.flags_byte).byte];
+    const present = (personality: number) => party.some((p) => p.d?.personality === personality) ||
+      Array.from({ length: 14 * 30 }, (_, i) => i).some((i) => boxFlags(i) & 0b10 && boxPersonality(i) === personality);
+    for (const t of opts.trade) {
+      const rec = arriving(t.record, l), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
+      if (!rec || incoming == null) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }   // DRAFT
+      if (present(incoming)) { tradeWaits.push({ id: t.id, why: "that daemon is already in this save" }); continue; }   // DRAFT
+      const inParty = party.find((p) => p.d?.personality === t.out >>> 0);
+      const inBox = inParty ? -1 : Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => boxFlags(i) & 0b10 && boxPersonality(i) === t.out >>> 0) ?? -1;
+      const away = inParty ? awayAfter(inParty) : inBox >= 0 && !!(boxFlags(inBox) & (1 << l.away_bit));
+      if (!inParty && inBox < 0) { tradeWaits.push({ id: t.id, why: "the daemon traded is not in this save" }); continue; }   // DRAFT
+      if (!away) { tradeWaits.push({ id: t.id, why: "the daemon traded is home in the game -- SEND it again" }); continue; }   // DRAFT
+      const d = readDaemon(rec, 0, l)!;
+      if (inParty) {
+        const full = new Uint8Array(l.pokemon_size), v = new DataView(full.buffer);
+        full.set(rec, 0);
+        const row = SPECIES[String(d.species)], level = Math.max(1, levelFromExp(row?.growth ?? 0, d.exp));
+        full[l.level_offset] = level;
+        full[l.box_pokemon_size + 5] = 0xff;                                     // no mail
+        if (row?.base) {
+          const key = (d.personality ^ d.otId) >>> 0, plain = new DataView(new ArrayBuffer(48));
+          for (let k = 0; k < 48; k += 4) plain.setUint32(k, (v.getUint32(32 + k, true) ^ key) >>> 0, true);
+          const order = ORDERS[d.personality % 24], evAt = order.indexOf("E") * 12, misc = order.indexOf("M") * 12;
+          const s = calcStats(row.base, level, unpackIVs(plain.getUint32(misc + 4, true)), [0, 1, 2, 3, 4, 5].map((k) => plain.getUint8(evAt + k)), d.personality);
+          v.setUint16(86, s.maxHP, true);
+          [s.maxHP, s.atk, s.def, s.speed, s.spAtk, s.spDef].forEach((n, k) => v.setUint16(88 + 2 * k, n, true));
+        }
+        for (let k = 0; k < l.pokemon_size; k++) { const b = at(inParty.recStart + k); out[b.byte] = full[k]; touched.add(b.id); }
+        inParty.d = readDaemon(full, inParty.i, l);                              // so SOUNDINGS below sees who is there now
+      } else {
+        for (let k = 0; k < l.box_pokemon_size; k++) { const b = box(4 + inBox * l.box_pokemon_size + k); out[b.byte] = rec[k]; touched.add(b.id); }
+      }
+      traded.push({ id: t.id, out: t.out >>> 0, in: incoming >>> 0, species: d.species, nickname: d.nickname, where: inParty ? "party" : "box" });
+    }
+  }
   // C-195: SOUNDINGS -- each carried daemon's level, in the party and the boxes; home, or just gone, it is 0
   const sounded: SyncResult["sounded"] = [];
   if (opts.sounding !== undefined) {
@@ -322,5 +371,5 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const sector = out.subarray(off, off + l.sector_size);
     new DataView(out.buffer, off).setUint16(FOOTER_CHECKSUM, sectionChecksum(sector, sectionSize(id, l)), true);
   }
-  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved, gifted, sounded };
+  return { save: out, answered, refused, firstLink, recalledSeen, changed: touched.size > 0, newlySeen, friendship, grew, money, house, evolved, gifted, sounded, traded, tradeWaits };
 }

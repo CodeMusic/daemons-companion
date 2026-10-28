@@ -10,6 +10,10 @@
 //   GET  /api/index              C-24: the save's INDEX -- seen and bound, each entry in the edition's voice, OPUS's margins
 //   POST /api/sync               C-21: the one SYNC -- read the save, receive or return a daemon if the game asked,
 //                                link the save, settle a daemon brought home without the app; the married save only
+//   GET  /api/trade              C-219: this companion's player on the exchange, its AWAY daemons, the offers and trades;
+//                                POST /api/trade/{join,offer,accept,withdraw,recall,password,hub} (docs/TRADING.md)
+//   /api/exchange/*              C-218, C-219: THE EXCHANGE, for every companion on the home network and the tailnet --
+//                                POST invite (home only), join {name, code | password}; the rest as a player (x-daemons-player)
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
 //   GET  /art/party/<slot>.png   a party daemon as the game draws it, its streaks painted for its routines (C-18)
 //   GET  /api/device/state       C-09: what a device shows -- the day, the season, the one next step, its daemon
@@ -59,7 +63,9 @@ import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/h
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
-import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
+import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind } from "./lines.js";
@@ -153,6 +159,27 @@ export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uin
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
+
+// C-218: the exchange's keys -- a player's token (kept only as its SHA-256), a password as scrypt (salted, never kept
+// itself), and an invite code to read aloud (no 0/O or 1/I)
+const INVITE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+export const KEYS: X.Keys = {
+  token: () => randomBytes(24).toString("base64url"),
+  hash: (t) => createHash("sha256").update(t).digest("base64url"),
+  password(pw) { const salt = randomBytes(16); return `scrypt$${salt.toString("base64url")}$${scryptSync(pw, salt, 32).toString("base64url")}`; },
+  check(pw, kept) {
+    const [kind, salt, hash] = kept.split("$");
+    if (kind !== "scrypt" || !salt || !hash) return false;
+    const want = Buffer.from(hash, "base64url"), got = scryptSync(pw, Buffer.from(salt, "base64url"), want.length);
+    return got.length === want.length && timingSafeEqual(got, want);
+  },
+  code: () => Array.from({ length: 8 }, () => INVITE_LETTERS[randomInt(INVITE_LETTERS.length)]).join(""),
+};
+// C-219: this companion's way to the exchange -- the hub's address in SETTINGS (`trade.hub`), or none: it is the hub
+export const tradeLink = (store: Store): Link => {
+  const hub = store.getSetting("trade.hub");
+  return hub ? remoteLink(store, hub) : localLink(store, KEYS);
+};
 export const doStep = (cfg: Config, store: Store, id: number, from: "site" | "device", deviceId = "") =>
   core.doStep(hostOf(cfg), store, id, from, deviceId);
 const awayNow = (cfg: Config) => core.awayNow(hostOf(cfg));
@@ -619,6 +646,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // the same bridge passing something on, and must not turn a cable into Wi-Fi.
       if (validDeviceId(deviceId) && (path.startsWith("/api/device/") || path.startsWith("/api/ai/")) &&
           (asked || relayed || !isLoopback(req.socket.remoteAddress))) devices.seen(deviceId, via);
+      // ---- C-218, C-219: THE EXCHANGE -- other companions on the home network and the tailnet trade here, each as the
+      // player it joined as (x-daemons-player). Never through the relay: the exchange is not on the internet (C-222).
+      if (path.startsWith("/api/exchange/")) {
+        if (relayed) return send(res, 403, { error: "the exchange is on the home network and the tailnet only" });
+        const name = path.slice("/api/exchange/".length), b = req.method === "POST" ? await body(req) : {};
+        if (req.method === "POST" && name === "invite") {               // made at home: this machine, or a paired phone
+          if (!phone && !isLoopback(req.socket.remoteAddress)) return send(res, 403, { error: "an invite is made on the hub's site or a paired phone" });
+          return send(res, 200, X.invite(store, KEYS));
+        }
+        if (req.method === "POST" && name === "join") {
+          const r = X.join(store, KEYS, b);
+          return send(res, X.failed(r) ? 400 : 200, r);
+        }
+        if (req.method === "GET" && name === "players" && (phone || isLoopback(req.socket.remoteAddress))) return send(res, 200, { players: X.players(store) });
+        const player = X.playerFor(store, KEYS, String(req.headers["x-daemons-player"] ?? ""));
+        if (!player) return send(res, 401, { error: "join the exchange first" });
+        if (name === "me") return send(res, 200, X.players(store).find((v) => v.id === player.id));
+        const r = exchangeRoute(store, KEYS, player, name, req.method === "GET" ? {} : b);
+        return send(res, r?.error === "not found" ? 404 : r?.error ? 400 : 200, r);
+      }
       if (!isLoopback(req.socket.remoteAddress) && !phone && !(req.method === "POST" && path === "/api/pair") &&
           !DEVICE_DOOR.some((d) => d(req.method ?? "", path)))
         return send(res, 403, { error: "only the device's endpoints answer the network -- pair this phone first" });
@@ -690,6 +737,24 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         store.setSetting("host", b.open ? "0.0.0.0" : "127.0.0.1");
         return send(res, 200, { open: b.open === true, now: cfg.host === "0.0.0.0", restart: (b.open === true) !== (cfg.host === "0.0.0.0") });
+      }
+      // C-219: TRADE -- this companion's player on the exchange (tradelink.ts), and the hub's address
+      if (req.method === "POST" && path === "/api/trade/hub") {
+        const b = await body(req), url = typeof b.url === "string" ? b.url.trim() : "";
+        if (url && !/^https?:\/\/[^\s/]+(:\d+)?\/?$/.test(url)) return send(res, 400, { error: "the hub's address, as http://coremp135:4730" });
+        if (url !== (store.getSetting("trade.hub") ?? "")) { store.setSetting("trade.hub", url || null); store.setSetting("trade.token", null); }
+        return send(res, 200, { hub: url });
+      }
+      if (TRADE_PATHS.includes(path)) {
+        const h = hostOf(ecfg);
+        return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {}));
+      }
+      if (req.method === "POST" && path === "/api/sync") {           // C-219: what the exchange sent, fetched first; told after
+        const h = hostOf(ecfg), link = store.getSetting("trade.token") ? tradeLink(store) : null;
+        await beforeSync(link, store, h.save.read());
+        const r = route(h, store, { method: "POST", path, deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) });
+        await afterSync(link, store);
+        return reply(res, r);
       }
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
       if (handles(req.method ?? "", path))

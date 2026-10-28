@@ -19,6 +19,7 @@ import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./save/growth.js";
+import { tradesToWrite, tradesWritten } from "./tradelink.js";   // C-219
 import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
 import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
@@ -97,8 +98,9 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to, from: e.from }] : []; });
   const gift = giftToWrite(store, h.edition) ?? undefined;     // C-185: HANDSHAKE, once, into the PC, already away
   const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)
+  const trade = tradesToWrite(store, game);                     // C-219: what the exchange sent this game (tradelink.ts)
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
-                              sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars });
+                              sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars, trade });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)
@@ -107,6 +109,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
     if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
     for (const e of r.evolved) evolutionWritten(store, e.personality);   // C-184: the save holds it now
     if (r.gifted) giftWritten(store);                              // C-185: and the gift
+    tradesWritten(store, r.traded.map((t) => t.id));              // C-219: and what was traded, for the exchange to hear
     if (dream) store.setSetting("dream.applied", String(dream.last));   // C-200: the next SYNC counts from here
     if (r.sounded.length) checkedIn(store, r.sounded, now);        // C-195: SOUNDINGS, each one's last check-in
     if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
@@ -123,6 +126,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
            met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship },
            gifted: r.gifted ? HANDSHAKE.name : null,
+           traded: r.traded.map((t) => ({ nickname: t.nickname, species: t.species, where: t.where })), tradeWaits: r.tradeWaits.map((t) => t.why),
            grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null,
            casino: casino.delta || casino.spins ? { won: casino.delta, spins: casino.spins, from: r.money?.from ?? p.money, to: r.money?.to ?? p.money } : null };
 }

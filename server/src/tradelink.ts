@@ -85,7 +85,7 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
 }
 
 // ---- SYNC ----
-type Inbox = { game: string; deliveries: X.Delivery[] };
+type Inbox = { game: string; deliveries: X.Delivery[]; locked?: number[] };
 const inboxOf = (store: Store): Inbox | null => { try { return JSON.parse(store.getSetting("trade.inbox") ?? "null"); } catch { return null; } };
 const outbox = (store: Store): string[] => { try { return JSON.parse(store.getSetting("trade.outbox") ?? "[]"); } catch { return []; } };
 
@@ -101,7 +101,7 @@ export async function beforeSync(link: Link | null, store: Store, save: Uint8Arr
       const t = tradeRecord(save, h.personality);
       if (typeof t !== "string") await link.call("handback", { id: h.id, record: toB64(t.record) });
     }
-    store.setSetting("trade.inbox", JSON.stringify({ game: gameId(game), deliveries: r.deliveries ?? [] }));
+    store.setSetting("trade.inbox", JSON.stringify({ game: gameId(game), deliveries: r.deliveries ?? [], locked: r.locked ?? [] }));
     return null;
   } catch (e) { return (e as Error).message; }
 }
@@ -112,8 +112,14 @@ export function tradesToWrite(store: Store, game: GameKey): TradeIn[] {
   if (!ib || ib.game !== gameId(game)) return [];
   return ib.deliveries.filter((d) => !done.includes(d.id)).flatMap((d) => {
     const record = fromB64(d.record);
-    return record ? [{ id: d.id, out: d.out, record }] : [];
+    return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase }] : [];
   });
+}
+// What the game must keep AWAY (TRADING): this game's daemons in a trade, as the exchange said before this SYNC -- or
+// undefined when it was not asked (not joined, the hub away), and the save's lock bits are left as they are
+export function tradeLocks(store: Store, game: GameKey): number[] | undefined {
+  const ib = inboxOf(store);
+  return ib && ib.game === gameId(game) && Array.isArray(ib.locked) ? ib.locked : undefined;
 }
 export function tradesWritten(store: Store, ids: string[]) {
   if (!ids.length) return;

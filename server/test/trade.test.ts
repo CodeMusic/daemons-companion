@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/save/growth.js";
-import { readAway, readBoxes, readSave, ORDERS } from "../src/save/reader.js";
+import { blocks, LAYOUT, readAway, readBoxes, readSave, ORDERS, tradeBits } from "../src/save/reader.js";
 import { syncSave } from "../src/save/writer.js";
 import { arriving, describe as describeRecord, fromB64, toB64, tradeRecord } from "../src/save/trade.js";
 import * as X from "../src/exchange.js";
@@ -86,6 +86,47 @@ describe("the save's half (save/trade.ts, writer.ts trade)", () => {
   });
 });
 
+describe("the game's bits (DAEMONS T-473)", () => {
+  const bits = (save: Uint8Array, personality: number) => {
+    const t = tradeRecord(save, personality);
+    // tradeRecord clears them for the exchange; read them from the save itself
+    const party = readSave(save).party.find((d) => d.personality === personality);
+    return { party, t };
+  };
+  it("a swap arrives TRADED_IN (and LOAN on a loan), marked; a return arrives plain, LOAN and the marker cleared", () => {
+    const b = tradeRecord(saveB(), 2002);
+    if (typeof b === "string") throw new Error(b);
+    const tb = tradeBits(LAYOUT), misc = ORDERS[2002 % 24].indexOf("M") * 12, key = (2002 ^ B_ID) >>> 0;
+    const marker = (r: Uint8Array) => ((new DataView(r.buffer).getUint32(32 + misc + 8, true) ^ key) >>> 29) & 1;
+    const full = arriving(b.record)!, loan = arriving(b.record, LAYOUT, { loan: true })!;
+    expect([full[tb.at] & tb.tradedIn, full[tb.at] & tb.loan, marker(full)]).toEqual([tb.tradedIn, 0, 1]);
+    expect([loan[tb.at] & tb.tradedIn, loan[tb.at] & tb.loan]).toEqual([tb.tradedIn, tb.loan]);
+    const back = arriving(loan, LAYOUT, { phase: "return" })!;
+    expect([back[tb.at] & (tb.tradedIn | tb.loan), marker(back)]).toEqual([0, 0]);
+    expect(describeRecord(back)).not.toBeNull();                                                      // still sealed right
+    // and none of the bits leave in a record sent to the exchange
+    const written = syncSave(saveA(), { link: false, trade: [{ id: "x", out: 1002, record: b.record, loan: true }] }).save;
+    const sent = tradeRecord(written, 2002);
+    if (typeof sent === "string") throw new Error(sent);
+    expect(sent.record[tb.at] & (tb.loan | tb.tradedIn)).toBe(0);
+    expect(bits(written, 2002).party?.away).toBe(true);
+  });
+
+  it("TRADING locks a daemon in a trade: set, an ask home refused, cleared once it is not", () => {
+    const tb = tradeBits(LAYOUT), flags = (save: Uint8Array, slot: number) => {
+      const { sb1 } = blocks(save); return sb1[LAYOUT.party_offset + slot * LAYOUT.pokemon_size + LAYOUT.flags_byte];
+    };
+    const asked = buildSave({ player: "ROVER", trainerId: A_ID, slots: [{ counter: 4, party: [mon(1001, A_ID, 1, 12), mon(1002, A_ID, 4, 15, { away: true, asked: true })] }, { counter: 3, party: [] }] });
+    const r = syncSave(asked, { link: false, locks: [1002] });
+    expect(r.answered).toEqual([]);
+    expect(r.refused[0]).toMatch(/in a trade/);
+    expect(flags(r.save, 1) & tb.trading).toBe(tb.trading);
+    expect(readSave(r.save).party[1]).toMatchObject({ away: true, asked: false });
+    expect(flags(syncSave(r.save, { link: false, locks: [] }).save, 1) & tb.trading).toBe(0);
+    expect(flags(syncSave(r.save, { link: false }).save, 1) & tb.trading).toBe(tb.trading);       // not asked: left as it is
+  });
+});
+
 describe("the exchange (C-218 players, C-219 trades)", () => {
   it("joins by invite, and the same name again only with its password", () => {
     const hub = new Store(":memory:");
@@ -110,6 +151,7 @@ describe("the exchange (C-218 players, C-219 trades)", () => {
     const offered = await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/offer", { personality: 1002, kind: "full" });
     expect(offered.status).toBe(200);
     const id = (offered.body as X.Offer).id;
+    expect(X.inbox(hub, X.players(hub)[0].id, { name: "ROVER", trainerId: A_ID & 0xffff, secretId: A_ID >>> 16 }).locked).toEqual([1002]);
     expect((await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/offer", { personality: 1002 })).body).toMatchObject({ error: /already in a trade/ });
     const view = await tradeRoute(kit, kitStore, B.save, "CONTEXT", "GET", "/api/trade", {});
     expect((view.body as any).board.open[0]).toMatchObject({ id, from: { player: "ROVER", nickname: SPECIES["4"].name } });

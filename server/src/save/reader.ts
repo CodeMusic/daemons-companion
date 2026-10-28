@@ -22,6 +22,13 @@ const ITEMS = itemsJson as unknown as Record<string, { name: string; description
 // `sounding_shift` (bits 6-7 until the export carries it): 3 doing well, 2 doing fine, 1 quiet today, 0 no signal yet
 export type Sounding = 0 | 1 | 2 | 3;
 export const soundingShift = (l: Layout) => { const s = (l as Record<string, unknown>).sounding_shift; return typeof s === "number" ? s : 6; };
+// C-219 / DAEMONS T-473: a trade's bits, as the exported layout names them (the game lane's calls until it carries them):
+// TRADING, the lock while a daemon is in a trade, in the flags byte beside AWAY (bit 3); LOAN and TRADED_IN in the u16 at
+// 0x1E, outside the encrypted substructs and the checksum (bit 0 a borrowed daemon, bit 1 one just arrived by trade, which
+// the game clears when it finishes it)
+const num = (l: Layout, k: string, d: number) => { const v = (l as Record<string, unknown>)[k]; return typeof v === "number" ? v : d; };
+export const tradeBits = (l: Layout) => ({ trading: 1 << num(l, "trading_bit", 3), at: num(l, "trade_flags_offset", 0x1e),
+                                           loan: num(l, "loan_mask", 1), tradedIn: num(l, "traded_in_mask", 2) });
 
 export interface PartyDaemon {
   slot: number;            // 0-5 in the party

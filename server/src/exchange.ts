@@ -166,9 +166,18 @@ export function recall(store: Store, player: string, id: string): Result<Offer> 
 // ---- what a companion does at SYNC (tradelink.ts) ----
 // what this player's game receives now (each once it is written), and which borrowed daemons it is asked to hand back
 export interface Delivery { id: string; out: number; record: string; from: string; kind: Kind; phase: "swap" | "return" }
-export function inbox(store: Store, player: string, game: GameKey): { deliveries: Delivery[]; handbacks: { id: string; personality: number }[] } {
+// `locked`: this game's daemons in a trade now -- one on offer, one agreed and not yet gone, one borrowed that is on its
+// way home -- which the game must not bring home (TRADING, DAEMONS T-473)
+export function inbox(store: Store, player: string, game: GameKey): { deliveries: Delivery[]; handbacks: { id: string; personality: number }[]; locked: number[] } {
   const s = load(store), me = gameId(game);
-  const deliveries: Delivery[] = [], handbacks: { id: string; personality: number }[] = [];
+  const deliveries: Delivery[] = [], handbacks: { id: string; personality: number }[] = [], locked: number[] = [];
+  for (const o of s.offers) {
+    const mine = [o.from, o.with].find((x) => x && x.player === player && gameId(x.game) === me);
+    if (!mine) continue;
+    const theirs = mine === o.from ? o.with : o.from;
+    if (o.state === "open" || ((o.state === "agreed" || o.state === "returning") && !o.written.includes(`${player}:swap`))) locked.push(mine.personality);
+    else if (o.state === "returning" && theirs && !o.written.includes(`${player}:return`)) locked.push(theirs.personality);
+  }
   const name = (id: string) => s.players.find((p) => p.id === id)?.name ?? "?";
   for (const o of s.offers) {
     if (!o.with || (o.state !== "agreed" && o.state !== "returning")) continue;
@@ -187,7 +196,7 @@ export function inbox(store: Store, player: string, game: GameKey): { deliveries
       if (!o.handback[player]) handbacks.push({ id: o.id, personality: theirs.personality });
     }
   }
-  return { deliveries, handbacks };
+  return { deliveries, handbacks, locked };
 }
 // a borrowed daemon handed back, as it is now in the borrower's save (AWAY: save/trade.ts tradeRecord)
 export function handback(store: Store, player: string, id: string, record: string): Result<Offer> {

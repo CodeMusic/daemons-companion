@@ -3,7 +3,7 @@
 // companion's then, not the game's -- so what goes to the exchange is its whole BoxPokemon as the save keeps it (80
 // bytes: its own trainer, its own encryption), and what comes back is written by syncSave (writer.ts, `trade`) into the
 // slot the one traded for it left. Read only here. No node: imports (the phone hosting alone runs it).
-import { blocks, LAYOUT, type Layout, ORDERS, readDaemon, sectionSize, soundingShift } from "./reader.js";
+import { blocks, LAYOUT, type Layout, ORDERS, readDaemon, sectionSize, soundingShift, tradeBits } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
 import speciesJson from "../../data/species.json" with { type: "json" };
@@ -42,27 +42,35 @@ export function tradeRecord(save: Uint8Array, personality: number, l: Layout = L
   if (!rec) return "that daemon is not in this save";                                     // DRAFT
   if (!(rec[l.flags_byte] & (1 << l.away_bit))) return "only a daemon AWAY can be traded -- SEND it from the game first";   // DRAFT
   const record = rec.slice();
-  record[l.flags_byte] &= ~((1 << l.away_bit) | (1 << l.asked_bit) | (3 << soundingShift(l))) & 0xff;   // the companion's bits are this save's, not the daemon's
+  const tb = tradeBits(l);
+  record[l.flags_byte] &= ~((1 << l.away_bit) | (1 << l.asked_bit) | (3 << soundingShift(l)) | tb.trading) & 0xff;   // the companion's bits are this save's, not the daemon's
+  record[tb.at] &= ~(tb.loan | tb.tradedIn) & 0xff;
   const d = describe(record, l);
   return d ? { ...d, record } : "that daemon's record is damaged";                        // DRAFT
 }
 
-// A record arriving: whole, or null -- AWAY set (it arrives on the companion, as HANDSHAKE does), ASKED and its sounding
-// cleared, and the game's marker (unusedRibbons bit 2, the u32 at Misc+8, bit 29, as C-184) set so the game finishes it
-// on load (DAEMONS T-467: the INDEX, a trade evolution). Re-summed and sealed again under its own key.
-export function arriving(record: Uint8Array, l: Layout = LAYOUT): Uint8Array | null {
+// A record arriving: whole, or null -- AWAY set (it arrives on the companion, as HANDSHAKE does), ASKED, its sounding and
+// TRADING cleared. A SWAP is marked for the game to finish on load (DAEMONS T-473): the marker (unusedRibbons bit 2, the
+// u32 at Misc+8, bit 29, as C-184) re-summed and sealed under its own key, TRADED_IN set, and LOAN for a loan -- so the
+// INDEX takes it and it trade-evolves, unless it is borrowed. A loan's RETURN is the player's own coming home: nothing to
+// finish, LOAN cleared.
+export function arriving(record: Uint8Array, l: Layout = LAYOUT, how: { loan?: boolean; phase?: "swap" | "return" } = {}): Uint8Array | null {
   if (!describe(record, l)) return null;
-  const r = record.slice(), v = new DataView(r.buffer);
+  const tb = tradeBits(l), r = record.slice(), v = new DataView(r.buffer);
+  r[l.flags_byte] = (r[l.flags_byte] & ~((1 << l.asked_bit) | (3 << soundingShift(l)) | tb.trading) & 0xff) | (1 << l.away_bit);
+  r[tb.at] &= ~(tb.loan | tb.tradedIn) & 0xff;
+  const swap = how.phase !== "return";
+  if (swap) r[tb.at] |= tb.tradedIn | (how.loan ? tb.loan : 0);
   const personality = v.getUint32(0, true), key = (personality ^ v.getUint32(4, true)) >>> 0;
   const plain = new DataView(new ArrayBuffer(48));
   for (let k = 0; k < 48; k += 4) plain.setUint32(k, (v.getUint32(32 + k, true) ^ key) >>> 0, true);
   const misc = ORDERS[personality % 24].indexOf("M") * 12;
-  plain.setUint32(misc + 8, (plain.getUint32(misc + 8, true) | (1 << 29)) >>> 0, true);
+  const ribbons = plain.getUint32(misc + 8, true);           // a return clears a marker the borrower's game never finished
+  plain.setUint32(misc + 8, (swap ? ribbons | (1 << 29) : ribbons & ~(1 << 29)) >>> 0, true);
   let sum = 0;
   for (let k = 0; k < 48; k += 2) sum = (sum + plain.getUint16(k, true)) & 0xffff;
   v.setUint16(28, sum, true);
   for (let k = 0; k < 48; k += 4) v.setUint32(32 + k, (plain.getUint32(k, true) ^ key) >>> 0, true);
-  r[l.flags_byte] = (r[l.flags_byte] & ~((1 << l.asked_bit) | (3 << soundingShift(l))) & 0xff) | (1 << l.away_bit);
   return r;
 }
 

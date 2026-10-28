@@ -27,7 +27,7 @@ import { arriving } from "./trade.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 import eventsJson from "../../data/events.json" with { type: "json" };
-import { LAYOUT, type Layout, soundingShift, type Sounding, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
+import { LAYOUT, type Layout, soundingShift, tradeBits, type Sounding, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
 
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }
 export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
@@ -50,7 +50,7 @@ export interface Evolve { personality: number; species: number; from?: number } 
 // AWAY, so it is carried from the moment it arrives
 export interface Gift { species: number; name: string; level: number; personality: number; ivs: number; game: number }
 // C-219: a trade -- the daemon going (by its personality, AWAY here) and the whole record of the one coming in its place
-export interface TradeIn { id: string; out: number; record: Uint8Array }
+export interface TradeIn { id: string; out: number; record: Uint8Array; loan?: boolean; phase?: "swap" | "return" }
 
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
@@ -67,7 +67,8 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
                                              house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift;
-                                             sounding?: Sounding; vars?: Record<number, number>; trade?: TradeIn[] }, l: Layout = LAYOUT): SyncResult {
+                                             sounding?: Sounding; vars?: Record<number, number>; trade?: TradeIn[];
+                                             locks?: number[] }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -99,8 +100,16 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
   const homeAfter = party.filter(({ d }) => d && (d.asked ? d.away : !d.away)).length;
   const keepHome = homeAfter === 0 ? [...party].reverse().find(({ d }) => d && d.asked && !d.away) : undefined;
   if (keepHome?.d) refused.push(`${keepHome.d.nickname || keepHome.d.name} stays: one daemon always stays in the party.`);   // DRAFT
+  // C-219 / DAEMONS T-473: a daemon in a trade stays AWAY -- asked home, it is told so and the ask taken back
+  const locked = new Set((opts.locks ?? []).map((p) => p >>> 0));
   for (const { i, recStart, d } of party) {
     if (!d || !d.asked || keepHome?.i === i) continue;
+    if (d.away && locked.has(d.personality >>> 0)) {
+      const f = at(recStart + l.flags_byte);
+      out[f.byte] &= ~(1 << l.asked_bit) & 0xff; touched.add(f.id);
+      refused.push(`${d.nickname || d.name} is in a trade. It stays AWAY until the trade is done.`);   // DRAFT
+      continue;
+    }
     const f = at(recStart + l.flags_byte);
     let flags = out[f.byte] ^ (1 << l.away_bit);         // there if it was here, here if it was there
     flags &= ~(1 << l.asked_bit) & 0xff;
@@ -282,7 +291,7 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const present = (personality: number) => party.some((p) => p.d?.personality === personality) ||
       Array.from({ length: 14 * 30 }, (_, i) => i).some((i) => boxFlags(i) & 0b10 && boxPersonality(i) === personality);
     for (const t of opts.trade) {
-      const rec = arriving(t.record, l), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
+      const rec = arriving(t.record, l, { loan: t.loan, phase: t.phase }), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
       if (!rec || incoming == null) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }   // DRAFT
       if (present(incoming)) { tradeWaits.push({ id: t.id, why: "that daemon is already in this save" }); continue; }   // DRAFT
       const inParty = party.find((p) => p.d?.personality === t.out >>> 0);
@@ -311,6 +320,22 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
         for (let k = 0; k < l.box_pokemon_size; k++) { const b = box(4 + inBox * l.box_pokemon_size + k); out[b.byte] = rec[k]; touched.add(b.id); }
       }
       traded.push({ id: t.id, out: t.out >>> 0, in: incoming >>> 0, species: d.species, nickname: d.nickname, where: inParty ? "party" : "box" });
+    }
+  }
+  // C-219 / DAEMONS T-473: TRADING, the game's lock -- set on every daemon of this game in a trade now, cleared on the
+  // rest (only when the exchange was asked: `locks` undefined leaves the bits as they are)
+  if (opts.locks) {
+    const bit = tradeBits(l).trading;
+    const lockAt = (f: { id: number; byte: number }, personality: number) => {
+      const next = locked.has(personality >>> 0) ? out[f.byte] | bit : out[f.byte] & ~bit & 0xff;
+      if (next !== out[f.byte]) { out[f.byte] = next; touched.add(f.id); }
+    };
+    for (const p of party) if (p.d) lockAt(at(p.recStart + l.flags_byte), p.d.personality);
+    const box = (off: number) => { const id = 5 + Math.floor(off / l.sector_data_size); return { id, byte: where.get(id)! + (off % l.sector_data_size) }; };
+    for (let i = 0; i < 14 * 30; i++) {
+      const start = 4 + i * l.box_pokemon_size, f = box(start + l.flags_byte);
+      if (!(out[f.byte] & 0b10)) continue;
+      lockAt(f, [0, 1, 2, 3].reduce((n, k) => n | (out[box(start + k).byte] << (8 * k)), 0));
     }
   }
   // C-195: SOUNDINGS -- each carried daemon's level, in the party and the boxes; home, or just gone, it is 0

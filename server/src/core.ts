@@ -19,7 +19,7 @@ import { feelings } from "./feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./save/growth.js";
-import { tradesToWrite, tradesWritten } from "./tradelink.js";   // C-219
+import { tradeLocks, tradesToWrite, tradesWritten } from "./tradelink.js";   // C-219
 import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
 import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
@@ -100,7 +100,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)
   const trade = tradesToWrite(store, game);                     // C-219: what the exchange sent this game (tradelink.ts)
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
-                              sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars, trade });
+                              sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars, trade, locks: tradeLocks(store, game) });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)

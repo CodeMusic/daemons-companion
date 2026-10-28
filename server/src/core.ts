@@ -92,8 +92,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const house = HOUSE_AT != null ? houseAfter - Number(store.getSetting("casino.house.written") ?? 0) : 0;
   // C-184: what evolved on the devices, written for each daemon that is home
   const evolve = readSave(file).party.flatMap((d) => { const e = evolvedOf(store, d.personality); return e ? [{ personality: d.personality, species: e.to }] : []; });
-  const gift = giftToWrite(store, h.edition) ?? undefined;
-  const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)     // C-185: HANDSHAKE, once, into the PC, already away
+  const gift = giftToWrite(store, h.edition) ?? undefined;     // C-185: HANDSHAKE, once, into the PC, already away
+  const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
                               sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars });
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
@@ -103,8 +103,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
     if (meetings.length) store.setSetting("met.applied", String(meetings[meetings.length - 1].id));
     if (r.grew) store.setSetting(`exp.applied.${r.grew.personality}`, String(growLast.get(r.grew.personality) ?? 0));
     for (const e of r.evolved) evolutionWritten(store, e.personality);   // C-184: the save holds it now
-    if (r.gifted) giftWritten(store);
-    if (dream) store.setSetting("dream.applied", String(dream.last));   // C-200: the next SYNC counts from here                              // C-185: and the gift
+    if (r.gifted) giftWritten(store);                              // C-185: and the gift
+    if (dream) store.setSetting("dream.applied", String(dream.last));   // C-200: the next SYNC counts from here
     if (r.sounded.length) checkedIn(store, r.sounded, now);        // C-195: SOUNDINGS, each one's last check-in
     if (casino.delta || casino.spins) store.setSetting("casino.applied", String(casino.last));   // a clamp still settles it
     // C-167: and what a clamp left unmoved, so what the house has kept is what the money really moved

@@ -17,7 +17,7 @@ void Display::configure() {                 // C-173: LilyGO's pins (pins_arduin
   }
   {
     auto cfg = panel.config();
-    cfg.pin_cs = 41; cfg.pin_rst = -1;                // LilyGO starts it without its reset line
+    cfg.pin_cs = 41; cfg.pin_rst = 37;                // DISP_RST, as the Arduino variant names it
     cfg.panel_width = 410; cfg.panel_height = 502; cfg.memory_width = 480; cfg.memory_height = 502;
     cfg.offset_x = 22; cfg.offset_y = 0; cfg.readable = false;
     panel.config(cfg);

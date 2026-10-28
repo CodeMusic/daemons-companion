@@ -23,9 +23,23 @@ static bool fromCard = false;                             // C-199: the shelf ca
 // C-199: KEEP ON THE CARD ends the shelf, where there is a card and the companion answered
 static int keeps() { return !fromCard && cardReady() ? 1 : 0; }
 
-// C-209: ASK THE GUIDE heads the shelf once the GUIDE is held -- a question by voice, answered from its pages
-static bool guideHeld() { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == "guide") return true; return false; }
-static int asks() { return guideHeld() && talkCan() && !fromCard ? 1 : 0; }
+// C-209: ASK THE GUIDE heads the shelf once the GUIDE is held -- a question by voice, answered from its pages. C-229, C-230:
+// once THE SUBTLE LAYER is, its three: ASK (a line from its pages and a question back), TWO VOICES (only the asking voice)
+// and TODAY'S QUESTION (asked, then answered by voice, and kept in its journal)
+static bool held(const char *id) { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == id) return true; return false; }
+enum AskKind { ASK_GUIDE, ASK_SUBTLE, ASK_VOICES, ASK_TODAY };
+static const char *const ASK_NAMES[] = { "ASK THE GUIDE", "ASK THE SUBTLE LAYER", "TWO VOICES", "TODAY'S QUESTION" };   // DRAFT
+static const char *const ASK_HINTS[] = { "tap, then ask your question", "tap, then ask: a line, and a question back",
+                                         "tap, then say a thing", "tap: its question, then tap to answer" };              // DRAFT
+static int askKinds(AskKind *k) {
+  int n = 0;
+  if (!talkCan() || fromCard) return 0;
+  if (held("guide")) k[n++] = ASK_GUIDE;
+  if (held("subtle")) { k[n++] = ASK_SUBTLE; k[n++] = ASK_VOICES; k[n++] = ASK_TODAY; }
+  return n;
+}
+static int asks() { AskKind k[4]; return askKinds(k); }
+static AskKind askAt(int i) { AskKind k[4]; askKinds(k); return k[i]; }
 // C-199 (3): THE INDEX heads the shelf (index.cpp), after ASK THE GUIDE
 String runIndex(); int indexKeepAll();
 static int heads() { return asks() + 1; }
@@ -35,7 +49,7 @@ static int listN() {
 }
 static String listName(int i) {
   if (bMode == B_BOOKS && i >= heads() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                        // DRAFT
-  if (bMode == B_BOOKS && i < asks()) return "ASK THE GUIDE";                                                         // DRAFT
+  if (bMode == B_BOOKS && i < asks()) return ASK_NAMES[askAt(i)];
   if (bMode == B_BOOKS && i < heads()) return "THE INDEX";                                                            // DRAFT
   if (bMode == B_BOOKS) return String((const char *)(shelf["books"][i - heads()]["title"] | ""));
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
@@ -58,9 +72,9 @@ static String drawBooks(uint16_t day, uint16_t ink) {
     return " ";
   }
   canvas.drawString(bMode == B_BOOKS ? (fromCard ? "BOOKS  (FROM THE CARD)" : "BOOKS") : String((const char *)(shelf["books"][bBook]["title"] | "")), 10, 30);   // DRAFT
-  if (bMode == B_BOOKS && asks() && bAt == 0) {           // what ASK THE GUIDE does, under the list
+  if (bMode == B_BOOKS && bAt < asks()) {                // what the ask does, under the list
     canvas.setTextFont(1); canvas.setTextColor(QUIET);
-    canvas.drawString("tap, then ask your question", 10, H - 50);                                                         // DRAFT
+    canvas.drawString(ASK_HINTS[askAt(bAt)], 10, H - 50);
     canvas.setTextFont(2);
   }
   int n = listN(), fit = listRowsFit();
@@ -82,6 +96,21 @@ static bool fetchChapter() {
   for (JsonVariant p : chap["paragraphs"].as<JsonArray>()) pageText += (pageText.length() ? "\n\n" : "") + String((const char *)(p | ""));
   bSkip = 0;
   return true;
+}
+
+// C-230: TODAY'S QUESTION -- the book's question for the day on the TALK screen; a tap, and eight seconds to answer it
+// aloud, kept in its journal (the companion hears it); anything else leaves it unanswered
+static void todaysQuestion() {
+  bool ok = false; String got = http("GET", "/api/subtle/today", "", &ok);
+  JsonDocument d;
+  if (!ok || deserializeJson(d, got) || !(d["held"] | false)) { say("NOT FOUND"); return; }                             // DRAFT
+  talkShow("TODAY'S QUESTION", String((const char *)(d["question"] | "")));                                             // DRAFT
+  while (true) {
+    int s, e; routineInput(s, e);
+    if (routineQuit() || e == -1 || s) return;
+    if (e == 1) { talkToSubtle = 3; talkHold(8000); talkToSubtle = 0; return; }
+    delay(10);
+  }
 }
 
 // the chapter aloud, a paragraph at a time, from the one the page shows; a tap, a hold or the crown stops it
@@ -148,8 +177,11 @@ String runBooks() {
       int n = listN();
       if (step && n) { bAt = (bAt + n + step) % n; progress(""); }
       if (ev == 1 && n) {
-        if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the GUIDE's answer
-          talkToGuide = true; talkHold(6000); talkToGuide = false;
+        if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the book's answer
+          AskKind k = askAt(bAt);
+          if (k == ASK_TODAY) todaysQuestion();
+          else if (k == ASK_GUIDE) { talkToGuide = true; talkHold(6000); talkToGuide = false; }
+          else { talkToSubtle = k == ASK_VOICES ? 2 : 1; talkHold(6000); talkToSubtle = 0; }   // C-229
           while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }   // read it, then on
           screen = RUN;
         }

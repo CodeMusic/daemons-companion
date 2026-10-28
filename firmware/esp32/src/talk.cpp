@@ -345,10 +345,14 @@ static void offline(uint8_t *rec, size_t n) {
 }
 
 bool talkToGuide = false;
+int talkToSubtle = 0;                                   // C-229, C-230 (books.cpp)
+static int voicesTurn = 0;                              // C-229: TWO VOICES, a turn at a time
+void talkShow(const String &heard, const String &answer) { talkHeard = heard; talkAnswer = answer; talkStatus = ""; screen = TALK; draw(); lastInput = millis(); }
 bool talkListening = false;                              // C-213: TALK is listening (its ears up, ui.cpp)                                 // C-209: the next talk is asked of the GUIDE (books.cpp)
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
   if (talkToGuide && !atHome()) { say("ASK THE GUIDE AT HOME"); return; }   // DRAFT -- the hub's module answers it
+  if (talkToSubtle && !atHome()) { say("ASK THE BOOK AT HOME"); return; }   // DRAFT -- C-229: the hub hears it
   // C-82: talk sends a recording and streams a voice back, which the relay (JSON only) does not carry: home, or a bridge
   if (!atHome() && !usbLive() && !linkPhoneHere() && !brainConfigured()) { say(online() ? "TALK NEEDS HOME OR PHONE" : "TALK NEEDS WI-FI"); return; }   // DRAFT
   // C-75: eight seconds where there is PSRAM; on the M5GO as much as the heap will give, down to two
@@ -399,7 +403,9 @@ void talkHold(uint32_t forMs) {
   // stays in use while the hub's module thinks -- however long that is. An older server answers the one request (200).
   HTTPClient h;
   h.setTimeout(20000);
-  h.begin(serverUrl + (talkToGuide ? "/api/device/talk?guide=1&async=1" : "/api/device/talk?async=1"));   // C-209
+  h.begin(serverUrl + (talkToSubtle ? String("/api/device/talk?subtle=1&async=1") + (talkToSubtle == 2 ? "&mode=voices&turn=" + String(voicesTurn++)
+                                                                                       : talkToSubtle == 3 ? String("&today=1") : String(""))
+                       : talkToGuide ? String("/api/device/talk?guide=1&async=1") : String("/api/device/talk?async=1")));   // C-209, C-229
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "audio/wav");
   int code = h.POST(rec, 44 + n * 2);

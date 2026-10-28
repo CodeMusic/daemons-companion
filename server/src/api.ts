@@ -990,8 +990,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does
         const b = await body(req);
+        // the user, 2026-10-28: or any words the device shows, {text} -- a dream read aloud on the watch
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
-        const text = row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
+        const text = typeof b.text === "string" && b.text.trim() ? b.text : row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
         if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "host a daemon to hear its entry" });
         return answer(PRIORITY.reading, async () =>          // C-180: a reading -- the hub's Module LLM's first work
           forDevice({ ...await readAloud(String(text).replace(/\n/g, " ").slice(0, 600)), answer: text }));

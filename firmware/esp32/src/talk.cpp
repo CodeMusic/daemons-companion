@@ -354,15 +354,19 @@ void talkHold(uint32_t forMs) {
   lastInput = millis();
 }
 
-void talkReadEntry() {
+void talkReadEntry() { talkReadText(""); }
+// the user, 2026-10-28: any words read aloud the same way -- a dream; "" the carried daemon's INDEX entry
+void talkReadText(const String &text) {
   if (!atHome()) { say(online() ? "NEEDS HOME" : "NEEDS WI-FI"); return; }      // DRAFT -- C-82: a voice is not JSON
-  screen = TALK; talkHeard = ""; talkAnswer = st.daemon.entry; talkStatus = "Reading..."; draw();   // DRAFT
+  screen = TALK; talkHeard = ""; talkAnswer = text.length() ? text : st.daemon.entry; talkStatus = "Reading..."; draw();   // DRAFT
   HTTPClient h;
   h.setTimeout(65535);           // the most HTTPClient holds (16 bits): 90000 was 24 s, with the INDEX voice taking ~15
   h.begin(serverUrl + "/api/device/speak");
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "application/json");
-  int code = h.POST("{}");
+  JsonDocument q; if (text.length()) q["text"] = text;
+  String req; serializeJson(q, req);
+  int code = h.POST(req);
   String body = code == 200 ? h.getString() : "";
   h.end();
   answer(code, body);

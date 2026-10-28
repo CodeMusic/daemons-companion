@@ -3,15 +3,24 @@
 // it wrote one, otherwise the companion's own words), how long and how still the night was, and whether it was tucked in.
 import { useEffect, useState } from "react";
 import { Text, YStack } from "tamagui";
-import { api } from "../net";
-import { Card, Eyebrow, Small, whenSaid } from "../ui";
+import { api, apiLater, ON_PHONE } from "../net";
+import { Spoken } from "../types";
+import { Action, Card, Eyebrow, Small, whenSaid } from "../ui";
+import { useVoice } from "./Daemon";
 
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string };
 const NIGHT = { vivid: "A deep night", quiet: "A quiet night", broken: "A restless night" };   // DRAFT
 
-export function DreamsScreen() {
+export function DreamsScreen({ ink }: { ink?: string }) {
   const [dreams, setDreams] = useState<Dream[] | null>(null);
+  const speak = useVoice();
+  const [reading, setReading] = useState(0);
+  const readAloud = async (d: Dream) => {                     // the user, 2026-10-28: a dream read aloud, in the INDEX voice
+    setReading(d.id);
+    try { speak((await apiLater<Spoken>("/api/ai/speak", { text: d.text })).audioBase64); } catch { /* the card says nothing new */ }
+    finally { setReading(0); }
+  };
   const [error, setError] = useState("");
   useEffect(() => { api<{ dreams: Dream[] }>("/api/dreams").then((r) => setDreams(r.dreams)).catch((e) => setError(e.message)); }, []);
   if (error) return <Small color="$color8">{error}</Small>;
@@ -24,6 +33,7 @@ export function DreamsScreen() {
           <Eyebrow>{`${NIGHT[d.quality].toUpperCase()} · ${d.hours} HOURS${d.tucked ? " · TUCKED IN" : ""}`}</Eyebrow>
           <Text fontSize={15} color="$color12">{d.text}</Text>
           <Small color="$color10">{`${d.nickname || "Your daemon"}, woke ${whenSaid(d.to)}`}</Small>
+          {ON_PHONE ? <Action label={reading === d.id ? "Reading…" : "Read aloud"} onPress={() => readAloud(d)} ink={ink} /> : null}
         </Card>
       )) : <Card><Small>{"No dreams yet. Wear the watch to bed, or tuck the daemon in with SLEEP, and its dream is here in the morning.  DRAFT"}</Small></Card>}
     </YStack>

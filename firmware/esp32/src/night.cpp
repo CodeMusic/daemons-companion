@@ -10,6 +10,7 @@
 #include "app.h"
 #include "motion.h"
 #include "sound.h"
+#include "talk.h"
 #include <Preferences.h>
 #include <sys/time.h>
 
@@ -57,9 +58,20 @@ void drawDream(uint16_t day) {
   canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(TL_DATUM);
   canvas.drawString(dreamLater ? "IT REMEMBERS MORE" : "WHILE YOU SLEPT", 10, 34);   // DRAFT
   wrap(dreamText, 10, 60, W - 20, 2, 19, (H - 100) / 19, PAPER);
-  canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BC_DATUM);
-  canvas.drawString("tap: good morning", W / 2, H - 8);                            // DRAFT
+  canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
+  canvas.drawString("tap: good morning", 10, H - 12);                              // DRAFT
+  if (talkCan()) {                                       // the user, 2026-10-28: the dream read aloud
+    canvas.drawRoundRect(W - 86, H - 38, 78, 30, 8, day);
+    canvas.setTextFont(2); canvas.setTextColor(day); canvas.setTextDatum(MC_DATUM);
+    canvas.drawString("LISTEN", W - 47, H - 23);                                   // DRAFT
+  }
   canvas.setTextDatum(TL_DATUM);
+}
+// a tap on the dream: LISTEN reads it aloud (true: taken); anywhere else puts it away (the caller)
+bool dreamTap(int x, int y) {
+  if (!dreamShowing() || !talkCan() || x < W - 90 || y < H - 42) return false;
+  String t = dreamText; dreamDismiss(); talkReadText(t);
+  return true;
 }
 
 // ---- the night -----------------------------------------------------------------------------------------------------------

@@ -226,7 +226,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
       <Segments value={seg} onChange={setSeg} options={[["yours", "Yours"], ["party", "Party"], ["index", "INDEX"], ["routines", "Routines"], ["soundings", "SOUNDINGS"], ["dreams", "DREAMS"]]} />
       {seg === "index" ? <IndexScreen ink={ink} /> : null}
       {seg === "soundings" ? <SoundingsScreen /> : null}
-      {seg === "dreams" ? <DreamsScreen /> : null}
+      {seg === "dreams" ? <DreamsScreen ink={ink} /> : null}
       {seg === "routines" ? <RoutinesCard ink={ink} /> : null}
       {seg === "yours" ? (<>
       {away ? <LifeCard ink={ink} name={away.nickname} daemon={away} /> : null}

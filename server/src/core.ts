@@ -30,6 +30,7 @@ import { readIndex } from "./save/index.js";
 import { readPlay } from "./save/play.js";            // T-426: the instrument, on the boards with keys
 import { readSubtle } from "./save/subtle.js";
 import { senseFor, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards
+import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -231,6 +232,7 @@ export function doStep(h: Host, store: Store, id: number, from: "site" | "device
   if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(h, store, id, deviceId); }
   if (r.fresh && r.goal) {                                       // C-185: a goal finished together -- the bond's, and the gift's
     const d = carriedDaemon(h, store, deviceId);
+    store.logInteraction("goal", String(id));                 // C-207: the week's goals, for how the daemon looks
     if (d) { bondAdd(store, d.personality, "goals"); offerGift(store, speciesHeld(h)); }
   }
   return r;
@@ -305,7 +307,9 @@ export function daemonFeelings(store: Store, now = new Date()) {
 }
 export const artName = (species: number | string) => (SPECIES[String(species)]?.art?.front as string | undefined)?.split("/").pop()?.replace("_front.png", "");
 export function daemonExpression(store: Store, now = new Date(), lifeNow = daemonLife(store, now), species: number | null = null) {
-  return expressionFor(lifeNow, daemonFeelings(store, now), species === null ? null : faceOf(artName(species)));
+  const t = thriveOf(store, now);                                 // C-207: drowsy after a broken night, its colours the week's
+  const life = lifeNow.tired === "awake" && drowsyFrom(t, now.getHours()) ? { ...lifeNow, tired: "drowsy" as const } : lifeNow;
+  return thrived(expressionFor(life, daemonFeelings(store, now), species === null ? null : faceOf(artName(species))), t);
 }
 
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
@@ -367,6 +371,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
                       expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
+                      thrive: thriveOf(store, now),                 // C-207: the glow and the small marks, drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board

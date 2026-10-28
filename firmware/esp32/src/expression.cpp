@@ -25,7 +25,7 @@ static uint16_t shade(uint16_t c) {
 }
 
 static void ready() {
-  String key = artKeyHave + "/" + expression.name;
+  String key = artKeyHave + "/" + expression.name + "/" + String(expression.sat, 3) + "/" + String(expression.val, 3);   // C-207: the week nudges the shade
   if (key == shadedFor) return;
   for (int i = 0; i < 16; i++) shaded[i] = i >= 1 && i <= 10 ? shade(artPal[i]) : artPal[i];
   top = 64; bottom = 0; rightmost = 0;
@@ -101,4 +101,36 @@ void drawMark(int x, int y, int scale, bool mirrored, int minY) {
     if (expression.ink[r] & bit) canvas.fillRect(mx + c * px, my + r * px, px, px, expression.markColour);
     else if (expression.white[r] & bit) canvas.fillRect(mx + c * px, my + r * px, px, px, PAPER);
   }
+}
+
+// ---- C-207: the week, worn -------------------------------------------------------------------------------------------
+Thrive thrive;
+void takeThrive(JsonVariant t) {
+  Thrive x;
+  if (!t.isNull()) { x.glow = constrain((int)(t["glow"] | 0), 0, 100); x.stars = constrain((int)(t["stars"] | 0), 0, 5); x.moon = t["moon"] | false; }
+  thrive = x;
+}
+static uint16_t blend565(uint16_t a, uint16_t b, float f) {   // a toward b by f
+  int ar = a >> 11, ag = (a >> 5) & 63, ab = a & 31, br = b >> 11, bg = (b >> 5) & 63, bb = b & 31;
+  return ((int)(ar + (br - ar) * f) << 11) | ((int)(ag + (bg - ag) * f) << 5) | (int)(ab + (bb - ab) * f);
+}
+// a soft halo: what is already drawn there (the sky, the ground) lifted toward the day's colour, most at the middle and
+// fading to nothing at its edge -- a third of the way at its brightest, so it is felt more than seen
+void drawGlow(int cx, int cy, int r, uint16_t day) {
+  if (thrive.glow <= 0 || r <= 0) return;
+  float g = thrive.glow / 100.0f * 0.33f;
+  for (int y = max(0, cy - r); y <= min(H - 1, cy + r); y++)
+    for (int x = max(0, cx - r); x <= min(W - 1, cx + r); x++) {
+      float d = sqrtf((float)((x - cx) * (x - cx) + (y - cy) * (y - cy))) / r;
+      if (d >= 1) continue;
+      float f = g * (1 - d) * (1 - d);
+      if (f > 0.01f) canvas.drawPixel(x, y, blend565(canvas.readPixel(x, y), day, f));
+    }
+}
+static void star(int x, int y, uint16_t c) {
+  canvas.drawFastHLine(x - 2, y, 5, c); canvas.drawFastVLine(x, y - 2, 5, c); canvas.drawPixel(x, y, 0xFFFF);
+}
+void drawThriveMarks(int x, int y, int side) {
+  for (int i = 0; i < thrive.stars; i++) star(x + 4 + i * 7, y + 4 + (i & 1) * 3, 0xFF60);   // gold, in a little row
+  if (thrive.moon) { canvas.fillCircle(x + side - 6, y + 6, 4, 0xFFF4); canvas.fillCircle(x + side - 4, y + 5, 3, 0x0841); }   // a crescent
 }

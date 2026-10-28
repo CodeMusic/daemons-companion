@@ -405,9 +405,11 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   if (noticing) { if (!held) { heldWalk = walk; held = true; } walk = heldWalk; right = nRight; hop = 0; } else held = false;
   int side = 64 * sc, ax = cx - side / 2 + (int)(room * (walk - 0.5f)) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
   int ay = floorY - side + 4 * sc + bob + hop;
+  drawGlow(ax + side / 2, ay + side / 2, side * 5 / 8, hex565(st.menu));                  // C-207: the week's glow, behind it
   canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
   drawArt(ax, ay, sc, right);
   drawMark(ax, ay, sc, right, markTop);
+  drawThriveMarks(ax, ay, side);                                                          // C-207: its stars and its moon
   if (noticing) intuitionRipple(ax + side / 2, ay + side / 2, side, nPhase);   // C-203: the purple ripple, rising
 }
 

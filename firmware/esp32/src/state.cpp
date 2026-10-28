@@ -198,6 +198,7 @@ bool takeState(const char *json) {
     st.daemon.fed = lf["fed"]["today"] | 0; st.daemon.watered = lf["watered"]["today"] | 0; st.daemon.due = lf["fed"]["due"] | 0;
     st.daemon.tired = lf["tired"] | "awake";
     takeExpression(doc["daemon"]["expression"]);         // C-119: how it looks now, decided on the server
+    takeThrive(doc["daemon"]["thrive"]);                 // C-207: and how the week has gone
     JsonVariant dn = doc["daemon"]["den"];                // C-113: its den (server/src/dens.ts); CONTENT's if none
     st.daemon.den = Den();
     if (!dn.isNull()) {

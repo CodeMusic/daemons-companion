@@ -10,11 +10,22 @@ import { LATE } from "./module.js";
 export type Thought = { text: string; firstMs: number | null; totalMs: number };
 type Obj = { request_id?: string; work_id?: string; error?: { code: number; message?: string }; data?: unknown };
 
-// The first n sentences of what is written so far, once n are finished (or, at the end, however many there are)
+// The first n sentences of what is written so far, once they are finished (or, at the end, however many there are) --
+// one, when it is long already: every word is spoken, and the module's voice takes ~0.35 s a word (49 words, 18 s;
+// measured 2026-10-28), so a talk stays near 30 words. A sentence that never ends is cut at 34 words.
+const LONG_ONE = 15, MOST_WORDS = 34;
+const wordsIn = (t: string) => t.split(/\s+/).filter(Boolean).length;
 export function firstSentences(text: string, n: number, ended = false): string | null {
-  const ends = [...text.matchAll(/[.!?\u2026]+["'\u2019\u201d)\]]*(?=\s|$)/g)];
-  if (ends.length >= n && (ended || ends[n - 1].index! + ends[n - 1][0].length < text.length)) return text.slice(0, ends[n - 1].index! + ends[n - 1][0].length).trim();
-  return ended ? text.trim() : null;
+  const ends = [...text.matchAll(/[.!?\u2026]+["'\u2019\u201d)\]]*(?=\s|$)/g)].map((m) => m.index! + m[0].length);
+  const settled = (at: number) => ended || at < text.length;      // more written after it: the sentence really ended
+  for (let k = 0; k < Math.min(n, ends.length); k++) {
+    const upTo = text.slice(0, ends[k]).trim();
+    if (!settled(ends[k])) break;
+    if (k === n - 1 || wordsIn(upTo) >= LONG_ONE) return upTo;
+  }
+  const w = text.split(/\s+/).filter(Boolean);
+  if (w.length > MOST_WORDS) return `${w.slice(0, MOST_WORDS).join(" ").replace(/[,;:]$/, "")}\u2026`;
+  return ended ? (ends.length ? text.slice(0, ends[Math.min(n, ends.length) - 1]).trim() : text.trim()) : null;
 }
 export class StackFlow {
   private sock: Socket | null = null;

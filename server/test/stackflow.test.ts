@@ -142,5 +142,9 @@ describe("an answer cut to its first sentences (p256 runs on)", () => {
     expect(firstSentences("Hello there! Is it 3.5 degrees? Yes.", 2, true)).toBe("Hello there! Is it 3.5 degrees?");
     expect(firstSentences("Only one", 2, true)).toBe("Only one");
     expect(firstSentences("\u201cHi.\u201d Then more. More.", 2, true)).toBe("\u201cHi.\u201d Then more.");
+    const long = "I walked along the shore all morning and counted every shell the tide had left for me. Then I slept.";
+    expect(firstSentences(long, 2)).toBe("I walked along the shore all morning and counted every shell the tide had left for me.");   // long: one
+    expect(firstSentences("word ".repeat(50), 2)).toMatch(/^(word ){33}word\u2026$/);                                        // never ends: cut
+    expect(firstSentences("Hi. Me too", 2, true)).toBe("Hi.");                                                                 // the end: whole ones
   });
 });

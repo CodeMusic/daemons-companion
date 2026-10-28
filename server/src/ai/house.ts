@@ -55,11 +55,14 @@ export function persona(a: TalkAsk, heard = ""): string {
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
                d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
   return [`${who}, from the INDEX, who lives with the user.`,
-          d.entry ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 160)}` : "",
+          d.entry ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
           d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
-          d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 120)}` : "",
+          d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 90)}` : "",
           a.day ? `Today is ${a.day.day}${a.day.theme ? ` (${a.day.theme})` : ""}${a.season ? `, in ${a.season}` : ""}.` : "",
-          a.goal ? `The user is working on: ${a.goal.goal} -- next, ${a.goal.step}.` : ""]
+          a.goal ? `The user is working on: ${a.goal.goal} -- next, ${a.goal.step}.` : "",
+          // the style rides here, not in the system message: a long system message at a pooled client's setup made every
+          // answer from it empty (the hardware lane, 2026-10-28); the name said again, the 0.5B drifts from it
+          `Answer as ${d.nickname}, in one or two short warm sentences. Never say you are an AI.`]
     .filter(Boolean).join(" ");
 }
 // the user's message as the module is sent it: who it is, then what they said

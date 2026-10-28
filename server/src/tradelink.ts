@@ -175,7 +175,7 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
 // The hub's address as TRADE's THE HUB sets it: http(s)://name[:port], or "" for none. A new hub forgets the old token.
 export function setHub(store: Store, raw: unknown): { hub: string } | string {
   const url = typeof raw === "string" ? raw.trim().replace(/\/+$/, "") : "";
-  if (url && !/^https?:\/\/[^\s/]+(:\d+)?$/.test(url)) return "the hub's address, as http://coremp135:4730";   // DRAFT
+  if (url && !/^https?:\/\/[^\s/]+(:\d+)?$/.test(url)) return "the hub's address, as http://your-hub:4730";   // DRAFT
   if (url !== (store.getSetting("trade.hub") ?? "")) { store.setSetting("trade.hub", url || null); store.setSetting("trade.token", null); }
   return { hub: url };
 }

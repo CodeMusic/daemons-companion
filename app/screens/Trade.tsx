@@ -40,10 +40,10 @@ export function TradeScreen({ ink }: { ink?: string }) {
     <Card gap={6}>
       <Eyebrow>THE HUB</Eyebrow>
       <Small>{v.needsHub ? "Trading goes through a hub. Name its address here, then join." : v.hub ? `Trading through ${v.hub}.` : "This companion is the hub: other players trade here."}</Small>
-      {/* the app reaches plain http only on the local network: a bare name or a 100.x address, not a .ts.net name */}
-      <Small color="$color10">Use the hub's plain name, like coremp135, or its 100.x address.</Small>
+      {/* plain http reaches the local network and the tailnet (*.ts.net, build 800 on) */}
+      <Small color="$color10">Your hub's address: its name on your network or your tailnet.  DRAFT</Small>
       <XStack gap={8} flexWrap="wrap" alignItems="center">
-        <Entry value={hub} onChange={setHub} onSubmit={() => {}} placeholder="http://coremp135:4730 (empty: this one)" limit={80} />
+        <Entry value={hub} onChange={setHub} onSubmit={() => {}} placeholder="http://your-hub:4730 (empty: this one)" limit={80} />
         <Action label="SET" ink={ink} onPress={() => act("/api/trade/hub", { url: hub }, hub ? `Trading through ${hub}. Join there.` : "This companion is the hub again.")} />
       </XStack>
     </Card>

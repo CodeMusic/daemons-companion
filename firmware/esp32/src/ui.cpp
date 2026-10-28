@@ -687,7 +687,18 @@ void draw() {
     canvas.drawString(upper(st.carrying ? st.daemon.nickname : String("your daemon")), 10, 32);
     int y = 52;
     if (talkHeard.length()) y += min(2, wrap("\"" + talkHeard + "\"", 10, y, W - 20, 2, 16, 2, QUIET)) * 16 + 4;
-    if (talkAnswer.length()) wrap(talkAnswer, 10, y, W - 20, 2, 16, (H - 20 - y) / 16, PAPER);
+    const bool showIt = st.carrying && H >= 260;             // C-213: on the Ultra's tall glass, the daemon saying it
+    if (showIt && talkListening) {                            // listening: large, lifted, its ears up -- arcs either side
+      int cx = W / 2, top = 70;
+      drawArt(cx - 64, top - 4, 2);
+      for (int k = 0; k < 3; k++) {
+        canvas.drawArc(cx - 70, top + 40, 14 + 8 * k, 12 + 8 * k, 140, 220, readable(day));
+        canvas.drawArc(cx + 70, top + 40, 14 + 8 * k, 12 + 8 * k, 320, 40, readable(day));
+      }
+    } else {
+      if (talkAnswer.length()) wrap(talkAnswer, 10, y, W - 20, 2, 16, (H - (showIt ? 96 : 20) - y) / 16, PAPER);
+      if (showIt) drawArt(W / 2 - 32, H - 92, 1);
+    }
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     footer(talkStatus.length() ? talkStatus : hint("hold the dial: talk again    top button: back"));
   } else if (screen != HOME) {

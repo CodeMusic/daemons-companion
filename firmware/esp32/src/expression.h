@@ -12,8 +12,10 @@ struct Expression {
   int dy = 0; float squash = 1, bob = 1; bool still = false, shake = false;   // the pose
   bool marked = false; uint8_t ink[8] = {}, white[8] = {}; uint16_t markColour = 0;   // the mark: two 8x8 bit planes
   Patch patch[16]; int patches = 0;                                // the eyes
+  Patch mouth[2]; int mouths = 0;                                  // C-213: the mouth open, painted while its voice plays
 };
 extern Expression expression;
+extern volatile bool mouthOpen;                        // C-213: open on the beat while its voice plays (talk.cpp)
 // C-207 (server/src/thrive.ts): how the week has gone -- a glow behind it (0..100), a star a goal finished this week, a
 // moon the morning after a vivid night. Drawn as told, like the expression.
 struct Thrive { int glow = 0, stars = 0; bool moon = false; };

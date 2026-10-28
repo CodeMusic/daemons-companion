@@ -57,6 +57,11 @@ void takeExpression(JsonVariant e) {
         }
       }
     }
+    for (JsonVariant q : e["mouth"].as<JsonArray>()) {          // C-213: the mouth open (expressions.ts mouthPatch)
+      if (x.mouths >= 2) break;
+      x.mouth[x.mouths++] = { (uint8_t)(q["x"] | 0), (uint8_t)(q["y"] | 0), (uint8_t)(q["w"] | 0), (uint8_t)(q["h"] | 0),
+                              rgb565(q["rgb"][0] | 0, q["rgb"][1] | 0, q["rgb"][2] | 0) };
+    }
     for (JsonVariant q : e["patch"].as<JsonArray>()) {
       if (x.patches >= 16) break;
       x.patch[x.patches++] = { (uint8_t)(q["x"] | 0), (uint8_t)(q["y"] | 0), (uint8_t)(q["w"] | 0), (uint8_t)(q["h"] | 0),
@@ -68,10 +73,13 @@ void takeExpression(JsonVariant e) {
 }
 
 // The sprite in the expression: its colours shaded, its eyes patched, lowered by dy and squashed toward its feet
+volatile bool mouthOpen = false;
 void drawSprite(int x, int y, int scale, bool mirrored) {
   if (!artKeyHave.length() || artKeyHave != st.daemon.artKey) return;
   ready();
-  auto rowOf = [](int j) { return bottom - (int)roundf((bottom - j) * expression.squash) + expression.dy; };
+  // C-213: speaking with no mouth known yet, it bobs on the beat instead
+  static int beat; beat = mouthOpen && !expression.mouths ? -1 : 0;
+  auto rowOf = [](int j) { return bottom - (int)roundf((bottom - j) * expression.squash) + expression.dy + beat; };
   for (int j = 0; j < 64; j++) {
     int row = rowOf(j), tall = max(1, rowOf(j + 1) - row);   // stretched, a row reaches down to the next: no gap
     for (int i = 0; i < 64; i++) {
@@ -81,6 +89,10 @@ void drawSprite(int x, int y, int scale, bool mirrored) {
       for (int k = 0; k < expression.patches; k++) {
         const Patch &p = expression.patch[k];
         if (i >= p.x && i < p.x + p.w && j >= p.y && j < p.y + p.h) colour = p.colour;   // the later patch wins (the line)
+      }
+      if (mouthOpen) for (int k = 0; k < expression.mouths; k++) {   // C-213: the mouth over the eyes' patches
+        const Patch &p = expression.mouth[k];
+        if (i >= p.x && i < p.x + p.w && j >= p.y && j < p.y + p.h) colour = p.colour;
       }
       canvas.fillRect(x + (mirrored ? 63 - i : i) * scale, y + row * scale, scale, scale * tall, colour);
     }

@@ -12,6 +12,12 @@
 // C-74: the footers name the dial and the top button; on a board with two buttons and no dial (the StickS3) they name
 // its buttons instead -- the side one turns (a tap) and goes back (held), the front one presses.
 static String hint(String s) {
+  if (isWatch()) {                            // C-161, C-173: swipes and taps, the crown back (DRAFT)
+    s.replace("top button: back", "crown: back"); s.replace("top: back", "crown: back"); s.replace("top button: stop", "crown: stop");
+    s.replace("top button: undo", "hold: undo"); s.replace("top: delete", "hold: delete");
+    s.replace("hold the dial", "hold the daemon"); s.replace("turn:", "swipe:"); s.replace("press:", "tap:");
+    return s;
+  }
   if (board.kind == BoardKind::TDisplayPro) {   // C-105: the touch screen first -- its three buttons do the same (DRAFT)
     s.replace("top button: back", "hold: back"); s.replace("top button: stop", "touch: stop");
     s.replace("top button: undo", "hold: undo"); s.replace("top: delete", "hold: delete");
@@ -616,13 +622,14 @@ void draw() {
          : !st.carrying ? String(board.nfc ? "No daemon here. TOUCHSTONE can take one off a card; the party's routines are here too."
                                            : "No daemon here. Your party's routines, and the board's own. Press to open.")   // C-153, DRAFT
          : st.carrying ? "The routines " + daemonName() + " can run. Press to open."
-                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round || H < 160 ? 2 : 4,
-         board.round || H < 160 ? 18 : 27, board.round ? 5 : 3, PAPER);   // C-102: the Dial, smaller so it all fits; C-148 a
+                       : "Routines are a daemon's. Send one here from the game.", 10, 58, W - 20, board.round || H < 160 || isWatch() ? 2 : 4,
+         board.round || H < 160 || isWatch() ? 18 : 27, board.round ? 5 : isWatch() ? 7 : 3, PAPER);   // C-173: the watch's, whole   // C-102: the Dial, smaller so it all fits; C-148 a
                                                                            // 135-high screen too (it ran into the names)
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     String names;                                            // C-67: this board's own types
     for (int i = 0; i < typeCount; i++) names += String(i ? "  " : "") + types[i].name;
-    if (!board.round) canvas.drawString(names, 10, H - 6);   // C-102: no room at the foot of a circle
+    if (!board.round && !gridLists()) canvas.drawString(names, 10, H - 6);   // C-102: no room at the foot of a circle; C-173
+                                                                            // the watch's page dots there, its grid after
   } else if (!st.have) {
     wrap("Looking for the companion.", 10, 40, W - 20, 4, 28, 2, PAPER);
     wrap(wifiSet() ? "Wi-Fi is set. Is the server running, with \"host\": \"0.0.0.0\"?"

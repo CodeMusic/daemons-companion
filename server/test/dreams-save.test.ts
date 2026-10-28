@@ -5,7 +5,8 @@ import eventsJson from "../data/events.json" with { type: "json" };
 import { sync, type Host } from "../src/core.js";
 import { Store } from "../src/db.js";
 import { blocks } from "../src/save/reader.js";
-import { checkNight, dreamDay, dreamImage, keepNight, type Night } from "../src/dreams.js";
+import { checkNight, DREAM_VARS, dreamDay, dreamImage, keepNight, type Night } from "../src/dreams.js";
+import P from "../data/profile_layout.json" with { type: "json" };
 import { buildSave } from "./build_save.js";
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
@@ -43,6 +44,13 @@ describe("C-200: the last dream, into the save at SYNC", () => {
     const before = h.bytes.slice();
     sync(h, store);                                               // no new dream: every var as it was
     for (const v of [0x40d4, 0x40d5, 0x40d6, 0x40d7]) expect(varOf(h.bytes, v)).toBe(varOf(before, v));
+  });
+  it("writes the four the game left to it, where its layout says (T-462), and never the game's own", () => {
+    const W = (P as any).its_dreams.write;
+    expect(DREAM_VARS).toEqual({ dream: W.dream.var, hours: W.hours.var, nights: W.nights.var, day: W.day.var });
+    for (const k of ["dream", "hours", "nights", "day"]) expect(EV.sb1_vars + 2 * (W[k].var - EV.vars_start)).toBe(W[k].sb1);
+    const game = Object.values((P as any).its_dreams.game).map((g: any) => g.var);
+    expect(Object.values(DREAM_VARS).some((v) => game.includes(v))).toBe(false);
   });
   it("picks the image the written dream told, from sixteen", () => {
     const d = { to: "2026-10-29T11:00:00Z", personality: 0x2f, quality: "quiet" as const };

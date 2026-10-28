@@ -527,7 +527,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   checkTalk().catch(() => {});
   setInterval(() => { checkTalk().catch(() => {}); }, 60_000).unref();
   // The first talk of the day was a ~15 s setup on the module (p256, the hardware lane 2026-10-28): the daemon carried and,
-  // once found, the GUIDE are set up ahead -- a minute after starting, then every ten (a no-op while their thinkers hold)
+  // once found, the GUIDE are set up ahead -- a minute after starting, then every half hour (a no-op while they hold;
+  // fewer setups, since each leaks the module's llm unit a few files -- the hardware lane, 2026-10-28)
   const warmTalk = () => {
     if (!house.any) return;
     const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, save = hostOf(ecfg).save.read();
@@ -536,7 +537,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     house.warm(asks).catch(() => {});
   };
   setTimeout(warmTalk, 60_000).unref();
-  setInterval(warmTalk, 10 * 60_000).unref();
+  setInterval(warmTalk, 30 * 60_000).unref();   // a no-op while both thinkers hold: setups only when a persona changed
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's

@@ -7,7 +7,7 @@
 // first idle module; with none idle, or no first words within the deadline, it is LATE and the caller takes it elsewhere
 // (n8n, the way it goes today). No node: imports -- the words and the WAV are plain bytes.
 import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } from "./module.js";
-import type { StackFlow } from "./stackflow.js";
+import type { StackFlow, Thought } from "./stackflow.js";
 import { GUIDE_SETUP, guideQuestion } from "../guideask.js";   // C-209
 
 export type ModuleAt = { url: string; name: string; found?: string };
@@ -103,7 +103,7 @@ export class House {
 
   // A thinker set up with this persona on that module -- once (3.4 s), then reused; at most two alive, the oldest let go.
   // Not set up yet and a deadline to keep: set up in the background, and this talk is LATE (it goes elsewhere).
-  private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null, most = 300) {
+  private async think(sf: StackFlow, m: ModuleAt, model: string, prompt: string, said: string, deadlineMs: number | null, most = 300, again = false): Promise<Thought> {
     const mind = await this.mindOf(sf, m);
     const had = mind.held.find((x) => x.key === prompt);
     if (had) had.used = this.now();
@@ -113,7 +113,16 @@ export class House {
       if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
       work = await ready;
     }
-    return sf.infer(work, said.slice(0, most), { ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}), sentences: SAY_SENTENCES });
+    try { return await sf.infer(work, said.slice(0, most), { ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}), sentences: SAY_SENTENCES }); }
+    catch (e) {
+      // the module's llm unit restarted under us (the hardware lane, 2026-10-28: it ran out of files and systemd brought
+      // it back, every thinker gone): this one is forgotten, a silent connection dropped, and the talk set up again once
+      const why = (e as Error).message;
+      if (why === LATE || again || !/silent|closed|StackFlow:/.test(why)) throw e;
+      mind.held = mind.held.filter((x) => x.work !== work);
+      if (/silent/.test(why)) sf.reset();
+      return this.think(sf, m, model, prompt, said, deadlineMs, most, true);
+    }
   }
   // What is alive on a module's StackFlow, as this server knows it -- on a new connection (this server started, or the
   // link dropped) what is alive there is not ours, and is let go first

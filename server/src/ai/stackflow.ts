@@ -128,6 +128,9 @@ export class StackFlow {
     for (const w of await this.taskinfo().catch(() => [] as string[])) if (!mine.has(w)) { await this.exit(w); n++; }
     return n;
   }
+  // the connection dropped on purpose (a module gone silent): the next call connects afresh, and every thinker on it is
+  // known to be gone (generation)
+  reset() { this.sock?.destroy(); }
   exit(workId: string): Promise<void> { return this.locked(async () => {
     try { await this.send({ request_id: "exit", work_id: workId, action: "exit" }); await this.next(5000); } catch { /* gone already */ }
   }); }

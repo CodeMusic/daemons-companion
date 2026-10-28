@@ -30,6 +30,7 @@ const flow: Server = createServer((s) => {
         out({ request_id: o.request_id, work_id: w, error: { code: 0 } });
       }
       if (o.action === "inference") {
+        if (!alive.has(o.work_id)) { out({ work_id: o.work_id, error: { code: -9, message: "unit not found" } }); continue; }
         const who = /You are (\w+)/.exec(prompts.get(o.work_id) ?? "")?.[1];
         out({ work_id: o.work_id, data: { delta: `I am ${who}`, index: 0, finish: false }, error: { code: 0 } });
         out({ work_id: o.work_id, data: { delta: ".", index: 1, finish: true }, error: { code: 0 } });
@@ -127,6 +128,13 @@ describe("thinking through StackFlow (C-180)", () => {
     t += 31 * 60_000;
     await h.warm([{ ...ask("x"), guide: () => "" }]);                       // half an hour on: the GUIDE warmed again
     expect(seen.filter((x) => x.action === "setup").length).toBe(before + 1);
+  });
+  it("a thinker gone under it (the llm unit restarted) is set up again, and the talk still answers", async () => {
+    const sf = new StackFlow("127.0.0.1", port);
+    const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => sf);
+    expect((await h.talk(ask("PHOENIX"), null)).answer).toBe("I am PHOENIX.");
+    alive.clear();                                                           // systemd brought llm-llm back: nothing alive
+    expect((await h.talk(ask("PHOENIX"), null)).answer).toBe("I am PHOENIX.");
   });
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));

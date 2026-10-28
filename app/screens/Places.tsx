@@ -5,7 +5,8 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { KIND_NAMES } from "../data";
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "../deviceSprites";
 import { setPalette } from "../look";
-import { ALONE, api, HANDHELD, HandheldNow, isAway, OFFLINE, redrawWidgetNow, WIDGET } from "../net";
+import * as SecureStore from "expo-secure-store";
+import { ALONE, api, HANDHELD, HandheldNow, isAway, KEEP, OFFLINE, ON_PHONE, redrawWidgetNow, WIDGET } from "../net";
 import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../types";
 import { Action, Art, Card, Choice, Eyebrow, Result, Small } from "../ui";
 import { useApi } from "../useApi";
@@ -263,8 +264,32 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
   );
 }
 
+// C-217 (the user, 2026-10-28: "the order of listed devices should place the last used ones at the top ... maybe with a
+// sort order option"): LAST USED (here now first, then the most recently heard), BY MAKER (as before, each maker's newest
+// first) or NAME -- remembered on this phone or browser
+type Order = "recent" | "maker" | "name";
+const ORDER_KEY = "devices-order";
+async function loadOrder(): Promise<Order> {
+  try {
+    const v = ON_PHONE ? await SecureStore.getItemAsync(ORDER_KEY, KEEP) : globalThis.localStorage?.getItem(`daemons-${ORDER_KEY}`);
+    return v === "maker" || v === "name" ? v : "recent";
+  } catch { return "recent"; }
+}
+function saveOrder(o: Order) {
+  try { if (ON_PHONE) SecureStore.setItemAsync(ORDER_KEY, o, KEEP).catch(() => {}); else globalThis.localStorage?.setItem(`daemons-${ORDER_KEY}`, o); }
+  catch { /* remembered for this visit only */ }
+}
+const nameOf = (d: DeviceRow) => lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind;
+const lastUsed = (a: DeviceRow, b: DeviceRow) => Number(b.here) - Number(a.here) || Date.parse(b.lastSeen) - Date.parse(a.lastSeen);
+function grouped(ds: DeviceRow[], order: Order): { maker: string | null; ds: DeviceRow[] }[] {
+  if (order === "maker") return MAKERS.map((maker) => ({ maker, ds: ds.filter((d) => makerOf(d.kind) === maker).sort(lastUsed) })).filter((g) => g.ds.length);
+  return [{ maker: null, ds: [...ds].sort(order === "name" ? (a, b) => nameOf(a).localeCompare(nameOf(b)) || lastUsed(a, b) : lastUsed) }];
+}
+
 export function DeviceScreen({ ink }: { ink: string }) {
   const [mine, setMine] = useState<string | null>(null);   // C-160: the device whose own settings are open
+  const [order, setOrder] = useState<Order>("recent");     // C-217
+  useEffect(() => { loadOrder().then(setOrder); }, []);
   const [link, setLink] = useState<Link | null>(null);
   const [error, setError] = useState("");
   const [ran, setRan] = useState<number | null>(null);
@@ -341,10 +366,13 @@ export function DeviceScreen({ ink }: { ink: string }) {
           {/* C-100 (DRAFT) */}
           {WIDGET ? <Small>{"Your phone can host one too: add the DAEMONS widget to your home screen, and it appears here as This phone's widget."}</Small> : null}
           {/* C-130: under each maker's name, and a picture of each device beside it */}
-          {MAKERS.map((maker) => ({ maker, ds: link.devices!.filter((d) => makerOf(d.kind) === maker) })).filter((g) => g.ds.length).map((g) => (
-          <YStack key={g.maker} marginTop={10}>
-          <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10" borderBottomWidth={1} borderColor="$color6"
-                paddingBottom={2}>{g.maker.toUpperCase()}</Text>
+          {link.devices.length > 1 ? (                            /* C-217 (DRAFT) */
+            <YStack marginTop={8}><Choice<Order> value={order} options={[["recent", "Last used"], ["maker", "By maker"], ["name", "Name"]]}
+                                       onPick={(o) => { setOrder(o); saveOrder(o); }} ink={ink} /></YStack>) : null}
+          {grouped(link.devices, order).map((g) => (
+          <YStack key={g.maker ?? "all"} marginTop={10}>
+          {g.maker ? <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10" borderBottomWidth={1} borderColor="$color6"
+                paddingBottom={2}>{g.maker.toUpperCase()}</Text> : null}
           {g.ds.map((d) => (
             <XStack key={d.id} gap={12} marginTop={8} alignItems="flex-start">
             <DeviceSprite kind={d.kind} size={52} dim={!d.here} />
@@ -352,7 +380,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
               <XStack justifyContent="space-between" alignItems="baseline" gap={8} cursor="pointer" role="button"
                       onPress={() => setMine(mine === d.id ? null : d.id)}>
                 <Text fontSize={15} fontWeight="600" color={d.here ? "$color12" : "$color10"}>
-                  {`${lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind}${d.here ? "" : " (away)"}`}</Text>
+                  {`${nameOf(d)}${d.here ? "" : " (away)"}`}</Text>
                 <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color9">{mine === d.id ? "CLOSE" : "ITS SETTINGS ›"}</Text>
               </XStack>
               <Small>{[d.here ? `here, by ${d.via === "usb" ? "its cable" : d.via === "phone" ? "the phone"

@@ -22,8 +22,12 @@ export function fixesOf(store: Store, device?: string): Fix[] {
 }
 export function keepFix(store: Store, f: Omit<Fix, "at" | "device">, device: string, now = new Date()): Fix {
   const fix: Fix = { ...f, at: now.toISOString(), device };
+  // C-175: the same fix told twice (over LoRa by another board, and later by the watch's own outbox) is kept once
+  const had = fixesOf(store);
+  const same = had.find((x) => x.device === device && x.at === fix.at && x.lat === fix.lat && x.lon === fix.lon);
+  if (same) return same;
   // newest first, a fix told late (C-199) put in its place among the rest
-  const list = [fix, ...fixesOf(store)].sort((a, b) => b.at.localeCompare(a.at));
+  const list = [fix, ...had].sort((a, b) => b.at.localeCompare(a.at));
   store.setSetting("where", JSON.stringify(list.slice(0, KEEP)));
   const asked = store.getSetting(`find.${device}`);
   if (asked && fix.at >= asked) store.setSetting(`find.${device}`, null);   // found: the ask is answered (by a fix since it)

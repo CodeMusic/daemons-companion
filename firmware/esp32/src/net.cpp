@@ -783,6 +783,8 @@ void report(const String &kind, const String &detail) {
     }
     return;
   }
+  // C-175: out of reach, a fix or a night goes on the air too, for one of the user's boards to tell the companion now
+  if (!online() && (kind == "where" || kind == "night")) loraRelay(kind, detail);
   Told t;
   strlcpy(t.kind, kind.c_str(), sizeof t.kind); strlcpy(t.detail, detail.c_str(), sizeof t.detail);
   // full (long out of touch): on the Ultra it waits on the card (C-199) -- a long walk's fixes, a night -- else it is not kept

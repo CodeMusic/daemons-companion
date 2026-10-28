@@ -84,3 +84,12 @@ describe("FIND taken back (the user, 2026-10-28)", () => {
     expect(store.getSetting("find.t-watch-ultra-f351d4")).toBeFalsy();
   });
 });
+
+describe("C-175: a fix told twice", () => {
+  it("is kept once -- over LoRa by another board, and later by the watch itself", () => {
+    const store = new Store(":memory:"), at = new Date("2026-10-29T08:00:00Z");
+    keepFix(store, { lat: 45.1, lon: -75.1, metres: 5 }, "w", at);
+    keepFix(store, { lat: 45.1, lon: -75.1, metres: 5 }, "w", at);
+    expect(fixesOf(store)).toHaveLength(1);
+  });
+});

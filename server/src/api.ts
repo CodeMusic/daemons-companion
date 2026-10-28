@@ -1376,14 +1376,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           setTalkFirst(store, b.detail);
           return send(res, 200, { talk: talkNow(store) });
         }
+        // C-175: a fix or a night passed on by another of the user's boards over LoRa -- `for` is the watch it came from
+        const teller = (kind === "where" || kind === "night") && validDeviceId(b.for) ? b.for : deviceId;
         if (kind === "where") {
-          const f = takeFix(store, typeof b.detail === "string" ? b.detail : "", deviceId);
+          const f = takeFix(store, typeof b.detail === "string" ? b.detail : "", teller);
           return typeof f === "string" ? send(res, 400, { error: f }) : send(res, 200, { fix: f });
         }
         if (kind === "night") {
-          const r = takeNight(hostOf(ecfg), store, typeof b.detail === "string" ? b.detail : "", deviceId);
+          const r = takeNight(hostOf(ecfg), store, typeof b.detail === "string" ? b.detail : "", teller);
           if (typeof r === "string") return send(res, 400, { error: r });
-          const { dream } = r, d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
+          const { dream } = r, d = core.carriedDaemon(hostOf(ecfg), store, teller);
           if (house.any && d && dream.by === "words") {
             house.talk({ text: dreamAsk(dream), history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)
               .then((a) => { if (a.answer) rewriteDream(store, dream.id, a.answer); }).catch(() => {});

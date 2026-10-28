@@ -32,6 +32,12 @@
 #include <deque>
 
 static const uint8_t K_BEACON = 1, K_WAVE = 2, K_SAY = 3, K_CALL = 4, K_ACT = 5, K_REPLY = 6, K_TABLE = 7;   // C-134: 5, 6; C-151: 7
+// C-175 (the user, 2026-10-27: "it should always use Lora to ping other devices, and mesh if needed to reach the hub"):
+// 8 RELAY -- a watch out of reach of Wi-Fi and the phone sends its fixes and nights on the air ("<device>\t<kind>\t<detail>");
+// any of the user's boards that hears it, and is in reach of the companion, tells the companion for it (the companion
+// keeps a thing told twice once: the watch's own outbox tells it again later)
+static const uint8_t K_RELAY = 8;
+static String relayIn;                                     // one heard, to tell the companion from the loop
 #include "broadcast.h"
 #include "casino.h"                                                  // C-151: the table
 static const int HOPS = 2, HEAD = 26, TEXT_MAX = 80, NEARBY_MAX = 12, FRAME_MAX = HEAD + TEXT_MAX;
@@ -232,6 +238,7 @@ static void take(const uint8_t *b, int n, int rssi) {
   int relayed = kind == K_TABLE ? 0 : HOPS - hops;               // C-151: a TABLE goes with no hops, heard directly or not at all
   remember(from, species, name, relayed, rssi);
   if (kind == K_TABLE) { casinoHeard(from, species, name, text == "1", 1); return; }   // C-151: the table, never passed on
+  if (kind == K_RELAY && meetIsOurs(hex8(from)) && online() && !relayIn.length()) relayIn = text;   // C-175: ours, and we can reach home
   bool forMe = to == 0 || to == me;
   // C-134: a broadcast -- a word to everyone, an act, an answer -- goes to broadcast.cpp, which shows it once however
   // it came (and may answer it); the mesh below passes it on as any frame
@@ -269,7 +276,24 @@ static void pump() {
   if (st == RADIOLIB_ERR_NONE) take(b, n, rssi);
 }
 
+// C-175: a watch's fix or night onto the air, for one of the user's boards to tell the companion
+bool loraRelay(const String &kind, const String &detail) {
+  String t = deviceId() + "\t" + kind + "\t" + detail;
+  return t.length() <= TEXT_MAX && sendWithId(K_RELAY, 0, t, ++ourId);
+}
+static void relayOut() {                                   // what was heard, told to the companion for the watch it came from
+  if (!relayIn.length()) return;
+  String t = relayIn; relayIn = "";
+  int a = t.indexOf('\t'), b = t.indexOf('\t', a + 1);
+  if (a <= 0 || b <= a) return;
+  JsonDocument d; d["for"] = t.substring(0, a); d["kind"] = t.substring(a + 1, b); d["detail"] = t.substring(b + 1);
+  String body; serializeJson(d, body);
+  http("POST", "/api/device/interact", body);           // over Wi-Fi: the cable's INTERACT carries no `for`
+  Serial.println("lora: relayed " + t.substring(0, 60));
+}
+
 void loraLoop(uint32_t now, bool on, int species) {
+  relayOut();                                              // C-175
   if (!radioOn()) return;
   if (bandFor(cfg.band) != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915)) {   // the site moved the band
     bandMhz = bandFor(cfg.band); tft.waitDMA(); radioBus(); radio->setFrequency((float)bandMhz); radio->startReceive();
@@ -412,6 +436,7 @@ bool loraReady() { return false; }
 void loraBegin() {}
 void loraLoop(uint32_t, bool, int) {}
 bool loraSend(uint8_t, uint32_t, const String &) { return false; }
+bool loraRelay(const String &, const String &) { return false; }
 bool loraCast(uint8_t, uint16_t, const String &) { return false; }   // C-134
 bool loraTable(bool) { return false; }                               // C-151
 bool loraCanSay() { return false; }

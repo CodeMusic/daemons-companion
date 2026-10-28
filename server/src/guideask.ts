@@ -30,12 +30,15 @@ export function guidePassages(g: Guide, question: string, most = 2, chars = 700)
 // the 0.5B's window, so it lost who it was and wandered (an answer about Middle-earth).
 // Short throughout: the module's qwen2.5-0.5B-prefill takes about 128 tokens a turn, setup and input together; past that
 // it answers noise (2026-10-28: 80 words of page in the input, every answer arXiv or calculus)
-export const GUIDE_SETUP = "You are THE GUIDE, a small book. Answer in one or two short sentences, only from the page given.";
+// One setup for every book (the GUIDE, THE SUBTLE LAYER -- C-229): the module holds two thinkers and each setup leaks it
+// files, so the books share one, and which book answers rides in the input with its page
+export const GUIDE_SETUP = "You are a small book. Answer in one or two short sentences, only from the page given.";
 // plain words only: a quote or a line break in what StackFlow is sent turned the 0.5B's answers to noise (2026-10-28 --
 // "(No page ...)" answered well, every "Page \"...\"" one wandered into maths)
 const plain = (t: string) => t.replace(/["\u201c\u201d]/g, "").replace(/\s+/g, " ").trim();
 export function guidePages(passages: Passage[]): string {
   return passages.length ? passages.map((p) => `The page ${plain(p.title)} says: ${plain(p.text)}`).join(" ") : "No page of the book touches this.";
 }
-export const guideQuestion = (pages: string, question: string) => `${pages} Question: ${plain(question).slice(0, 200)}`;
-export function guidePersona(passages: Passage[]): string { return `${GUIDE_SETUP} ${guidePages(passages)}`; }
+export const guideQuestion = (pages: string, question: string, book = "THE GUIDE") =>
+  `From ${book}: ${pages} Question: ${plain(question).slice(0, 200)}`;
+export function guidePersona(passages: Passage[], book = "THE GUIDE"): string { return `${GUIDE_SETUP} From ${book}: ${guidePages(passages)}`; }

@@ -112,7 +112,7 @@ describe("thinking through StackFlow (C-180)", () => {
     const setups = seen.filter((x) => x.action === "setup").slice(before);
     expect(setups).toHaveLength(1);
     expect(setups[0].data.prompt).toBe(GUIDE_SETUP);
-    expect(seen.filter((x) => x.action === "inference").at(-1)!.data).toBe('Page "dreams": words Question: dreams');
+    expect(seen.filter((x) => x.action === "inference").at(-1)!.data).toBe('From THE GUIDE: Page "dreams": words Question: dreams');
   });
   it("warms the daemon carried and the GUIDE ahead, so the first talk keeps its deadline; never over one talked to lately", async () => {
     const sf = new StackFlow("127.0.0.1", port);

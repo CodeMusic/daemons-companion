@@ -13,11 +13,12 @@ describe("C-209: asking the GUIDE", () => {
     expect(p.length).toBeGreaterThan(0);
     expect(p.length).toBeLessThanOrEqual(2);
     expect(p.map((x) => x.text).join("").length).toBeLessThanOrEqual(700);
-    expect(guidePersona(p)).toMatch(/^You are THE GUIDE/);
+    expect(guidePersona(p)).toMatch(/^You are a small book\. .* From THE GUIDE: /);
   });
   it("answers as the GUIDE, from what was heard, when asked of it", () => {
     const ask = { history: [], daemon: { nickname: "SPARKY" }, speak: false, guide: (heard: string) => guidePages(guidePassages(g, heard)) };
-    expect(persona(ask, "the mind as code")).toMatch(/^You are THE GUIDE/);
+    expect(persona(ask, "the mind as code")).toMatch(/From THE GUIDE: /);
+    expect(persona({ ...ask, book: "THE SUBTLE LAYER" }, "a hunch")).toMatch(/From THE SUBTLE LAYER: /);
     expect(persona({ ...ask, guide: undefined })).toMatch(/^You are SPARKY/);
   });
 });

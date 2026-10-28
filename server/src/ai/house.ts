@@ -20,7 +20,8 @@ export type TalkAsk = {
   season?: string;
   goal?: { goal: string; step: string } | null;
   speak: boolean;
-  guide?: (heard: string, chars?: number) => string;      // C-209: asked of the GUIDE -- its pages nearest what was heard (guidePages), cut to chars
+  guide?: (heard: string, chars?: number) => string;      // C-209: asked of a book -- its pages nearest what was heard (guidePages), cut to chars
+  book?: string;                                          // which book: THE GUIDE (the default), THE SUBTLE LAYER (C-229)
 };
 export type TalkAnswer = { answer: string; heard: string | null; audio: Uint8Array | null; provider: string; firstMs: number | null };
 
@@ -52,7 +53,7 @@ export function checkModules(list: unknown): ModuleAt[] | string {
 // one (50 words) leaves that client answering nothing, for good, until its services restart; 15 words answer (2026-10-28)
 export const TALK_SYSTEM = "You are a character in the game DAEMONS. Become who the note in brackets describes.";
 export function persona(a: TalkAsk, heard = ""): string {
-  if (a.guide) return `${GUIDE_SETUP} ${a.guide(heard)}`;   // C-209: the GUIDE answers, not the daemon (its pages, a.guide)
+  if (a.guide) return `${GUIDE_SETUP} From ${a.book ?? "THE GUIDE"}: ${a.guide(heard)}`;   // C-209: a book answers, not the daemon (its pages, a.guide)
   const d = a.daemon;
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
                d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
@@ -262,7 +263,7 @@ export class House {
       const sf = (this.noFlowUntil.get(m.url) ?? 0) > this.now() ? null : this.thinker?.(m) ?? null;
       try {
         if (sf) {
-          try { r = a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text, wide(h.llm!) ? 380 : 170), text), deadlineMs, 700)   // C-209: one GUIDE thinker
+          try { r = a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text, wide(h.llm!) ? 380 : 170), text, a.book), deadlineMs, 700)   // C-209: one thinker for the books
                             : await this.think(sf, m, h.llm!, persona(steady(a), text), text, deadlineMs); }
           catch (e) {
             if (!/ECONNREFUSED|EHOSTUNREACH|did not answer/.test((e as Error).message)) throw e;

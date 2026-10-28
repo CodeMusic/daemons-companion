@@ -69,7 +69,7 @@ entry; when the board cannot, n8n does.
   note's words go to the app's VOICE NOTES. Only the hub's module does this for now, not n8n
   ([The T-Watch Ultra](The-T-Watch-Ultra)).
 - **Answers as THE GUIDE** (C-209). Once your save has found THE GUIDE, ask it a question by voice from a watch's
-  BOOKS, or in words. The pages nearest the question go to the model with it, and it answers as the book, only from
+  BOOKS, or in the app's GUIDE -- typed, or held and spoken. The pages nearest the question go to the model with it, and it answers as the book, only from
   them. Like any talk, it goes to whichever answers first.
 
 ## Coming

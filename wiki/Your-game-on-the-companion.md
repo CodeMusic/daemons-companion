@@ -73,8 +73,9 @@ A shelf of what can be read (C-145, C-156): five books, each opening as a page o
   never written.**
 - **THE GUIDE** -- only once your save has found it. Its 8-bit cover (its title and author set in the app's own type --
   the art carries none of the game's lettering, which is Nintendo's), CONTENTS by part, and each chapter on the book's
-  own dark page, with BACK, CONTENTS and NEXT; its last chapter ends on READ, the link its QR code opens. Nothing of it
-  shows before it is found.
+  own dark page, with BACK, CONTENTS and NEXT; its last chapter ends on READ, the link its QR code opens. **ASK THE
+  GUIDE** (C-209): type a question, or hold and speak it, and the book answers from its own pages
+  ([The hub and its AI](The-hub-and-its-AI)). Nothing of it shows before it is found.
 - **THE SUBTLE LAYER** (DAEMONS T-423) -- a trainer's handbook, only once your save has found it. An open book in its
   own purples: its cover (its title set in the app's own type), the contents, then each page with its picture on the
   left and its words on the right (one above the other on a phone); a few pictures turn, and in TWO VOICES the second,

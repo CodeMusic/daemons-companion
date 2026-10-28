@@ -10,7 +10,7 @@ answered at once from written lines, with no model at all (C-196).
 
 | where | how | state |
 |---|---|---|
-| the phone | DAEMON, Yours, **HOLD TO TALK** (with a daemon on your device) | built; needs a current phone build (`./bindCompanion.sh phone`) |
+| the phone | DAEMON, Yours, **HOLD TO TALK** (with a daemon on your device); and **ASK THE GUIDE** in the LIBRARY's GUIDE, typed or held and spoken, once your save has found it (C-209) | built; needs a current phone build (`./bindCompanion.sh phone`) |
 | an INDEX entry | **LISTEN** on any entry in DAEMON, INDEX (the phone and the site: a spinner you can stop while the voice is made, HUSH while it speaks), the Tab5's INDEX, or press on the entry on a board | runs on the site |
 | the T-Embed CC1101 | **hold the dial** half a second on a home page; the TALK screen shows what it heard and the answer, and the speaker says it | **runs** -- over Wi-Fi or the cable; away from both, through the paired phone |
 | the plain T-Embed, the SI4732 | **hold the dial** at home | built, not yet run |

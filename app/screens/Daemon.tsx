@@ -13,6 +13,7 @@ import { IndexScreen } from "./Index";
 import { RoutinesCard } from "./Routines";
 import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
+import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard } from "./Reads";   // C-203
 import { useApi } from "../useApi";
  // C-119: how it looks now, decided on the server
@@ -143,7 +144,7 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
 }
 
 export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
-  const [seg, setSeg] = useState<"yours" | "party" | "index" | "routines" | "soundings" | "dreams">("yours");   // C-156; C-200 dreams
+  const [seg, setSeg] = useState<"yours" | "party" | "index" | "routines" | "soundings" | "dreams" | "meetings">("yours");   // C-156; C-200 dreams
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<{ species: number; name: string; category: string; entry: string } | null>(null);
@@ -223,10 +224,11 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   const away = (own ? hosted : null) ?? party?.find((d) => d.away) ?? hosted ?? undefined;
   return (
     <YStack gap={14}>
-      <Segments value={seg} onChange={setSeg} options={[["yours", "Yours"], ["party", "Party"], ["index", "INDEX"], ["routines", "Routines"], ["soundings", "SOUNDINGS"], ["dreams", "DREAMS"]]} />
+      <Segments value={seg} onChange={setSeg} options={[["yours", "Yours"], ["party", "Party"], ["index", "INDEX"], ["routines", "Routines"], ["soundings", "SOUNDINGS"], ["dreams", "DREAMS"], ["meetings", "MEETINGS"]]} />
       {seg === "index" ? <IndexScreen ink={ink} /> : null}
       {seg === "soundings" ? <SoundingsScreen /> : null}
       {seg === "dreams" ? <DreamsScreen ink={ink} /> : null}
+      {seg === "meetings" ? <MeetingsScreen ink={ink} /> : null}
       {seg === "routines" ? <RoutinesCard ink={ink} /> : null}
       {seg === "yours" ? (<>
       {away ? <LifeCard ink={ink} name={away.nickname} daemon={away} /> : null}

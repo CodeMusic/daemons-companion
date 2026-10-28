@@ -135,7 +135,7 @@ bool undoable();
 extern Battery bat;                       // C-63
 
 void draw();
-void say(const String &word);
+void say(const String &word, uint32_t ms = 1500);
 void celebrate(const String &what);
 void progress(const String &text);        // what a routine is waiting for, on the RUN screen (it answers SHOT too)
 void shot();                              // the screen, down the cable

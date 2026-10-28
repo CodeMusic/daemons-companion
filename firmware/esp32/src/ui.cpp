@@ -914,7 +914,7 @@ void draw() {
   dirty = false;
 }
 
-void say(const String &word) { flash = word; flashUntil = millis() + 1500; dirty = true; }
+void say(const String &word, uint32_t ms) { flash = word; flashUntil = millis() + ms; dirty = true; }
 
 // C-50: what the server says the tick finished -- a step, a milestone, the whole goal -- heard and seen
 void celebrate(const String &what) {

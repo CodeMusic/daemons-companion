@@ -693,6 +693,14 @@ struct Told { char kind[16]; char detail[48]; };
 static QueueHandle_t outbox = nullptr;
 static volatile bool sending = false;
 static String *stateMail = nullptr;                    // from the task, for the loop
+static String *saidMail = nullptr;                     // C-196: the daemon's own line after a care, for the loop
+static const uint32_t SAID_MS = 3500;                  // long enough to read 36 characters
+// C-196 (C-180 (2)): a care's answer carries `said`, a line written for the daemon's mood and the day (no model)
+static String saidIn(const String &answer) {
+  JsonDocument d;
+  if (!answer.length() || deserializeJson(d, answer)) return "";
+  return d["said"] | "";
+}
 static portMUX_TYPE mailMux = portMUX_INITIALIZER_UNLOCKED;
 bool netBusy() { return sending || (outbox && uxQueueMessagesWaiting(outbox)); }
 // what OUTBOX down the cable reports: the last send -- its answer, how long it took, which way it went -- and the tries
@@ -715,8 +723,14 @@ static bool sendOne() {
     JsonDocument d; d["kind"] = t.kind; d["detail"] = t.detail;
     String body; serializeJson(d, body);
     uint32_t t0 = millis();
-    http("POST", "/api/device/interact", body, &ok);
+    String answer = http("POST", "/api/device/interact", body, &ok);
     code = lastCode;
+    String said = ok ? saidIn(answer) : "";
+    if (said.length()) {
+      String *m = new String(said);
+      portENTER_CRITICAL(&mailMux); String *old = saidMail; saidMail = m; portEXIT_CRITICAL(&mailMux);
+      delete old;
+    }
     sentTries = ++tries; sentCode = code; sentMs = millis() - t0; sentAway = viaRelay();
     if (ok || code > 0) { xQueueReceive(outbox, &t, 0); tries = 0; }   // told -- or refused, which sending again would not change
     if (ok && !uxQueueMessagesWaiting(outbox)) {         // the last of them: its new life, for the loop
@@ -759,7 +773,12 @@ void report(const String &kind, const String &detail) {
   if (!outbox) {
     JsonDocument d; d["kind"] = kind; d["detail"] = detail;
     String body; serializeJson(d, body);
-    if (http("POST", "/api/device/interact", body).length()) httpState("GET", "/api/device/state", "");   // its new life
+    String answer = http("POST", "/api/device/interact", body);
+    if (answer.length()) {
+      String said = saidIn(answer);
+      if (said.length()) say(said, SAID_MS);
+      httpState("GET", "/api/device/state", "");   // its new life
+    }
     return;
   }
   Told t;
@@ -775,6 +794,8 @@ void reportLoop() {
     if (!netBusy()) { takeState(*m); lastPoll = millis(); dirty = true; }   // more to send: its own answer will come
     delete m;
   }
+  portENTER_CRITICAL(&mailMux); String *s = saidMail; saidMail = nullptr; portEXIT_CRITICAL(&mailMux);
+  if (s) { say(*s, SAID_MS); delete s; }
   if (outbox && uxQueueMessagesWaiting(outbox) && bridgeLive() && (!netLock || xSemaphoreTakeRecursive(netLock, 0) == pdTRUE)) {
     Told t;
     while (xQueueReceive(outbox, &t, 0) == pdTRUE) bridge(String("INTERACT ") + t.kind + " " + t.detail);

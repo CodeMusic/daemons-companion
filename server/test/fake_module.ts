@@ -2,7 +2,7 @@
 // tools/ax630bench.ts run against it by hand)
 import { createServer, type Server } from "node:http";
 
-export function fakeModule(opts: { firstDelayMs?: number } = {}): Server {
+export function fakeModule(opts: { firstDelayMs?: number; busyHearing?: boolean } = {}): Server {
   return createServer(async (req, res) => {
     const chunks: Buffer[] = []; for await (const c of req) chunks.push(c as Buffer);
     const body = Buffer.concat(chunks);
@@ -20,6 +20,7 @@ export function fakeModule(opts: { firstDelayMs?: number } = {}): Server {
       return res.end(Buffer.concat([Buffer.from("RIFF"), Buffer.from(String(input))]));
     }
     if (req.url === "/v1/audio/transcriptions") {
+      if (opts.busyHearing) { res.writeHead(500); return res.end("Server busy, please try again later"); }   // Whisper with no NPU memory left
       res.writeHead(200, { "content-type": "application/json" });
       return res.end(JSON.stringify({ text: body.includes("said.wav") ? "heard it" : "" }));
     }

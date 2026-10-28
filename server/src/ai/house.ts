@@ -55,7 +55,10 @@ export function persona(a: TalkAsk, heard = ""): string {
 
 type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: string };
 
+const HEAR_MS = 8000, DEAF_MS = 10 * 60_000;
 export class House {
+  private deafUntil = new Map<string, number>();
+  private deaf(url: string) { return (this.deafUntil.get(url) ?? 0) > this.now(); }
   private busy = new Set<string>();
   private held = new Map<string, Held>();
   constructor(private modules: () => ModuleAt[], private now = () => Date.now()) {}
@@ -86,7 +89,7 @@ export class House {
     for (const m of this.modules()) {
       if (this.busy.has(m.url)) continue;
       const h = await this.models(m);
-      if (h.llm && (!needsHearing || h.stt) && !this.busy.has(m.url)) return { m, h };
+      if (h.llm && (!needsHearing || (h.stt && !this.deaf(m.url))) && !this.busy.has(m.url)) return { m, h };
     }
     return null;
   }
@@ -101,7 +104,11 @@ export class House {
     try {
       let heard: string | null = null, text = a.text?.trim() ?? "";
       if (!text && a.wav) {
-        heard = (await hear(m.url, h.stt!, Buffer.from(a.wav))).text.trim();
+        // a module's hearing that does not answer in HEAR_MS (Whisper beside the LLM and MeloTTS: "Server busy" after
+        // 30 s, the hardware lane 2026-10-28) is LATE -- the recording goes elsewhere, and that module is not asked to
+        // hear again for DEAF_MS. With nowhere else to go (deadlineMs null) it is waited on as long as before.
+        try { heard = (await hear(m.url, h.stt!, Buffer.from(a.wav), deadlineMs ? HEAR_MS : undefined)).text.trim(); }
+        catch (e) { if (!deadlineMs) throw e; this.deafUntil.set(m.url, this.now() + DEAF_MS); throw new Error(LATE); }
         text = heard;
         if (!text) return { answer: "", heard: "", audio: null, provider: `module:${m.name}`, firstMs: null };
       }

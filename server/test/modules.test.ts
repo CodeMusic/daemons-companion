@@ -30,6 +30,15 @@ describe("the house", () => {
     expect(r.heard).toBe("heard it");
     expect(r.answer).toBe("Good morning!");
   });
+  it("is LATE when the module cannot hear, and asks it to hear no more for a while -- but still to think", async () => {
+    const deafSrv = fakeModule({ busyHearing: true }), url = await up(deafSrv);
+    try {
+      const h = new House(() => [{ url, name: "busy ears" }]);
+      await expect(h.talk({ ...ask, text: undefined, wav: new Uint8Array(64) })).rejects.toThrow(LATE);
+      await expect(h.talk({ ...ask, text: undefined, wav: new Uint8Array(64) })).rejects.toThrow(LATE);   // not asked again
+      expect((await h.talk(ask)).answer).toBe("Good morning!");                                         // words still thought
+    } finally { deafSrv.close(); }
+  });
   it("is LATE when no first words come before the deadline, and waits when told to", async () => {
     const h = new House(() => [{ url: sUrl, name: "slow" }]);
     await expect(h.talk(ask, 100)).rejects.toThrow(LATE);

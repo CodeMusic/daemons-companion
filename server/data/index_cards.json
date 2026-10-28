@@ -44,10 +44,8 @@
  "understandings": [
   {
    "n": 1,
-   "key": "FIRST",
    "name": "STILL",
    "flag": 2384,
-   "flag_name": "FLAG_UNDERSTANDING_FIRST",
    "rgb": [
     156,
     123,
@@ -71,10 +69,8 @@
   },
   {
    "n": 2,
-   "key": "SCHOOL",
    "name": "NAMING",
    "flag": 2401,
-   "flag_name": "FLAG_UNDERSTANDING_SCHOOL",
    "rgb": [
     99,
     123,
@@ -98,10 +94,8 @@
   },
   {
    "n": 3,
-   "key": "READING",
    "name": "NOTICE",
    "flag": 2402,
-   "flag_name": "FLAG_UNDERSTANDING_READING",
    "rgb": [
     82,
     189,
@@ -125,10 +119,8 @@
   },
   {
    "n": 4,
-   "key": "NOTES",
    "name": "REFLECT",
    "flag": 2403,
-   "flag_name": "FLAG_UNDERSTANDING_NOTES",
    "rgb": [
     222,
     156,
@@ -152,10 +144,8 @@
   },
   {
    "n": 5,
-   "key": "SCORN",
    "name": "STANCE",
    "flag": 2404,
-   "flag_name": "FLAG_UNDERSTANDING_SCORN",
    "rgb": [
     82,
     90,
@@ -179,10 +169,8 @@
   },
   {
    "n": 6,
-   "key": "RETURN",
    "name": "MEND",
    "flag": 2405,
-   "flag_name": "FLAG_UNDERSTANDING_RETURN",
    "rgb": [
     173,
     82,
@@ -206,10 +194,8 @@
   },
   {
    "n": 7,
-   "key": "GUIDE",
    "name": "PRACTICE",
    "flag": 2406,
-   "flag_name": "FLAG_UNDERSTANDING_GUIDE",
    "rgb": [
     90,
     156,

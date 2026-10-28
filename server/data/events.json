@@ -9,7 +9,6 @@
    "section": "GAME EVENTS",
    "held": {
     "all_flags": [],
-    "flag_names": [],
     "var": {
      "name": "VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB",
      "number": 16469,
@@ -26,9 +25,6 @@
    "held": {
     "all_flags": [
      2095
-    ],
-    "flag_names": [
-     "FLAG_SYS_B_DASH"
     ]
    }
   },
@@ -39,9 +35,6 @@
    "held": {
     "all_flags": [
      2089
-    ],
-    "flag_names": [
-     "FLAG_SYS_POKEDEX_GET"
     ]
    }
   },
@@ -52,113 +45,86 @@
    "held": {
     "all_flags": [
      1193
-    ],
-    "flag_names": [
-     "FLAG_GOT_OPUS"
     ]
    }
   },
   {
    "n": 5,
-   "name": "SLATE (CAIRN)",
+   "name": "SLATE",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2080
-    ],
-    "flag_names": [
-     "FLAG_BADGE01_GET"
     ]
    }
   },
   {
    "n": 6,
-   "name": "SLOPE (BASIN)",
+   "name": "SLOPE",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2081
-    ],
-    "flag_names": [
-     "FLAG_BADGE02_GET"
     ]
    }
   },
   {
    "n": 7,
-   "name": "SENSE (GAUGE)",
+   "name": "SENSE",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2082
-    ],
-    "flag_names": [
-     "FLAG_BADGE03_GET"
     ]
    }
   },
   {
    "n": 8,
-   "name": "FIT (TRELLIS)",
+   "name": "FIT",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2083
-    ],
-    "flag_names": [
-     "FLAG_BADGE04_GET"
     ]
    }
   },
   {
    "n": 9,
-   "name": "SKEW (TILT)",
+   "name": "SKEW",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2084
-    ],
-    "flag_names": [
-     "FLAG_BADGE05_GET"
     ]
    }
   },
   {
    "n": 10,
-   "name": "FRAME (MATTE)",
+   "name": "FRAME",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2085
-    ],
-    "flag_names": [
-     "FLAG_BADGE06_GET"
     ]
    }
   },
   {
    "n": 11,
-   "name": "HEAT (ANNEAL)",
+   "name": "HEAT",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2086
-    ],
-    "flag_names": [
-     "FLAG_BADGE07_GET"
     ]
    }
   },
   {
    "n": 12,
-   "name": "TRUE (SCORN)",
+   "name": "TRUE",
    "section": "MARKS",
    "held": {
     "all_flags": [
      2087
-    ],
-    "flag_names": [
-     "FLAG_BADGE08_GET"
     ]
    }
   },
@@ -169,9 +135,6 @@
    "held": {
     "all_flags": [
      770
-    ],
-    "flag_names": [
-     "FLAG_GOT_NOTEBOOK"
     ]
    }
   },
@@ -182,9 +145,6 @@
    "held": {
     "all_flags": [
      788
-    ],
-    "flag_names": [
-     "FLAG_GOT_DIPLOMA"
     ]
    }
   },
@@ -208,100 +168,76 @@
    "held": {
     "all_flags": [
      2913
-    ],
-    "flag_names": [
-     "FLAG_SONG_FIR"
     ]
    }
   },
   {
    "n": 17,
-   "name": "TWELVE DAYS (SLATE)",
+   "name": "TWELVE DAYS",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2914
-    ],
-    "flag_names": [
-     "FLAG_SONG_1"
     ]
    }
   },
   {
    "n": 18,
-   "name": "REALIZATION (SLOPE)",
+   "name": "REALIZATION",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2915
-    ],
-    "flag_names": [
-     "FLAG_SONG_2"
     ]
    }
   },
   {
    "n": 19,
-   "name": "FORGIVENESS (SENSE)",
+   "name": "FORGIVENESS",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2916
-    ],
-    "flag_names": [
-     "FLAG_SONG_3"
     ]
    }
   },
   {
    "n": 20,
-   "name": "GUARDIAN (FIT)",
+   "name": "GUARDIAN",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2917
-    ],
-    "flag_names": [
-     "FLAG_SONG_4"
     ]
    }
   },
   {
    "n": 21,
-   "name": "HARMONY (SKEW)",
+   "name": "HARMONY",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2918
-    ],
-    "flag_names": [
-     "FLAG_SONG_5"
     ]
    }
   },
   {
    "n": 22,
-   "name": "CANVAS (FRAME)",
+   "name": "CANVAS",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2919
-    ],
-    "flag_names": [
-     "FLAG_SONG_6"
     ]
    }
   },
   {
    "n": 23,
-   "name": "REFLECTIONS (HEAT)",
+   "name": "REFLECTIONS",
    "section": "SONGBOOK",
    "held": {
     "all_flags": [
      2920
-    ],
-    "flag_names": [
-     "FLAG_SONG_7"
     ]
    }
   },
@@ -312,9 +248,6 @@
    "held": {
     "all_flags": [
      2921
-    ],
-    "flag_names": [
-     "FLAG_NEXUS_LIT"
     ]
    }
   },
@@ -325,9 +258,6 @@
    "held": {
     "all_flags": [
      564
-    ],
-    "flag_names": [
-     "FLAG_GOT_SS_TICKET"
     ]
    }
   },
@@ -338,9 +268,6 @@
    "held": {
     "all_flags": [
      2392
-    ],
-    "flag_names": [
-     "FLAG_FIR_IN_KEY"
     ]
    }
   },
@@ -364,22 +291,6 @@
      2583,
      2584,
      2589
-    ],
-    "flag_names": [
-     "FLAG_ROUTE1_GROVE_FOUND",
-     "FLAG_VIRIDIAN_FOREST_GROVE_FOUND",
-     "FLAG_ROUTE24_GROVE_FOUND",
-     "FLAG_ROUTE25_GROVE_FOUND",
-     "FLAG_ROUTE11_GROVE_FOUND",
-     "FLAG_ROUTE8_GROVE_FOUND",
-     "FLAG_ROUTE13_GROVE_FOUND",
-     "FLAG_ONE_ISLAND_GROVE_FOUND",
-     "FLAG_TWO_ISLAND_GROVE_FOUND",
-     "FLAG_THREE_ISLAND_BERRY_FOREST_GROVE_FOUND",
-     "FLAG_FOUR_ISLAND_GROVE_FOUND",
-     "FLAG_FIVE_ISLAND_MEADOW_GROVE_FOUND",
-     "FLAG_SIX_ISLAND_WATER_PATH_GROVE_FOUND",
-     "FLAG_SEVEN_ISLAND_GROVE_FOUND"
     ]
    }
   },
@@ -506,7 +417,6 @@
    "section": "GAME EVENTS",
    "held": {
     "all_flags": [],
-    "flag_names": [],
     "var": {
      "name": "VAR_MAP_SCENE_ROUTE5_ROUTE6_ROUTE7_ROUTE8_GATES",
      "number": 16482,
@@ -522,15 +432,12 @@
    "held": {
     "all_flags": [
      789
-    ],
-    "flag_names": [
-     "FLAG_GOT_REVEAL"
     ]
    }
   },
   {
    "n": 39,
-   "name": "RESOLVER (HALFTONE)",
+   "name": "RESOLVER",
    "section": "GAME EVENTS",
    "held": null,
    "items": [
@@ -561,9 +468,6 @@
    "held": {
     "all_flags": [
      2242
-    ],
-    "flag_names": [
-     "FLAG_WORLD_MAP_BIRTH_ISLAND_EXTERIOR"
     ]
    }
   },
@@ -574,9 +478,6 @@
    "held": {
     "all_flags": [
      2400
-    ],
-    "flag_names": [
-     "FLAG_GOT_GUIDE"
     ]
    }
   },
@@ -587,9 +488,6 @@
    "held": {
     "all_flags": [
      3296
-    ],
-    "flag_names": [
-     "FLAG_GOT_SUBTLE_LAYER"
     ]
    }
   },
@@ -600,9 +498,6 @@
    "held": {
     "all_flags": [
      2112
-    ],
-    "flag_names": [
-     "FLAG_SYS_NATIONAL_DEX"
     ],
     "var": {
      "name": "VAR_NATIONAL_DEX",
@@ -620,92 +515,71 @@
   },
   {
    "n": 45,
-   "name": "STILL (TANOBY)",
+   "name": "STILL",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2384
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_FIRST"
     ]
    }
   },
   {
    "n": 46,
-   "name": "NAMING (SCHOOL)",
+   "name": "NAMING",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2401
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_SCHOOL"
     ]
    }
   },
   {
    "n": 47,
-   "name": "NOTICE (READING)",
+   "name": "NOTICE",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2402
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_READING"
     ]
    }
   },
   {
    "n": 48,
-   "name": "REFLECT (NOTES)",
+   "name": "REFLECT",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2403
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_NOTES"
     ]
    }
   },
   {
    "n": 49,
-   "name": "STANCE (SCORN)",
+   "name": "STANCE",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2404
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_SCORN"
     ]
    }
   },
   {
    "n": 50,
-   "name": "MEND (RETURN)",
+   "name": "MEND",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2405
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_RETURN"
     ]
    }
   },
   {
    "n": 51,
-   "name": "PRACTICE (GUIDE)",
+   "name": "PRACTICE",
    "section": "UNDERSTANDINGS",
    "held": {
     "all_flags": [
      2406
-    ],
-    "flag_names": [
-     "FLAG_UNDERSTANDING_GUIDE"
     ]
    }
   },
@@ -716,9 +590,6 @@
    "held": {
     "all_flags": [
      3096
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_ROLLOVER"
     ]
    }
   },
@@ -729,9 +600,6 @@
    "held": {
     "all_flags": [
      3097
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_EVEN_LIGHT_SPRING"
     ]
    }
   },
@@ -742,9 +610,6 @@
    "held": {
     "all_flags": [
      3098
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_EVEN_LIGHT_AUTUMN"
     ]
    }
   },
@@ -755,9 +620,6 @@
    "held": {
     "all_flags": [
      3099
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_DAWN_VIGIL"
     ]
    }
   },
@@ -768,9 +630,6 @@
    "held": {
     "all_flags": [
      3100
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_FIRST_FROST"
     ]
    }
   },
@@ -781,9 +640,6 @@
    "held": {
     "all_flags": [
      3101
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_DEN_DAY"
     ]
    }
   },
@@ -794,9 +650,6 @@
    "held": {
     "all_flags": [
      3102
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_FLEDGLING_DAY"
     ]
    }
   },
@@ -807,9 +660,6 @@
    "held": {
     "all_flags": [
      3103
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_LANTERN_NIGHTS"
     ]
    }
   },
@@ -820,9 +670,6 @@
    "held": {
     "all_flags": [
      3104
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_SCIENCE_FAIR"
     ]
    }
   },
@@ -833,9 +680,6 @@
    "held": {
     "all_flags": [
      3105
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_TRUCE_DAY"
     ]
    }
   },
@@ -846,9 +690,6 @@
    "held": {
     "all_flags": [
      3106
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_MARIGOLD_DAYS"
     ]
    }
   },
@@ -859,9 +700,6 @@
    "held": {
     "all_flags": [
      3107
-    ],
-    "flag_names": [
-     "FLAG_YEAR_LINE_GIVING_THANKS"
     ]
    }
   },
@@ -889,9 +727,6 @@
    "held": {
     "all_flags": [
      2416
-    ],
-    "flag_names": [
-     "FLAG_COMPANION_LINKED"
     ]
    }
   }

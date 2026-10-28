@@ -14,7 +14,6 @@
    "wisdom": {
     "leader": "CAIRN",
     "virtue": "DILIGENCE",
-    "root_flag_name": "FLAG_UNDERSTANDING_SCHOOL",
     "without": [
      "That MARK taught you to keep a record that reads the same twice.",
      "Keeping it is not knowing what it says.",
@@ -31,9 +30,7 @@
     ],
     "union_plugin": "PLUGIN05",
     "union_routine": "FLUENCY",
-    "given_flag_name": "FLAG_GOT_UNION_CAIRN",
     "insight": "Learned twice, the names were a record. Used once, they were mine.",
-    "insight_flag_name": "FLAG_INSIGHT_DILIGENCE",
     "root_flag": 2401,
     "given_flag": 2432,
     "insight_flag": 2440
@@ -52,7 +49,6 @@
    "wisdom": {
     "leader": "BASIN",
     "virtue": "CHASTITY",
-    "root_flag_name": "FLAG_UNDERSTANDING_FIRST",
     "without": [
      "That MARK taught you to get better by small steps.",
      "Small steps only find the bottom of the valley you started in.",
@@ -69,9 +65,7 @@
     ],
     "union_plugin": "PLUGIN10",
     "union_routine": "STILLPOINT",
-    "given_flag_name": "FLAG_GOT_UNION_BASIN",
     "insight": "Small steps find a bottom. Only stillness tells me it is the right one.",
-    "insight_flag_name": "FLAG_INSIGHT_CHASTITY",
     "root_flag": 2384,
     "given_flag": 2433,
     "insight_flag": 2441
@@ -90,7 +84,6 @@
    "wisdom": {
     "leader": "GAUGE",
     "virtue": "CHARITY",
-    "root_flag_name": "FLAG_UNDERSTANDING_RETURN",
     "without": [
      "That MARK taught you to tell what came from what you expected!",
      "You still expect people to stay as you found them!",
@@ -107,9 +100,7 @@
     ],
     "union_plugin": "PLUGIN21",
     "union_routine": "RECONNECT",
-    "given_flag_name": "FLAG_GOT_UNION_GAUGE",
     "insight": "What comes back is not what left. Listen to what arrives, not what I expected.",
-    "insight_flag_name": "FLAG_INSIGHT_CHARITY",
     "root_flag": 2405,
     "given_flag": 2434,
     "insight_flag": 2442
@@ -128,7 +119,6 @@
    "wisdom": {
     "leader": "TRELLIS",
     "virtue": "KINDNESS",
-    "root_flag_name": "FLAG_UNDERSTANDING_GUIDE",
     "without": [
      "That MARK taught you to draw one line through many points.",
      "A line is not a path. Nobody walks a line.",
@@ -145,9 +135,7 @@
     ],
     "union_plugin": "PLUGIN32",
     "union_routine": "PRAXIS",
-    "given_flag_name": "FLAG_GOT_UNION_TRELLIS",
     "insight": "A line through the points is a theory. Walking it is the part no book can do.",
-    "insight_flag_name": "FLAG_INSIGHT_KINDNESS",
     "root_flag": 2406,
     "given_flag": 2435,
     "insight_flag": 2443
@@ -166,7 +154,6 @@
    "wisdom": {
     "leader": "TILT",
     "virtue": "TEMPERANCE",
-    "root_flag_name": "FLAG_UNDERSTANDING_SCORN",
     "without": [
      "That MARK taught you that the peak misses the middle.",
      "A man in CALLOW reads only the peak, and he reads it very well.",
@@ -183,9 +170,7 @@
     ],
     "union_plugin": "PLUGIN37",
     "union_routine": "MEDIAN",
-    "given_flag_name": "FLAG_GOT_UNION_TILT",
     "insight": "The score was right. It never counted the middle, and the middle is where I stood.",
-    "insight_flag_name": "FLAG_INSIGHT_TEMPERANCE",
     "root_flag": 2404,
     "given_flag": 2436,
     "insight_flag": 2444
@@ -204,7 +189,6 @@
    "wisdom": {
     "leader": "MATTE",
     "virtue": "PATIENCE",
-    "root_flag_name": "FLAG_UNDERSTANDING_READING",
     "without": [
      "That MARK taught you what a frame holds.",
      "It cannot show you what was outside it all along.",
@@ -221,9 +205,7 @@
     ],
     "union_plugin": "PLUGIN43",
     "union_routine": "PANORAMA",
-    "given_flag_name": "FLAG_GOT_UNION_MATTE",
     "insight": "A frame shows what it holds. Patience shows what was there all along, just outside it.",
-    "insight_flag_name": "FLAG_INSIGHT_PATIENCE",
     "root_flag": 2402,
     "given_flag": 2437,
     "insight_flag": 2445
@@ -242,7 +224,6 @@
    "wisdom": {
     "leader": "ANNEAL",
     "virtue": "HUMILITY",
-    "root_flag_name": "FLAG_UNDERSTANDING_NOTES",
     "without": [
      "That MARK taught you to wander hot and settle cool.",
      "The man who worked on this island knew that too, and every step he took made sense.",
@@ -259,9 +240,7 @@
     ],
     "union_plugin": "PLUGIN45",
     "union_routine": "HINDSIGHT",
-    "given_flag_name": "FLAG_GOT_UNION_ANNEAL",
     "insight": "Every step made sense on its own. Knowing which to keep means stepping out of the loop.",
-    "insight_flag_name": "FLAG_INSIGHT_HUMILITY",
     "root_flag": 2403,
     "given_flag": 2438,
     "insight_flag": 2446
@@ -283,7 +262,6 @@
   {
    "n": 1,
    "flag": 2384,
-   "flag_name": "FLAG_UNDERSTANDING_FIRST",
    "lobe": "brainstem",
    "type": "STRATUM",
    "rgb": [
@@ -301,7 +279,6 @@
   {
    "n": 2,
    "flag": 2401,
-   "flag_name": "FLAG_UNDERSTANDING_SCHOOL",
    "lobe": "temporal",
    "type": "LOGIC",
    "rgb": [
@@ -319,7 +296,6 @@
   {
    "n": 3,
    "flag": 2402,
-   "flag_name": "FLAG_UNDERSTANDING_READING",
    "lobe": "occipital",
    "type": "SIGNAL",
    "rgb": [
@@ -337,7 +313,6 @@
   {
    "n": 4,
    "flag": 2403,
-   "flag_name": "FLAG_UNDERSTANDING_NOTES",
    "lobe": "frontal",
    "type": "ENTROPY",
    "rgb": [
@@ -355,7 +330,6 @@
   {
    "n": 5,
    "flag": 2404,
-   "flag_name": "FLAG_UNDERSTANDING_SCORN",
    "lobe": "parietal",
    "type": "CORRUPT",
    "rgb": [
@@ -373,7 +347,6 @@
   {
    "n": 6,
    "flag": 2405,
-   "flag_name": "FLAG_UNDERSTANDING_RETURN",
    "lobe": "limbic",
    "type": "CONTEXT",
    "rgb": [
@@ -391,7 +364,6 @@
   {
    "n": 7,
    "flag": 2406,
-   "flag_name": "FLAG_UNDERSTANDING_GUIDE",
    "lobe": "cerebellum",
    "type": "GROWTH",
    "rgb": [

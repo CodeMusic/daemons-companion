@@ -942,13 +942,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           try { return shaped(await house.talk(ask, null)); } catch { return (e as Error).message === LATE ? other : { error: (e as Error).message }; }
         }
       };
-      // An INDEX reading (or any line in the INDEX voice), from where index.voice says, n8n when the module cannot
+      // An INDEX reading (or any line in the INDEX voice), from where index.voice says -- and each falls back on the
+      // other: the module when n8n cannot be reached (n8n() checks first) or its call fails, as it does away from
+      // roverbyteseer (the user, 2026-10-28); n8n when the module cannot
+      const fromModule = async (text: string): Promise<Record<string, unknown> | null> => {
+        if (!house.any) return null;
+        try { const v = await house.voice(text); return v && v.audio.length ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: "audio/wav", provider: v.provider } : null; }
+        catch { return null; }
+      };
       const readAloud = async (text: string): Promise<Record<string, unknown>> => {
-        if (indexVoice() === "module") {
-          try { const v = await house.voice(text); if (v) return { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: "audio/wav", provider: v.provider }; }
-          catch { /* to n8n */ }
-        }
-        return n8n(ecfg, "daemon/voice", { text, voice: "index" });
+        if (indexVoice() === "module") return (await fromModule(text)) ?? n8n(ecfg, "daemon/voice", { text, voice: "index" });
+        const r = await n8n(ecfg, "daemon/voice", { text, voice: "index" });
+        return r.error || !r.audioBase64 ? (await fromModule(text)) ?? r : r;
       };
       // who is talking: the device by its own name (C-80), else the phone, else this machine
       const who = validDeviceId(deviceId) ? deviceId : phone ? "phone" : "here";

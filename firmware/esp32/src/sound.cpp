@@ -366,13 +366,22 @@ void soundSettings(bool on, int volume) {
 void soundDay(const String &note) { root = dayRoot(note.length() ? note[0] : 'C'); }
 
 // C-164: the save's edition chooses the instrument -- the harp for CONTENT, the flute for CONTEXT -- kept for the next start
+static String forced = "default";            // the site's INSTRUMENT (TESTING), over the edition's
 void soundEdition(const String &edition) {
 #if SAMPLED
   for (int i = 0; i < INSTRUMENT_N; i++) {
-    if (edition != INSTRUMENTS[i].edition || i == instrument) continue;
-    instrument = i;
-    Preferences p; p.begin("sound", false); p.putString("edition", edition); p.end();
+    if (edition != INSTRUMENTS[i].edition) continue;
+    if (i != instrument && forced == "default") instrument = i;
+    static String kept;
+    if (kept != edition) { kept = edition; Preferences p; p.begin("sound", false); p.putString("edition", edition); p.end(); }
   }
+#endif
+}
+void soundForce(const String &name) {
+#if SAMPLED
+  forced = name;
+  if (name == "default") { Preferences p; p.begin("sound", true); String ed = p.getString("edition", ""); p.end(); if (ed.length()) soundEdition(ed); return; }
+  for (int i = 0; i < INSTRUMENT_N; i++) if (name == INSTRUMENTS[i].name) instrument = i;
 #endif
 }
 

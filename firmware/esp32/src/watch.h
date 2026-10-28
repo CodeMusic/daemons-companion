@@ -18,6 +18,7 @@ long watchSteps();                        // today's steps, -1 without a step co
 bool watchPowerOff();
 int watchCableIn();                       // C-182: 1 the cable is in, 0 out, -1 no PMU to ask                     // the PMU switches everything off; the crown starts it again
 bool watchTalking();                      // push to talk held on the face (C-66 listens)
+bool watchFinger(int &x, int &y);        // the finger now, kept from being a gesture (PLAY's strings and holes)
 bool watchTouchDown();                    // a finger on the screen now (talk.cpp listens while it stays)
 int watchGesture();                       // C-134: inside a routine -- a swipe (+1 next, -1 back a row), 2 a tap, -2 a hold; 0 nothing
 bool watchGestureAcross();                // C-161: that swipe went across (left or right), not up or down

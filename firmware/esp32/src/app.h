@@ -59,7 +59,9 @@ struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = tru
                   bool wakeEvery = false;      // C-159: the wake jingle on every wake, not only at power-up
                   String face = "daemon";      // C-162: the round face -- daemon, clock or virtue
                   bool faceSky = true;         // C-163: the season behind the daemon's faces, and the weather in front
-                  int hours = 24; };           // C-166: the clock in 12 or 24 hours
+                  int hours = 24;              // C-166: the clock in 12 or 24 hours
+                  String instrument = "default"; };   // PLAY to test: the save's ("default"), or "harp" or "flute" forced
+void playForce(const String &name);       // play.cpp: an instrument forced for testing (and PLAY open), or "default"
 extern State st;
 extern Settings cfg;
 extern bool dirty;

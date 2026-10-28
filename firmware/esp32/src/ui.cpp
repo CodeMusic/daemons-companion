@@ -183,7 +183,7 @@ const char *linkName() {
 // its fourth and fifth ran into the footer)
 // C-161 (the user, 2026-10-18): on the watch a row is a finger's height, about four to the screen, and a tap on one
 // opens it -- each row drawn is kept, how far it lies from the chosen one, for watch.cpp's touch to find
-static int rowH() { return isWatch() ? 42 : 19; }   // C-173: the Ultra draws the S3's screens, larger (board.zoom)
+int rowH() { return isWatch() ? 42 : 19; }   // C-173: the Ultra draws the S3's screens, larger (board.zoom)
 // C-172: a grid's tiles too -- each kept as a rectangle, and the grid's whole area, so a tap between tiles is nothing
 static int tapN = 0; static int16_t tapX[12], tapY[12], tapW[12], tapH[12], tapOff[12];
 static int16_t areaX = 0, areaY = 0, areaW = 0, areaH = 0;

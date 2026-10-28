@@ -17,6 +17,7 @@ bool watchLocalTime(struct tm &) { return false; }
 long watchSteps() { return -1; }
 bool watchTalking() { return false; }
 bool watchTouchDown() { return false; }
+bool watchFinger(int &, int &) { return false; }
 int watchGesture() { return 0; }
 bool watchGestureAcross() { return false; }
 bool watchPowerOff() { return false; }
@@ -370,8 +371,12 @@ static bool touchTake(Touch &t) {
 }
 static void touchDrop() { Touch t; while (touchTake(t)) {} }
 bool watchTouchDown() { return fingerDown; }
+// the user, 2026-10-28 (the harp's strings plucked, the flute's holes held): where the finger is now, in the canvas's
+// coordinates -- and that touch kept from becoming a gesture as it lifts, so a glissando is never a swipe or a hold
+bool watchFinger(int &x, int &y) { x = fingerX; y = fingerY; if (fingerDown) swallowTouch = true; return fingerDown; }
 #else
 bool watchTouchDown() { int16_t x[1], y[1]; return haveTouch && touchRead(x, y) > 0; }
+bool watchFinger(int &x, int &y) { int16_t xs[1], ys[1]; bool on = haveTouch && touchRead(xs, ys) > 0; x = xs[0]; y = ys[0]; return on; }
 #endif
 
 // C-134: a routine's own screen reads the touch itself (the loop, and so touchLoop, waits while it runs): a swipe

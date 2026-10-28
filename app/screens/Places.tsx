@@ -54,7 +54,7 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
 // any other device specific settings"): one device's own settings over the shared ones (GET/POST /api/devices/<id>/settings,
 // the CASINO session's) -- each row says whether it is this device's own or every device's, and goes back with one tap.
 // A board's own SOUND page reports here too. Every word DRAFT.
-type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24 };
+type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24; instrument?: "default" | "harp" | "flute" };
 type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: Own; keys: string[] };
 
 // C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, and the season
@@ -63,6 +63,7 @@ type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: O
 type Face = "daemon" | "clock" | "virtue";
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
 const CLOCK_FACE = /^(t-watch-s3|t-watch-ultra|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
+const PLAYS = /^(t-watch-s3|t-watch-ultra|t-deck|m5-cardputer)/;   // the boards with MUSIC: the watches' strings and holes, the number keys
 const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],
   ["clock", "CLOCK", "hands over it"],
@@ -169,6 +170,14 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
       {CLOCK_FACE.test(id) && s.keys?.includes("hours") ? (
         <OwnRow own={s.own} set={set} k="hours" label="CLOCK">
           <Choice value={v.hours ?? 24} options={[[12, "12 HOURS"], [24, "24 HOURS"]]} onPick={(hours) => set({ hours })} ink={ink} />
+        </OwnRow>
+      ) : null}
+      {/* the user, 2026-10-28: "a debug preview mode should be in settings to switch instruments for testing" */}
+      {PLAYS.test(id) && s.keys?.includes("instrument") ? (
+        <OwnRow own={s.own} set={set} k="instrument" label="INSTRUMENT (TESTING)">
+          <Choice value={v.instrument ?? "default"} options={[["default", "THE SAVE'S"], ["harp", "HARP"], ["flute", "FLUTE"]]}
+                  onPick={(instrument) => set({ instrument })} ink={ink} />
+          <Small color="$color10">For testing PLAY: HARP or FLUTE plays that one, open whatever the save holds.</Small>
         </OwnRow>
       ) : null}
       {/* forgetting a device: it leaves the list (and its daemon goes back to none) until it next says hello (DRAFT) */}

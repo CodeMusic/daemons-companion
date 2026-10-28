@@ -14,6 +14,7 @@ void es8311Mic();
 void soundSettings(bool on, int volume);   // C-43: from the site
 void soundDay(const String &note);         // the day's note: "C" (Sunday) .. "B" (Saturday)
 void soundEdition(const String &edition); // C-164: the save's instrument -- the harp for CONTENT, the flute for CONTEXT
+void soundForce(const String &name);      // the site's INSTRUMENT (TESTING): "harp" or "flute" over the edition's, "default" back
 void soundTurn(int dir);                   // the dial: right an ascending pair, left a descending one
 void soundSelect();                        // one tone, the day's own
 void soundBack();                          // the day's note an octave down, softly

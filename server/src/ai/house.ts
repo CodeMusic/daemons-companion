@@ -79,6 +79,7 @@ type Held = { at: number; llm?: string; tts?: string; stt?: string; error?: stri
 
 const HEAR_MS = 8000, DEAF_MS = 10 * 60_000;
 const wide = (model: string) => /p256/i.test(model);  // a thinker with room: 256 tokens a turn, not ~128
+const SAY_SENTENCES = 2;                                  // a talk's answer: two sentences, then spoken (HUB.md Phase 5 item 3)
 const MINDS = 2;
 const WARM_KEEP_MS = 30 * 60_000;                         // a thinker talked to this lately is not let go to warm another
 type Mind = { gen: number; held: { key: string; work: string; used: number }[] };                                           // thinkers alive on a module at once: the llm unit's two slots
@@ -112,7 +113,7 @@ export class House {
       if (deadlineMs) { ready.catch(() => {}); throw new Error(LATE); }
       work = await ready;
     }
-    return sf.infer(work, said.slice(0, most), deadlineMs ? { firstWithinMs: deadlineMs } : {});
+    return sf.infer(work, said.slice(0, most), { ...(deadlineMs ? { firstWithinMs: deadlineMs } : {}), sentences: SAY_SENTENCES });
   }
   // What is alive on a module's StackFlow, as this server knows it -- on a new connection (this server started, or the
   // link dropped) what is alive there is not ours, and is let go first

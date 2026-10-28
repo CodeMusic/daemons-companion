@@ -5,7 +5,7 @@ import { createServer, type Server } from "node:net";
 import type { AddressInfo } from "node:net";
 import { House, type TalkAsk } from "../src/ai/house.js";
 import { LATE } from "../src/ai/module.js";
-import { StackFlow } from "../src/ai/stackflow.js";
+import { firstSentences, StackFlow } from "../src/ai/stackflow.js";
 import { fakeModule } from "./fake_module.js";
 import { GUIDE_SETUP } from "../src/guideask.js";
 
@@ -131,5 +131,16 @@ describe("thinking through StackFlow (C-180)", () => {
   it("thinks through the plugin as before when there is no StackFlow there", async () => {
     const h = new House(() => [{ url: modUrl, name: "m" }], undefined, () => new StackFlow("127.0.0.1", 9));
     expect((await h.talk(ask("SEEKMUSAI"), null)).answer).toBe("Good morning!");
+  });
+});
+
+describe("an answer cut to its first sentences (p256 runs on)", () => {
+  it("gives the first two once both are finished and more follows, and whatever there is at the end", () => {
+    expect(firstSentences("Hello there. I dreamt of", 2)).toBeNull();
+    expect(firstSentences("Hello there. I dreamt of rain.", 2)).toBeNull();          // still streaming: the end may grow
+    expect(firstSentences("Hello there. I dreamt of rain. And then", 2)).toBe("Hello there. I dreamt of rain.");
+    expect(firstSentences("Hello there! Is it 3.5 degrees? Yes.", 2, true)).toBe("Hello there! Is it 3.5 degrees?");
+    expect(firstSentences("Only one", 2, true)).toBe("Only one");
+    expect(firstSentences("\u201cHi.\u201d Then more. More.", 2, true)).toBe("\u201cHi.\u201d Then more.");
   });
 });

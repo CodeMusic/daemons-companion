@@ -10,6 +10,12 @@ import { LATE } from "./module.js";
 export type Thought = { text: string; firstMs: number | null; totalMs: number };
 type Obj = { request_id?: string; work_id?: string; error?: { code: number; message?: string }; data?: unknown };
 
+// The first n sentences of what is written so far, once n are finished (or, at the end, however many there are)
+export function firstSentences(text: string, n: number, ended = false): string | null {
+  const ends = [...text.matchAll(/[.!?\u2026]+["'\u2019\u201d)\]]*(?=\s|$)/g)];
+  if (ends.length >= n && (ended || ends[n - 1].index! + ends[n - 1][0].length < text.length)) return text.slice(0, ends[n - 1].index! + ends[n - 1][0].length).trim();
+  return ended ? text.trim() : null;
+}
 export class StackFlow {
   private sock: Socket | null = null;
   private buf = "";
@@ -65,24 +71,35 @@ export class StackFlow {
     return r.work_id;
   }); }
   // what was said, to that thinker; its words as they stream. firstWithinMs: no first words by then is LATE for the caller.
-  infer(workId: string, said: string, opts: { firstWithinMs?: number; totalMs?: number } = {}): Promise<Thought> { return this.locked(async () => {
+  // sentences: the answer is the first that many sentences, given back the moment they are written -- p256 runs on for
+  // six (the hardware lane, 2026-10-28: 39-50 s a spoken talk, past the watch's wait); the rest is read and let go
+  // here, holding the connection, since StackFlow cannot be stopped mid-answer
+  infer(workId: string, said: string, opts: { firstWithinMs?: number; totalMs?: number; sentences?: number } = {}): Promise<Thought> {
+    let early: ((t: Thought) => void) | null = null;
+    const answered = new Promise<Thought>((r) => { early = r; });
+    const run = this.locked(async () => {
     const t0 = Date.now();
     await this.send({ request_id: "infer", work_id: workId, action: "inference", object: "llm.utf-8", data: said });
     let text = "", firstMs: number | null = null;
     for (;;) {
       const wait = firstMs === null && opts.firstWithinMs ? opts.firstWithinMs - (Date.now() - t0) : (opts.totalMs ?? 30000) - (Date.now() - t0);
-      if (wait <= 0) { this.sock?.destroy(); throw new Error(firstMs === null ? LATE : "the module's StackFlow ran too long"); }
+      const left = early ? wait : Math.max(wait, 90000 - (Date.now() - t0));   // the answer given: the rest let run out
+      if (left <= 0) { this.sock?.destroy(); throw new Error(firstMs === null ? LATE : "the module's StackFlow ran too long"); }
       let r: Obj;
-      try { r = await this.next(wait); }
+      try { r = await this.next(left); }
       catch (e) { if (firstMs === null && opts.firstWithinMs) { this.sock?.destroy(); throw new Error(LATE); } throw e; }
       if (r.error?.code) throw new Error(`the module's StackFlow: ${r.error.message ?? r.error.code}`);
       const d = r.data as { delta?: string; finish?: boolean } | string | undefined;
       if (!d || typeof d !== "object") break;
       if (d.delta) { if (firstMs === null) firstMs = Date.now() - t0; text += d.delta; }
+      const cut = opts.sentences ? firstSentences(text, opts.sentences) : null;
+      if (early && cut !== null) { (early as (t: Thought) => void)({ text: cut, firstMs, totalMs: Date.now() - t0 }); early = null; }
       if (d.finish) break;
     }
-    return { text, firstMs, totalMs: Date.now() - t0 };
-  }); }
+    return { text: opts.sentences ? firstSentences(text, opts.sentences, true)! : text, firstMs, totalMs: Date.now() - t0 };
+  });
+    return Promise.race([answered, run]);
+  }
   // The llm instances alive on the module ("llm.1000", ...), whoever made them
   taskinfo(ms = 5000): Promise<string[]> { return this.locked(async () => {
     await this.send({ request_id: "taskinfo", work_id: "llm", action: "taskinfo" });

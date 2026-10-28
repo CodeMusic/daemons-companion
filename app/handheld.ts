@@ -109,16 +109,21 @@ class Link {
   }
 
   // PAIR THE HANDHELD: find a board showing the link's service, connect, and listen -- which makes iOS ask for the code.
-  async pair() {
+  // target (C-176, the board tapped to the phone, "t-watch-ultra-f351d4"): that board first -- the one whose name carries
+  // its id's tail; after a few seconds with none, the first board showing the service, as before.
+  async pair(target?: string) {
     await this.forget(false);
     let ble: BleManager;
     try { ble = await this.ready(); } catch (e) { return this.set({ phase: "none", note: (e as Error).message }); }
-    this.set({ phase: "looking", note: "Looking for the handheld. On it, open ROUTINES, WHISPER, PAIR MY PHONE." });
+    this.set({ phase: "looking", note: target ? "Linking with the watch you tapped -- keep it close." : "Looking for the handheld. On it, open ROUTINES, WHISPER, PAIR MY PHONE." });   // DRAFT
+    const tail = target?.match(/([0-9a-f]{6})$/)?.[1], since = Date.now();
     await new Promise<void>((done) => {
       const stop = setTimeout(() => { ble.stopDeviceScan(); this.set({ phase: "none", note: "No handheld nearby. Is PAIR MY PHONE open on it?" }); done(); }, 60000);
       ble.startDeviceScan([SERVICE], null, (error, found) => {
         if (error) { clearTimeout(stop); ble.stopDeviceScan(); this.set({ phase: "none", note: `Bluetooth: ${error.message}` }); return done(); }
         if (!found) return;
+        const named = `${found.name ?? ""} ${found.localName ?? ""}`.toLowerCase();
+        if (tail && !named.includes(tail) && Date.now() - since < 6000) return;   // not the one tapped: wait for it a moment
         clearTimeout(stop); ble.stopDeviceScan();
         this.connect(found.id, true).then(done);
       });

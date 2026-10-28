@@ -6,7 +6,7 @@
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Platform, useColorScheme, useWindowDimensions } from "react-native";
+import { AppState, Linking, Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import { SCREEN } from "./data";
 import { loadLook, LOOK, lookHeard, PALETTE, paletteHeard, setPalette } from "./look";
@@ -76,6 +76,19 @@ function Shell() {
   const besideWidth = Math.round(Math.min(480, width * 0.42));
   const pageWidth = beside ? besideWidth : Math.min(720, width);
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
+  // C-176 (the user chose "the watch shows, the phone taps"): the Ultra's tag holds daemons://link?device=<id> -- the
+  // phone tapped to it opens here, on PLACES, linking with that watch
+  useEffect(() => {
+    const open = (url: string | null) => {
+      const m = url ? /^daemons:\/\/link\?device=([a-z0-9][a-z0-9-]{2,47})$/.exec(url) : null;
+      if (!m || !HANDHELD) return;
+      setTab("places");
+      HANDHELD.pair(m[1]);
+    };
+    Linking.getInitialURL().then(open).catch(() => {});
+    const sub = Linking.addEventListener("url", (e) => open(e.url));
+    return () => sub.remove();
+  }, []);
   useEffect(() => { if (beside && tab === "game") setTab("today"); }, [beside, tab]);
   const [today, setToday] = useState<Today | null>(null);
   const [error, setError] = useState("");

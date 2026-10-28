@@ -75,6 +75,7 @@ import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          /
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePassages, guidePersona } from "./guideask.js";   // C-209
+import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
@@ -397,7 +398,7 @@ export const DEVICE_DOOR = [
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
-     "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
+     "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry"),   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
@@ -1145,7 +1146,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const m = url.searchParams.get("id") ? meetingOf(store, Number(url.searchParams.get("id"))) : meetingsOf(store)[0];
         return m ? send(res, 200, meetingForWatch(m)) : send(res, 404, { error: "no meeting yet" });
       }
-      if (req.method === "GET" && path === "/api/meetings") return send(res, 200, { meetings: meetingsOf(store) });   // the app's list
+      if (req.method === "GET" && path === "/api/meeting/list") return send(res, 200, { meetings: meetingsOf(store) });   // the app's list (/api/meetings is C-60's: who was met nearby)
       if (req.method === "GET" && path === "/api/meeting/audio") {    // one part's recording, while it is kept
         const f = join(meetDir(Number(url.searchParams.get("id"))), `${Number(url.searchParams.get("n"))}.wav`);
         if (!existsSync(f)) return send(res, 404, { error: "that recording is gone" });
@@ -1159,6 +1160,37 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         setState(store, id, "hearing");
         (async () => { for (let n = 0; n < m.parts.length; n++) if (m.parts[n] === null) await meetHear(id, n); await meetWriteIfReady(id); })()
           .catch((e) => setState(store, id, "failed", (e as Error).message));
+        return send(res, 200, { ok: true });
+      }
+      // ---- C-199 (5): a voice note -- the recording whole, heard on the hub's module, the words the note ------------------
+      const noteWav = (id: number) => join(dirname(cfg.database), "voicenotes", `${id}.wav`);
+      const noteHear = async (id: number) => {
+        const f = noteWav(id);
+        if (!existsSync(f)) return;
+        const words = await house.transcribe(new Uint8Array(readFileSync(f)));
+        noteHeard(store, id, words, "No module can hear: the hub's module is needed.");   // DRAFT
+        if (words !== null) unlinkSync(f);                                     // heard: the words are the note
+      };
+      if (req.method === "POST" && path === "/api/device/voicenote") {
+        const wav = await rawBody(req);
+        if (!wav || wav.length < 44) return send(res, 400, { error: "a voice note is a WAV of up to 2 MB" });
+        const said = Number(url.searchParams.get("at"));
+        const n = newVoiceNote(store, validDeviceId(deviceId) ? deviceId : "here", Number.isFinite(said) && said > 0 ? new Date(said * 1000) : null);
+        mkdirSync(dirname(noteWav(n.id)), { recursive: true });
+        writeFileSync(noteWav(n.id), wav);
+        noteHear(n.id).catch((e) => noteHeard(store, n.id, null, (e as Error).message));
+        return send(res, 200, { id: n.id });
+      }
+      if (req.method === "GET" && path === "/api/voicenotes") return send(res, 200, { notes: voiceNotesOf(store) });
+      if (req.method === "POST" && path === "/api/voicenote/retry") {
+        const id = Number((await body(req)).id);
+        noteHear(id).catch((e) => noteHeard(store, id, null, (e as Error).message));
+        return send(res, 200, { ok: true });
+      }
+      if (req.method === "POST" && path === "/api/voicenote/forget") {
+        const id = Number((await body(req)).id);
+        if (existsSync(noteWav(id))) unlinkSync(noteWav(id));
+        forgetVoiceNote(store, id);
         return send(res, 200, { ok: true });
       }
       if (req.method === "POST" && path === "/api/meeting/forget") {  // the meeting and its recording, gone

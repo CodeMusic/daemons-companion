@@ -2,7 +2,7 @@
 // the watch (with option to read the summary part outloud)"): RECORD A MEETING and LAST MEETING, in HOURS. The microphone
 // is read by a task of its own into half-minute parts (two buffers, so one fills while the other is sent), each sent to
 // the companion as it is finished (server/src/meetings.ts hears it there) and kept on the SD card first where there is
-// one (C-199), so a part the network missed is sent later -- SEND KEPT MEETINGS goes through what is left. While it
+// one (C-199), so a part the network missed is sent later -- SEND KEPT goes through what is left. While it
 // records the glass says so, in red, the whole time: the people in the room can see it. At the end the companion writes
 // it up; the watch waits for it and shows the SUMMARY (LISTEN reads it), the ACTION ITEMS, and the daemon's DAY-DREAM.
 // Every word DRAFT.
@@ -170,7 +170,7 @@ String runMeeting() {
   talkEarClose(); haptic(16);
   if (meetId < 0 || kept) {
     runPanel = nullptr;
-    return "Recorded. " + String(kept) + " part" + (kept == 1 ? "" : "s") + " kept on the card -- HOURS, SEND KEPT MEETINGS at home.";   // DRAFT
+    return "Recorded. " + String(kept) + " part" + (kept == 1 ? "" : "s") + " kept on the card -- HOURS, SEND KEPT at home.";   // DRAFT
   }
   http("POST", "/api/device/meeting/end", "{\"id\":" + String(meetId) + ",\"parts\":" + String(parts) + "}", &ok);
   showWriteUp(meetId);
@@ -179,6 +179,59 @@ String runMeeting() {
 }
 
 String runLastMeeting() { showWriteUp(0); runPanel = nullptr; return ""; }
+
+// ---- C-199 (5): VOICE NOTE -- a minute at most, said to the watch; to the companion at once at home, else kept on the card
+static const int NOTE_N = RATE * 60;
+static uint32_t noteFrom = 0; static size_t noteGot = 0;
+static String drawNote(uint16_t day, uint16_t ink) {
+  canvas.fillRect(0, 26, W, 34, 0xC000);
+  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(2); canvas.setTextColor(PAPER);
+  canvas.drawString((millis() / 600) % 2 ? "●  A VOICE NOTE" : "   A VOICE NOTE", W / 2, 43);                              // DRAFT
+  canvas.setTextFont(7);
+  canvas.drawString(String(noteGot / RATE), W / 2, 110);
+  canvas.setTextFont(2); canvas.setTextColor(QUIET);
+  canvas.drawString("of 60 seconds", W / 2, 150);                                                              // DRAFT
+  if (st.carrying) drawArt(W / 2 - 32, 170, 1);
+  canvas.setTextDatum(TL_DATUM);
+  return "tap: done";                                                                                           // DRAFT
+}
+static bool sendNote(const uint8_t *wav, size_t bytes, long at) {
+  if (!atHome()) return false;
+  HTTPClient h;
+  h.setTimeout(30000);
+  h.begin(serverUrl + "/api/device/voicenote?at=" + String(at));
+  h.addHeader("x-device", deviceId());
+  if (relayKey.length() >= 16) h.addHeader("authorization", "Bearer " + relayKey);
+  h.addHeader("content-type", "audio/wav");
+  int code = h.POST((uint8_t *)wav, bytes);
+  h.end();
+  return code == 200;
+}
+String runVoiceNote() {
+  if (!talkEarOpen()) return "No microphone here.";                                                            // DRAFT
+  uint8_t *wav = (uint8_t *)ps_malloc(44 + NOTE_N * 2);
+  if (!wav) { talkEarClose(); return "Not enough memory to record."; }                                        // DRAFT
+  int16_t *pcm = (int16_t *)(wav + 44);
+  noteGot = 0; noteFrom = millis();
+  runPanel = drawNote; haptic(16);
+  uint32_t drawnAt = 0;
+  while (noteGot < (size_t)NOTE_N) {
+    noteGot += talkMicRead(pcm + noteGot, min((size_t)1024, (size_t)(NOTE_N - noteGot)), 20);
+    int step, ev; routineInput(step, ev);
+    if (ev || giveUp()) break;
+    if (millis() - drawnAt > 1000) { drawnAt = millis(); progress(""); }
+  }
+  talkEarClose(); haptic(16);
+  runPanel = nullptr;
+  if (noteGot < RATE / 2) { free(wav); return "Too short to keep."; }                                          // DRAFT
+  talkWavHeader(wav, noteGot);
+  struct tm lt; long at = watchLocalTime(lt) ? (long)time(nullptr) : 0;
+  size_t bytes = 44 + noteGot * 2;
+  bool sent = sendNote(wav, bytes, at);
+  bool kept = !sent && cardWriteBytes("notes/" + String(at ? at : (long)millis()) + ".wav", wav, bytes);
+  free(wav);
+  return sent ? "Sent -- its words are in the app soon." : kept ? "Kept on the card -- SEND KEPT at home." : "Not sent, and no card to keep it.";   // DRAFT
+}
 
 // C-199: what the card kept -- each meeting's parts sent (a meeting recorded away is started on the companion now), then
 // ended, so it is written up
@@ -206,6 +259,14 @@ String runSendKept() {
     bool ok; http("POST", "/api/device/meeting/end", "{\"id\":" + String(id) + ",\"parts\":" + String(most) + "}", &ok);
     meetings++;
   }
+  // C-199 (5): the voice notes kept, each sent whole with when it was said (its name)
+  int notesSent = 0;
+  for (String f : cardList("notes")) {
+    size_t bytes = 0; uint8_t *wav = cardReadBytes("notes/" + f, bytes);
+    if (wav && sendNote(wav, bytes, f.toInt())) { cardRemove("notes/" + f); notesSent++; }
+    free(wav);
+  }
+  if (notesSent) say(String(notesSent) + " NOTES SENT");                                                      // DRAFT
   return partsSent ? String(partsSent) + " parts of " + String(meetings) + " meeting" + (meetings == 1 ? "" : "s") + " sent; the app has them written up soon."   // DRAFT
-                   : "Nothing kept to send.";                                                                  // DRAFT
+                   : notesSent ? String(notesSent) + " voice note" + (notesSent == 1 ? "" : "s") + " sent." : "Nothing kept to send.";   // DRAFT
 }

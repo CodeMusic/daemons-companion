@@ -63,23 +63,55 @@ function MeetingCard({ m, ink, reload }: { m: Meeting; ink?: string; reload: () 
   );
 }
 
+// C-199 (5): the notes said to the watch, newest first -- each its words, a goal made of it, or forgotten
+type VoiceNote = { id: number; at: string; text: string; state: "hearing" | "done" | "failed"; error?: string };
+function VoiceNotes({ ink }: { ink?: string }) {
+  const [notes, setNotes] = useState<VoiceNote[] | null>(null), [n, setN] = useState(0), [said, setSaid] = useState("");
+  const reload = () => setN((x) => x + 1);
+  useEffect(() => { api<{ notes: VoiceNote[] }>("/api/voicenotes").then((r) => setNotes(r.notes)).catch(() => setNotes([])); }, [n]);
+  useEffect(() => { if (!notes?.some((x) => x.state === "hearing")) return; const t = setTimeout(reload, 10000); return () => clearTimeout(t); }, [notes]);
+  if (!notes?.length) return null;
+  return (
+    <Card>
+      <Eyebrow>VOICE NOTES</Eyebrow>
+      {said ? <Small>{said}</Small> : null}
+      {notes.slice(0, 30).map((v) => (
+        <YStack key={v.id} borderTopWidth={1} borderColor="$color5" paddingVertical={8} gap={4}>
+          <Small color="$color10">{`${dayOf(v.at)}, ${timeOf(v.at)}${v.state === "hearing" ? " · Listening to it…" : ""}`}</Small>
+          {v.state === "failed" ? <Small color="$color8">{v.error ?? "Not heard."}</Small> : null}
+          {v.text ? <Text fontSize={15} lineHeight={22} color="$color12">{v.text}</Text> : null}
+          <XStack gap={8} flexWrap="wrap">
+            {v.state === "done" ? <Action label="MAKE IT A GOAL" ink={ink} onPress={async () => {
+              await api("/api/goals", { title: v.text.slice(0, 40) }); setSaid("Added to your goals.");   // DRAFT
+            }} /> : null}
+            {v.state === "failed" ? <Action label="TRY AGAIN" ink={ink} onPress={async () => { await api("/api/voicenote/retry", { id: v.id }); reload(); }} /> : null}
+            <Action label="FORGET IT" ink={ink} onPress={async () => { await api("/api/voicenote/forget", { id: v.id }); reload(); }} />
+          </XStack>
+        </YStack>
+      ))}
+    </Card>
+  );
+}
+
 export function MeetingsScreen({ ink }: { ink?: string }) {
   const [list, setList] = useState<Meeting[] | null>(null);
   const [error, setError] = useState("");
   const [n, setN] = useState(0);
   const reload = () => setN((x) => x + 1);
-  useEffect(() => { api<{ meetings: Meeting[] }>("/api/meetings").then((r) => setList(r.meetings)).catch((e) => setError(e.message)); }, [n]);
+  useEffect(() => { api<{ meetings: Meeting[] }>("/api/meeting/list").then((r) => setList(r.meetings)).catch((e) => setError(e.message)); }, [n]);
   useEffect(() => {                                          // while one is being heard or written, look again now and then
     if (!list?.some((m) => m.state !== "done" && m.state !== "failed")) return;
     const t = setTimeout(reload, 15000); return () => clearTimeout(t);
   }, [list]);
   if (error) return <Small color="$color8">{error}</Small>;
   if (!list) return null;
-  if (!list.length) return <Card><Small>{"No meetings yet. On the Ultra, HOURS → RECORD A MEETING, and its write-up is here afterwards.  DRAFT"}</Small></Card>;
+  if (!list.length) return (<YStack gap={14}><VoiceNotes ink={ink} />
+    <Card><Small>{"No meetings yet. On the Ultra, HOURS → RECORD A MEETING, and its write-up is here afterwards.  DRAFT"}</Small></Card></YStack>);
   const days: [string, Meeting[]][] = [];
   for (const m of list) { const d = dayOf(m.startedAt); const at = days.find(([x]) => x === d); if (at) at[1].push(m); else days.push([d, [m]]); }
   return (
     <YStack gap={14}>
+      <VoiceNotes ink={ink} />
       {days.map(([day, ms]) => (
         <YStack key={day} gap={8}>
           <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color10">{day.toUpperCase()}</Text>

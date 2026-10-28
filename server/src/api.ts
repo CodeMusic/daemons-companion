@@ -1105,7 +1105,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (asked && (p.provider !== "module" || !house.any)) return { error: "Asking the GUIDE needs the hub." };   // DRAFT
         const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
-          daemon: p.daemon, day: p.day, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide };
+          daemon: p.daemon, day: p.day, season: p.season, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide };
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
         if (p.provider !== "module" || !house.any) {              // n8n first -- and, C-211, the module when n8n cannot answer

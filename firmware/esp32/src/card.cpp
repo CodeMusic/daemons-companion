@@ -16,6 +16,7 @@ String cardStatus() { return "CARD none"; }
 bool cardWriteBytes(const String &, const uint8_t *, size_t) { return false; }
 uint8_t *cardReadBytes(const String &, size_t &n) { n = 0; return nullptr; }
 bool cardRemove(const String &) { return false; }
+bool cardRename(const String &, const String &) { return false; }
 std::vector<String> cardList(const String &) { return {}; }
 bool cardStreamBegin(const String &) { return false; }
 void cardStreamWrite(const uint8_t *, size_t) {}
@@ -71,7 +72,8 @@ uint8_t *cardReadBytes(const String &name, size_t &n) {
   f.close();
   return b;
 }
-bool cardRemove(const String &name) { return cardReady() && SD.remove("/daemons/" + name); }
+bool cardRemove(const String &name) { return cardReady() && (SD.remove("/daemons/" + name) || SD.rmdir("/daemons/" + name)); }
+bool cardRename(const String &from, const String &to) { return cardReady() && SD.rename("/daemons/" + from, "/daemons/" + to); }
 std::vector<String> cardList(const String &dir) {
   std::vector<String> out;
   if (!cardReady()) return out;

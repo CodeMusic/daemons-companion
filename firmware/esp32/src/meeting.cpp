@@ -15,33 +15,53 @@
 void drawArt(int x, int y, int scale, bool mirrored = false);   // ui.cpp
 extern String relayKey;                                         // net.cpp: this board's own key
 
-static const int RATE = 16000, PART_S = 30, PART_N = RATE * PART_S;
-static int16_t *bufs[2] = { nullptr, nullptr };           // two half-minute buffers, in PSRAM
+// The review, 2026-10-28: three half-minute buffers -- one filling, the others with the sender -- and the sender a task of
+// its own, so a slow card or a slow upload never costs the half-minute being recorded; a part that could be neither sent
+// nor kept is LOST, and the companion told so at the end, so the rest is still written up.
+static const int RATE = 16000, PART_S = 30, PART_N = RATE * PART_S, BUFS = 3;
+static int16_t *bufs[BUFS] = { nullptr, nullptr, nullptr };   // in PSRAM
+static volatile bool busy[BUFS] = { false, false, false };   // with the sender
+static volatile size_t lenOf[BUFS] = { 0, 0, 0 };
 static volatile int filling = 0; static volatile size_t fill = 0;
-static volatile int ready = -1;                            // a buffer finished and waiting to be sent (-1 none)
 static volatile bool recording = false;
-static TaskHandle_t recTask = nullptr;
-static int meetId = 0, parts = 0, sent = 0, kept = 0;
+static TaskHandle_t recTask = nullptr, sendTask = nullptr;
+static QueueHandle_t readyQ = nullptr;
+static volatile int meetId = 0, parts = 0, sent = 0, kept = 0, dropped = 0;
+static std::vector<int> lostParts;
+static portMUX_TYPE lostMux = portMUX_INITIALIZER_UNLOCKED;
 static uint32_t startedAt = 0;
 static String meetLine;                                    // what the panel says under the time
 
+static void partDone(int b, size_t samples);
 static void recLoop(void *) {
   while (recording) {
     size_t n = talkMicRead(bufs[filling] + fill, min((size_t)1024, (size_t)(PART_N - fill)), 50);
     fill += n;
     if (fill >= PART_N) {
-      if (ready >= 0) { fill = 0; continue; }              // the last part not yet away: this half-minute is lost, not the next
-      ready = filling; filling ^= 1; fill = 0;
+      int next = -1;
+      for (int i = 0; i < BUFS; i++) if (i != filling && !busy[i]) { next = i; break; }
+      if (next < 0) { fill = 0; dropped++; continue; }     // every buffer still with the sender: this half-minute is lost
+      lenOf[filling] = fill; busy[filling] = true;
+      int b = filling; xQueueSend(readyQ, &b, 0);
+      filling = next; fill = 0;
     }
   }
   recTask = nullptr; vTaskDelete(nullptr);
+}
+static void sendLoop(void *) {
+  int b;
+  for (;;) {
+    if (xQueueReceive(readyQ, &b, pdMS_TO_TICKS(200)) == pdTRUE) { partDone(b, lenOf[b]); busy[b] = false; }
+    else if (!recording && !uxQueueMessagesWaiting(readyQ)) break;
+  }
+  sendTask = nullptr; vTaskDelete(nullptr);
 }
 
 // one part to the companion, at home (a recording is not JSON, so not through the relay): true when it was taken
 static bool sendPart(int id, int n, const uint8_t *wav, size_t bytes) {
   if (!id || !atHome()) return false;
   HTTPClient h;
-  h.setTimeout(30000);
+  h.setTimeout(20000);
   h.begin(serverUrl + "/api/device/meeting/part?id=" + String(id) + "&n=" + String(n));
   h.addHeader("x-device", deviceId());
   if (relayKey.length() >= 16) h.addHeader("authorization", "Bearer " + relayKey);
@@ -62,7 +82,9 @@ static void partDone(int b, size_t samples) {
   bool onCard = cardReady() && cardWriteBytes(name, wav, 44 + samples * 2);
   if (sendPart(meetId, n, wav, 44 + samples * 2)) { sent++; if (onCard) cardRemove(name); }
   else if (onCard) kept++;
+  else { portENTER_CRITICAL(&lostMux); lostParts.push_back(n); portEXIT_CRITICAL(&lostMux); }
 }
+static String lostJson() { String l = "["; for (size_t i = 0; i < lostParts.size(); i++) l += (i ? "," : "") + String(lostParts[i]); return l + "]"; }
 
 // ---- the panel -------------------------------------------------------------------------------------------------------
 static String drawRecording(uint16_t day, uint16_t ink) {
@@ -145,19 +167,23 @@ static void showWriteUp(int id) {
 String runMeeting() {
   if (!talkEarOpen()) return "No microphone here.";                                                            // DRAFT
   for (auto &b : bufs) if (!b) b = (int16_t *)ps_malloc(PART_N * 2);
-  if (!bufs[0] || !bufs[1]) { talkEarClose(); return "Not enough memory to record."; }                         // DRAFT
+  if (!bufs[0] || !bufs[1] || !bufs[2]) { talkEarClose(); return "Not enough memory to record."; }              // DRAFT
+  if (!readyQ) readyQ = xQueueCreate(BUFS, sizeof(int));
   bool ok; String got = http("POST", "/api/device/meeting/start", "{}", &ok);
   JsonDocument d; meetId = ok && !deserializeJson(d, got) ? (int)(d["id"] | 0) : 0;
   if (!meetId && !cardReady()) { talkEarClose(); return online() ? "The companion did not answer." : "NEEDS WI-FI, OR A CARD"; }   // DRAFT
   if (!meetId) meetId = -(int)(time(nullptr) % 100000000);   // offline: kept on the card under a number of its own, sent later
-  parts = sent = kept = 0; filling = 0; fill = 0; ready = -1; recording = true; startedAt = millis();
+  parts = sent = kept = dropped = 0; lostParts.clear(); filling = 0; fill = 0; recording = true; startedAt = millis();
+  for (auto &x : busy) x = false;
+  xQueueReset(readyQ);
   xTaskCreatePinnedToCore(recLoop, "meeting", 4096, nullptr, 3, &recTask, 0);
+  xTaskCreatePinnedToCore(sendLoop, "meetsend", 8192, nullptr, 1, &sendTask, 1);
   haptic(16);
   runPanel = drawRecording;
   uint32_t drawnAt = 0;
   while (true) {
-    if (ready >= 0) { int b = ready; partDone(b, PART_N); ready = -1; }
-    meetLine = String(sent) + " sent" + (kept ? ", " + String(kept) + " on the card" : String(""));          // DRAFT
+    meetLine = String(sent) + " sent" + (kept ? ", " + String(kept) + " on the card" : String("")) +
+               (lostParts.size() + dropped ? ", " + String((int)lostParts.size() + dropped) + " lost" : String(""));   // DRAFT
     int step, ev; routineInput(step, ev);
     if (ev == 1 || ev == -1 || routineQuit()) break;
     if (millis() - drawnAt > 500) { drawnAt = millis(); progress(""); }
@@ -165,14 +191,17 @@ String runMeeting() {
   }
   recording = false;
   while (recTask) delay(10);
-  if (ready >= 0) { partDone(ready, PART_N); ready = -1; }
-  if (fill > RATE) partDone(filling, fill);                 // the last part, as long as it got
+  if (fill > RATE) { lenOf[filling] = fill; busy[filling] = true; int b = filling; xQueueSend(readyQ, &b, portMAX_DELAY); }   // the last part, as long as it got
+  meetLine = "Sending the last of it...";                                                                     // DRAFT
+  progress("");
+  while (sendTask) delay(20);                               // what is left goes (or is kept) before the end is told
   talkEarClose(); haptic(16);
-  if (meetId < 0 || kept) {
+  if (meetId < 0 || kept) {                                 // the rest waits on the card: how many there were, and what was lost
+    cardWrite("meetings/" + String(meetId) + "/parts.txt", String(parts) + " " + lostJson());
     runPanel = nullptr;
     return "Recorded. " + String(kept) + " part" + (kept == 1 ? "" : "s") + " kept on the card -- HOURS, SEND KEPT at home.";   // DRAFT
   }
-  http("POST", "/api/device/meeting/end", "{\"id\":" + String(meetId) + ",\"parts\":" + String(parts) + "}", &ok);
+  http("POST", "/api/device/meeting/end", "{\"id\":" + String(meetId) + ",\"parts\":" + String(parts) + ",\"lost\":" + lostJson() + "}", &ok);
   showWriteUp(meetId);
   runPanel = nullptr;
   return "";
@@ -233,8 +262,10 @@ String runVoiceNote() {
   return sent ? "Sent -- its words are in the app soon." : kept ? "Kept on the card -- SEND KEPT at home." : "Not sent, and no card to keep it.";   // DRAFT
 }
 
-// C-199: what the card kept -- each meeting's parts sent (a meeting recorded away is started on the companion now), then
-// ended, so it is written up
+// C-199: what the card kept. Each meeting's parts are sent; a meeting recorded away is started on the companion first and
+// its folder renamed to that number at once, so a second pass carries on with it rather than starting another (the
+// review, 2026-10-28); the end is told only when every part is away, with how many there were and which were lost
+// (parts.txt, written when the recording stopped).
 String runSendKept() {
   if (!cardReady()) return "No card here.";                                                                    // DRAFT
   if (!atHome()) return "NEEDS HOME";                                                                         // DRAFT
@@ -242,22 +273,28 @@ String runSendKept() {
   for (String dir : cardList("meetings")) {
     int id = dir.toInt();
     std::vector<String> files = cardList("meetings/" + dir);
-    if (files.empty()) continue;
+    String tally = cardRead("meetings/" + dir + "/parts.txt");
     if (id <= 0) {                                         // recorded away: the companion has not heard of it yet
       bool ok; String got = http("POST", "/api/device/meeting/start", "{}", &ok);
-      JsonDocument d; if (!ok || deserializeJson(d, got)) break;
+      JsonDocument d; if (!ok || deserializeJson(d, got) || !(d["id"] | 0)) break;
       id = d["id"] | 0;
+      if (!cardRename("meetings/" + dir, "meetings/" + String(id))) break;   // never two meetings for one recording
+      dir = String(id);
     }
-    int most = 0;
+    bool all = true;
     for (String f : files) {
-      int n = f.toInt(); most = max(most, n + 1);
+      if (!f.endsWith(".wav")) continue;
+      int n = f.toInt();
       size_t bytes = 0; uint8_t *wav = cardReadBytes("meetings/" + dir + "/" + f, bytes);
-      if (wav && sendPart(id, n, wav, bytes)) { cardRemove("meetings/" + dir + "/" + f); partsSent++; }
+      if (wav && sendPart(id, n, wav, bytes)) { cardRemove("meetings/" + dir + "/" + f); partsSent++; } else all = false;
       free(wav);
       say("SENT " + String(partsSent)); progress("");                                                         // DRAFT
     }
-    bool ok; http("POST", "/api/device/meeting/end", "{\"id\":" + String(id) + ",\"parts\":" + String(most) + "}", &ok);
-    meetings++;
+    if (!all || !tally.length()) continue;                 // more to send next time (or still recording's tally missing)
+    int sp = tally.indexOf(' ');
+    String body = "{\"id\":" + String(id) + ",\"parts\":" + tally.substring(0, sp) + ",\"lost\":" + (sp > 0 ? tally.substring(sp + 1) : String("[]")) + "}";
+    bool ok; http("POST", "/api/device/meeting/end", body, &ok);
+    if (ok) { cardRemove("meetings/" + dir + "/parts.txt"); cardRemove("meetings/" + dir); meetings++; }
   }
   // C-199 (5): the voice notes kept, each sent whole with when it was said (its name)
   int notesSent = 0;

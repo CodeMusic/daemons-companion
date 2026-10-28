@@ -10,6 +10,7 @@ String cardStatus();                                      // SD? down the cable
 bool cardWriteBytes(const String &name, const uint8_t *data, size_t n);   // C-212: a recording, written whole
 uint8_t *cardReadBytes(const String &name, size_t &n);   // malloc'd (free it), or nullptr
 bool cardRemove(const String &name);
+bool cardRename(const String &from, const String &to);   // C-212: a file or folder under /daemons, renamed
 std::vector<String> cardList(const String &dir);          // the names in a folder under /daemons, sorted
 // C-199: one stream at a time -- a voice kept as it plays, or played back from the card
 bool cardStreamBegin(const String &name);                 // written as it comes; kept only if ended with keep

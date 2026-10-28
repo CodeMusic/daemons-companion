@@ -10,6 +10,7 @@ import { SCREEN } from "../data";
 import { Art } from "../ui";
 import { ReadAloud } from "../readAloud";   // C-208
 import { AskSubtle, TodaysQuestion } from "./AskSubtle";   // C-229, C-230
+import { Cards } from "./Arcana";   // C-232
 
 type Para = { text: string; voice: "telling" | "asking" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
@@ -84,6 +85,7 @@ export function SubtleBook({ b }: { b: SubtleT }) {
         <Text position="absolute" top={25 * 2} left={0} right={0} textAlign="center" fontSize={11} fontStyle="italic" color={C.faint}>
           {b.subtitle ?? ""}</Text>
       </YStack>
+      <Cards />
       <TodaysQuestion />
       <AskSubtle />
       <YStack backgroundColor={C.page} borderColor={C.edge} borderWidth={1} borderRadius={4} padding={16} gap={4}>

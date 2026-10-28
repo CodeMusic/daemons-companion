@@ -87,7 +87,7 @@ export function AskSubtle() {
 }
 
 type Today = { held: boolean; question?: string; centre?: string; note?: string; word?: string; answer?: string | null };
-type Kept = { date: string; question: string; answer: string; centre: string; note: string };
+type Kept = { date: string; question: string; answer: string; centre: string; note: string; card?: { keyword: string; side: string; shiny: boolean } };
 
 export function TodaysQuestion() {
   const [t, setT] = useState<Today | null>(null);
@@ -120,7 +120,7 @@ export function TodaysQuestion() {
         {journal ? "CLOSE THE JOURNAL" : "THE JOURNAL ›"}</Text>
       {journal?.map((k) => (
         <YStack key={k.date} gap={2} paddingTop={8} borderTopWidth={1} borderColor={C.edge}>
-          <Text {...mono} fontSize={10} color={C.faint}>{`${k.date} · THE ${k.centre.toUpperCase()} · ${k.note}`}</Text>
+          <Text {...mono} fontSize={10} color={C.faint}>{`${k.date} · THE ${k.centre.toUpperCase()} · ${k.note}${k.card ? ` · ${k.card.keyword}${k.card.shiny ? " ✦" : ""}` : ""}`}</Text>
           <Text fontSize={14} lineHeight={20} color={C.faint}>{k.question}</Text>
           <Text fontSize={15} lineHeight={22} color={C.ink}>{k.answer}</Text>
         </YStack>

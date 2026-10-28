@@ -69,7 +69,14 @@ which relates to the profile feature". Decided the same day by multiple choice; 
      the LLM modules, each in its own personality.
    - **The link cable** (C-221): the game's own TRADE CENTER, and link battles between two app emulators through the
      hub.
-   - **A lobby beyond the tailnet** (C-222): through the relay, plus proximity links over Bluetooth, LoRa and NFC.
+   - **A lobby beyond the tailnet** (C-222), plus proximity links over Bluetooth, LoRa and NFC. **The forward path**
+     (decided 2026-10-28): for now a new player needs the tailnet, which is fine before a real release. For a launch
+     with many players, **a multi-user exchange runs on roverbyteseer, on a codemusic subdomain over https**, and it
+     talks to each home's inner hub (the CoreMP135), which keeps its own players, saves and devices. The incoming
+     **Tiiny AI** gives roverbyteseer room for many requests and larger models, which C-220's chats would use. What
+     already fits it: the exchange speaks HTTP with a per-player token, and a companion's THE HUB takes any address,
+     so pointing it at the public exchange is a change of address. What it will need: https, accounts and abuse
+     handling decided first (kids), and the home hub passing its players' trades through.
    - **Friends and gifts** (C-223): a friends list, a gift with no return (an item or a daemon), and shared dreams.
    - **Battles** (C-224): one player's daemons against another's, through the hub, outside the link cable as well.
 

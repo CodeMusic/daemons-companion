@@ -20240,8 +20240,8 @@
     "CONTEXT": "Whoever finally reads it will think the\nmessage was always there."
    },
    "art": {
-    "front": null,
-    "back": null,
+    "front": "gfx/daemons/symbol/a_front.png",
+    "back": "gfx/daemons/symbol/a_back.png",
     "party": null
    },
    "native": {

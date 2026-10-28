@@ -159,12 +159,14 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   // C-116: the daemon this phone tends -- a party daemon AWAY if there is one, else the one its widget hosts, else the
   // first AWAY anywhere (C-103: most wait in a box, and the card was hidden for all of them)
   const [hosted, setHosted] = useState<Daemon | null>(null);
+  const [own, setOwn] = useState(false);                 // the phone's own, as TODAY shows it, over any other away
   const load = useCallback(() => {
     api<{ party: Daemon[] }>("/api/party").then((r) => { setParty(r.party); setError(""); }).catch((e) => setError(e.message));
     api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices").then(async (v) => {
       const mine = WIDGET ? await WIDGET.widgetId() : null;
-      const d = v.devices.find((x) => x.id === mine)?.daemon ?? v.away[0] ?? null;
+      const own = v.devices.find((x) => x.id === mine)?.daemon ?? null, d = own ?? v.away[0] ?? null;
       setHosted(d ? { ...d, friendship: 0, away: true, asked: false, holding: null } : null);
+      setOwn(!!own);
     }).catch(() => {});
   }, []);
   useEffect(load, [load]);
@@ -217,7 +219,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   };
   // The SYNC card is always shown -- when no save is set yet, SYNC is how the user is taught to set one (C-30).
   const asked = party?.some((d) => d.asked) ?? false;
-  const away = party?.find((d) => d.away) ?? hosted ?? undefined;
+  const away = (own ? hosted : null) ?? party?.find((d) => d.away) ?? hosted ?? undefined;
   return (
     <YStack gap={14}>
       <Segments value={seg} onChange={setSeg} options={[["yours", "Yours"], ["party", "Party"], ["index", "INDEX"], ["routines", "Routines"], ["soundings", "SOUNDINGS"], ["dreams", "DREAMS"]]} />

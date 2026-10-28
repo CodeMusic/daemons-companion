@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Image, Platform } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
-import { ALONE, ART, artByJson, isAway, KEYED, ON_PHONE, pairAgain, SERVER } from "./net";
+import { ALONE, ART, artByJson, FRESH_ART, isAway, KEYED, ON_PHONE, pairAgain, SERVER } from "./net";
 import { Link } from "./types";
  // C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
 export const { careSound }: typeof import("./careSound") = ON_PHONE ? require("./careSound") : { careSound: () => "" };
@@ -11,7 +11,7 @@ export const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" 
 export function Art({ path, size, height, fit }: { path: string; size: number; height?: number; fit?: "contain" }) {   // C-158: height, for a hat; T-423: fit, for pictures of differing heights
   const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && (isAway() || ALONE) ? null : SERVER + path));
   const viaJson = useCallback(() => { artByJson(path).then(setUri).catch(() => {}); }, [path]);
-  useEffect(() => { if (!uri) viaJson(); }, [uri, viaJson]);
+  useEffect(() => { if (!uri || (path.startsWith("/art/party/") && uri.startsWith("data:") && !FRESH_ART.has(path))) viaJson(); }, [uri, viaJson, path]);
   const style = [{ width: size, height: height ?? size }, PIXELATED as any];
   if (!uri) return <YStack width={size} height={height ?? size} />;
   return <Image source={{ uri }} style={style} resizeMode={fit ?? "cover"} onError={() => { if (uri.startsWith("http") && ON_PHONE) viaJson(); }} />;
@@ -97,9 +97,11 @@ export function Segments<T extends string>({ value, onChange, options }: { value
   return (
     <XStack backgroundColor="$color3" borderRadius={9} padding={3}>
       {options.map(([v, label]) => (
-        <YStack key={v} flex={1} paddingVertical={7} borderRadius={7} alignItems="center" cursor="pointer" role="tab"
+        <YStack key={v} flexGrow={1} flexShrink={0} flexBasis="auto" paddingVertical={7} paddingHorizontal={options.length > 4 ? 3 : 2} borderRadius={7} alignItems="center" cursor="pointer" role="tab"
                 aria-selected={v === value} backgroundColor={v === value ? "$color1" : "transparent"} onPress={() => onChange(v)}>
-          <Text fontFamily="$mono" fontSize={12} letterSpacing={1} fontWeight={v === value ? "700" : "400"}
+          {/* one line always: on a phone six labels shrink to fit rather than break a word (the user, 2026-10-28) */}
+          <Text fontFamily="$mono" fontSize={options.length > 4 ? 11 : 12} letterSpacing={options.length > 4 ? 0 : 1} fontWeight={v === value ? "700" : "400"}
+                numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}
                 color={v === value ? "$color12" : "$color10"}>{label}</Text>
         </YStack>
       ))}

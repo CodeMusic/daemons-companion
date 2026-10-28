@@ -13,6 +13,32 @@ import { previewQuery } from "../preview";
 import { PlayBook } from "./Play";
 import { SubtleBook, type SubtleT } from "./Subtle";
 
+// T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
+// GBA's black, its 224-pixel windows centred in 240 by 160 -- the game's own words, the player's name and the best mark
+const GBA = (r: number, g: number, b: number) => `rgb(${[r, g, b].map((x) => Math.round(x * 255 / 31)).join(",")})`;
+const PAPER = GBA(29, 28, 25), INK = GBA(3, 3, 4), FAINT = GBA(23, 22, 19);
+function Diploma({ name, best, grade }: { name: string; best: number | null; grade: string }) {
+  const line = (t: string, size = 14, weight: "400" | "700" = "400", color = INK) =>
+    <Text fontFamily="$mono" fontSize={size} fontWeight={weight} color={color} textAlign="center">{t}</Text>;
+  return (
+    <YStack width="100%" aspectRatio={240 / 160} backgroundColor="#000" padding="3.3%" marginTop={6} borderRadius={4}>
+      <YStack flex={1} backgroundColor={PAPER} borderRadius={2} paddingVertical="4%" justifyContent="space-between" alignItems="center">
+        {line("CALLOW SCHOOL", 15, "700")}
+        <YStack alignItems="center" gap={4}>
+          {line("This is to certify that")}
+          {line(name || "you", 17, "700")}
+          {line("sat the paper, all seven parts,")}
+          {line("and passed it.")}
+        </YStack>
+        <YStack alignItems="center" gap={2}>
+          {best !== null ? line(`MARK  ${best}   ${grade}`, 15, "700") : null}
+          {line("A  PUT IT AWAY", 11, "400", FAINT)}
+        </YStack>
+      </YStack>
+    </YStack>
+  );
+}
+
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
   const [open, setOpen] = useState(false);
   return (
@@ -336,6 +362,7 @@ export function GuideBook({ g }: { g: GuideBookT }) {
 
 export function SchoolScreen() {
   const [pr, setPr] = useState<Progress | null>(null);
+  const [shown, setShown] = useState(false);       // the DIPLOMA as the game draws it
   const [p, setP] = useState<Profile | null>(null);
   useEffect(() => {
     api<Progress>("/api/progress").then(setPr).catch(() => {});
@@ -348,16 +375,23 @@ export function SchoolScreen() {
       <Card borderLeftWidth={6} borderLeftColor="$color9">
         <Eyebrow>CALLOW SCHOOL</Eyebrow>
         {s.diploma ? (
-          <YStack gap={4} marginTop={4}>
-            <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10">DIPLOMA</Text>
-            <Text fontSize={15} lineHeight={22} color="$color12">{`This is to certify that ${p?.name ?? "you"} sat the paper, all seven parts, and passed it.`}</Text>
-            {s.best !== null ? <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{`MARK ${s.best}  ${s.grade ?? ""}`}</Text> : null}
+          <YStack gap={4} marginTop={4} cursor="pointer" role="button" onPress={() => setShown((o) => !o)}>
+            <XStack justifyContent="space-between" alignItems="center">
+              <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10">DIPLOMA</Text>
+              <Text fontSize={18} color="$color10">{shown ? "−" : "+"}</Text>
+            </XStack>
+            {shown ? <Diploma name={p?.name ?? ""} best={s.best} grade={s.grade ?? ""} /> : (<>
+              <Text fontSize={15} lineHeight={22} color="$color12">{`This is to certify that ${p?.name ?? "you"} sat the paper, all seven parts, and passed it.`}</Text>
+              {s.best !== null ? <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{`MARK ${s.best}  ${s.grade ?? ""}`}</Text> : null}
+            </>)}
           </YStack>
         ) : <Small>{s.attempts ? `The paper sat ${s.attempts === 1 ? "once" : `${s.attempts} times`}; best ${s.best}. ${s.passMark} passes.` : "No DIPLOMA yet."}</Small>}
       </Card>
       <Card>
         <Eyebrow>{s.textbook ? "THE TEXTBOOK" : "THE FLOORS"}</Eyebrow>
-        {SCHOOL.floors.map((f, i) => <Floor key={f.floor} f={f} reached={s.floors[i]} />)}
+        {/* the DIPLOMA held, every lesson is open: the paper is passed (the user, 2026-10-28 -- a save given the DIPLOMA
+            had stood on no floor, and every lesson read "Not yet stood on") */}
+        {SCHOOL.floors.map((f, i) => <Floor key={f.floor} f={f} reached={s.floors[i] || s.diploma} />)}
       </Card>
       <PracticePaper />
     </YStack>

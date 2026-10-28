@@ -229,6 +229,8 @@ export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
     }
   }
   const j = await r.json();
+  // the companion's catch-all: a page this app knows and the companion does not yet -- it runs older code
+  if (r.status === 404 && j.error === "not found") throw new Error("The companion doesn't have this yet. Update it (the hub's deploy), then try again.");   // DRAFT
   if (!r.ok) throw new Error(j.error ?? `the server answered ${r.status}`);
   return j as T;
 }
@@ -272,6 +274,7 @@ export function freshSoon() {                     // many answers at once (keepE
 export async function api<T>(path: string, body?: unknown): Promise<T> {
   // C-188: paired, SYNC writes the companion's mirror of the game's save -- the game hands its save over and pauses first,
   // and takes back what SYNC wrote before it goes on (game/gate.ts; hosting alone, local.ts holds it the same way)
+  if (path === "/api/sync" && body !== undefined) forgetPartyArt();
   if (path === "/api/sync" && body !== undefined && !ALONE && ON_PHONE) {
     await GATE.hold();
     try { return await apiLive<T>(path, body); } finally { GATE.release(); }
@@ -373,8 +376,13 @@ export const ART = new Map<string, string>();
 
 export let everySpecies: Promise<void> | null = null;
 
+// A party daemon's picture is kept by its slot, and the box's slots move at a SYNC: one kept from before shows the daemon
+// that sat there then (the user, 2026-10-28: SEEKMUSAI named, OVERLOADED drawn). So each is asked for again once a run,
+// and after every SYNC (Art, in ui.tsx).
+export const FRESH_ART = new Set<string>();
+const forgetPartyArt = () => { for (const p of [...FRESH_ART]) if (p.startsWith("/art/party/")) FRESH_ART.delete(p); };
 export function keepArt(path: string, uri: string) {
-  ART.set(path, uri);
+  ART.set(path, uri); FRESH_ART.add(path);
   if (ON_PHONE) { KEPT.art[path] = uri; saveKept(); }
 }
 

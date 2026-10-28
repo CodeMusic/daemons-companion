@@ -88,6 +88,9 @@ function Shell() {
   const [, heard] = useState(0);
   // C-86: a screen first drawn from what the phone kept is drawn again when the companion's fresher answer arrives
   const [fresh, setFresh] = useState(0);
+  // the tab already open, tapped again: back to its own first page -- out of a book to the LIBRARY (the user, 2026-10-28)
+  const [again, setAgain] = useState(0);
+  const pickTab = (t: (typeof TABS)[number]) => { if (t === tab) setAgain((n) => n + 1); setTab(t); };
   useEffect(() => {
     const f = () => heard((n) => n + 1);
     const g = () => { setFresh((n) => n + 1); reload(); };
@@ -163,10 +166,10 @@ function Shell() {
               <Text fontSize={20} lineHeight={22} color={tab === "settings" ? "$color12" : "$color10"}>⚙</Text>
             </YStack>
           </XStack>
-          <TabStrip tab={tab} setTab={setTab} tabs={beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS} />
+          <TabStrip tab={tab} setTab={pickTab} tabs={beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS} />
         </YStack>
         {beside ? <FoundBeside {...found} /> : null}
-        {tab !== "game" ? <ScrollView key={fresh} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
+        {tab !== "game" ? <ScrollView key={`${fresh}.${again}`} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
           {error ? <Stuck error={error} ink={ink} /> : null}
           {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
           {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}

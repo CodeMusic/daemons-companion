@@ -9,6 +9,7 @@ void talkHold(uint32_t forMs = 0);   // the dial is held: listen until it is let
                                       // computer: TALK <ms> down the cable), then answer
 void talkReadEntry();           // C-65: the carried daemon's INDEX entry, aloud
 extern bool talkToGuide;        // C-209: the next talk asked of the GUIDE
+extern bool talkListening;      // C-213: listening now -- the daemon's ears up on the TALK screen
 size_t talkMicRead(int16_t *buf, size_t most, uint32_t waitMs);   // C-212: raw samples, the ear open
 void talkWavHeader(uint8_t *h, uint32_t samples);                   // C-212: 16 kHz mono, 16-bit
 void talkReadText(const String &text);   // the user, 2026-10-28: any words aloud (a dream); "" the INDEX entry

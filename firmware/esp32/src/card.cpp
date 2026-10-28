@@ -17,6 +17,14 @@ bool cardWriteBytes(const String &, const uint8_t *, size_t) { return false; }
 uint8_t *cardReadBytes(const String &, size_t &n) { n = 0; return nullptr; }
 bool cardRemove(const String &) { return false; }
 std::vector<String> cardList(const String &) { return {}; }
+bool cardStreamBegin(const String &) { return false; }
+void cardStreamWrite(const uint8_t *, size_t) {}
+void cardStreamEnd(bool) {}
+bool cardStreamOpen(const String &) { return false; }
+size_t cardStreamRead(uint8_t *, size_t) { return 0; }
+void cardStreamClose() {}
+bool cardHas(const String &) { return false; }
+bool cardAppendLine(const String &, const String &) { return false; }
 
 #else
 
@@ -73,6 +81,32 @@ std::vector<String> cardList(const String &dir) {
   std::sort(out.begin(), out.end(), [](const String &a, const String &b) { return a.toInt() < b.toInt(); });
   return out;
 }
+// ---- C-199: a stream -- a voice kept as it plays (to a temporary, renamed when it ended whole), or played from the card
+static File stream; static String streamPath;
+bool cardStreamBegin(const String &name) {
+  if (!cardReady()) return false;
+  streamPath = "/daemons/" + name; dirsFor(streamPath);
+  stream = SD.open(streamPath + ".tmp", FILE_WRITE);
+  return (bool)stream;
+}
+void cardStreamWrite(const uint8_t *data, size_t n) { if (stream) stream.write(data, n); }
+void cardStreamEnd(bool keep) {
+  if (!stream) return;
+  stream.close();
+  if (keep) { SD.remove(streamPath); SD.rename(streamPath + ".tmp", streamPath); } else SD.remove(streamPath + ".tmp");
+}
+bool cardStreamOpen(const String &name) { if (!cardReady()) return false; stream = SD.open("/daemons/" + name, FILE_READ); return (bool)stream; }
+size_t cardStreamRead(uint8_t *buf, size_t n) { return stream ? stream.read(buf, n) : 0; }
+void cardStreamClose() { if (stream) stream.close(); }
+bool cardHas(const String &name) { return cardReady() && SD.exists("/daemons/" + name); }
+bool cardAppendLine(const String &name, const String &line) {
+  if (!cardReady()) return false;
+  File f = SD.open("/daemons/" + name, FILE_APPEND);
+  if (!f) return false;
+  f.print(line); f.print('\n'); f.close();
+  return true;
+}
+
 String cardRead(const String &name) {
   if (!cardReady()) return "";
   File f = SD.open("/daemons/" + name, FILE_READ);

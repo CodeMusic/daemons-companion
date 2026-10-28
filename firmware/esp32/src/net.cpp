@@ -785,12 +785,35 @@ void report(const String &kind, const String &detail) {
   }
   Told t;
   strlcpy(t.kind, kind.c_str(), sizeof t.kind); strlcpy(t.detail, detail.c_str(), sizeof t.detail);
-  xQueueSend(outbox, &t, 0);                             // full (long out of touch): this one is not kept
+  // full (long out of touch): on the Ultra it waits on the card (C-199) -- a long walk's fixes, a night -- else it is not kept
+  if (xQueueSend(outbox, &t, 0) != pdTRUE) cardAppendLine("waiting.txt", kind + "\t" + detail);
   sendAfter = millis() + 600;
+}
+// C-199: what waited on the card, back into the outbox a few at a time once it has room and the companion is in reach
+static void drainCard() {
+  static uint32_t at = 0;
+  if (millis() - at < 10000) return;
+  at = millis();
+  if (!outbox || uxQueueMessagesWaiting(outbox) || !(online() || bridgeLive()) || !cardHas("waiting.txt")) return;
+  String all = cardRead("waiting.txt"), rest;
+  int taken = 0, from = 0;
+  while (from < (int)all.length()) {
+    int nl = all.indexOf('\n', from); if (nl < 0) nl = all.length();
+    String line = all.substring(from, nl); from = nl + 1;
+    int tab = line.indexOf('\t');
+    if (tab <= 0) continue;
+    if (taken < 8) {
+      Told t; strlcpy(t.kind, line.substring(0, tab).c_str(), sizeof t.kind); strlcpy(t.detail, line.substring(tab + 1).c_str(), sizeof t.detail);
+      if (xQueueSend(outbox, &t, 0) == pdTRUE) { taken++; continue; }
+    }
+    rest += line + "\n";
+  }
+  if (rest.length()) cardWrite("waiting.txt", rest); else cardRemove("waiting.txt");
 }
 
 // C-121: every pass of the loop -- the state the outbox brought back, and what is waiting carried by the cable or phone
 void reportLoop() {
+  drainCard();                                           // C-199
   portENTER_CRITICAL(&mailMux); String *m = stateMail; stateMail = nullptr; portEXIT_CRITICAL(&mailMux);
   if (m) {
     if (!netBusy()) { takeState(*m); lastPoll = millis(); dirty = true; }   // more to send: its own answer will come

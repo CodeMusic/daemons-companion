@@ -33,6 +33,7 @@ static TinyGPSPlus gps;
 static Why why = OFF;
 static uint32_t onAt = 0, toldAt = 0, stillSince = 0, polledAt = 0, beepAt = 0;
 static int told = 0;
+static uint32_t findAt = 0;                               // when FIND began (a touch after it ends it)
 
 static void power(Why w) {
   if (w == why) return;
@@ -69,7 +70,8 @@ static void walked() {
 }
 static void tell() {
   char d[48];
-  snprintf(d, sizeof d, "%.6f %.6f %d", gps.location.lat(), gps.location.lng(), (int)(gps.hdop.hdop() * 5));   // HDOP x 5 m, roughly
+  struct tm lt; long taken = watchLocalTime(lt) ? (long)time(nullptr) : 0;   // C-199: when, so a fix told late is filed then
+  snprintf(d, sizeof d, "%.6f %.6f %d %ld", gps.location.lat(), gps.location.lng(), (int)(gps.hdop.hdop() * 5), taken);   // HDOP x 5 m, roughly
   report("where", d);
   toldAt = millis(); told++;
 }
@@ -80,6 +82,8 @@ void gpsLoop(uint32_t now) {
   bool moving = k == M_WALKING || k == M_RUNNING || k == M_CYCLING;
   if (moving) stillSince = 0; else if (!stillSince) stillSince = now;
   if (why == FIND) {
+    // found by hand (the user, 2026-10-28: the beeping went on with the watch in hand): a touch or a press stops it
+    if ((int32_t)(lastInput - findAt) > 1500) { say("FOUND"); power(OFF); return; }                    // DRAFT
     if (now - beepAt > 4000) { beepAt = now; soundAccomplish(1, st.daemon.species, 0); haptic(16); }   // here, here
     if (goodFix()) { tell(); say("FOUND"); power(OFF); }                                                // DRAFT
     else if (now - onAt > 120000) power(OFF);
@@ -102,9 +106,10 @@ void gpsLoop(uint32_t now) {
 void gpsFromState(JsonVariantConst f) {
   static String last;
   String at = f | "";
+  if (!at.length() && why == FIND && last.length()) { say("FOUND"); power(OFF); }   // taken back in the app: Found it   // DRAFT
   if (!at.length() || at == last) return;
   last = at;
-  wake(); say("HERE!"); beepAt = 0;                        // DRAFT
+  wake(); say("HERE!"); beepAt = 0; findAt = millis(); lastInput = findAt;   // DRAFT
   power(OFF); power(FIND);
 }
 String gpsStatus() {

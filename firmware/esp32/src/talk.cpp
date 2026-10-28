@@ -1,5 +1,7 @@
 #include <memory>
 #include <HTTPClient.h>
+#include "expression.h"
+#include "card.h"
 #include <mbedtls/base64.h>
 #include <driver/i2s.h>
 #include <es7210.h>
@@ -144,6 +146,9 @@ static void wavHeader(uint8_t *h, uint32_t samples) {
 }
 
 // The answer's voice, streamed from the server into the speaker a little at a time.
+// C-199: a voice kept on the card under `keepAs` (16 kHz PCM, as it streams); "" keeps nothing
+static String keepAs;
+static void mouthBeat(const int16_t *buf, int n);
 static void playVoice(const String &path) {
   HTTPClient h;
   h.setTimeout(15000);
@@ -151,17 +156,45 @@ static void playVoice(const String &path) {
   if (h.GET() != 200) { h.end(); return; }
   WiFiClient *in = h.getStreamPtr();
   int left = h.getSize();
+  bool keeping = keepAs.length() && cardStreamBegin(keepAs);
   static int16_t buf[512];
-  uint32_t quietSince = millis();
+  uint32_t quietSince = millis(), beatAt = 0;
   while (left != 0 && millis() - quietSince < 4000) {
     int got = in->readBytes((uint8_t *)buf, min((int)sizeof buf, left > 0 ? left : (int)sizeof buf));
     if (got <= 0) continue;
     quietSince = millis();
     if (left > 0) left -= got;
+    if (keeping) cardStreamWrite((const uint8_t *)buf, got);
+    mouthBeat(buf, got / 2);
     soundPcm(buf, got / 2);
-    if (giveUp()) break;                              // the top button stops it
+    if (giveUp()) { left = -2; break; }               // the top button stops it (and what was kept is not whole)
   }
+  if (keeping) cardStreamEnd(left == 0);
+  if (mouthOpen) { mouthOpen = false; draw(); }
   h.end();
+}
+// C-213: the mouth on the beat -- open while the voice is loud, shut between words; drawn a few times a second
+static void mouthBeat(const int16_t *buf, int n) {
+  static uint32_t beatAt = 0;
+  if (millis() - beatAt <= 180) return;
+  long long sq = 0;
+  for (int i = 0; i < n; i++) sq += (long)buf[i] * buf[i];
+  bool open = n && sq / n > 600LL * 600 && !mouthOpen;
+  if (open != mouthOpen) { mouthOpen = open; beatAt = millis(); if (st.carrying) draw(); }
+}
+// C-199: a voice kept on the card, played as it was heard (no network needed); false when it was not kept
+static bool playKept(const String &name) {
+  if (!cardHas(name) || !cardStreamOpen(name)) return false;
+  static int16_t buf[512];
+  size_t got;
+  while ((got = cardStreamRead((uint8_t *)buf, sizeof buf)) > 0) {
+    mouthBeat(buf, got / 2);
+    soundPcm(buf, got / 2);
+    if (giveUp()) break;
+  }
+  cardStreamClose();
+  if (mouthOpen) { mouthOpen = false; draw(); }
+  return true;
 }
 
 // What the server said: show the words, then play the voice.
@@ -282,11 +315,19 @@ static void overPhone(uint8_t *rec, size_t n) {
     if (!got) delay(20);
   }
   screen = TALK;
-  if (!got) { talkStatus = "The phone did not answer."; draw(); return; }                   // DRAFT
+  // the user, 2026-10-28 (on LTE: "the phone didn't respond"): which it was -- the link dropped, or no answer came
+  if (!got) { talkStatus = linkPhoneHere() ? "The phone did not answer in time." : "Lost the phone partway."; draw(); return; }   // DRAFT
   JsonDocument d;
   deserializeJson(d, line.substring(7));
   talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | ""); talkStatus = d["error"] | "";
   draw();
+  // C-213: the phone says it on its own speaker; the daemon here mouths it for about as long (fourteen letters a second)
+  uint32_t speakFor = min(20000u, (uint32_t)talkAnswer.length() * 1000 / 14), t0 = millis();
+  while (st.carrying && talkAnswer.length() && millis() - t0 < speakFor && !giveUp()) {
+    mouthOpen = !mouthOpen && ((millis() - t0) / 180) % 5 != 4;   // every fifth beat shut, a breath between
+    draw(); delay(180);
+  }
+  if (mouthOpen) { mouthOpen = false; draw(); }
   lastInput = millis();
 }
 
@@ -301,7 +342,8 @@ static void offline(uint8_t *rec, size_t n) {
   lastInput = millis();
 }
 
-bool talkToGuide = false;                                 // C-209: the next talk is asked of the GUIDE (books.cpp)
+bool talkToGuide = false;
+bool talkListening = false;                              // C-213: TALK is listening (its ears up, ui.cpp)                                 // C-209: the next talk is asked of the GUIDE (books.cpp)
 void talkHold(uint32_t forMs) {
   if (!talkCan()) return;
   if (talkToGuide && !atHome()) { say("ASK THE GUIDE AT HOME"); return; }   // DRAFT -- the hub's module answers it
@@ -312,7 +354,7 @@ void talkHold(uint32_t forMs) {
   uint8_t *rec = (uint8_t *)bigAlloc(44 + most * 2);
   while (!rec && most > RATE * 2) { most -= RATE; rec = (uint8_t *)malloc(44 + most * 2); }
   if (!rec || !micOn()) { free(rec); say("NO MICROPHONE"); return; }          // DRAFT
-  screen = TALK; talkHeard = talkAnswer = ""; talkStatus = "Listening..."; draw();   // DRAFT
+  screen = TALK; talkHeard = talkAnswer = ""; talkStatus = "Listening..."; talkListening = true; draw();   // DRAFT
   ledsTint(0xFFFFFF);
   int16_t *pcm = (int16_t *)(rec + 44);
   size_t n = 0; int step = 0;
@@ -337,6 +379,7 @@ void talkHold(uint32_t forMs) {
     if ((n / 2000) != (size_t)step) { step = n / 2000; ledsDance(DANCE_GLIMMER, step, 0); }
   }
   ledsDance(-1, 0, 0);
+  talkListening = false;                                   // C-213: the ears down again
   if (board.mic != Mic::Analog) i2s_driver_uninstall(MIC);
   soundResume();                                                              // C-74, C-75: the shared speaker back
   while (!forMs && (board.touch ? watchTouchDown() : !digitalRead(board.encKey))) delay(5);   // a long talk ran out: wait for the let-go
@@ -364,11 +407,16 @@ void talkHold(uint32_t forMs) {
   lastInput = millis();
 }
 
+static uint32_t hashOf(const String &s) { uint32_t h = 2166136261u; for (unsigned i = 0; i < s.length(); i++) h = (h ^ (uint8_t)s[i]) * 16777619u; return h; }   // FNV-1a
 void talkReadEntry() { talkReadText(""); }
 // the user, 2026-10-28: any words read aloud the same way -- a dream; "" the carried daemon's INDEX entry
 void talkReadText(const String &text) {
+  // C-199: a reading heard before is on the card -- played from there, anywhere
+  String words = text.length() ? text : st.daemon.entry, kept = "voices/" + String((uint32_t)words.length(), HEX) + "-" + String(hashOf(words), HEX) + ".pcm";
+  if (cardHas(kept)) { screen = TALK; talkHeard = ""; talkAnswer = words; talkStatus = ""; draw(); playKept(kept); lastInput = millis(); return; }
   if (!atHome()) { say(online() ? "NEEDS HOME" : "NEEDS WI-FI"); return; }      // DRAFT -- C-82: a voice is not JSON
-  screen = TALK; talkHeard = ""; talkAnswer = text.length() ? text : st.daemon.entry; talkStatus = "Reading..."; draw();   // DRAFT
+  keepAs = cardReady() ? kept : "";
+  screen = TALK; talkHeard = ""; talkAnswer = words; talkStatus = "Reading..."; draw();   // DRAFT
   HTTPClient h;
   h.setTimeout(65535);           // the most HTTPClient holds (16 bits): 90000 was 24 s, with the INDEX voice taking ~15
   h.begin(serverUrl + "/api/device/speak");
@@ -380,5 +428,6 @@ void talkReadText(const String &text) {
   String body = code == 200 ? h.getString() : "";
   h.end();
   answer(code, body);
+  keepAs = "";                                            // C-199: only the reading's own voice is kept
   lastInput = millis();
 }

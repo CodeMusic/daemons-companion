@@ -13,6 +13,7 @@ import { IndexScreen } from "./Index";
 import { RoutinesCard } from "./Routines";
 import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
+import { ReadsCard } from "./Reads";   // C-203
 import { useApi } from "../useApi";
  // C-119: how it looks now, decided on the server
 
@@ -248,6 +249,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
       {error && !needPath ? <Small color="$color8">{error}</Small> : null}
       <NearbyCard ink={ink} />
       <MeetingsCard />
+      <ReadsCard />
       </>) : null}
       {seg === "party" ? (<>
       <XStack flexWrap="wrap" gap={12}>

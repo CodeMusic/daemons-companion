@@ -43,3 +43,9 @@ export function setLook(l: Look) {
 export function wearLook() { if (ON_PHONE) Appearance.setColorScheme(LOOK === "auto" ? "unspecified" : LOOK); }
 
 export const useDark = () => useThemeName().startsWith("dark");
+
+// C-203: THE SUBTLE LAYER's purple, the book's own (DAEMONS tools/gensubtle.py): C_RULE as ink on a light page, C_MARGIN,
+// the hue lit, on a dark one -- as the game sets it on the field's light box and the battle's dark one. It marks a
+// noticing (a read, a lean, THE LOG), never a feeling.
+export const SUBTLE = { hue: "#B0569E", lit: "#EF8CD6" };
+export const useSubtleInk = () => (useDark() ? SUBTLE.lit : SUBTLE.hue);

@@ -185,3 +185,6 @@ export type HomeSettings = { url: string | null; hasToken: boolean; ok: boolean;
 export const TABS = ["today", "game", "daemon", "goals", "library", "you", "places", "settings"] as const;   // C-187: GAME, on the phone and iPad
 
 export const SHOWN_TABS = TABS.filter((t) => t !== "settings" && (t !== "game" || Platform.OS !== "web"));   // the site has the playground
+// C-203: the companion's own log of reads and leans (server/src/intuition.ts readsView), once the save holds the book
+export type Reads = { held: boolean; reads: { given: number; landed: number }; leans: { told: number; landed: number };
+                      recent: { at: string; about: "near" | "rain" | "night" | "walk"; line: string; landed: string | null; open: boolean }[] };

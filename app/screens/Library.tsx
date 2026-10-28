@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../data";
+import { useSubtleInk } from "../look";   // C-203
 import { api } from "../net";
 import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData } from "../types";
@@ -448,7 +449,8 @@ export function NotebookPage({ page, colours, outline, open: startOpen = false }
         </YStack>
         <Text fontSize={18} color="$color10">{open ? "−" : "+"}</Text>
       </XStack>
-      {open ? (page.text
+      {open ? (page.kind === "reads" && page.text ? <ReadsLog text={page.text} />   // C-203: THE LOG, a line a row, in the book's purple
+        : page.text
         ? page.text.split(/\n\n+/).map((par, i) => <Text key={i} fontSize={15} lineHeight={22} marginBottom={4} color="$color12">{par.replace(/\n/g, " ")}</Text>)
         : page.kind === "song" && page.key && page.notes?.length ? <SongStaff keyName={page.key} notes={page.notes} colours={colours} outline={outline} />
         : <Small>{page.kind === "song" ? "The game draws its notes in the key you played it in." : "Written by the game from your save each time you open it there."}</Small>) : null}
@@ -456,6 +458,11 @@ export function NotebookPage({ page, colours, outline, open: startOpen = false }
       {open && page.link ? <Action label={linkLabel(page.link)} onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}
     </YStack>
   );
+}
+
+function ReadsLog({ text }: { text: string }) {
+  const ink = useSubtleInk();
+  return <YStack gap={2}>{text.split("\n").map((l, i) => <Text key={i} fontSize={15} lineHeight={22} color={ink}>{l}</Text>)}</YStack>;
 }
 
 export function NotebookCard({ skip }: { skip?: string } = {}) {

@@ -87,19 +87,29 @@ static void onAccel(uint8_t, uint8_t *data, uint32_t, uint64_t *, void *) {
   last = g;
 }
 
-// the firmware's upload holds the I2C bus for some seconds: the touch task stands aside meanwhile (on the glass, 2026-10-28:
-// with the touch read every 10 ms between its chunks the upload failed with an IO error after a minute)
+// the firmware's upload holds the I2C bus for some seconds, and anything else on it between its chunks breaks it (on the
+// glass, 2026-10-28: an IO error after a minute, with the touch, the power chip and the clock all read meanwhile). So it
+// goes up here, in setup, before the loop or the touch task touch the bus -- at 400 kHz (every chip on this bus takes it;
+// 11 s at 100) and tried three times -- and the task only reads what it sends after.
 static volatile bool uploading = false;
 bool motionHoldsBus() { return uploading; }
-static void motionTask(void *) {
+static bool upload() {
   bhy.setFirmware(bosch_firmware_image, bosch_firmware_size, false);
   bhy.setBootFromFlash(false);
-  uploading = true; vTaskDelay(pdMS_TO_TICKS(30));           // the touch task's read in hand finishes first
-  uint32_t t0 = millis();
-  bool up = bhy.begin(Wire, BHI260AP_SLAVE_ADDRESS_L);
+  uploading = true; delay(30);                             // a touch read already in hand finishes first
+  uint32_t was = Wire.getClock(); Wire.setClock(400000);
+  bool up = false;
+  for (int k = 0; k < 3 && !up; k++) {
+    uint32_t t0 = millis();
+    up = bhy.begin(Wire, BHI260AP_SLAVE_ADDRESS_L);
+    Serial.printf("motion: upload %s in %lu ms (try %d)\n", up ? "done" : "failed", (unsigned long)(millis() - t0), k + 1);
+  }
+  Wire.setClock(was);
   uploading = false;
-  Serial.printf("motion: upload %s in %lu ms\n", up ? "done" : "failed", (unsigned long)(millis() - t0));
-  if (!up) { why = String("not found: ") + bhy.getError(); Serial.println("motion: " + why); vTaskDelete(nullptr); return; }
+  if (!up) { why = String("not found: ") + bhy.getError(); Serial.println("motion: " + why); }
+  return up;
+}
+static void motionTask(void *) {
   bhy.setRemapAxes(SensorBHI260AP::TOP_LAYER_BOTTOM_RIGHT_CORNER);   // as LilyGO's own library places it on the Ultra
   accelScale = bhy.getScaling(SensorBHI260AP::ACCEL_PASSTHROUGH);
   if (accelScale <= 0) accelScale = 1.0f / 4096;
@@ -110,15 +120,15 @@ static void motionTask(void *) {
   bhy.configure(SensorBHI260AP::STEP_COUNTER, 1, 0);
   bhy.configure(SensorBHI260AP::ACTIVITY_RECOGNITION, 1, 0);
   bhy.configure(SensorBHI260AP::WRIST_TILT_GESTURE, 1, 0);
-  bhy.configure(SensorBHI260AP::ACCEL_PASSTHROUGH, 100, 0);
+  bhy.configure(SensorBHI260AP::ACCEL_PASSTHROUGH, 50, 0);   // 50 Hz: enough for a shake or a tap, and half the FIFO
   ready = true; why = "running";
   Serial.println("motion: the BHI260AP is running");
-  for (;;) { bhy.update(); vTaskDelay(pdMS_TO_TICKS(20)); }
+  for (;;) { bhy.update(); vTaskDelay(pdMS_TO_TICKS(40)); }
 }
 
 void motionBegin() {
   Preferences p; p.begin("motion", true); before = p.getLong("before", 0); p.end();
-  xTaskCreatePinnedToCore(motionTask, "motion", 8192, nullptr, 1, nullptr, 0);
+  if (upload()) xTaskCreatePinnedToCore(motionTask, "motion", 8192, nullptr, 1, nullptr, 1);   // on the loop's core: on core 0 it starved the idle task (a TASK_WDT reset, on the glass)
 }
 bool motionReady() { return ready; }
 long motionSteps() {

@@ -51,6 +51,7 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
+import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
 import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
@@ -1274,6 +1275,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (path !== "/api/game/debug/file" || !(m.patches ?? []).some((x) => x.file === name) || name.includes("/") || name.includes(".."))
           return send(res, 404, { error: "no such testing build" });
         return send(res, 200, { b64: readFileSync(join(dir!, name)).toString("base64") });
+      }
+      // C-215: every save the companion knows, one chosen as the one it reads; and a save kept here by name (a new game
+      // begun in the app, say -- the mirror refuses another game's, and this keeps it beside the others instead)
+      if (path.startsWith("/api/saves") && (phone || isLoopback(req.socket.remoteAddress)) && !board) {
+        const known = () => listSaves(cfg, store, savePathOf(cfg, store), mirrorPath(cfg));
+        if (req.method === "GET" && path === "/api/saves") return send(res, 200, { saves: known().saves });
+        if (req.method === "POST" && path === "/api/saves/choose") {
+          const b = await body(req), { saves, paths } = known(), e = saves.find((x) => x.id === b.id);
+          if (!e) return send(res, 404, { error: "no such save" });
+          if (e.kind === "mirror") store.setSetting("save.mirror", "on");
+          else { store.setSetting("savePath", paths.get(e.id)!); store.setSetting("save.mirror", null); }
+          return send(res, 200, { saves: known().saves });
+        }
+        if (req.method === "POST" && path === "/api/saves/keep") {
+          const b = await body(req);
+          const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
+          if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "keep {b64, label?}, a whole save" });
+          try { return send(res, 200, { id: keepSave(cfg, store, bytes, typeof b.label === "string" ? b.label : ""), saves: known().saves }); }
+          catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
+        }
       }
       if (path === "/api/save/mirror" && (phone || isLoopback(req.socket.remoteAddress)) && !board) {
         if (req.method === "GET") {

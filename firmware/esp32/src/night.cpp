@@ -15,6 +15,7 @@
 #include <sys/time.h>
 
 static bool on = false, tucked = false;
+static float lastHours = 0; static int lastStirs = 0; static long lastTo = 0;   // C-206: the last night told
 static long from = 0;                                     // seconds since 1970
 static uint32_t stirsAt = 0, movingSince = 0;
 static String dreamText; static uint32_t dreamUntil = 0; static bool dreamLater = false;
@@ -27,6 +28,8 @@ void nightBegin() {
   Preferences p; p.begin("night", true);
   on = p.getBool("on", false); tucked = p.getBool("tucked", false); from = p.getLong("from", 0); stirsAt = p.getULong("stirs", 0); p.end();
   stirsAt = 0;                                            // the motion sensor counts again from nought after a restart
+  p.begin("night", true);
+  lastHours = p.getFloat("lastH", 0); lastStirs = p.getInt("lastS", 0); lastTo = p.getLong("lastTo", 0); p.end();
 }
 static long epochNow() { struct tm t; return watchLocalTime(t) ? (long)time(nullptr) : 0; }
 
@@ -47,9 +50,27 @@ static String dreamOf(float hours, int stirs) {
   return name + " dreamt of " + a + ", and slept on.";
 }
 
-static void showDream(const String &text, bool later) { dreamText = text; dreamLater = later; dreamUntil = millis() + 30000; wake(); dirty = true; }
+// C-206: the last dream is kept until it is read (tapped away), so the face can say one is waiting
+static bool dreamSeen = true; static uint32_t dreamAt = 0;
+static void showDream(const String &text, bool later) {
+  dreamText = text; dreamLater = later; dreamUntil = millis() + 30000; dreamSeen = false; dreamAt = millis(); wake(); dirty = true;
+}
 bool dreamShowing() { return dreamUntil && (int32_t)(dreamUntil - millis()) > 0; }
-void dreamDismiss() { dreamUntil = 0; dirty = true; }
+void dreamDismiss() { dreamUntil = 0; dreamSeen = true; dirty = true; }
+bool dreamWaiting() { return !dreamSeen && dreamText.length() && millis() - dreamAt < 18UL * 3600000; }
+bool dreamAgain() { if (!dreamText.length()) return false; dreamUntil = millis() + 30000; wake(); dirty = true; return true; }
+
+// C-206: the last night, for the face's heads-up -- its hours and quality, kept in flash with when it ended
+static const char *qualityOf(float hours, int stirs) {
+  if (hours < 4 || stirs > max(4.0f, hours * 1.2f)) return "BROKEN";          // server/src/dreams.ts quality()
+  if (hours >= 6.5f && stirs <= max(2.0f, hours / 3)) return "VIVID";
+  return "QUIET";
+}
+bool lastNight(float &hours, String &quality, long &endedAt) {
+  if (!lastTo) return false;
+  hours = lastHours; quality = qualityOf(lastHours, lastStirs); endedAt = lastTo;
+  return true;
+}
 
 // the dream, over whatever is shown: its title, the words, a tap to put it away
 void drawDream(uint16_t day) {
@@ -84,6 +105,8 @@ static void end(long at) {
   float hours = (at - from) / 3600.0f;
   int stirs = (int)(motionStirs() - stirsAt);
   if (hours < 1 || hours > 16 || !from || !at) return;   // a nap, or a clock not yet set: no night to tell
+  lastHours = hours; lastStirs = stirs; lastTo = at;
+  { Preferences p; p.begin("night", false); p.putFloat("lastH", hours); p.putInt("lastS", stirs); p.putLong("lastTo", at); p.end(); }
   char d[48]; snprintf(d, sizeof d, "%ld %ld %d %d", from, at, stirs, tucked ? 1 : 0);
   report("night", d);
   if (st.carrying) { showDream(dreamOf(hours, stirs), false); soundWake(); }

@@ -60,7 +60,8 @@ struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = tru
                   String face = "daemon";      // C-162: the round face -- daemon, clock or virtue
                   bool faceSky = true;         // C-163: the season behind the daemon's faces, and the weather in front
                   int hours = 24;              // C-166: the clock in 12 or 24 hours
-                  String instrument = "default"; };   // PLAY to test: the save's ("default"), or "harp" or "flute" forced
+                  String instrument = "default";
+                  String quick = "care,music,hours"; };   // C-206: the Ultra's three buttons under its face   // PLAY to test: the save's ("default"), or "harp" or "flute" forced
 void playForce(const String &name);
 // C-203 (intuition.cpp): THE SUBTLE LAYER on the watches -- the daemon noticing, a read now and then, a lean at the reels
 enum ReadAbout { READ_NEAR, READ_RAIN, READ_NIGHT, READ_WALK };
@@ -79,7 +80,10 @@ String stepsWords(long steps);                             // "1234 STEPS", and 
 void nightBegin(); void nightLoop(uint32_t now); void nightTuck(); void nightWake();
 void nightFromState(JsonVariantConst d); String nightStatus();
 bool dreamShowing(); void dreamDismiss(); void drawDream(uint16_t day);       // play.cpp: an instrument forced for testing (and PLAY open), or "default"
-bool dreamTap(int x, int y);                                // the dream's LISTEN tapped: read aloud
+bool dreamTap(int x, int y);
+bool dreamWaiting(); bool dreamAgain();
+bool quickTap(int x, int y);                               // C-206 (ui.cpp): a button under the Ultra's face                    // C-206: a dream not yet read; shown again
+bool lastNight(float &hours, String &quality, long &endedAt);   // C-206: the last night told, for the heads-up                                // the dream's LISTEN tapped: read aloud
 extern State st;
 extern Settings cfg;
 extern bool dirty;

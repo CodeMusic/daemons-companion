@@ -29,6 +29,7 @@ void loadSettings() {
   cfg.faceSky = p.getBool("sky", cfg.faceSky);              // C-163
   cfg.hours = p.getInt("hours", cfg.hours);                 // C-166
   cfg.instrument = p.getString("instr", cfg.instrument);    // PLAY to test
+  cfg.quick = p.getString("quick", cfg.quick);              // C-206
   p.end();
   applySettings();
 }
@@ -42,6 +43,7 @@ static void saveSettings() {
   p.putBool("sky", cfg.faceSky);                            // C-163
   p.putInt("hours", cfg.hours);                             // C-166
   p.putString("instr", cfg.instrument);                     // PLAY to test
+  p.putString("quick", cfg.quick);                          // C-206
   p.end();
 }
 // C-159: SOUND changed on the board -- a state already on its way still says the old one, so for a little while the
@@ -62,9 +64,14 @@ void takeSettings(JsonVariant s) {
   got.faceSky = s["faceSky"] | cfg.faceSky;                 // C-163
   got.hours = (s["hours"] | cfg.hours) == 12 ? 12 : 24;     // C-166
   got.instrument = s["instrument"] | cfg.instrument.c_str();   // PLAY to test
+  got.quick = cfg.quick;
+  if (s["quick"].is<JsonArrayConst>()) {                    // C-206: three names, kept as "a,b,c"
+    String q; for (JsonVariantConst v : s["quick"].as<JsonArrayConst>()) q += (q.length() ? "," : "") + String((const char *)(v | ""));
+    got.quick = q;
+  }
   if (soundHereAt && millis() - soundHereAt < 30000) got.sound = cfg.sound;
   if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
-      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery && got.face == cfg.face && got.faceSky == cfg.faceSky && got.hours == cfg.hours && got.instrument == cfg.instrument) return;
+      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery && got.face == cfg.face && got.faceSky == cfg.faceSky && got.hours == cfg.hours && got.instrument == cfg.instrument && got.quick == cfg.quick) return;
   cfg = got;
   saveSettings();
   applySettings();

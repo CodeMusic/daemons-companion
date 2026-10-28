@@ -8,6 +8,7 @@
 #include "sound.h"
 #include "leds.h"
 #include "expression.h"
+#include "motion.h"
 
 // C-74: the footers name the dial and the top button; on a board with two buttons and no dial (the StickS3) they name
 // its buttons instead -- the side one turns (a tap) and goes back (held), the front one presses.
@@ -535,6 +536,70 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.setTextDatum(TL_DATUM);
 }
 
+// ---- C-206 (the user, 2026-10-28, by multiple choice: "below the face"): the Ultra's strip ---------------------------
+// Under the face's 240 square, the 40 rows the tall glass has left: a heads-up line -- a dream waiting first, then last
+// night (told as SUSPENDED, the game's word for sleep), then what the wrist is doing and the steps -- and three buttons,
+// each opening the view chosen in the app (`quick`). Every word DRAFT.
+static const char *QUICK_IDS[] = { "care", "talk", "music", "hours", "casino", "routines", "dream", "index" };
+static const char *QUICK_NAMES[] = { "CARE", "TALK", "MUSIC", "HOURS", "CASINO", "ROUTINES", "DREAM", "INDEX" };   // DRAFT
+static int quickOf(int slot) {                              // the slot's view, as an index of QUICK_IDS; -1 none
+  String q = cfg.quick + ",";
+  for (int i = 0, from = 0, at; (at = q.indexOf(',', from)) >= 0; i++, from = at + 1)
+    if (i == slot) { String id = q.substring(from, at); for (int k = 0; k < 8; k++) if (id == QUICK_IDS[k]) return k; return -1; }
+  return -1;
+}
+static String headsUp() {
+  if (dreamWaiting()) return "A DREAM IS WAITING -- tap DREAM";                                  // DRAFT
+  float h; String q; long to;
+  struct tm t;
+  if (lastNight(h, q, to) && watchLocalTime(t) && time(nullptr) - to < 12L * 3600)
+    return "SUSPENDED " + String(h, 1) + " H  -  " + q;                                          // DRAFT
+  static const char *KIND[] = { "", "STILL", "WALKING", "RUNNING", "CYCLING", "RIDING" };      // DRAFT
+  long steps = watchSteps();
+  String k = KIND[motionKind()];
+  return k + (k.length() && steps >= 0 ? "  -  " : "") + (steps >= 0 ? stepsWords(steps) : String(""));
+}
+static void drawStrip(uint16_t day, uint16_t ink) {
+  const int top = 240;
+  canvas.fillRect(0, top, W, H - top, INK);
+  canvas.setTextFont(1); canvas.setTextDatum(TC_DATUM);
+  canvas.setTextColor(dreamWaiting() ? readable(day) : QUIET);
+  canvas.drawString(headsUp(), W / 2, top + 2);
+  for (int i = 0; i < 3; i++) {
+    int k = quickOf(i), x = 6 + i * (W - 12) / 3, w = (W - 12) / 3 - 6;
+    if (k < 0) continue;
+    bool lit = k == 6 && dreamWaiting();
+    if (lit) canvas.fillRoundRect(x, top + 14, w, 24, 8, day); else canvas.drawRoundRect(x, top + 14, w, 24, 8, day);
+    canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM); canvas.setTextColor(lit ? ink : PAPER);
+    canvas.drawString(QUICK_NAMES[k], x + w / 2, top + 26);
+  }
+  canvas.setTextDatum(TL_DATUM);
+}
+static int typeNamed(const char *n) { for (int i = 0; i < typeCount; i++) if (!strcmp(types[i].name, n)) return i; return -1; }
+// a tap under the face: true when it was one of the buttons (and what it opens is open)
+bool quickTap(int x, int y) {
+  if (board.kind != BoardKind::TWatchUltra || screen != HOME || page != FACE_PAGE || y < 252) return false;
+  int k = quickOf(constrain((x - 6) * 3 / (W - 12), 0, 2));
+  if (k < 0) return true;
+  haptic(1); soundSelect();
+  int t;
+  switch (k) {
+    case 0: if (st.carrying) openCareGrid(); else say("No daemon here"); break;                   // DRAFT
+    case 1: if (talkCan()) talkHold(5000); break;
+    case 2: case 3: case 4:
+      t = typeNamed(k == 2 ? "MUSIC" : k == 3 ? "HOURS" : "CASINO");
+      if (t < 0) break;
+      typeAt = t; routineAt = 0;
+      if (k == 4) runRoutine(); else screen = LIST;
+      break;
+    case 5: screen = TYPES; typeAt = 0; break;
+    case 6: if (!dreamAgain()) say("No dream yet"); break;                                         // DRAFT
+    case 7: if (st.carrying) { screen = INDEX_ENTRY; entryTop = 0; } else say("No daemon here"); break;
+  }
+  dirty = true;
+  return true;
+}
+
 // C-174: the steps, and on the Ultra the distance its GNSS walked beside them
 String stepsWords(long steps) {
   String s = String(steps) + " STEPS";                                                      // DRAFT
@@ -841,7 +906,9 @@ void draw() {
     if (at >= 0) pageDots(at, LAUNCH_N);
   }
   H = fullH;
-  present(faceShown ? 240 : 0);   // C-102: the Dial's square, inside its circle; C-173 the Ultra's, larger
+  const bool strip = faceShown && board.kind == BoardKind::TWatchUltra;
+  if (strip) drawStrip(day, ink);                              // C-206: the face at the top, the strip under it
+  present(strip ? 0 : faceShown ? 240 : 0);   // C-102: the Dial's square, inside its circle; C-173 the Ultra's, larger
   dirty = false;
 }
 

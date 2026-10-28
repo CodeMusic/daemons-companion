@@ -561,6 +561,7 @@ static void touchLoop(uint32_t now) {
 static void touchTap(int x, int y, uint32_t now) {
   int off, tile;
   if (dreamTap(x, y)) { lastInput = millis(); return; }            // its LISTEN, the dream aloud
+  if (!dreamShowing() && quickTap(x, y)) { lastInput = millis(); return; }   // C-206: a button under the face
   if (dreamShowing()) { dreamDismiss(); lastInput = now; return; }   // C-200: good morning
   if (readShowing()) { readDismiss(); lastInput = now; return; }     // C-203: the read, put away
   if (screen == CARE_GRID && (tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); return; }   // C-163

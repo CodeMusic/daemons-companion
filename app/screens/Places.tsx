@@ -56,7 +56,7 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
 // any other device specific settings"): one device's own settings over the shared ones (GET/POST /api/devices/<id>/settings,
 // the CASINO session's) -- each row says whether it is this device's own or every device's, and goes back with one tap.
 // A board's own SOUND page reports here too. Every word DRAFT.
-type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24; instrument?: "default" | "harp" | "flute" };
+type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24; instrument?: "default" | "harp" | "flute"; quick?: string[] };
 type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: Own; keys: string[] };
 
 // C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, and the season
@@ -66,6 +66,8 @@ type Face = "daemon" | "clock" | "virtue";
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
 const CLOCK_FACE = /^(t-watch-s3|t-watch-ultra|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
 const PLAYS = /^(t-watch-s3|t-watch-ultra|t-deck|m5-cardputer)/;
+const QUICKS: [string, string][] = [["care", "CARE"], ["talk", "TALK"], ["music", "MUSIC"], ["hours", "HOURS"], ["casino", "CASINO"],
+                                    ["routines", "ROUTINES"], ["dream", "LAST DREAM"], ["index", "INDEX"]];   // C-206, DRAFT
 const GNSS = /^t-watch-ultra-/;   // C-174: the boards that know where they are   // the boards with MUSIC: the watches' strings and holes, the number keys
 const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],
@@ -223,6 +225,17 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
       {CLOCK_FACE.test(id) && s.keys?.includes("hours") ? (
         <OwnRow own={s.own} set={set} k="hours" label="CLOCK">
           <Choice value={v.hours ?? 24} options={[[12, "12 HOURS"], [24, "24 HOURS"]]} onPick={(hours) => set({ hours })} ink={ink} />
+        </OwnRow>
+      ) : null}
+      {GNSS.test(id) && s.keys?.includes("quick") ? (                  /* C-206: the three buttons under the Ultra's face */
+        <OwnRow own={s.own} set={set} k="quick" label="QUICK BUTTONS UNDER THE FACE">
+          {[0, 1, 2].map((i) => {
+            const q = v.quick ?? ["care", "music", "hours"];
+            return (
+              <Choice key={i} value={q[i]} options={QUICKS}
+                      onPick={(x) => set({ quick: q.map((y, j) => (j === i ? x : y)) })} ink={ink} />
+            );
+          })}
         </OwnRow>
       ) : null}
       {GNSS.test(id) ? <WhereRow id={id} ink={ink} /> : null}

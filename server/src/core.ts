@@ -130,6 +130,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
 // C-162 (the user, 2026-10-18): the faces a round screen can show at home -- the daemon in the middle with the time
 // above it (the default), the daemon under a clock's hands, or the day's words alone (the watch's first face)
 export const FACES = ["daemon", "clock", "virtue"] as const;
+// C-206 (the user, 2026-10-28): the Ultra's three quick-launch buttons, under its face -- each opens one view
+export const QUICKS = ["care", "talk", "music", "hours", "casino", "routines", "dream", "index"] as const;
 export type Face = typeof FACES[number];
 
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
@@ -141,7 +143,8 @@ export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, v
                                  face: "daemon" as Face,                      // C-162: the round face a watch shows first
                                  faceSky: true,                               // C-163: the season behind its daemon, the weather in front
                                  hours: 24 as 12 | 24,                        // C-166: the clock in 12 or 24 hours
-                                 instrument: "default" as "default" | "harp" | "flute" };   // PLAY to test: the save's, or one forced (and unlocked)
+                                 instrument: "default" as "default" | "harp" | "flute",
+                                 quick: ["care", "music", "hours"] as string[] };   // C-206: the Ultra's quick-launch buttons   // PLAY to test: the save's, or one forced (and unlocked)
 export type DeviceSettings = typeof DEVICE_SETTINGS;
 function parsed(store: Store, key: string): Partial<DeviceSettings> {
   try { return JSON.parse(store.getSetting(key) ?? "{}"); } catch { return {}; }
@@ -149,7 +152,7 @@ function parsed(store: Store, key: string): Partial<DeviceSettings> {
 // C-159 (the user, 2026-10-18: "tap the device to open its specific settings -- there you can adjust sound style, volume
 // (or mute), along with any other device specific settings"): each device's own over the shared ones. What a device may
 // keep for itself; the rest (the palette, the band, meeting others) is the companion's, the same for every board.
-export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face", "faceSky", "hours", "instrument"] as const;   // face: C-162; faceSky: C-163; hours: C-166
+export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face", "faceSky", "hours", "instrument", "quick"] as const;   // face: C-162; faceSky: C-163; hours: C-166
 export function ownSettings(store: Store, deviceId: string): Partial<DeviceSettings> {
   return deviceId ? parsed(store, `device.${deviceId}`) : {};
 }
@@ -181,8 +184,10 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (typeof s.faceSky !== "boolean") return "faceSky is on or off";                      // C-163
   if (s.hours !== 12 && s.hours !== 24) return "hours is 12 or 24";                        // C-166
   if (!["default", "harp", "flute"].includes(s.instrument)) return "instrument is default, harp or flute";
+  if (!Array.isArray(s.quick) || s.quick.length !== 3 || !s.quick.every((q: string) => (QUICKS as readonly string[]).includes(q)))
+    return `quick is three of ${QUICKS.join(", ")}`;                                      // C-206
   return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band,
-           wakeSound: s.wakeSound, face: s.face, faceSky: s.faceSky, hours: s.hours, instrument: s.instrument };
+           wakeSound: s.wakeSound, face: s.face, faceSky: s.faceSky, hours: s.hours, instrument: s.instrument, quick: [...s.quick] };
 }
 
 

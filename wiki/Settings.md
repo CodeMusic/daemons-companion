@@ -28,7 +28,9 @@ A phone hosting on its own keeps its own copy of the save instead, taken from Fi
 name. With two or more, SETTINGS shows **YOUR SAVES**: each save's trainer and where it comes from, its play time,
 MARKS, the daemons seen and where it was saved, and **READING** beside the one the companion reads now. Tap another
 (**READ THIS**) to have the companion read, SYNC and mirror that one instead. Choosing writes nothing into any save;
-choosing one that is not the mirror ends the mirror, as setting a save path does.
+choosing one that is not the mirror ends the mirror, as setting a save path does. Only a paired phone or the machine
+the companion runs on may see the saves, so YOUR SAVES shows in the app and on the site opened on that machine, and
+stays hidden on a hub's site opened from another browser.
 
 **A game the mirror refuses.** The mirror never takes another game's place -- a new game begun in the app, say, would
 otherwise replace the companion's. The app's GAME then offers, once a session, to **Keep it** on the companion as a

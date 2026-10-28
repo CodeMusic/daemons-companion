@@ -19,6 +19,7 @@
 #include <freertos/task.h>
 #include <Preferences.h>
 #include <esp_timer.h>
+#include "watch.h"
 #include "sound.h"
 #include "board.h"
 #include "leds.h"
@@ -540,7 +541,8 @@ void soundGameRoutine(const String &name, const String &type, uint32_t rgb) {
 }
 
 // C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them
-void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; tuneLater(t.notes, t.n, root, DANCE_PULSE, 0.8f); }   // C-114; C-121: from its task
+void soundCare(int what) { haptic(10);                     // C-176: a care, a double click on the wrist
+  const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; tuneLater(t.notes, t.n, root, DANCE_PULSE, 0.8f); }   // C-114; C-121: from its task
 
 // ---- C-50: accomplishment. Each daemon's tunes are its own: GENERATED from its species number and the day of the week
 // (the user, 2026-10-04), in a pentatonic scale on the day's note -- so no two notes ever clash -- with a voice (the
@@ -550,6 +552,7 @@ void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)];
 static void voiceOf(int species, int day) { duty = voiceDuty(species, day); }
 
 void soundAccomplish(int kind, int species, int day) {     // 0 a step, 1 a milestone, 2 the whole goal
+  haptic(kind == 0 ? 1 : kind == 1 ? 27 : 52);              // C-176: a click, a strong double, a pulse
   Note tune[14];
   int n = accomplishTune(tune, kind, species, day);
   voiceOf(species, day);
@@ -607,6 +610,7 @@ void soundReelTick() {
 void soundReelStop(int reel) { tone(root - 12 + 7 * reel, 34, 0.9f); ringLater(); }
 void soundCoin(int i) { tone(root + 19 + (i % 3) * 5, 14, 0.45f, true); ringLater(); }   // a click too
 void soundSlots(int what, const String &look) {   // 0 the lever, 1 a loss, 2 a small win, 3 a big one, 4 the jackpot, 5 a cheer (C-151)
+  haptic(what == 2 ? 47 : what == 3 ? 14 : what == 4 ? 16 : 0);   // C-176: a win buzzes; the jackpot long
   if (what == 0) { play(TUNE_SLOTS_PULL, 3, root, -1, 0.8f); return; }
   if (what == 5) { tuneLater(TUNE_SLOTS_CHEER, 6, root, DANCE_SPARKLE, 0.8f); return; }
   if (what == 1) { play(TUNE_SLOTS_LOSE, 2, root, -1, 0.5f); return; }

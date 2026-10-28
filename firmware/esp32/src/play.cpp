@@ -302,7 +302,7 @@ static String runPlay(bool songbook) {
       } else if (down && !was && mode == P_GUIDE && y >= 52 && y < 90) { hearSong(); }
       else if (harp()) {
         int d = down ? stringAt(x, y) : -1;
-        if (d >= 0 && d != last) { sound(midiOfDeg(d), 1600); lit = d; litAt = millis(); noteIn(d, result); progress(""); }
+        if (d >= 0 && d != last) { sound(midiOfDeg(d), 1600); haptic(24); lit = d; litAt = millis(); noteIn(d, result); progress(""); }
         last = d;
         if (lit >= 0 && millis() - litAt > 220) { lit = -1; progress(""); }
       } else {

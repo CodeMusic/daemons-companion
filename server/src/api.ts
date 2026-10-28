@@ -53,6 +53,7 @@ import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { checkNight, dreamAsk, dreamsOf, keepNight, rested, rewriteDream } from "./dreams.js";   // C-200
 import { bondAdd } from "./evolve.js";
+import { askFind, checkFix, fixesOf, keepFix } from "./where.js";   // C-174
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
@@ -325,7 +326,7 @@ export function ourHost(hostOrUrl: string): boolean {
 }
 // What a board may log about itself over the network (INTERACT): its routines, the CASINO's coins and seat, and its cares.
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night"];   // C-159: setting; C-200: night
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where"];   // C-159: setting; C-200: night; C-174: where
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -1085,6 +1086,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
         }
       }
+      // C-174: where the watches have been (?device= one of them), the newest first; and FIND, for one device
+      if (req.method === "GET" && path === "/api/where") return send(res, 200, { fixes: fixesOf(store, url.searchParams.get("device") ?? undefined) });
+      if (req.method === "POST" && path === "/api/where/find") {
+        const b = await body(req);
+        if (!validDeviceId(b.id)) return send(res, 400, { error: "find {id}" });
+        askFind(store, b.id); return send(res, 200, { asked: true });
+      }
       // C-200: the dream journal, the newest first
       if (req.method === "GET" && path === "/api/dreams") return send(res, 200, { dreams: dreamsOf(store) });
       if (req.method === "POST" && path === "/api/device/interact") {
@@ -1105,6 +1113,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // every interaction does (Wi-Fi, the outbox, the cable's INTERACT, the phone). Kept with a written dream at once;
         // the module asked for its own telling after (it replaces the written one, and the watch shows it from its next
         // state); a rested night is the bond's. Not logged as tending: sleeping is not a care.
+        // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending
+        if (kind === "where") {
+          const f = checkFix(typeof b.detail === "string" ? b.detail : "");
+          if (typeof f === "string") return send(res, 400, { error: f });
+          return send(res, 200, { fix: keepFix(store, f, deviceId) });
+        }
         if (kind === "night") {
           const [from, to, stirs, tucked] = (typeof b.detail === "string" ? b.detail : "").split(" ").map(Number);
           const n = checkNight({ from: new Date(from * 1000), to: new Date(to * 1000), stirs, tucked: tucked === 1 });

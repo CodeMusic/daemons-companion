@@ -2,6 +2,7 @@
 // the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/local.ts, over
 // expo-sqlite and the save Delta shared through Files) run the same rules. Nothing here may import Node.
 import { freshDream } from "./dreams.js";
+import { findAsked } from "./where.js";
 import { den } from "./dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
@@ -369,7 +370,8 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            settings: deviceSettings(store, deviceId),   // C-159: its own over the shared
            holiday: today_, casino,                           // C-149: how a board dresses today; the CASINO's coins
            ...giftNews(store),                                // C-185: the HANDSHAKE given, told once on each board
-           ...(freshDream(store, now) ? { dream: freshDream(store, now) } : {}),   // C-200: the night's dream, the module's once it comes
+           ...(freshDream(store, now) ? { dream: freshDream(store, now) } : {}),
+           ...(findAsked(store, deviceId, now) ? { find: findAsked(store, deviceId, now) } : {}),   // C-174: FIND, this device only   // C-200: the night's dream, the module's once it comes
            world: { watch: context.watch, weather: weather && { kind: weather.kind, tempC: weather.tempC, city: weather.city } },   // C-158
            beacons: ownBeacons(store).map((b) => b.peer).join(","),     // C-15: our companions' tags, never a meeting
            netsRev: new SharedNetworks(store).rev(),     // C-93: the shared networks changed: a device reports and takes them

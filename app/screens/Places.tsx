@@ -1,5 +1,6 @@
 // PLACES -- the devices under their makers, each one's settings, routines and remotes; the handheld's link. (C-157: out of App.tsx.)
 import { useEffect, useState } from "react";
+import { Linking } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { KIND_NAMES } from "../data";
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "../deviceSprites";
@@ -63,7 +64,8 @@ type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: O
 type Face = "daemon" | "clock" | "virtue";
 const ROUND_FACE = /^(t-watch-s3|m5-dial|m5-cores3)-/;
 const CLOCK_FACE = /^(t-watch-s3|t-watch-ultra|m5-dial|m5-cores3|t-display-pro)-/;   // C-166: the boards whose faces tell the time
-const PLAYS = /^(t-watch-s3|t-watch-ultra|t-deck|m5-cardputer)/;   // the boards with MUSIC: the watches' strings and holes, the number keys
+const PLAYS = /^(t-watch-s3|t-watch-ultra|t-deck|m5-cardputer)/;
+const GNSS = /^t-watch-ultra-/;   // C-174: the boards that know where they are   // the boards with MUSIC: the watches' strings and holes, the number keys
 const FACES: [Face, string, string][] = [   // DRAFT
   ["daemon", "DAEMON", "the time above it"],
   ["clock", "CLOCK", "hands over it"],
@@ -113,6 +115,28 @@ function OwnRow({ k, label, own, set, children }: { k: string | string[]; label:
               : <Text fontSize={12} color="$color10">as every device</Text>}
       </XStack>
       {children}
+    </YStack>
+  );
+}
+// C-174 (the user: "track its location on the iphone app -- also a where am I ping that also makes an audible tone on the
+// watch"): where it was last, opened in Maps; FIND IT makes it say HERE and sound until it has a fix to tell (DRAFT)
+type Fix = { at: string; lat: number; lon: number; metres: number };
+function WhereRow({ id, ink }: { id: string; ink: string }) {
+  const [fix, setFix] = useState<Fix | null | undefined>(undefined);
+  const [asked, setAsked] = useState(false);
+  useEffect(() => { api<{ fixes: Fix[] }>(`/api/where?device=${encodeURIComponent(id)}`).then((r) => setFix(r.fixes[0] ?? null)).catch(() => setFix(null)); }, [id, asked]);
+  return (
+    <YStack gap={4} paddingVertical={6}>
+      <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">WHERE IT IS</Text>
+      {fix ? (<>
+        <Small>{`Last seen ${new Date(fix.at).toLocaleString()} · within ${fix.metres} m`}</Small>
+        <Text fontSize={13} color="$color10" textDecorationLine="underline"
+              onPress={() => Linking.openURL(`https://maps.apple.com/?ll=${fix.lat},${fix.lon}&q=${encodeURIComponent("The watch")}`)}>{"Open in Maps"}</Text>
+      </>) : fix === null ? <Small color="$color10">{"No place yet: it takes a fix on a walk, and every quarter hour."}</Small> : null}
+      <XStack gap={8}>
+        <Action label={asked ? "Asked -- listen for it" : "FIND IT"} ink={ink}
+                onPress={async () => { await api("/api/where/find", { id }); setAsked(true); setTimeout(() => setAsked(false), 60000); }} />
+      </XStack>
     </YStack>
   );
 }
@@ -172,6 +196,7 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
           <Choice value={v.hours ?? 24} options={[[12, "12 HOURS"], [24, "24 HOURS"]]} onPick={(hours) => set({ hours })} ink={ink} />
         </OwnRow>
       ) : null}
+      {GNSS.test(id) ? <WhereRow id={id} ink={ink} /> : null}
       {/* the user, 2026-10-28: "a debug preview mode should be in settings to switch instruments for testing" */}
       {PLAYS.test(id) && s.keys?.includes("instrument") ? (
         <OwnRow own={s.own} set={set} k="instrument" label="INSTRUMENT (TESTING)">

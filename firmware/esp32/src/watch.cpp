@@ -3,6 +3,9 @@
 #include "talk.h"
 #include "motion.h"                                         // C-201: the Ultra's motion sensor
 #include "casino.h"
+#if defined(BOARD_TWATCH_S3)
+#include <SensorDRV2605.hpp>                               // C-176: both watches have the DRV2605 (0x5A)
+#endif
 
 #if defined(BOARD_CORES3) || defined(BOARD_DIAL) || defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
 #define MAIN_BUS_TOUCH 1                                  // C-102: the Dial reads its touch as the CoreS3 does; C-105 the T-Display-S3 Pro
@@ -20,6 +23,7 @@ long watchSteps() { return -1; }
 bool watchTalking() { return false; }
 bool watchTouchDown() { return false; }
 bool watchFinger(int &, int &) { return false; }
+void haptic(uint8_t) {}
 int watchGesture() { return 0; }
 bool watchGestureAcross() { return false; }
 bool watchPowerOff() { return false; }
@@ -162,6 +166,31 @@ void watchPower() {
   delay(20);
 }
 
+#if defined(BOARD_TWATCH_ULTRA)
+// C-174: the GNSS's rail (BLDO1), on only while gps.cpp wants a fix; its backup (VRTC) is always on
+void watchGnssPower(bool on) {
+  if (!havePmu) return;
+  if (on) { pmu.setBLDO1Voltage(3300); pmu.enableBLDO1(); delay(5); } else pmu.disableBLDO1();
+}
+#endif
+
+#if defined(BOARD_TWATCH_S3)
+// C-176: the DRV2605's taps and buzzes -- its first library, triggered from here, one effect at a time (as LilyGO's
+// vibrator() plays one). Its enable is the S3's BLDO2 rail and the Ultra's expander pin 6, both on by now.
+static SensorDRV2605 drv;
+static bool haveDrv = false;
+static void hapticBegin() {
+  haveDrv = drv.begin(Wire, board.sda, board.scl);
+  if (haveDrv) { drv.selectLibrary(1); drv.setMode(SensorDRV2605::MODE_INTTRIG); }
+}
+void haptic(uint8_t effect) {
+  if (!haveDrv || !effect || !cfg.sound) return;        // quiet is quiet: the sound setting holds the buzz too
+  drv.setWaveform(0, min<uint8_t>(effect, 123)); drv.setWaveform(1, 0); drv.run();
+}
+#else
+void haptic(uint8_t) {}
+#endif
+
 void watchBegin() {
   Preferences p; p.begin("watch", true); offsetMin = p.getInt("offset", 0); p.end();
   haveRtc = rtc.begin(Wire, board.sda, board.scl);
@@ -213,6 +242,9 @@ void watchBegin() {
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL);
 #endif
   Serial.printf("watch: pmu %d clock %d steps %d touch %d\n", havePmu, haveRtc, haveAccel, haveTouch);
+#if defined(BOARD_TWATCH_S3)
+  hapticBegin();                                       // C-176
+#endif
 #if defined(BOARD_TWATCH_ULTRA)
   motionBegin();                                       // C-201: its steps come from the BHI260AP, once its firmware is up
 #endif

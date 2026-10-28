@@ -17,7 +17,7 @@ the game's are.
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
-| **LIBRARY** | CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
+| **LIBRARY** | THE PLAYER'S MANUAL, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
 ## YOU
@@ -64,8 +64,14 @@ not named; **?** means the save cannot say.
 
 ## The LIBRARY
 
-A shelf of what can be read (C-145, C-156): five books, each opening as a page of its own.
+A shelf of what can be read (C-145, C-156), each book opening as a page of its own.
 
+- **THE PLAYER'S MANUAL** (C-233) -- first on the shelf, for everyone: DAEMONS' own manual (the PDF in DAEMONS' `docs/`,
+  rebuilt at every release), every way to play and how it all works, telling how and never where. On the iPhone and
+  iPad it is fetched from DAEMONS on GitHub as published, kept on the device (so it opens away from home and offline),
+  fetched again when a newer one is out, and read in the app's own page, scrolled and pinched as any PDF; **Share**
+  keeps it in Books or Files. On the site it opens in the page, or in a tab of its own. None of it is in this
+  repository.
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its
   board once you have stood on it (greyed and closed until then). And **THE PAPER, TO SIT AGAIN**: the whole paper, a

@@ -151,7 +151,8 @@ The companion reads your save, so it can show you what you have done in there --
 - **YOU** -- you as the game draws you, your rival, your money and your MARKS as badges, each opening its page;
   the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
   the story so far; and **TRADE** ([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)).
-- **LIBRARY** -- CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
+- **LIBRARY** -- **THE PLAYER'S MANUAL** first (DAEMONS' own PDF, every way to play and how it all works: fetched from
+  DAEMONS as published, kept on the iPhone or iPad and read there, or in the page on the site; C-233), CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
   GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
   a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE
   to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened).

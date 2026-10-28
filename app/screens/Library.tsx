@@ -1,4 +1,4 @@
-// the LIBRARY -- CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK, STREAM (C-145, C-156). (C-157: out of App.tsx.)
+// the LIBRARY -- THE PLAYER'S MANUAL, CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK, STREAM (C-145, C-156, C-233). (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
 import { File } from "expo-file-system";
 import { useEffect, useState } from "react";
@@ -16,6 +16,7 @@ import { previewQuery } from "../preview";
 import { PlayBook } from "./Play";
 import { ReadAloud } from "../readAloud";   // C-208
 import { SubtleBook, type SubtleT } from "./Subtle";
+import { ManualBook, manualAbout } from "./Manual";   // C-233
 
 // T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
 // GBA's black, its 224-pixel windows centred in 240 by 160 -- the game's own words, the player's name and the best mark
@@ -115,7 +116,7 @@ export function PracticePaper() {
 }
 export function LibraryScreen() {
   const dayInk = useInk();
-  const [book, setBook] = useState<"school" | "guide" | "subtle" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"manual" | "school" | "guide" | "subtle" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
@@ -125,6 +126,7 @@ export function LibraryScreen() {
   }, []);
   const back = <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
+  if (book === "manual") return <YStack gap={14}>{back}<ManualBook /></YStack>;   // C-233
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
   if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
   if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
@@ -135,6 +137,8 @@ export function LibraryScreen() {
   const chapters = g?.sections?.reduce((n, x) => n + x.entries.length, 0) ?? 0;
   return (
     <YStack gap={14}>
+      {/* C-233: the manual first on the shelf, for everyone -- it tells how, never where. DRAFT */}
+      <ShelfBook colour="#6b5aa6" spine="MANUAL" title="THE PLAYER'S MANUAL" about={manualAbout()} onPress={() => setBook("manual")} />
       <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
         <XStack gap={14} alignItems="center">
           <YStack width={72} height={48} borderRadius={3} backgroundColor="$color9" alignItems="center" justifyContent="center">

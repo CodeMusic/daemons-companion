@@ -493,6 +493,16 @@
   },
   {
    "n": 44,
+   "name": "THE HERMETIC LAYER",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     3315
+    ]
+   }
+  },
+  {
+   "n": 45,
    "name": "GLOBAL INDEX",
    "section": "GAME EVENTS",
    "held": {
@@ -514,7 +524,7 @@
    "note": "IsNationalPokedexEnabled: also sb2 pokedex.nationalMagic == 0xB9 (sb2_byte)"
   },
   {
-   "n": 45,
+   "n": 46,
    "name": "STILL",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -524,7 +534,7 @@
    }
   },
   {
-   "n": 46,
+   "n": 47,
    "name": "NAMING",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -534,7 +544,7 @@
    }
   },
   {
-   "n": 47,
+   "n": 48,
    "name": "NOTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -544,7 +554,7 @@
    }
   },
   {
-   "n": 48,
+   "n": 49,
    "name": "REFLECT",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -554,7 +564,7 @@
    }
   },
   {
-   "n": 49,
+   "n": 50,
    "name": "STANCE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -564,7 +574,7 @@
    }
   },
   {
-   "n": 50,
+   "n": 51,
    "name": "MEND",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -574,7 +584,7 @@
    }
   },
   {
-   "n": 51,
+   "n": 52,
    "name": "PRACTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -584,7 +594,7 @@
    }
   },
   {
-   "n": 52,
+   "n": 53,
    "name": "ROLLOVER",
    "section": "THE YEAR",
    "held": {
@@ -594,7 +604,7 @@
    }
   },
   {
-   "n": 53,
+   "n": 54,
    "name": "EVEN LIGHT, SPRING",
    "section": "THE YEAR",
    "held": {
@@ -604,7 +614,7 @@
    }
   },
   {
-   "n": 54,
+   "n": 55,
    "name": "EVEN LIGHT, AUTUMN",
    "section": "THE YEAR",
    "held": {
@@ -614,7 +624,7 @@
    }
   },
   {
-   "n": 55,
+   "n": 56,
    "name": "DAWN VIGIL",
    "section": "THE YEAR",
    "held": {
@@ -624,7 +634,7 @@
    }
   },
   {
-   "n": 56,
+   "n": 57,
    "name": "FIRST FROST",
    "section": "THE YEAR",
    "held": {
@@ -634,7 +644,7 @@
    }
   },
   {
-   "n": 57,
+   "n": 58,
    "name": "DEN DAY",
    "section": "THE YEAR",
    "held": {
@@ -644,7 +654,7 @@
    }
   },
   {
-   "n": 58,
+   "n": 59,
    "name": "FLEDGLING DAY",
    "section": "THE YEAR",
    "held": {
@@ -654,7 +664,7 @@
    }
   },
   {
-   "n": 59,
+   "n": 60,
    "name": "LANTERN NIGHTS",
    "section": "THE YEAR",
    "held": {
@@ -664,7 +674,7 @@
    }
   },
   {
-   "n": 60,
+   "n": 61,
    "name": "SCIENCE FAIR",
    "section": "THE YEAR",
    "held": {
@@ -674,7 +684,7 @@
    }
   },
   {
-   "n": 61,
+   "n": 62,
    "name": "TRUCE DAY",
    "section": "THE YEAR",
    "held": {
@@ -684,7 +694,7 @@
    }
   },
   {
-   "n": 62,
+   "n": 63,
    "name": "MARIGOLD DAYS",
    "section": "THE YEAR",
    "held": {
@@ -694,7 +704,7 @@
    }
   },
   {
-   "n": 63,
+   "n": 64,
    "name": "GIVING THANKS",
    "section": "THE YEAR",
    "held": {
@@ -704,7 +714,7 @@
    }
   },
   {
-   "n": 64,
+   "n": 65,
    "name": "STREAM AND HEARSAY",
    "section": "GAME EVENTS",
    "held": null,
@@ -721,7 +731,7 @@
    "note": "the page only gives this row (the STREAM and HEARSAY in the bag, every show told)"
   },
   {
-   "n": 65,
+   "n": 66,
    "name": "COMPANION LINKED",
    "section": "GAME EVENTS",
    "held": {

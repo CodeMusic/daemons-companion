@@ -6,6 +6,7 @@
 // writes is what TODAY, the widget and the INDEX read. The game is paused whenever another tab is shown.
 // A newer release, once published, shows as a strip above the game: one tap makes it from the player's original kept
 // here, and the game starts again from the same save.
+import { GameTitle, type TitleChoice } from "./GameTitle";
 import { useEffect, useRef, useState } from "react";
 import { Directory, File, Paths } from "expo-file-system";
 import { WebView } from "react-native-webview";
@@ -140,6 +141,9 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
     catch (e) { setKeptSaid((e as Error).message); }
   };
   const [pace, setPace] = useState<{ drawn: number; ran: number | null; sound: string } | null>(null);   // the speed readout
+  // the title (GameTitle.tsx): GAME opens on it, and PLAY starts the emulator -- once a session; leaving the tab and
+  // coming back finds the game where it was
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {                                       // a newer release, as published now
     if (game) freshPatches().then(() => setUpdate(updateFor(game)));
@@ -240,6 +244,22 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
           {error ? <Small color="$color9">{error}</Small> : null}
           <Small color="$color8">DRAFT</Small>
         </Card>
+      </YStack>
+    );
+  }
+  if (!playing) {
+    const choices: TitleChoice[] = [
+      { key: "play", label: "PLAY", note: game.testing ? `the TESTING BUILD, v${game.release}` : `v${game.release}`, onPick: () => setPlaying(true) },
+      ...(update ? [{ key: "update", label: "UPDATE", note: step ? STEPS[step] : update.needs === "ready" ? `v${update.release} is out -- your save comes with it`
+                                                                    : `v${update.release} is out -- choose your FireRed or LeafGreen again`,
+                      onPick: () => { if (!step) renew(); } }] : []),
+      ...(game.testing ? [{ key: "release", label: "THE RELEASE", note: step ? STEPS[step] : "back from the TESTING BUILD", onPick: () => { if (!step) swap(false); } }]
+        : testing ? [{ key: "debug", label: "DEBUG", note: step ? STEPS[step] : `the TESTING BUILD, v${testing}, with its DEBUG menu`, onPick: () => { if (!step) swap(true); } }] : []),
+      { key: "another", label: "ANOTHER GAME", note: "FireRed for CONTENT, LeafGreen for CONTEXT", onPick: () => { if (!step) bring(); } },
+    ];
+    return (
+      <YStack flex={active ? 1 : undefined} display={active ? "flex" : "none"}>
+        <GameTitle edition={game.edition} choices={choices} said={error || (step ? STEPS[step] : "")} />
       </YStack>
     );
   }

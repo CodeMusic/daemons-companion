@@ -12541,10 +12541,11 @@
   },
   "evolutions": [
    {
-    "method": "TRADE",
-    "param": 0,
+    "method": "TRADE_PARTNER",
+    "param": 341,
     "target": 314,
-    "judged": false
+    "judged": false,
+    "partner": 341
    }
   ]
  },
@@ -13732,10 +13733,11 @@
   },
   "evolutions": [
    {
-    "method": "TRADE",
-    "param": 0,
+    "method": "TRADE_PARTNER",
+    "param": 313,
     "target": 314,
-    "judged": false
+    "judged": false,
+    "partner": 313
    }
   ]
  },

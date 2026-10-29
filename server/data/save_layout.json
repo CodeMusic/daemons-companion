@@ -20,6 +20,8 @@
  "trade_flags_offset": 30,
  "loan_mask": 1,
  "traded_in_mask": 2,
+ "trade_partner_shift": 2,
+ "trade_partner_mask": 2044,
  "natures": [
   [
    0,

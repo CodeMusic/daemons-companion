@@ -101,7 +101,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
         </Small>
         <XStack gap={8} flexWrap="wrap" marginTop={4}>
           {s.canPick ? <Action label="Choose a save…" onPress={pick} ink={ink} /> : null}
-          {s.dir && s.canPick ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}   {/* C-170: this machine's Finder */}
+          {s.dir && s.canPick ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}{/* C-170: this machine's Finder */}
         </XStack>
       </Card>
       <SavesCard onChosen={load} />
@@ -277,7 +277,7 @@ export function PairCard({ ink }: { ink: string }) {
               <Text fontFamily="$mono" fontSize={28} letterSpacing={6} fontWeight="700" color="$color12">{code}</Text>
               <Small>{`On the phone, type the address ${address} and this code. It works once, for ten minutes.`}</Small>
               {fallback ? <Small color="$color10">{`The name finds this computer on any Wi-Fi it shares with the phone. If the phone cannot reach it, type ${fallback} instead (that one changes with the network).`}</Small> : null}
-              {net.tailnet ? <Small color="$color10">{`On your tailnet, home or away, it is http://${net.tailnet}:${net.port} -- for a phone, or for this site in any browser there.`}</Small> : null}   {/* C-170, DRAFT */}
+              {net.tailnet ? <Small color="$color10">{`On your tailnet, home or away, it is http://${net.tailnet}:${net.port} -- for a phone, or for this site in any browser there.`}</Small> : null}{/* C-170, DRAFT */}
             </YStack>
           ) : null}
         </>

@@ -60,7 +60,8 @@ import { StackFlow } from "./ai/stackflow.js";
 import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
-import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";   // C-220
+import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
+import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
@@ -1176,7 +1177,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const pcm = quick ? Buffer.from(quick) : await toDevicePcm(raw);
           if (pcm) { audio = `/api/device/voice/${voices.put(pcm)}`; ms = Math.round(pcm.length / 2 / DEVICE_RATE * 1000); }
         }
-        return { answer: r.answer ?? null, heard: r.heard ?? null, provider: r.provider ?? null, error: r.error ?? null, audio, ms };
+        return { answer: r.answer ?? null, heard: r.heard ?? null, provider: r.provider ?? null, error: r.error ?? null, audio, ms,
+                 ...(r.command !== undefined ? { command: r.command } : {}) };   // C-244: the watch acts on it, then says answer
       };
       // Whatever was recorded (the phone's AAC, the handheld's WAV) goes on as a 16 kHz WAV, so speech to text is sent one kind.
       const heardAs = async (audio: Buffer, mime: string) => {
@@ -1197,6 +1199,23 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!job) return send(res, 404, { error: "that answer is gone; ask again" });
         return send(res, 200, { status: job.status, ahead: job.ahead ?? null, error: job.error ?? null, ...(job.result ?? {}) });
       }
+      // C-244: INDEX, a spoken command -- read by the rules, else by the module's command prompt, checked against the list;
+      // what it changes kept in the device's own settings (so the app shows it), and the line the watch says once it acts
+      const asCommand = async (heard: string): Promise<Record<string, unknown>> => {
+        const words = commandWords(heard) ?? "";
+        let command = ruleCommand(words), by = "rules";
+        if (!command && words && house.any) {
+          const q = commandQuestion(words);
+          const r = await house.talk({ text: q, history: [], daemon: { nickname: "INDEX" }, speak: false, fixed: { setup: COMMAND_SETUP, question: q } }, null).catch(() => null);
+          command = r ? checkCommand(r.answer) : null; by = r?.provider ?? "module";
+        }
+        const patch = commandPatch(command);
+        if (patch && validDeviceId(deviceId)) { const s = setOwnSettings(store, deviceId, patch); if (typeof s === "string") command = null; }
+        const answer = commandSaid(command, words, new Date(), deviceSettings(store, deviceId).hours);
+        const v = await readAloud(answer).catch(() => ({} as Record<string, unknown>));
+        return { answer, heard, command, provider: command ? `command:${by}` : "command",
+                 ...(typeof v.audioBase64 === "string" ? { audioBase64: v.audioBase64, audioMime: v.audioMime ?? "audio/wav" } : {}) };
+      };
       // C-229: ASK THE SUBTLE LAYER -- its line and a question back (the module says the line in its own words where it is,
       // the book's own sentence where it is not), or TWO VOICES' asking voice; heard first when it was spoken, and the whole
       // of what it says read aloud in the INDEX voice. The GUIDE, once found, sets some answers in the day's virtue (guideAside).
@@ -1263,7 +1282,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (subtle && url.searchParams.get("today") === "1") return forDevice(await keepSpoken(b));   // C-230: today's answer, aloud
           if (subtle) return forDevice(await askSubtle({ ...b, mode: url.searchParams.get("mode") === "voices" ? "voices" : "ask",
                                                          turn: Number(url.searchParams.get("turn")) || 0 }));
-          if (!guide) return forDevice(remember({}, await talkOn(talkPayload(b))));
+          if (!guide) {
+            // C-244: heard first where the hub's module can hear (in ten seconds, or as before) -- words that begin INDEX are
+            // a command for the watch, not a word to the daemon
+            const words = house.any && typeof b.audioBase64 === "string"
+              ? await Promise.race([house.transcribe(new Uint8Array(Buffer.from(b.audioBase64, "base64"))).catch(() => null),
+                                    new Promise<null>((r) => setTimeout(() => r(null), 10_000))]) : null;
+            if (words && commandWords(words) !== null) return forDevice(await asCommand(words));
+            if (words) return forDevice(remember({}, { ...await talkOn(talkPayload({ text: words })), heard: words }));
+            const r = remember({}, await talkOn(talkPayload(b)));
+            if (typeof r.heard === "string" && commandWords(r.heard) !== null) return forDevice(await asCommand(r.heard));   // heard by n8n
+            return forDevice(r);
+          }
           if (!asGuide(b)) return { error: "Find the GUIDE first." };                                 // DRAFT
           return forDevice(withAside(b, { ...await talkOn(talkPayload(b)), heard: b.text }));
         });

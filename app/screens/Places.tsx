@@ -57,7 +57,11 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
 // any other device specific settings"): one device's own settings over the shared ones (GET/POST /api/devices/<id>/settings,
 // the CASINO session's) -- each row says whether it is this device's own or every device's, and goes back with one tap.
 // A board's own SOUND page reports here too. Every word DRAFT.
-type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24; instrument?: "default" | "harp" | "flute"; quick?: string[] };
+// C-242: the watch's drains, each on or off, and the AUTO rules (server core.ts POWER)
+type Power = { low: boolean; gps: boolean; lora: boolean; meet: boolean; aod: boolean; pulses: boolean; poll: number;
+               gpsOnMove: boolean; radiosOnMove: boolean; stillMinutes: number };
+type Own = DeviceSettings & { wakeSound?: string; face?: Face; faceSky?: boolean; hours?: 12 | 24; instrument?: "default" | "harp" | "flute"; quick?: string[];
+                              power?: Power };
 type OwnSettings = { device: string; shared: Own; own: Partial<Own>; settings: Own; keys: string[] };
 
 // C-162, C-163 (the user, 2026-10-18, through the watch's session): the face a round screen shows at home, and the season
@@ -116,6 +120,52 @@ function FacePicture({ face, sky, daemon, ring }: { face: Face; sky: boolean; da
 // one setting's row: its name, whether it is this device's own (and back to every device's in a tap), and its choice. A
 // component of its own, not one made inside the card -- made there, every redraw of PLACES was a new kind of row, and
 // React built each row and its pictures again
+// C-242, C-243 (the user, 2026-10-29: "a setting in the app for the watch regarding battery, like on or off for certain
+// features ... make it smart so it only turns on GPS when the accelerometer detects movement"): the watch's battery, a
+// switch at a time -- each sent as one part of power, kept as this watch's own. LOW POWER turns every drain to its
+// thrifty side on the watch at once, and leaves these as set for when it is off again. Every word DRAFT.
+function PowerRows({ id, power, own, set, ink }: { id: string; power: Power; own: object; set: (patch: Record<string, unknown>) => void; ink: string }) {
+  const p = (patch: Partial<Power>) => set({ power: patch });
+  const onOff: [boolean, string][] = [[true, "On"], [false, "Off"]];
+  const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{label}</Text>{children}</YStack>);
+  return (
+    <OwnRow own={own} set={set} k="power" label="BATTERY">
+    <Row label="LOW POWER">
+      <Choice value={power.low} options={onOff} onPick={(low) => p({ low })} ink={ink} />
+      <Small color="$color10">{power.low ? "Every drain below is at its thrifty side: GPS and LoRa off, a slower check, a dimmer, shorter screen." : "Off: the watch uses the switches below. You can also say \"INDEX, low power on\"."}</Small>
+    </Row>
+    {GNSS.test(id) ? (
+      <Row label="GPS">
+        <Choice value={!power.gps ? "off" : power.gpsOnMove ? "move" : "on"} ink={ink}
+                options={[["move", "When it moves"], ["on", "Always"], ["off", "Off"]]}
+                onPick={(x) => p(x === "off" ? { gps: false } : { gps: true, gpsOnMove: x === "move" })} />
+      </Row>
+    ) : null}
+    <Row label="LORA">
+      <Choice value={power.lora} options={onOff} onPick={(lora) => p({ lora })} ink={ink} />
+    </Row>
+    <Row label="MEETING OTHERS (BLUETOOTH)">
+      <Choice value={power.meet} options={onOff} onPick={(meet) => p({ meet })} ink={ink} />
+    </Row>
+    <Row label="RADIOS ONLY WHEN IT MOVES">
+      <Choice value={power.radiosOnMove} options={onOff} onPick={(radiosOnMove) => p({ radiosOnMove })} ink={ink} />
+    </Row>
+    <Row label="STILL FOR THIS LONG, AND THEY SLEEP">
+      <Choice value={power.stillMinutes} options={[[2, "2 min"], [5, "5 min"], [10, "10 min"], [30, "30 min"]]} onPick={(stillMinutes) => p({ stillMinutes })} ink={ink} />
+    </Row>
+    <Row label="CHECKS IN WITH THE COMPANION">
+      <Choice value={power.poll} options={[[30, "30 s"], [60, "1 min"], [120, "2 min"], [300, "5 min"], [600, "10 min"]]} onPick={(poll) => p({ poll })} ink={ink} />
+    </Row>
+    <Row label="ALWAYS-ON FACE">
+      <Choice value={power.aod} options={onOff} onPick={(aod) => p({ aod })} ink={ink} />
+    </Row>
+    <Row label="PULSES (TAPS ON THE WRIST)">
+      <Choice value={power.pulses} options={onOff} onPick={(pulses) => p({ pulses })} ink={ink} />
+    </Row>
+    </OwnRow>
+  );
+}
 function OwnRow({ k, label, own, set, children }: { k: string | string[]; label: string; own: object;
                   set: (patch: Record<string, unknown>) => void; children: React.ReactNode }) {
   const keys = Array.isArray(k) ? k : [k], mine = keys.some((x) => x in own);
@@ -248,7 +298,9 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
           })}
         </OwnRow>
       ) : null}
-      {/^t-watch-/.test(id) && !ALONE ? <TalkFirstRow ink={ink} /> : null}   {/* C-211: on the watch's own settings too */}
+      {/^t-watch-/.test(id) && s.keys?.includes("power") && v.power ? <PowerRows id={id} power={v.power} own={s.own} set={set} ink={ink} /> : null}
+      {/* C-211: on the watch's own settings too */}
+      {/^t-watch-/.test(id) && !ALONE ? <TalkFirstRow ink={ink} /> : null}
       {GNSS.test(id) ? <WhereRow id={id} ink={ink} /> : null}
       {/* the user, 2026-10-28: "a debug preview mode should be in settings to switch instruments for testing" */}
       {PLAYS.test(id) && s.keys?.includes("instrument") ? (

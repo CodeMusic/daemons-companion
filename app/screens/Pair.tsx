@@ -46,7 +46,7 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
       {error ? <Small color="$color9">{error}</Small> : null}
       {!ON_PHONE ? <Small>DRAFT</Small> : null}
       {LOCAL && !alone ? <Text fontSize={14} color="$color10" marginTop={18} textDecorationLine="underline" role="button"
-                                onPress={() => setAlone(true)}>No computer? Host the daemon on this device alone</Text> : null}   {/* DRAFT */}
+                                onPress={() => setAlone(true)}>No computer? Host the daemon on this device alone</Text> : null}{/* DRAFT */}
       {LOCAL && alone ? <PhoneAlone onPaired={onPaired} /> : null}
     </YStack>
   );

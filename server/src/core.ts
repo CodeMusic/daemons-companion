@@ -142,6 +142,26 @@ export const FACES = ["daemon", "clock", "virtue", "together", "orbit", "suspend
 export const QUICKS = ["care", "talk", "music", "hours", "casino", "routines", "dream", "index", "books"] as const;   // books: C-208
 export type Face = typeof FACES[number];
 
+// C-242 (the user, 2026-10-29: "a setting in the app for the watch regarding battery, like on or off for certain
+// features ... make it smart so it only turns on GPS when the accelerometer detects movement"): each drain on or off,
+// how often it asks the companion, and the AUTO rules -- GPS (and, if chosen, the radios) only while the motion sensor
+// says it is moving, off after stillMinutes still. C-243: `low`, the watch's own low-power mode, every switch at its
+// thrifty side at once (the watch applies it; these stay as set, for when it is turned off). Kept per device.
+export type Power = { low: boolean; gps: boolean; lora: boolean; meet: boolean; aod: boolean; pulses: boolean; poll: number;
+                      gpsOnMove: boolean; radiosOnMove: boolean; stillMinutes: number };
+export const POWER: Power = { low: false, gps: true, lora: true, meet: true, aod: false, pulses: true, poll: 60,
+                              gpsOnMove: true, radiosOnMove: false, stillMinutes: 5 };
+export const POLLS = [30, 60, 120, 300, 600];
+function checkPower(p: any): Power | string {
+  if (!p || typeof p !== "object" || Array.isArray(p)) return "power is a set of switches";
+  const v = { ...POWER, ...p };
+  for (const k of ["low", "gps", "lora", "meet", "aod", "pulses", "gpsOnMove", "radiosOnMove"] as const)
+    if (typeof v[k] !== "boolean") return `power.${k} is on or off`;
+  if (!POLLS.includes(v.poll)) return `power.poll is one of ${POLLS.join(", ")} seconds`;
+  if (!Number.isInteger(v.stillMinutes) || v.stillMinutes < 1 || v.stillMinutes > 60) return "power.stillMinutes is 1 to 60";
+  return { low: v.low, gps: v.gps, lora: v.lora, meet: v.meet, aod: v.aod, pulses: v.pulses, poll: v.poll,
+           gpsOnMove: v.gpsOnMove, radiosOnMove: v.radiosOnMove, stillMinutes: v.stillMinutes };
+}
 // C-43: the board's settings -- set on the site, never on the board -- carried to it in every state, so a board
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
 export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
@@ -152,15 +172,17 @@ export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, v
                                  faceSky: true,                               // C-163: the season behind its daemon, the weather in front
                                  hours: 24 as 12 | 24,                        // C-166: the clock in 12 or 24 hours
                                  instrument: "default" as "default" | "harp" | "flute",
-                                 quick: ["care", "music", "hours"] as string[] };   // C-206: the Ultra's quick-launch buttons   // PLAY to test: the save's, or one forced (and unlocked)
+                                 quick: ["care", "music", "hours"] as string[],   // C-206: the Ultra's quick-launch buttons
+                                 power: { ...POWER } };                           // C-242, C-243: the watch's drains, each on or off   // C-206: the Ultra's quick-launch buttons   // PLAY to test: the save's, or one forced (and unlocked)
 export type DeviceSettings = typeof DEVICE_SETTINGS;
+
 function parsed(store: Store, key: string): Partial<DeviceSettings> {
   try { return JSON.parse(store.getSetting(key) ?? "{}"); } catch { return {}; }
 }
 // C-159 (the user, 2026-10-18: "tap the device to open its specific settings -- there you can adjust sound style, volume
 // (or mute), along with any other device specific settings"): each device's own over the shared ones. What a device may
 // keep for itself; the rest (the palette, the band, meeting others) is the companion's, the same for every board.
-export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face", "faceSky", "hours", "instrument", "quick"] as const;   // face: C-162; faceSky: C-163; hours: C-166
+export const OWN_KEYS = ["home", "sleepAfter", "sound", "volume", "ring", "wakeSound", "face", "faceSky", "hours", "instrument", "quick", "power"] as const;   // face: C-162; faceSky: C-163; hours: C-166
 export function ownSettings(store: Store, deviceId: string): Partial<DeviceSettings> {
   return deviceId ? parsed(store, `device.${deviceId}`) : {};
 }
@@ -171,7 +193,11 @@ export function deviceSettings(store: Store, deviceId = ""): DeviceSettings {
 // the shared one. The settings that result, or why not.
 export function setOwnSettings(store: Store, deviceId: string, patch: Record<string, unknown>): DeviceSettings | string {
   const own: Record<string, unknown> = { ...ownSettings(store, deviceId) };
-  for (const k of OWN_KEYS) if (k in patch) { if (patch[k] === null) delete own[k]; else own[k] = patch[k]; }
+  for (const k of OWN_KEYS) if (k in patch) {
+    if (patch[k] === null) delete own[k];
+    // C-242: one switch at a time -- a part of power is laid over the device's power as it stands
+    else own[k] = k === "power" && patch[k] && typeof patch[k] === "object" ? { ...deviceSettings(store, deviceId).power, ...(patch[k] as object) } : patch[k];
+  }
   const s = checkSettings({ ...DEVICE_SETTINGS, ...parsed(store, "device"), ...own });
   if (typeof s === "string") return s;
   store.setSetting(`device.${deviceId}`, Object.keys(own).length ? JSON.stringify(own) : null);
@@ -194,8 +220,10 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (!["default", "harp", "flute"].includes(s.instrument)) return "instrument is default, harp or flute";
   if (!Array.isArray(s.quick) || s.quick.length !== 3 || !s.quick.every((q: string) => (QUICKS as readonly string[]).includes(q)))
     return `quick is three of ${QUICKS.join(", ")}`;                                      // C-206
+  const power = checkPower(s.power);                                                      // C-242
+  if (typeof power === "string") return power;
   return { home: s.home, sleepAfter: s.sleepAfter, sound: s.sound, volume: s.volume, ring: s.ring, meet: s.meet, palette: s.palette, band: s.band,
-           wakeSound: s.wakeSound, face: s.face, faceSky: s.faceSky, hours: s.hours, instrument: s.instrument, quick: [...s.quick] };
+           wakeSound: s.wakeSound, face: s.face, faceSky: s.faceSky, hours: s.hours, instrument: s.instrument, quick: [...s.quick], power };
 }
 
 

@@ -56,7 +56,8 @@ async function mirrorIn() {
 // The page: the emulator, and a few words to and from the app
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<style>html,body{margin:0;height:100%;background:#0f1115;overflow:hidden}#game{width:100%;height:100%}</style></head>
+<style>html,body{margin:0;height:100%;background:#0f1115;overflow:hidden}#game{width:100%;height:100%}
+body.pad #game{height:50%}</style></head>
 <body><div id="game"></div><script>
 const ctxs = []; const AC = window.AudioContext || window.webkitAudioContext;   // every sound context, to wake on a touch
 if (AC) { const W = function (...a) { const c = new AC(...a); ctxs.push(c); return c; }; W.prototype = AC.prototype;
@@ -80,8 +81,19 @@ setInterval(() => window.takeSave("tick"), 15000);
 window.EJS_player = "#game"; window.EJS_core = "gba"; window.EJS_gameUrl = "daemons.gba"; window.EJS_gameName = "daemons";
 window.EJS_pathtodata = "${CDN}"; window.EJS_startOnLoaded = true; window.EJS_backgroundColor = "#0f1115";
 window.EJS_Buttons = { netplay: false, exitEmulation: false, saveState: false, loadState: false };
-window.EJS_defaultOptions = { webgl2Enabled: "enabled" };
-window.EJS_onGameStart = () => { say({ kind: "started" }); speed(); };
+// the on-screen controls wherever there is a touch screen: EmulatorJS draws them only for a phone it knows, and an iPad
+// says it is a Mac (the user, 2026-10-28: "on the ipad ... there was no on screen controls")
+const touchy = navigator.maxTouchPoints > 1;
+window.EJS_defaultOptions = touchy ? { webgl2Enabled: "enabled", "virtual-gamepad": "enabled" } : { webgl2Enabled: "enabled" };
+// C-234: a controller held (the GameSir Pocket Taco clips over the phone's lower half): the game in the top half, the
+// screen's own controls hidden; taken off, back as before. EmulatorJS reads the controller itself (the Gamepad API).
+const pads = () => Array.from((navigator.getGamepads && navigator.getGamepads()) || []).some((x) => x && x.connected);
+const layout = () => { const held = pads(); document.body.classList.toggle("pad", held);
+  try { window.EJS_emulator.changeSettingOption("virtual-gamepad", held || !touchy ? "disabled" : "enabled"); } catch (e) {}
+  try { window.EJS_emulator.handleResize(); } catch (e) {}
+  say({ kind: "pad", held }); };
+window.addEventListener("gamepadconnected", layout); window.addEventListener("gamepaddisconnected", layout);
+window.EJS_onGameStart = () => { say({ kind: "started" }); speed(); layout(); };
 // How fast it runs: frames drawn a second (the screen's pace; Low Power Mode holds it at 30) and frames the core ran
 const speed = () => { let drawn = 0, t0 = performance.now(), f0 = null;
   const tick = () => { drawn++; requestAnimationFrame(tick); }; requestAnimationFrame(tick);

@@ -12,13 +12,17 @@ import { Text, XStack, YStack } from "tamagui";
 import { AS_ABOVE, EMERALD, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLine, witchingNow, witchingRoutine }
   from "../../server/src/witching";
 import { api, ON_PHONE } from "../net";
+import { PREVIEW_ON } from "../preview";
 import { dayRoot, soundLevel, soundOf } from "../tuneSound";
 import { Action, Small } from "../ui";
 
-// in the hour or not, looked at again each half minute
+// in the hour or not, looked at again each half minute -- or always, with SETTINGS' preview on (the user, 2026-10-29:
+// the hour's look shown any time, read only; its count is then the clock's own minutes)
+export const hourNow = () => witchingNow() || PREVIEW_ON;
+export const previewed = () => (PREVIEW_ON ? "?preview=1" : "");
 export function useWitching() {
-  const [w, setW] = useState(witchingNow());
-  useEffect(() => { const t = setInterval(() => setW(witchingNow()), 30000); return () => clearInterval(t); }, []);
+  const [w, setW] = useState(hourNow());
+  useEffect(() => { const t = setInterval(() => setW(hourNow()), 30000); return () => clearInterval(t); }, []);
   return w;
 }
 // a frame every so often: the breath, the flicker
@@ -44,7 +48,7 @@ export function WitchShimmer({ side }: { side: number }) {
 // minute -- behind the daemon, with a mark at twelve and at the crease, half past
 export function HourPie({ side }: { side: number }) {
   useFrame(10000);
-  if (!witchingNow()) return null;                           // C-240: Halloween shimmers all day, but the count is the hour's
+  if (!hourNow()) return null;                               // C-240: Halloween shimmers all day, but the count is the hour's
   const w = side * 0.76, h = side * 0.84, gone = hourGone(), spoke = (Math.PI * h) / 60 + 1.5;
   const filled = Math.floor(gone * 60 + 0.5);
   return (
@@ -96,7 +100,7 @@ export function WitchingHour({ nickname, species, note }: { nickname: string; sp
   const [routine, setRoutine] = useState<string | null>(null);
   const [said, setSaid] = useState("");
   useEffect(() => {
-    Promise.all([api<{ held: boolean }>("/api/subtle/today"), api<{ types: string[] }>(`/api/species/${species}`)])
+    Promise.all([api<{ held: boolean }>(`/api/subtle/today${previewed()}`), api<{ types: string[] }>(`/api/species/${species}`)])
       .then(([s, sp]) => setRoutine(s.held ? witchingRoutine(sp.types ?? []) : null)).catch(() => {});
   }, [species]);
   if (!routine) return null;

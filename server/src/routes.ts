@@ -41,7 +41,7 @@ import { bondAdd } from "./evolve.js";
 import { thriveOf } from "./thrive.js";   // C-207
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
-import { ackSpellcraft, firstSight, readHermetic } from "./hermetic.js";   // C-238
+import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/hermetic/first", "/api/halloween"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack"];
@@ -112,27 +112,28 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/reads") return ok({ held: readSubtle(save, undefined, a.query?.preview === "1").held, ...readsView(store, now) });   // C-203: the companion's own log
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));
     if (path === "/api/hermetic") return ok(readHermetic(save, store, a.query?.preview === "1"));   // C-238: THE HERMETIC LAYER
-    if (path === "/api/hermetic/first") return ok({ message: firstSight(store, save, now) });       // C-238: the hour, first seen
+    if (path === "/api/hermetic/first")                                 // C-238: the hour, first seen (?preview=1: the message, nothing kept)
+      return ok({ message: a.query?.preview === "1" ? FIRST_SIGHT : firstSight(store, save, now) });
     if (path === "/api/halloween") {                                    // C-240: today, with the book held -- the costume and the treats
       const held = readHermetic(save, store).held, sp = Number(a.query?.species) || 0;
       return ok(held && halloweenOn(now) ? { on: true, costume: sp ? costumeOf(sp, now) : null, treats: treatsOf(store, now) } : { on: false });
     }
     // C-232: THE SUBTLE LAYER's deck; C-239: ?deck=spellcraft, THE HERMETIC LAYER's -- each only once its book is held
     if (path === "/api/arcana/draw") {                                   // C-232: a card, or a spread of three (a GET: the watch may ask it)
-      const spell = a.query?.deck === "spellcraft";
-      if (spell ? !readHermetic(save, store).held : !readSubtle(save).held)
+      const spell = a.query?.deck === "spellcraft", pv = a.query?.preview === "1";   // the user, 2026-10-29: the preview shows both decks
+      if (spell ? !readHermetic(save, store, pv).held : !readSubtle(save, undefined, pv).held)
         return no(403, spell ? "Find THE HERMETIC LAYER first." : "Find THE SUBTLE LAYER first.");   // DRAFT
       return ok({ cards: draw(a.query?.count === "3" ? 3 : 1, Math.random, spell ? "spellcraft" : "subtle") });
     }
     if (path === "/api/arcana/today") {                                  // C-232: the day's card, the same all day for this trainer
-      const spell = a.query?.deck === "spellcraft", hermetic = readHermetic(save, store).held;
-      if (spell ? !hermetic : !readSubtle(save).held) return ok({ held: false });
+      const spell = a.query?.deck === "spellcraft", pv = a.query?.preview === "1", hermetic = readHermetic(save, store, pv).held;
+      if (spell ? !hermetic : !readSubtle(save, undefined, pv).held) return ok({ held: false });
       const p = readProfile(save), date = today(h, store, now).date, who = `${p.name}${p.trainerId}`;
       if (hermetic && isHalloween(date)) return ok({ held: true, card: thirteenOfDay(date, who), halloween: true });   // C-240
       return ok({ held: true, card: cardOfDay(date, who, spell ? "spellcraft" : "subtle") });
     }
     if (path === "/api/subtle/today" || path === "/api/subtle/journal") {   // C-230: the book's question of the day, and what was answered
-      if (!readSubtle(save).held) return ok({ held: false });
+      if (!readSubtle(save, undefined, a.query?.preview === "1").held) return ok({ held: false });   // ?preview=1: as if held, read only
       const t = today(h, store, now), q = todaysQuestion(t.date, dayOf(t));
       return ok(path.endsWith("journal") ? { held: true, entries: journalOf(store).slice(0, 60) }
                                           : { held: true, ...q, answer: journalOf(store).find((x) => x.date === t.date)?.answer ?? null });

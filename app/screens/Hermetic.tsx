@@ -9,6 +9,7 @@ import { Button, Text, XStack, YStack } from "tamagui";
 import { EMERALD, pulseNow } from "../../server/src/witching";
 import { SCREEN } from "../data";
 import { api } from "../net";
+import { PREVIEW_ON } from "../preview";
 import { Art, Small } from "../ui";
 import { ReadAloud } from "../readAloud";   // C-208
 import { Cards } from "./Arcana";   // C-239: ?deck=spellcraft
@@ -121,9 +122,10 @@ export function FirstSight({ onHeld }: { onHeld?: () => void }) {
   const breath = useBreath();
   const [m, setM] = useState<{ title: string; lines: string[]; ack: string } | null>(null);
   const [done, setDone] = useState("");
-  useEffect(() => { api<{ message: typeof m }>("/api/hermetic/first").then((r) => setM(r.message)).catch(() => {}); }, []);
+  useEffect(() => { api<{ message: typeof m }>(`/api/hermetic/first${PREVIEW_ON ? "?preview=1" : ""}`).then((r) => setM(r.message)).catch(() => {}); }, []);
   if (!m) return null;
   const ack = async () => {
+    if (PREVIEW_ON) { setDone("A preview: nothing is kept. Between three and four, it will be."); return; }   // DRAFT; read only
     try { await api("/api/hermetic/ack", {}); setDone("SPELLCRAFT is yours. THE HERMETIC LAYER is in the LIBRARY."); onHeld?.(); }   // DRAFT
     catch (e) { setDone((e as Error).message); }
   };

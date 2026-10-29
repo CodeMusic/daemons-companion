@@ -128,6 +128,19 @@ describe("C-229, C-230: through the server", () => {
   });
 });
 
+describe("the preview (the user, 2026-10-29): both decks and the hour's first sight, read only", () => {
+  it("draws THE SUBTLE LAYER's cards and SPELLCRAFT's as if held, and writes nothing", async () => {
+    expect((await get("not", "/api/arcana/today?preview=1")).held).toBe(true);
+    const s = await get("not", "/api/arcana/today?deck=spellcraft&preview=1");
+    expect(s.card.side).toBe("spellcraft");
+    expect((await get("not", "/api/arcana/draw?count=3&deck=spellcraft&preview=1")).cards).toHaveLength(3);
+    expect((await get("not", "/api/arcana/today?deck=spellcraft")).held).toBe(false);          // without it, still not held
+    expect((await get("not", "/api/hermetic/first?preview=1")).message.ack).toBe("SO MOTE IT BE");
+    expect((await get("not", "/api/hermetic")).held).toBe(false);                               // the preview kept nothing
+    expect((await get("not", "/api/subtle/today?preview=1")).held).toBe(true);
+  });
+});
+
 describe("C-232: the cards, through the server", () => {
   it("draws only once the book is held: the day's card, a card, a spread", async () => {
     expect((await get("not", "/api/arcana/today")).held).toBe(false);

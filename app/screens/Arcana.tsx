@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { api } from "../net";
+import { PREVIEW_ON } from "../preview";
 import { Art, Small } from "../ui";
 
 export type Card = { n: number; roman: string; side: "reason" | "instinct" | "spellcraft"; keyword: string; phrase: string; name: string;
@@ -39,7 +40,7 @@ export function ArcanaCard({ card, width }: { card: Card; width: number }) {
 const SPELL = { page: "#1d2a24", edge: "#1F8F5F", pink: "#50C878" };
 export function Cards({ deck = "subtle" }: { deck?: "subtle" | "spellcraft" }) {
   const C = deck === "spellcraft" ? { ...CS, ...SPELL } : CS;
-  const q = deck === "spellcraft" ? "&deck=spellcraft" : "";
+  const q = (deck === "spellcraft" ? "&deck=spellcraft" : "") + (PREVIEW_ON ? "&preview=1" : "");   // the preview: both decks, read only
   const [halloween, setHalloween] = useState(false);
   const [day, setDay] = useState<Card | null>(null);
   const [held, setHeld] = useState(false);

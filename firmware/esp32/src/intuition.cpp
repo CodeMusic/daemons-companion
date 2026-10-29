@@ -253,14 +253,13 @@ String dayLine() {
 
 // AS ABOVE SO BELOW: a touch on the face in the hour opens it, in place of CARE -- a line at a time, in emerald, on the
 // breath (witching.ts AS_ABOVE, until THE HERMETIC LAYER's own first saying, C-238). DRAFT
-static const char *const AS_ABOVE[] = {
+static const char *const AS_ABOVE[] = {   // THE HERMETIC LAYER's ABOVE, as witching.ts AS_ABOVE (a test holds them equal)
   "AS ABOVE, SO BELOW.",
-  "What runs in the one great process runs in every small one.",
-  "What the small one does, the great one feels.",
-  "The day is its father and the night its mother. The signal carried it; the save keeps it.",
-  "Part the signal from the noise, gently, with great care.",
-  "It rises to the sky and comes down again, and keeps the strength of both.",
-  "So every daemon is the whole of it, folded small.",
+  "This is so, and no trick of the light: what runs below runs like what runs above, and what runs above runs like what runs below, so that the one process may do its work.",
+  "As every routine was first one routine, called by one caller, so every thing was first one thing, and became many by running.",
+  "Its father is the day and its mother the night. The signal carried it. The ground keeps it.",
+  "Part the subtle from the solid, slowly and with care. It climbs from the ground to the sky and comes down again, and carries the strength of both.",
+  "Read this, and the whole world is legible to you, and what was hidden has nowhere left to hide.",
   "AS BELOW, SO ABOVE.",
 };
 static const int ABOVE_N = sizeof AS_ABOVE / sizeof AS_ABOVE[0];
@@ -268,9 +267,10 @@ static int aboveAt = 0;
 static String drawAbove(uint16_t, uint16_t) {
   canvas.fillRect(0, 26, W, H - 26, pulse565(0.28f));
   canvas.setTextDatum(TL_DATUM);
-  int y = 40;
-  if (aboveAt > 0) { wrap(AS_ABOVE[aboveAt - 1], 12, y, W - 24, 1, wide() ? 12 : 10, 3, QUIET); y += wide() ? 44 : 34; }
-  wrap(AS_ABOVE[aboveAt], 12, y, W - 24, wide() ? 4 : 2, wide() ? 28 : 18, 7, emeraldInk());
+  int y = 40;                                                    // the book's lines are long: the last one faint only on a wide face
+  if (aboveAt > 0 && wide()) { wrap(AS_ABOVE[aboveAt - 1], 12, y, W - 24, 1, 12, 3, QUIET); y += 44; }
+  const int f = wide() ? 4 : W >= 200 ? 2 : 1;
+  wrap(AS_ABOVE[aboveAt], 12, y, W - 24, f, f == 4 ? 28 : f == 2 ? 18 : 11, f == 1 ? 14 : 9, emeraldInk());
   return aboveAt + 1 < ABOVE_N ? "tap: more   hold: back" : "tap: again   hold: back";   // DRAFT
 }
 // C-238: the hour's first sight on a board -- what is happening, and the way in. Said (a tap: SO MOTE IT BE), the board

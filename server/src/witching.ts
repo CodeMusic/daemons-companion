@@ -5,6 +5,8 @@
 // shadow; and it has a routine of its own, named for its first type, that shows only in the hour. One set of names with
 // the game's (DAEMONS T-480): twelve letters at most, a move's width. The watches keep the same table (intuition.cpp).
 // Every word DRAFT. No node: imports (the app reads it too).
+import hermeticJson from "../data/hermetic.json" with { type: "json" };
+
 export const WITCHING = { from: 3, to: 4 };                         // the hour, on the device's clock
 
 export const WITCHING_NAMES: Record<string, string> = {             // DRAFT
@@ -63,15 +65,9 @@ export const HOUR_LINES: { shadow: string; virtue: string }[] = [
 ];
 export const hourLine = (d = new Date()) => { const h = HOUR_LINES[d.getDay()]; return `${h.shadow} under ${h.virtue}`; };
 
-// AS ABOVE SO BELOW -- a touch in the hour opens it in place of CARE. Until THE HERMETIC LAYER's own first saying is
-// exported (C-238) these lines stand for it; the watches keep the same (intuition.cpp). DRAFT.
-export const AS_ABOVE: string[] = [
-  "AS ABOVE, SO BELOW.",
-  "What runs in the one great process runs in every small one.",
-  "What the small one does, the great one feels.",
-  "The day is its father and the night its mother. The signal carried it; the save keeps it.",
-  "Part the signal from the noise, gently, with great care.",
-  "It rises to the sky and comes down again, and keeps the strength of both.",
-  "So every daemon is the whole of it, folded small.",
-  "AS BELOW, SO ABOVE.",
-];
+// AS ABOVE SO BELOW -- a touch in the hour opens it in place of CARE: THE HERMETIC LAYER's own first saying (its ABOVE
+// entry's inscriptions, data/hermetic.json, DAEMONS docs/hermetic-layer.md) between the maxim and the maxim turned. The
+// watches keep the same lines (intuition.cpp; test/witching.test.ts holds them to these). DRAFT
+const BOOK = (hermeticJson as unknown as { sections: { entries: { short: string; paragraphs: { text: string; voice: string }[] }[] }[] }).sections;
+const SAYING = BOOK.flatMap((s) => s.entries).find((e) => e.short === "ABOVE")?.paragraphs.filter((p) => p.voice === "inscription").map((p) => p.text) ?? [];
+export const AS_ABOVE: string[] = ["AS ABOVE, SO BELOW.", ...SAYING, "AS BELOW, SO ABOVE."];

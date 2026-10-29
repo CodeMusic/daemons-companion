@@ -1,5 +1,6 @@
 // C-236: the witching hour -- 3 to 4 in the morning; a routine named for the daemon's first type, one set with the game's.
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { AS_ABOVE, breathOf, HOUR_LINES, hourDate, hourGone, hourLine, minutesLeft, PULSE, pulseOf, WITCHING_NAMES, WITCHING_TUNE,
          witchingLine, witchingNow, witchingRoutine } from "../src/witching.js";
 import speciesJson from "../data/species.json" with { type: "json" };
@@ -47,5 +48,11 @@ describe("C-237: the hour's face", () => {
     for (const h of HOUR_LINES) expect(`${h.shadow} under ${h.virtue}`.length).toBeLessThanOrEqual(24);
     expect(AS_ABOVE[0]).toBe("AS ABOVE, SO BELOW.");
     expect(AS_ABOVE.at(-1)).toBe("AS BELOW, SO ABOVE.");
+  });
+  it("says THE HERMETIC LAYER's own first saying, and the watches say the same lines", () => {
+    expect(AS_ABOVE.length).toBeGreaterThan(3);                                    // the book's inscriptions between the maxims
+    const cpp = readFileSync(new URL("../../firmware/esp32/src/intuition.cpp", import.meta.url), "utf8");
+    const table = cpp.slice(cpp.indexOf("AS_ABOVE[] = {"), cpp.indexOf("};", cpp.indexOf("AS_ABOVE[] = {")));
+    expect([...table.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => JSON.parse(`"${m[1]}"`))).toEqual(AS_ABOVE);
   });
 });

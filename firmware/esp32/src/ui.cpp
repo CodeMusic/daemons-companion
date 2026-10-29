@@ -406,9 +406,11 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   int side = 64 * sc, ax = cx - side / 2 + (int)(room * (walk - 0.5f)) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
   int ay = floorY - side + 4 * sc + bob + hop;
   drawGlow(ax + side / 2, ay + side / 2, side * 5 / 8, hex565(st.menu));                  // C-207: the week's glow, behind it
-  canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
+  const bool witching = witchingNow();                            // C-236: in the hour it casts no shadow, and shimmers
+  if (!witching) canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
   drawArt(ax, ay, sc, right);
   drawMark(ax, ay, sc, right, markTop);
+  if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
   drawThriveMarks(ax, ay, side);                                                          // C-207: its stars and its moon
   if (noticing) intuitionRipple(ax + side / 2, ay + side / 2, side, nPhase);   // C-203: the purple ripple, rising
 }
@@ -906,8 +908,10 @@ void draw() {
         int side = 64 * sc, room = max(0, w - side);
         int ax = x + (int)(room * walk) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0), ay = floorY - side + 4 * sc + bob + hop;
         canvas.setClipRect(x, y, w, h);
-        canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
+        const bool witching = witchingNow();                        // C-236
+        if (!witching) canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
         drawArt(ax, ay, sc, right);
+        if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
         drawMark(ax, ay, sc, right, y);                        // C-119: zz, a heart, a drop ... above its head, inside the den
         canvas.clearClipRect();
       };

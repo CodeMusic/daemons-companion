@@ -19,6 +19,7 @@
 // The purple marks a noticing, never a feeling. Every word DRAFT.
 #include "app.h"
 #include "watch.h"
+#include "sound.h"                                        // C-236: THE HOUR's tune
 #include <Preferences.h>
 #include <time.h>
 
@@ -187,12 +188,74 @@ void drawUnder() {
   canvas.setTextDatum(TL_DATUM);
 }
 
+// ---- the witching hour (C-236) -------------------------------------------------------------------------------------------
+// From 3:00 to 4:00 in the morning on the watch's clock the carried daemon wears a thin purple shimmer -- the book's
+// purple, faint, flickering, as if the seam were thin -- and casts no shadow; and a routine of its own, named for its
+// first type, shows in ROUTINES (THE HOUR) only then: a tune that falls and a half step that does not belong, the screen
+// pulsing purple. Anyone up at three sees the shimmer; the routine comes only once the save holds THE SUBTLE LAYER (the
+// user, for the game, 2026-10-29 -- the same here). The names are server/src/witching.ts's, one set with the game's
+// (DAEMONS T-480). Every word DRAFT.
+static const char *const WITCH_TYPES[] = { "VECTOR", "ENTROPY", "GROWTH", "CONTENT", "LOGIC", "SWARM", "CORRUPT", "SIGNAL", "STRATUM",
+                                           "FLOW", "CONTEXT", "LATENT", "LEGACY", "HARDENED", "FROZEN", "OPAQUE", "EMERGENT", "ORACLE" };
+static const char *const WITCH_NAMES[] = { "NIGHT COURSE", "EMBER HOUR", "DARK ROOTS", "BLANK PAGE", "LAST PROOF", "QUIET HIVE",
+                                           "BITROT MOON", "DEAD AIR", "UNDERLAYER", "UNDERTOW", "THIN SEAM", "WHAT SLEEPS", "OLD GHOSTS",
+                                           "NIGHT WATCH", "BLACK ICE", "VEIL", "BEFORE DAWN", "SECOND SIGHT" };   // DRAFT
+bool witchingNow() { struct tm t; return st.carrying && watchLocalTime(t) && t.tm_hour == 3; }
+bool witchingRoutineNow() { return witchingNow() && intuitionOn(); }   // its routine, only with the book held
+const char *witchingName() {
+  String first = st.daemon.types; int cut = first.indexOf(' '); if (cut > 0) first = first.substring(0, cut);
+  for (int i = 0; i < (int)(sizeof WITCH_TYPES / sizeof *WITCH_TYPES); i++) if (first == WITCH_TYPES[i]) return WITCH_NAMES[i];
+  return "THIN SEAM";
+}
+// the shimmer: two faint rings that breathe and drop out now and then, and a few motes turning about it
+void witchShimmer(int cx, int cy, int side) {
+  uint32_t t = millis();
+  for (int k = 0; k < 2; k++) {
+    if ((t / 110 + k * 3) % 9 == 0) continue;                // it flickers
+    int rx = side * 42 / 100 + k * 4 + (int)(2 * sinf(t / 260.0f + k)), ry = side * 46 / 100 + k * 4 + (int)(2 * cosf(t / 300.0f + k));
+    canvas.drawEllipse(cx, cy, rx, ry, k ? HUE : LIT);
+  }
+  for (int i = 0; i < 6; i++) {
+    float a = t / 900.0f + i * 1.047f; int r = side * 52 / 100;
+    canvas.fillRect(cx + (int)(r * cosf(a)), cy + (int)(r * 1.1f * sinf(a)), 2, 2, i % 2 ? LIT : HUE);
+  }
+}
+void drawArt(int x, int y, int scale, bool mirrored);   // ui.cpp: the daemon carried, in its expression
+static uint32_t hourFrom = 0;
+static String drawHour(uint16_t, uint16_t) {
+  float p = (millis() - hourFrom) / 1000.0f, pulse = 0.5f + 0.5f * sinf(p * 2.2f);
+  canvas.fillRect(0, 26, W, H - 26, canvas.color565((int)(40 + 30 * pulse), (int)(14 + 8 * pulse), (int)(38 + 28 * pulse)));
+  int side = 128, cx = W / 2, cy = H / 2 + 6;
+  drawArt(cx - side / 2, cy - side / 2, 2, false);
+  witchShimmer(cx, cy, side);
+  canvas.setTextFont(2); canvas.setTextColor(LIT); canvas.setTextDatum(TC_DATUM);
+  canvas.drawString(witchingName(), W / 2, 34);
+  canvas.setTextDatum(TL_DATUM);
+  return " ";
+}
+// THE HOUR's one routine: its tune, the screen pulsing, the daemon in its shimmer
+String runWitching() {
+  static const int16_t NOTES[][2] = { { 0, 60 }, { -3, 60 }, { -7, 60 }, { -12, 70 }, { -11, 90 }, { 127, 25 }, { -15, 130 } };   // tens of ms (witching.ts)
+  runPanel = drawHour; hourFrom = millis();
+  for (auto &n : NOTES) {
+    if (n[0] != 127) playNoteSemis(n[0], n[1] * 10);
+    for (uint32_t t0 = millis(); millis() - t0 < (uint32_t)n[1] * 10 + 60;) { progress(""); delay(40); if (routineQuit()) break; }
+  }
+  for (uint32_t t0 = millis(); millis() - t0 < 1500;) { progress(""); delay(40); }
+  runPanel = nullptr;
+  return daemonName() + " did " + witchingName() + ". It does not, by day.";   // DRAFT
+}
+
 // ---- every pass ------------------------------------------------------------------------------------------------------------
 void intuitionLoop(uint32_t now) {
   static uint32_t rainAt = 0; static bool wasAsleep = true;
   if (readShowing()) { static uint32_t at = 0; if (now - at > 250) { at = now; dirty = true; } }
   if (underUntil && (int32_t)(underUntil - now) > -300) { static uint32_t at = 0; if (now - at > 250) { at = now; dirty = true; } }   // C-204
   if (noticeUntil && (int32_t)(noticeUntil - now) > -300) { static uint32_t at = 0; if (now - at > 60) { at = now; dirty = true; } }
+  { static bool hadHour = false; static uint32_t at = 0;         // C-236: THE HOUR comes and goes -- at home or asleep, never mid-list
+    if (now - at > 15000) { at = now; bool w = witchingRoutineNow(); if (w != hadHour && (asleep || screen == HOME)) { hadHour = w; routinesBegin(); dirty = true; } }
+    static uint32_t flickerAt = 0;                                // the shimmer, for anyone up at three
+    if (!asleep && screen == HOME && now - flickerAt > 120 && witchingNow()) { flickerAt = now; dirty = true; } }
   bool woke = wasAsleep && !asleep;
   wasAsleep = asleep;
   if (!intuitionOn() || asleep || screen != HOME) return;

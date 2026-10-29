@@ -56,10 +56,14 @@ static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetwork
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
 
 // C-67: the types this board can run -- the CC1101's radios only where they are; Bluetooth and Wi-Fi everywhere.
-RoutineType types[14];
+RoutineType types[16];
 int typeCount = 0;
+// C-236: THE HOUR -- from 3 to 4 in the morning, first: one routine named for the carried daemon's type (intuition.cpp)
+static char hourName[16] = "THIN SEAM";
+static Routine HOUR_ROUTINES[] = { { hourName, runWitching } };
 void routinesBegin() {
   typeCount = 0;
+  if (isWatch() && witchingRoutineNow()) { strncpy(hourName, witchingName(), sizeof hourName - 1); types[typeCount++] = { "THE HOUR", "3 to 4 in the morning", HOUR_ROUTINES, 1 }; }   // DRAFT
   if (board.hatSda >= 0) types[typeCount++] = { "GLOW",  "Thermal",   GLOW_ROUTINES,       4 };   // C-148: the board's own sense first; DRAFT
   types[typeCount++] =                     { "CASINO",     "the game's money", CASINO_ROUTINES, 1 };   // C-149: every board, first (after the StickC-Plus's GLOW), DRAFT
   if (board.ir)     types[typeCount++] = board.irRx >= 0 ? RoutineType{ "FLARE", "IR", FLARE_ROUTINES, 7 }
@@ -111,7 +115,7 @@ void runRoutine() {
   runResult = "Running...";
   screen = RUN;
   draw();
-  if (strcmp(t.name, "CASINO")) soundRoutine(t.name);   // C-40: its tune, the ring dancing (C-149: the CASINO pulls its own lever)
+  if (strcmp(t.name, "CASINO") && strcmp(t.name, "THE HOUR")) soundRoutine(t.name);   // C-40: its tune, the ring dancing (C-149: the CASINO pulls its own lever; C-236: THE HOUR plays its own)
   routineRunning = true;
   runResult = t.routines[routineAt].run();
   routineRunning = false; lastInput = millis();

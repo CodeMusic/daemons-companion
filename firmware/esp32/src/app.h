@@ -75,6 +75,7 @@ bool intuitionNoticing(bool &right, float &phase); void intuitionRipple(int cx, 
 bool readShowing(); void readDismiss(); void drawRead(uint16_t day);
 void leanPull(bool pays, bool may = true); void leanResult(bool paid); void drawLean(int y);
 void intuitionUnder(const String &words, uint32_t after); void drawUnder();   // C-204: words under words
+bool witchingNow(); bool witchingRoutineNow(); const char *witchingName(); void witchShimmer(int cx, int cy, int side); String runWitching();   // C-236: 3 to 4 AM
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();
@@ -270,7 +271,7 @@ void batteryFake(int pct);                // C-63: BATTEST <pct> down the cable 
 typedef String (*RoutineFn)();
 struct Routine { const char *name; RoutineFn run; };
 struct RoutineType { const char *name; const char *radio; const Routine *routines; int count; };
-extern RoutineType types[14];
+extern RoutineType types[16];
 extern int typeCount;
 void routinesBegin();                     // the types this board can run
 bool partyFirst();                        // C-68: ROUTINES opens the party (a board with no radios of its own)

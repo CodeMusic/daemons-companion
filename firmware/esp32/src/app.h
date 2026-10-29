@@ -75,7 +75,13 @@ bool intuitionNoticing(bool &right, float &phase); void intuitionRipple(int cx, 
 bool readShowing(); void readDismiss(); void drawRead(uint16_t day);
 void leanPull(bool pays, bool may = true); void leanResult(bool paid); void drawLean(int y);
 void intuitionUnder(const String &words, uint32_t after); void drawUnder();   // C-204: words under words
-bool witchingNow(); bool witchingRoutineNow(); const char *witchingName(); void witchShimmer(int cx, int cy, int side); String runWitching();   // C-236: 3 to 4 AM
+bool witchingNow(); bool witchingRoutineNow(); const char *witchingName(); void witchShimmer(int cx, int cy, int side); String runWitching();
+uint16_t pulse565(float bright);          // C-237: red<->blue through purple, on the clock's eight-second breath
+uint16_t emeraldInk();                    // C-237: the tablet's ink, glowing slowly
+void witchPie(int cx, int cy, int rx, int ry);   // C-237: the hour, filled widdershins
+int witchMinutesLeft(); String witchDate();
+String dayLine();                         // the day's virtue over its shadow -- turned under in the hour (C-237)
+void openAsAbove();                       // C-237: AS ABOVE SO BELOW, a touch in the hour   // C-236: 3 to 4 AM
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();

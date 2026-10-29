@@ -363,7 +363,7 @@ static void drawFaceWide(uint16_t day, uint16_t ink) {
   int x = split + 18, w = W - x - 10;
   canvas.setTextColor(readable(day));
   wrap(upper(st.theme.length() ? st.theme : st.day), x, 40, w, 4, 26, 2, day);
-  wrap(upper(st.virtue), x, 96, w, 2, 16, 2, PAPER);
+  wrap(upper(dayLine()), x, 96, w, 2, 16, 2, PAPER);
   canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
   canvas.drawString(upper(st.chakra) + (st.note.length() ? "  -  " + st.note : ""), x, 132);
   if (st.carrying) {                                           // the daemon you carry, small, in the corner
@@ -408,6 +408,7 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   drawGlow(ax + side / 2, ay + side / 2, side * 5 / 8, hex565(st.menu));                  // C-207: the week's glow, behind it
   const bool witching = witchingNow();                            // C-236: in the hour it casts no shadow, and shimmers
   if (!witching) canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
+  else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237: the hour, counting down
   drawArt(ax, ay, sc, right);
   drawMark(ax, ay, sc, right, markTop);
   if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
@@ -467,13 +468,15 @@ static void drawFaceDaemon(uint16_t day) {
   canvas.setTextDatum(MC_DATUM);
   if (st.carrying) { faceDaemon(W / 2, 188, 2, 56, 72); faceListening(day); }
   faceWeather();
-  canvas.setTextFont(2); edgedString(upper(st.theme.length() ? st.theme : st.day), W / 2, 34, readable(day));
-  if (st.carrying) { canvas.setTextFont(4); timeAt(hm, ampm, W / 2, 57, PAPER); }
+  const bool hour = witchingNow();                            // C-237: in the hour, the date and the minutes left, no time
+  canvas.setTextFont(2); edgedString(hour ? witchDate() : upper(st.theme.length() ? st.theme : st.day), W / 2, 34, hour ? emeraldInk() : readable(day));
+  if (st.carrying && hour) { canvas.setTextFont(4); edgedString(String(witchMinutesLeft()) + " min left", W / 2, 57, emeraldInk()); }   // DRAFT
+  else if (st.carrying) { canvas.setTextFont(4); timeAt(hm, ampm, W / 2, 57, PAPER); }
   else {
     canvas.setTextFont(7); timeAt(hm, ampm, W / 2, 96, PAPER);
     canvas.setTextFont(1); edgedString("NO DAEMON HERE", W / 2, 146, QUIET);   // DRAFT
   }
-  faceLine(upper(st.virtue), 207, PAPER);
+  faceLine(upper(dayLine()), 207, PAPER);
   canvas.setTextFont(1);
   edgedString(faceFoot(), W / 2, 225, bat.present && !bat.usb && bat.percent <= 20 ? 0xF800 : faceSkyOn() ? 0xCE59 : QUIET);
   faceBattery(W / 2, 16);                                    // at the top of the circle, over the day's theme
@@ -494,11 +497,13 @@ static void drawFaceClock(uint16_t day) {
   if (st.carrying) { faceDaemon(cx, 176, 2, 48, 60); faceListening(day); }
   faceWeather();
   canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
-  edgedString(upper(st.theme.length() ? st.theme : st.day), cx, 50, readable(day));
-  edgedString(upper(st.virtue), cx, 196, PAPER);
+  const bool hour = witchingNow();                            // C-237: in the hour no hands -- the date, the minutes left
+  edgedString(hour ? witchDate() : upper(st.theme.length() ? st.theme : st.day), cx, 50, hour ? emeraldInk() : readable(day));
+  if (hour) { canvas.setTextFont(4); edgedString(String(witchMinutesLeft()), cx, 74, emeraldInk()); canvas.setTextFont(1); }
+  edgedString(upper(dayLine()), cx, 196, PAPER);
   faceBattery(cx, 208);                                      // between the day's words and the six
   struct tm t;
-  if (watchLocalTime(t)) {                                   // the hands over the daemon, each edged in INK to stand off it
+  if (!hour && watchLocalTime(t)) {                         // the hands over the daemon, each edged in INK to stand off it
     float m = (t.tm_min + t.tm_sec / 60.0f) * PI / 30, h = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;
     canvas.drawWideLine(cx, cy, cx + 54 * sinf(h), cy - 54 * cosf(h), 4.0f, INK);
     canvas.drawWideLine(cx, cy, cx + 54 * sinf(h), cy - 54 * cosf(h), 2.5f, PAPER);
@@ -586,7 +591,7 @@ static void drawFace(uint16_t day, uint16_t ink) {
   canvas.setTextFont(7);
   timeAt(hm, ampm, W / 2, 84, PAPER);
   canvas.setTextFont(2); canvas.setTextColor(PAPER);
-  canvas.drawString(upper(st.virtue), W / 2, 124);
+  canvas.drawString(upper(dayLine()), W / 2, 124);
   canvas.setTextColor(QUIET);
   canvas.drawString(upper(st.chakra) + (st.note.length() ? "  -  " + st.note : ""), W / 2, 144);
   long steps = watchSteps();
@@ -796,7 +801,7 @@ void draw() {
     canvas.setTextFont(4); canvas.setTextColor(readable(day));
     canvas.drawString(upper(st.theme.length() ? st.theme : st.day), 10, 50);
     canvas.setTextFont(2); canvas.setTextColor(PAPER);
-    canvas.drawString(upper(st.virtue), 10, 86);
+    canvas.drawString(upper(dayLine()), 10, 86);
     canvas.setTextColor(QUIET);
     canvas.drawString(upper(st.chakra) + "    THE NOTE OF " + st.note, 10, 108);
     canvas.setTextFont(1); canvas.setTextColor(PAPER);
@@ -878,13 +883,13 @@ void draw() {
         canvas.setTextDatum(TL_DATUM); canvas.setTextFont(2); canvas.setTextColor(QUIET);
         canvas.drawString("TODAY IS", x, 40);
         wrap(upper(st.theme.length() ? st.theme : st.day), x, 58, 166, 4, 26, 2, day);
-        wrap(upper(st.virtue), x, 114, 166, 2, 16, 2, PAPER);
+        wrap(upper(dayLine()), x, 114, 166, 2, 16, 2, PAPER);
       }
     }
     canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
     if (undoable()) { String u = hint("done: " + lastDoneText.substring(0, 30) + "   top button: undo"); if (board.round) footer("hold: undo"); else canvas.drawString(u, 10, H - 6); }
     else {                                       // C-73: wherever the virtue shows, its chakra shows too
-      String day = st.virtue + (st.chakra.length() ? "  -  " + st.chakra : String(""));
+      String day = dayLine() + (st.chakra.length() ? "  -  " + st.chakra : String(""));
       if (board.round) footer(st.step >= 0 ? hint("press: done") : day);   // C-102, DRAFT
       else canvas.drawString(st.step >= 0 ? hint("press: done") + "    " + day : day, 10, H - 6);   // C-105: in each board's own words
     }
@@ -910,6 +915,7 @@ void draw() {
         canvas.setClipRect(x, y, w, h);
         const bool witching = witchingNow();                        // C-236
         if (!witching) canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
+        else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237
         drawArt(ax, ay, sc, right);
         if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
         drawMark(ax, ay, sc, right, y);                        // C-119: zz, a heart, a drop ... above its head, inside the den
@@ -948,6 +954,7 @@ void draw() {
       canvas.drawString("fed " + String(st.daemon.fed) + "/3  water " + String(st.daemon.watered) + "/3", x, 108);
       int cf = wide() ? 2 : 1, ch = wide() ? 16 : 11, cn = wide() ? 4 : 2;   // C-105: wide, the cue in a readable size
       if (H < 160) {}                                          // the StickS3: no room under its day for a cue
+      else if (witchingNow()) wrap(String(witchMinutesLeft()) + " min left  " + witchDate(), x, 128, W - x - 6, cf, ch, cn, emeraldInk());   // C-237, DRAFT
       else if (st.daemon.cue.length()) wrap(st.daemon.cue, x, 128, W - x - 6, cf, ch, cn, QUIET);
       else if (st.daemon.holding.length()) wrap("holding " + st.daemon.holding, x, 128, W - x - 6, cf, ch, cn, QUIET);
       canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);

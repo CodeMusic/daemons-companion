@@ -8,15 +8,18 @@ import { hearSettings, soundLevel } from "../tuneSound";
 import { Cast, Notebook, PlayerState, Profile, TABS, Today } from "../types";
 import { Action, Art, Card, careSound, Eyebrow, Small } from "../ui";
 import { Under } from "./Reads";   // C-204
+import { useWitching } from "./Witching";   // C-237
+import { EMERALD, hourLine } from "../../server/src/witching";
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
+  const witching = useWitching();                           // C-237: in the hour the day's line is turned under
   const done = async () => { if (today.next) { await api(`/api/steps/${today.next.step.id}/done`, {}); reload(); } };
   return (
     <YStack gap={14}>
       <Card>
         <Eyebrow>{today.day.day.toUpperCase()} · {today.day.note} · {today.season.toUpperCase()}</Eyebrow>
         <Text fontSize={24} fontWeight="600" color="$color12">{today.day.theme ?? today.day.virtue}</Text>
-        <Text fontSize={16} color="$color11">{today.day.cue ?? today.day.virtue}</Text>
+        <Text fontSize={16} color={witching ? EMERALD.lit : "$color11"}>{witching ? hourLine() : today.day.cue ?? today.day.virtue}</Text>{/* C-237: turned under */}
         <Small>{today.day.chakra} · {today.day.hue} · {today.edition}</Small>
       </Card>
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>

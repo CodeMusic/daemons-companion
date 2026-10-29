@@ -3,6 +3,7 @@
 // views (a line is a thin rotated bar), so it needs nothing native and draws the same on the site. The daemon walks it
 // side to side and faces the way it goes; asleep, it stays put with a z; `hop` changes when it is tended.
 import type { Thrive } from "../server/src/thrive";
+import { HourPie, WitchShimmer } from "./screens/Witching";   // C-236, C-237
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import speciesJson from "../server/data/species.json";
@@ -83,8 +84,9 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive }:
-  { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null }) {
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching }:
+  { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
+    witching?: boolean }) {   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
   const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
@@ -139,7 +141,8 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
           {thrive && thrive.glow > 0 ? [0.84, 0.68, 0.52].map((r, i) => (   // C-207: a good week, a soft light about it -- rings
             <View key={i} style={{ position: "absolute", left: side * (0.5 - r / 2), top: side * (0.52 - r / 2), width: side * r, height: side * r,   // that fade
                                    borderRadius: side, backgroundColor: ink, opacity: 0.045 * Math.min(1, thrive.glow / 100) }} />)) : null}
-          <View style={{ position: "absolute", left: side * 0.22, top: side * 0.9, width: side * 0.55, height: side * 0.09, borderRadius: side, backgroundColor: "rgba(0,0,0,0.28)" }} />
+          {witching ? <HourPie side={side} />
+            : <View style={{ position: "absolute", left: side * 0.22, top: side * 0.9, width: side * 0.55, height: side * 0.09, borderRadius: side, backgroundColor: "rgba(0,0,0,0.28)" }} />}
           <View style={[{ width: side, height: side, transform: [{ translateY: ((pose?.dy ?? 0) * side) / 64 + (side * (1 - (pose?.squash ?? 1))) / 2 },
                                                                   { scaleY: pose?.squash ?? 1 }, { scaleX: right ? -1 : 1 }] }, PIXELATED as any]}>
             {art}
@@ -148,6 +151,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
                                      height: (p.h * side) / 64 + 0.5, backgroundColor: `rgb(${p.rgb.join(",")})` }} />
             ))}
           </View>
+          {witching ? <WitchShimmer side={side} /> : null}
           {expression?.mark ? <Mark mark={expression.mark} size={Math.round(side * 0.2)} style={{ position: "absolute", right: side * 0.04, top: side * 0.02 }} />
             : asleep && !expression ? <Text style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
         </Animated.View>

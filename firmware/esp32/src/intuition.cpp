@@ -202,6 +202,91 @@ static const char *const WITCH_NAMES[] = { "NIGHT COURSE", "EMBER HOUR", "DARK R
                                            "NIGHT WATCH", "BLACK ICE", "VEIL", "BEFORE DAWN", "SECOND SIGHT" };   // DRAFT
 bool witchingNow() { struct tm t; return st.carrying && watchLocalTime(t) && t.tm_hour == 3; }
 bool witchingRoutineNow() { return witchingNow() && intuitionOn(); }   // its routine, only with the book held
+
+// C-237 (the user, 2026-10-29): every pulse breathes red<->blue through purple -- CONTENT's red and CONTEXT's blue made
+// one, the middle the book's own purple (server/src/witching.ts PULSE; the game's T-482 the same): one breath every
+// eight seconds on the clock's phase, so boards side by side breathe together. Emerald is the tablet's ink.
+static const uint8_t P_RED[3] = { 200, 64, 90 }, P_PURPLE[3] = { 176, 86, 158 }, P_BLUE[3] = { 79, 107, 216 };
+static const uint16_t EM_DEEP = (1 << 11) | (16 << 5) | 5, EM_LIT = (10 << 11) | (50 << 5) | 15;   // #0E402B, #50C878
+static float breathNow() {                                      // 0 red, 0.5 purple, 1 blue
+  struct tm t; if (!watchLocalTime(t)) return 0.5f;
+  static int lastSec = -1; static uint32_t secAt = 0;
+  if (t.tm_sec != lastSec) { lastSec = t.tm_sec; secAt = millis(); }
+  uint32_t ms = (uint32_t)((t.tm_hour * 60 + t.tm_min) * 60 + t.tm_sec) * 1000u + min<uint32_t>(999, millis() - secAt);
+  return (1 - cosf(2 * PI * (ms % 8000) / 8000.0f)) / 2;
+}
+uint16_t pulse565(float bright) {
+  float s = breathNow(), k = s < 0.5f ? s * 2 : (s - 0.5f) * 2;
+  const uint8_t *a = s < 0.5f ? P_RED : P_PURPLE, *b = s < 0.5f ? P_PURPLE : P_BLUE;
+  return canvas.color565((int)((a[0] + (b[0] - a[0]) * k) * bright), (int)((a[1] + (b[1] - a[1]) * k) * bright), (int)((a[2] + (b[2] - a[2]) * k) * bright));
+}
+uint16_t emeraldInk() { float s = breathNow(); return canvas.color565(31 + (int)(49 * s), 143 + (int)(57 * s), 95 + (int)(25 * s)); }   // an inscription's slow glow
+
+// the hour counted down: the inner circle fills widdershins from twelve, a mark at half past (the crease); the minutes left
+void witchPie(int cx, int cy, int rx, int ry) {
+  struct tm t; if (!witchingNow() || !watchLocalTime(t)) return;
+  float gone = (t.tm_min * 60 + t.tm_sec) / 3600.0f;
+  int n = max(1, (int)(gone * 96));
+  for (int i = 0; i < n; i++) {                                 // a fan of thin wedges; a negative angle runs counter-clockwise
+    float a0 = -2 * PI * gone * i / n, a1 = -2 * PI * gone * (i + 1) / n;
+    canvas.fillTriangle(cx, cy, cx + (int)(rx * sinf(a0)), cy - (int)(ry * cosf(a0)), cx + (int)(rx * sinf(a1)), cy - (int)(ry * cosf(a1)), EM_DEEP);
+  }
+  float a = -2 * PI * gone;
+  canvas.drawLine(cx, cy, cx + (int)(rx * sinf(a)), cy - (int)(ry * cosf(a)), EM_LIT);   // its edge, moving
+  canvas.drawFastVLine(cx, cy - ry, 5, EM_LIT); canvas.drawFastVLine(cx, cy + ry - 5, 5, EM_LIT);   // twelve, and the crease
+}
+int witchMinutesLeft() { struct tm t; if (!watchLocalTime(t)) return 0; return max(1, (3600 - (t.tm_min * 60 + t.tm_sec) + 59) / 60); }
+String witchDate() {
+  static const char *const D[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
+  static const char *const M[] = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+  struct tm t; if (!watchLocalTime(t)) return "";
+  return String(D[t.tm_wday]) + " " + String(t.tm_mday) + " " + M[t.tm_mon];
+}
+// the day's line, turned under in the hour: {shadow} under {virtue}, the folk craft's words (witching.ts HOUR_LINES). DRAFT
+static const char *const HOUR_SHADOW[] = { "Thrall", "Devouring", "Binding", "Slumber", "Hex", "Evil Eye", "Glamour" };
+static const char *const HOUR_VIRTUE[] = { "Circle", "Measure", "Offering", "Vigil", "Uncrossing", "Blessing", "Grounding" };
+String dayLine() {
+  struct tm t;
+  if (witchingNow() && watchLocalTime(t)) return String(HOUR_SHADOW[t.tm_wday]) + " under " + HOUR_VIRTUE[t.tm_wday];
+  return st.virtue;
+}
+
+// AS ABOVE SO BELOW: a touch on the face in the hour opens it, in place of CARE -- a line at a time, in emerald, on the
+// breath (witching.ts AS_ABOVE, until THE HERMETIC LAYER's own first saying, C-238). DRAFT
+static const char *const AS_ABOVE[] = {
+  "AS ABOVE, SO BELOW.",
+  "What runs in the one great process runs in every small one.",
+  "What the small one does, the great one feels.",
+  "The day is its father and the night its mother. The signal carried it; the save keeps it.",
+  "Part the signal from the noise, gently, with great care.",
+  "It rises to the sky and comes down again, and keeps the strength of both.",
+  "So every daemon is the whole of it, folded small.",
+  "AS BELOW, SO ABOVE.",
+};
+static const int ABOVE_N = sizeof AS_ABOVE / sizeof AS_ABOVE[0];
+static int aboveAt = 0;
+static String drawAbove(uint16_t, uint16_t) {
+  canvas.fillRect(0, 26, W, H - 26, pulse565(0.28f));
+  canvas.setTextDatum(TL_DATUM);
+  int y = 40;
+  if (aboveAt > 0) { wrap(AS_ABOVE[aboveAt - 1], 12, y, W - 24, 1, wide() ? 12 : 10, 3, QUIET); y += wide() ? 44 : 34; }
+  wrap(AS_ABOVE[aboveAt], 12, y, W - 24, wide() ? 4 : 2, wide() ? 28 : 18, 7, emeraldInk());
+  return aboveAt + 1 < ABOVE_N ? "tap: more   hold: back" : "tap: again   hold: back";   // DRAFT
+}
+void openAsAbove() {
+  aboveAt = 0; screen = RUN; runPanel = drawAbove; routineRunning = true; progress("");
+  uint32_t drewAt = millis();
+  while (true) {
+    int step, ev; routineInput(step, ev);
+    if (routineQuit() || ev == -1) break;
+    if (ev == 1 || step > 0) { aboveAt = (aboveAt + 1) % ABOVE_N; progress(""); drewAt = millis(); }
+    else if (step < 0) { aboveAt = (aboveAt + ABOVE_N - 1) % ABOVE_N; progress(""); drewAt = millis(); }
+    if (millis() - drewAt > 120) { drewAt = millis(); progress(""); }   // the breath under it
+    delay(10);
+  }
+  routineRunning = false; runPanel = nullptr; screen = HOME; lastInput = millis(); dirty = true;
+  while (giveUp()) delay(10);
+}
 const char *witchingName() {
   String first = st.daemon.types; int cut = first.indexOf(' '); if (cut > 0) first = first.substring(0, cut);
   for (int i = 0; i < (int)(sizeof WITCH_TYPES / sizeof *WITCH_TYPES); i++) if (first == WITCH_TYPES[i]) return WITCH_NAMES[i];
@@ -213,22 +298,22 @@ void witchShimmer(int cx, int cy, int side) {
   for (int k = 0; k < 2; k++) {
     if ((t / 110 + k * 3) % 9 == 0) continue;                // it flickers
     int rx = side * 42 / 100 + k * 4 + (int)(2 * sinf(t / 260.0f + k)), ry = side * 46 / 100 + k * 4 + (int)(2 * cosf(t / 300.0f + k));
-    canvas.drawEllipse(cx, cy, rx, ry, k ? HUE : LIT);
+    canvas.drawEllipse(cx, cy, rx, ry, pulse565(k ? 0.7f : 1.0f));   // C-237: on the breath
   }
   for (int i = 0; i < 6; i++) {
     float a = t / 900.0f + i * 1.047f; int r = side * 52 / 100;
-    canvas.fillRect(cx + (int)(r * cosf(a)), cy + (int)(r * 1.1f * sinf(a)), 2, 2, i % 2 ? LIT : HUE);
+    canvas.fillRect(cx + (int)(r * cosf(a)), cy + (int)(r * 1.1f * sinf(a)), 2, 2, pulse565(i % 2 ? 1.0f : 0.6f));
   }
 }
 void drawArt(int x, int y, int scale, bool mirrored);   // ui.cpp: the daemon carried, in its expression
 static uint32_t hourFrom = 0;
 static String drawHour(uint16_t, uint16_t) {
-  float p = (millis() - hourFrom) / 1000.0f, pulse = 0.5f + 0.5f * sinf(p * 2.2f);
-  canvas.fillRect(0, 26, W, H - 26, canvas.color565((int)(40 + 30 * pulse), (int)(14 + 8 * pulse), (int)(38 + 28 * pulse)));
+  canvas.fillRect(0, 26, W, H - 26, pulse565(0.3f));                     // C-237: the breath, faint
   int side = 128, cx = W / 2, cy = H / 2 + 6;
+  witchPie(cx, cy, side * 38 / 100, side * 42 / 100);              // C-237: the hour, counting down
   drawArt(cx - side / 2, cy - side / 2, 2, false);
   witchShimmer(cx, cy, side);
-  canvas.setTextFont(2); canvas.setTextColor(LIT); canvas.setTextDatum(TC_DATUM);
+  canvas.setTextFont(2); canvas.setTextColor(emeraldInk()); canvas.setTextDatum(TC_DATUM);
   canvas.drawString(witchingName(), W / 2, 34);
   canvas.setTextDatum(TL_DATUM);
   return " ";

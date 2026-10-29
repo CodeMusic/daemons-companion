@@ -569,7 +569,7 @@ static void touchTap(int x, int y, uint32_t now) {
   if (screen == CARE_GRID && (tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); return; }   // C-163
   if (screen == HOME && page == FACE_PAGE) {                   // C-163: a double tap on the face opens CARE; one does nothing
     static uint32_t tappedAt = 0;
-    if (tappedAt && now - tappedAt < 450) { tappedAt = 0; if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT
+    if (tappedAt && now - tappedAt < 450) { tappedAt = 0; if (st.carrying && witchingNow()) openAsAbove(); else if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT; C-237: in the hour, AS ABOVE SO BELOW
     else tappedAt = now;
     return;
   }
@@ -611,7 +611,7 @@ static void motionLoop(uint32_t now) {
   if (!casinoAtTable() && motionTakeShake()) {           // at the reels a shake pulls the lever (casino.cpp)
     if (asleep) wake(); else { hopUntil = now + 480; lastInput = now; dirty = true; }
   }
-  if (motionTakeDoubleTap() && st.carrying) { wake(); lastInput = now; openCareGrid(); }
+  if (motionTakeDoubleTap() && st.carrying) { wake(); lastInput = now; if (witchingNow()) openAsAbove(); else openCareGrid(); }   // C-237
   MotionKind k; static uint32_t saidAt = 0;
   if (motionTakeKindChange(k)) {
     if (k == M_WALKING || k == M_RUNNING) intuitionMoment(READ_WALK);   // C-203: a walk begun -- perhaps a read of the way

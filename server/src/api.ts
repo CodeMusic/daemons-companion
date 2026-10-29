@@ -60,7 +60,7 @@ import { StackFlow } from "./ai/stackflow.js";
 import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
-import { MEET_SETUP, meetQuestion, setMeetTalker } from "./together.js";   // C-220
+import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";   // C-220
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
@@ -538,6 +538,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const q = meetQuestion(me, other, heard);
     return (await house.talk({ text: q, history: [], daemon: { nickname: me.nickname }, speak: false, fixed: { setup: MEET_SETUP, question: q } })).answer;
   });
+  // C-220: daemons out together meet on their own, one pair each quarter hour
+  setInterval(() => { meetOnTheirOwn(store).catch(() => {}); }, 15 * 60_000).unref();
   discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
   const checkTalk = async () => {                              // C-211: each talk source's health, every minute
     const at = new Date().toISOString();

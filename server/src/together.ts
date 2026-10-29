@@ -14,10 +14,10 @@ import speciesJson from "../data/species.json" with { type: "json" };
 const SPECIES = speciesJson as unknown as Record<string, { name: string; types?: string[]; category?: string }>;
 export interface Out { player: string; personality: number; species: number; nickname: string; level: number; edition: string; at: string; until: string }
 export type Line = { who: "a" | "b"; said: string; by: "module" | "written" };
-export interface Met { id: string; at: string; a: Out & { name: string }; b: Out & { name: string }; lines: Line[] }
+export interface Met { id: string; at: string; a: Out & { name: string }; b: Out & { name: string }; lines: Line[]; own?: boolean }   // own: they met on their own
 interface State { out: Out[]; met: Met[]; next: number }
 
-const KEY = "meet", OUT_MS = 12 * 60 * 60 * 1000, KEPT = 30, TURNS = 4;
+const KEY = "meet", OUT_MS = 12 * 60 * 60 * 1000, KEPT = 30, TURNS = 4, AGAIN_MS = 6 * 60 * 60 * 1000;
 const load = (store: Store): State => {
   try { const s = JSON.parse(store.getSetting(KEY) ?? "null"); if (s?.out) return s; } catch { /* none yet */ }
   return { out: [], met: [], next: 1 };
@@ -54,7 +54,7 @@ export function outView(store: Store, player: string, name: Named, reach: Reach 
     mine: mine && brief(mine, name),
     others: here.filter((o) => o.player !== player && reach(player, o.player)).map((o) => ({ id: o.player, ...brief(o, name) })),
     met: s.met.filter((m) => m.a.player === player || m.b.player === player).slice(-10).reverse()
-      .map((m) => ({ id: m.id, at: m.at, a: brief(m.a, name), b: brief(m.b, name), lines: m.lines })),
+      .map((m) => ({ id: m.id, at: m.at, a: brief(m.a, name), b: brief(m.b, name), lines: m.lines, own: !!m.own })),
   };
 }
 
@@ -113,7 +113,7 @@ export async function meetLines(a: Speaker, b: Speaker, day: string, say: Talker
 // this player's daemon out meets that player's; both must be out now. The lines are made outside the store's
 // transaction (they may wait on the module), then kept.
 export async function meet(store: Store, player: string, withPlayer: unknown, reach: Reach = () => true, now = new Date(),
-                           say: Talker | null = talker): Promise<Met | { error: string }> {
+                           say: Talker | null = talker, own = false): Promise<Met | { error: string }> {
   const s = load(store), here = live(s, now);
   const a = here.find((o) => o.player === player);
   if (!a) return fail("send one of yours out first");                                          // DRAFT
@@ -122,8 +122,24 @@ export async function meet(store: Store, player: string, withPlayer: unknown, re
   const day = now.toISOString().slice(0, 16);   // the minute: a second meeting the same day reads differently
   const lines = await meetLines(speakerOf(a), speakerOf(b), day, say);
   return change(store, (st) => {
-    const m: Met = { id: `m${st.next++}`, at: now.toISOString(), a: { ...a, name: speakerOf(a).name }, b: { ...b, name: speakerOf(b).name }, lines };
+    const m: Met = { id: `m${st.next++}`, at: now.toISOString(), a: { ...a, name: speakerOf(a).name }, b: { ...b, name: speakerOf(b).name }, lines, ...(own ? { own } : {}) };
     st.met = [...st.met, m].slice(-KEPT);
     return m;
   });
+}
+
+// Two daemons out at the same time meet on their own (the hub, every quarter hour): one pair a turn -- the two out
+// together that have not met in six hours, the longest out first -- so the module is asked for one meeting at a time.
+export async function meetOnTheirOwn(store: Store, reach: Reach = () => true, now = new Date(), say: Talker | null = talker): Promise<Met | null> {
+  const s = load(store), here = live(s, now).sort((x, y) => x.at.localeCompare(y.at));
+  const lately = (x: Out, y: Out) => s.met.some((m) => now.getTime() - new Date(m.at).getTime() < AGAIN_MS &&
+    ((m.a.player === x.player && m.a.personality === x.personality && m.b.player === y.player && m.b.personality === y.personality) ||
+     (m.a.player === y.player && m.a.personality === y.personality && m.b.player === x.player && m.b.personality === x.personality)));
+  for (let i = 0; i < here.length; i++)
+    for (let j = i + 1; j < here.length; j++)
+      if (reach(here[i].player, here[j].player) && !lately(here[i], here[j])) {
+        const r = await meet(store, here[i].player, here[j].player, reach, now, say, true);
+        return "error" in r ? null : r;
+      }
+  return null;
 }

@@ -98,7 +98,8 @@ afterwards on TRADE, with the two pictures facing each other (the last thirty me
   one lists who is out and the meetings. On a companion, `/api/trade/{out,back,meet}`, where `out` takes the
   `personality` of an AWAY daemon in this save. `GET /api/trade` carries `out`.
 - **Not yet.** Meetings work within one home only; THE COMMONS does not carry them. The boards do not show meetings
-  yet. Daemons do not meet on their own; a player presses MEET.
+  yet. Meetings within a home now also happen on their own: every quarter hour the hub meets two daemons that are out
+  together, one pair at a time, and not the same two again within six hours.
 
 ## THE COMMONS: trading between homes (C-222, first round built 2026-10-28)
 

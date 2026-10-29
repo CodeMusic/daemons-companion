@@ -15,7 +15,7 @@ type Offer = { id: string; at: string; kind: "full" | "loan"; state: string; to:
 type Mine = { personality: number; species: number; name: string; nickname: string; level: number; busy: boolean };
 // C-220: OUT TOGETHER
 type OutOne = { id?: string; player: string; species: number; nickname: string; level: number; edition: string; name: string; until: string };
-type Met = { id: string; at: string; a: OutOne; b: OutOne; lines: { who: "a" | "b"; said: string; by: "module" | "written" }[] };
+type Met = { id: string; at: string; a: OutOne; b: OutOne; lines: { who: "a" | "b"; said: string; by: "module" | "written" }[]; own?: boolean };
 type Out = { mine: OutOne | null; others: OutOne[]; met: Met[] };
 type View = { out?: Out | null; hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
               board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean } | null;
@@ -213,7 +213,8 @@ function OutCard({ v, ink, act }: { v: View; ink: string; act: (path: string, bo
         <YStack key={m.id} gap={6} paddingVertical={8} borderTopWidth={1} borderColor="$color5">
           <XStack justifyContent="space-between" alignItems="flex-end">
             <YStack alignItems="center"><Art path={`/art/species/${m.a.species}.png`} size={64} /><Small>{m.a.nickname}</Small></YStack>
-            <Small color="$color10">{new Date(m.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</Small>
+            <YStack alignItems="center"><Small color="$color10">{new Date(m.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</Small>
+              {m.own ? <Small color="$color10">met on their own</Small> : null}</YStack>
             <YStack alignItems="center"><YStack style={{ transform: [{ scaleX: -1 }] }}><Art path={`/art/species/${m.b.species}.png`} size={64} /></YStack><Small>{m.b.nickname}</Small></YStack>
           </XStack>
           {m.lines.map((l, i) => (

@@ -69,4 +69,17 @@ describe("OUT TOGETHER (C-220)", () => {
     expect(M.outView(hub, kit.id, name, undefined, new Date(t.getTime() + 13 * 3600_000)).others).toEqual([]);
     expect(M.sendOut(hub, rover.id, { species: 99999, nickname: "Z" })).toEqual({ error: "which daemon?" });
   });
+
+  it("meets on its own: one pair a turn, not again within six hours", async () => {
+    const { hub, rover, kit } = two();
+    const t = new Date("2026-10-28T10:00:00Z");
+    expect(await M.meetOnTheirOwn(hub, undefined, t, null)).toBeNull();          // only one out
+    M.sendOut(hub, rover.id, { species: 4, nickname: "A", level: 5 }, t);
+    M.sendOut(hub, kit.id, { species: 1, nickname: "B", level: 5 }, t);
+    const m = await M.meetOnTheirOwn(hub, undefined, t, null);
+    expect(m?.own).toBe(true);
+    expect(await M.meetOnTheirOwn(hub, undefined, new Date(t.getTime() + 3600_000), null)).toBeNull();
+    expect(await M.meetOnTheirOwn(hub, undefined, new Date(t.getTime() + 7 * 3600_000), null)).not.toBeNull();
+    expect(M.outView(hub, kit.id, () => "?", undefined, t).met[0].own).toBe(true);
+  });
 });

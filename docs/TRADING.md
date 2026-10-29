@@ -82,6 +82,19 @@ which relates to the profile feature". Decided the same day by multiple choice; 
 
 Every word the player reads is DRAFT.
 
+## A daemon given (C-223, built 2026-10-29)
+
+GIVE IT, beside TRADE IT and LEND IT, offers an AWAY daemon as a gift, to anyone or to one player, with nothing asked
+back. Another player's TAKE IT accepts it, and nothing of theirs is offered. Then:
+- **The giver's next SYNC** lets the daemon go. A box slot is emptied; a party member is removed and the party closed
+  up behind it. The last daemon in a party is never given; that gift waits.
+- **The receiver's next SYNC** writes the daemon into the first empty box slot, AWAY, the way a trade's arrives:
+  TRADED_IN, marked for the game to finish on load, with no partner named. A full PC makes it wait.
+- **The ledger** keeps a restored save from giving the same daemon again.
+
+The exchange calls it kind `gift`. Its deliveries are `<id>:give` (the giver's, with no record) and `<id>:swap` (the
+receiver's, with `out` 0).
+
 ## OUT TOGETHER: daemons that meet (C-220, first piece built 2026-10-28)
 
 A player sends one AWAY daemon **out** (TRADE, OUT TOGETHER: SEND OUT). It stays out for twelve hours, until it is

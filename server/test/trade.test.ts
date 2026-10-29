@@ -250,3 +250,42 @@ describe("the exchange (C-218 players, C-219 trades)", () => {
     expect(X.accept(hub, two.player.id, o.id, { game: game(saveA()), edition: "CONTENT", record: toB64(a.record) })).toMatchObject({ error: /itself|already/ });
   });
 });
+
+describe("a gift (C-223): given with nothing back", () => {
+  it("leaves the giver's party, closing it up, and arrives in the receiver's first empty box slot", async () => {
+    const hub = new Store(":memory:"), kitStore = new Store(":memory:");
+    const A = { save: saveA() }, B = { save: saveB() };
+    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://coremp135:4730", viaHub(hub));
+    await rover.join({ name: "ROVER" });
+    await kit.join({ name: "KIT", code: X.invite(hub, KEYS).code });
+    const given = await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/offer", { personality: 1002, kind: "gift" });
+    expect(given.body).toMatchObject({ kind: "gift", state: "open" });
+    const id = (given.body as X.Offer).id;
+    expect((await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/accept", { offer: id, gift: true })).body).toMatchObject({ error: /your own offer/ });
+    const took = await tradeRoute(kit, kitStore, B.save, "CONTEXT", "POST", "/api/trade/accept", { offer: id, gift: true });
+    expect(took.body).toMatchObject({ kind: "gift", state: "agreed" });
+    expect((await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/recall", { id })).body).toMatchObject({ error: /gift does not come back/ });
+
+    const ra = await sync(rover, hub, A), rb = await sync(kit, kitStore, B);
+    expect(ra.traded).toEqual([{ nickname: SPECIES["4"].name, species: 4, where: "party", gave: true }]);
+    expect(rb.traded).toEqual([{ nickname: SPECIES["4"].name, species: 4, where: "box" }]);
+    expect(readSave(A.save).party.map((d) => d.personality)).toEqual([1001]);                        // closed up behind it
+    const boxes = readBoxes(B.save).map((d) => d.personality);
+    expect(boxes).toContain(1002);
+    expect(boxes).toContain(2002);                                                                    // nothing of KIT's left
+    expect(X.board(hub, X.players(hub)[0].id).trades[0]).toMatchObject({ state: "done", kind: "gift" });
+    expect((await sync(rover, hub, A)).traded).toEqual([]);                                           // once
+    // the save it left, restored, cannot give it again
+    expect((await tradeRoute(rover, hub, saveA(), "CONTENT", "POST", "/api/trade/offer", { personality: 1002, kind: "gift" })).body)
+      .toMatchObject({ error: /traded away from this game already/ });
+  });
+
+  it("waits when the daemon given is the last in the party, or came home", () => {
+    const solo = buildSave({ player: "ROVER", trainerId: A_ID, slots: [{ counter: 4, party: [mon(1002, A_ID, 4, 15, { away: true })] }, { counter: 3, party: [] }] });
+    expect(syncSave(solo, { link: false, trade: [{ id: "g:give", out: 1002, record: null, give: true }] }).tradeWaits[0].why).toMatch(/last in the party/);
+    expect(syncSave(saveA(), { link: false, trade: [{ id: "g:give", out: 1001, record: null, give: true }] }).tradeWaits[0].why).toMatch(/home in the game/);
+    const fromBox = syncSave(saveB(), { link: false, trade: [{ id: "g:give", out: 2002, record: null, give: true }] });
+    expect(fromBox.traded[0]).toMatchObject({ gave: true, where: "box" });
+    expect(readBoxes(fromBox.save).map((d) => d.personality)).toEqual([2003]);
+  });
+});

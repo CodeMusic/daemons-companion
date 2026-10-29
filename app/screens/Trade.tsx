@@ -10,7 +10,7 @@ import { Action, Art, Card, Choice, Entry, Eyebrow, Small, useInk } from "../ui"
 import { useApi } from "../useApi";
 
 type Brief = { player: string; personality: number; species: number; nickname: string; level: number; edition: string } | null;
-type Offer = { id: string; at: string; kind: "full" | "loan"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean;
+type Offer = { id: string; at: string; kind: "full" | "loan" | "gift"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean;
                side?: "from" | "with" | null; commons?: boolean };
 type Mine = { personality: number; species: number; name: string; nickname: string; level: number; busy: boolean };
 // C-220: OUT TOGETHER
@@ -36,7 +36,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
   const [v, setV, error] = useApi<View>("/api/trade");
   const [said, setSaid] = useState("");
   const [name, setName] = useState(""), [code, setCode] = useState(""), [pw, setPw] = useState(""), [hub, setHub] = useState("");
-  const [kind, setKind] = useState<"full" | "loan">("full");
+  const [kind, setKind] = useState<"full" | "loan" | "gift">("full");
   const [scope, setScope] = useState<"home" | "friends">("home");   // C-222: this home, or friends' homes on THE COMMONS
   const [to, setTo] = useState<string>("");
   const [giving, setGiving] = useState<string | null>(null);   // the offer being taken
@@ -92,8 +92,9 @@ export function TradeScreen({ ink }: { ink?: string }) {
       <Card gap={6}>
         <Eyebrow>OFFER ONE OF YOURS</Eyebrow>
         {free.length ? (<>
-          <Choice value={kind} ink={ink} onPick={setKind} options={[["full", "TRADE IT"], ["loan", "LEND IT"]]} />
-          <Small>{kind === "full" ? "It becomes theirs, and theirs yours." : "You each lend one. Either of you can call yours home, and both come back."}</Small>
+          <Choice value={kind} ink={ink} onPick={setKind} options={[["full", "TRADE IT"], ["loan", "LEND IT"], ["gift", "GIVE IT"]]} />
+          <Small>{kind === "full" ? "It becomes theirs, and theirs yours." : kind === "loan" ? "You each lend one. Either of you can call yours home, and both come back."
+            : "It becomes theirs, and nothing comes back. Your next SYNC lets it go."}</Small>
           {b?.commons ? <Choice value={scope} ink={ink} onPick={(x) => { setScope(x as "home" | "friends"); setTo(""); }} options={[["home", "THIS HOME"], ["friends", "FRIENDS' HOMES"]] as ["home" | "friends", string][]} /> : null}
           {targets.length ? (
             <Choice value={to} ink={ink} onPick={setTo} options={[["", "ANYONE"], ...targets.map((p) => [p.id, p.name] as [string, string])]} />
@@ -101,7 +102,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
           {free.map((d) => (
             <XStack key={d.personality} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="center">
               <YStack flex={1}><Text fontSize={15} color="$color12">{`${d.nickname} · LV ${d.level}`}</Text><Small>{d.name}</Small></YStack>
-              <Action label="OFFER" ink={ink} onPress={() => act("/api/trade/offer", { personality: d.personality, kind, to: to || undefined, scope }, `${d.nickname} is on offer${scope === "friends" ? " to friends' homes" : ""}.`)} />
+              <Action label="OFFER" ink={ink} onPress={() => act("/api/trade/offer", { personality: d.personality, kind, to: to || undefined, scope }, `${d.nickname} is ${kind === "gift" ? "offered as a gift" : "on offer"}${scope === "friends" ? " to friends' homes" : ""}.`)} />
             </XStack>
           ))}
         </>) : <Small>No daemon is AWAY and free to offer.</Small>}
@@ -113,8 +114,9 @@ export function TradeScreen({ ink }: { ink?: string }) {
         {theirs.map((o) => (
           <YStack key={o.id} gap={4} paddingVertical={6} borderTopWidth={1} borderColor="$color5">
             <Text fontSize={15} color="$color12">{`${o.from?.player}: ${who(o.from)}`}</Text>
-            <Small>{o.kind === "loan" ? "A loan: each lends one." : "A trade."}{o.to ? ` For ${o.to}.` : ""}</Small>
-            {giving !== o.id ? <Action label="TAKE IT" ink={ink} onPress={() => setGiving(o.id)} /> : (
+            <Small>{o.kind === "loan" ? "A loan: each lends one." : o.kind === "gift" ? "A gift: nothing is asked back." : "A trade."}{o.to ? ` For ${o.to}.` : ""}</Small>
+            {o.kind === "gift" ? <Action label="TAKE IT" ink={ink} onPress={() => act("/api/trade/accept", { offer: o.id, gift: true }, `Thank you! Your next SYNC brings ${o.from?.nickname}.`)} />
+            : giving !== o.id ? <Action label="TAKE IT" ink={ink} onPress={() => setGiving(o.id)} /> : (
               <YStack gap={4}>
                 <Small>Give which of yours?</Small>
                 {free.map((d) => (
@@ -129,7 +131,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
         {ours.map((o) => (
           <XStack key={o.id} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="center">
             <YStack flex={1}><Text fontSize={15} color="$color12">{`Yours: ${who(o.from)}`}</Text>
-              <Small>{`${o.kind === "loan" ? "To lend" : "To trade"}${o.to ? `, for ${o.to}` : ", to anyone"}`}</Small></YStack>
+              <Small>{`${o.kind === "loan" ? "To lend" : o.kind === "gift" ? "To give" : "To trade"}${o.to ? `, for ${o.to}` : ", to anyone"}`}</Small></YStack>
             <Action label="WITHDRAW" ink={ink} onPress={() => act("/api/trade/withdraw", { id: o.id }, "Withdrawn.")} />
           </XStack>
         ))}
@@ -159,8 +161,8 @@ export function TradeScreen({ ink }: { ink?: string }) {
           <Eyebrow>YOUR TRADES</Eyebrow>
           {b!.trades.map((o) => (
             <YStack key={o.id} gap={2} paddingVertical={6} borderTopWidth={1} borderColor="$color5">
-              <Text fontSize={15} color="$color12">{`${who(o.from)}  ⇄  ${who(o.with)}`}</Text>
-              <Small>{`${o.kind === "loan" ? "Loan" : "Trade"} with ${o.side === "from" ? o.with?.player : o.from?.player}: ${o.state === "agreed" && o.held ? "lent -- each of you holds the other's" : STATE[o.state] ?? o.state}`}</Small>
+              <Text fontSize={15} color="$color12">{o.kind === "gift" ? `${who(o.from)}  →  ${o.side === "from" ? o.with?.player : "you"}` : `${who(o.from)}  ⇄  ${who(o.with)}`}</Text>
+              <Small>{`${o.kind === "loan" ? "Loan" : o.kind === "gift" ? "Gift" : "Trade"} with ${o.side === "from" ? o.with?.player : o.from?.player}: ${o.kind === "gift" ? (o.state === "done" ? "given" : "agreed -- each side's next SYNC") : o.state === "agreed" && o.held ? "lent -- each of you holds the other's" : STATE[o.state] ?? o.state}`}</Small>
               {o.kind === "loan" && o.state === "agreed" ? <Action label="CALL MINE HOME" ink={ink} onPress={() => act("/api/trade/recall", { id: o.id }, "Called home. Each side's next SYNC brings its own back.")} /> : null}
             </YStack>
           ))}

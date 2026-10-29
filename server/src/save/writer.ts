@@ -37,7 +37,7 @@ export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: str
                               evolved: { nickname: string; personality: number; from: number; to: number }[];
                               gifted: { box: number; pos: number; personality: number; species: number } | null;
                               sounded: { personality: number; level: Sounding }[];   // C-195: each carried daemon given a level
-                              traded: { id: string; out: number; in: number; species: number; nickname: string; where: "party" | "box" }[];   // C-219
+                              traded: { id: string; out: number; in: number; species: number; nickname: string; where: "party" | "box"; gave?: boolean }[];   // C-219; gave: C-223
                               tradeWaits: { id: string; why: string }[] }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
@@ -50,7 +50,9 @@ export interface Evolve { personality: number; species: number; from?: number } 
 // AWAY, so it is carried from the moment it arrives
 export interface Gift { species: number; name: string; level: number; personality: number; ivs: number; game: number }
 // C-219: a trade -- the daemon going (by its personality, AWAY here) and the whole record of the one coming in its place
-export interface TradeIn { id: string; out: number; record: Uint8Array; loan?: boolean; phase?: "swap" | "return" }
+// C-223: a GIFT -- `give` on the giver's side (the daemon leaves: no record comes in), and on the receiver's an `out` of 0
+// (nothing leaves: it arrives in the first empty box slot)
+export interface TradeIn { id: string; out: number; record: Uint8Array | null; loan?: boolean; phase?: "swap" | "return"; give?: boolean }
 
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
@@ -296,7 +298,46 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const boxFlags = (i: number) => out[box(4 + i * l.box_pokemon_size + l.flags_byte).byte];
     const present = (personality: number) => party.some((p) => p.d?.personality === personality) ||
       Array.from({ length: 14 * 30 }, (_, i) => i).some((i) => boxFlags(i) & 0b10 && boxPersonality(i) === personality);
+    const free = () => Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => !(boxFlags(i) & 0b10)) ?? -1;
     for (const t of opts.trade) {
+      // C-223: a gift given -- the daemon leaves this save: its box slot emptied, or the party closed up behind it
+      if (t.give) {
+        const pi = party.findIndex((p) => p.d?.personality === t.out >>> 0);
+        const bi = pi >= 0 ? -1 : Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => boxFlags(i) & 0b10 && boxPersonality(i) === t.out >>> 0) ?? -1;
+        if (pi < 0 && bi < 0) { tradeWaits.push({ id: t.id, why: "the daemon given is not in this save" }); continue; }   // DRAFT
+        if (pi >= 0 ? !awayAfter(party[pi]) : !(boxFlags(bi) & (1 << l.away_bit))) { tradeWaits.push({ id: t.id, why: "the daemon given is home in the game -- SEND it again" }); continue; }   // DRAFT
+        if (pi >= 0 && party.length <= 1) { tradeWaits.push({ id: t.id, why: "the daemon given is the last in the party" }); continue; }   // DRAFT
+        const gone = pi >= 0 ? party[pi].d! : null;
+        if (pi >= 0) {
+          const n = party.length, size = l.pokemon_size, read = (j: number) => Uint8Array.from({ length: size }, (_, k) => out[at(l.party_offset + j * size + k).byte]);
+          for (let j = pi; j < n; j++) {
+            const next = j + 1 < n ? read(j + 1) : new Uint8Array(size);
+            for (let k = 0; k < size; k++) { const b = at(l.party_offset + j * size + k); out[b.byte] = next[k]; touched.add(b.id); }
+          }
+          const c = at(l.party_count_offset); out[c.byte] = n - 1; touched.add(c.id);
+          party.splice(pi, 1);
+          party.forEach((p, j) => { p.i = j; p.recStart = l.party_offset + j * size; });
+          traded.push({ id: t.id, out: t.out >>> 0, in: 0, species: gone!.species, nickname: gone!.nickname, where: "party", gave: true });
+        } else {
+          const d = readDaemon(Uint8Array.from({ length: l.box_pokemon_size }, (_, k) => out[box(4 + bi * l.box_pokemon_size + k).byte]), 0, l);
+          for (let k = 0; k < l.box_pokemon_size; k++) { const b = box(4 + bi * l.box_pokemon_size + k); out[b.byte] = 0; touched.add(b.id); }
+          traded.push({ id: t.id, out: t.out >>> 0, in: 0, species: d?.species ?? 0, nickname: d?.nickname ?? "", where: "box", gave: true });
+        }
+        continue;
+      }
+      // C-223: a gift received -- nothing leaves; it arrives in the first empty box slot, as a trade's arrives
+      if (!t.out) {
+        const rec = t.record && arriving(t.record, l, { phase: "swap" }), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
+        if (!rec || incoming == null) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }   // DRAFT
+        if (present(incoming)) { tradeWaits.push({ id: t.id, why: "that daemon is already in this save" }); continue; }   // DRAFT
+        const at0 = free();
+        if (at0 < 0) { tradeWaits.push({ id: t.id, why: "the PC is full -- make room in a box" }); continue; }   // DRAFT
+        for (let k = 0; k < l.box_pokemon_size; k++) { const b = box(4 + at0 * l.box_pokemon_size + k); out[b.byte] = rec[k]; touched.add(b.id); }
+        const d = readDaemon(rec, 0, l)!;
+        traded.push({ id: t.id, out: 0, in: incoming >>> 0, species: d.species, nickname: d.nickname, where: "box" });
+        continue;
+      }
+      if (!t.record) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }
       const inParty = party.find((p) => p.d?.personality === t.out >>> 0);
       const inBox = inParty ? -1 : Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => boxFlags(i) & 0b10 && boxPersonality(i) === t.out >>> 0) ?? -1;
       // T-474: the species given for it -- the one leaving this slot

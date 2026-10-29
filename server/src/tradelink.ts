@@ -80,6 +80,7 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
     case "accept": {                              // C-220: and the two daemons meet once, to say hello
       const r = X.accept(store, p.id, String(b.id ?? ""), b, new Date(), reach);
       if (X.failed(r) || !r.with) return r;
+      if (r.kind === "gift") return shown(r);       // C-223: a gift has one daemon -- no hello
       const daemon = (x: X.Side) => ({ player: x.player, personality: x.personality, species: x.species, nickname: x.nickname, level: x.level, edition: x.edition });
       return M.hello(store, daemon(r.from), daemon(r.with), r.kind).then(() => shown(r), () => shown(r));
     }
@@ -127,8 +128,9 @@ export function tradesToWrite(store: Store, game: GameKey): TradeIn[] {
   const ib = inboxOf(store), done = outbox(store);
   if (!ib || ib.game !== gameId(game)) return [];
   return ib.deliveries.filter((d) => !done.includes(d.id)).flatMap((d) => {
+    if (d.phase === "give") return [{ id: d.id, out: d.out, record: null, give: true } as TradeIn];   // C-223: a gift given -- it leaves
     const record = fromB64(d.record);
-    return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase }] : [];
+    return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase } as TradeIn] : [];
   });
 }
 // What the game must keep AWAY (TRADING): this game's daemons in a trade, as the exchange said before this SYNC -- or
@@ -195,6 +197,8 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
   }
   if (path === "/api/trade/offer" || path === "/api/trade/accept") {
     if (!save) return no(404, "no save named -- set it in Settings");
+    // C-223: a gift taken -- nothing given back, only this game named, for the next SYNC to put it in a box
+    if (path.endsWith("accept") && b.gift === true) return answer(await link.call("accept", { game: gameOf(save), edition, id: b.offer }));
     const t = tradeRecord(save, Number(b.personality));
     if (typeof t === "string") return no(400, t);
     const sent = { game: gameOf(save), edition, record: toB64(t.record) };

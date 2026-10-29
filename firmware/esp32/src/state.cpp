@@ -1,6 +1,8 @@
 // What the server said, and the board's settings (C-67: from main.cpp).
 #include <Preferences.h>
 #include <mbedtls/base64.h>
+#include <LittleFS.h>
+#include <vector>
 #include "app.h"
 #include "card.h"
 #include "broadcast.h"
@@ -278,6 +280,34 @@ static void show(const String &key, const uint16_t *pal, const uint8_t *pix) {
 
 // A picture as the server sends it. The reply names whose it is (`artKey`; a server before 2026-10-28 does not, and the
 // one asked for is assumed): one fetched for a daemon since changed is kept, not shown under the new one's name.
+// C-241: and where there is no card (the user's Ultra has none), on the board's own flash -- the partition the build
+// leaves for files, mounted once (formatted the first time), the last eight pictures kept. Without it, a board with no
+// Wi-Fi asked a phone in a pocket for every picture after every start, and showed the shadow for minutes.
+static bool flashReady() {
+  static int8_t ok = -1;
+  if (ok < 0) ok = psramFound() && LittleFS.begin(true) ? 1 : 0;
+  return ok == 1;
+}
+static void flashKeep(const String &key, const String &json) {
+  if (cardReady() || !flashReady()) return;
+  if (!LittleFS.exists("/art")) LittleFS.mkdir("/art");
+  File d = LittleFS.open("/art"); std::vector<String> names; String oldest; time_t oldestAt = 0;
+  for (File f = d.openNextFile(); f; f = d.openNextFile()) {
+    names.push_back(f.name());
+    if (!oldest.length() || f.getLastWrite() < oldestAt) { oldest = f.name(); oldestAt = f.getLastWrite(); }
+  }
+  if (names.size() >= 8 && oldest.length()) LittleFS.remove("/art/" + oldest);
+  File f = LittleFS.open("/art/" + key + ".json", "w");
+  if (f) { f.print(json); f.close(); }
+}
+static String flashRead(const String &key) {
+  if (cardReady() || !flashReady()) return "";
+  File f = LittleFS.open("/art/" + key + ".json", "r");
+  if (!f) return "";
+  String s = f.readString(); f.close();
+  return s;
+}
+
 bool takeArt(const String &json) {
   JsonDocument doc;
   if (deserializeJson(doc, json) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;
@@ -293,7 +323,7 @@ bool takeArt(const String &json) {
   if (!key.length()) return false;
   bool fresh = !artCached(key);
   keep(key, pal, pix);
-  if (fresh) cardWrite("art/" + key + ".json", json);                // C-199: on the Ultra's card, for the next time
+  if (fresh && !cardWrite("art/" + key + ".json", json)) flashKeep(key, json);   // C-199: on the Ultra's card, for the next time; C-241: or its flash
   if (key == st.daemon.artKey) show(key, pal, pix);
   return true;
 }
@@ -301,6 +331,7 @@ bool takeArt(const String &json) {
 bool artFromCache(const String &key) {
   if (KeptArt *k = keptFor(key)) { k->used = millis(); if (key == st.daemon.artKey) show(key, k->pal, k->pix); return true; }
   String c = cardRead("art/" + key + ".json");
+  if (!c.length()) c = flashRead(key);                               // C-241
   return c.length() && takeArt(c) && artCached(key);
 }
 

@@ -467,7 +467,9 @@ void handleLine(String line, bool fromPhone) {
     else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing
   }
   else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
-  else if (line.startsWith("PARTYART ")) casinoTakeArt(line.c_str() + 9);   // C-149: a party daemon, for the CASINO's reels
+  else if (line.startsWith("PARTYART ")) {           // C-149: a party daemon, for the CASINO's reels
+    if (!casinoTakeArt(line.c_str() + 9)) takeArt(line.substring(9));   // C-241: or fetched ahead (fetchPartyArt), kept by its artKey
+  }
   else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
   else if (line == "SHOT" && !fromPhone) { if (dirty && !asleep) draw(); shot(); }   // C-121: what it shows now, not before the line ahead of it
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
@@ -852,13 +854,17 @@ void reportLoop() {
 // a bridge that has not answered in 2.5 s is passed over for Wi-Fi where there is Wi-Fi (the phone, asleep in a pocket,
 // left the shadow there for minutes); a failure is asked again after five seconds, so a missing server is not asked in
 // a loop. With nothing wanted, the party's pictures are fetched ahead, one every three seconds, so a change shows at once.
+// C-241: and through the phone where there is no Wi-Fi (PARTYART?, which the app already answers for the CASINO): the
+// user's Ultra has no Wi-Fi away from home, so the party was never fetched ahead and every change waited on the phone.
 static void fetchPartyArt() {
   static uint32_t nextAt = 0;
-  if (!psramFound() || bridgeLive() || !online() || (int32_t)(millis() - nextAt) < 0) return;
+  bool viaPhone = !online() && phoneLive() && !usbLive();
+  if (!psramFound() || (int32_t)(millis() - nextAt) < 0 || !(viaPhone || (online() && !bridgeLive()))) return;
   for (int i = 0; i < st.partyN; i++) {
     const Member &m = st.party[i];
     if (m.slot < 0 || !m.artKey.length() || artCached(m.artKey)) continue;
-    if (artFromCache(m.artKey)) { nextAt = millis() + 200; return; }          // on the card
+    if (artFromCache(m.artKey)) { nextAt = millis() + 200; return; }          // on the card, or the flash
+    if (viaPhone) { linkSend("PARTYART? " + String(m.slot)); nextAt = millis() + 8000; return; }
     bool ok; String got = http("GET", "/api/device/art?slot=" + String(m.slot), "", &ok);
     nextAt = millis() + (ok && takeArt(got) ? 3000 : 30000);
     return;
@@ -871,9 +877,15 @@ void askForArt() {
   if (wanted != key) { wanted = key; artAskedAt = 0; bridged = false; if (artFromCache(key)) { artTold = "kept"; return; } }
   if (artAskedAt && millis() - artAskedAt < (bridged && online() ? 2500u : 5000u)) return;
   artAskedAt = millis();
-  if (bridgeLive() && !bridged) { bridged = true; bridge("ART?"); return; }
+  static int asks = 0;                                     // C-241: so MEM says how long the bridge has been asked
+  if (bridgeLive() && !bridged) { bridged = true; bridge("ART?"); artTold = "asked the " + String(usbLive() ? "cable" : "phone") + " x" + String(++asks); return; }
   bridged = false;
-  if (!online()) { if (bridgeLive()) { bridged = true; bridge("ART?"); } return; }
+  if (!online()) {
+    if (bridgeLive()) { bridged = true; bridge("ART?"); artTold = "asked the " + String(usbLive() ? "cable" : "phone") + " x" + String(++asks); }
+    else artTold = "no Wi-Fi, no phone";
+    return;
+  }
+  asks = 0;
   bool ok;
   String got = http("GET", "/api/device/art", "", &ok);
   artTold = !ok ? "fetch failed (" + String(got.length()) + " bytes)" : takeArt(got) ? "taken" : "unread (" + String(got.length()) + " bytes)";

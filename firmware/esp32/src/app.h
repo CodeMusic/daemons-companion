@@ -58,6 +58,29 @@ struct State {
   String watch, sky;                        // C-158: the real world -- the hour (DAWN DAY DUSK NIGHT) and the weather's kind
 };
 // C-43: the board's settings, set on the site and carried in the state; kept in flash for when it is unlinked
+// C-242 (the user, 2026-10-29): each drain on or off, from the app's BATTERY -- the state's settings.power -- and the AUTO
+// rules: GPS (and, chosen, the radios) only while the motion sensor says it moves. C-243: `low`, every switch at its
+// thrifty side at once, kept apart so turning it off brings the rest back as set. power.cpp reads them.
+struct PowerCfg { bool low = false, gps = true, lora = true, meet = true, aod = false, pulses = true; int poll = 60;
+               bool gpsOnMove = true, radiosOnMove = false; int stillMinutes = 5;
+               bool operator==(const PowerCfg &o) const { return low == o.low && gps == o.gps && lora == o.lora && meet == o.meet &&
+                 aod == o.aod && pulses == o.pulses && poll == o.poll && gpsOnMove == o.gpsOnMove && radiosOnMove == o.radiosOnMove &&
+                 stillMinutes == o.stillMinutes; } };
+bool powerMoving();            // moved within the still spell (always true without a motion sensor)
+bool powerGps();               // GPS may be on at all (FIND aside)
+bool powerGpsPolls();          // and fixes now and then while still ("Always"), not only on the move
+uint32_t powerStillMs();
+bool powerLora(); bool powerMeet();
+uint32_t powerPollMs();        // how often it asks the companion
+int powerSleepAfter();         // seconds left alone before the screen sleeps
+uint8_t powerBright();         // the AMOLED's brightness awake
+bool powerAod();               // the always-on face, asleep
+void powerSetLow(bool on);     // the watch's own switch (and its charger)
+void powerLoop(uint32_t now);
+void openQuick(int k); bool openView(const String &id);   // ui.cpp: a view, by a quick button or C-244
+void settingsChanged();        // kept and applied, after a change made here (state.cpp)
+bool aodShowing();             // asleep, with the dim face showing (input.cpp)
+void backlightDim();
 struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = true; int volume = 40; int ring = 33;
                   bool meet = true; int band = 433;   // meet: C-15, meeting others nearby; band: C-72, LoRa
                   bool wakeEvery = false;      // C-159: the wake jingle on every wake, not only at power-up
@@ -65,7 +88,8 @@ struct Settings { String home = "daemon"; int sleepAfter = 120; bool sound = tru
                   bool faceSky = true;         // C-163: the season behind the daemon's faces, and the weather in front
                   int hours = 24;              // C-166: the clock in 12 or 24 hours
                   String instrument = "default";
-                  String quick = "care,music,hours"; };   // C-206: the Ultra's three buttons under its face   // PLAY to test: the save's ("default"), or "harp" or "flute" forced
+                  String quick = "care,music,hours";
+                  PowerCfg power; };   // C-242   // C-206: the Ultra's three buttons under its face   // PLAY to test: the save's ("default"), or "harp" or "flute" forced
 void playForce(const String &name);
 // C-203 (intuition.cpp): THE SUBTLE LAYER on the watches -- the daemon noticing, a read now and then, a lean at the reels
 enum ReadAbout { READ_NEAR, READ_RAIN, READ_NIGHT, READ_WALK };
@@ -125,7 +149,7 @@ String daemonName();                      // C-51: the routines speak in its nam
 // routine RUNs. INDEX_ENTRY: the carried daemon's (C-36). PICK_NET, TYPE_PASS: joining a network on the board (C-33).
 // CARE: feed, water, train, or read its INDEX entry (C-13). PICK_REMOTE: C-51. PARTY, MOVES: GAME ROUTINES (C-68) -- the
 // party, then a daemon's routines; picking one plays it, the ring lit its colour.
-enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_PAGE, TALK_PAGE };   // C-211: TALK, who answers first   // C-159: SOUND, on or off on the board   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
+enum Page { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, FACE_PAGE, OFF_PAGE, SOUND_PAGE, TALK_PAGE, POWER_PAGE };   // C-243: LOW POWER on the watches   // C-211: TALK, who answers first   // C-159: SOUND, on or off on the board   // C-73: the Xenith day; C-71: the watch's face; SWITCH OFF
 Page homePage();                          // where waking lands: the watch's face, or the daemon (or TODAY, C-42)
 enum Screen { HOME, TYPES, LIST, RUN, INDEX_ENTRY, PICK_NET, TYPE_PASS, CARE, PICK_REMOTE, PARTY, MOVES, TALK, COMPOSE,   // TALK: C-66; COMPOSE: C-123
               CARE_KEYS,                  // C-149: the three-button boards' CARE -- a button each, then home

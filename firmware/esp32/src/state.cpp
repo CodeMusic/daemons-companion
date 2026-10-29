@@ -18,6 +18,7 @@ void applySettings() {
   soundSettings(cfg.sound, cfg.volume);
   ledsBrightness(cfg.ring);
   soundForce(cfg.instrument); playForce(cfg.instrument);   // PLAY to test
+  if (!asleep) backlight(true);                             // C-243: low power dims it
 }
 
 void loadSettings() {
@@ -31,6 +32,7 @@ void loadSettings() {
   cfg.hours = p.getInt("hours", cfg.hours);                 // C-166
   cfg.instrument = p.getString("instr", cfg.instrument);    // PLAY to test
   cfg.quick = p.getString("quick", cfg.quick);              // C-206
+  p.getBytes("power", &cfg.power, sizeof cfg.power);         // C-242: kept whole (plain values, its size checked by the read)
   p.end();
   applySettings();
 }
@@ -45,15 +47,27 @@ static void saveSettings() {
   p.putInt("hours", cfg.hours);                             // C-166
   p.putString("instr", cfg.instrument);                     // PLAY to test
   p.putString("quick", cfg.quick);                          // C-206
+  p.putBytes("power", &cfg.power, sizeof cfg.power);         // C-242
   p.end();
 }
 // C-159: SOUND changed on the board -- a state already on its way still says the old one, so for a little while the
 // board's own word stands
 static uint32_t soundHereAt = 0;
+uint32_t lowHereAt = 0;                                      // C-243: the same for low power, switched on the watch
 void soundSetHere(bool on) {
   cfg.sound = on; soundHereAt = millis();
   saveSettings(); applySettings();
   report("setting", String("sound ") + (on ? "on " : "off ") + deviceId());
+}
+void settingsChanged() { saveSettings(); applySettings(); dirty = true; }
+// C-243: low power switched on the watch itself (its SETTINGS, "INDEX, low power on", or ended by its charger) -- kept,
+// applied, and told to the companion as its own setting, so the app's BATTERY agrees
+void powerSetLow(bool on) {
+  if (cfg.power.low == on) return;
+  cfg.power.low = on; lowHereAt = millis();
+  saveSettings(); applySettings();
+  report("setting", String("low ") + (on ? "on " : "off ") + deviceId());
+  dirty = true;
 }
 void takeSettings(JsonVariant s) {
   Settings got;
@@ -70,9 +84,18 @@ void takeSettings(JsonVariant s) {
     String q; for (JsonVariantConst v : s["quick"].as<JsonArrayConst>()) q += (q.length() ? "," : "") + String((const char *)(v | ""));
     got.quick = q;
   }
+  JsonVariant pw = s["power"];                               // C-242: absent from an older companion -- kept as it was
+  if (!pw.isNull()) {
+    got.power.low = pw["low"] | cfg.power.low; got.power.gps = pw["gps"] | cfg.power.gps; got.power.lora = pw["lora"] | cfg.power.lora;
+    got.power.meet = pw["meet"] | cfg.power.meet; got.power.aod = pw["aod"] | cfg.power.aod; got.power.pulses = pw["pulses"] | cfg.power.pulses;
+    got.power.poll = constrain((int)(pw["poll"] | cfg.power.poll), 30, 600);
+    got.power.gpsOnMove = pw["gpsOnMove"] | cfg.power.gpsOnMove; got.power.radiosOnMove = pw["radiosOnMove"] | cfg.power.radiosOnMove;
+    got.power.stillMinutes = constrain((int)(pw["stillMinutes"] | cfg.power.stillMinutes), 1, 60);
+  } else got.power = cfg.power;
   if (soundHereAt && millis() - soundHereAt < 30000) got.sound = cfg.sound;
+  if (lowHereAt && millis() - lowHereAt < 60000) got.power.low = cfg.power.low;   // C-243: switched here, not yet heard there
   if (got.home == cfg.home && got.sleepAfter == cfg.sleepAfter && got.sound == cfg.sound && got.volume == cfg.volume &&
-      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery && got.face == cfg.face && got.faceSky == cfg.faceSky && got.hours == cfg.hours && got.instrument == cfg.instrument && got.quick == cfg.quick) return;
+      got.ring == cfg.ring && got.meet == cfg.meet && got.band == cfg.band && got.wakeEvery == cfg.wakeEvery && got.face == cfg.face && got.faceSky == cfg.faceSky && got.hours == cfg.hours && got.instrument == cfg.instrument && got.quick == cfg.quick && got.power == cfg.power) return;
   cfg = got;
   saveSettings();
   applySettings();

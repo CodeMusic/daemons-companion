@@ -196,7 +196,7 @@ void turn(int step) {
     // C-159: SOUND before it, on or off on the board itself
     // C-161 (the user, 2026-10-18: "the first tabs should be the most used ones (goals, routines, etc... and finally
     // settings"): on the face boards TODAY, then ROUTINES, then the daemon, the day, and SETTINGS (SOUND_PAGE) last
-    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, ROUTINES_PAGE, DAEMON, DAY_PAGE, TALK_PAGE, SOUND_PAGE, OFF_PAGE };   // C-211: TALK on the watches
+    static const Page EMBED[] = { TODAY, DAEMON, ROUTINES_PAGE, DAY_PAGE, SOUND_PAGE, OFF_PAGE }, WATCH[] = { FACE_PAGE, TODAY, ROUTINES_PAGE, DAEMON, DAY_PAGE, TALK_PAGE, SOUND_PAGE, POWER_PAGE, OFF_PAGE };   // C-243: LOW POWER   // C-211: TALK on the watches
     bool face = board.touch || board.round;   // C-102: the Dial's round face first, as the watch's
     // C-163: the watch has no SWITCH OFF -- its crown held sleeps, held longer switches it off (its power chip)
     // counted from the lists, so a page added to one cannot strand the last (C-211 added TALK and SWITCH OFF fell off)
@@ -260,6 +260,7 @@ void press() {
     else if (page == DAY_PAGE) { soundSelect(); delay(160); soundSelect(); }   // C-73: the day's note, twice
     else if (page == OFF_PAGE) switchOff("Off.");                                // the user, 2026-10-15; DRAFT
     else if (page == SOUND_PAGE) { soundSetHere(!cfg.sound); if (cfg.sound) soundSelect(); }   // C-159
+    else if (page == POWER_PAGE) powerSetLow(!cfg.power.low);                                    // C-243
     else if (page == TALK_PAGE && st.talk.have) {               // C-211: the other one first, at once; the server is told
       st.talk.first = st.talk.first == "module" ? "n8n" : "module";
       report("talkfirst", st.talk.first);
@@ -358,10 +359,20 @@ void back() {
 // nothing else. The link keeps running underneath (readUsb, the Wi-Fi poll), so it wakes current.
 bool chorded = false;
 
+// C-242: on the Ultra, with ALWAYS-ON FACE set, sleep keeps the face at home, dim, redrawn once a minute (main.cpp);
+// the touch and the buttons still do nothing until a wake
+static bool aodNow = false;
+bool aodShowing() { return asleep && aodNow; }
 void sleepNow() {
   asleep = true;
-  canvas.fillSprite(TFT_BLACK); present();
-  backlight(false);
+  aodNow = powerAod();
+  if (aodNow) {
+    screen = HOME; menuOpen = false; page = homePage();
+    draw(); backlightDim();
+  } else {
+    canvas.fillSprite(TFT_BLACK); present();
+    backlight(false);
+  }
   ledsSleep(true);
 }
 

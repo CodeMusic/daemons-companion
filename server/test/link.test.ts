@@ -116,6 +116,11 @@ describe("the board's settings, set on the site (C-43)", () => {
     expect((await post("/api/device/settings", { sound: false })).json).toMatchObject({ sound: false, home: "daemon" });
     expect((await post("/api/device/settings", { home: "routines" })).status).toBe(400);
     expect((await post("/api/device/settings", { volume: 101 })).status).toBe(400);
+    // C-243: low power switched on the watch itself travels as its own setting, the rest of its power kept
+    const low = await post("/api/device/interact", { kind: "setting", detail: "low on t-watch-ultra-f351d4" });
+    expect(low.status).toBe(200);
+    expect(low.json.settings.power).toMatchObject({ low: true, gps: true, poll: 60 });
+    expect((await post("/api/device/interact", { kind: "setting", detail: "low maybe t-watch-ultra-f351d4" })).status).toBe(400);
     expect((await get("/api/device/state")).settings.sound).toBe(false);
   });
 });

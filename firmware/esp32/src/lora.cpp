@@ -106,6 +106,7 @@ static void radioBus() { SPI3.user.usr_miso = 1; SPI3.user.usr_mosi = 1; SPI3.us
 static void radioBus() {}
 #endif
 static bool ready = false; static int bandMhz = 0; static uint32_t triedAt = 0;
+static bool slept = false;                                 // C-242: put to sleep by BATTERY (LORA off, low power, or still)
 static volatile bool gotFrame = false;
 static void IRAM_ATTR onFrame() { gotFrame = true; }
 static uint32_t beaconAt = 0; static bool beaconOn = false; static int ourSpecies = 0;
@@ -207,6 +208,7 @@ bool loraSend(uint8_t kind, uint32_t to, const String &text) {
 }
 bool loraCast(uint8_t kind, uint16_t id, const String &text) { return sendWithId(kind, 0, text, id); }
 static bool sendWithId(uint8_t kind, uint32_t to, const String &text, uint16_t id, uint8_t hops) {
+  if (slept || !powerLora()) return false;                 // C-242: switched off, it says nothing
   uint32_t me = meetTag();
   if (!ready || !me || !st.carrying) return false;
   uint8_t b[FRAME_MAX]; int n = 0;
@@ -293,8 +295,13 @@ static void relayOut() {                                   // what was heard, to
 }
 
 void loraLoop(uint32_t now, bool on, int species) {
+  if (!powerLora()) {
+    if (ready && !slept) { tft.waitDMA(); radioBus(); radio->sleep(); slept = true; beaconOn = false; }
+    return;                                                // what waits to be relayed waits for it
+  }
   relayOut();                                              // C-175
   if (!radioOn()) return;
+  if (slept) { tft.waitDMA(); radioBus(); radio->startReceive(); slept = false; }
   if (bandFor(cfg.band) != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915)) {   // the site moved the band
     bandMhz = bandFor(cfg.band); tft.waitDMA(); radioBus(); radio->setFrequency((float)bandMhz); radio->startReceive();
   }

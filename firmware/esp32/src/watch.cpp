@@ -188,7 +188,7 @@ static void hapticBegin() {
   if (haveDrv) { drv.selectLibrary(1); drv.setMode(SensorDRV2605::MODE_INTTRIG); }
 }
 void haptic(uint8_t effect) {
-  if (!haveDrv || !effect || !cfg.sound) return;        // quiet is quiet: the sound setting holds the buzz too
+  if (!haveDrv || !effect || !cfg.sound || !cfg.power.pulses) return;   // quiet is quiet: the sound setting holds the buzz too; C-242 PULSES
   drv.setWaveform(0, min<uint8_t>(effect, 123)); drv.setWaveform(1, 0); drv.run();
 }
 #else

@@ -85,7 +85,8 @@ void loop() {
   remotesLoop(now);                         // C-165: the remotes every device shares
   activityLoop(now);                        // C-183: a thousand steps walked, shown
   if (!bridgeLive() && online() && !netBusy()) {   // C-121: not while the outbox sends -- the state comes back with it
-    if (now - lastPoll > POLL_MS || (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
+    if (now - lastPoll > powerPollMs() ||   // C-242: as often as BATTERY says
+         (!st.have && now - lastPoll > 5000)) { lastPoll = now; httpState("GET", "/api/device/state", ""); }
     pollCommands(now);                        // C-32: what the site sent, over Wi-Fi
   }
   if (flashUntil && now > flashUntil) { flashUntil = 0; dirty = true; }
@@ -93,7 +94,8 @@ void loop() {
   uplinkLoop(now);
   linkLoop(now);                            // C-55
   talkLoop(now);                            // C-181: a talk's answer, when the hub has it
-  meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-15
+  powerLoop(now);                           // C-242, C-243
+  meetLoop(now, powerMeet(), st.carrying ? st.daemon.species : 0);   // C-15; C-242 its BATTERY switch and rule
   loraLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);   // C-72: the same switch, the same tag
   meetCastLoop(now); castLoop(now);         // C-134: broadcasts -- Bluetooth's pieces, answers due
   meetReport();
@@ -109,7 +111,10 @@ void loop() {
   // C-42: any menu, left alone, goes to sleep; waking lands at home. Signed: watchLoop's touch and crown come after
   // `now` was read, so lastInput can be a few ms newer than it -- unsigned, that was 49 days alone, and the watch slept
   // the moment it was woken or touched (2026-10-18)
-  if (!asleep && cfg.sleepAfter > 0 && (int32_t)(now - lastInput) > (int32_t)cfg.sleepAfter * 1000) sleepNow();
+  if (!asleep && powerSleepAfter() > 0 && (int32_t)(now - lastInput) > (int32_t)powerSleepAfter() * 1000) sleepNow();   // C-243: sooner in low power
+  // C-242: the always-on face, asleep -- drawn dim once a minute (and when the state changes what it shows)
+  static int aodMinute = -1;
+  if (asleep && aodShowing() && (dirty || aodMinute != (int)(now / 60000))) { aodMinute = now / 60000; dirty = false; draw(); }
   // the daemon at home is alive: redraw it a few times a second
   static uint32_t lifeAt = 0;
   if (!asleep && screen == HOME && (page == DAEMON || (page == FACE_PAGE && faceHasDaemon())) && st.carrying && now - lifeAt > 90) {   // C-162

@@ -200,6 +200,54 @@ static bool playKept(const String &name) {
 }
 
 // What the server said: show the words, then play the voice.
+// C-244 (the user, 2026-10-29: "if I talk to the daemon and start with the word INDEX (it knows it is a command mode) ...
+// the AI returns a JSON command that the watch actions"): a talk that began INDEX comes back with `command`, already
+// checked by the server against its list (server/src/commands.ts) -- a switch is thrown before the answer is said, so
+// "Low power mode, on." is true when it is heard; a page or a routine is opened after it. null: not on the list, and
+// the answer says so.
+static String goAfter;                                     // "page <name>" or "routine <NAME>", once the answer is said
+static void commandBefore(JsonVariantConst c) {
+  goAfter = "";
+  if (c.isNull()) return;
+  String what = c["do"] | "";
+  if (what == "lowpower") { powerSetLow(c["on"] | false); return; }
+  if (what == "page") { goAfter = "page " + String((const char *)(c["name"] | "")); return; }
+  if (what == "routine") { goAfter = "routine " + String((const char *)(c["name"] | "")); return; }
+  if (what != "setting") return;
+  // the server has kept it in this watch's settings too, so the next state agrees; here it takes effect now
+  String name = c["name"] | ""; JsonVariantConst v = c["value"];
+  if (name == "sound") { soundSetHere(v | true); return; }
+  if (name == "volume") cfg.volume = constrain((int)(v | cfg.volume), 0, 100);
+  else if (name == "hours") cfg.hours = (v | 24) == 12 ? 12 : 24;
+  else if (name == "face") cfg.face = v | cfg.face.c_str();
+  else if (name == "gps") cfg.power.gps = v | cfg.power.gps;
+  else if (name == "lora") cfg.power.lora = v | cfg.power.lora;
+  else if (name == "bluetooth") cfg.power.meet = v | cfg.power.meet;
+  else if (name == "always on") cfg.power.aod = v | cfg.power.aod;
+  else if (name == "pulses") cfg.power.pulses = v | cfg.power.pulses;
+  else return;
+  settingsChanged();
+}
+static void commandAfter() {
+  String go = goAfter; goAfter = "";
+  if (go.startsWith("page ")) {
+    String name = go.substring(5);
+    if (name == "talk") return;                            // here already
+    lastInput = millis();
+    if (openView(name)) return;
+    Page p = name == "today" ? TODAY : name == "daemon" ? DAEMON : name == "settings" ? SOUND_PAGE : homePage();   // "face"
+    screen = HOME; menuOpen = false; page = p; dirty = true;
+  } else if (go.startsWith("routine ")) {
+    String want = go.substring(8);
+    for (int i = 0; i < typeCount; i++)
+      for (int k = 0; k < types[i].count; k++)
+        if (want.equalsIgnoreCase(types[i].routines[k].name)) { typeAt = i; routineAt = k; lastInput = millis(); runRoutine(); return; }
+    for (int i = 0; i < typeCount; i++)
+      if (want.equalsIgnoreCase(types[i].name)) { typeAt = i; routineAt = 0; screen = LIST; lastInput = millis(); dirty = true; return; }
+    say("No " + want + " here");                                                // DRAFT
+  }
+}
+
 static void answer(int code, const String &body) {
   JsonDocument d;
   if (code != 200 || deserializeJson(d, body)) {
@@ -208,9 +256,11 @@ static void answer(int code, const String &body) {
   talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | "");
   const char *err = d["error"] | "";
   talkStatus = strlen(err) ? String(err) : "";
+  commandBefore(d["command"]);                             // C-244
   draw();
   const char *audio = d["audio"] | "";
   if (strlen(audio)) playVoice(audio);
+  commandAfter();
 }
 
 // A line from the cable, read directly while a talk turn waits (the loop is not running, so nothing else reads it).
@@ -250,8 +300,9 @@ static void overCable(uint8_t *rec, size_t n) {
   JsonDocument d;
   deserializeJson(d, line.substring(7));
   talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | ""); talkStatus = d["error"] | "";
+  commandBefore(d["command"]);                                                   // C-244
   screen = TALK; draw();
-  if (!(d["audio"] | false)) { lastInput = millis(); return; }
+  if (!(d["audio"] | false)) { lastInput = millis(); commandAfter(); return; }
   b64Held.reset();                                                               // C-97: given back before the voice
   std::unique_ptr<uint8_t, void (*)(void *)> pcmHeld((uint8_t *)malloc(3100), free);   // C-97: borrowed while in use, not kept
   uint8_t *pcm = pcmHeld.get();
@@ -265,6 +316,7 @@ static void overCable(uint8_t *rec, size_t n) {
     if (giveUp()) stopped = true;
   }
   lastInput = millis();
+  commandAfter();                                                                // C-244
 }
 
 // G.711 mu-law: a 16-bit sample in eight bits, as telephones have always sent speech. Sun's reference g711.c, checked
@@ -322,6 +374,7 @@ static void overPhone(uint8_t *rec, size_t n) {
   JsonDocument d;
   deserializeJson(d, line.substring(7));
   talkHeard = plain(d["heard"] | ""); talkAnswer = plain(d["answer"] | ""); talkStatus = d["error"] | "";
+  commandBefore(d["command"]);                                                   // C-244
   draw();
   // C-213: the phone says it on its own speaker; the daemon here mouths it for about as long (fourteen letters a second)
   uint32_t speakFor = min(20000u, (uint32_t)talkAnswer.length() * 1000 / 14), t0 = millis();
@@ -331,6 +384,7 @@ static void overPhone(uint8_t *rec, size_t n) {
   }
   if (mouthOpen) { mouthOpen = false; draw(); }
   lastInput = millis();
+  commandAfter();                                                                // C-244
 }
 
 // C-76: the turn offline, through the LLM630 (brain.cpp). Frees the recording.

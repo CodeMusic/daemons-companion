@@ -653,6 +653,15 @@ bool quickTap(int x, int y) {
   int k = quickOf(constrain((x - 6) * 3 / (W - 12), 0, 2));
   if (k < 0) return true;
   haptic(1); soundSelect();
+  openQuick(k);
+  return true;
+}
+// a view by its QUICK_IDS name -- a quick button's, or C-244's "INDEX, open MUSIC"; false for a name it does not know
+bool openView(const String &id) {
+  for (int k = 0; k < 9; k++) if (id == QUICK_IDS[k]) { openQuick(k); return true; }
+  return false;
+}
+void openQuick(int k) {
   int t;
   switch (k) {
     case 0: if (st.carrying) openCareGrid(); else say("No daemon here"); break;                   // DRAFT
@@ -668,7 +677,6 @@ bool quickTap(int x, int y) {
     case 7: if (st.carrying) { screen = INDEX_ENTRY; entryTop = 0; } else say("No daemon here"); break;
   }
   dirty = true;
-  return true;
 }
 
 // C-174: the steps, and on the Ultra the distance its GNSS walked beside them
@@ -774,6 +782,10 @@ void draw() {
     drawRoutines(day);
   } else if (page == FACE_PAGE) {
     drawFace(day, ink);
+    if (cfg.power.low) {                     // C-243: shown on the face -- a small LOW at the top, in the day's colour
+      canvas.setTextFont(1); canvas.setTextDatum(TC_DATUM); canvas.setTextColor(readable(day));
+      canvas.drawString("LOW POWER", W / 2, 4);                                                // DRAFT
+    }
   } else if (page == ROUTINES_PAGE) {
     canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("ROUTINES", 10, 34);
@@ -853,6 +865,19 @@ void draw() {
     }
     canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
     footer(hint(!st.talk.have ? "" : st.talk.first == "module" ? "press: n8n first" : "press: module first"));   // DRAFT
+  } else if (page == POWER_PAGE) {           // C-243 (the user, 2026-10-29): low power, on the watch itself
+    canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(TL_DATUM);
+    canvas.drawString(bat.present && bat.percent >= 0 ? "BATTERY  " + String(bat.percent) + "%" + (bat.usb ? "  CHARGING" : "") : String("BATTERY"), 10, 32);   // DRAFT
+    canvas.setTextFont(4); canvas.setTextColor(cfg.power.low ? readable(day) : PAPER);
+    canvas.drawString(cfg.power.low ? "LOW POWER ON" : "LOW POWER OFF", 10, 52);              // DRAFT
+    canvas.setTextFont(2);
+    wrap(cfg.power.low ? String("GPS and LoRa asleep, no meeting, the companion asked every five minutes, the screen dimmer and "
+                                "quicker to sleep. The charger turns it off.")
+                       : String("GPS ") + (!powerGps() ? "off" : powerGpsPolls() ? "always" : "when it moves") + ", LoRa " +
+                         (cfg.power.lora ? "on" : "off") + ", the companion asked every " + String(cfg.power.poll) + " s. "
+                         "The rest is set in the app: PLACES, the watch, BATTERY.", 10, 88, W - 20, 2, 18, 6, PAPER);   // DRAFT
+    canvas.setTextFont(1); canvas.setTextDatum(BL_DATUM); canvas.setTextColor(QUIET);
+    footer(hint(cfg.power.low ? "press: turn it off" : "press: turn it on"));                 // DRAFT
   } else if (page == OFF_PAGE) {             // the user, 2026-10-15: "there is no way to turn it off"
     canvas.setTextFont(4); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("SWITCH OFF", 10, 40);                                       // DRAFT

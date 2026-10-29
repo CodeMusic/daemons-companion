@@ -825,7 +825,7 @@ String runSlots() {
     // C-151: the table -- the radios kept listening and answering (the loop is not running), who is heard sitting
     // here, ourselves said every half minute over LoRa and each minute to the companion, and those gone quiet let go
     loraLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);
-    meetLoop(now, cfg.meet, st.carrying ? st.daemon.species : 0);
+    meetLoop(now, powerMeet(), st.carrying ? st.daemon.species : 0);
     meetCastLoop(now); castLoop(now);
     { int sp; uint32_t tg; while (meetTakeTable(sp, tg)) casinoHeard(tg, sp, "", true, 2); }
     if (now - tableAt > 30000) { tableAt = now; loraTable(true); ++tableTicks; report("table", tableHere()); }   // C-158: each half minute
@@ -848,7 +848,7 @@ String runSlots() {
     lastInput = now;
     draw();
     // left alone at rest as long as the board would sleep: it gets up from the table
-    if (!spinning() && cfg.sleepAfter > 0 && now - idleSince > (uint32_t)cfg.sleepAfter * 1000) break;
+    if (!spinning() && powerSleepAfter() > 0 && now - idleSince > (uint32_t)powerSleepAfter() * 1000) break;
     delay(4);
   }
   if (phase == ROLLING && !rigged) { won = bet * PAYS[outcome]; unreported += won; sessionDelta += won; }   // left mid-pull: it still pays

@@ -89,13 +89,15 @@ void gpsLoop(uint32_t now) {
     else if (now - onAt > 120000) power(OFF);
     return;
   }
+  // C-242: BATTERY's GPS -- Off (or low power) keeps it off but for FIND; "When it moves" only walks; "Always" polls too
+  if (!powerGps()) { if (why != OFF) power(OFF); return; }
   if (moving && why != WALK) power(WALK);
   if (why == WALK) {
     if (goodFix() && now - toldAt > 30000) { walked(); tell(); }
-    if (stillSince && now - stillSince > 5UL * 60000) power(OFF);
+    if (stillSince && now - stillSince > powerStillMs()) power(OFF);
     return;
   }
-  if (why == OFF && now - polledAt > 15UL * 60000) { polledAt = now; power(POLL); }
+  if (why == OFF && powerGpsPolls() && now - polledAt > 15UL * 60000) { polledAt = now; power(POLL); }
   if (why == POLL) {
     if (goodFix()) { tell(); power(OFF); }
     else if (now - onAt > 90000) power(OFF);

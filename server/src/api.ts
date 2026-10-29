@@ -1579,12 +1579,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!kind) return send(res, 400, { error: "an interaction needs a kind" });
         if (!phone && !isLoopback(req.socket.remoteAddress) && !NETWORK_KINDS.includes(kind))
           return send(res, 403, { error: "a board does not log that" });
-        // C-159: a board's own setting, changed on the board -- "sound on|off [device]" -- kept as its own, not as tending it
+        // C-159: a board's own setting, changed on the board -- "sound on|off [device]" -- kept as its own, not as tending it;
+        // C-243: and "low on|off [device]", the watch's low-power mode switched on the watch (or ended by its charger)
         if (kind === "setting") {
-          const m = /^(sound) (on|off)(?: ([a-z0-9][a-z0-9-]{2,47}))?$/.exec(typeof b.detail === "string" ? b.detail : "");
+          const m = /^(sound|low) (on|off)(?: ([a-z0-9][a-z0-9-]{2,47}))?$/.exec(typeof b.detail === "string" ? b.detail : "");
           const who = m?.[3] ?? deviceId;
-          if (!m || !validDeviceId(who)) return send(res, 400, { error: "a setting is sound on|off, from a device" });
-          const r = setOwnSettings(store, who, { sound: m[2] === "on" });
+          if (!m || !validDeviceId(who)) return send(res, 400, { error: "a setting is sound or low, on|off, from a device" });
+          const r = setOwnSettings(store, who, m[1] === "low" ? { power: { low: m[2] === "on" } } : { sound: m[2] === "on" });
           return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { settings: r });
         }
         // C-200: a night ended on the watch -- "night <from> <to> <stirs> <tucked>" (seconds since 1970), so it travels as

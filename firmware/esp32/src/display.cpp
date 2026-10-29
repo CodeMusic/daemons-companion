@@ -107,13 +107,20 @@ void Display::configure() {
 }
 #endif
 
+uint8_t powerBright();   // power.cpp: C-243 dims it
+// C-242: the always-on face's glow -- the AMOLEDs only (powerAod asks for the Ultra alone)
+void backlightDim() {
+#if BOARD_TDISPLAY_AMOLED || BOARD_TWATCH_ULTRA
+  tft.setBrightness(18);
+#endif
+}
 void backlight(bool on) {
   if (board.pmuBacklight) { pmuBacklight(on); return; }   // C-75: the CoreS3's is its power chip's
 #if BOARD_DIAL
   tft.setBrightness(on ? 160 : 0); return;                // C-102: M5GFX's PWM on GPIO 9
 #endif
 #if BOARD_TDISPLAY_AMOLED || BOARD_TWATCH_ULTRA
-  tft.setBrightness(on ? 200 : 0); return;                // C-135: the AMOLED's own register (0x51); C-173 the Ultra's
+  tft.setBrightness(on ? powerBright() : 0); return;      // C-135: the AMOLED's own register (0x51); C-173 the Ultra's; C-243 dimmer when low
 #endif
   if (board.lcdBl >= 0) { pinMode(board.lcdBl, OUTPUT); digitalWrite(board.lcdBl, on ? HIGH : LOW); }
 }

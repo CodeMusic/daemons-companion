@@ -1118,7 +1118,7 @@
  },
  "337": {
   "name": "PLUGIN49",
-  "description": "Takes their repair or state change for itself instead."
+  "description": "The foe takes on the user's type, and every weakness that comes with it."
  },
  "338": {
   "name": "PLUGIN50",

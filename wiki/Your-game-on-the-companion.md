@@ -110,7 +110,7 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   you toward something to notice; it never says what will happen. Every word DRAFT.
 - **The witching hour** (C-236) -- between three and four in the morning, on the device's own clock, your daemon wears a
   thin purple shimmer and casts no shadow, on the watch's face and in the app. Once your save holds THE SUBTLE LAYER it
-  also has a routine of its own, only then, named for its type (FLOW's UNDERTOW, LOGIC's LAST PROOF ...): on the watches
+  also has a routine of its own, only then, named for its type (FLOW's UNDERCURRENT, LOGIC's LAST PROOF ...): on the watches
   ROUTINES -> THE HOUR, in the app under its care. The game has the hour too (DAEMONS T-480). Every word DRAFT.
 - **Words under words** (C-204) -- with the book held, four of the daemon's own lines carry a second, in purple, after
   it: what it means beneath what it says. You chose them: under "Hi! I missed you!", *I counted.*; under "Goodnight.

@@ -198,7 +198,7 @@ void drawUnder() {
 static const char *const WITCH_TYPES[] = { "VECTOR", "ENTROPY", "GROWTH", "CONTENT", "LOGIC", "SWARM", "CORRUPT", "SIGNAL", "STRATUM",
                                            "FLOW", "CONTEXT", "LATENT", "LEGACY", "HARDENED", "FROZEN", "OPAQUE", "EMERGENT", "ORACLE" };
 static const char *const WITCH_NAMES[] = { "NIGHT COURSE", "EMBER HOUR", "DARK ROOTS", "BLANK PAGE", "LAST PROOF", "QUIET HIVE",
-                                           "BITROT MOON", "DEAD AIR", "UNDERLAYER", "UNDERTOW", "THIN SEAM", "WHAT SLEEPS", "OLD GHOSTS",
+                                           "BITROT MOON", "DEAD AIR", "UNDERLAYER", "UNDERCURRENT", "THIN SEAM", "WHAT SLEEPS", "OLD GHOSTS",
                                            "NIGHT WATCH", "BLACK ICE", "VEIL", "BEFORE DAWN", "SECOND SIGHT" };   // DRAFT
 bool witchingNow() { struct tm t; return st.carrying && watchLocalTime(t) && t.tm_hour == 3; }
 bool witchingRoutineNow() { return witchingNow() && intuitionOn(); }   // its routine, only with the book held

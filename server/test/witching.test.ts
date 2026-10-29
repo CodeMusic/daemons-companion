@@ -15,11 +15,15 @@ describe("C-236: the witching hour", () => {
     for (const n of Object.values(WITCHING_NAMES)) expect(n.length).toBeLessThanOrEqual(12);
     expect(new Set(Object.values(WITCHING_NAMES)).size).toBe(Object.keys(WITCHING_NAMES).length);
   });
+  it("never borrows a daemon's name (UNDERTOW is a species; FLOW's is UNDERCURRENT)", () => {
+    const names = new Set(Object.values(speciesJson as unknown as Record<string, { name: string }>).map((s) => s.name.toUpperCase()));
+    for (const n of Object.values(WITCHING_NAMES)) expect(names.has(n), n).toBe(false);
+  });
   it("takes the first type, however it is written", () => {
-    expect(witchingRoutine("FLOW / CONTEXT")).toBe("UNDERTOW");
+    expect(witchingRoutine("FLOW / CONTEXT")).toBe("UNDERCURRENT");
     expect(witchingRoutine(["LOGIC", "CONTENT"])).toBe("LAST PROOF");
     expect(witchingRoutine("")).toBe("THIN SEAM");
-    expect(witchingLine("SPARKY", "UNDERTOW")).toBe("SPARKY did UNDERTOW. It does not, by day.");
+    expect(witchingLine("SPARKY", "UNDERCURRENT")).toBe("SPARKY did UNDERCURRENT. It does not, by day.");
     expect(WITCHING_TUNE.some(([s]) => s === 127)).toBe(true);
   });
 });

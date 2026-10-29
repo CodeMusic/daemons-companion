@@ -43,7 +43,8 @@ daemon it hosts.
 one thing, the daemon, NEARBY, the game, the LIBRARY's news), DAEMON (YOURS: its daemon in its den and its expression,
 DRINK FEED TRAIN SLEEP or WAKE, NEARBY, the party, SYNC; the INDEX: each entry, NATIVE, and LISTEN; ROUTINES: THE CASINO
 and THE HOUSE), GOALS, LIBRARY (CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK with PLAY, STREAM), YOU, PLACES (DEVICES by
-maker, a picture of each, which daemon goes where, ITS SETTINGS for each, and HOME, Home Assistant), SETTINGS (portrait,
+maker, by NAME or LAST USED first -- the choice kept, as the app's PLACES (C-217; compiled, not yet flashed) -- a picture
+of each, which daemon goes where, ITS SETTINGS for each, and HOME, Home Assistant), SETTINGS (portrait,
 landscape or turning with it; AUTO, LIGHT or DARK, where AUTO is dark from 8pm to 6am). Another daemon's word, act or
 JACKPOT shows as a banner over whatever page is open. It has its own Wi-Fi, is paired like a phone with the site's PAIR
 A PHONE code, and keeps everything on it, the whole INDEX and its art included. **Paired by the computer's name**
@@ -147,6 +148,10 @@ empty one leaves, eighty letters at most.
 
 **The crown is a press, not a dial** (C-161): pressed, it goes back; pressed twice, home, to the face; held, the watch
 sleeps, and held longer its power chip switches it off -- so the watch has no SWITCH OFF page. Only the crown wakes it.
+
+**BOOKS** is on both watches: THE SUBTLE LAYER, THE GUIDE and the NOTEBOOK once your save holds them, read a page a
+swipe and aloud; ASK THE GUIDE, and for THE SUBTLE LAYER its asking, TWO VOICES, TODAY'S QUESTION and its cards (C-208,
+C-209, C-229, C-230, C-232 -- built, not yet on the wrist; [The T-Watch Ultra](The-T-Watch-Ultra) has each).
 Swipe left or right to turn a page, up or down to move through a list; a list's rows are a finger tall, four to the
 screen, and a tap opens the row touched.
 

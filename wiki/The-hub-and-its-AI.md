@@ -42,7 +42,9 @@ YOUR NETWORK**, in SETTINGS, takes the address of another one -- a standalone bo
 **The rule it is built to: no device ever waits on it.** Every board shares one small model, so:
 
 1. **A talk is answered at once** with an id, and the device fetches the words, then the voice, when they are ready
-   (`?async=1`). It stays usable while its daemon thinks (C-180, C-181).
+   (`?async=1`). It stays usable while its daemon thinks (C-180, C-181). **A talk is short**: its first sentence or two,
+   given back and spoken as soon as they are written, near thirty words; the carried daemon and the GUIDE are set up on
+   the board ahead, so a first talk seldom waits, and a board that restarted is set up again rather than failing.
 2. **Most replies need no model.** A care's answer (FEED, WATER, TRAIN, SLEEP, WAKE) and a hello come from written
    lines, chosen by the daemon's mood and the day, at once (C-180, C-196). Every line is DRAFT.
 3. **A deadline, then n8n.** If no board is free, or none has begun an answer in about two seconds, the talk goes to

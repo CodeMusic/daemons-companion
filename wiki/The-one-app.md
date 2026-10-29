@@ -29,6 +29,11 @@ device and checks the result's SHA-1 too. Your original is kept untouched beside
 It plays with the mGBA core in a web view (EmulatorJS, the same version the playground uses). Under the game: frames
 run and drawn, and whether the sound is running.
 
+**The buttons are on the screen** wherever there is a touch screen -- the iPhone and, since C-235, the iPad too (iPadOS
+calls itself a Mac, so the game's controls were hidden there). **A controller held on the phone** -- one that clips
+round it and gives it a GBA's buttons -- puts the game in the top half of the screen and hides the on-screen controls,
+so the phone plays like a GBA (C-234, its first piece; built, still to check by hand).
+
 **Updates.** The list of releases is read live from GitHub. When a newer DAEMONS is out, a strip shows above the game.
 One tap remakes the game from your original, and it starts again from the same save.
 

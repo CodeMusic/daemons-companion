@@ -139,7 +139,8 @@ board's controls, pages, quirks and which ones run today:
 - **It can change hands.** Offer a daemon that is AWAY to another player on your hub's **EXCHANGE** -- **TRADE IT**, or
   **LEND IT** and call it home later -- and each game takes what it received at its next SYNC, finished as a trade is
   finished in FireRed: entered in the INDEX, and evolved if a trade evolves it. Built, and run between two companions on
-  test saves; the game's half is in DAEMONS v11.316.4
+  test saves; the game's half is in DAEMONS v11.316.4. Homes can trade with friends' homes too, through **THE COMMONS**,
+  a server the project runs, on the tailnet for now
   ([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)).
 
 ## Your game, in your pocket

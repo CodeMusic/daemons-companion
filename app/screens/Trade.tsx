@@ -21,7 +21,8 @@ type Out = { mine: OutOne | null; others: OutOne[]; met: Met[] };
 // C-223: dreams shared at home
 type SharedDream = { id: string; at: string; player: string; mine: boolean; species: number; nickname: string; quality: string; text: string; woke: string };
 type View = { dreams?: SharedDream[] | null; out?: Out | null; hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
-              board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean } | null;
+              board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean;
+                       friends?: { friends: Named[]; asked: Named[]; asks: Named[] } } | null;   // C-223
               pending: number; waiting: number };
 type Named = { id: string; name: string };
 type Commons = { url: string | null; error?: string; home: { id: string; name: string; approved: boolean; code: string; friends: Named[]; asks: Named[]; asked: Named[] } | null };
@@ -38,7 +39,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
   const [name, setName] = useState(""), [code, setCode] = useState(""), [pw, setPw] = useState(""), [hub, setHub] = useState("");
   const [kind, setKind] = useState<"full" | "loan" | "gift">("full");
   const [scope, setScope] = useState<"home" | "friends">("home");   // C-222: this home, or friends' homes on THE COMMONS
-  const [to, setTo] = useState<string>("");
+  const [to, setTo] = useState<string>("");   // a player's id, "" anyone, "friends" C-223
   const [giving, setGiving] = useState<string | null>(null);   // the offer being taken
   const [invite, setInvite] = useState<{ code: string; until: string } | null>(null);
   const reload = async () => setV(await api<View>("/api/trade"));
@@ -97,12 +98,13 @@ export function TradeScreen({ ink }: { ink?: string }) {
             : "It becomes theirs, and nothing comes back. Your next SYNC lets it go."}</Small>
           {b?.commons ? <Choice value={scope} ink={ink} onPick={(x) => { setScope(x as "home" | "friends"); setTo(""); }} options={[["home", "THIS HOME"], ["friends", "FRIENDS' HOMES"]] as ["home" | "friends", string][]} /> : null}
           {targets.length ? (
-            <Choice value={to} ink={ink} onPick={setTo} options={[["", "ANYONE"], ...targets.map((p) => [p.id, p.name] as [string, string])]} />
+            <Choice value={to} ink={ink} onPick={setTo} options={[["", "ANYONE"], ...(scope === "home" && b?.friends?.friends.length ? [["friends", "FRIENDS"] as [string, string]] : []),
+                                                                  ...targets.map((p) => [p.id, p.name] as [string, string])]} />
           ) : null}
           {free.map((d) => (
             <XStack key={d.personality} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="center">
               <YStack flex={1}><Text fontSize={15} color="$color12">{`${d.nickname} · LV ${d.level}`}</Text><Small>{d.name}</Small></YStack>
-              <Action label="OFFER" ink={ink} onPress={() => act("/api/trade/offer", { personality: d.personality, kind, to: to || undefined, scope }, `${d.nickname} is ${kind === "gift" ? "offered as a gift" : "on offer"}${scope === "friends" ? " to friends' homes" : ""}.`)} />
+              <Action label="OFFER" ink={ink} onPress={() => act("/api/trade/offer", { personality: d.personality, kind, to: to && to !== "friends" ? to : undefined, friends: to === "friends", scope }, `${d.nickname} is ${kind === "gift" ? "offered as a gift" : "on offer"}${scope === "friends" ? " to friends' homes" : ""}.`)} />
             </XStack>
           ))}
         </>) : <Small>No daemon is AWAY and free to offer.</Small>}
@@ -138,6 +140,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
       </Card>
 
       <OutCard v={v} ink={ink} act={act} />
+      {b?.friends ? <FriendsCard f={b.friends} players={(b.players ?? []).filter((p) => p.id !== v.me!.id && !p.commons)} ink={ink} act={act} /> : null}
 
       {v.dreams ? (
         <Card gap={6}>
@@ -249,6 +252,39 @@ function OutCard({ v, ink, act }: { v: View; ink: string; act: (path: string, bo
             </XStack>
           ))}
         </YStack>
+      ))}
+    </Card>
+  );
+}
+
+// C-223 (the user, 2026-10-28, by multiple choice): FRIENDS at home -- ask a player, they ask back (or ACCEPT), and you
+// are friends: an offer can then be for FRIENDS only. Every word DRAFT.
+function FriendsCard({ f, players, ink, act }: { f: { friends: Named[]; asked: Named[]; asks: Named[] }; players: Named[]; ink: string;
+                                                  act: (path: string, body: unknown, done: string) => Promise<void> }) {
+  const known = new Set([...f.friends, ...f.asked, ...f.asks].map((x) => x.id));
+  const others = players.filter((p) => !known.has(p.id));
+  return (
+    <Card gap={6}>
+      <Eyebrow>FRIENDS</Eyebrow>
+      {!f.friends.length && !f.asks.length && !f.asked.length ? <Small>Ask a player to be friends. Once they ask back, you can offer to friends only.</Small> : null}
+      {f.asks.map((a) => (
+        <XStack key={a.id} gap={10} alignItems="center" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>
+          <Text flex={1} fontSize={15} color="$color12">{`${a.name} asks to be friends.`}</Text>
+          <Action label="ACCEPT" ink={ink} onPress={() => act("/api/trade/befriend", { id: a.id }, `${a.name} is a friend.`)} />
+        </XStack>
+      ))}
+      {f.friends.map((x) => (
+        <XStack key={x.id} gap={10} alignItems="center" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>
+          <Text flex={1} fontSize={15} color="$color12">{x.name}</Text>
+          <Action label="FORGET" ink={ink} onPress={() => act("/api/trade/unfriend", { id: x.id }, `${x.name} is not a friend now.`)} />
+        </XStack>
+      ))}
+      {f.asked.map((x) => <Small key={x.id}>{`Waiting for ${x.name} to ask back.`}</Small>)}
+      {others.map((p) => (
+        <XStack key={p.id} gap={10} alignItems="center" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>
+          <Text flex={1} fontSize={15} color="$color12">{p.name}</Text>
+          <Action label="ASK" ink={ink} onPress={() => act("/api/trade/befriend", { id: p.id }, `Asked ${p.name}.`)} />
+        </XStack>
       ))}
     </Card>
   );

@@ -15,7 +15,10 @@ const SPECIES = speciesJson as unknown as Record<string, { name: string; types?:
 export interface Out { player: string; personality: number; species: number; nickname: string; level: number; edition: string; at: string; until: string }
 export type Line = { who: "a" | "b"; said: string; by: "module" | "written" };
 export interface Met { id: string; at: string; a: Out & { name: string }; b: Out & { name: string }; lines: Line[]; own?: boolean }   // own: they met on their own
-interface State { out: Out[]; met: Met[]; next: number }
+// C-223 (the user, 2026-10-28, by multiple choice): a dream shared -- one of a daemon's nights (dreams.ts), told to the
+// other players at home; the last forty kept, three a player at most
+export interface Shared { id: string; at: string; player: string; species: number; nickname: string; quality: string; text: string; woke: string }
+interface State { out: Out[]; met: Met[]; next: number; shared?: Shared[] }
 
 const KEY = "meet", OUT_MS = 12 * 60 * 60 * 1000, KEPT = 30, TURNS = 4, AGAIN_MS = 6 * 60 * 60 * 1000;
 const load = (store: Store): State => {
@@ -142,4 +145,34 @@ export async function meetOnTheirOwn(store: Store, reach: Reach = () => true, no
         return "error" in r ? null : r;
       }
   return null;
+}
+
+// ---- C-223: dreams shared ----
+const SHARED_KEPT = 40, SHARED_EACH = 3;
+export function shareDream(store: Store, player: string, d: { species?: unknown; nickname?: unknown; quality?: unknown; text?: unknown; woke?: unknown },
+                           now = new Date()): Shared | { error: string } {
+  const text = typeof d.text === "string" ? d.text.replace(/\s+/g, " ").trim().slice(0, 400) : "";
+  if (!text) return fail("which dream?");                                                       // DRAFT
+  const woke = new Date(String(d.woke ?? ""));
+  return change(store, (s) => {
+    const all = s.shared ?? [];
+    if (all.some((x) => x.player === player && x.text === text)) return fail("that dream is shared already");   // DRAFT
+    const x: Shared = { id: `d${s.next++}`, at: now.toISOString(), player, species: Number(d.species) || 0,
+                        nickname: typeof d.nickname === "string" ? d.nickname.slice(0, 12).toUpperCase() : "",
+                        quality: d.quality === "vivid" || d.quality === "broken" ? d.quality : "quiet", text,
+                        woke: isNaN(woke.getTime()) ? now.toISOString() : woke.toISOString() };
+    const mine = all.filter((y) => y.player === player);
+    const drop = new Set(mine.slice(0, Math.max(0, mine.length - SHARED_EACH + 1)).map((y) => y.id));   // a player's oldest go first
+    s.shared = [...all.filter((y) => !drop.has(y.id)), x].slice(-SHARED_KEPT);
+    return x;
+  });
+}
+export function unshareDream(store: Store, player: string, id: unknown) {
+  return change(store, (s) => { s.shared = (s.shared ?? []).filter((x) => !(x.id === id && x.player === player)); return { ok: true }; });
+}
+// the dreams this player may see, the newest first: their own and those of players in reach
+export function sharedDreams(store: Store, player: string, name: Named, reach: Reach = () => true) {
+  return (load(store).shared ?? []).filter((x) => x.player === player || reach(player, x.player)).reverse()
+    .map((x) => ({ id: x.id, at: x.at, player: name(x.player), mine: x.player === player, species: x.species, nickname: x.nickname,
+                   quality: x.quality, text: x.text, woke: x.woke }));
 }

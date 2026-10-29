@@ -2,7 +2,7 @@
 // journal -- every night a watch told the companion, the newest first: the dream the daemon had (the hub's telling when
 // it wrote one, otherwise the companion's own words), how long and how still the night was, and whether it was tucked in.
 import { useEffect, useState } from "react";
-import { Text, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { api, apiLater, ON_PHONE } from "../net";
 import { Spoken } from "../types";
 import { Action, Card, Eyebrow, Small, whenSaid } from "../ui";
@@ -22,6 +22,11 @@ export function DreamsScreen({ ink }: { ink?: string }) {
     finally { setReading(0); }
   };
   const [error, setError] = useState("");
+  const [shared, setShared] = useState<Record<number, string>>({});   // C-223: what SHARE said, per dream
+  const share = async (d: Dream) => {
+    try { await api("/api/trade/share", { id: d.id }); setShared((x) => ({ ...x, [d.id]: "Shared with the players at home." })); }
+    catch (e) { setShared((x) => ({ ...x, [d.id]: (e as Error).message })); }
+  };
   useEffect(() => { api<{ dreams: Dream[] }>("/api/dreams").then((r) => setDreams(r.dreams)).catch((e) => setError(e.message)); }, []);
   if (error) return <Small color="$color8">{error}</Small>;
   if (!dreams) return null;
@@ -33,7 +38,11 @@ export function DreamsScreen({ ink }: { ink?: string }) {
           <Eyebrow>{`${NIGHT[d.quality].toUpperCase()} · ${d.hours} HOURS${d.tucked ? " · TUCKED IN" : ""}`}</Eyebrow>
           <Text fontSize={15} color="$color12">{d.text}</Text>
           <Small color="$color10">{`${d.nickname || "Your daemon"}, woke ${whenSaid(d.to)}`}</Small>
-          {ON_PHONE ? <Action label={reading === d.id ? "Reading…" : "Read aloud"} onPress={() => readAloud(d)} ink={ink} /> : null}
+          <XStack gap={8} flexWrap="wrap">
+            {ON_PHONE ? <Action label={reading === d.id ? "Reading…" : "Read aloud"} onPress={() => readAloud(d)} ink={ink} /> : null}
+            <Action label="SHARE" onPress={() => share(d)} ink={ink} />
+          </XStack>
+          {shared[d.id] ? <Small>{shared[d.id]}</Small> : null}
         </Card>
       )) : <Card><Small>{"No dreams yet. Wear the watch to bed, or tuck the daemon in with SLEEP, and its dream is here in the morning.  DRAFT"}</Small></Card>}
     </YStack>

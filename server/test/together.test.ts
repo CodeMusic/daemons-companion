@@ -82,4 +82,18 @@ describe("OUT TOGETHER (C-220)", () => {
     expect(await M.meetOnTheirOwn(hub, undefined, new Date(t.getTime() + 7 * 3600_000), null)).not.toBeNull();
     expect(M.outView(hub, kit.id, () => "?", undefined, t).met[0].own).toBe(true);
   });
+
+  it("shares dreams with the players at home, three a player, never twice (C-223)", () => {
+    const { hub, rover, kit } = two();
+    expect(exchangeRoute(hub, KEYS, rover, "share", { text: "" })).toEqual({ error: "which dream?" });
+    for (const t of ["one", "two", "three", "four"]) exchangeRoute(hub, KEYS, rover, "share", { text: `a dream ${t}`, nickname: "pip", species: 4, quality: "vivid" });
+    expect(exchangeRoute(hub, KEYS, rover, "share", { text: "a dream four" })).toEqual({ error: "that dream is shared already" });
+    const seen = exchangeRoute(hub, KEYS, kit, "dreams", {}).dreams;
+    expect(seen.map((d: any) => d.text)).toEqual(["a dream four", "a dream three", "a dream two"]);
+    expect(seen[0]).toMatchObject({ player: "ROVER", mine: false, nickname: "PIP", quality: "vivid" });
+    exchangeRoute(hub, KEYS, kit, "unshare", { id: seen[0].id });            // not KIT's to take down
+    expect(exchangeRoute(hub, KEYS, rover, "dreams", {}).dreams).toHaveLength(3);
+    exchangeRoute(hub, KEYS, rover, "unshare", { id: seen[0].id });
+    expect(exchangeRoute(hub, KEYS, kit, "dreams", {}).dreams).toHaveLength(2);
+  });
 });

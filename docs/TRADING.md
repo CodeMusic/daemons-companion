@@ -101,6 +101,14 @@ afterwards on TRADE, with the two pictures facing each other (the last thirty me
   yet. Meetings within a home now also happen on their own: every quarter hour the hub meets two daemons that are out
   together, one pair at a time, and not the same two again within six hours.
 
+## Dreams shared (C-223, first piece built 2026-10-29)
+
+SHARE on a dream (DAEMON, DREAMS) tells it to the other players at home. TRADE's DREAMS SHARED lists the dreams, the
+newest first, each with its daemon's picture. A player can UNSHARE their own. Each player keeps at most three shared,
+the hub keeps forty, and the same dream cannot be shared twice. The exchange's routes are `dreams`, `share` and
+`unshare`; on a companion they are `/api/trade/share` (a dream's `id`) and `/api/trade/unshare`. Sharing works within
+one home only, as OUT TOGETHER does.
+
 ## THE COMMONS: trading between homes (C-222, first round built 2026-10-28)
 
 *Decided by multiple choice, 2026-10-28: through the home hub; the home hub vouches for its players; friends only;

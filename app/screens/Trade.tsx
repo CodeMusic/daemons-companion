@@ -17,7 +17,9 @@ type Mine = { personality: number; species: number; name: string; nickname: stri
 type OutOne = { id?: string; player: string; species: number; nickname: string; level: number; edition: string; name: string; until: string };
 type Met = { id: string; at: string; a: OutOne; b: OutOne; lines: { who: "a" | "b"; said: string; by: "module" | "written" }[]; own?: boolean };
 type Out = { mine: OutOne | null; others: OutOne[]; met: Met[] };
-type View = { out?: Out | null; hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
+// C-223: dreams shared at home
+type SharedDream = { id: string; at: string; player: string; mine: boolean; species: number; nickname: string; quality: string; text: string; woke: string };
+type View = { dreams?: SharedDream[] | null; out?: Out | null; hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
               board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean } | null;
               pending: number; waiting: number };
 type Named = { id: string; name: string };
@@ -133,6 +135,23 @@ export function TradeScreen({ ink }: { ink?: string }) {
       </Card>
 
       <OutCard v={v} ink={ink} act={act} />
+
+      {v.dreams ? (
+        <Card gap={6}>
+          <Eyebrow>DREAMS SHARED</Eyebrow>
+          {!v.dreams.length ? <Small>No dreams shared yet. SHARE one from your daemon's DREAMS.</Small> : null}
+          {v.dreams.slice(0, 8).map((d) => (
+            <XStack key={d.id} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="flex-start">
+              {d.species ? <Art path={`/art/species/${d.species}.png`} size={40} /> : null}
+              <YStack flex={1} gap={2}>
+                <Text fontSize={15} color="$color12">{d.text}</Text>
+                <Small color="$color10">{`${d.mine ? "Yours" : d.player}: ${d.nickname || "a daemon"}, a ${d.quality === "vivid" ? "deep" : d.quality === "broken" ? "restless" : "quiet"} night`}</Small>
+                {d.mine ? <Action label="UNSHARE" ink={ink} onPress={() => act("/api/trade/unshare", { id: d.id }, "Unshared.")} /> : null}
+              </YStack>
+            </XStack>
+          ))}
+        </Card>
+      ) : null}
 
       {(b?.trades ?? []).length ? (
         <Card gap={6}>

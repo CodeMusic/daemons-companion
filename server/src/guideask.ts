@@ -42,3 +42,19 @@ export function guidePages(passages: Passage[]): string {
 export const guideQuestion = (pages: string, question: string, book = "THE GUIDE") =>
   `From ${book}: ${pages} Question: ${plain(question).slice(0, 200)}`;
 export function guidePersona(passages: Passage[], book = "THE GUIDE"): string { return `${GUIDE_SETUP} From ${book}: ${guidePages(passages)}`; }
+
+// C-209 (2026-10-28: the GUIDE answered "Paris" from what the model knows, not its page): what the model said is kept
+// only when it is the page's (grounded -- subtleask.ts groundedIn); otherwise the GUIDE says the page's own sentence
+// nearest the question, and with no page near it, that it has none. DRAFT.
+export const NO_PAGE = "The GUIDE has no page on that.";
+export function pageSentence(p: Passage, question: string): string {
+  const q = new Set(words(question));
+  const all = p.text.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter((x) => x.length > 12);
+  if (!all.length) return p.text.slice(0, 160);
+  const best = all.map((x, i) => ({ x, i, n: words(x).filter((w) => q.has(w)).length })).sort((a, b) => b.n - a.n || a.i - b.i)[0];
+  return best.x.length > 200 ? `${best.x.slice(0, 197).replace(/\s+\S*$/, "")}...` : best.x;
+}
+export function keptToPage(answer: string, passages: Passage[], question: string, grounded: (said: string, page: string) => boolean): string {
+  if (!passages.length) return NO_PAGE;
+  return grounded(answer, `${passages[0].title} ${passages[0].text}`) ? answer : pageSentence(passages[0], question);
+}

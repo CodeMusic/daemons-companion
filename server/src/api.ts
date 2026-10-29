@@ -84,7 +84,7 @@ import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
-import { guidePages, guidePassages } from "./guideask.js";   // C-209
+import { guidePages, guidePassages, keptToPage } from "./guideask.js";   // C-209
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { ackSpellcraft, readHermetic } from "./hermetic.js";   // C-238
 import { trickOrTreat } from "./halloween.js";   // C-240
@@ -1122,6 +1122,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const save = hostOf(ecfg).save.read(), g = save ? readGuide(save) : { held: false };
         if (!g.held) return false;
         b.guide = (heard: string, chars = 170) => guidePages(guidePassages(g, heard || String(b.text ?? ""), 1, chars));
+        b.passages = (heard: string) => guidePassages(g, heard || String(b.text ?? ""), 1, 700);   // the page, to check against
         return true;
       };
       // C-180: a talk on the module, answered in n8n's shape; LATE (none free, no first words in time) or a module that
@@ -1221,6 +1222,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // of what it says read aloud in the INDEX voice. The GUIDE, once found, sets some answers in the day's virtue (guideAside).
       // C-229: the GUIDE's part of the day -- now and then its answer ends on the day's virtue over its shadow (shown; the
       // voice says the answer only)
+      // C-209: the GUIDE's answer kept to its page (guideask.ts keptToPage) -- said again in the INDEX voice when it changed
+      const toPage = async (b: Record<string, any>, r: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        if (typeof r.answer !== "string" || !r.answer || r.error || typeof b.passages !== "function") return r;
+        const q = String(r.heard ?? b.text ?? ""), kept = keptToPage(r.answer, b.passages(q), q, groundedIn);
+        if (kept === r.answer) return r;
+        const { audioBase64: _a, audioMime: _m, ...rest } = r;
+        const v = b.speak === false || !r.audioBase64 ? {} : await readAloud(kept).catch(() => ({} as Record<string, unknown>));
+        return { ...rest, answer: kept, provider: "book", ...(typeof v.audioBase64 === "string" ? { audioBase64: v.audioBase64, audioMime: v.audioMime ?? "audio/wav" } : {}) };
+      };
       const withAside = (b: Record<string, any>, r: Record<string, unknown>): Record<string, unknown> => {
         if (typeof r.answer !== "string" || !r.answer || r.error) return r;
         const t = today(ecfg, store), aside = guideAside(String(r.heard ?? b.text ?? ""), t.day.cue ?? "", t.date);
@@ -1268,7 +1278,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (typeof b.audioBase64 === "string" && b.audioBase64)
             Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
           if (b.guide === true && !asGuide(b)) return { error: "Find the GUIDE first." };            // C-209, DRAFT
-          return b.guide ? withAside(b, await talkOn(talkPayload(b))) : remember(b, await talkOn(talkPayload(b)));
+          return b.guide ? withAside(b, await toPage(b, await talkOn(talkPayload(b)))) : remember(b, await talkOn(talkPayload(b)));
         });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw
@@ -1295,7 +1305,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             return forDevice(r);
           }
           if (!asGuide(b)) return { error: "Find the GUIDE first." };                                 // DRAFT
-          return forDevice(withAside(b, { ...await talkOn(talkPayload(b)), heard: b.text }));
+          const r = await talkOn(talkPayload(b));
+          return forDevice(withAside(b, await toPage(b, { ...r, heard: r.heard ?? b.text })));   // heard by the module, where the watch sent a recording
         });
       }
       // ---- C-212: a meeting, from the watch's RECORD to its write-up -------------------------------------------------------

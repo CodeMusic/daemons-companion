@@ -11,6 +11,7 @@ import { readAway, readBoxes, readSave, type Sounding } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { HOUSE_AT, syncSave } from "./save/writer.js";
 import { firstSight, HERMETIC_FLAG, readHermetic, spellcraftToWrite } from "./hermetic.js";   // C-238
+import { halloweenView } from "./halloween.js";   // C-240
 import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
@@ -344,6 +345,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   let play: { i: string; u: boolean; l: string[]; h: string[] } | null = null;
   let subtle: Sense | null = null;                         // C-203: only once the save holds the book, and a daemon is carried
   let hermetic: { held: number; first: number } | undefined;   // C-238
+  let halloween: ReturnType<typeof halloweenView> = null;   // C-240
   // C-158: the world the devices live in -- the real one: the hour (the game's watches), the weather of the city set
   // on the site -- and the CASINO's luck in it, with its reasons
   const weather = weatherNow(store, now), today_ = holiday(t.edition, now);
@@ -394,6 +396,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
     if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now);
     if (d) { const msg = firstSight(store, bytes, now); hermetic = { held: readHermetic(bytes, store).held ? 1 : 0, first: msg ? 1 : 0 }; }   // C-238
+    if (d) halloween = halloweenView(store, d.species, readHermetic(bytes, store).held, now);   // C-240
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
@@ -413,6 +416,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            play,                                         // T-426: the instrument, on the boards with keys
            ...(subtle ? { subtle } : {}),                // C-203: what there is to read, and how often a lean is right
            hermetic,                                     // C-238: THE HERMETIC LAYER held; the hour's first sight still to be said
+           ...(halloween ? { halloween } : {}),          // C-240: the costume, a treat just left
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },

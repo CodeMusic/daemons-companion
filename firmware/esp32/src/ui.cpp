@@ -406,10 +406,10 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   int side = 64 * sc, ax = cx - side / 2 + (int)(room * (walk - 0.5f)) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0);
   int ay = floorY - side + 4 * sc + bob + hop;
   drawGlow(ax + side / 2, ay + side / 2, side * 5 / 8, hex565(st.menu));                  // C-207: the week's glow, behind it
-  const bool witching = witchingNow();                            // C-236: in the hour it casts no shadow, and shimmers
+  const bool witching = shimmerNow();                             // C-236: in the hour it casts no shadow, and shimmers (C-240: all Halloween)
   if (!witching) canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), 0x0841);   // its shadow, darker than the ground
-  else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237: the hour, counting down
-  drawArt(ax, ay, sc, right);
+  else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237: the hour, counting down (only in the hour)
+  if (costumeNow()) indexArtDraw(ax, ay, sc); else drawArt(ax, ay, sc, right);     // C-240: in its costume
   drawMark(ax, ay, sc, right, markTop);
   if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
   drawThriveMarks(ax, ay, side);                                                          // C-207: its stars and its moon
@@ -499,11 +499,11 @@ static void drawFaceClock(uint16_t day) {
   canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
   const bool hour = witchingNow();                            // C-237: in the hour no hands -- the date, the minutes left
   edgedString(hour ? witchDate() : upper(st.theme.length() ? st.theme : st.day), cx, 50, hour ? emeraldInk() : readable(day));
-  if (hour) { canvas.setTextFont(4); edgedString(String(witchMinutesLeft()), cx, 74, emeraldInk()); canvas.setTextFont(1); }
+  if (hour) { canvas.setTextFont(2); edgedString(String(witchMinutesLeft()) + " min left", cx, 34, emeraldInk()); canvas.setTextFont(1); }   // above the date, clear of the shimmer
   edgedString(upper(dayLine()), cx, 196, PAPER);
   faceBattery(cx, 208);                                      // between the day's words and the six
   struct tm t;
-  if (!hour && watchLocalTime(t)) {                         // the hands over the daemon, each edged in INK to stand off it
+  if (!hour && !halloweenNow() && watchLocalTime(t)) {      // the hands over the daemon, each edged in INK (C-240: none on Halloween)
     float m = (t.tm_min + t.tm_sec / 60.0f) * PI / 30, h = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;
     canvas.drawWideLine(cx, cy, cx + 54 * sinf(h), cy - 54 * cosf(h), 4.0f, INK);
     canvas.drawWideLine(cx, cy, cx + 54 * sinf(h), cy - 54 * cosf(h), 2.5f, PAPER);
@@ -913,10 +913,10 @@ void draw() {
         int side = 64 * sc, room = max(0, w - side);
         int ax = x + (int)(room * walk) + (expression.shake ? ((t / 70) % 2 ? sc : -sc) : 0), ay = floorY - side + 4 * sc + bob + hop;
         canvas.setClipRect(x, y, w, h);
-        const bool witching = witchingNow();                        // C-236
+        const bool witching = shimmerNow();                         // C-236; C-240: all Halloween
         if (!witching) canvas.fillEllipse(ax + side / 2, floorY + 2, side / 4, max(2, sc * 2), INK);   // its shadow
         else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237
-        drawArt(ax, ay, sc, right);
+        if (costumeNow()) indexArtDraw(ax, ay, sc); else drawArt(ax, ay, sc, right);     // C-240
         if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
         drawMark(ax, ay, sc, right, y);                        // C-119: zz, a heart, a drop ... above its head, inside the den
         canvas.clearClipRect();

@@ -17,7 +17,8 @@ import { DreamsScreen } from "./Dreams";   // C-200
 import { followVoice, useMouth } from "../speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard, Under } from "./Reads";   // C-203, C-204
-import { AsAbove, HourCount, useWitching, WitchingHour } from "./Witching";   // C-236, C-237
+import { AsAbove, HalloweenNote, HourCount, useHalloween, useWitching, WitchingHour } from "./Witching";   // C-236, C-237, C-240
+import { FirstSight } from "./Hermetic";   // C-238
 import { useApi } from "../useApi";
  // C-119: how it looks now, decided on the server
 
@@ -39,6 +40,9 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const [under, setUnder] = useState("");                   // C-204: words under words, once the book is held
   const witching = useWitching();                           // C-236: 3 to 4 in the morning
   const [above, setAbove] = useState(false);               // C-237: AS ABOVE SO BELOW, opened by a touch in the hour
+  const halloween = useHalloween(daemon.species);           // C-240: the shimmer all day, the costume, the treats
+  const [unmasked, setUnmasked] = useState(false);
+  const masked = halloween.on && !!halloween.costume && !unmasked;
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
@@ -74,10 +78,11 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
       <YStack position="relative">
-      <Pressable disabled={!witching} onPress={() => setAbove(true)} accessibilityLabel={witching ? "as above, so below" : undefined}>{/* C-237: in the hour, a touch */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={l.expression} thrive={l.thrive} witching={witching}   // C-113, C-119
+      <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
+                 accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={masked ? null : l.expression} thrive={l.thrive} witching={witching || halloween.on}   // C-113, C-119; C-240: Halloween shimmers all day
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
-                          path={`/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
+                          path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
       </Pressable>
       {witching ? <HourCount /> : null}
       </YStack>
@@ -90,6 +95,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}
       {/* C-118: big, and as the boards have them: asleep, one WAKE; at bedtime SLEEP lit (DRAFT) */}
+      {witching ? <FirstSight /> : null}{/* C-238: the hour, seen here the first time -- what is happening, and SPELLCRAFT */}
       {witching && above ? <AsAbove onClose={() => setAbove(false)} />   /* C-237: AS ABOVE SO BELOW, in place of CARE */
       : l.tired === "asleep" ? (
         <XStack marginTop={6}><CareKey label="Wake" lit onPress={() => care("wake", "Awake.")} ink={ink} /></XStack>
@@ -104,6 +110,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       {said ? <Small>{said}</Small> : null}
       <Under words={under} />
       {witching ? <WitchingHour nickname={name} species={daemon.species} note={note} /> : null}
+      <HalloweenNote h={halloween} masked={masked} name={name} />
     </Card>
   );
 }

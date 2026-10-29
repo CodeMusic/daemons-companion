@@ -112,6 +112,23 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   thin purple shimmer and casts no shadow, on the watch's face and in the app. Once your save holds THE SUBTLE LAYER it
   also has a routine of its own, only then, named for its type (FLOW's UNDERCURRENT, LOGIC's LAST PROOF ...): on the watches
   ROUTINES -> THE HOUR, in the app under its care. The game has the hour too (DAEMONS T-480). Every word DRAFT.
+- **The hour's face** (C-237) -- in the hour the shimmer's inner circle fills counter-clockwise in emerald, the minutes
+  left beside it as a number and the date (no clock time: the hour is three to four); the clock face drops its hands;
+  the day's line turns under -- *{shadow} under {virtue}*, in the folk craft's words (THRALL under CIRCLE, DEVOURING under
+  MEASURE, BINDING under OFFERING, SLUMBER under VIGIL, HEX under UNCROSSING, EVIL EYE under BLESSING, GLAMOUR under
+  GROUNDING); and a touch, where it would open CARE, opens **AS ABOVE SO BELOW**, a line at a time. Every pulse -- the app,
+  the watches, the game -- breathes **red to blue through purple**, one eight-second breath on the clock, so devices side
+  by side breathe together. Every word DRAFT.
+- **THE HERMETIC LAYER** (C-238) -- the third book, and SPELLCRAFT. The first time you see the hour, here or on a watch,
+  a message says what is happening; say *SO MOTE IT BE* and the book is yours here, and in the game at the next SYNC.
+  (The game opens it its own way too.) Its pages breathe; its inscriptions glow emerald, each one sayable on its own --
+  a spell read aloud. On the watches: BOOKS -> AS ABOVE SO BELOW, and the book's chapters. Every word DRAFT.
+- **SPELLCRAFT's cards** (C-239) -- a third face on the twenty-two: words as spells and the alchemist's work, each daemon
+  as it is in the hour, on emerald. THE DAY'S CARD, a draw, past-present-future, in the book and in BOOKS. Every word DRAFT.
+- **Halloween** (C-240) -- with THE HERMETIC LAYER held, all of 31 October: the shimmer all day; your daemon in a costume,
+  dressed as what it fears (a daemon of a type that beats its own, from the game's chart) -- tap it to take the mask off;
+  trick or treat -- every daemon it meets that day leaves a card or a sweet line; the day's card one of the Book of
+  Thirteen's spells; and the clock face without its hands. Every word DRAFT.
 - **Words under words** (C-204) -- with the book held, four of the daemon's own lines carry a second, in purple, after
   it: what it means beneath what it says. You chose them: under "Hi! I missed you!", *I counted.*; under "Goodnight.
   Stay near?", *Don't go far.*; under "Again! Again!", *Watch me.*; under "Five more minutes?", *Stay with me.* On the

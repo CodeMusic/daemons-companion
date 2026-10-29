@@ -8,9 +8,10 @@ import { Button, Text, XStack, YStack } from "tamagui";
 import { api } from "../net";
 import { Art, Small } from "../ui";
 
-export type Card = { n: number; roman: string; side: "reason" | "instinct"; keyword: string; phrase: string; name: string;
+export type Card = { n: number; roman: string; side: "reason" | "instinct" | "spellcraft"; keyword: string; phrase: string; name: string;
                      shiny: boolean; art: string; face: string; at?: string };
-const C = { page: "#2c1c32", edge: "#4a3352", ink: "#f0e6f2", faint: "#9a86a0", pink: "#e07ad0", deep: "#3a1838" };
+const CS = { page: "#2c1c32", edge: "#4a3352", ink: "#f0e6f2", faint: "#9a86a0", pink: "#e07ad0", deep: "#3a1838" };
+const C = CS;
 const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
 
 export function ArcanaCard({ card, width }: { card: Card; width: number }) {
@@ -33,17 +34,22 @@ export function ArcanaCard({ card, width }: { card: Card; width: number }) {
   );
 }
 
-// THE DAY'S CARD, and A CARD or A SPREAD drawn whenever one is wanted -- in THE SUBTLE LAYER's book, once it is held
-export function Cards() {
+// THE DAY'S CARD, and A CARD or A SPREAD drawn whenever one is wanted -- in THE SUBTLE LAYER's book, once it is held;
+// C-239: deck="spellcraft", THE HERMETIC LAYER's, in its emerald (and on Halloween, C-240, the day's card one of the thirteen)
+const SPELL = { page: "#1d2a24", edge: "#1F8F5F", pink: "#50C878" };
+export function Cards({ deck = "subtle" }: { deck?: "subtle" | "spellcraft" }) {
+  const C = deck === "spellcraft" ? { ...CS, ...SPELL } : CS;
+  const q = deck === "spellcraft" ? "&deck=spellcraft" : "";
+  const [halloween, setHalloween] = useState(false);
   const [day, setDay] = useState<Card | null>(null);
   const [held, setHeld] = useState(false);
   const [drawn, setDrawn] = useState<Card[]>([]);
   const [err, setErr] = useState("");
   const [w, setW] = useState(0);
-  useEffect(() => { api<{ held: boolean; card?: Card }>("/api/arcana/today").then((r) => { setHeld(r.held); setDay(r.card ?? null); }).catch(() => {}); }, []);
+  useEffect(() => { api<{ held: boolean; card?: Card; halloween?: boolean }>(`/api/arcana/today${q ? "?" + q.slice(1) : ""}`).then((r) => { setHeld(r.held); setDay(r.card ?? null); setHalloween(!!r.halloween); }).catch(() => {}); }, [q]);
   if (!held || !day) return null;
   const draw = async (count: 1 | 3) => {
-    try { setDrawn((await api<{ cards: Card[] }>(`/api/arcana/draw?count=${count}`)).cards); setErr(""); }
+    try { setDrawn((await api<{ cards: Card[] }>(`/api/arcana/draw?count=${count}${q}`)).cards); setErr(""); }
     catch (e) { setErr((e as Error).message); }
   };
   const one = Math.min(240, Math.max(150, w - 32)), three = Math.max(96, Math.min(200, (w - 32 - 2 * 10) / 3));
@@ -51,7 +57,8 @@ export function Cards() {
     <YStack onLayout={(e) => setW(e.nativeEvent.layout.width)} backgroundColor={C.page} borderColor={C.edge} borderWidth={1} borderRadius={4} padding={16} gap={10}>
       <Text {...mono} fontSize={12} color={C.pink}>THE DAY'S CARD</Text>
       {w ? <YStack alignSelf="center"><ArcanaCard card={day} width={one} /></YStack> : null}
-      <Small color={C.faint}>{`${day.side === "reason" ? "REASON" : "INSTINCT"} · ${day.roman}${day.shiny ? " · shiny" : ""} -- what does it point you toward today?  DRAFT`}</Small>
+      <Small color={C.faint}>{halloween ? `HALLOWEEN · THE THIRTEEN · ${day.roman} -- a spell for the day.  DRAFT`
+        : `${day.side === "reason" ? "REASON" : day.side === "instinct" ? "INSTINCT" : "SPELLCRAFT"} · ${day.roman}${day.shiny ? " · shiny" : ""} -- what does it point you toward today?  DRAFT`}</Small>
       <XStack gap={8} flexWrap="wrap">
         <Button size="$3" onPress={() => draw(1)} backgroundColor={C.pink}><Text {...mono} fontSize={12} color={C.page}>DRAW A CARD</Text></Button>
         <Button size="$3" onPress={() => draw(3)} borderColor={C.pink} backgroundColor={C.page}><Text {...mono} fontSize={12} color={C.pink}>PAST · PRESENT · FUTURE</Text></Button>

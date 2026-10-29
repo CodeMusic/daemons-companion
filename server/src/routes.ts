@@ -42,7 +42,8 @@ import { thriveOf } from "./thrive.js";   // C-207
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { ackSpellcraft, firstSight, readHermetic } from "./hermetic.js";   // C-238
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/hermetic/first"];
+import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/hermetic/first", "/api/halloween"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -103,7 +104,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/guide") return ok(readGuide(save));              // C-145: the GUIDE, once found
     if (path === "/api/books" || path === "/api/book") {               // C-208: the books held -- their chapters, or one chapter
-      const books = booksOf(readSubtle(save), readGuide(save), readNotebook(save));   // never ?preview: the boards read what the save holds
+      const books = booksOf(readSubtle(save), readGuide(save), readNotebook(save), readHermetic(save, store));   // never ?preview: the boards read what the save holds (C-238: or what was found here)
       if (path === "/api/books") return ok({ books: bookList(books) });
       const c = chapterOf(books, a.query?.book ?? "", Number(a.query?.n));
       return c ? ok(c) : no(404, "no such chapter");
@@ -112,6 +113,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));
     if (path === "/api/hermetic") return ok(readHermetic(save, store, a.query?.preview === "1"));   // C-238: THE HERMETIC LAYER
     if (path === "/api/hermetic/first") return ok({ message: firstSight(store, save, now) });       // C-238: the hour, first seen
+    if (path === "/api/halloween") {                                    // C-240: today, with the book held -- the costume and the treats
+      const held = readHermetic(save, store).held, sp = Number(a.query?.species) || 0;
+      return ok(held && halloweenOn(now) ? { on: true, costume: sp ? costumeOf(sp, now) : null, treats: treatsOf(store, now) } : { on: false });
+    }
     // C-232: THE SUBTLE LAYER's deck; C-239: ?deck=spellcraft, THE HERMETIC LAYER's -- each only once its book is held
     if (path === "/api/arcana/draw") {                                   // C-232: a card, or a spread of three (a GET: the watch may ask it)
       const spell = a.query?.deck === "spellcraft";

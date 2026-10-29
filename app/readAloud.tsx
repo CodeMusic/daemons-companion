@@ -59,8 +59,8 @@ export function useReadAloud() {
 }
 
 // the button, for a chapter or a page: READ ALOUD, or STOP while it reads
-export function ReadAloud({ id, paragraphs, ink }: { id: string; paragraphs: string[]; ink?: string }) {
+export function ReadAloud({ id, paragraphs, ink, label }: { id: string; paragraphs: string[]; ink?: string; label?: string }) {   // C-238: label, a spell's SAY IT
   const r = useReadAloud();
   if (!ON_PHONE) return null;
-  return <Action label={r.reading === id ? "STOP READING" : "READ ALOUD"} onPress={() => r.read(id, paragraphs)} ink={ink} />;   // DRAFT
+  return <Action label={r.reading === id ? "STOP READING" : label ?? "READ ALOUD"} onPress={() => r.read(id, paragraphs)} ink={ink} />;   // DRAFT
 }

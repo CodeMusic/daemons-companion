@@ -570,7 +570,7 @@ static void touchTap(int x, int y, uint32_t now) {
   if (screen == HOME && page == FACE_PAGE) {                   // C-163: a double tap on the face opens CARE; one does nothing
     static uint32_t tappedAt = 0;
     if (tappedAt && now - tappedAt < 450) { tappedAt = 0; if (st.carrying && witchingNow()) openAsAbove(); else if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT; C-237: in the hour, AS ABOVE SO BELOW
-    else tappedAt = now;
+    else { tappedAt = now; toggleMask(); }                       // C-240: on Halloween a tap takes the mask off (or puts it on)
     return;
   }
   if (tapAt(x, y, off)) { pick(off); press(); return; }        // C-161, C-172: a row or a tile, tapped, opens that one

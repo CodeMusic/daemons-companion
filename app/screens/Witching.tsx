@@ -44,6 +44,7 @@ export function WitchShimmer({ side }: { side: number }) {
 // minute -- behind the daemon, with a mark at twelve and at the crease, half past
 export function HourPie({ side }: { side: number }) {
   useFrame(10000);
+  if (!witchingNow()) return null;                           // C-240: Halloween shimmers all day, but the count is the hour's
   const w = side * 0.76, h = side * 0.84, gone = hourGone(), spoke = (Math.PI * h) / 60 + 1.5;
   const filled = Math.floor(gone * 60 + 0.5);
   return (
@@ -110,6 +111,30 @@ export function WitchingHour({ nickname, species, note }: { nickname: string; sp
       <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color={EMERALD.lit}>THE HOUR</Text>
       <Action label={routine} onPress={run} ink={pulseNow(0.85)} />
       {said ? <Small color={EMERALD.lit}>{said}</Small> : <Small color="$color9">Only now, between three and four.</Small>}
+    </YStack>
+  );
+}
+
+// C-240: Halloween, with THE HERMETIC LAYER held -- the shimmer all day, the costume (what it fears; a tap takes the mask
+// off), and the treats the daemons it met today left. GET /api/halloween?species=. Every word DRAFT.
+export type HalloweenT = { on: boolean; costume?: { species: number; name: string } | null; treats?: { text: string; at: string }[] };
+export function useHalloween(species: number) {
+  const [h, setH] = useState<HalloweenT>({ on: false });
+  useEffect(() => {
+    const look = () => api<HalloweenT>(`/api/halloween?species=${species}`).then(setH).catch(() => {});
+    look(); const t = setInterval(look, 60000); return () => clearInterval(t);
+  }, [species]);
+  return h;
+}
+export function HalloweenNote({ h, masked, name }: { h: HalloweenT; masked: boolean; name: string }) {
+  if (!h.on) return null;
+  return (
+    <YStack gap={4} paddingTop={6}>
+      <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color={EMERALD.lit}>HALLOWEEN</Text>
+      {h.costume ? <Small color="$color11">{masked ? `${name} went as ${h.costume.name}, what it fears. Tap it to take the mask off.`
+                                                 : `${name}, unmasked. Tap it to put ${h.costume.name} back on.`}</Small> : null}
+      {(h.treats ?? []).slice(0, 5).map((t, i) => <Small key={i} color={EMERALD.lit}>{t.text}</Small>)}
+      {(h.treats ?? []).length === 0 ? <Small color="$color9">Every daemon it meets today leaves a treat.</Small> : null}
     </YStack>
   );
 }

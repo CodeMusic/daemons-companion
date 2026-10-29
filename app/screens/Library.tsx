@@ -16,6 +16,7 @@ import { previewQuery } from "../preview";
 import { PlayBook } from "./Play";
 import { ReadAloud } from "../readAloud";   // C-208
 import { SubtleBook, type SubtleT } from "./Subtle";
+import { HermeticBook, type HermeticT } from "./Hermetic";   // C-238
 import { ManualBook, manualAbout } from "./Manual";   // C-233
 
 // T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
@@ -116,8 +117,9 @@ export function PracticePaper() {
 }
 export function LibraryScreen() {
   const dayInk = useInk();
-  const [book, setBook] = useState<"manual" | "school" | "guide" | "subtle" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"manual" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
+  const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {
@@ -130,6 +132,7 @@ export function LibraryScreen() {
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
   if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
   if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
+  if (book === "hermetic" && her?.held) return <YStack gap={14}>{back}<HermeticBook b={her} /></YStack>;   // C-238
   if (book === "notebook") return <YStack gap={14}>{back}<NotebookCard skip="SONGBOOK" /></YStack>;   // C-156: moved here from YOU
   if (book === "songbook") return <YStack gap={14}>{back}<SongbookBook /></YStack>;
   if (book === "stream") return <YStack gap={14}>{back}<StreamBook /></YStack>;
@@ -183,6 +186,20 @@ export function LibraryScreen() {
               <Small>{`${sub.subtitle ?? ""} · ${(sub.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages`}</Small>
             </YStack>
             <Text fontSize={18} color="$color10">›</Text>
+          </XStack>
+        </Card>
+      ) : null}
+      {her?.held ? (                                         /* C-238: the third book, beside the other two */
+        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "#50C878" }} onPress={() => setBook("hermetic")}>
+          <XStack gap={14} alignItems="center">
+            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor="#1d2a24" borderRadius={3}>
+              <Art path="/art/arcana/spellcraft.png" size={27} height={45} />
+            </YStack>
+            <YStack flex={1} gap={2}>
+              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="#50C878">{her.title ?? "THE HERMETIC LAYER"}</Text>
+              <Small>{`${her.subtitle ?? ""} · ${(her.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages · SPELLCRAFT`}</Small>
+            </YStack>
+            <Text fontSize={18} color="#50C878">›</Text>
           </XStack>
         </Card>
       ) : null}

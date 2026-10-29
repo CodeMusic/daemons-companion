@@ -7,8 +7,9 @@
 import type { Guide } from "./save/guide.js";
 import type { Subtle } from "./save/subtle.js";
 import type { Notebook } from "./save/notebook.js";
+import type { Hermetic } from "./hermetic.js";
 
-export type BookId = "subtle" | "guide" | "notebook";
+export type BookId = "subtle" | "guide" | "notebook" | "hermetic";   // C-238: hermetic
 export type Chapter = { title: string; paragraphs: string[] };
 export type Book = { id: BookId; title: string; chapters: Chapter[] };
 export const READ_MAX = 560;                                  // a paragraph read aloud in one go, under the voice's 600
@@ -31,7 +32,7 @@ export function readable(paragraphs: string[]): string[] {
   return out;
 }
 
-export function booksOf(subtle: Subtle, guide: Guide, notebook: Notebook): Book[] {
+export function booksOf(subtle: Subtle, guide: Guide, notebook: Notebook, hermetic?: Hermetic): Book[] {
   const books: Book[] = [];
   if (subtle.held && subtle.sections)
     books.push({ id: "subtle", title: subtle.title ?? "THE SUBTLE LAYER", chapters: subtle.sections.flatMap((s) =>
@@ -39,6 +40,9 @@ export function booksOf(subtle: Subtle, guide: Guide, notebook: Notebook): Book[
   if (guide.held && guide.sections)
     books.push({ id: "guide", title: guide.title ?? "THE GUIDE", chapters: (guide.sections as any[]).flatMap((s) =>
       (s.entries as { title: string; paragraphs: string[] }[]).map((e) => ({ title: e.title, paragraphs: readable(e.paragraphs) }))) });
+  if (hermetic?.held && hermetic.sections?.length)                       // C-238: THE HERMETIC LAYER, read as the others are
+    books.push({ id: "hermetic", title: hermetic.title ?? "THE HERMETIC LAYER", chapters: hermetic.sections.flatMap((s) =>
+      s.entries.map((e) => ({ title: e.title, paragraphs: readable(e.paragraphs.map((p) => p.text)) }))) });
   if (notebook.held)
     books.push({ id: "notebook", title: "THE NOTEBOOK", chapters: notebook.sections.flatMap((s) =>
       s.pages.filter((p) => p.text).map((p) => ({ title: `${s.name}: ${p.title}`, paragraphs: readable(prose(p.text!)) }))) });

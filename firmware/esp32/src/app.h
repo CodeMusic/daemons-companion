@@ -81,7 +81,12 @@ uint16_t emeraldInk();                    // C-237: the tablet's ink, glowing sl
 void witchPie(int cx, int cy, int rx, int ry);   // C-237: the hour, filled widdershins
 int witchMinutesLeft(); String witchDate();
 String dayLine();                         // the day's virtue over its shadow -- turned under in the hour (C-237)
-void openAsAbove();                       // C-237: AS ABOVE SO BELOW, a touch in the hour   // C-236: 3 to 4 AM
+void openAsAbove();                       // C-237: AS ABOVE SO BELOW, a touch in the hour
+void hermeticFromState(JsonVariant h);    // C-238: THE HERMETIC LAYER's first sight, from the state
+void halloweenFromState(JsonVariant h);   // C-240: Halloween, with the book held
+bool halloweenNow(); bool shimmerNow(); bool costumeNow(); void toggleMask();
+void indexArtDraw(int x, int y, int sc);  // index.cpp: the picture indexArtFor loaded (C-240: a costume)
+extern uint32_t routinesRun;              // C-240: how many routines have run (one may have used the INDEX's picture)   // C-236: 3 to 4 AM
 // C-200 (night.cpp): the night and the daemon's dream
 // C-174 (gps.cpp): the Ultra's GNSS -- walks, a poll, FIND
 void gpsLoop(uint32_t now); void gpsFromState(JsonVariantConst f); String gpsStatus();

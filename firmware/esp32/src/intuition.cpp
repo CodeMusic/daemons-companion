@@ -273,6 +273,60 @@ static String drawAbove(uint16_t, uint16_t) {
   wrap(AS_ABOVE[aboveAt], 12, y, W - 24, wide() ? 4 : 2, wide() ? 28 : 18, 7, emeraldInk());
   return aboveAt + 1 < ABOVE_N ? "tap: more   hold: back" : "tap: again   hold: back";   // DRAFT
 }
+// C-238: the hour's first sight on a board -- what is happening, and the way in. Said (a tap: SO MOTE IT BE), the board
+// tells the companion ("spellcraft"), which opens THE HERMETIC LAYER here and writes the game's flag at the next SYNC.
+// Held off (hold: later), it asks again in ten minutes, while the hour lasts. The words are hermetic.ts FIRST_SIGHT's. DRAFT
+static bool hermFirst = false;
+static uint32_t firstLaterAt = 0;
+void hermeticFromState(JsonVariant h) { if (!h.isNull()) hermFirst = (h["first"] | 0) != 0; }
+static String drawFirst(uint16_t, uint16_t) {
+  canvas.fillRect(0, 26, W, H - 26, pulse565(0.28f));
+  canvas.setTextDatum(TL_DATUM); canvas.setTextFont(wide() ? 4 : 2); canvas.setTextColor(emeraldInk());
+  canvas.drawString("THE HOUR IS THIN", 12, 34);
+  wrap("It is between three and four in the morning, and the fold is thin. Your daemon shimmers and casts no shadow. "
+       "It does, only now. A book has found you that is not from the ordinary world: THE HERMETIC LAYER. In it, words are "
+       "spells. Say so, and SPELLCRAFT is yours -- here now, and in the game when it next syncs.",
+       12, wide() ? 70 : 56, W - 24, wide() ? 2 : 1, wide() ? 18 : 11, 16, PAPER);
+  return "tap: SO MOTE IT BE   hold: later";
+}
+static void openFirstSight() {
+  screen = RUN; runPanel = drawFirst; routineRunning = true; progress("");
+  uint32_t drewAt = millis(); bool said = false;
+  while (true) {
+    int step, ev; routineInput(step, ev);
+    if (routineQuit() || ev == -1) break;
+    if (ev == 1) { said = true; break; }
+    if (millis() - drewAt > 150) { drewAt = millis(); progress(""); }
+    delay(10);
+  }
+  routineRunning = false; runPanel = nullptr; screen = HOME; lastInput = millis(); dirty = true;
+  if (said) { hermFirst = false; report("spellcraft", "ack"); say("SPELLCRAFT is yours. Look in BOOKS."); }   // DRAFT
+  else firstLaterAt = millis();
+  while (giveUp()) delay(10);
+}
+// C-240: Halloween, with THE HERMETIC LAYER held (the companion says so, with the costume and a treat just left): the
+// shimmer all day and no shadow, the clock face without its hands, the daemon dressed as what it fears (a tap takes the
+// mask off for five minutes), and each treat said as it comes. DRAFT
+bool indexArtFor(int species); void indexArtDraw(int x, int y, int sc);   // index.cpp
+static bool hwOn = false, costumeArt = false;
+static int hwCostume = 0;
+static String hwTreat;
+static uint32_t unmaskUntil = 0, costumeRun = 0xFFFFFFFF, costumeTriedAt = 0;
+void halloweenFromState(JsonVariant h) {
+  if (h.isNull()) { hwOn = false; return; }
+  hwOn = (h["on"] | 0) != 0;
+  int c = h["costume"]["species"] | 0;
+  if (c != hwCostume) { hwCostume = c; costumeArt = false; }
+  String t = h["treat"] | "";
+  if (t.length() && t != hwTreat) { hwTreat = t; say(t, 4000); }
+}
+bool halloweenNow() { return hwOn && st.carrying; }
+bool shimmerNow() { return witchingNow() || halloweenNow(); }
+bool costumeNow() { return halloweenNow() && hwCostume && costumeArt && !(unmaskUntil && (int32_t)(unmaskUntil - millis()) > 0); }
+void toggleMask() {
+  if (!halloweenNow() || !hwCostume) return;
+  unmaskUntil = costumeNow() ? millis() + 300000 : 0; dirty = true;
+}
 void openAsAbove() {
   aboveAt = 0; screen = RUN; runPanel = drawAbove; routineRunning = true; progress("");
   uint32_t drewAt = millis();
@@ -340,7 +394,12 @@ void intuitionLoop(uint32_t now) {
   { static bool hadHour = false; static uint32_t at = 0;         // C-236: THE HOUR comes and goes -- at home or asleep, never mid-list
     if (now - at > 15000) { at = now; bool w = witchingRoutineNow(); if (w != hadHour && (asleep || screen == HOME)) { hadHour = w; routinesBegin(); dirty = true; } }
     static uint32_t flickerAt = 0;                                // the shimmer, for anyone up at three
-    if (!asleep && screen == HOME && now - flickerAt > 120 && witchingNow()) { flickerAt = now; dirty = true; } }
+    if (!asleep && screen == HOME && now - flickerAt > 120 && shimmerNow()) { flickerAt = now; dirty = true; } }   // C-240: all Halloween too
+  if (hermFirst && !asleep && screen == HOME && witchingNow() && (!firstLaterAt || now - firstLaterAt > 600000UL)) openFirstSight();   // C-238
+  if (halloweenNow() && hwCostume && !asleep && screen == HOME && (!costumeArt || costumeRun != routinesRun)   // C-240: its costume's
+      && (!costumeTriedAt || now - costumeTriedAt > 30000)) {   // picture, loaded again after a routine has used the INDEX's
+    costumeTriedAt = now; costumeArt = indexArtFor(hwCostume); costumeRun = routinesRun; dirty = true;
+  }
   bool woke = wasAsleep && !asleep;
   wasAsleep = asleep;
   if (!intuitionOn() || asleep || screen != HOME) return;

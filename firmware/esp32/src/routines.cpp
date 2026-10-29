@@ -110,6 +110,7 @@ String runChooseRemote() {
   pickRemoteNext = true; remoteAt = flareActive();
   return "";
 }
+uint32_t routinesRun = 0;                     // C-240
 void runRoutine() {
   const RoutineType &t = types[typeAt];
   runResult = "Running...";
@@ -118,7 +119,7 @@ void runRoutine() {
   if (strcmp(t.name, "CASINO") && strcmp(t.name, "THE HOUR")) soundRoutine(t.name);   // C-40: its tune, the ring dancing (C-149: the CASINO pulls its own lever; C-236: THE HOUR plays its own)
   routineRunning = true;
   runResult = t.routines[routineAt].run();
-  routineRunning = false; lastInput = millis();
+  routineRunning = false; lastInput = millis(); routinesRun++;
   if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
   if (pickRemoteNext) { pickRemoteNext = false; screen = PICK_REMOTE; }    // C-51: CHOOSE A REMOTE, a list
   if (!strcmp(t.name, "FLARE") && routineAt == 0) reportRemotes();         // a remote taught: the site hears of it

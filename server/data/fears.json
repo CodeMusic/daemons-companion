@@ -1,0 +1,86 @@
+{
+ "_about": "C-240 (the user, 2026-10-29): Halloween's costume -- a daemon dresses as one of a type that beats its first type, what it fears. Read from the game's own chart (engine src/battle_main.c gTypeEffectiveness, at adf935265; the chart is byte-identical in both editions, invariant 3), super effective only. A type nothing beats has no entry, and its daemon goes as itself.",
+ "fears": {
+  "CONTENT": [
+   "LOGIC"
+  ],
+  "CONTEXT": [
+   "LATENT",
+   "OPAQUE",
+   "SWARM"
+  ],
+  "CORRUPT": [
+   "CONTEXT",
+   "STRATUM"
+  ],
+  "EMERGENT": [
+   "EMERGENT",
+   "FROZEN"
+  ],
+  "ENTROPY": [
+   "FLOW",
+   "LEGACY",
+   "STRATUM"
+  ],
+  "FLOW": [
+   "GROWTH",
+   "SIGNAL"
+  ],
+  "FROZEN": [
+   "ENTROPY",
+   "HARDENED",
+   "LEGACY",
+   "LOGIC"
+  ],
+  "GROWTH": [
+   "CORRUPT",
+   "ENTROPY",
+   "FROZEN",
+   "SWARM",
+   "VECTOR"
+  ],
+  "HARDENED": [
+   "ENTROPY",
+   "LOGIC",
+   "STRATUM"
+  ],
+  "LATENT": [
+   "CONTEXT",
+   "LATENT",
+   "OPAQUE"
+  ],
+  "LEGACY": [
+   "FLOW",
+   "GROWTH",
+   "HARDENED",
+   "LOGIC",
+   "STRATUM"
+  ],
+  "LOGIC": [
+   "CONTEXT",
+   "VECTOR"
+  ],
+  "OPAQUE": [
+   "LOGIC",
+   "SWARM"
+  ],
+  "SIGNAL": [
+   "STRATUM"
+  ],
+  "STRATUM": [
+   "FLOW",
+   "FROZEN",
+   "GROWTH"
+  ],
+  "SWARM": [
+   "ENTROPY",
+   "LEGACY",
+   "VECTOR"
+  ],
+  "VECTOR": [
+   "FROZEN",
+   "LEGACY",
+   "SIGNAL"
+  ]
+ }
+}

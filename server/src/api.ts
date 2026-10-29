@@ -85,7 +85,8 @@ import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages } from "./guideask.js";   // C-209
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
-import { ackSpellcraft } from "./hermetic.js";   // C-238
+import { ackSpellcraft, readHermetic } from "./hermetic.js";   // C-238
+import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
@@ -1452,7 +1453,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const touch = b.how === "nfc";                            // C-176: two companions touched -- a meeting, closer
         store.logInteraction("met", `${species} ${peer}${lora ? ` lora ${hops}` : card ? " card" : touch ? " nfc" : ""}`);
         if (touch) { const d = core.carriedDaemon(hostOf(ecfg), store, deviceId); if (d) bondAdd(store, d.personality, "cares"); }   // the bond, a little
-        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : card ? "card" : touch ? "nfc" : "ble", hops });
+        // C-240: on Halloween, with THE HERMETIC LAYER held, every daemon met leaves a treat -- once each, that day
+        const treat = readHermetic(hostOf(ecfg).save.read(), store).held ? trickOrTreat(store, peer, SPECIES[species].name) : null;
+        return send(res, 200, { counted: true, name: SPECIES[species].name, how: lora ? "lora" : card ? "card" : touch ? "nfc" : "ble", hops,
+                                ...(treat ? { treat: treat.text } : {}) });
       }
       // C-72: a wave or a word over LoRa -- heard ("in") from a daemon nearby, or sent ("out") to one (or to everyone,
       // peer 00000000). Kept as the daemon's life is kept, and shown under MET NEARBY. A word is forty letters at most.

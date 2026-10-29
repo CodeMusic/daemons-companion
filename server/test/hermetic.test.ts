@@ -43,3 +43,31 @@ describe("C-238: SPELLCRAFT, found two ways", () => {
     expect(spellcraftOf(s)).toEqual({});
   });
 });
+
+// C-240: Halloween, with THE HERMETIC LAYER held
+describe("C-240: Halloween", async () => {
+  const { costumeOf, halloweenOn, halloweenView, trickOrTreat, treatsOf } = await import("../src/halloween.js");
+  const species = (await import("../data/species.json")).default as unknown as Record<string, { types: string[] }>;
+  const fears = (await import("../data/fears.json")).default as unknown as { fears: Record<string, string[]> };
+  const hw = new Date(2026, 9, 31, 14, 0);
+  it("is the 31st of October, all of it", () => {
+    expect([halloweenOn(new Date(2026, 9, 31, 0, 1)), halloweenOn(new Date(2026, 9, 31, 23, 59)), halloweenOn(new Date(2026, 10, 1, 0, 0))]).toEqual([true, true, false]);
+  });
+  it("dresses a daemon as what it fears -- a daemon of a type that beats its own, the same one all day", () => {
+    const c = costumeOf(1, hw)!;                                     // ROVERCUB, GROWTH
+    expect(fears.fears.GROWTH).toContain(species[String(c.species)].types[0]);
+    expect(costumeOf(1, new Date(2026, 9, 31, 22, 0))).toEqual(c);
+  });
+  it("leaves one treat per daemon met that day, only on Halloween", () => {
+    const s = new Store(":memory:");
+    expect(trickOrTreat(s, "a1b2c3d4", "ROVERCUB", new Date(2026, 9, 30, 12))).toBeNull();
+    const t = trickOrTreat(s, "a1b2c3d4", "ROVERCUB", hw, () => 0.9)!;
+    expect(t.kind).toBe("sweet");
+    expect(t.text).toMatch(/^ROVERCUB left a treat: /);
+    expect(trickOrTreat(s, "a1b2c3d4", "ROVERCUB", hw)).toBeNull();
+    expect(trickOrTreat(s, "0badf00d", "INKLING", hw, () => 0.1)!.kind).toBe("card");
+    expect(treatsOf(s, hw)).toHaveLength(2);
+    expect(halloweenView(s, 1, true, new Date(hw.getTime() + 60000))).toMatchObject({ on: 1, treats: 2 });
+    expect(halloweenView(s, 1, false, hw)).toBeNull();                // without the book, an ordinary day
+  });
+});

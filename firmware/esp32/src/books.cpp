@@ -28,12 +28,15 @@ static int keeps() { return !fromCard && cardReady() ? 1 : 0; }
 // and TODAY'S QUESTION (asked, then answered by voice, and kept in its journal)
 static bool held(const char *id) { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == id) return true; return false; }
 // C-232: and its cards -- THE DAY'S CARD, DRAW A CARD, PAST PRESENT FUTURE (arcana.cpp), which need no voice
-enum AskKind { ASK_GUIDE, ASK_SUBTLE, ASK_VOICES, ASK_TODAY, ASK_CARD, ASK_DRAW, ASK_SPREAD };
+// C-238, C-239: once THE HERMETIC LAYER is held, its own: AS ABOVE SO BELOW and the SPELLCRAFT deck's three
+enum AskKind { ASK_GUIDE, ASK_SUBTLE, ASK_VOICES, ASK_TODAY, ASK_CARD, ASK_DRAW, ASK_SPREAD, ASK_SCARD, ASK_SDRAW, ASK_SSPREAD, ASK_ABOVE };
 static const char *const ASK_NAMES[] = { "ASK THE GUIDE", "ASK THE SUBTLE LAYER", "TWO VOICES", "TODAY'S QUESTION",
-                                         "THE DAY'S CARD", "DRAW A CARD", "PAST PRESENT FUTURE" };                          // DRAFT
+                                         "THE DAY'S CARD", "DRAW A CARD", "PAST PRESENT FUTURE",
+                                         "SPELLCRAFT: TODAY", "SPELLCRAFT: DRAW", "SPELLCRAFT: SPREAD", "AS ABOVE SO BELOW" };   // DRAFT
 static const char *const ASK_HINTS[] = { "tap, then ask your question", "tap, then ask: a line, and a question back",
                                          "tap, then say a thing", "tap: its question, then tap to answer",
-                                         "tap: the card for today", "tap: a card -- tap again for another", "tap: three cards, swipe between" };   // DRAFT
+                                         "tap: the card for today", "tap: a card -- tap again for another", "tap: three cards, swipe between",
+                                         "tap: the spell card for today", "tap: a spell card", "tap: three spell cards", "tap: the first saying" };   // DRAFT
 static int askKinds(AskKind *k) {
   int n = 0;
   if (fromCard) return 0;
@@ -43,11 +46,12 @@ static int askKinds(AskKind *k) {
     if (talk) { k[n++] = ASK_SUBTLE; k[n++] = ASK_VOICES; k[n++] = ASK_TODAY; }
     k[n++] = ASK_CARD; k[n++] = ASK_DRAW; k[n++] = ASK_SPREAD;
   }
+  if (held("hermetic")) { k[n++] = ASK_ABOVE; k[n++] = ASK_SCARD; k[n++] = ASK_SDRAW; k[n++] = ASK_SSPREAD; }   // C-238, C-239
   return n;
 }
-static int asks() { AskKind k[8]; return askKinds(k); }
-static AskKind askAt(int i) { AskKind k[8]; askKinds(k); return k[i]; }
-String runArcana(int mode);                               // arcana.cpp
+static int asks() { AskKind k[12]; return askKinds(k); }
+static AskKind askAt(int i) { AskKind k[12]; askKinds(k); return k[i]; }
+String runArcana(int mode, bool spell = false);            // arcana.cpp; C-239: spell, THE HERMETIC LAYER's deck
 // C-199 (3): THE INDEX heads the shelf (index.cpp), after ASK THE GUIDE
 String runIndex(); int indexKeepAll();
 static int heads() { return asks() + 1; }
@@ -187,11 +191,13 @@ String runBooks() {
       if (ev == 1 && n) {
         if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the book's answer
           AskKind k = askAt(bAt);
-          if (k >= ASK_CARD) { String r = runArcana(k - ASK_CARD); runPanel = drawBooks; if (r.length()) say(r); }   // C-232
+          if (k == ASK_ABOVE) { openAsAbove(); screen = RUN; runPanel = drawBooks; routineRunning = true; }   // C-238
+          else if (k >= ASK_SCARD) { String r = runArcana(k - ASK_SCARD, true); runPanel = drawBooks; if (r.length()) say(r); }   // C-239
+          else if (k >= ASK_CARD) { String r = runArcana(k - ASK_CARD); runPanel = drawBooks; if (r.length()) say(r); }   // C-232
           else if (k == ASK_TODAY) todaysQuestion();
           else if (k == ASK_GUIDE) { talkToGuide = true; talkHold(6000); talkToGuide = false; }
           else { talkToSubtle = k == ASK_VOICES ? 2 : 1; talkHold(6000); talkToSubtle = 0; }   // C-229
-          if (k < ASK_CARD)                                    // a spoken answer: read it, then on (the cards are their own page)
+          if (k < ASK_CARD)                                    // a spoken answer: read it, then on (the cards and the saying are their own pages)
             while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }
           screen = RUN;
         }

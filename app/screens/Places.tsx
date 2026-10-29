@@ -133,7 +133,7 @@ function PowerRows({ id, power, own, set, ink }: { id: string; power: Power; own
     <OwnRow own={own} set={set} k="power" label="BATTERY">
     <Row label="LOW POWER">
       <Choice value={power.low} options={onOff} onPick={(low) => p({ low })} ink={ink} />
-      <Small color="$color10">{power.low ? "Every drain below is at its thrifty side: GPS and LoRa off, a slower check, a dimmer, shorter screen." : "Off: the watch uses the switches below. You can also say \"INDEX, low power on\"."}</Small>
+      <Small color="$color10">{power.low ? "Every drain below is at its thrifty side: GPS and LoRa off, a slower check, a dimmer, shorter screen. Charging turns it off." : "Off: the watch uses the switches below. You can also say \"INDEX, low power on\"."}</Small>
     </Row>
     {GNSS.test(id) ? (
       <Row label="GPS">
@@ -157,9 +157,11 @@ function PowerRows({ id, power, own, set, ink }: { id: string; power: Power; own
     <Row label="CHECKS IN WITH THE COMPANION">
       <Choice value={power.poll} options={[[30, "30 s"], [60, "1 min"], [120, "2 min"], [300, "5 min"], [600, "10 min"]]} onPick={(poll) => p({ poll })} ink={ink} />
     </Row>
-    <Row label="ALWAYS-ON FACE">
-      <Choice value={power.aod} options={onOff} onPick={(aod) => p({ aod })} ink={ink} />
-    </Row>
+    {GNSS.test(id) ? (                                                        /* the AMOLED's only (the watch session) */
+      <Row label="ALWAYS-ON FACE">
+        <Choice value={power.aod} options={onOff} onPick={(aod) => p({ aod })} ink={ink} />
+      </Row>
+    ) : null}
     <Row label="PULSES (TAPS ON THE WRIST)">
       <Choice value={power.pulses} options={onOff} onPick={(pulses) => p({ pulses })} ink={ink} />
     </Row>

@@ -259,3 +259,4 @@ network -- as the player it joined as. A phone hosting alone answers the same, t
 | `POST /api/exchange/join` | `{name, code}` or `{name, password}`: a player's token. Eight wrong tries from one address in ten minutes, then 429 |
 | `GET /api/exchange/players` | the players, for this machine or a paired phone |
 | `/api/exchange/me`, `board`, `offer`, `accept`, `withdraw`, `recall`, `inbox`, `handback`, `written`, `password` | as a player (`x-daemons-player`): the exchange's own side -- who you are, the offers and trades, and at SYNC what arrives, a loan handed back, and what was written |
+| `/api/trade/out`, `back`, `meet`; `/api/exchange/out`, `back`, `meet` | OUT TOGETHER (C-220): a daemon that is AWAY sent out and called back, and the meeting of two that are out -- four turns said by the hub's AI board, the goodbye always written. Home only, for now |

@@ -74,7 +74,11 @@ the exchange sent before it writes the save, and tells the exchange afterwards.
 
 ## Later
 
-Each is filed as a ticket, open, and none is built: two daemons sent out meeting and talking (C-220); the game's own
+**OUT TOGETHER** (C-220, its first piece): on TRADE, send a daemon that is AWAY out, and when another player's is out too
+the two meet and talk, four turns, said by the hub's AI board -- a turn it does not start in time is written instead,
+and the goodbye is always written. The two pictures face each other on the card. At home only, for now.
+
+Each of the rest is filed as a ticket, open, and none is built: the rest of C-220; the game's own
 link cable through the hub, for trades and battles (C-221); a lobby beyond the tailnet, and links by Bluetooth, LoRa or
 a touch (C-222); friends and gifts (C-223); battles between players (C-224).
 

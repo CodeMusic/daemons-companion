@@ -156,7 +156,8 @@ The companion reads your save, so it can show you what you have done in there --
   DAEMONS as published, kept on the iPhone or iPad and read there, or in the page on the site; C-233), CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
   GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
   a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE
-  to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened).
+  to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened). Some say the
+  shelf has room for one more ([THE HERMETIC LAYER](https://github.com/CodeMusic/DAEMONS/wiki/The-Hermetic-Layer)).
 - **The INDEX**, in DAEMON -- every entry, read aloud if you like, and where each daemon is NATIVE; in the app, the
   whole card, taking its colour as your save comes to understand that kind of daemon. On the T-Watch Ultra it is in
   BOOKS, every daemon you have met.

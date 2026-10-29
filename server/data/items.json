@@ -784,6 +784,70 @@
   "name": "HERMETIC",
   "description": "THE HERMETIC LAYER. Found on the underside of the world. It reads only at night."
  },
+ "233": {
+  "name": "LOGIC SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is LOGIC."
+ },
+ "234": {
+  "name": "VECTOR SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is VECTOR."
+ },
+ "235": {
+  "name": "CORRUPT SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is CORRUPT."
+ },
+ "236": {
+  "name": "STRATUM SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is STRATUM."
+ },
+ "237": {
+  "name": "LEGACY SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is LEGACY."
+ },
+ "238": {
+  "name": "SWARM SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is SWARM."
+ },
+ "239": {
+  "name": "LATENT SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is LATENT."
+ },
+ "240": {
+  "name": "HARDENED SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is HARDENED."
+ },
+ "241": {
+  "name": "ENTROPY SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is ENTROPY."
+ },
+ "242": {
+  "name": "FLOW SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is FLOW."
+ },
+ "243": {
+  "name": "GROWTH SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is GROWTH."
+ },
+ "244": {
+  "name": "SIGNAL SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is SIGNAL."
+ },
+ "245": {
+  "name": "CONTEXT SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is CONTEXT."
+ },
+ "246": {
+  "name": "FROZEN SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is FROZEN."
+ },
+ "247": {
+  "name": "EMERGENT SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is EMERGENT."
+ },
+ "248": {
+  "name": "OPAQUE SINK",
+  "description": "Halves the first super-effective hit on one channel, then is spent. This one is OPAQUE."
+ },
  "254": {
   "name": "RED SCARF",
   "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS."

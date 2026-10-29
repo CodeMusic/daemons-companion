@@ -1,5 +1,5 @@
 {
- "_about": "C-23: offsets into SaveBlock2 (section 0) and SaveBlock1 (sections 1-4, end to end), read from global.h's own struct comments; flag numbers resolved from flags.h. A flag below daemons_flags_start is a bit in SaveBlock1's flags, one at or above it a bit in SaveBlock2's daemonsFlags. INDEX flags are by national number minus one. Money is stored XOR the encryption key. A daemon is SEEN only when sb2 index_seen and sb1 seen1 and seen2 all have its bit (pokedex_screen.c's anticheat), so a writer sets all three. T-427: house_take is the house's take (what the GAME CORNER and the CASINO kept, in money), house_take_bytes wide, signed little-endian (negative while the player is ahead), stored plain -- NOT XORed as money is. Only ever added to. house_take_at_fall is the take as it stood when CORPUS fell (the game freezes it there, once; VERDIGRIS names it), same width and sign -- the game's to write, never a writer's. T-406: sb1 first_met is where each daemon was first SEEN, first_met_bytes bytes, one per national number (number - 1), each a map section first_met_places names (0: not recorded); trust them only when the u32 at first_met_magic is first_met_magic_value (an older save holds a recap scene there). A SEEN daemon with 0 was seen before the game kept them: the INDEX says BEFORE RECORDS.",
+ "_about": "C-23: offsets into SaveBlock2 (section 0) and SaveBlock1 (sections 1-4, end to end), read from global.h's own struct comments; flag numbers resolved from flags.h. A flag below daemons_flags_start is a bit in SaveBlock1's flags, one at or above it a bit in SaveBlock2's daemonsFlags. INDEX flags are by national number minus one. Money is stored XOR the encryption key. A daemon is SEEN only when sb2 index_seen and sb1 seen1 and seen2 all have its bit (pokedex_screen.c's anticheat), so a writer sets all three. T-427: house_take is the house's take (what the GAME CORNER and the CASINO kept, in money), house_take_bytes wide, signed little-endian (negative while the player is ahead), stored plain -- NOT XORed as money is. Only ever added to. house_take_at_fall is the take as it stood when CORPUS fell (the game freezes it there, once; VERDIGRIS names it), same width and sign -- the game's to write, never a writer's. T-406: sb1 first_met is where each daemon was first SEEN, first_met_bytes bytes, one per national number (number - 1), each a map section first_met_places names (0: not recorded; it also names the three bytes that are no place -- THE COMPANION, A TRADE, A GIFT, T-492); trust them only when the u32 at first_met_magic is first_met_magic_value (an older save holds a recap scene there). A SEEN daemon with 0 was seen before the game kept them: the INDEX says BEFORE RECORDS.",
  "sb2": {
   "player_name": 0,
   "player_gender": 8,
@@ -144,7 +144,10 @@
    "194": "VIAPOIS CHAMBER",
    "195": "KETTLE SPRING",
    "196": "THE NEXUS",
-   "197": "VERDIGRIS DEPT."
+   "197": "VERDIGRIS DEPT.",
+   "255": "THE COMPANION",
+   "254": "A TRADE",
+   "253": "A GIFT"
   }
  },
  "flags": {

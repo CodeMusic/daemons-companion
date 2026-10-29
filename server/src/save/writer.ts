@@ -291,11 +291,16 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const present = (personality: number) => party.some((p) => p.d?.personality === personality) ||
       Array.from({ length: 14 * 30 }, (_, i) => i).some((i) => boxFlags(i) & 0b10 && boxPersonality(i) === personality);
     for (const t of opts.trade) {
-      const rec = arriving(t.record, l, { loan: t.loan, phase: t.phase }), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
-      if (!rec || incoming == null) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }   // DRAFT
-      if (present(incoming)) { tradeWaits.push({ id: t.id, why: "that daemon is already in this save" }); continue; }   // DRAFT
       const inParty = party.find((p) => p.d?.personality === t.out >>> 0);
       const inBox = inParty ? -1 : Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => boxFlags(i) & 0b10 && boxPersonality(i) === t.out >>> 0) ?? -1;
+      // T-474: the species given for it -- the one leaving this slot
+      const leaving = inParty?.d ?? (inBox >= 0 ? (() => {
+        try { return readDaemon(Uint8Array.from({ length: l.box_pokemon_size }, (_, k) => out[box(4 + inBox * l.box_pokemon_size + k).byte]), 0, l); }
+        catch { return null; }                                   // a damaged record: no partner named
+      })() : null);
+      const rec = arriving(t.record, l, { loan: t.loan, phase: t.phase, partner: leaving?.species }), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
+      if (!rec || incoming == null) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }   // DRAFT
+      if (present(incoming)) { tradeWaits.push({ id: t.id, why: "that daemon is already in this save" }); continue; }   // DRAFT
       const away = inParty ? awayAfter(inParty) : inBox >= 0 && !!(boxFlags(inBox) & (1 << l.away_bit));
       if (!inParty && inBox < 0) { tradeWaits.push({ id: t.id, why: "the daemon traded is not in this save" }); continue; }   // DRAFT
       if (!away) { tradeWaits.push({ id: t.id, why: "the daemon traded is home in the game -- SEND it again" }); continue; }   // DRAFT

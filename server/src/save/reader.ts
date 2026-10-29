@@ -27,8 +27,11 @@ export const soundingShift = (l: Layout) => { const s = (l as Record<string, unk
 // 0x1E, outside the encrypted substructs and the checksum (bit 0 a borrowed daemon, bit 1 one just arrived by trade, which
 // the game clears when it finishes it)
 const num = (l: Layout, k: string, d: number) => { const v = (l as Record<string, unknown>)[k]; return typeof v === "number" ? v : d; };
+// DAEMONS T-474: and bits 2-10 of that u16, the ENGINE species id of the daemon given for this one in the trade (0: none),
+// for a pair evolution -- written with TRADED_IN, cleared by the game when it finishes the trade
 export const tradeBits = (l: Layout) => ({ trading: 1 << num(l, "trading_bit", 3), at: num(l, "trade_flags_offset", 0x1e),
-                                           loan: num(l, "loan_mask", 1), tradedIn: num(l, "traded_in_mask", 2) });
+                                           loan: num(l, "loan_mask", 1), tradedIn: num(l, "traded_in_mask", 2),
+                                           partnerShift: num(l, "trade_partner_shift", 2), partnerMask: num(l, "trade_partner_mask", 0x7fc) });
 
 export interface PartyDaemon {
   slot: number;            // 0-5 in the party

@@ -44,7 +44,8 @@ export function tradeRecord(save: Uint8Array, personality: number, l: Layout = L
   const record = rec.slice();
   const tb = tradeBits(l);
   record[l.flags_byte] &= ~((1 << l.away_bit) | (1 << l.asked_bit) | (3 << soundingShift(l)) | tb.trading) & 0xff;   // the companion's bits are this save's, not the daemon's
-  record[tb.at] &= ~(tb.loan | tb.tradedIn) & 0xff;
+  const v = new DataView(record.buffer);
+  v.setUint16(tb.at, v.getUint16(tb.at, true) & ~(tb.loan | tb.tradedIn | tb.partnerMask) & 0xffff, true);
   const d = describe(record, l);
   return d ? { ...d, record } : "that daemon's record is damaged";                        // DRAFT
 }
@@ -54,13 +55,15 @@ export function tradeRecord(save: Uint8Array, personality: number, l: Layout = L
 // u32 at Misc+8, bit 29, as C-184) re-summed and sealed under its own key, TRADED_IN set, and LOAN for a loan -- so the
 // INDEX takes it and it trade-evolves, unless it is borrowed. A loan's RETURN is the player's own coming home: nothing to
 // finish, LOAN cleared.
-export function arriving(record: Uint8Array, l: Layout = LAYOUT, how: { loan?: boolean; phase?: "swap" | "return" } = {}): Uint8Array | null {
+export function arriving(record: Uint8Array, l: Layout = LAYOUT, how: { loan?: boolean; phase?: "swap" | "return"; partner?: number } = {}): Uint8Array | null {
   if (!describe(record, l)) return null;
   const tb = tradeBits(l), r = record.slice(), v = new DataView(r.buffer);
   r[l.flags_byte] = (r[l.flags_byte] & ~((1 << l.asked_bit) | (3 << soundingShift(l)) | tb.trading) & 0xff) | (1 << l.away_bit);
-  r[tb.at] &= ~(tb.loan | tb.tradedIn) & 0xff;
   const swap = how.phase !== "return";
-  if (swap) r[tb.at] |= tb.tradedIn | (how.loan ? tb.loan : 0);
+  // T-474: on a swap, the species given for it (the engine's id) beside TRADED_IN, for a pair evolution
+  const partner = swap ? ((how.partner ?? 0) << tb.partnerShift) & tb.partnerMask : 0;
+  const flags = v.getUint16(tb.at, true) & ~(tb.loan | tb.tradedIn | tb.partnerMask) & 0xffff;
+  v.setUint16(tb.at, swap ? flags | tb.tradedIn | (how.loan ? tb.loan : 0) | partner : flags, true);
   const personality = v.getUint32(0, true), key = (personality ^ v.getUint32(4, true)) >>> 0;
   const plain = new DataView(new ArrayBuffer(48));
   for (let k = 0; k < 48; k += 4) plain.setUint32(k, (v.getUint32(32 + k, true) ^ key) >>> 0, true);

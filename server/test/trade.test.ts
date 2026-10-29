@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/save/growth.js";
-import { blocks, LAYOUT, readAway, readBoxes, readSave, ORDERS, tradeBits } from "../src/save/reader.js";
+import { blocks, LAYOUT, readAway, readBoxes, readSave, ORDERS, sectionSize, tradeBits } from "../src/save/reader.js";
 import { syncSave } from "../src/save/writer.js";
 import { arriving, describe as describeRecord, fromB64, toB64, tradeRecord } from "../src/save/trade.js";
 import * as X from "../src/exchange.js";
@@ -110,6 +110,35 @@ describe("the game's bits (DAEMONS T-473)", () => {
     if (typeof sent === "string") throw new Error(sent);
     expect(sent.record[tb.at] & (tb.loan | tb.tradedIn)).toBe(0);
     expect(bits(written, 2002).party?.away).toBe(true);
+  });
+
+  it("T-474: a swap names the species given for it (party or box) beside TRADED_IN; a return names none", () => {
+    const tb = tradeBits(LAYOUT), at = (save: Uint8Array, personality: number) => {
+      const t = readSave(save).party.find((d) => d.personality === personality) ? "party" : "box";
+      const { sb1 } = blocks(save);
+      if (t === "party") { const i = readSave(save).party.findIndex((d) => d.personality === personality);
+        return new DataView(sb1.buffer).getUint16(LAYOUT.party_offset + i * LAYOUT.pokemon_size + tb.at, true); }
+      return -1;
+    };
+    const b = tradeRecord(saveB(), 2002), a = tradeRecord(saveA(), 1002);
+    if (typeof b === "string" || typeof a === "string") throw new Error("record");
+    // into A's party, for A's 1002 (species 4): partner 4
+    const intoA = syncSave(saveA(), { link: false, trade: [{ id: "x", out: 1002, record: b.record }] }).save;
+    const word = at(intoA, 2002);
+    expect([(word & tb.partnerMask) >> tb.partnerShift, word & tb.tradedIn]).toEqual([4, tb.tradedIn]);
+    // into B's box, for B's 2002 (species 1): partner 1, read from the record that arrived
+    const intoB = syncSave(saveB(), { link: false, trade: [{ id: "y", out: 2002, record: a.record }] }).save;
+    const boxed = readBoxes(intoB)[0];
+    expect(boxed.personality).toBe(1002);
+    const { slot } = blocks(intoB), storage = new Uint8Array(LAYOUT.storage_size);
+    for (let id = 5; id <= 13; id++) { const sec = slot.sections.get(id); if (sec) storage.set(sec.subarray(0, sectionSize(id)), (id - 5) * 3968); }
+    expect((new DataView(storage.buffer).getUint16(4 + tb.at, true) & tb.partnerMask) >> tb.partnerShift).toBe(1);
+    // a loan's return names none, and nothing leaves in a record sent onward
+    const back = arriving(arriving(b.record, LAYOUT, { partner: 4 })!, LAYOUT, { phase: "return" })!;
+    expect(new DataView(back.buffer).getUint16(tb.at, true) & (tb.partnerMask | tb.tradedIn)).toBe(0);
+    const sent = tradeRecord(intoA, 2002);
+    if (typeof sent === "string") throw new Error(sent);
+    expect(new DataView(sent.record.buffer).getUint16(tb.at, true) & tb.partnerMask).toBe(0);
   });
 
   it("TRADING locks a daemon in a trade: set, an ask home refused, cleared once it is not", () => {

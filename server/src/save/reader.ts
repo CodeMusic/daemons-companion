@@ -31,7 +31,8 @@ const num = (l: Layout, k: string, d: number) => { const v = (l as Record<string
 // for a pair evolution -- written with TRADED_IN, cleared by the game when it finishes the trade
 export const tradeBits = (l: Layout) => ({ trading: 1 << num(l, "trading_bit", 3), at: num(l, "trade_flags_offset", 0x1e),
                                            loan: num(l, "loan_mask", 1), tradedIn: num(l, "traded_in_mask", 2),
-                                           partnerShift: num(l, "trade_partner_shift", 2), partnerMask: num(l, "trade_partner_mask", 0x7fc) });
+                                           partnerShift: num(l, "trade_partner_shift", 2), partnerMask: num(l, "trade_partner_mask", 0x7fc),
+                                          gifted: num(l, "gifted_mask", 1 << 11) });   // C-223 / DAEMONS T-492: arrived as a gift
 
 export interface PartyDaemon {
   slot: number;            // 0-5 in the party

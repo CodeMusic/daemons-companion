@@ -299,5 +299,13 @@ describe("a gift (C-223): given with nothing back", () => {
     const r = syncSave(saveB(), { link: false, trade: [{ id: "g:swap", out: 0, record: a.record }] });
     expect(readBoxes(r.save).map((d) => d.personality)).toEqual([2002, 2003, 1002]);
     expect(readBoxes(r.save)[2]).toMatchObject({ away: true });
+    // DAEMONS T-492: GIFTED (0x1E bit 11) beside TRADED_IN, partner 0; a trade's arrival is not GIFTED, and none leaves in a record sent
+    const tb = tradeBits(LAYOUT), f = (r: Uint8Array) => new DataView(r.buffer).getUint16(tb.at, true);
+    const gift = arriving(a.record, LAYOUT, { phase: "swap", gift: true })!, trade = arriving(a.record, LAYOUT, { phase: "swap", partner: 7 })!;
+    expect([f(gift) & tb.gifted, f(gift) & tb.tradedIn, f(gift) & tb.partnerMask]).toEqual([tb.gifted, tb.tradedIn, 0]);
+    expect(f(trade) & tb.gifted).toBe(0);
+    const sent = tradeRecord(r.save, 1002);
+    if (typeof sent === "string") throw new Error(sent);
+    expect(f(sent.record) & (tb.gifted | tb.tradedIn)).toBe(0);
   });
 });

@@ -338,7 +338,7 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
       }
       // C-223: a gift received -- nothing leaves; it arrives in the first empty box slot, as a trade's arrives
       if (!t.out) {
-        const rec = t.record && arriving(t.record, l, { phase: "swap" }), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
+        const rec = t.record && arriving(t.record, l, { phase: "swap", gift: true }), incoming = rec && new DataView(rec.buffer).getUint32(0, true);
         if (!rec || incoming == null) { tradeWaits.push({ id: t.id, why: "the daemon sent is damaged" }); continue; }   // DRAFT
         if (present(incoming)) { tradeWaits.push({ id: t.id, why: "that daemon is already in this save" }); continue; }   // DRAFT
         const at0 = free();

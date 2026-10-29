@@ -1,7 +1,7 @@
 // C-111: the companion's own logic, wherever it runs. Everything here reads and writes through a Store and a SaveFile, so
 // the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/local.ts, over
 // expo-sqlite and the save Delta shared through Files) run the same rules. Nothing here may import Node.
-import { dreamVars, freshDream } from "./dreams.js";
+import { DREAM_VARS, dreamVars, freshDream } from "./dreams.js";
 import { findAsked } from "./where.js";
 import { den } from "./dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
@@ -101,6 +101,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const gift = giftToWrite(store, h.edition) ?? undefined;     // C-185: HANDSHAKE, once, into the PC, already away
   const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)
   const trade = tradesToWrite(store, game);                     // C-219: what the exchange sent this game (tradelink.ts)
+  // C-223: a dream of a daemon being given away is not told to the game (its ITS DREAMS line would name one gone)
+  if (dream && dream.personality !== null && trade.some((t) => t.give && t.out >>> 0 === dream.personality! >>> 0)) dream.vars[DREAM_VARS.dream] = 0;
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
                               sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars, trade, locks: tradeLocks(store, game),
                               spellcraft: spellcraftToWrite(store, file) ? HERMETIC_FLAG : undefined });   // C-238

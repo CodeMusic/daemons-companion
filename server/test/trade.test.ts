@@ -288,4 +288,16 @@ describe("a gift (C-223): given with nothing back", () => {
     expect(fromBox.traded[0]).toMatchObject({ gave: true, where: "box" });
     expect(readBoxes(fromBox.save).map((d) => d.personality)).toEqual([2003]);
   });
+
+  it("finds the giver's daemon by its trainer too, never lets one asked home go, and puts an arrival after the AWAY ones", () => {
+    // the same personality under another trainer is not the one given
+    expect(syncSave(saveA(), { link: false, trade: [{ id: "g:give", out: 1002, ot: B_ID, record: null, give: true }] }).tradeWaits[0].why).toMatch(/not in this save/);
+    expect(syncSave(saveA(), { link: false, trade: [{ id: "g:give", out: 1002, ot: A_ID, record: null, give: true }] }).traded[0]).toMatchObject({ gave: true });
+    // KIT's PC: 2002 AWAY in the first slot, 2003 home in the second -- an arrival goes after 2002, into the third
+    const a = tradeRecord(saveA(), 1002);
+    if (typeof a === "string") throw new Error(a);
+    const r = syncSave(saveB(), { link: false, trade: [{ id: "g:swap", out: 0, record: a.record }] });
+    expect(readBoxes(r.save).map((d) => d.personality)).toEqual([2002, 2003, 1002]);
+    expect(readBoxes(r.save)[2]).toMatchObject({ away: true });
+  });
 });

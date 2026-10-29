@@ -187,7 +187,7 @@ export function recall(store: Store, player: string, id: string): Result<Offer> 
 
 // ---- what a companion does at SYNC (tradelink.ts) ----
 // what this player's game receives now (each once it is written), and which borrowed daemons it is asked to hand back
-export interface Delivery { id: string; out: number; record: string; from: string; kind: Kind; phase: "swap" | "return" | "give" }   // give: C-223, the giver's
+export interface Delivery { id: string; out: number; record: string; from: string; kind: Kind; phase: "swap" | "return" | "give"; ot?: number }   // give: C-223, the giver's
 // `locked`: this game's daemons in a trade now -- one on offer, one agreed and not yet gone, one borrowed that is on its
 // way home -- which the game must not bring home (TRADING, DAEMONS T-473)
 export function inbox(store: Store, player: string, game: GameKey): { deliveries: Delivery[]; handbacks: { id: string; personality: number }[]; locked: number[] } {
@@ -206,7 +206,8 @@ export function inbox(store: Store, player: string, game: GameKey): { deliveries
     // C-223: a gift -- the giver's game lets it go, the receiver's takes it into a box (out 0: nothing leaves)
     if (o.kind === "gift") {
       if (o.from.player === player && gameId(o.from.game) === me && !o.written.includes(`${player}:give`))
-        deliveries.push({ id: `${o.id}:give`, out: o.from.personality, record: "", from: name(o.with.player), kind: "gift", phase: "give" });
+        deliveries.push({ id: `${o.id}:give`, out: o.from.personality, record: "", from: name(o.with.player), kind: "gift", phase: "give",
+                          ot: (() => { const b = fromB64(o.from.record), d = b && describe(b); return d ? d.otId : undefined; })() });
       if (o.with.player === player && gameId(o.with.game) === me && !o.written.includes(`${player}:swap`))
         deliveries.push({ id: `${o.id}:swap`, out: 0, record: o.from.record, from: name(o.from.player), kind: "gift", phase: "swap" });
       continue;

@@ -52,7 +52,8 @@ export interface Gift { species: number; name: string; level: number; personalit
 // C-219: a trade -- the daemon going (by its personality, AWAY here) and the whole record of the one coming in its place
 // C-223: a GIFT -- `give` on the giver's side (the daemon leaves: no record comes in), and on the receiver's an `out` of 0
 // (nothing leaves: it arrives in the first empty box slot)
-export interface TradeIn { id: string; out: number; record: Uint8Array | null; loan?: boolean; phase?: "swap" | "return"; give?: boolean }
+export interface TradeIn { id: string; out: number; record: Uint8Array | null; loan?: boolean; phase?: "swap" | "return"; give?: boolean;
+                          ot?: number }   // C-223: the giver's daemon by who it is -- personality and its trainer's id, never a slot
 
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
@@ -298,14 +299,24 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const boxFlags = (i: number) => out[box(4 + i * l.box_pokemon_size + l.flags_byte).byte];
     const present = (personality: number) => party.some((p) => p.d?.personality === personality) ||
       Array.from({ length: 14 * 30 }, (_, i) => i).some((i) => boxFlags(i) & 0b10 && boxPersonality(i) === personality);
-    const free = () => Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => !(boxFlags(i) & 0b10)) ?? -1;
+    // C-223: an arrival goes after every daemon already AWAY in the PC, so the game's first AWAY (DaemonFirstAway: the
+    // party, then the boxes in order) stays the one this player carries; the first empty slot only when none is after
+    const free = () => {
+      const all = Array.from({ length: 14 * 30 }, (_, i) => i), lastAway = all.filter((i) => boxFlags(i) & 0b10 && boxFlags(i) & (1 << l.away_bit)).pop() ?? -1;
+      return all.find((i) => i > lastAway && !(boxFlags(i) & 0b10)) ?? all.find((i) => !(boxFlags(i) & 0b10)) ?? -1;
+    };
     for (const t of opts.trade) {
       // C-223: a gift given -- the daemon leaves this save: its box slot emptied, or the party closed up behind it
       if (t.give) {
-        const pi = party.findIndex((p) => p.d?.personality === t.out >>> 0);
-        const bi = pi >= 0 ? -1 : Array.from({ length: 14 * 30 }, (_, i) => i).find((i) => boxFlags(i) & 0b10 && boxPersonality(i) === t.out >>> 0) ?? -1;
+        // found by who it is (the player may move it in the PC or the party between SYNCs: DAEMONS' check, 2026-10-29)
+        const boxOt = (i: number) => [4, 5, 6, 7].reduce((n, k) => n | (out[box(4 + i * l.box_pokemon_size + k).byte] << (8 * (k - 4))), 0) >>> 0;
+        const pi = party.findIndex((p) => p.d?.personality === t.out >>> 0 && (t.ot === undefined || p.d.otId >>> 0 === t.ot >>> 0));
+        const bi = pi >= 0 ? -1 : Array.from({ length: 14 * 30 }, (_, i) => i)
+          .find((i) => boxFlags(i) & 0b10 && boxPersonality(i) === t.out >>> 0 && (t.ot === undefined || boxOt(i) === t.ot >>> 0)) ?? -1;
         if (pi < 0 && bi < 0) { tradeWaits.push({ id: t.id, why: "the daemon given is not in this save" }); continue; }   // DRAFT
-        if (pi >= 0 ? !awayAfter(party[pi]) : !(boxFlags(bi) & (1 << l.away_bit))) { tradeWaits.push({ id: t.id, why: "the daemon given is home in the game -- SEND it again" }); continue; }   // DRAFT
+        // called home in the game (AWAY cleared, or asked home) -- never let it go
+        const home = pi >= 0 ? !awayAfter(party[pi]) : !(boxFlags(bi) & (1 << l.away_bit)) || !!(boxFlags(bi) & (1 << l.asked_bit));
+        if (home) { tradeWaits.push({ id: t.id, why: "the daemon given is home in the game -- SEND it again" }); continue; }   // DRAFT
         if (pi >= 0 && party.length <= 1) { tradeWaits.push({ id: t.id, why: "the daemon given is the last in the party" }); continue; }   // DRAFT
         const gone = pi >= 0 ? party[pi].d! : null;
         if (pi >= 0) {

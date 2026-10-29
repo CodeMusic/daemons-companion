@@ -74,14 +74,14 @@ export function dreamDay(d: { to: string }): number {
 // 0x40D4 quality (1 broken, 2 quiet, 3 vivid; bit 2 tucked in) and the image above it, 0x40D5 the hours in tenths,
 // 0x40D6 nights and rested nights since, 0x40D7 the day. `last` is what the next SYNC counts from.
 export const DREAM_VARS = { dream: 0x40d4, hours: 0x40d5, nights: 0x40d6, day: 0x40d7 } as const;
-export function dreamVars(store: Store): { vars: Record<number, number>; last: number } | null {
+export function dreamVars(store: Store): { vars: Record<number, number>; last: number; personality: number | null } | null {
   const applied = Number(store.getSetting("dream.applied") ?? 0);
   const fresh = dreamsOf(store).filter((d) => d.id > applied);
   if (!fresh.length) return null;
   // the latest NIGHT, by when it ended -- an outbox may tell an older night late (the review; thrive.ts reads it so too)
   const d = [...fresh].sort((a, b) => Date.parse(b.to) - Date.parse(a.to))[0], q = { broken: 1, quiet: 2, vivid: 3 }[d.quality] | (d.tucked ? 4 : 0);
   const nights = Math.min(255, fresh.length), restedN = Math.min(255, fresh.filter(rested).length);
-  return { last: Math.max(...fresh.map((x) => x.id)), vars: { [DREAM_VARS.dream]: (dreamImage(d) << 8) | q, [DREAM_VARS.hours]: Math.min(0xffff, Math.round(d.hours * 10)),
+  return { last: Math.max(...fresh.map((x) => x.id)), personality: d.personality, vars: { [DREAM_VARS.dream]: (dreamImage(d) << 8) | q, [DREAM_VARS.hours]: Math.min(0xffff, Math.round(d.hours * 10)),
                                [DREAM_VARS.nights]: (restedN << 8) | nights, [DREAM_VARS.day]: dreamDay(d) } };
 }
 

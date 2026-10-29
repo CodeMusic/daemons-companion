@@ -128,7 +128,7 @@ export function tradesToWrite(store: Store, game: GameKey): TradeIn[] {
   const ib = inboxOf(store), done = outbox(store);
   if (!ib || ib.game !== gameId(game)) return [];
   return ib.deliveries.filter((d) => !done.includes(d.id)).flatMap((d) => {
-    if (d.phase === "give") return [{ id: d.id, out: d.out, record: null, give: true } as TradeIn];   // C-223: a gift given -- it leaves
+    if (d.phase === "give") return [{ id: d.id, out: d.out, record: null, give: true, ...(d.ot !== undefined ? { ot: d.ot } : {}) } as TradeIn];   // C-223: a gift given -- it leaves
     const record = fromB64(d.record);
     return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase } as TradeIn] : [];
   });

@@ -68,7 +68,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
                                              house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift;
                                              sounding?: Sounding; vars?: Record<number, number>; trade?: TradeIn[];
-                                             locks?: number[] }, l: Layout = LAYOUT): SyncResult {
+                                             locks?: number[]; spellcraft?: number }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
   const index: 0 | 1 = a && (!b || newer(a, b)) ? 0 : 1;
@@ -125,6 +125,12 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
     const linked = bit(P.flags.companion_linked), recalled = bit(P.flags.companion_recalled);
     if (!(out[linked.byte] & linked.mask)) { out[linked.byte] |= linked.mask; firstLink = true; touched.add(0); }
     if (out[recalled.byte] & recalled.mask) { out[recalled.byte] &= ~recalled.mask & 0xff; recalledSeen = true; touched.add(0); }
+  }
+  // C-238: SPELLCRAFT, found here first -- the game's flag set (FLAG_GOT_HERMETIC_LAYER, in the same DAEMONS block)
+  if (opts.spellcraft) {
+    const start = P.flags.daemons_flags_start, sb2 = where.get(0)!, n = opts.spellcraft - start;
+    const byte = sb2 + P.sb2.daemons_flags + (n >> 3), mask = 1 << (n & 7);
+    if (n >= 0 && !(out[byte] & mask)) { out[byte] |= mask; touched.add(0); }
   }
   // C-15: the INDEX sees what was met -- the bit set in all three copies the game keeps, or it does not believe it
   const newlySeen: number[] = [];

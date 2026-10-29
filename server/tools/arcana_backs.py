@@ -2,6 +2,7 @@
 """C-232: THE SUBTLE LAYER's cards -- the faces the daemon, its keyword and its phrase are laid over (data/arcana.json).
 
 Both on the book's purple (DAEMONS tools/gensubtle.py: C_RULE the hue, C_MARGIN lit), as the user asked (2026-10-28):
+  SPELLCRAFT (C-239) a magic circle and the old work's signs under emerald, the hour's shimmer where the daemon stands
   REASON    a circuit board under a green gradient -- traces at right angles, their pads -- the mainland's mind
   INSTINCT  a living net under gold -- nodes, and the curves between them -- the islands' mind
 and each again SHINY: its colours inverted, a gold foil edge and a few glints. A soft dark halo where the daemon stands.
@@ -18,6 +19,8 @@ HUE, LIT, DEEP = (176, 86, 158), (239, 140, 214), (58, 24, 56)          # C_RULE
 GREEN, GREEN_LIT = (22, 150, 92), (128, 240, 180)
 GOLD, GOLD_LIT = (224, 150, 40), (255, 214, 140)
 FOIL = (255, 226, 122)
+EMERALD, EMERALD_LIT = (31, 143, 95), (80, 200, 120)                  # C-239: the tablet's ink (server/src/witching.ts EMERALD)
+P_RED, P_BLUE = (200, 64, 90), (79, 107, 216)                          # C-237: the breath's two ends (witching.ts PULSE)
 
 
 def gradient(top, bottom, fade_from=0.35):
@@ -75,10 +78,44 @@ def neural(rng):
     return Image.alpha_composite(glow, layer)
 
 
+def sigils(rng):
+    """C-239, SPELLCRAFT: a magic circle where the daemon stands -- two rings and a seven-pointed star -- and the old
+    work's signs scattered faint (the elements' triangles, the sun's circle and point, the moon), all in emerald"""
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    cx, cy, r = W / 2, CARD["sprite_cy"], CARD["sprite_size"] * 0.74
+    for rr in (r, r - 7):
+        d.ellipse((cx - rr, cy - rr, cx + rr, cy + rr), outline=EMERALD_LIT + (90,), width=1)
+    pts = [(cx + (r - 8) * math.sin(2 * math.pi * k / 7), cy - (r - 8) * math.cos(2 * math.pi * k / 7)) for k in range(7)]
+    d.line([pts[(k * 3) % 7] for k in range(8)], fill=EMERALD_LIT + (70,), width=1)       # {7/3}, drawn in one line
+    def glyph(x, y, kind, a):
+        c = EMERALD_LIT + (a,)
+        if kind in ("fire", "air"): d.polygon([(x, y - 7), (x - 7, y + 5), (x + 7, y + 5)], outline=c)
+        if kind in ("water", "earth"): d.polygon([(x, y + 7), (x - 7, y - 5), (x + 7, y - 5)], outline=c)
+        if kind == "air": d.line((x - 5, y + 1, x + 5, y + 1), fill=c)
+        if kind == "earth": d.line((x - 5, y - 1, x + 5, y - 1), fill=c)
+        if kind == "sun": d.ellipse((x - 6, y - 6, x + 6, y + 6), outline=c); d.ellipse((x - 1, y - 1, x + 1, y + 1), fill=c)
+        if kind == "moon": d.arc((x - 7, y - 7, x + 7, y + 7), 90, 270, fill=c, width=2)
+    for _ in range(16):
+        x, y = rng.randint(14, W - 14), rng.choice([rng.randint(70, 104), rng.randint(250, 390), rng.randint(14, 40)])
+        glyph(x, y, rng.choice(["fire", "water", "air", "earth", "sun", "moon"]), rng.randint(60, 120))
+    return Image.alpha_composite(layer.filter(ImageFilter.GaussianBlur(1.2)), layer)
+
+
+def shimmer():
+    """C-239: the witching hour's two rings about the daemon, one at each end of the breath -- and no shadow"""
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    cx, cy, s = W / 2, CARD["sprite_cy"], CARD["sprite_size"]
+    d.ellipse((cx - s * 0.46, cy - s * 0.5, cx + s * 0.46, cy + s * 0.5), outline=P_RED + (170,), width=2)
+    d.ellipse((cx - s * 0.52, cy - s * 0.56, cx + s * 0.52, cy + s * 0.56), outline=P_BLUE + (140,), width=1)
+    return layer
+
+
 def face(kind, shiny=False, seed=231):
-    rng = random.Random(seed + (0 if kind == "reason" else 1))
-    im = gradient(HUE, GREEN if kind == "reason" else GOLD).convert("RGBA")
-    im = Image.alpha_composite(im, circuit(rng) if kind == "reason" else neural(rng))
+    rng = random.Random(seed + {"reason": 0, "instinct": 1, "spellcraft": 2}[kind])
+    im = gradient(HUE, {"reason": GREEN, "instinct": GOLD, "spellcraft": EMERALD}[kind]).convert("RGBA")
+    im = Image.alpha_composite(im, {"reason": circuit, "instinct": neural, "spellcraft": sigils}[kind](rng))
     halo = Image.new("RGBA", (W, H), (0, 0, 0, 0))                      # where the daemon stands
     s, cy = CARD["sprite_size"], CARD["sprite_cy"]
     ImageDraw.Draw(halo).ellipse((W / 2 - s * 0.62, cy - s * 0.58, W / 2 + s * 0.62, cy + s * 0.58), fill=DEEP + (150,))
@@ -87,11 +124,12 @@ def face(kind, shiny=False, seed=231):
     py = CARD["phrase_y"]
     ImageDraw.Draw(band).rounded_rectangle((14, py - 22, W - 15, py + 36), radius=10, fill=DEEP + (190,))
     im = Image.alpha_composite(im, band.filter(ImageFilter.GaussianBlur(1)))
+    if kind == "spellcraft": im = Image.alpha_composite(im, shimmer())
     if shiny:
         rgb = ImageOps.invert(im.convert("RGB")).convert("RGBA")
         im = rgb
     d = ImageDraw.Draw(im)
-    edge = FOIL if shiny else LIT
+    edge = FOIL if shiny else EMERALD_LIT if kind == "spellcraft" else LIT
     d.rounded_rectangle((1, 1, W - 2, H - 2), radius=14, outline=edge, width=3)
     d.rounded_rectangle((7, 7, W - 8, H - 8), radius=10, outline=edge + (140,), width=1)
     if shiny:                                                            # a few glints
@@ -108,7 +146,7 @@ def face(kind, shiny=False, seed=231):
 
 def main():
     write = "--write" in sys.argv
-    for kind in ("reason", "instinct"):
+    for kind in ("reason", "instinct", "spellcraft"):
         for shiny in (False, True):
             name = f"arcana_{kind}{'_shiny' if shiny else ''}.png"
             img = face(kind, shiny)

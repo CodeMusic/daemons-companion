@@ -7,10 +7,14 @@
 // noticing, never a prediction (4.33). Only once the save holds THE SUBTLE LAYER. Every word DRAFT. No node: imports.
 import arcanaJson from "../data/arcana.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
+import thirteenJson from "../data/thirteen.json" with { type: "json" };
 
-export type Side = "reason" | "instinct";
+// C-239: and SPELLCRAFT, THE HERMETIC LAYER's face of the same twenty-two -- its own deck, drawn once that book is held
+export type Side = "reason" | "instinct" | "spellcraft";
+export type Deck = "subtle" | "spellcraft";
 type Face = { keyword: string; phrase: string; species: string };
-const DECK = (arcanaJson as unknown as { cards: { n: number; roman: string; reason: Face; instinct: Face }[] }).cards;
+const DECK = (arcanaJson as unknown as { cards: { n: number; roman: string; reason: Face; instinct: Face; spellcraft: Face }[] }).cards;
+const THIRTEEN = (thirteenJson as unknown as { cards: { n: string; keyword: string; phrase: string; species: string }[] }).cards;
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national: number }>;
 const BY_NAME = new Map(Object.entries(SPECIES).map(([id, s]) => [s.name, Number(id)]));
 
@@ -29,17 +33,25 @@ export const deckSize = () => DECK.length;
 
 const hash = (s: string) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return h; };
 // the day's card: the same all day, for one trainer -- the seed is the date and who they are
-export function cardOfDay(date: string, who = ""): Card {
-  const h = hash(`${date}|${who}|arcana`);
-  return cardOf(h % DECK.length, (h >>> 8) % 2 ? "instinct" : "reason", (h >>> 12) % SHINY_ONE_IN === 0);
+export function cardOfDay(date: string, who = "", deck: Deck = "subtle"): Card {
+  const h = hash(`${date}|${who}|${deck === "subtle" ? "arcana" : deck}`);
+  return cardOf(h % DECK.length, deck === "spellcraft" ? "spellcraft" : (h >>> 8) % 2 ? "instinct" : "reason", (h >>> 12) % SHINY_ONE_IN === 0);
+}
+// C-240: Halloween's card, with THE HERMETIC LAYER held -- one of the Book of Thirteen's spells (three and a half among them)
+export const isHalloween = (date: string) => date.slice(5) === "10-31";
+export function thirteenOfDay(date: string, who = ""): Card {
+  const h = hash(`${date}|${who}|thirteen`), t = THIRTEEN[h % THIRTEEN.length], species = BY_NAME.get(t.species) ?? 0;
+  return { n: h % THIRTEEN.length, roman: t.n, side: "spellcraft", keyword: t.keyword, phrase: t.phrase, species, name: t.species,
+           shiny: false, art: `/art/species/${species}.png`, face: "/art/arcana/spellcraft.png" };
 }
 // a card, or a spread of three (no card twice in one spread)
-export function draw(count: 1 | 3, rand: () => number = Math.random): Card[] {
+export function draw(count: 1 | 3, rand: () => number = Math.random, deck: Deck = "subtle"): Card[] {
   const ns = [...DECK.keys()];
   const out: Card[] = [];
   for (let i = 0; i < count; i++) {
     const n = ns.splice(Math.floor(rand() * ns.length), 1)[0];
-    out.push({ ...cardOf(n, rand() < 0.5 ? "reason" : "instinct", Math.floor(rand() * SHINY_ONE_IN) === 0), ...(count === 3 ? { at: SPREAD[i] } : {}) });
+    const side: Side = deck === "spellcraft" ? "spellcraft" : rand() < 0.5 ? "reason" : "instinct";
+    out.push({ ...cardOf(n, side, Math.floor(rand() * SHINY_ONE_IN) === 0), ...(count === 3 ? { at: SPREAD[i] } : {}) });
   }
   return out;
 }

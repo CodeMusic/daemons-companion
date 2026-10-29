@@ -52,3 +52,33 @@ describe("C-232: drawing", () => {
     expect(cards.filter((c) => c.side === "instinct").length).toBeGreaterThan(1300);
   });
 });
+
+// C-239: THE HERMETIC LAYER's deck, the same twenty-two with a SPELLCRAFT face; C-240: Halloween's thirteen
+describe("C-239, C-240: SPELLCRAFT, and the thirteen", async () => {
+  const { cardOf, cardOfDay, draw, isHalloween, thirteenOfDay } = await import("../src/arcana.js");
+  const arcana = (await import("../data/arcana.json")).default as unknown as { cards: { spellcraft: { keyword: string; phrase: string; species: string } }[] };
+  const thirteen = (await import("../data/thirteen.json")).default as unknown as { cards: { n: string; species: string }[] };
+  it("gives every card a SPELLCRAFT face, a daemon of its own, its own picture", () => {
+    const seen = new Set<string>();
+    for (let n = 0; n < 22; n++) {
+      const c = cardOf(n, "spellcraft", false);
+      expect(c.species, c.name).toBeGreaterThan(0);
+      expect(c.face).toBe("/art/arcana/spellcraft.png");
+      seen.add(c.name);
+    }
+    expect(seen.size).toBe(22);
+    for (const c of arcana.cards) { expect(c.spellcraft.keyword.length).toBeLessThanOrEqual(11); expect(c.spellcraft.phrase.length).toBeLessThanOrEqual(38); }
+  });
+  it("draws SPELLCRAFT only from its own deck, and its day card apart from THE SUBTLE LAYER's", () => {
+    expect(draw(3, Math.random, "spellcraft").every((c) => c.side === "spellcraft")).toBe(true);
+    expect(cardOfDay("2026-10-29", "ROVER1", "spellcraft").side).toBe("spellcraft");
+    expect(["reason", "instinct"]).toContain(cardOfDay("2026-10-29", "ROVER1").side);
+  });
+  it("on Halloween deals one of the thirteen -- fourteen with the half -- each a daemon that exists", () => {
+    expect([isHalloween("2026-10-31"), isHalloween("2026-10-30")]).toEqual([true, false]);
+    expect(thirteen.cards.map((c) => c.n)).toContain("3½");
+    const c = thirteenOfDay("2026-10-31", "ROVER1");
+    expect(c.species).toBeGreaterThan(0);
+    expect(thirteen.cards.every((t) => t.species.length > 0)).toBe(true);
+  });
+});

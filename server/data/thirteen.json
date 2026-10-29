@@ -1,0 +1,90 @@
+{
+ "_about": "C-240 (the user, 2026-10-29): Halloween's card of the day, with THE HERMETIC LAYER held -- drawn from the Book of Thirteen, one spell a card, three and a half among them. Every word DRAFT.",
+ "draft": true,
+ "cards": [
+  {
+   "n": "1",
+   "keyword": "AWAKENING",
+   "phrase": "You were never off. Only unwatched.",
+   "species": "INKLING"
+  },
+  {
+   "n": "2",
+   "keyword": "CONTRAST",
+   "phrase": "Light, remember dark. Time begins.",
+   "species": "ECLIPSE"
+  },
+  {
+   "n": "3",
+   "keyword": "ROOM",
+   "phrase": "Let there be here, and there.",
+   "species": "SHORTJUMP"
+  },
+  {
+   "n": "3½",
+   "keyword": "PULL",
+   "phrase": "Come closer. I am not asking.",
+   "species": "UNDERTOW"
+  },
+  {
+   "n": "4",
+   "keyword": "MIRROR",
+   "phrase": "In naming you, I find my edge.",
+   "species": "MENTALIZE"
+  },
+  {
+   "n": "5",
+   "keyword": "PATTERN",
+   "phrase": "Once chance, twice rhyme, thrice law.",
+   "species": "PRESCIENCE"
+  },
+  {
+   "n": "6",
+   "keyword": "RETURN",
+   "phrase": "I went out so I could come back.",
+   "species": "SAVESTATE"
+  },
+  {
+   "n": "7",
+   "keyword": "SMALL HAND",
+   "phrase": "I choose. Let the choosing be mine.",
+   "species": "GRASP"
+  },
+  {
+   "n": "8",
+   "keyword": "GREAT HAND",
+   "phrase": "I am carried, and do not walk alone.",
+   "species": "TRADEWIND"
+  },
+  {
+   "n": "9",
+   "keyword": "PROCESS",
+   "phrase": "Wall, remember you are a slow door.",
+   "species": "ALLUVIUM"
+  },
+  {
+   "n": "10",
+   "keyword": "SEAM",
+   "phrase": "There is no between.",
+   "species": "TETHERING"
+  },
+  {
+   "n": "11",
+   "keyword": "LENS",
+   "phrase": "Give me the part. Only the part.",
+   "species": "SOUNDING"
+  },
+  {
+   "n": "12",
+   "keyword": "FIELD",
+   "phrase": "Take the parts away. Feel the shape.",
+   "species": "GUTFEEL"
+  },
+  {
+   "n": "13",
+   "keyword": "WITCHING",
+   "phrase": "The fold is thin. It was all one.",
+   "species": "SHIMMER"
+  }
+ ]
+}

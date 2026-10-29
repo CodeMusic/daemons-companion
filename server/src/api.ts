@@ -85,6 +85,7 @@ import { weatherNow } from "./context.js";
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages } from "./guideask.js";   // C-209
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
+import { ackSpellcraft } from "./hermetic.js";   // C-238
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
@@ -428,7 +429,7 @@ export function ourHost(hostOrUrl: string): boolean {
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
 // C-190: the boards with a LoRa radio (docs/DEVICES.md)
 const LORA_KINDS = /^(t-deck|t-watch-s3|t-watch-ultra)/;
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean", "talkfirst"];   // C-159: setting; C-200: night; C-174: where; C-203: read, lean; C-211: talkfirst
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean", "talkfirst", "spellcraft"];   // C-238: spellcraft   // C-159: setting; C-200: night; C-174: where; C-203: read, lean; C-211: talkfirst
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
@@ -1555,6 +1556,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // the module asked for its own telling after (it replaces the written one, and the watch shows it from its next
         // state); a rested night is the bond's. Not logged as tending: sleeping is not a care.
         // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending
+        if (kind === "spellcraft") {                              // C-238: the hour's first sight, acknowledged on a board
+          ackSpellcraft(store, deviceId);
+          return send(res, 200, { hermetic: { held: 1, first: 0 } });
+        }
         if (kind === "read" || kind === "lean") {                 // C-203: a read given, a lean told -- the log's, not tending
           const r = takeSubtle(store, kind, typeof b.detail === "string" ? b.detail : "", deviceId);
           return send(res, r.status, r.body);

@@ -10,6 +10,7 @@ import type { Store } from "./store.js";
 import { readAway, readBoxes, readSave, type Sounding } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 import { HOUSE_AT, syncSave } from "./save/writer.js";
+import { firstSight, HERMETIC_FLAG, readHermetic, spellcraftToWrite } from "./hermetic.js";   // C-238
 import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./days.js";
@@ -100,7 +101,8 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const dream = dreamVars(store);                              // C-200: the last dream, for the game (T-462)
   const trade = tradesToWrite(store, game);                     // C-219: what the exchange sent this game (tradelink.ts)
   const r = syncSave(file, { link: true, met: { seen, friendship: friendshipGain }, grow, money: casino.delta, house, evolve, gift,
-                              sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars, trade, locks: tradeLocks(store, game) });
+                              sounding: soundingOf(daemonLife(store, now)), vars: dream?.vars, trade, locks: tradeLocks(store, game),
+                              spellcraft: spellcraftToWrite(store, file) ? HERMETIC_FLAG : undefined });   // C-238
   const backup = r.changed ? h.save.write(r.save, now) : null;   // a copy of the save as it was goes beside it first
   // only once the save holds them: what was met, and what was grown, are written -- together (C-157), so a SYNC never
   // records one as applied and not another (the save itself is a file: it is written, whole, just before)
@@ -341,6 +343,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   // themselves are built into the boards, firmware/common/play.h)
   let play: { i: string; u: boolean; l: string[]; h: string[] } | null = null;
   let subtle: Sense | null = null;                         // C-203: only once the save holds the book, and a daemon is carried
+  let hermetic: { held: number; first: number } | undefined;   // C-238
   // C-158: the world the devices live in -- the real one: the hour (the game's watches), the weather of the city set
   // on the site -- and the CASINO's luck in it, with its reasons
   const weather = weatherNow(store, now), today_ = holiday(t.edition, now);
@@ -390,6 +393,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
     if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now);
+    if (d) { const msg = firstSight(store, bytes, now); hermetic = { held: readHermetic(bytes, store).held ? 1 : 0, first: msg ? 1 : 0 }; }   // C-238
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
@@ -408,6 +412,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            casts: castsForDevice(store, now),            // C-134: the last ten minutes' broadcasts; a board drops ids it has
            play,                                         // T-426: the instrument, on the boards with keys
            ...(subtle ? { subtle } : {}),                // C-203: what there is to read, and how often a lean is right
+           hermetic,                                     // C-238: THE HERMETIC LAYER held; the hour's first sight still to be said
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },

@@ -22,6 +22,7 @@ export type TalkAsk = {
   speak: boolean;
   guide?: (heard: string, chars?: number) => string;      // C-209: asked of a book -- its pages nearest what was heard (guidePages), cut to chars
   book?: string;                                          // which book: THE GUIDE (the default), THE SUBTLE LAYER (C-229)
+  fixed?: { setup: string; question: string };            // C-220: a fixed setup (one thinker for every meeting) and this turn's question
 };
 export type TalkAnswer = { answer: string; heard: string | null; audio: Uint8Array | null; provider: string; firstMs: number | null };
 
@@ -258,12 +259,13 @@ export class House {
       }
       const messages = [{ role: "system", content: TALK_SYSTEM },
         ...a.history.slice(-2).flatMap((x) => [{ role: "user", content: x.said.slice(0, 150) }, { role: "assistant", content: x.answer.slice(0, 150) }]),   // the small window
-        { role: "user", content: askedAs(a, text) }];
+        { role: "user", content: a.fixed ? a.fixed.question : askedAs(a, text) }];
       let r: { text: string; firstMs: number | null };
       const sf = (this.noFlowUntil.get(m.url) ?? 0) > this.now() ? null : this.thinker?.(m) ?? null;
       try {
         if (sf) {
-          try { r = a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text, wide(h.llm!) ? 380 : 170), text, a.book), deadlineMs, 700)   // C-209: one thinker for the books
+          try { r = a.fixed ? await this.think(sf, m, h.llm!, a.fixed.setup, a.fixed.question, deadlineMs)   // C-220: a meeting's turn
+                  : a.guide ? await this.think(sf, m, h.llm!, GUIDE_SETUP, guideQuestion(a.guide(text, wide(h.llm!) ? 380 : 170), text, a.book), deadlineMs, 700)   // C-209: one thinker for the books
                             : await this.think(sf, m, h.llm!, persona(steady(a), text), text, deadlineMs); }
           catch (e) {
             if (!/ECONNREFUSED|EHOSTUNREACH|did not answer/.test((e as Error).message)) throw e;

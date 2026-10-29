@@ -11,7 +11,7 @@
 //   POST /api/sync               C-21: the one SYNC -- read the save, receive or return a daemon if the game asked,
 //                                link the save, settle a daemon brought home without the app; the married save only
 //   GET  /api/trade              C-219: this companion's player on the exchange, its AWAY daemons, the offers and trades;
-//                                POST /api/trade/{join,offer,accept,withdraw,recall,password,hub} (docs/TRADING.md)
+//                                POST /api/trade/{join,offer,accept,withdraw,recall,password,hub,out,back,meet} (docs/TRADING.md)
 //   /api/exchange/*              C-218, C-219: THE EXCHANGE, for every companion on the home network and the tailnet --
 //                                POST invite (home only), join {name, code | password}; the rest as a player (x-daemons-player)
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
@@ -60,6 +60,7 @@ import { StackFlow } from "./ai/stackflow.js";
 import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
+import { MEET_SETUP, meetQuestion, setMeetTalker } from "./together.js";   // C-220
 import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
@@ -528,6 +529,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   }, {                                                         // the thinkers set up, kept across a restart (a deploy)
     load: (url) => { try { return JSON.parse(store.getSetting(`module.minds.${url}`) ?? "[]"); } catch { return []; } },
     save: (url, held) => store.setSetting(`module.minds.${url}`, JSON.stringify(held)),
+  });
+  // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
+  setMeetTalker(async (me, other, heard) => {
+    if (!house.any) return null;
+    const q = meetQuestion(me, other, heard);
+    return (await house.talk({ text: q, history: [], daemon: { nickname: me.nickname }, speak: false, fixed: { setup: MEET_SETUP, question: q } })).answer;
   });
   discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
   const checkTalk = async () => {                              // C-211: each talk source's health, every minute

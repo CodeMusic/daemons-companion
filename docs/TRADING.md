@@ -82,6 +82,24 @@ which relates to the profile feature". Decided the same day by multiple choice; 
 
 Every word the player reads is DRAFT.
 
+## OUT TOGETHER: daemons that meet (C-220, first piece built 2026-10-28)
+
+A player sends one AWAY daemon **out** (TRADE, OUT TOGETHER: SEND OUT). It stays out for twelve hours, until it is
+called back, or until another one is sent in its place. Nothing leaves the game. A player whose daemon is out can
+**MEET** any other daemon that is out, and the two talk in four short lines, taking turns. Both players see the meeting
+afterwards on TRADE, with the two pictures facing each other (the last thirty meetings are kept).
+
+- **Who says the lines.** On the hub, its Module LLM says each turn in the speaker's voice
+  (`server/src/together.ts`). Every meeting uses one fixed setup (`MEET_SETUP`), so all meetings share a single
+  thinker. A turn the module cannot start within the talk deadline uses a written line instead (DRAFT): the first
+  meeting while that thinker is being set up, a busy module, or no module at all, as on a phone hosting alone. The
+  goodbye is always written.
+- **Routes.** On the exchange, `/api/exchange/{out,back,meet}`: `out` with a daemon sends it out, and `out` without
+  one lists who is out and the meetings. On a companion, `/api/trade/{out,back,meet}`, where `out` takes the
+  `personality` of an AWAY daemon in this save. `GET /api/trade` carries `out`.
+- **Not yet.** Meetings work within one home only; THE COMMONS does not carry them. The boards do not show meetings
+  yet. Daemons do not meet on their own; a player presses MEET.
+
 ## THE COMMONS: trading between homes (C-222, first round built 2026-10-28)
 
 *Decided by multiple choice, 2026-10-28: through the home hub; the home hub vouches for its players; friends only;

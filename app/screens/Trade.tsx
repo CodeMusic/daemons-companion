@@ -6,14 +6,18 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../net";
-import { Action, Card, Choice, Entry, Eyebrow, Small, useInk } from "../ui";
+import { Action, Art, Card, Choice, Entry, Eyebrow, Small, useInk } from "../ui";
 import { useApi } from "../useApi";
 
 type Brief = { player: string; personality: number; species: number; nickname: string; level: number; edition: string } | null;
 type Offer = { id: string; at: string; kind: "full" | "loan"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean;
                side?: "from" | "with" | null; commons?: boolean };
 type Mine = { personality: number; species: number; name: string; nickname: string; level: number; busy: boolean };
-type View = { hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
+// C-220: OUT TOGETHER
+type OutOne = { id?: string; player: string; species: number; nickname: string; level: number; edition: string; name: string; until: string };
+type Met = { id: string; at: string; a: OutOne; b: OutOne; lines: { who: "a" | "b"; said: string; by: "module" | "written" }[] };
+type Out = { mine: OutOne | null; others: OutOne[]; met: Met[] };
+type View = { out?: Out | null; hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
               board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean } | null;
               pending: number; waiting: number };
 type Named = { id: string; name: string };
@@ -128,6 +132,8 @@ export function TradeScreen({ ink }: { ink?: string }) {
         ))}
       </Card>
 
+      <OutCard v={v} ink={ink} act={act} />
+
       {(b?.trades ?? []).length ? (
         <Card gap={6}>
           <Eyebrow>YOUR TRADES</Eyebrow>
@@ -163,6 +169,63 @@ export function TradeScreen({ ink }: { ink?: string }) {
       {hubCard}
       <Small color="$color8">DRAFT</Small>
     </YStack>
+  );
+}
+
+// C-220 (the user, 2026-10-28: "if I send mine and so does another user ... we see both of them on screen and they
+// interact -- they even chat"): OUT TOGETHER -- one AWAY daemon sent out (nothing leaves the game), another player's
+// met, and the two talk; the hub's AI board says what it can in time, the rest is written. Every word DRAFT.
+function OutCard({ v, ink, act }: { v: View; ink: string; act: (path: string, body: unknown, done: string) => Promise<void> }) {
+  const [meeting, setMeeting] = useState<string | null>(null);
+  const out = v.out;
+  if (!out) return null;
+  const mine = out.mine;
+  return (
+    <Card gap={6}>
+      <Eyebrow>OUT TOGETHER</Eyebrow>
+      <Small>Send one of your daemons out to meet other players' daemons. Nothing leaves your game: it is a visit.</Small>
+      {mine ? (
+        <XStack gap={10} alignItems="center">
+          <Art path={`/art/species/${mine.species}.png`} size={56} />
+          <YStack flex={1}><Text fontSize={15} color="$color12">{`${mine.nickname} is out · LV ${mine.level}`}</Text><Small>{mine.name}</Small></YStack>
+          <Action label="CALL BACK" ink={ink} onPress={() => act("/api/trade/back", {}, `${mine.nickname} is home.`)} />
+        </XStack>
+      ) : v.away.length ? v.away.map((d) => (
+        <XStack key={d.personality} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="center">
+          <Art path={`/art/species/${d.species}.png`} size={40} />
+          <YStack flex={1}><Text fontSize={15} color="$color12">{`${d.nickname} · LV ${d.level}`}</Text><Small>{d.name}</Small></YStack>
+          <Action label="SEND OUT" ink={ink} onPress={() => act("/api/trade/out", { personality: d.personality }, `${d.nickname} is out.`)} />
+        </XStack>
+      )) : <Small>No daemon is AWAY -- SEND one from the game first.</Small>}
+      {out.others.length ? <Small color="$color10">Out now:</Small> : <Small color="$color10">Nobody else is out yet.</Small>}
+      {out.others.map((o) => (
+        <XStack key={o.id} gap={10} paddingVertical={6} borderTopWidth={1} borderColor="$color5" alignItems="center">
+          <Art path={`/art/species/${o.species}.png`} size={40} />
+          <YStack flex={1}><Text fontSize={15} color="$color12">{`${o.player}: ${o.nickname} · LV ${o.level}`}</Text><Small>{o.name}</Small></YStack>
+          {mine ? <Action label={meeting === o.id ? "MEETING..." : "MEET"} ink={ink} onPress={async () => {
+            if (meeting) return;
+            setMeeting(o.id!);
+            try { await act("/api/trade/meet", { with: o.id }, `${mine.nickname} met ${o.nickname}.`); } finally { setMeeting(null); }
+          }} /> : null}
+        </XStack>
+      ))}
+      {out.met.slice(0, 3).map((m) => (
+        <YStack key={m.id} gap={6} paddingVertical={8} borderTopWidth={1} borderColor="$color5">
+          <XStack justifyContent="space-between" alignItems="flex-end">
+            <YStack alignItems="center"><Art path={`/art/species/${m.a.species}.png`} size={64} /><Small>{m.a.nickname}</Small></YStack>
+            <Small color="$color10">{new Date(m.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</Small>
+            <YStack alignItems="center"><YStack style={{ transform: [{ scaleX: -1 }] }}><Art path={`/art/species/${m.b.species}.png`} size={64} /></YStack><Small>{m.b.nickname}</Small></YStack>
+          </XStack>
+          {m.lines.map((l, i) => (
+            <XStack key={i} justifyContent={l.who === "a" ? "flex-start" : "flex-end"}>
+              <YStack maxWidth="80%" paddingHorizontal={10} paddingVertical={6} borderRadius={10} backgroundColor={l.who === "a" ? "$color4" : "$color5"}>
+                <Text fontSize={14} color="$color12">{`${l.who === "a" ? m.a.nickname : m.b.nickname}: ${l.said}`}</Text>
+              </YStack>
+            </XStack>
+          ))}
+        </YStack>
+      ))}
+    </Card>
   );
 }
 

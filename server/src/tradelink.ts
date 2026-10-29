@@ -13,6 +13,7 @@ import { readAway } from "./save/reader.js";
 import { fromB64, gameId, gameOf, toB64, tradeRecord, type GameKey } from "./save/trade.js";
 import * as X from "./exchange.js";
 import { homeRoute } from "./commonslink.js";
+import * as M from "./together.js";   // C-220: OUT TOGETHER
 
 export interface Link {
   hub: string;                                                            // "" -- the exchange is this companion's own
@@ -69,6 +70,7 @@ export function remoteLink(store: Store, hub: string, f: typeof fetch = fetch): 
 
 // The exchange's requests, by name, as one player -- the same for the hub's own companion and for one over the network
 // (api.ts answers /api/exchange/<name> with this)
+const nameOf = (store: Store): M.Named => { const all = X.players(store); return (id) => all.find((v) => v.id === id)?.name ?? "?"; };
 export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: string, b: any, reach?: X.Reach): any {
   const shown = (r: X.Result<X.Offer>) => (X.failed(r) ? r : X.shown(store, p.id, r));
   switch (name) {
@@ -81,6 +83,10 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
     case "handback": return shown(X.handback(store, p.id, String(b.id ?? ""), String(b.record ?? "")));
     case "written": return { ok: X.written(store, p.id, Array.isArray(b.ids) ? b.ids.map(String) : []) };
     case "password": return X.setPassword(store, keys, p.id, b.password);
+    // C-220: OUT TOGETHER -- one daemon out, called back, met
+    case "out": return b.nickname === undefined ? M.outView(store, p.id, nameOf(store), reach) : M.sendOut(store, p.id, b);
+    case "back": return M.callBack(store, p.id);
+    case "meet": return M.meet(store, p.id, b.with, reach).then((r) => ("error" in r ? r : M.outView(store, p.id, nameOf(store), reach)));
     default: return { error: "not found" };
   }
 }
@@ -156,13 +162,22 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
       .filter((o: any) => o.mine).flatMap((o: any) => [o.from, o.with]).filter(Boolean).map((x: any) => x.personality));   // its own, and one it borrowed
     const away = save ? readAway(save).map((d) => ({ personality: d.personality >>> 0, species: d.species, name: d.name, nickname: d.nickname,
                                                      level: d.level, busy: busy.has(d.personality >>> 0) })) : [];
-    return ok({ hub: link.hub, me, game: game?.name ?? null, edition, away, board: board?.error ? null : board,
+    const out = me ? await link.call("out", {}) : null;
+    return ok({ hub: link.hub, me, game: game?.name ?? null, edition, away, board: board?.error ? null : board, out: out?.error ? null : out,
                 pending: outbox(store).length, waiting: (inboxOf(store)?.deliveries ?? []).length });
   }
   if (method !== "POST") return no(404, "not found");
   if (path === "/api/trade/join") return answer(await link.join(b));
   if (path === "/api/trade/withdraw" || path === "/api/trade/recall" || path === "/api/trade/password")
     return answer(await link.call(path.slice("/api/trade/".length), b));
+  // C-220: OUT TOGETHER -- an AWAY daemon of this save sent out (named by its personality), called back, met
+  if (path === "/api/trade/out") {
+    if (!save) return no(404, "no save named -- set it in Settings");
+    const d = readAway(save).find((x) => x.personality >>> 0 === Number(b.personality) >>> 0);
+    if (!d) return no(400, "only a daemon AWAY goes out -- SEND it from the game first");       // DRAFT
+    return answer(await link.call("out", { personality: d.personality >>> 0, species: d.species, nickname: d.nickname, level: d.level, edition }));
+  }
+  if (path === "/api/trade/back" || path === "/api/trade/meet") return answer(await link.call(path.slice("/api/trade/".length), b));
   if (path === "/api/trade/offer" || path === "/api/trade/accept") {
     if (!save) return no(404, "no save named -- set it in Settings");
     const t = tradeRecord(save, Number(b.personality));
@@ -180,4 +195,5 @@ export function setHub(store: Store, raw: unknown): { hub: string } | string {
   if (url !== (store.getSetting("trade.hub") ?? "")) { store.setSetting("trade.hub", url || null); store.setSetting("trade.token", null); }
   return { hub: url };
 }
-export const TRADE_PATHS = ["/api/trade", "/api/trade/join", "/api/trade/offer", "/api/trade/accept", "/api/trade/withdraw", "/api/trade/recall", "/api/trade/password"];
+export const TRADE_PATHS = ["/api/trade", "/api/trade/join", "/api/trade/offer", "/api/trade/accept", "/api/trade/withdraw", "/api/trade/recall", "/api/trade/password",
+                            "/api/trade/out", "/api/trade/back", "/api/trade/meet"];

@@ -204,52 +204,84 @@ static void tapOwnSettings(lv_event_t *e) {
   openWatched(kindName(kind) + (id == deviceId() ? " (this one)" : "") + ": ITS OWN SETTINGS", ownPath, drawOwnSettings);
 }
 
+// C-217 (the user, 2026-10-28: "the last used ones at the top ... maybe with a sort order option"): LAST USED (here now
+// first, then the most recently heard), BY MAKER (each maker's newest first), NAME -- as the app's PLACES; kept
+static uint8_t devOrder = 0;                              // 0 last used, 1 by maker, 2 name
+static void loadDevOrder() { Preferences p; p.begin("tab5ui", true); devOrder = p.getUChar("devorder", 0); p.end(); if (devOrder > 2) devOrder = 0; }
+static void tapDevOrder(lv_event_t *e) {
+  devOrder = (uint8_t)(long)lv_event_get_user_data(e);
+  Preferences p; p.begin("tab5ui", false); p.putUChar("devorder", devOrder); p.end();
+  drawnAt[P_PLACES] = 0;
+}
+static bool usedLater(JsonObject a, JsonObject b) {      // here now first, then lastSeen newest (ISO times sort as text)
+  bool ha = a["here"] | false, hb = b["here"] | false;
+  if (ha != hb) return ha;
+  return strcmp(a["lastSeen"] | "", b["lastSeen"] | "") > 0;
+}
+
+static void drawDevice(lv_obj_t *p, JsonObject d, JsonArray away) {
+  lv_obj_t *outer = card(p);
+  lv_obj_set_flex_flow(outer, LV_FLEX_FLOW_ROW);
+  lv_obj_set_style_pad_column(outer, 20, 0);
+  deviceSprite(outer, d["kind"] | "", 96, !(d["here"] | false));
+  lv_obj_t *c = column(outer, LV_SIZE_CONTENT);
+  lv_obj_set_flex_grow(c, 1);
+  String id = d["id"] | "";
+  lv_obj_t *nr = row(c);
+  label(nr, kindName(d["kind"] | "") + (id == deviceId() ? "  (this one)" : "") + ((d["here"] | false) ? "" : "  (away)"), &lv_font_montserrat_28, INK);
+  ownIds.push_back(id);                            // C-160: its own settings
+  button(nr, "ITS SETTINGS", tapOwnSettings, (void *)(long)(ownIds.size() - 1), false);
+  String said = String((d["here"] | false) ? "here, by " : "last heard ") + ((d["here"] | false) ? (const char *)(d["via"] | "") : (const char *)(d["lastSeen"] | ""));
+  if (!d["battery"].isNull()) said += "   battery " + String((int)(d["battery"]["percent"] | 0)) + "%";
+  label(c, said + "   " + id, &lv_font_montserrat_16, QUIET);
+  JsonObject has = d["daemon"];
+  label(c, has.isNull() ? "Hosts no daemon" : "Hosts " + String((const char *)(has["nickname"] | "")) + ", Lv. " + String((int)(has["level"] | 0)),
+        &lv_font_montserrat_20, INK);
+  if (!away.size()) return;
+  lv_obj_t *r = row(c);
+  long long mine = has.isNull() ? -1 : (long long)(has["personality"] | 0LL);
+  chooseIds.push_back(id);
+  button(r, choosingFor == id ? "CLOSE" : "CHOOSE", tapChoose, (void *)(long)(chooseIds.size() - 1), false);   // DRAFT
+  if (choosingFor != id) return;
+  for (JsonObject a : away) {
+    if (carryN >= 63) break;
+    long long pers = a["personality"] | 0LL;
+    carries[carryN] = { id, pers };
+    button(r, a["nickname"] | "", tapCarry, (void *)(long)carryN++, pers == mine);
+  }
+  if (away.size() && carryN < 64) { carries[carryN] = { id, -1 }; button(r, "None", tapCarry, (void *)(long)carryN++, mine < 0); }
+}
+
 static void drawDevices(lv_obj_t *p) {
   JsonDocument dv = newDoc();
   if (!kept("devices", dv)) { label(p, "Your devices show here once the Tab5 is paired.", &lv_font_montserrat_28, QUIET); return; }
   label(p, "Each device hosts a daemon of its own. SEND them from the party in the game, SYNC, and choose here which goes where.",
         &lv_font_montserrat_20, QUIET, LV_PCT(100));
+  static bool loaded = false;
+  if (!loaded) { loaded = true; loadDevOrder(); }
+  lv_obj_t *orow = row(p);                               // DRAFT
+  static const char *const ORDERS[] = { "LAST USED", "BY MAKER", "NAME" };
+  for (int o = 0; o < 3; o++) button(orow, ORDERS[o], tapDevOrder, (void *)(long)o, devOrder == o);
   carryN = 0; ownIds.clear(); chooseIds.clear();
   JsonArray away = dv["away"];
+  std::vector<JsonObject> ds;
+  for (JsonObject d : dv["devices"].as<JsonArray>()) ds.push_back(d);
+  if (devOrder == 2) std::stable_sort(ds.begin(), ds.end(), [](JsonObject a, JsonObject b) {
+    int c = kindName(a["kind"] | "").compareTo(kindName(b["kind"] | ""));
+    return c != 0 ? c < 0 : usedLater(a, b);
+  });
+  else std::stable_sort(ds.begin(), ds.end(), usedLater);
+  if (devOrder != 1) { for (JsonObject d : ds) drawDevice(p, d, away); return; }
   // C-130: under each maker's name, and beside each device a picture of it
   static const char *const OTHER = "Other";
   for (int m = 0; m <= DEVICE_MAKER_N; m++) {
-  String maker = m < DEVICE_MAKER_N ? DEVICE_MAKERS[m] : OTHER;
-  bool headed = false;
-  for (JsonObject d : dv["devices"].as<JsonArray>()) {
-    if (makerOf(d["kind"] | "") != maker) continue;
-    if (!headed) { headed = true; String head = maker; head.toUpperCase(); label(p, head, &lv_font_montserrat_20, QUIET); }
-    lv_obj_t *outer = card(p);
-    lv_obj_set_flex_flow(outer, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_column(outer, 20, 0);
-    deviceSprite(outer, d["kind"] | "", 96, !(d["here"] | false));
-    lv_obj_t *c = column(outer, LV_SIZE_CONTENT);
-    lv_obj_set_flex_grow(c, 1);
-    String id = d["id"] | "";
-    lv_obj_t *nr = row(c);
-    label(nr, kindName(d["kind"] | "") + (id == deviceId() ? "  (this one)" : "") + ((d["here"] | false) ? "" : "  (away)"), &lv_font_montserrat_28, INK);
-    ownIds.push_back(id);                            // C-160: its own settings
-    button(nr, "ITS SETTINGS", tapOwnSettings, (void *)(long)(ownIds.size() - 1), false);
-    String said = String((d["here"] | false) ? "here, by " : "last heard ") + ((d["here"] | false) ? (const char *)(d["via"] | "") : (const char *)(d["lastSeen"] | ""));
-    if (!d["battery"].isNull()) said += "   battery " + String((int)(d["battery"]["percent"] | 0)) + "%";
-    label(c, said + "   " + id, &lv_font_montserrat_16, QUIET);
-    JsonObject has = d["daemon"];
-    label(c, has.isNull() ? "Hosts no daemon" : "Hosts " + String((const char *)(has["nickname"] | "")) + ", Lv. " + String((int)(has["level"] | 0)),
-          &lv_font_montserrat_20, INK);
-    if (!away.size()) continue;
-    lv_obj_t *r = row(c);
-    long long mine = has.isNull() ? -1 : (long long)(has["personality"] | 0LL);
-    chooseIds.push_back(id);
-    button(r, choosingFor == id ? "CLOSE" : "CHOOSE", tapChoose, (void *)(long)(chooseIds.size() - 1), false);   // DRAFT
-    if (choosingFor != id) continue;
-    for (JsonObject a : away) {
-      if (carryN >= 63) break;
-      long long pers = a["personality"] | 0LL;
-      carries[carryN] = { id, pers };
-      button(r, a["nickname"] | "", tapCarry, (void *)(long)carryN++, pers == mine);
+    String maker = m < DEVICE_MAKER_N ? DEVICE_MAKERS[m] : OTHER;
+    bool headed = false;
+    for (JsonObject d : ds) {
+      if (makerOf(d["kind"] | "") != maker) continue;
+      if (!headed) { headed = true; String head = maker; head.toUpperCase(); label(p, head, &lv_font_montserrat_20, QUIET); }
+      drawDevice(p, d, away);
     }
-    if (away.size() && carryN < 64) { carries[carryN] = { id, -1 }; button(r, "None", tapCarry, (void *)(long)carryN++, mine < 0); }
-  }
   }
 }
 

@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <algorithm>
 #include <esp_heap_caps.h>
 #include "ui.h"
 #include "net.h"

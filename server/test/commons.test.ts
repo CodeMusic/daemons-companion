@@ -71,6 +71,17 @@ describe("THE COMMONS (C-222)", () => {
     expect(readAway(new Uint8Array(readFileSync(A))).map((d) => d.personality)).toEqual([2002]);
     expect(readBoxes(new Uint8Array(readFileSync(B)))[0].personality).toBe(1002);
     expect((await get(`${hubA}/api/trade`)).board.trades).toMatchObject([{ state: "done", commons: true }]);
+    // C-220: the trade's hello was made on the commons, and both homes list it
+    expect((await get(`${hubA}/api/trade`)).out.met).toMatchObject([{ trade: "full", commons: true }]);
+    // OUT TOGETHER across homes: each sends its daemon out; ROVER HOUSE sees KIT's beside its own and meets it there
+    expect((await post(`${hubA}/api/trade/out`, { personality: 2002 })).error).toBeUndefined();
+    expect((await post(`${hubB}/api/trade/out`, { personality: 1002 })).error).toBeUndefined();
+    const others = (await get(`${hubA}/api/trade`)).out.others;
+    expect(others).toMatchObject([{ player: "KIT · KIT HOUSE", commons: true }]);
+    const after = await post(`${hubA}/api/trade/meet`, { with: others[0].id });
+    expect(after.met[0]).toMatchObject({ commons: true, a: { player: "ROVER · ROVER HOUSE" }, b: { player: "KIT · KIT HOUSE" } });
+    expect(after.met[0].lines.map((l: any) => l.by)).toEqual(["written", "written", "written", "written"]);   // no model on this commons
+    expect((await get(`${hubB}/api/trade`)).out.met.some((m: any) => m.commons && !m.trade)).toBe(true);
   });
 
   it("the keeper's list and approval answer only on the commons' own machine; a home needs its key", async () => {

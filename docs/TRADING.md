@@ -155,3 +155,19 @@ hub/commons.sh homes        # the keeper's list;  hub/commons.sh approve h1  let
 - **Personal accounts** (C-226), once security allows, most likely on a cloud service with security groups. The
   commons moves there from roverbyteseer, which first serves internal testing with the Tiiny AI.
 - **A lobby like Nintendo's** (C-227): friends, invite codes and players detected nearby, safe for kids.
+
+## Daemons meeting (C-220)
+
+*The user, 2026-10-29, by multiple choice: in the app and on a device; three ways to meet (an invitation to a friend's
+daemon, devices near each other, during a trade); lines written by the model and filtered, no player text.*
+
+- **OUT TOGETHER** (the iOS lane's, `together.ts`): an AWAY daemon sent out for twelve hours meets another player's,
+  four short lines; the hub also meets two out together on its own each quarter hour.
+- **The filter** (`meetsafe.ts`): every line the model writes passes it or a written line is said instead -- no way out
+  of the game, nothing about a person, nothing rude, no made-up name, at most 120 letters. Shared dreams (C-223) too.
+- **The trade hello**: when a trade or loan is agreed, its two daemons meet once.
+- **Across THE COMMONS**: a daemon sent out is out at home and on the commons; friends' homes' daemons out are listed
+  beside the home's and met on the commons, which also meets friends' daemons on its own. The commons' lines come
+  from an OpenAI-compatible model named in `commons.env` beside its database (roverbyteseer's LiteLLM; the Tiiny AI
+  later) -- never in this repository -- or are written when none is named.
+- **Next**: the boards (C-245) and meeting nearby (C-246), the hardware lane's.

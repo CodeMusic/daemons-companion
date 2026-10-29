@@ -66,7 +66,7 @@ export function makeCommons(store: Store): Server {
       if (path.startsWith("/commons/x/")) {
         const p = X.playerFor(store, KEYS, String(req.headers["x-daemons-player"] ?? ""));
         if (!p || p.home !== home.id) return send(res, 401, { error: "that player is not this home's" });
-        const r = exchangeRoute(store, KEYS, p, path.slice("/commons/x/".length), b, C.reach(store));
+        const r = await exchangeRoute(store, KEYS, p, path.slice("/commons/x/".length), b, C.reach(store));   // a meeting or a hello waits on its lines
         return send(res, r?.error === "not found" ? 404 : r?.error ? 400 : 200, r);
       }
       return send(res, 404, { error: "not found" });

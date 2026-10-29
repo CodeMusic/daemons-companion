@@ -77,7 +77,12 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
   switch (name) {
     case "board": return X.board(store, p.id, reach);
     case "offer": return shown(X.offer(store, p.id, b, new Date(), reach));
-    case "accept": return shown(X.accept(store, p.id, String(b.id ?? ""), b, new Date(), reach));
+    case "accept": {                              // C-220: and the two daemons meet once, to say hello
+      const r = X.accept(store, p.id, String(b.id ?? ""), b, new Date(), reach);
+      if (X.failed(r) || !r.with) return r;
+      const daemon = (x: X.Side) => ({ player: x.player, personality: x.personality, species: x.species, nickname: x.nickname, level: x.level, edition: x.edition });
+      return M.hello(store, daemon(r.from), daemon(r.with), r.kind).then(() => shown(r), () => shown(r));
+    }
     case "withdraw": return shown(X.withdraw(store, p.id, String(b.id ?? "")));
     case "recall": return shown(X.recall(store, p.id, String(b.id ?? "")));
     case "inbox": return X.inbox(store, p.id, b.game);

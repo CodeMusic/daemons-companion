@@ -31,7 +31,7 @@ const viaHub = (hub: Store): typeof fetch => (async (url: string, init: any) => 
   const p = X.playerFor(hub, KEYS, init.headers["x-daemons-player"] ?? "");
   if (!p) return out({ error: "join the exchange first" });
   if (name === "me") return out(X.players(hub).find((v) => v.id === p.id));
-  return out(exchangeRoute(hub, KEYS, p, name, b));
+  return out(await exchangeRoute(hub, KEYS, p, name, b));
 }) as unknown as typeof fetch;
 
 async function sync(link: Link, store: Store, bytes: { save: Uint8Array }) {
@@ -186,6 +186,10 @@ describe("the exchange (C-218 players, C-219 trades)", () => {
     expect((view.body as any).board.open[0]).toMatchObject({ id, from: { player: "ROVER", nickname: SPECIES["4"].name } });
     const took = await tradeRoute(kit, kitStore, B.save, "CONTEXT", "POST", "/api/trade/accept", { offer: id, personality: 2002 });
     expect(took.body).toMatchObject({ state: "agreed" });
+    // C-220: and the two daemons met once, to say hello -- both players see it
+    const met = (await tradeRoute(kit, kitStore, B.save, "CONTEXT", "GET", "/api/trade", {})).body as any;
+    expect(met.out.met[0]).toMatchObject({ trade: "full", a: { nickname: SPECIES["4"].name }, b: { nickname: SPECIES["1"].name } });
+    expect(met.out.met[0].lines).toHaveLength(4);
     expect(JSON.stringify(took.body)).not.toMatch(/record|secretId/);                                // names only, never a record
 
     const ra = await sync(rover, hub, A), rb = await sync(kit, kitStore, B);

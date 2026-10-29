@@ -21,6 +21,9 @@ case "${1:-}" in
   run)        # what the LaunchAgent runs
     mkdir -p "$DATA"
     cd "$HERE/server"
+    # C-220: the meetings' model, if any -- COMMONS_LLM_URL, COMMONS_LLM_MODEL, COMMONS_LLM_KEY in commons.env beside the
+    # database (never in this repository); without it every meeting's lines are written
+    [[ -f "$DATA/commons.env" ]] && { set -a; source "$DATA/commons.env"; set +a; }
     COMMONS_HOST="$(addr)" COMMONS_PORT=4750 COMMONS_DB="$DATA/commons.sqlite" exec node --import tsx src/commons_main.ts ;;
   install)
     (cd "$HERE/server" && npm ci --no-audit --no-fund)

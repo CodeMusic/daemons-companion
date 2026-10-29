@@ -9,12 +9,14 @@
 // a busy module, none at all -- a phone hosting alone) is written instead, from the lines below. All DRAFT.
 // Home only for now: THE COMMONS (friends' homes) does not carry meetings yet. No node: imports.
 import type { Store } from "./store.js";
+import { safeLine } from "./meetsafe.js";   // C-220: what one daemon says to another player's, checked (kids play)
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; types?: string[]; category?: string }>;
 export interface Out { player: string; personality: number; species: number; nickname: string; level: number; edition: string; at: string; until: string }
 export type Line = { who: "a" | "b"; said: string; by: "module" | "written" };
-export interface Met { id: string; at: string; a: Out & { name: string }; b: Out & { name: string }; lines: Line[]; own?: boolean }   // own: they met on their own
+export interface Met { id: string; at: string; a: Out & { name: string }; b: Out & { name: string }; lines: Line[]; own?: boolean;   // own: they met on their own
+                      trade?: "full" | "loan" }   // C-220: they met as a trade or a loan was agreed
 // C-223 (the user, 2026-10-28, by multiple choice): a dream shared -- one of a daemon's nights (dreams.ts), told to the
 // other players at home; the last forty kept, three a player at most
 export interface Shared { id: string; at: string; player: string; species: number; nickname: string; quality: string; text: string; woke: string }
@@ -57,7 +59,7 @@ export function outView(store: Store, player: string, name: Named, reach: Reach 
     mine: mine && brief(mine, name),
     others: here.filter((o) => o.player !== player && reach(player, o.player)).map((o) => ({ id: o.player, ...brief(o, name) })),
     met: s.met.filter((m) => m.a.player === player || m.b.player === player).slice(-10).reverse()
-      .map((m) => ({ id: m.id, at: m.at, a: brief(m.a, name), b: brief(m.b, name), lines: m.lines, own: !!m.own })),
+      .map((m) => ({ id: m.id, at: m.at, a: brief(m.a, name), b: brief(m.b, name), lines: m.lines, own: !!m.own, ...(m.trade ? { trade: m.trade } : {}) })),
   };
 }
 
@@ -108,6 +110,9 @@ export async function meetLines(a: Speaker, b: Speaker, day: string, say: Talker
     let said: string | null = null;
     // the last turn is a goodbye, always written: the model would only carry on
     if (say && t < TURNS - 1) { try { const r = await say(me, other, heard); said = r ? trimLine(r, me.nickname) : null; } catch { said = null; } }
+    // the module's line only if it passes (meetsafe.ts): no way out of the game, nothing about a person, nothing rude, no
+    // made-up name -- else the written line, which is ours and needs no check
+    if (said) said = safeLine(said, [me.nickname, other.nickname, me.name, other.name, me.types, other.types]);
     lines.push(said ? { who: t % 2 ? "b" : "a", said, by: "module" } : { who: t % 2 ? "b" : "a", said: writtenTurn(t, me, other, day), by: "written" });
   }
   return lines;
@@ -147,12 +152,27 @@ export async function meetOnTheirOwn(store: Store, reach: Reach = () => true, no
   return null;
 }
 
+// C-220 (the user, 2026-10-29: "during a trade"): the two daemons in a trade or a loan just agreed meet once, to say
+// hello -- neither need be out. Kept with the other meetings, so both players see it.
+export async function hello(store: Store, x: Omit<Out, "at" | "until">, y: Omit<Out, "at" | "until">, kind: "full" | "loan",
+                            now = new Date(), say: Talker | null = talker): Promise<Met> {
+  const a: Out = { ...x, at: now.toISOString(), until: now.toISOString() }, b: Out = { ...y, at: now.toISOString(), until: now.toISOString() };
+  const lines = await meetLines(speakerOf(a), speakerOf(b), now.toISOString().slice(0, 16), say);
+  return change(store, (st) => {
+    const m: Met = { id: `m${st.next++}`, at: now.toISOString(), a: { ...a, name: speakerOf(a).name }, b: { ...b, name: speakerOf(b).name }, lines, trade: kind };
+    st.met = [...st.met, m].slice(-KEPT);
+    return m;
+  });
+}
+
 // ---- C-223: dreams shared ----
 const SHARED_KEPT = 40, SHARED_EACH = 3;
 export function shareDream(store: Store, player: string, d: { species?: unknown; nickname?: unknown; quality?: unknown; text?: unknown; woke?: unknown },
                            now = new Date()): Shared | { error: string } {
   const text = typeof d.text === "string" ? d.text.replace(/\s+/g, " ").trim().slice(0, 400) : "";
   if (!text) return fail("which dream?");                                                       // DRAFT
+  // C-220's filter on a dream other players will read: a dream is the companion's own writing, but a module wrote it
+  if (!safeLine(text, [typeof d.nickname === "string" ? d.nickname : ""], 400)) return fail("that dream cannot be shared");   // DRAFT
   const woke = new Date(String(d.woke ?? ""));
   return change(store, (s) => {
     const all = s.shared ?? [];

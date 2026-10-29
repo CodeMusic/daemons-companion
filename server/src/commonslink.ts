@@ -59,6 +59,17 @@ async function tokenFor(store: Store, c: Linked, p: X.Player, f: typeof fetch): 
   store.setSetting("commons.tokens", JSON.stringify({ ...tokens(store), [p.id]: r.token }));
   return r.token;
 }
+// the home's OUT TOGETHER view with the commons' beside it: friends' daemons out, and meetings, marked "c:"; this home's
+// own players, which the commons lists too (as "KIT · THIS HOME"), left out of its list of others
+function merged(store: Store, home: any, far: any): any {
+  if (!far || far.error || !home || home.error) return home;
+  const suffix = ` · ${store.getSetting("commons.name") ?? ""}`;
+  return { ...home,
+           others: [...(home.others ?? []), ...(far.others ?? []).filter((o: any) => !String(o.player).endsWith(suffix))
+                                                             .map((o: any) => ({ ...o, id: C + o.id, commons: true }))],
+           met: [...(home.met ?? []), ...(far.met ?? []).map((m: any) => ({ ...m, id: C + m.id, commons: true }))]
+             .sort((x: any, y: any) => String(y.at).localeCompare(String(x.at))).slice(0, 10) };
+}
 const marked = (o: any) => (o && !o.error && o.id ? { ...o, id: C + o.id, commons: true } : o);
 const strip = (id: unknown) => String(id ?? "").slice(C.length);
 const isC = (id: unknown) => String(id ?? "").startsWith(C);
@@ -94,6 +105,18 @@ export async function homeRoute(store: Store, keys: X.Keys, p: X.Player, name: s
       return { deliveries: [...home.deliveries, ...(far.deliveries ?? []).map((d: any) => ({ ...d, id: C + d.id }))],
                handbacks: [...home.handbacks, ...(far.handbacks ?? []).map((h: any) => ({ ...h, id: C + h.id }))],
                locked: [...home.locked, ...(far.locked ?? [])] };
+    }
+    // C-220: OUT TOGETHER across homes -- a daemon sent out is out at home and on the commons; friends' daemons out, and
+    // the meetings with them, are listed beside the home's ("c:" before an id); a meeting with one is made on the commons
+    case "out": {
+      if (b.nickname !== undefined) { const r = here("out", b); if (!r.error) await there("out", b); return r; }
+      return merged(store, await here("out", b), await there("out", {}));
+    }
+    case "back": { const r = here("back", b); await there("back", {}); return r; }
+    case "meet": {
+      if (!isC(b.with)) return here("meet", b);
+      const r = await there("meet", { with: strip(b.with) });
+      return r.error ? r : merged(store, await here("out", {}), r);
     }
     case "written": {
       const ids: string[] = Array.isArray(b.ids) ? b.ids.map(String) : [];

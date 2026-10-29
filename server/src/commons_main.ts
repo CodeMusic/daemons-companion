@@ -6,7 +6,18 @@
 import { fileURLToPath } from "node:url";
 import { makeCommons } from "./commons_api.js";
 import { Store } from "./db.js";
+import { reach } from "./commons.js";
+import { llmTalker } from "./llmtalker.js";
+import { meetOnTheirOwn, setMeetTalker } from "./together.js";
 
 const db = process.env.COMMONS_DB || fileURLToPath(new URL("../commons.sqlite", import.meta.url));
 const port = Number(process.env.COMMONS_PORT || 4750), host = process.env.COMMONS_HOST || "0.0.0.0";
-makeCommons(new Store(db)).listen(port, host, () => console.log(`THE COMMONS on http://${host}:${port}  (database ${db})`));
+// C-220: meetings' lines from a model -- COMMONS_LLM_URL (an OpenAI-compatible endpoint), COMMONS_LLM_MODEL and
+// COMMONS_LLM_KEY from the environment, never from a file here; unset, every line is written. Friends' daemons out
+// together meet on their own each quarter hour, one pair a turn, as at home.
+const store = new Store(db);
+const llm = process.env.COMMONS_LLM_URL, model = process.env.COMMONS_LLM_MODEL;
+if (llm && model) setMeetTalker(llmTalker(llm, model, process.env.COMMONS_LLM_KEY ?? ""));
+setInterval(() => { meetOnTheirOwn(store, reach(store)).catch(() => {}); }, 15 * 60 * 1000).unref();
+makeCommons(store).listen(port, host, () =>
+  console.log(`THE COMMONS on http://${host}:${port}  (database ${db}; meetings' lines ${llm && model ? `from ${model}` : "written"})`));

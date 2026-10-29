@@ -90,6 +90,8 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
     case "handback": return shown(X.handback(store, p.id, String(b.id ?? ""), String(b.record ?? "")));
     case "written": return { ok: X.written(store, p.id, Array.isArray(b.ids) ? b.ids.map(String) : []) };
     case "password": return X.setPassword(store, keys, p.id, b.password);
+    case "befriend": return X.befriend(store, p.id, b.id, reach);    // C-223: friends at home
+    case "unfriend": return X.unfriend(store, p.id, b.id);
     // C-220: OUT TOGETHER -- one daemon out, called back, met
     case "out": return b.nickname === undefined ? M.outView(store, p.id, nameOf(store), reach) : M.sendOut(store, p.id, b);
     case "back": return M.callBack(store, p.id);
@@ -188,7 +190,7 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
     if (!d) return no(400, "only a daemon AWAY goes out -- SEND it from the game first");       // DRAFT
     return answer(await link.call("out", { personality: d.personality >>> 0, species: d.species, nickname: d.nickname, level: d.level, edition }));
   }
-  if (path === "/api/trade/back" || path === "/api/trade/meet" || path === "/api/trade/unshare") return answer(await link.call(path.slice("/api/trade/".length), b));
+  if (path === "/api/trade/back" || path === "/api/trade/meet" || path === "/api/trade/unshare" || path === "/api/trade/befriend" || path === "/api/trade/unfriend") return answer(await link.call(path.slice("/api/trade/".length), b));
   // C-223: one of this companion's dreams (dreams.ts), shared with the players at home
   if (path === "/api/trade/share") {
     const d = dreamsOf(store).find((x) => x.id === Number(b.id));
@@ -202,7 +204,7 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
     const t = tradeRecord(save, Number(b.personality));
     if (typeof t === "string") return no(400, t);
     const sent = { game: gameOf(save), edition, record: toB64(t.record) };
-    return answer(path.endsWith("offer") ? await link.call("offer", { ...sent, kind: b.kind, to: b.to, scope: b.scope })
+    return answer(path.endsWith("offer") ? await link.call("offer", { ...sent, kind: b.kind, to: b.to, scope: b.scope, friends: b.friends === true })
                                          : await link.call("accept", { ...sent, id: b.offer }));
   }
   return no(404, "not found");
@@ -215,4 +217,4 @@ export function setHub(store: Store, raw: unknown): { hub: string } | string {
   return { hub: url };
 }
 export const TRADE_PATHS = ["/api/trade", "/api/trade/join", "/api/trade/offer", "/api/trade/accept", "/api/trade/withdraw", "/api/trade/recall", "/api/trade/password",
-                            "/api/trade/out", "/api/trade/back", "/api/trade/meet", "/api/trade/share", "/api/trade/unshare"];
+                            "/api/trade/out", "/api/trade/back", "/api/trade/meet", "/api/trade/share", "/api/trade/unshare", "/api/trade/befriend", "/api/trade/unfriend"];

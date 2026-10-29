@@ -309,3 +309,27 @@ describe("a gift (C-223): given with nothing back", () => {
     expect(f(sent.record) & (tb.gifted | tb.tradedIn)).toBe(0);
   });
 });
+
+describe("friends at home (C-223)", () => {
+  it("are friends once both ask; an offer for friends is seen and taken only by them", async () => {
+    const hub = new Store(":memory:"), kitStore = new Store(":memory:");
+    const A = { save: saveA() }, B = { save: saveB() };
+    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://coremp135:4730", viaHub(hub));
+    await rover.join({ name: "ROVER" });
+    await kit.join({ name: "KIT", code: X.invite(hub, KEYS).code });
+    const [r, k] = X.players(hub).map((p) => p.id);
+    expect((await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/offer", { personality: 1002, kind: "gift", friends: true })).body)
+      .toMatchObject({ error: /no friends here yet/ });
+    expect((await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/befriend", { id: k })).body).toMatchObject({ friends: [], asked: [{ name: "KIT" }] });
+    expect(X.board(hub, k).friends.asks).toEqual([{ id: r, name: "ROVER" }]);
+    expect((await tradeRoute(kit, kitStore, B.save, "CONTEXT", "POST", "/api/trade/befriend", { id: r })).body).toMatchObject({ friends: [{ name: "ROVER" }], asks: [] });
+    expect(X.board(hub, r).friends.friends).toEqual([{ id: k, name: "KIT" }]);
+    const o = await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/offer", { personality: 1002, kind: "gift", friends: true });
+    expect(o.body).toMatchObject({ kind: "gift" });
+    expect(X.board(hub, k).open.map((x) => x.id)).toEqual([(o.body as X.Offer).id]);
+    await tradeRoute(kit, kitStore, B.save, "CONTEXT", "POST", "/api/trade/unfriend", { id: r });
+    expect(X.board(hub, k).open).toEqual([]);                                                        // friends only: gone from KIT's view
+    expect((await tradeRoute(kit, kitStore, B.save, "CONTEXT", "POST", "/api/trade/accept", { offer: (o.body as X.Offer).id, gift: true })).body)
+      .toMatchObject({ error: /for their friends/ });
+  });
+});

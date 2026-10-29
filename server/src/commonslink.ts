@@ -89,7 +89,8 @@ export async function homeRoute(store: Store, keys: X.Keys, p: X.Player, name: s
     case "board": {
       const home = here("board", b), far = await there("board", {});
       if (far.error) return { ...home, commons: false };
-      return { open: [...home.open, ...far.open.map(marked)], trades: [...home.trades, ...far.trades.map(marked)],
+      return { friends: home.friends,                                                       // C-223: friends at home
+               open: [...home.open, ...far.open.map(marked)], trades: [...home.trades, ...far.trades.map(marked)],
                // the friends' players; this home's own are listed already, from home
                players: [...home.players, ...far.players.filter((x: any) => !x.name.endsWith(` · ${store.getSetting("commons.name") ?? ""}`))
                                                      .map((x: any) => ({ ...x, id: C + x.id, commons: true }))],

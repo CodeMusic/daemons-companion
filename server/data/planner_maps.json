@@ -3335,6 +3335,7 @@
    },
    "joins": [
     "CinnabarIsland_Gym",
+    "CinnabarIsland_HattersHouse",
     "CinnabarIsland_Mart",
     "CinnabarIsland_PokemonCenter_1F",
     "CinnabarIsland_PokemonLab_Entrance",
@@ -3348,6 +3349,21 @@
     "SixIsland_Harbor",
     "ThreeIsland_Harbor",
     "TwoIsland_Harbor"
+   ],
+   "gate": "water (DRIVER03)",
+   "draft": true
+  },
+  "CinnabarIsland_HattersHouse": {
+   "id": "MAP_CINNABAR_ISLAND_HATTERS_HOUSE",
+   "place": "QUICKSILVER IS.",
+   "section": "MAPSEC_CINNABAR_ISLAND",
+   "type": "indoor",
+   "width": 11,
+   "height": 9,
+   "step": 16,
+   "edges": {},
+   "joins": [
+    "CinnabarIsland"
    ],
    "gate": "water (DRIVER03)",
    "draft": true

@@ -1,0 +1,31 @@
+{
+ "_about": "The GAME tab's launcher (the user, 2026-10-29). The art is the title screen's, from the built graphics; green is the splash's 0s and 1s (sparkles.pal teal ramp, bright to trail), noteColours its notes. daemons: who stands left and right on each edition's title, by name.",
+ "green": "#40d8c0",
+ "greenRamp": [
+  "#a0f8e8",
+  "#40d8c0",
+  "#009080",
+  "#005048"
+ ],
+ "noteColours": [
+  "#d83078",
+  "#f87840",
+  "#f8d848",
+  "#78d860",
+  "#48a8f8",
+  "#a870f8",
+  "#f8a8c8"
+ ],
+ "daemons": {
+  "content": [
+   "CODEMUSAI",
+   "CAREMUSAI"
+  ],
+  "context": [
+   "CAREMUSAI",
+   "CODEMUSAI"
+  ]
+ },
+ "mark": "©'11-'26 CODEMUSIC",
+ "scale": 2
+}

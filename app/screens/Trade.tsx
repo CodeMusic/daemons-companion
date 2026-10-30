@@ -212,7 +212,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
 // C-220 (the user, 2026-10-28: "if I send mine and so does another user ... we see both of them on screen and they
 // interact -- they even chat"): OUT TOGETHER -- one AWAY daemon sent out (nothing leaves the game), another player's
 // met, and the two talk; the hub's AI board says what it can in time, the rest is written. Every word DRAFT.
-// C-223: an ITEM given, nothing back -- from the bag's ITEMS, BALLS and BERRIES and the PC (never a key item or a PLUGIN).
+// C-223: an ITEM given, nothing back -- from the bag's ITEMS and BALLS and the PC (never a key item or a PLUGIN).
 // The giver's next SYNC takes it out of the game; only then does the receiver's put it in their PC.
 function ItemCard({ items, players, friends, ink, act }: { items: Held[]; players: Named[]; friends: boolean; ink: string;
                                                          act: (path: string, body: unknown, done: string) => Promise<void> }) {
@@ -221,7 +221,7 @@ function ItemCard({ items, players, friends, ink, act }: { items: Held[]; player
     <Card gap={6}>
       <Eyebrow>GIVE AN ITEM</Eyebrow>
       <Small>It becomes theirs, and nothing comes back. Your next SYNC takes it out of your game; theirs puts it in their PC.</Small>
-      {!items.length ? <Small>Your bag and PC hold nothing that can be given. Key items and PLUGINS stay yours.</Small> : (<>
+      {!items.length ? <Small>Your bag and PC hold nothing that can be given. Key items, berries and PLUGINS stay yours.</Small> : (<>
         <Choice value={count} ink={ink} onPick={setCount} options={[["1", "ONE"], ["5", "FIVE"], ["all", "ALL"]]} />
         {players.length ? <Choice value={to} ink={ink} onPick={setTo} options={[["", "ANYONE"], ...(friends ? [["friends", "FRIENDS"] as [string, string]] : []),
                                                                              ...players.map((p) => [p.id, p.name] as [string, string])]} /> : null}

@@ -1,5 +1,5 @@
-// C-223: an ITEM given, nothing back. What a save may give: the bag's ITEMS, BALLS and BERRIES pockets and the PC's
-// items -- never a key item or a PLUGIN (their pockets are not read here). The giver's SYNC takes the count out (the bag
+// C-223: an ITEM given, nothing back. What a save may give: the bag's ITEMS and BALLS pockets and the PC's
+// items (giftable, below) -- never a key item or a PLUGIN (their pockets are not read here). The giver's SYNC takes the count out (the bag
 // first, then the PC) and closes the pocket up behind an emptied slot, as the game's compaction does; the receiver's puts
 // it in the PC, stacked onto the same item while it stays at or under 999, else in the first empty slot (AddPCItem's
 // rule). Bag quantities are XOR the low 16 bits of SaveBlock2's encryption key; the PC's are plain (DAEMONS' engine,
@@ -23,8 +23,11 @@ export function pocketsOf(sb1: Record<string, number | undefined> = (profileJson
   one("PC", sb1.pc_items, sb1.pc_items_count);
   return p;
 }
-// an item the companion will offer: importance 0 where items.json says (when it does not, the pockets read are the rule)
-export const giftable = (id: number) => id > 0 && (ITEMS[String(id)]?.importance ?? 0) === 0;
+// an item the companion will offer: importance 0, and one that goes in the ITEMS or BALLS pocket -- a berry or a PLUGIN
+// added to a bag brings its BERRY POUCH or TM CASE with it in the game (item.c), so neither is given (the game lane's
+// advice, 2026-10-29). Every such item may be given, even one a script asks for: the user, 2026-10-29.
+const POCKETS_GIVEN = new Set(["POCKET_ITEMS", "POCKET_POKE_BALLS"]);
+export const giftable = (id: number) => { const it = ITEMS[String(id)]; return id > 0 && !!it && (it.importance ?? 0) === 0 && (!it.pocket || POCKETS_GIVEN.has(it.pocket)); };
 export const itemName = (id: number) => ITEMS[String(id)]?.name ?? `ITEM ${id}`;
 
 // SaveBlock1's slots as 16-bit words, wherever they sit: the reader's copy, or the writer's sectors

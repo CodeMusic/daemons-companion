@@ -69,6 +69,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto
 import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
 import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
+import { fetchManualText } from "./manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
@@ -809,6 +810,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const r = await commonsFriend(store, what, b);
         return send(res, r?.error ? 400 : 200, r);
       }
+      if (req.method === "GET" && path === "/api/manual") return send(res, 200, await fetchManualText(store));   // C-233: the manual as words, for a device
       if (TRADE_PATHS.includes(path)) {
         const h = hostOf(ecfg);
         return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {}));

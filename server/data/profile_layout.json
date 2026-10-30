@@ -1,5 +1,5 @@
 {
- "_about": "C-23: offsets into SaveBlock2 (section 0) and SaveBlock1 (sections 1-4, end to end), read from global.h's own struct comments; flag numbers resolved from flags.h. A flag below daemons_flags_start is a bit in SaveBlock1's flags, one at or above it a bit in SaveBlock2's daemonsFlags. INDEX flags are by national number minus one. Money is stored XOR the encryption key. A daemon is SEEN only when sb2 index_seen and sb1 seen1 and seen2 all have its bit (pokedex_screen.c's anticheat), so a writer sets all three. T-427: house_take is the house's take (what the GAME CORNER and the CASINO kept, in money), house_take_bytes wide, signed little-endian (negative while the player is ahead), stored plain -- NOT XORed as money is. Only ever added to. house_take_at_fall is the take as it stood when CORPUS fell (the game freezes it there, once; VERDIGRIS names it), same width and sign -- the game's to write, never a writer's. T-406: sb1 first_met is where each daemon was first SEEN, first_met_bytes bytes, one per national number (number - 1), each a map section first_met_places names (0: not recorded; it also names the three bytes that are no place -- THE COMPANION, A TRADE, A GIFT, T-492); trust them only when the u32 at first_met_magic is first_met_magic_value (an older save holds a recap scene there). A SEEN daemon with 0 was seen before the game kept them: the INDEX says BEFORE RECORDS.",
+ "_about": "C-23: offsets into SaveBlock2 (section 0) and SaveBlock1 (sections 1-4, end to end), read from global.h's own struct comments; flag numbers resolved from flags.h. A flag below daemons_flags_start is a bit in SaveBlock1's flags, one at or above it a bit in SaveBlock2's daemonsFlags. INDEX flags are by national number minus one. Money is stored XOR the encryption key. A daemon is SEEN only when sb2 index_seen and sb1 seen1 and seen2 all have its bit (pokedex_screen.c's anticheat), so a writer sets all three. T-427: house_take is the house's take (what the GAME CORNER and the CASINO kept, in money), house_take_bytes wide, signed little-endian (negative while the player is ahead), stored plain -- NOT XORed as money is. Only ever added to. house_take_at_fall is the take as it stood when CORPUS fell (the game freezes it there, once; VERDIGRIS names it), same width and sign -- the game's to write, never a writer's. T-406: sb1 first_met is where each daemon was first SEEN, first_met_bytes bytes, one per national number (number - 1), each a map section first_met_places names (0: not recorded; it also names the three bytes that are no place -- THE COMPANION, A TRADE, A GIFT, T-492); trust them only when the u32 at first_met_magic is first_met_magic_value (an older save holds a recap scene there). A SEEN daemon with 0 was seen before the game kept them: the INDEX says BEFORE RECORDS. C-223: every item slot (sb1 key_items, tmhm, items_pocket, balls_pocket, berries_pocket, pc_items; each *_count slots long) is 4 bytes: itemId u16 little-endian, then quantity u16. A BAG pocket's quantity is stored XOR the low 16 bits of sb2 encryption_key (item.c's GetBagItemQuantity); the PC's (pc_items) is stored plain (GetPcItemQuantity XORs with 0). An empty slot is itemId 0 with quantity 0 (in a pocket: 0 XOR the key's low half). A stack holds at most 999. items.json names each item's pocket and importance; a writer puts an item only in its own pocket.",
  "sb2": {
   "player_name": 0,
   "player_gender": 8,
@@ -28,6 +28,12 @@
   "tmhm_count": 58,
   "items_pocket": 784,
   "items_count": 42,
+  "balls_pocket": 1072,
+  "balls_count": 13,
+  "berries_pocket": 1356,
+  "berries_count": 43,
+  "pc_items": 664,
+  "pc_items_count": 30,
   "seen1": 1528,
   "seen2": 14872,
   "first_met": 9788,

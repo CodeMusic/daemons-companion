@@ -1,8 +1,10 @@
 // What the server said, and the board's settings (C-67: from main.cpp).
 #include <Preferences.h>
 #include <mbedtls/base64.h>
+#if CONFIG_IDF_TARGET_ESP32S3
 #include <LittleFS.h>
 #include <vector>
+#endif
 #include "app.h"
 #include "card.h"
 #include "broadcast.h"
@@ -283,6 +285,8 @@ static void show(const String &key, const uint16_t *pal, const uint8_t *pix) {
 // C-241: and where there is no card (the user's Ultra has none), on the board's own flash -- the partition the build
 // leaves for files, mounted once (formatted the first time), the last eight pictures kept. Without it, a board with no
 // Wi-Fi asked a phone in a pocket for every picture after every start, and showed the shadow for minutes.
+// Only on the S3s: on the M5GO's ESP32 LittleFS's flash code overflows IRAM, and its boards have cards (C-255).
+#if CONFIG_IDF_TARGET_ESP32S3
 static bool flashReady() {
   static int8_t ok = -1;
   if (ok < 0) ok = psramFound() && LittleFS.begin(true) ? 1 : 0;
@@ -307,6 +311,10 @@ static String flashRead(const String &key) {
   String s = f.readString(); f.close();
   return s;
 }
+#else
+static void flashKeep(const String &, const String &) {}
+static String flashRead(const String &) { return ""; }
+#endif
 
 bool takeArt(const String &json) {
   JsonDocument doc;

@@ -32,7 +32,8 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 }
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
-      !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide") || !strcmp(name, "subtle")) return K_PROFILE;   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER
+      !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide") || !strcmp(name, "subtle") ||
+      !strcmp(name, "hermetic") || !strcmp(name, "manual")) return K_PROFILE;   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER; C-238, C-233
   if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
   if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
@@ -66,7 +67,11 @@ void netScan() { ask(SCAN); }
 void netPair(const String &srv, const String &code) { ask(PAIR, srv, code); }
 void netSyncNow() { ask(SYNC); }
 static std::atomic<bool> forgetDue{false};
-void netDownloadAll() { forgetDue = true; ask(SYNC); }   // C-177: every tag forgotten, so every answer comes whole
+void netDownloadAll() { forgetDue = true; ask(SYNC); }
+// C-238 (the user, 2026-10-29: "same as the app, but with preview setting"): the books a save has not found yet, shown as
+// a PREVIEW, as the app's preview does -- kept on the Tab5; nothing counts as found
+bool netPreview() { Preferences p; p.begin("tab5", true); bool on = p.getBool("preview", false); p.end(); return on; }
+void netSetPreview(bool on) { Preferences p; p.begin("tab5", false); p.putBool("preview", on); p.end(); ask(SYNC); }   // C-177: every tag forgotten, so every answer comes whole
 void netGameSync() { ask(GAME); }
 std::atomic<int> netVoice{V_QUIET};
 static std::atomic<uint32_t> voiceGen{0};          // a stop moves it on: a voice made for an older one is dropped
@@ -516,7 +521,9 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/notebook", "notebook");           // C-131: the PROFILE's NOTEBOOK, as the app reads it
     fetchKeep("/api/guide", "guide");                 // C-145: the GUIDE, once the save holds it
-    fetchKeep("/api/subtle", "subtle");               // T-423: THE SUBTLE LAYER, once the save holds it
+    fetchKeep(netPreview() ? "/api/subtle?preview=1" : "/api/subtle", "subtle");         // T-423: THE SUBTLE LAYER, once the save holds it
+    fetchKeep(netPreview() ? "/api/hermetic?preview=1" : "/api/hermetic", "hermetic");   // C-238: THE HERMETIC LAYER, once found (or a PREVIEW)
+    fetchKeep("/api/manual", "manual");               // C-233: THE PLAYER'S MANUAL, as words
     fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours
     fetchKeep("/api/regions", "regions");             // the two regions' maps, lit from the profile's visited (C-127)
     fetchKeep("/api/progress", "progress");           // C-137: GAME EVENTS, and CALLOW SCHOOL as the save has it

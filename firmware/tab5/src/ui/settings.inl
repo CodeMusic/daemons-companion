@@ -88,6 +88,7 @@ static void lookAgain() {                                          // the whole 
   buildFrame();
   lv_tabview_set_active(tabs, at, LV_ANIM_OFF);
 }
+static void tapPreview(lv_event_t *e) { netSetPreview((long)lv_event_get_user_data(e) != 0); drawnAt[P_SETTINGS] = 0; }
 static void tapLook(lv_event_t *e) {
   look = (int)(long)lv_event_get_user_data(e); saveLook();
   lookAgain();

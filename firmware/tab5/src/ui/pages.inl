@@ -11,6 +11,13 @@ static void drawSettings(lv_obj_t *p) {
   for (int i = 0; i < 3; i++) button(lr, LOOK_NAMES[i], tapLook, (void *)(long)i, i == look);
   label(o, look == L_AUTO ? "Dark through the daemon's night, 8pm to 6am, by the companion's clock."   // DRAFT
                           : look == L_DARK ? "Stays dark." : "Stays light.", &lv_font_montserrat_16, QUIET, LV_PCT(100));
+  lv_obj_t *bk = card(p);                          // C-238: the LIBRARY's books a save has not found, as a PREVIEW
+  label(bk, "THE LIBRARY", &lv_font_montserrat_20, QUIET);
+  lv_obj_t *br = row(bk);
+  button(br, "PREVIEW OFF", tapPreview, (void *)0L, !netPreview());
+  button(br, "PREVIEW ON", tapPreview, (void *)1L, netPreview());
+  label(bk, netPreview() ? "Books your save has not found yet are on the shelf, marked PREVIEW. Nothing counts as found."
+                         : "A book is on the shelf once your save has found it.", &lv_font_montserrat_20, QUIET, LV_PCT(100));   // DRAFT
   lv_obj_t *w = card(p);
   label(w, "WI-FI", &lv_font_montserrat_20, QUIET);
   label(w, net.wifi ? "Joined " + netNetworkName() : "Not on a network", &lv_font_montserrat_28, INK);

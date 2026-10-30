@@ -36,6 +36,8 @@ void netScan();                      // the networks near, read with netNetworks
 int netNetworksNear(String out[16]);
 void netPair(const String &server, const String &code);
 void netSyncNow();                   // send what waits, then bring what changed (C-177: asked by tag, 304 when not)
+bool netPreview();                   // C-238: the LIBRARY's unfound books shown as a PREVIEW (SETTINGS)
+void netSetPreview(bool on);
 void netDownloadAll();               // DOWNLOAD EVERYTHING AGAIN: every tag forgotten, so every answer comes whole
 void netGameSync();                  // SYNC with the game: only when the companion answers (it writes the save)
 void netSend(const char *method, const String &path, const String &body);   // a write: sent now, or kept and sent later

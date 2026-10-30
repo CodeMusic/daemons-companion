@@ -243,7 +243,11 @@ static void commandAfter() {
       for (int k = 0; k < types[i].count; k++)
         if (want.equalsIgnoreCase(types[i].routines[k].name)) { typeAt = i; routineAt = k; lastInput = millis(); runRoutine(); return; }
     for (int i = 0; i < typeCount; i++)
-      if (want.equalsIgnoreCase(types[i].name)) { typeAt = i; routineAt = 0; screen = LIST; lastInput = millis(); dirty = true; return; }
+      if (want.equalsIgnoreCase(types[i].name)) {
+        typeAt = i; routineAt = 0; lastInput = millis();
+        if (types[i].count == 1) { runRoutine(); return; }   // C-256: a type of one routine (TV, BOOKS, CASINO) runs it
+        screen = LIST; dirty = true; return;
+      }
     say("No " + want + " here");                                                // DRAFT
   }
 }

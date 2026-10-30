@@ -127,6 +127,24 @@ export class Home {
     } catch (e) { return { ok: false, error: (e as Error).message }; }
   }
 
+  // C-256: a TV's button (tv.ts) -- only the remote and Android Debug Bridge services, only on a remote or media player
+  async tvCall(domain: "remote" | "androidtv", service: "toggle" | "send_command" | "adb_command", data: { entity_id?: string; command?: string }) {
+    const kind = domain === "remote" ? "remote" : "media_player";
+    if (!new RegExp(`^${kind}\\.[a-z0-9_]+$`).test(String(data.entity_id))) throw new HomeError("failed", "not a TV");
+    await this.call("POST", `/api/services/${domain}/${service}`, data);
+  }
+  // C-256: each integration's entities, with their names: the ids from one template, the names from the states
+  async tvEntities(domains: Record<string, string>): Promise<Record<string, { id: string; name: string }[]>> {
+    const parts = Object.entries(domains).filter(([k, d]) => /^[a-z]+$/.test(k) && /^[a-z_]+$/.test(d))
+      .map(([k, d]) => `"${k}": integration_entities('${d}') | list`);
+    const ids = await this.call("POST", "/api/template", { template: `{{ {${parts.join(", ")}} | tojson }}` });
+    const map: Record<string, string[]> = typeof ids === "string" ? JSON.parse(ids) : ids;
+    const states = await this.call("GET", "/api/states") as State[];
+    const name = new Map(states.map((s) => [s.entity_id, String(s.attributes?.friendly_name ?? s.entity_id)]));
+    return Object.fromEntries(Object.entries(map).map(([k, l]) =>
+      [k, (Array.isArray(l) ? l : []).filter((id) => name.has(id)).map((id) => ({ id, name: name.get(id)! }))]));
+  }
+
   // Asked in words: Home Assistant's own conversation agent answers (the one its voice pipeline uses, the BOX-3's too)
   async ask(text: string, conversationId?: string | null): Promise<{ ok: boolean; speech?: string; conversationId?: string; error?: string }> {
     const t = String(text ?? "").trim().slice(0, 500);

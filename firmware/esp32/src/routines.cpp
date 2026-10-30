@@ -25,6 +25,7 @@ String runSeeTheHeat(); String runWarmestThing(); String runSomeonesHere(); Stri
 String runWakeMe(); String runStopwatch(); String runCountdown();   // C-205: HOURS, clock.cpp
 String runMeeting(); String runLastMeeting(); String runSendKept(); String runVoiceNote();  // C-212, C-199 (5): meeting.cpp
 String runBooks();                        // C-208: BOOKS, books.cpp
+String runTv();                           // C-256: TV, tv.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
                                                { "THEATER MODE", runTheaterMode }, { "CHOOSE A REMOTE", runChooseRemote },
@@ -51,6 +52,7 @@ static const Routine HOURS_ROUTINES[]      = { { "WAKE ME", runWakeMe }, { "STOP
                                                { "RECORD A MEETING", runMeeting }, { "LAST MEETING", runLastMeeting },
                                                { "VOICE NOTE", runVoiceNote }, { "SEND KEPT", runSendKept } };   // C-205; C-212; C-199 (5), DRAFT
 static const Routine BOOKS_ROUTINES[]      = { { "READ", runBooks } };   // C-208, DRAFT
+static const Routine TV_ROUTINES[]         = { { "REMOTE", runTv } };   // C-256, DRAFT
 static const Routine CASINO_ROUTINES[]     = { { "SLOTS", runSlots } };   // C-149, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
                                                { "WI-FI MOTION", runWifiMotion } };   // C-70, DRAFT
@@ -70,6 +72,7 @@ void routinesBegin() {
                                                          : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   if (isWatch()) types[typeCount++] = { "BOOKS", "the books the save holds", BOOKS_ROUTINES, 1 };   // C-208, DRAFT
+  if (isWatch()) types[typeCount++] = { "TV", "the TV, through the companion", TV_ROUTINES, 1 };   // C-256, DRAFT
   if (isWatch()) types[typeCount++] = { "HOURS", "the daemon keeps time", HOURS_ROUTINES, 7 };   // C-205, DRAFT
   if (board.keyboard || isWatch()) types[typeCount++] = { "MUSIC", "the game's instrument", MUSIC_ROUTINES, 2 };   // T-426: the boards with number keys; the watches' strings and holes, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };

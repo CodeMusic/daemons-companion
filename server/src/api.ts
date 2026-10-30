@@ -80,6 +80,8 @@ import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressi
 import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
+import { Tvs, lanHost } from "./tv.js";
+import { createSocket } from "node:dgram";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
@@ -435,6 +437,32 @@ const LORA_KINDS = /^(t-deck|t-watch-s3|t-watch-ultra)/;
 export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean", "talkfirst", "spellcraft"];   // C-238: spellcraft   // C-159: setting; C-200: night; C-174: where; C-203: read, lean; C-211: talkfirst
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
+// C-256: the Rokus on this network -- an SSDP search for roku:ecp, then each one's own name. Two seconds, at most eight.
+async function findRokus(wait = 2000): Promise<{ host: string; name: string }[]> {
+  const hosts = new Set<string>();
+  await new Promise<void>((done) => {
+    const sock = createSocket({ type: "udp4", reuseAddr: true });
+    const end = () => { try { sock.close(); } catch { /* closed */ } done(); };
+    sock.on("error", end);
+    sock.on("message", (m) => {
+      const loc = /^location:\s*http:\/\/([^:/\s]+):8060/im.exec(m.toString());
+      const h = loc ? lanHost(loc[1]) : null;
+      if (h && hosts.size < 8) hosts.add(h);
+    });
+    sock.bind(0, () => {
+      const q = "M-SEARCH * HTTP/1.1\r\nHost: 239.255.255.250:1900\r\nMan: \"ssdp:discover\"\r\nST: roku:ecp\r\nMX: 1\r\n\r\n";
+      sock.send(q, 1900, "239.255.255.250");
+      setTimeout(end, wait);
+    });
+  });
+  return Promise.all([...hosts].map(async (host) => {
+    try {
+      const x = await (await fetch(`http://${host}:8060/query/device-info`, { signal: AbortSignal.timeout(2000) })).text();
+      const n = /<user-device-name>([^<]+)</.exec(x)?.[1] ?? /<friendly-device-name>([^<]+)</.exec(x)?.[1] ?? /<model-name>([^<]+)</.exec(x)?.[1];
+      return { host, name: (n ?? "Roku").trim().slice(0, 16) };
+    } catch { return { host, name: "Roku" }; }
+  }));
+}
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
                     "/api/settings/pick", "/api/settings/reveal", "/api/settings/relay", "/api/settings/home"];
 // C-56: the user's n8n carries a phone's requests here from anywhere, marking each with the relay's secret. A relayed
@@ -448,13 +476,13 @@ export function relaySecret(store: Store): string {
   return s;
 }
 export const DEVICE_DOOR = [
-  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face", "/api/device/greet"].includes(p),
+  (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face", "/api/device/greet", "/api/device/tvs"].includes(p),
   (m: string, p: string) => m === "POST" &&
     ["/api/device/ticks", "/api/device/untick", "/api/device/interact", "/api/device/results", "/api/device/routines",
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
-     "/api/device/broadcast", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
+     "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
@@ -568,6 +596,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
   const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
+  const tvs = new Tvs({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) }, home);   // C-256: the TVs
   const agentKey = (renew = false) => ollamaKey((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), renew);   // C-142
   // C-142: the address Home Assistant's Ollama integration is given -- this machine on the network, and the key
   const agentView = (cfg: Config) => {
@@ -774,6 +803,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { ...home.settings(), ...(await home.check()), agent: agentView(ecfg) });
       }
       if (req.method === "GET" && path === "/api/home") return send(res, 200, await home.view());
+      // ---- C-256: TV -- the TVs a device's remote presses (tv.ts): a Roku directly, the rest through Home Assistant ----
+      if (req.method === "GET" && path === "/api/tvs") return send(res, 200, { tvs: tvs.list(), keys: tvs.forDevice().keys });
+      if (req.method === "GET" && path === "/api/tvs/find") return send(res, 200, await tvs.find(await findRokus()));
+      if (req.method === "POST" && path === "/api/tvs") {
+        const b = await body(req);
+        if (b.op === "remove") return send(res, 200, { ok: tvs.remove(b.id), tvs: tvs.list() });
+        if (b.op === "rename") return send(res, 200, { ok: tvs.rename(b.id, b.name), tvs: tvs.list() });
+        const r = tvs.add(b);
+        return send(res, r.ok ? 200 : 400, { ...r, tvs: tvs.list() });
+      }
+      if (req.method === "POST" && path === "/api/tvs/press") { const b = await body(req); return send(res, 200, await tvs.press(b.id, b.key)); }
+      if (req.method === "GET" && path === "/api/device/tvs") return send(res, 200, tvs.forDevice());
+      if (req.method === "POST" && path === "/api/device/tv") { const b = await body(req); return send(res, 200, await tvs.press(b.id, b.key)); }
       if (req.method === "POST" && path === "/api/home/act") {
         const b = await body(req);
         return send(res, 200, await home.act(String(b.id ?? ""), String(b.action ?? "")));

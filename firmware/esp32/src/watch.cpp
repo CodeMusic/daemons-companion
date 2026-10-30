@@ -25,6 +25,7 @@ bool watchTouchDown() { return false; }
 bool watchFinger(int &, int &) { return false; }
 void haptic(uint8_t) {}
 int watchGesture() { return 0; }
+bool watchTapPoint(int &, int &) { return false; }
 bool watchGestureAcross() { return false; }
 bool watchPowerOff() { return false; }
 int watchCableIn() { return -1; }
@@ -436,6 +437,9 @@ bool watchFinger(int &x, int &y) { int16_t xs[1], ys[1]; bool on = haveTouch && 
 static int crownPoll();                                        // below, beside crownLoop
 static bool across = false;                                    // the last swipe went across, not up or down
 bool watchGestureAcross() { return across; }
+// C-256: where the last tap watchGesture returned fell, in the canvas's coordinates (TV's buttons)
+static int16_t tapPx = -1, tapPy = -1;
+bool watchTapPoint(int &x, int &y) { if (tapPx < 0) return false; x = tapPx; y = tapPy; tapPx = -1; return true; }
 int watchGesture() {
   static bool was = false; static int16_t x0, y0, x1, y1; static uint32_t at = 0;
   // C-161: inside a routine the loop waits, and crownLoop with it -- so the crown is read here, and goes back
@@ -445,7 +449,7 @@ int watchGesture() {
   Touch g;                                                     // C-171: the task's, in the screen's own coordinates
   if (!touchTake(g)) return 0;
   if (g.kind == 3) return -2;
-  if (g.kind == 1) return 2;
+  if (g.kind == 1) { tapPx = g.x; tapPy = g.y; return 2; }
   across = abs(g.dx) > abs(g.dy);                              // the axis of this very gesture, for watchGestureAcross
   return across ? (g.dx < 0 ? 1 : -1) : (g.dy < 0 ? 1 : -1);
 #endif
@@ -461,7 +465,9 @@ int watchGesture() {
   across = abs(dx) > SWIPE && abs(dx) > abs(dy);
   if (across) return dx < 0 ? 1 : -1;
   if (abs(dy) > SWIPE) return dy < 0 ? 1 : -1;
-  return millis() - at > 700 ? -2 : 2;
+  if (millis() - at > 700) return -2;
+  tapPx = x0; tapPy = y0;
+  return 2;
 }
 
 String watchStatus() {

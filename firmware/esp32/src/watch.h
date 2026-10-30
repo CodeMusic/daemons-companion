@@ -22,5 +22,6 @@ void haptic(uint8_t effect);            // C-176: the DRV2605's effect (its libr
 bool watchFinger(int &x, int &y);        // the finger now, kept from being a gesture (PLAY's strings and holes)
 bool watchTouchDown();                    // a finger on the screen now (talk.cpp listens while it stays)
 int watchGesture();                       // C-134: inside a routine -- a swipe (+1 next, -1 back a row), 2 a tap, -2 a hold; 0 nothing
+bool watchTapPoint(int &x, int &y);        // C-256: where that tap fell (canvas), once; false when not known
 bool watchGestureAcross();                // C-161: that swipe went across (left or right), not up or down
 String watchStatus();                     // C-98: the parts found, and a finger now, for WATCH from the computer

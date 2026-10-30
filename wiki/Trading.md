@@ -47,6 +47,19 @@ CONTENT and CONTEXT trade with each other freely.
 - When its owner calls it home, it must be **AWAY** to go back -- SEND it and SYNC. Each of you gets your own back at
   your next SYNC, as it is now.
 
+## Gifts, friends and shared dreams
+
+- **GIVE IT** offers a daemon that is AWAY with nothing back -- to anyone, or to one player -- and **TAKE IT** takes
+  it. The giver's next SYNC lets it go (never the last daemon in the party); the receiver's next SYNC writes it into the
+  first empty box slot, AWAY, and the game finishes it as it does a trade's, with FIRST MET: A GIFT (C-223, DAEMONS
+  T-492). Giving an item is built and kept hidden until the hub can give items.
+- **FRIENDS**: ask another player, they ask back, and you are friends; an offer -- a trade, a loan or a gift -- can be
+  for friends only.
+- **SHARE** on a dream (DAEMON, DREAMS) tells it to the players at home; TRADE's **DREAMS SHARED** lists them, newest
+  first, and **UNSHARE** takes your own down. Three a player.
+
+All three are at home only, for now, and every word is DRAFT.
+
 ## Fair play
 
 - **A daemon in a trade stays AWAY.** The game will not call it home ("*NAME* is in a trade"), and the companion will
@@ -80,7 +93,7 @@ and the goodbye is always written. The two pictures face each other on the card.
 
 Each of the rest is filed as a ticket, open, and none is built: the rest of C-220; the game's own
 link cable through the hub, for trades and battles (C-221); a lobby beyond the tailnet, and links by Bluetooth, LoRa or
-a touch (C-222); friends and gifts (C-223); battles between players (C-224).
+a touch (C-222); battles between players (C-224).
 
 *Every word the game and the app show for trading is DRAFT.* The design is in
 [docs/TRADING.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TRADING.md), and the routes in

@@ -24,6 +24,7 @@ import speciesJson from "../../data/species.json" with { type: "json" };
 import { expFor, levelFromExp } from "./growth.js";
 import { calcStats, unpackIVs } from "./stats.js";
 import { arriving } from "./trade.js";
+import { itemName, pocketsOf, putItem, takeItem, type Pockets, type Words } from "./items.js";   // C-223
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 import eventsJson from "../../data/events.json" with { type: "json" };
@@ -37,7 +38,8 @@ export interface SyncResult { save: Uint8Array; answered: Answer[]; refused: str
                               evolved: { nickname: string; personality: number; from: number; to: number }[];
                               gifted: { box: number; pos: number; personality: number; species: number } | null;
                               sounded: { personality: number; level: Sounding }[];   // C-195: each carried daemon given a level
-                              traded: { id: string; out: number; in: number; species: number; nickname: string; where: "party" | "box"; gave?: boolean }[];   // C-219; gave: C-223
+                              traded: { id: string; out: number; in: number; species: number; nickname: string; where: "party" | "box" | "bag" | "pc"; gave?: boolean;
+                                        item?: { id: number; count: number } }[];   // C-219; gave and item: C-223
                               tradeWaits: { id: string; why: string }[] }
 // C-15: what the companion met nearby since the last SYNC -- species to mark SEEN (by national number), and how much
 // friendship the carried daemon gained by it
@@ -53,7 +55,8 @@ export interface Gift { species: number; name: string; level: number; personalit
 // C-223: a GIFT -- `give` on the giver's side (the daemon leaves: no record comes in), and on the receiver's an `out` of 0
 // (nothing leaves: it arrives in the first empty box slot)
 export interface TradeIn { id: string; out: number; record: Uint8Array | null; loan?: boolean; phase?: "swap" | "return"; give?: boolean;
-                          ot?: number }   // C-223: the giver's daemon by who it is -- personality and its trainer's id, never a slot
+                          ot?: number;    // C-223: the giver's daemon by who it is -- personality and its trainer's id, never a slot
+                          item?: { id: number; count: number } }   // C-223: an item given (give) or received (out 0), no record (save/items.ts)
 
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };
@@ -70,7 +73,7 @@ export function answerRequests(save: Uint8Array, l: Layout = LAYOUT): { save: Ui
 // grow: C-80 -- several daemons may have experience waiting; the first of them that is home after this SYNC is written
 export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings; grow?: Growth | Growth[]; money?: number;
                                              house?: number; houseAt?: number | null; evolve?: Evolve[]; gift?: Gift;
-                                             sounding?: Sounding; vars?: Record<number, number>; trade?: TradeIn[];
+                                             sounding?: Sounding; vars?: Record<number, number>; trade?: TradeIn[]; itemPockets?: Pockets;
                                              locks?: number[]; spellcraft?: number }, l: Layout = LAYOUT): SyncResult {
   const a = readSlot(save, 0, l), b = readSlot(save, 1, l);
   if (!a && !b) throw new Error("neither save slot is valid -- not a DAEMONS save, or a damaged one");
@@ -305,7 +308,22 @@ export function syncSave(save: Uint8Array, opts: { link: boolean; met?: Meetings
       const all = Array.from({ length: 14 * 30 }, (_, i) => i), lastAway = all.filter((i) => boxFlags(i) & 0b10 && boxFlags(i) & (1 << l.away_bit)).pop() ?? -1;
       return all.find((i) => i > lastAway && !(boxFlags(i) & 0b10)) ?? all.find((i) => !(boxFlags(i) & 0b10)) ?? -1;
     };
+    // C-223: SaveBlock1's item slots as words, through the sectors they sit in (a slot never straddles two)
+    const words: Words = {
+      get: (o) => out[at(o).byte] | (out[at(o + 1).byte] << 8),
+      set: (o, v) => { const a = at(o), b = at(o + 1); out[a.byte] = v & 0xff; out[b.byte] = (v >> 8) & 0xff; touched.add(a.id); touched.add(b.id); },
+    };
+    const pockets = opts.itemPockets ?? pocketsOf(), itemKey = new DataView(out.buffer, where.get(0)! + P.sb2.encryption_key).getUint32(0, true);
     for (const t of opts.trade) {
+      // C-223: an item -- given, out of the bag (then the PC); received, into the PC
+      if (t.item) {
+        // never out of one save before the PC that takes it can be reached (profile_layout's pc_items: the game lane's export)
+        if (!pockets.PC) { tradeWaits.push({ id: t.id, why: "this companion cannot reach the PC's items yet -- it waits for an update" }); continue; }   // DRAFT
+        const ok = t.give ? takeItem(words, pockets, itemKey, t.item.id, t.item.count) : putItem(words, pockets, t.item.id, t.item.count);
+        if (!ok) { tradeWaits.push({ id: t.id, why: t.give ? `this save no longer holds ${t.item.count} ${itemName(t.item.id)}` : !pockets.PC ? "this companion cannot reach the PC's items yet -- it waits for an update" : "the PC's items are full -- make room" }); continue; }   // DRAFT
+        traded.push({ id: t.id, out: 0, in: 0, species: 0, nickname: itemName(t.item.id), where: t.give ? "bag" : "pc", item: { ...t.item }, ...(t.give ? { gave: true } : {}) });
+        continue;
+      }
       // C-223: a gift given -- the daemon leaves this save: its box slot emptied, or the party closed up behind it
       if (t.give) {
         // found by who it is (the player may move it in the PC or the party between SYNCs: DAEMONS' check, 2026-10-29)

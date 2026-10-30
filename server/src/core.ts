@@ -131,7 +131,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,
            met: { companions: meetings.length, newlySeen: r.newlySeen.length, friendship: r.friendship },
            gifted: r.gifted ? HANDSHAKE.name : null,
-           traded: r.traded.map((t) => ({ nickname: t.nickname, species: t.species, where: t.where, ...(t.gave ? { gave: true } : {}) })), tradeWaits: r.tradeWaits.map((t) => t.why),
+           traded: r.traded.map((t) => ({ nickname: t.nickname, species: t.species, where: t.where, ...(t.gave ? { gave: true } : {}), ...(t.item ? { count: t.item.count } : {}) })), tradeWaits: r.tradeWaits.map((t) => t.why),
            grew: r.grew ? { nickname: r.grew.nickname, exp: r.grew.exp, from: r.grew.from, to: r.grew.to } : null,
            casino: casino.delta || casino.spins ? { won: casino.delta, spins: casino.spins, from: r.money?.from ?? p.money, to: r.money?.to ?? p.money } : null };
 }

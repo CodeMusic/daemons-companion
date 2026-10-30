@@ -10,6 +10,7 @@ import type { Store } from "./store.js";
 import type { Reply } from "./routes.js";
 import type { TradeIn } from "./save/writer.js";
 import { readAway } from "./save/reader.js";
+import { giftableItems, pocketsOf } from "./save/items.js";   // C-223: an item given
 import { fromB64, gameId, gameOf, toB64, tradeRecord, type GameKey } from "./save/trade.js";
 import * as X from "./exchange.js";
 import { homeRoute } from "./commonslink.js";
@@ -76,11 +77,11 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
   const shown = (r: X.Result<X.Offer>) => (X.failed(r) ? r : X.shown(store, p.id, r));
   switch (name) {
     case "board": return X.board(store, p.id, reach);
-    case "offer": return shown(X.offer(store, p.id, b, new Date(), reach));
+    case "offer": return shown(b.kind === "item" ? X.offerItem(store, p.id, b, new Date(), reach) : X.offer(store, p.id, b, new Date(), reach));   // C-223: an item
     case "accept": {                              // C-220: and the two daemons meet once, to say hello
       const r = X.accept(store, p.id, String(b.id ?? ""), b, new Date(), reach);
       if (X.failed(r) || !r.with) return r;
-      if (r.kind === "gift") return shown(r);       // C-223: a gift has one daemon -- no hello
+      if (r.kind === "gift" || r.kind === "item") return shown(r);       // C-223: a gift has one daemon (or none) -- no hello
       const daemon = (x: X.Side) => ({ player: x.player, personality: x.personality, species: x.species, nickname: x.nickname, level: x.level, edition: x.edition });
       return M.hello(store, daemon(r.from), daemon(r.with), r.kind).then(() => shown(r), () => shown(r));
     }
@@ -130,6 +131,7 @@ export function tradesToWrite(store: Store, game: GameKey): TradeIn[] {
   const ib = inboxOf(store), done = outbox(store);
   if (!ib || ib.game !== gameId(game)) return [];
   return ib.deliveries.filter((d) => !done.includes(d.id)).flatMap((d) => {
+    if (d.item) return [{ id: d.id, out: 0, record: null, item: d.item, ...(d.phase === "give" ? { give: true } : {}) } as TradeIn];   // C-223: an item given or received
     if (d.phase === "give") return [{ id: d.id, out: d.out, record: null, give: true, ...(d.ot !== undefined ? { ot: d.ot } : {}) } as TradeIn];   // C-223: a gift given -- it leaves
     const record = fromB64(d.record);
     return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase } as TradeIn] : [];
@@ -176,7 +178,8 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
     const away = save ? readAway(save).map((d) => ({ personality: d.personality >>> 0, species: d.species, name: d.name, nickname: d.nickname,
                                                      level: d.level, busy: busy.has(d.personality >>> 0) })) : [];
     const out = me ? await link.call("out", {}) : null, dreams = me ? await link.call("dreams", {}) : null;
-    return ok({ hub: link.hub, me, game: game?.name ?? null, edition, away, board: board?.error ? null : board, out: out?.error ? null : out, dreams: dreams?.dreams ?? null,
+    const items = save && pocketsOf().PC ? giftableItems(save) : undefined;   // C-223: what this save could give (none until the layout names the PC)
+    return ok({ hub: link.hub, me, game: game?.name ?? null, edition, away, items, board: board?.error ? null : board, out: out?.error ? null : out, dreams: dreams?.dreams ?? null,
                 pending: outbox(store).length, waiting: (inboxOf(store)?.deliveries ?? []).length });
   }
   if (method !== "POST") return no(404, "not found");
@@ -199,6 +202,14 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
   }
   if (path === "/api/trade/offer" || path === "/api/trade/accept") {
     if (!save) return no(404, "no save named -- set it in Settings");
+    // C-223: an item given -- one this save holds now, as many as it holds (the SYNC that takes it out checks again)
+    if (path.endsWith("offer") && b.kind === "item") {
+      if (!pocketsOf().PC) return no(400, "giving an item comes with the next update");                  // DRAFT
+      const held = giftableItems(save).find((x) => x.item === Number(b.item));
+      if (!held) return no(400, "this save holds none of that to give");                                 // DRAFT
+      const count = Math.max(1, Math.min(Number(b.count) || 1, held.count, 99));
+      return answer(await link.call("offer", { game: gameOf(save), edition, kind: "item", item: held.item, count, name: held.name, to: b.to, friends: b.friends === true }));
+    }
     // C-223: a gift taken -- nothing given back, only this game named, for the next SYNC to put it in a box
     if (path.endsWith("accept") && b.gift === true) return answer(await link.call("accept", { game: gameOf(save), edition, id: b.offer }));
     const t = tradeRecord(save, Number(b.personality));

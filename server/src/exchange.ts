@@ -29,10 +29,11 @@ export interface Player { id: string; name: string; at: string; tokens: string[]
 // same home or homes that are friends
 export type Reach = (a: string, b: string) => boolean;
 const everyone: Reach = () => true;
-export type Kind = "full" | "loan" | "gift";   // gift: C-223, nothing given back
+export type Kind = "full" | "loan" | "gift" | "item";   // gift: C-223, nothing given back; item: C-223, an item given, nothing back
 export interface Side { player: string; game: GameKey; edition: string; personality: number; species: number; nickname: string; level: number; record: string }
 export type OfferState = "open" | "agreed" | "done" | "withdrawn" | "returning" | "returned";   // done: a full trade both SYNCs wrote
 export interface Offer { id: string; at: string; kind: Kind; to: string | null; friends?: boolean; state: OfferState; from: Side; with: Side | null;
+                         item?: { id: number; count: number; name: string };   // C-223: an item given (kind "item"); the Side then names no daemon
                          agreedAt: string | null; written: string[];        // which deliveries a SYNC has written ("<player>:swap" / ":return")
                          handback: Record<string, string> }                 // a loan's return: each player's borrowed daemon, as it is now
 interface State { players: Player[]; offers: Offer[]; ledger: Record<string, number[]>; invites: { code: string; until: string }[]; next: number }
@@ -168,6 +169,30 @@ export function offer(store: Store, player: string, b: { game: GameKey; edition:
     return o;
   });
 }
+// C-223: an ITEM given, nothing back -- from the bag's ITEMS, BALLS or BERRIES pockets or the PC (the companion reads
+// which: save/items.ts), never a key item or a PLUGIN. The giver's next SYNC takes it out of the save; only then does the
+// receiver's put it in their PC. One live offer of an item per game, so the same few are never offered twice.
+export function offerItem(store: Store, player: string, b: { game: GameKey; edition: string; item?: unknown; count?: unknown; name?: unknown; to?: unknown; friends?: unknown },
+                          now = new Date(), reach: Reach = everyone): Result<Offer> {
+  const id = Number(b.item), count = Number(b.count), name = typeof b.name === "string" ? b.name.trim().toUpperCase().slice(0, 16) : "";
+  if (!Number.isInteger(id) || id < 1 || id > 0xffff || !name) return fail("which item?");                  // DRAFT
+  if (!Number.isInteger(count) || count < 1 || count > 99) return fail("give 1 to 99 of an item");           // DRAFT
+  if (!b.game || (b.edition !== "CONTENT" && b.edition !== "CONTEXT")) return fail("which edition?");
+  return change(store, (s) => {
+    if (s.offers.some((o) => o.kind === "item" && o.item?.id === id && gameId(o.from.game) === gameId(b.game) &&
+                             (o.state === "open" || (o.state === "agreed" && !o.written.includes(`${o.from.player}:give`)))))
+      return fail(`${name} is already on offer`);                                                            // DRAFT
+    const to = typeof b.to === "string" && b.to ? b.to : null;
+    if (to && (to === player || !s.players.some((p) => p.id === to) || !reach(player, to))) return fail("no such player to offer to");
+    const friends = b.friends === true && !to;
+    if (friends && !(s.players.find((p) => p.id === player)?.friends ?? []).length) return fail("you have no friends here yet -- ask someone first");   // DRAFT
+    const from: Side = { player, game: b.game, edition: b.edition, personality: 0, species: 0, nickname: name, level: count, record: "" };
+    const o: Offer = { id: `t${s.next++}`, at: now.toISOString(), kind: "item", to, ...(friends ? { friends } : {}), state: "open", from, with: null,
+                       item: { id, count, name }, agreedAt: null, written: [], handback: {} };
+    s.offers.push(o);
+    return o;
+  });
+}
 // the swap, agreed at once: both daemons leave their games' hands together
 export function accept(store: Store, player: string, id: string, b: { game: GameKey; edition: string; record: string }, now = new Date(),
                        reach: Reach = everyone): Result<Offer> {
@@ -178,12 +203,12 @@ export function accept(store: Store, player: string, id: string, b: { game: Game
     if (o.to && o.to !== player) return fail("that offer is for someone else");                 // DRAFT
     if (o.friends && !friendsOf(s, o.from.player).includes(player)) return fail("that offer is for their friends");   // DRAFT
     // C-223: a gift is taken with nothing given -- only the game it goes to
-    if (o.kind === "gift") {
+    if (o.kind === "gift" || o.kind === "item") {
       if (!b.game || gameId(b.game) === gameId(o.from.game)) return fail("a game cannot give to itself");   // DRAFT
       if (b.edition !== "CONTENT" && b.edition !== "CONTEXT") return fail("which edition?");
       o.with = { player, game: b.game, edition: b.edition, personality: 0, species: 0, nickname: "", level: 0, record: "" };
       o.state = "agreed"; o.agreedAt = now.toISOString();
-      (s.ledger[gameId(o.from.game)] ??= []).push(o.from.personality >>> 0);
+      if (o.kind === "gift") (s.ledger[gameId(o.from.game)] ??= []).push(o.from.personality >>> 0);
       return o;
     }
     const sd = side(player, b.game, b.edition, b.record);
@@ -201,6 +226,8 @@ export function withdraw(store: Store, player: string, id: string): Result<Offer
   return change(store, (s) => {
     const o = s.offers.find((x) => x.id === id);
     if (!o || o.from.player !== player) return fail("no such offer of yours");
+    // C-223: an item taken but not yet out of the giver's save (it was not there at SYNC, say) can still be called off
+    if (o.kind === "item" && o.state === "agreed" && !o.written.includes(`${player}:give`)) { o.state = "withdrawn"; return o; }
     if (o.state !== "open") return fail("that offer was taken already -- a loan is called home instead");   // DRAFT
     o.state = "withdrawn";
     return o;
@@ -211,7 +238,7 @@ export function recall(store: Store, player: string, id: string): Result<Offer> 
   return change(store, (s) => {
     const o = s.offers.find((x) => x.id === id);
     if (!o || (o.from.player !== player && o.with?.player !== player)) return fail("no such trade of yours");
-    if (o.kind !== "loan") return fail(o.kind === "gift" ? "a gift does not come back" : "a full trade does not come back");   // DRAFT
+    if (o.kind !== "loan") return fail(o.kind === "gift" || o.kind === "item" ? "a gift does not come back" : "a full trade does not come back");   // DRAFT
     if (o.state !== "agreed") return fail(o.state === "returning" ? "it is on its way home already" : "that loan has not begun");   // DRAFT
     o.state = "returning";
     return o;
@@ -220,13 +247,15 @@ export function recall(store: Store, player: string, id: string): Result<Offer> 
 
 // ---- what a companion does at SYNC (tradelink.ts) ----
 // what this player's game receives now (each once it is written), and which borrowed daemons it is asked to hand back
-export interface Delivery { id: string; out: number; record: string; from: string; kind: Kind; phase: "swap" | "return" | "give"; ot?: number }   // give: C-223, the giver's
+export interface Delivery { id: string; out: number; record: string; from: string; kind: Kind; phase: "swap" | "return" | "give"; ot?: number;   // give: C-223, the giver's
+                           item?: { id: number; count: number } }   // C-223: an item given (out 0, no record)
 // `locked`: this game's daemons in a trade now -- one on offer, one agreed and not yet gone, one borrowed that is on its
 // way home -- which the game must not bring home (TRADING, DAEMONS T-473)
 export function inbox(store: Store, player: string, game: GameKey): { deliveries: Delivery[]; handbacks: { id: string; personality: number }[]; locked: number[] } {
   const s = load(store), me = gameId(game);
   const deliveries: Delivery[] = [], handbacks: { id: string; personality: number }[] = [], locked: number[] = [];
   for (const o of s.offers) {
+    if (o.kind === "item") continue;                               // an item locks no daemon
     const mine = [o.from, o.with].find((x) => x && x.player === player && gameId(x.game) === me);
     if (!mine) continue;
     const theirs = mine === o.from ? o.with : o.from;
@@ -236,6 +265,15 @@ export function inbox(store: Store, player: string, game: GameKey): { deliveries
   const name = (id: string) => { const p = s.players.find((x) => x.id === id); return p?.label ?? p?.name ?? "?"; };
   for (const o of s.offers) {
     if (!o.with || (o.state !== "agreed" && o.state !== "returning")) continue;
+    // C-223: an item -- out of the giver's save first; into the receiver's PC only once that is written
+    if (o.kind === "item" && o.item) {
+      const item = { id: o.item.id, count: o.item.count };
+      if (o.from.player === player && gameId(o.from.game) === me && !o.written.includes(`${player}:give`))
+        deliveries.push({ id: `${o.id}:give`, out: 0, record: "", from: name(o.with.player), kind: "item", phase: "give", item });
+      if (o.with.player === player && gameId(o.with.game) === me && o.written.includes(`${o.from.player}:give`) && !o.written.includes(`${player}:swap`))
+        deliveries.push({ id: `${o.id}:swap`, out: 0, record: "", from: name(o.from.player), kind: "item", phase: "swap", item });
+      continue;
+    }
     // C-223: a gift -- the giver's game lets it go, the receiver's takes it into a box (out 0: nothing leaves)
     if (o.kind === "gift") {
       if (o.from.player === player && gameId(o.from.game) === me && !o.written.includes(`${player}:give`))
@@ -281,10 +319,10 @@ export function written(store: Store, player: string, ids: string[]) {
   return change(store, (s) => {
     for (const full of ids) {
       const [id, phase] = full.split(":"), o = s.offers.find((x) => x.id === id);
-      if (o && o.with && o.kind === "gift" && (phase === "give" || phase === "swap")) {   // C-223
+      if (o && o.with && (o.kind === "gift" || o.kind === "item") && (phase === "give" || phase === "swap")) {   // C-223
         const k = `${player}:${phase}`;
         if (!o.written.includes(k)) o.written.push(k);
-        if (phase === "swap") s.ledger[gameId(o.with.game)] = (s.ledger[gameId(o.with.game)] ?? []).filter((p) => p !== o.from.personality >>> 0);
+        if (phase === "swap" && o.kind === "gift") s.ledger[gameId(o.with.game)] = (s.ledger[gameId(o.with.game)] ?? []).filter((p) => p !== o.from.personality >>> 0);
         if (o.written.includes(`${o.from.player}:give`) && o.written.includes(`${o.with.player}:swap`)) o.state = "done";
         continue;
       }
@@ -312,7 +350,8 @@ export function shown(store: Store, player: string, o: Offer, s = load(store)) {
   return { id: o.id, at: o.at, kind: o.kind, state: o.state, to: name(o.to), mine: o.from.player === player || o.with?.player === player,
            side: o.from.player === player ? "from" : o.with?.player === player ? "with" : null,   // which of the two is this player's
            from: brief(o.from), with: brief(o.with), agreedAt: o.agreedAt, done: o.state === "returned" || o.state === "done",
-           held: o.written.filter((w) => w.endsWith(":swap")).length === 2 };   // both SYNCs wrote the swap
+           held: o.written.filter((w) => w.endsWith(":swap")).length === 2,
+           ...(o.item ? { item: o.item, given: o.written.includes(`${o.from.player}:give`) } : {}) };   // C-223: an item, and whether it has left the giver's save   // both SYNCs wrote the swap
 }
 export function board(store: Store, player: string, reach: Reach = everyone) {
   const s = load(store), show = (o: Offer) => shown(store, player, o, s);

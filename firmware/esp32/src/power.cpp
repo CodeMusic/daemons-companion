@@ -36,6 +36,18 @@ uint8_t powerBright() { return cfg.power.low ? 70 : 200; }
 // only the Ultra's AMOLED: a dark pixel there is an unlit one, so a dim face asleep costs little (the S3's LCD lights all)
 bool powerAod() { return board.kind == BoardKind::TWatchUltra && cfg.power.aod && !cfg.power.low; }
 
+// C-255: a watch asleep needs little of the chip -- 80 MHz keeps Wi-Fi, Bluetooth, LoRa and the sound (the bus clock
+// stays 80 MHz), and the loop rests 20 ms a pass rather than 1. Only the watches: an M5 on its IP5306 reads a light load
+// as unplugged, and switches itself off.
+bool powerWatch() { return board.kind == BoardKind::TWatchUltra || board.kind == BoardKind::TWatchS3; }
+void powerAsleep(bool on) {
+#if CONFIG_IDF_TARGET_ESP32S3                          // the watches are S3s; on the M5GO's ESP32 the clock code costs IRAM it lacks
+  if (!powerWatch()) return;
+  setCpuFrequencyMhz(on ? 80 : 240);
+#endif
+}
+int powerLoopRest() { return asleep && powerWatch() && !aodShowing() ? 20 : 1; }
+
 void powerLoop(uint32_t now) {
   powerMoving();                                   // kept current, so the still spell counts from the last step
   // C-243: the charger ends low power -- the cable going in, held for a second (a loose one flickers)

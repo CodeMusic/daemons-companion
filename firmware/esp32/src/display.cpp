@@ -114,6 +114,16 @@ void backlightDim() {
   tft.setBrightness(18);
 #endif
 }
+// C-255: the Ultra's AMOLED put to sleep (its SLPIN) while the watch sleeps without the always-on face -- dark at
+// brightness 0 it still scans; asleep it draws almost nothing, and keeps what it held
+void panelRest(bool rest) {
+#if BOARD_TWATCH_ULTRA
+  static bool resting = false;
+  if (rest == resting) return;
+  resting = rest;
+  if (rest) tft.sleep(); else tft.wakeup();
+#endif
+}
 void backlight(bool on) {
   if (board.pmuBacklight) { pmuBacklight(on); return; }   // C-75: the CoreS3's is its power chip's
 #if BOARD_DIAL

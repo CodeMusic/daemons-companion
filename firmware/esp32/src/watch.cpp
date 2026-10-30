@@ -267,8 +267,12 @@ bool watchBattery(Battery &b) {
 }
 
 // The server's clock is the truth when it speaks; the watch's own clock keeps time between.
+// A state the phone could not refresh is sent again as it was, and its clock with it: a clock already taken is that copy,
+// not the time (the user, 2026-10-30: "the time says 12:22 but the time is 1:16"), so it never sets the watch back.
 void watchSetClock(time_t epoch, int offsetMinutes) {
-  if (epoch < 1700000000) return;
+  static time_t taken = 0;
+  if (epoch < 1700000000 || epoch == taken) return;
+  taken = epoch;
   struct timeval tv = { epoch, 0 }; settimeofday(&tv, nullptr);
   clockSet = true;
   if (offsetMinutes != offsetMin) {

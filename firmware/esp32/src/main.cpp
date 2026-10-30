@@ -121,6 +121,6 @@ void loop() {
     lifeAt = now; dirty = true;
   }
   if (dirty && !asleep) draw();
-  delay(1);
+  delay(powerLoopRest());                   // C-255: a sleeping watch rests longer between passes
 }
 

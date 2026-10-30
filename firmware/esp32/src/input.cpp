@@ -372,8 +372,10 @@ void sleepNow() {
   } else {
     canvas.fillSprite(TFT_BLACK); present();
     backlight(false);
+    panelRest(true);
   }
   ledsSleep(true);
+  powerAsleep(true);
 }
 
 // True if this input was spent waking the board.
@@ -388,6 +390,8 @@ bool wake() {
   loraMessageRead();                              // C-123: any touch reads a message heard (the T-Deck's keys: readDeck)
   if (!asleep) return false;
   asleep = false;
+  powerAsleep(false);
+  panelRest(false);
   screen = HOME;
   menuOpen = false;                               // C-117: it wakes at home, out of the menu
   page = homePage();

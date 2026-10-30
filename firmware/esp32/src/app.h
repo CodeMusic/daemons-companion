@@ -172,6 +172,7 @@ extern const char WHEEL[]; extern const int WHEEL_N;
 extern String runResult;
 extern String flash; extern uint32_t flashUntil;
 extern bool asleep;
+void powerAsleep(bool on); int powerLoopRest(); void panelRest(bool rest);   // C-255
 extern uint32_t lastInput;
 extern long lastDone; extern String lastDoneText; extern uint32_t lastDoneAt;
 bool undoable();

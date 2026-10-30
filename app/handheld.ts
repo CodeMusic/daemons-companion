@@ -217,11 +217,19 @@ class Link {
 
   private async sendState() {
     // away, n8n runs once a request: the state every half minute rather than every five seconds (docs/REMOTE.md)
-    if (this.away() && Date.now() - this.stateAt < 30000) { if (this.lastState) this.say("STATE " + this.lastState); return; }
+    if (this.away() && Date.now() - this.stateAt < 30000) { this.sayState(); return; }
     this.stateAt = Date.now();
     try { this.lastState = JSON.stringify(await this.ask("/api/device/state?via=phone")); await this.flush(); }
     catch { /* away from the companion: the board keeps the last state it was given */ }
-    if (this.lastState) this.say("STATE " + this.lastState);
+    this.sayState();
+  }
+  // The clock is the phone's own, stamped as it is sent: a state kept while the companion is away would otherwise carry
+  // the hour it was fetched, and set the watch back to it every five seconds (C-71; the user, 2026-10-30)
+  private sayState() {
+    if (!this.lastState) return;
+    const now = new Date(), s = JSON.parse(this.lastState);
+    s.clock = { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() };
+    this.say("STATE " + JSON.stringify(s));
   }
 
   private async sendCommands() {
@@ -278,7 +286,7 @@ class Link {
         const r = await this.ask<{ state: object; celebrate?: string }>(path, body);
         if (r.celebrate) this.say("CELEBRATE " + r.celebrate);
         this.lastState = JSON.stringify(r.state);
-        this.say("STATE " + this.lastState);
+        this.sayState();
       } catch {
         await this.later(path, body);
         if (word === "TICK") this.say("CELEBRATE step");    // heard now; the companion learns it when it is back

@@ -20,17 +20,17 @@ export function ArcanaCard({ card, width }: { card: Card; width: number }) {
   const edge = { textShadowColor: card.shiny ? "#f0dcf0" : C.deep, textShadowRadius: 3 * k, textShadowOffset: { width: 0, height: 0 } };
   const at = (y: number, child: React.ReactNode, key: string) =>
     <YStack key={key} position="absolute" top={y * k} left={0} right={0} alignItems="center">{child}</YStack>;
-  const sprite = 128 * k;
+  const sprite = 128 * k;            // the words are set over the card's art, so they keep its size, whatever the device's text size
   return (
     <YStack width={width} height={h} position="relative" aria-label={`${card.keyword}: ${card.phrase}`}>
       <YStack position="absolute" top={0} left={0}><Art path={card.face} size={width} height={h} /></YStack>
       <YStack position="absolute" top={186 * k - sprite / 2} left={width / 2 - sprite / 2}><Art path={card.art} size={sprite} /></YStack>
-      {at(10, <Text {...mono} fontSize={11 * k} color={ink}>{card.roman}</Text>, "roman")}
-      {at(32, <Text {...mono} letterSpacing={1} fontWeight="800" fontSize={(card.keyword.length <= 8 ? 24 : card.keyword.length <= 10 ? 20 : 18) * k}
+      {at(10, <Text allowFontScaling={false} {...mono} fontSize={11 * k} color={ink}>{card.roman}</Text>, "roman")}
+      {at(32, <Text allowFontScaling={false} {...mono} letterSpacing={1} fontWeight="800" fontSize={(card.keyword.length <= 8 ? 24 : card.keyword.length <= 10 ? 20 : 18) * k}
                     color={ink} {...edge}>{card.keyword}</Text>, "keyword")}
-      {at(274, <Text fontSize={16 * k} lineHeight={21 * k} color={ink} textAlign="center" paddingHorizontal={20 * k} {...edge}>{card.phrase}</Text>, "phrase")}
-      {at(361, <Text {...mono} fontSize={9 * k} color={ink}>{card.name}</Text>, "name")}
-      {card.shiny ? at(-2, <Text {...mono} fontSize={9 * k} color="#b8860b">✦ SHINY ✦</Text>, "shiny") : null}
+      {at(274, <Text allowFontScaling={false} fontSize={16 * k} lineHeight={21 * k} color={ink} textAlign="center" paddingHorizontal={20 * k} {...edge}>{card.phrase}</Text>, "phrase")}
+      {at(361, <Text allowFontScaling={false} {...mono} fontSize={9 * k} color={ink}>{card.name}</Text>, "name")}
+      {card.shiny ? at(-2, <Text allowFontScaling={false} {...mono} fontSize={9 * k} color="#b8860b">✦ SHINY ✦</Text>, "shiny") : null}
     </YStack>
   );
 }

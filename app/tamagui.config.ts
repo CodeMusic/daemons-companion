@@ -63,14 +63,24 @@ const mono = createSystemFont({
   font: { family: Platform.select({ web: "ui-monospace, Menlo, monospace", default: "Menlo" }) },
 });
 
-export const config = createTamagui({
+// The device's own text size (Settings, Display, Text Size) scales every line, and the pages are laid out to fixed
+// sizes: a cover's title over its art, a tile's word, a pane beside the game -- so at a large size they ran into each
+// other (the user, 2026-10-30, on the iPad). The text still grows with the setting, up to a fifth; words set over a
+// picture do not grow at all (allowFontScaling={false} where they are set).
+const GROWS = { maxFontSizeMultiplier: 1.2 };
+
+const base = {
   ...defaultConfig,
   animations,
   themes,
   fonts: { ...defaultConfig.fonts, mono },
   // Plain style names and values, so the code reads without Tamagui's shorthand table to hand.
   settings: { ...defaultConfig.settings, onlyAllowShorthands: false, allowedStyleValues: false },
-});
+};
+// typed as the rest: TextProps (in defaultProps' type) is built from this config, and TypeScript would chase its tail
+export const config = createTamagui({
+  ...base, defaultProps: { Text: GROWS, SizableText: GROWS, Input: GROWS, TextArea: GROWS },
+} as typeof base);
 
 export default config;
 export type AppConfig = typeof config;

@@ -80,9 +80,9 @@ export function SubtleBook({ b }: { b: SubtleT }) {
           a little below the border (the user, 2026-10-19) */}
       <YStack width={132 * 2} height={160 * 2} overflow="hidden" alignSelf="center" borderRadius={2} position="relative">
         <YStack marginLeft={-54 * 2}><Art path="/art/subtle/cover.png" size={240 * 2} height={160 * 2} /></YStack>
-        <Text position="absolute" top={12 * 2} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={14} fontWeight="800"
+        <Text allowFontScaling={false} position="absolute" top={12 * 2} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={14} fontWeight="800"
               color={C.ink}>{b.title ?? "THE SUBTLE LAYER"}</Text>
-        <Text position="absolute" top={25 * 2} left={0} right={0} textAlign="center" fontSize={11} fontStyle="italic" color={C.faint}>
+        <Text allowFontScaling={false} position="absolute" top={25 * 2} left={0} right={0} textAlign="center" fontSize={11} fontStyle="italic" color={C.faint}>
           {b.subtitle ?? ""}</Text>
       </YStack>
       <Cards />

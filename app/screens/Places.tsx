@@ -102,7 +102,7 @@ function FacePicture({ face, sky, daemon, ring }: { face: Face; sky: boolean; da
           <YStack width={20} height={3} backgroundColor="#7a7f88" borderRadius={2} />
         </YStack>
       ) : (<>
-        {face === "daemon" ? <Text position="absolute" top={5} fontFamily="$mono" fontSize={9} fontWeight="800" color="#f3f1ea">13:06</Text> : null}
+        {face === "daemon" ? <Text allowFontScaling={false} position="absolute" top={5} fontFamily="$mono" fontSize={9} fontWeight="800" color="#f3f1ea">13:06</Text> : null}
         <YStack marginTop={face === "daemon" ? 9 : 0}>
           {daemon ? <Art path={`/art/party/${daemon.slot}.png`} size={face === "daemon" ? 36 : 40} /> : <YStack width={24} height={24} borderRadius={24} backgroundColor="#5b6b8c" />}
         </YStack>

@@ -302,7 +302,7 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
           );
         })}
         {Array.from({ length: 8 }, (_, d) => (
-          <Text key={`n${d}`} pointerEvents="none" position="absolute" fontFamily="$mono" fontSize={11} color="#9aa0aa"
+          <Text key={`n${d}`} allowFontScaling={false} pointerEvents="none" position="absolute" fontFamily="$mono" fontSize={11} color="#9aa0aa"
                 left={harp ? ((d + 0.5) * w) / 8 - 4 : ((d % 4) + 0.5) * (w / 4) - 4} top={harp ? H - 14 : (d < 4 ? H * 0.28 : H * 0.72) - 7}>{d + 1}</Text>
         ))}
         {floats.map((f) => <Floating key={f.id} pcAt={f.pcAt} x={f.x} y={f.y} onDone={() => setFloats((all) => all.filter((o) => o.id !== f.id))} />)}

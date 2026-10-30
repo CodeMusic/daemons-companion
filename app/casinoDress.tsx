@@ -90,7 +90,7 @@ const Bit = memo(function Bit({ look, i, w, h, colour }: { look: string; i: numb
   if (look === "snow") body = dot(3 + (i % 2) * 2, 3 + (i % 2) * 2, c);
   else if (look === "petals") body = dot(8, 5, c);
   else if (look === "leaves") body = <View style={{ width: 7, height: 7, backgroundColor: c, transform: [{ rotate: "45deg" }, { scaleY: 1.3 }] }} />;
-  else if (look === "hearts" || look === "clover") body = <Text style={{ fontSize: 11, color: look === "clover" ? "#20b040" : c }}>{look === "clover" ? "♣" : "♥"}</Text>;
+  else if (look === "hearts" || look === "clover") body = <Text allowFontScaling={false} style={{ fontSize: 11, color: look === "clover" ? "#20b040" : c }}>{look === "clover" ? "♣" : "♥"}</Text>;
   else if (look === "confetti" || look === "streamers") body = dot(4 + (i % 3) * 2, 3, c, 0);
   else if (look === "eggs") body = dot(6, 8, c);
   else if (look === "pumpkins") body = dot(7, 7, "#ff7a1a");

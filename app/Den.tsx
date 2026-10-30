@@ -153,7 +153,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
           </View>
           {witching ? <WitchShimmer side={side} /> : null}
           {expression?.mark ? <Mark mark={expression.mark} size={Math.round(side * 0.2)} style={{ position: "absolute", right: side * 0.04, top: side * 0.02 }} />
-            : asleep && !expression ? <Text style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
+            : asleep && !expression ? <Text allowFontScaling={false} style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
         </Animated.View>
       ) : null}
     </View>

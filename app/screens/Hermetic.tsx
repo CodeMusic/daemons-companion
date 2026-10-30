@@ -86,10 +86,10 @@ export function HermeticBook({ b }: { b: HermeticT }) {
       {/* the cover: the deck's own face, the title over it in our type */}
       <YStack width={240} height={400} alignSelf="center" position="relative">
         <Art path="/art/arcana/spellcraft.png" size={240} height={400} />
-        <Text position="absolute" top={36} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={16} fontWeight="800"
+        <Text allowFontScaling={false} position="absolute" top={36} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={16} fontWeight="800"
               color={breath.glow}>{b.title ?? "THE HERMETIC LAYER"}</Text>
-        <Text position="absolute" top={60} left={0} right={0} textAlign="center" fontSize={12} fontStyle="italic" color={C.ink}>{b.subtitle ?? ""}</Text>
-        <Text position="absolute" bottom={92} left={16} right={16} textAlign="center" {...mono} fontSize={11} color={C.ink}>AS ABOVE, SO BELOW</Text>
+        <Text allowFontScaling={false} position="absolute" top={60} left={0} right={0} textAlign="center" fontSize={12} fontStyle="italic" color={C.ink}>{b.subtitle ?? ""}</Text>
+        <Text allowFontScaling={false} position="absolute" bottom={92} left={16} right={16} textAlign="center" {...mono} fontSize={11} color={C.ink}>AS ABOVE, SO BELOW</Text>
       </YStack>
       <Cards deck="spellcraft" />
       <YStack backgroundColor={breath.page} borderColor={EMERALD.hue} borderWidth={1} borderRadius={4} padding={16} gap={4}>

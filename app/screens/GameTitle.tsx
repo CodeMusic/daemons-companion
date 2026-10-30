@@ -102,7 +102,7 @@ export function GameTitle({ edition, choices, said }: { edition: string; choices
         </YStack>
         {said ? <Text fontFamily="$mono" fontSize={12} color="#9aa3ad" textAlign="center" maxWidth={420}>{said}</Text> : null}
       </YStack>
-      <Text position="absolute" bottom={18} alignSelf="center" fontFamily="$mono" fontSize={12} letterSpacing={2} color="#9aa3ad">{MARK}</Text>
+      <Text allowFontScaling={false} position="absolute" bottom={18} alignSelf="center" fontFamily="$mono" fontSize={12} letterSpacing={2} color="#9aa3ad">{MARK}</Text>
     </View>
   );
 }

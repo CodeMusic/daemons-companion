@@ -313,7 +313,7 @@ function CoverTitle({ title, author }: { title: string; author: string }) {
     const d = Math.abs(rest.slice(0, k).join(" ").length - rest.slice(k).join(" ").length);
     if (d < best) { best = d; cut = k; }
   }
-  const line = { position: "absolute" as const, left: 0, right: 0, textAlign: "center" as const, fontFamily: "$mono" as const, color: "#f3f4f6" };
+  const line = { allowFontScaling: false, position: "absolute" as const, left: 0, right: 0, textAlign: "center" as const, fontFamily: "$mono" as const, color: "#f3f4f6" };
   return (<>
     <Text {...line} top={10} fontSize={13} lineHeight={16} letterSpacing={1} fontWeight="700">{rest.slice(0, cut).join(" ")}</Text>
     <Text {...line} top={27} fontSize={13} lineHeight={16} letterSpacing={1} fontWeight="700">{rest.slice(cut).join(" ")}</Text>
@@ -499,7 +499,7 @@ export function SongStaff({ keyName, notes, colours, outline }: { keyName: strin
           return (
             <YStack key={i}>
               {ledgers.map((st) => <YStack key={st} position="absolute" left={x - 4} width={HEAD + 8} top={yOf(st)} height={1} backgroundColor="$color8" />)}
-              {p.acc ? <Text position="absolute" left={x - 11} top={yOf(p.step) - 9} fontSize={13} color="$color11">{p.acc}</Text> : null}
+              {p.acc ? <Text allowFontScaling={false} position="absolute" left={x - 11} top={yOf(p.step) - 9} fontSize={13} color="$color11">{p.acc}</Text> : null}
               <YStack position="absolute" left={x} top={yOf(p.step) - HEAD / 2} width={HEAD} height={HEAD - 2} borderRadius={HEAD / 2}
                       backgroundColor={colour(p.pc)} borderWidth={1} borderColor={outline ?? "#1d2026"} />
             </YStack>

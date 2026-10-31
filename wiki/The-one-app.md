@@ -30,9 +30,16 @@ It plays with the mGBA core in a web view (EmulatorJS, the same version the play
 run and drawn, and whether the sound is running.
 
 **The buttons are on the screen** wherever there is a touch screen -- the iPhone and, since C-235, the iPad too (iPadOS
-calls itself a Mac, so the game's controls were hidden there). **A controller held on the phone** -- one that clips
-round it and gives it a GBA's buttons -- puts the game in the top half of the screen and hides the on-screen controls,
-so the phone plays like a GBA (C-234, its first piece; built, still to check by hand).
+calls itself a Mac, so the game's controls were hidden there). If the game's start stops short of showing them, they
+are put back within a few seconds (C-263).
+
+**A controller** -- the GameSir Pocket Taco that clips round the phone, or any game controller iOS knows -- is read by
+the app itself and its buttons handed to the game (C-263; the web view's own controller support never heard it). Held,
+the game moves to the top half and the controller is drawn under it, each button with what it is in the game: **A** and
+**B** are A and B, **X** and **Y** and the **M** buttons (the shoulders) are **L** and **R**, the menu button START and
+the options button SELECT. **CONTROLLER**, above the game beside ‹ TITLE, chooses that layout by hand; **ON-SCREEN
+CONTROLS** goes back. The buttons stay at the top, where a controller over the phone's lower half leaves them in reach.
+*Still to try with the Pocket Taco itself.*
 
 **Updates.** The list of releases is read live from GitHub. When a newer DAEMONS is out, a strip shows above the game.
 One tap remakes the game from your original, and it starts again from the same save.

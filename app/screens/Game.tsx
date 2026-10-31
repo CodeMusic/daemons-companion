@@ -21,6 +21,7 @@ import { sha1 } from "../../server/src/game/hash";
 import { mirrorChoice } from "../../server/src/game/mirror";
 import { applyPlan, livePlan } from "../../server/src/game/live";       // C-261
 import { heardSync } from "../received";
+import PAD from "../modules/daemons-pad";                              // C-263
 import { Action, Card, Eyebrow, Small } from "../ui";
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version
@@ -61,12 +62,28 @@ async function mirrorIn() {
   } catch { /* no mirror yet, or the companion away: the device's save as it is */ }
 }
 
+// C-263: the controller, drawn under the game while it plays -- each button with what it is in the game (A, B, L, R,
+// START, SELECT); the Pocket Taco's own shape, its M buttons the shoulders
+const TACO = `<svg viewBox="0 0 400 190" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,Menlo,monospace" font-weight="700">
+<rect x="4" y="26" width="392" height="160" rx="46" fill="#1b1e26" stroke="#3a3f4a" stroke-width="3"/>
+<rect x="34" y="8" width="70" height="26" rx="10" fill="#2a2e38" stroke="#3a3f4a" stroke-width="2"/><text x="69" y="26" fill="#c9ccd3" font-size="14" text-anchor="middle">L</text>
+<rect x="296" y="8" width="70" height="26" rx="10" fill="#2a2e38" stroke="#3a3f4a" stroke-width="2"/><text x="331" y="26" fill="#c9ccd3" font-size="14" text-anchor="middle">R</text>
+<path d="M68 72h26v26h26v26h-26v26h-26v-26h-26v-26h26z" fill="#3a3f4a"/>
+<g fill="#3a3f4a"><circle cx="320" cy="72" r="17"/><circle cx="288" cy="104" r="17"/><circle cx="352" cy="104" r="17"/><circle cx="320" cy="136" r="17"/></g>
+<g fill="#c9ccd3" font-size="14" text-anchor="middle"><text x="320" y="77">R</text><text x="288" y="109">L</text><text x="352" y="109">B</text><text x="320" y="141">A</text></g>
+<g fill="#2a2e38" stroke="#3a3f4a" stroke-width="2"><rect x="150" y="140" width="40" height="14" rx="7"/><rect x="210" y="140" width="40" height="14" rx="7"/></g>
+<g fill="#8b90a0" font-size="9" text-anchor="middle"><text x="170" y="170">SELECT</text><text x="230" y="170">START</text></g>
+</svg>`;
+
 // The page: the emulator, and a few words to and from the app
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>html,body{margin:0;height:100%;background:#0f1115;overflow:hidden}#game{width:100%;height:100%}
-body.pad #game{height:50%}</style></head>
-<body><div id="game"></div><script>
+body.pad #game{height:50%}#taco{display:none}
+body.pad #taco{display:flex;height:50%;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  color:#8b90a0;font:11px ui-monospace,Menlo,monospace;letter-spacing:1px;text-align:center}
+#taco svg{width:min(86%,420px);height:auto}</style></head>
+<body><div id="game"></div><div id="taco">${TACO}<div>THE CONTROLLER PLAYS THE GAME · DRAFT</div></div><script>
 const ctxs = []; const AC = window.AudioContext || window.webkitAudioContext;   // every sound context, to wake on a touch
 if (AC) { const W = function (...a) { const c = new AC(...a); ctxs.push(c); return c; }; W.prototype = AC.prototype;
   window.AudioContext = W; window.webkitAudioContext = W; }
@@ -115,9 +132,15 @@ window.EJS_Buttons = { netplay: false, exitEmulation: false, saveState: false, l
 const touchy = navigator.maxTouchPoints > 1;
 window.EJS_defaultOptions = touchy ? { webgl2Enabled: "enabled", "virtual-gamepad": "enabled" } : { webgl2Enabled: "enabled" };
 // C-234: a controller held (the GameSir Pocket Taco clips over the phone's lower half): the game in the top half, the
-// screen's own controls hidden; taken off, back as before. EmulatorJS reads the controller itself (the Gamepad API).
-const pads = () => Array.from((navigator.getGamepads && navigator.getGamepads()) || []).some((x) => x && x.connected);
-const layout = () => { const held = pads(); document.body.classList.toggle("pad", held);
+// screen's own controls hidden; taken off, back as before. C-263: the app reads the controller (GameController) and hands
+// its buttons in -- a web view's Gamepad API never hears it -- and CONTROLLER above the game chooses it by hand
+let tacoOn = false, nativePad = false;
+const pads = () => !nativePad && Array.from((navigator.getGamepads && navigator.getGamepads()) || []).some((x) => x && x.connected);
+window.setTaco = (on) => { tacoOn = on; layout(); };
+window.padInput = (b, v) => { try { g().simulateInput(0, b, v); } catch (e) {} };
+window.useNativePad = () => { nativePad = true;                       // the app reads it: the page never reads it twice
+  try { Object.defineProperty(navigator, "getGamepads", { value: () => [], configurable: true }); } catch (e) {} };
+const layout = () => { const held = tacoOn || pads(); document.body.classList.toggle("pad", held);
   try { window.EJS_emulator.changeSettingOption("virtual-gamepad", held || !touchy ? "disabled" : "enabled"); } catch (e) {}
   try { window.EJS_emulator.handleResize(); } catch (e) {}
   say({ kind: "pad", held }); };
@@ -149,7 +172,11 @@ const speed = () => { let drawn = 0, t0 = performance.now(), f0 = null;
     try { f = g().getFrameNum(); } catch (e) {}
     say({ kind: "speed", drawn: Math.round(drawn / s), ran: f !== null && f0 !== null ? Math.round((f - f0) / s) : null,
           sound: ctxs.map((c) => c.state).join(",") });
-    drawn = 0; t0 = t; f0 = f; wake(); }, 3000); };
+    drawn = 0; t0 = t; f0 = f; wake();
+    // C-263: the screen's own controls kept where they belong -- a start that stopped short of showing them left the
+    // iPad with none (C-235, C-257)
+    try { const E = window.EJS_emulator; if (touchy && !document.body.classList.contains("pad") && E.virtualGamepad.style.display === "none" && !E.virtualGamepad.style.opacity)
+      E.changeSettingOption("virtual-gamepad", "enabled"); } catch (e) {} }, 3000); };
 window.onerror = (m) => say({ kind: "error", text: String(m) });
 const s = document.createElement("script"); s.src = "${CDN}loader.js"; document.body.appendChild(s);
 </script></body></html>`;
@@ -193,6 +220,18 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
   // coming back finds the game where it was
   const [playing, setPlaying] = useState(false);
   const lowPower = useLowPowerMode();                     // C-258
+  // C-263: a controller held -- the app hears it come and go (and its buttons), and the game takes the controller's
+  // layout then, or when CONTROLLER is pressed; ON-SCREEN CONTROLS goes back
+  const [held, setHeld] = useState<string[]>(() => { try { return PAD?.held() ?? []; } catch { return []; } });
+  const [taco, setTaco] = useState(() => held.length > 0);
+  const tacoNow = useRef(taco);
+  useEffect(() => {
+    if (!PAD) return;
+    const a = PAD.addListener("onPad", (e) => { setHeld(e.held); setTaco(e.held.length > 0); });
+    const b = PAD.addListener("onButton", (e) => { if (started.current) web.current?.injectJavaScript(`window.padInput(${e.b},${e.v}); true;`); });
+    return () => { a.remove(); b.remove(); };
+  }, []);
+  useEffect(() => { tacoNow.current = taco; if (started.current) web.current?.injectJavaScript(`window.setTaco(${taco}); true;`); }, [taco]);
   const [startWhy, setStartWhy] = useState("");          // C-257: what EmulatorJS warned of while starting
   useEffect(() => { if (started.current) web.current?.injectJavaScript(`window.muteGame(${muted}); true;`); }, [muted]);
   // C-259: back to the title -- the save taken out first, as leaving a tab does, then the emulator let go
@@ -322,6 +361,8 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
         }
         if (!active) web.current?.injectJavaScript("window.pauseGame(); true;");
         if (muted) web.current?.injectJavaScript("window.muteGame(true); true;");
+        if (PAD) web.current?.injectJavaScript(`window.useNativePad(); window.setTaco(${tacoNow.current}); true;`);   // C-263
+        if (__DEV__ && process.env.EXPO_PUBLIC_DAEMONS_TRY_PAD === "1") PAD?.tryVirtual?.(true);   // the Simulator has no controller
       })();
     } else if (m.kind === "save" && m.b64) {
       const u = lived.current;                              // C-261: the save from before a live write, read back: put SYNC's in again
@@ -406,6 +447,13 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
         <YStack role="button" cursor="pointer" paddingHorizontal={10} paddingVertical={4} borderRadius={3} borderWidth={1} borderColor="#3a3f4a"
                 onPress={toTitle} aria-label="back to the title">
           <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="#c9ccd3">‹ TITLE</Text>
+        </YStack>
+        <YStack role="button" cursor="pointer" paddingHorizontal={10} paddingVertical={4} borderRadius={3} borderWidth={1}
+                borderColor={taco ? "#c9ccd3" : "#3a3f4a"} onPress={() => setTaco((t) => !t)}
+                aria-label={taco ? "the screen's own controls" : "play with a controller"}>{/* C-263 (DRAFT) */}
+          <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="#c9ccd3">
+            {taco ? "ON-SCREEN CONTROLS" : held.length ? `CONTROLLER · ${held[0].toUpperCase()}` : "CONTROLLER"}
+          </Text>
         </YStack>
         {lowPower ? <Text flex={1} fontSize={12} color="#f2c14e">Low Power Mode is on: the game may run slower. DRAFT</Text> : null}
       </XStack>

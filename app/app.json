@@ -45,7 +45,7 @@
         "@kingstinct/react-native-healthkit",
         {
           "NSHealthShareUsageDescription": "Your steps today count toward your walking goal, and your daemon is glad of the walk.",
-          "NSHealthUpdateUsageDescription": false,
+          "NSHealthUpdateUsageDescription": "DAEMONS companion never writes to Health; it only reads your steps for your walking goal.",
           "background": false
         }
       ],

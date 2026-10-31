@@ -86,7 +86,7 @@ Identifiers, User Content -- "not linked, not used for tracking").*
 | Bluetooth (`NSBluetoothAlwaysUsageDescription`) | "To carry your handheld's link: its goal, its daemon and its routines, at home or away." | ***add the meeting***: "To carry your handheld's link, and to meet other companions nearby." *-- the app also advertises and listens for C-15's beacon, and App Review reads this line against what the app does.* |
 | Local network (`NSLocalNetworkUsageDescription`) | "To reach your DAEMONS companion on your computer, at home." | keep |
 
-**Privacy policy URL** -- **required** for an app that reads Health: **[yours]**. A one-page draft:
+**Privacy policy URL** -- **required** for an app that reads Health: **https://github.com/CodeMusic/daemons-companion/blob/main/PRIVACY.md** (published 2026-10-31, C-210; it supersedes the first draft below):
 
 > DAEMONS companion keeps your goals and your daemon on your own computer. It reads your step count from Apple Health,
 > with your permission, and sends it only to your own companion server. It sends a Bluetooth beacon that holds a kind

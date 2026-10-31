@@ -273,7 +273,7 @@ String http(const char *method, const String &path, const String &body, bool *ok
     out = code == 200 ? h.getString() : "";
     h.end();
   }
-  if (code < 0 && relaySet()) {                        // home did not answer at all (a refusal is an answer): the relay
+  if (code < 0 && relaySet() && !usbLive()) {         // home did not answer at all (a refusal is an answer): the relay -- never with the cable here (C-179)
     out = relayHttp(method, path, body, &code);
     awayAt = code > 0 ? millis() : 0;                  // the relay answered (even "home is asleep"): away, for a while
   } else if (code > 0) awayAt = 0;
@@ -462,6 +462,13 @@ void handleLine(String line, bool fromPhone) {
   auto reply = [&](const String &out) { if (fromPhone) linkSend(out); else Serial.println(out); };
   uint32_t &seen = fromPhone ? phoneSeen : usbSeen;
   line.trim();
+  // C-179 (2026-10-31): any line from the cable's bridge says a bridge is there -- not only a STATE read whole. Until one
+  // was, a board on the cable polled Wi-Fi (home's old address, then the relay's HTTPS, ~5 s blocked each) and the
+  // bridge's states piled up unread past the 4 KB buffer. C-178: a board that knows no network asks at once.
+  if (!fromPhone && line.length()) {
+    if (!usbLive() && knownCount == 0) netsDue = true;
+    usbSeen = millis();
+  }
   if (line.startsWith("STATE ")) {
     if (takeState(line.c_str() + 6)) seen = millis();       // C-121: the line's own buffer, no copy
     else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing

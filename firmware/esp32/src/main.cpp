@@ -30,7 +30,7 @@ static void step(const char *what) { Serial.printf("boot: %s (heap %u, largest %
 void setup() {
   // The bridge's STATE line is ~300 bytes and the USB receive buffer defaults to 256: while the screen is being drawn
   // the rest was dropped, the JSON arrived cut short, and the corner said NO LINK with the bridge plainly connected.
-  Serial.setRxBufferSize(4096);
+  Serial.setRxBufferSize(psramFound() ? 8192 : 4096);   // C-179: room for a state and the line after it, where there is PSRAM
   Serial.begin(115200);
   cableFlush(0);                              // C-105: note the send buffer's room while it is empty
   for (uint32_t t0 = millis(); !Serial && millis() - t0 < 4000; ) delay(10);   // a listener, if one is coming
@@ -74,7 +74,8 @@ void loop() {
   gpsLoop(now);                             // C-174
   intuitionLoop(now);                       // C-203
   clockLoop(now);                           // C-205
-  if (now - lastHello > HELLO_MS) { lastHello = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); dirty = true; }   // C-80: its own name
+  if (!lastHello || now - lastHello > HELLO_MS) { lastHello = now;   // C-178: the first at once, so the bridge may begin
+    Serial.println(String("HELLO daemons-companion ") + board.id + " 4 " + deviceId()); dirty = true; }   // 4: it keeps its entry (C-179)   // C-80: its own name
   static uint32_t phoneHelloAt = 0;          // C-80: the phone carries the board's name on, so it hears it now and then
   if (linkPhoneHere() && (phoneHelloAt == 0 || now - phoneHelloAt > 30000)) {
     phoneHelloAt = now; linkSend(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId());
@@ -102,7 +103,7 @@ void loop() {
   static bool wifiWas = false;              // C-52: the site hears at once when the board joins or leaves a network
   if (wifiWas != (WiFi.status() == WL_CONNECTED)) { wifiWas = !wifiWas; reportNetworks(); dirty = true; }
   static uint32_t netsAt = 0;               // C-93: the shared networks moved on -- at most every ten seconds
-  if (netsDue && (usbLive() || online()) && now - netsAt > 10000) { netsAt = now; reportNetworks(); }
+  if (netsDue && (usbLive() || online()) && (!netsAt || now - netsAt > 10000)) { netsAt = now; reportNetworks(); }   // C-178: the first at once
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
   soundLoop();                              // C-121: the tune task's dance shown; C-75: the DAC let go between sounds

@@ -546,6 +546,7 @@ static void readCable() {
     char c = Serial.read();
     if (c != '\n') { if (cableIn.length() < 6000) cableIn += c; continue; }
     cableIn.trim();
+    if (cableIn.length()) usbSeen = millis();      // C-179: any line from the bridge says it is there
     if (cableIn == "SHOT") { draw(); shot(); }
     else if (cableIn == "KEY PRESS") cableEvent = 1;
     else if (cableIn == "KEY RIGHT" || cableIn == "KEY PRESS2") cableEvent = 2;
@@ -562,7 +563,7 @@ static void readCable() {
     // read where they lie, never copied (the M5GO, without PSRAM, had no room for a second 4 KB). A STATE proves the
     // bridge is there, so the board's reports keep going by the cable; it is read only where there is room to spare --
     // the reels keep their own count of the money meanwhile
-    else if (cableIn.startsWith("STATE ")) { usbSeen = millis(); if (psramFound()) takeState(cableIn.c_str() + 6); }
+    else if (cableIn.startsWith("STATE ")) { if (psramFound()) takeState(cableIn.c_str() + 6); }
     else if (cableIn.startsWith("PARTYART ")) casinoTakeArt(cableIn.c_str() + 9);
     cableIn = "";
   }
@@ -843,7 +844,7 @@ String runSlots() {
     }
     if (phase == SHOWING && now - shownAt > 2600) phase = IDLE;
     // the bridge hears the board is here (the loop's own HELLO is not running)
-    if (now - helloAt > HELLO_MS) { helloAt = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 3 " + deviceId()); }
+    if (now - helloAt > HELLO_MS) { helloAt = now; Serial.println(String("HELLO daemons-companion ") + board.id + " 4 " + deviceId()); }
     soundIdle();
     lastInput = now;
     draw();

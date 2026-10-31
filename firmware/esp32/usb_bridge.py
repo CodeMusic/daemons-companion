@@ -130,15 +130,39 @@ def main():
 def bridge(a, port):
     dev = boardport.open_port(port, timeout=0.2)   # C-75: without restarting an M5GO or Fire
     print("usb_bridge: %s <-> %s" % (port, a.server), flush=True)
-    last, sent, listed, polled = 0.0, None, 0.0, 0.0
+    last, listed, polled = 0.0, 0.0, 0.0
     buf = b""
+    # C-178, C-179 (2026-10-31): nothing down the cable until the board has said HELLO -- opening the port restarts it, and
+    # a state sent while it boots arrived cut short (the SI4732's, 1329 bytes); then a state only when it has changed
+    # (the clock aside) or as a keepalive inside the board's USB_FRESH_MS (15 s), never piling up unread (the T-Display
+    # Pro's 4090 bytes); and the daemon's INDEX entry only when its artKey changes -- the board keeps the one it has, and
+    # says ENTRY? when it has none
+    hello = False
+    told = {"key": None, "at": 0.0, "entry": None, "keeps": False}   # keeps: its HELLO says 4 or more -- it keeps its entry
+    KEEPALIVE = 10.0
+
+    def send_state(state, force=False):
+        key = json.dumps({k: v for k, v in state.items() if k != "clock"}, sort_keys=True, separators=(",", ":"))
+        if not force and key == told["key"] and time.time() - told["at"] < KEEPALIVE:
+            return False
+        out, d = state, state.get("daemon")
+        if told["keeps"] and isinstance(d, dict) and d.get("entry"):
+            if d.get("artKey") == told["entry"]:
+                out = dict(state, daemon={k: v for k, v in d.items() if k != "entry"})
+            else:
+                told["entry"] = d.get("artKey")
+        dev.write(("STATE " + json.dumps(out, separators=(",", ":")) + "\n").encode())
+        changed = key != told["key"]
+        told["key"], told["at"] = key, time.time()
+        return changed
+
     talk = None                                     # C-66: a recording arriving from the board, in base64 lines
     while True:
         now = time.time()
-        if now - listed > 60:                       # C-32: what routines the device has, for the site
+        if hello and now - listed > 60:             # C-32: what routines the device has, for the site
             listed = now
             dev.write(b"LIST\n")
-        if now - polled > 1.0:                      # C-32: what the site sent the device
+        if hello and now - polled > 1.0:            # C-32: what the site sent the device
             polled = now
             try:
                 for cmd in server_json(a.server, "/api/device/commands?via=usb")["commands"]:
@@ -146,16 +170,13 @@ def bridge(a, port):
                     print("usb_bridge: the site -> device: %s %s" % (cmd["type"], cmd.get("routine") or cmd.get("label") or ""), flush=True)
             except Exception:
                 pass                                # the state below says when the server is away
-        if now - last > a.every:
+        if hello and now - last > a.every:
             last = now
             try:
                 state = server_json(a.server, "/api/device/state?via=usb")
-                line = json.dumps(state, separators=(",", ":"))
-                dev.write(("STATE " + line + "\n").encode())
-                if line != sent:
+                if send_state(state):
                     print("usb_bridge: state -> device: %s, step %s" % (state["day"]["name"],
                           state["step"]["id"] if state.get("step") else "none"), flush=True)
-                    sent = line
             except Exception as e:
                 print("usb_bridge: the server did not answer (%s)" % e, flush=True)
         buf += dev.read(256)
@@ -178,7 +199,7 @@ def bridge(a, port):
                     r = server_json(a.server, "/api/device/ticks", {"steps": [step]})
                     if r.get("celebrate"):              # C-50: a step, a milestone or the whole goal -- the board plays it
                         dev.write(("CELEBRATE %s\n" % r["celebrate"]).encode())
-                    dev.write(("STATE " + json.dumps(r["state"], separators=(",", ":")) + "\n").encode())
+                    send_state(r["state"], force=True)
                     print("usb_bridge: step %d done on the device%s" % (step, " -- " + r["celebrate"] if r.get("celebrate") else ""), flush=True)
                 except Exception as e:
                     print("usb_bridge: could not tick step %d (%s)" % (step, e), flush=True)
@@ -186,7 +207,7 @@ def bridge(a, port):
                 step = int(msg.split()[1])
                 try:
                     r = server_json(a.server, "/api/device/untick", {"step": step})
-                    dev.write(("STATE " + json.dumps(r["state"], separators=(",", ":")) + "\n").encode())
+                    send_state(r["state"], force=True)
                     print("usb_bridge: step %d undone on the device" % step, flush=True)
                 except Exception as e:
                     print("usb_bridge: could not undo step %d (%s)" % (step, e), flush=True)
@@ -212,6 +233,13 @@ def bridge(a, port):
             elif msg.startswith("UNREAD "):
                 print("usb_bridge: the device could not read the state it was sent (%s bytes arrived)" % msg.split()[1],
                       flush=True)
+                told["key"], told["entry"] = None, None     # C-179: the whole state again, at the next turn
+            elif msg == "ENTRY?":                           # C-179: the board has no INDEX entry for its daemon -- the whole state
+                told["entry"] = None
+                try:
+                    send_state(server_json(a.server, "/api/device/state?via=usb"), force=True)
+                except Exception as e:
+                    print("usb_bridge: the server did not answer (%s)" % e, flush=True)
             elif msg.startswith("INTERACT "):
                 # C-13: a routine was run on the device -- tending the daemon. Passed on as the device would over Wi-Fi.
                 parts = msg.split(" ", 2)
@@ -219,8 +247,7 @@ def bridge(a, port):
                     server_json(a.server, "/api/device/interact", {"kind": parts[1], "detail": parts[2] if len(parts) > 2 else ""})
                     print("usb_bridge: the device %s" % ("ran " + parts[2] if parts[1] == "routine" else "-- " + parts[1]), flush=True)
                     # C-13: its life changed -- send the new state now, not in five seconds
-                    state = server_json(a.server, "/api/device/state?via=usb")
-                    dev.write(("STATE " + json.dumps(state, separators=(",", ":")) + "\n").encode())
+                    send_state(server_json(a.server, "/api/device/state?via=usb"), force=True)
                 except Exception as e:
                     print("usb_bridge: could not pass on an interaction (%s)" % e, flush=True)
             elif msg.startswith("RESULT "):
@@ -295,6 +322,11 @@ def bridge(a, port):
                 except Exception as e:
                     print("usb_bridge: could not pass on the routines (%s)" % e, flush=True)
             elif msg.startswith("HELLO "):
+                if not hello:
+                    hello = True
+                    words = msg.split()
+                    told["keeps"] = len(words) >= 4 and words[3].isdigit() and int(words[3]) >= 4
+                    last = listed = polled = 0.0            # C-178: everything due at once, now that the board can hear it
                 words = msg.split()
                 if len(words) >= 5 and words[4] != DEVICE["id"]:
                     DEVICE["id"] = words[4]

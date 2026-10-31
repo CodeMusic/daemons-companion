@@ -215,9 +215,20 @@ bool takeState(const char *json) {
     st.daemon.name = doc["daemon"]["name"] | ""; st.daemon.nickname = doc["daemon"]["nickname"] | "";
     st.daemon.level = doc["daemon"]["level"] | 0; st.daemon.friendship = doc["daemon"]["friendship"] | 0;
     st.daemon.holding = doc["daemon"]["holding"] | "";   // what it held when it was sent (T-374)
-    st.daemon.category = doc["daemon"]["category"] | ""; st.daemon.entry = doc["daemon"]["entry"] | "";
-    st.daemon.entry.replace("\n", " ");     // the game's line breaks are for its own window; this screen wraps its own
-    st.daemon.artKey = doc["daemon"]["artKey"] | "";
+    st.daemon.category = doc["daemon"]["category"] | "";
+    // C-179: down the cable the INDEX entry comes only when the daemon's artKey changes (the bridge leaves it out else,
+    // for the 4 KB line): the one this board has is kept -- and where it has none for this daemon (it started again, or
+    // the daemon changed with the entry lost), it asks for the whole state again
+    JsonVariant entry = doc["daemon"]["entry"];
+    String key = doc["daemon"]["artKey"] | "";
+    if (!entry.isNull()) {
+      st.daemon.entry = entry | "";
+      st.daemon.entry.replace("\n", " ");   // the game's line breaks are for its own window; this screen wraps its own
+    } else if (key != st.daemon.artKey || !st.daemon.entry.length()) {
+      st.daemon.entry = "";
+      if (usbLive()) Serial.println("ENTRY?");
+    }
+    st.daemon.artKey = key;
     st.daemon.species = doc["daemon"]["species"] | 0;
     st.daemon.margin = doc["daemon"]["margin"] | "";      // C-149: OPUS's margin beside its entry
     st.daemon.margin.replace("\n", " ");

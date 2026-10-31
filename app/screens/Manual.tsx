@@ -21,11 +21,29 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
             says: "DAEMONS with other players: trading, loans, gifts, meetings and friends' homes" },                                               // DRAFT
   tiiny:  { title: "A BIGGER MIND", about: "Setting up a Tiiny Pocket for the companion: the computer, the network and the hub.",                  // DRAFT
             says: "Setting up the Tiiny Pocket for the DAEMONS companion" },                                                                        // DRAFT
+  micro:  { title: "MICRO-START", about: "DAEMONS in five pages.", says: "DAEMONS in five pages" },                                          // DRAFT (C-264)
 };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;
   return `${BOOK[w].about}${r ? ` For v${r}.` : ""}`;   // DRAFT
 };
+
+// C-264: a book read in whatever room it is given -- HOW TO PLAY's reader over the game panel -- fetched and kept as the
+// shelf's are; the page fills it and follows its size
+export function BookPdf({ which }: { which: Which }) {
+  const [m, setM] = useState<Manual | null>(() => keptManual(which));
+  const [error, setError] = useState("");
+  useEffect(() => {
+    setM(keptManual(which)); setError("");
+    freshManual(which).then((f) => { setM(f); setError(""); }).catch((e) => setError((e as Error).message));
+  }, [which]);
+  if (!m) return <YStack flex={1} alignItems="center" justifyContent="center" padding={20}>
+    <Small color={error ? "#f2a2a2" : "#c9ccd3"}>{error || "Fetching it from DAEMONS…"}</Small></YStack>;   // DRAFT
+  return Platform.OS === "web"
+    ? createElement("iframe", { src: m.uri, title: BOOK[which].title, style: { flex: 1, width: "100%", height: "100%", border: 0, background: "#525659" } })
+    : <WebView key={m.etag ?? m.at} source={{ uri: m.uri }} originWhitelist={["*"]} allowingReadAccessToURL={manualDir().uri}
+               allowFileAccess style={{ flex: 1, backgroundColor: "#525659" }} />;
+}
 
 export function ManualBook({ which = "player" }: { which?: Which }) {
   const B = BOOK[which];

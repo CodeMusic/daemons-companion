@@ -41,6 +41,15 @@ the options button SELECT. **CONTROLLER**, above the game beside ‹ TITLE, choo
 CONTROLS** goes back. The buttons stay at the top, where a controller over the phone's lower half leaves them in reach.
 *Still to try with the Pocket Taco itself.*
 
+**HOW TO PLAY** (C-264). On GAME's title, under PLAY, and on the card before a game is chosen: a purple frame with three
+books, shortest first -- **MICRO-START** (five pages), **QUICK-START** and the **USER MANUAL** -- each opening in a reader
+over the game panel, at whatever size the panel is (drag the divider and it follows), with **‹ MAIN MENU** back to the
+title. While playing, the game holds still under it and **‹ BACK TO THE GAME** goes on where it was. It opens while
+playing from **? HOW TO PLAY** in the companion's header (beside ⚙), which brings the game panel into view for it.
+*Still to come:* HOW TO PLAY under **Help** on the menu bar, the Mac's and the iPad's own. The books are DAEMONS' own PDFs, fetched as published and
+kept on the device, as the LIBRARY keeps them; none of them is in this repository. On the site, the header's button opens
+them over the page. Words DRAFT.
+
 **Updates.** The list of releases is read live from GitHub. When a newer DAEMONS is out, a strip shows above the game.
 One tap remakes the game from your original, and it starts again from the same save.
 

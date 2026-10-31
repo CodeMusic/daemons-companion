@@ -30,6 +30,7 @@ import { voiceFor } from "./tuneSound";
 import { loadPreview } from "./preview";
 import { keepSplit, muteAway, splitKept } from "./game/away";
 import { heardElsewhere, Received } from "./received";   // C-261
+import { HowToOverlay, openHowTo } from "./howto";          // C-264
 import type { Arrival } from "../server/src/core";
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void;
@@ -120,8 +121,16 @@ function Shell() {
   const fit = (w: number) => Math.round(Math.max(300, Math.min(width - 340, w)));
   const besideWidth = fit(split ?? Math.min(480, width * 0.42));
   const gameAway = beside && away === "game", companionAway = beside && away === "companion";
+  const narrowHeader = (beside ? besideWidth : width) < 420;   // C-264: the header's HOW TO PLAY as "?" where it is narrow
   const pageWidth = beside && !gameAway ? besideWidth : Math.min(720, width);
   const putAway = (side: Away) => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setAway(side); };
+  // C-264: HOW TO PLAY from the companion's header -- over the game panel, which is brought into view for it (GAME on a
+  // phone, the game side brought back beside); on the site, over the page
+  const howToPlay = () => {
+    if (ON_PHONE && !beside) setTab("game");
+    else if (gameAway) putAway("none");
+    openHowTo();
+  };
   const dragFrom = useRef<number | null>(null);
   const drag = (dx: number, done: boolean) => {             // the divider dragged left widens the companion
     if (dragFrom.current === null) dragFrom.current = besideWidth;
@@ -241,14 +250,19 @@ function Shell() {
         <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
           <XStack alignItems="center">
             <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
+            <YStack flex={1} />
             {OFFLINE && !showToast ? (
-              <YStack marginLeft="auto" role="button" cursor="pointer" onPress={() => setToastGone(null)}
+              <YStack marginLeft={10} role="button" cursor="pointer" onPress={() => setToastGone(null)}
                       paddingHorizontal={10} paddingVertical={2} borderRadius={999} borderWidth={1.5}
                       borderColor="$color11" backgroundColor="$color3">
                 <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
               </YStack>
             ) : null}
-            <YStack marginLeft={OFFLINE && !showToast ? 10 : "auto"} padding={4} cursor="pointer" role="button" aria-label="settings"
+            <YStack marginLeft={10} paddingHorizontal={8} paddingVertical={3} borderRadius={999} borderWidth={1.5} borderColor="$color9"
+                    cursor="pointer" role="button" aria-label="how to play" onPress={howToPlay}>{/* C-264 (DRAFT) */}
+              <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">{narrowHeader ? "?" : "? HOW TO PLAY"}</Text>
+            </YStack>
+            <YStack marginLeft={6} padding={4} cursor="pointer" role="button" aria-label="settings"
                     onPress={() => setTab(tab === "settings" ? "today" : "settings")}>
               <Text fontSize={20} lineHeight={22} color={tab === "settings" ? "$color12" : "$color10"}>⚙</Text>
             </YStack>
@@ -282,6 +296,7 @@ function Shell() {
       </YStack>
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
       <Received />{/* C-261: over everything, the game too */}
+      {!ON_PHONE ? <HowToOverlay playing={false} /> : null}{/* C-264: the site has no game panel: over the page */}
     </YStack>
   );
   const inked = <InkContext.Provider value={ink}>{page}</InkContext.Provider>;   // the day's ink for every key and banner

@@ -22,6 +22,7 @@ import { mirrorChoice } from "../../server/src/game/mirror";
 import { applyPlan, livePlan } from "../../server/src/game/live";       // C-261
 import { heardSync } from "../received";
 import PAD from "../modules/daemons-pad";                              // C-263
+import { HowToOverlay, openHowTo, useHowTo } from "../howto";          // C-264
 import { Action, Card, Eyebrow, Small } from "../ui";
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version
@@ -232,6 +233,9 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
     return () => { a.remove(); b.remove(); };
   }, []);
   useEffect(() => { tacoNow.current = taco; if (started.current) web.current?.injectJavaScript(`window.setTaco(${taco}); true;`); }, [taco]);
+  // C-264: HOW TO PLAY over the game panel -- the game held still while a book is open over it, and going on after
+  const how = useHowTo(), reading = how !== "closed";
+  const wasReading = useRef(false);
   const [startWhy, setStartWhy] = useState("");          // C-257: what EmulatorJS warned of while starting
   useEffect(() => { if (started.current) web.current?.injectJavaScript(`window.muteGame(${muted}); true;`); }, [muted]);
   // C-259: back to the title -- the save taken out first, as leaving a tab does, then the emulator let go
@@ -295,6 +299,12 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
     }
     web.current?.injectJavaScript("window.playGame(); true;");
   };
+  useEffect(() => {
+    if (!started.current || reading === wasReading.current) return;
+    wasReading.current = reading;
+    if (reading) web.current?.injectJavaScript("window.pauseGame(); true;");
+    else if (active) resume();
+  }, [reading]);
   // C-261: each save the game makes, SYNCed at once -- only the game the companion follows (a SYNC by hand marries it
   // first), and only a save the companion holds: the phone's own, or, paired, the mirror that just took it
   const syncing = useRef(false), again = useRef(false);
@@ -396,14 +406,17 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
             + "here: FireRed becomes CONTENT, LeafGreen becomes CONTEXT. Your file is only read; nothing of it leaves this device."}</Small>
           {step ? <Small color="$color10">{STEPS[step]}</Small> : <Action label="Choose your game" ink={ink} onPress={bring} />}
           {error ? <Small color="$color9">{error}</Small> : null}
+          <XStack><Action label="How to play" ink={ink} onPress={() => openHowTo()} /></XStack>{/* C-264 */}
           <Small color="$color8">DRAFT</Small>
         </Card>
+        <HowToOverlay playing={false} />
       </YStack>
     );
   }
   if (!playing) {
     const choices: TitleChoice[] = [
       { key: "play", label: "PLAY", note: game.testing ? `the TESTING BUILD, v${game.release}` : `v${game.release}`, onPick: () => setPlaying(true) },
+      { key: "how", label: "HOW TO PLAY", note: "MICRO-START, QUICK-START, the USER MANUAL", onPick: () => openHowTo() },   // C-264 (DRAFT)
       ...(update ? [{ key: "update", label: "UPDATE", note: step ? STEPS[step] : update.needs === "ready" ? `v${update.release} is out -- your save comes with it`
                                                                     : `v${update.release} is out -- choose your FireRed or LeafGreen again`,
                       onPick: () => { if (!step) renew(); } }] : []),
@@ -414,6 +427,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
     return (
       <YStack flex={active ? 1 : undefined} display={active ? "flex" : "none"}>
         <GameTitle edition={game.edition} choices={choices} said={error || (step ? STEPS[step] : "")} />
+        <HowToOverlay playing={false} />
       </YStack>
     );
   }
@@ -469,6 +483,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
         </Small>) : null}
       {error ? <Small color="$color9">{error}</Small> : null}
       {startWhy ? <Small color="$color8">{`EmulatorJS, starting: ${startWhy}`}</Small> : null}
+      <HowToOverlay playing toTitle={toTitle} />
       {liveWhy ? <Small color="$color8">{`SYNC started the game again from its save: ${liveWhy}  DRAFT`}</Small> : null}
     </YStack>
   );

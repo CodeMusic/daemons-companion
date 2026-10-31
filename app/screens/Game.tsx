@@ -401,7 +401,8 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
       ) : keptSaid ? (
         <XStack padding={8} backgroundColor="$color3" onPress={() => setKeptSaid("")}><Small>{`${keptSaid}  DRAFT`}</Small></XStack>
       ) : null}
-      <XStack paddingHorizontal={8} paddingVertical={4} gap={10} alignItems="center">     {/* C-259, C-258 (DRAFT) */}
+      {/* C-259, C-258 (DRAFT) */}
+      <XStack paddingHorizontal={8} paddingVertical={4} gap={10} alignItems="center">
         <YStack role="button" cursor="pointer" paddingHorizontal={10} paddingVertical={4} borderRadius={3} borderWidth={1} borderColor="#3a3f4a"
                 onPress={toTitle} aria-label="back to the title">
           <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="#c9ccd3">‹ TITLE</Text>

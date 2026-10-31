@@ -39,15 +39,24 @@ One tap remakes the game from your original, and it starts again from the same s
 
 ## One save (C-188)
 
-The game's save **is** the companion's save. Showing the companion pauses the game. SYNC, SEND and RETURN write the
-save, and the game starts again from what they wrote (CONTINUE). The rule SYNC has always had -- never write a save
-while the game runs -- becomes the app's rhythm.
+The game's save **is** the companion's save. Showing the companion pauses the game. The rule SYNC has always had --
+never write a save while the game runs -- becomes the app's rhythm.
+
+**Every save SYNCs by itself** (C-261). The app reads the game's save memory each second and takes a save once it has
+held still (never one half written). The moment one lands it is SYNCed: SEND a daemon, save, and it is with the
+companion before you have closed the menu -- no SYNC to press. **Play never stops for it**: what SYNC wrote (a daemon
+AWAY, a trade, the CASINO's coins) goes into the running game as well as the save -- the app takes the game as the
+emulator holds it, finds each change by the save's own bytes, writes it in and puts the game back on the same frame.
+Only when that cannot be done safely (the game changed those very bytes since its save) does the game start again
+from the save (CONTINUE), as it used to, and a line under the game says why. Only the game the companion follows is
+SYNCed this way; the first SYNC, which marries a save to the companion, is still the button.
 
 **Paired with a companion** (a computer or [the hub](The-hub-and-its-AI)), the device's save is the real one. After
 each game save the app sends it to the companion, which keeps it as a **mirror** (`mirror.sav` beside its database,
 never the save path you set). Boards at home and the hub's AI then see the same daemons. A SYNC from the app pauses the
 game, waits for the save to cross, and takes the mirror back before play goes on. Each side is known by SHA-1: when both
 have moved, the device wins. Choosing a save path in SETTINGS ends the mirror. *Still to check on an iPad, paired.*
+Paired, a save is SYNCed by itself only once the companion has taken it as the mirror -- never another game's.
 
 - **A late save never undoes a SYNC.** The app sends the copy it last agreed with; a save arriving after the companion
   has moved on (a SYNC wrote it while the game's save was still on its way) is refused, and the device takes the
@@ -55,6 +64,14 @@ have moved, the device wins. Choosing a save path in SETTINGS ends the mirror. *
 - **Another game never takes the mirror's place** -- a new game begun in the app, say. The app offers to keep that
   game on the companion as a save of its own instead, and SETTINGS, **YOUR SAVES** chooses which save the companion
   reads ([Settings](Settings#your-saves), C-215).
+
+## RECEIVED
+
+When a SYNC brings something -- a daemon you SENT, one that came by a trade or a gift, an item into your PC -- a framed
+popup says so over whatever is on screen, the game too: **"{your name} Received"**, the daemon (or the item and how
+many), and **"From {who sent it}"** -- you, for a daemon you SENT; the other player, for a trade or a gift. One at a
+time; a tap puts it away. The site shows the same, for its own SYNC and for any it did not ask for (a save watched on
+the computer, the playground's game, a paired phone). Words DRAFT.
 
 ## The iPad on its side (C-189)
 

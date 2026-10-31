@@ -20,6 +20,15 @@ the game's are.
 | **LIBRARY** | THE PLAYER'S MANUAL, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
+## When the game saves
+
+**In the one app every save SYNCs by itself**, and nothing restarts ([The one app](The-one-app#one-save-c-188)). **On a
+computer** the companion watches the save it reads: when the file changes and holds still, the pages read it again,
+and a save that asks for something -- a daemon SENT, or CALLed HOME -- is SYNCed by itself **as soon as no program
+holds the file open** (C-261). mGBA keeps its `.sav` open while it plays, so that is the moment you close the game;
+it never writes while the emulator could write its own copy back over it. Where that cannot be told (no `lsof`), SYNC
+stays the button. What a SYNC brings shows as **RECEIVED** ([The one app](The-one-app#received)).
+
 ## YOU
 
 At the top, **you as the game draws you** (C-125): the trainer card's picture and your walking frame, REASON or

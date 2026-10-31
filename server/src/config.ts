@@ -10,6 +10,7 @@ export interface Config {
   database: string;                 // a SQLite file, or ":memory:"
   edition: Edition;                 // which edition's voice and season the daemon keeps
   savePath: string | null;          // a COPY of the DAEMONS save to read -- never the one the game is using
+  watchSave?: boolean;              // C-261: SYNC a save that asks once it lands and no program holds it (off: the playground's own)
   artDir: string;                   // DAEMONS' own art (gfx/daemons/), served at /art/
   siteDir?: string | null;
   debugDir?: string | null;         // C-216: the DEBUG patches, private, sent by ./syncCompanion.sh debug (beside siteDir when unset)

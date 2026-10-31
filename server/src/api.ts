@@ -171,6 +171,66 @@ export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uin
   return { sha1: sha1(bytes), bytes };
 }
 const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
+// C-261: what each SYNC brought, numbered -- so a page that did not ask for the SYNC (the site, while the watcher or the
+// playground SYNCed) shows RECEIVED for it too -- and when the save this companion reads last changed
+type Heard = { n: number; at: string | null; player: string; arrivals: core.Arrival[]; saved: string | null };
+const HEARD = new WeakMap<Store, Heard>();
+export function heardOf(store: Store): Heard {
+  let h = HEARD.get(store);
+  if (!h) HEARD.set(store, h = { n: 0, at: null, player: "", arrivals: [], saved: null });
+  return h;
+}
+// The one SYNC, asked for or not (C-219: what the exchange sent fetched first, told after). `cfg` with its save path.
+export async function runSync(cfg: Config, store: Store, ask: { deviceId: string; query: Record<string, string>; body: any }): Promise<Reply> {
+  const h = hostOf(cfg), link = store.getSetting("trade.token") ? tradeLink(store) : null;
+  await beforeSync(link, store, h.save.read());
+  const r = route(h, store, { method: "POST", path: "/api/sync", ...ask });
+  await afterSync(link, store);
+  const b = r.body as { player?: string; arrivals?: core.Arrival[]; heard?: number } | undefined, heard = heardOf(store);
+  if (r.status === 200 && b) {
+    if (b.arrivals?.length) Object.assign(heard, { n: heard.n + 1, at: new Date().toISOString(), player: b.player ?? "", arrivals: b.arrivals });
+    b.heard = heard.n;                                   // the page that asked has seen these already
+  }
+  return r;
+}
+// C-261 (the user, 2026-10-31: "if u save it should detect the timestamp change with a watcher and update"): the save
+// this companion reads, watched by its modification time. Once it has changed and held still, a save that asks -- a
+// daemon SENT, or asked home -- is SYNCed, but only while no program holds the file open: an emulator playing the game
+// (mGBA keeps its .sav open while it runs) would write its own over what SYNC wrote, so the SYNC waits until the game is
+// closed. Only the game this companion follows; never the mirror, which the app SYNCs itself as each save lands.
+export function watchSave(cfg: Config, store: Store, every = 2000) {
+  let last = "", changedAt = 0, done = "", busy = false;
+  const stamp = (path: string) => { try { const st = statSync(path); return `${path}|${st.mtimeMs}|${st.size}`; } catch { return ""; } };
+  const tick = async () => {
+    if (store.getSetting("save.mirror") === "on") return;
+    const path = savePathOf(cfg, store);
+    if (!path || !existsSync(path)) return;
+    const now = stamp(path);
+    if (now !== last) {
+      if (last) { changedAt = Date.now(); heardOf(store).saved = new Date().toISOString(); }   // what was there at the start is not a change
+      last = now;
+      return;
+    }
+    if (!changedAt || Date.now() - changedAt < 2 * every) return;     // held still
+    let bytes: Uint8Array, asks: boolean;
+    try { bytes = new Uint8Array(readFileSync(path)); asks = readSave(bytes).party.some((d) => d.asked); } catch { changedAt = 0; return; }
+    const id = sha1(bytes), wed = store.married(), p = (() => { try { return readProfile(bytes); } catch { return null; } })();
+    const ours = !!wed && !!p && wed.name === p.name && wed.trainerId === p.trainerId && wed.secretId === p.secretId;
+    if (!asks || !ours || id === done) { changedAt = 0; return; }    // nothing asked, or not its game: read as it is
+    if (await heldOpen(path) !== false) return;                       // the game still has it (or it cannot be told)
+    changedAt = 0; done = id;
+    try { await runSync({ ...cfg, savePath: path }, store, { deviceId: "", query: {}, body: {} }); } catch { /* SYNC by hand says why */ }
+    last = stamp(path);                                               // its own write is not a change to answer
+  };
+  setInterval(() => { if (busy) return; busy = true; tick().catch(() => {}).finally(() => { busy = false; }); }, every).unref();
+}
+// Whether a program has the file open (lsof, on macOS and Linux), or null when that cannot be told -- then nothing is written
+function heldOpen(path: string): Promise<boolean | null> {
+  return new Promise((done) => execFile("lsof", ["-t", "--", path], { timeout: 4000 }, (err, out) => {
+    if (!err) return done(String(out).trim().length > 0);
+    done((err as { code?: unknown }).code === 1 && !String(out).trim() ? false : null);   // 1, and nothing: no program has it
+  }));
+}
 // C-204: the save holds THE SUBTLE LAYER -- words under words may be said
 // Who a talk is with, for the module's persona: the daemon a device carries, its day and the user's next step (C-180)
 function talkWho(ecfg: Config, store: Store, deviceId: string) {
@@ -886,13 +946,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const h = hostOf(ecfg);
         return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {}));
       }
-      if (req.method === "POST" && path === "/api/sync") {           // C-219: what the exchange sent, fetched first; told after
-        const h = hostOf(ecfg), link = store.getSetting("trade.token") ? tradeLink(store) : null;
-        await beforeSync(link, store, h.save.read());
-        const r = route(h, store, { method: "POST", path, deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) });
-        await afterSync(link, store);
-        return reply(res, r);
-      }
+      if (req.method === "POST" && path === "/api/sync")             // C-219: what the exchange sent, fetched first; told after
+        return reply(res, await runSync(ecfg, store, { deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) }));
+      if (req.method === "GET" && path === "/api/sync/heard") return send(res, 200, heardOf(store));   // C-261
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
       if (handles(req.method ?? "", path) && path !== "/api/subtle/ask")   // C-229: answered below, with the module and the voice
         return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),

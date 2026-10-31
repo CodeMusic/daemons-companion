@@ -68,6 +68,9 @@ describe("THE COMMONS (C-222)", () => {
     const ra = await post(`${hubA}/api/sync`, {}), rb = await post(`${hubB}/api/sync`, {});
     expect(ra.traded).toMatchObject([{ species: 1, where: "party" }]);
     expect(rb.traded).toMatchObject([{ species: 4, where: "box" }]);
+    // C-261: and RECEIVED says who each came from
+    expect(ra.arrivals).toMatchObject([{ kind: "trade", species: 1, where: "party", from: expect.stringMatching(/^KIT/) }]);
+    expect(rb.arrivals).toMatchObject([{ kind: "trade", species: 4, where: "box", from: expect.stringMatching(/^ROVER/) }]);
     expect(readAway(new Uint8Array(readFileSync(A))).map((d) => d.personality)).toEqual([2002]);
     expect(readBoxes(new Uint8Array(readFileSync(B)))[0].personality).toBe(1002);
     expect((await get(`${hubA}/api/trade`)).board.trades).toMatchObject([{ state: "done", commons: true }]);

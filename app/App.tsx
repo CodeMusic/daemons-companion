@@ -29,6 +29,8 @@ import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
 import { loadPreview } from "./preview";
 import { keepSplit, muteAway, splitKept } from "./game/away";
+import { heardElsewhere, Received } from "./received";   // C-261
+import type { Arrival } from "../server/src/core";
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void;
                                                          tabs?: readonly (typeof TABS)[number][] }) {
@@ -164,6 +166,20 @@ function Shell() {
     api<{ palette?: string }>("/api/device/settings").then((s) => setPalette(s.palette)).catch(() => {});   // C-90
     return () => { offlineHeard.delete(f); freshHeard.delete(g); paletteHeard.delete(f); };
   }, [reload]);
+  // C-261: on the site, a SYNC something else asked for (the save watched as it lands, the playground's game, a paired
+  // phone) shows RECEIVED here too and the page is read again; a save that changed is read again
+  useEffect(() => {
+    if (ON_PHONE) return;
+    let was: string | null | undefined;
+    const t = setInterval(() => {
+      api<{ n: number; saved: string | null; player: string; arrivals: Arrival[] }>("/api/sync/heard").then((h) => {
+        if (heardElsewhere(h, was === undefined)) { setFresh((n) => n + 1); reload(); }
+        else if (was !== undefined && h.saved !== was) reload();
+        was = h.saved;
+      }).catch(() => {});
+    }, 4000);
+    return () => clearInterval(t);
+  }, [reload]);
   // C-92: away from the companion, a toast once -- dismissed, a small AWAY in the title bar, which brings it back
   const [toastGone, setToastGone] = useState<string | null>(null);
   // C-55: back to the handheld this phone paired with, if any
@@ -265,6 +281,7 @@ function Shell() {
         ) : null}
       </YStack>
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
+      <Received />{/* C-261: over everything, the game too */}
     </YStack>
   );
   const inked = <InkContext.Provider value={ink}>{page}</InkContext.Provider>;   // the day's ink for every key and banner

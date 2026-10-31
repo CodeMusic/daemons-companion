@@ -56,7 +56,8 @@ export interface Gift { species: number; name: string; level: number; personalit
 // (nothing leaves: it arrives in the first empty box slot)
 export interface TradeIn { id: string; out: number; record: Uint8Array | null; loan?: boolean; phase?: "swap" | "return"; give?: boolean;
                           ot?: number;    // C-223: the giver's daemon by who it is -- personality and its trainer's id, never a slot
-                          item?: { id: number; count: number } }   // C-223: an item given (give) or received (out 0), no record (save/items.ts)
+                          item?: { id: number; count: number };   // C-223: an item given (give) or received (out 0), no record (save/items.ts)
+                          from?: string; kind?: string }          // C-261: who it came from and how, for RECEIVED (never written)
 
 
 const EV = eventsJson as unknown as { sb1_vars: number; vars_start: number };

@@ -20,6 +20,8 @@ import { ReadsCard, Under } from "./Reads";   // C-203, C-204
 import { AsAbove, HalloweenNote, HourCount, useHalloween, useWitching, WitchingHour } from "./Witching";   // C-236, C-237, C-240
 import { FirstSight } from "./Hermetic";   // C-238
 import { useApi } from "../useApi";
+import { heardSync } from "../received";              // C-261
+import type { Arrival } from "../../server/src/core";
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
@@ -206,7 +208,9 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
     const r = await api<{ sameGame: boolean; firstSave: boolean; married: { name: string }; received: string[];
                           returned: string[]; refused: string[]; firstLink: boolean; recalledSeen: boolean;
                           grew: { nickname: string; exp: number; from: number; to: number } | null;
-                          backup: string | null; casino: { won: number; spins: number; from: number; to: number } | null }>("/api/sync", {});
+                          backup: string | null; casino: { won: number; spins: number; from: number; to: number } | null;
+                          player?: string; arrivals?: Arrival[] }>("/api/sync", {});
+    heardSync(r);                                               // C-261: RECEIVED, for what it brought
     const said: string[] = [];
     if (!r.sameGame) said.push(`This save belongs to a different game. Your companion hosts daemons from ${r.married.name}'s.`);
     if (r.firstLink) said.push("Linked. Your game now offers SEND in a daemon's menu.");

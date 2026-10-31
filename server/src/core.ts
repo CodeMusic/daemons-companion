@@ -56,6 +56,9 @@ export function today(h: Host, store: Store, now = new Date()) {
 // change). On that save: answer the requests (any number away, C-80), set LINKED so the game shows SEND, and settle an
 // emergency return -- written only if something changed, after a backup, with the game closed. On any other save:
 // nothing is written; the app shows it, and says it belongs to a different game.
+// C-261: one thing a SYNC brought to the companion or the save -- RECEIVED shows each (the app's received.tsx)
+export type Arrival = { kind: "sent" | "trade" | "gift" | "item" | "companion"; nickname: string; species: number; slot?: number;
+                        where?: "party" | "box" | "bag" | "pc"; count?: number; from: string | null };
 export function sync(h: Host, store: Store, now = new Date()) {
   const file = h.save.read();
   if (!file) throw new Error("no save is configured (savePath in config.json)");
@@ -67,7 +70,7 @@ export function sync(h: Host, store: Store, now = new Date()) {
   const sameGame = married.name === game.name && married.trainerId === game.trainerId && married.secretId === game.secretId;
   if (!sameGame)
     return { sameGame, firstSave, married, received: [], returned: [], refused: [], firstLink: false, recalledSeen: false, backup: null,
-             met: { companions: 0, newlySeen: 0, friendship: null }, grew: null, casino: null };
+             met: { companions: 0, newlySeen: 0, friendship: null }, grew: null, casino: null, player: game.name, arrivals: [] as Arrival[] };
   // C-15: what was met nearby since the last SYNC -- each species seen; +1 friendship for each companion met in a day
   // (the beacon's id changes hourly, so it is counted per hour seen), at most +5 a day. Small, as everything is (PLAN 7).
   const applied = Number(store.getSetting("met.applied") ?? 0);
@@ -125,7 +128,17 @@ export function sync(h: Host, store: Store, now = new Date()) {
     // C-167: what was added to the save's count, so the next SYNC adds only what is new
     if (r.house) store.setSetting("casino.house.written", String(Number(store.getSetting("casino.house.written") ?? 0) + r.house.to - r.house.from));
   });
-  return { sameGame, firstSave, married,
+  // C-261: what arrived, for RECEIVED -- a daemon the game SENT (from the player), what a trade or a gift brought (from
+  // whoever sent it: a daemon, or an item into the PC) and HANDSHAKE (from the companion). What left (gave) is not one.
+  const sent = readSave(file).party, how = new Map(trade.map((t) => [t.id, t]));
+  const arrivals: Arrival[] = [
+    ...r.answered.filter((a) => a.now === "away").map((a) => ({ kind: "sent" as const, nickname: a.nickname || a.name,
+      species: sent.find((d) => d.slot === a.slot)?.species ?? 0, slot: a.slot, from: game.name })),
+    ...r.traded.filter((t) => !t.gave).map((t) => ({ kind: t.item ? "item" as const : how.get(t.id)?.kind === "gift" ? "gift" as const : "trade" as const,
+      nickname: t.nickname, species: t.species, where: t.where, ...(t.item ? { count: t.item.count } : {}), from: how.get(t.id)?.from ?? null })),
+    ...(r.gifted ? [{ kind: "companion" as const, nickname: HANDSHAKE.name, species: r.gifted.species, where: "box" as const, from: null }] : []),
+  ];
+  return { sameGame, firstSave, married, player: game.name, arrivals,
            received: r.answered.filter((a) => a.now === "away").map((a) => a.nickname),
            returned: r.answered.filter((a) => a.now === "home").map((a) => a.nickname),
            refused: r.refused, firstLink: r.firstLink, recalledSeen: r.recalledSeen, backup,

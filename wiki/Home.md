@@ -22,7 +22,7 @@ a glossary.
 
 1. **Run the companion on your computer** and point it at a **copy** of your save --
    [Running the companion](Running-the-companion).
-2. **SEND a daemon AWAY** in the game, close the game, and **SYNC** in the companion --
+2. **SEND a daemon AWAY** in the game and close the game: the companion SYNCs it by itself (or press **SYNC**) --
    [Host on your phone](Host-on-your-phone#3-send-a-daemon-away-and-sync).
 3. **Build the app onto your iPhone** with `./bindCompanion.sh phone` and **pair it** -- the site offers your computer
    by its own name -- [Host on your phone](Host-on-your-phone#4-build-the-app-onto-your-iphone).

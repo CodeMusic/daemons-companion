@@ -26,7 +26,7 @@ Nothing to buy. The phone in your pocket is the first host, and the one I would 
 1. **Play [DAEMONS](https://github.com/CodeMusic/DAEMONS)**, and in your party, **SEND** a daemon AWAY.
 2. **Start the companion** on your computer and show it a **copy** of your save -- never the only one
    (`./bindCompanion.sh`, then SETTINGS on the site it opens).
-3. **SYNC.** The daemon steps out of the game.
+3. **SYNC** -- or close the game, and the companion SYNCs it by itself. The daemon steps out of the game.
 4. **Put the app on your iPhone** (`./bindCompanion.sh phone`) and **pair** it: the site's SETTINGS, PAIR A PHONE
    offers your computer by its own name (`http://<name>.local:4730`), so the pairing holds wherever the two of you
    share a Wi-Fi.
@@ -48,8 +48,9 @@ The app has grown into **one app for everything** -- the game, the companion, th
 - **On an iPhone or an iPad**, give it your own FireRed or LeafGreen once, from Files. It fetches our patch from the
   DAEMONS release, makes the game on the device and checks it by SHA-1, and plays it in a GAME tab. When a newer
   release is out, one tap remakes it and the game carries on from the same save.
-- **One save.** The game's save *is* the companion's: showing the companion pauses the game, SYNC and SEND write the
-  save, and the game starts again from it. Paired with a companion at home, the device keeps the real save and the
+- **One save.** The game's save *is* the companion's: showing the companion pauses the game, and **every save the game
+  makes SYNCs by itself**, what SYNC writes going into the running game too, so play never stops for it (C-261). What
+  a SYNC brings -- a daemon SENT, a trade, a gift -- shows as **RECEIVED**: your name, the daemon, who it is from. Paired with a companion at home, the device keeps the real save and the
   companion a mirror (C-188). The mirror never takes another game's place: the app offers to keep that game on the
   companion as a save of its own, and SETTINGS, **YOUR SAVES** chooses which one the companion reads (C-215).
 - **The iPad on its side** is one screen: the game on the left, always playing, and the companion beside it -- with a

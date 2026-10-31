@@ -52,6 +52,8 @@ computer: check its address in the Forward node.
 ## SYNC says something unexpected
 
 - **Close the game first.** A running emulator writes its own copy of the save back over the companion's.
+- **SENT, but nothing came?** On a computer the companion SYNCs a SEND by itself only once no program holds the save
+  open -- close the emulator, and it follows within seconds. It uses `lsof` to tell; where there is none, press SYNC.
 - *"This save belongs to a different game…"* -- the companion is married to the first save you SYNCed; another game's
   save is shown but never written.
 - No SEND in the game's menu? SYNC once first: the first SYNC links the save.

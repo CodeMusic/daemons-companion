@@ -76,7 +76,8 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /api/regions` | the two region maps' cells -- no save needed (*alone too*) |
 | `GET /api/groves` | the groves' universes, signs and who lives in each -- no save needed (*alone too*) |
 | `GET /api/school` | CALLOW SCHOOL's floors, syllabi, boards and the paper -- no save needed (*alone too*) |
-| `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time, and write in the meetings, the experience earned and what the boards' CASINO won or lost (the money kept between 0 and 999999); and the trades -- what the exchange sent fetched first, each written into the slot its own left, TRADING set on every daemon in a trade, the exchange told after ([Trading](#trading)) (*alone too*) |
+| `POST /api/sync` | **SYNC**: read the save, bring a daemon across or home, link the save the first time, and write in the meetings, the experience earned and what the boards' CASINO won or lost (the money kept between 0 and 999999); and the trades -- what the exchange sent fetched first, each written into the slot its own left, TRADING set on every daemon in a trade, the exchange told after ([Trading](#trading)) -- and `arrivals`, what it brought for RECEIVED (each with its kind, its name, its species and who it is from), and `heard`, the count below (*alone too*) |
+| `GET /api/sync/heard` | C-261: the count of SYNCs that brought something, the last one's `arrivals` and `player`, and `saved`, when the save last changed -- so the site shows RECEIVED for a SYNC it did not ask for |
 | `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |
 | `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines; `?expression=` shades it |
 | `GET /art/species/<id>.png` | a species as the INDEX draws it |

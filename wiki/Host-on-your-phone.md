@@ -50,8 +50,9 @@ companion's.
    SEND…"*
 2. In the game, open a party daemon's menu and choose **SEND**. It appears only once the save is linked, and only a
    well daemon goes (full health, nothing ailing it). The game saves.
-3. Close the game, and **SYNC** again. The daemon is now **AWAY**: washed out in the companion's party, *ON YOUR
-   DEVICE*. Whatever it was holding goes with it.
+3. Close the game, and **SYNC** again -- or let the companion do it: it watches the save, and SYNCs a SEND by itself
+   the moment the emulator lets go of the file (C-261), with **RECEIVED** on the site. The daemon is now **AWAY**:
+   washed out in the companion's party, *ON YOUR DEVICE*. Whatever it was holding goes with it.
 4. To bring it home: in the game the same daemon's menu offers **CALL HOME**. Choose it, save, close, SYNC. The
    experience it earned while it was out comes home with it.
 

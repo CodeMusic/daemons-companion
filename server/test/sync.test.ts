@@ -57,6 +57,14 @@ describe("SYNC (C-21) and the married save (C-22)", () => {
       .toEqual([["PIP", true, false], ["LABEL", false, false]]);
   });
 
+  it("says what arrived, for RECEIVED: the daemon SENT, from the player (C-261)", () => {
+    const { cfg } = saveFile([PIP, { ...LABEL, asked: true }]);
+    const r = sync(cfg, new Store(":memory:"));
+    expect(r.player).toBe("ROVER");
+    expect(r.arrivals).toEqual([{ kind: "sent", nickname: "LABEL", species: 4, slot: 1, from: "ROVER" }]);
+    expect(sync(cfg, new Store(":memory:")).arrivals).toEqual([]);           // nothing asked: nothing arrives
+  });
+
   it("sends a second daemon while one is away: a daemon in each device (C-80)", () => {
     const { path, cfg } = saveFile([{ ...PIP, away: true }, { ...LABEL, asked: true }, HUNCH]);
     const r = sync(cfg, new Store(":memory:"));

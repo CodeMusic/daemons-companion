@@ -131,10 +131,11 @@ export function tradesToWrite(store: Store, game: GameKey): TradeIn[] {
   const ib = inboxOf(store), done = outbox(store);
   if (!ib || ib.game !== gameId(game)) return [];
   return ib.deliveries.filter((d) => !done.includes(d.id)).flatMap((d) => {
-    if (d.item) return [{ id: d.id, out: 0, record: null, item: d.item, ...(d.phase === "give" ? { give: true } : {}) } as TradeIn];   // C-223: an item given or received
-    if (d.phase === "give") return [{ id: d.id, out: d.out, record: null, give: true, ...(d.ot !== undefined ? { ot: d.ot } : {}) } as TradeIn];   // C-223: a gift given -- it leaves
+    const who = { from: d.from, kind: d.kind };            // C-261: RECEIVED says who sent it
+    if (d.item) return [{ id: d.id, out: 0, record: null, item: d.item, ...who, ...(d.phase === "give" ? { give: true } : {}) } as TradeIn];   // C-223: an item given or received
+    if (d.phase === "give") return [{ id: d.id, out: d.out, record: null, give: true, ...who, ...(d.ot !== undefined ? { ot: d.ot } : {}) } as TradeIn];   // C-223: a gift given -- it leaves
     const record = fromB64(d.record);
-    return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase } as TradeIn] : [];
+    return record ? [{ id: d.id, out: d.out, record, loan: d.kind === "loan", phase: d.phase, ...who } as TradeIn] : [];
   });
 }
 // What the game must keep AWAY (TRADING): this game's daemons in a trade, as the exchange said before this SYNC -- or

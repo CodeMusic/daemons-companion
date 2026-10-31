@@ -2,8 +2,10 @@
 // EmulatorJS in a web view, the ROM made on this device from the player's own (game/rom.ts). The page is written next to
 // the ROM in the app's documents and opened from there, so the emulator reads the ROM as a file beside it.
 // The save is the companion's (C-188's one save): hosting alone's daemons.sav. It is put into the game when the game
-// starts, and taken out of the game every 15 s while it changes and whenever the game is left -- so what the game
-// writes is what TODAY, the widget and the INDEX read. The game is paused whenever another tab is shown.
+// starts, and taken out of the game the moment it saves (C-261: its save read each second, taken once it holds still)
+// and whenever the game is left -- so what the game writes is what TODAY, the widget and the INDEX read. Each save the
+// game makes is SYNCed at once, and what SYNC writes goes into the running game too (server/src/game/live.ts): play
+// never stops for it. The game is paused whenever another tab is shown.
 // A newer release, once published, shows as a strip above the game: one tap makes it from the player's original kept
 // here, and the game starts again from the same save.
 import { GameTitle, type TitleChoice } from "./GameTitle";
@@ -17,6 +19,8 @@ import { GATE } from "../game/gate";
 import { ALONE, api, LOCAL, TOKEN } from "../net";
 import { sha1 } from "../../server/src/game/hash";
 import { mirrorChoice } from "../../server/src/game/mirror";
+import { applyPlan, livePlan } from "../../server/src/game/live";       // C-261
+import { heardSync } from "../received";
 import { Action, Card, Eyebrow, Small } from "../ui";
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version
@@ -34,14 +38,16 @@ const keptFile = () => new File(new Directory(Paths.document, "game"), "kept.jso
 function keeping(): boolean { try { const f = keptFile(); return f.exists && !!JSON.parse(f.textSync()).keep; } catch { return false; } }
 function keepHere(on: boolean) { try { const f = keptFile(); if (!f.exists) f.create(); f.write(JSON.stringify({ keep: on })); } catch { /* asked again */ } }
 const keepThere = (b64: string) => api("/api/saves/keep", { b64, label: "This device's other game" });   // DRAFT
-async function mirrorOut(b64: string, refused?: (b64: string, why: string) => void) {
-  if (!paired()) return;
-  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64, base: agreed() || undefined })).sha1); }
+// true when the companion now holds this save as its mirror (C-261: then it may SYNC it)
+async function mirrorOut(b64: string, refused?: (b64: string, why: string) => void): Promise<boolean> {
+  if (!paired()) return false;
+  try { agree((await api<{ sha1: string }>("/api/save/mirror", { b64, base: agreed() || undefined })).sha1); return true; }
   catch (e) {                                             // the companion away, or its copy moved on (base: never undo a SYNC's writes): the next look settles it
     const why = (e as Error).message;
-    if (!/another game/.test(why)) return;
+    if (!/another game/.test(why)) return false;
     if (keeping()) keepThere(b64).catch(() => { /* the next save tries again */ });
     else refused?.(b64, why);
+    return false;
   }
 }
 async function mirrorIn() {
@@ -75,12 +81,25 @@ const b64 = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s 
 const unb64 = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
 const g = () => window.EJS_emulator && window.EJS_emulator.gameManager;
 let last = "";
+// C-261: the save as it lands -- the game's save memory read each second, and a save taken once it has held still for
+// two (the game writes its sectors over a second or so; a read in the middle of that is never taken)
+let seen = null, still = 0;
+const same = (a, b) => { if (!a || !b || a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; };
+setInterval(() => { try { const E = window.EJS_emulator, b = !E || E.paused || !g() ? null : g().getSaveFile(); if (!b || !b.length) return;
+  if (!same(b, seen)) { seen = b.slice(); still = 0; return; }
+  if (++still !== 2) return;
+  const s = b64(b); if (s !== last) { last = s; say({ kind: "save", b64: s, why: "saved" }); } } catch (e) {} }, 1000);
 window.takeSave = (why) => { try { const b = g() && g().getSaveFile(); if (!b || !b.length) return; const s = b64(b);
   if (s !== last || why === "leave") { last = s; say({ kind: "save", b64: s, why }); } } catch (e) { say({ kind: "error", text: String(e) }); } };
-window.putSave = (s) => { try { const m = g(), p = m.getSaveFilePath(); let dir = "";
+const writeSave = (s) => { const m = g(), p = m.getSaveFilePath(); let dir = "";
   for (const part of p.split("/").slice(0, -1).filter(Boolean)) { dir += "/" + part; if (!m.FS.analyzePath(dir).exists) m.FS.mkdir(dir); }
-  if (m.FS.analyzePath(p).exists) m.FS.unlink(p); m.FS.writeFile(p, unb64(s)); m.loadSaveFiles(); m.restart(); last = s;
-  } catch (e) { say({ kind: "error", text: String(e) }); } };
+  if (m.FS.analyzePath(p).exists) m.FS.unlink(p); m.FS.writeFile(p, unb64(s)); m.loadSaveFiles(); last = s; seen = unb64(s); still = 0; };
+window.putSave = (s) => { try { writeSave(s); g().restart(); } catch (e) { say({ kind: "error", text: String(e) }); } };
+window.putFlash = (s) => { try { writeSave(s); } catch (e) { say({ kind: "error", text: String(e) }); } };
+// C-261: SYNC into the running game -- the game as mGBA keeps it, out to the app, and back with SYNC's bytes in it
+window.snapshot = (id) => { try { say({ kind: "state", id, b64: b64(g().getState()) }); } catch (e) { say({ kind: "state", id, error: String(e) }); } };
+window.restore = (id, st, s) => { try { g().loadState(unb64(st)); writeSave(s); say({ kind: "restored", id, ok: true }); }
+  catch (e) { say({ kind: "restored", id, ok: false, error: String(e) }); } };
 window.pauseGame = () => { try { window.takeSave("leave"); window.EJS_emulator.pause(); } catch (e) {} };
 window.playGame = () => { try { window.EJS_emulator.play(); } catch (e) {} };
 let volume = null;
@@ -88,7 +107,6 @@ window.muteGame = (on) => { const E = window.EJS_emulator; muted = on;
   try { if (on) { if (volume === null) volume = E.volume; E.setVolume(0); } else { E.setVolume(volume ?? 0.5); volume = null; } }
   catch (e) { ctxs.forEach((c) => { try { on ? c.suspend() : c.resume(); } catch (x) {} }); }
   if (!on) wake(); };
-setInterval(() => window.takeSave("tick"), 15000);
 window.EJS_player = "#game"; window.EJS_core = "gba"; window.EJS_gameUrl = "daemons.gba"; window.EJS_gameName = "daemons";
 window.EJS_pathtodata = "${CDN}"; window.EJS_startOnLoaded = true; window.EJS_backgroundColor = "#0f1115";
 window.EJS_Buttons = { netplay: false, exitEmulation: false, saveState: false, loadState: false };
@@ -201,13 +219,54 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
     setPage(f.uri);
   }, [game]);
   const handed = useRef<(() => void) | null>(null);       // waiting on the save the game hands over on leaving
-  // C-188: back to the game -- if the companion wrote the save meanwhile (a SYNC, a daemon sent or come home), the
-  // game starts again from it (CONTINUE), as the playground does; otherwise it simply goes on
+  // C-261: a word to the page and its answer, by id (a snapshot of the game, the game put back)
+  const asks = useRef(new Map<string, (m: any) => void>());
+  const ask = (js: (id: string) => string, ms = 8000) => new Promise<any>((done) => {
+    const id = `a${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+    const t = setTimeout(() => { asks.current.delete(id); done(null); }, ms);
+    asks.current.set(id, (m) => { clearTimeout(t); asks.current.delete(id); done(m); });
+    web.current?.injectJavaScript(js(JSON.stringify(id)));
+  });
+  // C-261: what SYNC wrote, put into the running game -- true when it is there and play goes on from the same frame;
+  // false when it could not be put there safely (the game moved on since its save), and the game starts again instead
+  const lived = useRef<{ was: string; now: string; until: number } | null>(null);
+  const [liveWhy, setLiveWhy] = useState("");
+  const liveWrite = async (was: string, now: string): Promise<boolean> => {
+    const before = bytesOf(was), after = bytesOf(now), plan = livePlan(before, after);
+    if (!plan) { setLiveWhy("SYNC wrote another slot"); return false; }
+    const st = await ask((id) => `window.snapshot(${id}); true;`);
+    if (!st?.b64) { setLiveWhy(st?.error ?? "the game gave no snapshot"); return false; }
+    const state = bytesOf(st.b64), r = applyPlan(state, plan, { before, after });
+    if (!r.ok) { setLiveWhy(r.why); return false; }
+    const back = await ask((id) => `window.restore(${id}, ${JSON.stringify(b64Of(state))}, ${JSON.stringify(now)}); true;`);
+    if (!back?.ok) { setLiveWhy(back?.error ?? "the game did not take it back"); return false; }
+    lived.current = { was, now, until: Date.now() + 20000 };   // and a save from before it, if one comes, is not taken
+    setLiveWhy("");
+    return true;
+  };
+  // C-188: back to the game -- if the companion wrote the save meanwhile (a SYNC, a daemon sent or come home), what it
+  // wrote goes into the running game (C-261), or where it cannot, the game starts again from it (CONTINUE); otherwise
+  // it simply goes on
   const resume = async () => {
     await mirrorIn();                                     // C-188: a SYNC the paired companion wrote comes back first
     const f = saveFile(), now = f.exists ? b64Of(f.bytesSync()) : "";
-    if (now && now !== given.current) { given.current = now; web.current?.injectJavaScript(`window.putSave(${JSON.stringify(now)}); true;`); }
+    if (now && now !== given.current) {
+      const was = given.current; given.current = now;
+      if (!(was && started.current && await liveWrite(was, now))) web.current?.injectJavaScript(`window.putSave(${JSON.stringify(now)}); true;`);
+    }
     web.current?.injectJavaScript("window.playGame(); true;");
+  };
+  // C-261: each save the game makes, SYNCed at once -- only the game the companion follows (a SYNC by hand marries it
+  // first), and only a save the companion holds: the phone's own, or, paired, the mirror that just took it
+  const syncing = useRef(false), again = useRef(false);
+  const autoSync = async () => {
+    if (syncing.current) { again.current = true; return; }
+    syncing.current = true;
+    try {
+      const p = await api<{ thisGame: boolean | null }>("/api/profile");
+      if (p.thisGame === true) { const r = await api<any>("/api/sync", {}); heardSync(r); onSaved?.(); }
+    } catch { /* the companion away, or no save it follows: SYNC by hand says why */ }
+    finally { syncing.current = false; if (again.current) { again.current = false; autoSync(); } }
   };
   useEffect(() => {                                       // paused while another tab is shown
     if (!started.current) return;
@@ -265,11 +324,21 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
         if (muted) web.current?.injectJavaScript("window.muteGame(true); true;");
       })();
     } else if (m.kind === "save" && m.b64) {
+      const u = lived.current;                              // C-261: the save from before a live write, read back: put SYNC's in again
+      if (u && m.b64 === u.was && Date.now() < u.until) {
+        web.current?.injectJavaScript(`window.putFlash(${JSON.stringify(u.now)}); true;`);
+        if (m.why === "leave") handed.current?.();
+        return;
+      }
       const f = saveFile(), bytes = bytesOf(m.b64);
       const whole = bytes.length >= 0x10000;                // a whole save, never a blank start
       if (whole) { if (!f.exists) f.create(); f.write(bytes); given.current = m.b64; onSaved?.(); }   // C-189: read beside the game
       // C-188: to the paired companion's mirror -- and a SYNC waiting on the game's save waits for that too
-      (whole ? mirrorOut(m.b64, onRefused) : Promise.resolve()).finally(() => { if (m.why === "leave") handed.current?.(); });
+      (whole ? mirrorOut(m.b64, onRefused) : Promise.resolve(false)).then((mirrored) => {
+        if (whole && m.why === "saved" && (ALONE || mirrored)) autoSync();   // C-261
+      }).finally(() => { if (m.why === "leave") handed.current?.(); });
+    } else if ((m.kind === "state" || m.kind === "restored") && typeof (m as any).id === "string") {
+      asks.current.get((m as any).id)?.(m);                // C-261
     } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
     else if (m.kind === "error" && m.text) setError(m.text);
     else if (m.kind === "log" && m.text && /start/i.test(m.text)) setStartWhy((w) => w || m.text!);
@@ -351,6 +420,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
         </Small>) : null}
       {error ? <Small color="$color9">{error}</Small> : null}
       {startWhy ? <Small color="$color8">{`EmulatorJS, starting: ${startWhy}`}</Small> : null}
+      {liveWhy ? <Small color="$color8">{`SYNC started the game again from its save: ${liveWhy}  DRAFT`}</Small> : null}
     </YStack>
   );
 }

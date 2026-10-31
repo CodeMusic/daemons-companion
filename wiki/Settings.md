@@ -13,6 +13,11 @@ and keeps a backup beside it in `companion-backups/` first. Close the game befor
 writes its own copy back over yours. Point the emulator and the companion at the same `.sav` and the round trip just
 works.
 
+**Watched** (C-261). The companion watches the save it reads. A change that holds still is read again at once, and a
+save that asks (a SEND, a CALL HOME) is SYNCed by itself as soon as no program holds the file open -- that is, once
+the emulator is closed. `"watchSave": false` in `config.json` turns it off (the DAEMONS playground's own companions
+do: the playground SYNCs as its COMPANION tab opens).
+
 - **Never half a save.** The new save is written beside the old and then put in its place, so a crash mid-write leaves
   the old one whole. What a SYNC writes in is recorded as applied all at once, or not at all (C-157).
 - **The backups are pruned** after each write: the newest sixty, and every one from the last fortnight, are kept; the

@@ -1,29 +1,48 @@
 // C-256 (the user, 2026-10-30: "I really want that feature for the t-watch ultra"): TV -- a remote for the TVs added on the
 // companion's SETTINGS. The Ultra has no IR light, so a button is a request to the companion (POST /api/device/tv), which
 // presses it the TV's own way: a Roku directly, an Apple TV, a Google TV or a Fire TV through Home Assistant (server/src/
-// tv.ts). It needs the home's Wi-Fi, where the TV is.
+// tv.ts). It needs the home's Wi-Fi, where the TV is. A Roku is pressed by the watch itself, straight to its address on
+// that Wi-Fi (the user's hub sat on another network and could not reach theirs, 2026-10-31), and through the companion
+// only if that fails; the list comes in the state (through the phone too) and is kept in flash.
 //
 // Twelve buttons in four rows -- POWER HOME BACK, the arrows round OK, then VOL- PLAY VOL+ and MUTE -- tapped where they
 // are; the crown or a swipe moves the mark and a press presses it, for a board without touch; a swipe across chooses
 // another TV; a hold goes back. Every word DRAFT.
 #include "app.h"
 #include "watch.h"
+#include <HTTPClient.h>
+#include <Preferences.h>
 
 void haptic(uint8_t effect);
 
 static JsonDocument tvList;
+static String tvKept;                                // the list as the state last gave it, kept in flash
+
+void tvFromState(JsonArrayConst tvs) {
+  String j; serializeJson(tvs, j);
+  if (j == tvKept) return;
+  tvKept = j;
+  Preferences p; p.begin("tv", false); p.putString("list", j); p.end();
+}
+static bool tvLoad() {
+  if (!tvKept.length()) { Preferences p; p.begin("tv", true); tvKept = p.getString("list", ""); p.end(); }
+  tvList.clear();
+  JsonDocument a;
+  if (tvKept.length() && !deserializeJson(a, tvKept) && a.is<JsonArray>()) tvList["tvs"] = a.as<JsonArray>();
+  return tvList["tvs"].size() > 0;
+}
 static int tvAt = 0, keyAt = 8;                    // the TV shown, and the button marked (OK)
 static uint32_t pressedAt = 0; static int pressed = -1; static String tvSaid;
 
 // the buttons, by the server's names (tv.ts KEYS), with what each says and where it sits on a 3-wide grid of 5 rows
-struct TvKey { const char *key, *label; uint8_t col, row; };
+struct TvKey { const char *key, *label; uint8_t col, row; const char *roku; };
 static const TvKey KEYS[] = {
-  { "power", "POWER", 0, 0 }, { "home", "HOME", 1, 0 }, { "back", "BACK", 2, 0 },
-  { "up", "^", 1, 1 },
-  { "left", "<", 0, 2 }, { "ok", "OK", 1, 2 }, { "right", ">", 2, 2 },
-  { "down", "v", 1, 3 },
-  { "voldown", "VOL-", 0, 4 }, { "play", "PLAY", 1, 4 }, { "volup", "VOL+", 2, 4 },
-  { "mute", "MUTE", 0, 3 },
+  { "power", "POWER", 0, 0, "Power" }, { "home", "HOME", 1, 0, "Home" }, { "back", "BACK", 2, 0, "Back" },
+  { "up", "^", 1, 1, "Up" },
+  { "left", "<", 0, 2, "Left" }, { "ok", "OK", 1, 2, "Select" }, { "right", ">", 2, 2, "Right" },
+  { "down", "v", 1, 3, "Down" },
+  { "voldown", "VOL-", 0, 4, "VolumeDown" }, { "play", "PLAY", 1, 4, "Play" }, { "volup", "VOL+", 2, 4, "VolumeUp" },
+  { "mute", "MUTE", 0, 3, "VolumeMute" },
 };
 static const int NKEYS = sizeof KEYS / sizeof KEYS[0];
 static int gx, gy, gw, gh;                          // the grid's place on the canvas, set as it is drawn
@@ -57,6 +76,15 @@ static void press(int i) {
   pressed = i; pressedAt = millis(); keyAt = i; tvSaid = "";
   haptic(1);
   progress("");
+  // a Roku with an address: straight to it, on this Wi-Fi (its External Control Protocol)
+  String host = tvList["tvs"][tvAt]["host"] | "";
+  if (host.length() && WiFi.status() == WL_CONNECTED) {
+    HTTPClient h; h.setConnectTimeout(1500); h.setTimeout(2500);
+    int code = h.begin("http://" + host + ":8060/keypress/" + KEYS[i].roku) ? h.POST("") : -1;
+    h.end();
+    if (code >= 200 && code < 300) { progress(""); return; }
+    if (code == 403) { tvSaid = "THE ROKU REFUSES: TURN ON CONTROL BY MOBILE APPS"; progress(""); return; }      // DRAFT
+  }
   JsonDocument b; b["id"] = tvList["tvs"][tvAt]["id"]; b["key"] = KEYS[i].key;
   String body; serializeJson(b, body);
   bool ok; String got = http("POST", "/api/device/tv", body, &ok);
@@ -68,11 +96,13 @@ static void press(int i) {
 }
 
 String runTv() {
-  if (!online()) return "TV NEEDS THE HOME'S WI-FI";                                                             // DRAFT
-  bool ok; String got = http("GET", "/api/device/tvs", "", &ok);
-  tvList.clear();
-  if (!ok || deserializeJson(tvList, got)) return "THE COMPANION DID NOT ANSWER";                                // DRAFT
-  if (!tvList["tvs"].size()) return "No TV yet -- add one on the companion's SETTINGS, TV.";                     // DRAFT
+  if (WiFi.status() != WL_CONNECTED) return "TV NEEDS THE HOME'S WI-FI";                                       // DRAFT
+  if (!tvLoad()) {                                                     // nothing kept yet: ask the companion once
+    bool ok; String got = online() ? http("GET", "/api/device/tvs", "", &ok) : "";
+    JsonDocument d;
+    if (got.length() && !deserializeJson(d, got) && d["tvs"].is<JsonArray>()) { tvFromState(d["tvs"].as<JsonArrayConst>()); tvLoad(); }
+  }
+  if (!tvList["tvs"].size()) return "No TV yet -- add one on the companion's PLACES, TV.";                       // DRAFT
   tvAt = constrain(tvAt, 0, (int)tvList["tvs"].size() - 1); tvSaid = ""; pressed = -1;
   runPanel = drawTv;
   progress("");

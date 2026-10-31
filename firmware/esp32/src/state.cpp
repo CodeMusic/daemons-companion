@@ -133,6 +133,7 @@ bool takeState(const char *json) {
   if (!doc["away"].isNull()) takeAway(doc["away"]["url"] | "", doc["away"]["key"] | "");
   if (!doc["clock"].isNull()) watchSetClock(doc["clock"]["epoch"] | 0, doc["clock"]["offset"] | 0);   // C-71
   if (doc["casts"].is<JsonArrayConst>()) castFromState(doc["casts"].as<JsonArrayConst>());   // C-134: broadcasts, once each
+  if (doc["tvs"].is<JsonArrayConst>()) tvFromState(doc["tvs"].as<JsonArrayConst>());   // C-256: the TVs, kept
   playFromState(doc["play"]);                // T-426: the instrument, its lock and the songs learned
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   soundEdition(st.edition);                  // C-164: and on the save's own instrument

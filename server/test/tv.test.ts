@@ -79,12 +79,13 @@ describe("TVs (C-256)", () => {
     expect((await tvs.press("nope", "ok")).ok).toBe(false);
   });
 
-  it("shows a device the names, never the addresses", () => {
+  it("shows a device a Roku's address (to press it directly), never a Home Assistant entity", () => {
     const { tvs } = world();
     tvs.add({ name: "Den", platform: "roku", host: "192.168.1.40" });
+    tvs.add({ name: "Shield", platform: "google", entity: "remote.shield" });
     const d = tvs.forDevice();
-    expect(d.tvs).toEqual([{ id: "den", name: "Den", platform: "roku" }]);
-    expect(JSON.stringify(d)).not.toContain("192.168");
+    expect(d.tvs).toEqual([{ id: "den", name: "Den", platform: "roku", host: "192.168.1.40" }, { id: "shield", name: "Shield", platform: "google" }]);
+    expect(JSON.stringify(d)).not.toContain("remote.shield");
   });
 
   it("finds the Rokus heard and Home Assistant's TVs, marking those already added", async () => {

@@ -62,6 +62,15 @@ const slug = (name: string, taken: string[]) => {
   return id;
 };
 
+// What a device is shown, in its state too: each TV's id, name and platform, and a Roku's address -- a watch on the Roku's
+// own Wi-Fi presses it directly (the user's hub, 2026-10-31, was on another network than the Roku and could not reach it;
+// the watch was beside it). A Home Assistant entity stays here.
+export function tvsForDevice(get: (k: string) => string | null) {
+  let l: Tv[] = [];
+  try { const x = JSON.parse(get(KEY) ?? "[]"); if (Array.isArray(x)) l = x; } catch { /* none */ }
+  return l.map(({ id, name, platform, host }) => (host ? { id, name, platform, host } : { id, name, platform }));
+}
+
 export interface Keys { get(k: string): string | null; set(k: string, v: string | null): void }
 export type Fetch = typeof fetch;
 
@@ -72,8 +81,7 @@ export class Tvs {
     try { const l = JSON.parse(this.keys.get(KEY) ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; }
   }
   private save(l: Tv[]) { this.keys.set(KEY, JSON.stringify(l)); }
-  // what a device is shown: the names and ids, never where they are
-  forDevice() { return { tvs: this.list().map(({ id, name, platform }) => ({ id, name, platform })), keys: KEYS }; }
+  forDevice() { return { tvs: tvsForDevice((k) => this.keys.get(k)), keys: KEYS }; }
 
   add(x: { name?: unknown; platform?: unknown; host?: unknown; entity?: unknown }): { ok: boolean; tv?: Tv; error?: string } {
     const platform = x.platform as Platform, name = cleanName(x.name);

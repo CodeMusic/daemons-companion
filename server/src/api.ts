@@ -80,7 +80,7 @@ import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressi
 import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
-import { Tvs, lanHost } from "./tv.js";
+import { Tvs, lanHost, tvsForDevice } from "./tv.js";
 import { createSocket } from "node:dgram";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
@@ -220,7 +220,8 @@ const talkNow = (store: Store) => ({ first: talkFirst(store), n8n: !!TALK_HEALTH
 // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
 export const deviceState = (cfg: Config, store: Store, now = new Date(), deviceId = "", as: string | null = null) => {
   const addr = cfg.host === "0.0.0.0" ? lanAddress() : null;
-  return { ...core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null, as), talk: talkNow(store) };
+  return { ...core.deviceState(hostOf(cfg), store, now, deviceId, addr ? `http://${addr}:${cfg.port}` : null, as), talk: talkNow(store),
+           tvs: tvsForDevice((k) => store.getSetting(k)) };   // C-256: the TVs, so a watch reached through the phone has them
 };
 
 const ART_DIR = fileURLToPath(new URL("../data/art/", import.meta.url));

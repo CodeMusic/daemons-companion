@@ -87,9 +87,10 @@ And two things a trainer can do there: **forget** a memory (it leaves the month 
 re-summarised), and **load a dream from the game**: the dream the save carries (T-462's VAR_0x40D4, its image and
 quality) comes in at SYNC and is told in words from the set the ROM draws from.
 
-**One question before the portal is drawn.** The game's rule is that a feeling is shown, never named, and every screen
-so far keeps it. A portal that prints "very GLAD" breaks it; one that shows feelings as the daemon's face, its colour
-or weather in a room keeps it, with the words behind a tap or not shown at all. This is the user's call.
+**Decided (the user, 2026-10-31): feelings are shown, the words are behind a tap.** The game's rule is that a
+feeling is shown, never named. The portal keeps it by default: NOW shows each feeling as the daemon's face, its colour
+and the weather in its room, and a tap on one shows the words the model is given ("very GLAD") and the event behind
+it. **The portal opens on NOW.**
 
 ## Ideas, while we are here
 

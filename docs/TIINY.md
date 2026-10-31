@@ -120,8 +120,8 @@ The plan that works whichever it turns out to be -- **a voice is a recipe, and l
 - **The playground and the iPad app run the game in an emulator**, which can read the game's memory live (engineAi
   already does it over mGBA's socket). There the companion can watch the game as it is played: a daemon in the
   side panel reacting to the battle you are in. That is the "phone version" the question guessed at, and it is real.
-- **The AI playtester (T-319) could run on the Tiiny for nothing.** The standing rule is never to run the *paid*
-  playtester; a local one changes what it costs, not the rule. Whether that rule loosens is the user's call.
+- **The AI playtester (T-319) can run on the Tiiny for nothing.** Decided (the user, 2026-10-31): a session may run
+  it **locally on the Tiiny without asking**; the *paid* playtester is still never run.
 
 ## The enclosure (C-250)
 
@@ -132,7 +132,7 @@ of the metal, the hub's touch screen in front and its microSD reachable. One two
 class) feeds both, so the unit has one cable to the wall. **Measure the real device before printing**: these are the
 documented numbers, not callipers.
 
-Three directions, sketched in the session (2026-10-30):
+Three directions, sketched in the session (2026-10-30). **Decided (the user, 2026-10-31): THE PLINTH.**
 
 1. **THE PLINTH** -- the Tiiny lies flat in a vented tray; the hub stands on four posts above it, its screen tilted
    15° toward you. Simplest to print, best for air, the Tiiny's lights visible through a slot.

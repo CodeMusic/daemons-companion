@@ -11,7 +11,8 @@ learned home to the game. Any device can host a daemon, and with more than one d
 from your party. It also reads your save, so you as the game draws you, your NOTEBOOK and what you have been taught come
 with you -- and its CASINO plays with your game's money.
 
-**The game itself has a manual**:
+**New to the game? [QUICK START](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf)** is a short guide in large type -- what DAEMONS is and how to
+play it, a step at a time. **The game itself has a manual**:
 [the DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf), a PDF of 47
 pages -- every way to play, getting started, the world, daemons, battles and the seventeen types, BENCHMARKS, MARKS and
 ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER and the CASINO, the companion, help and
@@ -69,6 +70,7 @@ too, and TestFlight is to come. Internal and in testing for now -- [The one app]
 ## Elsewhere in the repository
 
 - [README](https://github.com/CodeMusic/daemons-companion/blob/main/README.md) -- the companion in a page.
+- [QUICK START](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf) -- the game in a few large-type pages, for a first time.
 - [The DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf) -- the
   game, for the player who holds it.
 - [docs/FIELD-GUIDE.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/FIELD-GUIDE.md) -- a walk

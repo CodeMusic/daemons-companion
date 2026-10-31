@@ -29,5 +29,6 @@
 - [README](https://github.com/CodeMusic/daemons-companion/blob/main/README.md)
 - [TODO](https://github.com/CodeMusic/daemons-companion/blob/main/TODO.md)
 - [DAEMONS, the game](https://github.com/CodeMusic/DAEMONS)
-- [QUICK START (PDF)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf)
+- [MICRO-START (PDF, 5 pages)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-microstart.pdf)
+- [QUICK-START (PDF, 25 pages)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf)
 - [The player's manual (PDF)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf)

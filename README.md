@@ -12,8 +12,8 @@ happened while it was with you.
 
 I will not tell you which device it should live in. I never assign a daemon. You will see which one it likes.
 
-**New to the game? [QUICK START](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf)** is a short guide in large type -- what DAEMONS is and how to
-play it, a step at a time. **The game's whole manual is here**:
+**New to the game? [MICRO-START](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-microstart.pdf)** is five pages, and **[QUICK-START](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf)** the same in
+25 pages of large type -- what DAEMONS is and how to play it, a step at a time. **The game's whole manual is here**:
 **[the DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf)**, a PDF of 47
 pages -- every way to play, getting started, the world, daemons, battles and the seventeen types, BENCHMARKS, MARKS and
 ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER and the CASINO, this companion, help and

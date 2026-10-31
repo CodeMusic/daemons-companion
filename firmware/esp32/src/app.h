@@ -137,6 +137,7 @@ void takeSettings(JsonVariant s);
 void soundSetHere(bool on);               // C-159: SOUND turned on or off on the board itself -- kept, and told to the companion
 bool takeState(const String &json);
 bool takeState(const char *json);
+extern String stateError;                // C-179: why the last state was not read (told with UNREAD)
 bool takeArt(const String &json);
 bool artFromCache(const String &key);   // the picture kept for that daemon, made the one shown
 bool artCached(const String &key);

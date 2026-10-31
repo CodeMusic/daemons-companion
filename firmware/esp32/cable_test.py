@@ -73,10 +73,12 @@ def run(version):
             STATE["daemon"] = dict(STATE["daemon"], artKey="1-b", entry="Another entry.")
             new = states(1.5)
             check("v4: a new artKey brings its entry", len(new) == 1 and new[0]["daemon"].get("entry") == "Another entry.")
-            say("UNREAD 4090")
+            say("UNREAD 4605 ART")                  # a picture unread: the state need not go again
+            check("v4: an unread ART sends no state", states(1.5) == [])
+            say("UNREAD 4090 STATE")
             STATE["step"] = {"id": 8}
             after = states(1.5)
-            check("v4: after UNREAD the whole state", len(after) == 1 and after[0]["daemon"].get("entry"))
+            check("v4: after an unread STATE the whole state", len(after) == 1 and after[0]["daemon"].get("entry"))
         else:
             check("v3: its entry always sent (older firmware keeps none)", changed and changed[0]["daemon"].get("entry"))
         keep = states(11.0)

@@ -231,9 +231,13 @@ def bridge(a, port):
                 except Exception as e:
                     print("usb_bridge: no picture for the CASINO's reel (%s)" % e, flush=True)
             elif msg.startswith("UNREAD "):
-                print("usb_bridge: the device could not read the state it was sent (%s bytes arrived)" % msg.split()[1],
+                words = msg.split()                         # UNREAD <bytes> [STATE|ART|CMD...]: which line (C-179)
+                kind = words[2].lower() if len(words) > 2 else "state"
+                why = " -- " + " ".join(words[3:]) if len(words) > 3 else ""
+                print("usb_bridge: the device could not read the %s it was sent (%s bytes arrived%s)" % (kind, words[1], why),
                       flush=True)
-                told["key"], told["entry"] = None, None     # C-179: the whole state again, at the next turn
+                if kind == "state":
+                    told["key"], told["entry"] = None, None     # C-179: the whole state again, at the next turn
             elif msg == "ENTRY?":                           # C-179: the board has no INDEX entry for its daemon -- the whole state
                 told["entry"] = None
                 try:

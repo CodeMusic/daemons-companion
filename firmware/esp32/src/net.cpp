@@ -81,7 +81,10 @@ void saveNetworks() {
   for (int i = 0; i < MAX_NETS; i++) {
     String k = String(i);
     if (i < knownCount) { p.putString(("s" + k).c_str(), knownSsid[i]); p.putString(("p" + k).c_str(), knownPass[i]); }
-    else { p.remove(("s" + k).c_str()); p.remove(("p" + k).c_str()); }
+    else {                                                  // only what is there: removing a key never written logs an error
+      if (p.isKey(("s" + k).c_str())) p.remove(("s" + k).c_str());
+      if (p.isKey(("p" + k).c_str())) p.remove(("p" + k).c_str());
+    }
   }
   p.putString("server", serverUrl);
   p.end();
@@ -471,9 +474,9 @@ void handleLine(String line, bool fromPhone) {
   }
   if (line.startsWith("STATE ")) {
     if (takeState(line.c_str() + 6)) seen = millis();       // C-121: the line's own buffer, no copy
-    else reply("UNREAD " + String(line.length()));   // the bridge says so, rather than the corner silently not changing
+    else reply("UNREAD " + String(line.length()) + " STATE " + stateError);   // C-179: and why (lost bytes, or memory)   // the bridge says so, rather than the corner silently not changing
   }
-  else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length())); }
+  else if (line.startsWith("ART ")) { if (!takeArt(line.substring(4))) reply("UNREAD " + String(line.length()) + " ART"); }
   else if (line.startsWith("PARTYART ")) {           // C-149: a party daemon, for the CASINO's reels
     if (!casinoTakeArt(line.c_str() + 9)) takeArt(line.substring(9));   // C-241: or fetched ahead (fetchPartyArt), kept by its artKey
   }
@@ -522,7 +525,7 @@ void handleLine(String line, bool fromPhone) {
   }
   else if (line.startsWith("CMD ")) {
     JsonDocument d;
-    if (deserializeJson(d, line.substring(4))) reply("UNREAD " + String(line.length()));
+    if (deserializeJson(d, line.substring(4))) reply("UNREAD " + String(line.length()) + " CMD");
     else if (fromPhone && String(d["type"] | "") == "wifi") reply("UNREAD wifi");   // C-33: a password only down the cable
     else handleCommand(d.as<JsonVariant>());
   }

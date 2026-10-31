@@ -25,7 +25,7 @@ void tvFromState(JsonArrayConst tvs) {
   Preferences p; p.begin("tv", false); p.putString("list", j); p.end();
 }
 static bool tvLoad() {
-  if (!tvKept.length()) { Preferences p; p.begin("tv", true); tvKept = p.getString("list", ""); p.end(); }
+  if (!tvKept.length()) { Preferences p; if (p.begin("tv", false)) { tvKept = p.isKey("list") ? p.getString("list", "") : ""; p.end(); } }
   tvList.clear();
   JsonDocument a;
   if (tvKept.length() && !deserializeJson(a, tvKept) && a.is<JsonArray>()) tvList["tvs"] = a.as<JsonArray>();

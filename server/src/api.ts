@@ -57,6 +57,8 @@ import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
+import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
+import { bondTrend, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
@@ -183,6 +185,30 @@ function talkWho(ecfg: Config, store: Store, deviceId: string) {
     goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
   };
 }
+// C-252: who the daemon carried is, as self.ts says it -- the save's friendship and its week's trend (one snapshot a day,
+// kept in the store), its life and feelings, last night's dream, and the trainer and the box from this machine's settings
+function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date()): SelfFacts {
+  const st = deviceState(ecfg, store, now, deviceId), d = st.daemon as Record<string, any> | null, w = talkWho(ecfg, store, deviceId);
+  let trend: SelfFacts["bondTrend"] = null;
+  if (d && typeof d.friendship === "number") {
+    const today = now.toLocaleDateString("en-CA");
+    let days: Record<string, number> = {};
+    try { days = JSON.parse(store.getSetting("self.bondDays") ?? "{}"); } catch { /* a fresh start */ }
+    trend = bondTrend(days, today, d.friendship);
+    if (days[today] === undefined) store.setSetting("self.bondDays", JSON.stringify(keepBondDay(days, today, d.friendship)));
+  }
+  const kind = validDeviceId(deviceId) ? kindOf(deviceId) : "";
+  return { ...w.daemon, nickname: w.daemon.nickname, box: store.getSetting("self.box") || undefined,
+           device: kind ? (store.getSetting(`self.device.${kind}`) || kind.toUpperCase()) : undefined,
+           trainer: store.getSetting("self.trainer") || undefined,
+           friendship: d && typeof d.friendship === "number" ? d.friendship : null, bondTrend: trend,
+           life: d?.life ?? null, feelings: d ? core.daemonFeelings(store, now) : null,
+           dream: (w.daemon as { dream?: string }).dream ?? null,
+           yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
+           day: w.day, season: w.season, goal: w.goal };
+}
+const selfText = (ecfg: Config, store: Store, deviceId: string, length: SelfLength) =>
+  selfOf(selfFacts(ecfg, store, deviceId), length, store.getSetting("self.instructions") || SELF_INSTRUCTIONS);
 const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!s && readSubtle(s).held; };
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
@@ -203,7 +229,8 @@ export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId
 // answers a talk first, and whether each can -- n8n's voice server reachable, a module answering with a thinker. Checked
 // on a minute's timer by the server (makeServer), never per request; every board's state carries it, so a watch draws
 // its dots without asking. Unset, the module is first once one is known (as talkProvider).
-export type TalkHealth = { n8n: { ok: boolean; at: string } | null; modules: { name: string; ok: boolean; at: string }[] };
+export type TalkHealth = { n8n: { ok: boolean; at: string } | null; modules: { name: string; ok: boolean; at: string }[];
+                           tiiny?: { ok: boolean; at: string; models: string[] } | null };   // C-249
 let TALK_HEALTH: TalkHealth = { n8n: null, modules: [] };
 export const talkFirst = (store: Store): "module" | "n8n" => {
   const p = store.getSetting("talk.provider");
@@ -213,7 +240,7 @@ export const talkFirst = (store: Store): "module" | "n8n" => {
 // module's turn is set over it (the review: a watch's talkfirst had set "auto" over "local")
 const setTalkFirst = (store: Store, first: "module" | "n8n") => {
   const was = store.getSetting("talk.provider");
-  store.setSetting("talk.provider", first === "module" ? "module" : was === "local" || was === "openrouter" ? was : "auto");
+  store.setSetting("talk.provider", first === "module" ? "module" : was === "local" || was === "openrouter" || was === "tiiny" ? was : "auto");
 };
 const talkNow = (store: Store) => ({ first: talkFirst(store), n8n: !!TALK_HEALTH.n8n?.ok, module: TALK_HEALTH.modules.some((m) => m.ok) });
 
@@ -576,7 +603,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const at = new Date().toISOString();
     const n8nOk = cfg.talk.url ? { ok: await reachable(cfg.talk.url), at } : null;
     const modules = (await house.view()).map((m) => ({ name: m.name, ok: !m.error && !!m.llm, at }));
-    TALK_HEALTH = { n8n: n8nOk, modules };
+    const t = tiinyIn((k) => store.getSetting(k)), held = t ? await tiinyModels(t) : null;   // C-249
+    TALK_HEALTH = { n8n: n8nOk, modules, tiiny: t ? { ok: !!held && !!pickThinker(t, held), at, models: held ?? [] } : null };
   };
   checkTalk().catch(() => {});
   setInterval(() => { checkTalk().catch(() => {}); }, 60_000).unref();
@@ -970,12 +998,35 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
       const talkView = async () => ({ provider: talkProvider(), first: talkFirst(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
-                                      modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "" });
+                                      modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "",
+                                      tiiny: tiinyView((k) => store.getSetting(k)) });
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
+      // C-252: the daemon's self, exactly as a model is given it (the mind portal's SELF, C-254) -- this machine's own
+      if (req.method === "GET" && path === "/api/self") {
+        const length = (["short", "day", "full"] as const).find((l) => l === url.searchParams.get("length")) ?? "day";
+        return send(res, 200, { length, text: selfText(ecfg, store, deviceId, length), trainer: store.getSetting("self.trainer") ?? "",
+                                box: store.getSetting("self.box") ?? "", instructions: store.getSetting("self.instructions") ?? "" });
+      }
+      if (req.method === "POST" && path === "/api/self") {          // the trainer's name, the box, the user's own instructions
+        const b = await body(req);
+        for (const [k, most] of [["trainer", 40], ["box", 60], ["instructions", 4000]] as const)
+          if (typeof b[k] === "string") store.setSetting(`self.${k}`, b[k].trim().slice(0, most) || null);
+        return send(res, 200, { text: selfText(ecfg, store, deviceId, "day") });
+      }
       if (req.method === "POST" && path === "/api/talk/settings") {
         const b = await body(req);
-        if (b.provider !== undefined && !["module", "auto", "local", "openrouter"].includes(b.provider))
-          return send(res, 400, { error: "provider is module, auto, local or openrouter" });
+        if (b.provider !== undefined && !["module", "auto", "local", "openrouter", "tiiny"].includes(b.provider))
+          return send(res, 400, { error: "provider is module, auto, local, openrouter or tiiny" });
+        if (b.tiiny !== undefined) {                           // C-249: the Tiiny's address, key and models (the key is never shown back)
+          const t = b.tiiny ?? {};
+          if (typeof t.url === "string" && t.url.trim() && !tiinyUrl(t.url))
+            return send(res, 400, { error: "the Tiiny's address ends in /v1: http://roverbyteseer:4000/v1, or http://<its address>/openai/v1" });   // DRAFT
+          if (typeof t.url === "string") store.setSetting("tiiny.url", t.url.trim() ? tiinyUrl(t.url) : null);
+          for (const k of ["key", "model", "tts", "asr", "voice"] as const)
+            if (typeof t[k] === "string") store.setSetting(`tiiny.${k}`, t[k].trim().slice(0, 200) || null);
+          const at = tiinyIn((k) => store.getSetting(k)), held = at ? await tiinyModels(at) : null;
+          TALK_HEALTH = { ...TALK_HEALTH, tiiny: at ? { ok: !!held && !!pickThinker(at, held), at: new Date().toISOString(), models: held ?? [] } : null };
+        }
         if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
         if (b.first !== undefined && !["n8n", "module"].includes(b.first)) return send(res, 400, { error: "first is module or n8n" });
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
@@ -1181,6 +1232,20 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           book: (p as { book?: string }).book };                                                                // C-229
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
+        const tiiny = tiinyIn((k) => store.getSetting(k));
+        if (p.provider === "tiiny" && tiiny && !asked) {          // C-249: the Tiiny, with the daemon's whole self; else as before
+          try {
+            const said = ask.text ?? (ask.wav ? await tiinyHear(tiiny, ask.wav) : null);
+            if (said) {
+              const model = pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []);
+              const answer = await tiinyChat(tiiny, model, selfText(ecfg, store, deviceId, "full"), ask.history, said);
+              const v = p.speak ? await tiinySpeak(tiiny, answer) : null;
+              return { answer, heard: ask.wav ? said : null, provider: `tiiny:${model}`,
+                       ...(v ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: v.mime } : {}) };
+            }
+          } catch { /* the Tiiny away or failing: the module, then n8n, as below */ }
+          p = { ...p, provider: house.any ? "module" : "auto" };
+        }
         if (p.provider !== "module" || !house.any) {              // n8n first -- and, C-211, the module when n8n cannot answer
           const r = await n8n(ecfg, "daemon/talk", p.provider === "module" ? { ...p, provider: "auto" } : p);
           if (!r.error || !house.any || asked) return r;

@@ -189,11 +189,15 @@ export function VersionCard({ ink }: { ink: string }) {
 
 // C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly. C-180: or the modules in the
 // house (the hub's Module LLM, an AX630 board), and, beside it, the one voice that reads the INDEX aloud.
-type Provider = "module" | "auto" | "local" | "openrouter";
+type Provider = "module" | "auto" | "local" | "openrouter" | "tiiny";
+type Tiiny = { url: string; keySet: boolean; model: string; tts: string; asr: string; voice: string };   // C-249
 type HouseModule = { url: string; name: string; busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null };
 export function TalkSettingsCard({ ink }: { ink: string }) {
   const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
-                            moduleAddresses?: string }>("/api/talk/settings");
+                            moduleAddresses?: string; tiiny?: Tiiny;
+                            health?: { tiiny?: { ok: boolean; models: string[] } | null } }>("/api/talk/settings");
+  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string } | null>(null);
+  const [tiinyNote, setTiinyNote] = useState("");
   const [typed, setTyped] = useState<string | null>(null);
   const [looking, setLooking] = useState("");
   if (!t) return null;
@@ -205,13 +209,22 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
   const pick = async (provider: Provider) => setT(await api<typeof t>("/api/talk/settings", { provider }));
   const voice = async (indexVoice: "n8n" | "module") => setT(await api<typeof t>("/api/talk/settings", { indexVoice }));
   const modules = t.modules ?? [], house = modules.length > 0 || t.provider === "module";
+  const tiinyOn = !!t.tiiny?.url, tiinyHealth = t.health?.tiiny;
+  const saveTiiny = async () => {                                     // C-249: its address, key and model, then a look
+    setTiinyNote("Looking...");   // DRAFT
+    try { setT(await api<typeof t>("/api/talk/settings", { tiiny: tiinyTyped ?? {} })); setTiinyTyped(null); setTiinyNote(""); }
+    catch (e) { setTiinyNote((e as Error).message); }
+  };
   return (
     <Card>
       <Eyebrow>WHO ANSWERS WHEN YOU TALK</Eyebrow>
       <Choice value={t.provider} onPick={pick} ink={ink}
-              options={[...(house ? [["module", "In the house"] as [Provider, string]] : []),
+              options={[...(tiinyOn ? [["tiiny", "The Tiiny"] as [Provider, string]] : []),
+                        ...(house ? [["module", "In the house"] as [Provider, string]] : []),
                         ["auto", "Mine, then OpenRouter"], ["local", "Only mine"], ["openrouter", "OpenRouter"]]} />
-      <Small>{t.provider === "module" ? "The daemons think, speak and listen on the AI boards in your house; nothing you say leaves it. "
+      <Small>{t.provider === "tiiny" ? "Your daemon thinks on the Tiiny in your house, with everything it knows about itself. "
+          + "If the Tiiny is away, the talk goes to the house boards, then your own model."   /* DRAFT */
+        : t.provider === "module" ? "The daemons think, speak and listen on the AI boards in your house; nothing you say leaves it. "
           + "When every board is busy, the talk goes to your own model so nobody waits."   /* DRAFT */
         : t.provider === "local" ? "Your words stay on your own machines. If your model is busy or off, the daemon says it cannot answer."
         : t.provider === "openrouter" ? "The words heard go to OpenRouter to be answered. The recording itself never leaves home."
@@ -232,6 +245,22 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
           <Small>{looking || "Its address on your network (more than one: commas). The hub's own board is found by itself."}</Small>{/* DRAFT */}
         </YStack>
       ) : null}
+      <YStack gap={6} marginTop={6}>
+        <Eyebrow>THE TIINY</Eyebrow>
+        <Input value={tiinyTyped?.url ?? t.tiiny?.url ?? ""} onChangeText={(url) => setTiinyTyped({ ...tiinyTyped, url })}
+               placeholder="http://roverbyteseer:4000/v1" autoCapitalize="none" autoCorrect={false} keyboardType="url" />
+        <XStack gap={8} flexWrap="wrap" alignItems="center">
+          <Input flexGrow={1} minWidth={140} value={tiinyTyped?.key ?? ""} onChangeText={(key) => setTiinyTyped({ ...tiinyTyped, key })}
+                 placeholder={t.tiiny?.keySet ? "its key is kept" : "its key"} secureTextEntry autoCapitalize="none" autoCorrect={false} />
+          <Input flexGrow={1} minWidth={140} value={tiinyTyped?.model ?? t.tiiny?.model ?? ""} onChangeText={(model) => setTiinyTyped({ ...tiinyTyped, model })}
+                 placeholder="its model (or the first)" autoCapitalize="none" autoCorrect={false} />
+          <Action label="Look for it" ink={ink} onPress={saveTiiny} />
+        </XStack>
+        <Small color={tiinyHealth ? (tiinyHealth.ok ? "$color10" : "$color9") : undefined}>
+          {tiinyNote || (!tiinyOn ? "Its address: roverbyteseer's, which lists the Tiiny's models with its own, or the Tiiny's own, ending /openai/v1."
+            : tiinyHealth?.ok ? `Answering: ${tiinyHealth.models.length} models.` : "Not answering yet.")}
+        </Small>{/* DRAFT */}
+      </YStack>
       {house ? (
         <YStack gap={6} marginTop={6}>
           <Eyebrow>THE INDEX READS IN</Eyebrow>
@@ -241,7 +270,7 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
             : "The INDEX reads in one of the house boards' voices, without the voice server."}</Small>{/* DRAFT */}
         </YStack>
       ) : null}
-      {!t.connected && t.provider !== "module" ? <Small color="$color8">Talking is not set up yet: add "talk" to server/config.json (README, Talk to your daemon).</Small> : null}
+      {!t.connected && t.provider !== "module" && t.provider !== "tiiny" ? <Small color="$color8">Talking is not set up yet: add "talk" to server/config.json (README, Talk to your daemon).</Small> : null}
     </Card>
   );
 }

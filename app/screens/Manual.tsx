@@ -18,6 +18,8 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
   player: { title: "THE PLAYER'S MANUAL", about: "Every way to play DAEMONS, and how it all works.", says: "How to play DAEMONS, every way there is" },   // DRAFT
   social: { title: "PLAYING TOGETHER", about: "Trading, loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS.",                         // DRAFT
             says: "DAEMONS with other players: trading, loans, gifts, meetings and friends' homes" },                                               // DRAFT
+  tiiny:  { title: "A BIGGER MIND", about: "Setting up a Tiiny Pocket for the companion: the computer, the network and the hub.",                  // DRAFT
+            says: "Setting up the Tiiny Pocket for the DAEMONS companion" },                                                                        // DRAFT
 };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;

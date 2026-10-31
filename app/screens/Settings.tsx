@@ -10,6 +10,7 @@ import { Action, Card, Choice, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
 import { SavesCard } from "./Saves";   // C-215
 import { PREVIEW_ON, setPreview } from "../preview";
+import { muteAway, setMuteAway } from "../game/away";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
@@ -27,6 +28,7 @@ export function AloneSettings({ ink }: { ink: string }) {
   return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
+      {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
       <PreviewCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={LOCAL?.hasSave() ? "$color9" : "$color5"}>
         <Eyebrow>THIS PHONE HOSTS ON ITS OWN</Eyebrow>
@@ -81,6 +83,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
   if (!s) return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
+      {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
       <PreviewCard ink={ink} />
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
@@ -90,6 +93,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
   return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
+      {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
       <PreviewCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
@@ -345,6 +349,19 @@ export function RelayCard({ ink }: { ink: string }) {
       {/* selectable is the phone's; on the web it reached the DOM as an unknown attribute, so the web gets user-select */}
       <Text fontFamily="$mono" fontSize={13} color="$color12" {...(Platform.OS === "web" ? { userSelect: "text" } : { selectable: true })}>{r.secret}</Text>
       {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
+// C-260 (DRAFT): beside the companion (an iPad on its side, the Mac), the game can be put away and keeps playing --
+// heard meanwhile, or not
+function GameAwayCard({ ink }: { ink: string }) {
+  const [mute, setMute] = useState(muteAway());
+  return (
+    <Card>
+      <Eyebrow>MUTE THE GAME WHILE IT IS PUT AWAY</Eyebrow>
+      <Small>With the game beside the companion, the ‹ on the divider puts the game away and it keeps playing. DRAFT</Small>
+      <Choice value={mute} options={[[true, "Yes"], [false, "No"]]} onPick={(v) => { setMute(v); setMuteAway(v); }} ink={ink} />
     </Card>
   );
 }

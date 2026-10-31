@@ -10,6 +10,7 @@ import { GameTitle, type TitleChoice } from "./GameTitle";
 import { useEffect, useRef, useState } from "react";
 import { Directory, File, Paths } from "expo-file-system";
 import { WebView } from "react-native-webview";
+import { useLowPowerMode } from "expo-battery";
 import { Text, XStack, YStack } from "tamagui";
 import { freshPatches, heldGame, makeGame, makeTestingBuild, testingBuilds, updateFor, updateGame, type Game, type Step } from "../game/rom";
 import { GATE } from "../game/gate";
@@ -63,9 +64,13 @@ body.pad #game{height:50%}</style></head>
 const ctxs = []; const AC = window.AudioContext || window.webkitAudioContext;   // every sound context, to wake on a touch
 if (AC) { const W = function (...a) { const c = new AC(...a); ctxs.push(c); return c; }; W.prototype = AC.prototype;
   window.AudioContext = W; window.webkitAudioContext = W; }
-const wake = () => ctxs.forEach((c) => { if (c.state !== "running") c.resume().catch(() => {}); });
+let muted = false;                                         // C-260: put away beside the companion, and muted while so
+const wake = () => { if (!muted) ctxs.forEach((c) => { if (c.state !== "running") c.resume().catch(() => {}); }); };
 ["touchstart", "touchend", "mousedown", "keydown"].forEach((e) => document.addEventListener(e, wake, true));
 const say = (m) => window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(m));
+// C-257: what EmulatorJS warns of while starting reaches the app, so a failed start says why
+["warn", "error"].forEach((k) => { const o = console[k].bind(console); console[k] = (...a) => { o(...a);
+  const t = a.map((x) => (x && x.stack) || String(x)).join(" "); if (/fail|error/i.test(t)) say({ kind: "log", text: t.slice(0, 400) }); }; });
 const b64 = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const unb64 = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
 const g = () => window.EJS_emulator && window.EJS_emulator.gameManager;
@@ -78,6 +83,11 @@ window.putSave = (s) => { try { const m = g(), p = m.getSaveFilePath(); let dir 
   } catch (e) { say({ kind: "error", text: String(e) }); } };
 window.pauseGame = () => { try { window.takeSave("leave"); window.EJS_emulator.pause(); } catch (e) {} };
 window.playGame = () => { try { window.EJS_emulator.play(); } catch (e) {} };
+let volume = null;
+window.muteGame = (on) => { const E = window.EJS_emulator; muted = on;
+  try { if (on) { if (volume === null) volume = E.volume; E.setVolume(0); } else { E.setVolume(volume ?? 0.5); volume = null; } }
+  catch (e) { ctxs.forEach((c) => { try { on ? c.suspend() : c.resume(); } catch (x) {} }); }
+  if (!on) wake(); };
 setInterval(() => window.takeSave("tick"), 15000);
 window.EJS_player = "#game"; window.EJS_core = "gba"; window.EJS_gameUrl = "daemons.gba"; window.EJS_gameName = "daemons";
 window.EJS_pathtodata = "${CDN}"; window.EJS_startOnLoaded = true; window.EJS_backgroundColor = "#0f1115";
@@ -94,7 +104,26 @@ const layout = () => { const held = pads(); document.body.classList.toggle("pad"
   try { window.EJS_emulator.handleResize(); } catch (e) {}
   say({ kind: "pad", held }); };
 window.addEventListener("gamepadconnected", layout); window.addEventListener("gamepaddisconnected", layout);
-window.EJS_onGameStart = () => { say({ kind: "started" }); speed(); layout(); };
+// C-257: a page EmulatorJS's settings cannot be kept by (the Mac's web view refuses file:// storage) keeps none, rather
+// than its start throwing on the read
+window.EJS_disableLocalStorage = (() => { try { localStorage.setItem("ejs-probe", "1"); localStorage.removeItem("ejs-probe"); return false; } catch (e) { return true; } })();
+let begun = false;
+const begin = () => { if (begun) return; begun = true; say({ kind: "started" });
+  try { speed(); } catch (e) {} try { layout(); } catch (e) {} };
+window.EJS_onGameStart = () => begin();
+// C-257: EmulatorJS's start can throw after the core is already running (the music plays) -- then it shows "Failed to
+// start game", never draws the game and never says it started. Frames moving mean it did: its last steps are done here.
+const rescue = setInterval(() => { const E = window.EJS_emulator; let f = 0;
+  try { f = Number(g().getFrameNum()) || 0; } catch (e) {}
+  if (begun) { clearInterval(rescue); return; }
+  if (f < 30 || !E || E.started) return;
+  clearInterval(rescue);
+  const steps = [() => { if (E.textElem) { E.textElem.remove(); E.textElem = null; } },
+    () => { E.game.classList.remove("ejs_game"); E.game.classList.add("ejs_canvas_parent"); if (!E.canvas.parentNode) E.game.appendChild(E.canvas); },
+    () => { E.failedToStart = false; E.started = true; E.paused = false; },
+    () => { if (E.touch) E.virtualGamepad.style.display = ""; }, () => E.handleResize(), () => E.menu.open()];
+  steps.forEach((s) => { try { s(); } catch (e) {} });
+  say({ kind: "rescued" }); begin(); }, 1000);
 // How fast it runs: frames drawn a second (the screen's pace; Low Power Mode holds it at 30) and frames the core ran
 const speed = () => { let drawn = 0, t0 = performance.now(), f0 = null;
   const tick = () => { drawn++; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
@@ -122,7 +151,8 @@ const STEPS: Record<Step, string> = { reading: "Reading your game...", checking:
   fetching: "Fetching the DAEMONS patch...", patching: "Making DAEMONS from it...", keeping: "Keeping it on this device..." };
 
 // The game, kept mounted while the app runs (hidden, and paused, on the other tabs)
-export function GameView({ active, ink, onSaved }: { active: boolean; ink: string; onSaved?: () => void }) {
+// `muted`: put away beside the companion with MUTE THE GAME WHILE IT IS PUT AWAY on (C-260)
+export function GameView({ active, ink, onSaved, muted = false }: { active: boolean; ink: string; onSaved?: () => void; muted?: boolean }) {
   const [game, setGame] = useState<Game | null>(() => heldGame());
   const [step, setStep] = useState<Step | null>(null);
   const [error, setError] = useState("");
@@ -144,6 +174,18 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
   // the title (GameTitle.tsx): GAME opens on it, and PLAY starts the emulator -- once a session; leaving the tab and
   // coming back finds the game where it was
   const [playing, setPlaying] = useState(false);
+  const lowPower = useLowPowerMode();                     // C-258
+  const [startWhy, setStartWhy] = useState("");          // C-257: what EmulatorJS warned of while starting
+  useEffect(() => { if (started.current) web.current?.injectJavaScript(`window.muteGame(${muted}); true;`); }, [muted]);
+  // C-259: back to the title -- the save taken out first, as leaving a tab does, then the emulator let go
+  const toTitle = async () => {
+    if (started.current) await new Promise<void>((done) => {
+      const t = setTimeout(() => { handed.current = null; done(); }, paired() ? 8000 : 1500);
+      handed.current = () => { clearTimeout(t); handed.current = null; done(); };
+      web.current?.injectJavaScript("window.pauseGame(); true;");
+    });
+    started.current = false; setPace(null); setStartWhy(""); setPlaying(false);
+  };
 
   useEffect(() => {                                       // a newer release, as published now
     if (game) freshPatches().then(() => setUpdate(updateFor(game)));
@@ -220,6 +262,7 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
           if (paired() && sha1(f.bytesSync()) !== agreed()) mirrorOut(given.current, onRefused);   // and the device's, to it
         }
         if (!active) web.current?.injectJavaScript("window.pauseGame(); true;");
+        if (muted) web.current?.injectJavaScript("window.muteGame(true); true;");
       })();
     } else if (m.kind === "save" && m.b64) {
       const f = saveFile(), bytes = bytesOf(m.b64);
@@ -229,6 +272,7 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
       (whole ? mirrorOut(m.b64, onRefused) : Promise.resolve()).finally(() => { if (m.why === "leave") handed.current?.(); });
     } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
     else if (m.kind === "error" && m.text) setError(m.text);
+    else if (m.kind === "log" && m.text && /start/i.test(m.text)) setStartWhy((w) => w || m.text!);
   };
 
   if (!active && !game) return null;
@@ -288,6 +332,13 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
       ) : keptSaid ? (
         <XStack padding={8} backgroundColor="$color3" onPress={() => setKeptSaid("")}><Small>{`${keptSaid}  DRAFT`}</Small></XStack>
       ) : null}
+      <XStack paddingHorizontal={8} paddingVertical={4} gap={10} alignItems="center">     {/* C-259, C-258 (DRAFT) */}
+        <YStack role="button" cursor="pointer" paddingHorizontal={10} paddingVertical={4} borderRadius={3} borderWidth={1} borderColor="#3a3f4a"
+                onPress={toTitle} aria-label="back to the title">
+          <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="#c9ccd3">‹ TITLE</Text>
+        </YStack>
+        {lowPower ? <Text flex={1} fontSize={12} color="#f2c14e">Low Power Mode is on: the game may run slower. DRAFT</Text> : null}
+      </XStack>
       <WebView key={game.sha1} ref={web} source={{ uri: page }} originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}
                allowingReadAccessToURL={new Directory(Paths.document, "game").uri} allowFileAccess allowFileAccessFromFileURLs
                allowUniversalAccessFromFileURLs allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false}
@@ -296,9 +347,10 @@ export function GameView({ active, ink, onSaved }: { active: boolean; ink: strin
       {pace && active ? (
         <Small color={pace.ran !== null && pace.ran < 55 ? "$color9" : "$color8"}>
           {`${pace.ran ?? "?"} game frames a second · ${pace.drawn} drawn · sound ${pace.sound || "none"}`
-            + (pace.drawn > 0 && pace.drawn <= 35 ? " -- the screen is held at 30: is Low Power Mode on?" : "")}
+            + (!lowPower && pace.drawn > 0 && pace.drawn <= 35 ? " -- the screen is held at 30" : "")}
         </Small>) : null}
       {error ? <Small color="$color9">{error}</Small> : null}
+      {startWhy ? <Small color="$color8">{`EmulatorJS, starting: ${startWhy}`}</Small> : null}
     </YStack>
   );
 }

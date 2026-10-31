@@ -6,7 +6,7 @@
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Linking, Platform, useColorScheme, useWindowDimensions } from "react-native";
+import { AppState, LayoutAnimation, Linking, PanResponder, Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import { SCREEN } from "./data";
 import { loadLook, LOOK, lookHeard, PALETTE, paletteHeard, setPalette } from "./look";
@@ -28,6 +28,7 @@ import { SHOWN_TABS, TABS, Today } from "./types";
 import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
 import { loadPreview } from "./preview";
+import { keepSplit, muteAway, splitKept } from "./game/away";
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void;
                                                          tabs?: readonly (typeof TABS)[number][] }) {
@@ -66,6 +67,44 @@ function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[numbe
   );
 }
 
+// C-260: beside, the game and the companion share the window -- a divider to drag between them, and each side can be
+// put away (the other takes the whole window); putting one away while the other is away brings that one back
+type Away = "none" | "game" | "companion";
+function Knob({ label, onPress, hint }: { label: string; onPress: () => void; hint: string }) {
+  return (
+    <YStack role="button" cursor="pointer" aria-label={hint} width={22} height={34} borderRadius={4} alignItems="center" justifyContent="center"
+            backgroundColor="$color9" onPress={onPress}>
+      <Text fontSize={16} lineHeight={18} fontWeight="700" color="$color1">{label}</Text>
+    </YStack>
+  );
+}
+function Divider({ drag, putAway }: { drag: (dx: number, done: boolean) => void; putAway: (side: Away) => void }) {
+  const latest = useRef(drag); latest.current = drag;       // the pan is made once; the drag it calls is this render's
+  const pan = useRef(PanResponder.create({                   // a tap is the knobs'; a sideways pull is the divider's
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 3, onPanResponderTerminationRequest: () => false,
+    onPanResponderMove: (_, g) => latest.current(g.dx, false), onPanResponderRelease: (_, g) => latest.current(g.dx, true),
+    onPanResponderTerminate: (_, g) => latest.current(g.dx, true),
+  })).current;
+  return (
+    <YStack width={24} backgroundColor="$color3" borderLeftWidth={1} borderRightWidth={1} borderColor="$color6"
+            alignItems="center" justifyContent="center" gap={10} cursor="col-resize" {...pan.panHandlers}>
+      <Knob label="‹" hint="put the game away" onPress={() => putAway("game")} />
+      <YStack gap={4} paddingVertical={12}>{[0, 1, 2, 3, 4].map((i) => <YStack key={i} width={4} height={4} borderRadius={2} backgroundColor="$color9" />)}</YStack>
+      <Knob label="›" hint="put the companion away" onPress={() => putAway("companion")} />
+    </YStack>
+  );
+}
+function Edge({ side, putAway }: { side: "left" | "right"; putAway: (side: Away) => void }) {
+  // the strip at the edge the hidden side went to: bring it back, or swap which side is away
+  return (
+    <YStack width={28} backgroundColor="$color3" borderColor="$color6" borderLeftWidth={side === "right" ? 1 : 0} borderRightWidth={side === "left" ? 1 : 0}
+            alignItems="center" justifyContent="center" gap={10}>
+      <Knob label={side === "left" ? "›" : "‹"} hint={side === "left" ? "bring the game back" : "bring the companion back"} onPress={() => putAway("none")} />
+      <Knob label={side === "left" ? "»" : "«"} hint={side === "left" ? "the game alone" : "the companion alone"} onPress={() => putAway(side === "left" ? "companion" : "game")} />
+    </YStack>
+  );
+}
+
 function Shell() {
   // the page's width in points, never "100%": inside a vertical ScrollView on iOS a percentage is not resolved, and on an
   // iPad (wider than the 720 cap) every line of the books was laid out at its full length and ran off the right edge
@@ -74,8 +113,20 @@ function Shell() {
   // C-189: an iPad on its side is one screen -- the game on the left, always playing, and the companion beside it on the
   // right (GAME is no longer a tab there); upright, and on a phone, GAME is one more tab
   const beside = ON_PHONE && width > height && Math.min(width, height) >= 700;   // an iPad; a big phone on its side is 440 high
-  const besideWidth = Math.round(Math.min(480, width * 0.42));
-  const pageWidth = beside ? besideWidth : Math.min(720, width);
+  const [away, setAway] = useState<Away>("none");            // C-260: which side is put away
+  const [split, setSplit] = useState<number | null>(() => (ON_PHONE ? splitKept() : null));   // the companion's width, as dragged
+  const fit = (w: number) => Math.round(Math.max(300, Math.min(width - 340, w)));
+  const besideWidth = fit(split ?? Math.min(480, width * 0.42));
+  const gameAway = beside && away === "game", companionAway = beside && away === "companion";
+  const pageWidth = beside && !gameAway ? besideWidth : Math.min(720, width);
+  const putAway = (side: Away) => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setAway(side); };
+  const dragFrom = useRef<number | null>(null);
+  const drag = (dx: number, done: boolean) => {             // the divider dragged left widens the companion
+    if (dragFrom.current === null) dragFrom.current = besideWidth;
+    const w = fit(dragFrom.current - dx);
+    setSplit(w);
+    if (done) { dragFrom.current = null; keepSplit(w); }
+  };
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
   // C-176 (the user chose "the watch shows, the phone taps"): the Ultra's tag holds daemons://link?device=<id> -- the
   // phone tapped to it opens here, on PLACES, linking with that watch
@@ -160,11 +211,17 @@ function Shell() {
   // left and the companion -- its header, tabs and page -- on the right; upright, the header sits above the game on GAME
   const page = (
     <YStack flex={1} backgroundColor="$color2" flexDirection={beside ? "row" : "column-reverse"}>
-      {ON_PHONE ? <YStack flex={1} display={beside || tab === "game" ? "flex" : "none"}
+      {/* put away, the game keeps a sliver on screen: a web view out of sight stops drawing, and the game with it */}
+      {ON_PHONE ? <YStack flex={gameAway ? undefined : 1} width={gameAway ? 2 : undefined} overflow="hidden"
+                              display={beside || tab === "game" ? "flex" : "none"}
                               paddingTop={beside ? 24 : 0} backgroundColor="#0f1115">
-        <GameView active={beside || tab === "game"} ink={ink} onSaved={() => setSaved((n) => n + 1)} /></YStack> : null}
-      <YStack flex={!beside && tab !== "game" ? 1 : undefined} width={beside ? besideWidth : undefined}
-              borderLeftWidth={beside ? 3 : 0} borderLeftColor="$color9">
+        <GameView active={beside || tab === "game"} ink={ink} onSaved={() => setSaved((n) => n + 1)}
+                  muted={gameAway && muteAway()} /></YStack> : null}
+      {beside && away === "none" ? <Divider drag={drag} putAway={putAway} /> : null}
+      {gameAway ? <Edge side="left" putAway={putAway} /> : null}
+      {companionAway ? <Edge side="right" putAway={putAway} /> : null}
+      <YStack flex={(!beside && tab !== "game") || gameAway ? 1 : undefined} width={beside && !gameAway ? besideWidth : undefined}
+              display={companionAway ? "none" : "flex"}>
         <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
           <XStack alignItems="center">
             <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>

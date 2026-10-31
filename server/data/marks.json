@@ -188,7 +188,7 @@
    "found": "BRAZEN CITY",
    "wisdom": {
     "leader": "MATTE",
-    "virtue": "PATIENCE",
+    "virtue": "FORGIVENESS",
     "without": [
      "That MARK taught you what a frame holds.",
      "It cannot show you what was outside it all along.",
@@ -197,7 +197,7 @@
     "with": [
      "You were let in, and came out seeing more.",
      "Not more inside the frame. Around it.",
-     "That took patience. Most people only wait. Take this."
+     "That is forgiveness. Most people stop at the frame. Take this."
     ],
     "explain": [
      "PLUGIN43 is PANORAMA. It takes in everything around the frame: it hits both of them, and never misses.",
@@ -205,7 +205,7 @@
     ],
     "union_plugin": "PLUGIN43",
     "union_routine": "PANORAMA",
-    "insight": "A frame shows what it holds. Patience shows what was there all along, just outside it.",
+    "insight": "A frame shows what someone did. Forgiveness sees what was there all along, just outside it.",
     "root_flag": 2402,
     "given_flag": 2437,
     "insight_flag": 2445

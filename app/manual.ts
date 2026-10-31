@@ -4,14 +4,14 @@
 // published has changed (its ETag); on the site it is fetched for the page and shown from memory. Since 2026-10-31 a
 // second, PLAYING TOGETHER (docs/DAEMONS-social-manual.pdf: trading, loans, gifts, OUT TOGETHER, friends, dreams, THE
 // COMMONS), kept the same way beside it; and a third, A BIGGER MIND (docs/DAEMONS-tiiny-manual.pdf: the Tiiny Pocket set up
-// for the companion).
+// for the companion); and QUICK START (docs/DAEMONS-quickstart.pdf: what it is and how to play, step by step).
 import { Directory, File, Paths } from "expo-file-system";
 import { ON_PHONE } from "./net";
 
-export type Which = "player" | "social" | "tiiny";
+export type Which = "player" | "quick" | "social" | "tiiny";
 const DOCS = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/";
-const PDF: Record<Which, string> = { player: "DAEMONS-manual.pdf", social: "DAEMONS-social-manual.pdf", tiiny: "DAEMONS-tiiny-manual.pdf" };
-const INFO: Record<Which, string> = { player: "manual.json", social: "social.json", tiiny: "tiiny.json" };
+const PDF: Record<Which, string> = { player: "DAEMONS-manual.pdf", quick: "DAEMONS-quickstart.pdf", social: "DAEMONS-social-manual.pdf", tiiny: "DAEMONS-tiiny-manual.pdf" };
+const INFO: Record<Which, string> = { player: "manual.json", quick: "quick.json", social: "social.json", tiiny: "tiiny.json" };
 export const manualUrl = (w: Which = "player") => DOCS + PDF[w];
 export type Manual = { uri: string; release: string | null; etag: string | null; size: number; at: string };
 
@@ -43,7 +43,7 @@ export function keptManual(w: Which = "player"): Manual | null {
   try { return { ...(JSON.parse(f.textSync()) as Omit<Manual, "uri">), uri: pdfFile(w).uri }; } catch { return null; }
 }
 
-const shown: Record<Which, Manual | null> = { player: null, social: null, tiiny: null };   // the site's, for as long as the page is open
+const shown: Record<Which, Manual | null> = { player: null, quick: null, social: null, tiiny: null };   // the site's, for as long as the page is open
 // asked afresh each time on the phone; on the site a header beyond the plain ones would need GitHub to allow it first
 const FRESH: RequestInit = ON_PHONE ? { headers: { "cache-control": "no-cache" } } : {};
 

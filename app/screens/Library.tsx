@@ -117,7 +117,7 @@ export function PracticePaper() {
 }
 export function LibraryScreen() {
   const dayInk = useInk();
-  const [book, setBook] = useState<"manual" | "social" | "tiiny" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [g, setG] = useState<GuideBookT | null>(null);
@@ -129,6 +129,7 @@ export function LibraryScreen() {
   const back = <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
   if (book === "manual") return <YStack gap={14}>{back}<ManualBook /></YStack>;   // C-233
+  if (book === "quick") return <YStack gap={14}>{back}<ManualBook which="quick" /></YStack>;
   if (book === "social") return <YStack gap={14}>{back}<ManualBook which="social" /></YStack>;
   if (book === "tiiny") return <YStack gap={14}>{back}<ManualBook which="tiiny" /></YStack>;
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
@@ -144,6 +145,8 @@ export function LibraryScreen() {
     <YStack gap={14}>
       {/* C-233: the manual first on the shelf, for everyone -- it tells how, never where. DRAFT */}
       <ShelfBook colour="#6b5aa6" spine="MANUAL" title="THE PLAYER'S MANUAL" about={manualAbout()} onPress={() => setBook("manual")} />
+      {/* QUICK START (2026-10-31): the short way in. DRAFT */}
+      <ShelfBook colour="#a6825a" spine="QUICK" title="QUICK START" about={manualAbout("quick")} onPress={() => setBook("quick")} />
       {/* its companion, PLAYING TOGETHER (2026-10-31): trading, loans, gifts, meetings, friends. DRAFT */}
       <ShelfBook colour="#5a7fa6" spine="TOGETHER" title="PLAYING TOGETHER" about={manualAbout("social")} onPress={() => setBook("social")} />
       {/* the third, A BIGGER MIND (2026-10-31): the Tiiny Pocket set up for the companion. DRAFT */}

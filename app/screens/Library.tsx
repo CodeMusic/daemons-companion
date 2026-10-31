@@ -117,7 +117,7 @@ export function PracticePaper() {
 }
 export function LibraryScreen() {
   const dayInk = useInk();
-  const [book, setBook] = useState<"manual" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"manual" | "social" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [g, setG] = useState<GuideBookT | null>(null);
@@ -129,6 +129,7 @@ export function LibraryScreen() {
   const back = <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
   if (book === "manual") return <YStack gap={14}>{back}<ManualBook /></YStack>;   // C-233
+  if (book === "social") return <YStack gap={14}>{back}<ManualBook which="social" /></YStack>;
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
   if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
   if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
@@ -142,6 +143,8 @@ export function LibraryScreen() {
     <YStack gap={14}>
       {/* C-233: the manual first on the shelf, for everyone -- it tells how, never where. DRAFT */}
       <ShelfBook colour="#6b5aa6" spine="MANUAL" title="THE PLAYER'S MANUAL" about={manualAbout()} onPress={() => setBook("manual")} />
+      {/* its companion, PLAYING TOGETHER (2026-10-31): trading, loans, gifts, meetings, friends. DRAFT */}
+      <ShelfBook colour="#5a7fa6" spine="TOGETHER" title="PLAYING TOGETHER" about={manualAbout("social")} onPress={() => setBook("social")} />
       <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
         <XStack gap={14} alignItems="center">
           <YStack width={72} height={48} borderRadius={3} backgroundColor="$color9" alignItems="center" justifyContent="center">

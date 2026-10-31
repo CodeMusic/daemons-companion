@@ -209,6 +209,30 @@
    "link": null
   },
   {
+   "section": 1,
+   "title": "THE PAINTING",
+   "kind": "text",
+   "flag": 3319,
+   "flag2": 0,
+   "about": "Words from a painting, scrambled.",
+   "text": "Along the frame of the painting on\nthe S.S. ANNE, in letters that\nwouldn't hold still:\n\nSVB, BLF! OLLP ZTZRM.",
+   "seen": 2923,
+   "place": "S.S. ANNE",
+   "link": null
+  },
+  {
+   "section": 1,
+   "title": "THE PAINTING",
+   "kind": "text",
+   "flag": 3320,
+   "flag2": 0,
+   "about": "The same words, held still.",
+   "text": "Along the frame of the painting on\nthe S.S. ANNE:\n\nSVB, BLF! OLLP ZTZRM.\n\nBefore its twin, the letters held\nstill:\n\nHEY, YOU! LOOK AGAIN.",
+   "seen": 2924,
+   "place": "THE NEXUS",
+   "link": null
+  },
+  {
    "section": 2,
    "title": "FIRST SESSION",
    "kind": "text",
@@ -1247,7 +1271,7 @@
    "flag": 3233,
    "flag2": 0,
    "about": null,
-   "text": "I walk down into a pool. There is\nalways one more stair under the\\lwater.\n\nA hippo floats at the bottom,\nasleep, perfectly still.",
+   "text": "I walk down into a pool. There is\nalways one more stair under the\nwater.\n\nA hippo floats at the bottom,\nasleep, perfectly still.",
    "seen": 2899,
    "place": null,
    "link": null

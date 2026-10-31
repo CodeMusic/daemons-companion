@@ -72,7 +72,10 @@ void routinesBegin() {
                                                          : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   if (isWatch()) types[typeCount++] = { "BOOKS", "the books the save holds", BOOKS_ROUTINES, 1 };   // C-208, DRAFT
-  if (isWatch()) types[typeCount++] = { "TV", "the TV, through the companion", TV_ROUTINES, 1 };   // C-256, DRAFT
+  // C-256: the TV remote over Wi-Fi -- FLARE on a watch with no IR light, as on the boards that have one (the user,
+  // 2026-10-31: "Yes, call it FLARE"); TV beside FLARE (IR out) on a watch that has one
+  if (isWatch()) types[typeCount++] = board.ir ? RoutineType{ "TV", "the TV, over Wi-Fi", TV_ROUTINES, 1 }
+                                               : RoutineType{ "FLARE", "Wi-Fi", TV_ROUTINES, 1 };   // DRAFT
   if (isWatch()) types[typeCount++] = { "HOURS", "the daemon keeps time", HOURS_ROUTINES, 7 };   // C-205, DRAFT
   if (board.keyboard || isWatch()) types[typeCount++] = { "MUSIC", "the game's instrument", MUSIC_ROUTINES, 2 };   // T-426: the boards with number keys; the watches' strings and holes, DRAFT
   types[typeCount++] =                     { "WHISPER",    "Bluetooth", WHISPER_ROUTINES,    3 };
@@ -125,7 +128,7 @@ void runRoutine() {
   routineRunning = false; lastInput = millis(); routinesRun++;
   if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
   if (pickRemoteNext) { pickRemoteNext = false; screen = PICK_REMOTE; }    // C-51: CHOOSE A REMOTE, a list
-  if (!strcmp(t.name, "FLARE") && routineAt == 0) reportRemotes();         // a remote taught: the site hears of it
+  if (board.ir && !strcmp(t.name, "FLARE") && routineAt == 0) reportRemotes();         // a remote taught: the site hears of it
   while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
   sideWas = true;
   report("routine", String(t.name) + "/" + t.routines[routineAt].name);

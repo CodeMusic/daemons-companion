@@ -23,6 +23,7 @@
 #include "lora.h"
 #include "leds.h"
 #include "casino.h"
+#include "glass.h"
 #include "sound.h"
 #include "../../common/relay_ca.h"   // one copy for every board and the Tab5
 // C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) --
@@ -523,6 +524,7 @@ void handleLine(String line, bool fromPhone) {
     }
     if (!asleep) draw();
   }
+  else if (line.startsWith("GLASS") && !fromPhone) reply(glassCable(line.substring(5)));   // C-262: the prism's picture, set by eye
   else if (line.startsWith("CMD ")) {
     JsonDocument d;
     if (deserializeJson(d, line.substring(4))) reply("UNREAD " + String(line.length()) + " CMD");

@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "leds.h"
 #include "meet.h"
+#include "glass.h"
 
 State st;
 Settings cfg;
@@ -136,6 +137,7 @@ bool takeState(const char *json) {
   if (!doc["clock"].isNull()) watchSetClock(doc["clock"]["epoch"] | 0, doc["clock"]["offset"] | 0);   // C-71
   if (doc["casts"].is<JsonArrayConst>()) castFromState(doc["casts"].as<JsonArrayConst>());   // C-134: broadcasts, once each
   if (doc["tvs"].is<JsonArrayConst>()) tvFromState(doc["tvs"].as<JsonArrayConst>());   // C-256: the TVs, kept
+  glassFromState(doc);                       // C-262: what a T-Glass shows, and its clock
   playFromState(doc["play"]);                // T-426: the instrument, its lock and the songs learned
   soundDay(st.note);                         // C-40: the interactions are in the day's key
   soundEdition(st.edition);                  // C-164: and on the save's own instrument

@@ -310,6 +310,29 @@ IO4, halved. No speaker, microphone or radio beyond Wi-Fi and Bluetooth.
 *Sources: github.com/Xinyuan-LilyGO/T-Display-S3-AMOLED (examples/factory/pins_config.h, rm67162.cpp);
 Xinyuan-LilyGO/LilyGo-AMOLED-Series (README, src/LilyGo_AMOLED.h/.cpp, initSequence.cpp); lovyan03/LovyanGFX 1.2.19.*
 
+## The T-Glass (C-262)
+
+Glasses: an **ESP32-S3FN4R2** (**4 MB flash, 2 MB quad PSRAM** -- the smallest the companion runs on: `env:t-glass` has
+one 3 MB app partition, `huge_app.csv`, and no second to update into) behind a **1.1" JD9613 LTPS AMOLED, 126x294**, on
+plain **SPI** (SPI3: SCK 15, MOSI 16, CS 17, DC 21, RST 18), reflected through a prism that shows only a **126x126
+square** of it. Neither LovyanGFX has a JD9613: `Panel_JD9613` (display.h) is a `Panel_LCD` with LilyGO's start-up list.
+**Its RAM is half the screen, so it cannot be turned** (no MADCTL MV): the panel stays upright and `present()` turns the
+126 canvas and places it in the panel's rows itself. **How it lands on the prism differs between V1 and V2** (the board is
+the same; V2 changed the reflection) and is set by eye down the cable: `GLASS TURN 0..3`, `GLASS MIRROR 0|1` (LilyGO's
+MADCTL bit 0x02), `GLASS ROW n` (where the seen square starts; 168, the last 126 rows, as LilyGO's V2 examples), `GLASS
+BRIGHT n`, `GLASS?`; kept in flash. Brightness is the register 0x51.
+
+**Input: one capacitive touch button on GPIO 14** (the S3's own touch pad -- read with `touchRead`, a touch reading
+higher) **and BOOT (0)**: a tap turns a note's page (asleep, it only wakes), a hold goes HOME, two taps go DARK; `GLASS
+TAP|TWICE|HOLD` presses it from the computer. **A vibration motor on 38** (a 1 kHz tone, as LilyGO drives it): one buzz
+when something new is sent. **Battery** by voltage on **IO13, halved** (LilyGO gives no capacity). A PCF85063A (I2C SDA
+9 / SCL 8), a **BHI260AP** on its own SPI (33-37, enabled by 48: off until read -- it needs its firmware loaded, as the
+Ultra's), a PDM microphone (data 5, clock 6) not yet used. **No speaker.** Its LilyGO figures: about 300 uA asleep, 90-230+
+mA with Wi-Fi on -- so it reaches the companion through the phone's Bluetooth, glance first.
+
+*Sources: github.com/Xinyuan-LilyGO/LilyGO-T-Wristband-and-T-Glass (src/LilyGo_Wristband.h/.cpp, src/initSequence.cpp,
+examples/GlassV2); wiki.lilygo.cc/products/other/t-glass.*
+
 ## The Cardputer and Cardputer ADV (C-136)
 
 **One build** (`env:m5-cardputer`): a **Stamp-S3 (ESP32-S3FN8: 8 MB flash, no PSRAM)**, an **ST7789V2 135x240** turned to

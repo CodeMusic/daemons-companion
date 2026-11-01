@@ -12,6 +12,7 @@ import { Directory, File, Paths } from "expo-file-system";
 import speciesJson from "../server/data/species.json";
 import { Store, type Db } from "../server/src/store";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "../server/src/routes";
+import { show as glassShow } from "../server/src/glass";   // C-262
 import { awayNow, deviceSettings, deviceState, type Edition, type Host, type SaveFile } from "../server/src/core";
 import { assign, carryView } from "../server/src/carry";
 import { kindOf, validDeviceId } from "../server/src/deviceid";
@@ -176,6 +177,10 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
   }
   // C-200, C-174: a watch's night and its fixes, carried here over its cable or Bluetooth; the written dream, never the
   // module's (there is none on a phone alone)
+  if (method === "POST" && path === "/api/device/interact" && body?.kind === "glass") {   // C-262: the glasses' own button
+    const r = glassShow(s, { show: body.detail });
+    return typeof r === "string" ? no(400, r) : ok({ glass: r });
+  }
   if (method === "POST" && path === "/api/device/interact" && (body?.kind === "read" || body?.kind === "lean"))   // C-203
     return takeSubtle(s, body.kind, typeof body.detail === "string" ? body.detail : "", deviceId);
   if (method === "POST" && path === "/api/device/interact" && (body?.kind === "night" || body?.kind === "where")) {

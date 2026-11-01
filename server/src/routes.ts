@@ -43,8 +43,9 @@ import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/hermetic/first", "/api/halloween"];
-const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack"];
+import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/hermetic/first", "/api/halloween", "/api/glass"];
+const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -64,6 +65,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/broadcasts") return ok({ items: castsSince(store, Number(a.query?.since) || 0) });
     if (path === "/api/broadcast/acts") return ok({ acts: ACTS, casino: (actsJson as { casino?: unknown[] }).casino ?? [] });   // C-151: JACKPOT, BIGWIN
     if (path === "/api/today") return ok(today(h, store, now));
+    if (path === "/api/glass") return ok(glassView(store, now.getTime()));   // C-262: what the glasses show, and the notes
     if (path === "/api/goals") return ok(store.goals());
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48
     if (path === "/api/goal") return ok({ goal: store.currentGoal(), limit: ENTRY_LIMIT });   // C-46: ONE goal
@@ -194,6 +196,18 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       return "error" in r ? no(400, r.error ?? "") : ok({ fresh: r.fresh, id: r.cast.id });
     }
     if (path === "/api/sync") return ok(sync(h, store, now));
+    // C-262: the T-Glass -- a note written, removed, shown; what the glasses show; a care, and its reaction laid over it
+    if (path === "/api/glass/note") { const r = saveNote(store, b ?? {}, now); return typeof r === "string" ? no(400, r) : ok(r); }
+    if (path === "/api/glass/note/remove") return removeNote(store, Number(b?.id)) ? ok({ ok: true }) : no(404, "no such note");
+    if (path === "/api/glass/show") { const r = show(store, b ?? {}); return typeof r === "string" ? no(400, r) : ok(r); }
+    if (path === "/api/glass/care") {
+      const kind = String(b?.kind ?? "");
+      if (!["feed", "water", "train"].includes(kind)) return no(400, "care is feed, water or train");
+      const r = route(h, store, { ...a, path: `/api/daemon/${kind}` }, now);   // the care itself, as the app's own CARE gives it
+      if (r.status !== 200) return r;
+      const said = (r.body as { said?: string }).said ?? "";
+      return ok({ ...(r.body as object), glass: moment(store, kind, said, now.getTime()) });
+    }
     const care = path.match(CARE);                      // C-13: care -- feed, water, train, and SLEEP (C-114) -- kept as the device's are
     if (care) {
       // C-196: the daemon's written line for it, as the boards show (chosen before the care counts, as api.ts's careLine)

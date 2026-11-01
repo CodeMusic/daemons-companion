@@ -77,6 +77,7 @@ import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
+import { show as glassShow } from "./glass.js";   // C-262
 import { noteClose, outlookLoop } from "./intuition.js";   // C-203
 import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressions.js";
 import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./face.js";
@@ -522,7 +523,7 @@ export function ourHost(hostOrUrl: string): boolean {
 // SYNC writes `exp` and `met` into the save, so only the companion itself writes those (the review, 2026-10-18).
 // C-190: the boards with a LoRa radio (docs/DEVICES.md)
 const LORA_KINDS = /^(t-deck|t-watch-s3|t-watch-ultra)/;
-export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean", "talkfirst", "spellcraft"];   // C-238: spellcraft   // C-159: setting; C-200: night; C-174: where; C-203: read, lean; C-211: talkfirst
+export const NETWORK_KINDS = ["routine", "casino", "table", "feed", "water", "train", "sleep", "wake", "setting", "night", "where", "read", "lean", "talkfirst", "spellcraft", "glass"];   // C-238: spellcraft   // C-159: setting; C-200: night; C-174: where; C-203: read, lean; C-211: talkfirst
 // C-53: what only this machine may do, even for a paired phone -- make a pairing code, list or forget phones, open the
 // network, or open a dialog or a Finder window on the Mac
 // C-256: the Rokus on this network -- an SSDP search for roku:ecp, then each one's own name. Two seconds, at most eight.
@@ -1770,6 +1771,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // the module asked for its own telling after (it replaces the written one, and the watch shows it from its next
         // state); a rested night is the bond's. Not logged as tending: sleeping is not a care.
         // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending
+        if (kind === "glass") {                                   // C-262: the T-Glass's own button -- "home", "dark" or "daemon"
+          const r = glassShow(store, { show: b.detail });
+          return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { glass: r });
+        }
         if (kind === "spellcraft") {                              // C-238: the hour's first sight, acknowledged on a board
           ackSpellcraft(store, deviceId);
           return send(res, 200, { hermetic: { held: 1, first: 0 } });

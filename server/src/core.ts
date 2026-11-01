@@ -34,6 +34,7 @@ import { readPlay } from "./save/play.js";            // T-426: the instrument, 
 import { readSubtle } from "./save/subtle.js";
 import { senseFor, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards
 import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
+import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -459,6 +460,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            play,                                         // T-426: the instrument, on the boards with keys
            ...(subtle ? { subtle } : {}),                // C-203: what there is to read, and how often a lean is right
            hermetic,                                     // C-238: THE HERMETIC LAYER held; the hour's first sight still to be said
+           ...(isGlass(deviceId) ? { glass: glassForDevice(store, now.getTime()) } : {}),   // C-262: a T-Glass's one screen
            ...(halloween ? { halloween } : {}),          // C-240: the costume, a treat just left
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,

@@ -114,6 +114,24 @@ void boardBegin() {
   }
 }
 
+#elif defined(BOARD_TGLASS)
+
+// C-262: the LilyGO T-Glass (V1 and V2: the same board, a different prism) -- an ESP32-S3FN4R2 (4 MB flash, 2 MB quad
+// PSRAM) behind a 1.1" JD9613 AMOLED on SPI (126x294, the 126 square the prism shows: display.cpp), one capacitive
+// touch button on GPIO 14 and BOOT (0), a vibration motor on 38, the battery on IO13 halved, a PCF85063A and a
+// BHI260AP (I2C 9/8; the BHI on its own SPI, 33-37, enabled by 48) and a PDM microphone (5, 6). No speaker. Pins from
+// LilyGO's LilyGO-T-Wristband-and-T-Glass (src/LilyGo_Wristband.h).
+void boardBegin() {
+  board.kind = BoardKind::TGlass; board.id = "t-glass"; board.name = "T-Glass";
+  board.width = 126; board.height = 126; board.rotation = 0;
+  board.sda = 9; board.scl = 8;
+  board.power = Power::AdcDivider; board.battAdc = 13;
+  pinMode(0, INPUT_PULLUP);                                    // BOOT, read by glass.cpp beside the touch button
+  pinMode(38, OUTPUT); digitalWrite(38, LOW);                  // the motor, still
+  pinMode(48, OUTPUT); digitalWrite(48, LOW);                  // the motion sensor off until something reads it
+  Wire.begin(board.sda, board.scl);
+}
+
 #elif defined(BOARD_TDISPLAY_AMOLED)
 
 // C-135: the LilyGO T-Display-S3 AMOLED 1.91 -- an ESP32-S3R8 (16 MB flash, 8 MB octal PSRAM) behind an RM67162 AMOLED,

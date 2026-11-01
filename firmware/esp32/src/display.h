@@ -1,7 +1,27 @@
 #pragma once
 // C-67: the screen, configured from `board` at start (LovyanGFX takes its pins at run time, which TFT_eSPI cannot), and
 // the sprite everything is drawn into whole and then pushed, so nothing flickers.
-#if BOARD_TWATCH_ULTRA
+#if BOARD_TGLASS
+// C-262: the T-Glass's 1.1" JD9613 AMOLED on SPI3 (LilyGO's LilyGO-T-Wristband-and-T-Glass): 126 columns by 294 rows,
+// and only a 126x126 square of it seen through the prism. Its RAM is half the screen, so it is never turned (no MV):
+// the panel stays as it is and present() turns and places the canvas itself. Its brightness is a register (0x51).
+#define LGFX_USE_V1
+#include <LovyanGFX.hpp>
+extern bool glassMirror;
+struct Panel_JD9613 : public lgfx::Panel_LCD {
+  Panel_JD9613() { _cfg.panel_width = _cfg.memory_width = 126; _cfg.panel_height = _cfg.memory_height = 294; }
+  void setBrightness(uint8_t b) override { startWrite(); _bus->writeCommand(0x51, 8); _bus->writeData(b, 8); _bus->flush(); endWrite(); }
+ protected:
+  uint8_t getMadCtl(uint8_t) const override { return glassMirror ? 0x02 : 0; }   // 0x02: LilyGO's flip, for the V1 prism
+  const uint8_t *getInitCommands(uint8_t listno) const override;
+};
+class Display : public lgfx::LGFX_Device {
+  lgfx::Bus_SPI bus;
+  Panel_JD9613 panel;
+ public:
+  void configure();
+};
+#elif BOARD_TWATCH_ULTRA
 // C-173: the T-Watch Ultra's 2.06" CO5300 AMOLED on QSPI -- LovyanGFX 1.2.19's Panel_CO5300, which it wrote for this
 // watch; portrait, 410x502, its glass 22 columns into the chip's memory (LilyGO's LilyGoDispQSPI). Its brightness is a
 // register (0x51), as the T-Display AMOLED's.

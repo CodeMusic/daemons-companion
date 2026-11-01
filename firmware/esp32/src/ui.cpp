@@ -7,6 +7,7 @@
 #include "link.h"
 #include "sound.h"
 #include "leds.h"
+#include "glass.h"
 #include "expression.h"
 #include "motion.h"
 
@@ -688,6 +689,7 @@ String stepsWords(long steps) {
 }
 
 void draw() {
+  if (isGlass()) { glassDraw(); return; }                  // C-262: the glasses' one screen, in place of all of these
   // C-173: on the Ultra a face keeps the 240 square it was drawn for, centred in the taller canvas (present)
   const bool faceShown = board.zoom != 1 && screen == HOME && page == FACE_PAGE && !dreamShowing();
   const int fullH = H;

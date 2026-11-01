@@ -10,6 +10,7 @@
 #include "meet.h"
 #include "lora.h"
 #include "broadcast.h"
+#include "glass.h"
 
 // C-105: what was printed, sent before going on -- but never waiting long. On the S3's own USB, Serial.flush() waits
 // until a program on the computer reads the port, with no limit: plugged into a computer with nothing reading it, a
@@ -74,6 +75,7 @@ void loop() {
   gpsLoop(now);                             // C-174
   intuitionLoop(now);                       // C-203
   clockLoop(now);                           // C-205
+  if (isGlass()) glassLoop(now);            // C-262: its touch button, its moment's end
   if (!lastHello || now - lastHello > HELLO_MS) { lastHello = now;   // C-178: the first at once, so the bridge may begin
     Serial.println(String("HELLO daemons-companion ") + board.id + " 4 " + deviceId()); dirty = true; }   // 4: it keeps its entry (C-179)   // C-80: its own name
   static uint32_t phoneHelloAt = 0;          // C-80: the phone carries the board's name on, so it hears it now and then

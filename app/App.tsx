@@ -15,6 +15,7 @@ import { DaemonScreen, useNews } from "./screens/Daemon";
 import { GoalsScreen } from "./screens/Goals";
 import { HomeAssistantCard, HomeScreen } from "./screens/Home";
 import { TvCard } from "./screens/Tv";
+import { GlassCard } from "./screens/Glass";   // C-262
 import { LibraryScreen } from "./screens/Library";
 import { PairScreen, sendTodaysSteps } from "./screens/Pair";
 import { GameView } from "./screens/Game";
@@ -275,7 +276,7 @@ function Shell() {
           {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
           {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
           {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
-          {tab === "places" ? <YStack gap={14}><DeviceScreen ink={ink} /><HomeScreen ink={ink} goSettings={() => setTab("settings")} /><TvCard ink={ink} goSettings={() => setTab("settings")} /></YStack> : null}
+          {tab === "places" ? <YStack gap={14}><DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={() => setTab("settings")} /><TvCard ink={ink} goSettings={() => setTab("settings")} /></YStack> : null}
           {tab === "you" ? <ProfileScreen /> : null}
           {tab === "library" ? <LibraryScreen /> : null}
           {tab === "settings" ? <SettingsScreen ink={ink} /> : null}

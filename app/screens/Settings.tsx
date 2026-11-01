@@ -1,6 +1,6 @@
 // SETTINGS -- the save, the app, the look, the voice; on the phone THIS PHONE; on the site PAIR A PHONE and AWAY FROM HOME. (C-157: out of App.tsx.)
 import { useCallback, useEffect, useState } from "react";
-import { Platform, useWindowDimensions } from "react-native";
+import { Platform } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { BUILD } from "../data";
 import { LOOK, Look, setLook } from "../look";
@@ -30,6 +30,7 @@ export function AloneSettings({ ink }: { ink: string }) {
     <YStack gap={14}>
       <VersionCard ink={ink} />
       {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
+      <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
       <PreviewCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={LOCAL?.hasSave() ? "$color9" : "$color5"}>
         <Eyebrow>THIS PHONE HOSTS ON ITS OWN</Eyebrow>
@@ -85,6 +86,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
     <YStack gap={14}>
       <VersionCard ink={ink} />
       {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
+      <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
       <PreviewCard ink={ink} />
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
@@ -95,6 +97,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
     <YStack gap={14}>
       <VersionCard ink={ink} />
       {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
+      <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
       <PreviewCard ink={ink} />
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
@@ -358,16 +361,11 @@ export function RelayCard({ ink }: { ink: string }) {
 // heard meanwhile, or not
 function GameAwayCard({ ink }: { ink: string }) {
   const [mute, setMute] = useState(muteAway());
-  const { width, height } = useWindowDimensions();
-  const beside = width > height && Math.min(width, height) >= 700;   // as App.tsx lays it out
   return (
-    <>
-      <Card>
-        <Eyebrow>MUTE THE GAME WHILE IT IS PUT AWAY</Eyebrow>
-        <Small>With the game beside the companion, the ‹ on the divider puts the game away and it keeps playing. DRAFT</Small>
-        <Choice value={mute} options={[[true, "Yes"], [false, "No"]]} onPick={(v) => { setMute(v); setMuteAway(v); }} ink={ink} />
-      </Card>
-      <DevModeCard ink={ink} beside={beside} />{/* C-268 */}
-    </>
+    <Card>
+      <Eyebrow>MUTE THE GAME WHILE IT IS PUT AWAY</Eyebrow>
+      <Small>With the game beside the companion, the ‹ on the divider puts the game away and it keeps playing. DRAFT</Small>
+      <Choice value={mute} options={[[true, "Yes"], [false, "No"]]} onPick={(v) => { setMute(v); setMuteAway(v); }} ink={ink} />
+    </Card>
   );
 }

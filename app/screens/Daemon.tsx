@@ -23,6 +23,8 @@ import { useApi } from "../useApi";
 import { heardSync } from "../received";              // C-261
 import type { Arrival } from "../../server/src/core";
 import type { Care } from "../../server/src/care";   // C-266
+import { pretendLife, setPretend, useDev } from "../game/dev";   // C-269: </>, in DEVELOPER MODE
+import { DevTag, PretendPanel } from "../devpanel";
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
@@ -50,6 +52,10 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
   const player = useAudioPlayer(null);
+  const dev = useDev();                                     // C-269: </> and its sliders, in memory only
+  const [tweak, setTweak] = useState(false);
+  useEffect(() => { if (!dev.on) setTweak(false); }, [dev.on]);
+  useEffect(() => () => setPretend(null), []);              // left, it is back to the truth
   useEffect(() => {
     api<Life>("/api/daemon/life").then(setL).catch(() => {});
     api<Today>("/api/today").then((t) => setNote(t.day.note)).catch(() => {});
@@ -58,6 +64,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       .then((r) => hearSettings(r.settings)).catch(() => {});
   }, []);
   if (!l) return null;
+  const shown = pretendLife(l);                             // C-269: as </> sets it, or as it is
   const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
     setSaid(word); setUnder(""); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
     setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
@@ -79,11 +86,15 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   };
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
-      <Eyebrow>{`${name}, TODAY`}</Eyebrow>
+      <XStack alignItems="center">
+        <Eyebrow>{`${name}, TODAY`}</Eyebrow>
+        <YStack flex={1} />
+        {dev.on ? <DevTag open={tweak} onPress={() => { if (tweak) setPretend(null); setTweak(!tweak); }} /> : null}
+      </XStack>
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={masked ? null : l.expression} thrive={l.thrive} witching={witching || halloween.on}   // C-113, C-119; C-240: Halloween shimmers all day
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on}   // C-113, C-119; C-240: Halloween shimmers all day
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
       </Pressable>
@@ -91,10 +102,11 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       </YStack>
       {l.tired === "asleep"                                 // C-118: asleep, said plainly -- not the small word
         ? <Text fontSize={28} fontWeight="800" letterSpacing={2} color="$color12">ASLEEP</Text>
-        : <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>}
+        : <Text fontSize={20} fontWeight="600" color="$color12">{shown.word}</Text>}
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}${l.rested ? " · slept" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
-      {l.care ? <CareStats mood={l.mood} care={l.care} ink={ink} /> : null}
+      {shown.care ? <CareStats mood={shown.mood} care={shown.care} ink={ink} /> : null}
+      {dev.on && tweak ? <PretendPanel truth={l} onClose={() => setTweak(false)} /> : null}
       {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}

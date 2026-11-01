@@ -441,7 +441,7 @@ export function keepArt(path: string, uri: string) {
 
 export async function artByJson(path: string): Promise<string> {
   const sub = /^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/.exec(path);   // T-423: THE SUBTLE LAYER's, kept as they are read
-  const face = /^\/art\/arcana\/((?:reason|instinct)(?:_shiny)?)\.png$/.exec(path);   // C-232: a card's face
+  const face = /^\/art\/arcana\/((?:reason|instinct|above|below|spellcraft)(?:_shiny)?|back)\.png$/.exec(path);   // C-232: a card's face; C-273: ABOVE, BELOW, the back
   if (sub || face) {
     const { png } = await api<{ png: string }>(face ? `/api/art?arcana=${face[1]}` : `/api/art?subtle=${sub![1]}`);
     keepArt(path, `data:image/png;base64,${png}`);

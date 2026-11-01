@@ -1850,7 +1850,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
         if (q.has("player") || q.has("mark") || q.has("guide") || q.has("subtle") || q.has("arcana")) {   // C-145: ?guide=cover; T-423: ?subtle=<picture>_<frame>|cover; C-232: ?arcana=<face>
           const sub = q.get("subtle") ?? "", face = q.get("arcana") ?? "";
-          const name = q.has("arcana") ? (/^(reason|instinct)(_shiny)?$/.test(face) ? `arcana_${face}.png` : "") : q.has("subtle") ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `subtle_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
+          const name = q.has("arcana") ? (/^((reason|instinct|above|below|spellcraft)(_shiny)?|back)$/.test(face) ? `arcana_${face}.png` : "") : q.has("subtle") ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `subtle_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
             ? `player_${q.get("player") === "instinct" ? "instinct" : "reason"}${q.get("walk") ? "_walk" : ""}.png`
             : `mark_${Math.max(1, Math.min(8, Number(q.get("mark")) || 1))}.png`;
           const file = join(ART_DIR, name);
@@ -1874,7 +1874,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return res.end(body);
       }
       // T-423: THE SUBTLE LAYER's pictures -- /art/subtle/<picture>_<frame>.png, and /art/subtle/cover.png
-      const subtleArt = path.match(/^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/) ?? path.match(/^\/art\/(arcana)\/((?:reason|instinct)(?:_shiny)?)\.png$/);   // C-232: a card's face
+      const subtleArt = path.match(/^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/) ?? path.match(/^\/art\/(arcana)\/((?:reason|instinct|above|below|spellcraft)(?:_shiny)?|back)\.png$/);   // C-232: a card's face; C-273: ABOVE, BELOW, the back
       if (req.method === "GET" && subtleArt) {
         const file = join(ART_DIR, subtleArt[1] === "arcana" ? `arcana_${subtleArt[2]}.png` : `subtle_${subtleArt[1]}.png`);
         if (!existsSync(file)) return send(res, 404, { error: "no such picture" });

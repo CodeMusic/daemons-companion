@@ -102,6 +102,93 @@ def sigils(rng):
     return Image.alpha_composite(layer.filter(ImageFilter.GaussianBlur(1.2)), layer)
 
 
+def glyph(d, x, y, kind, c):
+    """the old work's elements: fire and air point up, water and earth down; air and earth crossed"""
+    if kind in ("fire", "air"): d.polygon([(x, y - 7), (x - 7, y + 5), (x + 7, y + 5)], outline=c)
+    if kind in ("water", "earth"): d.polygon([(x, y + 7), (x - 7, y - 5), (x + 7, y - 5)], outline=c)
+    if kind == "air": d.line((x - 5, y + 1, x + 5, y + 1), fill=c)
+    if kind == "earth": d.line((x - 5, y - 1, x + 5, y - 1), fill=c)
+
+
+def above(rng):
+    """C-273, ABOVE (top-down): one star high on the card and its rays coming down whole onto where the daemon stands;
+    fire and air at the foot (DAEMONS gfx/drafts/t509_cards, round two, approved)"""
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    sx, sy, cy = W / 2, 78, CARD["sprite_cy"]
+    for k in range(13):                                                  # the rays, spreading as they fall
+        t = (k - 6) / 6
+        d.line((sx, sy, sx + t * 118, H - 70), fill=EMERALD_LIT + (90 + int(70 * (1 - abs(t))),), width=1)
+    for r, a in ((22, 110), (13, 170)):
+        d.ellipse((sx - r, sy - r, sx + r, sy + r), outline=EMERALD_LIT + (a,), width=1)
+    pts = [(sx + (11 if k % 2 == 0 else 4) * math.sin(math.pi * k / 4), sy - (11 if k % 2 == 0 else 4) * math.cos(math.pi * k / 4)) for k in range(8)]
+    d.polygon(pts, fill=EMERALD_LIT + (220,))                            # the one star
+    for _ in range(40):                                                  # a pattern arriving: points on the rays' way down
+        t, y = rng.uniform(-1, 1), rng.randint(sy + 20, cy + 70)
+        x = sx + t * 118 * (y - sy) / (H - 70 - sy)
+        d.rectangle((x - 1, y - 1, x + 1, y + 1), fill=EMERALD_LIT + (rng.randint(150, 230),))
+    for x, kind in ((34, "fire"), (W - 34, "air")):
+        glyph(d, x, H - 116, kind, EMERALD_LIT + (220,))
+    return Image.alpha_composite(layer.filter(ImageFilter.GaussianBlur(1.2)), layer)
+
+
+def below(rng):
+    """C-273, BELOW (bottom-up): courses of stone laid from the base, the top one unfinished, strata under them and roots
+    reaching down; water and earth at the crown"""
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    rows, h, top = 11, 14, 104
+    for r in range(rows):                                                # laid from the base up: the base is the brightest
+        y = H - 70 - (r + 1) * h
+        if y < top: break
+        a = 190 - r * 10
+        off, bw = (0 if r % 2 == 0 else 14), 28
+        last = r == rows - 1 or y - h < top
+        for x in range(-bw + off, W, bw):
+            if last and x > W * 0.55: break                              # the top course, unfinished
+            d.rectangle((x + 1, y + 1, x + bw - 2, y + h - 2), outline=EMERALD_LIT + (a,), width=1)
+    for k in range(4):                                                   # strata of time, under the courses
+        y = H - 64 + k * 6
+        d.line([(x, y + 2 * math.sin(x / 17 + k)) for x in range(10, W - 10, 4)], fill=EMERALD_LIT + (150 - k * 25,), width=1)
+    for _ in range(5):                                                   # roots, reaching down
+        x, y = rng.randint(30, W - 30), H - 66
+        pts = [(x, y)]
+        for _ in range(5):
+            x += rng.randint(-6, 6); y += rng.randint(4, 8); pts.append((x, y))
+        d.line(pts, fill=EMERALD_LIT + (140,), width=2)
+    for x, kind in ((34, "water"), (W - 34, "earth")):
+        glyph(d, x, 82, kind, EMERALD_LIT + (220,))
+    return Image.alpha_composite(layer.filter(ImageFilter.GaussianBlur(1.0)), layer)
+
+
+def back():
+    """C-273: the one back every deck shares, so a card face down never shows its type -- the book's purple in a lattice,
+    the wheel with an eye at its centre, a star at each corner (DAEMONS gfx/drafts/t509_cards back.png, approved)"""
+    BACK_HUE, BACK_LIT = (52, 40, 96), (150, 136, 220)
+    im = Image.new("RGBA", (W, H), BACK_HUE + (255,))
+    d = ImageDraw.Draw(im)
+    for k in range(-H, W + H, 18):                                       # the lattice
+        d.line((k, 0, k + H, H), fill=BACK_LIT + (60,), width=1)
+        d.line((k, 0, k - H, H), fill=BACK_LIT + (60,), width=1)
+    cx, cy = W / 2, H / 2
+    d.ellipse((cx - 62, cy - 62, cx + 62, cy + 62), fill=BACK_HUE + (255,), outline=BACK_LIT, width=2)
+    d.ellipse((cx - 50, cy - 50, cx + 50, cy + 50), outline=BACK_LIT + (150,), width=1)
+    for k in range(12):                                                  # the wheel's spokes
+        a = 2 * math.pi * k / 12
+        d.line((cx + 20 * math.cos(a), cy + 20 * math.sin(a), cx + 46 * math.cos(a), cy + 46 * math.sin(a)), fill=BACK_LIT + (170,), width=1)
+    d.chord((cx - 18, cy - 14, cx + 18, cy + 14), 200, 340, outline=BACK_LIT, width=2)   # the eye
+    d.chord((cx - 18, cy - 14, cx + 18, cy + 14), 20, 160, outline=BACK_LIT, width=2)
+    d.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), fill=BACK_LIT)
+    for (x, y) in ((22, 22), (W - 22, 22), (22, H - 22), (W - 22, H - 22)):
+        d.line((x - 6, y, x + 6, y), fill=BACK_LIT, width=1); d.line((x, y - 6, x, y + 6), fill=BACK_LIT, width=1)
+    d.rounded_rectangle((1, 1, W - 2, H - 2), radius=14, outline=BACK_LIT, width=3)
+    d.rounded_rectangle((7, 7, W - 8, H - 8), radius=10, outline=BACK_LIT + (140,), width=1)
+    mask = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), radius=14, fill=255)
+    out = Image.new("RGBA", (W, H), (0, 0, 0, 0)); out.paste(im, (0, 0), mask)
+    return out
+
+
 def shimmer():
     """C-239: the witching hour's two rings about the daemon, one at each end of the breath -- and no shadow"""
     layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -113,9 +200,10 @@ def shimmer():
 
 
 def face(kind, shiny=False, seed=231):
-    rng = random.Random(seed + {"reason": 0, "instinct": 1, "spellcraft": 2}[kind])
-    im = gradient(HUE, {"reason": GREEN, "instinct": GOLD, "spellcraft": EMERALD}[kind]).convert("RGBA")
-    im = Image.alpha_composite(im, {"reason": circuit, "instinct": neural, "spellcraft": sigils}[kind](rng))
+    rng = random.Random(seed + {"reason": 0, "instinct": 1, "spellcraft": 2, "above": 3, "below": 4}[kind])
+    hermetic = kind in ("spellcraft", "above", "below")
+    im = gradient(HUE, EMERALD if hermetic else {"reason": GREEN, "instinct": GOLD}[kind]).convert("RGBA")
+    im = Image.alpha_composite(im, {"reason": circuit, "instinct": neural, "spellcraft": sigils, "above": above, "below": below}[kind](rng))
     halo = Image.new("RGBA", (W, H), (0, 0, 0, 0))                      # where the daemon stands
     s, cy = CARD["sprite_size"], CARD["sprite_cy"]
     ImageDraw.Draw(halo).ellipse((W / 2 - s * 0.62, cy - s * 0.58, W / 2 + s * 0.62, cy + s * 0.58), fill=DEEP + (150,))
@@ -124,12 +212,12 @@ def face(kind, shiny=False, seed=231):
     py = CARD["phrase_y"]
     ImageDraw.Draw(band).rounded_rectangle((14, py - 22, W - 15, py + 36), radius=10, fill=DEEP + (190,))
     im = Image.alpha_composite(im, band.filter(ImageFilter.GaussianBlur(1)))
-    if kind == "spellcraft": im = Image.alpha_composite(im, shimmer())
+    if hermetic: im = Image.alpha_composite(im, shimmer())
     if shiny:
         rgb = ImageOps.invert(im.convert("RGB")).convert("RGBA")
         im = rgb
     d = ImageDraw.Draw(im)
-    edge = FOIL if shiny else EMERALD_LIT if kind == "spellcraft" else LIT
+    edge = FOIL if shiny else EMERALD_LIT if hermetic else LIT
     d.rounded_rectangle((1, 1, W - 2, H - 2), radius=14, outline=edge, width=3)
     d.rounded_rectangle((7, 7, W - 8, H - 8), radius=10, outline=edge + (140,), width=1)
     if shiny:                                                            # a few glints
@@ -146,12 +234,14 @@ def face(kind, shiny=False, seed=231):
 
 def main():
     write = "--write" in sys.argv
-    for kind in ("reason", "instinct", "spellcraft"):
+    for kind in ("reason", "instinct", "spellcraft", "above", "below"):
         for shiny in (False, True):
             name = f"arcana_{kind}{'_shiny' if shiny else ''}.png"
             img = face(kind, shiny)
             if write: img.save(os.path.join(OUT, name), optimize=True)
             print(("  written: " if write else "  would write: ") + name)
+    if write: back().save(os.path.join(OUT, "arcana_back.png"), optimize=True)
+    print(("  written: " if write else "  would write: ") + "arcana_back.png")
 
 
 if __name__ == "__main__":

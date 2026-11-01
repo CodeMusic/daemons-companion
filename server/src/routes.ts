@@ -17,7 +17,7 @@ import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
 import { readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
-import { cardOfDay, draw, isHalloween, thirteenOfDay } from "./arcana.js";   // C-232
+import { cardOfDay, draw, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
@@ -120,19 +120,22 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const held = readHermetic(save, store).held, sp = Number(a.query?.species) || 0;
       return ok(held && halloweenOn(now) ? { on: true, costume: sp ? costumeOf(sp, now) : null, treats: treatsOf(store, now) } : { on: false });
     }
-    // C-232: THE SUBTLE LAYER's deck; C-239: ?deck=spellcraft, THE HERMETIC LAYER's -- each only once its book is held
+    // C-232: THE SUBTLE LAYER's deck; C-239: ?deck=spellcraft, THE HERMETIC LAYER's -- each only once its book is held;
+    // C-273: ?deck=hermetic, its ABOVE and BELOW; ?pick= one of the book's two decks (or both, as one); ?spread=mbs
+    const deckOf = (q?: string): Deck => q === "spellcraft" ? "spellcraft" : q === "hermetic" ? "hermetic" : "subtle";
     if (path === "/api/arcana/draw") {                                   // C-232: a card, or a spread of three (a GET: the watch may ask it)
-      const spell = a.query?.deck === "spellcraft", pv = a.query?.preview === "1";   // the user, 2026-10-29: the preview shows both decks
+      const deck = deckOf(a.query?.deck), spell = deck !== "subtle", pv = a.query?.preview === "1";   // the user, 2026-10-29: the preview shows both decks
       if (spell ? !readHermetic(save, store, pv).held : !readSubtle(save, undefined, pv).held)
         return no(403, spell ? "Find THE HERMETIC LAYER first." : "Find THE SUBTLE LAYER first.");   // DRAFT
-      return ok({ cards: draw(a.query?.count === "3" ? 3 : 1, Math.random, spell ? "spellcraft" : "subtle") });
+      const pick = (["reason", "instinct", "above", "below"] as const).find((k) => k === a.query?.pick) ?? "both";
+      return ok({ cards: draw(a.query?.count === "3" ? 3 : 1, Math.random, deck, pick, a.query?.spread === "mbs" ? "mbs" : "ppf") });
     }
     if (path === "/api/arcana/today") {                                  // C-232: the day's card, the same all day for this trainer
-      const spell = a.query?.deck === "spellcraft", pv = a.query?.preview === "1", hermetic = readHermetic(save, store, pv).held;
+      const deck = deckOf(a.query?.deck), spell = deck !== "subtle", pv = a.query?.preview === "1", hermetic = readHermetic(save, store, pv).held;
       if (spell ? !hermetic : !readSubtle(save, undefined, pv).held) return ok({ held: false });
       const p = readProfile(save), date = today(h, store, now).date, who = `${p.name}${p.trainerId}`;
       if (hermetic && isHalloween(date)) return ok({ held: true, card: thirteenOfDay(date, who), halloween: true });   // C-240
-      return ok({ held: true, card: cardOfDay(date, who, spell ? "spellcraft" : "subtle") });
+      return ok({ held: true, card: cardOfDay(date, who, deck) });
     }
     if (path === "/api/subtle/today" || path === "/api/subtle/journal") {   // C-230: the book's question of the day, and what was answered
       if (!readSubtle(save, undefined, a.query?.preview === "1").held) return ok({ held: false });   // ?preview=1: as if held, read only

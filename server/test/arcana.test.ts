@@ -19,8 +19,9 @@ describe("C-232: the deck", () => {
       for (const c of [r, i]) {
         expect(existsSync(join(ART, SPECIES[c.species].art.front.split("/").pop()!.replace("_front", "")))).toBe(true);
         expect(c.keyword.length).toBeLessThanOrEqual(12);
-        expect(c.phrase.length).toBeGreaterThanOrEqual(100);      // C-272: a prophecy, not a short phrase
-        expect(c.phrase.length).toBeLessThanOrEqual(200);         // the GBA's card holds 4-6 lines (T-509)
+        expect(c.phrase.length).toBeLessThanOrEqual(40);           // the short phrase: the game's and the watches'
+        expect(c.prophecy!.length).toBeGreaterThanOrEqual(100);    // C-272: the prophecy, the app's alone
+        expect(c.prophecy!.length).toBeLessThanOrEqual(200);
       }
       expect(r.keyword).not.toBe(i.keyword);
     }
@@ -57,22 +58,43 @@ describe("C-232: drawing", () => {
 // C-272: THE HERMETIC LAYER's two decks, ABOVE and BELOW -- a face each on the twenty-two, as REASON and INSTINCT
 describe("C-272: ABOVE and BELOW", async () => {
   const arcana = (await import("../data/arcana.json")).default as unknown as
-    { cards: Record<"reason" | "instinct" | "above" | "below" | "spellcraft", { keyword: string; phrase: string; species: string }>[] };
+    { cards: Record<"reason" | "instinct" | "above" | "below" | "spellcraft", { keyword: string; phrase: string; prophecy: string; species: string }>[] };
   const thirteen = (await import("../data/thirteen.json")).default as unknown as { cards: { species: string }[] };
   const BY_NAME = new Map(Object.values(SPECIES).map((s) => [s.name, s]));
   it("gives every card an ABOVE and a BELOW face, each a prophecy on a daemon of its own", () => {
     for (const c of arcana.cards) for (const f of [c.above, c.below]) {
       expect(BY_NAME.get(f.species)?.national, f.species).toBeGreaterThan(0);    // SYMBOL's art is a folder of forms
       expect(f.keyword.length).toBeLessThanOrEqual(12);
-      expect(f.phrase.length).toBeGreaterThanOrEqual(100);
-      expect(f.phrase.length).toBeLessThanOrEqual(200);
+      expect(f.phrase.length).toBeLessThanOrEqual(40);
+      expect(f.prophecy.length).toBeGreaterThanOrEqual(100);
+      expect(f.prophecy.length).toBeLessThanOrEqual(200);
     }
     const faces = arcana.cards.flatMap((c) => [c.reason, c.instinct, c.above, c.below].map((f) => f.species));
     expect(new Set([...faces, ...thirteen.cards.map((t) => t.species)]).size).toBe(faces.length + thirteen.cards.length);
   });
   it("keeps every word in the GBA's characters", () => {
     for (const c of arcana.cards) for (const f of [c.reason, c.instinct, c.above, c.below])
-      expect(/^[A-Za-z0-9 .,:;!?'-]+$/.test(f.phrase + f.keyword), f.keyword).toBe(true);
+      expect(/^[A-Za-z0-9 .,:;!?'-]+$/.test(f.phrase + f.keyword + f.prophecy), f.keyword).toBe(true);
+  });
+  // C-273, agreed with the game lane (DAEMONS T-509): the GBA computes the same day's card
+  it("deals the hermetic day's card by SPELLCRAFT's seed, odd ABOVE and even BELOW", () => {
+    expect([cardOfDay("2026-11-01", "RED12345", "hermetic")].map((c) => [c.roman, c.side, c.keyword])[0]).toEqual(["XX", "below", "THE LEDGER"]);
+    expect([cardOfDay("2026-11-02", "RED12345", "hermetic")].map((c) => [c.roman, c.side, c.keyword])[0]).toEqual(["XI", "above", "THE COIN"]);
+    expect([cardOfDay("2026-12-25", "BLUE54321", "hermetic")].map((c) => [c.roman, c.side, c.keyword])[0]).toEqual(["VIII", "above", "SULPHUR"]);
+    expect(cardOfDay("2026-11-01", "RED12345", "hermetic").n).toBe(cardOfDay("2026-11-01", "RED12345", "spellcraft").n);
+    expect(cardOfDay("2026-11-01", "RED12345", "hermetic").prophecy?.length).toBeGreaterThan(100);
+  });
+  it("draws from the deck chosen -- one of the two, or both as one -- and lays MIND, BODY, SPIRIT", () => {
+    for (let s = 1; s < 30; s++) {
+      expect(draw(3, seeded(s), "hermetic", "above").every((c) => c.side === "above")).toBe(true);
+      expect(draw(3, seeded(s), "subtle", "instinct").every((c) => c.side === "instinct")).toBe(true);
+      expect(draw(1, seeded(s), "hermetic", "reason")[0].side).not.toBe("reason");   // a pick from the other book means both
+    }
+    const sides = new Set(Array.from({ length: 60 }, (_, s) => draw(1, seeded(s + 1), "hermetic")[0].side));
+    expect([...sides].sort()).toEqual(["above", "below"]);
+    expect(draw(3, seeded(3), "subtle", "both", "mbs").map((c) => c.at)).toEqual(["MIND", "BODY", "SPIRIT"]);
+    expect(cardOf(4, "below", true).face).toBe("/art/arcana/below_shiny.png");
+    for (const f of ["above", "below", "above_shiny", "below_shiny", "back"]) expect(existsSync(join(ART, `arcana_${f}.png`))).toBe(true);
   });
 });
 

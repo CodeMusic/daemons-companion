@@ -19,6 +19,8 @@ export const WITCHING_NAMES: Record<string, string> = {             // DRAFT
 export const WITCHING_TUNE: [number, number][] = [[0, 600], [-3, 600], [-7, 600], [-12, 700], [-11, 900], [127, 250], [-15, 1300]];
 
 export const witchingNow = (d = new Date()) => d.getHours() >= WITCHING.from && d.getHours() < WITCHING.to;
+// the thin half-hour (DAEMONS T-501: 3:30 to 3:59) -- C-273: the hermetic deck's names turn to WITHIN and WITHOUT in it
+export const thinNow = (d = new Date()) => d.getHours() === WITCHING.from && d.getMinutes() >= 30;
 // named for its first type ("FLOW / CONTEXT", or ["FLOW", "CONTEXT"])
 export function witchingRoutine(types: string | string[]): string {
   const first = (Array.isArray(types) ? types[0] ?? "" : types.split(/[\s/,]+/)[0] ?? "").toUpperCase();

@@ -54,7 +54,7 @@ describe("expressions on any sprite (C-119)", () => {
 
   it("lids half the eye when sleepy or sad, and draws an upturned arc when glad", () => {
     const f = faceOf("caremusai")!;
-    expect(eyePatch(f, EXPRESSIONS.drowsy).every((p) => p.h === 2)).toBe(true);   // the top half of a 5-high eye
+    expect(eyePatch(f, EXPRESSIONS.drowsy).every((p) => p.h === 3)).toBe(true);   // the top half of a 6-high eye
     const glad = eyePatch(f, EXPRESSIONS.glad);
     const arc = glad.filter((p) => p.h === 1);
     expect(Math.min(...arc.map((p) => p.y))).toBeLessThan(Math.max(...arc.map((p) => p.y)));   // the middle above the ends

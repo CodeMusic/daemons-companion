@@ -142,7 +142,9 @@ function find(px: Uint8Array, w: number, h: number): Face | null {
   return { eyes, sure: Math.round(best.sure * 100) / 100, fill: DARK.has(fill) ? 5 : fill, line: DARK.has(fill) ? 1 : 5 };
 }
 
-const names = readdirSync(ART).filter((f) => f.endsWith(".png")).map((f) => f.slice(0, -4)).sort();
+// Only the daemons: the arcana, the guide's cover and the SUBTLE pages are in art/ too, and are not indexed sprites
+const isSprite = (f: string) => { const b = readFileSync(join(ART, f)); return b[25] === 3 && b[28] === 0; };
+const names = readdirSync(ART).filter((f) => f.endsWith(".png") && isSprite(f)).map((f) => f.slice(0, -4)).sort();
 const checkedPath = join(DATA, "faces.json");
 const checked: Record<string, Face> = existsSync(checkedPath) ? JSON.parse(readFileSync(checkedPath, "utf8")) : {};
 const suggested: Record<string, Face> = {};

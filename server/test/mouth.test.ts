@@ -3,8 +3,8 @@ import { EXPRESSIONS, expressionFor, faceOf, mouthPatch } from "../src/expressio
 
 describe("C-213: the mouth, open while it speaks", () => {
   it("is known where a person found it, and nothing elsewhere", () => {
-    const f = faceOf("archiver")!;                            // faces.json: mouth [16, 28, 2, 1]
-    expect(mouthPatch(f, EXPRESSIONS.awake)).toEqual([{ x: 16, y: 28, w: 2, h: 2, rgb: expect.any(Array) }]);
+    const f = faceOf("archiver")!;                            // faces.json: mouth [22, 30, 2, 1]
+    expect(mouthPatch(f, EXPRESSIONS.awake)).toEqual([{ x: 22, y: 30, w: 2, h: 2, rgb: expect.any(Array) }]);
     expect(mouthPatch(faceOf("artsai")!, EXPRESSIONS.awake)).toEqual([]);   // no mouth found yet
   });
   it("is red inside when there is room", () => {

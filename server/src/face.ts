@@ -175,7 +175,7 @@ export function encodeRgb(w: number, h: number, rgb: Uint8Array): Buffer {
 
 // The face's revision: it changes when anything drawn would -- another daemon, new routines painting its streaks, its
 // expression, its den, or this file's drawing (FACE_DRAWING, bumped by hand when the pictures change)
-const FACE_DRAWING = 1;
+const FACE_DRAWING = 2;   // 2: C-271, the eyes moved onto the redrawn art
 export function faceRev(parts: { artKey?: string | null; expression?: string | null; den?: Den | null; mouth?: unknown; care?: unknown }): string {
   const care = parts.care === undefined ? [] : [parts.care];      // C-266: absent, the revisions before it are unchanged
   return createHash("sha1").update(JSON.stringify([FACE_DRAWING, parts.artKey ?? null, parts.expression ?? null, parts.den ?? null, parts.mouth ?? null, ...care]))

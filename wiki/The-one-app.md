@@ -46,7 +46,8 @@ books, shortest first -- **MICRO-START** (five pages), **QUICK-START** and the *
 over the game panel, at whatever size the panel is (drag the divider and it follows), with **‹ MAIN MENU** back to the
 title. While playing, the game holds still under it and **‹ BACK TO THE GAME** goes on where it was. It opens while
 playing from **? HOW TO PLAY** in the companion's header (beside ⚙), which brings the game panel into view for it.
-*Still to come:* HOW TO PLAY under **Help** on the menu bar, the Mac's and the iPad's own. The books are DAEMONS' own PDFs, fetched as published and
+It is under **Help** on the menu bar too, the iPad's and the Mac's (**How to Play DAEMONS**), and from there it opens
+before pairing as well, over the pairing screen. The books are DAEMONS' own PDFs, fetched as published and
 kept on the device, as the LIBRARY keeps them; none of them is in this repository. On the site, the header's button opens
 them over the page. Words DRAFT.
 

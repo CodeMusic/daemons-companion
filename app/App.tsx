@@ -34,7 +34,9 @@ import { keepLogsWidth, logsWidth, useDev } from "./game/dev";       // C-268
 import { Logs } from "./devpanel";
 import { heardElsewhere, Received } from "./received";   // C-261
 import { HowToOverlay, openHowTo } from "./howto";          // C-264
+import MENU from "./modules/daemons-menu";                    // C-264: the menu bar's Help
 import type { Arrival } from "../server/src/core";
+let menuHowTo: (() => void) | null = null;                    // C-264: Shell's HOW TO PLAY, which brings the game panel into view
 // and takes you to them, and goes once the last is in view
 function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void;
                                                          tabs?: readonly (typeof TABS)[number][] }) {
@@ -174,6 +176,7 @@ function Shell() {
   };
   const logsPutAway = (on: boolean) => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setLogsAway(on); };
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
+  useEffect(() => { menuHowTo = howToPlay; return () => { menuHowTo = null; }; });   // C-264: the menu bar's Help, here
   // C-176 (the user chose "the watch shows, the phone taps"): the Ultra's tag holds daemons://link?device=<id> -- the
   // phone tapped to it opens here, on PLACES, linking with that watch
   useEffect(() => {
@@ -348,6 +351,14 @@ export default function App() {
   // C-53: on the phone, pair first; on the site, the server is this machine
   const [paired, setPaired] = useState<boolean | null>(KEYED ? null : true);   // C-170: a site away from home pairs too
   useEffect(() => { onUnpaired(() => setPaired(false)); loadConnection().then(setPaired).catch(() => setPaired(false)); }, []);
+  // C-264: HOW TO PLAY from the menu bar's Help (the iPad's, and the Mac's for the iPad app on it) -- over the game panel
+  // once there is one, and over the pairing before it
+  useEffect(() => {
+    const s = MENU?.addListener("onHowToPlay", () => (menuHowTo ?? openHowTo)());
+    // the Simulator's taps never reach the menu bar's menus: a debug build can send the command itself
+    const t = __DEV__ && process.env.EXPO_PUBLIC_DAEMONS_TRY_MENU === "1" ? setTimeout(() => MENU?.tryHowToPlay?.(), 5000) : undefined;
+    return () => { s?.remove(); clearTimeout(t); };
+  }, []);
   // C-144: the paper or the night -- chosen, or AUTO as the phone or the computer is set
   const [look, seeLook] = useState(LOOK);
   useEffect(() => { const f = () => seeLook(LOOK); lookHeard.add(f); loadLook().then(f); return () => { lookHeard.delete(f); }; }, []);
@@ -363,6 +374,11 @@ export default function App() {
     <TamaguiProvider config={config} defaultTheme={scheme}>
       <Theme name={scheme}>
         {paired === null ? null : paired ? <Shell /> : <PairScreen onPaired={() => setPaired(true)} />}
+        {paired === false ? (   // C-264: the books over the pairing, below the status bar as the header is
+          <YStack position="absolute" top={ON_PHONE ? 60 : 0} left={0} right={0} bottom={0} pointerEvents="box-none">
+            <HowToOverlay playing={false} />
+          </YStack>
+        ) : null}
       </Theme>
     </TamaguiProvider>
   );

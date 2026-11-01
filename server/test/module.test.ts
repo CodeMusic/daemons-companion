@@ -38,6 +38,7 @@ describe("the Module LLM's API (C-180)", () => {
     expect(said.totalMs).toBeGreaterThanOrEqual(said.firstMs!);
     const spoken = await speak(base, "melotts-en-default", "a line");
     expect(spoken.audio.toString()).toBe("RIFFa line");
+    expect((await speak(base, "melotts-en-default", "DAEMONS, said")).audio.toString()).toBe("RIFFDaymons, said");   // C-270
     expect((await hear(base, "whisper-tiny", spoken.audio)).text).toBe("heard it");
   });
 });

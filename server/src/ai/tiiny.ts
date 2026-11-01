@@ -6,6 +6,7 @@
 //
 // Its window is large, so unlike the module (house.ts) the daemon's whole self rides as the system message (self.ts).
 // No node: imports -- this runs on the phone too.
+import { sayable } from "./say.js";   // C-270
 
 export type TiinyAt = { url: string; key: string; model: string; tts: string; asr: string; voice: string };
 
@@ -77,7 +78,7 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
   try {
     return await timed(ms, async (signal) => {
       const r = await f(`${at.url}/audio/speech`, { method: "POST", headers: headers(at), signal,
-        body: JSON.stringify({ model: at.tts, input: text.slice(0, 600), voice: at.voice || "default", response_format: "wav",
+        body: JSON.stringify({ model: at.tts, input: sayable(text).slice(0, 600), voice: at.voice || "default", response_format: "wav",
                                ...(instructions ? { instructions } : {}) }) });
       if (!r.ok) return null;
       const audio = new Uint8Array(await r.arrayBuffer());

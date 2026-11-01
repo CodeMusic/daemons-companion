@@ -3,6 +3,8 @@
 // names are OpenAI's only. Written to the OpenAI shapes, so anything that speaks them (a computer's own server, say) can
 // stand in for it. What each model can do is learned from /v1/models, never assumed.
 
+import { sayable } from "./say.js";   // C-270
+
 export type ModuleModel = { id: string; kind: "llm" | "tts" | "stt" | "other" };
 export type Said = { text: string; firstMs: number | null; totalMs: number; pieces: number; tokens: number | null };
 export type Spoken = { audio: Buffer; mime: string; ms: number };
@@ -96,7 +98,7 @@ export async function speak(base: string, model: string, text: string, voice?: s
   const t0 = performance.now();
   const r = await fetch(`${trim(base)}/v1/audio/speech`, {
     method: "POST", headers: { "content-type": "application/json" }, signal: AbortSignal.timeout(timeoutMs),
-    body: JSON.stringify({ model, input: text, ...(voice ? { voice } : {}), response_format: "wav" }),
+    body: JSON.stringify({ model, input: sayable(text), ...(voice ? { voice } : {}), response_format: "wav" }),
   });
   if (!r.ok) throw new Error(`the module's speech answered ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`);
   return { audio: Buffer.from(await r.arrayBuffer()), mime: r.headers.get("content-type") ?? "audio/wav", ms: performance.now() - t0 };

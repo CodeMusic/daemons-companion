@@ -99,6 +99,7 @@ import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicen
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { readSubtle } from "./save/subtle.js";   // C-204
+import { sayable } from "./ai/say.js";   // C-270
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
@@ -1328,8 +1329,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         catch { return null; }
       };
       const readAloud = async (text: string): Promise<Record<string, unknown>> => {
-        if (indexVoice() === "module") return (await fromModule(text)) ?? n8n(ecfg, "daemon/voice", { text, voice: "index" });
-        const r = await n8n(ecfg, "daemon/voice", { text, voice: "index" });
+        if (indexVoice() === "module") return (await fromModule(text)) ?? n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });
+        const r = await n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });
         return r.error || !r.audioBase64 ? (await fromModule(text)) ?? r : r;
       };
       // who is talking: the device by its own name (C-80), else the phone, else this machine

@@ -48,6 +48,13 @@ describe("talking to it", () => {
     expect(await tiinyHear(at, new Uint8Array([0]), f)).toBe("hello there");
     expect(await tiinySpeak({ ...at, tts: "" }, "hi", "", f)).toBeNull();
   });
+  it("hands its voice DAEMON as it is said (C-270)", async () => {
+    let input = "";
+    const f = (async (_u: string, o: RequestInit) => { input = JSON.parse(String(o.body)).input;
+      return new Response(new Uint8Array([1]), { headers: { "content-type": "audio/wav" } }); }) as typeof fetch;
+    await tiinySpeak(at, "My DAEMON says hello.", "", f);
+    expect(input).toBe("My Daymon says hello.");
+  });
 });
 
 describe("the self", () => {

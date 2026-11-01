@@ -174,8 +174,18 @@ window.addEventListener("gamepadconnected", layout); window.addEventListener("ga
 // than its start throwing on the read
 window.EJS_disableLocalStorage = (() => { try { localStorage.setItem("ejs-probe", "1"); localStorage.removeItem("ejs-probe"); return false; } catch (e) { return true; } })();
 let begun = false;
+// A on X and B on Z, as mGBA and the emulators the user plays on have them (the user, 2026-11-01: "I like A to be X and B
+// to be Z"); EmulatorJS's own are the other way round. Its defaults (for RESET) and the keys it has (its own, or kept
+// from before) swapped once, while they are still its old ones -- a key the player set by hand later is never undone.
+const abSwap = () => { const E = window.EJS_emulator, c = E && E.controls && E.controls[0], d = E && E.defaultControllers && E.defaultControllers[0];
+  if (d && d[0] && d[8] && d[0].value === "x" && d[8].value === "z") { d[0].value = "z"; d[8].value = "x"; }
+  let done = false; try { done = localStorage.getItem("daemons-ab") === "x"; } catch (e) {}
+  if (done || !c || !c[0] || !c[8] || c[0].value !== 88 || c[8].value !== 90) return;   // 88 x, 90 z, once looked up
+  c[0].value = 90; c[8].value = 88;
+  try { E.checkGamepadInputs(); } catch (e) {} try { E.saveSettings(); } catch (e) {}
+  try { localStorage.setItem("daemons-ab", "x"); } catch (e) {} };
 const begin = () => { if (begun) return; begun = true; say({ kind: "started" });
-  try { speed(); } catch (e) {} try { layout(); } catch (e) {} };
+  try { abSwap(); } catch (e) {} try { speed(); } catch (e) {} try { layout(); } catch (e) {} };
 window.EJS_onGameStart = () => begin();
 // C-257: EmulatorJS's start can throw after the core is already running (the music plays) -- then it shows "Failed to
 // start game", never draws the game and never says it started. Frames moving mean it did: its last steps are done here.

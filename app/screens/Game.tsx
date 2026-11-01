@@ -24,6 +24,7 @@ import { heardSync } from "../received";
 import PAD from "../modules/daemons-pad";                              // C-263
 import { HowToOverlay, openHowTo, useHowTo } from "../howto";          // C-264
 import { Action, Card, Eyebrow, Small } from "../ui";
+import { devLog, devStats, useDev } from "../game/dev";                 // C-266
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version
 const saveFile = () => new File(Paths.document, "daemons.sav");
@@ -92,9 +93,22 @@ let muted = false;                                         // C-260: put away be
 const wake = () => { if (!muted) ctxs.forEach((c) => { if (c.state !== "running") c.resume().catch(() => {}); }); };
 ["touchstart", "touchend", "mousedown", "keydown"].forEach((e) => document.addEventListener(e, wake, true));
 const say = (m) => window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(m));
-// C-257: what EmulatorJS warns of while starting reaches the app, so a failed start says why
+// C-257: what EmulatorJS warns of reaches the app, so a failed start says why (C-266: in DEVELOPER MODE's LOGS) -- the
+// message as well as where, since WebKit's stack names only the place
 ["warn", "error"].forEach((k) => { const o = console[k].bind(console); console[k] = (...a) => { o(...a);
-  const t = a.map((x) => (x && x.stack) || String(x)).join(" "); if (/fail|error/i.test(t)) say({ kind: "log", text: t.slice(0, 400) }); }; });
+  const t = a.map((x) => x && x.stack ? (x.message ? x.message + " @ " : "") + x.stack : String(x)).join(" "); say({ kind: "log", text: t.slice(0, 600) }); }; });
+// C-266: the app's web view has no MediaRecorder, and EmulatorJS's settings menu asks it which video it can record before
+// the game is shown -- the start threw there ("Failed to start game", a moment, until C-257's rescue drew it). Recording is
+// never offered here; the question is answered "none"
+if (typeof window.MediaRecorder === "undefined") window.MediaRecorder = { isTypeSupported: () => false };
+// and whatever else in that menu this web view cannot do: the menu goes short of it, and the game still starts (the error
+// kept, in LOGS)
+let EJSclass;
+Object.defineProperty(window, "EmulatorJS", { configurable: true, get: () => EJSclass, set: (C) => { EJSclass = C;
+  try { const menu = C.prototype.setupSettingsMenu;
+    C.prototype.setupSettingsMenu = function () { try { return menu.apply(this, arguments); }
+      catch (e) { console.warn("EmulatorJS's settings menu stopped short: " + (e && e.message), e); if (!this.settings) this.settings = {}; } };
+  } catch (e) {} } });
 const b64 = (u8) => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const unb64 = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
 const g = () => window.EJS_emulator && window.EJS_emulator.gameManager;
@@ -137,7 +151,7 @@ window.muteGame = (on) => { const E = window.EJS_emulator; muted = on;
   if (!on) wake(); };
 window.EJS_player = "#game"; window.EJS_core = "gba"; window.EJS_gameUrl = "daemons.gba"; window.EJS_gameName = "daemons";
 window.EJS_pathtodata = "${CDN}"; window.EJS_startOnLoaded = true; window.EJS_backgroundColor = "#0f1115";
-window.EJS_Buttons = { netplay: false, exitEmulation: false, saveState: false, loadState: false };
+window.EJS_Buttons = { netplay: false, exitEmulation: false, saveState: false, loadState: false, screenRecord: false };
 // the on-screen controls wherever there is a touch screen: EmulatorJS draws them only for a phone it knows, and an iPad
 // says it is a Mac (the user, 2026-10-28: "on the ipad ... there was no on screen controls")
 const touchy = navigator.maxTouchPoints > 1;
@@ -246,6 +260,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
   // C-264: HOW TO PLAY over the game panel -- the game held still while a book is open over it, and going on after
   const how = useHowTo(), reading = how !== "closed";
   const wasReading = useRef(false);
+  const dev = useDev();                                  // C-266: the workings shown only in DEVELOPER MODE
   const [startWhy, setStartWhy] = useState("");          // C-257: what EmulatorJS warned of while starting
   useEffect(() => { if (started.current) web.current?.injectJavaScript(`window.muteGame(${muted}); true;`); }, [muted]);
   // C-259: back to the title -- the save taken out first, as leaving a tab does, then the emulator let go
@@ -402,9 +417,11 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
       }).finally(() => { if (m.why === "leave") handed.current?.(); });
     } else if ((m.kind === "state" || m.kind === "restored") && typeof (m as any).id === "string") {
       asks.current.get((m as any).id)?.(m);                // C-261
-    } else if (m.kind === "speed" && typeof m.drawn === "number") setPace({ drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" });
-    else if (m.kind === "error" && m.text) setError(m.text);
-    else if (m.kind === "log" && m.text && /start/i.test(m.text)) setStartWhy((w) => w || m.text!);
+    } else if (m.kind === "speed" && typeof m.drawn === "number") {
+      const p = { drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" }; setPace(p); devStats(p);
+    } else if (m.kind === "error" && m.text) { setError(m.text); devLog("game", m.text); }
+    else if (m.kind === "log" && m.text) { devLog("game", m.text); if (/start/i.test(m.text)) setStartWhy((w) => w || m.text!); }
+    else if (m.kind === "rescued") devLog("game", "EmulatorJS's start stopped short; the game was shown by hand (C-257)");
   };
 
   if (!active && !game) return null;
@@ -488,13 +505,13 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
                allowUniversalAccessFromFileURLs allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false}
                scrollEnabled={false} bounces={false} onMessage={(e) => heard(e.nativeEvent.data)}
                applicationNameForUserAgent="Version/18.0 Mobile/15E148 Safari/604.1" />
-      {pace && active ? (
+      {pace && active && dev.on ? (
         <Small color={pace.ran !== null && pace.ran < 55 ? "$color9" : "$color8"}>
           {`${pace.ran ?? "?"} game frames a second · ${pace.drawn} drawn · sound ${pace.sound || "none"}`
             + (!lowPower && pace.drawn > 0 && pace.drawn <= 35 ? " -- the screen is held at 30" : "")}
         </Small>) : null}
       {error ? <Small color="$color9">{error}</Small> : null}
-      {startWhy ? <Small color="$color8">{`EmulatorJS, starting: ${startWhy}`}</Small> : null}
+      {startWhy && dev.on ? <Small color="$color8">{`EmulatorJS, starting: ${startWhy}`}</Small> : null}
       <HowToOverlay playing toTitle={toTitle} />
       {liveWhy ? <Small color="$color8">{`SYNC started the game again from its save: ${liveWhy}  DRAFT`}</Small> : null}
     </YStack>

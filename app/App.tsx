@@ -30,6 +30,8 @@ import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
 import { loadPreview } from "./preview";
 import { keepSplit, muteAway, splitKept } from "./game/away";
+import { keepLogsWidth, logsWidth, useDev } from "./game/dev";       // C-266
+import { Logs } from "./devpanel";
 import { heardElsewhere, Received } from "./received";   // C-261
 import { HowToOverlay, openHowTo } from "./howto";          // C-264
 import type { Arrival } from "../server/src/core";
@@ -109,6 +111,24 @@ function Edge({ side, putAway }: { side: "left" | "right"; putAway: (side: Away)
   );
 }
 
+// C-266: DEVELOPER MODE's LOGS at the right, beside the companion -- its own divider to drag, and a › that puts it away
+// (a ‹ at the right edge brings it back)
+function LogsDivider({ drag, putAway }: { drag: (dx: number, done: boolean) => void; putAway: () => void }) {
+  const latest = useRef(drag); latest.current = drag;
+  const pan = useRef(PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 3, onPanResponderTerminationRequest: () => false,
+    onPanResponderMove: (_, g) => latest.current(g.dx, false), onPanResponderRelease: (_, g) => latest.current(g.dx, true),
+    onPanResponderTerminate: (_, g) => latest.current(g.dx, true),
+  })).current;
+  return (
+    <YStack width={24} backgroundColor="$color3" borderLeftWidth={1} borderRightWidth={1} borderColor="$color6"
+            alignItems="center" justifyContent="center" gap={10} cursor="col-resize" {...pan.panHandlers}>
+      <YStack gap={4} paddingVertical={12}>{[0, 1, 2, 3, 4].map((i) => <YStack key={i} width={4} height={4} borderRadius={2} backgroundColor="$color9" />)}</YStack>
+      <Knob label="›" hint="put the logs away" onPress={putAway} />
+    </YStack>
+  );
+}
+
 function Shell() {
   // the page's width in points, never "100%": inside a vertical ScrollView on iOS a percentage is not resolved, and on an
   // iPad (wider than the 720 cap) every line of the books was laid out at its full length and ran off the right edge
@@ -119,7 +139,13 @@ function Shell() {
   const beside = ON_PHONE && width > height && Math.min(width, height) >= 700;   // an iPad; a big phone on its side is 440 high
   const [away, setAway] = useState<Away>("none");            // C-260: which side is put away
   const [split, setSplit] = useState<number | null>(() => (ON_PHONE ? splitKept() : null));   // the companion's width, as dragged
-  const fit = (w: number) => Math.round(Math.max(300, Math.min(width - 340, w)));
+  const dev = useDev();                                       // C-266: DEVELOPER MODE's LOGS, at the right
+  const [logsAway, setLogsAway] = useState(false);
+  const [logsW, setLogsW] = useState(() => (ON_PHONE ? logsWidth() ?? 320 : 320));
+  const showLogs = beside && dev.on && !logsAway;
+  const fitLogs = (w: number) => Math.round(Math.max(220, Math.min(width * 0.4, w)));
+  const logsRoom = beside && dev.on ? (logsAway ? 28 : fitLogs(logsW) + 24) : 0;
+  const fit = (w: number) => Math.round(Math.max(300, Math.min(width - 340 - logsRoom, w)));
   const besideWidth = fit(split ?? Math.min(480, width * 0.42));
   const gameAway = beside && away === "game", companionAway = beside && away === "companion";
   const narrowHeader = (beside ? besideWidth : width) < 420;   // C-264: the header's HOW TO PLAY as "?" where it is narrow
@@ -139,6 +165,14 @@ function Shell() {
     setSplit(w);
     if (done) { dragFrom.current = null; keepSplit(w); }
   };
+  const logsFrom = useRef<number | null>(null);
+  const dragLogs = (dx: number, done: boolean) => {         // the logs' divider dragged left widens the logs
+    if (logsFrom.current === null) logsFrom.current = fitLogs(logsW);
+    const w = fitLogs(logsFrom.current - dx);
+    setLogsW(w);
+    if (done) { logsFrom.current = null; keepLogsWidth(w); }
+  };
+  const logsPutAway = (on: boolean) => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setLogsAway(on); };
   const [tab, setTab] = useState<(typeof TABS)[number]>("today");
   // C-176 (the user chose "the watch shows, the phone taps"): the Ultra's tag holds daemons://link?device=<id> -- the
   // phone tapped to it opens here, on PLACES, linking with that watch
@@ -295,6 +329,12 @@ function Shell() {
           </XStack>
         ) : null}
       </YStack>
+      {showLogs ? <LogsDivider drag={dragLogs} putAway={() => logsPutAway(true)} /> : null}
+      {showLogs ? <YStack width={fitLogs(logsW)} backgroundColor="$color1" paddingTop={24}><Logs /></YStack> : null}
+      {beside && dev.on && logsAway ? (
+        <YStack width={28} backgroundColor="$color3" borderColor="$color6" borderLeftWidth={1} alignItems="center" justifyContent="center">
+          <Knob label="‹" hint="bring the logs back" onPress={() => logsPutAway(false)} />
+        </YStack>) : null}
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
       <Received />{/* C-261: over everything, the game too */}
       {!ON_PHONE ? <HowToOverlay playing={false} /> : null}{/* C-264: the site has no game panel: over the page */}

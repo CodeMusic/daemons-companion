@@ -1,6 +1,6 @@
 // SETTINGS -- the save, the app, the look, the voice; on the phone THIS PHONE; on the site PAIR A PHONE and AWAY FROM HOME. (C-157: out of App.tsx.)
 import { useCallback, useEffect, useState } from "react";
-import { Platform } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { BUILD } from "../data";
 import { LOOK, Look, setLook } from "../look";
@@ -11,6 +11,7 @@ import { useApi } from "../useApi";
 import { SavesCard } from "./Saves";   // C-215
 import { PREVIEW_ON, setPreview } from "../preview";
 import { muteAway, setMuteAway } from "../game/away";
+import { DevModeCard } from "../devpanel";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
@@ -357,11 +358,16 @@ export function RelayCard({ ink }: { ink: string }) {
 // heard meanwhile, or not
 function GameAwayCard({ ink }: { ink: string }) {
   const [mute, setMute] = useState(muteAway());
+  const { width, height } = useWindowDimensions();
+  const beside = width > height && Math.min(width, height) >= 700;   // as App.tsx lays it out
   return (
-    <Card>
-      <Eyebrow>MUTE THE GAME WHILE IT IS PUT AWAY</Eyebrow>
-      <Small>With the game beside the companion, the ‹ on the divider puts the game away and it keeps playing. DRAFT</Small>
-      <Choice value={mute} options={[[true, "Yes"], [false, "No"]]} onPick={(v) => { setMute(v); setMuteAway(v); }} ink={ink} />
-    </Card>
+    <>
+      <Card>
+        <Eyebrow>MUTE THE GAME WHILE IT IS PUT AWAY</Eyebrow>
+        <Small>With the game beside the companion, the ‹ on the divider puts the game away and it keeps playing. DRAFT</Small>
+        <Choice value={mute} options={[[true, "Yes"], [false, "No"]]} onPick={(v) => { setMute(v); setMuteAway(v); }} ink={ink} />
+      </Card>
+      <DevModeCard ink={ink} beside={beside} />{/* C-266 */}
+    </>
   );
 }

@@ -118,8 +118,18 @@ window.putFlash = (s) => { try { writeSave(s); } catch (e) { say({ kind: "error"
 window.snapshot = (id) => { try { say({ kind: "state", id, b64: b64(g().getState()) }); } catch (e) { say({ kind: "state", id, error: String(e) }); } };
 window.restore = (id, st, s) => { try { g().loadState(unb64(st)); writeSave(s); say({ kind: "restored", id, ok: true }); }
   catch (e) { say({ kind: "restored", id, ok: false, error: String(e) }); } };
-window.pauseGame = () => { try { window.takeSave("leave"); window.EJS_emulator.pause(); } catch (e) {} };
-window.playGame = () => { try { window.EJS_emulator.play(); } catch (e) {} };
+// C-265: whether the app wants the game running. Back from another Space, the background or the lock screen, a game the
+// app still wants running plays again, and a button held down when the touch was lost is let go -- before this, the
+// screen's buttons could stop moving anything until the game was left and started again
+let want = false;
+const release = () => { for (let i = 0; i < 16; i++) { try { g().simulateInput(0, i, 0); } catch (e) {} } };
+const back = () => { const E = window.EJS_emulator; wake(); if (want && E && E.started && E.paused) { try { E.play(); } catch (e) {} } };
+window.pauseGame = () => { want = false; try { window.takeSave("leave"); window.EJS_emulator.pause(); } catch (e) {} };
+window.playGame = () => { want = true; try { window.EJS_emulator.play(); } catch (e) {} };
+document.addEventListener("visibilitychange", () => { if (document.hidden) release(); else back(); });
+window.addEventListener("pageshow", back); window.addEventListener("focus", back);
+window.addEventListener("blur", release);
+["touchstart", "mousedown"].forEach((e) => document.addEventListener(e, back, true));
 let volume = null;
 window.muteGame = (on) => { const E = window.EJS_emulator; muted = on;
   try { if (on) { if (volume === null) volume = E.volume; E.setVolume(0); } else { E.setVolume(volume ?? 0.5); volume = null; } }
@@ -173,7 +183,7 @@ const speed = () => { let drawn = 0, t0 = performance.now(), f0 = null;
     try { f = g().getFrameNum(); } catch (e) {}
     say({ kind: "speed", drawn: Math.round(drawn / s), ran: f !== null && f0 !== null ? Math.round((f - f0) / s) : null,
           sound: ctxs.map((c) => c.state).join(",") });
-    drawn = 0; t0 = t; f0 = f; wake();
+    drawn = 0; t0 = t; f0 = f; back();
     // C-263: the screen's own controls kept where they belong -- a start that stopped short of showing them left the
     // iPad with none (C-235, C-257)
     try { const E = window.EJS_emulator; if (touchy && !document.body.classList.contains("pad") && E.virtualGamepad.style.display === "none" && !E.virtualGamepad.style.opacity)
@@ -291,13 +301,15 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
   // wrote goes into the running game (C-261), or where it cannot, the game starts again from it (CONTINUE); otherwise
   // it simply goes on
   const resume = async () => {
-    await mirrorIn();                                     // C-188: a SYNC the paired companion wrote comes back first
-    const f = saveFile(), now = f.exists ? b64Of(f.bytesSync()) : "";
-    if (now && now !== given.current) {
-      const was = given.current; given.current = now;
-      if (!(was && started.current && await liveWrite(was, now))) web.current?.injectJavaScript(`window.putSave(${JSON.stringify(now)}); true;`);
-    }
-    web.current?.injectJavaScript("window.playGame(); true;");
+    try {
+      await mirrorIn();                                   // C-188: a SYNC the paired companion wrote comes back first
+      const f = saveFile(), now = f.exists ? b64Of(f.bytesSync()) : "";
+      if (now && now !== given.current) {
+        const was = given.current; given.current = now;
+        if (!(was && started.current && await liveWrite(was, now))) web.current?.injectJavaScript(`window.putSave(${JSON.stringify(now)}); true;`);
+      }
+    } catch { /* C-265: whatever failed on the way back, the game still goes on -- it was left paused */ }
+    finally { web.current?.injectJavaScript("window.playGame(); true;"); }
   };
   useEffect(() => {
     if (!started.current || reading === wasReading.current) return;

@@ -30,7 +30,7 @@ import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
 import { loadPreview } from "./preview";
 import { keepSplit, muteAway, splitKept } from "./game/away";
-import { keepLogsWidth, logsWidth, useDev } from "./game/dev";       // C-266
+import { keepLogsWidth, logsWidth, useDev } from "./game/dev";       // C-268
 import { Logs } from "./devpanel";
 import { heardElsewhere, Received } from "./received";   // C-261
 import { HowToOverlay, openHowTo } from "./howto";          // C-264
@@ -111,7 +111,7 @@ function Edge({ side, putAway }: { side: "left" | "right"; putAway: (side: Away)
   );
 }
 
-// C-266: DEVELOPER MODE's LOGS at the right, beside the companion -- its own divider to drag, and a › that puts it away
+// C-268: DEVELOPER MODE's LOGS at the right, beside the companion -- its own divider to drag, and a › that puts it away
 // (a ‹ at the right edge brings it back)
 function LogsDivider({ drag, putAway }: { drag: (dx: number, done: boolean) => void; putAway: () => void }) {
   const latest = useRef(drag); latest.current = drag;
@@ -139,7 +139,7 @@ function Shell() {
   const beside = ON_PHONE && width > height && Math.min(width, height) >= 700;   // an iPad; a big phone on its side is 440 high
   const [away, setAway] = useState<Away>("none");            // C-260: which side is put away
   const [split, setSplit] = useState<number | null>(() => (ON_PHONE ? splitKept() : null));   // the companion's width, as dragged
-  const dev = useDev();                                       // C-266: DEVELOPER MODE's LOGS, at the right
+  const dev = useDev();                                       // C-268: DEVELOPER MODE's LOGS, at the right
   const [logsAway, setLogsAway] = useState(false);
   const [logsW, setLogsW] = useState(() => (ON_PHONE ? logsWidth() ?? 320 : 320));
   const showLogs = beside && dev.on && !logsAway;

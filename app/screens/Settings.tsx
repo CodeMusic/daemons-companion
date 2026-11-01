@@ -367,7 +367,7 @@ function GameAwayCard({ ink }: { ink: string }) {
         <Small>With the game beside the companion, the ‹ on the divider puts the game away and it keeps playing. DRAFT</Small>
         <Choice value={mute} options={[[true, "Yes"], [false, "No"]]} onPick={(v) => { setMute(v); setMuteAway(v); }} ink={ink} />
       </Card>
-      <DevModeCard ink={ink} beside={beside} />{/* C-266 */}
+      <DevModeCard ink={ink} beside={beside} />{/* C-268 */}
     </>
   );
 }

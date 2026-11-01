@@ -1,4 +1,4 @@
-// C-266: DEVELOPER MODE -- off, the game shows none of its workings (the frames line, what EmulatorJS warned of); on, a
+// C-268: DEVELOPER MODE -- off, the game shows none of its workings (the frames line, what EmulatorJS warned of); on, a
 // LOGS panel beside the game and the companion (or a card in SETTINGS where there is no room beside) shows them, with
 // what the app warned of and how much memory its JavaScript holds. Kept on this device, as the game's other choices are.
 import { useEffect, useState } from "react";

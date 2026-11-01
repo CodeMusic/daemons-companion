@@ -1,4 +1,4 @@
-// C-266: DEVELOPER MODE's LOGS -- the game's pace, the app's memory, and every warning the game's web view and the app
+// C-268: DEVELOPER MODE's LOGS -- the game's pace, the app's memory, and every warning the game's web view and the app
 // gave, newest first. A panel beside the game and the companion; a card in SETTINGS where there is no room beside.
 import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";

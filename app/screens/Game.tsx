@@ -24,7 +24,7 @@ import { heardSync } from "../received";
 import PAD from "../modules/daemons-pad";                              // C-263
 import { HowToOverlay, openHowTo, useHowTo } from "../howto";          // C-264
 import { Action, Card, Eyebrow, Small } from "../ui";
-import { devLog, devStats, useDev } from "../game/dev";                 // C-266
+import { devLog, devStats, useDev } from "../game/dev";                 // C-268
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version
 const saveFile = () => new File(Paths.document, "daemons.sav");
@@ -93,11 +93,11 @@ let muted = false;                                         // C-260: put away be
 const wake = () => { if (!muted) ctxs.forEach((c) => { if (c.state !== "running") c.resume().catch(() => {}); }); };
 ["touchstart", "touchend", "mousedown", "keydown"].forEach((e) => document.addEventListener(e, wake, true));
 const say = (m) => window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(m));
-// C-257: what EmulatorJS warns of reaches the app, so a failed start says why (C-266: in DEVELOPER MODE's LOGS) -- the
+// C-257: what EmulatorJS warns of reaches the app, so a failed start says why (C-268: in DEVELOPER MODE's LOGS) -- the
 // message as well as where, since WebKit's stack names only the place
 ["warn", "error"].forEach((k) => { const o = console[k].bind(console); console[k] = (...a) => { o(...a);
   const t = a.map((x) => x && x.stack ? (x.message ? x.message + " @ " : "") + x.stack : String(x)).join(" "); say({ kind: "log", text: t.slice(0, 600) }); }; });
-// C-266: the app's web view has no MediaRecorder, and EmulatorJS's settings menu asks it which video it can record before
+// C-268: the app's web view has no MediaRecorder, and EmulatorJS's settings menu asks it which video it can record before
 // the game is shown -- the start threw there ("Failed to start game", a moment, until C-257's rescue drew it). Recording is
 // never offered here; the question is answered "none"
 if (typeof window.MediaRecorder === "undefined") window.MediaRecorder = { isTypeSupported: () => false };
@@ -260,7 +260,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
   // C-264: HOW TO PLAY over the game panel -- the game held still while a book is open over it, and going on after
   const how = useHowTo(), reading = how !== "closed";
   const wasReading = useRef(false);
-  const dev = useDev();                                  // C-266: the workings shown only in DEVELOPER MODE
+  const dev = useDev();                                  // C-268: the workings shown only in DEVELOPER MODE
   const [startWhy, setStartWhy] = useState("");          // C-257: what EmulatorJS warned of while starting
   useEffect(() => { if (started.current) web.current?.injectJavaScript(`window.muteGame(${muted}); true;`); }, [muted]);
   // C-259: back to the title -- the save taken out first, as leaving a tab does, then the emulator let go

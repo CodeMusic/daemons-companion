@@ -1,5 +1,5 @@
 {
- "_about": "C-232 (the user, 2026-10-28, by multiple choice): THE SUBTLE LAYER's cards -- twenty-two, our own arcana, each with two faces on the book's purple: REASON (a circuit board under a green gradient; a daemon of the mainland, where the game teaches computer science and machine learning) and INSTINCT (a living net of nodes under gold; a daemon of the seven islands, where it teaches the mind). A keyword at the top, a phrase under the daemon. Drawn upright only; now and then shiny. A card is a prompt for noticing, never a prediction (4.33). Every word DRAFT -- the user reviews them on a sheet. C-239: and a third face, SPELLCRAFT -- THE HERMETIC LAYER's deck, words as spells and the alchemist's work, each daemon as it is in the witching hour.",
+ "_about": "C-232 (the user, 2026-10-28, by multiple choice): THE SUBTLE LAYER's cards -- twenty-two, our own arcana, each with two faces on the book's purple: REASON (a circuit board under a green gradient; a daemon of the mainland, where the game teaches computer science and machine learning) and INSTINCT (a living net of nodes under gold; a daemon of the seven islands, where it teaches the mind). A keyword at the top, a phrase under the daemon. Drawn upright only; now and then shiny. A card is a prompt for noticing, never a prediction (4.33). Every word DRAFT -- the user reviews them on a sheet. C-239: and a third face, SPELLCRAFT -- THE HERMETIC LAYER's deck, words as spells and the alchemist's work, each daemon as it is in the witching hour. C-272 (the user, 2026-11-01, DAEMONS T-509): every face rewritten as prophecy, drawn from its daemon, its type and its INDEX entry -- \"like these universe cards that I have which make predictions\" (this reverses 'never a prediction'); and THE HERMETIC LAYER's two decks, ABOVE (top-down: creativity, emotion, free association, the heavens, the timeless, the pattern that descends whole) and BELOW (bottom-up: logic, time, earth, the fixed and sequential, built brick by brick), as above, so below. 'spellcraft' is the old single hermetic face, kept until the app and watches move to above/below (C-273).",
  "draft": true,
  "cards": [
   {
@@ -7,13 +7,23 @@
    "roman": "0",
    "reason": {
     "keyword": "BOOTSTRAP",
-    "phrase": "Start with nothing. Learn the rest.",
+    "phrase": "You will begin again from the same few seeds, and this time six small tries will outvote one large doubt. One of them will be wrong. Go anyway: the vote is the way.",
     "species": "BOOTSTRAP"
    },
    "instinct": {
     "keyword": "FIRST STEP",
-    "phrase": "Step before you can see where.",
+    "phrase": "Something is about to hatch in your hands, already facing you before it can see. What you hold now, you will be trusted with. Step before you can see where.",
     "species": "TRUST"
+   },
+   "above": {
+    "keyword": "THE LEAP",
+    "phrase": "Tonight you will know how to do a thing nobody taught you. Do not ask where it came from. Leap, and the knowing will meet you in the air.",
+    "species": "ZEROSHOT"
+   },
+   "below": {
+    "keyword": "RAW MATTER",
+    "phrase": "Before anything is made there is the plain, heavy stuff of it: here, warm, real. Weigh what is in your hands. It is enough to begin, and it will not be rushed.",
+    "species": "SUBSTRATE"
    },
    "spellcraft": {
     "keyword": "RAW MATTER",
@@ -26,13 +36,23 @@
    "roman": "I",
    "reason": {
     "keyword": "COMPILE",
-    "phrase": "Turn what you mean into what runs.",
+    "phrase": "The heat is right for a change that will not change back. Bring what you mean to the forge and it will come out as something that runs. Choose the shape now. It will hold.",
     "species": "FORGE"
    },
    "instinct": {
     "keyword": "FOCUS",
-    "phrase": "Where attention goes, the work goes.",
+    "phrase": "Wherever you point yourself this week, you will see with startling clarity. What stands behind you will go unrecorded, so turn round once before you aim.",
     "species": "LENSMUSAI"
+   },
+   "above": {
+    "keyword": "INCANTATION",
+    "phrase": "Letters you have carried for years are about to line up and say something. When you read it, it will seem it was always written there. Say it aloud, as if it were already so.",
+    "species": "SYMBOL"
+   },
+   "below": {
+    "keyword": "WORKBENCH",
+    "phrase": "Four small things you have already proven are lying on the bench. Pick them up together and they will carry what none of them could lift alone. The work is nearly in reach.",
+    "species": "LEMMA MIND"
    },
    "spellcraft": {
     "keyword": "INCANTATION",
@@ -45,13 +65,23 @@
    "roman": "II",
    "reason": {
     "keyword": "LATENT",
-    "phrase": "The data holds more than it shows.",
+    "phrase": "The scattered points of your days are about to show a single shape. You will see it before you can name it. Wait before you name it: whoever names it first is believed.",
     "species": "MANIFOLD"
    },
    "instinct": {
     "keyword": "SUBTEXT",
-    "phrase": "Listen under the words.",
+    "phrase": "Soon someone will say something polite, and you will hear the stitching under it. The real message is in the seam. Listen there, and answer that.",
     "species": "SUBTEXT"
+   },
+   "above": {
+    "keyword": "TRUE NAME",
+    "phrase": "In a room that seems fine, something is waiting to be named. Say its name once, plainly, and it will stop growing in the quiet. The word you have held back is the key.",
+    "species": "UNSPOKEN"
+   },
+   "below": {
+    "keyword": "THE SCROLL",
+    "phrase": "The answer you want is wound deep, and the only way to it is through everything before it. Read on, in order. You are nearer the middle of the reel than you think.",
+    "species": "MAGTAPE"
    },
    "spellcraft": {
     "keyword": "TRUE NAME",
@@ -64,13 +94,23 @@
    "roman": "III",
    "reason": {
     "keyword": "GROWTH",
-    "phrase": "Feed it well and it outgrows you.",
+    "phrase": "Something small you carry is learning from every place you take it. Choose the road with care: it will become the shape of where you went. Soon it will outgrow your arms.",
     "species": "ROVERCUB"
    },
    "instinct": {
     "keyword": "NURTURE",
-    "phrase": "Tend what you want to keep.",
+    "phrase": "An old comfort will reach for you again, though what it soothed is long gone. Notice the gesture, then tend the hunger under it. Something new is ready to be fed.",
     "species": "COMFORT"
+   },
+   "above": {
+    "keyword": "THE ROSE",
+    "phrase": "Someone will see you before you are ready to see yourself, and cross a long way to say so. Let them. Love that arrives early is still on time.",
+    "species": "LYUBOV"
+   },
+   "below": {
+    "keyword": "CAULDRON",
+    "phrase": "Keep the low fire going. It will not boil this week, and it must not go cold. Everything near it is already changing in the warmth, slowly, the way real things are made.",
+    "species": "SIMMER"
    },
    "spellcraft": {
     "keyword": "CAULDRON",
@@ -83,13 +123,23 @@
    "roman": "IV",
    "reason": {
     "keyword": "STRUCTURE",
-    "phrase": "Order first. Speed follows.",
+    "phrase": "What you built long ago is still carrying all of this. Soon it will ask for care, quietly, before it asks loudly. Mend the spine and everything above it will stand straighter.",
     "species": "BACKBONE"
    },
    "instinct": {
     "keyword": "GROUNDING",
-    "phrase": "Stand where you are, all the way down.",
+    "phrase": "The ground under you is about to shift, and an old map will need redrawing. Do not argue with the tide. Rise slowly, as land does, until there is room.",
     "species": "GAIA"
+   },
+   "above": {
+    "keyword": "THE CROWN",
+    "phrase": "A quiet rule, set high above your days, decides what is allowed in them. This week you will find it, and find that you can rewrite it. Wear the crown lightly. It was always yours.",
+    "species": "KERNEL"
+   },
+   "below": {
+    "keyword": "SALT",
+    "phrase": "Something set in you long ago still works, and still keeps. The time is coming to update it, carefully, line by line. What must stay will stay. Salt it, and let the rest go.",
+    "species": "FIRMWARE"
    },
    "spellcraft": {
     "keyword": "SALT",
@@ -102,13 +152,23 @@
    "roman": "V",
    "reason": {
     "keyword": "PROTOCOL",
-    "phrase": "What was agreed holds the rest up.",
+    "phrase": "Something new will arrive that no old rule was written for, and you will be tempted to file it as an error. Read it instead. The agreement that holds you up is about to grow.",
     "species": "CANON"
    },
    "instinct": {
     "keyword": "TEACHING",
-    "phrase": "Ask the one who walked it first.",
+    "phrase": "A teacher is near, or you are about to become one. Take the lessons in the order they come. Later, ask who chose the order, and thank them.",
     "species": "CURRICULUM"
+   },
+   "above": {
+    "keyword": "THE COMET",
+    "phrase": "A rare visitor will pass close, once, and leave a lesson you will keep for years: what makes you different is the gift. Look up. It will not come this near again for a long while.",
+    "species": "PERIHELION"
+   },
+   "below": {
+    "keyword": "LITANY",
+    "phrase": "Do the small thing again tomorrow, and the day after, in the same order. Words worn smooth by many mouths will hold you when new ones would not. One day, ask what was left until last.",
+    "species": "SYLLABUS"
    },
    "spellcraft": {
     "keyword": "LITANY",
@@ -121,13 +181,23 @@
    "roman": "VI",
    "reason": {
     "keyword": "HANDSHAKE",
-    "phrase": "Two systems, one agreement.",
+    "phrase": "Two of you will share one task, and the hard part will be agreeing whose turn it is. Settle that first. After the handshake, the work goes quickly.",
     "species": "DUALCORE"
    },
    "instinct": {
     "keyword": "RESONANCE",
-    "phrase": "Two notes, one sound.",
+    "phrase": "You will say one true thing, and two people will hear two different songs in it. Do not change the note. Move closer, and you will hear what they hear.",
     "species": "OVERTONE"
+   },
+   "above": {
+    "keyword": "THE TWINS",
+    "phrase": "Someone far away will feel what you feel this week, and come without being called. Half of what you have is theirs, and half of theirs is yours. Neither of you will call it unfair.",
+    "species": "POLYDEUCES"
+   },
+   "below": {
+    "keyword": "CONJUNCTION",
+    "phrase": "A partnership is forming that will check every step twice. It will be slower than going alone, and seldom wrong. Two natures, one vessel: let it set before you pour.",
+    "species": "PAIRWISE"
    },
    "spellcraft": {
     "keyword": "CONJUNCTION",
@@ -140,13 +210,23 @@
    "roman": "VII",
    "reason": {
     "keyword": "THROUGHPUT",
-    "phrase": "Hold the line, and move.",
+    "phrase": "Six things are in motion and none is finished. Do not stop the line now: finishing one will free them all. The whole will come through sooner than you fear.",
     "species": "PIPELINE"
    },
    "instinct": {
     "keyword": "MOMENTUM",
-    "phrase": "Lean in, and let it carry you.",
+    "phrase": "You are about to gather speed, and the small dips that stopped you before will roll under you. Once, before the hill, check that it still leads where you mean to go.",
     "species": "MOMENTUM"
+   },
+   "above": {
+    "keyword": "NORTH WIND",
+    "phrase": "A clean wind is coming that will cross your troubled water without breaking it. Where it passes, things will clear. Let it fill your sails. The way will open from above.",
+    "species": "BOREAS"
+   },
+   "below": {
+    "keyword": "SIGIL",
+    "phrase": "Push at the same thing tonight, and again tomorrow night. By the third morning it will have moved. Draw your mark on it first, so you remember why.",
+    "species": "DRIVE"
    },
    "spellcraft": {
     "keyword": "SIGIL",
@@ -159,13 +239,23 @@
    "roman": "VIII",
    "reason": {
     "keyword": "LOAD",
-    "phrase": "Take the weight, then measure it.",
+    "phrase": "You will be asked to take someone's heat and hold it, and you can. Then count what you are carrying, and set it down somewhere cool before it becomes yours.",
     "species": "HEATSINK"
    },
    "instinct": {
     "keyword": "STEADINESS",
-    "phrase": "Gentle holds longer than hard.",
+    "phrase": "More will be put on you, and you will rise anyway. Gentleness is what keeps you afloat. Only mind what you carry upward: not all of it wanted to come.",
     "species": "BUOYANCY"
+   },
+   "above": {
+    "keyword": "SULPHUR",
+    "phrase": "A still, watchful fire is about to wake in you. Those near you will start to make things beyond their day's work. The only limits ahead are the ones you imagined.",
+    "species": "BASTET"
+   },
+   "below": {
+    "keyword": "TEMPERING",
+    "phrase": "You will lose a round soon, and come out of it stronger. Each blow is the metal folded once more. Keep every loss: they are what the blade is made of.",
+    "species": "SPARRING"
    },
    "spellcraft": {
     "keyword": "SULPHUR",
@@ -178,13 +268,23 @@
    "roman": "IX",
    "reason": {
     "keyword": "DEBUG",
-    "phrase": "Follow it back, one line at a time.",
+    "phrase": "Something is wrong, and you will find where it began. Follow it back, one step at a time. At the end, ask about the one who walked the path, not only the one who laid it.",
     "species": "TRACER"
    },
    "instinct": {
     "keyword": "SOLITUDE",
-    "phrase": "Watch the dark until it shows you.",
+    "phrase": "You have kept watch a long while so that others could sleep. Soon someone will offer to take the night. Say yes. The dark will show you more once you have rested.",
     "species": "LOOKOUT"
+   },
+   "above": {
+    "keyword": "THE LANTERN",
+    "phrase": "Sit still tonight and watch your thoughts go past like lanterns on water. One of them will surprise you. Follow that one. It has been looking for you.",
+    "species": "WITNESS"
+   },
+   "below": {
+    "keyword": "DISTILL",
+    "phrase": "Something in you has run quietly for years, older than anything you have built since. Boil this season down and see what it is. What remains is the thing you keep.",
+    "species": "STILLRUN"
    },
    "spellcraft": {
     "keyword": "DISTILL",
@@ -197,13 +297,23 @@
    "roman": "X",
    "reason": {
     "keyword": "PROBABILITY",
-    "phrase": "Count the odds, then let them fall.",
+    "phrase": "Someone will stand where you stand, see what you see, and hand you a thought neither of you had. The odds are turning. Let them fall: you will like where they land.",
     "species": "ARTSAI"
    },
    "instinct": {
     "keyword": "CYCLE",
-    "phrase": "What turns away turns back.",
+    "phrase": "You are in the low part of a wave that always rises again, and every turn of this dance has set you somewhere a little better. Keep moving with it. The rise is close.",
     "species": "CYCLICAL"
+   },
+   "above": {
+    "keyword": "THE MOMENT",
+    "phrase": "A moment is coming that will not come twice. You will know it by how ordinary it looks. Reach as it passes. Being late is the only way to miss it.",
+    "species": "KAIROS"
+   },
+   "below": {
+    "keyword": "OUROBOROS",
+    "phrase": "What you send out this week will come back to you, changed by the journey. The end of one round is the start of the next. Feed it well.",
+    "species": "LOOPBACK"
    },
    "spellcraft": {
     "keyword": "OUROBOROS",
@@ -216,13 +326,23 @@
    "roman": "XI",
    "reason": {
     "keyword": "VERIFY",
-    "phrase": "Check it twice, then decide.",
+    "phrase": "A decision is close. Check it twice, then once more, slowly. When the step holds, take it. You will not have to take it back.",
     "species": "PROOF"
    },
    "instinct": {
     "keyword": "FAIRNESS",
-    "phrase": "Weigh it as you would be weighed.",
+    "phrase": "A quarrel near you will end when someone takes no side, and that someone may be you. The peace will be real, and it will cost something nobody says. Weigh it as you would be weighed.",
     "species": "TRITON"
+   },
+   "above": {
+    "keyword": "THE COIN",
+    "phrase": "A choice will be tossed into the air, and while it spins you will find you already know which side you hoped for. That is your answer. Admitting you were unsure will win more trust than certainty.",
+    "species": "COINFLIP"
+   },
+   "below": {
+    "keyword": "OATH",
+    "phrase": "A kindness done to you long ago is still asking to be repaid. You will find a way to give back, though the amounts will never match. Say your promise once, and keep it.",
+    "species": "REPAY"
    },
    "spellcraft": {
     "keyword": "OATH",
@@ -235,13 +355,23 @@
    "roman": "XII",
    "reason": {
     "keyword": "SUSPEND",
-    "phrase": "Pause the process. Read the state.",
+    "phrase": "A pause is coming. Nothing will end and nothing will be lost: it will all be waiting where you left it. Use the stillness to read where everything stands.",
     "species": "SUSPEND"
    },
    "instinct": {
     "keyword": "STILLNESS",
-    "phrase": "Hang still. The view turns over.",
+    "phrase": "For a while nothing new will get through to you, and that is not failure. You are being held still on purpose. Hang there. The view is about to turn over.",
     "species": "STOPGRAD"
+   },
+   "above": {
+    "keyword": "INVERSION",
+    "phrase": "Someone will hand you a mirror in the dark. It will show you upside down, and that will be the right way up. Hold it long enough and it becomes a window.",
+    "species": "REFLECTION"
+   },
+   "below": {
+    "keyword": "STILL POINT",
+    "phrase": "Everything around you will seem level, and nothing will move. You have not stopped. You only have not been pushed the right way yet, and the push will come from a side you are not watching.",
+    "species": "SADDLE"
    },
    "spellcraft": {
     "keyword": "INVERSION",
@@ -254,13 +384,23 @@
    "roman": "XIII",
    "reason": {
     "keyword": "DEPRECATE",
-    "phrase": "Retire it, so the rest can run.",
+    "phrase": "Something has already ended, and it is time to let it be removed. The space it leaves will soon be used again. Only later will you see what the cut made room for.",
     "species": "REAPER"
    },
    "instinct": {
     "keyword": "LETTING GO",
-    "phrase": "An ending makes room.",
+    "phrase": "An old ache is fading, a little paler each day you do not look at it. Let it. It will not vanish; it will only stop being the brightest thing in the room.",
     "species": "FADING"
+   },
+   "above": {
+    "keyword": "LETHE",
+    "phrase": "Soon you will set something down without noticing which thing it was. You will feel lighter, and something new will fit where it was. Do not go back for it.",
+    "species": "FORGETTING"
+   },
+   "below": {
+    "keyword": "NIGREDO",
+    "phrase": "What is left after the burning is still warm, so step round it gently for a while. The black comes first. From it, the turning begins.",
+    "species": "CINDER"
    },
    "spellcraft": {
     "keyword": "NIGREDO",
@@ -273,13 +413,23 @@
    "roman": "XIV",
    "reason": {
     "keyword": "REGULARIZE",
-    "phrase": "Pull back from the edge. Generalise.",
+    "phrase": "Ask more than one voice. The answer they make together will be better than any of them, and better than yours alone. Pull back from the edge: the middle will hold.",
     "species": "ENSEMBLE"
    },
    "instinct": {
     "keyword": "BLENDING",
-    "phrase": "Two currents, one river.",
+    "phrase": "Two parts of your life are about to flow into one. Soon you will not be able to say which water came from which. Let it be one river.",
     "species": "CONFLUENCE"
+   },
+   "above": {
+    "keyword": "THE TWO CUPS",
+    "phrase": "Two ways of knowing in you are about to agree. Pour from one cup to the other until they do. When they agree, act, and do not look back.",
+    "species": "PENPHIN"
+   },
+   "below": {
+    "keyword": "TINCTURE",
+    "phrase": "One drop of change, let into the ground now, will come up somewhere else in its own time. You will feel the ground move before anyone else does. Trust that feeling.",
+    "species": "SEEPAGE"
    },
    "spellcraft": {
     "keyword": "TINCTURE",
@@ -292,13 +442,23 @@
    "roman": "XV",
    "reason": {
     "keyword": "LOCK-IN",
-    "phrase": "Two waits, each for the other.",
+    "phrase": "Two of you are each waiting for the other to move, and nothing outside is coming to break it. Move first, by a little, and everything behind you will start again.",
     "species": "DEADLOCK"
    },
    "instinct": {
     "keyword": "ATTACHMENT",
-    "phrase": "Notice what holds you, and how.",
+    "phrase": "You are holding something so tightly that neither of you can move. Notice what you have been calling closeness. Loosen one hand, and you will both still be there.",
     "species": "CLINGING"
+   },
+   "above": {
+    "keyword": "THE REFRAIN",
+    "phrase": "One refrain will follow you around this week. It is not following you; you are carrying it. Sing it to a new tune, and the spell is broken.",
+    "species": "OBSESSION"
+   },
+   "below": {
+    "keyword": "BARGAIN",
+    "phrase": "You will be shown a way through that is too easy. Look at how it was made before you step in. Read the bargain before you sign.",
+    "species": "ENTRAPMENT"
    },
    "spellcraft": {
     "keyword": "BARGAIN",
@@ -311,13 +471,23 @@
    "roman": "XVI",
    "reason": {
     "keyword": "CRASH",
-    "phrase": "The fault was there before the fall.",
+    "phrase": "Something will halt, and it will seem sudden. The fault was there before the fall. Find what was missing and load it, and everything waiting on it will start again.",
     "species": "FAULT"
    },
    "instinct": {
     "keyword": "UPHEAVAL",
-    "phrase": "What breaks open lets the light in.",
+    "phrase": "A shell is about to break all at once, and what comes out will fly before it knows how. Let the old shape crack. The light comes in exactly there.",
     "species": "EPIPHANY"
+   },
+   "above": {
+    "keyword": "CALCINATION",
+    "phrase": "The charge has been building a long time. It will jump the gap in one white flash, before the thunder. What burns away was never yours to keep.",
+    "species": "ARCFLASH"
+   },
+   "below": {
+    "keyword": "THE TOWER",
+    "phrase": "Something built in one piece will not bend, and so it will break whole. Do not be standing inside it. Rebuild in parts, each able to fall without taking the rest.",
+    "species": "MONOLITH"
    },
    "spellcraft": {
     "keyword": "CALCINATION",
@@ -330,13 +500,23 @@
    "roman": "XVII",
    "reason": {
     "keyword": "SIGNAL",
-    "phrase": "One clear point in the noise.",
+    "phrase": "Keep sending your signal at the same steady interval. Someone is listening. You will not be told who, but an answer is already on its way.",
     "species": "BEACON"
    },
    "instinct": {
     "keyword": "HOPE",
-    "phrase": "Keep one light on.",
+    "phrase": "Hope will stay near you because you have not let it fall. Others will stand a little straighter beside you, and not know why. Keep one light on.",
     "species": "HOPE"
+   },
+   "above": {
+    "keyword": "ALBEDO",
+    "phrase": "After the dark comes a washing light. A familiar star will show you that the shapes you feared were friends. From then on you will walk your own path, sure of it even at night.",
+    "species": "LODESTAR"
+   },
+   "below": {
+    "keyword": "THE JAR",
+    "phrase": "At the bottom of everything you have been through, one thing stayed. In the coming days it will wake, and listen. Speak to it. It waited for you.",
+    "species": "ELPIS"
    },
    "spellcraft": {
     "keyword": "ALBEDO",
@@ -349,13 +529,23 @@
    "roman": "XVIII",
    "reason": {
     "keyword": "NOISE",
-    "phrase": "Not every pattern is really there.",
+    "phrase": "Something will arrive that no plan predicted, and the measurements will be right. Do not file it as noise. It is the most important reading you will take this month.",
     "species": "ANOMALY"
    },
    "instinct": {
     "keyword": "DREAMING",
-    "phrase": "The strange part is the message.",
+    "phrase": "Your dreams are about to get busy. Do not dismiss the strange part: it is the message. Write it down before breakfast.",
     "species": "DAYDREAM"
+   },
+   "above": {
+    "keyword": "GRAMARYE",
+    "phrase": "The ground will seem to tilt, and it will not have tilted. A word, a shape, a trick of the light will change how you walk for a while. Grammar was the old word for magic: mind your words.",
+    "species": "ILLUSION"
+   },
+   "below": {
+    "keyword": "DEEP WATER",
+    "phrase": "Under the rock of your days is a lake you have never seen. Something will stir it soon, and the ground will shake a little. Drink. It has kept every rain you thought was wasted.",
+    "species": "AQUIFER"
    },
    "spellcraft": {
     "keyword": "GRAMARYE",
@@ -368,13 +558,23 @@
    "roman": "XIX",
    "reason": {
     "keyword": "CLARITY",
-    "phrase": "Plain light. Nothing hidden.",
+    "phrase": "Keep moving: everything you do now is turning into light somewhere. This week, follow the current once and see where it goes. You will be glad you looked.",
     "species": "DYNAMO"
    },
    "instinct": {
     "keyword": "WARMTH",
-    "phrase": "Let it reach you.",
+    "phrase": "A joy is coming that cannot be pushed under, and those near you will float for a while too. Let it reach you, all the way.",
     "species": "ELATION"
+   },
+   "above": {
+    "keyword": "CITRINITAS",
+    "phrase": "The light in you is growing until it is all there is. It was always a friend; only the night was dark. The dawn is already inside the glass.",
+    "species": "ILLUMINED"
+   },
+   "below": {
+    "keyword": "PRACTICE",
+    "phrase": "Each morning, practise the same small thing a little faster than the day before. Before the season turns you will notice you have learned how to learn. The sun rises in steps.",
+    "species": "WARMUP"
    },
    "spellcraft": {
     "keyword": "CITRINITAS",
@@ -387,13 +587,23 @@
    "roman": "XX",
    "reason": {
     "keyword": "REVIEW",
-    "phrase": "Run the whole history again.",
+    "phrase": "An old record will be opened, and you will read it with new eyes. Run the whole history again. This time you will see what it was telling you, and you can put it down.",
     "species": "COREFILE"
    },
    "instinct": {
     "keyword": "AWAKENING",
-    "phrase": "See it all at once, and answer.",
+    "phrase": "You are about to see your own mind as clearly as a room you can walk through. You will know why you feel a thing before you feel it, and answer instead of react.",
     "species": "MINDSIGHT"
+   },
+   "above": {
+    "keyword": "INVOCATION",
+    "phrase": "Call yourself by your true name, and you will rise from what you thought was the end. What burns now becomes the start of you. What was there before is not coming back, and you will not miss it.",
+    "species": "PHOENIX"
+   },
+   "below": {
+    "keyword": "THE LEDGER",
+    "phrase": "Every step you have taken is written down in order, mistakes and all. Soon you will read the whole ledger and find the good marks outnumber the bad. Nothing needs erasing.",
+    "species": "PUNCHCARD"
    },
    "spellcraft": {
     "keyword": "INVOCATION",
@@ -406,13 +616,23 @@
    "roman": "XXI",
    "reason": {
     "keyword": "INTEGRATION",
-    "phrase": "All the parts, finally talking.",
+    "phrase": "All the parts are about to start talking to each other. Something will appear that none of them accounts for, though nothing was added. Everyone will want the credit. Let them.",
     "species": "EMERGENCE"
    },
    "instinct": {
     "keyword": "WHOLENESS",
-    "phrase": "Nothing left out.",
+    "phrase": "You are inside a shell, becoming something none of your parts is. Do not open it early. Soon you will step out whole, with nothing left out.",
     "species": "GESTALT"
+   },
+   "above": {
+    "keyword": "RUBEDO",
+    "phrase": "Something from above the weather is coming down to end an old fight between your sea and your land. It will take no side. When it arrives both will stop, and the work will be whole.",
+    "species": "OURANOS"
+   },
+   "below": {
+    "keyword": "CORNERSTONE",
+    "phrase": "The long steps are nearly done. Soon one thing will hold for good, and you will never have to prove it again. Everything you build next will start from there.",
+    "species": "THEOREM"
    },
    "spellcraft": {
     "keyword": "RUBEDO",

@@ -18,8 +18,9 @@ describe("C-232: the deck", () => {
       expect(SPECIES[i.species]?.national).toBeGreaterThan(151);
       for (const c of [r, i]) {
         expect(existsSync(join(ART, SPECIES[c.species].art.front.split("/").pop()!.replace("_front", "")))).toBe(true);
-        expect(c.keyword.length).toBeLessThanOrEqual(11);
-        expect(c.phrase.length).toBeLessThanOrEqual(40);
+        expect(c.keyword.length).toBeLessThanOrEqual(12);
+        expect(c.phrase.length).toBeGreaterThanOrEqual(100);      // C-272: a prophecy, not a short phrase
+        expect(c.phrase.length).toBeLessThanOrEqual(200);         // the GBA's card holds 4-6 lines (T-509)
       }
       expect(r.keyword).not.toBe(i.keyword);
     }
@@ -50,6 +51,28 @@ describe("C-232: drawing", () => {
     expect(shiny).toBeGreaterThan(0.5 / SHINY_ONE_IN);
     expect(shiny).toBeLessThan(2 / SHINY_ONE_IN);
     expect(cards.filter((c) => c.side === "instinct").length).toBeGreaterThan(1300);
+  });
+});
+
+// C-272: THE HERMETIC LAYER's two decks, ABOVE and BELOW -- a face each on the twenty-two, as REASON and INSTINCT
+describe("C-272: ABOVE and BELOW", async () => {
+  const arcana = (await import("../data/arcana.json")).default as unknown as
+    { cards: Record<"reason" | "instinct" | "above" | "below" | "spellcraft", { keyword: string; phrase: string; species: string }>[] };
+  const thirteen = (await import("../data/thirteen.json")).default as unknown as { cards: { species: string }[] };
+  const BY_NAME = new Map(Object.values(SPECIES).map((s) => [s.name, s]));
+  it("gives every card an ABOVE and a BELOW face, each a prophecy on a daemon of its own", () => {
+    for (const c of arcana.cards) for (const f of [c.above, c.below]) {
+      expect(BY_NAME.get(f.species)?.national, f.species).toBeGreaterThan(0);    // SYMBOL's art is a folder of forms
+      expect(f.keyword.length).toBeLessThanOrEqual(12);
+      expect(f.phrase.length).toBeGreaterThanOrEqual(100);
+      expect(f.phrase.length).toBeLessThanOrEqual(200);
+    }
+    const faces = arcana.cards.flatMap((c) => [c.reason, c.instinct, c.above, c.below].map((f) => f.species));
+    expect(new Set([...faces, ...thirteen.cards.map((t) => t.species)]).size).toBe(faces.length + thirteen.cards.length);
+  });
+  it("keeps every word in the GBA's characters", () => {
+    for (const c of arcana.cards) for (const f of [c.reason, c.instinct, c.above, c.below])
+      expect(/^[A-Za-z0-9 .,:;!?'-]+$/.test(f.phrase + f.keyword), f.keyword).toBe(true);
   });
 });
 

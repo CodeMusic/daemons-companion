@@ -77,6 +77,8 @@ Home Assistant's address and token are not in this file, and neither is THE WEAT
 - **SETTINGS, PREVIEW** -- off unless you turn it on: PLAY and THE SUBTLE LAYER shown as if the game had already given
   them, to try them before the game does. The companion is asked with `?preview=1` and your save is never touched; the
   site also takes `?preview=1` (or `harp`, `flute`) in its address.
+- **SETTINGS, DEVELOPER MODE** -- off unless you turn it on: the game's workings, LOGS, and **</>** on the daemon's
+  card ([below](#developer-mode)).
 - **SETTINGS, WHO ANSWERS WHEN YOU TALK** -- where your words go when you talk.
 - **SETTINGS, YOUR SAVES** -- every save the companion knows, and which it reads; tap one to read it
   ([above](#your-saves)).
@@ -132,3 +134,24 @@ them -- the CASINO's tunes and the care phrases, and on the phone and the site t
 own instrument**: DAEMONS' HARP for a CONTENT save, its FLUTE for CONTEXT, synthesized for the project and nothing of
 Nintendo's (DAEMONS T-425). The Tab5's is built, not yet flashed. The boards play the same notes on their own beeps;
 the boards with a speaker are to take the instrument too (C-164, open).
+
+## DEVELOPER MODE
+
+**SETTINGS, DEVELOPER MODE** (C-268) is off unless you turn it on, in the app and on the site. The app keeps the choice
+on the device; the site keeps it for the visit. Off, the game shows none of its workings. On:
+
+- **Under the game**, the frames run and drawn each second and whether the sound is running, and what EmulatorJS
+  warned of while starting ([The one app](The-one-app#the-game-in-the-app-c-187)).
+- **LOGS** -- the game's pace, how much memory the app's JavaScript holds (where it can say), whether the device hosts
+  alone or the companion it is paired with, and every warning the game and the app gave, newest first. **PING** times a
+  request to the companion, **COPY** shares the lines, **CLEAR** empties them. On an iPad on its side, LOGS is a panel
+  at the right, beside the game and the companion, with a divider of its own to drag (its width is kept) and **›** to
+  put it away. Elsewhere it opens under the card in SETTINGS.
+- **</>** (C-269), on the daemon's card in DAEMON: sliders for its MOOD, REST, HUNGER, THIRST, WEIGHT and COMPANY, each
+  beside its true value, and the card's bars, its word and its width follow them
+  ([Feelings and expressions](Feelings-and-expressions#how-it-has-been-cared-for-c-266)). **In memory only**: nothing
+  reaches the companion, the save or the game, and **RESET**, **CLOSE**, leaving the card, DEVELOPER MODE off or the
+  app closed puts it back. The shadows under its eyes are drawn by the companion, which never hears of the sliders, so
+  they stay as they truly are.
+
+Every word DRAFT.

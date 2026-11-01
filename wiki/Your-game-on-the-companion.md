@@ -17,7 +17,7 @@ the game's are.
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
-| **LIBRARY** | THE PLAYER'S MANUAL, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
+| **LIBRARY** | THE PLAYER'S MANUAL, QUICK START, PLAYING TOGETHER, A BIGGER MIND, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
 ## When the game saves
@@ -81,6 +81,10 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   fetched again when a newer one is out, and read in the app's own page, scrolled and pinched as any PDF; **Share**
   keeps it in Books or Files. On the site it opens in the page, or in a tab of its own. None of it is in this
   repository.
+- **QUICK START** (C-233) -- next on the shelf: DAEMONS' short way in, what it is and how to play it, step by step (the
+  QUICK-START PDF), fetched, kept and read as the manual is. After it, DAEMONS' two other manuals, kept the same way:
+  **PLAYING TOGETHER** (trading, loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS) and **A BIGGER MIND**
+  (setting up a Tiiny Pocket for the companion).
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its
   board once you have stood on it (greyed and closed until then). And **THE PAPER, TO SIT AGAIN**: the whole paper, a
@@ -110,13 +114,21 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   centre. Typed, or held and spoken; read aloud where the voice is. On a phone alone the line is the book's own sentence;
   with the hub, its module may say it in its own words. The GUIDE, for its part, ends some answers on the day's virtue
   over its shadow. Every word DRAFT.
-- **THE SUBTLE LAYER's cards** (C-232) -- twenty-two, our own arcana, each with two faces on the book's purple: **REASON**,
-  a circuit board under green with a daemon of the mainland (where the game teaches computer science and machine
-  learning), and **INSTINCT**, a living net under gold with a daemon of the islands (where it teaches the mind) -- a
-  keyword at the top, a phrase under the daemon; now and then a **shiny** one, its colours inverted, a gold foil edge.
-  **THE DAY'S CARD** (the same all day, kept beside the day's answer in the journal), **DRAW A CARD** whenever you want
-  one -- one each, with a friend -- and **PAST · PRESENT · FUTURE**. In the book and on the watches' BOOKS. A card points
-  you toward something to notice; it never says what will happen. Every word DRAFT.
+- **THE SUBTLE LAYER's cards** (C-232, C-272, C-273) -- twenty-two, our own arcana, each with two faces on the book's
+  purple: **REASON**, a circuit board under green with a daemon of the mainland (where the game teaches computer science
+  and machine learning), and **INSTINCT**, a living net under gold with a daemon of the islands (where it teaches the
+  mind) -- a keyword at the top, a short phrase under the daemon; now and then a **shiny** one, its colours inverted, a
+  gold foil edge. Every face's words are written from its daemon, its type and its INDEX entry.
+
+  **THE CARDS** are folded under the book's cover as a deck: touch it to open them, and again to put them away. **THE
+  CARD OF THE DAY** (the same all day, kept beside the day's answer in the journal) lies face down until you touch it.
+  **A SINGLE DRAW**, **PAST · PRESENT · FUTURE** and **MIND · BODY · SPIRIT** draw from the deck you choose -- **The
+  Deck of Reason**, **The Deck of Instinct** or **A Combined Deck**: it shuffles and spreads, a card touched in the
+  spread lands face down in its place on the board, and a touch turns it over. Every card has the same back, so the
+  spread never shows which face is coming. Under a turned card, **its prophecy** -- a few sentences of its own, only in
+  the LIBRARY's book; the game and the watches keep the short phrase. On the watches' BOOKS: THE DAY'S CARD, DRAW A
+  CARD -- one each, with a friend -- and PAST · PRESENT · FUTURE. The cards are only read: they never change your
+  daemon or your save. Every word DRAFT.
 - **Late at night** -- some say their daemon is not quite itself in the small hours: a shimmer that was not there, a
   shadow that is not there, a routine that is in no list. The companion does not explain it, and neither does this page.
 - **A third book?** -- there is talk of one among the LIBRARY's books, a grimoire with cards of its own, said to bend

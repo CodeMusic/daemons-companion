@@ -35,6 +35,11 @@ to OpenRouter when your model is busy, and chooses the INDEX's voice: n8n's (the
 AI board's, each falling back on the other. **WHO ANSWERS FIRST WHEN YOU TALK** (C-211), in THE HUB card and a watch's
 settings, chooses the AI board or n8n first, with a green or red dot for each. The recording never leaves home.
 
+**Every voice says DAEMONS as DAY-mons** (C-270). The words the companion hands a voice -- the AI board's and any other
+in the house, and the INDEX voice through n8n -- have *daemon* and *daemons* respelled the way they are said, whatever
+their case; the words shown and kept are never changed. DAEMONS' n8n workflows do the same for what their own voices
+are handed.
+
 ## Or: the AI board in the house
 
 With [the hub's AX630](The-hub-and-its-AI) found, hearing (Whisper), thinking (qwen2.5-0.5B) and the voice (MeloTTS)

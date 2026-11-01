@@ -57,12 +57,22 @@ The app has grown into **one app for everything** -- the game, the companion, th
   NOTEBOOK page just filed, or the INDEX card of a daemon just met, opening next to the game (C-189).
 - **In a browser**, the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) plays the game with this
   companion's site in a tab beside it.
-- **On a Mac** (C-210): the iPad app builds and runs on an Apple Silicon Mac. TestFlight is how it will be handed out,
-  and that is not done yet; a Mac window of its own comes later.
+- **On a Mac** (C-210): the iPad app runs on an Apple Silicon Mac. TestFlight hands one build to the iPhone, the iPad
+  and the Mac; a Mac window of its own comes later.
+- **On the home screen it is called DAEMONS**, with a new icon (C-267). **HOW TO PLAY** -- on GAME's title, in the
+  companion's header and under the menu bar's Help -- opens MICRO-START, QUICK-START and the manual over the game
+  (C-264).
+- **A controller plays it** (C-263) -- the GameSir Pocket Taco, or any controller iOS knows -- with its buttons drawn
+  under the game. A keyboard has A on X and B on Z, as mGBA has them. Leave the app and come back, and the game's
+  buttons answer again (C-265).
+- **SETTINGS, DEVELOPER MODE** shows the game's pace and LOGS of what the game and the app warned of, and **</>** tries
+  the daemon's mood and care on sliders, in memory only (C-268, C-269;
+  [Settings](https://github.com/CodeMusic/daemons-companion/wiki/Settings#developer-mode)).
 
-It is internal and in testing: built for our own phones and iPads, not on the App Store or TestFlight yet. **The app
-holds nothing of Nintendo's**: you bring your own game, and the patch is applied on your device.
-**[The one app](https://github.com/CodeMusic/daemons-companion/wiki/The-one-app)**.
+It is in testing, through TestFlight: for our own testers now, and for testers outside once Apple's beta review has
+passed the build uploaded for them. It is not on the App Store. **The app holds nothing of Nintendo's**: you bring your
+own game, and the patch is applied on your device. It collects nothing for its developer either
+([PRIVACY.md](PRIVACY.md)). **[The one app](https://github.com/CodeMusic/daemons-companion/wiki/The-one-app)**.
 
 ## Any device can host one
 
@@ -76,6 +86,7 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | **LilyGO T-Deck / T-Deck Plus** | can be typed to, and types back: a message sent over **LoRa** to every board a street away |
 | **LilyGO T-Watch S3** | stands on its face -- DAEMON, CLOCK or VIRTUE, chosen from the phone -- with the season's sky behind it and the weather in front; is tended with a double tap, and keeps your steps |
 | **LilyGO T-Watch Ultra** | **knows when you sleep, and dreams** -- and walks with you (steps, the distance, where it went), wakes you gently, reads you its books and the INDEX (kept on its card, so they open offline), takes meetings and voice notes, holds a card to its NFC, pairs your phone with a touch, and plays your game's HARP or FLUTE by touch ([The T-Watch Ultra](https://github.com/CodeMusic/daemons-companion/wiki/The-T-Watch-Ultra)) |
+| **LilyGO T-Glass** | stands before one eye, on one screen chosen in the app's GLASSES -- the time and the next step, a note a page at a time, the daemon, or nothing at all -- with a care's moment laid over it ([Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards#the-t-glass)) |
 | **LilyGO T-Display-S3 Pro**, **T-Display-S3 AMOLED** | spreads out across a wide screen |
 | **M5Stack** StickS3, CoreS3, M5GO, Fire, Dial | fits a pocket, a desk, a palm -- the Dial reads cards held to its face; the M5GO and Fire hear LoRa with a module |
 | **M5StickC-Plus** with its Thermal HAT | **sees heat**: GLOW, a routine type of its own -- the warmest thing in the room, and when someone is there |
@@ -83,7 +94,8 @@ and M5Stack boards are supported**, and with more than one, each can host a diff
 | **M5Stack Tab5** | runs **the control center**: every screen of the app, on a tablet of its own |
 | **Espressif ESP32-S3-BOX-3** | is **your home's voice assistant**: Home Assistant's own, with the daemon for a face and, if you like, its words |
 
-One is still on my bench: the plain Cardputer is built and waiting for its first run on the real thing. The T-Watch and
+Two are still on my bench: the plain Cardputer and the T-Glass are built and waiting for their first run on the real
+thing. The T-Watch and
 the Cardputer ADV have had theirs and run, though not every key and tap of theirs has been tried by hand yet. Each
 board's controls, pages, quirks and which ones run today:
 **[Boards](https://github.com/CodeMusic/daemons-companion/wiki/Boards)**. Flashing one takes one command:
@@ -94,13 +106,14 @@ board's controls, pages, quirks and which ones run today:
 - **It keeps its day.** Given a drink, fed, trained, put to bed; a quiet line at a meal time, and one at bedtime. It
   never nags.
 - **It feels -- and you can see it.** Glad after a meal, sleepy at night, its eyes closing when it sleeps, standing in a
-  den that looks like its type. I drew none of that by hand: every host shades and shapes its own sprite, so it works
-  for whichever daemon you bring out
-  ([Feelings and expressions](https://github.com/CodeMusic/daemons-companion/wiki/Feelings-and-expressions)).
+  den that looks like its type. It shows how it has been looked after, too: a night not put to bed shadows its eyes,
+  missed meals thin it and good meals with no training fill it out, and the app's daemon card keeps the bars (C-266).
+  I drew none of that by hand: every host shades and shapes its own sprite, so it works for whichever daemon you bring
+  out ([Feelings and expressions](https://github.com/CodeMusic/daemons-companion/wiki/Feelings-and-expressions)).
 - **It helps with yours.** Tell it what you want to get done and it finds **one next step**. Each step you finish is a
   meal, and experience it takes home at the next SYNC.
-- **It talks.** Hold to talk on the phone or a board, and it answers in its INDEX voice
-  ([Talk to your daemon](https://github.com/CodeMusic/daemons-companion/wiki/Talk-to-your-daemon)).
+- **It talks.** Hold to talk on the phone or a board, and it answers in its INDEX voice -- and every voice says
+  DAEMONS as DAY-mons (C-270) ([Talk to your daemon](https://github.com/CodeMusic/daemons-companion/wiki/Talk-to-your-daemon)).
 - **It reads you its INDEX entry** aloud -- or anyone's.
 - **It plays.** **THE CASINO** is on every board, the phone, the site and the Tab5: SLOTS, three reels of your daemon
   and others you have seen in your game, the season -- or the weather outside -- falling over them, and a holiday's
@@ -155,8 +168,9 @@ The companion reads your save, so it can show you what you have done in there --
   the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
   the story so far; and **TRADE** ([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)).
 - **LIBRARY** -- **THE PLAYER'S MANUAL** first (DAEMONS' own PDF, every way to play and how it all works: fetched from
-  DAEMONS as published, kept on the iPhone or iPad and read there, or in the page on the site; C-233), CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
-  GUIDE once you have found it in the game, the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
+  DAEMONS as published, kept on the iPhone or iPad and read there, or in the page on the site; C-233), then **QUICK START**, the short way in, CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
+  GUIDE and THE SUBTLE LAYER once you have found them in the game -- THE SUBTLE LAYER's **CARDS** drawn by touch, a
+  prophecy under each (C-273) -- the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
   a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE
   to play, listening as the game listens) and **STREAM** (every lesson a MARK or a ROOT has opened). Some say the
   shelf has room for one more ([THE HERMETIC LAYER](https://github.com/CodeMusic/DAEMONS/wiki/The-Hermetic-Layer)).

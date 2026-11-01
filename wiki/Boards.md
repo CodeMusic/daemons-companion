@@ -17,6 +17,7 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 | **LilyGO T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, moving with the radio | AM/FM: **CHANNEL**, a move it learns | voltage | `t-embed` | **runs** |
 | **LilyGO T-Watch S3** | 240x240 touch | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | **runs** |
 | **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press), lift, shake and double tap | yes (TALK on the face) | -- | LoRa (MESH), GNSS (walks), NFC (cards), haptics | power chip | `t-watch-ultra` | **runs**; its sleep, walks, cards and TOUCH, HOURS, THE INDEX and meetings built and being tried on the wrist -- [The T-Watch Ultra](The-T-Watch-Ultra) |
+| **LilyGO T-Glass** | 126x126, seen through its prism (a 126x294 AMOLED) | one touch button and BOOT; a vibration motor | -- (a microphone, not yet used) | -- | -- | voltage | `t-glass` | built, not yet on the glasses -- [below](#the-t-glass) |
 | **LilyGO T-Deck, T-Deck Plus** | 320x240 | keyboard and trackball -- it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus, not yet used | voltage | `t-deck` | **runs** |
 | **LilyGO T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- (no microphone) | -- | -- | charger (voltage) | `t-display-pro` | **runs** |
 | **LilyGO T-Display-S3 AMOLED 1.91** | 536x240, touch on the touch version | touch and BOOT, or two buttons | -- (no microphone) | -- | -- | voltage | `t-display-amoled` | **runs** |
@@ -139,6 +140,7 @@ only on its top button, so a pocket cannot wake it.
   joins MESH ([Meeting others nearby](Meeting-others-nearby)); set the module's reset switch to G13, not G25, which is
   the speaker's pin (on G25 the Fire is silent).
 - **T-Watch S3**: its home is the face ([below](#the-t-watch-s3)); a double tap on it opens CARE.
+- **T-Glass**: one touch button, and BOOT the same -- a tap, two taps, a hold ([below](#the-t-glass)).
 
 On the T-Deck the keyboard types a Wi-Fi password straight in (Enter joins), and a word to a daemon nearby. At home,
 any letter starts **A MESSAGE TO EVERYONE NEARBY** over LoRa (C-123): Enter or the ball sends it, Backspace on an
@@ -178,6 +180,37 @@ minutes carrying a daemon with no reset. The faces, the CARE grid, the SOUND pag
 are seen on it. Not yet tried by hand: a tap landing on a row, the crown pressed twice, a care done from the grid. TALK
 is not yet seen: it waits on speech to text (C-83, [Talk to your daemon](Talk-to-your-daemon)). The Dial and the
 CoreS3 take the same faces, not yet seen on them.
+
+## The T-Glass
+
+**LilyGO's T-Glass shows one screen in front of one eye** (C-262): a 1.1" AMOLED seen through a prism, of which only a
+126-pixel square shows. Everything is light on black, so the rest of the prism stays clear. It hosts a daemon as any
+board does, but draws none of the boards' pages: it shows **one thing at a time**, chosen in the app.
+
+| screen | what it shows |
+|---|---|
+| **HOME** | the time, the battery, the daemon it hosts and today's next step |
+| **a NOTE** | one of your notes: its first line as the title, then five lines a page |
+| **DAEMON** | the daemon, its name and how it is, in a word |
+| **DARK** | nothing: the panel turned down, the prism clear |
+
+**GLASSES**, in PLACES on the app and the site, once a T-Glass is known: a preview of what the glasses should be
+showing, drawn from the same state; **SHOW** -- HOME, DAEMON or DARK; **CARE** -- Drink, Feed and Train, tending the
+daemon as the app's own CARE does, with its reaction laid over whatever the glasses show for eight seconds; and
+**NOTES** -- NEW NOTE, Edit and Remove (tapped twice). A note's title is its first line, so renaming it is editing that
+line. **Tap a note to send it**: its row stays selected while, and only while, the glasses show it -- even with the app
+left -- and anything else sent clears it. Something new sent buzzes the glasses once.
+
+**On the glasses**, the touch button: a tap turns a note's page (asleep, it only wakes them; on DARK, it goes back
+HOME), a hold goes HOME, and two taps go DARK. The app's selection follows.
+
+It has no speaker, and Wi-Fi drains it, so it is meant to reach the companion through your phone's Bluetooth or its
+cable. **The picture is fitted to the prism by eye**, since the V1 and V2 glasses reflect it differently: down the
+cable, `GLASS TURN 0..3`, `GLASS MIRROR 0|1`, `GLASS ROW n` (where the seen square starts), `GLASS BRIGHT n`, and
+`GLASS?` to read them back -- kept on the glasses. `GLASS TAP`, `GLASS TWICE` and `GLASS HOLD` press its button from
+the computer.
+
+*Built, not yet on the glasses.* Every word on the glass and in GLASSES is DRAFT.
 
 ## The pages
 
@@ -262,6 +295,10 @@ remote by brand (**Try its POWER**, then keep it) and rename remotes.
 **Each board's own IR pins** (C-150). A board whose IR only sends -- the T-Watch S3 and the StickC-Plus -- has
 **FLARE (IR out)**: POWER, VOLUME UP and DOWN, THEATER MODE and CHOOSE A REMOTE. TEACH A REMOTE and WHAT REMOTE IS THIS
 need a receiver: the T-Embed CC1101 has one (seen), and the StickS3 has one on its own pins (built, not yet seen).
+
+**The TV over Wi-Fi** (C-256). The T-Watch Ultra has no IR light, so its **FLARE** works over **Wi-Fi**: it is the TV
+remote, and opens REMOTE at once. A watch with IR keeps FLARE (IR out) and has **TV** beside it, the same remote over Wi-Fi. The TVs are
+added in PLACES, TV ([The T-Watch Ultra](The-T-Watch-Ultra)). Built, not yet flashed.
 
 **GLOW** (C-148) is the StickC-Plus's own sense, through M5Stack's **Thermal HAT** (an MLX90640, 32x24 across 110x75
 degrees), found when it is fitted. Fit the HAT with its window facing out, away from the screen, and point the top of

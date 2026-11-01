@@ -37,11 +37,12 @@ been seen, so the computer is the way to start ([Host on your phone](Host-on-you
 
 ## Or: the one app
 
-**The game and the companion in one app** (C-186): on an iPhone or an iPad, bring your own FireRed or LeafGreen, and
+**The game and the companion in one app**, called DAEMONS on the home screen (C-186, C-267): on an iPhone or an iPad,
+bring your own FireRed or LeafGreen, and
 the app makes DAEMONS from it on the device, plays it, and shares its one save with the companion. On an iPad on its
 side, the game and the companion sit side by side. In a browser, the [DAEMONS
 playground](https://github.com/CodeMusic/daemons-playground) does the same; the iPad app runs on an Apple Silicon Mac
-too, and TestFlight is to come. Internal and in testing for now -- [The one app](The-one-app).
+too, and TestFlight hands one build to all three. In testing for now -- [The one app](The-one-app).
 
 ## Every page
 
@@ -50,20 +51,20 @@ too, and TestFlight is to come. Internal and in testing for now -- [The one app]
 | [The one app](The-one-app) | the game, the companion and the books in one app: iPhone, iPad, the browser and the Mac; your own ROM patched on the device, one save and its mirror, the iPad side by side, THE ROAD AHEAD |
 | [Host on your phone](Host-on-your-phone) | the happy path, step by step: the save, SEND and SYNC, the iPhone app, pairing, the widget -- and the phone on its own |
 | [Running the companion](Running-the-companion) | `bindCompanion.sh`, the site and its six tabs, the server, its logs, keeping it running, Node 24 |
-| [Your game on the companion](Your-game-on-the-companion) | TODAY's game, YOU (MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, THE ROAD AHEAD), the LIBRARY (CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK, STREAM, READ ALOUD), the INDEX and NATIVE, SOUNDINGS, DREAMS, the CASINO's coins |
+| [Your game on the companion](Your-game-on-the-companion) | TODAY's game, YOU (MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, THE ROAD AHEAD), the LIBRARY (the manuals, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER and its CARDS, the NOTEBOOK, the SONGBOOK, STREAM, READ ALOUD), the INDEX and NATIVE, SOUNDINGS, DREAMS, the CASINO's coins |
 | [The CASINO](The-CASINO) | SLOTS on every board, the phone, the site and the Tab5: the reels, the coins, the day's odds and THE HOUSE, the dress and the holidays, the table and its cheers |
 | [Nights and dreams](Nights-and-dreams) | the night a watch keeps, the daemon's dream, the journal, the dream written into your save for the game, how the week shows on the daemon, WAKE ME |
 | [The hub and its AI](The-hub-and-its-AI) | the CoreMP135 as the companion's server and THE EXCHANGE; the AX630 AI board that talks, tells dreams, hears meetings and voice notes and answers as THE GUIDE; who answers first |
-| [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, the T-Watch S3's faces, care, routines (GLOW, the CASINO, CHORUS, cards, tags taught a routine), sounds, battery, settings |
-| [The T-Watch Ultra](The-T-Watch-Ultra) | the biggest watch: sleep, steps and walks, cards and TOUCH, haptics, HOURS, BOOKS, THE INDEX and its SD card, meetings and voice notes, the mesh relay, its mouth, the instrument, and what is coming -- DAEMONS on the wrist |
+| [Boards](Boards) | the optional handhelds: every supported board, its controls, its pages, the T-Watch S3's faces, the T-Glass, care, routines (GLOW, the CASINO, CHORUS, cards, tags taught a routine), sounds, battery, settings |
+| [The T-Watch Ultra](The-T-Watch-Ultra) | the biggest watch: sleep, steps and walks, cards and TOUCH, FLARE as its TV remote, haptics, HOURS, BOOKS, THE INDEX and its SD card, meetings and voice notes, the mesh relay, its mouth, the instrument, and what is coming -- DAEMONS on the wrist |
 | [Flashing and linking](Flashing-and-linking) | `updateCompanion.sh`, `linkCompanion.sh` and `box3.sh`, checks down the cable, and what to do when a board looks dead |
 | [Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3) | HOME in PLACES on the app, the site and the Tab5; the BOX-3 as the home's voice assistant with the daemon for a face; the daemon as Home Assistant's conversation agent |
 | [Away from home](Away-from-home) | the relay through your own n8n, reading its executions, and keeping your computer reachable |
-| [Feelings and expressions](Feelings-and-expressions) | how it feels, and how its face shows it on every host -- from its own sprite, in its den |
+| [Feelings and expressions](Feelings-and-expressions) | how it feels and how it has been cared for, and how every host shows it -- from its own sprite, in its den |
 | [Talk to your daemon](Talk-to-your-daemon) | hold to talk, read aloud, and what it takes on your own machines |
 | [Meeting others nearby](Meeting-others-nearby) | the Bluetooth beacon, a meeting by touch, broadcasts to every daemon, notifications, and LoRa's MESH on the boards that have it, with its relay |
 | [Trading](Trading) | trading a daemon with another player through the hub's EXCHANGE: joining, TRADE IT and LEND IT, the swap at SYNC, loans, what keeps it fair |
-| [Settings](Settings) | the save path and its backups, YOUR SAVES, `server/config.json`, every settings card, THE WEATHER, each device's own settings and its sound |
+| [Settings](Settings) | the save path and its backups, YOUR SAVES, `server/config.json`, every settings card, THE WEATHER, each device's own settings and its sound, DEVELOPER MODE |
 | [Server API](Server-API) | every route the server answers |
 | [Troubleshooting](Troubleshooting) | the widget stuck looking, presses kept, pairing by name, a board that looks dead, a device with no sound, a silent Fire, a bridge waiting for its board, a phone build that fails |
 

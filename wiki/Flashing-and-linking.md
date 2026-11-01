@@ -38,6 +38,8 @@ The names `--board` takes:
 |---|---|
 | `t-embed` | the T-Embed CC1101, the plain T-Embed and the T-Embed SI4732 (one build) |
 | `t-watch-s3` | the T-Watch S3 |
+| `t-watch-ultra` | the T-Watch Ultra |
+| `t-glass` | the T-Glass |
 | `t-deck` | the T-Deck and T-Deck Plus |
 | `t-display-pro` | the T-Display-S3 Pro |
 | `t-display-amoled` | the T-Display-S3 AMOLED 1.91 |

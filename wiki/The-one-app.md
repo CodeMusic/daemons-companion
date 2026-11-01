@@ -4,8 +4,12 @@
 companion's app grew into it -- there is no second app. Play DAEMONS, SEND a daemon out of your party, care for it,
 read what the game has given you, and bring it home again, all in one place.
 
-*Internal and in testing.* It is built and run on our own iPhone and iPads; it is not on the App Store or TestFlight.
-Whether and how it is published is decided later.
+*In testing.* It is handed out through TestFlight (C-210): to our own testers now, and to testers outside once Apple's
+beta review has passed the build uploaded for them. It is not on the App Store; whether and how it is published is
+decided later. It collects nothing for its developer:
+[PRIVACY.md](https://github.com/CodeMusic/daemons-companion/blob/main/PRIVACY.md).
+
+**On the home screen it is called DAEMONS** (C-267), with a new icon. Its bundle id and slug stay as they were.
 
 ## Where it runs
 
@@ -14,11 +18,10 @@ Whether and how it is published is decided later.
 | **iPhone** | GAME, a tab | every tab |
 | **iPad** | upright, GAME is a tab; **on its side, the game on the left and the companion beside it** | every tab |
 | **a browser** | the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground): the game with the companion's site in a tab | the companion's site (`./bindCompanion.sh`, or served by [the hub](The-hub-and-its-AI)) -- everything but GAME |
-| **a Mac** | **the iPad app** (C-210): it builds for an Apple Silicon Mac and has run on one, launched by hand; a native Mac window comes later | the same app's tabs; or the site |
+| **a Mac** | **the iPad app** (C-210), from TestFlight: it runs on an Apple Silicon Mac; a native Mac window comes later | the same app's tabs; or the site |
 
-**TestFlight** for the iPhone, the iPad and the Mac from one build is decided and not done (C-210). It is how a Mac will
-get the app to open like any other; the copy that ran by hand was not a way to ship it. Until then, a developer runs it
-from Xcode, on My Mac (Designed for iPad).
+**TestFlight** hands one build to the iPhone, the iPad and the Mac (C-210), so a Mac opens the app like any other. A
+developer can still run it from Xcode, on My Mac (Designed for iPad).
 
 ## The game in the app (C-187)
 
@@ -26,8 +29,8 @@ from Xcode, on My Mac (Designed for iPad).
 from Files. The app knows it by its SHA-1, downloads our BPS patch from the DAEMONS release on GitHub, applies it on the
 device and checks the result's SHA-1 too. Your original is kept untouched beside it.
 
-It plays with the mGBA core in a web view (EmulatorJS, the same version the playground uses). Under the game: frames
-run and drawn, and whether the sound is running.
+It plays with the mGBA core in a web view (EmulatorJS, the same version the playground uses). In DEVELOPER MODE
+(C-268), under the game: frames run and drawn, and whether the sound is running ([Settings](Settings#developer-mode)).
 
 **The buttons are on the screen** wherever there is a touch screen -- the iPhone and, since C-235, the iPad too (iPadOS
 calls itself a Mac, so the game's controls were hidden there). If the game's start stops short of showing them, they
@@ -40,6 +43,13 @@ the game moves to the top half and the controller is drawn under it, each button
 the options button SELECT. **CONTROLLER**, above the game beside ‹ TITLE, chooses that layout by hand; **ON-SCREEN
 CONTROLS** goes back. The buttons stay at the top, where a controller over the phone's lower half leaves them in reach.
 *Still to try with the Pocket Taco itself.*
+
+**A keyboard** -- an iPad's or a Mac's -- has **A on X and B on Z**, as mGBA has them (EmulatorJS's own defaults are the
+other way round). They are swapped once; a key you set by hand in EmulatorJS's controls is never undone.
+
+**Back from elsewhere** (C-265). Leave the app -- for another Space on the Mac, the background or the lock screen --
+and come back, and a game the app still wants running plays on, its buttons answering; a button held when the touch
+was lost is let go. *Not yet seen on a device.*
 
 **HOW TO PLAY** (C-264). On GAME's title, under PLAY, and on the card before a game is chosen: a purple frame with three
 books, shortest first -- **MICRO-START** (five pages), **QUICK-START** and the **USER MANUAL** -- each opening in a reader

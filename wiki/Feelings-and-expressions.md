@@ -57,6 +57,33 @@ Every sprite the game exports shares one palette layout, so an expression is a *
 routines' streaks are kept), a **pose**, an 8x8 **mark** above the head, and **eye patches**. The server -- or a phone
 hosting alone -- decides which shows and sends every host a finished description; the hosts only draw it.
 
+## How it has been cared for (C-266)
+
+The feelings answer the last day; **care** answers the last two weeks
+([`server/src/care.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/care.ts)). Like the
+feelings, it is read, never stored -- worked out from what you have done together and the clock -- so nothing runs down
+on its own, and tending it puts it right again, a day at a time.
+
+| | range | what moves it | how it shows |
+|---|---|---|---|
+| **REST** | 0 .. 100, 100 rested | the nights it was put to bed, the last counting most; up past 11 and never put down counts too | a night not put to bed shadows its eyes; three in a row, and they are bloodshot |
+| **HUNGER** | 0 .. 100, 0 fed | meal times that ended with nothing eaten, the recent ones most | it is sad and feels further away; day after day of it, it grows thinner |
+| **THIRST** | 0 .. 100, 0 watered | the same, for drinks | sad and further away, as with hunger; its shape does not change |
+| **WEIGHT** | -100 .. 100, 0 its balance | a whole day eaten well with no training makes it a little heavier, each meal missed a little thinner, and every day it settles back toward its balance | wider or narrower about its middle |
+| **COMPANIONSHIP** | 0 .. 100 | how near it feels to you: hunger, thirst, short nights and empty days away from it | -- |
+
+- **Every host draws it the same way**: the body widened or narrowed about its middle, and the shadows and the
+  bloodshot painted under and beside its eyes, as the eyes themselves are. Like the eyes, they need eyes a person has
+  checked ([below](#the-eyes)).
+- **Hungry and thirsty for days is sad.** The days before today cost it mood and push SAD. Today's missed meals were
+  already in its mood, a little each, and are not counted twice.
+- **In the app**, the daemon's card in DAEMON shows it as bars filled in the day's colour: MOOD, REST, FED, WATER and
+  COMPANY, each with a word (*rested*, *tired*, *worn out* ...), and WEIGHT, whose middle is its balance -- thinner to
+  the left, heavier to the right. DEVELOPER MODE's **</>** tries any of it on sliders, in memory only
+  ([Settings](Settings#developer-mode)).
+
+The numbers and the words are DRAFT.
+
 ## The eyes
 
 The eyes change only for daemons whose eyes have been **checked by a person** --
@@ -67,7 +94,9 @@ takes everything else.
 `tools/faces.ts` suggests eyes for the rest (`server/data/faces.suggested.json`), growing each one it finds to the
 whole socket -- the dark, the glint and the iris -- so that closing it leaves no rim behind. It still boxes ears and
 antennae as readily as eyes, so its guesses are checked before they move across -- and **checked asleep**: a box that
-sits on an eye is not enough if the sleeping face still looks awake. 44 daemons have checked eyes today.
+sits on an eye is not enough if the sleeping face still looks awake. 44 daemons have checked eyes today. Their sprites
+were all redrawn after the first check, so each eye was found again on the new art and checked again from the sheets
+(C-271).
 
 ```sh
 cd server
@@ -81,7 +110,8 @@ npx tsx tools/expressions.ts --only awake,asleep /tmp/check.png NAME...   # the 
 
 On the BOX-3 the daemon speaks Home Assistant's answers, and its mouth moves -- but, as with the eyes, **only a mouth a
 person has checked is drawn** (`mouth` in `faces.json`). `tools/mouths.ts` suggests one, looking only below checked eyes
-(`server/data/mouths.suggested.json`). 24 daemons have checked mouths today; the rest speak with a speech bubble.
+(`server/data/mouths.suggested.json`). 23 daemons have checked mouths today, moved with their eyes onto the
+redrawn art; the rest speak with a speech bubble.
 
 **One open mouth for every host** (C-213): the same open mouth is in the expression the boards receive, the BOX-3's
 face and the app's picture (`/art/party/N.png?mouth=open`). The app opens and shuts it on a beat while TALK, LISTEN or

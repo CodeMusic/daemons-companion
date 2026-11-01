@@ -70,7 +70,7 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `POST /api/subtle/ask` | C-229: `{text, mode: ask|voices, turn}` (or `audioBase64`) -- THE SUBTLE LAYER answers: `line` (its nearest page's own sentence, or the hub's module saying it), `back` (a question back), or `asking` (TWO VOICES); `answer` the whole, read aloud where the voice is (*a phone alone: the book's own line*) |
 | `GET /api/subtle/today`, `POST /api/subtle/today` | C-230: the book's question of the day (`question`, `centre`, `note`, `word`, today's `answer`); POST `{text}` keeps the answer in the journal, one a day (*alone too*) |
 | `GET /api/subtle/journal` | C-230: what was answered, newest first, with the day and the centre (*alone too*) |
-| `GET /api/arcana/today`, `GET /api/arcana/draw?count=1|3` | C-232: THE SUBTLE LAYER's cards, once the book is held -- the day's card (the same all day for the save's trainer), or a fresh draw: one, or PAST PRESENT FUTURE; each `{n, roman, side: reason|instinct, keyword, phrase, name, species, shiny, art, face}` (`face` is `/art/arcana/<side>[_shiny].png`). Open to the boards (*alone too*) |
+| `GET /api/arcana/today`, `GET /api/arcana/draw?count=1\|3&pick=&spread=` | C-232: THE SUBTLE LAYER's cards, once the book is held -- the day's card (the same all day for the save's trainer), or a fresh draw: one, or three with no card twice. C-273: `pick` is `reason`, `instinct` or `both` (the default), and `spread=mbs` places the three MIND BODY SPIRIT rather than PAST PRESENT FUTURE. Each `{n, roman, side: reason\|instinct, keyword, phrase, prophecy, name, species, shiny, art, face, at?}` -- `phrase` the short words on the face, `prophecy` the app's words under it (C-272), `face` `/art/arcana/<side>[_shiny].png`, `at` its place in a spread; every card's back is `/art/arcana/back.png`. Open to the boards (*alone too*) |
 | `GET /api/subtle` | whether the save has found THE SUBTLE LAYER, and once it has, the book by section and page, each page's paragraphs in their voice (`telling` or `asking`) and its picture's frames; `?preview=1`, for a check, as if found (*alone too*) |
 | `GET /api/marks` | each MARK's and understanding's words, colours and towns -- no save needed (*alone too*) |
 | `GET /api/regions` | the two region maps' cells -- no save needed (*alone too*) |
@@ -107,8 +107,21 @@ plays at). A big win is a broadcast act, `JACKPOT` or `BIGWIN`.
 
 | route | what it does |
 |---|---|
-| `GET /api/daemon/life` | the hosted daemon's life: mood, fed, watered, trained, drowsy or asleep, a cue at a meal time or bedtime, and its expression (*alone too*) |
+| `GET /api/daemon/life` | the hosted daemon's life: mood, fed, watered, trained, drowsy or asleep, a cue at a meal time or bedtime, its expression, and `care` (C-266: rest, hunger, thirst, weight and companionship over two weeks, and whether its eyes are shadowed or bloodshot) (*alone too*) |
 | `POST /api/daemon/feed` (`water`, `train`, `sleep`, `wake`) | tend it -- `water` is DRINK on the screens; `sleep` puts it to bed, `wake` only wakes it (*alone too*) |
+
+## The T-Glass (C-262)
+
+| route | what it does |
+|---|---|
+| `GET /api/glass` | what the glasses show -- `show` (`home`, `note`, `daemon` or `dark`), the `note` shown, a care's `moment` while it lasts -- the notes with their titles, and `momentMs`, how long a moment lasts (*alone too*) |
+| `POST /api/glass/note` | `{id?, text}` -- a note written (no `id`) or rewritten; its title is its first line, and empty text is refused (*alone too*) |
+| `POST /api/glass/note/remove` | `{id}` -- a note removed; glasses showing it go HOME (*alone too*) |
+| `POST /api/glass/show` | `{show, note?}` -- what the glasses show (*alone too*) |
+| `POST /api/glass/care` | `{kind}` -- `feed`, `water` or `train`: the care itself, as `/api/daemon/<kind>`, with its reaction laid over what the glasses show (*alone too*) |
+
+A T-Glass reads its screen from its state (`glass`), and its own button reaches the server as `POST
+/api/device/interact` with `kind: glass` (`home`, `dark` or `daemon`).
 
 ## Broadcasts
 

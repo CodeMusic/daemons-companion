@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { life, type Interaction } from "../src/life.js";
+import { moodCost } from "../src/care.js";
 
 const at = (d: number, h: number, kind: string): Interaction => ({ at: new Date(2026, 9, d, h, 0).toISOString(), kind });
 const noon = (d: number) => new Date(2026, 9, d, 12, 30);
@@ -82,6 +83,6 @@ describe("the daemon's life (C-13, PLAN 7)", () => {
     const nine = new Date(2026, 9, 4, 9, 0);
     const newcomer = life([at(4, 8, "feed")], nine);                        // nothing before last evening
     const known = life([atm(3, 17, 0, "met"), at(4, 8, "feed")], nine);     // with you yesterday afternoon, no bed
-    expect(newcomer.mood - known.mood).toBe(3);                             // one missed night: PER_MISSED_MEAL, no more
+    expect(newcomer.mood - known.mood - moodCost(known.care)).toBe(3);                             // one missed night: PER_MISSED_MEAL, no more
   });
 });

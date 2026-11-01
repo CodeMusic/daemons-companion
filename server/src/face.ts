@@ -12,6 +12,7 @@ import { deflateSync } from "node:zlib";
 import { decodeIndexedPng } from "./art.js";
 import { crc32 } from "./paint.js";
 import { EXPRESSIONS, SHADED, eyePatch, mouthPatch, shade, type Expression, type Eyes, type Face, type Mark } from "./expressions.js";
+import { carePatch, type Worn } from "./care.js";   // C-266
 
 export const SCREEN = { w: 320, h: 240 };
 export const PHASES = ["idle", "listening", "thinking", "replying", "error", "muted", "timer"] as const;
@@ -82,7 +83,7 @@ const rgbOf = (hex: string): [number, number, number] => [1, 3, 5].map((i) => pa
 
 // The whole screen for one phase and frame: the den, the daemon on its floor in the phase's look. `sprite` is the
 // daemon's indexed PNG as the game paints it (streaks and all); null draws the den empty.
-export function renderFace(sprite: Buffer | null, own: Expression, face: Face | null, den: Den, phase: Phase, frame: number): Buffer {
+export function renderFace(sprite: Buffer | null, own: Expression & { worn?: Worn }, face: Face | null, den: Den, phase: Phase, frame: number): Buffer {
   const { w, h } = SCREEN, rgb = new Uint8Array(w * h * 3);
   const put = (x: number, y: number, c: number[]) => { if (x >= 0 && y >= 0 && x < w && y < h) rgb.set(c, (y * w + x) * 3); };
   const block = (x: number, y: number, k: number, c: number[]) => { for (let a = 0; a < k; a++) for (let b = 0; b < k; b++) put(x + a, y + b, c); };
@@ -119,13 +120,18 @@ export function renderFace(sprite: Buffer | null, own: Expression, face: Face | 
   if (face && look.mouth === "open")                // C-213: the one open mouth (expressions.ts mouthPatch)
     for (const p of mouthPatch(face, e))
       for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (y < 64 && px[y * 64 + x]) px[y * 64 + x] = p.rgb;
-  // The pose at rest (expressions.ts: squashed toward its feet, lifted or lowered), and the phase's nudge
+  if (face && own.worn)                             // C-266: the shadows under its eyes, the bloodshot (care.ts)
+    for (const p of carePatch(face, own.worn, e.shade, look.eyes === "closed"))
+      for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) if (px[y * 64 + x]) px[y * 64 + x] = p.rgb;
+  // The pose at rest (expressions.ts: squashed toward its feet, lifted or lowered), and the phase's nudge; C-266: as wide
+  // as it has been fed and trained, about the sprite's middle
   const dy = e.pose.dy + look.dy, rowOf = (y: number) => bottom - Math.round((bottom - y) * e.pose.squash) + dy;
+  const girth = own.pose.girth ?? 1, colOf = (x: number) => 32 + Math.round((x - 32) * girth);
   for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) {
     const c = px[y * 64 + x];
     if (!c) continue;
-    const ny = rowOf(y), tall = Math.max(1, rowOf(y + 1) - ny);
-    for (let t = 0; t < tall; t++) block(ox + (x + look.dx) * K, oy + (ny + t) * K, K, c);
+    const ny = rowOf(y), tall = Math.max(1, rowOf(y + 1) - ny), nx = colOf(x), wide = Math.max(1, colOf(x + 1) - nx);
+    for (let t = 0; t < tall; t++) for (let u = 0; u < wide; u++) block(ox + (nx + u + look.dx) * K, oy + (ny + t) * K, K, c);
   }
   // The mark: above its head, at the back, kept on the screen (beside the head if it must be)
   if (look.mark) {
@@ -170,7 +176,8 @@ export function encodeRgb(w: number, h: number, rgb: Uint8Array): Buffer {
 // The face's revision: it changes when anything drawn would -- another daemon, new routines painting its streaks, its
 // expression, its den, or this file's drawing (FACE_DRAWING, bumped by hand when the pictures change)
 const FACE_DRAWING = 1;
-export function faceRev(parts: { artKey?: string | null; expression?: string | null; den?: Den | null; mouth?: unknown }): string {
-  return createHash("sha1").update(JSON.stringify([FACE_DRAWING, parts.artKey ?? null, parts.expression ?? null, parts.den ?? null, parts.mouth ?? null]))
+export function faceRev(parts: { artKey?: string | null; expression?: string | null; den?: Den | null; mouth?: unknown; care?: unknown }): string {
+  const care = parts.care === undefined ? [] : [parts.care];      // C-266: absent, the revisions before it are unchanged
+  return createHash("sha1").update(JSON.stringify([FACE_DRAWING, parts.artKey ?? null, parts.expression ?? null, parts.den ?? null, parts.mouth ?? null, ...care]))
     .digest("hex").slice(0, 10);
 }

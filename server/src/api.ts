@@ -452,9 +452,11 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
 function boxFace(cfg: Config, store: Store, deviceId: string) {
   const d = deviceState(cfg, store, new Date(), deviceId).daemon as any;
   const face = d ? faceOf(core.artName(d.species)) : null;
-  const own = EXPRESSIONS[d?.expression?.name ?? "awake"] ?? EXPRESSIONS.awake;
+  const named = EXPRESSIONS[d?.expression?.name ?? "awake"] ?? EXPRESSIONS.awake;
+  // C-266: its girth and its worn eyes, as it has been cared for, kept over the named expression
+  const own = { ...named, pose: { ...named.pose, girth: d?.expression?.pose?.girth ?? 1 }, worn: d?.expression?.worn };
   const den = d?.den ?? denOf([]);
-  const rev = faceRev({ artKey: d?.artKey ?? null, expression: own.name, den, mouth: face?.mouth ?? null });
+  const rev = faceRev({ artKey: d?.artKey ?? null, expression: own.name, den, mouth: face?.mouth ?? null, care: [own.pose.girth, own.worn ?? null] });
   return { d, face, own, den, rev,
            info: { rev, has: !!d, name: d ? String(d.nickname || d.name || "") : "", wall: den.wall, floor: den.floor, glow: den.glow } };
 }

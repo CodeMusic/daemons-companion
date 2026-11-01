@@ -144,7 +144,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
           {witching ? <HourPie side={side} />
             : <View style={{ position: "absolute", left: side * 0.22, top: side * 0.9, width: side * 0.55, height: side * 0.09, borderRadius: side, backgroundColor: "rgba(0,0,0,0.28)" }} />}
           <View style={[{ width: side, height: side, transform: [{ translateY: ((pose?.dy ?? 0) * side) / 64 + (side * (1 - (pose?.squash ?? 1))) / 2 },
-                                                                  { scaleY: pose?.squash ?? 1 }, { scaleX: right ? -1 : 1 }] }, PIXELATED as any]}>
+                                                                  { scaleY: pose?.squash ?? 1 }, { scaleX: (right ? -1 : 1) * (pose?.girth ?? 1) }] }, PIXELATED as any]}>{/* C-266: as wide as it has been fed and trained */}
             {art}
             {(expression?.patch ?? []).map((p, i) => (               // its eyes, as it feels: rectangles of the sprite's own pixels
               <View key={i} style={{ position: "absolute", left: (p.x * side) / 64, top: (p.y * side) / 64, width: (p.w * side) / 64 + 0.5,

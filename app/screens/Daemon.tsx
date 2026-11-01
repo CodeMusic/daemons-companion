@@ -22,6 +22,7 @@ import { FirstSight } from "./Hermetic";   // C-238
 import { useApi } from "../useApi";
 import { heardSync } from "../received";              // C-261
 import type { Arrival } from "../../server/src/core";
+import type { Care } from "../../server/src/care";   // C-266
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
@@ -93,6 +94,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
         : <Text fontSize={20} fontWeight="600" color="$color12">{l.word}</Text>}
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}${l.rested ? " · slept" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
+      {l.care ? <CareStats mood={l.mood} care={l.care} ink={ink} /> : null}
       {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}
@@ -116,6 +118,43 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     </Card>
   );
 }
+// C-266 (the user, 2026-11-01: "in the app in the daemon companion view you can see their stats, like mood, and the
+// health ones"): how it is, and how it has been looked after -- each a bar, the care's words beside it (DRAFT). Weight is
+// the one with a middle: its balance is the centre, thinner to the left, heavier to the right.
+const CARE_ROWS: [string, (c: Care, mood: number) => number, (n: number) => string][] = [
+  ["MOOD", (_, m) => m, (n) => (n >= 72 ? "good" : n >= 55 ? "fair" : "low")],
+  ["REST", (c) => c.rest, (n) => (n >= 70 ? "rested" : n >= 40 ? "tired" : "worn out")],
+  ["FED", (c) => 100 - c.hunger, (n) => (n >= 80 ? "full" : n >= 50 ? "peckish" : "hungry")],
+  ["WATER", (c) => 100 - c.thirst, (n) => (n >= 80 ? "watered" : n >= 50 ? "dry" : "thirsty")],
+  ["COMPANY", (c) => c.companionship, (n) => (n >= 80 ? "close" : n >= 50 ? "near" : "distant")],
+];
+function CareStats({ mood, care, ink }: { mood: number; care: Care; ink: string }) {
+  const bar = (n: number) => (
+    <XStack flex={1} height={8} borderRadius={4} backgroundColor="$color4" overflow="hidden">
+      <YStack width={`${Math.max(0, Math.min(100, n))}%`} backgroundColor={ink} opacity={0.85} />
+    </XStack>);
+  const w = care.weight, weightWord = w <= -40 ? "thin" : w < -12 ? "lean" : w <= 12 ? "balanced" : w < 40 ? "plump" : "heavy";
+  return (
+    <YStack gap={4} marginTop={6} accessibilityLabel="its care">
+      {CARE_ROWS.map(([label, of, word]) => { const n = of(care, mood); return (
+        <XStack key={label} alignItems="center" gap={8}>
+          <Text fontFamily="$mono" fontSize={10} width={62} color="$color11">{label}</Text>
+          {bar(n)}
+          <Text fontFamily="$mono" fontSize={10} width={64} color="$color10">{word(n)}</Text>
+        </XStack>); })}
+      <XStack alignItems="center" gap={8}>
+        <Text fontFamily="$mono" fontSize={10} width={62} color="$color11">WEIGHT</Text>
+        <XStack flex={1} height={8} borderRadius={4} backgroundColor="$color4" position="relative">
+          <YStack position="absolute" left="50%" top={-2} bottom={-2} width={1} backgroundColor="$color9" />
+          <YStack position="absolute" top={0} bottom={0} borderRadius={4} backgroundColor={ink} opacity={0.85}
+                  left={`${w < 0 ? 50 + w / 2 : 50}%`} width={`${Math.max(1, Math.abs(w) / 2)}%`} />
+        </XStack>
+        <Text fontFamily="$mono" fontSize={10} width={64} color="$color10">{weightWord}</Text>
+      </XStack>
+    </YStack>
+  );
+}
+
 // C-119, C-213: the picture's query -- its expression's shade, and the mouth open while it speaks
 const artQuery = (expression: string | undefined, mouth: boolean) => {
   const q = [expression && expression !== "awake" ? `expression=${expression}` : "", mouth ? "mouth=open" : ""].filter(Boolean).join("&");

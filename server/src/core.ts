@@ -34,6 +34,7 @@ import { readPlay } from "./save/play.js";            // T-426: the instrument, 
 import { readSubtle } from "./save/subtle.js";
 import { senseFor, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards
 import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
+import { careworn, withCare } from "./care.js";   // C-266: the care group -- its girth, its eyes, its sadness
 import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -362,14 +363,16 @@ export function daemonLife(store: Store, now = new Date()) {
 }
 
 // C-120 / C-119: how it feels (from the last day), and the expression that shows it -- a description every host draws
-export function daemonFeelings(store: Store, now = new Date()) {
-  return feelings(store.interactionsSince(new Date(now.getTime() - 26 * 3600000)), now);
+export function daemonFeelings(store: Store, now = new Date(), lifeNow: Life | null = null) {
+  // C-266: hungry and thirsty for days is sad, whatever the last day pushed
+  return withCare(feelings(store.interactionsSince(new Date(now.getTime() - 26 * 3600000)), now), (lifeNow ?? daemonLife(store, now)).care);
 }
 export const artName = (species: number | string) => (SPECIES[String(species)]?.art?.front as string | undefined)?.split("/").pop()?.replace("_front.png", "");
 export function daemonExpression(store: Store, now = new Date(), lifeNow = daemonLife(store, now), species: number | null = null) {
   const t = thriveOf(store, now);                                 // C-207: drowsy after a broken night, its colours the week's
   const life = lifeNow.tired === "awake" && drowsyFrom(t, now.getHours()) ? { ...lifeNow, tired: "drowsy" as const } : lifeNow;
-  return thrived(expressionFor(life, daemonFeelings(store, now), species === null ? null : faceOf(artName(species))), t);
+  const face = species === null ? null : faceOf(artName(species));
+  return careworn(thrived(expressionFor(life, daemonFeelings(store, now, lifeNow), face), t), lifeNow.care, face);   // C-266: as it has been cared for
 }
 
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home

@@ -9,7 +9,7 @@ struct Patch { uint8_t x, y, w, h; uint16_t colour; };          // a rectangle o
 struct Expression {
   String name = "awake";
   float sat = 1, val = 1, mix = 0; uint8_t tint[3] = { 0, 0, 0 };   // the shade of colours 1..10
-  int dy = 0; float squash = 1, bob = 1; bool still = false, shake = false;   // the pose
+  int dy = 0; float squash = 1, bob = 1, girth = 1; bool still = false, shake = false;   // the pose; C-266: girth, its width about its middle
   bool marked = false; uint8_t ink[8] = {}, white[8] = {}; uint16_t markColour = 0;   // the mark: two 8x8 bit planes
   Patch patch[16]; int patches = 0;                                // the eyes
   Patch mouth[2]; int mouths = 0;                                  // C-213: the mouth open, painted while its voice plays

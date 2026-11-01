@@ -110,7 +110,7 @@ struct Stage: View {
           .frame(width: side * 0.55, height: side * 0.09)
           .position(x: x, y: floor + side * 0.02)
         Sprite(png: s.png, asleep: asleep, expr: s.expr)
-          .scaleEffect(x: entry.facesRight ? -1 : 1, y: s.expr?.pose.squash ?? 1, anchor: .bottom)   // C-119: squashed toward its feet
+          .scaleEffect(x: (entry.facesRight ? -1 : 1) * (s.expr?.pose.girth ?? 1), y: s.expr?.pose.squash ?? 1, anchor: .bottom)   // C-119: squashed toward its feet; C-266: as wide as it has been cared for
           .frame(width: side, height: side)
           .position(x: x, y: floor - side / 2 + side * 0.06 - (entry.hop ? side * 0.16 : 0) + (s.expr?.pose.dy ?? 0) * side / 64)
         if let mark = s.expr?.mark, !(s.said != nil && entry.date.timeIntervalSince(s.at) < 60) {   // C-119: zz, a heart, a drop

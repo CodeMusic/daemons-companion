@@ -17,14 +17,14 @@ import type { Axis, Feelings } from "./feelings.js";
 import facesJson from "../data/faces.json" with { type: "json" };
 
 export type Shade = { sat: number; val: number; tint: [number, number, number]; mix: number };
-export type Pose = { dy: number; squash: number; bob: number; still: boolean; shake: boolean };
+export type Pose = { dy: number; squash: number; bob: number; still: boolean; shake: boolean; girth?: number };   // C-266: girth, its width about its middle (care.ts)
 export type Mark = { rows: string[]; rgb: [number, number, number] };
 export type Eyes = "closed" | "happy" | "low" | null;
 export type Expression = { name: string; shade: Shade; pose: Pose; mark: Mark | null; eyes: Eyes };
 // What a host paints over the sprite for the eyes: rectangles in the 64x64 sprite's own pixels (mirrored with it when it
 // faces the other way), each one colour, already shaded. A host needs no rule of its own to close an eye.
 export type Patch = { x: number; y: number; w: number; h: number; rgb: [number, number, number] };
-export type Drawn = Expression & { patch: Patch[]; mouth?: Patch[] };   // C-213: mouth, painted over it while its voice plays
+export type Drawn = Expression & { patch: Patch[]; mouth?: Patch[]; worn?: { shadows: boolean; bloodshot: boolean } };   // C-213: mouth, painted over it while its voice plays; C-266: worn, its eyes as it has slept (care.ts)
 // A daemon's eyes, checked by a person (data/faces.json; tools/faces.ts suggests): boxes, and the colours around and of them
 export type Face = { eyes: [number, number, number, number][]; fill: number; line: number; fillRgb?: number[]; lineRgb?: number[];
                      mouth?: [number, number, number, number] };   // C-138: where it speaks from, when a person has found it

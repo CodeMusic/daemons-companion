@@ -19,7 +19,7 @@ struct Stage {
   bool asleep = false;
   // C-119: its expression (server/src/expressions.ts) -- the picture comes already shaded; the pose, the eyes and the mark
   // are drawn here. top/bottom/right: the sprite's own extent, for the squash and for where the mark goes.
-  bool still = false, shake = false; float bob = 1, squash = 1; int dy = 0;
+  bool still = false, shake = false; float bob = 1, squash = 1, girth = 1; int dy = 0;   // C-266: girth, as it has been cared for
   struct Patch { int x, y, w, h; uint16_t c; } patch[16]; int patches = 0;
   bool marked = false; uint8_t ink8[8] = {}, white8[8] = {}; uint16_t markC = 0;
   int top = 0, bottom = 63, right = 63;
@@ -148,8 +148,10 @@ void tick(lv_timer_t *t) {
       }
       auto rowOf = [&](int jj) { return s.bottom - (int)roundf((s.bottom - jj) * s.squash) + s.dy; };   // lowered, squashed toward its feet
       int row = rowOf((int)j), tall = max(1, rowOf((int)j + 1) - row);   // stretched, a row reaches down to the next: no gap
-      int x = ax + (right ? (int)(s.sw - 1 - i) : (int)i) * k, y = ay + row * k;
-      for (int b = 0; b < k * tall; b++) for (int a = 0; a < k; a++) p.dot(x + a, y + b, c);
+      auto colOf = [&](int ii) { return (int)s.sw / 2 + (int)roundf((ii - (int)s.sw / 2) * s.girth); };   // C-266: widened about its middle
+      int col = colOf((int)i), wide = max(1, colOf((int)i + 1) - col);
+      int x = ax + (right ? (int)s.sw - col - wide : col) * k, y = ay + row * k;
+      for (int b = 0; b < k * tall; b++) for (int a = 0; a < k * wide; a++) p.dot(x + a, y + b, c);
     }
   }
   if (s.marked) {                              // C-119: its mark above its head, at the back (never mirrored)
@@ -193,7 +195,7 @@ lv_obj_t *denStage(lv_obj_t *parent, JsonObject d, int w, int h) {
   String look = e.isNull() ? String("awake") : String((const char *)(e["name"] | "awake"));
   if (!e.isNull()) {                           // C-119
     s->still = e["pose"]["still"] | false; s->shake = e["pose"]["shake"] | false;
-    s->bob = e["pose"]["bob"] | 1.0f; s->squash = e["pose"]["squash"] | 1.0f; s->dy = e["pose"]["dy"] | 0;
+    s->bob = e["pose"]["bob"] | 1.0f; s->squash = e["pose"]["squash"] | 1.0f; s->girth = e["pose"]["girth"] | 1.0f; s->dy = e["pose"]["dy"] | 0;
     for (JsonObject q : e["patch"].as<JsonArray>()) {
       if (s->patches >= 16) break;
       uint32_t rgb = ((uint32_t)(q["rgb"][0] | 0) << 16) | ((uint32_t)(q["rgb"][1] | 0) << 8) | (uint32_t)(q["rgb"][2] | 0);

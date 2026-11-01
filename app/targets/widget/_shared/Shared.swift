@@ -10,7 +10,7 @@ let KIND = "DaemonWidget"
 // C-119: how it looks now, as the server describes it (server/src/expressions.ts). The picture comes already in its shade
 // (/api/art?expression=); the widget draws the eye patches and the mark over it, and takes the pose's rest.
 struct Expr: Codable {
-  struct Pose: Codable { let dy: Double; let squash: Double; let still: Bool }
+  struct Pose: Codable { let dy: Double; let squash: Double; let still: Bool; let girth: Double? }   // C-266: girth, as it has been fed and trained
   struct Mark: Codable { let rows: [String]; let rgb: [Int] }
   struct Patch: Codable { let x: Double; let y: Double; let w: Double; let h: Double; let rgb: [Int] }
   let name: String; let pose: Pose; let mark: Mark?; let patch: [Patch]

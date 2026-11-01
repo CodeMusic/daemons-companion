@@ -44,7 +44,7 @@ void takeExpression(JsonVariant e) {
     x.sat = s["sat"] | 1.0f; x.val = s["val"] | 1.0f; x.mix = s["mix"] | 0.0f;
     for (int i = 0; i < 3; i++) x.tint[i] = s["tint"][i] | 0;
     JsonVariant p = e["pose"];
-    x.dy = p["dy"] | 0; x.squash = p["squash"] | 1.0f; x.bob = p["bob"] | 1.0f; x.still = p["still"] | false; x.shake = p["shake"] | false;
+    x.dy = p["dy"] | 0; x.squash = p["squash"] | 1.0f; x.girth = p["girth"] | 1.0f; x.bob = p["bob"] | 1.0f; x.still = p["still"] | false; x.shake = p["shake"] | false;
     JsonVariant m = e["mark"];
     if (!m.isNull()) {
       x.marked = true;
@@ -80,6 +80,7 @@ void drawSprite(int x, int y, int scale, bool mirrored) {
   // C-213: speaking with no mouth known yet, it bobs on the beat instead
   static int beat; beat = mouthOpen && !expression.mouths ? -1 : 0;
   auto rowOf = [](int j) { return bottom - (int)roundf((bottom - j) * expression.squash) + expression.dy + beat; };
+  auto colOf = [](int i) { return 32 + (int)roundf((i - 32) * expression.girth); };   // C-266: as wide as it has been cared for
   for (int j = 0; j < 64; j++) {
     int row = rowOf(j), tall = max(1, rowOf(j + 1) - row);   // stretched, a row reaches down to the next: no gap
     for (int i = 0; i < 64; i++) {
@@ -94,7 +95,8 @@ void drawSprite(int x, int y, int scale, bool mirrored) {
         const Patch &p = expression.mouth[k];
         if (i >= p.x && i < p.x + p.w && j >= p.y && j < p.y + p.h) colour = p.colour;
       }
-      canvas.fillRect(x + (mirrored ? 63 - i : i) * scale, y + row * scale, scale, scale * tall, colour);
+      int col = colOf(i), wide = max(1, colOf(i + 1) - col);   // widened, a column reaches across to the next: no gap
+      canvas.fillRect(x + (mirrored ? 64 - col - wide : col) * scale, y + row * scale, scale * wide, scale * tall, colour);
     }
   }
 }

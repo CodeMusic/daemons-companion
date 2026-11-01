@@ -17,6 +17,7 @@
 // line during a meal time, never repeated as anything louder.
 
 export type Interaction = { at: string; kind: string; detail?: string | null };
+import { care, moodCost, type Care } from "./care.js";   // C-266: how it has been looked after, over days
 
 export const MEALS: [number, number][] = [[6, 10], [11, 14], [17, 21]];
 const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met", "walk", "sleep"];   // met: nearby (C-15); walk: the day's walking goal (C-48)
@@ -36,6 +37,7 @@ export type Life = {
   rested: boolean;                    // C-114: it slept last night
   quietDays: number;                  // whole days with nothing at all, before today
   cue: string | null;                 // at most one quiet line, during a meal time
+  care: Care;                         // C-266: rest, hunger, thirst, weight, companionship -- over days, not today
 };
 
 export function life(events: Interaction[], now = new Date()): Life {
@@ -80,8 +82,9 @@ export function life(events: Interaction[], now = new Date()): Life {
   const restless = !rested && events.some((e) => at(e) < eve.getTime()) ? 1 : 0;
 
   const hungry = Math.max(0, due - fed), thirsty = Math.max(0, due - watered);   // meal times begun and not met
+  const c = care(events, now, quietDays);                              // C-266: hungry and thirsty for days costs more
   const mood = Math.max(10, Math.min(100, Math.round(MOOD_START + Math.min(TOGETHER_MOST, together * PER_TOGETHER)
-    - hungry * PER_MISSED_MEAL - thirsty * (PER_MISSED_MEAL - 1) - restless * PER_MISSED_MEAL - quiet)));
+    - hungry * PER_MISSED_MEAL - thirsty * (PER_MISSED_MEAL - 1) - restless * PER_MISSED_MEAL - quiet - moodCost(c))));
 
   const tired = asleep ? "asleep" : hour >= NIGHT_FROM || hour < MORNING ? "drowsy" : "awake";
   const inMeal = MEALS.findIndex(([from, to]) => hour >= from && hour < to);
@@ -90,5 +93,5 @@ export function life(events: Interaction[], now = new Date()): Life {
 
   const word = tired === "asleep" ? "asleep" : tired === "drowsy" ? "sleepy"
     : mood >= 88 ? "happy" : mood >= 72 ? "content" : mood >= 55 ? "calm" : "a little low";
-  return { mood, word, fed: { today: fed, due }, watered: { today: watered, due }, trained, tired, rested, quietDays, cue };
+  return { mood, word, fed: { today: fed, due }, watered: { today: watered, due }, trained, tired, rested, quietDays, cue, care: c };
 }

@@ -37,9 +37,16 @@ export function varReader(sb1: Uint8Array) {
 }
 
 // C-203: THE LOG, as daemons_reads.c writes it when the page is opened -- the counts, then the last reads, newest first,
-// each landed once its thing is found (here as soon as the flag is set; the game marks and counts it the next time)
+// each landed once its thing is found (here as soon as the flag is set; the game marks and counts it the next time).
+// T-511: a read keeps its weekday + 1 at day_shift (0: logged before the day was kept), written "FRIDAY, " before it --
+// once the export carries the day's names; until then, a row is written as a read from before.
+type DayWords = { day_shift?: number; day_mask?: number; days?: string[]; words: { day_comma?: string } };
 export function readsLog(flag: (f: number) => boolean, v: (id: number) => number): string[] {
-  const R = profileJson.reads, P = profileJson;
+  const R = profileJson.reads as typeof profileJson.reads & DayWords, P = profileJson;
+  const dayOf = (where: number) => {
+    const d = R.day_shift !== undefined && R.days ? (where >> R.day_shift) & (R.day_mask ?? 7) : 0;
+    return d && R.days?.[d - 1] ? R.days[d - 1] + (R.words.day_comma ?? ", ") : "";
+  };
   const places = P.sb1.first_met_places as Record<string, string>;
   const rows: { where: number; landed: boolean }[] = [];
   for (let i = 0; i < R.log; i++) {
@@ -50,7 +57,7 @@ export function readsLog(flag: (f: number) => boolean, v: (id: number) => number
   const late = rows.filter((r, i) => r.landed && !(v(R.where + i) & (1 << R.landed_bit))).length;   // landed, not yet counted
   const fill = (w: string, a: number, b: number) => w.replace("{1}", String(a)).replace("{2}", String(b));
   return [fill(R.words.reads, v(R.given), Math.min(v(R.given), v(R.landed) + late)), fill(R.words.leans, v(R.leans_told), v(R.leans_landed)),
-          ...rows.map((r) => (places[String(r.where & 0xff)] ?? "") + R.words.colon + (R.phrases[(r.where >> R.phrase_shift) & R.phrase_mask] ?? "")
+          ...rows.map((r) => dayOf(r.where) + (places[String(r.where & 0xff)] ?? "") + R.words.colon + (R.phrases[(r.where >> R.phrase_shift) & R.phrase_mask] ?? "")
                              + (r.landed ? R.words.landed : ""))];
 }
 

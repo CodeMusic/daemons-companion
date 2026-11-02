@@ -149,6 +149,15 @@ describe("C-203: THE LOG, written from the save's vars as the game writes it", (
   it("writes only the counts before any read is given", () => {
     expect(readsLog(() => false, vars({}))).toEqual(["Reads: 0 given, 0 landed.", "Leans: 0 told, 0 landed."]);
   });
+  // T-511: the game keeps a read's weekday + 1 in bits 12-14 (0: before the day was kept) and writes "FRIDAY, " first
+  it("writes a read's weekday before it, and a read from before without one", () => {
+    const D = R as typeof R & { day_shift?: number; days?: string[]; words: { day_comma?: string } };
+    const lines = readsLog(() => false, vars({ [R.where]: where(sec, 1) | (6 << 12), [R.where + 1]: where(sec, 2) }));
+    expect(lines[3]).toBe(`${names[sec]}: something in the sand.`);               // from before: no day, as the game writes it
+    if (!D.days) return;                                                         // the export does not carry the days yet
+    expect(D.day_shift).toBe(12);
+    expect(lines[2]).toBe(`${D.days[5]}${D.words.day_comma}${names[sec]}: something in the grass.`);   // 6 = FRIDAY + 1
+  });
 });
 
 // ---- through the server: the sense only once the save holds the book, and a read told, kept and logged -----------------

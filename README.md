@@ -19,6 +19,8 @@ pages -- every way to play, getting started, the world, daemons, battles and the
 ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER and the CASINO, this companion, help and
 a glossary.
 
+**Why the name? [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf)** (19 pages) tells how the Greek *daimon* branched, and why it is said *DAY-mons*.
+
 ## The happy path: your phone hosts it
 
 Nothing to buy. The phone in your pocket is the first host, and the one I would start with.

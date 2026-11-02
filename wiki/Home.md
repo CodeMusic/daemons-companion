@@ -18,6 +18,8 @@ pages -- every way to play, getting started, the world, daemons, battles and the
 ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER and the CASINO, the companion, help and
 a glossary.
 
+**Why the name? [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf)** (19 pages) tells how the Greek *daimon* branched, and why it is said *DAY-mons*.
+
 ## The happy path: a daemon on your phone
 
 1. **Run the companion on your computer** and point it at a **copy** of your save --
@@ -75,6 +77,8 @@ too, and TestFlight hands one build to all three. In testing for now -- [The one
 - [QUICK-START](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf) -- the game in 25 large-type pages, for a first time.
 - [The DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf) -- the
   game, for the player who holds it.
+- [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf) -- where the word daemon came from, and why it is
+  said DAY-mons.
 - [docs/FIELD-GUIDE.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/FIELD-GUIDE.md) -- a walk
   through everything, with what you should see at each step.
 - [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/HARDWARE.md) -- every board's pins

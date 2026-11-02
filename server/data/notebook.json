@@ -233,6 +233,18 @@
    "link": null
   },
   {
+   "section": 1,
+   "title": "THE CARD HOME",
+   "kind": "text",
+   "flag": 3322,
+   "flag2": 0,
+   "about": "A card that came home from the ship.",
+   "text": "A card with a ship's stamp on it.\nMOM gave it to you.\n\nIn a hand you do not know, one\nline:\n\n“IT GOT THERE.”\n\nThere is no name on it.",
+   "seen": 2925,
+   "place": "BLANCHE TOWN",
+   "link": null
+  },
+  {
    "section": 2,
    "title": "FIRST SESSION",
    "kind": "text",

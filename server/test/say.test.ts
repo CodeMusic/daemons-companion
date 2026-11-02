@@ -13,4 +13,9 @@ describe("a line made sayable", () => {
     expect(sayable(sayable("DAEMONS and daemons"))).toBe("Daymons and daymons");
     expect(sayable("PING is glad.")).toBe("PING is glad.");
   });
+  it("respells a word that ends in daemon, keeping its front", () => {
+    expect(sayable("a eudaemon, a cacodaemon")).toBe("a eudaymon, a cacodaymon");
+    expect(sayable("EUDAEMONS and the Agathodaemon")).toBe("Eudaymons and the Agathodaymon");
+    expect(sayable(sayable("cacodaemons"))).toBe("cacodaymons");
+  });
 });

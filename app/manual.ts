@@ -5,15 +5,16 @@
 // second, PLAYING TOGETHER (docs/DAEMONS-social-manual.pdf: trading, loans, gifts, OUT TOGETHER, friends, dreams, THE
 // COMMONS), kept the same way beside it; and a third, A BIGGER MIND (docs/DAEMONS-tiiny-manual.pdf: the Tiiny Pocket set up
 // for the companion); and QUICK START (docs/DAEMONS-quickstart.pdf: what it is and how to play, step by step). C-264: and
-// MICRO-START (docs/DAEMONS-microstart.pdf, five pages), first of the three HOW TO PLAY opens over the game.
+// MICRO-START (docs/DAEMONS-microstart.pdf, five pages), first of the three HOW TO PLAY opens over the game. C-274: and
+// THE OLD WORD (docs/DAEMONS-etymology.pdf, T-517: how daimon branched, and why it is said DAY-mons).
 import { Directory, File, Paths } from "expo-file-system";
 import { ON_PHONE } from "./net";
 
-export type Which = "player" | "quick" | "social" | "tiiny" | "micro";
+export type Which = "player" | "quick" | "social" | "tiiny" | "micro" | "word";
 const DOCS = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/";
 const PDF: Record<Which, string> = { player: "DAEMONS-manual.pdf", quick: "DAEMONS-quickstart.pdf", social: "DAEMONS-social-manual.pdf", tiiny: "DAEMONS-tiiny-manual.pdf",
-                                     micro: "DAEMONS-microstart.pdf" };
-const INFO: Record<Which, string> = { player: "manual.json", quick: "quick.json", social: "social.json", tiiny: "tiiny.json", micro: "micro.json" };
+                                     micro: "DAEMONS-microstart.pdf", word: "DAEMONS-etymology.pdf" };
+const INFO: Record<Which, string> = { player: "manual.json", quick: "quick.json", social: "social.json", tiiny: "tiiny.json", micro: "micro.json", word: "word.json" };
 export const manualUrl = (w: Which = "player") => DOCS + PDF[w];
 export type Manual = { uri: string; release: string | null; etag: string | null; size: number; at: string };
 
@@ -45,7 +46,7 @@ export function keptManual(w: Which = "player"): Manual | null {
   try { return { ...(JSON.parse(f.textSync()) as Omit<Manual, "uri">), uri: pdfFile(w).uri }; } catch { return null; }
 }
 
-const shown: Record<Which, Manual | null> = { player: null, quick: null, social: null, tiiny: null, micro: null };   // the site's, for as long as the page is open
+const shown: Record<Which, Manual | null> = { player: null, quick: null, social: null, tiiny: null, micro: null, word: null };   // the site's, for as long as the page is open
 // asked afresh each time on the phone; on the site a header beyond the plain ones would need GitHub to allow it first
 const FRESH: RequestInit = ON_PHONE ? { headers: { "cache-control": "no-cache" } } : {};
 

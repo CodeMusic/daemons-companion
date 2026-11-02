@@ -22,6 +22,8 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
   tiiny:  { title: "A BIGGER MIND", about: "Setting up a Tiiny Pocket for the companion: the computer, the network and the hub.",                  // DRAFT
             says: "Setting up the Tiiny Pocket for the DAEMONS companion" },                                                                        // DRAFT
   micro:  { title: "MICRO-START", about: "DAEMONS in five pages.", says: "DAEMONS in five pages" },                                          // DRAFT (C-264)
+  word:   { title: "THE OLD WORD", about: "How the Greek daimon branched, and why it is said DAY-mons.",                                       // DRAFT (C-274)
+            says: "How daimon branched, and why it is said DAY-mons" },                                                                     // DRAFT (C-274)
 };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;

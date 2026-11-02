@@ -117,7 +117,7 @@ export function PracticePaper() {
 }
 export function LibraryScreen() {
   const dayInk = useInk();
-  const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [g, setG] = useState<GuideBookT | null>(null);
@@ -132,6 +132,7 @@ export function LibraryScreen() {
   if (book === "quick") return <YStack gap={14}>{back}<ManualBook which="quick" /></YStack>;
   if (book === "social") return <YStack gap={14}>{back}<ManualBook which="social" /></YStack>;
   if (book === "tiiny") return <YStack gap={14}>{back}<ManualBook which="tiiny" /></YStack>;
+  if (book === "word") return <YStack gap={14}>{back}<ManualBook which="word" /></YStack>;   // C-274
   if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
   if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
   if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
@@ -151,6 +152,8 @@ export function LibraryScreen() {
       <ShelfBook colour="#5a7fa6" spine="TOGETHER" title="PLAYING TOGETHER" about={manualAbout("social")} onPress={() => setBook("social")} />
       {/* the third, A BIGGER MIND (2026-10-31): the Tiiny Pocket set up for the companion. DRAFT */}
       <ShelfBook colour="#4f8a6e" spine="TIINY" title="A BIGGER MIND" about={manualAbout("tiiny")} onPress={() => setBook("tiiny")} />
+      {/* C-274: THE OLD WORD (2026-11-01): how daimon branched, and why it is said DAY-mons. DRAFT */}
+      <ShelfBook colour="#8a6a4a" spine="WORD" title="THE OLD WORD" about={manualAbout("word")} onPress={() => setBook("word")} />
       <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
         <XStack gap={14} alignItems="center">
           <YStack width={72} height={48} borderRadius={3} backgroundColor="$color9" alignItems="center" justifyContent="center">

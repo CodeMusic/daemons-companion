@@ -17,7 +17,7 @@ the game's are.
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
-| **LIBRARY** | THE PLAYER'S MANUAL, QUICK START, PLAYING TOGETHER, A BIGGER MIND, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
+| **LIBRARY** | THE PLAYER'S MANUAL, QUICK START, PLAYING TOGETHER, A BIGGER MIND, THE OLD WORD, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
 ## When the game saves
@@ -84,7 +84,8 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
 - **QUICK START** (C-233) -- next on the shelf: DAEMONS' short way in, what it is and how to play it, step by step (the
   QUICK-START PDF), fetched, kept and read as the manual is. After it, DAEMONS' two other manuals, kept the same way:
   **PLAYING TOGETHER** (trading, loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS) and **A BIGGER MIND**
-  (setting up a Tiiny Pocket for the companion).
+  (setting up a Tiiny Pocket for the companion). Then **THE OLD WORD** (C-274): how the Greek *daimon* branched, and why
+  it is said *DAY-mons*.
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its
   board once you have stood on it (greyed and closed until then). And **THE PAPER, TO SIT AGAIN**: the whole paper, a

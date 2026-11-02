@@ -170,7 +170,7 @@ The companion reads your save, so it can show you what you have done in there --
   the ROOTS in their own colours; the two region maps filling in as you go; the GROVES you have found; GAME EVENTS,
   the story so far; and **TRADE** ([Trading](https://github.com/CodeMusic/daemons-companion/wiki/Trading)).
 - **LIBRARY** -- **THE PLAYER'S MANUAL** first (DAEMONS' own PDF, every way to play and how it all works: fetched from
-  DAEMONS as published, kept on the iPhone or iPad and read there, or in the page on the site; C-233), then **QUICK START**, the short way in, CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
+  DAEMONS as published, kept on the iPhone or iPad and read there, or in the page on the site; C-233), then **QUICK START**, the short way in, the other books DAEMONS prints -- **THE OLD WORD** among them, on why daemons are said *DAY-mons* -- CALLOW SCHOOL (your DIPLOMA, and the paper to sit again, marked here and never in your save), THE
   GUIDE and THE SUBTLE LAYER once you have found them in the game -- THE SUBTLE LAYER's **CARDS** drawn by touch, a
   prophecy under each (C-273) -- the **NOTEBOOK** to read, the **SONGBOOK** (the songs you have learned, on
   a staff in the game's own key colours, to hear again -- and, once the game has given it to you, your HARP or FLUTE

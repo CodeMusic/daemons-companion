@@ -14,11 +14,11 @@ const G = guideJson as { flag: number; draft: boolean; title: string; author?: s
 // in its own type over the art (78cce6f; the author's name approved for the public cover, 2026-10-17)
 export interface Guide { held: boolean; title?: string; author?: string; draft?: boolean; sections?: Section[] }
 
-export function guideOf(flag: (f: number) => boolean): Guide {
-  return flag(G.flag) ? { held: true, title: G.title, author: G.author, draft: G.draft, sections: G.sections } : { held: false };
+export function guideOf(flag: (f: number) => boolean, preview = false): Guide {   // C-275: preview, as if held (</>), read only
+  return preview || flag(G.flag) ? { held: true, title: G.title, author: G.author, draft: G.draft, sections: G.sections } : { held: false };
 }
 
-export function readGuide(save: Uint8Array, l: Layout = LAYOUT): Guide {
+export function readGuide(save: Uint8Array, l: Layout = LAYOUT, preview = false): Guide {
   const { sb1, sb2 } = blocks(save, l);
-  return guideOf(flagReader(sb1, sb2));
+  return guideOf(flagReader(sb1, sb2), preview);
 }

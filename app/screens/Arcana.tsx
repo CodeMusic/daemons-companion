@@ -12,7 +12,7 @@ import { Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { thinNow } from "../../server/src/witching";
 import { api } from "../net";
-import { PREVIEW_ON } from "../preview";
+import { previewing } from "../preview";
 import { Art, Small } from "../ui";
 
 export type Card = { n: number; roman: string; side: "reason" | "instinct" | "above" | "below" | "spellcraft"; keyword: string; phrase: string;
@@ -168,7 +168,7 @@ const sideName = (side: Card["side"]) =>
 export function Cards({ book = "subtle" }: { book?: Book }) {
   const C = book === "hermetic" ? { ...CS, ...SPELL } : CS;
   const deck = book === "hermetic" ? "hermetic" : "subtle";
-  const pv = PREVIEW_ON ? "&preview=1" : "";                          // the preview: both decks, read only
+  const pv = previewing() ? "&preview=1" : "";                          // the preview: both decks, read only
   const [day, setDay] = useState<Card | null>(null);
   const [halloween, setHalloween] = useState(false);
   const [held, setHeld] = useState(false);

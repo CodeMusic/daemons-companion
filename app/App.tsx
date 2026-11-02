@@ -28,10 +28,10 @@ import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import { SHOWN_TABS, TABS, Today } from "./types";
 import { InkContext, onColour, Stuck } from "./ui";
 import { voiceFor } from "./tuneSound";
-import { loadPreview } from "./preview";
 import { keepSplit, muteAway, splitKept } from "./game/away";
 import { keepLogsWidth, logsWidth, useDev } from "./game/dev";       // C-268
 import { Logs } from "./devpanel";
+import { DevScreen } from "./screens/Dev";                  // C-275: </>
 import { heardElsewhere, Received } from "./received";   // C-261
 import { HowToOverlay, openHowTo } from "./howto";          // C-264
 import MENU from "./modules/daemons-menu";                    // C-264: the menu bar's Help
@@ -59,7 +59,7 @@ function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[numbe
                     aria-selected={tab === t} borderBottomColor={tab === t ? "$color9" : "transparent"}
                     onPress={() => setTab(t)}>
               <Text fontFamily="$mono" fontSize={narrow ? 11 : 12} letterSpacing={narrow ? 0.6 : 1.5} fontWeight={tab === t ? "700" : "400"}
-                    color={tab === t ? "$color12" : "$color10"}>{t.toUpperCase()}</Text>
+                    color={tab === t ? "$color12" : "$color10"}>{t === "dev" ? "</>" : t.toUpperCase()}</Text>
             </YStack>
           ))}
         </XStack>
@@ -191,6 +191,7 @@ function Shell() {
     return () => sub.remove();
   }, []);
   useEffect(() => { if (beside && tab === "game") setTab("today"); }, [beside, tab]);
+  useEffect(() => { if (!dev.on && tab === "dev") setTab("settings"); }, [dev.on, tab]);   // C-275: </> goes with DEVELOPER MODE
   const [today, setToday] = useState<Today | null>(null);
   const [error, setError] = useState("");
   const reload = useCallback(() => {
@@ -305,7 +306,7 @@ function Shell() {
               <Text fontSize={20} lineHeight={22} color={tab === "settings" ? "$color12" : "$color10"}>⚙</Text>
             </YStack>
           </XStack>
-          <TabStrip tab={tab} setTab={pickTab} tabs={beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS} />
+          <TabStrip tab={tab} setTab={pickTab} tabs={[...(beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS), ...(dev.on ? ["dev" as const] : [])]} />
         </YStack>
         {beside ? <FoundBeside {...found} /> : null}
         {tab !== "game" ? <ScrollView key={`${fresh}.${again}`} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
@@ -317,6 +318,7 @@ function Shell() {
           {tab === "you" ? <ProfileScreen /> : null}
           {tab === "library" ? <LibraryScreen /> : null}
           {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
+          {tab === "dev" && dev.on ? <DevScreen ink={ink} /> : null}{/* C-275 */}
           {tab === "settings" && SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
         </ScrollView> : null}
         {newsBanner}
@@ -362,7 +364,6 @@ export default function App() {
   // C-144: the paper or the night -- chosen, or AUTO as the phone or the computer is set
   const [look, seeLook] = useState(LOOK);
   useEffect(() => { const f = () => seeLook(LOOK); lookHeard.add(f); loadLook().then(f); return () => { lookHeard.delete(f); }; }, []);
-  useEffect(() => { loadPreview(); }, []);                  // SETTINGS' PREVIEW, a bench check (preview.ts)
   const system = useColorScheme();
   const scheme = look === "auto" ? (system === "dark" ? "dark" : "light") : look;
   useEffect(() => {   // the site's own pieces too: its scroll bars, and the page behind the app

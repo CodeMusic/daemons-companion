@@ -23,8 +23,7 @@ import { useApi } from "../useApi";
 import { heardSync } from "../received";              // C-261
 import type { Arrival } from "../../server/src/core";
 import type { Care } from "../../server/src/care";   // C-266
-import { pretendLife, setPretend, useDev } from "../game/dev";   // C-269: </>, in DEVELOPER MODE
-import { DevTag, PretendPanel } from "../devpanel";
+import { pretendLife, useDev } from "../game/dev";   // C-269: as </> sets its mood and care (C-275: in the </> tab)
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
@@ -52,10 +51,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
   const player = useAudioPlayer(null);
-  const dev = useDev();                                     // C-269: </> and its sliders, in memory only
-  const [tweak, setTweak] = useState(false);
-  useEffect(() => { if (!dev.on) setTweak(false); }, [dev.on]);
-  useEffect(() => () => setPretend(null), []);              // left, it is back to the truth
+  useDev();                                                 // C-269: drawn again as </> moves its sliders
   useEffect(() => {
     api<Life>("/api/daemon/life").then(setL).catch(() => {});
     api<Today>("/api/today").then((t) => setNote(t.day.note)).catch(() => {});
@@ -86,11 +82,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   };
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
-      <XStack alignItems="center">
-        <Eyebrow>{`${name}, TODAY`}</Eyebrow>
-        <YStack flex={1} />
-        {dev.on ? <DevTag open={tweak} onPress={() => { if (tweak) setPretend(null); setTweak(!tweak); }} /> : null}
-      </XStack>
+      <Eyebrow>{`${name}, TODAY`}</Eyebrow>
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
@@ -106,7 +98,6 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}${l.rested ? " · slept" : ""}`}</Small>
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
       {shown.care ? <CareStats mood={shown.mood} care={shown.care} /> : null}
-      {dev.on && tweak ? <PretendPanel truth={l} onClose={() => setTweak(false)} /> : null}
       {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)
         ? `Grown here: level ${l.level} to ${l.grown.level}. It takes that home with it.`
         : `Grown here: ${l.grown.exp} experience. It takes that home with it.`}</Small> : null}

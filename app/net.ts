@@ -4,6 +4,7 @@ import { File, Paths } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { GATE } from "./game/gate";
+import { devRoute, onSession } from "./game/dev";              // C-275
 
 // bindCompanion.sh sets EXPO_PUBLIC_DAEMONS_SERVER: an Android emulator reaches this machine at 10.0.2.2, not 127.0.0.1.
 // C-27, C-53: on the phone the companion's address and its key are set at runtime -- by pairing -- and kept in the
@@ -317,8 +318,18 @@ export function freshSoon() {                     // many answers at once (keepE
   freshTimer = setTimeout(() => { freshTimer = null; freshHeard.forEach((f) => f()); }, 600);
 }
 
-// C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
+// C-275: DEVELOPER MODE's game session -- a read asked as </> has it (a book as if held, an event unheld), in memory
+// only, before it reaches the companion or what the phone kept; a change there reads every screen again
 export async function api<T>(path: string, body?: unknown): Promise<T> {
+  const d = body === undefined ? devRoute(path) : null;
+  if (!d) return apiTruth<T>(path, body);
+  const r = await apiTruth<any>(d.path);
+  return (d.answer ? d.answer(r) : r) as T;
+}
+onSession(() => freshSoon());
+
+// C-62: every request goes through here. An answer is kept; no answer falls back to what was kept.
+export async function apiTruth<T>(path: string, body?: unknown): Promise<T> {
   // C-188: paired, SYNC writes the companion's mirror of the game's save -- the game hands its save over and pauses first,
   // and takes back what SYNC wrote before it goes on (game/gate.ts; hosting alone, local.ts holds it the same way)
   if (path === "/api/sync" && body !== undefined) forgetPartyArt();

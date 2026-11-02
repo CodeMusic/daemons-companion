@@ -12,14 +12,14 @@ import { Text, XStack, YStack } from "tamagui";
 import { AS_ABOVE, EMERALD, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLine, witchingNow, witchingRoutine }
   from "../../server/src/witching";
 import { api, ON_PHONE } from "../net";
-import { PREVIEW_ON } from "../preview";
+import { hourForced } from "../game/dev";               // C-275: </> sets the hour, in memory only
 import { dayRoot, soundLevel, soundOf } from "../tuneSound";
 import { Action, Small } from "../ui";
 
-// in the hour or not, looked at again each half minute -- or always, with SETTINGS' preview on (the user, 2026-10-29:
-// the hour's look shown any time, read only; its count is then the clock's own minutes)
-export const hourNow = () => witchingNow() || PREVIEW_ON;
-export const previewed = () => (PREVIEW_ON ? "?preview=1" : "");
+// in the hour or not, looked at again each half minute -- or as </> sets it (C-275: on any time, read only, its count the
+// clock's own minutes; or off in the hour itself)
+export const hourNow = () => hourForced() ?? witchingNow();
+export const previewed = () => (hourForced() === true && !witchingNow() ? "?preview=1" : "");
 export function useWitching() {
   const [w, setW] = useState(hourNow());
   useEffect(() => { const t = setInterval(() => setW(hourNow()), 30000); return () => clearInterval(t); }, []);

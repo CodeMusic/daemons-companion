@@ -59,10 +59,9 @@ export function DevModeCard({ ink }: { ink: string }) {
   return (
     <Card>
       <Eyebrow>DEVELOPER MODE</Eyebrow>
-      <Small>{"On, the game shows how fast it runs, and LOGS show what the game and the app warned of and how much memory the app holds" +
-        (beside ? ", in a panel at the right." : ", below.") + " DRAFT"}</Small>
+      <Small>{"On, a </> tab after PLACES sets the game session for this app alone -- the books, the game's events, the witching hour, " +
+        "your daemon's mood and care -- in memory only, and the game shows how fast it runs" + (beside ? "; LOGS in a panel at the right." : ".") + " DRAFT"}</Small>
       <Choice value={on} options={[[true, "On"], [false, "Off"]]} onPick={(v) => setDevMode(v)} ink={ink} />
-      {on && !beside ? <YStack height={420} borderTopWidth={1} borderColor="$color5" marginTop={6}><Logs /></YStack> : null}
     </Card>
   );
 }
@@ -77,7 +76,7 @@ export const DevTag = ({ open, onPress }: { open: boolean; onPress: () => void }
 type Truth = { mood: number; care?: { rest: number; hunger: number; thirst: number; weight: number; companionship: number } };
 const ROWS: [keyof Pretend, string, number, number][] = [["mood", "MOOD", 10, 100], ["rest", "REST", 0, 100], ["hunger", "HUNGER", 0, 100],
   ["thirst", "THIRST", 0, 100], ["weight", "WEIGHT", -100, 100], ["companionship", "COMPANY", 0, 100]];
-export function PretendPanel({ truth, onClose }: { truth: Truth; onClose: () => void }) {
+export function PretendPanel({ truth, onClose }: { truth: Truth; onClose?: () => void }) {
   useDev();                                                 // redrawn as the sliders move
   const [round, setRound] = useState(0);                    // RESET puts every thumb back where the truth is
   const p = pretending() ?? {};
@@ -89,7 +88,7 @@ export function PretendPanel({ truth, onClose }: { truth: Truth; onClose: () => 
         <YStack flex={1} />
         <XStack gap={6}>
           <Pill label="RESET" hint="back to its true values" onPress={() => { setPretend(null); setRound((n) => n + 1); }} />
-          <Pill label="CLOSE" hint="close, and back to its true values" onPress={() => { setPretend(null); onClose(); }} />
+          {onClose ? <Pill label="CLOSE" hint="close, and back to its true values" onPress={() => { setPretend(null); onClose(); }} /> : null}
         </XStack>
       </XStack>
       {ROWS.map(([k, label, min, max]) => {
@@ -109,7 +108,7 @@ export function PretendPanel({ truth, onClose }: { truth: Truth; onClose: () => 
             </Text>
           </XStack>);
       })}
-      <Small color="$color10">Nothing here reaches the companion, the save or the game. Closing this, or DEVELOPER MODE off, puts it back.</Small>
+      <Small color="$color10">Nothing here reaches the companion, the save or the game. RESET, the game session restored, DEVELOPER MODE off or the app shut puts it back.</Small>
     </YStack>
   );
 }

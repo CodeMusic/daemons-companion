@@ -40,7 +40,7 @@ const heard = new Set<() => void>();
 const tell = () => heard.forEach((h) => h());
 
 export const devMode = () => read().on;
-export const setDevMode = (on: boolean) => { if (!on) pretend = null; write({ ...read(), on }); };   // C-269: off, the pretend goes
+export const setDevMode = (on: boolean) => { if (!on) restoreSession(); write({ ...read(), on }); changed.forEach((h) => h()); };   // C-269, C-275: off, the session goes
 export const logsWidth = () => read().width;
 export const keepLogsWidth = (width: number) => write({ ...read(), width });
 
@@ -93,4 +93,39 @@ export function pretendLife<L extends { mood: number; word: string; tired: strin
   if (c) c.worn = { shadows: c.rest < SHADOWS_BELOW, bloodshot: c.rest < BLOODSHOT_BELOW };
   const expression = l.expression && c ? { ...l.expression, pose: { ...l.expression.pose, girth: girthOf(c.weight) }, worn: c.worn } : l.expression;
   return { ...l, mood, word, care: c, expression };
+}
+
+// C-275: THE GAME SESSION -- what the </> tab sets: the books held or not, each GAME EVENT and CALLOW SCHOOL's rows, the
+// witching hour. IN MEMORY ONLY, like the pretend above: the app is shown it (net.ts asks devRoute() before every read)
+// and nothing is written anywhere; RESTORE, DEVELOPER MODE off or the app shut puts the save's own answers back.
+export type Book = "guide" | "subtle" | "hermetic" | "play";
+export type Session = { books: Partial<Record<Book, boolean>>; events: Record<number, boolean>;
+                        school: Partial<Record<"textbook" | "diploma", boolean>>; hour: boolean | null };
+const blank = (): Session => ({ books: {}, events: {}, school: {}, hour: null });
+let session: Session = blank();
+const changed = new Set<() => void>();                        // net.ts: read every screen again
+export const sessionNow = () => session;
+export const onSession = (f: () => void) => { changed.add(f); return () => { changed.delete(f); }; };
+export function setSession(f: (s: Session) => Session) { session = f(session); tell(); changed.forEach((h) => h()); }
+export const restoreSession = () => { pretend = null; setSession(() => blank()); };
+export const sessionTouched = () => !!pretend || session.hour !== null || [session.books, session.events, session.school].some((o) => Object.keys(o).length > 0);
+
+// the witching hour as the session has it: null, the clock's
+export const hourForced = () => (read().on ? session.hour : null);
+// a book asked for as if held: the companion's own read-only ?preview=1 (never kept, never written)
+const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/play": "play" };
+export const bookForced = (b: Book) => (read().on ? session.books[b] : undefined);
+
+// Before a read: the path to ask (a book forced held asks with ?preview=1), and what to do to the answer
+export function devRoute(path: string): { path: string; answer?: (r: any) => any } | null {
+  if (!read().on) return null;
+  const bare = path.split("?")[0], b = BOOK_PATH[bare];
+  if (b && session.books[b] === true) return { path: `${bare}?preview=1` };
+  if (b && session.books[b] === false) return { path, answer: (r) => (bare === "/api/play" ? { ...r, unlocked: false } : { held: false }) };
+  if (bare === "/api/progress" && (Object.keys(session.events).length || Object.keys(session.school).length)) {
+    return { path, answer: (r) => r && ({ ...r,
+      events: (r.events ?? []).map((e: any) => (e.n in session.events ? { ...e, held: session.events[e.n] } : e)),
+      school: r.school && { ...r.school, ...session.school } }) };
+  }
+  return null;
 }

@@ -104,7 +104,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
                        songs: p.songs.map((x) => ({ ...x, learned: true, heard: false })) } : p);
     }
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
-    if (path === "/api/guide") return ok(readGuide(save));              // C-145: the GUIDE, once found
+    if (path === "/api/guide") return ok(readGuide(save, undefined, a.query?.preview === "1"));   // C-145: the GUIDE, once found (C-275: ?preview=1, as if held)
     if (path === "/api/books" || path === "/api/book") {               // C-208: the books held -- their chapters, or one chapter
       const books = booksOf(readSubtle(save), readGuide(save), readNotebook(save), readHermetic(save, store));   // never ?preview: the boards read what the save holds (C-238: or what was found here)
       if (path === "/api/books") return ok({ books: bookList(books) });

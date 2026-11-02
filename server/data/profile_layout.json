@@ -216,11 +216,23 @@
    "something to the east.",
    "something to the west."
   ],
+  "day_shift": 12,
+  "day_mask": 7,
+  "days": [
+   "SUNDAY",
+   "MONDAY",
+   "TUESDAY",
+   "WEDNESDAY",
+   "THURSDAY",
+   "FRIDAY",
+   "SATURDAY"
+  ],
   "words": {
    "reads": "Reads: {1} given, {2} landed.",
    "leans": "Leans: {1} told, {2} landed.",
    "colon": ": ",
-   "landed": " Landed."
+   "landed": " Landed.",
+   "day_comma": ", "
   }
  },
  "its_dreams": {

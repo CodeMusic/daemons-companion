@@ -213,12 +213,14 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     const care = path.match(CARE);                      // C-13: care -- feed, water, train, and SLEEP (C-114) -- kept as the device's are
     if (care) {
+      const night = care[1] === "sleep" ? null : appNight(h, store, deviceId, now, b?.stirs);   // C-283: woken -- the night it slept
       // C-196: the daemon's written line for it, as the boards show (chosen before the care counts, as api.ts's careLine)
       const l = daemonLife(store, now), kind = care[1] as LineKind;
       const said = writtenLine(kind, l.mood, now.toLocaleDateString("en-CA"), kind === "feed" ? l.fed.today : kind === "water" ? l.watered.today : 0);
       store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId);
       const r = lifeNow(h, store, deviceId, now), save = h.save.read();
-      return { ...r, body: { ...(r.body as object), ...saying(said, !!save && readSubtle(save).held) } };   // C-204: and under it
+      return { ...r, body: { ...(r.body as object), ...saying(said, !!save && readSubtle(save).held),   // C-204: and under it
+                             ...(night ? { dream: { id: night.id, text: night.text, by: night.by, quality: night.quality } } : {}) } };
     }
     const step = path.match(STEP);
     if (step) {
@@ -275,6 +277,22 @@ export function takeFix(store: Store, detail: string, deviceId: string, now = ne
   const taken = Number(detail.split(" ")[3]) * 1000;
   const at = Number.isFinite(taken) && taken > Date.UTC(2026, 0) && taken <= now.getTime() + 60000 ? new Date(taken) : now;
   return keepFix(store, f, deviceId, at);
+}
+// C-283 (the user, 2026-11-03: "when u hit sleep it should make the select local ai create a dream"): a daemon put to bed
+// in the evening or the night (SLEEP, on any device) and then woken or tended has had a night -- from the SLEEP to that
+// moment, tucked in, its stirs as the phone counted them (C-284, `stirs` with the care) -- unless a watch told that night
+// already. Kept as the watch's are (takeNight); api.ts asks the talk AI for its telling. A nap in the day is no night.
+export function appNight(h: Host, store: Store, deviceId: string, now: Date, stirs: unknown): Dream | null {
+  const since = store.interactionsSince(new Date(now.getTime() - 16 * 3600000)), at = (e: { at: string }) => Date.parse(e.at);
+  const sleep = [...since].reverse().find((e) => e.kind === "sleep");
+  if (!sleep) return null;
+  const h0 = new Date(sleep.at).getHours();
+  if (h0 < 18 && h0 >= 6) return null;                                       // a nap
+  if (since.some((e) => at(e) > at(sleep) && ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"].includes(e.kind))) return null;   // woken already
+  if (dreamsOf(store).some((d) => Date.parse(d.to) > at(sleep))) return null;    // the watch told this night
+  const s = Number.isInteger(stirs) && (stirs as number) >= 0 ? (stirs as number) : 0;
+  const r = takeNight(h, store, `${Math.floor(at(sleep) / 1000)} ${Math.floor(now.getTime() / 1000)} ${s} 1`, deviceId);
+  return typeof r === "string" ? null : r.dream;
 }
 // C-200: a night ended on the watch -- "night <from> <to> <stirs> <tucked>" (seconds since 1970), so it travels as every
 // interaction does (Wi-Fi, the outbox, the cable's INTERACT, the phone). Kept with a written dream at once; a rested night

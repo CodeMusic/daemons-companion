@@ -60,7 +60,7 @@ import { StackFlow } from "./ai/stackflow.js";
 import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { bondTrend, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
-import { dreamAsk, rewriteDream } from "./dreams.js";   // C-200
+import { dayOf as dayBefore, dreamAsk, dreamsOf, rewriteDream } from "./dreams.js";   // C-200; C-283: the day, the journal
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
@@ -686,6 +686,28 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   setInterval(warmTalk, 30 * 60_000).unref();   // a no-op while both thinkers hold: setups only when a persona changed
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
+  // C-283: a night's dream, told by whoever WHO ANSWERS WHEN YOU TALK chose (the Tiiny, the house's module, or n8n's) with
+  // the day before it as context; the written dream stays if none answers. In the background: the night is answered at once
+  const tellDream = (ecfg: Config, dream: { id: number; from: string; to: string; hours: number; stirs: number; tucked: boolean; by: string }, deviceId: string) => {
+    const d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
+    if (!d || dream.by !== "words") return;
+    const text = dreamAsk(dream, dayBefore(store, dream.from)), p = talkProvider();
+    const viaHouse = async () => (house.any ? (await house.talk({ text, history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
+    (async () => {
+      let answer: string | undefined;
+      const tiiny = tiinyIn((k) => store.getSetting(k));
+      if (p === "tiiny" && tiiny) {
+        try { answer = await tiinyChat(tiiny, pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []), selfText(ecfg, store, deviceId, "day"), [], text); } catch { /* the next */ }
+      }
+      if (!answer && p === "module") answer = await viaHouse().catch(() => undefined);
+      if (!answer) {
+        const r = await n8n(ecfg, "daemon/talk", { text, history: [], provider: p === "module" || p === "tiiny" ? "auto" : p, speak: false,
+                                                  voice: "index", localModel: ecfg.talk.localModel, ...talkWho(ecfg, store, deviceId) });
+        answer = typeof r.answer === "string" ? r.answer : await viaHouse().catch(() => undefined);
+      }
+      if (answer?.trim()) rewriteDream(store, dream.id, answer.trim());
+    })().catch(() => {});
+  };
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
   const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant
@@ -954,9 +976,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return reply(res, await runSync(ecfg, store, { deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) }));
       if (req.method === "GET" && path === "/api/sync/heard") return send(res, 200, heardOf(store));   // C-261
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
-      if (handles(req.method ?? "", path) && path !== "/api/subtle/ask")   // C-229: answered below, with the module and the voice
-        return reply(res, route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),
-                                                       body: req.method === "POST" ? await body(req) : {} }));
+      if (handles(req.method ?? "", path) && path !== "/api/subtle/ask") {   // C-229: answered below, with the module and the voice
+        const r = route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),
+                                               body: req.method === "POST" ? await body(req) : {} });
+        const night = (r.body as { dream?: { id: number } } | null)?.dream;   // C-283: woken after a SLEEP -- its dream, told
+        const kept = night ? dreamsOf(store).find((x) => x.id === night.id) : undefined;
+        if (kept) tellDream(ecfg, kept, deviceId);
+        return reply(res, r);
+      }
       if (req.method === "GET" && path === "/api/device/state") {
         hub.seen(via);
         const st = deviceState(ecfg, store, new Date(), deviceId, url.searchParams.get("expression"));   // C-121: ?expression= for bench.py
@@ -1801,11 +1828,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (kind === "night") {
           const r = takeNight(hostOf(ecfg), store, typeof b.detail === "string" ? b.detail : "", teller);
           if (typeof r === "string") return send(res, 400, { error: r });
-          const { dream } = r, d = core.carriedDaemon(hostOf(ecfg), store, teller);
-          if (house.any && d && dream.by === "words") {
-            house.talk({ text: dreamAsk(dream), history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)
-              .then((a) => { if (a.answer) rewriteDream(store, dream.id, a.answer); }).catch(() => {});
-          }
+          const { dream } = r;
+          tellDream(ecfg, dream, teller);                         // C-283: the talk AI, with the day (was the house's module only)
           return send(res, 200, { dream: { id: dream.id, text: dream.text, by: dream.by, quality: dream.quality } });
         }
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);

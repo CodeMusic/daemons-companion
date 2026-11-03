@@ -85,10 +85,29 @@ export function dreamVars(store: Store): { vars: Record<number, number>; last: n
                                [DREAM_VARS.nights]: (restedN << 8) | nights, [DREAM_VARS.day]: dreamDay(d) } };
 }
 
-// what the daemon is asked, as the user would hear it: the night, and what kind of telling (never shown)
-export function dreamAsk(n: Night): string {
+// C-283: the day before a night, as the dream is to be told it -- what was done together in the eighteen hours before it
+// began, in words (never shown; the dreamer weaves it in): the cares, the training, the steps and the walk, the talk,
+// the routines, the music, the games and the books
+const DAY_WORDS: [string[], string, string][] = [
+  [["feed"], "a meal", "meals"], [["water"], "a drink", "drinks"], [["train"], "a training", "trainings"],
+  [["step", "tick"], "a step toward the goal", "steps toward the goal"], [["walk"], "a walk", "walks"],
+  [["routine"], "a routine kept", "routines kept"], [["talk", "talkfirst"], "a talk", "talks"],
+  [["music", "song"], "a song played", "songs played"], [["casino", "table"], "a game at the CASINO", "games at the CASINO"],
+  [["read", "lean"], "a read of THE SUBTLE LAYER", "reads of THE SUBTLE LAYER"], [["card"], "a card turned", "cards turned"],
+  [["met"], "another daemon met", "other daemons met"], [["gift"], "a gift", "gifts"],
+];
+export function dayOf(store: Store, from: string): string {
+  const end = new Date(from).getTime(), seen = store.interactionsSince(new Date(end - 18 * 3600000)).filter((e) => Date.parse(e.at) <= end);
+  const said = DAY_WORDS.map(([kinds, one, many]) => { const k = seen.filter((e) => kinds.includes(e.kind)).length;
+    return k === 0 ? "" : k === 1 ? one : `${k} ${many}`; }).filter(Boolean);
+  return said.length ? said.join(", ") : "a quiet day, little done together";
+}
+// what the daemon is asked, as the user would hear it: the night, the day before it (C-283), and what kind of telling
+// (never shown)
+export function dreamAsk(n: Night, day: string | null = null): string {
   const how = { vivid: "a long, deep sleep", quiet: "a quiet night", broken: "a short, restless night" }[quality(n)];
   return `You have just woken after ${n.hours} hours of sleep${n.tucked ? ", tucked in by the user" : ""}: ${how}. ` +
+         (day ? `Yesterday, with the user: ${day}. Let the dream grow out of the day, changed as dreams change things. ` : "") +
          "Tell the user the dream you had, in two short sentences -- strange and gentle, in images, as a daemon dreams. " +
          "No more than 160 characters.";
 }

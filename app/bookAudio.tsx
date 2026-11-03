@@ -4,13 +4,15 @@
 // made by tools/bookaudio.py, T-518, each book in its own voice), from DAEMONS on GitHub as published; nothing of them
 // is in this repository. The phone fetches a book once and keeps it in the app's documents (audio/), so it plays with no
 // signal; the site streams it. The chapters beside each MP3 step it back and on, and where it was left is kept. SHARE
-// hands the kept book on, to Files or anyone, as the manuals' PDFs are (manual.ts); on the site, a tab. THE HERMETIC LAYER's recording is sealed in DAEMONS: once the book is held, the device
-// opens it with the key the book's own warning gives (sealed.ts) and keeps it (the user, by multiple choice: "Unseal it
-// on the device"). Every word DRAFT.
-import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+// hands the kept book on, to Files or anyone, as the manuals' PDFs are (manual.ts); on the site, a tab. THE HERMETIC
+// LAYER's recording is sealed in DAEMONS: once the book is held, the device opens it with the key the book's own warning
+// gives (sealed.ts) and keeps it (the user, by multiple choice: "Unseal it on the device"). A book plays on with its page
+// left or the screen locked, and shows on the lock screen. Every word DRAFT.
+import { createAudioPlayer, setAudioModeAsync, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { AppState } from "react-native";
 import { XStack } from "tamagui";
 import { ON_PHONE } from "./net";
 import { keyOfWarning, unseal } from "./sealed";
@@ -99,53 +101,73 @@ const clock = (s: number) => {
   return h ? `${h}:${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}` : `${m}:${String(x).padStart(2, "0")}`;
 };
 
+// The one book player, kept as long as the app runs (the user, 2026-11-03: "Yes, add it" -- a book plays on with the
+// screen locked): leaving a book's page does not stop it, and the lock screen shows the book and its controls. One book
+// plays at a time; LISTEN in another moves it there, keeping where the first was left. expo-audio sets the whole audio
+// mode on every call, so a care sound elsewhere can take the background away -- the book asks for it again on every
+// LISTEN and as the app leaves the screen. doNotMix, since only a book that does not mix is shown on the lock screen.
+const BOOK_MODE = { playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: "doNotMix" } as const;
+let player: AudioPlayer | null = null;
+let current: { which: Recorded; uri: string } | null = null;
+let pending: number | null = null;   // where to start, once the book has loaded
+let marked = 0;                      // when the bookmark was last written, as it plays
+function bookPlayer(): AudioPlayer {
+  if (player) return player;
+  const p = (player = createAudioPlayer(null));
+  p.addListener("playbackStatusUpdate", (s) => {
+    if (!current) return;
+    if (s.isLoaded && pending != null) { const at = pending; pending = null; p.seekTo(at).catch(() => {}); return; }
+    if (s.didJustFinish) { leave(current.which, 0); p.clearLockScreenControls(); return; }   // the end: next time, the start
+    if (s.playing && Date.now() - marked > 15000) { marked = Date.now(); leave(current.which, s.currentTime); }
+  });
+  AppState.addEventListener("change", (state) => {
+    if (state !== "active" && current && p.playing) setAudioModeAsync(BOOK_MODE).catch(() => {});
+  });
+  return p;
+}
+
 // LISTEN, its chapters and SHARE, for one book; `warning` is the sealed book's own warning, which holds its key
 export function Listen({ which, warning }: { which: Recorded; warning?: string }) {
   const B = BOOKS[which];
   const ink = useInk();
-  const player = useAudioPlayer(null);
-  const status = useAudioPlayerStatus(player);
+  const p = bookPlayer();
+  const status = useAudioPlayerStatus(p);
   const [h, setH] = useState<Heard | null>(() => kept(which));
   const [marks, setMarks] = useState<Marks | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const loaded = useRef<string | null>(null);
-  const seek = useRef<number | null>(null);
   const key = warning ? keyOfWarning(warning) : null;
-  const at = useRef(0);
-  at.current = status.currentTime || at.current;
 
   useEffect(() => {   // how long it is, before anything is fetched (an open book's chapters are small)
     if (!kept(which) && !B.sealed) fetched(`${AUDIO}${B.file}.chapters.json`)
       .then((b) => setMarks(JSON.parse(new TextDecoder().decode(b)))).catch(() => {});
-    return () => { if (loaded.current) leave(which, at.current); };
   }, [which]);
-  useEffect(() => {   // where it was left, once there is something to move through
-    if (status.isLoaded && seek.current != null) { const s = seek.current; seek.current = null; player.seekTo(s).catch(() => {}); }
-  }, [status.isLoaded]);
 
+  const mine = current?.which === which;   // this book is the one in the player
   const info = h ?? marks;
   const entries = (info?.chapters ?? []).filter((c) => c.kind === "entry");
-  const now = status.currentTime ?? 0;
+  const now = mine ? status.currentTime ?? 0 : 0;
   const here = (info?.chapters ?? []).filter((c) => c.start <= now + 0.5).pop();
-  const playing = !!loaded.current;
 
   const play = async () => {
     setError("");
     try {
       let got = h;
       if (!got) { setBusy(B.sealed ? "Opening it…" : ON_PHONE ? "Fetching it from DAEMONS, once…" : "Finding it…"); got = await heard(which, key, setBusy); setH(got); }   // DRAFT
-      if (loaded.current !== got.uri) {
-        await setAudioModeAsync({ playsInSilentMode: true });
-        player.replace({ uri: got.uri });
-        loaded.current = got.uri;
-        seek.current = leftAt()[which] ?? null;
+      await setAudioModeAsync(BOOK_MODE);
+      if (current?.uri !== got.uri) {
+        if (current) leave(current.which, p.currentTime);
+        p.replace({ uri: got.uri });
+        current = { which, uri: got.uri };
+        pending = leftAt()[which] ?? null;
+        p.setActiveForLockScreen(true, { title: B.title, artist: "DAEMONS", albumTitle: "Read aloud, DRAFT" },   // DRAFT
+                                 { showSeekForward: true, showSeekBackward: true });
       }
-      player.play();
+      p.play();
     } catch (e) { setError((e as Error).message); } finally { setBusy(null); }
   };
-  const pause = () => { player.pause(); leave(which, now); };
-  const to = (s: number) => { player.seekTo(Math.max(0, s)).catch(() => {}); leave(which, s); };
+  const pause = () => { p.pause(); if (mine) leave(which, p.currentTime); };
+  const to = (s: number) => { p.seekTo(Math.max(0, s)).catch(() => {}); leave(which, s); };
   const back = () => { const prev = [...entries].reverse().find((c) => c.start < now - 3); to(prev ? prev.start : 0); };
   const on = () => { const next = entries.find((c) => c.start > now + 0.5); if (next) to(next.start); };
   const share = async () => {
@@ -166,12 +188,12 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
   return (
     <Card>
       <Eyebrow>{`LISTEN${info ? ` · ${Math.round(info.duration / 60)} MIN` : ""}`}</Eyebrow>
-      <Small>{busy ?? (playing && here ? `${here.title} · ${clock(now)} of ${clock(info?.duration ?? status.duration)}`
+      <Small>{busy ?? (mine && here ? `${here.title} · ${clock(now)} of ${clock(info?.duration ?? status.duration)}`
         : `${B.reads}${leftAt()[which] ? ` It goes on from ${clock(leftAt()[which]!)}.` : ""} DRAFT`)}</Small>
       <XStack gap={10} flexWrap="wrap" alignItems="center">
-        <ListenControl phase={busy ? "making" : status.playing ? "speaking" : null} onListen={play} onStop={pause} ink={ink} />
-        {playing && entries.length ? <Action label="‹ Chapter" onPress={back} /> : null}
-        {playing && entries.length ? <Action label="Chapter ›" onPress={on} /> : null}
+        <ListenControl phase={busy ? "making" : mine && status.playing ? "speaking" : null} onListen={play} onStop={pause} ink={ink} />
+        {mine && entries.length ? <Action label="‹ Chapter" onPress={back} /> : null}
+        {mine && entries.length ? <Action label="Chapter ›" onPress={on} /> : null}
         {ON_PHONE ? <Action label="Share" onPress={share} /> : <Action label="Open in a tab" onPress={tab} />}
       </XStack>
       {error ? <Small color="$color9">{error}</Small> : null}

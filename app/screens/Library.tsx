@@ -4,12 +4,12 @@ import { File } from "expo-file-system";
 import { useEffect, useState } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../data";
+import { BOOK, GUIDE_COVER, TEXTBOOK_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../data";
 import { useSubtleInk } from "../look";   // C-203
 import { api, apiLater, ON_PHONE } from "../net";
 import { songSound } from "../songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData, Spoken } from "../types";
-import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small, useInk } from "../ui";
+import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small } from "../ui";
 import { useVoice } from "./Daemon";   // C-209
 import { useApi } from "../useApi";
 import { previewQuery } from "../preview";
@@ -116,7 +116,6 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  const dayInk = useInk();
   const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
@@ -156,8 +155,12 @@ export function LibraryScreen() {
       <ShelfBook colour="#8a6a4a" spine="WORD" title="THE OLD WORD" about={manualAbout("word")} onPress={() => setBook("word")} />
       <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
         <XStack gap={14} alignItems="center">
-          <YStack width={72} height={48} borderRadius={3} backgroundColor="$color9" alignItems="center" justifyContent="center">
-            <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color={dayInk}>CALLOW</Text>
+          {/* C-276: the TEXTBOOK's own cover, PRINCIPLES OF MIND, where a yellow CALLOW stood */}
+          <YStack width={72} height={48} borderRadius={3} backgroundColor="#c4932f" alignItems="center" justifyContent="center">
+            <YStack width={39} height={48} overflow="hidden">
+              <Image source={TEXTBOOK_COVER} style={{ width: 39, height: 48 }} resizeMode="stretch"
+                     accessibilityLabel="the TEXTBOOK's cover, PRINCIPLES OF MIND" />
+            </YStack>
           </YStack>
           <YStack flex={1} gap={2}>
             <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">CALLOW SCHOOL</Text>
@@ -456,10 +459,18 @@ export function SchoolScreen() {
   const [pr, setPr] = useState<Progress | null>(null);
   const [shown, setShown] = useState(false);       // the DIPLOMA as the game draws it
   const [p, setP] = useState<Profile | null>(null);
+  const [full, setFull] = useState(false);         // C-276: PRINCIPLES OF MIND, the TEXTBOOK in full
   useEffect(() => {
     api<Progress>("/api/progress").then(setPr).catch(() => {});
     api<Profile>("/api/profile").then(setP).catch(() => {});
   }, []);
+  if (full) return (
+    <YStack gap={14}>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
+            onPress={() => setFull(false)}>‹ CALLOW SCHOOL</Text>
+      <ManualBook which="textbook" />
+    </YStack>
+  );
   if (!pr) return <Small>Reading your save…</Small>;
   const s = pr.school;
   return (
@@ -484,6 +495,8 @@ export function SchoolScreen() {
         {/* the DIPLOMA held, every lesson is open: the paper is passed (the user, 2026-10-28 -- a save given the DIPLOMA
             had stood on no floor, and every lesson read "Not yet stood on") */}
         {SCHOOL.floors.map((f, i) => <Floor key={f.floor} f={f} reached={s.floors[i] || s.diploma} />)}
+        {/* C-276 (the user, 2026-11-03): under the seventh board, the whole TEXTBOOK as a university one, PDF. DRAFT */}
+        <XStack marginTop={6}><Action label="FULL TEXTBOOK ›" onPress={() => setFull(true)} /></XStack>
       </Card>
       <PracticePaper />
     </YStack>

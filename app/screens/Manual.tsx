@@ -24,6 +24,8 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
   micro:  { title: "MICRO-START", about: "DAEMONS in five pages.", says: "DAEMONS in five pages" },                                          // DRAFT (C-264)
   word:   { title: "THE OLD WORD", about: "How the Greek daimon branched, and why it is said DAY-mons.",                                       // DRAFT (C-274)
             says: "How daimon branched, and why it is said DAY-mons" },                                                                     // DRAFT (C-274)
+  textbook: { title: "PRINCIPLES OF MIND", about: "CALLOW SCHOOL's TEXTBOOK in full: the seven floors, taught.",                  // DRAFT (C-276)
+              says: "CALLOW SCHOOL's TEXTBOOK in full, the seven floors taught as a university textbook" },                     // DRAFT (C-276)
 };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;

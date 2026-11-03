@@ -64,6 +64,8 @@ export const SCHOOL: SchoolData = require("../server/data/school.json");
 
 export const letterOf = (m: number) => SCHOOL.grades.find((g) => m >= g.from)?.letter ?? "";
 export const GUIDE_COVER = require("../server/data/art/guide_cover.png");
+// C-276: PRINCIPLES OF MIND's cover (DAEMONS docs/DAEMONS-textbook.pdf, its first page), CALLOW SCHOOL's face on the shelf
+export const TEXTBOOK_COVER = require("../server/data/art/textbook_cover.png");
 
 // the GUIDE's own sixteen colours (DAEMONS tools/genguide.py): charcoal boards and pages, near-white ink, one cyan -- the
 // book looks like itself in either theme, as it does in the game

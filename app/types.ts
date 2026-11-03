@@ -30,7 +30,8 @@ export type Life = { mood: number; word: string; fed: { today: number; due: numb
               level: number | null; grown: { exp: number; level: number } | null;
               expression?: import("../server/src/expressions").Drawn;
               thrive?: import("../server/src/thrive").Thrive;   // C-207
-              care?: import("../server/src/care").Care };       // C-266: rest, hunger, thirst, weight, companionship
+              care?: import("../server/src/care").Care;
+              sleptAt?: string };   // C-284: put to bed and not woken since       // C-266: rest, hunger, thirst, weight, companionship
 
 // C-66, C-65: the daemon's voice on the phone. Its answer (and an INDEX entry read aloud) comes back as mp3 in base64 --
 // through the relay too, which carries only JSON -- so it is written to the cache and played from there.

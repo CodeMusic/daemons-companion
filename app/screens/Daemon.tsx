@@ -23,7 +23,8 @@ import { useApi } from "../useApi";
 import { heardSync } from "../received";              // C-261
 import type { Arrival } from "../../server/src/core";
 import type { Care } from "../../server/src/care";   // C-266
-import { pretendLife, useDev } from "../game/dev";   // C-269: as </> sets its mood and care (C-275: in the </> tab)
+import { pretendLife, useDev } from "../game/dev";
+import NIGHT from "../modules/daemons-night";                       // C-284: the phone's own night   // C-269: as </> sets its mood and care (C-275: in the </> tab)
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)
@@ -73,7 +74,14 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       }
       catch { /* quiet is fine */ }
     }
-    try { const r = await api<Life & { said?: string; under?: string }>(`/api/daemon/${what}`, {}); setL(r); if (r.said) setSaid(r.said); setUnder(r.under ?? ""); }   // its answer corrects the counts; C-196: its own line
+    // C-284: woken after a night in bed -- how often the phone was picked up meanwhile, from iOS's motion record (C-283)
+    const slept = what !== "sleep" ? l.sleptAt : undefined;
+    const stirs = slept && NIGHT ? await NIGHT.stirs(Date.parse(slept) / 1000, Date.now() / 1000).catch(() => null) : null;
+    try {
+      const r = await api<Life & { said?: string; under?: string; dream?: { text: string } }>(`/api/daemon/${what}`, typeof stirs === "number" ? { stirs } : {});
+      setL(r); if (r.said) setSaid(r.said); setUnder(r.under ?? "");   // its answer corrects the counts; C-196: its own line
+      if (r.dream) setSaid(r.dream.text);                 // C-283: the night's dream (the talk AI's telling follows, in DREAMS)
+    }
     catch (e) {                                            // out of reach, api() has kept it (C-62) -- once: the widget's
       if (!/^Kept on this phone/.test((e as Error).message))   // queue would send it again (the review, 2026-10-18); refused,
         api<Life>("/api/daemon/life").then(setL).catch(() => {});   // the companion's own counts replace the presumed ones

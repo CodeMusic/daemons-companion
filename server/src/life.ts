@@ -38,6 +38,7 @@ export type Life = {
   quietDays: number;                  // whole days with nothing at all, before today
   cue: string | null;                 // at most one quiet line, during a meal time
   care: Care;                         // C-266: rest, hunger, thirst, weight, companionship -- over days, not today
+  sleptAt?: string;                   // C-284: put to bed and not woken since -- when, so the phone can count its night's stirs
 };
 
 export function life(events: Interaction[], now = new Date()): Life {
@@ -93,5 +94,6 @@ export function life(events: Interaction[], now = new Date()): Life {
 
   const word = tired === "asleep" ? "asleep" : tired === "drowsy" ? "sleepy"
     : mood >= 88 ? "happy" : mood >= 72 ? "content" : mood >= 55 ? "calm" : "a little low";
-  return { mood, word, fed: { today: fed, due }, watered: { today: watered, due }, trained, tired, rested, quietDays, cue, care: c };
+  return { mood, word, fed: { today: fed, due }, watered: { today: watered, due }, trained, tired, rested, quietDays, cue, care: c,
+           ...(lastSleep && !woken ? { sleptAt: lastSleep.at } : {}) };
 }

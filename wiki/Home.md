@@ -19,6 +19,7 @@ ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER 
 a glossary.
 
 **Why the name? [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf)** (19 pages) tells how the Greek *daimon* branched, and why it is said *DAY-mons*.
+**From CALLOW SCHOOL: [PRINCIPLES OF MIND](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-textbook.pdf)** (82 pages), its TEXTBOOK written out as a university textbook -- seven floors, Language to Error, each taught from the research.
 
 ## The happy path: a daemon on your phone
 
@@ -79,6 +80,7 @@ too, and TestFlight hands one build to all three. In testing for now -- [The one
   game, for the player who holds it.
 - [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf) -- where the word daemon came from, and why it is
   said DAY-mons.
+- [PRINCIPLES OF MIND](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-textbook.pdf) -- CALLOW SCHOOL's TEXTBOOK as a university textbook, seven floors from Language to Error.
 - [docs/FIELD-GUIDE.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/FIELD-GUIDE.md) -- a walk
   through everything, with what you should see at each step.
 - [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/HARDWARE.md) -- every board's pins

@@ -33,3 +33,4 @@
 - [QUICK-START (PDF, 25 pages)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-quickstart.pdf)
 - [The player's manual (PDF)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf)
 - [THE OLD WORD (PDF, 19 pages)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf)
+- [PRINCIPLES OF MIND (PDF, 82 pages)](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-textbook.pdf)

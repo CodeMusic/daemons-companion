@@ -20,6 +20,7 @@ ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER 
 a glossary.
 
 **Why the name? [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf)** (19 pages) tells how the Greek *daimon* branched, and why it is said *DAY-mons*.
+**From CALLOW SCHOOL: [PRINCIPLES OF MIND](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-textbook.pdf)** (82 pages), its TEXTBOOK written out as a university textbook -- seven floors, Language to Error, each taught from the research.
 
 ## The happy path: your phone hosts it
 

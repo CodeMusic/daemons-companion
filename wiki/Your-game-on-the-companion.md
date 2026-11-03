@@ -90,7 +90,8 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its
   board once you have stood on it (greyed and closed until then). And **THE PAPER, TO SIT AGAIN**: the whole paper, a
   question at a time, marked here with the letter and every miss shown with its answer. **It is practice: your save is
-  never written.**
+  never written.** Under the seventh board, **FULL TEXTBOOK** opens **PRINCIPLES OF MIND**, the TEXTBOOK written out
+  as a university textbook (C-276), and the shelf's CALLOW SCHOOL wears its cover.
 - **THE GUIDE** -- only once your save has found it. Its 8-bit cover (its title and author set in the app's own type --
   the art carries none of the game's lettering, which is Nintendo's), CONTENTS by part, and each chapter on the book's
   own dark page, with BACK, CONTENTS and NEXT; its last chapter ends on READ, the link its QR code opens. **ASK THE

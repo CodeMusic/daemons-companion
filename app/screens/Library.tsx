@@ -18,6 +18,7 @@ import { ReadAloud } from "../readAloud";   // C-208
 import { SubtleBook, type SubtleT } from "./Subtle";
 import { HermeticBook, type HermeticT } from "./Hermetic";   // C-238
 import { ManualBook, manualAbout } from "./Manual";   // C-233
+import { Listen } from "../bookAudio";   // C-277
 
 // T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
 // GBA's black, its 224-pixel windows centred in 240 by 160 -- the game's own words, the player's name and the best mark
@@ -431,6 +432,7 @@ export function GuideBook({ g }: { g: GuideBookT }) {
                resizeMode="stretch" accessibilityLabel={g.title ?? "the GUIDE"} />
         <CoverTitle title={g.title ?? ""} author={g.author ?? ""} />
       </YStack>
+      <Listen which="guide" />
       <AskGuide />
       <YStack backgroundColor={BOOK.page} borderColor={BOOK.edge} borderWidth={1} borderRadius={4} padding={16} gap={4}>
         <Text {...mono} fontSize={12} color={BOOK.cyan}>CONTENTS</Text>
@@ -468,6 +470,7 @@ export function SchoolScreen() {
     <YStack gap={14}>
       <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
             onPress={() => setFull(false)}>‹ CALLOW SCHOOL</Text>
+      <Listen which="textbook" />
       <ManualBook which="textbook" />
     </YStack>
   );

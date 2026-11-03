@@ -13,6 +13,7 @@ import { previewing } from "../preview";
 import { Art, Small } from "../ui";
 import { ReadAloud } from "../readAloud";   // C-208
 import { Cards } from "./Arcana";   // C-239; C-273: ?deck=hermetic, ABOVE and BELOW
+import { Listen } from "../bookAudio";   // C-277: its recording, opened with the key its warning gives
 
 type Para = { text: string; voice: "telling" | "asking" | "inscription" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
@@ -91,6 +92,7 @@ export function HermeticBook({ b }: { b: HermeticT }) {
         <Text allowFontScaling={false} position="absolute" top={60} left={0} right={0} textAlign="center" fontSize={12} fontStyle="italic" color={C.ink}>{b.subtitle ?? ""}</Text>
         <Text allowFontScaling={false} position="absolute" bottom={92} left={16} right={16} textAlign="center" {...mono} fontSize={11} color={C.ink}>AS ABOVE, SO BELOW</Text>
       </YStack>
+      <Listen which="hermetic" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} />
       <Cards book="hermetic" />
       <YStack backgroundColor={breath.page} borderColor={EMERALD.hue} borderWidth={1} borderRadius={4} padding={16} gap={4}>
         <Text {...mono} fontSize={12} color={EMERALD.lit}>CONTENTS</Text>

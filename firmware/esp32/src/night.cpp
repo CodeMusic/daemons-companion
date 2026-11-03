@@ -111,10 +111,40 @@ static void end(long at) {
   report("night", d);
   if (st.carrying) { showDream(dreamOf(hours, stirs), false); soundWake(); }
 }
-void nightTuck() { long t = epochNow(); if (t && !on) { start(t, true); intuitionMoment(READ_NIGHT); } }   // CARE, SLEEP; C-203: perhaps a read of the night
+void nightTuck() {                                                       // CARE, SLEEP; C-203: perhaps a read of the night
+  long t = epochNow();
+  if (t && !on) { start(t, true); intuitionMoment(READ_NIGHT); if (nightQuiet()) sleepNow(); }   // C-285: and the screen dark at once
+}
 void nightWake() { long t = epochNow(); if (t) end(t); }                  // CARE, WAKE
 
+// ---- C-285 (the user, 2026-11-03, by multiple choice: GPS, Wi-Fi and the screen off -- "but one tap should show the
+// screen so u see the time and daemon, with the word tap to wake -- after a few seconds it goes back to black and sleep
+// continues if u didnt tap"): the Ultra with its daemon tucked in keeps only what counts the night (the motion sensor,
+// the clock). gps.cpp and net.cpp ask nightQuiet(); the screen sleeps without its always-on face. Asleep, a tap (or a
+// double tap on the wrist) lights the GLANCE -- the face, its time and the daemon, dim, and TAP TO WAKE -- for six
+// seconds; a second tap in them wakes the daemon and the night ends; otherwise it goes dark and the night goes on. The
+// wrist raised or shaken does nothing while it sleeps. WAKE, the first three minutes on the move, or sixteen hours end it.
+static uint32_t glanceUntil = 0;
+bool nightQuiet() { return on && tucked && board.kind == BoardKind::TWatchUltra; }
+static void glanceShow() {
+  panelRest(false);
+  screen = HOME; menuOpen = false; page = homePage();
+  draw();
+  canvas.setTextFont(2); canvas.setTextColor(QUIET); canvas.setTextDatum(BC_DATUM);
+  canvas.drawString("TAP TO WAKE", W / 2, H - 14);                                 // DRAFT
+  canvas.setTextDatum(TL_DATUM);
+  present(); backlightDim();
+}
+static void glanceHide() { canvas.fillSprite(TFT_BLACK); present(); backlight(false); panelRest(true); }
+bool nightTap() {                                          // a tap while the watch sleeps: true, taken
+  if (!asleep || !nightQuiet()) return false;
+  if (glanceUntil && (int32_t)(glanceUntil - millis()) > 0) { glanceUntil = 0; nightWake(); wake(); return true; }
+  glanceUntil = millis() + 6000; glanceShow();
+  return true;
+}
+
 void nightLoop(uint32_t now) {
+  if (glanceUntil && (int32_t)(glanceUntil - now) <= 0) { glanceUntil = 0; if (asleep) glanceHide(); }   // C-285: back to black
   static uint32_t at = 0;
   if (now - at < 5000) return;
   at = now;

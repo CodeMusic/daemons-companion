@@ -120,6 +120,8 @@ long gpsMetresToday();                                     // C-174: walked toda
 String stepsWords(long steps);                             // "1234 STEPS", and the distance beside them where there is one
 void nightBegin(); void nightLoop(uint32_t now); void nightTuck(); void nightWake();
 void nightFromState(JsonVariantConst d); String nightStatus();
+bool nightQuiet();                       // C-285: the Ultra's daemon tucked in -- GPS, Wi-Fi and the always-on face off
+bool nightTap();                         // C-285: a tap asleep -- the glance, then (tapped again) awake; true, taken
 bool dreamShowing(); void dreamDismiss(); void drawDream(uint16_t day);       // play.cpp: an instrument forced for testing (and PLAY open), or "default"
 bool dreamTap(int x, int y);
 bool dreamWaiting(); bool dreamAgain();

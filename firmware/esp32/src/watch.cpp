@@ -555,7 +555,7 @@ static void touchLoop(uint32_t now) {
   if (!down) return;
   down = false;
   if (talking) { talking = false; dirty = true; return; }      // let go of TALK: C-66 sends what was heard
-  if (asleep) return;                                          // only the crown wakes the watch (C-79)
+  if (asleep) { nightTap(); return; }                          // only the crown wakes the watch (C-79) -- C-285: or, its daemon asleep, the glance
   int dx = xNow - xFrom, dy = yNow - yFrom;
   // swipe left: the next page, as the dial turned right -- on the watch the other way round (the user, 2026-10-18:
   // "reverse the swipe tab order -- right to left swipe shows settings but the should be the left to right swipe")
@@ -617,11 +617,15 @@ static void crownLoop(uint32_t now) {
 // C-201: what the motion sensor noticed -- the wrist lifted wakes the screen; a shake wakes the daemon (or, awake, it
 // hops: glad of it); a double tap opens CARE; and the daemon answers a change in how you move (once a minute at most)
 static void motionLoop(uint32_t now) {
-  if (motionTakeRaise() && asleep) wake();
-  if (!casinoAtTable() && motionTakeShake()) {           // at the reels a shake pulls the lever (casino.cpp)
+  bool quiet = asleep && nightQuiet();                    // C-285: its daemon asleep -- a turn in bed wakes nothing
+  if (motionTakeRaise() && asleep && !quiet) wake();
+  if (!casinoAtTable() && motionTakeShake() && !quiet) {  // at the reels a shake pulls the lever (casino.cpp)
     if (asleep) wake(); else { hopUntil = now + 480; lastInput = now; dirty = true; }
   }
-  if (motionTakeDoubleTap() && st.carrying) { wake(); lastInput = now; if (witchingNow()) openAsAbove(); else openCareGrid(); }   // C-237
+  if (motionTakeDoubleTap() && st.carrying) {
+    if (quiet) nightTap();                                 // C-285: the glance, as a tap on the glass
+    else { wake(); lastInput = now; if (witchingNow()) openAsAbove(); else openCareGrid(); }   // C-237
+  }
   MotionKind k; static uint32_t saidAt = 0;
   if (motionTakeKindChange(k)) {
     if (k == M_WALKING || k == M_RUNNING) intuitionMoment(READ_WALK);   // C-203: a walk begun -- perhaps a read of the way

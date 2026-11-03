@@ -166,6 +166,10 @@ void netsRevSeen(long rev) { if (rev >= 0 && rev != netsRevHave) netsDue = true;
 // Join the strongest known network in range: a scan in the background, then WiFi.begin.
 uint32_t wifiTriedAt = 0; bool wifiScanning = false;
 void uplinkLoop(uint32_t now) {
+  if (nightQuiet()) {                                        // C-285: Wi-Fi off while its daemon sleeps; what it tells waits (the outbox)
+    if (WiFi.getMode() != WIFI_OFF) { WiFi.disconnect(true); WiFi.mode(WIFI_OFF); wifiScanning = false; wifiTriedAt = 0; }
+    return;
+  }
   if (!wifiSet() || WiFi.status() == WL_CONNECTED) return;
   if (!wifiScanning) {
     if (wifiTriedAt && now - wifiTriedAt < 20000) return;   // give a join time before looking again

@@ -23,7 +23,7 @@ bool powerMoving() {
   return movedAt && millis() - movedAt < powerStillMs();
 }
 uint32_t powerStillMs() { return (uint32_t)constrain(cfg.power.stillMinutes, 1, 60) * 60000UL; }
-bool powerGps() { return cfg.power.gps && !cfg.power.low; }
+bool powerGps() { return cfg.power.gps && !cfg.power.low && !nightQuiet(); }   // C-285: none while it sleeps
 bool powerGpsPolls() { return !cfg.power.gpsOnMove; }
 bool powerLora() { return cfg.power.lora && !cfg.power.low && (!cfg.power.radiosOnMove || powerMoving()); }
 bool powerMeet() { return cfg.meet && cfg.power.meet && !cfg.power.low && (!cfg.power.radiosOnMove || powerMoving()); }
@@ -34,7 +34,7 @@ int powerSleepAfter() {
 }
 uint8_t powerBright() { return cfg.power.low ? 70 : 200; }
 // only the Ultra's AMOLED: a dark pixel there is an unlit one, so a dim face asleep costs little (the S3's LCD lights all)
-bool powerAod() { return board.kind == BoardKind::TWatchUltra && cfg.power.aod && !cfg.power.low; }
+bool powerAod() { return board.kind == BoardKind::TWatchUltra && cfg.power.aod && !cfg.power.low && !nightQuiet(); }   // C-285: dark while it sleeps
 
 // C-255: a watch asleep needs little of the chip -- 80 MHz keeps Wi-Fi, Bluetooth, LoRa and the sound (the bus clock
 // stays 80 MHz), and the loop rests 20 ms a pass rather than 1. Only the watches: an M5 on its IP5306 reads a light load

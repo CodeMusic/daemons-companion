@@ -56,7 +56,7 @@ export async function unseal(zip: Uint8Array, key: string, rest: () => Promise<v
       step(b);
       if (i === 11 && b !== sum >>> 24 && b !== time >>> 8) throw new Error("wrong key");
       if (i >= 12) { plain[i - 12] = b; check = crc(check, b); }
-      if ((i & 0x3ffff) === 0x3ffff) await rest();
+      if ((i & 0xfffff) === 0xfffff) await rest();   // every megabyte
     }
     if (((check ^ 0xffffffff) >>> 0) !== sum) throw new Error(`${name} did not open whole.`);
     out[name] = plain;

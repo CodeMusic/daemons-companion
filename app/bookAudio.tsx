@@ -1,10 +1,10 @@
 // C-277 (the user, 2026-11-03: "for any book we have recorings we should link to the (git audio ideally for storage
 // reasons) and be able to listen to the book. inside would be an option to play it, along with a similar share button so
 // u could sent it or save it to files"): LISTEN inside each book that has a recording -- DAEMONS' MP3s (docs/books/audio,
-// made by tools/bookaudio.py, T-518, each book in its own voice), streamed from DAEMONS on GitHub as published; nothing
-// of them is in this repository. The chapters beside each MP3 step it back and on, and where it was left is kept. SHARE
-// keeps the book in the app's documents (audio/) and hands it on, to Files or anyone, as the manuals' PDFs are
-// (manual.ts); on the site, a tab. THE HERMETIC LAYER's recording is sealed in DAEMONS: once the book is held, the device
+// made by tools/bookaudio.py, T-518, each book in its own voice), from DAEMONS on GitHub as published; nothing of them
+// is in this repository. The phone fetches a book once and keeps it in the app's documents (audio/), so it plays with no
+// signal; the site streams it. The chapters beside each MP3 step it back and on, and where it was left is kept. SHARE
+// hands the kept book on, to Files or anyone, as the manuals' PDFs are (manual.ts); on the site, a tab. THE HERMETIC LAYER's recording is sealed in DAEMONS: once the book is held, the device
 // opens it with the key the book's own warning gives (sealed.ts) and keeps it (the user, by multiple choice: "Unseal it
 // on the device"). Every word DRAFT.
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
@@ -63,32 +63,35 @@ async function fetched(url: string): Promise<Uint8Array> {
   return new Uint8Array(await r.arrayBuffer());
 }
 
-// a book as it can be heard: kept, else streamed from DAEMONS -- or, sealed, opened here and kept
-async function heard(w: Recorded, key: string | null, keep = false): Promise<Heard> {
+// a book as it can be heard: kept, else fetched once (the phone) or streamed (the site) from DAEMONS -- or, sealed,
+// opened here. The phone keeps every one first: GitHub sends a large MP3 as application/octet-stream, nosniff, which a
+// phone's player need not stream, and a kept one plays with no signal and is the one SHARE hands on.
+async function heard(w: Recorded, key: string | null, say: (what: string) => void = () => {}): Promise<Heard> {
   const had = kept(w);
-  if (had && (had.kept || !keep || !ON_PHONE)) return had;
+  if (had) return had;
   const B = BOOKS[w];
-  let marks: Marks, bytes: Uint8Array | null = null;
   if (B.sealed) {
     if (!key) throw new Error("The book's warning names no one, so its recording will not open.");   // DRAFT
     const files = await unseal(await fetched(`${AUDIO}${B.file}.zip`), key, () => new Promise((go) => setTimeout(go, 0)));
     if (!files["sealed.mp3"] || !files["sealed.chapters.json"]) throw new Error("The sealed recording is not all there.");   // DRAFT
-    bytes = files["sealed.mp3"];
-    marks = JSON.parse(new TextDecoder().decode(files["sealed.chapters.json"]));
-  } else {
-    marks = JSON.parse(new TextDecoder().decode(await fetched(`${AUDIO}${B.file}.chapters.json`)));
-    if (keep && ON_PHONE) bytes = await fetched(`${AUDIO}${B.file}.mp3`);
+    const m: Marks = JSON.parse(new TextDecoder().decode(files["sealed.chapters.json"]));
+    const marks = { duration: m.duration, chapters: m.chapters };
+    if (ON_PHONE) {
+      put(mp3File(w), files["sealed.mp3"]);
+      put(marksFile(w), JSON.stringify(marks));
+      return { ...marks, uri: mp3File(w).uri, kept: true };
+    }
+    return (shown[w] = { ...marks, uri: URL.createObjectURL(new Blob([files["sealed.mp3"] as BlobPart], { type: "audio/mpeg" })), kept: false });
   }
-  marks = { duration: marks.duration, chapters: marks.chapters };
-  if (ON_PHONE && bytes) {
-    put(mp3File(w), bytes);
-    put(marksFile(w), JSON.stringify(marks));
-    return { ...marks, uri: mp3File(w).uri, kept: true };
-  }
-  const uri = bytes ? URL.createObjectURL(new Blob([bytes as BlobPart], { type: "audio/mpeg" })) : `${AUDIO}${B.file}.mp3`;
-  const h = { ...marks, uri, kept: false };
-  if (!ON_PHONE) shown[w] = h;
-  return h;
+  const m: Marks = JSON.parse(new TextDecoder().decode(await fetched(`${AUDIO}${B.file}.chapters.json`)));
+  const marks = { duration: m.duration, chapters: m.chapters };
+  if (!ON_PHONE) return (shown[w] = { ...marks, uri: `${AUDIO}${B.file}.mp3`, kept: false });
+  if (!audioDir().exists) audioDir().create();
+  await File.downloadFileAsync(`${AUDIO}${B.file}.mp3`, mp3File(w), { idempotent: true, onProgress: ({ bytesWritten, totalBytes }) => {
+    if (totalBytes > 0) say(`Fetching it from DAEMONS, once… ${Math.round((100 * bytesWritten) / totalBytes)}%`);   // DRAFT
+  } });
+  put(marksFile(w), JSON.stringify(marks));   // last, so a fetch cut short is fetched again
+  return { ...marks, uri: mp3File(w).uri, kept: true };
 }
 
 const clock = (s: number) => {
@@ -131,7 +134,7 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
     setError("");
     try {
       let got = h;
-      if (!got) { setBusy(B.sealed ? "Opening it…" : "Finding it…"); got = await heard(which, key); setH(got); }   // DRAFT
+      if (!got) { setBusy(B.sealed ? "Opening it…" : ON_PHONE ? "Fetching it from DAEMONS, once…" : "Finding it…"); got = await heard(which, key, setBusy); setH(got); }   // DRAFT
       if (loaded.current !== got.uri) {
         await setAudioModeAsync({ playsInSilentMode: true });
         player.replace({ uri: got.uri });
@@ -149,7 +152,7 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
     setError("");
     try {
       let got = h;
-      if (!got?.kept) { setBusy(B.sealed ? "Opening it…" : "Keeping it on this device…"); got = await heard(which, key, true); setH(got); }   // DRAFT
+      if (!got) { setBusy(B.sealed ? "Opening it…" : "Fetching it from DAEMONS, once…"); got = await heard(which, key, setBusy); setH(got); }   // DRAFT
       await Sharing.shareAsync(got.uri, { UTI: "public.mp3", mimeType: "audio/mpeg", dialogTitle: B.title });
     } catch (e) { setError((e as Error).message); } finally { setBusy(null); }
   };

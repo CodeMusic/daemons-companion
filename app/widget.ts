@@ -75,7 +75,7 @@ export async function drawAlone(local: (path: string) => Promise<Reply>) {
   const snap = d ? { carries: true, name: d.nickname || d.name, level: d.level, word: d.life.word, fed: d.life.fed.today,
                      watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired, cue: d.life.cue ?? undefined,
                      png: art?.status === 200 ? art.body.png : undefined, artKey: `${d.artKey}/${look}`, den: d.den,   // C-113: its den
-                     expr: d.expression }                                                       // C-119: its expression
+                     expr: d.expression, rest: d.life.care?.rest }                              // C-119: its expression; C-279: its sleep
                  : { carries: false, name: "", level: 0, word: "", fed: 0, watered: 0, trained: false, tired: "awake" };
   shared.set("aloneSnapshot", JSON.stringify({ ...snap, at: Date.now() / 1000 - SINCE_2001 }));
   ExtensionStorage.reloadWidget();

@@ -37,6 +37,7 @@ struct Snapshot: Codable {
   var sound: Bool? = nil            // C-160: this phone's own SOUND (PLACES, ITS SETTINGS): false is silent
   var volume: Int? = nil            //        and how loud, 0..100 as the boards have it (60 unless set)
   var edition: String? = nil        // T-425: the save's -- its instrument, the harp (CONTENT) or the flute (CONTEXT)
+  var rest: Int? = nil              // C-279: how well it has slept, 0..100 (C-266's care.rest), for the moon
 }
 
 // The day's life, as GET /api/daemon/life and POST /api/daemon/<care> answer (server/src/life.ts)
@@ -44,6 +45,8 @@ struct Life: Decodable {
   struct Count: Decodable { let today: Int; let due: Int }
   let word: String; let fed: Count; let watered: Count; let trained: Bool; let tired: String; let cue: String?
   let level: Int?
+  struct Care: Decodable { let rest: Int }   // C-279: the rest of C-266's care is not drawn here
+  let care: Care?
 }
 // The part of GET /api/device/state the widget draws
 struct DeviceState: Decodable {
@@ -168,7 +171,7 @@ enum Companion {
       let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
                        cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date(),
-                       sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition)
+                       sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition, rest: d.life.care?.rest)
       Shared.snapshot = s
       return s
     } catch {

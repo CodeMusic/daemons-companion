@@ -108,8 +108,8 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
         <XStack marginTop={6}><CareKey label="Wake" lit onPress={() => care("wake", "Awake.")} ink={ink} /></XStack>
       ) : (
         <XStack gap={8} marginTop={6}>
-          <CareKey label="Drink" onPress={() => care("water", "Drank.")} ink={ink} />{/* C-117: the boards' order */}
-          <CareKey label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />
+          <CareKey label="Feed" onPress={() => care("feed", "Eaten.")} ink={ink} />{/* C-279: feed, drink, train, sleep */}
+          <CareKey label="Drink" onPress={() => care("water", "Drank.")} ink={ink} />
           <CareKey label="Train" onPress={() => care("train", "Trained.")} ink={ink} />
           <CareKey label="Sleep" lit={l.tired === "drowsy"} onPress={() => care("sleep", "Asleep.")} ink={ink} />
         </XStack>

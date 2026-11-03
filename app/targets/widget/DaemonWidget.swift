@@ -153,7 +153,8 @@ enum Mark {
   }
 }
 
-// C-113: the day as pips -- three meals, three drinks, one training.
+// C-113: the day as pips -- three meals, three drinks, one training; C-279: and a moon, as well as it has slept (C-266's
+// rest: full and starred rested, full tired, an outline worn out; none before the companion says)
 struct Pips: View {
   let s: Snapshot
   let glow: Color
@@ -163,6 +164,11 @@ struct Pips: View {
       row("fork.knife", s.fed, 3)
       row("drop.fill", s.watered, 3)
       row("figure.strengthtraining.traditional", s.trained ? 1 : 0, 1)
+      if let r = s.rest {
+        Image(systemName: r >= 70 ? "moon.stars.fill" : r >= 40 ? "moon.fill" : "moon")
+          .font(.system(size: size * 1.5, weight: .semibold)).foregroundStyle(r >= 40 ? glow : SOFT)
+          .accessibilityLabel(r >= 70 ? "rested" : r >= 40 ? "tired" : "worn out")
+      }
     }
   }
   func row(_ symbol: String, _ done: Int, _ of: Int) -> some View {
@@ -222,11 +228,11 @@ struct Buttons: View {
   var body: some View {
     let den = s.den ?? PLAIN, hop = entry?.hop ?? false
     HStack(spacing: 6 * k) {
-      // C-117: the boards' order -- A drink, B feed, C train (then SLEEP)
-      CareButton(intent: WaterIntent(), label: "Drink", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k,
-                 pressed: pressed("water"), hop: hop && pressed("water"))
+      // C-279 (the user, 2026-11-03): feed, drink, train, sleep -- the pips' order, and the app's
       CareButton(intent: FeedIntent(), label: "Feed", symbol: "fork.knife", compact: compact, den: den, done: s.fed >= 3, k: k,
                  pressed: pressed("feed"), hop: hop && pressed("feed"))
+      CareButton(intent: WaterIntent(), label: "Drink", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k,
+                 pressed: pressed("water"), hop: hop && pressed("water"))
       CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den,
                  done: s.trained, k: k, pressed: pressed("train"), hop: hop && pressed("train"))
       CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: s.tired == "asleep", k: k,

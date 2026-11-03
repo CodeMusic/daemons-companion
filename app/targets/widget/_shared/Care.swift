@@ -38,6 +38,7 @@ func care(_ kind: CareKind) async {
     if var now = Shared.snapshot {                   // a second press may have landed meanwhile: correct the counts only
       now.word = l.word; now.fed = l.fed.today; now.watered = l.watered.today; now.trained = l.trained; now.tired = l.tired
       now.cue = l.cue
+      if let r = l.care?.rest { now.rest = r }       // C-279
       if let lv = l.level { now.level = lv }
       Shared.snapshot = now
     }

@@ -54,14 +54,16 @@ export type Turn = { said: string; answer: string };
 // One answer: the self as the system message, the turns before, then what was said. Throws on any failure, so the
 // caller takes the talk elsewhere (the module, then n8n).
 export async function tiinyChat(at: TiinyAt, model: string, system: string, history: Turn[], said: string,
-                                f: typeof fetch = fetch, ms = 30_000): Promise<string> {
+                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220): Promise<string> {
   if (!model) throw new Error("no model chosen");
   const messages = [{ role: "system", content: system },
                     ...history.slice(-6).flatMap((t) => [{ role: "user", content: t.said }, { role: "assistant", content: t.answer }]),
                     { role: "user", content: said.slice(0, 1000) }];
   return timed(ms, async (signal) => {
     const r = await f(`${at.url}/chat/completions`, { method: "POST", headers: headers(at), signal,
-      body: JSON.stringify({ model, messages, max_tokens: 220, temperature: 0.8 }) });
+      // thinking off: Qwen3.6 otherwise spends every token reasoning and says nothing (2026-11-03: 220 tokens of
+      // reasoning_content, content ""); off, it answered in 3-4 s. Read at the top level by the Tiiny, through LiteLLM.
+      body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature: 0.8, chat_template_kwargs: { enable_thinking: false } }) });
     if (!r.ok) throw new Error(`the Tiiny answered ${r.status}`);
     const j = await r.json();
     // a thinking model's reasoning is left out: only what it says

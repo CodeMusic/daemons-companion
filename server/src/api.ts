@@ -59,6 +59,7 @@ import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
 import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { voiceRecipe } from "./ai/voices.js";   // C-251
+import { INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { bondTrend, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { dayOf as dayBefore, dreamAsk, dreamsOf, rewriteDream } from "./dreams.js";   // C-200; C-283: the day, the journal
@@ -666,6 +667,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     load: (url) => { try { return JSON.parse(store.getSetting(`module.minds.${url}`) ?? "[]"); } catch { return []; } },
     save: (url, held) => store.setSetting(`module.minds.${url}`, JSON.stringify(held)),
   });
+  // C-249: a Tiiny set up and answering takes the house's AI work first (talk, write-ups, hearing, voices); the boards after
+  const tiinyNow = () => {
+    const at = tiinyIn((k) => store.getSetting(k));
+    if (!at || !TALK_HEALTH.tiiny?.ok) return null;
+    return { at, model: pickThinker(at, TALK_HEALTH.tiiny.models) };
+  };
+  preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE);
   // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
   setMeetTalker(async (me, other, heard) => {
     if (!house.any) return null;
@@ -1333,7 +1341,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // fails goes to n8n, and when n8n cannot be reached either (no internet) the module is waited on after all
       const talkOn = async (p: ReturnType<typeof talkPayload>): Promise<Record<string, unknown>> => {
         const asked = (p as { guide?: unknown }).guide;           // C-209: the GUIDE is answered on the hub's module only (n8n knows the daemon)
-        if (asked && (p.provider !== "module" || !house.any)) return { error: "Asking the GUIDE needs the hub." };   // DRAFT
+        if (asked && ((p.provider !== "module" && p.provider !== "tiiny") || !house.any)) return { error: "Asking the GUIDE needs the hub." };   // DRAFT
         const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
           daemon: p.daemon, day: p.day, season: p.season, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide,
@@ -1357,8 +1365,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                        ...(v ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: v.mime } : {}) };
             }
           } catch { /* the Tiiny away or failing: the module, then n8n, as below */ }
-          p = { ...p, provider: house.any ? "module" : "auto" };
         }
+        // the Tiiny chosen: what it did not answer above (a book asked, or it failed) goes through the House -- the Tiiny
+        // first there too (preferTiiny), then the boards -- and n8n after
+        if (p.provider === "tiiny") p = { ...p, provider: house.any ? "module" : "auto" };
         if (p.provider !== "module" || !house.any) {              // n8n first -- and, C-211, the module when n8n cannot answer
           const r = await n8n(ecfg, "daemon/talk", p.provider === "module" ? { ...p, provider: "auto" } : p);
           if (!r.error || !house.any || asked) return r;
@@ -1382,7 +1392,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         catch { return null; }
       };
       const readAloud = async (text: string): Promise<Record<string, unknown>> => {
-        if (indexVoice() === "module") return (await fromModule(text)) ?? n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });
+        if (indexVoice() === "module" || tiinyNow()?.at.tts) return (await fromModule(text)) ?? n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });   // C-249: the Tiiny's voice first
         const r = await n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });
         return r.error || !r.audioBase64 ? (await fromModule(text)) ?? r : r;
       };

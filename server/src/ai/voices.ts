@@ -54,6 +54,6 @@ export function voiceRecipe(d: VoiceOf, feelings?: Feelings | null, own?: string
   const types = (Array.isArray(d.types) ? d.types : String(d.types ?? "").split("/")).map((t) => t.trim().toUpperCase()).filter(Boolean);
   const base = TYPE_VOICE[types[0]] ?? DEFAULT_VOICE;
   const second = types[1] && TYPE_VOICE[types[1]] ? `, with a touch of ${TYPE_VOICE[types[1]].replace(/^an? /, "").split(",")[0]}` : "";
-  const cat = d.category ? ` It is a ${d.category.toLowerCase()} creature.` : "";
+  const c = d.category?.toLowerCase(), cat = c ? ` It is ${/^[aeiou]/.test(c) ? "an" : "a"} ${c} creature.` : "";
   return `${base}${second}.${cat} Not a human adult: a small living creature.${mood ? " " + mood : ""}`;
 }

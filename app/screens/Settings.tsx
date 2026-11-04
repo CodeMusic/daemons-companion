@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { BUILD } from "../data";
 import { LOOK, Look, setLook } from "../look";
-import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER } from "../net";
+import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER, SITE_HOME } from "../net";
 import { Settings } from "../types";
 import { Action, Card, Choice, Eyebrow, Small } from "../ui";
 import { useApi } from "../useApi";
@@ -12,10 +12,17 @@ import { SavesCard } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../game/away";
 import { DevModeCard } from "../devpanel";
 import { PhoneMindCard } from "./PhoneMind";   // C-280
+import { HomeAssistantCard } from "./Home";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
-  return ALONE ? <AloneSettings ink={ink} /> : <SavePathSettings ink={ink} />;
+  return (
+    <>
+      {ALONE ? <AloneSettings ink={ink} /> : <SavePathSettings ink={ink} />}
+      {/* C-287: the site at home's own cards -- PAIR A PHONE, the relay, HOME ASSISTANT (they were added in App.tsx) */}
+      {SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
+    </>
+  );
 }
 
 // C-111 (DRAFT): a phone hosting on its own keeps a copy of the save Delta shared; it takes a newer one, and gives it back

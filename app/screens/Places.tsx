@@ -11,6 +11,9 @@ import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../types";
 import { Action, Art, Card, Choice, Eyebrow, Result, Small } from "../ui";
 import { useApi } from "../useApi";
 import { HubCard, TalkFirstRow } from "./Hub";   // C-190; C-211
+import { GlassCard } from "./Glass";   // C-262
+import { HomeScreen } from "./Home";
+import { TvCard } from "./Tv";
 // a shared setting's row (a component of its own, so a redraw never builds the rows again)
 const Row = (p: { label: string; children: React.ReactNode }) =>
   <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
@@ -347,6 +350,11 @@ const lastUsed = (a: DeviceRow, b: DeviceRow) => Number(b.here) - Number(a.here)
 function grouped(ds: DeviceRow[], order: Order): { maker: string | null; ds: DeviceRow[] }[] {
   if (order === "maker") return MAKERS.map((maker) => ({ maker, ds: ds.filter((d) => makerOf(d.kind) === maker).sort(lastUsed) })).filter((g) => g.ds.length);
   return [{ maker: null, ds: [...ds].sort(order === "name" ? (a, b) => nameOf(a).localeCompare(nameOf(b)) || lastUsed(a, b) : lastUsed) }];
+}
+
+// C-287: the PLACES tab -- the devices, the glass, the home and the TV, as one page (it was put together in App.tsx)
+export function PlacesScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
+  return <YStack gap={14}><DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={goSettings} /><TvCard ink={ink} goSettings={goSettings} /></YStack>;
 }
 
 export function DeviceScreen({ ink }: { ink: string }) {

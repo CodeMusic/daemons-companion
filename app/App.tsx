@@ -5,23 +5,20 @@
 // $color8 its tints, $color10 to $color12 its shades -- so the app wears the day, as the device does.
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AppState, LayoutAnimation, Linking, PanResponder, Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import { SCREEN } from "./data";
 import { loadLook, LOOK, lookHeard, PALETTE, paletteHeard, setPalette } from "./look";
-import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, KEYED, keepEverything, KEPT, loadConnection, LOCAL, MEETING, OFFLINE, offlineHeard, ON_PHONE, onUnpaired, SERVER, setConnection, SITE_HOME, TOKEN, WIDGET } from "./net";
+import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, KEYED, keepEverything, KEPT, loadConnection, LOCAL, MEETING, OFFLINE, offlineHeard, ON_PHONE, onUnpaired, SERVER, setConnection, TOKEN, WIDGET } from "./net";
 import { DaemonScreen, useNews } from "./screens/Daemon";
 import { GoalsScreen } from "./screens/Goals";
-import { HomeAssistantCard, HomeScreen } from "./screens/Home";
-import { TvCard } from "./screens/Tv";
-import { GlassCard } from "./screens/Glass";   // C-262
 import { LibraryScreen } from "./screens/Library";
 import { PairScreen, sendTodaysSteps } from "./screens/Pair";
 import { GameView } from "./screens/Game";
 import { FoundBeside, useFound } from "./screens/Found";
-import { DeviceScreen } from "./screens/Places";
-import { PairCard, RelayCard, SettingsScreen } from "./screens/Settings";
+import { PlacesScreen } from "./screens/Places";
+import { SettingsScreen } from "./screens/Settings";
 import { TodayScreen } from "./screens/Today";
 import { ProfileScreen } from "./screens/You";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
@@ -130,6 +127,21 @@ function LogsDivider({ drag, putAway }: { drag: (dx: number, done: boolean) => v
     </YStack>
   );
 }
+
+// C-287: every tab but GAME, by name -- one page each (GAME is mounted once, outside the page's scroll: C-187). A view
+// returns null while it cannot be shown: TODAY until its data has come, </> outside DEVELOPER MODE.
+type Tab = (typeof TABS)[number];
+type TabProps = { ink: string; today: Today | null; reload: () => void; setTab: (t: Tab) => void; devOn: boolean };
+const TAB_VIEW: Record<Exclude<Tab, "game">, (p: TabProps) => React.JSX.Element | null> = {
+  today: ({ today, reload, ink, setTab }) => (today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null),
+  goals: ({ reload, ink }) => <GoalsScreen reload={reload} ink={ink} />,
+  daemon: ({ ink, setTab }) => <DaemonScreen ink={ink} goSettings={() => setTab("settings")} />,
+  places: ({ ink, setTab }) => <PlacesScreen ink={ink} goSettings={() => setTab("settings")} />,
+  you: () => <ProfileScreen />,
+  library: () => <LibraryScreen />,
+  settings: ({ ink }) => <SettingsScreen ink={ink} />,
+  dev: ({ ink, devOn }) => (devOn ? <DevScreen ink={ink} /> : null),   // C-275
+};
 
 function Shell() {
   // the page's width in points, never "100%": inside a vertical ScrollView on iOS a percentage is not resolved, and on an
@@ -311,15 +323,7 @@ function Shell() {
         {beside ? <FoundBeside {...found} /> : null}
         {tab !== "game" ? <ScrollView key={`${fresh}.${again}`} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}>
           {error ? <Stuck error={error} ink={ink} /> : null}
-          {tab === "today" && today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null}
-          {tab === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : null}
-          {tab === "daemon" ? <DaemonScreen ink={ink} goSettings={() => setTab("settings")} /> : null}
-          {tab === "places" ? <YStack gap={14}><DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={() => setTab("settings")} /><TvCard ink={ink} goSettings={() => setTab("settings")} /></YStack> : null}
-          {tab === "you" ? <ProfileScreen /> : null}
-          {tab === "library" ? <LibraryScreen /> : null}
-          {tab === "settings" ? <SettingsScreen ink={ink} /> : null}
-          {tab === "dev" && dev.on ? <DevScreen ink={ink} /> : null}{/* C-275 */}
-          {tab === "settings" && SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
+          <Fragment key={tab}>{TAB_VIEW[tab]({ ink, today, reload, setTab, devOn: dev.on })}</Fragment>
         </ScrollView> : null}
         {newsBanner}
         {showToast ? (

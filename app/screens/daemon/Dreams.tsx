@@ -32,7 +32,7 @@ export function DreamsScreen({ ink }: { ink?: string }) {
   if (!dreams) return null;
   return (
     <YStack gap={12}>
-      <Small>{"What the daemon dreamt, each night a watch kept with it.  DRAFT"}</Small>
+      <Small>{"What the daemon dreamt, each night it slept -- tucked in on the watch, the phone or the widget.  DRAFT"}</Small>
       {dreams.length ? dreams.map((d) => (
         <Card key={d.id}>
           <Eyebrow>{`${NIGHT[d.quality].toUpperCase()} · ${d.hours} HOURS${d.tucked ? " · TUCKED IN" : ""}`}</Eyebrow>

@@ -39,6 +39,7 @@ import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";
 import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js";   // C-200
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
+import { WAKES } from "./life.js";   // C-293: the cares that wake it, one list
 import { thriveOf } from "./thrive.js";   // C-207
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
@@ -289,7 +290,7 @@ export function appNight(h: Host, store: Store, deviceId: string, now: Date, sti
   if (!sleep) return null;
   const h0 = new Date(sleep.at).getHours();
   if (h0 < 18 && h0 >= 6) return null;                                       // a nap
-  if (since.some((e) => at(e) > at(sleep) && ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"].includes(e.kind))) return null;   // woken already
+  if (since.some((e) => at(e) > at(sleep) && WAKES.includes(e.kind))) return null;   // woken already
   if (dreamsOf(store).some((d) => Date.parse(d.to) > at(sleep))) return null;    // the watch told this night
   const s = Number.isInteger(stirs) && (stirs as number) >= 0 ? (stirs as number) : 0;
   const r = takeNight(h, store, `${Math.floor(at(sleep) / 1000)} ${Math.floor(now.getTime() / 1000)} ${s} 1`, deviceId);

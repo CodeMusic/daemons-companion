@@ -36,18 +36,18 @@ static long epochNow() { struct tm t; return watchLocalTime(t) ? (long)time(null
 // ---- the dream, written here (DRAFT) ----------------------------------------------------------------------------------
 static const char *IMAGES[] = {
   "running beside you through tall grass that hummed", "a library whose books read themselves aloud",
-  "a door it had never been through, standing open", "falling slowly upward into the stars",
+  "a door I had never been through, standing open", "falling slowly upward into the stars",
   "a tree that grew a leaf for every step you took", "rain that fell upward and hummed a tune",
   "a bridge of numbers over a river of moonlight", "you, small and far away, waving",
 };
 static const char *WAKES[] = { "bright", "rested", "humming", "glad of you" };
 static String dreamOf(float hours, int stirs) {
+  // C-293: the daemon telling it -- "I dreamt ..." (server/src/dreams.ts dreamWords)
   uint32_t s = (uint32_t)(from / 3600) * 2654435761u;
-  String name = st.daemon.nickname.length() ? st.daemon.nickname : String("Your daemon");
   const char *a = IMAGES[s % 8], *b = IMAGES[(s / 8 + 3) % 8];
-  if (hours < 4 || stirs > max(4.0f, hours * 1.2f)) return name + " dreamt in pieces: " + a + "... then " + b + ".";
-  if (hours >= 6.5f && stirs <= max(2.0f, hours / 3)) return name + " dreamt of " + a + ". It woke " + WAKES[(s / 64) % 4] + ".";
-  return name + " dreamt of " + a + ", and slept on.";
+  if (hours < 4 || stirs > max(4.0f, hours * 1.2f)) return String("I dreamt in pieces: ") + a + "... then " + b + ".";
+  if (hours >= 6.5f && stirs <= max(2.0f, hours / 3)) return String("I dreamt of ") + a + ". I woke " + WAKES[(s / 64) % 4] + ".";
+  return String("I dreamt of ") + a + ", and slept on.";
 }
 
 // C-206: the last dream is kept until it is read (tapped away), so the face can say one is waiting
@@ -116,6 +116,13 @@ void nightTuck() {                                                       // CARE
   if (t && !on) { start(t, true); intuitionMoment(READ_NIGHT); if (nightQuiet()) sleepNow(); }   // C-285: and the screen dark at once
 }
 void nightWake() { long t = epochNow(); if (t) end(t); }                  // CARE, WAKE
+void careDo(int kind);                                                   // input.cpp
+// C-293: woken from the watch some other way than CARE (the glance's second tap, the alarm's I'M UP) -- told to the
+// companion as WAKE, as CARE's is, or it went on sleeping there (it had only seemed awake because 6am woke it anyway)
+void nightWakeDaemon() {
+  if (st.carrying && st.daemon.tired == "asleep") careDo(4);              // reports WAKE and ends the night (input.cpp)
+  else nightWake();
+}
 
 // ---- C-285 (the user, 2026-11-03, by multiple choice: GPS, Wi-Fi and the screen off -- "but one tap should show the
 // screen so u see the time and daemon, with the word tap to wake -- after a few seconds it goes back to black and sleep
@@ -138,7 +145,7 @@ static void glanceShow() {
 static void glanceHide() { canvas.fillSprite(TFT_BLACK); present(); backlight(false); panelRest(true); }
 bool nightTap() {                                          // a tap while the watch sleeps: true, taken
   if (!asleep || !nightQuiet()) return false;
-  if (glanceUntil && (int32_t)(glanceUntil - millis()) > 0) { glanceUntil = 0; nightWake(); wake(); return true; }
+  if (glanceUntil && (int32_t)(glanceUntil - millis()) > 0) { glanceUntil = 0; wake(); nightWakeDaemon(); return true; }
   glanceUntil = millis() + 6000; glanceShow();
   return true;
 }
@@ -156,7 +163,9 @@ void nightLoop(uint32_t now) {
   if (!on) return;
   bool moving = k == M_WALKING || k == M_RUNNING || k == M_CYCLING;
   if (!moving) movingSince = 0; else if (!movingSince) movingSince = now;
-  if (movingSince && now - movingSince > 3UL * 60000) end(t - 180);   // up and about: the night ended as the walking began
+  // up and about: the night ended as the walking began -- but a night tucked in waits for the morning (from 5am): a walk
+  // in the small hours is not waking (C-293)
+  if (movingSince && now - movingSince > 3UL * 60000 && (!tucked || (lt.tm_hour >= 5 && lt.tm_hour < 20))) end(t - 180);
   else if (t - from > 16L * 3600) end(t);
 }
 

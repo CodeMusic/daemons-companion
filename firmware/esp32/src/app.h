@@ -119,6 +119,7 @@ String alarmWords();                                       // C-205: the alarm's
 long gpsMetresToday();                                     // C-174: walked today by the GNSS, -1 none
 String stepsWords(long steps);                             // "1234 STEPS", and the distance beside them where there is one
 void nightBegin(); void nightLoop(uint32_t now); void nightTuck(); void nightWake();
+void nightWakeDaemon();                   // C-293: woken from the watch (the glance, the alarm) -- told as WAKE, as CARE's is
 void nightFromState(JsonVariantConst d); String nightStatus();
 bool nightQuiet();                       // C-285: the Ultra's daemon tucked in -- GPS, Wi-Fi and the always-on face off
 bool nightTap();                         // C-285: a tap asleep -- the glance, then (tapped again) awake; true, taken

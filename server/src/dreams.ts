@@ -38,8 +38,8 @@ export const rested = (n: Night) => n.hours >= 6 && quality(n) !== "broken";
 const IMAGES = [
   "running beside you through tall grass that hummed", "a city where every window was lit and every door was open",
   "the sea, counting its own waves and losing count", "a library whose books read themselves aloud",
-  "a door it had never been through, standing open", "falling slowly upward into the stars",
-  "a tree that grew a leaf for every step you took", "its own name, written in light on the water",
+  "a door I had never been through, standing open", "falling slowly upward into the stars",
+  "a tree that grew a leaf for every step you took", "my own name, written in light on the water",
   "the old cartridge, warm in a sunlit room", "a long walk with no end it minded",
   "rain that fell upward and hummed a tune", "a bridge of numbers over a river of moonlight",
   "you, small and far away, waving", "a garden where every seed was a word",
@@ -55,10 +55,11 @@ function pickFrom<T>(list: T[], seed: number, k: number) {
 }
 const seedOf = (n: { to: string }, personality: number | null) => Math.floor(new Date(n.to).getTime() / 3600000) ^ ((personality ?? 7) >>> 0);
 export function dreamWords(n: Night, nickname: string, personality: number | null = null): string {
-  const s = seedOf(n, personality), q = quality(n), name = nickname || "Your daemon";
-  if (q === "vivid") return `${name} dreamt of ${pickFrom(IMAGES, s, 1)}. It woke ${pickFrom(WAKES, s, 2)}.`;
-  if (q === "broken") return `${name} dreamt in pieces: ${pickFrom(IMAGES, s, 3)}... then ${pickFrom(IMAGES, s, 4)}.`;
-  return `${name} dreamt of ${pickFrom(IMAGES, s, 5)}, and slept on.`;
+  // C-293: told by the daemon itself -- "I dreamt ..." (the nickname kept for the signature: the same night, the same dream)
+  const s = seedOf(n, personality), q = quality(n);
+  if (q === "vivid") return `I dreamt of ${pickFrom(IMAGES, s, 1)}. I woke ${pickFrom(WAKES, s, 2)}.`;
+  if (q === "broken") return `I dreamt in pieces: ${pickFrom(IMAGES, s, 3)}... then ${pickFrom(IMAGES, s, 4)}.`;
+  return `I dreamt of ${pickFrom(IMAGES, s, 5)}, and slept on.`;
 }
 
 // C-200 (DAEMONS T-462): the image the written dream told first -- its number in the game's own list of sixteen
@@ -103,14 +104,63 @@ export function dayOf(store: Store, from: string): string {
     return k === 0 ? "" : k === 1 ? one : `${k} ${many}`; }).filter(Boolean);
   return said.length ? said.join(", ") : "a quiet day, little done together";
 }
-// what the daemon is asked, as the user would hear it: the night, the day before it (C-283), and what kind of telling
-// (never shown)
-export function dreamAsk(n: Night, day: string | null = null): string {
+// C-293 (the user, 2026-11-04: "the dream should be more metaphorical and incorporate all it's context (and it's
+// identity from the index -- along with mood/care/companionship)... it should be as if it is telling about the dream it
+// had: 'I dreamt....'"): who is dreaming -- its INDEX self, how it feels, how it has been cared for, the bond -- told to
+// every talker, not only the Tiiny. The numbers become words by bands, as self.ts's do. Never shown: DRAFT.
+export type Dreamer = {
+  nickname: string; name?: string; types?: string; category?: string; entry?: string; trainer?: string;
+  feelings?: string | null;                                    // self.ts feelingsSaid: "very GLAD, a little SAD, ..."
+  care?: { rest: number; hunger: number; thirst: number; companionship: number; weight: number } | null;   // care.ts
+  bond?: number | null; bondTrend?: string | null;             // the friendship, 0..100, and its week
+  goal?: string | null; yesterday?: string | null; season?: string | null;
+};
+const band = (v: number, words: [string, string, string, string]) => words[v < 30 ? 0 : v < 55 ? 1 : v < 80 ? 2 : 3];
+export function dreamerSaid(w: Dreamer, trainer = w.trainer || "your trainer"): string {
+  const who = [w.name && w.name !== w.nickname ? `a ${w.name}` : "", w.types ? `a ${w.types} daemon` : ""].filter(Boolean).join(", ");
+  const lines = [`You are ${w.nickname || "a daemon"}${who ? `, ${who}` : ""}.`];
+  if (w.entry) lines.push(`Your INDEX entry${w.category ? ` (the ${w.category} DAEMON)` : ""}: ${w.entry.replace(/\s+/g, " ").slice(0, 300)}`);
+  if (w.feelings) lines.push(`You feel ${w.feelings}.`);
+  if (w.care) {
+    const c = w.care;
+    lines.push(`You are ${band(c.rest, ["worn out", "tired", "fairly rested", "well rested"])}, ` +
+               `${band(100 - c.hunger, ["very hungry", "hungry", "nearly fed", "well fed"])}, ` +
+               `${band(100 - c.thirst, ["very thirsty", "thirsty", "nearly watered", "well watered"])}` +
+               `${c.weight > 25 ? ", heavier than you should be" : c.weight < -25 ? ", thinner than you should be" : ""}, and you feel ` +
+               `${band(c.companionship, ["far from", "a little apart from", "near to", "close to"])} ${trainer}.`);
+  }
+  if (w.bond != null) lines.push(`Your bond with ${trainer} is ${Math.round(w.bond)}%${w.bondTrend ? `, ${w.bondTrend === "the SAME" ? "unchanged" : `grown ${w.bondTrend}`} this week` : ""}.`);
+  if (w.goal) lines.push(`${trainer[0].toUpperCase()}${trainer.slice(1)} is working toward: ${w.goal}.`);
+  if (w.yesterday) lines.push(`Yesterday: ${w.yesterday.replace(/\s+/g, " ").slice(0, 400)}`);
+  if (w.season) lines.push(`It is ${w.season}.`);
+  return lines.join("\n");
+}
+// what the daemon is asked, as the user would hear it: the night, the day before it (C-283), and how to tell it (C-293).
+// `short` for the house's small module, which keeps the words of a "never" (house.ts): its asks are all positive.
+export function dreamAsk(n: Night, day: string | null = null, w: Dreamer | null = null, length: "short" | "day" = "day"): string {
   const how = { vivid: "a long, deep sleep", quiet: "a quiet night", broken: "a short, restless night" }[quality(n)];
-  return `You have just woken after ${n.hours} hours of sleep${n.tucked ? ", tucked in by the user" : ""}: ${how}. ` +
-         (day ? `Yesterday, with the user: ${day}. Let the dream grow out of the day, changed as dreams change things. ` : "") +
-         "Tell the user the dream you had, in two short sentences -- strange and gentle, in images, as a daemon dreams. " +
-         "No more than 160 characters.";
+  const trainer = w?.trainer || "your trainer";
+  const night = `You have just woken after ${n.hours} hours of sleep${n.tucked ? `, tucked in by ${trainer}` : ""}: ${how}.`;
+  if (length === "short")
+    return `${night} ${day ? `Yesterday: ${day}. ` : ""}Tell ${trainer} your dream, starting with "I dreamt". ` +
+           "Two or three sentences, in the past tense, in strange and gentle images.";
+  return `${night}\n` + (day ? `Yesterday, with ${trainer}: ${day}.\n` : "") +
+    `Tell ${trainer} the dream you had last night. Begin with the words "I dreamt", in the first person and the past tense, ` +
+    "three or four sentences, under 320 characters. It is a dream, not a report: everything real comes back changed into " +
+    "an image. The dream happens inside what your INDEX entry says you are -- its world is your nature, made a place. " +
+    "Your feelings are its light and weather; how fed, watered and rested you are is what you carry; how close you feel " +
+    "is how near your trainer is in it. Yesterday, and what your trainer is working toward, come back disguised, as " +
+    "images only you would find for them. Say none of them plainly -- no goals, steps, meals, apps or devices by name -- " +
+    "and no advice, no lists. Strange, gentle, and your own.";
+}
+// C-293: a telling kept as the daemon telling it -- "I dreamt ..." -- whatever the talker began with, cut at a sentence
+export function asDreamt(text: string, most = 360): string {
+  let t = text.replace(/\s+/g, " ").replace(/^["'“”\s]+|["'“”\s]+$/g, "").trim();
+  if (!t) return "";
+  if (!/^I (dreamt|dreamed|had a dream|was dreaming)\b/i.test(t)) t = `I dreamt this: ${t}`;
+  if (t.length > most) { const cut = t.slice(0, most), end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+    t = end > most / 2 ? cut.slice(0, end + 1) : cut.trimEnd() + "…"; }
+  return t;
 }
 
 // ---- the journal -----------------------------------------------------------------------------------------------------
@@ -125,13 +175,21 @@ export function keepNight(store: Store, n: Night, who: { nickname: string; speci
   const list = dreamsOf(store);
   const same = list.find((d) => d.to === n.to && d.device === who.device);
   if (same) return same;
+  // C-293: the night taken at its waking (routes.ts appNight, from the SLEEP) and a watch's telling of it after -- one night, the watch's
+  // count of it kept (its stirs, its end), its telling kept if one has come
+  const twin = list.find((d) => d.tucked && n.tucked && Math.abs(Date.parse(d.from) - Date.parse(n.from)) < 15 * 60000);
+  if (twin) {
+    Object.assign(twin, { ...n, quality: quality(n), device: who.device }, twin.by === "words" ? { text: dreamWords(n, who.nickname, who.personality) } : {});
+    keep(store, list);
+    return twin;
+  }
   const d: Dream = { ...n, ...who, id: (list[0]?.id ?? 0) + 1, at: new Date().toISOString(), quality: quality(n),
                      text: dreamWords(n, who.nickname, who.personality), by: "words" };
   keep(store, [d, ...list]);
   return d;
 }
 export function rewriteDream(store: Store, id: number, text: string): Dream | null {
-  const t = text.replace(/\s+/g, " ").trim().slice(0, 240);
+  const t = asDreamt(text);
   if (!t) return null;
   const list = dreamsOf(store), d = list.find((x) => x.id === id);
   if (!d) return null;

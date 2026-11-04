@@ -88,7 +88,7 @@ void clockLoop(uint32_t now) {
   if (snoozeUntil && (int32_t)(now - snoozeUntil) >= 0) {
     snoozeUntil = 0;
     int r = ring("FIVE MINUTES ARE UP", true);                                                    // DRAFT
-    if (r == 1) { snoozes = 0; nightWake(); }
+    if (r == 1) { snoozes = 0; nightWakeDaemon(); }   // C-293: told as WAKE
     else if (r == 0 && snoozes < 3) { snoozes++; snoozeUntil = millis() + 5UL * 60000; }        // unanswered, or snoozed out: done
     return;
   }
@@ -108,7 +108,7 @@ void clockLoop(uint32_t now) {
   if (!due) return;
   firedDay = day; inWindow = false; snoozes = 0;
   int r = ring("GOOD MORNING  " + hhmm(t.tm_hour, t.tm_min), true);                             // DRAFT
-  if (r == 1) nightWake();
+  if (r == 1) nightWakeDaemon();                                                                 // C-293: told as WAKE
   else if (r == 0) { snoozes++; snoozeUntil = millis() + 5UL * 60000; }                          // unanswered five minutes: done
 }
 String clockStatus() {

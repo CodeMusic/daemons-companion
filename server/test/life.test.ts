@@ -55,11 +55,15 @@ describe("the daemon's life (C-13, PLAN 7)", () => {
     expect(life([], new Date(2026, 9, 4, 20, 30)).cue).toBeNull();                                      // not before bedtime
   });
 
-  it("put to bed at night, sleeps until six -- no cue, never woken to eat", () => {
+  it("put to bed at night, sleeps until it is woken -- noon at the latest (C-293) -- no cue, never woken to eat", () => {
     const bed = [atm(4, 22, 15, "sleep")];
     const night = life(bed, new Date(2026, 9, 5, 2, 0));
     expect([night.tired, night.word, night.cue]).toEqual(["asleep", "asleep", null]);
-    expect(life(bed, new Date(2026, 9, 5, 7, 0)).tired).toBe("awake");                              // up with the morning
+    expect(life(bed, new Date(2026, 9, 5, 7, 30)).tired).toBe("asleep");                            // still asleep when you wake
+    expect(life([...bed, atm(5, 7, 40, "wake")], new Date(2026, 9, 5, 7, 45)).tired).toBe("awake");  // woken
+    expect(life([...bed, atm(5, 7, 40, "feed")], new Date(2026, 9, 5, 7, 45)).tired).toBe("awake");  // or tended
+    expect(life(bed, new Date(2026, 9, 5, 12, 5)).tired).toBe("awake");                             // up by itself at noon
+    expect(life([atm(5, 1, 30, "sleep")], new Date(2026, 9, 5, 9, 0)).tired).toBe("asleep");         // to bed after midnight
   });
 
   it("naps an hour and a half in the day, and wakes when it is tended", () => {

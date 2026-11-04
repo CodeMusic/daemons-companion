@@ -10,7 +10,9 @@
 //                 each whole day with nothing at all costs a little more than the one before; and ANY interaction
 //                 today takes that away at once -- quick to recover, as the user asked
 //   tired         C-114 (the user, 2026-10-11): SLEEP is a care of its own. Put to bed in the evening or the night (from
-//                 8pm) it sleeps until 6am; put down in the day, it naps an hour and a half; tended in between, it wakes.
+//                 8pm) it sleeps until it is woken -- WAKE, or the first care of the morning -- and at noon at the latest
+//                 (C-293, the user 2026-11-04: "I often wake up after putting him to sleep and he is already awake"; it
+//                 had woken itself at 6am); put down in the day, it naps an hour and a half; tended in between, it wakes.
 //                 Not put to bed, it is drowsy from 8pm and stays so -- it waits for you, it never falls asleep alone.
 //   rested        it slept last night (put to bed between 6pm and 6am); a night without costs a little, as a meal does
 //
@@ -22,8 +24,8 @@ import { care, moodCost, type Care } from "./care.js";   // C-266: how it has be
 
 export const MEALS: [number, number][] = [[6, 10], [11, 14], [17, 21]];
 const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met", "walk", "sleep"];   // met: nearby (C-15); walk: the day's walking goal (C-48)
-const NIGHT_FROM = 20, MORNING = 6, BEDTIME = 21, NAP_MS = 90 * 60000;
-const WAKES = ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"];   // tending it wakes it -- or WAKE (C-118); a meeting nearby does not
+const NIGHT_FROM = 20, MORNING = 6, BEDTIME = 21, NAP_MS = 90 * 60000, SLEEPS_UNTIL = 12;   // C-293: a night's sleep waits to be woken, until noon
+export const WAKES = ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"];   // tending it wakes it -- or WAKE (C-118); a meeting nearby does not
 const MOOD_START = 70, PER_TOGETHER = 4, TOGETHER_MOST = 24, PER_MISSED_MEAL = 3, QUIET_STEP = 3, QUIET_MOST = 30;
 
 const localDay = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -64,14 +66,14 @@ export function life(events: Interaction[], now = new Date()): Life {
   }
   // each quiet day a little more than the one before: 3, then 6, then 9 ... never past 30 in all
   const quiet = Math.min(QUIET_MOST, (QUIET_STEP * quietDays * (quietDays + 1)) / 2);
-  // C-114: asleep only when put to bed -- until 6am at night, an hour and a half in the day -- and not tended since
+  // C-114: asleep only when put to bed -- until woken at night (noon at the latest, C-293), an hour and a half in the day -- and not tended since
   const at = (e: Interaction) => Date.parse(e.at);
   const lastSleep = events.filter((e) => e.kind === "sleep").reduce<Interaction | null>((a, e) => (!a || at(e) > at(a) ? e : a), null);
   const woken = lastSleep !== null && events.some((e) => WAKES.includes(e.kind) && at(e) > at(lastSleep));
   let asleep = false;
   if (lastSleep && !woken) {
     const slept = new Date(lastSleep.at), h = slept.getHours(), until = new Date(slept);
-    if (h >= NIGHT_FROM || h < MORNING) { if (h >= MORNING) until.setDate(until.getDate() + 1); until.setHours(MORNING, 0, 0, 0); }
+    if (h >= NIGHT_FROM || h < MORNING) { if (h >= MORNING) until.setDate(until.getDate() + 1); until.setHours(SLEEPS_UNTIL, 0, 0, 0); }
     else until.setTime(slept.getTime() + NAP_MS);
     asleep = now.getTime() < until.getTime();
   }

@@ -60,9 +60,9 @@ import { StackFlow } from "./ai/stackflow.js";
 import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { voiceRecipe } from "./ai/voices.js";   // C-251
 import { INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
-import { bondTrend, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
+import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
-import { dayOf as dayBefore, dreamAsk, dreamsOf, rewriteDream } from "./dreams.js";   // C-200; C-283: the day, the journal
+import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, rewriteDream, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
@@ -78,7 +78,8 @@ import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, trad
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
-import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
+import { appNight, handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
+import { WAKES as WAKING_KINDS } from "./life.js";   // C-293
 import { show as glassShow } from "./glass.js";   // C-262
 import { noteClose, outlookLoop } from "./intuition.js";   // C-203
 import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressions.js";
@@ -709,16 +710,29 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
   // C-283: a night's dream, told by whoever WHO ANSWERS WHEN YOU TALK chose (the Tiiny, the house's module, or n8n's) with
   // the day before it as context; the written dream stays if none answers. In the background: the night is answered at once
+  // C-293: every talker is told who is dreaming -- its INDEX self, feelings, care and bond (dreams.ts dreamerSaid) -- and asked
+  // for the dream in its own voice, "I dreamt ...", as metaphor; one telling at a time for a night
+  const telling = new Set<number>();
+  const dreamerOf = (ecfg: Config, deviceId: string): Dreamer => {
+    const f = selfFacts(ecfg, store, deviceId), care = (f.life as { care?: Dreamer["care"] } | null)?.care ?? null;
+    return { nickname: f.nickname, name: f.name, types: f.types, category: f.category, entry: f.entry, trainer: f.trainer,
+             feelings: f.feelings ? feelingsSaid(f.feelings) : null, care,
+             bond: f.friendship != null ? Math.max(0, Math.min(255, f.friendship)) / 255 * 100 : null, bondTrend: f.bondTrend ?? null,
+             goal: f.goal ? `${f.goal.goal} (next, ${f.goal.step})` : null, yesterday: f.yesterday ?? null, season: f.season ?? null };
+  };
   const tellDream = (ecfg: Config, dream: { id: number; from: string; to: string; hours: number; stirs: number; tucked: boolean; by: string }, deviceId: string) => {
     const d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
-    if (!d || dream.by !== "words") return;
-    const text = dreamAsk(dream, dayBefore(store, dream.from)), p = talkProvider();
-    const viaHouse = async () => (house.any ? (await house.talk({ text, history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
+    if (!d || dream.by !== "words" || telling.has(dream.id)) return;
+    telling.add(dream.id);
+    const day = dayBefore(store, dream.from), who = dreamerOf(ecfg, deviceId), p = talkProvider();
+    const self = dreamerSaid(who), ask = dreamAsk(dream, day, who), text = `${self}\n${ask}`;
+    const viaHouse = async () => (house.any ? (await house.talk({ text: `${dreamerSaid({ nickname: who.nickname, name: who.name, types: who.types, feelings: who.feelings })} ${dreamAsk(dream, day, who, "short")}`,
+                                                                   history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
     (async () => {
       let answer: string | undefined;
       const tiiny = tiinyIn((k) => store.getSetting(k));
       if (p === "tiiny" && tiiny) {
-        try { answer = await tiinyChat(tiiny, pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []), selfText(ecfg, store, deviceId, "day"), [], text); } catch { /* the next */ }
+        try { answer = await tiinyChat(tiiny, pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []), `${self}\n${store.getSetting("self.instructions") || SELF_INSTRUCTIONS}`, [], ask); } catch { /* the next */ }
       }
       if (!answer && p === "module") answer = await viaHouse().catch(() => undefined);
       if (!answer) {
@@ -727,7 +741,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         answer = typeof r.answer === "string" ? r.answer : await viaHouse().catch(() => undefined);
       }
       if (answer?.trim()) rewriteDream(store, dream.id, answer.trim());
-    })().catch(() => {});
+    })().catch(() => {}).finally(() => telling.delete(dream.id));
   };
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
   const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
@@ -1870,6 +1884,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           tellDream(ecfg, dream, teller);                         // C-283: the talk AI, with the day (was the house's module only)
           return send(res, 200, { dream: { id: dream.id, text: dream.text, by: dream.by, quality: dream.quality } });
         }
+        // C-293: a daemon put to bed on another device (the phone, the widget) and woken from this one has had its night too
+        const woke = WAKING_KINDS.includes(kind) ? appNight(hostOf(ecfg), store, deviceId, new Date(), undefined) : null;
+        if (woke) tellDream(ecfg, woke, deviceId);
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
         core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's
         return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? saying(careLine(kind), bookHeld(ecfg)) : {}) });   // C-180: its answer, at once; C-204: and under it

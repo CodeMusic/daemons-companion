@@ -79,9 +79,20 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     const slept = what !== "sleep" ? l.sleptAt : undefined;
     const stirs = slept && NIGHT ? await NIGHT.stirs(Date.parse(slept) / 1000, Date.now() / 1000).catch(() => null) : null;
     try {
-      const r = await api<Life & { said?: string; under?: string; dream?: { text: string } }>(`/api/daemon/${what}`, typeof stirs === "number" ? { stirs } : {});
+      const r = await api<Life & { said?: string; under?: string; dream?: { id: number; text: string; by: string } }>(`/api/daemon/${what}`, typeof stirs === "number" ? { stirs } : {});
       setL(r); if (r.said) setSaid(r.said); setUnder(r.under ?? "");   // its answer corrects the counts; C-196: its own line
-      if (r.dream) setSaid(r.dream.text);                 // C-283: the night's dream (the talk AI's telling follows, in DREAMS)
+      if (r.dream) {                                      // C-283: the night's dream -- the written one at once
+        setSaid(r.dream.text);
+        // C-293: and the talk AI's telling, "I dreamt ...", in its place when it comes (a minute at most)
+        const id = r.dream.id;
+        if (r.dream.by === "words") (async () => {
+          for (let i = 0; i < 15; i++) {
+            await new Promise((ok) => setTimeout(ok, 4000));
+            const told = (await api<{ dreams: { id: number; text: string; by: string }[] }>("/api/dreams").catch(() => null))?.dreams.find((d) => d.id === id);
+            if (told && told.by !== "words") { setSaid(told.text); return; }
+          }
+        })();
+      }
     }
     catch (e) {                                            // out of reach, api() has kept it (C-62) -- once: the widget's
       if (!/^Kept on this phone/.test((e as Error).message))   // queue would send it again (the review, 2026-10-18); refused,

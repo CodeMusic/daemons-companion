@@ -24,11 +24,11 @@ describe("C-200: a night and its dream", () => {
     expect(rested(night(7, 2) as any)).toBe(true);
     expect(rested(night(7, 12) as any)).toBe(false);
   });
-  it("writes the same dream for the same night, in the daemon's name", () => {
+  it("writes the same dream for the same night, told by the daemon itself (C-293)", () => {
     const n = night(8, 1) as any;
     expect(dreamWords(n, "SPARKY", 1234)).toBe(dreamWords(n, "SPARKY", 1234));
-    expect(dreamWords(n, "SPARKY", 1234)).toMatch(/^SPARKY dreamt of .+\. It woke .+\.$/);
-    expect(dreamWords(night(3, 0) as any, "SPARKY", 1234)).toMatch(/^SPARKY dreamt in pieces: /);
+    expect(dreamWords(n, "SPARKY", 1234)).toMatch(/^I dreamt of .+\. I woke .+\.$/);
+    expect(dreamWords(night(3, 0) as any, "SPARKY", 1234)).toMatch(/^I dreamt in pieces: /);
   });
   it("keeps the journal, once a night, the module's telling over the written one", () => {
     const store = new Store(":memory:");
@@ -37,8 +37,8 @@ describe("C-200: a night and its dream", () => {
     expect(d).toMatchObject({ id: 1, quality: "vivid", by: "words", nickname: "SPARKY" });
     expect(keepNight(store, n, who).id).toBe(1);                // told again: the same dream
     expect(dreamsOf(store)).toHaveLength(1);
-    expect(rewriteDream(store, 1, "  It dreamt the moon was a coin.  ")?.text).toBe("It dreamt the moon was a coin.");
-    expect(freshDream(store)).toMatchObject({ id: 1, by: "module", text: "It dreamt the moon was a coin." });
+    expect(rewriteDream(store, 1, "  I dreamt the moon was a coin.  ")?.text).toBe("I dreamt the moon was a coin.");
+    expect(freshDream(store)).toMatchObject({ id: 1, by: "module", text: "I dreamt the moon was a coin." });
     expect(freshDream(store, new Date(Date.now() + 20 * 3600000))).toBeNull();
   });
   it("counts a rested night toward the bond", () => {

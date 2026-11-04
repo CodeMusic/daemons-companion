@@ -67,7 +67,10 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
     if (!r.ok) throw new Error(`the Tiiny answered ${r.status}`);
     const j = await r.json();
     // a thinking model's reasoning is left out: only what it says
-    const text = String(j?.choices?.[0]?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+    let text = String(j?.choices?.[0]?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+    // cut off by the cap: end on its last whole sentence, so a voice never stops mid-word
+    if (j?.choices?.[0]?.finish_reason === "length") { const end = Math.max(...[".", "!", "?", "…"].map((c) => text.lastIndexOf(c)));
+                                                       if (end > 20) text = text.slice(0, end + 1); }
     if (!text) throw new Error("the Tiiny said nothing");
     return text;
   });

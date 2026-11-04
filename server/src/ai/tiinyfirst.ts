@@ -31,7 +31,7 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
         const system = a.fixed ? a.fixed.setup : a.guide ? GUIDE_SETUP : persona(a, text);
         const said = a.fixed ? a.fixed.question : a.guide ? guideQuestion(a.guide(text, 700), text, a.book) : text;
         const start = Date.now();
-        const answer = await tiinyChat(t.at, t.model, system, a.fixed || a.guide ? [] : a.history, said);
+        const answer = await tiinyChat(t.at, t.model, system, a.fixed || a.guide ? [] : a.history, said, fetch, 30_000, a.guide ? 220 : 90);
         const v = a.speak ? await tiinySpeak(t.at, answer, voiceRecipe({ types: a.daemon.types, category: a.daemon.category })) : null;
         return { answer, heard, audio: v?.audio ?? null, provider: `tiiny:${t.model}`, firstMs: Date.now() - start };
       }

@@ -271,6 +271,7 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
            yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
            day: w.day, season: w.season, goal: w.goal };
 }
+const TALK_TOKENS = 90;   // C-249: a talk's answer through the Tiiny -- two or three sentences
 const selfText = (ecfg: Config, store: Store, deviceId: string, length: SelfLength) =>
   selfOf(selfFacts(ecfg, store, deviceId), length, store.getSetting("self.instructions") || SELF_INSTRUCTIONS);
 // C-251: the voice the carried daemon speaks in -- its trainer's own recipe for it (voice.recipe.<species>), else its
@@ -1357,7 +1358,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                                           : (await onBoard(ask.wav)) ?? await tiinyHear(tiiny, ask.wav));
             if (said) {
               const model = pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []);
-              const answer = await tiinyChat(tiiny, model, selfText(ecfg, store, deviceId, "full"), ask.history, said);
+              // a spoken answer kept to a few sentences: every word is a moment of voice to make (2026-11-03: 220 tokens, 20 s)
+              const answer = await tiinyChat(tiiny, model, selfText(ecfg, store, deviceId, "full"), ask.history, said, fetch, 30_000, TALK_TOKENS);
               // its own voice model if one is chosen, else the house board speaks the Tiiny's words -- never silent
               const v = !p.speak ? null : (await tiinySpeak(tiiny, answer, voiceFor(ecfg, store, deviceId).recipe))
                 ?? (house.any ? await house.voice(answer).then((x) => x && x.audio.length ? { audio: x.audio, mime: "audio/wav" } : null).catch(() => null) : null);

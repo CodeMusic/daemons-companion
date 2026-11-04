@@ -208,12 +208,21 @@ bool witchingRoutineNow() { return witchingNow() && intuitionOn(); }   // its ro
 // eight seconds on the clock's phase, so boards side by side breathe together. Emerald is the tablet's ink.
 static const uint8_t P_RED[3] = { 200, 64, 90 }, P_PURPLE[3] = { 176, 86, 158 }, P_BLUE[3] = { 79, 107, 216 };
 static const uint16_t EM_DEEP = (1 << 11) | (16 << 5) | 5, EM_LIT = (10 << 11) | (50 << 5) | 15;   // #0E402B, #50C878
-static float breathNow() {                                      // 0 red, 0.5 purple, 1 blue
-  struct tm t; if (!watchLocalTime(t)) return 0.5f;
+static bool msOfDay(uint32_t &ms) {                              // ms since local midnight: the breaths' shared phase
+  struct tm t; if (!watchLocalTime(t)) return false;
   static int lastSec = -1; static uint32_t secAt = 0;
   if (t.tm_sec != lastSec) { lastSec = t.tm_sec; secAt = millis(); }
-  uint32_t ms = (uint32_t)((t.tm_hour * 60 + t.tm_min) * 60 + t.tm_sec) * 1000u + min<uint32_t>(999, millis() - secAt);
+  ms = (uint32_t)((t.tm_hour * 60 + t.tm_min) * 60 + t.tm_sec) * 1000u + min<uint32_t>(999, millis() - secAt);
+  return true;
+}
+static float breathNow() {                                      // 0 red, 0.5 purple, 1 blue
+  uint32_t ms; if (!msOfDay(ms)) return 0.5f;
   return (1 - cosf(2 * PI * (ms % 8000) / 8000.0f)) / 2;
+}
+// the creator's hour's gold breath: the same basis at sixteen seconds, so phone, watch and GBA breathe together
+static float goldBreathNow() {
+  uint32_t ms; if (!msOfDay(ms)) return 0.5f;
+  return (1 - cosf(2 * PI * (ms % 16000) / 16000.0f)) / 2;
 }
 uint16_t pulse565(float bright) {
   float s = breathNow(), k = s < 0.5f ? s * 2 : (s - 0.5f) * 2;
@@ -354,7 +363,7 @@ bool shimmerNow() { return witchLevel() > 0.04f; }         // no shadow once it 
 // the creator's hour: a soft gold rim about it, breathing slowly -- not a glitch, a light (DRAFT)
 void creatorRim(int cx, int cy, int side) {
   float lv = creatorLevelNow(); if (lv < 0.03f) return;
-  float b = lv * (0.75f + 0.25f * sinf(millis() / 1600.0f));
+  float b = lv * (0.85f + 0.15f * goldBreathNow());   // goldBreathOf (the app, 44193a3)
   for (int k = 0; k < 2; k++) {
     float kb = b * (k ? 0.45f : 1.0f);
     canvas.drawEllipse(cx, cy, side * 44 / 100 + k * 3, side * 48 / 100 + k * 3, canvas.color565((int)(240 * kb), (int)(196 * kb), (int)(96 * kb)));

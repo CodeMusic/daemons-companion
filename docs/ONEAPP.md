@@ -12,7 +12,7 @@ published, and how, is reviewed later. Nothing of Nintendo's is ever in the app 
 ## The one idea: one save, on the device
 
 The game plays in the app and keeps its save in the app's own storage. The companion runs in the app (hosting alone,
-C-111: `app/local.ts` runs `server/src/routes.ts` on the device) and reads and writes **that same file**. So everything
+C-111: `app/platform/local.ts` runs `server/src/routes.ts` on the device) and reads and writes **that same file**. So everything
 the companion already does with a save -- SYNC, a daemon SENT away to the phone or a board, its routines, its
 experience, RETURNED to the game -- happens on one file, with no computer and no hub.
 

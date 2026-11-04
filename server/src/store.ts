@@ -1,5 +1,5 @@
 // Goals, their sub-items, and each sub-item's steps (PLAN 2). The SQL is the same wherever it runs: Node's own SQLite on
-// the computer (db.ts), Expo's on a phone that hosts on its own (C-111, app/local.ts) -- each hands the Store a Db.
+// the computer (db.ts), Expo's on a phone that hosts on its own (C-111, app/platform/local.ts) -- each hands the Store a Db.
 
 // C-111: what the Store asks of a database -- Node's DatabaseSync has it, and so does a thin wrapper over expo-sqlite
 export interface Statement {

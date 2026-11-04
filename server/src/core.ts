@@ -1,5 +1,5 @@
 // C-111: the companion's own logic, wherever it runs. Everything here reads and writes through a Store and a SaveFile, so
-// the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/local.ts, over
+// the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/platform/local.ts, over
 // expo-sqlite and the save Delta shared through Files) run the same rules. Nothing here may import Node.
 import { DREAM_VARS, dreamVars, freshDream } from "./dreams.js";
 import { findAsked } from "./where.js";

@@ -1,5 +1,5 @@
 // C-280 (the user, 2026-11-03): THIS PHONE'S MIND -- whether a talk is answered by the hub (as always) or by the phone
-// itself, with Apple's on-device model (app/mind.ts). Shown only on a phone whose build has it; says plainly when the
+// itself, with Apple's on-device model (app/platform/mind.ts). Shown only on a phone whose build has it; says plainly when the
 // phone cannot (an older iPhone, an iPad 8, Apple Intelligence off). Every word DRAFT.
 import { useEffect, useState } from "react";
 import { canThink, mindHere, setThinker, thinker, type Thinker } from "../../platform/mind";

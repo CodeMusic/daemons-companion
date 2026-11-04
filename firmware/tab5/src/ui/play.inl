@@ -1,5 +1,5 @@
 // Part of ui.cpp (C-157): PLAY (T-426) -- the save's own instrument on the Tab5, by touch, as the app plays it
-// (app/screens/Play.tsx) and the game listens. Included by ui.cpp in order -- not a file of its own: it shares ui.cpp's
+// (app/screens/library/Play.tsx) and the game listens. Included by ui.cpp in order -- not a file of its own: it shares ui.cpp's
 // statics and may use anything the parts before it declare.
 // ---- PLAY -------------------------------------------------------------------------------------------------------------
 // The user, 2026-10-18: "choose a song, choose a key ... strings on the screen u pluck like a harp ... when u play a note

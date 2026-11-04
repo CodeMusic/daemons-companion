@@ -1,6 +1,6 @@
 // C-15: the phone's meeting beacon. iOS lets an app advertise only its local name and service UUIDs -- no service
 // data, no manufacturer data -- so the beacon is one 128-bit service UUID carrying a species and an hourly random tag
-// (app/beacon.ts builds it). In the background iOS moves it to its "overflow area", which other iPhones still hear.
+// (app/platform/beacon.ts builds it). In the background iOS moves it to its "overflow area", which other iPhones still hear.
 import CoreBluetooth
 import ExpoModulesCore
 

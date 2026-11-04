@@ -1,7 +1,7 @@
 // C-111: the requests a phone hosting on its own answers itself -- the day, the goal and its steps, the walk, the save's
 // party, profile and INDEX, a species, the daemon's life and care, and SYNC. The server answers the same ones here
 // (api.ts hands them over), so the phone and the computer can never disagree about what a request means. Nothing here
-// may import Node: it runs in the app too (app/local.ts).
+// may import Node: it runs in the app too (app/platform/local.ts).
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 import { readAway, readSave } from "./save/reader.js";
@@ -268,7 +268,7 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
 }
 
 // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's
-// interact and a phone hosting alone (app/local.ts) both take it here.
+// interact and a phone hosting alone (app/platform/local.ts) both take it here.
 export function takeFix(store: Store, detail: string, deviceId: string, now = new Date()): Fix | string {
   const f = checkFix(detail);
   if (typeof f === "string") return f;
@@ -313,7 +313,7 @@ export function takeNight(h: Host, store: Store, detail: string, deviceId: strin
 
 // C-203: a read given on a watch -- "read <near|rain|night|walk> <0|1> [way]" -- or a lean told at the CASINO's reels --
 // "lean <pays|not> <0|1>". Kept for the log (intuition.ts), never logged as tending. The server's interact and a phone
-// hosting alone (app/local.ts) both take them here.
+// hosting alone (app/platform/local.ts) both take them here.
 export function takeSubtle(store: Store, kind: string, detail: string, deviceId: string, now = new Date()): Reply {
   if (kind === "read") { const r = takeRead(store, detail, deviceId, now); return typeof r === "string" ? no(400, r) : ok({ read: r }); }
   const l = takeLean(store, detail, now);

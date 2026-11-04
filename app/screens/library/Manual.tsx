@@ -1,6 +1,6 @@
 // LIBRARY > THE PLAYER'S MANUAL (C-233, the user, 2026-10-28: "In the iOS app and in the iPad in the library section, we
 // should feature the user Manuel so you can bring up the PDF and read it from the app"): DAEMONS' own manual, fetched from
-// DAEMONS as published now (app/manual.ts) and read here -- on the iPhone and iPad in the app's own page, scrolled and
+// DAEMONS as published now (app/state/manual.ts) and read here -- on the iPhone and iPad in the app's own page, scrolled and
 // pinched as any PDF is, with SHARE to keep it in Books or Files; on the site, in the page. DRAFT. Its companion book,
 // PLAYING TOGETHER (2026-10-31), is read the same way.
 import * as Sharing from "expo-sharing";

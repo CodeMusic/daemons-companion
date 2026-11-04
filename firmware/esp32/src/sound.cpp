@@ -171,7 +171,7 @@ bool soundQuiet() { return true; }
 
 // ---- C-164: the instrument. Each note is a voice: the sample played faster or slower to its pitch (from the instrument's
 // root), looped while it is held if it loops (the flute) or played out if not (the harp), under its attack, decay and
-// sustain, then its release -- which rings on under the next note, as app/instrument.ts and the Tab5 render it. The
+// sustain, then its release -- which rings on under the next note, as app/sound/instrument.ts and the Tab5 render it. The
 // voices are mixed as they play, a block at a time, so nothing is held in memory but where each one is; and since a note
 // rings on after it ends, what rings after a tune is played out by the tune's task (ringOut), never more than a little
 // ahead of the speaker, so the next press is heard at once and mixed into whatever is still sounding.

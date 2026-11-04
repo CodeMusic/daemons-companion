@@ -65,7 +65,7 @@ enum CareSound {
 
   // T-425: the phrase on the save's own instrument -- DAEMONS' harp for CONTENT, flute for CONTEXT (Instruments.swift,
   // written from server/data/sounds/ by firmware/common/instruments.py) -- rendered as the app and the Tab5 render it
-  // (app/instrument.ts): each note the sample played faster or slower to its pitch, looped while held or played out, under
+  // (app/sound/instrument.ts): each note the sample played faster or slower to its pitch, looped while held or played out, under
   // its attack, decay, sustain and release, the release ringing under the next. The square wave only if there is none.
   static var loaded: [String: [Int16]] = [:]
   static func samples(_ i: InstrumentSpec) -> [Int16]? {

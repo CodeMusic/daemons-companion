@@ -22,7 +22,7 @@ static void wave(float duty, uint8_t *out) {      // one cycle of a square wave,
 
 // T-425 (the user, 2026-10-18: "these same tunes on the devices (and tab5 and phone) -- so everything feels in sync"): a
 // tune on the save's own instrument -- the harp for CONTENT, the flute for CONTEXT -- rendered as the phone renders it
-// (app/instrument.ts): each note the sample played faster or slower to its pitch, looped while held (the flute) or played
+// (app/sound/instrument.ts): each note the sample played faster or slower to its pitch, looped while held (the flute) or played
 // out (the harp), under its attack, decay, sustain and release, the release ringing under the next. The taps' clicks
 // stay the square wave.
 static volatile int instrumentAt = 0;              // INSTRUMENTS[], by the save's edition (soundFromState)

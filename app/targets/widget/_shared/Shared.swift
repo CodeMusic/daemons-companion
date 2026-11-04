@@ -1,5 +1,5 @@
 // C-100: what the widget shares with the app, and how it reaches the companion. The app writes the companion's
-// address, its key, the way from away and the widget's own device id into the App Group (app/widget.ts); the widget
+// address, its key, the way from away and the widget's own device id into the App Group (app/platform/widget.ts); the widget
 // keeps what it last showed there too, so a home screen away from everything still shows the daemon.
 import Foundation
 import WidgetKit
@@ -66,7 +66,7 @@ enum Shared {
     return v
   }
   static var paired: Bool { alone || (string("server") != nil && string("token") != nil && string("device") != nil) }
-  // C-111: the phone hosting on its own -- no companion to ask; the app draws the widget (app/widget.ts, drawAlone)
+  // C-111: the phone hosting on its own -- no companion to ask; the app draws the widget (app/platform/widget.ts, drawAlone)
   static var alone: Bool { string("alone") == "1" && string("device") != nil }
 
   static var snapshot: Snapshot? {

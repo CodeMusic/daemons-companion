@@ -36,7 +36,7 @@ piece (3). The message they carry: SPECIES(2), the name's length and the name (u
 or for an answer the answered FROM(4) ID(2) and the code.
 
 **The phone** sends and hears through the companion, and over its own Bluetooth too (C-141): while MEET OTHERS NEARBY is
-on, app/beacon.ts sends a broadcast as the same pieces, each a 128-bit service UUID (the one thing iOS lets an app
+on, app/platform/beacon.ts sends a broadcast as the same pieces, each a 128-bit service UUID (the one thing iOS lets an app
 advertise), rotated every 200 ms for 12 s, and gathers the pieces it hears (server/src/blecast.ts, Node-free).
 
 ## On a board: CHORUS

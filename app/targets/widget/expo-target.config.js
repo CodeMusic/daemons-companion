@@ -1,6 +1,6 @@
 // C-100: the daemon on the home screen -- a widget that is a device of its own (Shared.swift says how it reaches the
 // companion, Care.swift what its three buttons do). Its App Group is the app's, which hands it the companion's address,
-// key and the way from away (app/widget.ts).
+// key and the way from away (app/platform/widget.ts).
 /** @type {import('@bacons/apple-targets/app.plugin').ConfigFunction} */
 module.exports = (config) => ({
   type: "widget",

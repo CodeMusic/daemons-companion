@@ -1275,7 +1275,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-13: the device reports each use -- a routine run, a step ticked -- as tending the daemon.
       // ---- C-15: meeting others nearby. A companion's beacon carries only its daemon's species and a tag of four random
-      // bytes that changes every hour (firmware/esp32/src/meet.cpp, app/beacon.ts). Each of OUR companions says which tag
+      // bytes that changes every hour (firmware/esp32/src/meet.cpp, app/platform/beacon.ts). Each of OUR companions says which tag
       // is its own (beacon), so the board and the phone, which hear each other all day, never count as a meeting. A
       // meeting is then kept once per tag (so once an hour per companion), and the next SYNC writes it into the save.
       if (req.method === "POST" && path === "/api/device/beacon") {

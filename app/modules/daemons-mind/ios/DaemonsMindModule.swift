@@ -2,7 +2,7 @@
 // and speaks for its daemon by itself. Thinking is Apple's on-device model (FoundationModels: iOS 26 and an Apple
 // Intelligence iPhone -- on anything else `available` says why and the hub answers as before); hearing is the phone's
 // own speech recognition, on the device where it can be; speaking is its system voice, for when the hub's cannot be
-// reached. What is said is respelled before it reaches here (sayable, app/mind.ts), as every speech path is.
+// reached. What is said is respelled before it reaches here (sayable, app/platform/mind.ts), as every speech path is.
 import ExpoModulesCore
 import Speech
 import AVFoundation

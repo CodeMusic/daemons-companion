@@ -6,12 +6,12 @@
 //     dae0beac-0015-4d45-SSSS-PPPPPPPP0001       SSSS the carried daemon's species, PPPPPPPP a random tag
 //
 // -- the one form an iPhone app is allowed to advertise (no service data, no manufacturer data), so the board and the
-// phone (app/beacon.ts) send the same beacon and hear each other's. The tag is four random bytes, new every hour, so a
+// phone (app/platform/beacon.ts) send the same beacon and hear each other's. The tag is four random bytes, new every hour, so a
 // beacon cannot be followed from one hour to the next, and it says nothing about who carries it: a species, and
 // noise. It rides in the scan response (the advertisement proper carries the link's UUID, link.cpp).
 //
 // C-151: AT THE TABLE -- while a board sits at the CASINO's reels its beacon ends ca51, not 0001, so the boards nearby
-// that are at the reels too count it at the table (the phone, app/beacon.ts, reads only SSSS and PPPPPPPP: unchanged).
+// that are at the reels too count it at the table (the phone, app/platform/beacon.ts, reads only SSSS and PPPPPPPP: unchanged).
 //
 // THE LISTEN: four seconds every three minutes, which costs little. A tag already heard this hour is not heard again,
 // and the tags of our OWN other companions (the phone, which the server names in the state) are told but never

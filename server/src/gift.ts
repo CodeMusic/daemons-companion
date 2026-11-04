@@ -6,7 +6,7 @@
 import type { Store } from "./store.js";
 import type { Gift } from "./save/writer.js";
 
-// No node:crypto here: core.ts brings this file onto the phone hosting alone (app/local.ts), where there is none, and a
+// No node:crypto here: core.ts brings this file onto the phone hosting alone (app/platform/local.ts), where there is none, and a
 // daemon's personality and IVs need no secret randomness.
 export const HANDSHAKE = { species: 261, name: "HANDSHAKE", level: 5 };   // DRAFT: the name is T-450's, for the user
 export const LINE = [261, 262, 263];

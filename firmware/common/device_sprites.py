@@ -6,7 +6,7 @@ under LilyGO and M5Stack.
 Drawn from the makers' own product photos (lilygo.cc, docs.m5stack.com), 2026-10-16. One list here feeds every place
 that shows a device:
 
-    server/data/devices.json            the app and the site (app/deviceSprites.tsx draws it)
+    server/data/devices.json            the app and the site (app/art/deviceSprites.tsx draws it)
     firmware/common/device_sprites.h    the Tab5 (firmware/tab5/src/ui.cpp draws it with LVGL)
 
     python3 firmware/common/device_sprites.py            report what would change

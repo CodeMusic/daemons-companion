@@ -1,4 +1,4 @@
-// C-100: a daemon on the home screen. The widget is a device of its own (`iphone-widget-xxxxxx`, app/widget.ts): the
+// C-100: a daemon on the home screen. The widget is a device of its own (`iphone-widget-xxxxxx`, app/platform/widget.ts): the
 // daemon it hosts is chosen under DEVICE > YOUR DEVICES like any board's, and its three buttons tend it from here.
 // C-113: it lives in its den (Den.swift), large, and alive as it is on the boards -- it wanders the den through the hour
 // and faces the way it goes, sleeps where it stopped, and answers a button with a hop. The day is pips, not a sentence.

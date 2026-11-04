@@ -5,7 +5,7 @@
 // every device and this hub drop an id already seen -- the hub adds the new way to `via` instead.
 //
 // Every daemon that receives an act answers it, once, with the act's reply (acts.json); a reply is never answered, and
-// a word is never answered (it is read). Nothing here may import Node: it runs on the phone too (app/local.ts).
+// a word is never answered (it is read). Nothing here may import Node: it runs on the phone too (app/platform/local.ts).
 import actsJson from "../data/acts.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";

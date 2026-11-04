@@ -18,7 +18,9 @@ type Hub = { hub: false } | {
 // C-211 (the user, 2026-10-28: "configure the primary source (module or n8n ... green/red health indicator dots"): who
 // answers a talk first -- the hub's module or n8n, the other after it -- with a dot for whether each can now (checked by
 // the companion every minute). One choice for the whole companion: set here, on a watch's own settings, or on the watch.
-type TalkSettings = { first: "module" | "n8n"; health?: { n8n: { ok: boolean } | null; modules: { name: string; ok: boolean }[] } };
+type First = "module" | "n8n" | "tiiny";
+type TalkSettings = { first: First; tiiny?: { url: string };
+                      health?: { n8n: { ok: boolean } | null; modules: { name: string; ok: boolean }[]; tiiny?: { ok: boolean; models: string[] } | null } };
 const Dot = ({ ok }: { ok: boolean | null }) =>
   <YStack width={10} height={10} borderRadius={5} backgroundColor={ok === null ? "$color6" : ok ? "#3fb950" : "#e5534b"} />;
 export function TalkFirstRow({ ink }: { ink?: string }) {
@@ -28,18 +30,24 @@ export function TalkFirstRow({ ink }: { ink?: string }) {
   // an older companion (or a kept answer) has no health: grey dots, never a crash (the review)
   const mods = t.health?.modules ?? [], moduleOk = mods.length ? mods.some((m) => m.ok) : null;
   const n8nOk = t.health?.n8n ? t.health.n8n.ok : null;
-  const pick = async (first: "module" | "n8n") => {
+  // C-249: the Tiiny, once its address is given (Settings, THE TIINY)
+  const hasTiiny = !!t.tiiny?.url, tiinyOk = t.health?.tiiny ? t.health.tiiny.ok : null;
+  const pick = async (first: First) => {
     try { setT(await api<TalkSettings>("/api/talk/settings", { first })); setSaid(""); } catch (e) { setSaid((e as Error).message); }
   };
   return (
     <YStack gap={6} paddingVertical={6}>
       <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">WHO ANSWERS FIRST WHEN YOU TALK</Text>
-      <Choice value={t.first} options={[["module", "The hub's AI board"], ["n8n", "n8n"]]} onPick={pick} ink={ink} />
+      <Choice value={t.first} options={[...(hasTiiny ? [["tiiny", "The Tiiny"] as [First, string]] : []), ["module", "The hub's AI board"], ["n8n", "n8n"]]}
+              onPick={pick} ink={ink} />
       <XStack gap={14} alignItems="center" flexWrap="wrap">
+        {hasTiiny ? <XStack gap={6} alignItems="center"><Dot ok={tiinyOk} /><Small>{tiinyOk === null ? "Tiiny: not looked for yet" : tiinyOk ? "Tiiny: answering" : "Tiiny: not answering"}</Small></XStack> : null}
         <XStack gap={6} alignItems="center"><Dot ok={moduleOk} /><Small>{moduleOk === null ? "AI board: none known" : moduleOk ? "AI board: answering" : "AI board: not answering"}</Small></XStack>
         <XStack gap={6} alignItems="center"><Dot ok={n8nOk} /><Small>{n8nOk === null ? "n8n: not set" : n8nOk ? "n8n: reachable" : "n8n: out of reach"}</Small></XStack>
       </XStack>
-      <Small>{t.first === "module" ? "The other answers when the first cannot, or is slow." : "The AI board answers when n8n cannot."}</Small>
+      <Small>{t.first === "tiiny" ? "If the Tiiny is away or silent, the AI board answers, then n8n."
+        : t.first === "module" ? "The other answers when the first cannot, or is slow." : "The AI board answers when n8n cannot."}</Small>
+      {!hasTiiny ? <Small>The Tiiny joins these once its address is given: Settings, WHO ANSWERS WHEN YOU TALK, THE TIINY.</Small> : null}
       {said ? <Small color="$color8">{said}</Small> : null}
       <Small color="$color8">DRAFT</Small>
     </YStack>

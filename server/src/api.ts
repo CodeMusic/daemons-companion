@@ -309,7 +309,10 @@ export const talkFirst = (store: Store): "module" | "n8n" => {
 };
 // n8n first keeps the user's own choice of which (C-66: "local", the words never leaving home; "openrouter") -- only the
 // module's turn is set over it (the review: a watch's talkfirst had set "auto" over "local")
-const setTalkFirst = (store: Store, first: "module" | "n8n") => {
+// C-249: THE HUB card's choice may also be the Tiiny -- the boards keep the two they know (talkFirst), the app is told all three
+const talkFirstOf = (store: Store): "module" | "n8n" | "tiiny" => store.getSetting("talk.provider") === "tiiny" ? "tiiny" : talkFirst(store);
+const setTalkFirst = (store: Store, first: "module" | "n8n" | "tiiny") => {
+  if (first === "tiiny") return store.setSetting("talk.provider", "tiiny");
   const was = store.getSetting("talk.provider");
   store.setSetting("talk.provider", first === "module" ? "module" : was === "local" || was === "openrouter" || was === "tiiny" ? was : "auto");
 };
@@ -1093,7 +1096,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-66: who answers when you talk -- "auto" (this computer's model, OpenRouter when it is busy), "local" only (the
       // words never leave home), or "openrouter". Only the words heard go to a model, never the recording.
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
-      const talkView = async () => ({ provider: talkProvider(), first: talkFirst(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
+      const talkView = async () => ({ provider: talkProvider(), first: talkFirstOf(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "",
                                       tiiny: tiinyView((k) => store.getSetting(k)) });
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
@@ -1132,7 +1135,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           TALK_HEALTH = { ...TALK_HEALTH, tiiny: at ? { ok: !!held && !!pickThinker(at, held), at: new Date().toISOString(), models: held ?? [] } : null };
         }
         if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
-        if (b.first !== undefined && !["n8n", "module"].includes(b.first)) return send(res, 400, { error: "first is module or n8n" });
+        if (b.first !== undefined && !["n8n", "module", "tiiny"].includes(b.first)) return send(res, 400, { error: "first is module, n8n or tiiny" });
+        if (b.first === "tiiny" && !tiinyIn((k) => store.getSetting(k))) return send(res, 400, { error: "Give the Tiiny's address first." });   // DRAFT
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
         if (b.first !== undefined) setTalkFirst(store, b.first);   // C-211
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);

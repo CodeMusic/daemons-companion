@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-37, C-38, C-90: the device's colours for the day. `menu` is what a screen wears: the site's palette -- the
 // CHECKPOINT's trim the week DAEMONS exports -- by default, or the rainbow week (data/palettes.json) when the palette
 // setting says so (the user, 2026-10-09: one palette everywhere, the site's by default, a toggle for the other).

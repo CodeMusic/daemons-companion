@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-174 (the user, 2026-10-21: "gps could be shown on the companion app"; 2026-10-27, by multiple choice: "walks + regular
 // polling so u can track its location on the iphone app -- also a where am I ping that also makes an audible tone on the
 // watch"): where a watch with a GNSS has been. The watch tells each fix as a `where` interaction -- "<lat> <lon> <metres>"

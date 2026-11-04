@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-158: the real weather, for a city set on the site (the user, 2026-10-18: "A city set on the site"). Open-Meteo answers
 // without an account: its geocoding names the city's place, its forecast the weather there now. Only the city and its
 // place are kept ("weather.city"); the weather now is kept as "weather.now" (context.ts reads it), fetched every fifteen

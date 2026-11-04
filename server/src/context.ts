@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-158 (the user, 2026-10-18): the world the companion's devices live in, and the CASINO's luck in it. "we have
 // weather, time of day, holidays, seasons (w/ edition mods: north vs south hemisphere seasons).... we could fetch real
 // weather/seasons/time-of-day/holidays via the server to devices... this would affect the casino (maybe visually, maybe

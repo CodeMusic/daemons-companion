@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-119 (the user, 2026-10-12): expressions on any daemon's sprite -- "it still is the base sprite, but it can overlay
 // changes to the base sprite ... asleep, awake, and even expressions for after train/water/food events like happy ...
 // that way we can apply it to any given daemon we bring from the game." No art is drawn for any daemon: every sprite

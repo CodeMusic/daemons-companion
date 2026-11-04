@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-141: a broadcast as Bluetooth pieces, the boards' own (firmware/esp32/src/broadcast.cpp sendPieces / takePiece) -- so the
 // phone, which may advertise nothing but a service UUID, can say and hear what the boards say in the room. Node-free: the
 // app imports it. A piece is 16 bytes written as a 128-bit service UUID:

@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-155 (the user, 2026-10-18: "we should have routines on the phone app too -- including casino"): THE CASINO's SLOTS,
 // the rules every player keeps -- the handhelds (firmware/esp32/src/casino.cpp, the same table in C++: a test holds the
 // two together), the phone app and whatever comes after. Nothing here may import Node: the app imports it.

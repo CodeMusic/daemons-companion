@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-13: the daemon's life (PLAN 7, the base rules the user set on 2026-10-04). It is READ from what has happened --
 // the interactions kept since C-13 began (feeding, watering, training, a routine run, a step finished) -- and the
 // clock. Nothing is stored that runs down on its own, so nothing can nag: the daemon only ever says how it is.

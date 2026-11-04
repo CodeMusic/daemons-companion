@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-223: an ITEM given, nothing back. What a save may give: the bag's ITEMS and BALLS pockets and the PC's
 // items (giftable, below) -- never a key item or a PLUGIN (their pockets are not read here). The giver's SYNC takes the count out (the bag
 // first, then the PC) and closes the pocket up behind an emptied slot, as the game's compaction does; the receiver's puts

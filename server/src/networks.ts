@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-93: the networks every device knows (the user, 2026-10-09: "saved networks should be available to all connected
 // devices -- like if i save it on one they all get it"). One list, kept here: a network learned anywhere -- on a board
 // (UPLINK, TEACH A NETWORK), on the Tab5, or from the site -- is learned by every device the next time it is in touch,

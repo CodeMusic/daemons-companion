@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-209 (the user, 2026-10-28, by multiple choice: "Asking the GUIDE"): once the GUIDE is found, a question asked of it
 // -- by voice on the watch, or in the app -- is answered by the GUIDE itself, from its own pages. The pages nearest the
 // question (by the words they share with it, the common ones left out) go to the model with the question, and the model

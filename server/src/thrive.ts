@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-207 (the user, 2026-10-28: "as u sleep better or as your meet city goals it reflects in the way your daemon appears
 // ... subtly"; by multiple choice, all four ways): the carried daemon looks how the week has gone. The last seven days --
 // the nights a watch told (C-200: VIVID counts two, QUIET one, BROKEN takes one away) and the goals finished together

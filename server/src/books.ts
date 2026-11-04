@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-208 (the user, 2026-10-28: "you should be able to read both of these books from the watch ultra also ... hit a
 // button allowing the watch or app to read you the selected chapter aloud for either/any of these books, including
 // notes"; by multiple choice: THE SUBTLE LAYER, the GUIDE and the NOTEBOOK): the books the save holds, as a board reads

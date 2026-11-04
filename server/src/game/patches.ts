@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-187: which of our patches a player's ROM takes -- by its SHA-1, against server/data/patches.json (the game lane's
 // export, T-453: every release's four patches, the retail ROM each accepts and the ROM it makes). FireRed makes
 // CONTENT, LeafGreen CONTEXT; 1.0 and Rev 1 each have their own patch. No node: imports -- this runs on the phone.

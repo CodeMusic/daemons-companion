@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-14: the season an edition keeps on a date -- the same rule as DAEMONS tools/seasons.py (vision 9.21), read from
 // the exported data/seasons.json so the two can never disagree. CONTENT keeps the northern year, CONTEXT the southern.
 import seasonsJson from "../data/seasons.json" with { type: "json" };

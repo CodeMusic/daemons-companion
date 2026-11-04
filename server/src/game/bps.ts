@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-187: our BPS patch applied on the device -- the player's own FireRed or LeafGreen in, DAEMONS out (docs/ONEAPP.md).
 // byuu's BPS1, as DAEMONS' tools/bps.py writes it: "BPS1", the source, target and metadata sizes as varints, the
 // metadata, then actions -- each a varint of (length-1)<<2 | kind: 0 SourceRead (the source at the same offset), 1

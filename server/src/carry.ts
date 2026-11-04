@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-80: a daemon per device (the user, 2026-10-08: "most people will have one device, but others like myself would like
 // to put different daemons in each device from my party"). The game still says WHO goes out -- SEND in its party menu,
 // answered at SYNC -- and any number may be AWAY; the app and the site say WHERE each one goes (docs/DEVICES.md, Q2).

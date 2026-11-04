@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-111: the requests a phone hosting on its own answers itself -- the day, the goal and its steps, the walk, the save's
 // party, profile and INDEX, a species, the daemon's life and care, and SYNC. The server answers the same ones here
 // (api.ts hands them over), so the phone and the computer can never disagree about what a request means. Nothing here

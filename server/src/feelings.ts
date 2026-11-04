@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-120 (the user, 2026-10-12): the hosted daemon's feelings -- carried over from the AI harness's feelings.js
 // (gpt-play-pokemon-firered-daemons, branch context-content), in the shape it ended in and the user chose again:
 //

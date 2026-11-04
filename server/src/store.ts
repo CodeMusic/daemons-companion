@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // Goals, their sub-items, and each sub-item's steps (PLAN 2). The SQL is the same wherever it runs: Node's own SQLite on
 // the computer (db.ts), Expo's on a phone that hosts on its own (C-111, app/platform/local.ts) -- each hands the Store a Db.
 

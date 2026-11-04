@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-145: THE PROGRAMMER'S GUIDE TO THE HUMAN MIND, readable here once the save holds it -- the game's own text (DAEMONS
 // docs/guide.md, exported as data/guide.json in the game's order: sections, then entries, then paragraphs) and its 8-bit
 // cover (data/art/guide_cover.png). Before the GUIDE is found nothing of it is shown: a find stays findable blind (T-297).

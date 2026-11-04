@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-180 (HUB.md Phase 5 item 2): most replies need no model. A care given (FEED, WATER, TRAIN, SLEEP, WAKE) and a
 // hello are answered at once from written lines, chosen by the daemon's mood and the day -- the model is for talk only.
 // The same care on the same day in the same mood gives the same line, the next one of the day the next line. Short

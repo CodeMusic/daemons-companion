@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-191 (C-186 step 6): the planner, from the game lane's T-453 data (data/planner_*.json, DAEMONS
 // tools/companion_export.py's planner_tables). Every record carries `step`: how many of the story's steps must be done
 // before it is reachable. The save's done flags are counted, and only records at or under that count are shown -- the

@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-185 (the user, 2026-10-24: the first goal done together brings it, one a save): HANDSHAKE, the line that only grows
 // with you (DAEMONS T-450: HANDSHAKE 261 -> TETHERING 262 -> COROUTINE 263, met only by its bond, evolve.ts). The
 // companion gives the first one: offered the first time a goal is finished while a daemon is carried, told on the boards,

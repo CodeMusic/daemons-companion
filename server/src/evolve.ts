@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-184 (the user, 2026-10-24: "if an event happens that puts it over threshold then it evolved on the companions,
 // ...such that when it returns the game knows"; and: the game finds it already evolved). The game's own evolution table
 // (species.json `evolutions`, exported by DAEMONS T-448) judged here for a carried daemon -- only what the companion can

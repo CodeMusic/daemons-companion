@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-24: the save's own INDEX, as the game shows it -- a daemon SEEN shows its name and picture; one BOUND shows its
 // kind, its types and its entry, in the save's edition's voice. And, when the save holds OPUS, OPUS's margin beside
 // each entry it has, chosen exactly as the game chooses it (src/pokedex_screen.c, OpusMarginState):

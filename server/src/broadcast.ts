@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-134: BROADCASTS -- a word, or a thing a daemon does (an act: a wave, a bow, a tune), sent to every daemon at
 // once, and their answers. A broadcast travels every way it can: over LoRa (far, with no network), over Bluetooth (to
 // devices nearby), and through this hub (every linked device, wherever it is). It is shown ONCE however many ways it

@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-229, C-230 (the user, 2026-10-28, by multiple choice): ASK THE SUBTLE LAYER -- the GUIDE's sibling, answering by
 // instinct where the GUIDE answers by reason (DAEMONS vision 4.36, 4.38: the player's own INSTINCT and REASON; never the
 // word LOGIC, a type's name). Asked anything, the book gives ONE LINE from its nearest page, then A QUESTION BACK that

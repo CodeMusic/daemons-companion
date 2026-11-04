@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-18: a party daemon as the game draws it. DAEMONS exports each daemon's front sprite in its type palette as an
 // indexed PNG (data/art/), with the four streak slots, palette 11..14, left the game's blank grey. Here they are painted
 // as the game paints them for THIS daemon: slot k takes the colour of its k-th routine's type on its body

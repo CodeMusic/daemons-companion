@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-218, C-219 (the user, 2026-10-28, by multiple choice): THE EXCHANGE -- where players with different saves trade. It
 // lives on the hub, on the home network and the tailnet (never the internet, until a lobby is its own decision, C-222),
 // and every companion trades through it: the hub's own, and any other a player runs (tradelink.ts).

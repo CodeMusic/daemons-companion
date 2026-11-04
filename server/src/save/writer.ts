@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-10: the app's half of AWAY (DAEMONS T-358, vision 9.25). The game only ASKS: its party menu sets ASKED on a daemon
 // and saves. Opening that save, the app answers every request -- a daemon that is not AWAY goes AWAY (to the device),
 // one that is AWAY comes home -- and clears ASKED. Both bits are in the daemon's flags byte, outside its own encrypted

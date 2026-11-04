@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-238 (the user, 2026-10-29): THE HERMETIC LAYER, the third book -- SPELLCRAFT. A grimoire that takes from both the
 // others (the GUIDE's reason, THE SUBTLE LAYER's instinct), in the tablet's emerald on the breathing purple; the one book
 // that may say what the others never would (the user: "it is the one exception"). Its text is the game's (DAEMONS

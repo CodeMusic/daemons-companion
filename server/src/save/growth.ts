@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-24: a daemon's level from its experience, as the game reads a boxed one's (GetLevelFromBoxMonExp): the highest
 // level whose threshold it has reached. The six curves are the game's own macros (src/data/pokemon/
 // experience_tables.h), in C's integer arithmetic; levels 0 and 1 are the table's literal 0 and 1.

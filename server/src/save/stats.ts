@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-45: a daemon's stats at a level, exactly as the game's CalculateMonStats (src/pokemon.c) gives them: HP from its
 // base, IV and EV; the other five the same with +5, then its nature's +10% or -10% (in the game's u16 arithmetic).
 // IVs are packed in the misc substructure's second word (5 bits each: HP, Attack, Defense, Speed, Sp.Atk, Sp.Def);

@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-113: a daemon's den -- where it is drawn on every device that hosts it (the widget first; the app, the boards and
 // the Tab5 to follow). A den is its type's place: the colour is the type's own, as the game colours its sprites
 // (DAEMONS' tools/gbasprite.py TYPE_COLOR), and the motif is the type's metaphor -- FLOW moves, STRATUM is layered,

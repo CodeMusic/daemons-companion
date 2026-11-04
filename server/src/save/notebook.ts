@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-125: the NOTEBOOK, readable on the phone -- every page the save holds, in the game's own order and sections, with
 // its words. Which pages exist, the flags that file them and their words are data/notebook.json, which DAEMONS exports
 // from src/notebook.c and the headers it includes; a page is held by notebook.c's own rule (flag, and flag2 if any).

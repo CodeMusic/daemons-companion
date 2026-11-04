@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-187: CRC32 and SHA-1 in plain TypeScript, to recognise the player's ROM and check what the patch made -- on the
 // phone, where there is no node:crypto (a 16 MB ROM hashes in well under a second).
 const TABLE = (() => {

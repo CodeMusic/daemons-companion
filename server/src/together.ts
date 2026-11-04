@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-220 (the user, 2026-10-28: "if I send mine and so does another user, in the app (or device) we see both of them on
 // screen and they interact -- they even chat with each other via the LLM modules"): OUT TOGETHER, beside THE EXCHANGE.
 // A player sends one of their AWAY daemons OUT (one at a time, for twelve hours, or until called back); another player

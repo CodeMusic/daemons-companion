@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-189: what the game just gave -- the NOTEBOOK pages and INDEX cards a save holds now and did not before, so the app
 // can open them beside the game. A page is known by its section and title; a card by its number and whether it is bound
 // (a daemon met and later bound is new twice). Pages first: a page is what the game hands over on purpose. No node:

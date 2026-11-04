@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-220 (the user, 2026-10-29, by multiple choice: "model-written, filtered, no player text" -- kids play): every line
 // one daemon says to another player's passes here before anyone sees it. A line that fails is not shown: the meeting
 // says a written line in its place (together.ts). What it refuses:

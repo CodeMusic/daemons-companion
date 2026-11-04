@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-261 (the user, 2026-10-31: "why does the game have to restart midplay"): SYNC's writes put into the running game.
 // The game keeps its save in memory and writes that over the cartridge's at its next save, so a SYNC that changed only
 // the file would be undone -- which is why the app started the game again (CONTINUE) after one. Instead, what SYNC

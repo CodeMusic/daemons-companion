@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-266 (the user, 2026-11-01: "enhance how the appearance reflects its care ... a new group for care, such as a var for
 // weight (where 0 here means balance weight)"): how it has been looked after, over days rather than today, and how that
 // shows on it. DERIVED, NEVER STORED, as life.ts and feelings.ts are: read from the last two weeks of what was done

@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // T-426 (the user, 2026-10-18: "on the ios app, you should be able to go to the songbook, choose a song, choose a key, and
 // ... play ... if u dont have the instrument yet, this routine is locked"): PLAY as the save has it -- the instrument the
 // save's edition plays (the HARP for CONTENT, the FLUTE for CONTEXT), whether it is held yet (the game's got-instrument flag,

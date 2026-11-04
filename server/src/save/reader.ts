@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-02: reading a DAEMONS save. Read only -- writing (AWAY, C-10) is save/writer.ts, behind a backup.
 //
 // A Gen 3 save holds two slots of 14 sectors; each sector is 4 KiB: 3968 bytes of data and a footer (its section id,

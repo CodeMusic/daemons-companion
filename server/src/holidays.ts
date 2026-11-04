@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-149: the holiday a date keeps in an edition -- DAEMONS T-416's table by its real names (data/holidays.json), with
 // how a board dresses for it. CONTENT keeps the COMMON and the NORTHERN ones, CONTEXT the COMMON and the SOUTHERN; on a
 // day with two, the edition's own shows (T-416's open Q2, its first answer). A QUIET day is named and left undressed.

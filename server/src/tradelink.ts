@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-219: a companion's way to THE EXCHANGE (exchange.ts) -- the hub's own, in the same process, or the hub's over the
 // network (the tailnet: `trade.hub` is its address) for any other companion a player runs. The app's TRADE screen and
 // the site ask their own companion (/api/trade/*), which asks the exchange as the player it joined as.

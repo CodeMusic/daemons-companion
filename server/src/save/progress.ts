@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-128, C-129: the save's progress, finer than the PROFILE -- GAME EVENTS, the debug page's story-ordered list (data/
 // events.json, exported by DAEMONS), each row held or not; and CALLOW SCHOOL as the save has it (data/school.json): which
 // floors were stood on, the DIPLOMA, and the paper's best and last marks. Read only. A row the save cannot answer yet

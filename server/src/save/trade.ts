@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-219 (the user, 2026-10-28: "a trading mechanism ... we send one daemon out to the app and another user can trade
 // with"; decided by multiple choice): the save's half of a trade. A daemon is traded only while it is AWAY -- it is the
 // companion's then, not the game's -- so what goes to the exchange is its whole BoxPokemon as the save keeps it (80

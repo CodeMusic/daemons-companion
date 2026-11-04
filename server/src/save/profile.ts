@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-23: the PROFILE -- who this save belongs to and how far it has gone, as the trainer card and the INDEX would say.
 // Read only. Every offset comes from data/profile_layout.json, which DAEMONS exports from the built game's own headers
 // (global.h's struct comments, flags.h through the preprocessor); the place names from data/maps.json.

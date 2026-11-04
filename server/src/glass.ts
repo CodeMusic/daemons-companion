@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-262: the T-Glass -- one screen in front of one eye, and the app's GLASSES section that chooses it. The glasses show
 // one thing at a time (`show`): HOME (the time, the daemon, the next step), a NOTE, the DAEMON, or DARK. The app's
 // selection is never its own: a note is selected while, and only while, the glasses show it -- so it stays selected

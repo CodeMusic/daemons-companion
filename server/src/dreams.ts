@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-200 (the user, 2026-10-28: "sleep tracking ... it should be creative relating to daemons and dreams"; decided by
 // multiple choice): a night on the watch, and the dream the daemon had in it. The watch knows the night two ways -- a
 // long stillness at night (its motion sensor, C-201) or the daemon tucked in -- and tells it here when it ends: when it

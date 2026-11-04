@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-124 (the user, 2026-10-15): NFC cards that hold a daemon -- "like pokeballs -- u can put your daemon easily into it
 // -- or receive one that is there or swap". A card is a HOST, as a board is (C-80): its id is card-<uid> in the same
 // carry table, so a daemon is never in two places, and the companion keeps who is where. The card itself carries its

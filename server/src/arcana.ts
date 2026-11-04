@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-232 (the user, 2026-10-28, by multiple choice and in their words): THE SUBTLE LAYER's cards -- twenty-two, our own
 // arcana (data/arcana.json), each with two faces on the book's purple: REASON (a circuit board under green; a daemon of
 // the mainland, where the game teaches computer science and machine learning) and INSTINCT (a living net under gold; a

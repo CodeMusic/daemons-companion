@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-149 (the user, 2026-10-17): THE CASINO's coins are the save's money. A board plays SLOTS against the money the save
 // holds plus what it has won or lost since; each result reaches here as an ordinary interaction -- INTERACT casino
 // "<delta> <boot>.<seq> <device> <spins>" -- and waits until SYNC writes it into the married save (writer.ts), never

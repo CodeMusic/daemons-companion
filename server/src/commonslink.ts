@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // A home hub's link to THE COMMONS (commons.ts; C-222, the user 2026-10-28): the home's players and devices go on
 // talking only to their hub, and the hub speaks for them on the commons -- it registers the home once (the commons'
 // keeper approves it), vouches for each player as it first trades there, and passes their friends' trades through.

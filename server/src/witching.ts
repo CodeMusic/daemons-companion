@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-236 (the user, 2026-10-29: "at the witching hour if you happen to wake up at that time and check the Damons ...
 // something very unique ... and maybe a routine or skill they have that they do not otherwise have it only shows up
 // during that time"; by multiple choice): from 3:00 to 4:00 in the morning, on the device's own clock, the carried

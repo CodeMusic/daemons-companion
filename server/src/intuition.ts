@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-203 (the user, 2026-10-28, through the Subtle Layer session, by multiple choice): THE SUBTLE LAYER on the companion --
 // DAEMONS T-459's reads, leans and noticing, off the cartridge. All of it wakes only once the save holds the book (the
 // state carries `subtle` then, and only then), as the game's do.

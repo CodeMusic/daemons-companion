@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // T-423 (the user, 2026-10-18): THE SUBTLE LAYER, a trainer's handbook -- readable here once the save holds it, as the
 // GUIDE is (C-145): the game's own text (DAEMONS docs/subtle-layer.md, exported as data/subtle.json: sections, entries,
 // paragraphs each in its voice -- "telling", or "asking", the faint one) and its pictures (data/art/subtle_<picture>_

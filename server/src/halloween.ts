@@ -1,3 +1,4 @@
+// C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-240 (the user, 2026-10-29: "on Halloween if you have the book, the entire holiday features that hermetic layers
 // pulses (any time of day not just the witching hour)... let's get creative"; by multiple choice, all four): all of 31
 // October, with THE HERMETIC LAYER held -- the shimmer on the breath all day (no shadow); A COSTUME (the daemon goes as

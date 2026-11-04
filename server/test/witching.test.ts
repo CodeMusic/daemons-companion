@@ -56,3 +56,37 @@ describe("C-237: the hour's face", () => {
     expect([...table.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => JSON.parse(`"${m[1]}"`))).toEqual(AS_ABOVE);
   });
 });
+
+// DAEMONS T-519 (the user, 2026-11-02): the witching hour's strength as the game's glitch has it, THE CREATOR'S HOUR at
+// 4:24-5:12 (Brahma muhurta at a 6:00 sunrise), and the catch-up for play that starts inside an hour
+describe("T-519: the two hours, and the catch-up", async () => {
+  const W = await import("../src/witching.js");
+  const t = (h: number, m: number, s = 0) => new Date(2026, 10, 4, h, m, s);
+  it("follows the game's glitch curve in the witching hour: a quarter at 3:00, all at 3:30, 0.28 at 3:59", () => {
+    expect([W.witchingStrength(t(2, 59)), W.witchingStrength(t(3, 0)), W.witchingStrength(t(3, 15)), W.witchingStrength(t(3, 30)),
+            W.witchingStrength(t(3, 59)), W.witchingStrength(t(4, 0))]).toEqual([0, 0.25, 0.63, 1, 0.28, 0]);
+  });
+  it("keeps THE CREATOR'S HOUR 4:24 to 5:12: rising seven minutes, holding, resolving seven", () => {
+    expect([W.creatorNow(t(4, 23, 59)), W.creatorNow(t(4, 24)), W.creatorNow(t(5, 11, 59)), W.creatorNow(t(5, 12))]).toEqual([false, true, true, false]);
+    expect(W.creatorLevel(t(4, 24))).toBe(0);
+    expect(W.creatorLevel(t(4, 27, 30))).toBeCloseTo(0.5, 5);
+    expect([W.creatorLevel(t(4, 31)), W.creatorLevel(t(4, 48)), W.creatorLevel(t(5, 5))]).toEqual([1, 1, 1]);
+    expect(W.creatorLevel(t(5, 8, 30))).toBeCloseTo(0.5, 5);
+    expect(W.creatorLevel(t(3, 30))).toBe(0);
+  });
+  it("sounds its tone in the middle seven minutes only, 4:44:30 to 4:51:30, fading over half a minute", () => {
+    expect([W.creatorTone(t(4, 44, 29)), W.creatorTone(t(4, 44, 45)) > 0, W.creatorTone(t(4, 45)), W.creatorTone(t(4, 48)),
+            W.creatorTone(t(4, 51)), W.creatorTone(t(4, 51, 30))]).toEqual([0, true, 1, 1, 1, 0]);
+  });
+  it("shows nothing for a minute after arriving inside an hour, then eases over two up to the clock's level", () => {
+    const start = t(4, 24).getTime(), came = t(4, 40).getTime();
+    expect(W.caughtUp(t(4, 0).getTime(), came, start)).toBe(1);                      // arrived before it began: the clock's
+    expect(W.caughtUp(came, came + 59_000, start)).toBe(0);                          // the first minute: nothing
+    expect(W.caughtUp(came, came + 120_000, start)).toBeCloseTo(0.5, 5);             // halfway up
+    expect(W.caughtUp(came, came + 180_000, start)).toBe(1);                         // caught up
+    expect(W.creatorLevelNow(came, new Date(came + 30_000))).toBe(0);
+    expect(W.creatorLevelNow(came, new Date(came + 200_000))).toBe(1);
+    expect(W.witchingLevel(t(3, 20).getTime(), t(3, 20, 30))).toBe(0);              // the witching hour waits too
+    expect(W.witchingLevel(t(2, 50).getTime(), t(3, 30))).toBe(1);
+  });
+});

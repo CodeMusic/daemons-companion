@@ -17,7 +17,7 @@ import { DreamsScreen } from "./Dreams";   // C-200
 import { followVoice, useMouth } from "../../sound/speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard, Under } from "../shared/Reads";   // C-203, C-204
-import { AsAbove, HalloweenNote, HourCount, useHalloween, useWitching, WitchingHour } from "../shared/Witching";   // C-236, C-237, C-240
+import { AsAbove, HalloweenNote, HourCount, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../shared/Witching";   // C-236, C-237, C-240; T-519
 import { FirstSight } from "../shared/Hermetic";   // C-238
 import { talkHere, thinker } from "../../platform/mind";   // C-280
 import { useApi } from "../../platform/useApi";
@@ -52,6 +52,9 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
+  const shimmer = useWitchingLevel();                       // T-519: the shimmer as strong as the hour is now, caught up to
+  const dawn = useDawn();                                   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12 -- its light and its tone
+  useDawnTone(dawn.tone, note);
   const player = useAudioPlayer(null);
   useDev();                                                 // C-269: drawn again as </> moves its sliders
   useEffect(() => {
@@ -106,7 +109,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on}   // C-113, C-119; C-240: Halloween shimmers all day
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level}   // C-113, C-119; C-240: Halloween shimmers all day
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
       </Pressable>

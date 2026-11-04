@@ -133,13 +133,14 @@ describe("C-203: THE LOG, written from the save's vars as the game writes it", (
   const where = (mapsec: number, phrase: number, landed = false) => mapsec | (phrase << R.phrase_shift) | (landed ? 1 << R.landed_bit : 0);
   const names = layout.sb1.first_met_places as Record<string, string>;
   const [sec] = Object.keys(names).map(Number).filter((n) => n > 0);
+  const WED = new Date(2026, 10, 4);                                            // not a Saturday (T-516 S1)
   it("counts reads and leans, then the last reads, newest first, landed once their thing is found", () => {
     const lines = readsLog((f) => f === 0x500, vars({
       [R.given]: 3, [R.landed]: 1, [R.leans_told]: 5, [R.leans_landed]: 4,
       [R.where]: where(sec, 0), [R.thing]: 0x500,                   // found since: landed, and counted here
       [R.where + 1]: where(sec, 5, true), [R.thing + 1]: 0x501,
       [R.where + 2]: where(sec, 4), [R.thing + 2]: 0,                // a read about nothing never lands
-    }));
+    }), WED);
     expect(lines).toEqual([
       "Reads: 3 given, 2 landed.", "Leans: 5 told, 4 landed.",
       `${names[sec]}: something by the water. Landed.`, `${names[sec]}: something to the north. Landed.`,
@@ -147,16 +148,24 @@ describe("C-203: THE LOG, written from the save's vars as the game writes it", (
     ]);
   });
   it("writes only the counts before any read is given", () => {
-    expect(readsLog(() => false, vars({}))).toEqual(["Reads: 0 given, 0 landed.", "Leans: 0 told, 0 landed."]);
+    expect(readsLog(() => false, vars({}), WED)).toEqual(["Reads: 0 given, 0 landed.", "Leans: 0 told, 0 landed."]);
   });
   // T-511: the game keeps a read's weekday + 1 in bits 12-14 (0: before the day was kept) and writes "FRIDAY, " first
   it("writes a read's weekday before it, and a read from before without one", () => {
     const D = R as typeof R & { day_shift?: number; days?: string[]; words: { day_comma?: string } };
-    const lines = readsLog(() => false, vars({ [R.where]: where(sec, 1) | (6 << 12), [R.where + 1]: where(sec, 2) }));
+    const lines = readsLog(() => false, vars({ [R.where]: where(sec, 1) | (6 << 12), [R.where + 1]: where(sec, 2) }), WED);
     expect(lines[3]).toBe(`${names[sec]}: something in the sand.`);               // from before: no day, as the game writes it
     if (!D.days) return;                                                         // the export does not carry the days yet
     expect(D.day_shift).toBe(12);
     expect(lines[2]).toBe(`${D.days[5]}${D.words.day_comma}${names[sec]}: something in the grass.`);   // 6 = FRIDAY + 1
+  });
+  // T-516 S1: a Saturday opens THE LOG with one line above the counts
+  it("opens with the Saturday line on a Saturday, and not on another day", () => {
+    const S = R as typeof R & { words: { saturday?: string } };
+    const sat = new Date(2026, 10, 7);                                           // Saturday 7 November 2026
+    expect(readsLog(() => false, vars({}), WED)[0]).toBe("Reads: 0 given, 0 landed.");
+    if (!S.words.saturday) return;                                              // the export does not carry it yet
+    expect(readsLog(() => false, vars({}), sat)).toEqual([S.words.saturday, "Reads: 0 given, 0 landed.", "Leans: 0 told, 0 landed."]);
   });
 });
 

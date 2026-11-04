@@ -101,6 +101,12 @@ export function DevScreen({ ink }: { ink: string }) {
       </Card>
 
       <Card>
+        <Eyebrow>THE CREATOR'S HOUR</Eyebrow>
+        <Small>As the clock has it (4:24 to 5:12 in the morning), or on now as at its middle -- the light whole and the tone sounding -- or off.</Small>
+        <Choice value={s.dawn ?? null} options={[[null, "As the clock"], [true, "On"], [false, "Off"]]} onPick={(v) => setSession((x) => ({ ...x, dawn: v }))} ink={ink} />
+      </Card>
+
+      <Card>
         <Eyebrow>YOUR DAEMON</Eyebrow>
         {life?.care ? <PretendPanel truth={life} onClose={() => {}} />
           : <Small color="$color8">{life ? "No care to set yet: this companion has not looked after a daemon." : "Asking the companion..."}</Small>}

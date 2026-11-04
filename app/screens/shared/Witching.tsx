@@ -6,14 +6,15 @@
 // the watches and the game the same); the shimmer's inner circle fills widdershins in emerald over the hour, the minutes
 // left and the date beside it; and a touch on the den in the hour opens AS ABOVE SO BELOW in place of the care keys.
 import { useAudioPlayer } from "expo-audio";
-import { useEffect, useState } from "react";
-import { Pressable, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { AppState, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { AS_ABOVE, EMERALD, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLine, witchingNow, witchingRoutine }
-  from "../../../server/src/witching";
+import { AS_ABOVE, creatorLevelNow, creatorNow, creatorToneNow, EMERALD, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLevel,
+         witchingLine, witchingNow, witchingRoutine } from "../../../server/src/witching";
 import { api, ON_PHONE } from "../../platform/net";
-import { hourForced } from "../../state/dev";               // C-275: </> sets the hour, in memory only
+import { dawnForced, hourForced, onSession } from "../../state/dev";   // C-275: </> sets the hour, in memory only; T-519 the creator's too
 import { dayRoot, soundLevel, soundOf } from "../../sound/tuneSound";
+import { dawnTone } from "../../sound/dawnTone";            // T-519: THE CREATOR'S HOUR's tone
 import { Action, Small } from "../../ui/ui";
 
 // in the hour or not, looked at again each half minute -- or as </> sets it (C-275: on any time, read only, its count the
@@ -25,6 +26,40 @@ export function useWitching() {
   useEffect(() => { const t = setInterval(() => setW(hourNow()), 30000); return () => clearInterval(t); }, []);
   return w;
 }
+
+// T-519 (the user, 2026-11-02): when this app last came to the front -- the catch-up counts from here. Opened or brought
+// back inside an hour, its effect waits a minute and then eases up to where the clock has it (server/src/witching.ts).
+let arrived = Date.now();
+AppState.addEventListener("change", (state) => { if (state === "active") arrived = Date.now(); });
+export const arrivedAt = () => arrived;
+// how much of the witching hour's shimmer shows (0..1): the game's glitch curve, caught up to; forced on, all of it
+export function useWitchingLevel() {
+  useFrame(2000);
+  useSession();
+  const forced = hourForced();
+  return forced === true ? 1 : forced === false ? 0 : witchingLevel(arrived);
+}
+// THE CREATOR'S HOUR, 4:24 to 5:12 (T-519): its light and its tone (0..1 each), caught up to -- looked at each second in
+// the hour and each half minute outside it; forced on, as at its middle
+export type Dawn = { level: number; tone: number };
+export function useDawn(): Dawn {
+  const [, setF] = useState(0);
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    const tick = () => { setF((x) => x + 1); t = setTimeout(tick, creatorNow() || dawnForced() !== null ? 1000 : 30000); };
+    t = setTimeout(tick, 1000);
+    return () => clearTimeout(t);
+  }, []);
+  useSession();
+  const forced = dawnForced();
+  if (forced !== null) return forced ? { level: 1, tone: 1 } : { level: 0, tone: 0 };
+  return { level: creatorLevelNow(arrived), tone: creatorToneNow(arrived) };
+}
+// drawn again the moment </> changes the game session (C-275), not at the next look
+function useSession() {
+  const [, setF] = useState(0);
+  useEffect(() => onSession(() => setF((x) => x + 1)), []);
+}
 // a frame every so often: the breath, the flicker
 function useFrame(ms: number) {
   const [f, setF] = useState(0);
@@ -33,13 +68,13 @@ function useFrame(ms: number) {
 }
 
 // the shimmer, about the daemon (in its den, moving with it): two faint rings on the breath, and now and then one drops out
-export function WitchShimmer({ side }: { side: number }) {
+export function WitchShimmer({ side, level = 1 }: { side: number; level?: number }) {   // T-519: as strong as the hour is now
   const f = useFrame(140);
   const ring = (k: number) => {
-    if ((f + k * 3) % 9 === 0) return null;                   // it flickers
+    if (level <= 0.01 || (f + k * 3) % 9 === 0) return null;   // it flickers
     const s = side * (0.84 + 0.08 * k + 0.03 * Math.sin(f / 4 + k));
     return <View key={k} pointerEvents="none" style={{ position: "absolute", left: (side - s) / 2, top: (side * 1.04 - s * 1.08) / 2, width: s, height: s * 1.08,
-                                                        borderRadius: s, borderWidth: k ? 1 : 2, borderColor: pulseNow(k ? 0.75 : 1), opacity: 0.6 - 0.15 * k }} />;
+                                                        borderRadius: s, borderWidth: k ? 1 : 2, borderColor: pulseNow(k ? 0.75 : 1), opacity: (0.6 - 0.15 * k) * level }} />;
   };
   return <>{ring(0)}{ring(1)}</>;
 }
@@ -117,6 +152,62 @@ export function WitchingHour({ nickname, species, note }: { nickname: string; sp
       {said ? <Small color={EMERALD.lit}>{said}</Small> : <Small color="$color9">Only now, between three and four.</Small>}
     </YStack>
   );
+}
+
+// ---- THE CREATOR'S HOUR (DAEMONS T-519; the user, 2026-11-02: "not a glitch something else ... a softer touch still
+// encompassing"): light, not noise. Nothing flickers or tears. In the den a warm gold comes up from the floor like daylight
+// under a door, breathing once in sixteen seconds (half the witching breath); a few motes drift up through it, six at the
+// most; and the daemon wears a thin gold rim, steady, and looks rested. In the middle seven minutes a quiet "aah" joins
+// (sound/dawnTone.ts). Every part DRAFT; DAEMONS docs/private/plan-the-two-hours-2026-11-02.md has the whole of it.
+const GOLD = "#FFD27A", GOLD_DEEP = "#F2B04C";
+const breath16 = () => { const ms = Date.now() % 16000; return 0.85 + 0.15 * (1 - Math.cos((2 * Math.PI * ms) / 16000)) / 2; };
+export function DawnLight({ w, height, level }: { w: number; height: number; level: number }) {
+  useFrame(level > 0.01 ? 100 : 60000);
+  if (level <= 0.01 || !w) return null;
+  const b = breath16(), now = Date.now(), bands = 12, motes = Math.round(6 * level);
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: 0, top: 0, width: w, height }}>
+      {Array.from({ length: bands }, (_, i) => {                 // the light, from the floor up: brightest at the bottom
+        const k = 1 - i / bands, bh = (height * 0.7) / bands, lo = Math.round(i * bh), hi = Math.round((i + 1) * bh);   // edge to edge,
+        return <View key={i} style={{ position: "absolute", left: 0, right: 0, bottom: lo, height: hi - lo, backgroundColor: GOLD,   // never doubled
+                                       opacity: level * 0.34 * b * k ** 1.5 }} />;
+      })}
+      {Array.from({ length: motes }, (_, i) => {                 // the motes, rising slowly, each on its own time
+        const period = 9000 + i * 1700, u = ((now / period) + i * 0.37) % 1;
+        const x = w * ((0.13 + i * 0.157) % 1) + 6 * Math.sin(now / (2300 + i * 400) + i);
+        const size = i % 2 ? 3 : 4.5;
+        return <View key={`m${i}`} style={{ position: "absolute", left: x, top: height * (1 - u) - size, width: size, height: size, borderRadius: size,
+                                              backgroundColor: i % 3 ? GOLD : "#FFF4D6", opacity: level * 0.8 * Math.sin(Math.PI * u) }} />;
+      })}
+    </View>
+  );
+}
+// about the daemon: a thin gold rim, steady, and a faint warmth inside it
+export function DawnRim({ side, level }: { side: number; level: number }) {
+  if (level <= 0.01) return null;
+  const s = side * 0.9;
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: (side - s) / 2, top: (side * 1.04 - s * 1.06) / 2, width: s, height: s * 1.06,
+                                         borderRadius: s, borderWidth: 1.5, borderColor: GOLD_DEEP, backgroundColor: "rgba(255,210,122,0.12)",
+                                         opacity: 0.6 * level * breath16() }} />
+  );
+}
+// its tone, in the middle seven minutes: quiet -- about a third of this phone's own SOUND -- looped on the day's note, and
+// let go as the minutes end. Only on a phone, as the hour's tune is.
+export function useDawnTone(tone: number, note: string) {
+  const player = useAudioPlayer(null);
+  const loaded = useRef("");
+  useEffect(() => {
+    if (!ON_PHONE) return;
+    try {
+      const v = tone * soundLevel() * 0.35;
+      if (v <= 0.002) { if (loaded.current && player.playing) player.pause(); return; }
+      const uri = dawnTone(dayRoot(note));
+      if (loaded.current !== uri) { player.replace({ uri }); player.loop = true; loaded.current = uri; }
+      player.volume = v;
+      if (!player.playing) player.play();
+    } catch { /* quiet is fine */ }
+  }, [tone, note, player]);
 }
 
 // C-240: Halloween, with THE HERMETIC LAYER held -- the shimmer all day, the costume (what it fears; a tap takes the mask

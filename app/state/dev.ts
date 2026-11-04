@@ -100,18 +100,21 @@ export function pretendLife<L extends { mood: number; word: string; tired: strin
 // and nothing is written anywhere; RESTORE, DEVELOPER MODE off or the app shut puts the save's own answers back.
 export type Book = "guide" | "subtle" | "hermetic" | "play";
 export type Session = { books: Partial<Record<Book, boolean>>; events: Record<number, boolean>;
-                        school: Partial<Record<"textbook" | "diploma", boolean>>; hour: boolean | null };
-const blank = (): Session => ({ books: {}, events: {}, school: {}, hour: null });
+                        school: Partial<Record<"textbook" | "diploma", boolean>>; hour: boolean | null;
+                        dawn: boolean | null };   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12
+const blank = (): Session => ({ books: {}, events: {}, school: {}, hour: null, dawn: null });
 let session: Session = blank();
 const changed = new Set<() => void>();                        // net.ts: read every screen again
 export const sessionNow = () => session;
 export const onSession = (f: () => void) => { changed.add(f); return () => { changed.delete(f); }; };
 export function setSession(f: (s: Session) => Session) { session = f(session); tell(); changed.forEach((h) => h()); }
 export const restoreSession = () => { pretend = null; setSession(() => blank()); };
-export const sessionTouched = () => !!pretend || session.hour !== null || [session.books, session.events, session.school].some((o) => Object.keys(o).length > 0);
+export const sessionTouched = () => !!pretend || session.hour !== null || session.dawn !== null || [session.books, session.events, session.school].some((o) => Object.keys(o).length > 0);
 
 // the witching hour as the session has it: null, the clock's
 export const hourForced = () => (read().on ? session.hour : null);
+// T-519: THE CREATOR'S HOUR as the session has it: null, the clock's; on, as at its middle (its light whole, its tone sounding)
+export const dawnForced = () => (read().on ? session.dawn ?? null : null);
 // a book asked for as if held: the companion's own read-only ?preview=1 (never kept, never written)
 const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/play": "play" };
 export const bookForced = (b: Book) => (read().on ? session.books[b] : undefined);

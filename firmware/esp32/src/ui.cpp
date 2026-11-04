@@ -413,6 +413,7 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   if (costumeNow()) indexArtDraw(ax, ay, sc); else drawArt(ax, ay, sc, right);     // C-240: in its costume
   drawMark(ax, ay, sc, right, markTop);
   if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
+  else creatorRim(ax + side / 2, ay + side / 2, side);                                   // C-295: THE CREATOR'S HOUR, a gold rim
   drawThriveMarks(ax, ay, side);                                                          // C-207: its stars and its moon
   if (noticing) intuitionRipple(ax + side / 2, ay + side / 2, side, nPhase);   // C-203: the purple ripple, rising
 }
@@ -945,6 +946,7 @@ void draw() {
         else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237
         if (costumeNow()) indexArtDraw(ax, ay, sc); else drawArt(ax, ay, sc, right);     // C-240
         if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
+        else creatorRim(ax + side / 2, ay + side / 2, side);                     // C-295
         drawMark(ax, ay, sc, right, y);                        // C-119: zz, a heart, a drop ... above its head, inside the den
         canvas.clearClipRect();
       };

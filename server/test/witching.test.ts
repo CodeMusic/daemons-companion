@@ -89,4 +89,9 @@ describe("T-519: the two hours, and the catch-up", async () => {
     expect(W.witchingLevel(t(3, 20).getTime(), t(3, 20, 30))).toBe(0);              // the witching hour waits too
     expect(W.witchingLevel(t(2, 50).getTime(), t(3, 30))).toBe(1);
   });
+  it("breathes its gold once in sixteen seconds on the clock, so every device breathes together", () => {
+    expect(W.goldBreathOf(t(4, 30, 0))).toBeCloseTo(1, 6);                         // 16200 s since midnight: 1012.5 breaths, a top
+    expect(W.goldBreathOf(t(4, 30, 8))).toBeCloseTo(0, 6);                         // half a breath on: 1013, a bottom
+    expect(W.goldBreathOf(t(4, 30, 4))).toBeCloseTo(0.5, 6);
+  });
 });

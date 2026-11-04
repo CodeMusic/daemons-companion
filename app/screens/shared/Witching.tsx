@@ -9,7 +9,7 @@ import { useAudioPlayer } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 import { AppState, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { AS_ABOVE, creatorLevelNow, creatorNow, creatorToneNow, EMERALD, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLevel,
+import { AS_ABOVE, creatorLevelNow, creatorNow, creatorToneNow, EMERALD, goldBreathOf, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLevel,
          witchingLine, witchingNow, witchingRoutine } from "../../../server/src/witching";
 import { api, ON_PHONE } from "../../platform/net";
 import { dawnForced, hourForced, onSession } from "../../state/dev";   // C-275: </> sets the hour, in memory only; T-519 the creator's too
@@ -160,7 +160,7 @@ export function WitchingHour({ nickname, species, note }: { nickname: string; sp
 // most; and the daemon wears a thin gold rim, steady, and looks rested. In the middle seven minutes a quiet "aah" joins
 // (sound/dawnTone.ts). Every part DRAFT; DAEMONS docs/private/plan-the-two-hours-2026-11-02.md has the whole of it.
 const GOLD = "#FFD27A", GOLD_DEEP = "#F2B04C";
-const breath16 = () => { const ms = Date.now() % 16000; return 0.85 + 0.15 * (1 - Math.cos((2 * Math.PI * ms) / 16000)) / 2; };
+const breath16 = () => 0.85 + 0.15 * goldBreathOf();       // on the clock, as the watches and the game breathe it
 export function DawnLight({ w, height, level }: { w: number; height: number; level: number }) {
   useFrame(level > 0.01 ? 100 : 60000);
   if (level <= 0.01 || !w) return null;

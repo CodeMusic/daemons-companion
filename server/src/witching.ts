@@ -55,6 +55,14 @@ export const creatorStart = (d = new Date()) => new Date(d.getFullYear(), d.getM
 // glitch, then some ramp-up to where it is in the hour span"): play that starts or resumes inside an hour shows nothing for
 // a minute, then eases over two minutes up to where the clock has the hour; arriving before the hour began follows the
 // clock, whose own shape already rises. 0..1, to multiply an hour's level by.
+// its light breathes once in sixteen seconds (half the witching breath, so it reads as calm), and like that breath (C-237)
+// its phase is the clock's -- ms since midnight on the device -- so a phone, a watch and a GBA side by side breathe
+// together: 0 at the bottom of a breath, 1 at its top
+export const GOLD_BREATH_MS = 16000;
+export const goldBreathOf = (d = new Date()) => {
+  const ms = ((d.getHours() * 60 + d.getMinutes()) * 60 + d.getSeconds()) * 1000 + d.getMilliseconds();
+  return (1 - Math.cos((2 * Math.PI * ms) / GOLD_BREATH_MS)) / 2;
+};
 export const CATCH_UP = { quietMs: 60_000, easeMs: 120_000 };
 export function caughtUp(arrivedAt: number, now: number, startedAt: number): number {
   if (arrivedAt <= startedAt) return 1;

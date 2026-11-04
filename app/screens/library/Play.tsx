@@ -16,6 +16,7 @@ import { createAudioPlayer, RecordingPresets, requestRecordingPermissionsAsync, 
 import { Text, XStack, YStack } from "tamagui";
 import { previewQuery } from "../../state/preview";
 import { soundOf } from "../../sound/tuneSound";
+import { noteVoices, type NoteVoices } from "../../sound/noteVoices";
 import { Action, Card, Eyebrow, PIXELATED, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 
@@ -147,33 +148,26 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
   const [lit, setLit] = useState<number | null>(null);    // the string or hole sounding now
   const base = 60 + keyAt - (keyAt > 6 ? 12 : 0);        // the key's tonic, about middle C
   const midiAt = (d: number) => base + SCALE[d] + 12 * octave;
-  const players = useRef(new Map<number, AudioPlayer>());
   const echo = useRef<AudioPlayer | null>(null);
   const nextId = useRef(0);
   const ms = harp ? HARP_MS : FLUTE_MS;
 
-  // the notes' sounds, made for this key and octave before they are needed (a tap must not wait for one to be made)
-  const player = (m: number) => {
-    let pl = players.current.get(m);
-    if (!pl) { pl = createAudioPlayer({ uri: soundOf(`play-${p.instrument}-${m}-${ms}`, [[m, ms]]) }); players.current.set(m, pl); }
-    return pl;
-  };
+  // the notes' sounds, made for this key and octave before they are needed (a tap must not wait for one to be made);
+  // C-294: a few players a pitch, each kept waiting at its start, so every note shown is heard (sound/noteVoices.ts)
+  const voices = useRef<NoteVoices | null>(null);
+  const pool = () => (voices.current ??= noteVoices((m) => createAudioPlayer({ uri: soundOf(`play-${p.instrument}-${m}-${ms}`, [[m, ms]]) })));
   useEffect(() => {
     setAudioModeAsync({ playsInSilentMode: true, allowsRecording: !harp, shouldRouteThroughEarpiece: false }).catch(() => {});
-    for (let d = 0; d < 8; d++) player(midiAt(d));
+    pool().keep(Array.from({ length: 8 }, (_, d) => midiAt(d)));
   }, [keyAt, octave]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => {
-    players.current.forEach((pl) => pl.remove()); players.current.clear(); echo.current?.remove();
+    voices.current?.remove(); voices.current = null; echo.current?.remove();
     setAudioModeAsync({ playsInSilentMode: false, allowsRecording: false }).catch(() => {});
   }, []);
 
-  const sing = (d: number) => { const pl = player(midiAt(d)); pl.volume = 1; pl.seekTo(0); pl.play(); };
-  const hush = (d: number) => {                          // a breathed note let go: faded, then stopped
-    const pl = players.current.get(midiAt(d));
-    if (!pl) return;
-    let v = 1;
-    const t = setInterval(() => { v -= 0.25; if (v <= 0) { clearInterval(t); pl.pause(); pl.volume = 1; } else pl.volume = v; }, 30);
-  };
+  // a plucked string sounds again from the start, what it still rang damped; a breathed note let go fades, then stops
+  const sing = (d: number) => pool().play(midiAt(d), harp);
+  const hush = (d: number) => voices.current?.release(midiAt(d));
 
   // each note played: it drifts up, joins the sixteen listened to, and may be a song
   const heardRef = useRef<number[]>([]);

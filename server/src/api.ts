@@ -1322,11 +1322,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const tiiny = tiinyIn((k) => store.getSetting(k));
         if (p.provider === "tiiny" && tiiny && !asked) {          // C-249: the Tiiny, with the daemon's whole self; else as before
           try {
-            const said = ask.text ?? (ask.wav ? await tiinyHear(tiiny, ask.wav) : null);
+            // heard on the house's own board first (near, and quick), the Tiiny's hearing only without one
+            const said = ask.text ?? (ask.wav ? (house.any ? await house.transcribe(ask.wav).catch(() => null) : null) ?? await tiinyHear(tiiny, ask.wav) : null);
             if (said) {
               const model = pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []);
               const answer = await tiinyChat(tiiny, model, selfText(ecfg, store, deviceId, "full"), ask.history, said);
-              const v = p.speak ? await tiinySpeak(tiiny, answer) : null;
+              // its own voice model if one is chosen, else the house board speaks the Tiiny's words -- never silent
+              const v = !p.speak ? null : (await tiinySpeak(tiiny, answer))
+                ?? (house.any ? await house.voice(answer).then((x) => x && x.audio.length ? { audio: x.audio, mime: "audio/wav" } : null).catch(() => null) : null);
               return { answer, heard: ask.wav ? said : null, provider: `tiiny:${model}`,
                        ...(v ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: v.mime } : {}) };
             }

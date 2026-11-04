@@ -24,6 +24,10 @@
  "trade_partner_mask": 2044,
  "gifted_shift": 11,
  "gifted_mask": 2048,
+ "spirits_shift": 12,
+ "spirits_mask": 12288,
+ "lean_shift": 14,
+ "lean_mask": 49152,
  "natures": [
   [
    0,

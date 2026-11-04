@@ -50,33 +50,11 @@ user deciding it. Navigation is local React state:
   `ui/ui.tsx` `sound/careSound`, inside a check. A top-level import would pull native modules into the site's build.
 - **Code comments cite tickets** (`// C-264: ...`) from the companion's `TODO.md`. Keep them when code moves.
 
-## Where things live (C-289)
+## Where things live
 
-| Folder | What is in it |
-|---|---|
-| `App.tsx`, `index.ts` | `App` (pairing, the look, the providers) and `Shell`, which wires `shell/` together |
-| `shell/` | the tab strip, the beside split's panes and sizes (`panes.tsx`, `split.ts`), the background syncs (`sync.ts`) |
-| `screens/<tab>/` | each tab's page (`today`, `daemon`, `goals`, `library`, `you`, `places`, `settings`, `game`, `dev`) and the pages only it opens |
-| `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index` |
-| `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud, the book recordings, the LOGS |
-| `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |
-| `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), `useApi` |
-| `state/` | types, data, the look, the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`) |
-| `art/` | species sprites (`speciesArt.ts`, written by `tools/species-art.py`), device sprites, the casino's dress |
-| `game/` | the game's ROM and its gate |
-| `modules/`, `targets/` | native modules and the widget's Swift |
-| `tamagui.config.ts` | stays at the root |
-
-## Building with EAS
-
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
-
-## Rules
-
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+**`LAYOUT.md` at the repository's root** is the map of `app/` and everything else, and says where a new file goes
+(C-292). A commit that adds, moves or removes a folder updates it in the same commit; `server/test/layout.test.ts`
+checks it.
 
 ## DAEMONS is said DAY-mons
 

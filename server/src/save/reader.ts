@@ -35,6 +35,23 @@ export const tradeBits = (l: Layout) => ({ trading: 1 << num(l, "trading_bit", 3
                                            partnerShift: num(l, "trade_partner_shift", 2), partnerMask: num(l, "trade_partner_mask", 0x7fc),
                                           gifted: num(l, "gifted_mask", 1 << 11) });   // C-223 / DAEMONS T-492: arrived as a gift
 
+// DAEMONS T-519 (vision 4.40, engine src/daemons_spirits.c): SPIRITS, in the last four free bits of that u16 -- the class in
+// bits 12-13 (0 as it is, 1 in good spirits, 2 in low spirits, 3 never written and read as 0) and its lean in 14-15, read
+// by class. Together one ladder of twelve rungs, LOW 0 1 2 3 | -2 -1 [0] +1 | GOOD 3 2 1 0 (rung 0 the deepest, 11 settled
+// in good spirits). The companion only ever READS these bits (the game lane: never write them); the layout's own names
+// once exported, the game's positions until then. The words are the game's summary's, and only these two. DRAFT.
+export type SpiritsClass = "as it is" | "good" | "low";
+export interface Spirits { class: SpiritsClass; lean: 0 | 1 | 2 | 3; rung: number; words: string | null }
+export const spiritsBits = (l: Layout) => ({ shift: num(l, "spirits_shift", 12), mask: num(l, "spirits_mask", 0x3000),
+                                             leanShift: num(l, "lean_shift", 14), leanMask: num(l, "lean_mask", 0xc000) });
+const MIDDLE_AT = [0, 1, -1, -2];                            // the middle's lean: the middle, a step up, a step down, two down
+export function spiritsOf(word: number, l: Layout = LAYOUT): Spirits {
+  const b = spiritsBits(l), c = (word & b.mask) >> b.shift, lean = ((word & b.leanMask) >> b.leanShift) as Spirits["lean"];
+  if (c === 1) return { class: "good", lean, rung: 11 - lean, words: "In good spirits." };
+  if (c === 2) return { class: "low", lean, rung: lean, words: "In low spirits." };
+  return { class: "as it is", lean: c === 3 ? 0 : lean, rung: 6 + (c === 3 ? 0 : MIDDLE_AT[lean]), words: null };
+}
+
 export interface PartyDaemon {
   slot: number;            // 0-5 in the party
   personality: number;     // with otId, the daemon's identity -- never the slot
@@ -52,6 +69,7 @@ export interface PartyDaemon {
   away: boolean;           // on the companion's device (T-358)
   asked: boolean;          // the game's half of a send or return, waiting for the app
   sounding: Sounding;      // C-195: how it was doing at the last SYNC that found it away
+  spirits: Spirits;        // DAEMONS T-519: in good spirits, as it is, or in low spirits -- read, never written
 }
 
 export interface SaveRead {
@@ -163,6 +181,7 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
     away: !!(flags & (1 << l.away_bit)),
     asked: !!(flags & (1 << l.asked_bit)),
     sounding: ((flags >> soundingShift(l)) & 3) as Sounding,
+    spirits: spiritsOf(v.getUint16(tradeBits(l).at, true), l),
   };
 }
 

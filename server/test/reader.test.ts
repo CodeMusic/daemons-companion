@@ -70,3 +70,22 @@ describe.skipIf(!scratch || !existsSync(scratch))("a real scratch save", () => {
     expect(r.party.length).toBeGreaterThan(0);
   });
 });
+
+// DAEMONS T-519: SPIRITS, read from bits 12-15 of the u16 at 0x1E -- the class and its lean, one ladder of twelve rungs
+describe("T-519: SPIRITS", async () => {
+  const { spiritsOf } = await import("../src/save/reader.js");
+  const word = (c: number, lean: number) => (c << 12) | (lean << 14) | 0x0123;      // the trade's bits below are left alone
+  it("reads the class and its lean as the game keeps them, with the game's words for the two ends only", () => {
+    expect(spiritsOf(word(0, 0))).toEqual({ class: "as it is", lean: 0, rung: 6, words: null });
+    expect([1, 2, 3].map((l) => spiritsOf(word(0, l)).rung)).toEqual([7, 5, 4]);   // a step up, a step down, two down
+    expect(spiritsOf(word(1, 0))).toEqual({ class: "good", lean: 0, rung: 11, words: "In good spirits." });
+    expect(spiritsOf(word(1, 3)).rung).toBe(8);                                      // three steps slipped back
+    expect(spiritsOf(word(2, 0))).toEqual({ class: "low", lean: 0, rung: 0, words: "In low spirits." });
+    expect(spiritsOf(word(2, 3)).rung).toBe(3);
+    expect(spiritsOf(word(3, 2))).toEqual({ class: "as it is", lean: 0, rung: 6, words: null });   // never written
+  });
+  it("reads every daemon of an old save as it is (the bits were zero)", () => {
+    const d = readDaemon(buildDaemon({ personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12 }), 0);
+    expect(d?.spirits.class).toBe("as it is");
+  });
+});

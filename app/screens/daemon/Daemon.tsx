@@ -369,6 +369,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
             <Small>{d.name} · L{d.level}</Small>
             {d.away ? <Small color="$color10">ON YOUR DEVICE</Small> : null}
             {d.holding ? <Small>holding {d.holding}</Small> : null}
+            {d.spirits?.words ? <Small color="$color10">{d.spirits.words}</Small> : null}{/* DAEMONS T-519: as the game's summary says it */}
             {d.asked ? <Small color="$color10">{d.away ? "ASKED HOME" : "ASKED TO GO"}</Small> : null}
           </YStack>
         ))}

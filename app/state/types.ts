@@ -14,7 +14,8 @@ export type Step = { id: number; text: string; done: boolean };
 export type Goal = { id: number; title: string; done: boolean; subitems: { id: number; title: string; done: boolean; steps: Step[] }[] };
 
 export type Daemon = { slot: number; species: number; name: string; nickname: string; level: number; friendship: number; away: boolean; asked: boolean;
-                holding: string | null };
+                holding: string | null;
+                spirits?: { class: "as it is" | "good" | "low"; words: string | null } };   // DAEMONS T-519
 
 // C-46: ONE goal, built from milestones and steps -- each entry short on purpose (simpler is better, and the site says
 // so). A row is a step, or a milestone holding its own steps. Tap a step to do it; tap again to undo (C-49).

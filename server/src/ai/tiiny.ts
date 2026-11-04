@@ -82,7 +82,9 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
                                ...(instructions ? { instructions } : {}) }) });
       if (!r.ok) return null;
       const audio = new Uint8Array(await r.arrayBuffer());
-      return audio.length ? { audio, mime: r.headers.get("content-type") || "audio/wav" } : null;
+      // the bytes say what it is: the Tiiny sends a WAV labelled audio/mpeg (seen 2026-11-03, through LiteLLM)
+      const riff = audio.length > 12 && String.fromCharCode(...audio.subarray(0, 4)) === "RIFF";
+      return audio.length ? { audio, mime: riff ? "audio/wav" : r.headers.get("content-type") || "audio/mpeg" } : null;
     });
   } catch { return null; }
 }

@@ -45,6 +45,8 @@ describe("talking to it", () => {
       ? new Response(new Uint8Array([1, 2, 3]), { headers: { "content-type": "audio/wav" } })
       : new Response(JSON.stringify({ text: " hello there " }))) as typeof fetch;
     expect((await tiinySpeak(at, "hi", "", f))!.audio.length).toBe(3);
+    const mislabelled = (async () => new Response(new TextEncoder().encode("RIFF\0\0\0\0WAVEfmt "), { headers: { "content-type": "audio/mpeg" } })) as typeof fetch;
+    expect((await tiinySpeak(at, "hi", "", mislabelled))!.mime).toBe("audio/wav");
     expect(await tiinyHear(at, new Uint8Array([0]), f)).toBe("hello there");
     expect(await tiinySpeak({ ...at, tts: "" }, "hi", "", f)).toBeNull();
   });

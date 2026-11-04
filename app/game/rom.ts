@@ -11,7 +11,7 @@ import { Directory, File, Paths } from "expo-file-system";
 import { applyBps } from "../../server/src/game/bps";
 import { sha1 } from "../../server/src/game/hash";
 import { latestRelease, patchFor, releasedAs, usePatches, type Patch } from "../../server/src/game/patches";
-import { api } from "../net";
+import { api } from "../platform/net";
 
 export type Game = { edition: "CONTENT" | "CONTEXT"; release: string; sha1: string; from: string; at: string; testing?: boolean };   // testing: C-216
 

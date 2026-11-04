@@ -3,12 +3,12 @@
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import { AppState, Linking } from "react-native";
-import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, keepEverything, LOCAL, MEETING, offlineHeard, ON_PHONE, SERVER, setConnection, TOKEN, WIDGET } from "../net";
-import { paletteHeard, setPalette } from "../look";
-import { sendTodaysSteps } from "../screens/Pair";
-import { heardElsewhere } from "../received";   // C-261
+import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, keepEverything, LOCAL, MEETING, offlineHeard, ON_PHONE, SERVER, setConnection, TOKEN, WIDGET } from "../platform/net";
+import { paletteHeard, setPalette } from "../state/look";
+import { sendTodaysSteps } from "../screens/settings/Pair";
+import { heardElsewhere } from "../ui/received";   // C-261
 import type { Arrival } from "../../server/src/core";
-import type { TABS } from "../types";
+import type { TABS } from "../state/types";
 
 // C-176 (the user chose "the watch shows, the phone taps"): the Ultra's tag holds daemons://link?device=<id> -- the
 // phone tapped to it opens here, on PLACES, linking with that watch

@@ -1,9 +1,9 @@
 // The beside split's sizes and drags (C-288: out of App.tsx's Shell).
 import { useRef, useState } from "react";
 import { LayoutAnimation } from "react-native";
-import { ON_PHONE } from "../net";
-import { keepSplit, splitKept } from "../game/away";
-import { keepLogsWidth, logsWidth } from "../game/dev";       // C-268
+import { ON_PHONE } from "../platform/net";
+import { keepSplit, splitKept } from "../state/away";
+import { keepLogsWidth, logsWidth } from "../state/dev";       // C-268
 import type { Away } from "./panes";
 
 // C-189: an iPad on its side is one screen -- the game on the left, always playing, and the companion beside it on the

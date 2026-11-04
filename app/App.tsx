@@ -9,29 +9,29 @@ import { StatusBar } from "expo-status-bar";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
-import { SCREEN } from "./data";
-import { loadLook, LOOK, lookHeard, PALETTE } from "./look";
-import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./net";
-import { DaemonScreen, useNews } from "./screens/Daemon";
-import { GoalsScreen } from "./screens/Goals";
-import { LibraryScreen } from "./screens/Library";
-import { PairScreen } from "./screens/Pair";
-import { GameView } from "./screens/Game";
-import { FoundBeside, useFound } from "./screens/Found";
-import { PlacesScreen } from "./screens/Places";
-import { SettingsScreen } from "./screens/Settings";
-import { TodayScreen } from "./screens/Today";
-import { ProfileScreen } from "./screens/You";
+import { SCREEN } from "./state/data";
+import { loadLook, LOOK, lookHeard, PALETTE } from "./state/look";
+import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
+import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
+import { GoalsScreen } from "./screens/goals/Goals";
+import { LibraryScreen } from "./screens/library/Library";
+import { PairScreen } from "./screens/settings/Pair";
+import { GameView } from "./screens/game/Game";
+import { FoundBeside, useFound } from "./screens/game/Found";
+import { PlacesScreen } from "./screens/places/Places";
+import { SettingsScreen } from "./screens/settings/Settings";
+import { TodayScreen } from "./screens/today/Today";
+import { ProfileScreen } from "./screens/you/You";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
-import { SHOWN_TABS, TABS, Today } from "./types";
-import { InkContext, onColour, Stuck } from "./ui";
-import { voiceFor } from "./tuneSound";
-import { muteAway } from "./game/away";
-import { useDev } from "./game/dev";       // C-268
-import { Logs } from "./devpanel";
-import { DevScreen } from "./screens/Dev";                  // C-275: </>
-import { Received } from "./received";   // C-261
-import { HowToOverlay, openHowTo } from "./howto";          // C-264
+import { SHOWN_TABS, TABS, Today } from "./state/types";
+import { InkContext, onColour, Stuck } from "./ui/ui";
+import { voiceFor } from "./sound/tuneSound";
+import { muteAway } from "./state/away";
+import { useDev } from "./state/dev";       // C-268
+import { Logs } from "./ui/devpanel";
+import { DevScreen } from "./screens/dev/Dev";                  // C-275: </>
+import { Received } from "./ui/received";   // C-261
+import { HowToOverlay, openHowTo } from "./ui/howto";          // C-264
 import MENU from "./modules/daemons-menu";                    // C-264: the menu bar's Help
 import { TabStrip } from "./shell/TabStrip";
 import { Divider, Edge, LogsDivider, LogsEdge } from "./shell/panes";

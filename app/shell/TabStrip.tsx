@@ -2,7 +2,7 @@
 // there are more and takes you to them, and goes once the last is in view
 import { useRef, useState } from "react";
 import { ScrollView, Text, XStack, YStack } from "tamagui";
-import { SHOWN_TABS, TABS } from "../types";
+import { SHOWN_TABS, TABS } from "../state/types";
 
 export function TabStrip({ tab, setTab, tabs = SHOWN_TABS }: { tab: (typeof TABS)[number]; setTab: (t: (typeof TABS)[number]) => void;
                                                                 tabs?: readonly (typeof TABS)[number][] }) {

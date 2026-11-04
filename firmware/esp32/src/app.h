@@ -109,6 +109,7 @@ void openAsAbove();                       // C-237: AS ABOVE SO BELOW, a touch i
 void hermeticFromState(JsonVariant h);    // C-238: THE HERMETIC LAYER's first sight, from the state
 void halloweenFromState(JsonVariant h);   // C-240: Halloween, with the book held
 bool halloweenNow(); bool shimmerNow(); bool costumeNow(); void toggleMask();
+float witchLevel(); float creatorLevelNow(); void creatorRim(int cx, int cy, int side);   // C-295: each hour's strength now, with the catch-up
 void indexArtDraw(int x, int y, int sc);  // index.cpp: the picture indexArtFor loaded (C-240: a costume)
 extern uint32_t routinesRun;              // C-240: how many routines have run (one may have used the INDEX's picture)   // C-236: 3 to 4 AM
 // C-200 (night.cpp): the night and the daemon's dream

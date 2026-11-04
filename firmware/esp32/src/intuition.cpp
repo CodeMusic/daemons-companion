@@ -321,7 +321,45 @@ void halloweenFromState(JsonVariant h) {
   if (t.length() && t != hwTreat) { hwTreat = t; say(t, 4000); }
 }
 bool halloweenNow() { return hwOn && st.carrying; }
-bool shimmerNow() { return witchingNow() || halloweenNow(); }
+
+// ---- how strong each hour is, and the catch-up (C-295, DAEMONS T-519; the user, 2026-11-02) --------------------------------
+// server/src/witching.ts, by value. THE WITCHING HOUR's shimmer follows the game's glitch curve -- a quarter at 3:00, full at
+// 3:30, 0.28 at 3:59, on whole minutes. THE CREATOR'S HOUR, 4:24 to 5:12, a soft gold rim instead: it rises over seven
+// minutes, holds, and resolves over the last seven. THE CATCH-UP: a watch that wakes or starts inside an hour shows
+// nothing for a minute, then eases over two up to where the clock has it; one awake before the hour began follows the clock.
+static float smooth01(float t) { float x = t < 0 ? 0 : t > 1 ? 1 : t; return x * x * (3 - 2 * x); }
+static uint32_t arrivedMs = 0; static bool arrivedInWitch = false, arrivedInCreator = false;
+static float minuteOfDay(const struct tm &t) { return t.tm_hour * 60 + t.tm_min + t.tm_sec / 60.0f; }
+static bool creatorClock(const struct tm &t) { float m = minuteOfDay(t); return m >= 4 * 60 + 24 && m < 5 * 60 + 12; }
+static float caughtUp(bool arrivedInside) {
+  if (!arrivedInside) return 1;
+  return smooth01(((int32_t)(millis() - arrivedMs) - 60000) / 120000.0f);
+}
+static void arrive() {                                     // woken, or started: where the watch came in
+  struct tm t; bool known = watchLocalTime(t);
+  arrivedMs = millis(); arrivedInWitch = known && t.tm_hour == 3; arrivedInCreator = known && creatorClock(t);
+}
+float witchLevel() {                                       // 0..1: the shimmer now
+  if (halloweenNow()) return 1;                            // C-240: all Halloween, as it was
+  struct tm t; if (!witchingNow() || !watchLocalTime(t)) return 0;
+  return (100 - (abs(t.tm_min - 30) * 5) / 2) / 100.0f * caughtUp(arrivedInWitch);
+}
+float creatorLevelNow() {                                  // 0..1: the gold rim now
+  struct tm t; if (!st.carrying || !watchLocalTime(t) || !creatorClock(t)) return 0;
+  float m = minuteOfDay(t) - (4 * 60 + 24), span = 48;
+  float lv = smooth01(m / 7) < smooth01((span - m) / 7) ? smooth01(m / 7) : smooth01((span - m) / 7);
+  return lv * caughtUp(arrivedInCreator);
+}
+bool shimmerNow() { return witchLevel() > 0.04f; }         // no shadow once it shows: not in the catch-up's quiet minute
+// the creator's hour: a soft gold rim about it, breathing slowly -- not a glitch, a light (DRAFT)
+void creatorRim(int cx, int cy, int side) {
+  float lv = creatorLevelNow(); if (lv < 0.03f) return;
+  float b = lv * (0.75f + 0.25f * sinf(millis() / 1600.0f));
+  for (int k = 0; k < 2; k++) {
+    float kb = b * (k ? 0.45f : 1.0f);
+    canvas.drawEllipse(cx, cy, side * 44 / 100 + k * 3, side * 48 / 100 + k * 3, canvas.color565((int)(240 * kb), (int)(196 * kb), (int)(96 * kb)));
+  }
+}
 bool costumeNow() { return halloweenNow() && hwCostume && costumeArt && !(unmaskUntil && (int32_t)(unmaskUntil - millis()) > 0); }
 void toggleMask() {
   if (!halloweenNow() || !hwCostume) return;
@@ -349,12 +387,15 @@ const char *witchingName() {
 // the shimmer: two faint rings that breathe and drop out now and then, and a few motes turning about it
 void witchShimmer(int cx, int cy, int side) {
   uint32_t t = millis();
+  float lv = routineRunning ? 1 : witchLevel();            // C-295: on the glitch curve and the catch-up (THE HOUR's own routine whole)
+  if (lv < 0.04f) return;
   for (int k = 0; k < 2; k++) {
     if ((t / 110 + k * 3) % 9 == 0) continue;                // it flickers
+    if (k && lv < 0.5f) continue;                            // faint: one ring
     int rx = side * 42 / 100 + k * 4 + (int)(2 * sinf(t / 260.0f + k)), ry = side * 46 / 100 + k * 4 + (int)(2 * cosf(t / 300.0f + k));
-    canvas.drawEllipse(cx, cy, rx, ry, pulse565(k ? 0.7f : 1.0f));   // C-237: on the breath
+    canvas.drawEllipse(cx, cy, rx, ry, pulse565((k ? 0.7f : 1.0f) * (0.35f + 0.65f * lv)));   // C-237: on the breath
   }
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < (int)(6 * lv + 0.5f); i++) {
     float a = t / 900.0f + i * 1.047f; int r = side * 52 / 100;
     canvas.fillRect(cx + (int)(r * cosf(a)), cy + (int)(r * 1.1f * sinf(a)), 2, 2, pulse565(i % 2 ? 1.0f : 0.6f));
   }
@@ -393,8 +434,10 @@ void intuitionLoop(uint32_t now) {
   if (noticeUntil && (int32_t)(noticeUntil - now) > -300) { static uint32_t at = 0; if (now - at > 60) { at = now; dirty = true; } }
   { static bool hadHour = false; static uint32_t at = 0;         // C-236: THE HOUR comes and goes -- at home or asleep, never mid-list
     if (now - at > 15000) { at = now; bool w = witchingRoutineNow(); if (w != hadHour && (asleep || screen == HOME)) { hadHour = w; routinesBegin(); dirty = true; } }
-    static uint32_t flickerAt = 0;                                // the shimmer, for anyone up at three
-    if (!asleep && screen == HOME && now - flickerAt > 120 && shimmerNow()) { flickerAt = now; dirty = true; } }   // C-240: all Halloween too
+    static uint32_t flickerAt = 0, rimAt = 0;                     // the shimmer, for anyone up at three
+    if (!asleep && screen == HOME && now - flickerAt > 120 && shimmerNow()) { flickerAt = now; dirty = true; }   // C-240: all Halloween too
+    if (!asleep && screen == HOME && now - rimAt > 200 && creatorLevelNow() > 0.03f) { rimAt = now; dirty = true; } }   // C-295: the gold rim
+  if (wasAsleep && !asleep) arrive();                            // C-295: the catch-up counts from waking (and from the start)
   if (hermFirst && !asleep && screen == HOME && witchingNow() && (!firstLaterAt || now - firstLaterAt > 600000UL)) openFirstSight();   // C-238
   if (halloweenNow() && hwCostume && !asleep && screen == HOME && (!costumeArt || costumeRun != routinesRun)   // C-240: its costume's
       && (!costumeTriedAt || now - costumeTriedAt > 30000)) {   // picture, loaded again after a routine has used the INDEX's

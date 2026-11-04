@@ -11,6 +11,7 @@ import { useApi } from "../useApi";
 import { SavesCard } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../game/away";
 import { DevModeCard } from "../devpanel";
+import { PhoneMindCard } from "./PhoneMind";   // C-280
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
@@ -87,6 +88,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
       <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
+      <PhoneMindCard ink={ink} />{/* C-280 */}
       <LeaveCompanionCard ink={ink} />
     </YStack>
   );
@@ -121,6 +123,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
       </Card>
       <WeatherCard ink={ink} />
       <TalkSettingsCard ink={ink} />
+      <PhoneMindCard ink={ink} />{/* C-280 */}
       <LeaveCompanionCard ink={ink} />
     </YStack>
   );
@@ -189,7 +192,7 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
   const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
                             moduleAddresses?: string; tiiny?: Tiiny;
                             health?: { tiiny?: { ok: boolean; models: string[] } | null } }>("/api/talk/settings");
-  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string } | null>(null);
+  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; asr?: string; tts?: string } | null>(null);
   const [tiinyNote, setTiinyNote] = useState("");
   const [typed, setTyped] = useState<string | null>(null);
   const [looking, setLooking] = useState("");
@@ -248,6 +251,12 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
           <Input flexGrow={1} minWidth={140} value={tiinyTyped?.model ?? t.tiiny?.model ?? ""} onChangeText={(model) => setTiinyTyped({ ...tiinyTyped, model })}
                  placeholder="its model (or the first)" autoCapitalize="none" autoCorrect={false} />
           <Action label="Look for it" ink={ink} onPress={saveTiiny} />
+        </XStack>
+        <XStack gap={8} flexWrap="wrap" alignItems="center">
+          <Input flexGrow={1} minWidth={140} value={tiinyTyped?.asr ?? t.tiiny?.asr ?? ""} onChangeText={(asr) => setTiinyTyped({ ...tiinyTyped, asr })}
+                 placeholder="its hearing model (or the board's)" autoCapitalize="none" autoCorrect={false} />
+          <Input flexGrow={1} minWidth={140} value={tiinyTyped?.tts ?? t.tiiny?.tts ?? ""} onChangeText={(tts) => setTiinyTyped({ ...tiinyTyped, tts })}
+                 placeholder="its voice model (or the board's)" autoCapitalize="none" autoCorrect={false} />
         </XStack>
         <Small color={tiinyHealth ? (tiinyHealth.ok ? "$color10" : "$color9") : undefined}>
           {tiinyNote || (!tiinyOn ? "Its address: roverbyteseer's, which lists the Tiiny's models with its own, or the Tiiny's own, ending /openai/v1."

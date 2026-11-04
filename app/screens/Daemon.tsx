@@ -19,6 +19,7 @@ import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard, Under } from "./Reads";   // C-203, C-204
 import { AsAbove, HalloweenNote, HourCount, useHalloween, useWitching, WitchingHour } from "./Witching";   // C-236, C-237, C-240
 import { FirstSight } from "./Hermetic";   // C-238
+import { talkHere, thinker } from "../mind";   // C-280
 import { useApi } from "../useApi";
 import { heardSync } from "../received";              // C-261
 import type { Arrival } from "../../server/src/core";
@@ -204,6 +205,11 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
     if (!recorder.uri) { setState(""); return; }
     setState("thinking");
     try {
+      if (await thinker() === "phone") {                       // C-280: heard and answered on this phone
+        const r = await talkHere(recorder.uri, name);
+        setSaid(r); if (r.audioBase64) speak(r.audioBase64);
+        return;
+      }
       const audioBase64 = await new File(recorder.uri).base64();
       const r = await apiLater<Spoken>("/api/ai/talk", { audioBase64, audioMime: "audio/mp4" });   // C-180: never held open
       setSaid(r); speak(r.audioBase64);

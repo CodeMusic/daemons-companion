@@ -51,7 +51,8 @@ said **DAY-mon**: the Greek *daimon*, a guiding spirit, and the background proce
   daemon(s) as daymon(s) and keeps the rest of the word (eudaemon becomes eudaymon). It changes only what is spoken,
   never what is shown or stored.
 - **A new speech path must call it.** Today these do: the hub's `/api/ai/speak` (`server/src/api.ts`), the house module
-  (`server/src/ai/module.ts`), the Tiiny (`server/src/ai/tiiny.ts`), and n8n's daemon/voice, daemon/talk and
+  (`server/src/ai/module.ts`), the Tiiny (`server/src/ai/tiiny.ts`), the phone's own voice when it answers by itself (`app/mind.ts`,
+  C-280), and n8n's daemon/voice, daemon/talk and
   daemon/chat (the DAEMONS repo's `ai/n8n/make_workflows.py`, `SAYABLE`). The book recordings respell the same way.
 - **Not covered yet**: the LLM630 board's on-device MeloTTS (`firmware/esp32/src/brain.cpp`) and the BOX-3's Home
   Assistant voice pipeline both speak without going through the hub.

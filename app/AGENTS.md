@@ -29,7 +29,7 @@ Run lint and typecheck before declaring any task done.
 user deciding it. Navigation is local React state:
 
 - `index.ts` -> `App.tsx`. `App` pairs (C-53) and picks the paper or the night (C-144), then renders `Shell`.
-- **The tabs** are `TABS` in `types.ts`: `today, game, daemon, goals, library, you, places, settings, dev`.
+- **The tabs** are `TABS` in `state/types.ts`: `today, game, daemon, goals, library, you, places, settings, dev`.
   `SHOWN_TABS` hides `settings` (the gear opens it), `dev` (shown as `</>` only in DEVELOPER MODE, C-275) and, on the
   site, `game`. `Shell` keeps the open tab in `useState` and renders it from one table, `TAB_VIEW` (C-287).
 - **The game view is mounted once and never remounted** (C-187): outside the page's `ScrollView`, hidden rather than
@@ -46,9 +46,26 @@ user deciding it. Navigation is local React state:
 
 - **The app imports server source** (`../server/src/*`, `../server/data/*`) so a phone can host the companion's rules
   itself (C-111; `metro.config.js` allows it). Those server files must stay free of Node-only APIs.
-- **Phone-only modules load lazily**: `net.ts` `require()`s `handheld`, `beacon`, `widget` and `local`, and `ui.tsx`
-  `careSound`, inside a check. A top-level import would pull native modules into the site's build.
+- **Phone-only modules load lazily**: `platform/net.ts` `require()`s `handheld`, `beacon`, `widget` and `local`, and
+  `ui/ui.tsx` `sound/careSound`, inside a check. A top-level import would pull native modules into the site's build.
 - **Code comments cite tickets** (`// C-264: ...`) from the companion's `TODO.md`. Keep them when code moves.
+
+## Where things live (C-289)
+
+| Folder | What is in it |
+|---|---|
+| `App.tsx`, `index.ts` | `App` (pairing, the look, the providers) and `Shell`, which wires `shell/` together |
+| `shell/` | the tab strip, the beside split's panes and sizes (`panes.tsx`, `split.ts`), the background syncs (`sync.ts`) |
+| `screens/<tab>/` | each tab's page (`today`, `daemon`, `goals`, `library`, `you`, `places`, `settings`, `game`, `dev`) and the pages only it opens |
+| `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index` |
+| `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud, the book recordings, the LOGS |
+| `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |
+| `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), `useApi` |
+| `state/` | types, data, the look, the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`) |
+| `art/` | species sprites (`speciesArt.ts`, written by `tools/species-art.py`), device sprites, the casino's dress |
+| `game/` | the game's ROM and its gate |
+| `modules/`, `targets/` | native modules and the widget's Swift |
+| `tamagui.config.ts` | stays at the root |
 
 ## Building with EAS
 
@@ -72,7 +89,7 @@ said **DAY-mon**: the Greek *daimon*, a guiding spirit, and the background proce
   daemon(s) as daymon(s) and keeps the rest of the word (eudaemon becomes eudaymon). It changes only what is spoken,
   never what is shown or stored.
 - **A new speech path must call it.** Today these do: the hub's `/api/ai/speak` (`server/src/api.ts`), the house module
-  (`server/src/ai/module.ts`), the Tiiny (`server/src/ai/tiiny.ts`), the phone's own voice when it answers by itself (`app/mind.ts`,
+  (`server/src/ai/module.ts`), the Tiiny (`server/src/ai/tiiny.ts`), the phone's own voice when it answers by itself (`app/platform/mind.ts`,
   C-280), and n8n's daemon/voice, daemon/talk and
   daemon/chat (the DAEMONS repo's `ai/n8n/make_workflows.py`, `SAYABLE`). The book recordings respell the same way.
 - **Not covered yet**: the LLM630 board's on-device MeloTTS (`firmware/esp32/src/brain.cpp`) and the BOX-3's Home

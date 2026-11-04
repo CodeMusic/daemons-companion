@@ -23,11 +23,32 @@ npx expo install --fix      # fix incompatible package versions
 
 Run lint and typecheck before declaring any task done.
 
-## Navigation & Routing
+## Navigation (C-286)
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+**This app has no router.** It does not use Expo Router or any navigation library, and should not gain one without the
+user deciding it. Navigation is local React state:
+
+- `index.ts` -> `App.tsx`. `App` pairs (C-53) and picks the paper or the night (C-144), then renders `Shell`.
+- **The tabs** are `TABS` in `types.ts`: `today, game, daemon, goals, library, you, places, settings, dev`.
+  `SHOWN_TABS` hides `settings` (the gear opens it), `dev` (shown as `</>` only in DEVELOPER MODE, C-275) and, on the
+  site, `game`. `Shell` keeps the open tab in `useState` and renders it from one table, `TAB_VIEW` (C-287).
+- **The game view is mounted once and never remounted** (C-187): outside the page's `ScrollView`, hidden rather than
+  unmounted. Remounting it loses what was played since the last save. Keep this.
+- **An iPad on its side** (C-189) shows the game on the left and the companion on the right, a divider between them to
+  drag; either side can be put away (C-260). In DEVELOPER MODE a LOGS pane sits at the right with its own divider (C-268).
+- **Pages inside a tab are local `useState` unions**: the DAEMON tab's `seg`, the LIBRARY's `book`. There is no back
+  stack and no deep link into one.
+- **The open tab tapped again** bumps a counter in the page `ScrollView`'s `key`, remounting the tab: "back to its own
+  first page" (the user, 2026-10-28). It is meant to be blunt.
+- **Deep links**: only `daemons://link?device=<id>` (C-176), which opens PLACES and links that watch.
+
+## Rules the layout depends on
+
+- **The app imports server source** (`../server/src/*`, `../server/data/*`) so a phone can host the companion's rules
+  itself (C-111; `metro.config.js` allows it). Those server files must stay free of Node-only APIs.
+- **Phone-only modules load lazily**: `net.ts` `require()`s `handheld`, `beacon`, `widget` and `local`, and `ui.tsx`
+  `careSound`, inside a check. A top-level import would pull native modules into the site's build.
+- **Code comments cite tickets** (`// C-264: ...`) from the companion's `TODO.md`. Keep them when code moves.
 
 ## Building with EAS
 

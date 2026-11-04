@@ -58,6 +58,7 @@ import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
 import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
+import { voiceRecipe } from "./ai/voices.js";   // C-251
 import { bondTrend, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { dayOf as dayBefore, dreamAsk, dreamsOf, rewriteDream } from "./dreams.js";   // C-200; C-283: the day, the journal
@@ -271,6 +272,14 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
 }
 const selfText = (ecfg: Config, store: Store, deviceId: string, length: SelfLength) =>
   selfOf(selfFacts(ecfg, store, deviceId), length, store.getSetting("self.instructions") || SELF_INSTRUCTIONS);
+// C-251: the voice the carried daemon speaks in -- its trainer's own recipe for it (voice.recipe.<species>), else its
+// type's, shaded by how it feels now; said to a voice-design model with every line
+function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()) {
+  const d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
+  if (!d) return { species: null as number | null, recipe: voiceRecipe({}, null), own: "" };
+  const own = store.getSetting(`voice.recipe.${d.species}`) ?? "";
+  return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category }, core.daemonFeelings(store, now), own) };
+}
 const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!s && readSubtle(s).held; };
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
@@ -1094,6 +1103,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { length, text: selfText(ecfg, store, deviceId, length), trainer: store.getSetting("self.trainer") ?? "",
                                 box: store.getSetting("self.box") ?? "", instructions: store.getSetting("self.instructions") ?? "" });
       }
+      // C-251: the carried daemon's voice recipe -- as said to the voice model, and the trainer's own words for it if any
+      if (req.method === "GET" && path === "/api/voice") return send(res, 200, voiceFor(ecfg, store, deviceId));
+      if (req.method === "POST" && path === "/api/voice") {
+        const b = await body(req), v = voiceFor(ecfg, store, deviceId);
+        if (v.species === null) return send(res, 400, { error: "No daemon is carried." });   // DRAFT
+        if (typeof b.recipe === "string") store.setSetting(`voice.recipe.${v.species}`, b.recipe.trim().slice(0, 600) || null);
+        return send(res, 200, voiceFor(ecfg, store, deviceId));
+      }
       if (req.method === "POST" && path === "/api/self") {          // the trainer's name, the box, the user's own instructions
         const b = await body(req);
         for (const [k, most] of [["trainer", 40], ["box", 60], ["instructions", 4000]] as const)
@@ -1322,13 +1339,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const tiiny = tiinyIn((k) => store.getSetting(k));
         if (p.provider === "tiiny" && tiiny && !asked) {          // C-249: the Tiiny, with the daemon's whole self; else as before
           try {
-            // heard on the house's own board first (near, and quick), the Tiiny's hearing only without one
-            const said = ask.text ?? (ask.wav ? (house.any ? await house.transcribe(ask.wav).catch(() => null) : null) ?? await tiinyHear(tiiny, ask.wav) : null);
+            // heard by the Tiiny's own hearing model when one is chosen, else on the house's board (near, and quick)
+            const onBoard = async (w: Uint8Array) => house.any ? await house.transcribe(w).catch(() => null) : null;
+            const said = ask.text ?? (!ask.wav ? null : tiiny.asr ? (await tiinyHear(tiiny, ask.wav)) ?? await onBoard(ask.wav)
+                                                          : (await onBoard(ask.wav)) ?? await tiinyHear(tiiny, ask.wav));
             if (said) {
               const model = pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []);
               const answer = await tiinyChat(tiiny, model, selfText(ecfg, store, deviceId, "full"), ask.history, said);
               // its own voice model if one is chosen, else the house board speaks the Tiiny's words -- never silent
-              const v = !p.speak ? null : (await tiinySpeak(tiiny, answer))
+              const v = !p.speak ? null : (await tiinySpeak(tiiny, answer, voiceFor(ecfg, store, deviceId).recipe))
                 ?? (house.any ? await house.voice(answer).then((x) => x && x.audio.length ? { audio: x.audio, mime: "audio/wav" } : null).catch(() => null) : null);
               return { answer, heard: ask.wav ? said : null, provider: `tiiny:${model}`,
                        ...(v ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: v.mime } : {}) };

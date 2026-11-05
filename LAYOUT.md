@@ -30,7 +30,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index` |
 | `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud, the book recordings, the LOGS |
 | `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |
-| `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), `useApi` |
+| `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), the voices kept on the phone (`voiceFile.ts`), `useApi` |
 | `state/` | types, data, the look, the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`) |
 | `art/` | species sprites (`speciesArt.ts`, written by `tools/species-art.py`), device sprites, the casino's dress |
 | `game/` | the game's ROM and its gate |

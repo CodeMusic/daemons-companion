@@ -1,7 +1,7 @@
 // DAEMON -- Yours (its life, care, TALK, SYNC, NEARBY, meetings), Party; the INDEX and the Routines are their own files. (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
 import { File } from "expo-file-system";
-import { voiceFile } from "../../platform/voiceFile";
+import { keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
@@ -189,11 +189,12 @@ const artQuery = (expression: string | undefined, mouth: boolean) => {
   const q = [expression && expression !== "awake" ? `expression=${expression}` : "", mouth ? "mouth=open" : ""].filter(Boolean).join("&");
   return q ? `?${q}` : "";
 };
+// a voice to play: the hub's base64, or a kept file (platform/voiceFile.ts) played from where it is
 export function useVoice() {
   const player = useAudioPlayer(null);
-  return (b64?: string | null) => {
-    if (!b64) return;
-    const f = voiceFile("voice", b64);
+  return (v?: string | File | null) => {
+    if (!v) return;
+    const f = typeof v === "string" ? voiceFile("voice", v) : v;
     player.replace({ uri: f.uri }); player.play();
     followVoice(player);                                   // C-213: its mouth moves while it speaks
   };
@@ -206,6 +207,11 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
   const speak = useVoice();
   const [state, setState] = useState<"" | "listening" | "thinking">("");
   const [said, setSaid] = useState<Spoken | null>(null);
+  const [heard, setHeard] = useState<File | null>(null);   // the answer's voice, kept on the phone to hear again
+  const answered = (r: Spoken) => {
+    const f = r.audioBase64 && r.answer ? keepVoice(`talk:${r.answer}`, r.audioBase64) : null;
+    setHeard(f); speak(f ?? r.audioBase64);
+  };
   const start = async () => {
     const ok = await requestRecordingPermissionsAsync();
     if (!ok.granted) { setSaid({ error: "The microphone is off for this app (Settings, then DAEMONS)." }); return; }
@@ -221,12 +227,12 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
     try {
       if (await thinker() === "phone") {                       // C-280: heard and answered on this phone
         const r = await talkHere(recorder.uri, name);
-        setSaid(r); if (r.audioBase64) speak(r.audioBase64);
+        setSaid(r); answered(r);
         return;
       }
       const audioBase64 = await new File(recorder.uri).base64();
       const r = await apiLater<Spoken>("/api/ai/talk", { audioBase64, audioMime: "audio/mp4" });   // C-180: never held open
-      setSaid(r); speak(r.audioBase64);
+      setSaid(r); answered(r);
     } catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
   };
   return (
@@ -240,6 +246,7 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
       </Button>
       {said?.heard ? <Small color="$color10">{`“${said.heard}”`}</Small> : null}
       {said?.answer ? <Text fontSize={16} lineHeight={24} color="$color12">{said.answer}</Text> : null}
+      {heard && state === "" ? <Action label="HEAR IT AGAIN" ink={ink} onPress={() => speak(heard)} /> : null}{/* DRAFT */}
       {said?.error ? <Small color="$color8">{said.error}</Small> : null}
     </Card>
   );
@@ -254,7 +261,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   const [reading, setReading] = useState(false);
   const readAloud = async (species: number) => {           // C-65: the INDEX entry, in the INDEX voice
     setReading(true);
-    try { speak((await apiLater<Spoken>("/api/ai/speak", { species })).audioBase64); } catch { /* the card says nothing new */ }
+    try { speak(await readingVoice({ species })); } catch { /* the card says nothing new */ }   // kept on the phone after the first time
     finally { setReading(false); }
   };
   const [note, setNote] = useState("");

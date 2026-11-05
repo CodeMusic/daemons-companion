@@ -1,6 +1,6 @@
 // the INDEX -- every entry the save holds, NATIVE, OPUS's margins, LISTEN. (C-157: out of App.tsx.)
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import { voiceExt, voiceFile } from "../../platform/voiceFile";
+import { readingVoice, voiceExt } from "../../platform/voiceFile";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { Spinner, Text, XStack, YStack } from "tamagui";
@@ -20,13 +20,18 @@ export function useIndexReader() {
     const mine = ++turn.current;
     setFailed(""); setReading({ species, phase: "making" });
     try {
-      const r = await apiLater<Spoken>("/api/ai/speak", { species });   // C-180
-      if (turn.current !== mine) return;
-      if (!r.audioBase64) { setFailed(r.error ?? "No voice came back."); setReading(null); return; }
-      let uri = `data:audio/${voiceExt(r.audioBase64) === "wav" ? "wav" : "mpeg"};base64,${r.audioBase64}`;                      // the site plays it as it came
-      if (ON_PHONE) {                                                              // the phone, from its cache
-        uri = voiceFile("index", r.audioBase64).uri;
+      let uri: string;
+      if (ON_PHONE) {                       // the phone: the voice kept from the first time, else the hub's, kept
+        const f = await readingVoice({ species });
+        if (turn.current !== mine) return;
+        if (!f) { setFailed("No voice came back."); setReading(null); return; }   // DRAFT
+        uri = f.uri;
         await setAudioModeAsync({ playsInSilentMode: true });
+      } else {                              // the site plays it as it came
+        const r = await apiLater<Spoken>("/api/ai/speak", { species });   // C-180
+        if (turn.current !== mine) return;
+        if (!r.audioBase64) { setFailed(r.error ?? "No voice came back."); setReading(null); return; }
+        uri = `data:audio/${voiceExt(r.audioBase64) === "wav" ? "wav" : "mpeg"};base64,${r.audioBase64}`;
       }
       player.replace({ uri }); player.play();
       setReading({ species, phase: "speaking" });

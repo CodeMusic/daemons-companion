@@ -3,10 +3,10 @@
 // it wrote one, otherwise the companion's own words), how long and how still the night was, and whether it was tucked in.
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api, apiLater, ON_PHONE } from "../../platform/net";
-import { Spoken } from "../../state/types";
+import { api, ON_PHONE } from "../../platform/net";
 import { Action, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { useVoice } from "./Daemon";
+import { readingVoice } from "../../platform/voiceFile";
 
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string };
@@ -18,7 +18,7 @@ export function DreamsScreen({ ink }: { ink?: string }) {
   const [reading, setReading] = useState(0);
   const readAloud = async (d: Dream) => {                     // the user, 2026-10-28: a dream read aloud, in the INDEX voice
     setReading(d.id);
-    try { speak((await apiLater<Spoken>("/api/ai/speak", { text: d.text })).audioBase64); } catch { /* the card says nothing new */ }
+    try { speak(await readingVoice({ text: d.text })); } catch { /* the card says nothing new */ }   // kept on the phone after the first time
     finally { setReading(0); }
   };
   const [error, setError] = useState("");

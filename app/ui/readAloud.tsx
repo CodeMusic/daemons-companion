@@ -4,11 +4,10 @@
 // chapter starts at once. A paragraph past what the voice takes at once (600) is cut at its sentences, as the watch's
 // are (server/src/books.ts). Tapped again, it stops. Only where the voice is (ON_PHONE, with the companion behind it).
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { voiceFile } from "../platform/voiceFile";
+import { readingVoice } from "../platform/voiceFile";
 import { useEffect, useRef, useState } from "react";
-import { apiLater, ON_PHONE } from "../platform/net";
+import { ON_PHONE } from "../platform/net";
 import { followVoice, setSpeaking } from "../sound/speaking";   // C-213
-import { Spoken } from "../state/types";
 import { Action } from "./ui";
 
 const MAX = 560;
@@ -41,13 +40,13 @@ export function useReadAloud() {
     setReading(key);
     try {
       await setAudioModeAsync({ playsInSilentMode: true });
-      const next = sayable(paragraphs).map((text) => () => apiLater<Spoken>("/api/ai/speak", { text }));
+      const next = sayable(paragraphs).map((text) => () => readingVoice({ text }));   // each kept on the phone after the first time
       let coming = next.length ? next[0]() : null;
       for (let i = 0; i < next.length && run.current === mine; i++) {
         const spoken = await coming;
         coming = i + 1 < next.length ? next[i + 1]() : null;   // the next asked for while this one plays
-        if (run.current !== mine || !spoken?.audioBase64) break;
-        const f = voiceFile("read", spoken.audioBase64);
+        if (run.current !== mine || !spoken) break;
+        const f = spoken;
         player.replace({ uri: f.uri }); player.play(); followVoice(player);
         await ended();
       }

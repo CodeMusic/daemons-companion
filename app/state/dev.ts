@@ -98,7 +98,7 @@ export function pretendLife<L extends { mood: number; word: string; tired: strin
 // C-275: THE GAME SESSION -- what the </> tab sets: the books held or not, each GAME EVENT and CALLOW SCHOOL's rows, the
 // witching hour. IN MEMORY ONLY, like the pretend above: the app is shown it (net.ts asks devRoute() before every read)
 // and nothing is written anywhere; RESTORE, DEVELOPER MODE off or the app shut puts the save's own answers back.
-export type Book = "guide" | "subtle" | "hermetic" | "play";
+export type Book = "guide" | "subtle" | "hermetic" | "eudaimon" | "play";   // C-297: the dawn half
 export type Session = { books: Partial<Record<Book, boolean>>; events: Record<number, boolean>;
                         school: Partial<Record<"textbook" | "diploma", boolean>>; hour: boolean | null;
                         dawn: boolean | null };   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12
@@ -116,7 +116,7 @@ export const hourForced = () => (read().on ? session.hour : null);
 // T-519: THE CREATOR'S HOUR as the session has it: null, the clock's; on, as at its middle (its light whole, its tone sounding)
 export const dawnForced = () => (read().on ? session.dawn ?? null : null);
 // a book asked for as if held: the companion's own read-only ?preview=1 (never kept, never written)
-const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/play": "play" };
+const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/eudaimon": "eudaimon", "/api/play": "play" };
 export const bookForced = (b: Book) => (read().on ? session.books[b] : undefined);
 
 // Before a read: the path to ask (a book forced held asks with ?preview=1), and what to do to the answer

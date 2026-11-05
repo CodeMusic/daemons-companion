@@ -44,9 +44,10 @@ import { thriveOf } from "./thrive.js";   // C-207
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
+import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/hermetic/first", "/api/halloween", "/api/glass"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/hermetic/first", "/api/halloween", "/api/glass"];
 const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -116,6 +117,11 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/reads") return ok({ held: readSubtle(save, undefined, a.query?.preview === "1").held, ...readsView(store, now) });   // C-203: the companion's own log
     if (path === "/api/subtle") return ok(readSubtle(save, undefined, a.query?.preview === "1"));
     if (path === "/api/hermetic") return ok(readHermetic(save, store, a.query?.preview === "1"));   // C-238: THE HERMETIC LAYER
+    if (path === "/api/eudaimon") {                                     // C-297: THE EUDAIMON LAYER, its observer's line as the lead reads it
+      let lead;
+      try { lead = save ? readSave(save).party[0]?.spirits.class : undefined; } catch { /* as it is */ }
+      return ok(readEudaimon(save, a.query?.preview === "1", lead));
+    }
     if (path === "/api/hermetic/first")                                 // C-238: the hour, first seen (?preview=1: the message, nothing kept)
       return ok({ message: a.query?.preview === "1" ? FIRST_SIGHT : firstSight(store, save, now) });
     if (path === "/api/halloween") {                                    // C-240: today, with the book held -- the costume and the treats

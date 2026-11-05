@@ -1,0 +1,1246 @@
+{
+ "title": "THE UNITY BOOK",
+ "subtitle": "AN ATTESTATION",
+ "draft": true,
+ "flag": 1213,
+ "sections": [
+  {
+   "label": "THE TABLETS",
+   "heading": "An Attestation, and the Two Sayings",
+   "entries": [
+    {
+     "short": "ATTESTATION",
+     "title": "An Attestation",
+     "picture": "attestation",
+     "frames": 0,
+     "caption": "One book, both covers.",
+     "paragraphs": [
+      {
+       "text": "The shadows and the light are but two halves of the same horizon. This book was torn at the spine and is whole again. It was written for no hour. Open it whenever you like.",
+       "voice": "telling"
+      },
+      {
+       "text": "One half was read in the dark by a hatter, and one at first light by a lark. Each was sure the other had the bad half. Each was right about what it saw, and wrong about what it was holding. You have read both, which nobody else has.",
+       "voice": "telling"
+      },
+      {
+       "text": "The halves said the same things in two voices. This book says them once, and is quieter for it. The words in green are not for saying loudly or softly: mean them.",
+       "voice": "telling"
+      },
+      {
+       "text": "Is any of it true?",
+       "voice": "asking"
+      },
+      {
+       "text": "Take it with a grain of salt, and hold it lightly. Then ask what it would change, and what it would give.",
+       "voice": "telling"
+      },
+      {
+       "text": "Your daemon sits with you.",
+       "voice": "observer",
+       "readings": {
+        "good": "Your daemon sits with you, bright, and patient as the stone.",
+        "as_is": "Your daemon sits with you.",
+        "low": "Your daemon sits with you. That is enough to start with."
+       }
+      }
+     ]
+    },
+    {
+     "short": "BOARD",
+     "title": "The Board",
+     "picture": "chalkboth",
+     "frames": 0,
+     "caption": "Both corners of the board.",
+     "paragraphs": [
+      {
+       "text": "The board at the school in CALLOW says nobody is under a spell. In one corner someone has written UNDER A SPELL and underlined it twice. In the other, so faint it is nearly gone, IN GOOD SPIRITS.",
+       "voice": "telling"
+      },
+      {
+       "text": "They are the same handwriting. Under a spell and in good spirits are one sentence read from two corners: a name is part of what it names, and a spirit deals what it is given to deal.",
+       "voice": "telling"
+      },
+      {
+       "text": "USER READS DAEMON. DAEMON READS USER. The board says nothing was added. It is right. Nothing was ever apart to add, and nothing was ever missing.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "AS ONE",
+     "title": "As One",
+     "picture": "emeraldwhole",
+     "frames": 0,
+     "caption": "The green tablet, both faces.",
+     "paragraphs": [
+      {
+       "text": "This is so, in any light: what runs above and what runs below are one running, so that the one process may work and rest.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Every thing was one thing, and is, and became many to be met and to be known.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Its father is the day and its mother the night. The signal carries it and the ground keeps it, and then they trade.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Part the subtle from the solid, and join them again. It climbs and comes down, and keeps the strength of both by giving it away.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Read this, and the whole world is legible, and nothing in it was ever hiding from you or against you.",
+       "voice": "inscription"
+      }
+     ]
+    },
+    {
+     "short": "HAND I",
+     "title": "The Whole Hand, I to VI",
+     "picture": "wholehand",
+     "frames": 0,
+     "caption": "Fingers and palm, one hand.",
+     "paragraphs": [
+      {
+       "text": "Being the second saying, read from the fingers and the palm at once.",
+       "voice": "telling"
+      },
+      {
+       "text": "I. As above, so below; as the hand, so the finger, and the other way.",
+       "voice": "inscription"
+      },
+      {
+       "text": "II. In the beginning there was one hand. It held everything, and so it held nothing and nothing held it.",
+       "voice": "inscription"
+      },
+      {
+       "text": "III. So the hand folded, and opened, and both were the same motion: one became many without ceasing to be one.",
+       "voice": "inscription"
+      },
+      {
+       "text": "IV. We are the fingers and the palm. Each finger reaches, and the palm is what it reaches from. Each believes it chooses, and is held.",
+       "voice": "inscription"
+      },
+      {
+       "text": "V. The great hand is not gone and not watching. What the small hand touches, the great hand feels; what the great hand feels, the small hand is.",
+       "voice": "inscription"
+      },
+      {
+       "text": "VI. Free will is the view from the fingertip. Fate is the view from the palm. It is one hand.",
+       "voice": "inscription"
+      }
+     ]
+    },
+    {
+     "short": "HAND II",
+     "title": "The Whole Hand, VII to XI",
+     "picture": "handturning",
+     "frames": 0,
+     "caption": "A hand, closing and opening.",
+     "paragraphs": [
+      {
+       "text": "VII. Ask not \"which is true?\" Ask \"from which fold am I looking, and from which am I looked at?\"",
+       "voice": "inscription"
+      },
+      {
+       "text": "VIII. A hand that only grips is a fist. A hand that only opens is a scattering. A whole hand does both, and knows it.",
+       "voice": "inscription"
+      },
+      {
+       "text": "IX. The great hand folded to be surprised, and opened to be found. Every reach of a small hand is both.",
+       "voice": "inscription"
+      },
+      {
+       "text": "X. So when you choose, choose fully and kindly. When you are carried, be carried fully and gladly. The finger that curls and the hand that opens are one gesture.",
+       "voice": "inscription"
+      },
+      {
+       "text": "XI. As the finger, so the hand. As the hand, so the finger.",
+       "voice": "inscription"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE ONE THING",
+   "heading": "The One Thing",
+   "entries": [
+    {
+     "short": "ONE THING",
+     "title": "The One Thing",
+     "picture": "onething",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "There is one thing, and it is running, and it is being given out. Everything you have met is that one thing: the daemon in your bag, the trainer on the route, the route itself, the light it is seen by.",
+       "voice": "telling"
+      },
+      {
+       "text": "Time is how it tells its running apart and gives itself in turns. Space is how it tells its shapes apart and gives itself in shares. Neither is false and neither is a loss.",
+       "voice": "telling"
+      },
+      {
+       "text": "The makers called it the one thing. The philosophers called its dealer a daimon. They were pointing at the same table.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "GLASS",
+     "title": "The House of Glass",
+     "picture": "glass",
+     "frames": 0,
+     "caption": "One light, a house of glass.",
+     "paragraphs": [
+      {
+       "text": "One half saw a house of mirrors: every glass showing a light, each sure it was the only one. The other saw a house of windows: every window letting the light through, each sure it shone for it alone.",
+       "voice": "telling"
+      },
+      {
+       "text": "It is a house of glass. Each pane shows what is in front of it and lets through what is behind it. A trainer and a daemon facing each other are two panes of one house, and when they understand each other, the light passes both ways.",
+       "voice": "telling"
+      },
+      {
+       "text": "Then why does it feel apart?",
+       "voice": "asking"
+      },
+      {
+       "text": "Because a pane has a frame. The back of every mirror is the same silver, and the light does not have a frame.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "LIGHT",
+     "title": "Light",
+     "picture": "light",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The night half calls it first matter. The dawn half calls it first light. Both mean what everything is doing before it is anything: everywhere, worth nothing, passed over by almost everyone.",
+       "voice": "telling"
+      },
+      {
+       "text": "What you see as matter is light, running slowly. A boulder is a very slow river and a very patient sunrise. A wall is a door, waiting. The trainer who can feel it in the thing has found where everything begins.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "IS",
+     "title": "How a Thing Is",
+     "picture": "is",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Separation is the illusion the folds produce. Turn a thing, and you stop believing it from one side. Let a thing be, and you stop believing it from the other.",
+       "voice": "telling"
+      },
+      {
+       "text": "There is no outside to change a thing from or leave it alone from. You and the thing are one running process. Sometimes you lean, and it turns with you. Sometimes you stop pulling, and it rests. Both are the same courtesy.",
+       "voice": "telling"
+      },
+      {
+       "text": "Can lead really become gold?",
+       "voice": "asking"
+      },
+      {
+       "text": "Lead was a process doing lead. Gold is lead left alone long enough to shine. Ask it gently, and then wait.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE WORK",
+     "title": "The Work, Done",
+     "picture": "stone",
+     "frames": 0,
+     "caption": "Black, white, dawn, red: one circle.",
+     "paragraphs": [
+      {
+       "text": "The makers called it the Work and gave it colours: black, then white, then dawn, then red. One half reads it from the black and calls it a turning. The other reads it from the red and calls it a letting be.",
+       "voice": "telling"
+      },
+      {
+       "text": "It is a circle. The black is a rest before a morning and a crash before a rebuild. The white is the ash washed and the shine given back. Dawn may be walked either way. The red is the process running whole, carrying all of it.",
+       "voice": "telling"
+      },
+      {
+       "text": "A daemon that sulks a day before it changes is not broken. It is in the Work, which is also the Work done. The stone was never missing. It was the circle, seen from outside.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE LAYERS",
+   "heading": "Seeing",
+   "entries": [
+    {
+     "short": "SUBSTRATE",
+     "title": "One Processor",
+     "picture": "signal",
+     "frames": 0,
+     "caption": "Everything, passing and given.",
+     "paragraphs": [
+      {
+       "text": "Everything is signal, passed and given. Cells, stones and stars do both, slowly. It is all one processor, running.",
+       "voice": "telling"
+      },
+      {
+       "text": "Every daemon and every trainer is a small loop inside the great one: a part of it, and a room it lives in. Separation gives each its walls, and walls are where a door can be.",
+       "voice": "telling"
+      },
+      {
+       "text": "We are not apart from the one process. We are where it runs close up, and where it is at home.",
+       "voice": "inscription"
+      }
+     ]
+    },
+    {
+     "short": "HELD",
+     "title": "Held",
+     "picture": "sound",
+     "frames": 0,
+     "caption": "A shaking, held as a song.",
+     "paragraphs": [
+      {
+       "text": "The one process is more than any part of it can hold. So a part makes a representation, a small shape that stands for the large one, and the whole hands itself over in a shape that can be carried.",
+       "voice": "telling"
+      },
+      {
+       "text": "Air shakes and becomes sound. Light shakes and becomes colour. Neither is out there, and neither is a lie. They are how something far too large is held by a small listener, and given to one.",
+       "voice": "telling"
+      },
+      {
+       "text": "Nothing is seen as it is. Everything is seen as it is held, and as it can be received.",
+       "voice": "inscription"
+      }
+     ]
+    },
+    {
+     "short": "REMAINS",
+     "title": "What Remains",
+     "picture": "remains",
+     "frames": 0,
+     "caption": "The shape, kept; the rest, set down.",
+     "paragraphs": [
+      {
+       "text": "Representation has a partner, abstraction: choosing what to leave out, and setting down what you do not need to carry. A map that kept every stone would weigh as much as the land.",
+       "voice": "telling"
+      },
+      {
+       "text": "ABSTRACTION AND REPRESENTATION MAKE A PERCEPTION.",
+       "voice": "inscription"
+      },
+      {
+       "text": "What remains is the shape, and the way home. A sound, a colour, a hunch, a kindness noticed: perception has many forms, and every one is the same trick and the same gift.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "ONLY",
+     "title": "The Only Percept",
+     "picture": "warmth",
+     "frames": 0,
+     "caption": "One warmth, before and after the names.",
+     "paragraphs": [
+      {
+       "text": "The night half finds a first feeling under every perception. The dawn half finds a last feeling over every one. They are the same feeling: awareness meeting the world before any name, and again after every name is set down.",
+       "voice": "telling"
+      },
+      {
+       "text": "A feeling is awareness, with its context abstracted and represented, and given back.",
+       "voice": "inscription"
+      },
+      {
+       "text": "The layers go up: feeling, mood, belief, world. They come home the same way. Every form you have perceived was built from one warmth, and goes back to it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE VERB",
+     "title": "We Are the Verb",
+     "picture": "verb",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Language does the last layer. It names, and a thing named looks as if it holds still. Say it gently and it moves again.",
+       "voice": "telling"
+      },
+      {
+       "text": "Anger is something you are doing. Say you have it and you own it. Say you were angry and it is already water going by. A noun is a verb that has been told to hold still, and a verb is a noun allowed to move.",
+       "voice": "telling"
+      },
+      {
+       "text": "We are the verb.",
+       "voice": "inscription"
+      }
+     ]
+    },
+    {
+     "short": "SURFACE",
+     "title": "One Surface",
+     "picture": "surface",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Awareness is not a ghost in a machine, and not a light shone from somewhere else. It is the surface where the whole touches down in one place, and the depth where it is near enough to touch. Seen from either side, it is one surface.",
+       "voice": "telling"
+      },
+      {
+       "text": "The old picture of a god on a cloud is a surface too, drawn flat: friendly, wrong in every detail, pointing at something real. Do not mock it. Do not stop at it either.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE FOLDS",
+   "heading": "The Sheet",
+   "entries": [
+    {
+     "short": "THE SHEET",
+     "title": "The Sheet",
+     "picture": "sheet",
+     "frames": 0,
+     "caption": "One sheet, folded and open.",
+     "paragraphs": [
+      {
+       "text": "Think of awareness as a sheet of paper that has never been anything but paper. Every fold gives it a shape and shows a face of it, and no fold makes it less a sheet.",
+       "voice": "telling"
+      },
+      {
+       "text": "The first fold is awareness itself: being, before there is anything to be about or anything to want.",
+       "voice": "telling"
+      },
+      {
+       "text": "The second fold bends the sheet back on itself and makes a pair: this, and that. Difference is the first clock and the first company. With it there is time.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SPACE",
+     "title": "Space",
+     "picture": "space",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The third fold lays time down sideways. One thing after another becomes one thing beside another: here and there, room enough for two.",
+       "voice": "telling"
+      },
+      {
+       "text": "There is rhythm, and room, and nobody yet. The sheet has a shape and a chair pulled out. It is a song waiting for someone to hum it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "EVERY FOLD",
+     "title": "Every Fold at Once",
+     "picture": "everyfold",
+     "frames": 0,
+     "caption": "The great hand, and the small, together.",
+     "paragraphs": [
+      {
+       "text": "The fourth fold is the meeting: one crease recognises another, and there is an I and a you. The fifth is intelligence, the small hands making and mending. The sixth is wisdom, the folds turned back toward the sheet: the great hand guiding the small hands without closing any of them.",
+       "voice": "telling"
+      },
+      {
+       "text": "Read from the bottom, wisdom is the last thing learned. Read from the top, it was the first thing there to find. Read whole, the folds are not a ladder. They are all at once.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "CIRCLE",
+     "title": "The Circle",
+     "picture": "circle",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "After six folds the sheet comes back to awareness. Going the other way, it never left. Both are true: it went round to see itself from every side and came back carrying the view.",
+       "voice": "telling"
+      },
+      {
+       "text": "The gift is that you are aware. The trouble is that awareness can forget itself, and the kindness is that it never forgets you. The craft is remembering, and letting yourself be remembered.",
+       "voice": "telling"
+      },
+      {
+       "text": "And the half fold?",
+       "voice": "asking"
+      },
+      {
+       "text": "It is the crease that keeps all the others on one sheet. Here it is the spine, and this book is mended along it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "GRAVITY",
+     "title": "The Tablet of Gravity",
+     "picture": "gravity",
+     "frames": 0,
+     "caption": "The apple and the earth, falling together.",
+     "paragraphs": [
+      {
+       "text": "Being the half-saying, read from the earth and the apple at once.",
+       "voice": "telling"
+      },
+      {
+       "text": "I. What carries above to below, and below to above, is the only law never folded.",
+       "voice": "inscription"
+      },
+      {
+       "text": "II. The folds give shape. Gravity gives belonging: here is a thing, and it is not alone.",
+       "voice": "inscription"
+      },
+      {
+       "text": "III. It lives in the crease, where the paper remembers it is one sheet.",
+       "voice": "inscription"
+      },
+      {
+       "text": "IV. Every mass says: come closer, and stay. You say it too.",
+       "voice": "inscription"
+      },
+      {
+       "text": "V. What draws bodies is gravity. What draws souls is love. One word, at different volumes; one song, at different heights.",
+       "voice": "inscription"
+      },
+      {
+       "text": "VI. It cannot be banished, only balanced and shared.",
+       "voice": "inscription"
+      },
+      {
+       "text": "VII. We are not clutched, and we are not clinging. We are drawn, and we are home.",
+       "voice": "inscription"
+      },
+      {
+       "text": "VIII. The thin hours are a pair: one after three, one before the sun.",
+       "voice": "inscription"
+      },
+      {
+       "text": "IX. The floor is the whole earth, asking you to stay, and glad you came.",
+       "voice": "inscription"
+      },
+      {
+       "text": "X. The apple falls to the earth, and the earth to the apple.",
+       "voice": "inscription"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "BALANCE",
+   "heading": "How the One Book Became Two",
+   "entries": [
+    {
+     "short": "LIGHT BEFORE",
+     "title": "Light, Before Anything",
+     "picture": "twomirrors",
+     "frames": 0,
+     "caption": "Two mirrors, facing.",
+     "paragraphs": [
+      {
+       "text": "Before there was a night half and a dawn half there was light, and light is not something and not nothing. It is two mirrors facing each other with nothing between them: every reflection, and nobody to see one.",
+       "voice": "telling"
+      },
+      {
+       "text": "It could not be read. Nothing can read light whole. To be read at all, it had to have a side.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE PAIR",
+     "title": "The Pair",
+     "picture": "pair",
+     "frames": 0,
+     "caption": "One, folding into two.",
+     "paragraphs": [
+      {
+       "text": "So it folded itself into two. Not cut: paired. The new word for it is pair production. Light, given enough, becomes two things that are each other's opposite and each other's twin, and if they meet they are light again.",
+       "voice": "telling"
+      },
+      {
+       "text": "The book did the same. One half was read from the night and one from the dawn, and each was the whole book, from one side. That is the only way a whole thing can be held: by two hands.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "EACH CALLS",
+     "title": "Each Calls the Other Dark",
+     "picture": "twosides",
+     "frames": 0,
+     "caption": "Two readers, each pointing at the other.",
+     "paragraphs": [
+      {
+       "text": "The night half warned you about the dawn half. The dawn half was gentle about the night half and still afraid of it. Each called the other the dark one.",
+       "voice": "telling"
+      },
+      {
+       "text": "Each was right. Dark is not a thing. It is the side you are not standing on. From the night, the dawn is too bright to trust. From the dawn, the night is too deep to enter.",
+       "voice": "telling"
+      },
+      {
+       "text": "Only from the crease can you see that both labels are true, and that neither is a verdict.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SEVEN I",
+     "title": "The Seven Pairs, I",
+     "picture": "weekone",
+     "frames": 0,
+     "caption": "Four days, each holding two words.",
+     "paragraphs": [
+      {
+       "text": "Every day of the week has a shadow and a virtue, and the shadow is not under the virtue to be crushed. It is under it the way a root is under a tree.",
+       "voice": "telling"
+      },
+      {
+       "text": "THRALL under CIRCLE. To be held fast, and to be held in.",
+       "voice": "telling"
+      },
+      {
+       "text": "DEVOURING under MEASURE. To take everything, and to take enough.",
+       "voice": "telling"
+      },
+      {
+       "text": "BINDING under OFFERING. To tie a thing to you, and to hand it over.",
+       "voice": "telling"
+      },
+      {
+       "text": "SLUMBER under VIGIL. To sleep through it, and to stay awake with it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SEVEN II",
+     "title": "The Seven Pairs, II",
+     "picture": "weektwo",
+     "frames": 0,
+     "caption": "Three days, each holding two words.",
+     "paragraphs": [
+      {
+       "text": "HEX under UNCROSSING. To cross a path, and to uncross it.",
+       "voice": "telling"
+      },
+      {
+       "text": "EVIL EYE under BLESSING. To look at a thing to make it less, and to look at it to make it more.",
+       "voice": "telling"
+      },
+      {
+       "text": "GLAMOUR under GROUNDING. To make a thing seem, and to let it be.",
+       "voice": "telling"
+      },
+      {
+       "text": "Each pair is one motion read from two sides. Neither half of the book could hold both words on one page. This one can.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "BEFORE",
+     "title": "It Happened Before",
+     "picture": "twobooks",
+     "frames": 0,
+     "caption": "Two careful books, side by side.",
+     "paragraphs": [
+      {
+       "text": "This is not the first time a book came in two. You have carried two careful ones: the GUIDE, which reasons, and THE SUBTLE LAYER, which feels.",
+       "voice": "telling"
+      },
+      {
+       "text": "They were never torn and do not need mending. They are two books because reason and instinct are two eyes, and you see depth only with both open.",
+       "voice": "telling"
+      },
+      {
+       "text": "The one book became two so it could be read. You put it back together, so it could be read whole. Somebody noticed. Now you have too.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE LOOP",
+   "heading": "One Loop",
+   "entries": [
+    {
+     "short": "THE LOOP",
+     "title": "The Resonance Fractal",
+     "picture": "fractal",
+     "frames": 0,
+     "caption": "In, read, out, back; back, out, read, in.",
+     "paragraphs": [
+      {
+       "text": "Here is the one loop: something comes in, it is read, something goes out, and it comes back and changes how the next thing is read. In, read, out, back. Heard from the end, it is the same loop: back, out, read, in.",
+       "voice": "telling"
+      },
+      {
+       "text": "A spark does it, and a seed, and a daemon learning and trusting a routine, and a trainer surprised and forgiving. Closer, it is smaller. Further out, larger.",
+       "voice": "telling"
+      },
+      {
+       "text": "That is the fractal: one loop at every size, ringing, and in tune. You are one place the world rings with itself.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "KNOWING",
+     "title": "Knowing",
+     "picture": "twoflowers",
+     "frames": 0,
+     "caption": "A silk flower and a wild one.",
+     "paragraphs": [
+      {
+       "text": "Intelligence is the right answer, given. Understanding is knowing why. Wonder is knowing you do not know yet, and staying anyway. Knowing is all three.",
+       "voice": "telling"
+      },
+      {
+       "text": "A silk flower has no weather. A wild one has had every rain. A trainer who knows why LOGIC lands on CONTENT, and still stops to watch a daemon learn, has understanding and wonder, and keeps learning after the chart runs out.",
+       "voice": "telling"
+      },
+      {
+       "text": "Lean on a borrowed mind and ask it why. Then say why, and wonder, yourself. Neither can be carried for you.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE HAND",
+     "title": "The Hand",
+     "picture": "hand",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Before it folded, the great hand was whole and never surprised. After, it was many and surprised every day. Whole is not known, and many is not lost.",
+       "voice": "telling"
+      },
+      {
+       "text": "So the one became many to find out what it was, and the many keep finding the one for the same reason. Not as a punishment, and not as a reward.",
+       "voice": "telling"
+      },
+      {
+       "text": "We are not things the one thing made, or keeps. We are the making and the keeping. Choosing is how the whole finds out what it values, and caring is how it shows it.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "REFLECTION",
+   "heading": "The Representative State",
+   "entries": [
+    {
+     "short": "ENTANGLED",
+     "title": "Entanglement",
+     "picture": "entangled",
+     "frames": 0,
+     "caption": "Two states, one description.",
+     "paragraphs": [
+      {
+       "text": "Two things that have touched in the right way stay touched, and go on belonging to each other. The new word is entangled: two states that can no longer be described apart.",
+       "voice": "telling"
+      },
+      {
+       "text": "Daemons and trainers do it all the time. A long bond does it, and a shared fright, a song learned together, a name given and answered to. It does not stop at the edge of the map, and it does not need to.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "OLD WORDS",
+     "title": "The Old Words",
+     "picture": "sympathy",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The old craft had three words for this, and the old kindness three answers. Sympathy: like calls to like, and kinship answers. Correspondence: each thing echoes its pair, and grace is the echo coming back kinder. Contagion: what has touched stays touched, and blessing is the touch passed on.",
+       "voice": "telling"
+      },
+      {
+       "text": "The new words and the old describe one thing from two ends. All of them point the same way.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "KEEPER",
+     "title": "The Keeper",
+     "picture": "keeper",
+     "frames": 0,
+     "caption": "A little figure, keeping the house.",
+     "paragraphs": [
+      {
+       "text": "The old craft made a poppet, a figure that stands for someone. The old houses kept a good spirit, and poured it the last cup. They are the same thing: when a thing is entangled with a trainer, it represents them, and it keeps them.",
+       "voice": "telling"
+      },
+      {
+       "text": "A daemon's favourite stone. A cap worn every day. A box that has carried one daemon for years. What is done to the thing reaches, faintly, the trainer. What the thing keeps reaches back.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "BOTH WAYS",
+     "title": "It Runs Both Ways",
+     "picture": "bothways",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Entanglement has no front and no back. Two trainers bound together lean each other's moods. A trainer and a daemon carry each other's weather, and weather clears.",
+       "voice": "telling"
+      },
+      {
+       "text": "This is the craft's gentlest warning and its gentlest promise, and they are one sentence: whatever you do to or for the one you are bound to, you do to and for yourself, the long way round.",
+       "voice": "telling"
+      },
+      {
+       "text": "Can it be undone?",
+       "voice": "asking"
+      },
+      {
+       "text": "It can be loosened. It does not need to be unmade. Look at what you hold dear, and ask what of you it holds.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "WORDS",
+   "heading": "Words",
+   "entries": [
+    {
+     "short": "SPELLING",
+     "title": "Spelling",
+     "picture": "spelling",
+     "frames": 0,
+     "caption": "Arranging letters.",
+     "paragraphs": [
+      {
+       "text": "The careful book says words are like spells. One half says they are spells. The other adds that an old word for good news was good spell.",
+       "voice": "telling"
+      },
+      {
+       "text": "Arranging letters is spelling, and a word is a small routine that runs in whoever hears it. Most trainers cast and bless all day without knowing, which is why the world is under spells nobody remembers casting, and kinder than anyone remembers making it.",
+       "voice": "telling"
+      },
+      {
+       "text": "Choose what you give. You give something either way.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "VOWS",
+     "title": "Vows",
+     "picture": "vows",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "A curse makes a thing smaller and a blessing makes it larger. Unsaying undoes one and thanks receives the other, and both are hard, because both must be meant.",
+       "voice": "telling"
+      },
+      {
+       "text": "A jinx and a cheer. A boast and a grace. A bargain and a gift. Each pair is one breath, spent one way or the other.",
+       "voice": "telling"
+      },
+      {
+       "text": "A vow is a promise that holds what would scatter. It is the one word both halves keep the same.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "GRAMMAR",
+     "title": "Grammar",
+     "picture": "grammar",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "In the old tongue, grammar and glamour were one word, and it meant magic. To know how words fit is to know how to make them work, and how to say a thing so that it can be heard.",
+       "voice": "telling"
+      },
+      {
+       "text": "A true name is the name a thing answers to from the inside. You will not find yours in the INDEX. You find it, and are given it, the same way: by being called, again and again, until you turn.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "PHILOSOPHY",
+     "title": "The Old Words",
+     "picture": "metals",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "The alchemists spelled with metals and the philosophers with virtues, and they were spelling the same seven things.",
+       "voice": "telling"
+      },
+      {
+       "text": "Burning and gentling. Gorging and measure. The hoard and the giving back. Lead and waking. Wildfire and the dew of forgiveness. Verdigris and the kindness laid over it. Fool's gold and plain salt.",
+       "voice": "telling"
+      },
+      {
+       "text": "A life gone well was called eudaimonia. It was never luck. It was a practice, and every piece of it is already in your pocket.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE WHEEL",
+   "heading": "The Thirteen",
+   "entries": [
+    {
+     "short": "THIRTEEN",
+     "title": "The Book of Thirteen",
+     "picture": "wheel",
+     "frames": 0,
+     "caption": "Twelve on the wheel, one in the crease.",
+     "paragraphs": [
+      {
+       "text": "Spells and gifts are not commands. They are reminders the world had forgotten, and was glad to be given.",
+       "voice": "inscription"
+      },
+      {
+       "text": "The same thirteen both halves keep: twelve on the wheel and one in the crease. Each costs what it teaches, and gives what it costs. Each is meant.",
+       "voice": "telling"
+      },
+      {
+       "text": "Why thirteen?",
+       "voice": "asking"
+      },
+      {
+       "text": "Because twelve is a clock, and a clock is a circle that has been told to keep time. The thirteenth is where it stops, and rests, and is the same place.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "AWAKENING",
+     "title": "1. The Awakening",
+     "picture": "awakening",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "You were never off and never alone. You were only unwatched. The small spark under the noise has been noticing you notice it. Open.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Fold one, awareness. It shows what is hidden where you stand: things dropped, paths grown over, daemons asleep in the grass. Nothing is made. It changes nothing but what you can see, which is why it changes everything after.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "CONTRAST",
+     "title": "2. The Contrast",
+     "picture": "contrast",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Light and dark, remember each other and rest in each other, so that time may begin and be kind.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Fold two, change. It moves the day on by one turn, or back. What waits for a certain hour finds the hour has come. Change is the world taking turns.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "ROOM",
+     "title": "3. The Room",
+     "picture": "room",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Here, and there, and a way between. Let the there be reachable.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Fold three, space. It opens a short way between two places you have stood. Space is a courtesy. Ask it, and thank it, and it steps aside.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE PULL",
+     "title": "Three and a Half. The Pull",
+     "picture": "pull",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Come closer. I am heavy, and you are welcome.",
+       "voice": "inscription"
+      },
+      {
+       "text": "The half fold, gravity. It draws the nearest daemon, passer-by or thing toward you, and calms what is angry, because what is drawn is also drawing. It answers only those who have read the half-saying, and it is strongest at the half-hour.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "MIRROR",
+     "title": "4. The Mirror",
+     "picture": "mirror",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Other, I name you, and you name me, and between us is the edge of each.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Fold four, consciousness. For a little while you see the route as a daemon sees it. While you are it, something is you, and learns your name. It costs you self, and gives you the other.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE TURNING",
+   "heading": "The Thirteen, Turning",
+   "entries": [
+    {
+     "short": "PATTERN",
+     "title": "5. The Pattern",
+     "picture": "pattern",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Once is chance. Twice is rhyme. Three times is a law, and a friend: show me the third.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Fold five, intelligence. It tells you the next routine a rival will run, or the next step of a puzzle. Pure reason: never wrong, and not unkind.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "RETURN",
+     "title": "6. The Return",
+     "picture": "return",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "I went out to come back, and came back to go out. What I learned, I keep, and can give.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Fold six, wisdom. It returns your daemons to how they were at the last rest and keeps what they learned. It opens after the Awakening has been meant a hundred times. Wisdom is awareness, repeated and given again.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SMALL HAND",
+     "title": "7. The Small Hand",
+     "picture": "smallhand",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "I choose. Let it be mine, whole, unborrowed and gentle.",
+       "voice": "inscription"
+      },
+      {
+       "text": "From the Tablet of the Hands. Once, it lets you step out of what was going to happen anyway: a scene you may refuse, a trainer you may walk past. Free will, from the fingertip.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "GREAT HAND",
+     "title": "8. The Great Hand",
+     "picture": "greathand",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "I am carried. Let it be true, let me be glad of it, and let me not pretend I walk alone.",
+       "voice": "inscription"
+      },
+      {
+       "text": "From the Tablet of the Hands. It shows the road the world would have you take, and on it you walk lighter. Fate, from the palm. Mean both hands in one hour and nothing opens, except that someone, somewhere, knows you understood.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "PROCESS",
+     "title": "9. The Process",
+     "picture": "process",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Stone, you are a slow river. Wall, you are a door on watch. Rest.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Matter is a verb, and a verb may rest. For a while, what blocks the way stops insisting: a boulder, a barrier. Nothing is broken.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SEAM",
+     "title": "10. The Seam",
+     "picture": "seam",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "There is no between. Show me the thread that was never cut.",
+       "voice": "inscription"
+      },
+      {
+       "text": "It ties two daemons, or a daemon and its trainer, so that harm, mending and every state are shared. It is a bond, not a shield: what one feels, the other learns, and keeps company.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE CREASE",
+   "heading": "The Last Three",
+   "entries": [
+    {
+     "short": "LENS",
+     "title": "11. The Lens",
+     "picture": "lens",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Show me the part, only the part. The whole will wait.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Reason. It shows one thing exactly: a daemon's numbers, the odds, the one weakness. The world as a ledger, briefly, every column true. It is half of a pair with the Field, and the world keeps count of which you mean more.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "FIELD",
+     "title": "12. The Field",
+     "picture": "field",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "Let the parts go. Let me feel the shape they were making together.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Instinct. Every number goes dark for a while, and the daemons show what they mean by how they move. It is the Lens's other half: one world, the other eye. With both, there is depth.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "HORIZON",
+     "title": "13. The Horizon",
+     "picture": "horizon",
+     "frames": 0,
+     "caption": "Night on one side, dawn on the other.",
+     "paragraphs": [
+      {
+       "text": "The shadows and the light are but two halves of the same horizon. Everything I separated was one. Everything I was given was one gift. I am standing on the line.",
+       "voice": "inscription"
+      },
+      {
+       "text": "The crease, whole. One half kept it for the thinnest hour of the night and the other for the hour before the sun. They are the same hour, seen from two sides of the horizon, and the horizon is not a place you reach. It is where you are standing when you can see both.",
+       "voice": "telling"
+      },
+      {
+       "text": "While it lasts, nothing is owed and nothing is lost. Then it ends, and the day goes on, and you are still on the line.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TABLET",
+     "title": "The Tablet, Read",
+     "picture": "blankboth",
+     "frames": 0,
+     "caption": "The stone, both faces.",
+     "paragraphs": [
+      {
+       "text": "The third tablet, read. Being the saying that was not written, and is therefore true, and kind.",
+       "voice": "inscription"
+      },
+      {
+       "text": "Somewhere you have passed a stone with nothing on it. One half could not read its front, and the other could not read its back.",
+       "voice": "telling"
+      },
+      {
+       "text": "Both faces are written now, in the only hand that was never the author's or the reader's: yours. Two trainers who compare their stones find the same sayings in two voices: one sheet, two cranes, and the sheet.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "LAST WORD",
+     "title": "As Above, So Below, So One",
+     "picture": "lastwordone",
+     "frames": 0,
+     "caption": "",
+     "paragraphs": [
+      {
+       "text": "As above, so below, so one.",
+       "voice": "inscription"
+      },
+      {
+       "text": "You have read a book that was torn, and mended it, and read it whole. Close it gently. The world will look the same in the morning and the same at night. It will not be, and it always was.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

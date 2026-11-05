@@ -1278,6 +1278,12 @@
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
+ "250": {
+  "name": "UNITY BOOK",
+  "description": "THE UNITY BOOK. Torn at the spine, and whole again. It reads at any hour.",
+  "pocket": "POCKET_KEY_ITEMS",
+  "importance": 1
+ },
  "254": {
   "name": "RED SCARF",
   "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS.",

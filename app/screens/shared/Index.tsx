@@ -1,6 +1,6 @@
 // the INDEX -- every entry the save holds, NATIVE, OPUS's margins, LISTEN. (C-157: out of App.tsx.)
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import { File, Paths } from "expo-file-system";
+import { voiceExt, voiceFile } from "../../platform/voiceFile";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { Spinner, Text, XStack, YStack } from "tamagui";
@@ -23,10 +23,9 @@ export function useIndexReader() {
       const r = await apiLater<Spoken>("/api/ai/speak", { species });   // C-180
       if (turn.current !== mine) return;
       if (!r.audioBase64) { setFailed(r.error ?? "No voice came back."); setReading(null); return; }
-      let uri = `data:audio/mpeg;base64,${r.audioBase64}`;                      // the site plays it as it came
+      let uri = `data:audio/${voiceExt(r.audioBase64) === "wav" ? "wav" : "mpeg"};base64,${r.audioBase64}`;                      // the site plays it as it came
       if (ON_PHONE) {                                                              // the phone, from its cache
-        const f = new File(Paths.cache, `index-${Date.now()}.mp3`);
-        f.create(); f.write(r.audioBase64, { encoding: "base64" }); uri = f.uri;
+        uri = voiceFile("index", r.audioBase64).uri;
         await setAudioModeAsync({ playsInSilentMode: true });
       }
       player.replace({ uri }); player.play();

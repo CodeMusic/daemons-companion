@@ -1,6 +1,7 @@
 // DAEMON -- Yours (its life, care, TALK, SYNC, NEARBY, meetings), Party; the INDEX and the Routines are their own files. (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
-import { File, Paths } from "expo-file-system";
+import { File } from "expo-file-system";
+import { voiceFile } from "../../platform/voiceFile";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
@@ -192,8 +193,7 @@ export function useVoice() {
   const player = useAudioPlayer(null);
   return (b64?: string | null) => {
     if (!b64) return;
-    const f = new File(Paths.cache, `voice-${Date.now()}.mp3`);
-    f.create(); f.write(b64, { encoding: "base64" });
+    const f = voiceFile("voice", b64);
     player.replace({ uri: f.uri }); player.play();
     followVoice(player);                                   // C-213: its mouth moves while it speaks
   };

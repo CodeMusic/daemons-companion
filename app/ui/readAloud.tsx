@@ -4,7 +4,7 @@
 // chapter starts at once. A paragraph past what the voice takes at once (600) is cut at its sentences, as the watch's
 // are (server/src/books.ts). Tapped again, it stops. Only where the voice is (ON_PHONE, with the companion behind it).
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { File, Paths } from "expo-file-system";
+import { voiceFile } from "../platform/voiceFile";
 import { useEffect, useRef, useState } from "react";
 import { apiLater, ON_PHONE } from "../platform/net";
 import { followVoice, setSpeaking } from "../sound/speaking";   // C-213
@@ -47,8 +47,7 @@ export function useReadAloud() {
         const spoken = await coming;
         coming = i + 1 < next.length ? next[i + 1]() : null;   // the next asked for while this one plays
         if (run.current !== mine || !spoken?.audioBase64) break;
-        const f = new File(Paths.cache, `read-${Date.now()}.mp3`);
-        f.create(); f.write(spoken.audioBase64, { encoding: "base64" });
+        const f = voiceFile("read", spoken.audioBase64);
         player.replace({ uri: f.uri }); player.play(); followVoice(player);
         await ended();
       }

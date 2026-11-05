@@ -39,7 +39,7 @@ import { platform, tmpdir } from "node:os";
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, toDevicePcm, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, phoneAudio, toDevicePcm, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
@@ -1440,7 +1440,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-180: ?async=1 -- answered at once, {id}, and the answer fetched from GET /api/device/talk/<id> when it is ready;
       // without it the one request waits, as every board still does until the hardware lane moves it
       const later = url.searchParams.get("async") === "1";
-      const answer = async (priority: number, work: () => Promise<Record<string, unknown>>) => {
+      const answer = async (priority: number, work0: () => Promise<Record<string, unknown>>) => {
+        const work = () => work0().then(phoneAudio);       // 2026-11-05: a WAV voice goes to the phone as MP3 (it plays .mp3 only)
         if (!later) return send(res, 200, await work());
         return send(res, 202, { id: talkJobs.start(who, priority, work), status: "waiting" });
       };

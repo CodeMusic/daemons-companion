@@ -47,6 +47,20 @@ export async function toDevicePcm(audio: Buffer): Promise<Buffer | null> {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
+// 2026-11-05: a WAV (the Tiiny's voice, the board's) as an MP3 for the phone -- the app files every voice as .mp3, and
+// iOS decodes by the name, so a WAV under it plays as static. Anything not a WAV, or a WAV ffmpeg cannot read, as it came.
+export async function mp3OfWav(audio: Buffer): Promise<Buffer | null> {
+  if (audio.length < 12 || audio.toString("latin1", 0, 4) !== "RIFF") return null;
+  const mp3 = await run(FFMPEG, ["-hide_banner", "-loglevel", "error", "-f", "wav", "-i", "pipe:0",
+                                 "-codec:a", "libmp3lame", "-b:a", "64k", "-ac", "1", "-f", "mp3", "pipe:1"], audio);
+  return mp3 && mp3.length ? mp3 : null;
+}
+export async function phoneAudio<T extends Record<string, unknown>>(r: T): Promise<T> {
+  if (typeof r.audioBase64 !== "string" || !r.audioBase64) return r;
+  const mp3 = await mp3OfWav(Buffer.from(r.audioBase64, "base64")).catch(() => null);
+  return mp3 ? { ...r, audioBase64: mp3.toString("base64"), audioMime: "audio/mpeg" } : r;
+}
+
 // 16 kHz samples as a WAV -- what the speech-to-text server is sent, whatever the device recorded (C-66: the phone
 // records AAC, the handheld a WAV already).
 export function wavOf(pcm: Buffer, rate = DEVICE_RATE): Buffer {

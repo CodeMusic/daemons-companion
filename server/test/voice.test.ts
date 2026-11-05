@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { asWav, CAN_CONVERT, Conversations, DEVICE_RATE, FOUND_FFMPEG, pcmOfWav, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
+import { asWav, CAN_CONVERT, Conversations, DEVICE_RATE, FOUND_FFMPEG, mp3OfWav, pcmOfWav, phoneAudio, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
 
 // A second of a 440 Hz tone as a WAV, at a rate the handheld does not play (the voice server's is 24 kHz).
 function wav(rate: number, seconds = 1): Buffer {
@@ -100,4 +100,24 @@ describe("a recording over Bluetooth (C-82)", () => {
       expect(peak).toBeGreaterThan(6000);                       // the 8000-high tone came through, not silence
       expect(peak).toBeLessThan(10000);
     });
+});
+
+// 2026-11-05: the phone files every voice as .mp3, so a WAV (the Tiiny's) played as static -- the hub sends it MP3
+describe("a voice for the phone", () => {
+  const tone = Buffer.alloc(24000 * 2);
+  for (let i = 0; i < 24000; i++) tone.writeInt16LE(Math.round(8000 * Math.sin(i / 10)), i * 2);
+  it.skipIf(!FOUND_FFMPEG)("turns a WAV into an MP3", async () => {
+    const r = await phoneAudio({ answer: "hi", audioBase64: wavOf(tone, 24000).toString("base64"), audioMime: "audio/wav" });
+    const b = Buffer.from(r.audioBase64 as string, "base64");
+    expect(r.audioMime).toBe("audio/mpeg");
+    expect(b.toString("latin1", 0, 4)).not.toBe("RIFF");
+    expect(b.toString("latin1", 0, 3) === "ID3" || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0)).toBe(true);
+    expect(r.answer).toBe("hi");
+  });
+  it("leaves an MP3, and an answer with no voice, as they came", async () => {
+    const mp3 = { audioBase64: Buffer.from([0xff, 0xfb, 0x90, 0x00]).toString("base64"), audioMime: "audio/mpeg" };
+    expect(await phoneAudio(mp3)).toEqual(mp3);
+    expect(await phoneAudio({ answer: "x" })).toEqual({ answer: "x" });
+    expect(await mp3OfWav(Buffer.from("not a wav at all"))).toBeNull();
+  });
 });

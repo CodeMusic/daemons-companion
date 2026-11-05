@@ -11,7 +11,7 @@
 import { BleManager, Device, State, Subscription } from "react-native-ble-plx";
 import * as SecureStore from "expo-secure-store";
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
-import { File, Paths } from "expo-file-system";
+import { voiceFile } from "./voiceFile";
 
 const KEEP = { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK };   // C-57: readable in a locked pocket
 
@@ -32,8 +32,7 @@ export type Handheld = {
 // C-82: the daemon's answer to a talk the board carried here, said on the phone's own speaker (the board shows the words).
 let voice: AudioPlayer | null = null;
 async function sayOnPhone(mp3Base64: string) {
-  const f = new File(Paths.cache, `handheld-voice-${Date.now()}.mp3`);
-  f.create(); f.write(mp3Base64, { encoding: "base64" });
+  const f = voiceFile("handheld-voice", mp3Base64);
   await setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
   voice?.remove();
   voice = createAudioPlayer({ uri: f.uri });

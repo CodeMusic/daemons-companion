@@ -8,7 +8,7 @@
 // The decks' dawn readings, the mending at DAEMON TOWER and BALANCE come later (C-297's row).
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { goldBreathOf } from "../../../server/src/witching";
+import { EMERALD, goldBreathOf } from "../../../server/src/witching";
 import { SCREEN } from "../../state/data";
 import { Art, Small } from "../../ui/ui";
 import { ReadAloud } from "../../ui/readAloud";
@@ -17,14 +17,16 @@ type Para = { text: string; voice: "telling" | "asking" | "inscription" | "obser
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
 export type EudaimonT = { held: boolean; how?: string; title?: string; subtitle?: string; draft?: boolean; observer?: string;
                           sections?: { label: string; heading: string; entries: Entry[] }[] };
-// the dawn: a pale page, warm ink, the creator's hour's gold (Witching.tsx DawnLight) for what glows
+// the dawn: a pale page, warm ink, the creator's hour's gold (Witching.tsx DawnLight) for the book's own marks; its inscriptions
+// stay the tablet's green, as the game prints them and as the book itself says ("The words in green ...")
 export const DAWN = { page: "#FBF3E4", boards: "#F3E3C6", ink: "#3D2A1A", faint: "#8C7357", edge: "#E2C79A", gold: "#C98A1E", lit: "#E8A93A" };
 const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
 
 function useBreath() {
   const [, setF] = useState(0);
   useEffect(() => { const t = setInterval(() => setF((x) => x + 1), 400); return () => clearInterval(t); }, []);
-  return { glow: goldBreathOf() > 0.5 ? DAWN.lit : DAWN.gold };
+  const up = goldBreathOf() > 0.5;
+  return { glow: up ? DAWN.lit : DAWN.gold, green: up ? EMERALD.hue : "#156B47" };
 }
 
 // its picture: until the game's own are drawn and exported, the ABOVE face stands in (a star, its rays coming down)
@@ -76,9 +78,9 @@ export function EudaimonBook({ b }: { b: EudaimonT }) {
             <YStack height={2} backgroundColor={DAWN.lit} width={48} />
             <ReadAloud id={`eudaimon-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={DAWN.gold} />
             {e.paragraphs.map((p, i) => p.voice === "inscription" ? (
-              <YStack key={i} gap={2} borderLeftWidth={2} borderColor={DAWN.lit} paddingLeft={10}>
-                <Text fontSize={17} lineHeight={26} fontWeight="600" color={breath.glow}>{p.text}</Text>
-                <ReadAloud id={`eudaimon-${at}-${i}`} paragraphs={[p.text]} ink={DAWN.gold} label="Say it" />
+              <YStack key={i} gap={2} borderLeftWidth={2} borderColor={EMERALD.hue} paddingLeft={10}>
+                <Text fontSize={17} lineHeight={26} fontWeight="600" color={breath.green}>{p.text}</Text>
+                <ReadAloud id={`eudaimon-${at}-${i}`} paragraphs={[p.text]} ink={EMERALD.hue} label="Say it" />
               </YStack>
             ) : p.voice === "observer" ? (                           // read by someone: the lead daemon's own wording
               <YStack key={i} gap={2} backgroundColor={DAWN.boards} borderRadius={3} padding={10}>

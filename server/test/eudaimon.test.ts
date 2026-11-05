@@ -24,7 +24,7 @@ describe("C-297: THE EUDAIMON LAYER", () => {
     const PIP = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12 };
     const save = buildSave({ player: "ROVER", trainerId: 0x00ab1234, slots: [{ counter: 1, party: [PIP] }, { counter: 2, party: [PIP] }] });
     expect(savedEudaimon(save)).toBe(false);
-    const held = syncSave(save, { spellcraft: 3327 }).save;               // the writer sets any flag it is given
+    const held = syncSave(save, { link: false, spellcraft: 3327 }).save;               // the writer sets any flag it is given
     expect(savedEudaimon(held)).toBe(true);
     expect(readEudaimon(held)).toMatchObject({ held: true, how: "game", title: "THE EUDAIMON LAYER" });
   });

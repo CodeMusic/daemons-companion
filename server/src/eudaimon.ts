@@ -13,21 +13,25 @@ import { flagReader } from "./save/profile.js";
 type Readings = { good: string; as_is: string; low: string };
 type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer"; readings?: Readings };
 type Entry = { short: string; title: string; picture: string; frames?: number; caption: string; paragraphs: Para[] };
-type Section = { label: string; heading: string; entries: Entry[] };
+export type Section = { label: string; heading: string; entries: Entry[] };
 const E = eudaimonJson as unknown as { title: string; subtitle: string; draft: boolean; flag: number | null; sections: Section[] };
 export const EUDAIMON_FLAG: number | null = E.flag;
 
-export const savedEudaimon = (save: Uint8Array | null, l: Layout = LAYOUT) => {
-  if (!save || EUDAIMON_FLAG === null) return false;
-  try { const { sb1, sb2 } = blocks(save, l); return flagReader(sb1, sb2)(EUDAIMON_FLAG); } catch { return false; }
+// a book held by its flag in the save (null: the game has not placed it yet) -- the dawn half's and the mended book's (C-299)
+export const savedFlag = (save: Uint8Array | null, flag: number | null, l: Layout = LAYOUT) => {
+  if (!save || flag === null) return false;
+  try { const { sb1, sb2 } = blocks(save, l); return flagReader(sb1, sb2)(flag); } catch { return false; }
 };
+export const savedEudaimon = (save: Uint8Array | null, l: Layout = LAYOUT) => savedFlag(save, EUDAIMON_FLAG, l);
 
 // the observer's line as the lead daemon would read it: in good spirits, as it is, or in low spirits
 const READING: Record<SpiritsClass, keyof Readings> = { good: "good", "as it is": "as_is", low: "low" };
-export function observedSections(lead: SpiritsClass = "as it is"): Section[] {
-  return E.sections.map((s) => ({ ...s, entries: s.entries.map((e) => ({ ...e, paragraphs: e.paragraphs.map((p) =>
+// (any layer book's: THE UNITY BOOK's ATTESTATION carries one too, C-299)
+export function observe(sections: Section[], lead: SpiritsClass = "as it is"): Section[] {
+  return sections.map((s) => ({ ...s, entries: s.entries.map((e) => ({ ...e, paragraphs: e.paragraphs.map((p) =>
     p.voice === "observer" && p.readings ? { text: p.readings[READING[lead]] ?? p.text, voice: p.voice } : { text: p.text, voice: p.voice }) })) }));
 }
+export const observedSections = (lead: SpiritsClass = "as it is") => observe(E.sections, lead);
 
 export interface Eudaimon { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; observer?: SpiritsClass; sections?: Section[] }
 export function readEudaimon(save: Uint8Array | null, preview = false, lead: SpiritsClass = "as it is"): Eudaimon {

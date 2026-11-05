@@ -13,11 +13,13 @@ import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, 
 import { useVoice } from "../daemon/Daemon";   // C-209
 import { useApi } from "../../platform/useApi";
 import { previewQuery } from "../../state/preview";
+import { bookForced } from "../../state/dev";   // C-299: the mended book forced held on the </> tab
 import { PlayBook } from "./Play";
 import { ReadAloud } from "../../ui/readAloud";   // C-208
 import { SubtleBook, type SubtleT } from "./Subtle";
 import { HermeticBook, type HermeticT } from "../shared/Hermetic";   // C-238
 import { DAWN, EudaimonBook, type EudaimonT } from "../shared/Eudaimon";   // C-297
+import { UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
 import { ManualBook, manualAbout } from "./Manual";   // C-233
 import { Listen } from "../../ui/bookAudio";   // C-277
 
@@ -118,10 +120,12 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "notebook" | "songbook" | "stream" | null>(null);
+  const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "notebook" | "songbook" | "stream" | null>(null);
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
+  const [uni] = useApi<UnityT>(`/api/unity${previewQuery() ? "?preview=1" : ""}`);   // C-299: THE UNITY BOOK, the halves mended
+  const mended = !!uni?.held && (uni.how === "game" || bookForced("unity") === true);   // as in the game, the halves leave as the mended book comes
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {
@@ -140,6 +144,7 @@ export function LibraryScreen() {
   if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
   if (book === "hermetic" && her?.held) return <YStack gap={14}>{back}<HermeticBook b={her} /></YStack>;   // C-238
   if (book === "eudaimon" && eud?.held) return <YStack gap={14}>{back}<EudaimonBook b={eud} /></YStack>;   // C-297
+  if (book === "unity" && uni?.held) return <YStack gap={14}>{back}<UnityBook b={uni} /></YStack>;   // C-299
   if (book === "notebook") return <YStack gap={14}>{back}<NotebookCard skip="SONGBOOK" /></YStack>;   // C-156: moved here from YOU
   if (book === "songbook") return <YStack gap={14}>{back}<SongbookBook /></YStack>;
   if (book === "stream") return <YStack gap={14}>{back}<StreamBook /></YStack>;
@@ -208,7 +213,7 @@ export function LibraryScreen() {
           </XStack>
         </Card>
       ) : null}
-      {her?.held ? (                                         /* C-238: the third book, beside the other two */
+      {her?.held && !mended ? (                              /* C-238: the third book, beside the other two */
         <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "#50C878" }} onPress={() => setBook("hermetic")}>
           <XStack gap={14} alignItems="center">
             <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor="#1d2a24" borderRadius={3}>
@@ -222,7 +227,7 @@ export function LibraryScreen() {
           </XStack>
         </Card>
       ) : null}
-      {eud?.held ? (                                         /* C-297: the third book's dawn half, beside its night half */
+      {eud?.held && !mended ? (                              /* C-297: the third book's dawn half, beside its night half */
         <Card cursor="pointer" role="button" hoverStyle={{ borderColor: DAWN.lit }} onPress={() => setBook("eudaimon")}>
           <XStack gap={14} alignItems="center">
             <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor={DAWN.boards} borderRadius={3}>
@@ -233,6 +238,22 @@ export function LibraryScreen() {
               <Small>{`${eud.subtitle ?? ""} · ${(eud.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages · the dawn half`}</Small>
             </YStack>
             <Text fontSize={18} color={DAWN.gold}>›</Text>
+          </XStack>
+        </Card>
+      ) : null}
+      {uni?.held ? (                                         /* C-299: the halves mended -- both covers, the seam between */
+        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: UNITY.lit }} onPress={() => setBook("unity")}>
+          <XStack gap={14} alignItems="center">
+            <XStack width={72} height={48} alignItems="center" justifyContent="center" gap={2} backgroundColor={UNITY.boards} borderRadius={3}>
+              <Art path="/art/arcana/spellcraft.png" size={27} height={45} />
+              <YStack width={3} height={40} backgroundColor={UNITY.ink} />
+              <Art path="/art/arcana/above.png" size={27} height={45} />
+            </XStack>
+            <YStack flex={1} gap={2}>
+              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color={UNITY.mark}>{uni.title ?? "THE UNITY BOOK"}</Text>
+              <Small>{`${uni.subtitle ?? ""} · ${(uni.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages · mended`}</Small>
+            </YStack>
+            <Text fontSize={18} color={UNITY.mark}>›</Text>
           </XStack>
         </Card>
       ) : null}

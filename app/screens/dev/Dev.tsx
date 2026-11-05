@@ -18,6 +18,7 @@ const BOOKS: [Book, string, string, (r: any) => boolean][] = [
   ["subtle", "THE SUBTLE LAYER", "/api/subtle", (r) => !!r?.held],
   ["hermetic", "THE HERMETIC LAYER", "/api/hermetic", (r) => !!r?.held],
   ["eudaimon", "THE EUDAIMON LAYER", "/api/eudaimon", (r) => !!r?.held],   // C-297
+  ["unity", "THE UNITY BOOK", "/api/unity", (r) => !!r?.held],   // C-299
   ["play", "PLAY (its instrument)", "/api/play", (r) => !!r?.unlocked],
 ];
 

@@ -130,7 +130,7 @@ function Landing({ children }: { children: React.ReactNode }) {
   );
 }
 
-type Book = "subtle" | "hermetic";
+type Book = "subtle" | "hermetic" | "unity";   // C-299: the mended book deals the hermetic deck, Both as One only
 type Mode = "day" | "one" | "ppf" | "mbs";
 type Pick = "reason" | "instinct" | "above" | "below" | "both";
 const MODES: { k: Mode; label: string }[] = [
@@ -139,6 +139,7 @@ const MODES: { k: Mode; label: string }[] = [
 ];
 const PLACES: Record<"one" | "ppf" | "mbs", string[]> = { one: [""], ppf: ["PAST", "PRESENT", "FUTURE"], mbs: ["MIND", "BODY", "SPIRIT"] };
 const SPELL = { page: "#1d2a24", edge: "#1F8F5F", pink: "#50C878" };
+const MENDED = { page: "#211C26", edge: "#5C4766", pink: "#E8A93A" };   // C-299: the mended book's deck, the dawn's gold on the night's plum
 
 // which deck: THE SUBTLE LAYER's names one under another; THE HERMETIC LAYER's read as one sentence, only the names
 // bold -- "as The Deck Above, so The Deck Below, or Both as One" -- and in the thin half-hour Within and Without (the user)
@@ -151,6 +152,9 @@ function DeckChoice({ book, pick, setPick, colour }: { book: Book; pick: Pick; s
   const plain = (s: string) => <Text key={s} fontSize={16} lineHeight={26} color={C.faint}>{s}</Text>;
   if (book === "subtle") return (
     <YStack gap={2}>{[name("reason", "The Deck of Reason"), name("instinct", "The Deck of Instinct"), name("both", "A Combined Deck")]}</YStack>
+  );
+  if (book === "unity") return (                                      // C-299 (vision 4.40): "the mended book deals Both as One only"
+    <Text>{name("both", "Both as One")}</Text>
   );
   const thin = thinNow();
   return (
@@ -166,8 +170,8 @@ const sideName = (side: Card["side"]) =>
   side === "above" ? (thinNow() ? "WITHIN" : "ABOVE") : side === "below" ? (thinNow() ? "WITHOUT" : "BELOW") : side.toUpperCase();
 
 export function Cards({ book = "subtle" }: { book?: Book }) {
-  const C = book === "hermetic" ? { ...CS, ...SPELL } : CS;
-  const deck = book === "hermetic" ? "hermetic" : "subtle";
+  const C = book === "hermetic" ? { ...CS, ...SPELL } : book === "unity" ? { ...CS, ...MENDED } : CS;
+  const deck = book === "subtle" ? "subtle" : "hermetic";
   const pv = previewing() ? "&preview=1" : "";                          // the preview: both decks, read only
   const [day, setDay] = useState<Card | null>(null);
   const [halloween, setHalloween] = useState(false);

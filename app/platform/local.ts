@@ -3,6 +3,7 @@
 // (server/src/core.ts and routes.ts -- the same code the server runs) over the phone's own SQLite, and a COPY of the
 // save Delta shared through Files, kept in the app's documents. SYNC writes that copy (the one before it kept beside
 // it), and the phone hands it back to Delta through the share sheet. Delta's own save is never touched.
+import { journalOf, writeChapter } from "../../server/src/journal";   // C-298
 import { GATE } from "../game/gate";
 import * as SQLite from "expo-sqlite";
 import * as DocumentPicker from "expo-document-picker";
@@ -150,7 +151,13 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
       return r;
     } finally { GATE.release(); }
   }
-  if (handles(method, path)) return route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) });
+  if (handles(method, path)) {
+    const r = route(h, s, { method, path, body: body ?? {}, deviceId, query: Object.fromEntries(query) });
+    // C-298: a journal's chapter closed with no hub to think it through -- its page laid out plainly, here and now
+    const writing = (r.body as { writing?: number; id?: number } | null)?.writing;
+    if (writing) { await writeChapter(s, writing, null); const j = journalOf(s, (r.body as { id: number }).id); if (j) return ok({ ...j, writing }); }
+    return r;
+  }
   if (method === "GET") {
     if (path === "/api/devices") return ok(devicesView());
     if (path === "/api/device/link") return ok({ ...NO_LINK, ...devicesView() });

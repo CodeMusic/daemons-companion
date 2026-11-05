@@ -69,7 +69,7 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
   if (!model) throw new Error("no model chosen");
   const messages = [{ role: "system", content: system },
                     ...history.slice(-6).flatMap((t) => [{ role: "user", content: t.said }, { role: "assistant", content: t.answer }]),
-                    { role: "user", content: said.slice(0, 1000) }];
+                    { role: "user", content: said.slice(0, think ? 16_000 : 1000) }];   // C-298: the background path reads a write-up's whole input (a journal; a meeting's 4000)
   return timed(ms, async (signal) => {
     const r = await f(`${at.url}/chat/completions`, { method: "POST", headers: headers(at), signal,
       // thinking off: Qwen3.6 otherwise spends every token reasoning and says nothing (2026-11-03: 220 tokens of

@@ -99,6 +99,7 @@ import { ackSpellcraft, readHermetic } from "./hermetic.js";   // C-238
 import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
+import { journalOf, writeChapter } from "./journal.js";   // C-298
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { readSubtle } from "./save/subtle.js";   // C-204
@@ -713,6 +714,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-293: every talker is told who is dreaming -- its INDEX self, feelings, care and bond (dreams.ts dreamerSaid) -- and asked
   // for the dream in its own voice, "I dreamt ...", as metaphor; one telling at a time for a night
   const telling = new Set<number>();
+  // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
+  // nobody waiting; with no thinker at all, laid out plainly. One at a time per chapter.
+  const paging = new Set<number>();
+  const writeJournalPage = (chapter: number) => {
+    if (paging.has(chapter)) return;
+    paging.add(chapter);
+    writeChapter(store, chapter, house.any ? (system, user, most) => house.write(system, user, most) : null)
+      .catch(() => {}).finally(() => paging.delete(chapter));
+  };
   const dreamerOf = (ecfg: Config, deviceId: string): Dreamer => {
     const f = selfFacts(ecfg, store, deviceId), care = (f.life as { care?: Dreamer["care"] } | null)?.care ?? null;
     return { nickname: f.nickname, name: f.name, types: f.types, category: f.category, entry: f.entry, trainer: f.trainer,
@@ -1017,6 +1027,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const night = (r.body as { dream?: { id: number } } | null)?.dream;   // C-283: woken after a SLEEP -- its dream, told
         const kept = night ? dreamsOf(store).find((x) => x.id === night.id) : undefined;
         if (kept) tellDream(ecfg, kept, deviceId);
+        const writing = (r.body as { writing?: number } | null)?.writing;   // C-298: a chapter closed -- its page, by the background thinker
+        if (writing) {
+          writeJournalPage(writing);
+          // no thinker: laid out plainly at once (writeChapter's plain path is synchronous) -- answered finished
+          const id = (r.body as { id?: number }).id;
+          if (!house.any && id) return reply(res, { status: r.status, body: { ...journalOf(store, id), writing } });
+        }
         return reply(res, r);
       }
       if (req.method === "GET" && path === "/api/device/state") {

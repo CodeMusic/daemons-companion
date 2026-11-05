@@ -41,14 +41,15 @@ import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./wh
 import { bondAdd } from "./evolve.js";
 import { WAKES } from "./life.js";   // C-293: the cares that wake it, one list
 import { thriveOf } from "./thrive.js";   // C-207
+import { again, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/hermetic/first", "/api/halloween", "/api/glass"];
-const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care"];
+const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -70,6 +71,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/today") return ok(today(h, store, now));
     if (path === "/api/glass") return ok(glassView(store, now.getTime()));   // C-262: what the glasses show, and the notes
     if (path === "/api/goals") return ok(store.goals());
+    // C-298: the JOURNAL -- every journal, or one with its entries and chapters (journal.ts)
+    if (path === "/api/journals") return ok({ journals: journalsOf(store) });
+    if (path === "/api/journal") { const j = aJournal(store, Number(a.query?.id), now); return j ? ok(j) : no(404, "no such journal"); }
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48
     if (path === "/api/goal") return ok({ goal: store.currentGoal(), limit: ENTRY_LIMIT });   // C-46: ONE goal
     if (path === "/api/daemon/life") return lifeNow(h, store, deviceId, now);
@@ -263,6 +267,27 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       else if (Number.isInteger(b.milestone)) store.removeMilestone(b.milestone);
       else return no(400, "remove {step} or {milestone}");
       return ok({ goal: store.currentGoal(), limit: ENTRY_LIMIT });
+    }
+    // C-298: the JOURNAL. SUMMARIZE (and again) answer {writing: chapter}: whoever answered writes the page after --
+    // the hub's background thinker (api.ts), or a phone hosting alone, plainly (app/platform/local.ts)
+    if (path.startsWith("/api/journal")) {
+      const said = (r: unknown) => typeof r === "string" ? no(r.startsWith("no such") ? 404 : 400, r) : null;
+      if (path === "/api/journal") { const r = newJournal(store, b.title, now); return said(r) ?? ok(r, 201); }
+      if (path === "/api/journal/rename") { const r = renameJournal(store, Number(b.id), b.title, now); return said(r) ?? ok(r); }
+      if (path === "/api/journal/remove") return removeJournal(store, Number(b.id)) ? ok({ journals: journalsOf(store) }) : no(404, "no such journal");
+      if (path === "/api/journal/entry") { const r = keepEntry(store, b, now); return said(r) ?? ok(r, b.id == null ? 201 : 200); }
+      if (path === "/api/journal/entry/remove") { const r = removeEntry(store, Number(b.journal), Number(b.id), now); return said(r) ?? ok(r); }
+      if (path === "/api/journal/summarize" || path === "/api/journal/again") {
+        const r = path === "/api/journal/again" ? again(store, Number(b.chapter), now) : summarize(store, Number(b.journal), now);
+        return said(r) ?? ok({ ...(r as { journal: object }).journal, writing: (r as { chapter: number }).chapter });
+      }
+      if (path === "/api/journal/plain") {         // a page the thinker could not write, laid out as written instead
+        const w = chapterWords(store, Number(b.chapter));
+        if (!w) return no(404, "no such summary");
+        finishChapter(store, Number(b.chapter), plainPage(w), "plain");
+        const j = aJournal(store, Number(b.journal), now);
+        return j ? ok(j) : no(404, "no such journal");
+      }
     }
   }
   return no(404, "not found");

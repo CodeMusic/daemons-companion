@@ -43,7 +43,7 @@ daemon it hosts.
 **The Tab5** is the **control center**: the app's screens on a 5-inch touch screen, seven tabs -- TODAY (the day, the
 one thing, the daemon, NEARBY, the game, the LIBRARY's news), DAEMON (YOURS: its daemon in its den and its expression,
 DRINK FEED TRAIN SLEEP or WAKE, NEARBY, the party, SYNC; the INDEX: each entry, NATIVE, and LISTEN; ROUTINES: THE CASINO
-and THE HOUSE), GOALS, LIBRARY (CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK with PLAY, STREAM), YOU, PLACES (DEVICES by
+and THE HOUSE), JOURNEY (GOALS, the JOURNAL), LIBRARY (CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK with PLAY, STREAM), YOU, PLACES (DEVICES by
 maker, by NAME or LAST USED first -- the choice kept, as the app's PLACES (C-217; compiled, not yet flashed) -- a picture
 of each, which daemon goes where, ITS SETTINGS for each, and HOME, Home Assistant), SETTINGS (portrait,
 landscape or turning with it; AUTO, LIGHT or DARK, where AUTO is dark from 8pm to 6am). Another daemon's word, act or

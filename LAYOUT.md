@@ -26,7 +26,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 |---|---|
 | `App.tsx`, `index.ts` | `App` (pairing, the look, the providers) and `Shell`, which wires `shell/` together |
 | `shell/` | the tab strip, the beside split's panes and sizes (`panes.tsx`, `split.ts`), the background syncs (`sync.ts`) |
-| `screens/<tab>/` | each tab's page and the pages only it opens: `today/`, `daemon/`, `goals/`, `library/`, `you/`, `places/`, `settings/`, `game/`, `dev/` |
+| `screens/<tab>/` | each tab's page and the pages only it opens: `today/`, `daemon/`, `journey/` (GOALS, the JOURNAL), `library/`, `you/`, `places/`, `settings/`, `game/`, `dev/` |
 | `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index` |
 | `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud, the book recordings, the LOGS |
 | `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |

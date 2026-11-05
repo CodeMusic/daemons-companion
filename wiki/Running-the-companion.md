@@ -56,7 +56,8 @@ NEARBY.
   (each one recorded on a watch, by day: its summary, take-aways, action items and the daemon's day-dream, read aloud if
   you like, and the whole transcript -- [The T-Watch Ultra](The-T-Watch-Ultra)).
   While its voice plays -- TALK, LISTEN, READ ALOUD -- the daemon's mouth opens and shuts with it.
-- **GOALS** -- one goal, its steps and milestones, and WALKING.
+- **JOURNEY** -- GOALS (one goal, its steps and milestones, and WALKING) and the JOURNAL: journals of titled entries, and
+  SUMMARIZE, which turns what is new since the last summary into one page to export as a PDF or print.
 - **LIBRARY** -- CALLOW SCHOOL, THE GUIDE and THE SUBTLE LAYER once your save has found them, the **NOTEBOOK**, the
   **SONGBOOK** (your instrument to PLAY, and the songs you have learned, in their colours, with LISTEN to hear one) and
   **STREAM** (every lesson a MARK or a ROOT has opened).

@@ -13,7 +13,7 @@ import { SCREEN } from "./state/data";
 import { loadLook, LOOK, lookHeard, PALETTE } from "./state/look";
 import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
 import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
-import { GoalsScreen } from "./screens/goals/Goals";
+import { JourneyScreen } from "./screens/journey/Journey";   // C-298: GOALS and the JOURNAL
 import { LibraryScreen } from "./screens/library/Library";
 import { PairScreen } from "./screens/settings/Pair";
 import { GameView } from "./screens/game/Game";
@@ -46,7 +46,7 @@ type Tab = (typeof TABS)[number];
 type TabProps = { ink: string; today: Today | null; reload: () => void; setTab: (t: Tab) => void; devOn: boolean };
 const TAB_VIEW: Record<Exclude<Tab, "game">, (p: TabProps) => React.JSX.Element | null> = {
   today: ({ today, reload, ink, setTab }) => (today ? <TodayScreen today={today} reload={reload} ink={ink} goTo={setTab} /> : null),
-  goals: ({ reload, ink }) => <GoalsScreen reload={reload} ink={ink} />,
+  journey: ({ reload, ink }) => <JourneyScreen reload={reload} ink={ink} />,
   daemon: ({ ink, setTab }) => <DaemonScreen ink={ink} goSettings={() => setTab("settings")} />,
   places: ({ ink, setTab }) => <PlacesScreen ink={ink} goSettings={() => setTab("settings")} />,
   you: () => <ProfileScreen />,

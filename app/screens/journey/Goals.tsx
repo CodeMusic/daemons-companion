@@ -1,4 +1,4 @@
-// GOALS -- the one goal, its steps and milestones, and WALKING. (C-157: out of App.tsx.)
+// GOALS, JOURNEY's first section (C-298) -- the one goal, its steps and milestones, and WALKING. (C-157: out of App.tsx.)
 import { useCallback, useEffect, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";

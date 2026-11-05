@@ -29,7 +29,7 @@ Run lint and typecheck before declaring any task done.
 user deciding it. Navigation is local React state:
 
 - `index.ts` -> `App.tsx`. `App` pairs (C-53) and picks the paper or the night (C-144), then renders `Shell`.
-- **The tabs** are `TABS` in `state/types.ts`: `today, game, daemon, goals, library, you, places, settings, dev`.
+- **The tabs** are `TABS` in `state/types.ts`: `today, game, daemon, journey, library, you, places, settings, dev` (C-298: JOURNEY holds GOALS and the JOURNAL).
   `SHOWN_TABS` hides `settings` (the gear opens it), `dev` (shown as `</>` only in DEVELOPER MODE, C-275) and, on the
   site, `game`. `Shell` keeps the open tab in `useState` and renders it from one table, `TAB_VIEW` (C-287).
 - **The game view is mounted once and never remounted** (C-187): outside the page's `ScrollView`, hidden rather than

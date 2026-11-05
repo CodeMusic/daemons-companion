@@ -20,6 +20,7 @@
         },
         "CFBundleDisplayName": "DAEMONS",
         "NSSpeechRecognitionUsageDescription": "When you choose THIS PHONE to answer, it hears what you say to your daemon on the phone itself.",
+        "NSPhotoLibraryUsageDescription": "DAEMONS companion never looks through your photos. It asks only if you choose to save a page or a picture there.",
         "NSLocalNetworkUsageDescription": "To reach your DAEMONS companion on your computer, at home.",
         "NSMotionUsageDescription": "While your daemon sleeps, picking up your phone stirs it. The app reads only how often the phone moved in the night.",
         "ITSAppUsesNonExemptEncryption": false

@@ -1272,6 +1272,12 @@
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
+ "249": {
+  "name": "EUDAIMON",
+  "description": "THE EUDAIMON LAYER. Found on the top side of the morning. It reads at any hour.",
+  "pocket": "POCKET_KEY_ITEMS",
+  "importance": 1
+ },
  "254": {
   "name": "RED SCARF",
   "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS.",

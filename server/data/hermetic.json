@@ -16,7 +16,11 @@
      "caption": "This book was not printed here.",
      "paragraphs": [
       {
-       "text": "Close this book if it is still light. It was not written in the world you walk by day. OSRIC HATTER set it down on QUICKSILVER, where he made hats until the quicksilver in the felt began to talk to him. Some say he went mad. He says he went through.",
+       "text": "The path ahead is fraught with shadows, and not all of them are in front of you. Close this book if it is still light. It was not written for the world you walk by day.",
+       "voice": "telling"
+      },
+      {
+       "text": "OSRIC HATTER read it on QUICKSILVER, where he made hats until the quicksilver in the felt began to talk to him. Some say he went mad. He says he went through.",
        "voice": "telling"
       },
       {
@@ -25,6 +29,10 @@
       },
       {
        "text": "The other two books are careful. This one does not stop. The words in green are not for reading quietly: say them.",
+       "voice": "telling"
+      },
+      {
+       "text": "There is another way to read this. It was read in the light, by someone who sat very still. You would not trust it yet.",
        "voice": "telling"
       },
       {

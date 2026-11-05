@@ -57,7 +57,7 @@ import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
-import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
+import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { voiceRecipe } from "./ai/voices.js";   // C-251
 import { INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
@@ -673,7 +673,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const tiinyNow = () => {
     const at = tiinyIn((k) => store.getSetting(k));
     if (!at || !TALK_HEALTH.tiiny?.ok) return null;
-    return { at, model: pickThinker(at, TALK_HEALTH.tiiny.models) };
+    return { at, model: pickThinker(at, TALK_HEALTH.tiiny.models), quick: pickQuick(at, TALK_HEALTH.tiiny.models) };
   };
   preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE);
   // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
@@ -732,7 +732,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       let answer: string | undefined;
       const tiiny = tiinyIn((k) => store.getSetting(k));
       if (p === "tiiny" && tiiny) {
-        try { answer = await tiinyChat(tiiny, pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []), `${self}\n${store.getSetting("self.instructions") || SELF_INSTRUCTIONS}`, [], ask); } catch { /* the next */ }
+        try { answer = await tiinyChat(tiiny, pickQuick(tiiny, TALK_HEALTH.tiiny?.models ?? []), `${self}\n${store.getSetting("self.instructions") || SELF_INSTRUCTIONS}`, [], ask); } catch { /* the next */ }
       }
       if (!answer && p === "module") answer = await viaHouse().catch(() => undefined);
       if (!answer) {
@@ -1152,7 +1152,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (typeof t.url === "string" && t.url.trim() && !tiinyUrl(t.url))
             return send(res, 400, { error: "the Tiiny's address ends in /v1: http://roverbyteseer:4000/v1, or http://<its address>/openai/v1" });   // DRAFT
           if (typeof t.url === "string") store.setSetting("tiiny.url", t.url.trim() ? tiinyUrl(t.url) : null);
-          for (const k of ["key", "model", "tts", "asr", "voice"] as const)
+          for (const k of ["key", "model", "quick", "tts", "asr", "voice"] as const)
             if (typeof t[k] === "string") store.setSetting(`tiiny.${k}`, t[k].trim().slice(0, 200) || null);
           const at = tiinyIn((k) => store.getSetting(k)), held = at ? await tiinyModels(at) : null;
           TALK_HEALTH = { ...TALK_HEALTH, tiiny: at ? { ok: !!held && !!pickThinker(at, held), at: new Date().toISOString(), models: held ?? [] } : null };
@@ -1371,7 +1371,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             const said = ask.text ?? (!ask.wav ? null : tiiny.asr ? (await tiinyHear(tiiny, ask.wav)) ?? await onBoard(ask.wav)
                                                           : (await onBoard(ask.wav)) ?? await tiinyHear(tiiny, ask.wav));
             if (said) {
-              const model = pickThinker(tiiny, TALK_HEALTH.tiiny?.models ?? []);
+              const model = pickQuick(tiiny, TALK_HEALTH.tiiny?.models ?? []);   // the foreground thinker: someone is waiting
               // a spoken answer kept to a few sentences: every word is a moment of voice to make (2026-11-03: 220 tokens, 20 s)
               const answer = await tiinyChat(tiiny, model, selfText(ecfg, store, deviceId, "full"), ask.history, said, fetch, 30_000, TALK_TOKENS);
               // its own voice model if one is chosen, else the house board speaks the Tiiny's words -- never silent

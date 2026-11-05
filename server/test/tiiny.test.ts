@@ -1,6 +1,6 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl } from "../src/ai/tiiny.js";
+import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl } from "../src/ai/tiiny.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf } from "../src/self.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;
@@ -34,6 +34,17 @@ describe("talking to it", () => {
     expect(await tiinyChat(at, "m", "You are PING.", [{ said: "hi", answer: "hello" }], "how are you?", f)).toBe("Good morning.");
     expect(sent.messages.map((m: { role: string }) => m.role)).toEqual(["system", "user", "assistant", "user"]);
     expect(sent.messages[0].content).toBe("You are PING.");
+  });
+  it("asks again without thinking when a background answer went all on reasoning", async () => {
+    const bodies: any[] = [];
+    const f = (async (_u: string, init: RequestInit) => { bodies.push(JSON.parse(String(init.body)));
+      return new Response(JSON.stringify({ choices: [{ message: { content: bodies.length === 1 ? "" : "Said at last." } }] })); }) as typeof fetch;
+    expect(await tiinyChat(at, "m", "s", [], "hi", f, 1000, 100, true)).toBe("Said at last.");
+    expect(bodies.map((b) => b.chat_template_kwargs.enable_thinking)).toEqual([true, false]);
+  });
+  it("picks the quick thinker for the foreground, else the big one", () => {
+    expect(pickQuick({ ...at, model: "big", quick: "small" }, [])).toBe("small");
+    expect(pickQuick({ ...at, model: "big", quick: "" }, [])).toBe("big");
   });
   it("throws when it fails, so the talk goes elsewhere", async () => {
     const f = (async () => new Response("no", { status: 503 })) as typeof fetch;

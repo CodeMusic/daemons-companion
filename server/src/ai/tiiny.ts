@@ -8,9 +8,14 @@
 // No node: imports -- this runs on the phone too.
 import { sayable } from "./say.js";   // C-270
 
-export type TiinyAt = { url: string; key: string; model: string; tts: string; asr: string; voice: string };
+// Two thinkers (the user, 2026-11-05: "the larger one for async tasks but if we have a user talking to a daemon it needs to
+// respond quick"): model is the BACKGROUND thinker -- write-ups, meetings, anything that may take a while, thinking on;
+// quick is the FOREGROUND one -- a talk, the GUIDE, a command, someone waiting -- thinking off, a few sentences. quick
+// unset is the background model with thinking off (measured 2026-11-05 on the Tiiny: Qwen3.6-35B-A3B answers a talk in
+// 1-1.5 s, first words streamed in 0.4 s, no slower than Qwen3.5-9B -- it wakes only 3B of itself per word).
+export type TiinyAt = { url: string; key: string; model: string; quick: string; tts: string; asr: string; voice: string };
 
-export const TIINY_SETTINGS = ["tiiny.url", "tiiny.key", "tiiny.model", "tiiny.tts", "tiiny.asr", "tiiny.voice"] as const;
+export const TIINY_SETTINGS = ["tiiny.url", "tiiny.key", "tiiny.model", "tiiny.quick", "tiiny.tts", "tiiny.asr", "tiiny.voice"] as const;
 
 export const tiinyUrl = (raw: string): string | null => {
   const u = raw.trim().replace(/\/+$/, "");
@@ -21,7 +26,7 @@ export const tiinyUrl = (raw: string): string | null => {
 export function tiinyIn(get: (k: string) => string | null): TiinyAt | null {
   const url = tiinyUrl(get("tiiny.url") ?? "");
   if (!url) return null;
-  return { url, key: get("tiiny.key") ?? "", model: get("tiiny.model") ?? "", tts: get("tiiny.tts") ?? "",
+  return { url, key: get("tiiny.key") ?? "", model: get("tiiny.model") ?? "", quick: get("tiiny.quick") ?? "", tts: get("tiiny.tts") ?? "",
            asr: get("tiiny.asr") ?? "", voice: get("tiiny.voice") ?? "" };
 }
 
@@ -48,13 +53,19 @@ export async function tiinyModels(at: TiinyAt, f: typeof fetch = fetch, ms = 500
 // The thinker to ask: the one chosen, else the first that is not for hearing, speaking or pictures
 const SIDE = /asr|tts|whisper|speech|voice|image|flux|embed|rerank|ocr|music|3d/i;
 export const pickThinker = (at: TiinyAt, held: string[]) => at.model || held.find((m) => !SIDE.test(m)) || "";
+// The foreground thinker: the quick one if chosen, else the background one (with its thinking off, in tiinyChat)
+export const pickQuick = (at: TiinyAt, held: string[]) => at.quick || pickThinker(at, held);
+
+// What a background thinker may spend reasoning before it answers, over what it may say (Qwen counts both in max_tokens)
+export const THINK_BUDGET = 4096;
 
 export type Turn = { said: string; answer: string };
 
 // One answer: the self as the system message, the turns before, then what was said. Throws on any failure, so the
-// caller takes the talk elsewhere (the module, then n8n).
+// caller takes the talk elsewhere (the module, then n8n). think: the background path -- it reasons first, with
+// THINK_BUDGET more tokens and the caller's longer wait; if all of it went on reasoning, it is asked again without.
 export async function tiinyChat(at: TiinyAt, model: string, system: string, history: Turn[], said: string,
-                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220): Promise<string> {
+                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false): Promise<string> {
   if (!model) throw new Error("no model chosen");
   const messages = [{ role: "system", content: system },
                     ...history.slice(-6).flatMap((t) => [{ role: "user", content: t.said }, { role: "assistant", content: t.answer }]),
@@ -63,7 +74,8 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
     const r = await f(`${at.url}/chat/completions`, { method: "POST", headers: headers(at), signal,
       // thinking off: Qwen3.6 otherwise spends every token reasoning and says nothing (2026-11-03: 220 tokens of
       // reasoning_content, content ""); off, it answered in 3-4 s. Read at the top level by the Tiiny, through LiteLLM.
-      body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature: 0.8, chat_template_kwargs: { enable_thinking: false } }) });
+      body: JSON.stringify({ model, messages, max_tokens: maxTokens + (think ? THINK_BUDGET : 0), temperature: think ? 0.7 : 0.8,
+                             chat_template_kwargs: { enable_thinking: think } }) });
     if (!r.ok) throw new Error(`the Tiiny answered ${r.status}`);
     const j = await r.json();
     // a thinking model's reasoning is left out: only what it says
@@ -71,6 +83,7 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
     // cut off by the cap: end on its last whole sentence, so a voice never stops mid-word
     if (j?.choices?.[0]?.finish_reason === "length") { const end = Math.max(...[".", "!", "?", "…"].map((c) => text.lastIndexOf(c)));
                                                        if (end > 20) text = text.slice(0, end + 1); }
+    if (!text && think) return tiinyChat(at, model, system, history, said, f, ms, maxTokens, false);
     if (!text) throw new Error("the Tiiny said nothing");
     return text;
   });
@@ -101,6 +114,7 @@ export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = 
     return await timed(ms, async (signal) => {
       const form = new FormData();
       form.append("model", at.asr);
+      form.append("response_format", "json");      // the Tiiny takes json or text only (2026-11-05)
       form.append("file", new Blob([new Uint8Array(wav)], { type: "audio/wav" }), "said.wav");
       const r = await f(`${at.url}/audio/transcriptions`, { method: "POST", headers: headers(at, false), body: form, signal });
       if (!r.ok) return null;
@@ -112,6 +126,6 @@ export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = 
 
 // The settings as the app is shown them: the key never, only whether there is one
 export const tiinyView = (get: (k: string) => string | null) => ({
-  url: get("tiiny.url") ?? "", keySet: !!get("tiiny.key"), model: get("tiiny.model") ?? "",
+  url: get("tiiny.url") ?? "", keySet: !!get("tiiny.key"), model: get("tiiny.model") ?? "", quick: get("tiiny.quick") ?? "",
   tts: get("tiiny.tts") ?? "", asr: get("tiiny.asr") ?? "", voice: get("tiiny.voice") ?? "",
 });

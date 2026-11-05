@@ -10,7 +10,8 @@ import { persona } from "./house.js";
 import { tiinyChat, tiinyHear, tiinySpeak, type TiinyAt } from "./tiiny.js";
 import { voiceRecipe } from "./voices.js";
 
-export type TiinyNow = () => { at: TiinyAt; model: string } | null;   // null: not set up, or not answering now
+export type TiinyNow = () => { at: TiinyAt; model: string; quick?: string } | null;   // null: not set up, or not answering now
+// model: the background thinker; quick: the foreground one (tiiny.ts), the background one when not given
 
 // The INDEX's own voice, said to a voice-design model -- DRAFT, a trainer's own (voice.recipe.index) used whole
 export const INDEX_VOICE = "a calm, clear, measured narrator's voice, warm and precise, like a gentle museum guide reading " +
@@ -31,9 +32,10 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
         const system = a.fixed ? a.fixed.setup : a.guide ? GUIDE_SETUP : persona(a, text);
         const said = a.fixed ? a.fixed.question : a.guide ? guideQuestion(a.guide(text, 700), text, a.book) : text;
         const start = Date.now();
-        const answer = await tiinyChat(t.at, t.model, system, a.fixed || a.guide ? [] : a.history, said, fetch, 30_000, a.guide ? 220 : 90);
+        // the foreground: someone is waiting -- the quick thinker, thinking off
+        const answer = await tiinyChat(t.at, t.quick || t.model, system, a.fixed || a.guide ? [] : a.history, said, fetch, 30_000, a.guide ? 220 : 90);
         const v = a.speak ? await tiinySpeak(t.at, answer, voiceRecipe({ types: a.daemon.types, category: a.daemon.category })) : null;
-        return { answer, heard, audio: v?.audio ?? null, provider: `tiiny:${t.model}`, firstMs: Date.now() - start };
+        return { answer, heard, audio: v?.audio ?? null, provider: `tiiny:${t.quick || t.model}`, firstMs: Date.now() - start };
       }
     } catch { /* the house's boards, as before */ }
     return was.talk(a, deadlineMs);
@@ -50,7 +52,8 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
   };
   house.write = async (system: string, user: string, maxTokens = 400) => {
     const t = now();
-    if (t) try { return await tiinyChat(t.at, t.model, system, [], user, fetch, 180_000, maxTokens); } catch { /* the boards */ }
+    // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed
+    if (t) try { return await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true); } catch { /* the boards */ }
     return was.write(system, user, maxTokens);
   };
   return house;

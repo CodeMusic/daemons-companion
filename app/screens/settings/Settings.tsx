@@ -193,13 +193,13 @@ export function VersionCard({ ink }: { ink: string }) {
 // C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly. C-180: or the modules in the
 // house (the hub's Module LLM, an AX630 board), and, beside it, the one voice that reads the INDEX aloud.
 type Provider = "module" | "auto" | "local" | "openrouter" | "tiiny";
-type Tiiny = { url: string; keySet: boolean; model: string; tts: string; asr: string; voice: string };   // C-249
+type Tiiny = { url: string; keySet: boolean; model: string; quick?: string; tts: string; asr: string; voice: string };   // C-249
 type HouseModule = { url: string; name: string; busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null };
 export function TalkSettingsCard({ ink }: { ink: string }) {
   const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
                             moduleAddresses?: string; tiiny?: Tiiny;
                             health?: { tiiny?: { ok: boolean; models: string[] } | null } }>("/api/talk/settings");
-  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; asr?: string; tts?: string } | null>(null);
+  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; quick?: string; asr?: string; tts?: string } | null>(null);
   const [tiinyNote, setTiinyNote] = useState("");
   const [typed, setTyped] = useState<string | null>(null);
   const [looking, setLooking] = useState("");
@@ -256,9 +256,12 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
           <Input flexGrow={1} minWidth={140} value={tiinyTyped?.key ?? ""} onChangeText={(key) => setTiinyTyped({ ...tiinyTyped, key })}
                  placeholder={t.tiiny?.keySet ? "its key is kept" : "its key"} secureTextEntry autoCapitalize="none" autoCorrect={false} />
           <Input flexGrow={1} minWidth={140} value={tiinyTyped?.model ?? t.tiiny?.model ?? ""} onChangeText={(model) => setTiinyTyped({ ...tiinyTyped, model })}
-                 placeholder="its model (or the first)" autoCapitalize="none" autoCorrect={false} />
+                 placeholder="its thinker, for slow work (or the first)" autoCapitalize="none" autoCorrect={false} />
           <Action label="Look for it" ink={ink} onPress={saveTiiny} />
         </XStack>
+        {/* the user, 2026-11-05: a quick model when someone is talking, the big one for work that can take a while */}
+        <Input value={tiinyTyped?.quick ?? t.tiiny?.quick ?? ""} onChangeText={(quick) => setTiinyTyped({ ...tiinyTyped, quick })}
+               placeholder="its quick thinker, for talking (or the same one)" autoCapitalize="none" autoCorrect={false} />{/* DRAFT */}
         <XStack gap={8} flexWrap="wrap" alignItems="center">
           <Input flexGrow={1} minWidth={140} value={tiinyTyped?.asr ?? t.tiiny?.asr ?? ""} onChangeText={(asr) => setTiinyTyped({ ...tiinyTyped, asr })}
                  placeholder="its hearing model (or the board's)" autoCapitalize="none" autoCorrect={false} />

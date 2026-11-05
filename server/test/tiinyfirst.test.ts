@@ -4,7 +4,7 @@ import { House } from "../src/ai/house.js";
 import { preferTiiny } from "../src/ai/tiinyfirst.js";
 import type { TiinyAt } from "../src/ai/tiiny.js";
 
-const at: TiinyAt = { url: "http://tiiny.test/v1", key: "k", model: "tiiny-35b", tts: "tiiny-voice", asr: "", voice: "" };
+const at: TiinyAt = { url: "http://tiiny.test/v1", key: "k", model: "tiiny-35b", quick: "", tts: "tiiny-voice", asr: "", voice: "" };
 const boards = () => {
   const h = new House(() => []);
   h.talk = vi.fn(async () => ({ answer: "from the board", heard: null, audio: null, provider: "module:hub", firstMs: 1 }));
@@ -39,7 +39,16 @@ describe("the Tiiny first", () => {
     expect((await h.voice("an entry"))!.provider).toBe("tiiny:tiiny-voice");
     expect(sent[0].body.instructions).toBe("the INDEX's voice");
     expect(await h.write("system", "user", 300)).toBe("from the Tiiny");
-    expect(sent[1].body.max_tokens).toBe(300);
+    expect(sent[1].body.max_tokens).toBe(300 + 4096);   // what it may say, and what it may reason first
+  });
+  it("talks on the quick thinker, thinking off; writes on the big one, thinking on", async () => {
+    tiinyUp();
+    const h = preferTiiny(boards(), () => ({ at, model: "tiiny-35b", quick: "tiiny-9b" }));
+    expect((await h.talk({ text: "hi", history: [], daemon: { nickname: "PING" }, speak: false })).provider).toBe("tiiny:tiiny-9b");
+    expect(sent[0].body).toMatchObject({ model: "tiiny-9b", chat_template_kwargs: { enable_thinking: false } });
+    await h.write("system", "user", 300);
+    expect(sent[1].body).toMatchObject({ model: "tiiny-35b", chat_template_kwargs: { enable_thinking: true } });
+    expect(sent[1].body.max_tokens).toBeGreaterThan(300);
   });
   it("hears on the board when the Tiiny has no hearing model", async () => {
     tiinyUp();

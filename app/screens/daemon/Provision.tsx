@@ -13,7 +13,7 @@ import { tuneNotes } from "../../sound/tuneSound";
 export type Provision = { id: string; kind: "food" | "drink"; name: string; frames: string[][]; ink: Record<string, string> };
 
 // A red fruit, bitten from the right, then down to the core, then only crumbs on the floor -- drawn by hand, 'f' the
-// inside where it was bitten (DRAFT, its look the user's)
+// inside where it was bitten (DRAFT; the user kept this look, 2026-11-05)
 const FRUIT = [
   "......s.....",
   "......sll...",

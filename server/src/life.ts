@@ -10,7 +10,7 @@
 //                 each whole day with nothing at all costs a little more than the one before; and ANY interaction
 //                 today takes that away at once -- quick to recover, as the user asked
 //   tired         C-114 (the user, 2026-10-11): SLEEP is a care of its own. Put to bed in the evening or the night (from
-//                 8pm) it sleeps until it is woken -- WAKE, or the first care of the morning -- and at noon at the latest
+//                 dusk, 6pm -- C-300: it was 8pm, and SLEEP at 6:30 was a nap that woke at 8) it sleeps until it is woken -- WAKE, or the first care of the morning -- and at noon at the latest
 //                 (C-293, the user 2026-11-04: "I often wake up after putting him to sleep and he is already awake"; it
 //                 had woken itself at 6am); put down in the day, it naps an hour and a half; tended in between, it wakes.
 //                 Not put to bed, it is drowsy from 8pm and stays so -- it waits for you, it never falls asleep alone.
@@ -24,6 +24,7 @@ import { care, moodCost, type Care } from "./care.js";   // C-266: how it has be
 
 export const MEALS: [number, number][] = [[6, 10], [11, 14], [17, 21]];
 const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met", "walk", "sleep"];   // met: nearby (C-15); walk: the day's walking goal (C-48)
+export const DUSK = 18, DAWN = 5;   // C-301: the watches of the day (context.ts watchOf), where a night's sleep and the widget's key turn
 const NIGHT_FROM = 20, MORNING = 6, BEDTIME = 21, NAP_MS = 90 * 60000, SLEEPS_UNTIL = 12;   // C-293: a night's sleep waits to be woken, until noon
 export const WAKES = ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"];   // tending it wakes it -- or WAKE (C-118); a meeting nearby does not
 const MOOD_START = 70, PER_TOGETHER = 4, TOGETHER_MOST = 24, PER_MISSED_MEAL = 3, QUIET_STEP = 3, QUIET_MOST = 30;
@@ -42,6 +43,7 @@ export type Life = {
   cue: string | null;                 // at most one quiet line, during a meal time
   care: Care;                         // C-266: rest, hunger, thirst, weight, companionship -- over days, not today
   sleptAt?: string;                   // C-284: put to bed and not woken since -- when, so the phone can count its night's stirs
+  wakesAt?: string;                   // C-300: asleep -- when it would wake by itself (a nap's end, or noon), so a widget redraws then
 };
 
 export function life(events: Interaction[], now = new Date()): Life {
@@ -70,12 +72,13 @@ export function life(events: Interaction[], now = new Date()): Life {
   const at = (e: Interaction) => Date.parse(e.at);
   const lastSleep = events.filter((e) => e.kind === "sleep").reduce<Interaction | null>((a, e) => (!a || at(e) > at(a) ? e : a), null);
   const woken = lastSleep !== null && events.some((e) => WAKES.includes(e.kind) && at(e) > at(lastSleep));
-  let asleep = false;
+  let asleep = false, wakesAt: Date | null = null;
   if (lastSleep && !woken) {
     const slept = new Date(lastSleep.at), h = slept.getHours(), until = new Date(slept);
-    if (h >= NIGHT_FROM || h < MORNING) { if (h >= MORNING) until.setDate(until.getDate() + 1); until.setHours(SLEEPS_UNTIL, 0, 0, 0); }
+    if (h >= DUSK || h < MORNING) { if (h >= MORNING) until.setDate(until.getDate() + 1); until.setHours(SLEEPS_UNTIL, 0, 0, 0); }
     else until.setTime(slept.getTime() + NAP_MS);
     asleep = now.getTime() < until.getTime();
+    if (asleep) wakesAt = until;
   }
   // Rested: put to bed between 6pm and the morning that last began. A night without costs a little, as a meal does --
   // but only once it has had a night with you (a daemon just come out has nothing to be tired from).
@@ -98,5 +101,5 @@ export function life(events: Interaction[], now = new Date()): Life {
   const word = tired === "asleep" ? "asleep" : tired === "drowsy" ? "sleepy"
     : mood >= 88 ? "happy" : mood >= 72 ? "content" : mood >= 55 ? "calm" : "a little low";
   return { mood, word, fed: { today: fed, due }, watered: { today: watered, due }, trained, tired, rested, quietDays, cue, care: c,
-           ...(lastSleep && !woken ? { sleptAt: lastSleep.at } : {}) };
+           ...(lastSleep && !woken ? { sleptAt: lastSleep.at } : {}), ...(wakesAt ? { wakesAt: wakesAt.toISOString() } : {}) };
 }

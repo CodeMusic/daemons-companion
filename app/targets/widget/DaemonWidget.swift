@@ -57,7 +57,9 @@ struct Provider: TimelineProvider {
                                    policy: .after(back)))
       }
       let s = await Companion.refresh()
-      let end = now.addingTimeInterval(30 * 60)
+      // C-300: drawn again when it would change by itself -- it wakes (a nap's end, noon), or dusk or dawn turns the key
+      var end = min(now.addingTimeInterval(30 * 60), nextTurn(after: now))
+      if let w = s?.wakesAt, w > now { end = min(end, w.addingTimeInterval(5)) }
       completion(Timeline(entries: wander(s, paired: Shared.paired, from: now, until: end, react: false), policy: .after(end)))
     }
   }
@@ -149,7 +151,7 @@ func rgb(_ c: [Int]) -> Color { Color(red: Double(c[0]) / 255, green: Double(c[1
 
 enum Mark {
   static func symbol(_ did: String?) -> String? {
-    switch did { case "feed": "heart.fill"; case "water": "drop.fill"; case "train": "bolt.fill"; case "sleep": "moon.zzz.fill"; case "kept": "clock"; default: nil }
+    switch did { case "feed": "heart.fill"; case "water": "drop.fill"; case "train": "bolt.fill"; case "sleep": "moon.zzz.fill"; case "wake": "sun.max.fill"; case "kept": "clock"; default: nil }
   }
 }
 
@@ -180,6 +182,27 @@ struct Pips: View {
           .frame(width: size, height: size)
       }
     }
+  }
+}
+
+// C-301: JOURNEY -- the app opened on its JOURNEY tab (JourneyIntent), drawn as the care keys are, in the den's ink outlined
+struct JourneyButton: View {
+  let compact: Bool
+  let den: Den
+  var k: CGFloat = 1
+  var body: some View {
+    Button(intent: JourneyIntent()) {
+      Group {
+        if compact { Image(systemName: "map.fill").font(.system(size: 13 * k, weight: .bold)) }
+        else { Label("Journey", systemImage: "map.fill").font(.system(size: 12 * k, weight: .semibold)).labelStyle(.titleAndIcon) }   // DRAFT
+      }
+      .frame(maxWidth: .infinity, minHeight: (compact ? 26 : 30) * k)
+    }
+    .buttonStyle(.plain)
+    .foregroundStyle(Color(hex: den.glow))
+    .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: den.deep).opacity(0.55)))
+    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(hex: den.glow), lineWidth: 1.5))
+    .accessibilityLabel("Open JOURNEY")
   }
 }
 
@@ -233,10 +256,18 @@ struct Buttons: View {
                  pressed: pressed("feed"), hop: hop && pressed("feed"))
       CareButton(intent: WaterIntent(), label: "Drink", symbol: "drop.fill", compact: compact, den: den, done: s.watered >= 3, k: k,
                  pressed: pressed("water"), hop: hop && pressed("water"))
-      CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den,
-                 done: s.trained, k: k, pressed: pressed("train"), hop: hop && pressed("train"))
-      CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: s.tired == "asleep", k: k,
-                 pressed: pressed("sleep"), hop: hop && pressed("sleep"))   // C-114
+      // C-301 (the user, 2026-11-05): one key that follows the day -- WAKE while it sleeps, SLEEP from dusk, TRAIN from dawn
+      if s.tired == "asleep" {
+        CareButton(intent: WakeIntent(), label: "Wake", symbol: "sun.max.fill", compact: compact, den: den, done: false, k: k,
+                   pressed: pressed("wake"), hop: hop && pressed("wake"))   // DRAFT
+      } else if isNight(entry?.date ?? Date()) {
+        CareButton(intent: SleepIntent(), label: "Sleep", symbol: "moon.fill", compact: compact, den: den, done: false, k: k,
+                   pressed: pressed("sleep"), hop: hop && pressed("sleep"))   // C-114
+      } else {
+        CareButton(intent: TrainIntent(), label: "Train", symbol: "figure.strengthtraining.traditional", compact: compact, den: den,
+                   done: s.trained, k: k, pressed: pressed("train"), hop: hop && pressed("train"))
+      }
+      JourneyButton(compact: compact, den: den, k: k)   // C-301
     }
   }
 }
@@ -370,7 +401,7 @@ struct DaemonWidget: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: KIND, provider: Provider()) { DaemonWidgetView(entry: $0) }
       .configurationDisplayName("Your daemon")
-      .description("The daemon this phone hosts, in its den, and FEED, WATER and TRAIN from the home screen.")
+      .description("The daemon this phone hosts, in its den: FEED, DRINK, TRAIN or SLEEP as the day goes, and JOURNEY.")   // DRAFT
       .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular])
   }
 }

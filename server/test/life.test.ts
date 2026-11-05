@@ -48,6 +48,15 @@ describe("the daemon's life (C-13, PLAN 7)", () => {
 
   // C-114 (the user, 2026-10-11): SLEEP is a care of its own -- it waits to be put to bed
   const atm = (d: number, h: number, m: number, kind: string): Interaction => ({ at: new Date(2026, 9, d, h, m).toISOString(), kind });
+  // C-300: a night begins at dusk -- put to bed at 6:30pm it sleeps the night, and says when it would wake by itself
+  it("sleeps the night from dusk, and tells when it would wake (a nap's end, or noon)", () => {
+    const dusk = life([atm(4, 18, 30, "sleep")], new Date(2026, 9, 4, 20, 30));
+    expect(dusk.tired).toBe("asleep");                           // was a 90-minute nap that woke it at 8
+    expect(new Date(dusk.wakesAt!).getTime()).toBe(new Date(2026, 9, 5, 12, 0).getTime());
+    const nap = life([atm(4, 14, 0, "sleep")], new Date(2026, 9, 4, 14, 30));
+    expect(new Date(nap.wakesAt!).getTime()).toBe(new Date(2026, 9, 4, 15, 30).getTime());
+    expect(life([atm(4, 14, 0, "sleep")], new Date(2026, 9, 4, 16, 0)).wakesAt).toBeUndefined();   // awake: nothing to wait for
+  });
   it("is drowsy from 8pm and stays so until it is put to bed -- it never falls asleep alone", () => {
     expect(life([], new Date(2026, 9, 4, 21, 0)).tired).toBe("drowsy");
     expect(life([], new Date(2026, 9, 4, 23, 30)).word).toBe("sleepy");

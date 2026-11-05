@@ -38,6 +38,22 @@ struct Snapshot: Codable {
   var volume: Int? = nil            //        and how loud, 0..100 as the boards have it (60 unless set)
   var edition: String? = nil        // T-425: the save's -- its instrument, the harp (CONTENT) or the flute (CONTEXT)
   var rest: Int? = nil              // C-279: how well it has slept, 0..100 (C-266's care.rest), for the moon
+  var wakesAt: Date? = nil          // C-300: asleep -- when it would wake by itself, so the widget is drawn again then
+}
+
+// C-301: the watches of the day the care key turns on -- server/src/life.ts DUSK and DAWN (context.ts watchOf)
+let DUSK_HOUR = 18, DAWN_HOUR = 5
+func isNight(_ d: Date) -> Bool { let h = Calendar.current.component(.hour, from: d); return h >= DUSK_HOUR || h < DAWN_HOUR }
+// the next dusk or dawn after this moment -- when the care key would change by itself
+func nextTurn(after d: Date) -> Date {
+  let cal = Calendar.current
+  let turns = [DAWN_HOUR, DUSK_HOUR].compactMap { cal.nextDate(after: d, matching: DateComponents(hour: $0, minute: 0), matchingPolicy: .nextTime) }
+  return turns.min() ?? d.addingTimeInterval(3600)
+}
+func isoDate(_ s: String?) -> Date? {
+  guard let s else { return nil }
+  let f = ISO8601DateFormatter(); f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+  return f.date(from: s) ?? ISO8601DateFormatter().date(from: s)
 }
 
 // The day's life, as GET /api/daemon/life and POST /api/daemon/<care> answer (server/src/life.ts)
@@ -47,6 +63,7 @@ struct Life: Decodable {
   let level: Int?
   struct Care: Decodable { let rest: Int }   // C-279: the rest of C-266's care is not drawn here
   let care: Care?
+  let wakesAt: String?                       // C-300
 }
 // The part of GET /api/device/state the widget draws
 struct DeviceState: Decodable {
@@ -171,7 +188,8 @@ enum Companion {
       let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
                        cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date(),
-                       sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition, rest: d.life.care?.rest)
+                       sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition, rest: d.life.care?.rest,
+                       wakesAt: isoDate(d.life.wakesAt))
       Shared.snapshot = s
       return s
     } catch {

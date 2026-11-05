@@ -26,6 +26,8 @@ import { heardSync } from "../../ui/received";              // C-261
 import type { Arrival } from "../../../server/src/core";
 import type { Care } from "../../../server/src/care";   // C-266
 import { pretendLife, useDev } from "../../state/dev";
+import { onLifeHeard } from "../../state/lifeHeard";   // C-300
+import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-302
 import NIGHT from "../../modules/daemons-night";                       // C-284: the phone's own night   // C-269: as </> sets its mood and care (C-275: in the </> tab)
  // C-119: how it looks now, decided on the server
 
@@ -51,6 +53,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const [unmasked, setUnmasked] = useState(false);
   const masked = halloween.on && !!halloween.costume && !unmasked;
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
+  const [serving, setServing] = useState<Serving | null>(null);   // C-302: the fruit or the glass, eaten or drunk
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
   const shimmer = useWitchingLevel();                       // T-519: the shimmer as strong as the hour is now, caught up to
@@ -65,10 +68,18 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     playerId().then((id) => api<{ settings: { sound?: boolean; volume?: number } }>(`/api/devices/${encodeURIComponent(id)}/settings`))
       .then((r) => hearSettings(r.settings)).catch(() => {});
   }, []);
+  // C-300: tended elsewhere -- the widget, a watch -- read again: when the app is back at the front (shell/sync.ts, after
+  // the widget's kept presses are sent) and every half minute while it is shown
+  useEffect(() => {
+    const again = () => api<Life>("/api/daemon/life").then(setL).catch(() => {});
+    const off = onLifeHeard(again), t = setInterval(again, 30000);
+    return () => { off(); clearInterval(t); };
+  }, []);
   if (!l) return null;
   const shown = pretendLife(l);                             // C-269: as </> sets it, or as it is
   const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
     setSaid(word); setUnder(""); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
+    if (what === "feed" || what === "water") setServing({ provision: PROVISIONS[GIVEN[what]], at: Date.now(), ms: phraseMs(what) });   // C-302
     setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
     if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
       try {
@@ -102,7 +113,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       if (!/^Kept on this phone/.test((e as Error).message))   // queue would send it again (the review, 2026-10-18); refused,
         api<Life>("/api/daemon/life").then(setL).catch(() => {});   // the companion's own counts replace the presumed ones
     }
-    if (ALONE) redrawWidgetNow();                         // C-111: no companion for the widget to ask
+    redrawWidgetNow();                                    // C-300: the widget too, at once -- not in half an hour (C-111: alone, drawn here)
   };
   return (
     <Card borderLeftWidth={6} borderLeftColor="$color9">
@@ -110,7 +121,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level}   // C-113, C-119; C-240: Halloween shimmers all day
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level}   // C-113, C-119; C-240: Halloween shimmers all day
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
       </Pressable>

@@ -32,6 +32,15 @@ export async function shareWithWidget(c: { server: string; token: string; away: 
 // Draw it again -- after the daemon it carries was changed, or when the app comes back to the front.
 export function redrawWidget() { if (ON_IOS) ExtensionStorage.reloadWidget(); }
 
+// C-301: the widget's JOURNEY key opens the app and leaves the tab it asked for in the App Group (Care.swift JourneyIntent);
+// taken once, so the next time the app comes forward it stays where it was
+export function takeOpen(): string | null {
+  if (!ON_IOS) return null;
+  const t = shared.get("open") ?? null;
+  if (t) shared.remove("open");
+  return t;
+}
+
 // C-87: buttons pressed on the home screen while the companion was out of reach, sent in order once it answers.
 export async function sendWidgetKept(api: <T>(path: string, body?: unknown) => Promise<T>) {
   if (!ON_IOS) return;
@@ -39,7 +48,7 @@ export async function sendWidgetKept(api: <T>(path: string, body?: unknown) => P
   try { kept = JSON.parse(shared.get("queue") ?? "[]"); } catch { return; }
   if (!kept.length) return;
   shared.remove("queue");
-  for (const k of kept) if (/^\/api\/daemon\/(feed|water|train|sleep)$/.test(k.path)) await api(k.path, {}).catch(() => {});
+  for (const k of kept) if (/^\/api\/daemon\/(feed|water|train|sleep|wake)$/.test(k.path))   // C-301: and WAKE await api(k.path, {}).catch(() => {});
   ExtensionStorage.reloadWidget();
 }
 

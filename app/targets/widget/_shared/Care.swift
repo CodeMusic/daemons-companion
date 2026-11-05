@@ -11,8 +11,8 @@ import AVFoundation
 import WidgetKit
 
 enum CareKind: String {
-  case feed, water, train, sleep
-  var said: String { switch self { case .feed: "Eaten."; case .water: "Drank."; case .train: "Trained."; case .sleep: "Asleep." } }   // DRAFT
+  case feed, water, train, sleep, wake   // C-301: WAKE, in TRAIN's place while it sleeps
+  var said: String { switch self { case .feed: "Eaten."; case .water: "Drank."; case .train: "Trained."; case .sleep: "Asleep."; case .wake: "Awake." } }   // DRAFT
 }
 
 // What the press does to the day, assumed before anyone answers -- the same rule the phone alone has always used (C-111)
@@ -21,7 +21,8 @@ func presume(_ kind: CareKind, _ s: inout Snapshot) {
   case .feed: s.fed = min(3, s.fed + 1); s.tired = s.tired == "asleep" ? "awake" : s.tired   // tended, it wakes (C-114)
   case .water: s.watered = min(3, s.watered + 1); s.tired = s.tired == "asleep" ? "awake" : s.tired
   case .train: s.trained = true; s.tired = s.tired == "asleep" ? "awake" : s.tired
-  case .sleep: s.tired = "asleep"
+  case .sleep: s.tired = "asleep"; s.wakesAt = nil
+  case .wake: s.tired = isNight(Date()) ? "drowsy" : "awake"; s.wakesAt = nil
   }
   s.said = kind.said; s.did = kind.rawValue; s.at = Date()
 }
@@ -37,7 +38,7 @@ func care(_ kind: CareKind) async {
     let l: Life = try await Companion.call("/api/daemon/\(kind.rawValue)", post: true)
     if var now = Shared.snapshot {                   // a second press may have landed meanwhile: correct the counts only
       now.word = l.word; now.fed = l.fed.today; now.watered = l.watered.today; now.trained = l.trained; now.tired = l.tired
-      now.cue = l.cue
+      now.cue = l.cue; now.wakesAt = isoDate(l.wakesAt)   // C-300
       if let r = l.care?.rest { now.rest = r }       // C-279
       if let lv = l.level { now.level = lv }
       Shared.snapshot = now
@@ -174,4 +175,17 @@ struct TrainIntent: AudioPlaybackIntent {
 struct SleepIntent: AudioPlaybackIntent {                     // C-114
   static var title: LocalizedStringResource = "Put your daemon to bed"
   func perform() async throws -> some IntentResult { await care(.sleep); return .result() }
+}
+@available(iOS 17.0, *)
+struct WakeIntent: AudioPlaybackIntent {                      // C-301: no phrase -- the app's WAKE plays none either
+  static var title: LocalizedStringResource = "Wake your daemon"   // DRAFT
+  func perform() async throws -> some IntentResult { await care(.wake); return .result() }
+}
+// C-301: JOURNEY from the home screen -- the app opened, and told through the App Group which tab (the app reads "open" when
+// it comes to the front: app/platform/widget.ts takeOpen). A Link would do in the medium and large widgets, not the small.
+@available(iOS 17.0, *)
+struct JourneyIntent: AppIntent {
+  static var title: LocalizedStringResource = "Open JOURNEY"   // DRAFT
+  static var openAppWhenRun: Bool = true
+  func perform() async throws -> some IntentResult { Shared.defaults?.set("journey", forKey: "open"); return .result() }
 }

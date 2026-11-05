@@ -7,6 +7,7 @@ import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, keepEverything, LOCAL, 
 import { paletteHeard, setPalette } from "../state/look";
 import { sendTodaysSteps } from "../screens/settings/Pair";
 import { heardElsewhere } from "../ui/received";   // C-261
+import { lifeHeard } from "../state/lifeHeard";     // C-300
 import type { Arrival } from "../../server/src/core";
 import type { TABS } from "../state/types";
 
@@ -14,7 +15,15 @@ import type { TABS } from "../state/types";
 // phone tapped to it opens here, on PLACES, linking with that watch
 export function useDeepLinks(setTab: (t: (typeof TABS)[number]) => void) {
   useEffect(() => {
+    // C-301: the widget's JOURNEY key -- the App Group's "open" (asked for as the app comes forward, and a moment after,
+    // since iOS may run the key's intent just after), or daemons://journey from anywhere else
+    const fromWidget = () => { if (WIDGET?.takeOpen() === "journey") setTab("journey"); };
+    const looks: ReturnType<typeof setTimeout>[] = [];
+    const look = () => { fromWidget(); [400, 1200].forEach((ms) => looks.push(setTimeout(fromWidget, ms))); };
+    look();
+    const fore = AppState.addEventListener("change", (s) => { if (s === "active") look(); });
     const open = (url: string | null) => {
+      if (url && /^daemons:\/\/journey\/?$/.test(url)) { setTab("journey"); return; }
       const m = url ? /^daemons:\/\/link\?device=([a-z0-9][a-z0-9-]{2,47})$/.exec(url) : null;
       if (!m || !HANDHELD) return;
       setTab("places");
@@ -22,7 +31,7 @@ export function useDeepLinks(setTab: (t: (typeof TABS)[number]) => void) {
     };
     Linking.getInitialURL().then(open).catch(() => {});
     const sub = Linking.addEventListener("url", (e) => open(e.url));
-    return () => sub.remove();
+    return () => { sub.remove(); fore.remove(); looks.forEach(clearTimeout); };
   }, []);
 }
 
@@ -58,8 +67,8 @@ export function useBackgroundSync(reload: () => void, setFresh: (f: (n: number) 
     const widget = () => {
       const w = WIDGET, l = LOCAL;
       if (ALONE && w && l)                              // C-111: its buttons tended here, then the app draws it
-        w.sendWidgetKept(api).catch(() => {}).finally(() => w.drawAlone(l.localApi).catch(() => {}));
-      else { WIDGET?.sendWidgetKept(api).catch(() => {}); WIDGET?.redrawWidget(); }
+        w.sendWidgetKept(api).catch(() => {}).finally(() => { lifeHeard(); w.drawAlone(l.localApi).catch(() => {}); });
+      else (WIDGET?.sendWidgetKept(api) ?? Promise.resolve()).catch(() => {}).finally(() => { lifeHeard(); WIDGET?.redrawWidget(); });   // C-300: the app reads it after
     };
     sync(); widget();
     // C-87: each time the app comes back to the front, what the phone holds is brought up to date (and anything kept

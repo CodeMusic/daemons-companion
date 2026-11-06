@@ -17,6 +17,7 @@ export type TalkAsk = {
   daemon: { nickname: string; name?: string; types?: string; category?: string; entry?: string;
             said?: string;                                  // C-303: what it says of itself (species.json `said`)
             level?: number | null; mood?: string; fed?: string; dream?: string };   // the user, 2026-10-28: its game, so they can ask
+  voice?: string;                                           // the recipe it speaks in (voices.ts), its own; else made from its type
   day?: { day: string; theme?: string; cue?: string } | null;
   season?: string;
   goal?: { goal: string; step: string } | null;

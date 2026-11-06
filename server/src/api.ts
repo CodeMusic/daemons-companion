@@ -283,7 +283,7 @@ function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()
   const d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
   if (!d) return { species: null as number | null, recipe: voiceRecipe({}, null), own: "" };
   const own = store.getSetting(`voice.recipe.${d.species}`) ?? "";
-  return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category }, core.daemonFeelings(store, now), own) };
+  return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category, species: d.species }, core.daemonFeelings(store, now), own) };
 }
 // C-303 (DAEMONS T-522): what a daemon says of itself (species.json `said`), and the voice it says it in -- its own
 // (C-251), never the INDEX's. null when {own: true} was not asked, or it has no telling yet: its entry is read as before
@@ -294,7 +294,7 @@ function ownTelling(ecfg: Config, store: Store, deviceId: string, b: Record<stri
   const row = sid == null ? null : SPECIES[String(sid)];
   if (!row?.said) return null;
   return { text: String(row.said), recipe: carried ? carried.recipe
-    : voiceRecipe({ types: row.types, category: row.category }, null, store.getSetting(`voice.recipe.${sid}`)) };
+    : voiceRecipe({ types: row.types, category: row.category, species: sid }, null, store.getSetting(`voice.recipe.${sid}`)) };
 }
 const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!s && readSubtle(s).held; };
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
@@ -1389,7 +1389,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const ask: TalkAsk = { text: p.text, wav: p.audioBase64 ? Buffer.from(p.audioBase64, "base64") : undefined,
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
           daemon: p.daemon, day: p.day, season: p.season, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide,
-          book: (p as { book?: string }).book };                                                                // C-229
+          book: (p as { book?: string }).book,                                                                  // C-229
+          voice: voiceFor(ecfg, store, deviceId).recipe };                         // its own voice, wherever it is answered
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });
         const tiiny = tiinyIn((k) => store.getSetting(k));

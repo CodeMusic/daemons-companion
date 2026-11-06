@@ -45,9 +45,30 @@ export function moodOfVoice(f: Feelings | null | undefined): string {
            restless: "Right now it is quick and fidgety, hurrying its words." }[strongest[0]] ?? "";
 }
 
-export type VoiceOf = { types?: string[] | string; category?: string; name?: string; nickname?: string };
+export type VoiceOf = { types?: string[] | string; category?: string; name?: string; nickname?: string; species?: number | null };
 
-// The recipe said with each line: a trainer's own words if written, else its type's voice, its category, its mood
+// (the user, 2026-11-05: "each daemon should have their own voice"): its type gives the family resemblance, and the
+// species its own pitch, pace, texture and habit -- 5 x 4 x 8 x 8 = 1280 voices, dealt by a step coprime with 1280, so
+// no two species below 1280 share one. DRAFT, every word the user's to rewrite.
+const PITCH = ["pitched higher than most of its kind", "pitched lower than most of its kind", "pitched in the middle",
+  "very high and small", "surprisingly deep for its size"];
+const PACE = ["speaks quickly", "speaks slowly and deliberately", "speaks with a lilting, sing-song rhythm", "speaks in short little bursts"];
+const TEXTURE = ["breathy", "slightly husky", "bell-clear", "reedy", "velvety", "a little nasal", "round and warm", "thin and silvery"];
+const HABIT = ["draws out its vowels", "clips the ends of its words", "has the faintest lisp", "rasps softly at the end of phrases",
+  "gives a small hum before it speaks", "has a little laugh hidden in its voice", "lightly rolls its r's",
+  "leans on the first word of every sentence"];
+export const VOICES_OF_OWN = PITCH.length * PACE.length * TEXTURE.length * HABIT.length;
+
+export function ownVoice(species: number | null | undefined): string {
+  if (species == null || !Number.isInteger(species) || species < 0) return "";
+  let i = (species * 797) % VOICES_OF_OWN;
+  const h = HABIT[i % 8]; i = Math.floor(i / 8);
+  const t = TEXTURE[i % 8]; i = Math.floor(i / 8);
+  const pa = PACE[i % 4]; i = Math.floor(i / 4);
+  return `Its own voice: ${t}, ${PITCH[i % 5]}; it ${pa} and ${h}.`;
+}
+
+// The recipe said with each line: a trainer's own words if written, else its type's voice, its category, its own, its mood
 export function voiceRecipe(d: VoiceOf, feelings?: Feelings | null, own?: string | null): string {
   const mood = moodOfVoice(feelings);
   if (own && own.trim()) return [own.trim(), mood].filter(Boolean).join(" ");
@@ -55,5 +76,6 @@ export function voiceRecipe(d: VoiceOf, feelings?: Feelings | null, own?: string
   const base = TYPE_VOICE[types[0]] ?? DEFAULT_VOICE;
   const second = types[1] && TYPE_VOICE[types[1]] ? `, with a touch of ${TYPE_VOICE[types[1]].replace(/^an? /, "").split(",")[0]}` : "";
   const c = d.category?.toLowerCase(), cat = c ? ` It is ${/^[aeiou]/.test(c) ? "an" : "a"} ${c} creature.` : "";
-  return `${base}${second}.${cat} Not a human adult: a small living creature.${mood ? " " + mood : ""}`;
+  const mine = ownVoice(d.species);
+  return `${base}${second}.${cat}${mine ? " " + mine : ""} Not a human adult: a small living creature.${mood ? " " + mood : ""}`;
 }

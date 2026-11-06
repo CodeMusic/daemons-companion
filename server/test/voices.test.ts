@@ -1,6 +1,6 @@
 // C-251: a daemon's voice as a description, for a voice-design model
 import { describe, expect, it } from "vitest";
-import { moodOfVoice, TYPE_VOICE, voiceRecipe } from "../src/ai/voices.js";
+import { moodOfVoice, ownVoice, TYPE_VOICE, VOICES_OF_OWN, voiceRecipe } from "../src/ai/voices.js";
 
 const calm = { glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null };
 
@@ -25,5 +25,16 @@ describe("a daemon's voice recipe", () => {
   });
   it("never says the word it is mistaken for", () => {
     for (const t of Object.keys(TYPE_VOICE)) expect(voiceRecipe({ types: [t], category: "X" }).toLowerCase()).not.toContain("demon");
+  });
+  it("gives every species a voice of its own, kin by type", () => {
+    const seen = new Set<string>();
+    for (let n = 0; n < VOICES_OF_OWN; n++) seen.add(ownVoice(n));
+    expect(seen.size).toBe(VOICES_OF_OWN);
+    const a = voiceRecipe({ types: ["SIGNAL"], category: "DEMAND", species: 25 }), b = voiceRecipe({ types: ["SIGNAL"], category: "DEMAND", species: 26 });
+    expect(a).not.toBe(b);
+    expect(a).toContain(TYPE_VOICE.SIGNAL); expect(b).toContain(TYPE_VOICE.SIGNAL);
+    expect(a).toContain(ownVoice(25));
+    expect(ownVoice(null)).toBe("");
+    expect(voiceRecipe({ types: ["SIGNAL"], species: 25 }, null, "my own words")).toBe("my own words");
   });
 });

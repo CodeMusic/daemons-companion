@@ -66,8 +66,11 @@ export function forgetVoices(): number {
 // species for an INDEX entry the phone was not given the words of. null when no voice came.
 // C-303: {own: true} is what the daemon says of itself, in its own voice -- kept by its words (`said`) as well as its
 // species, so a telling that is rewritten is asked for again and never heard stale.
+// Bumped when the daemons' own voices change (voices.ts), so a telling kept in an old voice is made again -- 2: each
+// species a voice of its own (2026-11-05)
+const OWN_VOICES = 2;
 export async function readingVoice(body: { text?: string; species?: number; own?: boolean }, said?: string): Promise<File | null> {
-  const words = body.text !== undefined ? `text:${body.text}` : body.own ? `said:${body.species}:${said ?? ""}` : `species:${body.species}`;
+  const words = body.text !== undefined ? `text:${body.text}` : body.own ? `said:${OWN_VOICES}:${body.species}:${said ?? ""}` : `species:${body.species}`;
   const had = keptVoice(words);
   if (had) return had;
   const spoken = await apiLater<Spoken>("/api/ai/speak", body);

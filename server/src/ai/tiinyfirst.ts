@@ -34,7 +34,7 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
         const start = Date.now();
         // the foreground: someone is waiting -- the quick thinker, thinking off
         const answer = await tiinyChat(t.at, t.quick || t.model, system, a.fixed || a.guide ? [] : a.history, said, fetch, 30_000, a.guide ? 220 : 90);
-        const v = a.speak ? await tiinySpeak(t.at, answer, voiceRecipe({ types: a.daemon.types, category: a.daemon.category })) : null;
+        const v = a.speak ? await tiinySpeak(t.at, answer, a.voice || voiceRecipe({ types: a.daemon.types, category: a.daemon.category })) : null;
         return { answer, heard, audio: v?.audio ?? null, provider: `tiiny:${t.quick || t.model}`, firstMs: Date.now() - start };
       }
     } catch { /* the house's boards, as before */ }

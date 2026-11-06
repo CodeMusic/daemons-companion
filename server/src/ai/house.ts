@@ -15,6 +15,7 @@ export type TalkAsk = {
   text?: string; wav?: Uint8Array;                        // what was said: words, or a 16 kHz WAV to hear
   history: { said: string; answer: string }[];
   daemon: { nickname: string; name?: string; types?: string; category?: string; entry?: string;
+            said?: string;                                  // C-303: what it says of itself (species.json `said`)
             level?: number | null; mood?: string; fed?: string; dream?: string };   // the user, 2026-10-28: its game, so they can ask
   day?: { day: string; theme?: string; cue?: string } | null;
   season?: string;
@@ -53,7 +54,10 @@ export function checkModules(list: unknown): ModuleAt[] | string {
 // Short on purpose: M5's plugin sets a pooled client up with the first system message it sees, and on the module a long
 // one (50 words) leaves that client answering nothing, for good, until its services restart; 15 words answer (2026-10-28)
 export const TALK_SYSTEM = "You are a character in the game DAEMONS. Become who the note in brackets describes.";
-export function persona(a: TalkAsk, heard = ""): string {
+// C-303 (DAEMONS T-522): a daemon with a telling of its own is given THAT in place of its INDEX entry -- shorter, and
+// already in the first person, which a 0.5B continues better than a record about "it". `roomy` (the Tiiny, a thinker
+// with the window for it) is given both: the record, then how it speaks of itself.
+export function persona(a: TalkAsk, heard = "", roomy = false): string {
   if (a.guide) return `${GUIDE_SETUP} From ${a.book ?? "THE GUIDE"}: ${a.guide(heard)}`;   // C-209: a book answers, not the daemon (its pages, a.guide)
   const d = a.daemon;
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
@@ -61,7 +65,8 @@ export function persona(a: TalkAsk, heard = ""): string {
   // said positively, and never the word AI: a 0.5B loses the "never" and keeps the word (the hardware lane, 2026-10-28:
   // OVERLOADED answered "I'm OVERLOADED, an AI ... no body" under "Never say you are an AI")
   return [`${who}: a small living creature with a body of your own, from the INDEX of the game DAEMONS, who travels with the person who carries you.`,
-          d.entry ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
+          d.entry && (roomy || !d.said) ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
+          d.said ? `You say of yourself: "${d.said.replace(/\s+/g, " ").slice(0, 160)}"` : "",
           d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
           d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 90)}` : "",
           a.day ? `Today is ${a.day.day}${a.day.theme ? ` (${a.day.theme})` : ""}${a.season ? `, in ${a.season}` : ""}.` : "",

@@ -98,6 +98,15 @@ describe("the self", () => {
     expect(text).toContain("Yesterday: We walked to the lake.");
     expect(text).not.toContain("Over the last month");
   });
+  it("gives a daemon what it says of itself beside its record, never in the short self (C-303)", () => {
+    const f = { nickname: "PING", entry: "Asks one question and requires an answer.", said: "Are you there? Good. I will ask again." };
+    const day = selfOf(f, "day");
+    expect(day).toContain("Your INDEX entry: Asks one question and requires an answer.");
+    expect(day).toContain('You say of yourself, in your own words: "Are you there? Good. I will ask again."');
+    expect(day.indexOf("Your INDEX entry")).toBeLessThan(day.indexOf("You say of yourself"));
+    expect(selfOf(f, "short")).not.toContain("Are you there?");
+    expect(selfOf({ nickname: "PING", entry: "Asks." }, "day")).not.toContain("You say of yourself");
+  });
   it("keeps the short self short, and the month for the full one", () => {
     const f = { nickname: "PING", trainer: "TRAINER", feelings: feel, month: "A quiet month.", kept: ["the first walk"] };
     const short = selfOf(f, "short");

@@ -50,6 +50,11 @@ describe("C-283: a night from SLEEP to WAKE", () => {
 
 describe("C-293: he dreams as himself", () => {
   const n = { from: "", to: "", hours: 8, stirs: 0, tucked: true };
+  it("is told how it speaks of itself, after its record, and to tell the dream in that voice (C-303)", () => {
+    const self = dreamerSaid({ nickname: "PING", entry: "Asks one question.", said: "Are you there? Good." });
+    expect(self).toMatch(/Your INDEX entry: Asks one question\.\nYou say of yourself, in your own words: "Are you there\? Good\." Tell the dream in that voice\./);
+    expect(dreamerSaid({ nickname: "PING", entry: "Asks one question." })).not.toMatch(/You say of yourself/);
+  });
   it("is told who is dreaming -- the INDEX, feelings, care and bond -- and asked for a metaphor told as 'I dreamt'", () => {
     const self = dreamerSaid({ nickname: "SEEKMUSAI", name: "VAPOREON", types: "WATER", category: "BUBBLE JET", entry: "It lives near water.",
                                 trainer: "KIT", feelings: "very GLAD, and a little SAD", bond: 62, bondTrend: "STRONGER",

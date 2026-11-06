@@ -243,6 +243,7 @@ function talkWho(ecfg: Config, store: Store, deviceId: string) {
   const st = deviceState(ecfg, store, new Date(), deviceId), d = st.daemon;
   return {
     daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry,
+                  said: (SPECIES[String(d.species)]?.said as string | undefined) || undefined,   // C-303: what it says of itself
                   level: d.level ?? null, mood: d.life?.word,                                  // the user: its game, to ask about
                   fed: d.life ? `fed ${d.life.fed.today}, watered ${d.life.watered.today} today` : undefined,
                   dream: (st as { dream?: { text: string } }).dream?.text }
@@ -736,7 +737,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   };
   const dreamerOf = (ecfg: Config, deviceId: string): Dreamer => {
     const f = selfFacts(ecfg, store, deviceId), care = (f.life as { care?: Dreamer["care"] } | null)?.care ?? null;
-    return { nickname: f.nickname, name: f.name, types: f.types, category: f.category, entry: f.entry, trainer: f.trainer,
+    return { nickname: f.nickname, name: f.name, types: f.types, category: f.category, entry: f.entry, said: f.said, trainer: f.trainer,
              feelings: f.feelings ? feelingsSaid(f.feelings) : null, care,
              bond: f.friendship != null ? Math.max(0, Math.min(255, f.friendship)) / 255 * 100 : null, bondTrend: f.bondTrend ?? null,
              goal: f.goal ? `${f.goal.goal} (next, ${f.goal.step})` : null, yesterday: f.yesterday ?? null, season: f.season ?? null };
@@ -785,7 +786,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       for (let n = 2; used.has(model); n++) model = modelOf(`${nickname} ${n}`);
       used.add(model);
       return { model, nickname, name: String(d.name ?? ""), types: (row?.types ?? []).join("/"), category: row?.category ?? "",
-               entry: row?.entry?.[cfg.edition] ?? "" };
+               entry: row?.entry?.[cfg.edition] ?? "", said: row?.said || undefined };   // C-303
     };
     const byName = away.map(as);
     const box = devices.list().find((r) => kindOf(r.id) === "esp32-s3-box-3");
@@ -815,7 +816,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const r = await n8n(cfg, "daemon/talk", {
           text, history, provider: store.getSetting("talk.provider") ?? "auto", speak: false, voice: "index", localModel: cfg.talk.localModel,
           place: "home",
-          daemon: d ? { nickname: d.nickname, name: d.name, types: d.types, category: d.category, entry: d.entry } : { nickname: "your daemon" },
+          daemon: d ? { nickname: d.nickname, name: d.name, types: d.types, category: d.category, entry: d.entry, said: d.said } : { nickname: "your daemon" },
           day: { day: st.day.name, theme: st.day.theme, cue: st.day.virtue },
           goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null });
         if (typeof r.answer === "string" && r.answer.trim()) answer = r.answer.trim();

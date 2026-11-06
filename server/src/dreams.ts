@@ -110,7 +110,8 @@ export function dayOf(store: Store, from: string): string {
 // every talker, not only the Tiiny. The numbers become words by bands, as self.ts's do. Never shown: DRAFT.
 export type Dreamer = {
   nickname: string; name?: string; types?: string; category?: string; entry?: string; trainer?: string;
-  feelings?: string | null;                                    // self.ts feelingsSaid: "very GLAD, a little SAD, ..."
+  said?: string;                                               // C-303: what it says of itself (species.json `said`)
+  feelings?: string | null;                                 // self.ts feelingsSaid: "very GLAD, a little SAD, ..."
   care?: { rest: number; hunger: number; thirst: number; companionship: number; weight: number } | null;   // care.ts
   bond?: number | null; bondTrend?: string | null;             // the friendship, 0..100, and its week
   goal?: string | null; yesterday?: string | null; season?: string | null;
@@ -120,6 +121,8 @@ export function dreamerSaid(w: Dreamer, trainer = w.trainer || "your trainer"): 
   const who = [w.name && w.name !== w.nickname ? `a ${w.name}` : "", w.types ? `a ${w.types} daemon` : ""].filter(Boolean).join(", ");
   const lines = [`You are ${w.nickname || "a daemon"}${who ? `, ${who}` : ""}.`];
   if (w.entry) lines.push(`Your INDEX entry${w.category ? ` (the ${w.category} DAEMON)` : ""}: ${w.entry.replace(/\s+/g, " ").slice(0, 300)}`);
+  // C-303: the dream is told in the voice it speaks of itself in
+  if (w.said) lines.push(`You say of yourself, in your own words: "${w.said.replace(/\s+/g, " ").slice(0, 200)}" Tell the dream in that voice.`);
   if (w.feelings) lines.push(`You feel ${w.feelings}.`);
   if (w.care) {
     const c = w.care;

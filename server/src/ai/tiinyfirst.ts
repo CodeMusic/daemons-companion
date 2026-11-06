@@ -29,7 +29,7 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
       const heard = !a.text?.trim() && a.wav ? (t.at.asr ? await tiinyHear(t.at, a.wav) : null) ?? await was.transcribe(a.wav) : null;
       const text = (a.text?.trim() || heard || "").trim();
       if (text) {
-        const system = a.fixed ? a.fixed.setup : a.guide ? GUIDE_SETUP : persona(a, text);
+        const system = a.fixed ? a.fixed.setup : a.guide ? GUIDE_SETUP : persona(a, text, true);   // C-303: the record and its own telling, both
         const said = a.fixed ? a.fixed.question : a.guide ? guideQuestion(a.guide(text, 700), text, a.book) : text;
         const start = Date.now();
         // the foreground: someone is waiting -- the quick thinker, thinking off

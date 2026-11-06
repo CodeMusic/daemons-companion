@@ -11,7 +11,8 @@
 // site's SETTINGS shows (this machine only), and nothing else on the network reaches the companion this way.
 import { randomBytes } from "node:crypto";
 
-export type AgentDaemon = { model: string; nickname: string; name: string; types: string; category: string; entry: string };
+export type AgentDaemon = { model: string; nickname: string; name: string; types: string; category: string; entry: string;
+                            said?: string };   // C-303: what it says of itself, beside the record
 export type Turn = { role: string; content?: string };
 export const DEFAULT_MODEL = "daemon:latest";
 export const OLLAMA_VERSION = "0.12.6";             // the version said to a client that asks; nothing depends on it

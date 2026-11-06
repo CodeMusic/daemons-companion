@@ -12,7 +12,8 @@ import type { Feelings } from "./feelings.js";
 export type SelfLength = "short" | "day" | "full";
 export type SelfFacts = {
   nickname: string; name?: string; types?: string; category?: string; entry?: string; level?: number | null;
-  box?: string;                      // what it runs on: "a BOX" -- the hub, by default
+  said?: string;                     // C-303: what it says of itself (species.json `said`), beside the record
+  box?: string;                     // what it runs on: "a BOX" -- the hub, by default
   device?: string;                   // where it is hosted right now: "WATCH", "phone"
   trainer?: string;                  // from this machine's settings (self.trainer); "your trainer" without
   friendship?: number | null;        // the save's, 0..255
@@ -91,6 +92,8 @@ export function selfOf(f: SelfFacts, length: SelfLength = "day", instructions = 
   const hosted = f.device ? `You are hosted on their ${f.device} right now.` : "";
   if (f.trainer || hosted) lines.push([f.trainer ? `Your trainer is ${trainer}.` : "", hosted].filter(Boolean).join(" "));
   if (f.entry) lines.push(`Your INDEX entry${f.category ? ` (the ${f.category} DAEMON)` : ""}: ${clip(f.entry, length === "full" ? 400 : 200)}`);
+  // C-303 (DAEMONS T-522): the record is what is written about it; this is how it speaks of itself, so its talk keeps to it
+  if (f.said) lines.push(`You say of yourself, in your own words: "${clip(f.said, 200)}" That is how you sound.`);
   if (f.friendship != null)
     lines.push(`You and ${trainer} have a friendship bond of ${percent(f.friendship)}%` +
                (f.bondTrend ? (f.bondTrend === "the SAME" ? ", and over the last week it has stayed the SAME." : `, and over the last week it has grown ${f.bondTrend}.`) : "."));

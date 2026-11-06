@@ -91,6 +91,17 @@ describe("the house", () => {
       expect(last(1)).not.toMatch(/SEEKMUSAI/);
     } finally { m.close(); }
   });
+  it("gives a small thinker the daemon's own telling in place of its record, and a roomy one both (C-303)", () => {
+    const told: TalkAsk = { ...ask, daemon: { ...ask.daemon, said: "I keep watch. I am still up." } };
+    const small = persona(told);
+    expect(small).toContain('You say of yourself: "I keep watch. I am still up."');
+    expect(small).not.toContain("Your INDEX entry");
+    expect(small.length).toBeLessThan(600);
+    const roomy = persona(told, "", true);
+    expect(roomy).toContain("Your INDEX entry: Keeps watch.");
+    expect(roomy).toContain('You say of yourself: "I keep watch. I am still up."');
+    expect(persona(ask)).toContain("Your INDEX entry: Keeps watch.");   // no telling: its record, as before
+  });
   it("tells the model who it is, briefly", () => {
     const p = persona(ask);
     expect(p).toContain("ROVERCUB");

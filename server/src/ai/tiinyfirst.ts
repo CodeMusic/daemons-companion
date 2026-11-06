@@ -40,10 +40,11 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     } catch { /* the house's boards, as before */ }
     return was.talk(a, deadlineMs);
   };
-  house.voice = async (text: string) => {
+  // C-303: a reading is in the INDEX's voice unless it comes with a recipe -- a daemon telling of itself, in its own
+  house.voice = async (text: string, recipe?: string) => {
     const t = now();
-    if (t?.at.tts) { const v = await tiinySpeak(t.at, text, indexRecipe()); if (v) return { audio: v.audio, provider: `tiiny:${t.at.tts}` }; }
-    return was.voice(text);
+    if (t?.at.tts) { const v = await tiinySpeak(t.at, text, recipe || indexRecipe()); if (v) return { audio: v.audio, provider: `tiiny:${t.at.tts}` }; }
+    return was.voice(text, recipe);
   };
   house.transcribe = async (wav: Uint8Array) => {
     const t = now();

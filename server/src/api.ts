@@ -284,6 +284,17 @@ function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()
   const own = store.getSetting(`voice.recipe.${d.species}`) ?? "";
   return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category }, core.daemonFeelings(store, now), own) };
 }
+// C-303 (DAEMONS T-522): what a daemon says of itself (species.json `said`), and the voice it says it in -- its own
+// (C-251), never the INDEX's. null when {own: true} was not asked, or it has no telling yet: its entry is read as before
+function ownTelling(ecfg: Config, store: Store, deviceId: string, b: Record<string, any>): { text: string; recipe: string } | null {
+  if (b.own !== true) return null;
+  const carried = b.species === undefined ? voiceFor(ecfg, store, deviceId) : null;
+  const sid = carried ? carried.species : Number(b.species);
+  const row = sid == null ? null : SPECIES[String(sid)];
+  if (!row?.said) return null;
+  return { text: String(row.said), recipe: carried ? carried.recipe
+    : voiceRecipe({ types: row.types, category: row.category }, null, store.getSetting(`voice.recipe.${sid}`)) };
+}
 const bookHeld = (cfg: Config) => { const s = hostOf(cfg).save.read(); return !!s && readSubtle(s).held; };
 export const today = (cfg: Config, store: Store, now = new Date()) => core.today(hostOf(cfg), store, now);
 export const sync = (cfg: Config, store: Store, now = new Date()) => core.sync(hostOf(cfg), store, now);
@@ -1419,15 +1430,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // An INDEX reading (or any line in the INDEX voice), from where index.voice says -- and each falls back on the
       // other: the module when n8n cannot be reached (n8n() checks first) or its call fails, as it does away from
       // roverbyteseer (the user, 2026-10-28); n8n when the module cannot
-      const fromModule = async (text: string): Promise<Record<string, unknown> | null> => {
+      const fromModule = async (text: string, recipe?: string): Promise<Record<string, unknown> | null> => {
         if (!house.any) return null;
-        try { const v = await house.voice(text); return v && v.audio.length ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: "audio/wav", provider: v.provider } : null; }
+        try { const v = await house.voice(text, recipe); return v && v.audio.length ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: "audio/wav", provider: v.provider } : null; }
         catch { return null; }
       };
-      const readAloud = async (text: string): Promise<Record<string, unknown>> => {
-        if (indexVoice() === "module" || tiinyNow()?.at.tts) return (await fromModule(text)) ?? n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });   // C-249: the Tiiny's voice first
+      // recipe (C-303): a daemon's own voice for what it says of itself; without one, the INDEX's voice
+      const readAloud = async (text: string, recipe?: string): Promise<Record<string, unknown>> => {
+        if (indexVoice() === "module" || tiinyNow()?.at.tts) return (await fromModule(text, recipe)) ?? n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });   // C-249: the Tiiny's voice first
         const r = await n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });
-        return r.error || !r.audioBase64 ? (await fromModule(text)) ?? r : r;
+        return r.error || !r.audioBase64 ? (await fromModule(text, recipe)) ?? r : r;
       };
       // who is talking: the device by its own name (C-80), else the phone, else this machine
       const who = validDeviceId(deviceId) ? deviceId : phone ? "phone" : "here";
@@ -1701,6 +1713,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/device/speak") {    // C-65: the carried daemon's INDEX entry, aloud
         // C-99: or any species' entry, {species} -- the Tab5's INDEX reads each one aloud as the phone's LISTEN does
         const b = await body(req);
+        const told = ownTelling(ecfg, store, deviceId, b);   // C-303: {own: true} -- what it says of itself, in its own voice
+        if (told) return answer(PRIORITY.reading, async () => forDevice({ ...await readAloud(told.text, told.recipe), answer: told.text }));
         // the user, 2026-10-28: or any words the device shows, {text} -- a dream read aloud on the watch
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const text = typeof b.text === "string" && b.text.trim() ? b.text : row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
@@ -1717,6 +1731,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       if (req.method === "POST" && path === "/api/ai/speak") {       // C-65: an INDEX entry (or a line) in the INDEX voice
         const b = await body(req);
+        const told = ownTelling(ecfg, store, deviceId, b);   // C-303: {own: true} -- what it says of itself, in its own voice
+        if (told) return answer(PRIORITY.reading, async () => ({ ...await readAloud(told.text, told.recipe), answer: told.text }));
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;

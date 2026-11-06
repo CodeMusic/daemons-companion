@@ -287,8 +287,9 @@ export class House {
     } finally { this.busy.delete(m.url); }
   }
 
-  // Words in a module's voice (the INDEX, when it is set to the module); null when no module can speak
-  async voice(text: string): Promise<{ audio: Uint8Array; provider: string } | null> {
+  // Words in a module's voice (the INDEX, when it is set to the module); null when no module can speak. A module has
+  // one voice, so a recipe (C-303: a daemon telling of itself) is the Tiiny's to follow (tiinyfirst.ts), not its
+  async voice(text: string, _recipe?: string): Promise<{ audio: Uint8Array; provider: string } | null> {
     for (const m of this.modules()) {
       const h = await this.models(m);
       if (!h.tts) continue;

@@ -64,8 +64,10 @@ export function forgetVoices(): number {
 
 // A reading's voice: the kept one if it was made before, else the hub's, kept. It is known by its words, or by the
 // species for an INDEX entry the phone was not given the words of. null when no voice came.
-export async function readingVoice(body: { text?: string; species?: number }): Promise<File | null> {
-  const words = body.text !== undefined ? `text:${body.text}` : `species:${body.species}`;
+// C-303: {own: true} is what the daemon says of itself, in its own voice -- kept by its words (`said`) as well as its
+// species, so a telling that is rewritten is asked for again and never heard stale.
+export async function readingVoice(body: { text?: string; species?: number; own?: boolean }, said?: string): Promise<File | null> {
+  const words = body.text !== undefined ? `text:${body.text}` : body.own ? `said:${body.species}:${said ?? ""}` : `species:${body.species}`;
   const had = keptVoice(words);
   if (had) return had;
   const spoken = await apiLater<Spoken>("/api/ai/speak", body);

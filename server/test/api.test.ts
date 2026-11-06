@@ -74,6 +74,15 @@ describe("the server (C-04)", () => {
     expect(s.entry.length).toBeGreaterThan(10);
   });
 
+  it("gives what a daemon says of itself beside its entry, and speaks that when asked for its own (C-303)", async () => {
+    const s = await get("/api/species/1");
+    expect(s.said).toMatch(/\b(I|me|my)\b/);              // the first person; the record stays in the third
+    expect(s.said).not.toBe(s.entry);
+    const r = await post("/api/ai/speak", { species: 1, own: true });
+    expect(r.answer).toBe(s.said);                         // the telling, not the INDEX entry
+    expect((await post("/api/ai/speak", { species: 1 })).answer).toBeUndefined();   // the INDEX's reading, as before
+  });
+
   it("refuses a goal without a title", async () => {
     expect((await post("/api/goals", {})).error).toMatch(/title/);
   });

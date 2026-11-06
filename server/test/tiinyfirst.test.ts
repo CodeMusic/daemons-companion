@@ -41,6 +41,13 @@ describe("the Tiiny first", () => {
     expect(await h.write("system", "user", 300)).toBe("from the Tiiny");
     expect(sent[1].body.max_tokens).toBe(300 + 4096);   // what it may say, and what it may reason first
   });
+  it("reads what a daemon says of itself in the recipe it is given, not the INDEX's (C-303)", async () => {
+    tiinyUp();
+    const h = preferTiiny(boards(), () => ({ at, model: "tiiny-35b" }), () => "the INDEX's voice");
+    expect((await h.voice("I go where I am carried.", "a fresh, earnest, young voice"))!.provider).toBe("tiiny:tiiny-voice");
+    expect(sent[0].body.instructions).toBe("a fresh, earnest, young voice");
+    expect(sent[0].body.input).toBe("I go where I am carried.");
+  });
   it("talks on the quick thinker, thinking off; writes on the big one, thinking on", async () => {
     tiinyUp();
     const h = preferTiiny(boards(), () => ({ at, model: "tiiny-35b", quick: "tiiny-9b" }));

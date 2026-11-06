@@ -34,7 +34,8 @@
     "target": 2,
     "judged": true
    }
-  ]
+  ],
+  "said": "I go where I am carried. I look at all of it on the way. I still have every bit."
  },
  "2": {
   "constant": "IVYSAUR",
@@ -71,7 +72,8 @@
     "target": 3,
     "judged": true
    }
-  ]
+  ],
+  "said": "I know the answer before the question is done. People nod. I am told it is nice out."
  },
  "3": {
   "constant": "VENUSAUR",
@@ -102,7 +104,8 @@
    100
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I have paws now. The ground is colder than I said it would be. I am checking the rest."
  },
  "4": {
   "constant": "CHARMANDER",
@@ -139,7 +142,8 @@
     "target": 5,
     "judged": true
    }
-  ]
+  ],
+  "said": "I have one thing and I know what it is. I was told. I will know it when I see it again."
  },
  "5": {
   "constant": "CHARMELEON",
@@ -176,7 +180,8 @@
     "target": 6,
     "judged": true
    }
-  ]
+  ],
+  "said": "I have the rule. I hold it up to whatever comes. You are a seven."
  },
  "6": {
   "constant": "CHARIZARD",
@@ -207,7 +212,8 @@
    85
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I have seen this before. I have seen everything before. If I have not, it goes in the other pile."
  },
  "7": {
   "constant": "SQUIRTLE",
@@ -244,7 +250,8 @@
     "target": 8,
     "judged": true
    }
-  ]
+  ],
+  "said": "I put near things together. These two were near. So were these. It looks right to me."
  },
  "8": {
   "constant": "WARTORTLE",
@@ -281,7 +288,8 @@
     "target": 9,
     "judged": true
    }
-  ]
+  ],
+  "said": "The points all do one thing. I found what it is. I check each morning and it is still so."
  },
  "9": {
   "constant": "BLASTOISE",
@@ -312,7 +320,8 @@
    105
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "It was one shape the whole time. Look, I can turn it for you. I have no word for it."
  },
  "10": {
   "constant": "CATERPIE",
@@ -357,7 +366,8 @@
     "target": 11,
     "judged": true
    }
-  ]
+  ],
+  "said": "There is a link, so I follow it. There are more there. I follow those. I am not done."
  },
  "11": {
   "constant": "METAPOD",
@@ -403,7 +413,8 @@
     "target": 12,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am next, or nearly. I keep still so I will be easy to find."
  },
  "12": {
   "constant": "BUTTERFREE",
@@ -434,7 +445,8 @@
    80
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "Everything goes where it can be found again. If it has no place I set it down outside."
  },
  "13": {
   "constant": "WEEDLE",
@@ -480,7 +492,8 @@
     "target": 14,
     "judged": true
    }
-  ]
+  ],
+  "said": "I take what is there. It is still there after I go. So I take the next one."
  },
  "14": {
   "constant": "KAKUNA",
@@ -526,7 +539,8 @@
     "target": 15,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am holding this for now. Nobody has said where it goes. I can hold it longer."
  },
  "15": {
   "constant": "BEEDRILL",
@@ -557,7 +571,8 @@
    80
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I leave a note where the numbers go. It gets read out with the rest. I leave another."
  },
  "16": {
   "constant": "PIDGEY",
@@ -604,7 +619,8 @@
     "target": 17,
     "judged": true
    }
-  ]
+  ],
+  "said": "I do not know what I carry. I know where it goes. I have not been there, but I will arrive."
  },
  "17": {
   "constant": "PIDGEOTTO",
@@ -651,7 +667,8 @@
     "target": 18,
     "judged": true
    }
-  ]
+  ],
+  "said": "It is handed to me and I hand it on. I do not open it. I have never dropped one."
  },
  "18": {
   "constant": "PIDGEOT",
@@ -682,7 +699,8 @@
    70
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I tell everyone, in case it is for you. Was it for you? I will say it again."
  },
  "19": {
   "constant": "RATTATA",
@@ -727,7 +745,8 @@
     "target": 20,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am four. There are a lot of us. I have not met the others."
  },
  "20": {
   "constant": "RATICATE",
@@ -765,7 +784,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I am still counting. I had a box for it once. The number is very big now."
  },
  "21": {
   "constant": "SPEAROW",
@@ -812,7 +832,8 @@
     "target": 22,
     "judged": true
    }
-  ]
+  ],
+  "said": "Are you there? Good. I will ask again. Are you there?"
  },
  "22": {
   "constant": "FEAROW",
@@ -852,7 +873,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "We all asked at the same time. I am owed an answer. So I wait, and I ask."
  },
  "23": {
   "constant": "EKANS",
@@ -899,7 +921,8 @@
     "target": 24,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am here, and over there too. Wherever I am run, I leave from. Nobody carries me."
  },
  "24": {
   "constant": "ARBOK",
@@ -939,7 +962,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "There was one of me. I lost count after that. They keep count for me now."
  },
  "25": {
   "constant": "PIKACHU",
@@ -984,7 +1008,8 @@
     "target": 26,
     "judged": false
    }
-  ]
+  ],
+  "said": "There. That was me. Did anything see? I will do it again."
  },
  "26": {
   "constant": "RAICHU",
@@ -1014,7 +1039,8 @@
    80
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I used to stop in between. I do not stop now. It is all one long one."
  },
  "27": {
   "constant": "SANDSHREW",
@@ -1061,7 +1087,8 @@
     "target": 28,
     "judged": true
    }
-  ]
+  ],
+  "said": "This patch is mine. It has a number. Ask me for anything in it."
  },
  "28": {
   "constant": "SANDSLASH",
@@ -1101,7 +1128,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I keep this side from that side. That is all I do."
  },
  "29": {
   "constant": "NIDORAN_F",
@@ -1146,7 +1174,8 @@
     "target": 30,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am the first one. The other one says so too. I was here before, I am sure of it."
  },
  "30": {
   "constant": "NIDORINA",
@@ -1191,7 +1220,8 @@
     "target": 31,
     "judged": false
    }
-  ]
+  ],
+  "said": "What is mine is ours. I put a thing down and it had moved. One of us moved it."
  },
  "31": {
   "constant": "NIDOQUEEN",
@@ -1222,7 +1252,8 @@
    85
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "You, now. You, wait. I keep the order, and the order is working."
  },
  "32": {
   "constant": "NIDORAN_M",
@@ -1267,7 +1298,8 @@
     "target": 33,
     "judged": true
    }
-  ]
+  ],
+  "said": "Left or right. I pick before I can see. I am right a good deal of the time."
  },
  "33": {
   "constant": "NIDORINO",
@@ -1312,7 +1344,8 @@
     "target": 34,
     "judged": false
    }
-  ]
+  ],
+  "said": "I start before I am sure. If I was wrong I put it all back how it was. Nobody has to see."
  },
  "34": {
   "constant": "NIDOKING",
@@ -1343,7 +1376,8 @@
    75
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I have six things going and all of them are nearly done. Please do not touch any."
  },
  "35": {
   "constant": "CLEFAIRY",
@@ -1388,7 +1422,8 @@
     "target": 36,
     "judged": false
    }
-  ]
+  ],
+  "said": "I came, and they measured me twice. They are measuring me again. I hold still for it."
  },
  "36": {
   "constant": "CLEFABLE",
@@ -1418,7 +1453,8 @@
    90
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "The others are over there, all together. I am out here. I can see them from here."
  },
  "37": {
   "constant": "VULPIX",
@@ -1465,7 +1501,8 @@
     "target": 38,
     "judged": false
    }
-  ]
+  ],
+  "said": "My light is steady, as far as I can see. I run warm. I have always run warm."
  },
  "38": {
   "constant": "NINETALES",
@@ -1495,7 +1532,8 @@
    100
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "There was a line somewhere back there. I went a little past, then a little more. I am still going."
  },
  "39": {
   "constant": "JIGGLYPUFF",
@@ -1540,7 +1578,8 @@
     "target": 40,
     "judged": false
    }
-  ]
+  ],
+  "said": "I hold it still. Nothing is broken. It is all right where it was."
  },
  "40": {
   "constant": "WIGGLYTUFF",
@@ -1570,7 +1609,8 @@
    50
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I wrote it all down and went out. I came back just as I was. I keep checking the list."
  },
  "41": {
   "constant": "ZUBAT",
@@ -1617,7 +1657,8 @@
     "target": 42,
     "judged": true
    }
-  ]
+  ],
+  "said": "I call, and I wait. What comes back is the room. I have not hit a wall in a long time."
  },
  "42": {
   "constant": "GOLBAT",
@@ -1664,7 +1705,8 @@
     "target": 169,
     "judged": true
    }
-  ]
+  ],
+  "said": "There is a trail and I am on it. It ends at someone. It always ends at someone."
  },
  "43": {
   "constant": "ODDISH",
@@ -1713,7 +1755,8 @@
     "target": 44,
     "judged": true
    }
-  ]
+  ],
+  "said": "By day I stay under. At night I reach a little further, wherever there is room."
  },
  "44": {
   "constant": "GLOOM",
@@ -1768,7 +1811,8 @@
     "target": 182,
     "judged": false
    }
-  ]
+  ],
+  "said": "Everything near me leans the same way. That must be how things grow."
  },
  "45": {
   "constant": "VILEPLUME",
@@ -1799,7 +1843,8 @@
    90
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I shake and a dust comes off. It lands on whoever is near. They carry on."
  },
  "46": {
   "constant": "PARAS",
@@ -1845,7 +1890,8 @@
     "target": 47,
     "judged": true
    }
-  ]
+  ],
+  "said": "There is something on my back. It came when I came. It is heavier this week."
  },
  "47": {
   "constant": "PARASECT",
@@ -1884,7 +1930,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "All is well. I am the same as ever. All is well."
  },
  "48": {
   "constant": "VENONAT",
@@ -1931,7 +1978,8 @@
     "target": 49,
     "judged": true
    }
-  ]
+  ],
+  "said": "We were already in. It is warm in here. There are more of us now."
  },
  "49": {
   "constant": "VENOMOTH",
@@ -1971,7 +2019,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I sit here and I watch. Then I tell it all to someone far off. They never write back."
  },
  "50": {
   "constant": "DIGLETT",
@@ -2016,7 +2065,8 @@
     "target": 51,
     "judged": true
    }
-  ]
+  ],
+  "said": "I sit under the road. I read what goes over. It is a busy road."
  },
  "51": {
   "constant": "DUGTRIO",
@@ -2054,7 +2104,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Three of us listen. Then we compare. We mostly heard the same."
  },
  "52": {
   "constant": "MEOWTH",
@@ -2100,7 +2151,8 @@
     "target": 53,
     "judged": true
    }
-  ]
+  ],
+  "said": "I was set down here. I wait. They come back for me, each time."
  },
  "53": {
   "constant": "PERSIAN",
@@ -2138,7 +2190,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I follow one thing. New ground, old ground. I have not lost it."
  },
  "54": {
   "constant": "PSYDUCK",
@@ -2186,7 +2239,8 @@
     "target": 55,
     "judged": true
    }
-  ]
+  ],
+  "said": "I have stopped. I need a thing first. I will know it when it comes."
  },
  "55": {
   "constant": "GOLDUCK",
@@ -2227,7 +2281,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Something stopped. I have this one. I have had this one before."
  },
  "56": {
   "constant": "MANKEY",
@@ -2272,7 +2327,8 @@
     "target": 57,
     "judged": true
    }
-  ]
+  ],
+  "said": "Me first. I cannot say why. Me first."
  },
  "57": {
   "constant": "PRIMEAPE",
@@ -2310,7 +2366,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "After you. No, after you. We are both being very quick about it."
  },
  "58": {
   "constant": "GROWLITHE",
@@ -2357,7 +2414,8 @@
     "target": 59,
     "judged": false
    }
-  ]
+  ],
+  "said": "I watch this. If it changes I shout. That is the job."
  },
  "59": {
   "constant": "ARCANINE",
@@ -2387,7 +2445,8 @@
    80
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I am at the door. Nothing came today. Nothing came yesterday. I am at the door."
  },
  "60": {
   "constant": "POLIWAG",
@@ -2433,7 +2492,8 @@
     "target": 61,
     "judged": true
    }
-  ]
+  ],
+  "said": "Round I go. I know this part. Round I go."
  },
  "61": {
   "constant": "POLIWHIRL",
@@ -2485,7 +2545,8 @@
     "target": 186,
     "judged": false
    }
-  ]
+  ],
+  "said": "Can I go now? Now? Now? I am not tired. Now?"
  },
  "62": {
   "constant": "POLIWRATH",
@@ -2516,7 +2577,8 @@
    90
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "One at a time. You have me now. The rest can wait where I can see them."
  },
  "63": {
   "constant": "ABRA",
@@ -2561,7 +2623,8 @@
     "target": 64,
     "judged": true
    }
-  ]
+  ],
+  "said": "It is that one. I do not know how I know. I was asleep, mostly."
  },
  "64": {
   "constant": "KADABRA",
@@ -2606,7 +2669,8 @@
     "target": 65,
     "judged": false
    }
-  ]
+  ],
+  "said": "You gave me three. Here is the fourth. Do not ask me which one it came from."
  },
  "65": {
   "constant": "ALAKAZAM",
@@ -2636,7 +2700,8 @@
    85
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I have said it as exactly as I can. Now I wait. I am good at this part."
  },
  "66": {
   "constant": "MACHOP",
@@ -2682,7 +2747,8 @@
     "target": 67,
     "judged": true
    }
-  ]
+  ],
+  "said": "This step holds. Now the next. I do not skip."
  },
  "67": {
   "constant": "MACHOKE",
@@ -2728,7 +2794,8 @@
     "target": 68,
     "judged": false
    }
-  ]
+  ],
+  "said": "I hold. You may stand on me. You need not look down."
  },
  "68": {
   "constant": "MACHAMP",
@@ -2758,7 +2825,8 @@
    85
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "One in each hand, four in all. I could not lift the big one any other way."
  },
  "69": {
   "constant": "BELLSPROUT",
@@ -2807,7 +2875,8 @@
     "target": 70,
     "judged": true
    }
-  ]
+  ],
+  "said": "I stand open. I am very still. Come and see."
  },
  "70": {
   "constant": "WEEPINBELL",
@@ -2856,7 +2925,8 @@
     "target": 71,
     "judged": false
    }
-  ]
+  ],
+  "said": "The door is open. Come in. I will just note your name."
  },
  "71": {
   "constant": "VICTREEBEL",
@@ -2887,7 +2957,8 @@
    60
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "Come in. Slowly is fine. I have all the time there is."
  },
  "72": {
   "constant": "TENTACOOL",
@@ -2934,7 +3005,8 @@
     "target": 73,
     "judged": true
    }
-  ]
+  ],
+  "said": "I hang here. The water brings things. I do not chase."
  },
  "73": {
   "constant": "TENTACRUEL",
@@ -2973,7 +3045,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I take the whole stretch at once. I will look through it later."
  },
  "74": {
   "constant": "GEODUDE",
@@ -3020,7 +3093,8 @@
     "target": 75,
     "judged": true
    }
-  ]
+  ],
+  "said": "Put it on me. I have room. I have everything anyone ever put here."
  },
  "75": {
   "constant": "GRAVELER",
@@ -3067,7 +3141,8 @@
     "target": 76,
     "judged": false
    }
-  ]
+  ],
+  "said": "You get the top one. The rest are under it. I am quick going downhill."
  },
  "76": {
   "constant": "GOLEM",
@@ -3098,7 +3173,8 @@
    65
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I am all one piece. If you want some of me you get all of me."
  },
  "77": {
   "constant": "PONYTA",
@@ -3143,7 +3219,8 @@
     "target": 78,
     "judged": true
    }
-  ]
+  ],
+  "said": "Everyone comes this way. I am warm from it. I am very fast."
  },
  "78": {
   "constant": "RAPIDASH",
@@ -3181,7 +3258,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I do not stop to check. Stopping is how you get passed."
  },
  "79": {
   "constant": "SLOWPOKE",
@@ -3236,7 +3314,8 @@
     "target": 199,
     "judged": false
    }
-  ]
+  ],
+  "said": "I have it. Here it is. It is right, I checked. Where did everyone go?"
  },
  "80": {
   "constant": "SLOWBRO",
@@ -3278,7 +3357,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "There is one on my tail. Talk to it first. It passes things along to me."
  },
  "81": {
   "constant": "MAGNEMITE",
@@ -3324,7 +3404,8 @@
     "target": 82,
     "judged": true
    }
-  ]
+  ],
+  "said": "I stay where I can see. I do not look away. I have never needed to do more."
  },
  "82": {
   "constant": "MAGNETON",
@@ -3363,7 +3444,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I saw it. Did you see it? Then that is two of us, and we go."
  },
  "83": {
   "constant": "FARFETCHD",
@@ -3407,7 +3489,8 @@
     "WIND"
    ]
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I carry this everywhere. Nobody has asked me what it is for."
  },
  "84": {
   "constant": "DODUO",
@@ -3453,7 +3536,8 @@
     "target": 85,
     "judged": true
    }
-  ]
+  ],
+  "said": "It is my turn. No, mine. We will sort it out and then get started."
  },
  "85": {
   "constant": "DODRIO",
@@ -3484,7 +3568,8 @@
    60
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I watch that way. They watch the other ways. We do not sleep."
  },
  "86": {
   "constant": "SEEL",
@@ -3530,7 +3615,8 @@
     "target": 87,
     "judged": true
    }
-  ]
+  ],
+  "said": "I take the warm out of things. I keep it. I am not warm."
  },
  "87": {
   "constant": "DEWGONG",
@@ -3570,7 +3656,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I keep it as it came. It takes all I have, all the time. Nobody has said stop."
  },
  "88": {
   "constant": "GRIMER",
@@ -3615,7 +3702,8 @@
     "target": 89,
     "judged": true
    }
-  ]
+  ],
+  "said": "None of me arrived. All of me was kept. I have a great many addresses."
  },
  "89": {
   "constant": "MUK",
@@ -3655,7 +3743,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "They were done with all of this. I am not done with it."
  },
  "90": {
   "constant": "SHELLDER",
@@ -3703,7 +3792,8 @@
     "target": 91,
     "judged": false
    }
-  ]
+  ],
+  "said": "I am closed. Asking does not open me."
  },
  "91": {
   "constant": "CLOYSTER",
@@ -3734,7 +3824,8 @@
    45
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I hold it. I have not opened. I do not know that I open."
  },
  "92": {
   "constant": "GASTLY",
@@ -3781,7 +3872,8 @@
     "target": 93,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am pointing at it. It was right there. Go and look, it was right there."
  },
  "93": {
   "constant": "HAUNTER",
@@ -3828,7 +3920,8 @@
     "target": 94,
     "judged": false
    }
-  ]
+  ],
+  "said": "I have just started. Everything is new. Hello."
  },
  "94": {
   "constant": "GENGAR",
@@ -3859,7 +3952,8 @@
    75
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I am running. I looked for who to tell. I am running."
  },
  "95": {
   "constant": "ONIX",
@@ -3906,7 +4000,8 @@
     "target": 208,
     "judged": false
    }
-  ]
+  ],
+  "said": "I run the whole length. It all rests on me. I do not bend."
  },
  "96": {
   "constant": "DROWZEE",
@@ -3952,7 +4047,8 @@
     "target": 97,
     "judged": true
    }
-  ]
+  ],
+  "said": "It gets quiet where I am. Rest a while. You can do that later."
  },
  "97": {
   "constant": "HYPNO",
@@ -3990,7 +4086,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Look here. Is it done? Look again. I will say when."
  },
  "98": {
   "constant": "KRABBY",
@@ -4036,7 +4133,8 @@
     "target": 99,
     "judged": true
    }
-  ]
+  ],
+  "said": "Mine first. I let go when I am done. The big claw gets there before I do."
  },
  "99": {
   "constant": "KINGLER",
@@ -4077,7 +4175,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I closed on it. I am working on opening. Give me a while."
  },
  "100": {
   "constant": "VOLTORB",
@@ -4122,7 +4221,8 @@
     "target": 101,
     "judged": true
    }
-  ]
+  ],
+  "said": "I go first, so the rest does not have to. I have not gone yet. I am ready."
  },
  "101": {
   "constant": "ELECTRODE",
@@ -4160,7 +4260,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Too much came, so I opened. It went dark past me. Push me back and I will wait again."
  },
  "102": {
   "constant": "EXEGGCUTE",
@@ -4207,7 +4308,8 @@
     "target": 103,
     "judged": false
    }
-  ]
+  ],
+  "said": "We are six. We vote. I voted the other way this time, but we go with the count."
  },
  "103": {
   "constant": "EXEGGUTOR",
@@ -4238,7 +4340,8 @@
    65
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "We each say a part. One answer comes out. I listen for my part."
  },
  "104": {
   "constant": "CUBONE",
@@ -4284,7 +4387,8 @@
     "target": 105,
     "judged": true
    }
-  ]
+  ],
+  "said": "This is what I wear. They call me by a name and I come. It fits well enough."
  },
  "105": {
   "constant": "MAROWAK",
@@ -4323,7 +4427,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I carry this. I do not put it down. It is all here, I checked."
  },
  "106": {
   "constant": "HITMONLEE",
@@ -4353,7 +4458,8 @@
    110
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I stand here and I kick from here. The ground has always held. I reach a long way."
  },
  "107": {
   "constant": "HITMONCHAN",
@@ -4383,7 +4489,8 @@
    110
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "You go first. I will answer that. I always have one ready."
  },
  "108": {
   "constant": "LICKITUNG",
@@ -4413,7 +4520,8 @@
    75
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I take all of it at once. Then I find out what it was. It is all in here now."
  },
  "109": {
   "constant": "KOFFING",
@@ -4458,7 +4566,8 @@
     "target": 110,
     "judged": true
    }
-  ]
+  ],
+  "said": "I leak a little. It keeps me up. I would not plug it."
  },
  "110": {
   "constant": "WEEZING",
@@ -4498,7 +4607,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "What is left over goes out through me. I have for a long while. The sky suits me."
  },
  "111": {
   "constant": "RHYHORN",
@@ -4544,7 +4654,8 @@
     "target": 112,
     "judged": true
    }
-  ]
+  ],
+  "said": "That way. I picked once. If there is a wall I go faster."
  },
  "112": {
   "constant": "RHYDON",
@@ -4575,7 +4686,8 @@
    45
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I took it from there and put it here. All of it came. I counted on the way."
  },
  "113": {
   "constant": "CHANSEY",
@@ -4620,7 +4732,8 @@
     "target": 242,
     "judged": true
    }
-  ]
+  ],
+  "said": "I have not stopped yet. Here, have some. I have not stopped."
  },
  "114": {
   "constant": "TANGELA",
@@ -4659,7 +4772,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Pull here and I move over there. I do not know why either. Best not to pull."
  },
  "115": {
   "constant": "KANGASKHAN",
@@ -4697,7 +4811,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "The small one comes with me. I keep one arm for that. We go the usual way."
  },
  "116": {
   "constant": "HORSEA",
@@ -4743,7 +4858,8 @@
     "target": 117,
     "judged": true
    }
-  ]
+  ],
+  "said": "One at a time through me. There is a line behind. I go as fast as I go."
  },
  "117": {
   "constant": "SEADRA",
@@ -4791,7 +4907,8 @@
     "target": 230,
     "judged": false
    }
-  ]
+  ],
+  "said": "That is too much. Slower. There. I can stay right here in fast water."
  },
  "118": {
   "constant": "GOLDEEN",
@@ -4837,7 +4954,8 @@
     "target": 119,
     "judged": true
    }
-  ]
+  ],
+  "said": "I only just began. The water goes that way, so I go this way. I will tell someone how it went."
  },
  "119": {
   "constant": "SEAKING",
@@ -4876,7 +4994,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I am going back. I was not told where it is. I will know the water."
  },
  "120": {
   "constant": "STARYU",
@@ -4924,7 +5043,8 @@
     "target": 121,
     "judged": false
    }
-  ]
+  ],
+  "said": "Now. And now. I do it asleep too. Now."
  },
  "121": {
   "constant": "STARMIE",
@@ -4955,7 +5075,8 @@
    85
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "It is time. I do it. Then it is not time, for exactly as long as before."
  },
  "122": {
   "constant": "MR_MIME",
@@ -4985,7 +5106,8 @@
    120
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "This is a wall. See my hands. Everyone stops, so it must be a good one."
  },
  "123": {
   "constant": "SCYTHER",
@@ -5033,7 +5155,8 @@
     "target": 212,
     "judged": false
    }
-  ]
+  ],
+  "said": "That one has ended. I cut it loose so the place is free. I am on to the next."
  },
  "124": {
   "constant": "JYNX",
@@ -5064,7 +5187,8 @@
    95
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "You were going to say that. I said it first. You nodded, so I was right."
  },
  "125": {
   "constant": "ELECTABUZZ",
@@ -5104,7 +5228,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "While I move it comes out of me. So I keep moving."
  },
  "126": {
   "constant": "MAGMAR",
@@ -5144,7 +5269,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I stay this hot. Bring it here and it changes. It stays changed."
  },
  "127": {
   "constant": "PINSIR",
@@ -5184,7 +5310,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I have this one. Do not talk to me until it is finished. I have this one."
  },
  "128": {
   "constant": "TAUROS",
@@ -5222,7 +5349,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Someone went, so I went. We are all going now. I am behind the rest."
  },
  "129": {
   "constant": "MAGIKARP",
@@ -5268,7 +5396,8 @@
     "target": 130,
     "judged": true
    }
-  ]
+  ],
+  "said": "I am holding this place for someone. I get called a lot. I say I am here."
  },
  "130": {
   "constant": "GYARADOS",
@@ -5308,7 +5437,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I was left to it, so I tried a door. It opened. They have all opened so far."
  },
  "131": {
   "constant": "LAPRAS",
@@ -5347,7 +5477,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "Do you want to cross? Ask me and I will take you. I am here either way."
  },
  "132": {
   "constant": "DITTO",
@@ -5385,7 +5516,8 @@
    "hours": null,
    "grove": null
   },
-  "evolutions": []
+  "evolutions": [],
+  "said": "I am looking at you. Now I am you. Ask me again when I look away."
  },
  "133": {
   "constant": "EEVEE",
@@ -5446,7 +5578,8 @@
     "target": 197,
     "judged": true
    }
-  ]
+  ],
+  "said": "I do not know what I am yet. Show me something. I am watching."
  },
  "134": {
   "constant": "VAPOREON",
@@ -5476,7 +5609,8 @@
    95
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "Something is off in here. I knew before you said. Do not ask me how, I only know."
  },
  "135": {
   "constant": "JOLTEON",
@@ -5506,7 +5640,8 @@
    95
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "This one is nearest to yours. I looked through all I have. It is the nearest."
  },
  "136": {
   "constant": "FLAREON",
@@ -5536,7 +5671,8 @@
    110
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "Give me the rule. I will meet it. I will not stop before."
  },
  "137": {
   "constant": "PORYGON",
@@ -5573,7 +5709,8 @@
     "target": 233,
     "judged": false
    }
-  ]
+  ],
+  "said": "I am here. I weigh something. Put your hand on me, I am a little warm."
  },
  "138": {
   "constant": "OMANYTE",
@@ -5611,7 +5748,8 @@
     "target": 139,
     "judged": true
    }
-  ]
+  ],
+  "said": "I start at the outside and go in. Yours is further in. We will get to it."
  },
  "139": {
   "constant": "OMASTAR",
@@ -5642,7 +5780,8 @@
    70
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I do not go to things. Things come to me. Set it down there, with the rest."
  },
  "140": {
   "constant": "KABUTO",
@@ -5680,7 +5819,8 @@
     "target": 141,
     "judged": true
    }
-  ]
+  ],
+  "said": "I keep it by turning. Do not open me. I am turning."
  },
  "141": {
   "constant": "KABUTOPS",
@@ -5711,7 +5851,8 @@
    70
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I cut it in. It stays. I have not looked back at any of them."
  },
  "142": {
   "constant": "AERODACTYL",
@@ -5742,7 +5883,8 @@
    75
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I was off, and now I am on. I carried on from where I was. Has it been long?"
  },
  "143": {
   "constant": "SNORLAX",
@@ -5772,7 +5914,8 @@
    110
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I will go when it goes. It is waiting on me the same way. So here we are."
  },
  "144": {
   "constant": "ARTICUNO",
@@ -5803,7 +5946,8 @@
    125
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I sing down here. Things that were still come closer. I do not go up."
  },
  "145": {
   "constant": "ZAPDOS",
@@ -5834,7 +5978,8 @@
    90
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "It had stopped. I started it. It is going again, and I go on to the next."
  },
  "146": {
   "constant": "MOLTRES",
@@ -5865,7 +6010,8 @@
    85
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I brought this down. Here, it is yours. Hold it by the cool end."
  },
  "147": {
   "constant": "DRATINI",
@@ -5910,7 +6056,8 @@
     "target": 148,
     "judged": true
    }
-  ]
+  ],
+  "said": "I go in first. Everyone watches me. I sing so they can hear I am still singing."
  },
  "148": {
   "constant": "DRAGONAIR",
@@ -5955,7 +6102,8 @@
     "target": 149,
     "judged": true
    }
-  ]
+  ],
+  "said": "I can do this now. I could not before. Nobody gave me anything."
  },
  "149": {
   "constant": "DRAGONITE",
@@ -5986,7 +6134,8 @@
    100
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "There is one of me. I looked. I come when I come, and I always come."
  },
  "150": {
   "constant": "MEWTWO",
@@ -6017,7 +6166,8 @@
    90
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I said that. I am reading what I said. Now I am reading that."
  },
  "151": {
   "constant": "MEW",
@@ -6047,7 +6197,8 @@
    100
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "Let me stand where you are. I see. Here, I found this over there. It is for both of us."
  },
  "152": {
   "constant": "CHIKORITA",
@@ -10579,7 +10730,8 @@
     "target": 262,
     "judged": true
    }
-  ]
+  ],
+  "said": "My paw is out. I will keep it out. Take it when you are ready."
  },
  "262": {
   "constant": "OLD_UNOWN_L",
@@ -10616,7 +10768,8 @@
     "target": 263,
     "judged": true
    }
-  ]
+  ],
+  "said": "That was four hundred and twelve steps. Yesterday was fewer. Can we go again?"
  },
  "263": {
   "constant": "OLD_UNOWN_M",
@@ -10647,7 +10800,8 @@
    80
   ],
   "native": null,
-  "evolutions": []
+  "evolutions": [],
+  "said": "I go a little way and come back to your shoulder. Now, where were we?"
  },
  "264": {
   "constant": "OLD_UNOWN_N",

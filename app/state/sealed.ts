@@ -1,7 +1,8 @@
 // C-277: opening a book sealed in DAEMONS -- a zip kept, not deflated, under traditional ZipCrypto (tools/bookaudio.py
 // seals THE HERMETIC LAYER's recording with `zip -0 -P`, as tools/bookpdf.py seals the vault). Its key is never written
-// anywhere: it is the author's name as the book's own warning gives it ("... set it down"), in title case with a space,
-// so only a device that holds the book can open its recording. Plain code, no React Native, so a test can run it.
+// anywhere: it is the author's name as the book's own warning gives it ("... read it"; it was "... set it down"), in title
+// case with a space, so only a device that holds the book can open its recording. The dawn half's and THE UNITY BOOK's
+// recordings are sealed too, each with its own book's key (C-299, the user 2026-11-05): keyOfBook, below. Plain code, no React Native, so a test can run it.
 
 const TABLE = (() => {
   const t = new Uint32Array(256);
@@ -14,12 +15,8 @@ const TABLE = (() => {
 })();
 const crc = (c: number, b: number) => (TABLE[(c ^ b) & 0xff] ^ (c >>> 8)) >>> 0;
 
-// the key, from the book's own warning, as bookpdf.py's author_of_hermetic() takes it; null when the warning names no one
-export function keyOfWarning(text: string): string | null {
-  const m = /\b([A-Z]{2,}) ([A-Z]{2,}) set it down\b/.exec(text);
-  const title = (w: string) => w[0] + w.slice(1).toLowerCase();
-  return m ? `${title(m[1])} ${title(m[2])}` : null;
-}
+// the keys: read from each torn book's own first entry (server/src/bookkeys.ts, where a test can reach them)
+export { keyOfBook, keyOfWarning, type TornBook } from "../../server/src/bookkeys";
 
 // Every file in the zip, opened with the key: { name: bytes }. Throws "wrong key" before any bytes are kept, or when a
 // file's CRC does not match. `rest` is given the chance to breathe between pieces, so a phone's screen keeps moving.

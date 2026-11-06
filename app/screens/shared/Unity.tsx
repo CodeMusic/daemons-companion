@@ -5,11 +5,15 @@
 // is plain white, its inscriptions the tablet's green as both halves print them, its own marks the book's purple, which
 // is red and blue made one. BALANCE, written at the crease, carries both halves' colours under its heading. Its ATTESTATION's
 // observer's line is the wording the lead daemon's SPIRITS chose (GET /api/unity). Its deck deals "Both as One" only.
+// Its recording is in one voice, leaned neither way, sealed with its own key, read from its ATTESTATION (the user, 2026-11-05). The first time
+// the LIBRARY finds the save mended, the mending plays once on the shelf (Mending, below; app/state/mended.ts).
 // Every word DRAFT.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AccessibilityInfo, Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { EMERALD } from "../../../server/src/witching";
-import { Art } from "../../ui/ui";
+import { Listen } from "../../ui/bookAudio";
+import { Art, Card } from "../../ui/ui";
 import { Cards } from "../library/Arcana";
 import { DAWN, DawnBack, LayerPages, type EudaimonT, type LayerPalette } from "./Eudaimon";
 
@@ -67,6 +71,76 @@ const rule = (label: string) => label === "BALANCE" ? (
 ) : null;
 
 export function UnityBook({ b }: { b: UnityT }) {
-  return <LayerPages b={b} P={UNITY} green={EMERALD.hue} id="unity" cover={<Cover b={b} />} under={<Cards book="unity" />}
+  return <LayerPages b={b} P={UNITY} green={EMERALD.hue} id="unity" cover={<Cover b={b} />}
+                     under={<><Listen which="unity" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} /><Cards book="unity" /></>}
                      picture={(_, scale) => <Picture scale={scale} />} rule={rule} />;
+}
+
+// The mending, once (vision 4.40: "mended at DAEMON TOWER in a colourful burst -- the pair going back to light"): on the
+// shelf, the night half's front and the dawn half's back come together at the spine, the light goes out of them in rings
+// of colour, and the mended book is there. No new words. A tap, or the phone's Reduce Motion, lets it be mended at once.
+const SPECTRUM = ["#E05A5A", "#E8A93A", "#F2D45C", "#50C878", "#4A90D9", "#8E3F80"];
+const HALF = { w: 54, h: 90 };
+const drive = (v: Animated.Value, toValue: number, duration: number, easing = Easing.inOut(Easing.cubic)) =>
+  Animated.timing(v, { toValue, duration, easing, useNativeDriver: false });
+
+export function Mending({ b, onDone }: { b: UnityT; onDone: () => void }) {
+  const close = useRef(new Animated.Value(0)).current;      // 0: the halves apart; 1: together at the spine
+  const burst = useRef(new Animated.Value(0)).current;      // the light going out of them
+  const whole = useRef(new Animated.Value(0)).current;      // the mended book
+  const done = useRef(false);
+  const end = () => { if (!done.current) { done.current = true; onDone(); } };
+  useEffect(() => {
+    let run: Animated.CompositeAnimation | null = null;
+    AccessibilityInfo.isReduceMotionEnabled().catch(() => false).then((still) => {
+      if (still) { end(); return; }
+      run = Animated.sequence([
+        Animated.delay(600),
+        drive(close, 1, 1500),
+        Animated.parallel([drive(burst, 1, 1300, Easing.out(Easing.quad)), Animated.sequence([Animated.delay(450), drive(whole, 1, 700)])]),
+        Animated.delay(1200),
+      ]);
+      run.start(({ finished }) => { if (finished) end(); });
+    });
+    return () => run?.stop();
+  }, []);
+  const apart = (side: -1 | 1) => close.interpolate({ inputRange: [0, 1], outputRange: [side * 46, 0] });
+  const halves = whole.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
+  const flash = burst.interpolate({ inputRange: [0, 0.08, 0.4], outputRange: [0, 0.85, 0], extrapolate: "clamp" });
+  return (
+    <Card cursor="pointer" role="button" onPress={end} overflow="hidden" borderColor={UNITY.lit}>
+      <YStack height={150} alignItems="center" justifyContent="center" overflow="hidden" position="relative">{/* the light stays on its card */}
+        {SPECTRUM.map((c, i) => {
+          const at = i / SPECTRUM.length;
+          return (
+            <Animated.View key={c} pointerEvents="none" style={{
+              position: "absolute", width: 120, height: 120, borderRadius: 60, borderWidth: 5, borderColor: c,
+              opacity: burst.interpolate({ inputRange: [0, 0.05 + at * 0.4, 1], outputRange: [0, 0.95, 0], extrapolate: "clamp" }),
+              transform: [{ scale: burst.interpolate({ inputRange: [0, 1], outputRange: [0.15, 2.4 + i * 0.35] }) }],
+            }} />
+          );
+        })}
+        <Animated.View style={{ flexDirection: "row", opacity: halves }}>
+          <Animated.View style={{ transform: [{ translateX: apart(-1) }], backgroundColor: "#1d2a24", borderRadius: 3, padding: 3,
+                                  borderWidth: 2, borderColor: EMERALD.hue }}>
+            <Art path="/art/arcana/spellcraft.png" size={HALF.w} height={HALF.h} />
+          </Animated.View>
+          <Animated.View style={{ transform: [{ translateX: apart(1) }], borderRadius: 3, padding: 3, overflow: "hidden",
+                                  borderWidth: 2, borderColor: DAWN.lit }}>
+            <DawnBack w={HALF.w} h={HALF.h} />
+          </Animated.View>
+        </Animated.View>
+        <Animated.View pointerEvents="none" style={{ position: "absolute", alignItems: "center", gap: 6, opacity: whole }}>
+          <XStack borderRadius={4} overflow="hidden" borderWidth={2} borderColor={UNITY.ink}>
+            <Art path="/art/arcana/spellcraft.png" size={HALF.w} height={HALF.h} />
+            <Spine h={HALF.h} />
+            <DawnBack w={HALF.w} h={HALF.h} />
+          </XStack>
+          <Text allowFontScaling={false} {...mono} letterSpacing={1} fontSize={13} fontWeight="800" color={UNITY.mark}>{b.title ?? "THE UNITY BOOK"}</Text>
+        </Animated.View>
+        <Animated.View pointerEvents="none" style={{ position: "absolute", width: 120, height: 120, borderRadius: 60, backgroundColor: "#FFFDF8",
+                                                     opacity: flash, transform: [{ scale: burst.interpolate({ inputRange: [0, 0.4], outputRange: [0.3, 2.2], extrapolate: "clamp" }) }] }} />
+      </YStack>
+    </Card>
+  );
 }

@@ -12,6 +12,7 @@ import { EMERALD, goldBreathOf } from "../../../server/src/witching";
 import { SCREEN } from "../../state/data";
 import { Art, Small } from "../../ui/ui";
 import { ReadAloud } from "../../ui/readAloud";
+import { Listen } from "../../ui/bookAudio";   // C-299: its recording, sealed with its own key, from its BLESSING
 
 export type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer" };
 export type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
@@ -66,7 +67,7 @@ export type LayerPalette = { page: string; boards: string; ink: string; faint: s
 export function EudaimonBook({ b }: { b: EudaimonT }) {
   const breath = useBreath();
   return <LayerPages b={b} P={{ ...DAWN, mark: DAWN.gold }} green={breath.green} id="eudaimon" cover={<Cover b={b} glow={breath.glow} />}
-                     picture={(_, scale) => <Picture scale={scale} />} />;
+                     under={<Listen which="eudaimon" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} />} picture={(_, scale) => <Picture scale={scale} />} />;
 }
 
 // the open book the dawn half and the mended book share (C-299): its cover, what goes under it, its contents, then each

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { apiTruth } from "../../platform/net";
 import { restoreSession, sessionNow, sessionTouched, setSession, useDev, type Book } from "../../state/dev";
+import { mendAgain } from "../../state/mended";   // C-299
 import { Logs, PretendPanel } from "../../ui/devpanel";
 import { Action, Card, Choice, Eyebrow, Small } from "../../ui/ui";
 import type { Life } from "../../state/types";
@@ -74,6 +75,7 @@ export function DevScreen({ ink }: { ink: string }) {
           <Tick key={b} label={label} on={book(b)} truth={books[b] ?? null}
                 onPress={() => setSession((x) => ({ ...x, books: flip(x.books, b, book(b), books[b]) }))} />
         ))}
+        <Action label="Let it mend again" onPress={mendAgain} ink={ink} />{/* C-299: the mending plays once; this plays it again */}
       </Card>
 
       <Card>

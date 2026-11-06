@@ -6,7 +6,8 @@
 // signal; the site streams it. The chapters beside each MP3 step it back and on, and where it was left is kept. SHARE
 // hands the kept book on, to Files or anyone, as the manuals' PDFs are (manual.ts); on the site, a tab. THE HERMETIC
 // LAYER's recording is sealed in DAEMONS: once the book is held, the device opens it with the key the book's own warning
-// gives (sealed.ts) and keeps it (the user, by multiple choice: "Unseal it on the device"). A book plays on with its page
+// gives (sealed.ts) and keeps it (the user, by multiple choice: "Unseal it on the device"); so are the dawn half's and THE
+// UNITY BOOK's, each with its own book's key (C-299, the user 2026-11-05; the mended book in "one voice"). A book plays on with its page
 // left or the screen locked, and shows on the lock screen. Every word DRAFT.
 import { createAudioPlayer, setAudioModeAsync, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { Directory, File, Paths } from "expo-file-system";
@@ -15,16 +16,18 @@ import { useEffect, useState } from "react";
 import { AppState } from "react-native";
 import { XStack } from "tamagui";
 import { ON_PHONE } from "../platform/net";
-import { keyOfWarning, unseal } from "../state/sealed";
+import { keyOfBook, unseal } from "../state/sealed";
 import { ListenControl } from "../screens/shared/Index";
 import { Action, Card, Eyebrow, Small, useInk } from "./ui";
 
-export type Recorded = "guide" | "subtle" | "hermetic" | "textbook";
+export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook";
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
 const BOOKS: Record<Recorded, { file: string; title: string; reads: string; sealed?: boolean }> = {
   guide:    { file: "guide", title: "The Programmer's Guide to the Human Mind", reads: "Read aloud in reason's voice, even and unhurried." },   // DRAFT
   subtle:   { file: "the-subtle-layer", title: "The Subtle Layer", reads: "Read aloud in instinct's voice, warm and full." },                 // DRAFT
   hermetic: { file: "the-vault-audio", title: "The Hermetic Layer", reads: "Read aloud low and close, as the night would.", sealed: true },  // DRAFT
+  eudaimon: { file: "the-vault-audio-2", title: "The Eudaimon Layer", reads: "Read aloud lighter and slower, as the dawn would.", sealed: true },  // DRAFT
+  unity:    { file: "the-vault-audio-3", title: "The Unity Book", reads: "Read aloud in one voice, leaned neither way.", sealed: true },  // DRAFT
   textbook: { file: "principles-of-mind", title: "Principles of Mind", reads: "Read aloud by a professor, grave and warm." },             // DRAFT
 };
 type Chapter = { kind: "section" | "entry"; title: string; start: number; end: number };
@@ -73,7 +76,7 @@ async function heard(w: Recorded, key: string | null, say: (what: string) => voi
   if (had) return had;
   const B = BOOKS[w];
   if (B.sealed) {
-    if (!key) throw new Error("The book's warning names no one, so its recording will not open.");   // DRAFT
+    if (!key) throw new Error("The book names no reader, so its recording will not open.");   // DRAFT
     const files = await unseal(await fetched(`${AUDIO}${B.file}.zip`), key, () => new Promise((go) => setTimeout(go, 0)));
     if (!files["sealed.mp3"] || !files["sealed.chapters.json"]) throw new Error("The sealed recording is not all there.");   // DRAFT
     const m: Marks = JSON.parse(new TextDecoder().decode(files["sealed.chapters.json"]));
@@ -126,7 +129,8 @@ function bookPlayer(): AudioPlayer {
   return p;
 }
 
-// LISTEN, its chapters and SHARE, for one book; `warning` is the sealed book's own warning, which holds its key
+// LISTEN, its chapters and SHARE, for one book; `warning` is a sealed book's own first entry (its WARNING, BLESSING or
+// ATTESTATION), which holds its key
 export function Listen({ which, warning }: { which: Recorded; warning?: string }) {
   const B = BOOKS[which];
   const ink = useInk();
@@ -136,7 +140,7 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
   const [marks, setMarks] = useState<Marks | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const key = warning ? keyOfWarning(warning) : null;
+  const key = warning ? keyOfBook(which === "eudaimon" || which === "unity" ? which : "hermetic", warning) : null;
 
   useEffect(() => {   // how long it is, before anything is fetched (an open book's chapters are small)
     if (!kept(which) && !B.sealed) fetched(`${AUDIO}${B.file}.chapters.json`)

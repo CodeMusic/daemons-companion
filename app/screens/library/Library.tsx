@@ -19,7 +19,8 @@ import { ReadAloud } from "../../ui/readAloud";   // C-208
 import { SubtleBook, type SubtleT } from "./Subtle";
 import { HermeticBook, type HermeticT } from "../shared/Hermetic";   // C-238
 import { DAWN, EudaimonBook, type EudaimonT } from "../shared/Eudaimon";   // C-297
-import { UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
+import { Mending, UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
+import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
 import { ManualBook, manualAbout } from "./Manual";   // C-233
 import { Listen } from "../../ui/bookAudio";   // C-277
 
@@ -126,6 +127,7 @@ export function LibraryScreen() {
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
   const [uni] = useApi<UnityT>(`/api/unity${previewQuery() ? "?preview=1" : ""}`);   // C-299: THE UNITY BOOK, the halves mended
   const mended = !!uni?.held && (uni.how === "game" || bookForced("unity") === true);   // as in the game, the halves leave as the mended book comes
+  const mendingSeen = useMendingSeen();                    // C-299: the first time it is found mended, the mending plays once
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {
@@ -241,7 +243,8 @@ export function LibraryScreen() {
           </XStack>
         </Card>
       ) : null}
-      {uni?.held ? (                                         /* C-299: the halves mended -- both covers, the seam between */
+      {uni?.held && mended && mendingSeen !== true ? (mendingSeen === false ? <Mending b={uni} onDone={seeMending} /> : null)
+       : uni?.held ? (                                       /* C-299: the halves mended -- both covers, the seam between */
         <Card cursor="pointer" role="button" hoverStyle={{ borderColor: UNITY.lit }} onPress={() => setBook("unity")}>
           <XStack gap={14} alignItems="center">
             <XStack width={72} height={48} alignItems="center" justifyContent="center" gap={2} backgroundColor={UNITY.boards} borderRadius={3}>

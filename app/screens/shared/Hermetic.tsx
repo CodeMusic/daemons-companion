@@ -11,13 +11,14 @@ import { SCREEN } from "../../state/data";
 import { api } from "../../platform/net";
 import { previewing } from "../../state/preview";
 import { Art, Small } from "../../ui/ui";
+import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
 import { ReadAloud } from "../../ui/readAloud";   // C-208
 import { Cards } from "../library/Arcana";   // C-239; C-273: ?deck=hermetic, ABOVE and BELOW
 import { Listen } from "../../ui/bookAudio";   // C-277: its recording, opened with the key its warning gives
 
 type Para = { text: string; voice: "telling" | "asking" | "inscription" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
-export type HermeticT = { held: boolean; how?: string; title?: string; subtitle?: string; draft?: boolean;
+export type HermeticT = { held: boolean; how?: string; title?: string; subtitle?: string; draft?: boolean; cover?: string;
                           sections?: { label: string; heading: string; entries: Entry[] }[] };
 const C = { ink: "#f2ecf4", faint: "#a796ac", edge: "#4a3352" };
 const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
@@ -30,9 +31,10 @@ function useBreath() {
   return { page: pulseNow(0.16), boards: pulseNow(0.09), glow: s > 0.5 ? EMERALD.lit : "#3FB06C" };
 }
 
-// its picture: until the game's own are drawn and exported (data/art/hermetic/<picture>_0.png), the deck's face stands in
+// its picture, the game's own (data/art/hermetic_<picture>_<frame>.png); until one is exported, the deck's face stands in
 function Picture({ e, scale }: { e: Entry; scale: number }) {
-  return <Art key={e.picture} path="/art/arcana/spellcraft.png" size={94 * scale} height={84 * scale} fit="contain" />;
+  return <TurningPicture book="hermetic" e={e} scale={scale}
+                         standIn={<Art key={e.picture} path="/art/arcana/spellcraft.png" size={94 * scale} height={84 * scale} fit="contain" />} />;
 }
 
 export function HermeticBook({ b }: { b: HermeticT }) {
@@ -84,14 +86,19 @@ export function HermeticBook({ b }: { b: HermeticT }) {
   let n = 0;
   return (
     <YStack backgroundColor={breath.boards} borderRadius={4} padding={14} gap={14}>
-      {/* the cover: the deck's own face, the title over it in our type */}
-      <YStack width={240} height={400} alignSelf="center" position="relative">
+      {/* the cover: the game's own once exported (its title in our type), the motto under it; until then the deck's face */}
+      {b.cover ? (
+        <YStack gap={8}>
+          <BookCover book="hermetic" title={b.title ?? "THE HERMETIC LAYER"} subtitle={b.subtitle} />
+          <Text allowFontScaling={false} textAlign="center" {...mono} fontSize={11} color={breath.glow}>AS ABOVE, SO BELOW</Text>
+        </YStack>
+      ) : <YStack width={240} height={400} alignSelf="center" position="relative">
         <Art path="/art/arcana/spellcraft.png" size={240} height={400} />
         <Text allowFontScaling={false} position="absolute" top={36} left={0} right={0} textAlign="center" {...mono} letterSpacing={1} fontSize={16} fontWeight="800"
               color={breath.glow}>{b.title ?? "THE HERMETIC LAYER"}</Text>
         <Text allowFontScaling={false} position="absolute" top={60} left={0} right={0} textAlign="center" fontSize={12} fontStyle="italic" color={C.ink}>{b.subtitle ?? ""}</Text>
         <Text allowFontScaling={false} position="absolute" bottom={92} left={16} right={16} textAlign="center" {...mono} fontSize={11} color={C.ink}>AS ABOVE, SO BELOW</Text>
-      </YStack>
+      </YStack>}
       <Listen which="hermetic" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} />
       <Cards book="hermetic" />
       <YStack backgroundColor={breath.page} borderColor={EMERALD.hue} borderWidth={1} borderRadius={4} padding={16} gap={4}>

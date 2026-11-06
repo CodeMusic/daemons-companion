@@ -12,11 +12,12 @@ import { EMERALD, goldBreathOf } from "../../../server/src/witching";
 import { SCREEN } from "../../state/data";
 import { Art, Small } from "../../ui/ui";
 import { ReadAloud } from "../../ui/readAloud";
+import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
 import { Listen } from "../../ui/bookAudio";   // C-299: its recording, sealed with its own key, from its BLESSING
 
 export type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer" };
 export type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
-export type EudaimonT = { held: boolean; how?: string; title?: string; subtitle?: string; draft?: boolean; observer?: string;
+export type EudaimonT = { held: boolean; how?: string; title?: string; subtitle?: string; draft?: boolean; cover?: string; observer?: string;
                           sections?: { label: string; heading: string; entries: Entry[] }[] };
 // the dawn: a pale page, warm ink, the creator's hour's gold (Witching.tsx DawnLight) for the book's own marks; its inscriptions
 // stay the tablet's green, as the game prints them and as the book itself says ("The words in green ...")
@@ -30,9 +31,10 @@ function useBreath() {
   return { glow: up ? DAWN.lit : DAWN.gold, green: up ? EMERALD.hue : "#156B47" };
 }
 
-// its picture: until the game's own are drawn and exported, the ABOVE face stands in (a star, its rays coming down)
-function Picture({ scale }: { scale: number }) {
-  return <Art path="/art/arcana/above.png" size={94 * scale} height={84 * scale} fit="contain" />;
+// its picture, the game's own (data/art/eudaimon_<picture>_<frame>.png); until one is exported, the ABOVE face stands in
+function Picture({ e, scale }: { e: Entry; scale: number }) {
+  return <TurningPicture book="eudaimon" e={e} scale={scale}
+                         standIn={<Art path="/art/arcana/above.png" size={94 * scale} height={84 * scale} fit="contain" />} />;
 }
 
 // the back cover's picture, at any size: dawn coming up from the bottom, a sun on the line (C-299: the mended book shows it too)
@@ -47,8 +49,14 @@ export function DawnBack({ w, h }: { w: number; h: number }) {
   );
 }
 
-// the back cover, drawn, the title over it
+// the back cover: the game's own once exported (its title in our type), the motto under it; until then drawn, the title over it
 function Cover({ b, glow }: { b: EudaimonT; glow: string }) {
+  if (b.cover) return (
+    <YStack gap={8}>
+      <BookCover book="eudaimon" title={b.title ?? "THE EUDAIMON LAYER"} subtitle={b.subtitle} />
+      <Text allowFontScaling={false} textAlign="center" {...mono} fontSize={11} color={DAWN.ink}>AS BELOW, SO ABOVE</Text>
+    </YStack>
+  );
   return (
     <YStack width={240} height={400} alignSelf="center" position="relative" borderRadius={14} overflow="hidden" borderWidth={3} borderColor={DAWN.gold}>
       <DawnBack w={240} h={400} />
@@ -67,7 +75,7 @@ export type LayerPalette = { page: string; boards: string; ink: string; faint: s
 export function EudaimonBook({ b }: { b: EudaimonT }) {
   const breath = useBreath();
   return <LayerPages b={b} P={{ ...DAWN, mark: DAWN.gold }} green={breath.green} id="eudaimon" cover={<Cover b={b} glow={breath.glow} />}
-                     under={<Listen which="eudaimon" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} />} picture={(_, scale) => <Picture scale={scale} />} />;
+                     under={<Listen which="eudaimon" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} />} picture={(e, scale) => <Picture e={e} scale={scale} />} />;
 }
 
 // the open book the dawn half and the mended book share (C-299): its cover, what goes under it, its contents, then each

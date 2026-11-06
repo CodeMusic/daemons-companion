@@ -14,7 +14,7 @@ type Readings = { good: string; as_is: string; low: string };
 type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer"; readings?: Readings };
 type Entry = { short: string; title: string; picture: string; frames?: number; caption: string; paragraphs: Para[] };
 export type Section = { label: string; heading: string; entries: Entry[] };
-const E = eudaimonJson as unknown as { title: string; subtitle: string; draft: boolean; flag: number | null; sections: Section[] };
+const E = eudaimonJson as unknown as { title: string; subtitle: string; draft: boolean; flag: number | null; cover?: string; sections: Section[] };
 export const EUDAIMON_FLAG: number | null = E.flag;
 
 // a book held by its flag in the save (null: the game has not placed it yet) -- the dawn half's and the mended book's (C-299)
@@ -33,8 +33,8 @@ export function observe(sections: Section[], lead: SpiritsClass = "as it is"): S
 }
 export const observedSections = (lead: SpiritsClass = "as it is") => observe(E.sections, lead);
 
-export interface Eudaimon { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; observer?: SpiritsClass; sections?: Section[] }
+export interface Eudaimon { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; cover?: string; observer?: SpiritsClass; sections?: Section[] }
 export function readEudaimon(save: Uint8Array | null, preview = false, lead: SpiritsClass = "as it is"): Eudaimon {
   const how = savedEudaimon(save) ? "game" : preview ? "preview" : null;
-  return how ? { held: true, how, title: E.title, subtitle: E.subtitle, draft: E.draft, observer: lead, sections: observedSections(lead) } : { held: false };
+  return how ? { held: true, how, title: E.title, subtitle: E.subtitle, draft: E.draft, cover: E.cover, observer: lead, sections: observedSections(lead) } : { held: false };
 }

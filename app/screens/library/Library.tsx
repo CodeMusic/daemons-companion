@@ -22,6 +22,7 @@ import { DAWN, EudaimonBook, type EudaimonT } from "../shared/Eudaimon";   // C-
 import { Mending, UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
 import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
 import { ManualBook, manualAbout } from "./Manual";   // C-233
+import { CoverCrop } from "../../ui/bookPicture";   // C-299: the third book's covers on the shelf
 import { Listen } from "../../ui/bookAudio";   // C-277
 
 // T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
@@ -219,7 +220,7 @@ export function LibraryScreen() {
         <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "#50C878" }} onPress={() => setBook("hermetic")}>
           <XStack gap={14} alignItems="center">
             <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor="#1d2a24" borderRadius={3}>
-              <Art path="/art/arcana/spellcraft.png" size={27} height={45} />
+              {her.cover ? <CoverCrop book="hermetic" k={0.31} /> : <Art path="/art/arcana/spellcraft.png" size={27} height={45} />}
             </YStack>
             <YStack flex={1} gap={2}>
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="#50C878">{her.title ?? "THE HERMETIC LAYER"}</Text>
@@ -233,7 +234,7 @@ export function LibraryScreen() {
         <Card cursor="pointer" role="button" hoverStyle={{ borderColor: DAWN.lit }} onPress={() => setBook("eudaimon")}>
           <XStack gap={14} alignItems="center">
             <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor={DAWN.boards} borderRadius={3}>
-              <Art path="/art/arcana/above.png" size={27} height={45} />
+              {eud.cover ? <CoverCrop book="eudaimon" k={0.31} /> : <Art path="/art/arcana/above.png" size={27} height={45} />}
             </YStack>
             <YStack flex={1} gap={2}>
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color={DAWN.gold}>{eud.title ?? "THE EUDAIMON LAYER"}</Text>
@@ -243,14 +244,16 @@ export function LibraryScreen() {
           </XStack>
         </Card>
       ) : null}
-      {uni?.held && mended && mendingSeen !== true ? (mendingSeen === false ? <Mending b={uni} onDone={seeMending} /> : null)
+      {uni?.held && mended && mendingSeen !== true ? (mendingSeen === false ? <Mending b={uni} onDone={seeMending} night={her} dawn={eud} /> : null)
        : uni?.held ? (                                       /* C-299: the halves mended -- both covers, the seam between */
         <Card cursor="pointer" role="button" hoverStyle={{ borderColor: UNITY.lit }} onPress={() => setBook("unity")}>
           <XStack gap={14} alignItems="center">
             <XStack width={72} height={48} alignItems="center" justifyContent="center" gap={2} backgroundColor={UNITY.boards} borderRadius={3}>
-              <Art path="/art/arcana/spellcraft.png" size={27} height={45} />
-              <YStack width={3} height={40} backgroundColor={UNITY.ink} />
-              <Art path="/art/arcana/above.png" size={27} height={45} />
+              {uni.cover ? <CoverCrop book="unity" k={0.31} /> : (<>
+                <Art path="/art/arcana/spellcraft.png" size={27} height={45} />
+                <YStack width={3} height={40} backgroundColor={UNITY.ink} />
+                <Art path="/art/arcana/above.png" size={27} height={45} />
+              </>)}
             </XStack>
             <YStack flex={1} gap={2}>
               <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color={UNITY.mark}>{uni.title ?? "THE UNITY BOOK"}</Text>

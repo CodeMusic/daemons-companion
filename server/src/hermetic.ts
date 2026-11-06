@@ -17,7 +17,7 @@ import { witchingNow } from "./witching.js";
 type Para = { text: string; voice: "telling" | "asking"; inscription?: boolean };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
 type Section = { label: string; heading: string; entries: Entry[] };
-const H = hermeticJson as unknown as { title: string; subtitle: string; draft: boolean; sections: Section[] };
+const H = hermeticJson as unknown as { title: string; subtitle: string; draft: boolean; cover?: string; sections: Section[] };
 // the game's flag (engine fe8df1f55): DAEMONS_FLAGS_START + 0x3F3, until the export carries it by name
 export const HERMETIC_FLAG: number = (layoutJson as unknown as { flags: Record<string, unknown> }).flags.hermetic_layer as number ?? 0xCF3;
 
@@ -61,8 +61,8 @@ export function ackSpellcraft(store: Store, by: string, now = new Date()): Spell
 // for the SYNC: true while the companion holds the book and the save does not yet
 export const spellcraftToWrite = (store: Store, save: Uint8Array | null) => !!spellcraftOf(store).ackAt && !savedHermetic(save);
 
-export interface Hermetic { held: boolean; how?: "game" | "companion" | "preview"; title?: string; subtitle?: string; draft?: boolean; sections?: Section[] }
+export interface Hermetic { held: boolean; how?: "game" | "companion" | "preview"; title?: string; subtitle?: string; draft?: boolean; cover?: string; sections?: Section[] }
 export function readHermetic(save: Uint8Array | null, store: Store | null, preview = false): Hermetic {
   const how = savedHermetic(save) ? "game" : store && spellcraftOf(store).ackAt ? "companion" : preview ? "preview" : null;
-  return how ? { held: true, how, title: H.title, subtitle: H.subtitle, draft: H.draft, sections: H.sections } : { held: false };
+  return how ? { held: true, how, title: H.title, subtitle: H.subtitle, draft: H.draft, cover: H.cover, sections: H.sections } : { held: false };
 }

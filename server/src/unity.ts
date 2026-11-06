@@ -9,12 +9,12 @@ import unityJson from "../data/unity.json" with { type: "json" };
 import { LAYOUT, type Layout, type SpiritsClass } from "./save/reader.js";
 import { observe, savedFlag, type Section } from "./eudaimon.js";
 
-const U = unityJson as unknown as { title: string; subtitle: string; draft: boolean; flag: number | null; sections: Section[] };
+const U = unityJson as unknown as { title: string; subtitle: string; draft: boolean; flag: number | null; cover?: string; sections: Section[] };
 export const UNITY_FLAG: number | null = U.flag;
 export const savedUnity = (save: Uint8Array | null, l: Layout = LAYOUT) => savedFlag(save, UNITY_FLAG, l);
 
-export interface Unity { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; observer?: SpiritsClass; sections?: Section[] }
+export interface Unity { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; cover?: string; observer?: SpiritsClass; sections?: Section[] }
 export function readUnity(save: Uint8Array | null, preview = false, lead: SpiritsClass = "as it is"): Unity {
   const how = savedUnity(save) ? "game" : preview ? "preview" : null;
-  return how ? { held: true, how, title: U.title, subtitle: U.subtitle, draft: U.draft, observer: lead, sections: observe(U.sections, lead) } : { held: false };
+  return how ? { held: true, how, title: U.title, subtitle: U.subtitle, draft: U.draft, cover: U.cover, observer: lead, sections: observe(U.sections, lead) } : { held: false };
 }

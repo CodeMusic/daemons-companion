@@ -4,10 +4,11 @@
 // "asking" voice is printed faint, each voice on its own line. The pictures are the game's own (data/art/subtle_*.png, a
 // few turning, a frame every 0.7 s); the cover carries no lettering (the game's font is Nintendo's), so its title is set
 // here in our own type. Every word DRAFT.
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { SCREEN } from "../../state/data";
 import { Art } from "../../ui/ui";
+import { TurningPicture } from "../../ui/bookPicture";   // C-299: shared with the third book
 import { ReadAloud } from "../../ui/readAloud";   // C-208
 import { AskSubtle, TodaysQuestion } from "./AskSubtle";   // C-229, C-230
 import { Cards } from "./Arcana";   // C-232
@@ -21,15 +22,7 @@ const C = { boards: "#1b0f1f", page: "#2c1c32", edge: "#4a3352", ink: "#f0e6f2",
 const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
 
 // a picture at a whole multiple, its frames turning as the game turns them
-function Picture({ e, scale }: { e: Entry; scale: number }) {
-  const [f, setF] = useState(0), n = Math.max(1, e.frames ?? 1);
-  useEffect(() => {
-    if (n < 2) return;
-    const t = setInterval(() => setF((x) => (x + 1) % n), 700);
-    return () => clearInterval(t);
-  }, [n]);
-  return <Art path={`/art/subtle/${e.picture}_${n > 1 ? f : 0}.png`} size={94 * scale} height={84 * scale} fit="contain" />;
-}
+const Picture = ({ e, scale }: { e: Entry; scale: number }) => <TurningPicture book="subtle" e={e} scale={scale} />;
 
 export function SubtleBook({ b }: { b: SubtleT }) {
   const flat = (b.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));

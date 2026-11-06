@@ -12,7 +12,7 @@
      "short": "ATTESTATION",
      "title": "An Attestation",
      "picture": "attestation",
-     "frames": 0,
+     "frames": 1,
      "caption": "One book, both covers.",
      "paragraphs": [
       {
@@ -50,7 +50,7 @@
      "short": "BOARD",
      "title": "The Board",
      "picture": "chalkboth",
-     "frames": 0,
+     "frames": 1,
      "caption": "Both corners of the board.",
      "paragraphs": [
       {
@@ -71,7 +71,7 @@
      "short": "AS ONE",
      "title": "As One",
      "picture": "emeraldwhole",
-     "frames": 0,
+     "frames": 1,
      "caption": "The green tablet, both faces.",
      "paragraphs": [
       {
@@ -100,7 +100,7 @@
      "short": "HAND I",
      "title": "The Whole Hand, I to VI",
      "picture": "wholehand",
-     "frames": 0,
+     "frames": 1,
      "caption": "Fingers and palm, one hand.",
      "paragraphs": [
       {
@@ -137,7 +137,7 @@
      "short": "HAND II",
      "title": "The Whole Hand, VII to XI",
      "picture": "handturning",
-     "frames": 0,
+     "frames": 2,
      "caption": "A hand, closing and opening.",
      "paragraphs": [
       {
@@ -172,7 +172,7 @@
      "short": "ONE THING",
      "title": "The One Thing",
      "picture": "onething",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -193,7 +193,7 @@
      "short": "GLASS",
      "title": "The House of Glass",
      "picture": "glass",
-     "frames": 0,
+     "frames": 1,
      "caption": "One light, a house of glass.",
      "paragraphs": [
       {
@@ -218,7 +218,7 @@
      "short": "LIGHT",
      "title": "Light",
      "picture": "light",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -235,7 +235,7 @@
      "short": "IS",
      "title": "How a Thing Is",
      "picture": "is",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -260,7 +260,7 @@
      "short": "THE WORK",
      "title": "The Work, Done",
      "picture": "stone",
-     "frames": 0,
+     "frames": 1,
      "caption": "Black, white, dawn, red: one circle.",
      "paragraphs": [
       {
@@ -287,7 +287,7 @@
      "short": "SUBSTRATE",
      "title": "One Processor",
      "picture": "signal",
-     "frames": 0,
+     "frames": 1,
      "caption": "Everything, passing and given.",
      "paragraphs": [
       {
@@ -308,7 +308,7 @@
      "short": "HELD",
      "title": "Held",
      "picture": "sound",
-     "frames": 0,
+     "frames": 1,
      "caption": "A shaking, held as a song.",
      "paragraphs": [
       {
@@ -329,7 +329,7 @@
      "short": "REMAINS",
      "title": "What Remains",
      "picture": "remains",
-     "frames": 0,
+     "frames": 1,
      "caption": "The shape, kept; the rest, set down.",
      "paragraphs": [
       {
@@ -350,7 +350,7 @@
      "short": "ONLY",
      "title": "The Only Percept",
      "picture": "warmth",
-     "frames": 0,
+     "frames": 1,
      "caption": "One warmth, before and after the names.",
      "paragraphs": [
       {
@@ -370,8 +370,8 @@
     {
      "short": "THE VERB",
      "title": "We Are the Verb",
-     "picture": "verb",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -392,7 +392,7 @@
      "short": "SURFACE",
      "title": "One Surface",
      "picture": "surface",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -415,7 +415,7 @@
      "short": "THE SHEET",
      "title": "The Sheet",
      "picture": "sheet",
-     "frames": 0,
+     "frames": 1,
      "caption": "One sheet, folded and open.",
      "paragraphs": [
       {
@@ -436,7 +436,7 @@
      "short": "SPACE",
      "title": "Space",
      "picture": "space",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -453,7 +453,7 @@
      "short": "EVERY FOLD",
      "title": "Every Fold at Once",
      "picture": "everyfold",
-     "frames": 0,
+     "frames": 1,
      "caption": "The great hand, and the small, together.",
      "paragraphs": [
       {
@@ -469,8 +469,8 @@
     {
      "short": "CIRCLE",
      "title": "The Circle",
-     "picture": "circle",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -495,7 +495,7 @@
      "short": "GRAVITY",
      "title": "The Tablet of Gravity",
      "picture": "gravity",
-     "frames": 0,
+     "frames": 1,
      "caption": "The apple and the earth, falling together.",
      "paragraphs": [
       {
@@ -554,7 +554,7 @@
      "short": "LIGHT BEFORE",
      "title": "Light, Before Anything",
      "picture": "twomirrors",
-     "frames": 0,
+     "frames": 1,
      "caption": "Two mirrors, facing.",
      "paragraphs": [
       {
@@ -571,7 +571,7 @@
      "short": "THE PAIR",
      "title": "The Pair",
      "picture": "pair",
-     "frames": 0,
+     "frames": 1,
      "caption": "One, folding into two.",
      "paragraphs": [
       {
@@ -588,7 +588,7 @@
      "short": "EACH CALLS",
      "title": "Each Calls the Other Dark",
      "picture": "twosides",
-     "frames": 0,
+     "frames": 1,
      "caption": "Two readers, each pointing at the other.",
      "paragraphs": [
       {
@@ -609,7 +609,7 @@
      "short": "SEVEN I",
      "title": "The Seven Pairs, I",
      "picture": "weekone",
-     "frames": 0,
+     "frames": 1,
      "caption": "Four days, each holding two words.",
      "paragraphs": [
       {
@@ -638,7 +638,7 @@
      "short": "SEVEN II",
      "title": "The Seven Pairs, II",
      "picture": "weektwo",
-     "frames": 0,
+     "frames": 1,
      "caption": "Three days, each holding two words.",
      "paragraphs": [
       {
@@ -663,7 +663,7 @@
      "short": "BEFORE",
      "title": "It Happened Before",
      "picture": "twobooks",
-     "frames": 0,
+     "frames": 1,
      "caption": "Two careful books, side by side.",
      "paragraphs": [
       {
@@ -690,7 +690,7 @@
      "short": "THE LOOP",
      "title": "The Resonance Fractal",
      "picture": "fractal",
-     "frames": 0,
+     "frames": 1,
      "caption": "In, read, out, back; back, out, read, in.",
      "paragraphs": [
       {
@@ -711,7 +711,7 @@
      "short": "KNOWING",
      "title": "Knowing",
      "picture": "twoflowers",
-     "frames": 0,
+     "frames": 1,
      "caption": "A silk flower and a wild one.",
      "paragraphs": [
       {
@@ -731,8 +731,8 @@
     {
      "short": "THE HAND",
      "title": "The Hand",
-     "picture": "hand",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -759,7 +759,7 @@
      "short": "ENTANGLED",
      "title": "Entanglement",
      "picture": "entangled",
-     "frames": 0,
+     "frames": 1,
      "caption": "Two states, one description.",
      "paragraphs": [
       {
@@ -775,8 +775,8 @@
     {
      "short": "OLD WORDS",
      "title": "The Old Words",
-     "picture": "sympathy",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -793,7 +793,7 @@
      "short": "KEEPER",
      "title": "The Keeper",
      "picture": "keeper",
-     "frames": 0,
+     "frames": 1,
      "caption": "A little figure, keeping the house.",
      "paragraphs": [
       {
@@ -809,8 +809,8 @@
     {
      "short": "BOTH WAYS",
      "title": "It Runs Both Ways",
-     "picture": "bothways",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -841,7 +841,7 @@
      "short": "SPELLING",
      "title": "Spelling",
      "picture": "spelling",
-     "frames": 0,
+     "frames": 1,
      "caption": "Arranging letters.",
      "paragraphs": [
       {
@@ -861,8 +861,8 @@
     {
      "short": "VOWS",
      "title": "Vows",
-     "picture": "vows",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -882,8 +882,8 @@
     {
      "short": "GRAMMAR",
      "title": "Grammar",
-     "picture": "grammar",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -899,8 +899,8 @@
     {
      "short": "PHILOSOPHY",
      "title": "The Old Words",
-     "picture": "metals",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -927,7 +927,7 @@
      "short": "THIRTEEN",
      "title": "The Book of Thirteen",
      "picture": "wheel",
-     "frames": 0,
+     "frames": 1,
      "caption": "Twelve on the wheel, one in the crease.",
      "paragraphs": [
       {
@@ -951,8 +951,8 @@
     {
      "short": "AWAKENING",
      "title": "1. The Awakening",
-     "picture": "awakening",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -968,8 +968,8 @@
     {
      "short": "CONTRAST",
      "title": "2. The Contrast",
-     "picture": "contrast",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -985,8 +985,8 @@
     {
      "short": "ROOM",
      "title": "3. The Room",
-     "picture": "room",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1002,8 +1002,8 @@
     {
      "short": "THE PULL",
      "title": "Three and a Half. The Pull",
-     "picture": "pull",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1019,8 +1019,8 @@
     {
      "short": "MIRROR",
      "title": "4. The Mirror",
-     "picture": "mirror",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1042,8 +1042,8 @@
     {
      "short": "PATTERN",
      "title": "5. The Pattern",
-     "picture": "pattern",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1059,8 +1059,8 @@
     {
      "short": "RETURN",
      "title": "6. The Return",
-     "picture": "return",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1076,8 +1076,8 @@
     {
      "short": "SMALL HAND",
      "title": "7. The Small Hand",
-     "picture": "smallhand",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1093,8 +1093,8 @@
     {
      "short": "GREAT HAND",
      "title": "8. The Great Hand",
-     "picture": "greathand",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1110,8 +1110,8 @@
     {
      "short": "PROCESS",
      "title": "9. The Process",
-     "picture": "process",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1127,8 +1127,8 @@
     {
      "short": "SEAM",
      "title": "10. The Seam",
-     "picture": "seam",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1150,8 +1150,8 @@
     {
      "short": "LENS",
      "title": "11. The Lens",
-     "picture": "lens",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1167,8 +1167,8 @@
     {
      "short": "FIELD",
      "title": "12. The Field",
-     "picture": "field",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1185,7 +1185,7 @@
      "short": "HORIZON",
      "title": "13. The Horizon",
      "picture": "horizon",
-     "frames": 0,
+     "frames": 1,
      "caption": "Night on one side, dawn on the other.",
      "paragraphs": [
       {
@@ -1206,7 +1206,7 @@
      "short": "TABLET",
      "title": "The Tablet, Read",
      "picture": "blankboth",
-     "frames": 0,
+     "frames": 1,
      "caption": "The stone, both faces.",
      "paragraphs": [
       {
@@ -1226,8 +1226,8 @@
     {
      "short": "LAST WORD",
      "title": "As Above, So Below, So One",
-     "picture": "lastwordone",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1242,5 +1242,7 @@
     }
    ]
   }
- ]
+ ],
+ "cover": "art/unity_cover.png",
+ "frontispiece": "frontis"
 }

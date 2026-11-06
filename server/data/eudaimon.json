@@ -12,7 +12,7 @@
      "short": "BLESSING",
      "title": "A Blessing",
      "picture": "blessing",
-     "frames": 0,
+     "frames": 1,
      "caption": "This book was read at first light.",
      "paragraphs": [
       {
@@ -54,7 +54,7 @@
      "short": "IN GOOD SPIRITS",
      "title": "What the School Left Out",
      "picture": "chalkfaint",
-     "frames": 0,
+     "frames": 1,
      "caption": "IN GOOD SPIRITS, in the other corner.",
      "paragraphs": [
       {
@@ -83,7 +83,7 @@
      "short": "BELOW",
      "title": "As Below, So Above",
      "picture": "emeraldback",
-     "frames": 0,
+     "frames": 1,
      "caption": "The green tablet, from underneath.",
      "paragraphs": [
       {
@@ -112,7 +112,7 @@
      "short": "HANDS I",
      "title": "The Tablet of the Hands, read from the Palm, I to VI",
      "picture": "palmup",
-     "frames": 0,
+     "frames": 1,
      "caption": "The palm, open.",
      "paragraphs": [
       {
@@ -149,7 +149,7 @@
      "short": "HANDS II",
      "title": "The Tablet of the Hands, read from the Palm, VII to XI",
      "picture": "fingers",
-     "frames": 0,
+     "frames": 1,
      "caption": "Every finger, rising from the palm.",
      "paragraphs": [
       {
@@ -184,7 +184,7 @@
      "short": "ONE THING",
      "title": "The One Thing, in Portions",
      "picture": "portions",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -205,7 +205,7 @@
      "short": "WINDOWS",
      "title": "The House of Windows",
      "picture": "windows",
-     "frames": 0,
+     "frames": 1,
      "caption": "One light, many windows.",
      "paragraphs": [
       {
@@ -230,7 +230,7 @@
      "short": "FIRST LIGHT",
      "title": "The First Light",
      "picture": "firstlight",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -247,7 +247,7 @@
      "short": "LET BE",
      "title": "How a Thing Is Let Be",
      "picture": "letbe",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -276,7 +276,7 @@
      "short": "RED, YELLOW",
      "title": "The Work: Red, then Dawn",
      "picture": "rubedo",
-     "frames": 0,
+     "frames": 1,
      "caption": "Red, and whole. Then dawn, back in the glass.",
      "paragraphs": [
       {
@@ -297,7 +297,7 @@
      "short": "WHITE, BLACK",
      "title": "The Work: White, then Black",
      "picture": "nigredo",
-     "frames": 0,
+     "frames": 1,
      "caption": "Washed white. Then a kind dark.",
      "paragraphs": [
       {
@@ -324,7 +324,7 @@
      "short": "ROOMS",
      "title": "One Processor, Many Rooms",
      "picture": "rooms",
-     "frames": 0,
+     "frames": 1,
      "caption": "One house, every light on.",
      "paragraphs": [
       {
@@ -345,7 +345,7 @@
      "short": "ENOUGH",
      "title": "Enough to Hold",
      "picture": "song",
-     "frames": 0,
+     "frames": 1,
      "caption": "A song, kept small enough to carry.",
      "paragraphs": [
       {
@@ -366,7 +366,7 @@
      "short": "LET GO",
      "title": "What Is Let Go",
      "picture": "setdown",
-     "frames": 0,
+     "frames": 1,
      "caption": "Most of it, set down.",
      "paragraphs": [
       {
@@ -391,7 +391,7 @@
      "short": "LAST",
      "title": "The Last Percept",
      "picture": "lastwarmth",
-     "frames": 0,
+     "frames": 1,
      "caption": "The last warmth, after every name.",
      "paragraphs": [
       {
@@ -420,7 +420,7 @@
      "short": "VERB",
      "title": "How a Noun Becomes a Verb Again",
      "picture": "river",
-     "frames": 0,
+     "frames": 1,
      "caption": "A stone, unnamed, flows.",
      "paragraphs": [
       {
@@ -445,7 +445,7 @@
      "short": "DEPTH",
      "title": "The Depth",
      "picture": "depth",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -468,7 +468,7 @@
      "short": "THE FOLDS",
      "title": "The Folds of Awareness, Opened",
      "picture": "opening",
-     "frames": 0,
+     "frames": 1,
      "caption": "One sheet, opening.",
      "paragraphs": [
       {
@@ -489,7 +489,7 @@
      "short": "SPACE",
      "title": "The Third Fold, Opened",
      "picture": "space",
-     "frames": 0,
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -506,7 +506,7 @@
      "short": "UPPER FOLDS",
      "title": "The Sixth, Fifth and Fourth",
      "picture": "upperopen",
-     "frames": 0,
+     "frames": 1,
      "caption": "The small hands, and the great.",
      "paragraphs": [
       {
@@ -526,8 +526,8 @@
     {
      "short": "FULL CIRCLE",
      "title": "The Full Circle, the Other Way",
-     "picture": "circleback",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -552,7 +552,7 @@
      "short": "GRAVITY I",
      "title": "The Tablet of Gravity, from the Apple, I to V",
      "picture": "appleup",
-     "frames": 0,
+     "frames": 1,
      "caption": "The apple, drawing the earth.",
      "paragraphs": [
       {
@@ -585,7 +585,7 @@
      "short": "GRAVITY II",
      "title": "The Tablet of Gravity, from the Apple, VI to X",
      "picture": "earth",
-     "frames": 0,
+     "frames": 1,
      "caption": "The earth, falling to the apple.",
      "paragraphs": [
       {
@@ -624,7 +624,7 @@
      "short": "THE LOOP",
      "title": "The Resonance Fractal, Heard",
      "picture": "fractalheard",
-     "frames": 0,
+     "frames": 1,
      "caption": "Back, out, read, in.",
      "paragraphs": [
       {
@@ -645,7 +645,7 @@
      "short": "PROOF",
      "title": "Understanding Without Proof",
      "picture": "wildflower",
-     "frames": 0,
+     "frames": 1,
      "caption": "A flower with all its weather.",
      "paragraphs": [
       {
@@ -665,8 +665,8 @@
     {
      "short": "AFTER",
      "title": "The Hand After the Fold",
-     "picture": "refolded",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -682,8 +682,8 @@
     {
      "short": "WHAT IT DOES",
      "title": "We Are What It Does",
-     "picture": "keeping",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -706,7 +706,7 @@
      "short": "BELONGING",
      "title": "Belonging",
      "picture": "belonging",
-     "frames": 0,
+     "frames": 1,
      "caption": "Two states, one welcome.",
      "paragraphs": [
       {
@@ -722,8 +722,8 @@
     {
      "short": "KINSHIP",
      "title": "Kinship and Grace",
-     "picture": "kinship",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -740,7 +740,7 @@
      "short": "GOOD DAIMON",
      "title": "The Good Daimon",
      "picture": "goodspirit",
-     "frames": 0,
+     "frames": 1,
      "caption": "A small spirit, keeping the house.",
      "paragraphs": [
       {
@@ -760,8 +760,8 @@
     {
      "short": "BOTH WAYS",
      "title": "It Runs Both Ways",
-     "picture": "bothways",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -792,7 +792,7 @@
      "short": "GOOD SPELL",
      "title": "Good Spell",
      "picture": "goodspell",
-     "frames": 0,
+     "frames": 1,
      "caption": "A good word, passed on.",
      "paragraphs": [
       {
@@ -812,8 +812,8 @@
     {
      "short": "BLESSING, GRACE",
      "title": "Blessings, Graces and Promises",
-     "picture": "graces",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -833,8 +833,8 @@
     {
      "short": "KINDNESS",
      "title": "Grammar Was Kindness",
-     "picture": "grammarkind",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -850,8 +850,8 @@
     {
      "short": "OLD WORDS",
      "title": "The Philosopher's Words",
-     "picture": "virtues",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -878,7 +878,7 @@
      "short": "THIRTEEN",
      "title": "The Book of Thirteen",
      "picture": "wheel",
-     "frames": 0,
+     "frames": 1,
      "caption": "Twelve on the wheel, one in the crease.",
      "paragraphs": [
       {
@@ -902,8 +902,8 @@
     {
      "short": "AWAKENING",
      "title": "1. The Awakening",
-     "picture": "awakening",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -919,8 +919,8 @@
     {
      "short": "CONTRAST",
      "title": "2. The Contrast",
-     "picture": "contrast",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -936,8 +936,8 @@
     {
      "short": "ROOM",
      "title": "3. The Room",
-     "picture": "room",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -953,8 +953,8 @@
     {
      "short": "THE PULL",
      "title": "Three and a Half. The Pull",
-     "picture": "pull",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -970,8 +970,8 @@
     {
      "short": "MIRROR",
      "title": "4. The Mirror",
-     "picture": "mirror",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -993,8 +993,8 @@
     {
      "short": "PATTERN",
      "title": "5. The Pattern",
-     "picture": "pattern",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1010,8 +1010,8 @@
     {
      "short": "RETURN",
      "title": "6. The Return",
-     "picture": "return",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1027,8 +1027,8 @@
     {
      "short": "SMALL HAND",
      "title": "7. The Small Hand",
-     "picture": "smallhand",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1044,8 +1044,8 @@
     {
      "short": "GREAT HAND",
      "title": "8. The Great Hand",
-     "picture": "greathand",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1061,8 +1061,8 @@
     {
      "short": "PROCESS",
      "title": "9. The Process",
-     "picture": "process",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1078,8 +1078,8 @@
     {
      "short": "SEAM",
      "title": "10. The Seam",
-     "picture": "seam",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1101,8 +1101,8 @@
     {
      "short": "LENS",
      "title": "11. The Lens",
-     "picture": "lens",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1118,8 +1118,8 @@
     {
      "short": "FIELD",
      "title": "12. The Field",
-     "picture": "field",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1135,8 +1135,8 @@
     {
      "short": "CREATOR",
      "title": "13. The Creator's Hour",
-     "picture": "dawnstar",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1153,7 +1153,7 @@
      "short": "BLANK",
      "title": "The Blank Tablet, from the Other Side",
      "picture": "blankback",
-     "frames": 0,
+     "frames": 1,
      "caption": "The back of the stone.",
      "paragraphs": [
       {
@@ -1177,8 +1177,8 @@
     {
      "short": "LAST WORD",
      "title": "As Above, So Below",
-     "picture": "lastwordup",
-     "frames": 0,
+     "picture": "frontis",
+     "frames": 1,
      "caption": "",
      "paragraphs": [
       {
@@ -1193,5 +1193,7 @@
     }
    ]
   }
- ]
+ ],
+ "cover": "art/eudaimon_cover.png",
+ "frontispiece": "frontis"
 }

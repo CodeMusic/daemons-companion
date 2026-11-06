@@ -13,6 +13,7 @@ import cardsJson from "../../data/index_cards.json" with { type: "json" };
 import { blocks, readBoxes, readSave, LAYOUT, type Layout } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
+import { openMouthOf, type Patch } from "../expressions.js";   // C-303
 
 const P = profileJson;
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -21,7 +22,8 @@ const M = marginsJson as unknown as { levels_carried: number; instinct_gender: n
 
 export type IndexEntry = { national: number; species: number; name: string; seen: boolean; bound: boolean; art: string | null;
   category?: string; types?: string[]; entry?: string; margin?: { state: "carried" | "neglected"; text: string }; native?: string[];
-  colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null };
+  colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null;
+  said?: string; mouth?: Patch[] | null };   // C-303: what a bound daemon says of itself, and its open mouth on its picture
 
 // C-186 (the user, 2026-10-24: "full INDEX cards with margins (coloured by understanding gleaned)"; their rule, through
 // the game session: type match). A card stays grey until the save holds the understanding whose lobe shares one of the
@@ -82,6 +84,7 @@ export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: L
     if (bound) {
       Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: row.entry?.[edition] ?? "",
                          colour: cardColour(row.types ?? [], profile.roots) });
+      if (row.said) Object.assign(e, { said: row.said, mouth: openMouthOf(row.art?.front) });   // C-303: it tells of itself
       const m = profile.opus ? M.margins[id] : undefined;
       const state = !m ? null : grown.get(Number(id)) ? "carried" : boxed.has(Number(id)) ? "neglected" : null;
       if (m && state) {

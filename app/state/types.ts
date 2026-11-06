@@ -137,7 +137,9 @@ export type GuideBookT = { held: boolean; title?: string; author?: string; secti
 // voice; and OPUS's margin beside an entry, when the save holds OPUS and the game would show one.
 export type IndexEntry = { national: number; species: number; name: string; bound: boolean; art: string | null;
                     category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string }; native?: string[];
-  colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null };   // C-186: grey until gleaned
+  colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null;   // C-186: grey until gleaned
+  // C-303: what a bound daemon says of itself, and its open mouth as patches on its 64px picture (null: not found yet)
+  said?: string; mouth?: { x: number; y: number; w: number; h: number; rgb: [number, number, number] }[] | null };
 
 export type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
 

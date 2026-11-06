@@ -8,6 +8,7 @@ import { api, apiLater, ON_PHONE } from "../../platform/net";
 import { Index, Reading, Spoken } from "../../state/types";
 import { Art, Card, Eyebrow, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
+import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "./OwnVoice";   // C-303: the daemon tells of itself
 export function useIndexReader() {
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
@@ -43,8 +44,10 @@ export function useIndexReader() {
 
 // LISTEN (a play mark in a ring), the spinner with its stop square, and HUSH -- each a ring and a word, so the control
 // keeps its place and its size as it changes.
-export function ListenControl({ phase, onListen, onStop, ink }: { phase: "making" | "speaking" | null; onListen: () => void;
-                                                           onStop: () => void; ink: string }) {
+// C-303: `gear` is the INDEX's own LISTEN -- the play mark in a cog, because what reads the record is the device.
+const COG = [0, 45, 90, 135];
+export function ListenControl({ phase, onListen, onStop, ink, gear = false }: { phase: "making" | "speaking" | null; onListen: () => void;
+                                                           onStop: () => void; ink: string; gear?: boolean }) {
   const Word = ({ children }: { children: string }) =>
     <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} color="$color12">{children}</Text>;
   const ring = { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" } as const;
@@ -69,7 +72,13 @@ export function ListenControl({ phase, onListen, onStop, ink }: { phase: "making
   );
   return (
     <XStack alignItems="center" gap={10} role="button" aria-label="Listen" cursor="pointer" onPress={onListen}>
-      <YStack {...ring} backgroundColor="$color9">
+      <YStack {...ring} backgroundColor={gear ? "transparent" : "$color9"}>
+        {gear ? (<>
+          {COG.map((a) => (   // four bars through the middle: eight teeth
+            <YStack key={a} position="absolute" width={9} height={44} borderRadius={2} backgroundColor="$color9" rotate={`${a}deg`} />
+          ))}
+          <YStack position="absolute" width={34} height={34} borderRadius={17} backgroundColor="$color9" />
+        </>) : null}
         <View style={{ width: 0, height: 0, marginLeft: 4, borderTopWidth: 8, borderBottomWidth: 8, borderLeftWidth: 13,
                        borderTopColor: "transparent", borderBottomColor: "transparent", borderLeftColor: ink }} />
       </YStack>
@@ -82,7 +91,8 @@ export function IndexScreen({ ink }: { ink: string }) {
   const [ix, , error] = useApi<Index>("/api/index");
   const [open, setOpen] = useState<number | null>(null);
   const voice = useIndexReader();
-  const busy = voice.reading !== null;
+  const own = useOwnVoice();                               // C-303: the daemon's own telling, by a tap on its sprite
+  const busy = voice.reading !== null || own.told !== null;
   if (error) return <Small>{error}</Small>;
   if (!ix) return <Small>Loading…</Small>;
   const flat = (s: string) => s.replace(/\n/g, " ");      // the game's line breaks are for its own window
@@ -96,11 +106,14 @@ export function IndexScreen({ ink }: { ink: string }) {
       {ix.entries.map((e) => (
         // C-186: the card in its colour once gleaned (the user's rule: type match, server/src/save/index.ts), grey till then
         <Card key={e.national} padding={12} cursor={e.bound && !busy ? "pointer" : "default"}
+              position="relative" overflow="hidden"   // C-303: the daemon's overlay is laid over this card, and no further
               borderLeftWidth={6} borderLeftColor={e.colour?.hex ?? "$color6"}
               opacity={busy && open !== e.national ? 0.45 : 1}
               onPress={() => e.bound && !busy && setOpen(open === e.national ? null : e.national)}>
           <XStack gap={12} alignItems="center">
-            {e.art ? <Art path={e.art} size={64} /> : null}
+            {/* C-303: opened, a daemon with something to say of itself shimmers; a tap on it and it says so */}
+            {e.art ? <ShimmerArt path={e.art} size={64} on={open === e.national && !!e.said && !busy}
+                                 onPress={() => own.speak(e.species, e.said!)} /> : null}
             <YStack flex={1}>
               <Text fontFamily="$mono" fontSize={11} color="$color10">{`No. ${String(e.national).padStart(3, "0")}`}</Text>
               <Text fontSize={16} fontWeight="600" color="$color12">{e.name}</Text>
@@ -112,10 +125,11 @@ export function IndexScreen({ ink }: { ink: string }) {
             <YStack gap={8} marginTop={8}>
               <Text fontSize={15} lineHeight={22} color="$color12">{flat(e.entry ?? "")}</Text>
               {e.entry ? (
-                <ListenControl phase={voice.reading?.species === e.species ? voice.reading.phase : null} ink={ink}
-                               onListen={() => voice.listen(e.species)} onStop={voice.stop} />
+                <ListenControl phase={voice.reading?.species === e.species ? voice.reading.phase : null} ink={ink} gear
+                               onListen={() => { if (!own.told) voice.listen(e.species); }} onStop={voice.stop} />
               ) : null}
               {voice.failed && open === e.national ? <Small color="$color8">{voice.failed}</Small> : null}
+              {own.failed && open === e.national ? <Small color="$color8">{own.failed}</Small> : null}
               {e.native?.length ? (   /* T-407: NATIVE, as the game's area page says it */
                 <YStack gap={2}>
                   <Eyebrow>NATIVE</Eyebrow>
@@ -128,6 +142,9 @@ export function IndexScreen({ ink }: { ink: string }) {
                 </YStack>
               ) : null}
             </YStack>
+          ) : null}
+          {own.told?.species === e.species && e.art ? (
+            <OwnVoiceOverlay species={e.species} art={e.art} mouth={e.mouth} phase={own.told.phase} onStop={own.stop} onGone={own.gone} />
           ) : null}
         </Card>
       ))}

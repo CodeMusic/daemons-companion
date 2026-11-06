@@ -59,7 +59,7 @@ import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
 import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { voiceRecipe } from "./ai/voices.js";   // C-251
-import { INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
+import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, rewriteDream, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
@@ -1723,8 +1723,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const text = typeof b.text === "string" && b.text.trim() ? b.text : row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
         if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "host a daemon to hear its entry" });
+        // C-303: an INDEX entry is read in the device's voice; any other words in the reader's, as before
+        const how = typeof b.text === "string" && b.text.trim() ? undefined : store.getSetting("voice.recipe.entry") || ENTRY_VOICE;
         return answer(PRIORITY.reading, async () =>          // C-180: a reading -- the hub's Module LLM's first work
-          forDevice({ ...await readAloud(String(text).replace(/\n/g, " ").slice(0, 600)), answer: text }));
+          forDevice({ ...await readAloud(String(text).replace(/\n/g, " ").slice(0, 600), how), answer: text }));
       }
       if (req.method === "GET" && path.startsWith("/api/device/voice/")) {
         const pcm = voices.get(path.slice("/api/device/voice/".length));
@@ -1741,7 +1743,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
         if (!text) return send(res, 400, { error: "speak {species} or {text}, or host a daemon" });
-        return answer(PRIORITY.reading, () => readAloud(String(text).replace(/\n/g, " ").slice(0, 600)));
+        // C-303: an INDEX entry is read in the device's voice; any other words in the reader's, as before
+        const how = typeof b.text === "string" ? undefined : store.getSetting("voice.recipe.entry") || ENTRY_VOICE;
+        return answer(PRIORITY.reading, () => readAloud(String(text).replace(/\n/g, " ").slice(0, 600), how));
       }
       if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes
         const b = await body(req);

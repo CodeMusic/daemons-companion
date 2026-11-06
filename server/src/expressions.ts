@@ -115,6 +115,12 @@ export function mouthPatch(face: Face, e: Expression): Patch[] {
   if (w >= 3 && tall >= 3) out.push({ x: x + 1, y: y + 1, w: w - 2, h: tall - 2, rgb: shade([200, 70, 90], e.shade) });
   return out;
 }
+// C-303: a species' open mouth as patches on its 64px front picture, for a host that draws them over the picture itself
+// (the app's speaking overlay, any species of the INDEX -- not only a party slot); null where nobody has found its mouth
+export function openMouthOf(frontArt: string | undefined | null): Patch[] | null {
+  const f = faceOf(frontArt?.split("/").pop()?.replace("_front.png", ""));
+  return f?.mouth ? mouthPatch(f, EXPRESSIONS.awake) : null;
+}
 
 // A colour in an expression's shade: saturation and brightness scaled, then mixed toward the tint. The boards do the
 // same sum in their own code; the app and the widget take the picture this shades (paint.ts repaint, indexes 1..10).

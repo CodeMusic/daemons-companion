@@ -8,10 +8,11 @@ import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ACTS, castLine, playerId } from "../../state/data";
 import { DenStage } from "./Den";
 import { ALONE, api, apiLater, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
-import { Carried, Cast, Daemon, DeviceRow, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../../state/types";
+import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../../state/types";
 import { Action, Art, Card, CareKey, careSound, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
 import { hearSettings, soundLevel } from "../../sound/tuneSound";
 import { IndexScreen } from "../shared/Index";
+import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "../shared/OwnVoice";   // C-303
 import { RoutinesCard } from "./Routines";
 import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
@@ -267,13 +268,14 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   const [seg, setSeg] = useState<"yours" | "party" | "index" | "routines" | "soundings" | "dreams" | "meetings">("yours");   // C-156; C-200 dreams
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
-  const [open, setOpen] = useState<{ species: number; name: string; category: string; entry: string; said?: string } | null>(null);
+  const [open, setOpen] = useState<{ species: number; name: string; category: string; entry: string; said?: string;
+                                     mouth?: IndexEntry["mouth"] } | null>(null);
   const speak = useVoice();
+  const telling = useOwnVoice();                           // C-303: the daemon's own telling, by a tap on its sprite
   const [reading, setReading] = useState(false);
-  // C-65: the INDEX entry, in the INDEX voice. C-303: or, where the daemon has one, what it says of itself, in its own
-  const readAloud = async (species: number, said?: string) => {
+  const readAloud = async (species: number) => {           // C-65: the INDEX entry, in the INDEX voice
     setReading(true);
-    try { speak(await readingVoice(said ? { species, own: true } : { species }, said)); } catch { /* the card says nothing new */ }   // kept on the phone after the first time
+    try { speak(await readingVoice({ species })); } catch { /* the card says nothing new */ }   // kept on the phone after the first time
     finally { setReading(false); }
   };
   const [note, setNote] = useState("");
@@ -382,7 +384,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
           <YStack key={d.slot} width={150} alignItems="center" backgroundColor="$color1" borderWidth={1}
                   borderColor="$color5" borderRadius={4} padding={10} gap={2} opacity={d.away ? 0.45 : 1}
                   cursor="pointer" hoverStyle={{ borderColor: "$color9" }} role="button"
-                  onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ species: d.species, name: x.name, category: x.category, entry: x.entry, said: x.said }))}>
+                  onPress={() => api<any>(`/api/species/${d.species}`).then((x) => setOpen({ species: d.species, name: x.name, category: x.category, entry: x.entry, said: x.said, mouth: x.mouth }))}>
             <Art path={`/art/party/${d.slot}.png`} size={128} />
             <Text fontFamily="$mono" fontSize={13} fontWeight="700" color="$color12">{d.nickname}</Text>
             <Small>{d.name} · L{d.level}</Small>
@@ -394,13 +396,21 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
         ))}
       </XStack>
       {open ? (
-        <Card borderColor="$color9">
-          {/* C-303 (DAEMONS T-522): on its own page a daemon tells of itself, in its own voice; the record is the INDEX
-              tab's, in the INDEX voice. One with no telling yet shows its entry, as before. Labels DRAFT. */}
-          <Eyebrow>{open.said ? `${open.name} · IN ITS OWN WORDS` : `${open.name} · ${open.category} DAEMON`}</Eyebrow>
-          <Text fontSize={16} lineHeight={24} color="$color12">{open.said ?? open.entry}</Text>
-          {ON_PHONE ? <Action label={open.said ? (reading ? "Speaking…" : "Hear it") : reading ? "Reading…" : "Read aloud"}
-                              onPress={() => readAloud(open.species, open.said)} ink={ink} /> : null}
+        <Card borderColor="$color9" position="relative" overflow="hidden">
+          {/* C-303 (DAEMONS T-522; the user, 2026-11-06): the card shows the record and reads it in the INDEX voice; the
+              daemon's own telling is the sprite's -- it shimmers, and a tap lays the daemon over the card to say it. */}
+          <XStack gap={12} alignItems="center">
+            <ShimmerArt path={`/art/species/${open.species}.png`} size={64} on={!!open.said && !telling.told && !reading}
+                        onPress={() => telling.speak(open.species, open.said!)} />
+            <YStack flex={1}><Eyebrow>{open.name} · {open.category} DAEMON</Eyebrow></YStack>
+          </XStack>
+          <Text fontSize={16} lineHeight={24} color="$color12">{open.entry}</Text>
+          {ON_PHONE ? <Action label={reading ? "Reading…" : "Read aloud"} onPress={() => { if (!telling.told) readAloud(open.species); }} ink={ink} /> : null}
+          {telling.failed ? <Small color="$color8">{telling.failed}</Small> : null}
+          {telling.told?.species === open.species ? (
+            <OwnVoiceOverlay species={open.species} art={`/art/species/${open.species}.png`} mouth={open.mouth} phase={telling.told.phase}
+                             onStop={telling.stop} onGone={telling.gone} />
+          ) : null}
         </Card>
       ) : null}
       </>) : null}

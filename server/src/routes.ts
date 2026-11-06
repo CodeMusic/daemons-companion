@@ -40,6 +40,7 @@ import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
 import { WAKES } from "./life.js";   // C-293: the cares that wake it, one list
+import { openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches
 import { thriveOf } from "./thrive.js";   // C-207
 import { again, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
@@ -82,7 +83,8 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     const sp = path.match(SPECIES_ID);
     if (sp) {
       const row = SPECIES[sp[1]];
-      return row ? ok({ ...row, entry: row.entry[h.edition] }) : no(404, "no such species");
+      // C-303: `said` rides in the row; `mouth` is its open mouth as patches on its picture, where one is known
+      return row ? ok({ ...row, entry: row.entry[h.edition], mouth: openMouthOf(row.art?.front) }) : no(404, "no such species");
     }
     if (path === "/api/regions") return ok(REGIONS);   // C-131: the two regions' maps, for the Tab5 (no save needed)
     if (path === "/api/groves") return ok(GROVES);     // C-137: the groves' universes and signs, for the Tab5 (no save needed)

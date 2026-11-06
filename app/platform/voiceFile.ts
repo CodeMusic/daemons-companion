@@ -69,8 +69,12 @@ export function forgetVoices(): number {
 // Bumped when the daemons' own voices change (voices.ts), so a telling kept in an old voice is made again -- 2: each
 // species a voice of its own (2026-11-05)
 const OWN_VOICES = 2;
+// Bumped when the INDEX's voice changes (the hub's INDEX_VOICE, ai/tiinyfirst.ts), so an entry kept in the old voice is
+// read again -- 2: the device's voice, robotic and a little glitchy (the user, 2026-11-06; C-303)
+const INDEX_VOICES = 2;
 export async function readingVoice(body: { text?: string; species?: number; own?: boolean }, said?: string): Promise<File | null> {
-  const words = body.text !== undefined ? `text:${body.text}` : body.own ? `said:${OWN_VOICES}:${body.species}:${said ?? ""}` : `species:${body.species}`;
+  const words = body.text !== undefined ? `text:${body.text}` : body.own ? `said:${OWN_VOICES}:${body.species}:${said ?? ""}`
+              : `species:${INDEX_VOICES}:${body.species}`;
   const had = keptVoice(words);
   if (had) return had;
   const spoken = await apiLater<Spoken>("/api/ai/speak", body);

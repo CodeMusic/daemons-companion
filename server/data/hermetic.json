@@ -513,7 +513,7 @@
     {
      "short": "FULL CIRCLE",
      "title": "The Full Circle",
-     "picture": "frontis",
+     "picture": "circle",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -652,7 +652,7 @@
     {
      "short": "UNWITNESSED",
      "title": "The Hand Before the Fold",
-     "picture": "frontis",
+     "picture": "unfolded",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -669,7 +669,7 @@
     {
      "short": "THE VERB",
      "title": "We Are the Verb",
-     "picture": "frontis",
+     "picture": "verb",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -709,7 +709,7 @@
     {
      "short": "OLD WORDS",
      "title": "Sympathy and Correspondence",
-     "picture": "frontis",
+     "picture": "sympathy",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -743,7 +743,7 @@
     {
      "short": "BOTH WAYS",
      "title": "It Runs Both Ways",
-     "picture": "frontis",
+     "picture": "bothways",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -795,7 +795,7 @@
     {
      "short": "CURSE, CHARM",
      "title": "Curses, Charms and Vows",
-     "picture": "frontis",
+     "picture": "charms",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -816,7 +816,7 @@
     {
      "short": "GRAMARYE",
      "title": "Grammar Was Magic",
-     "picture": "frontis",
+     "picture": "grammar",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -833,7 +833,7 @@
     {
      "short": "OLD WORK",
      "title": "The Alchemist's Words",
-     "picture": "frontis",
+     "picture": "metals",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -885,7 +885,7 @@
     {
      "short": "AWAKENING",
      "title": "1. The Awakening",
-     "picture": "frontis",
+     "picture": "awakening",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -902,7 +902,7 @@
     {
      "short": "CONTRAST",
      "title": "2. The Contrast",
-     "picture": "frontis",
+     "picture": "contrast",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -919,7 +919,7 @@
     {
      "short": "ROOM",
      "title": "3. The Room",
-     "picture": "frontis",
+     "picture": "room",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -936,7 +936,7 @@
     {
      "short": "THE PULL",
      "title": "Three and a Half. The Pull",
-     "picture": "frontis",
+     "picture": "pull",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -953,7 +953,7 @@
     {
      "short": "MIRROR",
      "title": "4. The Mirror",
-     "picture": "frontis",
+     "picture": "mirror",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -976,7 +976,7 @@
     {
      "short": "PATTERN",
      "title": "5. The Pattern",
-     "picture": "frontis",
+     "picture": "pattern",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -993,7 +993,7 @@
     {
      "short": "RETURN",
      "title": "6. The Return",
-     "picture": "frontis",
+     "picture": "return",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1010,7 +1010,7 @@
     {
      "short": "SMALL HAND",
      "title": "7. The Small Hand",
-     "picture": "frontis",
+     "picture": "smallhand",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1027,7 +1027,7 @@
     {
      "short": "GREAT HAND",
      "title": "8. The Great Hand",
-     "picture": "frontis",
+     "picture": "greathand",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1044,7 +1044,7 @@
     {
      "short": "PROCESS",
      "title": "9. The Process",
-     "picture": "frontis",
+     "picture": "process",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1061,7 +1061,7 @@
     {
      "short": "SEAM",
      "title": "10. The Seam",
-     "picture": "frontis",
+     "picture": "seam",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1084,7 +1084,7 @@
     {
      "short": "LENS",
      "title": "11. The Lens",
-     "picture": "frontis",
+     "picture": "lens",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1101,7 +1101,7 @@
     {
      "short": "FIELD",
      "title": "12. The Field",
-     "picture": "frontis",
+     "picture": "field",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1118,7 +1118,7 @@
     {
      "short": "WITCHING",
      "title": "13. The Witching Hour",
-     "picture": "frontis",
+     "picture": "candle",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1160,7 +1160,7 @@
     {
      "short": "LAST WORD",
      "title": "As Below, So Above",
-     "picture": "frontis",
+     "picture": "lastword",
      "frames": 1,
      "caption": "",
      "paragraphs": [

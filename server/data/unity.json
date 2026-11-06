@@ -370,7 +370,7 @@
     {
      "short": "THE VERB",
      "title": "We Are the Verb",
-     "picture": "frontis",
+     "picture": "verb",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -469,7 +469,7 @@
     {
      "short": "CIRCLE",
      "title": "The Circle",
-     "picture": "frontis",
+     "picture": "circle",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -731,7 +731,7 @@
     {
      "short": "THE HAND",
      "title": "The Hand",
-     "picture": "frontis",
+     "picture": "hand",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -775,7 +775,7 @@
     {
      "short": "OLD WORDS",
      "title": "The Old Words",
-     "picture": "frontis",
+     "picture": "sympathy",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -809,7 +809,7 @@
     {
      "short": "BOTH WAYS",
      "title": "It Runs Both Ways",
-     "picture": "frontis",
+     "picture": "bothways",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -861,7 +861,7 @@
     {
      "short": "VOWS",
      "title": "Vows",
-     "picture": "frontis",
+     "picture": "vows",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -882,7 +882,7 @@
     {
      "short": "GRAMMAR",
      "title": "Grammar",
-     "picture": "frontis",
+     "picture": "grammar",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -899,7 +899,7 @@
     {
      "short": "PHILOSOPHY",
      "title": "The Old Words",
-     "picture": "frontis",
+     "picture": "metals",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -951,7 +951,7 @@
     {
      "short": "AWAKENING",
      "title": "1. The Awakening",
-     "picture": "frontis",
+     "picture": "awakening",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -968,7 +968,7 @@
     {
      "short": "CONTRAST",
      "title": "2. The Contrast",
-     "picture": "frontis",
+     "picture": "contrast",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -985,7 +985,7 @@
     {
      "short": "ROOM",
      "title": "3. The Room",
-     "picture": "frontis",
+     "picture": "room",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1002,7 +1002,7 @@
     {
      "short": "THE PULL",
      "title": "Three and a Half. The Pull",
-     "picture": "frontis",
+     "picture": "pull",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1019,7 +1019,7 @@
     {
      "short": "MIRROR",
      "title": "4. The Mirror",
-     "picture": "frontis",
+     "picture": "mirror",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1042,7 +1042,7 @@
     {
      "short": "PATTERN",
      "title": "5. The Pattern",
-     "picture": "frontis",
+     "picture": "pattern",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1059,7 +1059,7 @@
     {
      "short": "RETURN",
      "title": "6. The Return",
-     "picture": "frontis",
+     "picture": "return",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1076,7 +1076,7 @@
     {
      "short": "SMALL HAND",
      "title": "7. The Small Hand",
-     "picture": "frontis",
+     "picture": "smallhand",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1093,7 +1093,7 @@
     {
      "short": "GREAT HAND",
      "title": "8. The Great Hand",
-     "picture": "frontis",
+     "picture": "greathand",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1110,7 +1110,7 @@
     {
      "short": "PROCESS",
      "title": "9. The Process",
-     "picture": "frontis",
+     "picture": "process",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1127,7 +1127,7 @@
     {
      "short": "SEAM",
      "title": "10. The Seam",
-     "picture": "frontis",
+     "picture": "seam",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1150,7 +1150,7 @@
     {
      "short": "LENS",
      "title": "11. The Lens",
-     "picture": "frontis",
+     "picture": "lens",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1167,7 +1167,7 @@
     {
      "short": "FIELD",
      "title": "12. The Field",
-     "picture": "frontis",
+     "picture": "field",
      "frames": 1,
      "caption": "",
      "paragraphs": [
@@ -1226,7 +1226,7 @@
     {
      "short": "LAST WORD",
      "title": "As Above, So Below, So One",
-     "picture": "frontis",
+     "picture": "lastwordone",
      "frames": 1,
      "caption": "",
      "paragraphs": [

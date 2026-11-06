@@ -16,6 +16,7 @@
 import type { Life } from "./life.js";
 import type { Axis, Feelings } from "./feelings.js";
 import facesJson from "../data/faces.json" with { type: "json" };
+import mouthsFoundJson from "../data/mouths.found.json" with { type: "json" };   // C-303
 
 export type Shade = { sat: number; val: number; tint: [number, number, number]; mix: number };
 export type Pose = { dy: number; squash: number; bob: number; still: boolean; shake: boolean; girth?: number };   // C-266: girth, its width about its middle (care.ts)
@@ -117,9 +118,15 @@ export function mouthPatch(face: Face, e: Expression): Patch[] {
 }
 // C-303: a species' open mouth as patches on its 64px front picture, for a host that draws them over the picture itself
 // (the app's speaking overlay, any species of the INDEX -- not only a party slot); null where nobody has found its mouth
+// A daemon whose face a person has checked (faces.json) keeps to that -- its mouth, or none if they chose none. For the
+// rest, a mouth FOUND by a tool and accepted by eye (data/mouths.found.json, tools/mouths_found.py): for this overlay
+// only -- the boards, the BOX-3 and a party slot's picture draw checked faces alone.
+const FOUND = (mouthsFoundJson as unknown as { mouths: Record<string, [number, number, number, number]> }).mouths;
 export function openMouthOf(frontArt: string | undefined | null): Patch[] | null {
-  const f = faceOf(frontArt?.split("/").pop()?.replace("_front.png", ""));
-  return f?.mouth ? mouthPatch(f, EXPRESSIONS.awake) : null;
+  const stem = frontArt?.split("/").pop()?.replace("_front.png", ""), f = faceOf(stem);
+  if (f) return f.mouth ? mouthPatch(f, EXPRESSIONS.awake) : null;
+  const found = stem ? FOUND[stem] : undefined;
+  return found ? mouthPatch({ eyes: [], fill: 1, line: 5, mouth: found }, EXPRESSIONS.awake) : null;
 }
 
 // A colour in an expression's shade: saturation and brightness scaled, then mixed toward the tint. The boards do the

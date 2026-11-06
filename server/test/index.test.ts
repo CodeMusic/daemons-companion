@@ -4,6 +4,9 @@ import marginsJson from "../data/margins.json" with { type: "json" };
 import { readIndex } from "../src/save/index.js";
 import { expFor, levelFromExp } from "../src/save/growth.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
+import facesJson from "../data/faces.json" with { type: "json" };
+import foundJson from "../data/mouths.found.json" with { type: "json" };
+import { openMouthOf } from "../src/expressions.js";
 
 const P = profileJson;
 const M = (marginsJson as any).margins;
@@ -74,5 +77,21 @@ describe("the save's INDEX (C-24)", () => {
     const ix = readIndex(save({ opus: true, gender: 1, seen: [1, 16], bound: [1, 16], party: [mon(1, 20, 5), mon(16, 20, 5)] }), "CONTENT");
     expect(ix.entries[0].margin!.text).toBe(M["1"].instinctCarried);
     expect(ix.entries[1].margin!.text).toBe(M["16"].carried);      // PACKET has no second voice
+  });
+});
+
+describe("a mouth for the speaking overlay (C-303)", () => {
+  it("keeps to a checked face, mouth or none, and takes a found mouth only for a daemon nobody has checked", () => {
+    expect(openMouthOf("gfx/daemons/artsai_front.png")).toBeNull();            // checked, and given no mouth: none
+    expect(openMouthOf("gfx/daemons/archiver_front.png")![0]).toMatchObject({ x: 22, y: 30, w: 2 });   // checked
+    expect(openMouthOf("gfx/daemons/overloaded_front.png")![0]).toMatchObject({ x: 31, y: 42, w: 3, h: 2 });   // found
+    expect(openMouthOf("gfx/daemons/rovercub_front.png")).toBeNull();          // neither: it moves a little instead
+  });
+  it("holds no found mouth for a daemon whose face a person has checked, and every box inside the sprite", () => {
+    const found = (foundJson as any).mouths as Record<string, number[]>;
+    expect(Object.keys(found).filter((k) => k in (facesJson as object))).toEqual([]);
+    for (const [x, y, w, h] of Object.values(found)) {
+      expect(x >= 0 && y >= 0 && w >= 1 && h >= 1 && x + w <= 64 && y + h + 1 <= 64).toBe(true);
+    }
   });
 });

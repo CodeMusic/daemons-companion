@@ -1,0 +1,611 @@
+{
+ "_about": "C-303: mouths FOUND by a tool (tools/mouths_found.py) and accepted by eye on sheets by the session that built the speaking overlay, 2026-11-06 -- NOT checked by a person, so they are kept apart from faces.json, whose eyes and mouths the user has confirmed. Only the app's speaking overlay draws these (expressions.ts openMouthOf); the boards, the BOX-3 and a party slot's own picture keep to faces.json. x, y, w, h in the 64px front sprite. Strike any that is wrong; a daemon without one moves a little as it speaks instead.",
+ "mouths": {
+  "abandon": [
+   29,
+   40,
+   1,
+   1
+  ],
+  "acquire": [
+   30,
+   35,
+   1,
+   1
+  ],
+  "alluvium": [
+   30,
+   30,
+   4,
+   1
+  ],
+  "anode": [
+   30,
+   30,
+   2,
+   1
+  ],
+  "anomaly": [
+   31,
+   38,
+   2,
+   1
+  ],
+  "badseed": [
+   30,
+   37,
+   3,
+   1
+  ],
+  "bifurcate": [
+   28,
+   40,
+   3,
+   1
+  ],
+  "bigendian": [
+   31,
+   21,
+   3,
+   1
+  ],
+  "blocking": [
+   29,
+   32,
+   3,
+   1
+  ],
+  "bootstrap": [
+   30,
+   43,
+   2,
+   1
+  ],
+  "branch": [
+   30,
+   40,
+   1,
+   1
+  ],
+  "bristle": [
+   21,
+   39,
+   4,
+   1
+  ],
+  "buoyancy": [
+   15,
+   37,
+   2,
+   1
+  ],
+  "burstmode": [
+   31,
+   35,
+   2,
+   1
+  ],
+  "cadence": [
+   31,
+   25,
+   3,
+   1
+  ],
+  "capsule": [
+   31,
+   41,
+   5,
+   1
+  ],
+  "cinder": [
+   24,
+   29,
+   6,
+   1
+  ],
+  "clinging": [
+   29,
+   25,
+   2,
+   1
+  ],
+  "coldread": [
+   29,
+   27,
+   6,
+   1
+  ],
+  "corefile": [
+   31,
+   33,
+   2,
+   1
+  ],
+  "dangling": [
+   29,
+   35,
+   3,
+   1
+  ],
+  "deduction": [
+   29,
+   26,
+   6,
+   1
+  ],
+  "defunct": [
+   30,
+   31,
+   4,
+   1
+  ],
+  "detour": [
+   17,
+   26,
+   3,
+   1
+  ],
+  "deucalion": [
+   26,
+   35,
+   3,
+   1
+  ],
+  "elpis": [
+   25,
+   30,
+   1,
+   1
+  ],
+  "ensemble": [
+   31,
+   36,
+   2,
+   1
+  ],
+  "epiphany": [
+   31,
+   39,
+   2,
+   1
+  ],
+  "fakeroot": [
+   30,
+   26,
+   1,
+   1
+  ],
+  "fork": [
+   30,
+   35,
+   4,
+   1
+  ],
+  "gathering": [
+   29,
+   24,
+   6,
+   1
+  ],
+  "gestalt": [
+   40,
+   38,
+   4,
+   1
+  ],
+  "greedy": [
+   28,
+   39,
+   8,
+   1
+  ],
+  "guardian": [
+   42,
+   28,
+   2,
+   1
+  ],
+  "gutfeel": [
+   31,
+   27,
+   2,
+   1
+  ],
+  "handshake": [
+   35,
+   33,
+   4,
+   1
+  ],
+  "hashseed": [
+   16,
+   41,
+   4,
+   1
+  ],
+  "hauntproc": [
+   30,
+   30,
+   4,
+   1
+  ],
+  "heap": [
+   34,
+   29,
+   3,
+   1
+  ],
+  "heartbeat": [
+   30,
+   24,
+   2,
+   1
+  ],
+  "heatsink": [
+   13,
+   26,
+   6,
+   1
+  ],
+  "hibernate": [
+   30,
+   24,
+   5,
+   1
+  ],
+  "hoarding": [
+   19,
+   37,
+   2,
+   1
+  ],
+  "huddle": [
+   20,
+   38,
+   4,
+   1
+  ],
+  "illusion": [
+   29,
+   27,
+   1,
+   1
+  ],
+  "imitation": [
+   21,
+   35,
+   2,
+   1
+  ],
+  "indexer": [
+   31,
+   33,
+   2,
+   1
+  ],
+  "inference": [
+   27,
+   31,
+   2,
+   1
+  ],
+  "keeper": [
+   30,
+   36,
+   4,
+   1
+  ],
+  "kernel": [
+   30,
+   38,
+   2,
+   1
+  ],
+  "lockfile": [
+   30,
+   26,
+   4,
+   1
+  ],
+  "lockup": [
+   29,
+   39,
+   4,
+   1
+  ],
+  "locus": [
+   24,
+   39,
+   4,
+   1
+  ],
+  "longjump": [
+   26,
+   38,
+   4,
+   1
+  ],
+  "loopback": [
+   16,
+   29,
+   4,
+   1
+  ],
+  "lowbit": [
+   30,
+   41,
+   2,
+   1
+  ],
+  "mime": [
+   29,
+   23,
+   6,
+   1
+  ],
+  "mock": [
+   30,
+   40,
+   4,
+   1
+  ],
+  "multicast": [
+   30,
+   39,
+   4,
+   1
+  ],
+  "overlay": [
+   33,
+   36,
+   1,
+   1
+  ],
+  "overloaded": [
+   31,
+   42,
+   3,
+   1
+  ],
+  "penguin": [
+   35,
+   22,
+   5,
+   1
+  ],
+  "poll": [
+   32,
+   32,
+   2,
+   1
+  ],
+  "postulate": [
+   30,
+   23,
+   4,
+   1
+  ],
+  "predictor": [
+   31,
+   38,
+   2,
+   1
+  ],
+  "preempt": [
+   29,
+   25,
+   4,
+   1
+  ],
+  "proof": [
+   30,
+   25,
+   2,
+   1
+  ],
+  "quota": [
+   29,
+   32,
+   2,
+   1
+  ],
+  "rankle": [
+   29,
+   36,
+   6,
+   1
+  ],
+  "reaper": [
+   30,
+   28,
+   2,
+   1
+  ],
+  "repay": [
+   29,
+   31,
+   4,
+   1
+  ],
+  "resentment": [
+   28,
+   37,
+   8,
+   1
+  ],
+  "resident": [
+   31,
+   44,
+   1,
+   1
+  ],
+  "roverbyte": [
+   24,
+   31,
+   5,
+   1
+  ],
+  "rubric": [
+   28,
+   35,
+   4,
+   1
+  ],
+  "runoff": [
+   28,
+   30,
+   6,
+   1
+  ],
+  "savestate": [
+   31,
+   30,
+   3,
+   1
+  ],
+  "sentry": [
+   24,
+   32,
+   2,
+   1
+  ],
+  "slurp": [
+   19,
+   32,
+   2,
+   1
+  ],
+  "spaghetti": [
+   29,
+   27,
+   1,
+   1
+  ],
+  "sprawl": [
+   30,
+   43,
+   4,
+   1
+  ],
+  "spyware": [
+   22,
+   34,
+   3,
+   1
+  ],
+  "stack": [
+   26,
+   33,
+   2,
+   1
+  ],
+  "stalemate": [
+   22,
+   23,
+   2,
+   1
+  ],
+  "standby": [
+   31,
+   34,
+   2,
+   1
+  ],
+  "startle": [
+   29,
+   42,
+   1,
+   1
+  ],
+  "static": [
+   22,
+   26,
+   2,
+   1
+  ],
+  "stub": [
+   18,
+   37,
+   1,
+   1
+  ],
+  "stump": [
+   27,
+   34,
+   3,
+   1
+  ],
+  "substrate": [
+   27,
+   43,
+   8,
+   1
+  ],
+  "tappoint": [
+   27,
+   28,
+   4,
+   1
+  ],
+  "tempo": [
+   29,
+   35,
+   6,
+   1
+  ],
+  "tension": [
+   32,
+   23,
+   1,
+   1
+  ],
+  "tokenring": [
+   19,
+   34,
+   5,
+   1
+  ],
+  "tracer": [
+   31,
+   30,
+   2,
+   1
+  ],
+  "tracker": [
+   21,
+   32,
+   1,
+   1
+  ],
+  "uptime": [
+   28,
+   23,
+   2,
+   1
+  ],
+  "valence": [
+   24,
+   33,
+   2,
+   1
+  ],
+  "vigilance": [
+   30,
+   37,
+   3,
+   1
+  ],
+  "whim": [
+   30,
+   36,
+   2,
+   1
+  ],
+  "wiretap": [
+   29,
+   23,
+   2,
+   1
+  ]
+ }
+}

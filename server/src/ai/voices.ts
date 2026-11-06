@@ -65,10 +65,22 @@ export function ownVoice(species: number | null | undefined): string {
   const h = HABIT[i % 8]; i = Math.floor(i / 8);
   const t = TEXTURE[i % 8]; i = Math.floor(i / 8);
   const pa = PACE[i % 4]; i = Math.floor(i / 4);
-  return `Its own voice: ${t}, ${PITCH[i % 5]}; it ${pa} and ${h}.`;
+  return `A ${t} voice, ${PITCH[i % 5]}; it ${pa} and ${h}.`;
 }
 
-// The recipe said with each line: a trainer's own words if written, else its type's voice, its category, its own, its mood
+// The voices' generation (C-303; the user, 2026-11-06: a kept voice is made again "in case a newer version is
+// generated after future changes"). Bump VOICE_GENERATION when the recipes here, the INDEX's or the entry's voice
+// (ai/tiinyfirst.ts) change; the trainer's own bump (the store's voice.generation) is the part after the point, so
+// MAKE THE VOICES AGAIN in the app needs no new build. A phone keeps a voice under the generation it was made in and
+// forgets every one it kept when the generation it is told differs.
+//   1 the first voices  2 each species a voice of its own (2026-11-05)  3 the species' own traits said first, and the
+//   device's voice for the record (2026-11-06)
+export const VOICE_GENERATION = 3;
+export const voiceGeneration = (get: (k: string) => string | null | undefined) =>
+  `${VOICE_GENERATION}.${Math.max(0, Number(get("voice.generation")) || 0)}`;
+
+// The recipe said with each line: a trainer's own words if written, else its own voice first (a voice-design model
+// weighs what it is told first most: pitch and texture before character), then its type's voice, its category, its mood
 export function voiceRecipe(d: VoiceOf, feelings?: Feelings | null, own?: string | null): string {
   const mood = moodOfVoice(feelings);
   if (own && own.trim()) return [own.trim(), mood].filter(Boolean).join(" ");
@@ -77,5 +89,6 @@ export function voiceRecipe(d: VoiceOf, feelings?: Feelings | null, own?: string
   const second = types[1] && TYPE_VOICE[types[1]] ? `, with a touch of ${TYPE_VOICE[types[1]].replace(/^an? /, "").split(",")[0]}` : "";
   const c = d.category?.toLowerCase(), cat = c ? ` It is ${/^[aeiou]/.test(c) ? "an" : "a"} ${c} creature.` : "";
   const mine = ownVoice(d.species);
-  return `${base}${second}.${cat}${mine ? " " + mine : ""} Not a human adult: a small living creature.${mood ? " " + mood : ""}`;
+  const kind = mine ? `${mine} Like all of its kind it has ${base}${second}.` : `${base}${second}.`;
+  return `${kind}${cat} Not a human adult: a small living creature.${mood ? " " + mood : ""}`;
 }

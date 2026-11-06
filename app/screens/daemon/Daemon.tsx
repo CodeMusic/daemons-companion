@@ -408,7 +408,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
           {ON_PHONE ? <Action label={reading ? "Reading…" : "Read aloud"} onPress={() => { if (!telling.told) readAloud(open.species); }} ink={ink} /> : null}
           {telling.failed ? <Small color="$color8">{telling.failed}</Small> : null}
           {telling.told?.species === open.species ? (
-            <OwnVoiceOverlay species={open.species} art={`/art/species/${open.species}.png`} mouth={open.mouth} phase={telling.told.phase}
+            <OwnVoiceOverlay species={open.species} art={`/art/species/${open.species}.png`} name={open.name} mouth={open.mouth} phase={telling.told.phase}
                              onStop={telling.stop} onGone={telling.gone} />
           ) : null}
         </Card>

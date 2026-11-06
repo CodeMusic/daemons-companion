@@ -71,39 +71,54 @@ export function useOwnVoice() {
   return { told, failed, speak, stop, gone: () => setTold(null) };
 }
 
-// The sprite on an opened card, when the daemon has something to say of itself: it shimmers a little, and a tap wakes it
+// The sprite on an opened card, when the daemon has something to say of itself: it shimmers, and a play mark comes up on
+// it so the tap is plainly offered (the user, 2026-11-06: "it should shimmer and reveal a play button so u know u can tap
+// on it"). The mark is drawn, not an icon: a dark ring with a light triangle, breathing with the shimmer.
 export function ShimmerArt({ path, size, on, onPress }: { path: string; size: number; on: boolean; onPress: () => void }) {
   const glow = useRef(new Animated.Value(0)).current;
+  const came = useRef(new Animated.Value(0)).current;       // the play mark arriving, once, when the card opens
   useEffect(() => {
-    if (!on) { glow.setValue(0); return; }
+    if (!on) { glow.setValue(0); came.setValue(0); return; }
+    Animated.timing(came, { toValue: 1, duration: 360, delay: 120, easing: Easing.out(Easing.back(1.6)), useNativeDriver: NATIVE }).start();
     const loop = Animated.loop(Animated.sequence([
-      Animated.timing(glow, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE }),
-      Animated.timing(glow, { toValue: 0, duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE })]));
+      Animated.timing(glow, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE }),
+      Animated.timing(glow, { toValue: 0, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: NATIVE })]));
     loop.start();
     return () => loop.stop();
-  }, [on, glow]);
+  }, [on, glow, came]);
   if (!on) return <Art path={path} size={size} />;
+  const mark = Math.max(22, Math.round(size * 0.42));
   return (
-    <YStack role="button" aria-label="Hear it tell of itself" cursor="pointer" width={size} height={size}
+    <YStack role="button" aria-label="Hear it tell of itself" cursor="pointer" width={size} height={size} position="relative"
             onPress={(e: any) => { e?.stopPropagation?.(); onPress(); }}>
-      <Animated.View style={{ width: size, height: size, opacity: glow.interpolate({ inputRange: [0, 1], outputRange: [1, 0.78] }),
-                              transform: [{ scale: glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }) }] }}>
+      <Animated.View style={{ width: size, height: size, opacity: glow.interpolate({ inputRange: [0, 1], outputRange: [1, 0.7] }),
+                              transform: [{ scale: glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] }) }] }}>
         <Art path={path} size={size} />
       </Animated.View>
-      {/* a small light crossing it, corner to corner */}
-      <Animated.View style={{ pointerEvents: "none", position: "absolute", top: 0, left: 0, width: size * 0.22, height: size, backgroundColor: "#ffffff",
-                              opacity: glow.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0.16, 0] }),
-                              transform: [{ translateX: glow.interpolate({ inputRange: [0, 1], outputRange: [-size * 0.1, size * 0.9] }) }, { skewX: "-18deg" }] }} />
+      {/* a light crossing it, corner to corner */}
+      <Animated.View style={{ pointerEvents: "none", position: "absolute", top: 0, left: 0, width: size * 0.26, height: size, backgroundColor: "#ffffff",
+                              opacity: glow.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0.38, 0] }),
+                              transform: [{ translateX: glow.interpolate({ inputRange: [0, 1], outputRange: [-size * 0.15, size * 0.95] }) }, { skewX: "-18deg" }] }} />
+      {/* the play mark, at its foot, right */}
+      <Animated.View style={{ pointerEvents: "none", position: "absolute", right: -2, bottom: -2, width: mark, height: mark, borderRadius: mark / 2,
+                              backgroundColor: "rgba(20,20,24,0.82)", borderWidth: 1.5, borderColor: "#ffffff",
+                              alignItems: "center", justifyContent: "center",
+                              opacity: came,
+                              transform: [{ scale: Animated.multiply(came, glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] })) }] }}>
+        <View style={{ width: 0, height: 0, marginLeft: Math.round(mark * 0.12), borderTopWidth: mark * 0.2, borderBottomWidth: mark * 0.2, borderLeftWidth: mark * 0.34,
+                       borderTopColor: "transparent", borderBottomColor: "transparent", borderLeftColor: "#ffffff" }} />
+      </Animated.View>
     </YStack>
   );
 }
 
 const STILL = { dy: 0, squash: 1, bob: 1, still: true, shake: false } as const;
 
-// The daemon over its card: its den as large as the card, the daemon in it. Laid as the card's last child; the card
-// needs nothing but to be the overlay's parent. A tap anywhere on it lets it go.
-export function OwnVoiceOverlay({ species, art, mouth, phase, failed, onStop, onGone }:
-  { species: number; art: string; mouth?: Patch[] | null; phase: "thinking" | "speaking" | "leaving"; failed?: string;
+// The daemon over its card: its den as large as the card, the daemon in it, its name kept at the top (the user,
+// 2026-11-06: "while expanded and thinking/talking it should still show the daemons name"). Laid as the card's last
+// child; the card needs nothing but to be the overlay's parent. A tap anywhere on it lets it go.
+export function OwnVoiceOverlay({ species, art, name, mouth, phase, failed, onStop, onGone }:
+  { species: number; art: string; name?: string; mouth?: Patch[] | null; phase: "thinking" | "speaking" | "leaving"; failed?: string;
     onStop: () => void; onGone: () => void }) {
   const grow = useRef(new Animated.Value(0)).current;
   const [h, setH] = useState(0);
@@ -128,13 +143,18 @@ export function OwnVoiceOverlay({ species, art, mouth, phase, failed, onStop, on
                            transform: [{ scale: grow.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }] } as any]}>
       <YStack flex={1} role="button" aria-label="Hush" cursor="pointer" onPress={(e: any) => { e?.stopPropagation?.(); onStop(); }}>
         {h ? <DenStage species={species} art={<Art path={art} size={side} />} asleep={false} hop={0} height={h} expression={drawn} /> : null}
-        {phase === "thinking" || failed ? (
-          <View style={{ pointerEvents: "none", position: "absolute", left: 0, right: 0, top: 10, alignItems: "center" }}>
+        <View style={{ pointerEvents: "none", position: "absolute", left: 10, right: 10, top: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          {name ? (
+            <View style={{ paddingHorizontal: 9, paddingVertical: 4, borderRadius: 3, backgroundColor: "rgba(20,20,24,0.62)" }}>
+              <Text allowFontScaling={false} style={{ fontFamily: MONO, fontSize: 13, fontWeight: "700", letterSpacing: 1.5, color: "#ffffff" }}>{name}</Text>
+            </View>
+          ) : <View />}
+          {phase === "thinking" || failed ? (
             <Text allowFontScaling={false} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: 1.5, color: "#ffffff", opacity: 0.85 }}>
               {failed || "THINKING…"}
             </Text>
-          </View>
-        ) : null}
+          ) : null}
+        </View>
       </YStack>
     </Animated.View>
   );

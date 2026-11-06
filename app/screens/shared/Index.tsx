@@ -144,7 +144,8 @@ export function IndexScreen({ ink }: { ink: string }) {
             </YStack>
           ) : null}
           {own.told?.species === e.species && e.art ? (
-            <OwnVoiceOverlay species={e.species} art={e.art} mouth={e.mouth} phase={own.told.phase} onStop={own.stop} onGone={own.gone} />
+            <OwnVoiceOverlay species={e.species} art={e.art} name={e.name} mouth={e.mouth} phase={own.told.phase}
+                             onStop={own.stop} onGone={own.gone} />
           ) : null}
         </Card>
       ))}

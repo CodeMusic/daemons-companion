@@ -151,3 +151,45 @@ describe("talk that never makes a device wait (C-180)", () => {
     expect((await fetch(base + "/api/device/talk/nothing-like-it")).status).toBe(404);
   });
 });
+
+// C-303 (the user, 2026-11-06): the phone keeps only the TRUE voice. The hub marks each voice `final` -- the Tiiny's, in
+// the daemon's own recipe -- and a fallback not; and it names the voices' generation, so a phone's kept voices are made
+// again when the recipes or the voice model change (ai/voices.ts VOICE_GENERATION, or MAKE THE VOICES AGAIN).
+describe("the true voice, and the voices' generation (C-303)", () => {
+  let tiiny: import("node:http").Server, tiinyBase = "", speechOk = true;
+  const wav = Buffer.concat([Buffer.from("RIFF"), Buffer.alloc(40), Buffer.from([1, 2, 3])]);
+  beforeAll(async () => {
+    const { createServer } = await import("node:http");
+    tiiny = createServer((req, res) => {
+      if (req.url === "/v1/models") { res.setHeader("content-type", "application/json"); return res.end(JSON.stringify({ data: [{ id: "tiiny-voice" }, { id: "tiiny-9b" }] })); }
+      if (req.url === "/v1/audio/speech") { if (!speechOk) { res.statusCode = 503; return res.end(); } res.setHeader("content-type", "audio/wav"); return res.end(wav); }
+      res.statusCode = 404; res.end();
+    });
+    await new Promise<void>((r) => tiiny.listen(0, "127.0.0.1", () => r()));
+    tiinyBase = `http://127.0.0.1:${(tiiny.address() as AddressInfo).port}/v1`;
+  });
+  afterAll(async () => { await post("/api/talk/settings", { tiiny: { url: "" } }); tiiny.close(); });   // the tests after see no Tiiny
+
+  it("marks the Tiiny's voice final, in the voices' generation, and a fallback not", async () => {
+    const t = await post("/api/talk/settings", { tiiny: { url: tiinyBase, tts: "tiiny-voice", model: "tiiny-9b" } });
+    expect(t.health.tiiny.ok).toBe(true);
+    expect(t.voices).toBe("3.0");
+    const r = await post("/api/ai/speak", { species: 1, own: true });
+    expect(r.provider).toBe("tiiny:tiiny-voice");
+    expect(r.final).toBe(true);
+    expect(r.generation).toBe("3.0");
+    expect(typeof r.audioBase64).toBe("string");
+    speechOk = false;                                       // the Tiiny's voice away: whatever answers instead is not the voice meant
+    const f = await post("/api/ai/speak", { species: 1, own: true });
+    expect(f.final).toBe(false);
+    expect(f.generation).toBe("3.0");
+    speechOk = true;
+  });
+
+  it("tells the generation on its own, and MAKE THE VOICES AGAIN moves it", async () => {
+    expect((await get("/api/voices/generation")).generation).toBe("3.0");
+    const t = await post("/api/talk/settings", { voicesAgain: true });
+    expect(t.voices).toBe("3.1");
+    expect((await post("/api/ai/speak", { species: 1, own: true })).generation).toBe("3.1");
+  });
+});

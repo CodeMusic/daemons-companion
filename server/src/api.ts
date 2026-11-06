@@ -58,7 +58,7 @@ import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
 import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
-import { voiceRecipe } from "./ai/voices.js";   // C-251
+import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
@@ -1152,8 +1152,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
       const talkView = async () => ({ provider: talkProvider(), first: talkFirstOf(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "",
-                                      tiiny: tiinyView((k) => store.getSetting(k)) });
+                                      tiiny: tiinyView((k) => store.getSetting(k)), voices: voiceGeneration((k) => store.getSetting(k)) });
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
+      // C-303: the voices' generation (ai/voices.ts) -- a phone keeps its voices under it, and forgets them when it moves
+      if (req.method === "GET" && path === "/api/voices/generation") return send(res, 200, { generation: voiceGeneration((k) => store.getSetting(k)) });
       // C-252: the daemon's self, exactly as a model is given it (the mind portal's SELF, C-254) -- this machine's own
       if (req.method === "GET" && path === "/api/self") {
         const length = (["short", "day", "full"] as const).find((l) => l === url.searchParams.get("length")) ?? "day";
@@ -1194,6 +1196,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
         if (b.first !== undefined) setTalkFirst(store, b.first);   // C-211
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);
+        if (b.voicesAgain === true)                            // C-303: MAKE THE VOICES AGAIN -- every phone forgets the voices it kept
+          store.setSetting("voice.generation", String((Number(store.getSetting("voice.generation")) || 0) + 1));
         if (typeof b.moduleAddresses === "string") {          // a board's address, given by hand (ai/discover.ts), looked for now
           const list = b.moduleAddresses.split(",").map((a: string) => a.trim()).filter(Boolean);
           if (list.length > 8 || list.some((a: string) => !moduleUrl(a))) return send(res, 400, { error: "addresses like 10.0.0.40, or http://10.0.0.40:8000" });
@@ -1439,11 +1443,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         try { const v = await house.voice(text, recipe); return v && v.audio.length ? { audioBase64: Buffer.from(v.audio).toString("base64"), audioMime: "audio/wav", provider: v.provider } : null; }
         catch { return null; }
       };
-      // recipe (C-303): a daemon's own voice for what it says of itself; without one, the INDEX's voice
+      // recipe (C-303): a daemon's own voice for what it says of itself; without one, the INDEX's voice.
+      // `final` (the user, 2026-11-06: a voice that "falls back to hub local" is not kept on the phone, "that way if I
+      // retry it will try to make the true voice"): true when the voice is the one meant -- the Tiiny's, the only one that
+      // takes a recipe; or, for a line in no recipe, whichever index.voice names when it answered. A fallback is not
+      // final, and the phone plays it once and asks again next time. `generation` tells the phone which voices it kept.
+      const generation = voiceGeneration((k) => store.getSetting(k));
       const readAloud = async (text: string, recipe?: string): Promise<Record<string, unknown>> => {
-        if (indexVoice() === "module" || tiinyNow()?.at.tts) return (await fromModule(text, recipe)) ?? n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });   // C-249: the Tiiny's voice first
-        const r = await n8n(ecfg, "daemon/voice", { text: sayable(text), voice: "index" });
-        return r.error || !r.audioBase64 ? (await fromModule(text, recipe)) ?? r : r;
+        const tiiny = !!tiinyNow()?.at.tts, line = { text: sayable(text), voice: "index" };
+        const isFinal = (r: Record<string, unknown>, first: boolean) =>
+          String(r.provider ?? "").startsWith("tiiny:") || (!recipe && first && !tiiny);
+        if (indexVoice() === "module" || tiiny) {              // C-249: the Tiiny's voice first
+          const m = await fromModule(text, recipe);
+          if (m) return { ...m, final: isFinal(m, true), generation };
+          const r = await n8n(ecfg, "daemon/voice", line);
+          return { ...r, final: false, generation };
+        }
+        const r = await n8n(ecfg, "daemon/voice", line);
+        if (!r.error && r.audioBase64) return { ...r, final: !recipe, generation };
+        const m = await fromModule(text, recipe);
+        return m ? { ...m, final: false, generation } : r;
       };
       // who is talking: the device by its own name (C-80), else the phone, else this machine
       const who = validDeviceId(deviceId) ? deviceId : phone ? "phone" : "here";

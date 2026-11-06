@@ -36,7 +36,10 @@ export type Life = { mood: number; word: string; fed: { today: number; due: numb
 
 // C-66, C-65: the daemon's voice on the phone. Its answer (and an INDEX entry read aloud) comes back as mp3 in base64 --
 // through the relay too, which carries only JSON -- so it is written to the cache and played from there.
-export type Spoken = { answer?: string | null; heard?: string | null; provider?: string | null; error?: string | null; audioBase64?: string | null };
+// C-303: `final` says the voice is the one meant (the Tiiny's); a fallback is played once and never kept on the phone.
+// `generation` is the voices' generation the hub made it under (platform/voiceFile.ts keeps voices by it).
+export type Spoken = { answer?: string | null; heard?: string | null; provider?: string | null; error?: string | null; audioBase64?: string | null;
+                       final?: boolean; generation?: string };
 
 // C-60: who the daemon has met nearby (C-15). Each meeting: the species as the INDEX draws it, when, and whether a SYNC
 // has written it into the save yet. Below, quietly, the user's own check that the radios listen: the board's last

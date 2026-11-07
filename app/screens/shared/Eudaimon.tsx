@@ -14,9 +14,11 @@ import { Art, Small } from "../../ui/ui";
 import { ReadAloud } from "../../ui/readAloud";
 import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
 import { Listen } from "../../ui/bookAudio";   // C-299: its recording, sealed with its own key, from its BLESSING
+import { Toned, toneHex, tonePalette, type Tone } from "../../ui/tone";   // C-304: the mended book's lens
+import type { BookWithArt } from "../../ui/bookPicture";
 
 export type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer" };
-export type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
+export type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[]; book?: BookWithArt };
 export type EudaimonT = { held: boolean; how?: string; title?: string; subtitle?: string; draft?: boolean; cover?: string; observer?: string;
                           sections?: { label: string; heading: string; entries: Entry[] }[] };
 // the dawn: a pale page, warm ink, the creator's hour's gold (Witching.tsx DawnLight) for the book's own marks; its inscriptions
@@ -79,15 +81,23 @@ export function EudaimonBook({ b }: { b: EudaimonT }) {
 }
 
 // the open book the dawn half and the mended book share (C-299): its cover, what goes under it, its contents, then each
-// entry -- its picture, its words; an inscription in the tablet's green, sayable on its own; the observer's line set apart
-export function LayerPages({ b, P, green, id, cover, under, picture, rule }: {
+// entry -- its picture, its words; an inscription in the tablet's green, sayable on its own; the observer's line set apart.
+// C-304: the mended book's lens sits on top of every page (top), and each section may be read in a tone (toneFor; null:
+// the contents). The page kept is a section and a place in it, so the same section re-read with other words stays open.
+export function LayerPages({ b, P: P0, green: green0, id, cover, under, picture, rule, top, toneFor }: {
   b: EudaimonT; P: LayerPalette; green: string; id: string; cover: ReactNode; under?: ReactNode;
-  picture: (e: Entry, scale: number) => ReactNode; rule?: (label: string) => ReactNode }) {
-  const flat = (b.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
-  const [at, setTo] = useState<number | null>(null);
+  picture: (e: Entry, scale: number) => ReactNode; rule?: (label: string) => ReactNode;
+  top?: ReactNode; toneFor?: (section: number | null) => Tone }) {
+  const secs = b.sections ?? [];
+  const flat = secs.flatMap((sec, s) => sec.entries.map((e, j) => ({ sec, e, s, j })));
+  const [pos, setPos] = useState<{ s: number; j: number } | null>(null);
   const [w, setW] = useState(0);
-  const setAt = (to: number | null) => { setTo(to); SCREEN.scroller?.scrollTo?.({ y: 0, animated: false }); };
+  const found = pos && secs[pos.s]?.entries.length ? flat.findIndex((f) => f.s === pos.s && f.j === Math.min(pos.j, secs[pos.s].entries.length - 1)) : -1;
+  const at = found >= 0 ? found : null;
+  const setAt = (to: number | null) => { setPos(to === null || !flat[to] ? null : { s: flat[to].s, j: flat[to].j }); SCREEN.scroller?.scrollTo?.({ y: 0, animated: false }); };
   const wide = w >= 560;
+  const tone = toneFor?.(at === null ? null : flat[at].s) ?? null;
+  const P = tonePalette(P0, tone), green = toneHex(green0, tone), tablet = toneHex(EMERALD.hue, tone);
   if (at !== null && flat[at]) {
     const { sec, e } = flat[at];
     const turn = (label: string, to: number | null) => (
@@ -97,10 +107,11 @@ export function LayerPages({ b, P, green, id, cover, under, picture, rule }: {
     return (
       <YStack onLayout={(ev) => setW(ev.nativeEvent.layout.width)} backgroundColor={P.page} borderColor={P.edge} borderWidth={1}
               borderRadius={4} padding={18} gap={12}>
+        {top}
         <Text {...mono} fontSize={11} color={P.faint}>{`${sec.label} · ${sec.heading.toUpperCase()}`}</Text>
         <XStack gap={18} flexDirection={wide ? "row" : "column"} alignItems={wide ? "flex-start" : "center"}>
           <YStack alignItems="center" gap={6} width={wide ? 94 * 3 : undefined}>
-            <YStack backgroundColor={P.boards} padding={8} borderRadius={3}>{picture(e, wide ? 3 : 2)}</YStack>
+            <YStack backgroundColor={P.boards} padding={8} borderRadius={3}><Toned tone={tone}>{picture(e, wide ? 3 : 2)}</Toned></YStack>
             {e.caption ? <Text fontSize={12} lineHeight={17} color={P.faint} textAlign="center">{e.caption}</Text> : null}
           </YStack>
           <YStack width={wide ? Math.max(0, w - 2 * 18 - 94 * 3 - 18) : "100%"} gap={10}>
@@ -108,9 +119,9 @@ export function LayerPages({ b, P, green, id, cover, under, picture, rule }: {
             <YStack height={2} backgroundColor={P.lit} width={48} />
             <ReadAloud id={`${id}-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={P.mark} />
             {e.paragraphs.map((p, i) => p.voice === "inscription" ? (
-              <YStack key={i} gap={2} borderLeftWidth={2} borderColor={EMERALD.hue} paddingLeft={10}>
+              <YStack key={i} gap={2} borderLeftWidth={2} borderColor={tablet} paddingLeft={10}>
                 <Text fontSize={17} lineHeight={26} fontWeight="600" color={green}>{p.text}</Text>
-                <ReadAloud id={`${id}-${at}-${i}`} paragraphs={[p.text]} ink={EMERALD.hue} label="Say it" />
+                <ReadAloud id={`${id}-${at}-${i}`} paragraphs={[p.text]} ink={tablet} label="Say it" />
               </YStack>
             ) : p.voice === "observer" ? (                           // read by someone: the lead daemon's own wording
               <YStack key={i} gap={2} backgroundColor={P.boards} borderRadius={3} padding={10}>
@@ -134,6 +145,7 @@ export function LayerPages({ b, P, green, id, cover, under, picture, rule }: {
   let n = 0;
   return (
     <YStack backgroundColor={P.boards} borderRadius={4} padding={14} gap={14}>
+      {top}
       {cover}
       {under}
       <YStack backgroundColor={P.page} borderColor={P.edge} borderWidth={1} borderRadius={4} padding={16} gap={4}>

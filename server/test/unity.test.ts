@@ -2,7 +2,8 @@
 // preview; eleven sections, BALANCE at the crease after THE FOLDS; its ATTESTATION's observer's line as the lead reads it.
 import { describe, expect, it } from "vitest";
 import unity from "../data/unity.json" with { type: "json" };
-import { readUnity, savedUnity, UNITY_FLAG } from "../src/unity.js";
+import { LENS_DAWN, LENS_NIGHT, readUnity, savedUnity, UNITY_FLAG } from "../src/unity.js";
+import eudaimon from "../data/eudaimon.json" with { type: "json" };
 import { savedEudaimon } from "../src/eudaimon.js";
 import profile from "../data/profile_layout.json" with { type: "json" };
 import { buildSave } from "./build_save.js";
@@ -39,5 +40,28 @@ describe("C-299: THE UNITY BOOK", () => {
     expect(observer("low")).toEqual([raw.readings.low]);
     expect(observer()).toEqual([raw.readings.as_is]);
     expect(JSON.stringify(readUnity(null, true, "good"))).not.toContain("readings");
+  });
+});
+
+// C-304 (DAEMONS T-529, vision 4.40): the lens -- each section re-read in place as either half words it; BALANCE has no other reading
+describe("C-304: THE UNITY BOOK's lens", () => {
+  const labels = (xs: ({ label: string } | null)[]) => xs.map((s) => s?.label ?? null);
+  it("pairs every section but BALANCE with the night half's and the dawn half's, in order", () => {
+    const whole = (unity as any).sections.map((s: any) => s.label);
+    expect(labels(LENS_NIGHT)).toEqual(whole.map((l: string) => l === "BALANCE" ? null : l));
+    // the dawn half names the same ten sections, THE FOLDS read from the other side as THE UNFOLDING
+    expect(labels(LENS_DAWN)).toEqual(whole.map((l: string) => l === "BALANCE" ? null : l === "THE FOLDS" ? "THE UNFOLDING" : l));
+    expect(LENS_NIGHT.filter(Boolean)).toHaveLength(10);
+    expect(LENS_DAWN.filter(Boolean)).toHaveLength(10);
+  });
+  it("comes with the book, its observer's lines as the lead reads them and no readings sent", () => {
+    expect(readUnity(null).lens).toBeUndefined();
+    const b = readUnity(null, true, "low");
+    expect(b.lens!.night).toHaveLength(11);
+    expect(b.lens!.dawn).toHaveLength(11);
+    const raw = (eudaimon as any).sections.flatMap((s: any) => s.entries).flatMap((e: any) => e.paragraphs).find((p: any) => p.voice === "observer");
+    const dawnObserver = b.lens!.dawn.flatMap((s) => s?.entries ?? []).flatMap((e) => e.paragraphs).filter((p) => p.voice === "observer").map((p) => p.text);
+    expect(dawnObserver).toEqual([raw.readings.low]);
+    expect(JSON.stringify(b.lens)).not.toContain("readings");
   });
 });

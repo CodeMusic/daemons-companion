@@ -7,6 +7,11 @@
 // observer's line is the wording the lead daemon's SPIRITS chose (GET /api/unity). Its deck deals "Both as One" only.
 // Its recording is in one voice, leaned neither way, sealed with its own key, read from its ATTESTATION (the user, 2026-11-05). The first time
 // the LIBRARY finds the save mended, the mending plays once on the shelf (Mending, below; app/state/mended.ts).
+// C-304 (DAEMONS T-529, vision 4.40; the user, 2026-11-07: "you should be able to use a lens to see the passages from
+// either of their two forms"): a three-way switch on top of every page -- NIGHT, WHOLE, DAWN -- re-reads the section open
+// in place as the night half words it, as the whole does, or as the dawn half does (GET /api/unity's lens), and the page
+// turns to that half's tone: emerald sepia, full colour, sapphire cyanotype, the tints HALFTONE wears for each half. A
+// section only the whole has (BALANCE) reads whole, in full colour, in every setting. The game turns it with L and R.
 // Every word DRAFT.
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing } from "react-native";
@@ -16,9 +21,11 @@ import { Listen } from "../../ui/bookAudio";
 import { BookCover, CoverCrop, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
 import { Art, Card } from "../../ui/ui";
 import { Cards } from "../library/Arcana";
+import { toneHex, type Tone } from "../../ui/tone";
 import { DAWN, DawnBack, LayerPages, type Entry, type EudaimonT, type LayerPalette } from "./Eudaimon";
 
-export type UnityT = EudaimonT;
+type Sections = NonNullable<EudaimonT["sections"]>;
+export type UnityT = EudaimonT & { lens?: { night: (Sections[number] | null)[]; dawn: (Sections[number] | null)[] } };
 export const UNITY: LayerPalette = { page: "#FFFDF8", boards: "#EFE9DE", ink: "#211C26", faint: "#756C7B", edge: "#DCD2C4", mark: "#8E3F80", lit: "#B0569E" };
 const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
 
@@ -63,9 +70,10 @@ function Cover({ b }: { b: UnityT }) {
   );
 }
 
-// its picture, the game's own (data/art/unity_<picture>_<frame>.png); until one is exported, the two decks' faces stand in
+// its picture, the game's own (data/art/unity_<picture>_<frame>.png; through the lens, the half's own); until one is
+// exported, the two decks' faces stand in
 function Picture({ e, scale }: { e: Entry; scale: number }) {
-  return <TurningPicture book="unity" e={e} scale={scale} standIn={<Faces scale={scale} />} />;
+  return <TurningPicture book={e.book ?? "unity"} e={e} scale={scale} standIn={<Faces scale={scale} />} />;
 }
 function Faces({ scale }: { scale: number }) {
   return (
@@ -81,10 +89,44 @@ const rule = (label: string) => label === "BALANCE" ? (
   <XStack height={3} width={72} marginBottom={4}><YStack flex={1} backgroundColor={EMERALD.hue} /><YStack flex={1} backgroundColor={DAWN.lit} /></XStack>
 ) : null;
 
+// the lens: which reading, the half it is read from, and its tone
+type Lens = "night" | "whole" | "dawn";
+const LENSES: { k: Lens; label: string; tone: Tone; from?: "hermetic" | "eudaimon" }[] = [
+  { k: "night", label: "NIGHT", tone: "emerald", from: "hermetic" },
+  { k: "whole", label: "WHOLE", tone: null },
+  { k: "dawn", label: "DAWN", tone: "sapphire", from: "eudaimon" },
+];
+// the switch, on top of the page: three settings, the one held in its tone and underlined
+function LensSwitch({ lens, set }: { lens: Lens; set: (l: Lens) => void }) {
+  return (
+    <XStack alignSelf="center" borderWidth={1} borderColor={UNITY.edge} borderRadius={4} overflow="hidden" role="radiogroup" aria-label="Read it as">
+      {LENSES.map((l, i) => {
+        const on = l.k === lens, ink = toneHex(UNITY.mark, l.tone);
+        return (
+          <YStack key={l.k} paddingHorizontal={14} paddingVertical={7} cursor="pointer" role="radio" aria-checked={on}
+                  backgroundColor={on ? toneHex(UNITY.boards, l.tone) : UNITY.page} borderLeftWidth={i ? 1 : 0} borderColor={UNITY.edge}
+                  onPress={() => set(l.k)}>
+            <Text allowFontScaling={false} {...mono} fontSize={11} fontWeight={on ? "800" : "400"} color={on ? ink : UNITY.faint}
+                  textDecorationLine={on ? "underline" : "none"}>{l.label}</Text>
+          </YStack>
+        );
+      })}
+    </XStack>
+  );
+}
+
 export function UnityBook({ b }: { b: UnityT }) {
-  return <LayerPages b={b} P={UNITY} green={EMERALD.hue} id="unity" cover={<Cover b={b} />}
+  const [lens, setLens] = useState<Lens>("whole");
+  const L = LENSES.find((l) => l.k === lens)!;
+  const whole = b.sections ?? [];
+  // each section in the reading held: the half's words where it has them (its pictures its own), else the whole's
+  const other = L.from ? b.lens?.[lens as "night" | "dawn"] : undefined;
+  const read = other ? whole.map((s, i) => other[i] ? { ...other[i]!, entries: other[i]!.entries.map((e) => ({ ...e, book: L.from })) } : s) : whole;
+  const toneFor = (s: number | null) => s === null ? L.tone : other?.[s] ? L.tone : null;
+  return <LayerPages b={{ ...b, sections: read }} P={UNITY} green={EMERALD.hue} id={`unity-${lens}`} cover={<Cover b={b} />}
                      under={<><Listen which="unity" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} /><Cards book="unity" /></>}
-                     picture={(e, scale) => <Picture e={e} scale={scale} />} rule={rule} />;
+                     picture={(e, scale) => <Picture e={e} scale={scale} />} rule={rule}
+                     top={b.lens ? <LensSwitch lens={lens} set={setLens} /> : null} toneFor={toneFor} />;
 }
 
 // The mending, once (vision 4.40: "mended at DAEMON TOWER in a colourful burst -- the pair going back to light"): on the

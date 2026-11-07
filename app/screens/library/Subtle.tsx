@@ -1,4 +1,4 @@
-// LIBRARY > THE SUBTLE LAYER (T-423, the user, 2026-10-18): a trainer's handbook, in the game and here, once the save holds
+// LIBRARY > THE SUBTLE LAYER (T-423, the user, 2026-10-18): a USER's handbook, in the game and here, once the save holds
 // it (GET /api/subtle, as the GUIDE is). An open book, as the user chose for the game: the contents first, then each entry
 // with its picture on the left and its words on the right (one above the other on a narrow screen); in TWO VOICES the
 // "asking" voice is printed faint, each voice on its own line. The pictures are the game's own (data/art/subtle_*.png, a

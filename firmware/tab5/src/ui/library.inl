@@ -142,7 +142,7 @@ static void showGuide() {
   label(pg, String(guideAt + 1) + " / " + String(total), &lv_font_montserrat_16, BOOK_FAINT);
 }
 
-// ---- T-423: THE SUBTLE LAYER, a trainer's handbook, once the save holds it (GET /api/subtle, kept as "subtle"; its
+// ---- T-423: THE SUBTLE LAYER, a USER's handbook, once the save holds it (GET /api/subtle, kept as "subtle"; its
 // pictures kept as subtle_<picture>_<frame>) -- an open book in its own purples, as the app reads it: the cover (its title
 // set here in the Tab5's own type: the art carries no game font), the contents, then each page with its picture on the
 // left and its words on the right, a turning picture a frame every 0.7 s, TWO VOICES' asking voice faint. Every word DRAFT.

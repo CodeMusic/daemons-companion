@@ -6,7 +6,9 @@
 import { randomBytes } from "node:crypto";
 
 export const PRIORITY = { inHand: 0, reading: 1, chatter: 2 } as const;   // lower goes first
-const KEEP_MS = 5 * 60 * 1000;
+// 2026-11-07: half an hour, so a voice made while the phone was away is still here when it comes back (the user: "if
+// the user is not able to wait, when they come back it play right away")
+const KEEP_MS = 30 * 60 * 1000;
 
 type Job<R> = { id: string; who: string; priority: number; at: number; run: () => Promise<R>;
                 status: "waiting" | "thinking" | "done" | "failed"; result?: R; error?: string; ended?: number };

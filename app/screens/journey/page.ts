@@ -21,6 +21,22 @@ export async function exportPage(p: Page) {
   await Sharing.shareAsync(out, { UTI: "com.adobe.pdf", mimeType: "application/pdf", dialogTitle: p.title });
 }
 
+// 2026-11-07 (the user: "the export option becomes generalized allowing u to tap it, and select either of the available
+// rendering options -- PDF and if a voice has been made that option as well"): the chapter's kept voice, out of the app
+// under the chapter's name -- the share sheet: Save to Files, AirDrop, Messages
+export async function exportVoice(p: Page, voice: { uri: string }) {
+  const { File, Paths } = await import("expo-file-system");
+  const ext = /\.wav$/i.test(voice.uri) ? "wav" : "mp3";
+  const named = new File(Paths.cache, `${fileName(p)}.${ext}`);
+  if (named.exists) named.delete();
+  new File(voice.uri).copy(named);
+  await Sharing.shareAsync(named.uri, { mimeType: ext === "wav" ? "audio/wav" : "audio/mpeg", UTI: ext === "wav" ? "com.microsoft.waveform-audio" : "public.mp3",
+                                        dialogTitle: p.title });
+}
+
+// What a chapter is said as: its title, then its words
+export const spokenOf = (p: Pick<Page, "title" | "body">) => `${p.title}.\n\n${p.body}`;
+
 // Straight to a printer (AirPrint on a device; the print dialog on the site)
 export async function printPage(p: Page) {
   const html = pageHtml(p);

@@ -3,10 +3,9 @@
 // it wrote one, otherwise the companion's own words), how long and how still the night was, and whether it was tucked in.
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api, ON_PHONE } from "../../platform/net";
+import { api } from "../../platform/net";
 import { Action, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
-import { useVoice } from "./Daemon";
-import { readingVoice } from "../../platform/voiceFile";
+import { VoiceButton } from "../../ui/voiceButton";
 
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string };
@@ -14,13 +13,6 @@ const NIGHT = { vivid: "A deep night", quiet: "A quiet night", broken: "A restle
 
 export function DreamsScreen({ ink }: { ink?: string }) {
   const [dreams, setDreams] = useState<Dream[] | null>(null);
-  const speak = useVoice();
-  const [reading, setReading] = useState(0);
-  const readAloud = async (d: Dream) => {                     // the user, 2026-10-28: a dream read aloud, in the INDEX voice
-    setReading(d.id);
-    try { speak(await readingVoice({ text: d.text })); } catch { /* the card says nothing new */ }   // kept on the phone after the first time
-    finally { setReading(0); }
-  };
   const [error, setError] = useState("");
   const [shared, setShared] = useState<Record<number, string>>({});   // C-223: what SHARE said, per dream
   const share = async (d: Dream) => {
@@ -39,7 +31,8 @@ export function DreamsScreen({ ink }: { ink?: string }) {
           <Text fontSize={15} color="$color12">{d.text}</Text>
           <Small color="$color10">{`${d.nickname || "Your daemon"}, woke ${whenSaid(d.to)}`}</Small>
           <XStack gap={8} flexWrap="wrap">
-            {ON_PHONE ? <Action label={reading === d.id ? "Reading…" : "Read aloud"} onPress={() => readAloud(d)} ink={ink} /> : null}
+            {/* the user, 2026-10-28: a dream read aloud, in the INDEX voice -- 2026-11-07: made in the background, and kept */}
+            <VoiceButton text={d.text} ink={ink} />
             <Action label="SHARE" onPress={() => share(d)} ink={ink} />
           </XStack>
           {shared[d.id] ? <Small>{shared[d.id]}</Small> : null}

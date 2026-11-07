@@ -25,13 +25,13 @@ describe("the talk queue (C-180)", () => {
     expect(q.load).toEqual({ running: 0, waiting: 0 });
   });
 
-  it("says a failure, and forgets an answer nobody fetched after a few minutes", async () => {
+  it("says a failure, and forgets an answer nobody fetched after half an hour", async () => {
     let t = 0;
     const q = new TalkJobs<string>(2, () => t);
     const id = q.start("x", PRIORITY.inHand, () => Promise.reject(new Error("n8n did not answer")));
     await tick(); await tick();
     expect(q.get(id)).toEqual({ status: "failed", error: "n8n did not answer" });
-    t = 6 * 60 * 1000;
+    t = 31 * 60 * 1000;
     expect(q.get(id)).toBeNull();
     expect(q.get("not-an-id")).toBeNull();
   });

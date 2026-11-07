@@ -39,7 +39,8 @@ import { platform, tmpdir } from "node:os";
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, phoneAudio, toDevicePcm, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, joinVoices, phoneAudio, toDevicePcm, voicePieces, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
+const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
 import { readAway, readSave } from "./save/reader.js";
@@ -1758,6 +1759,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         const told = ownTelling(ecfg, store, deviceId, b);   // C-303: {own: true} -- what it says of itself, in its own voice
         if (told) return answer(PRIORITY.reading, async () => ({ ...await readAloud(told.text, told.recipe), answer: told.text }));
+        // 2026-11-07: {text, whole: true} -- all of it (a dream, a journal's chapter), read in parts and joined into one voice
+        if (b.whole === true && typeof b.text === "string" && b.text.trim()) {
+          const parts = voicePieces(b.text.slice(0, WHOLE_MOST));
+          return answer(PRIORITY.reading, async () => {
+            const got: Buffer[] = []; let provider = "";
+            for (const p of parts) {
+              const r = await readAloud(p);
+              if (typeof r.audioBase64 !== "string" || !r.audioBase64) return { error: String(r.error ?? "a part of it could not be voiced") };   // DRAFT
+              got.push(Buffer.from(r.audioBase64, "base64")); provider ||= String(r.provider ?? "");
+            }
+            const one = await joinVoices(got);
+            return one ? { audioBase64: one.toString("base64"), audioMime: one.toString("latin1", 0, 4) === "RIFF" ? "audio/wav" : "audio/mpeg", provider, parts: parts.length }
+                       : { error: "its voice could not be put together" };   // DRAFT
+          });
+        }
         const row = b.species !== undefined ? SPECIES[String(b.species)] : null;
         const carried = b.species === undefined && b.text === undefined ? deviceState(ecfg, store, new Date(), deviceId).daemon : null;
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;

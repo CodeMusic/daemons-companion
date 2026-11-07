@@ -121,3 +121,25 @@ describe("a voice for the phone", () => {
     expect(await mp3OfWav(Buffer.from("not a wav at all"))).toBeNull();
   });
 });
+
+describe("a whole piece's voice", () => {
+  it("is read in parts cut at sentences, each within what the voice takes", async () => {
+    const { voicePieces } = await import("../src/ai/voice.js");
+    const long = Array.from({ length: 30 }, (_, i) => `Sentence number ${i} is here.`).join(" ");
+    const parts = voicePieces(`A short first paragraph.\n\n${long}`);
+    expect(parts[0]).toBe("A short first paragraph.");
+    expect(parts.length).toBeGreaterThan(2);
+    expect(parts.every((p) => p.length <= 560)).toBe(true);
+    expect(parts.slice(1).every((p) => p.endsWith("."))).toBe(true);
+  });
+  it("joins its parts' voices into one, a breath between", async () => {
+    const { joinVoices, wavOf, CAN_CONVERT, FOUND_FFMPEG } = await import("../src/ai/voice.js");
+    if (!FOUND_FFMPEG) return;
+    const tone = wavOf(Buffer.alloc(24000 * 2), 24000);   // a second of silence each
+    const one = (await joinVoices([tone, tone]))!;
+    expect(one.toString("latin1", 0, 4)).toBe("RIFF");
+    expect((one.length - 44) / 2 / 24000).toBeCloseTo(2.4, 1);
+    expect(await joinVoices([tone])).toBe(tone);
+    void CAN_CONVERT;
+  });
+});

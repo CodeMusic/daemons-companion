@@ -61,6 +61,35 @@ export async function phoneAudio<T extends Record<string, unknown>>(r: T): Promi
   return mp3 ? { ...r, audioBase64: mp3.toString("base64"), audioMime: "audio/mpeg" } : r;
 }
 
+// 2026-11-07 (the user: a dream or a journal's chapter, its voice made once and kept, and exported): a long piece read
+// in parts the voice takes at once, cut at its sentences, and the parts' voices joined into one, a breath between.
+export const PIECE_MOST = 560;
+export function voicePieces(text: string, most = PIECE_MOST): string[] {
+  const out: string[] = [];
+  for (const p of text.split(/\n\s*\n/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean)) {
+    if (p.length <= most) { out.push(p); continue; }
+    let cur = "";
+    for (const s of p.match(/[^.!?]+[.!?]*\s*/g) ?? [p]) {
+      if ((cur + s).length > most && cur) { out.push(cur.trim()); cur = ""; }
+      cur += s.length > most ? s.slice(0, most) : s;
+    }
+    if (cur.trim()) out.push(cur.trim());
+  }
+  return out;
+}
+export const JOIN_RATE = 24000;
+export async function joinVoices(parts: Buffer[], gapMs = 400): Promise<Buffer | null> {
+  if (parts.length === 1) return parts[0];
+  const gap = Buffer.alloc(Math.round((JOIN_RATE * gapMs) / 1000) * 2), pcms: Buffer[] = [];
+  for (const p of parts) {
+    const pcm = await run(FFMPEG, ["-hide_banner", "-loglevel", "error", "-i", "pipe:0", "-f", "s16le", "-ac", "1",
+                                   "-ar", String(JOIN_RATE), "pipe:1"], p);
+    if (!pcm || !pcm.length) return null;
+    pcms.push(pcms.length ? gap : Buffer.alloc(0), pcm);
+  }
+  return wavOf(Buffer.concat(pcms), JOIN_RATE);
+}
+
 // 16 kHz samples as a WAV -- what the speech-to-text server is sent, whatever the device recorded (C-66: the phone
 // records AAC, the handheld a WAV already).
 export function wavOf(pcm: Buffer, rate = DEVICE_RATE): Buffer {

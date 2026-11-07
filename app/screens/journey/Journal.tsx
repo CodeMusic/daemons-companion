@@ -5,9 +5,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TextInput } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
+import { api, ON_PHONE } from "../../platform/net";
+import { useVoiceState, wholeVoice } from "../../platform/rendering";
+import { VoiceButton } from "../../ui/voiceButton";
 import { Action, Card, Entry, Eyebrow, Small, whenSaid } from "../../ui/ui";
-import { exportPage, printPage, spanOf, type Page } from "./page";
+import { exportPage, exportVoice, printPage, spanOf, spokenOf, type Page } from "./page";
 
 type Row = { id: number; title: string; created: string; entries: number; last: string | null; waiting: number };
 type JEntry = { id: number; title: string; body: string; at: string; edited: string | null };
@@ -29,7 +31,11 @@ export const JOURNAL_WORDS = {   // DRAFT, every one
   chapters: "CHAPTERS", entries: "ENTRIES",
   writing: "Your daemon is thinking it through. A page like this takes a while -- check back later; it will be here.",
   failed: "It could not be written this time.", again: "Try again", plain: "Lay it out as written",
-  export: "Export PDF", print: "Print", read: "Read", hide: "Hide",
+  export: "Export…", print: "Print", read: "Read", hide: "Hide",
+  exportAs: "EXPORT AS", asPdf: "PDF page", asVoice: "Its voice (audio)", notYet: "Its voice: tap Hear it first, and it can be exported once made.",
+  listen: { none: "○  Hear it", making: "Voice coming", ready: "●  Hear it", failed: "○  Try its voice again", stop: "■  Stop",
+            makingHint: "Its voice is being made. You can leave -- it will be ready when you come back.",
+            failedHint: "Its voice could not be made this time." },
   byPlain: "laid out as written", edited: "edited",
 };
 const W = JOURNAL_WORDS;
@@ -73,6 +79,7 @@ function JournalPage({ id, ink, onBack }: { id: number; ink: string; onBack: () 
   const [writing, setWriting] = useState<JEntry | "new" | null>(null);
   const [naming, setNaming] = useState<string | null>(null), [sure, setSure] = useState(false);
   const [reading, setReading] = useState<number | null>(null);
+  const [exporting, setExporting] = useState<number | null>(null);
   const load = useCallback(() => api<Journal>(`/api/journal?id=${id}`).then(setJ).catch((e) => setSaid(e.message)), [id]);
   useEffect(() => { load(); }, [load]);
   const thinking = !!j?.chapters.some((c) => c.state === "writing");
@@ -134,10 +141,12 @@ function JournalPage({ id, ink, onBack }: { id: number; ink: string; onBack: () 
               {c.state === "done" ? (
                 <>
                   <XStack gap={8} flexWrap="wrap">
-                    <Action label={W.export} onPress={() => out(exportPage, c)} ink={ink} />
+                    <Action label={reading === c.id ? W.hide : W.read} onPress={() => setReading(reading === c.id ? null : c.id)} ink={ink} />
+                    <VoiceButton text={spokenOf(c)} words={W.listen} />
+                    <Action label={W.export} onPress={() => ON_PHONE ? setExporting(exporting === c.id ? null : c.id) : out(exportPage, c)} />
                     <Action label={W.print} onPress={() => out(printPage, c)} />
-                    <Action label={reading === c.id ? W.hide : W.read} onPress={() => setReading(reading === c.id ? null : c.id)} />
                   </XStack>
+                  {exporting === c.id ? <ExportChoice page={pageOf(c)} ink={ink} onDone={() => setExporting(null)} onFail={setSaid} /> : null}
                   {reading === c.id ? (
                     <YStack backgroundColor="#fbfaf6" borderRadius={6} borderWidth={1} borderColor="$color6" padding={16} gap={10} marginTop={4}>
                       <Text fontSize={19} fontWeight="700" color="#1b1d22">{c.title}</Text>
@@ -157,6 +166,23 @@ function JournalPage({ id, ink, onBack }: { id: number; ink: string; onBack: () 
                                           onRemove={() => act("/api/journal/entry/remove", { journal: id, id: e.id })} />)}
         </Card>
       ) : null}
+    </YStack>
+  );
+}
+
+// Export, generalized: every way this chapter has been made -- its page always, its voice once one is made
+function ExportChoice({ page, ink, onDone, onFail }: { page: Page; ink: string; onDone: () => void; onFail: (s: string) => void }) {
+  const spoken = spokenOf(page), state = useVoiceState(spoken);
+  const go = (f: () => Promise<unknown>) => f().then(onDone, (e) => onFail((e as Error).message));
+  return (
+    <YStack gap={2} marginTop={4} padding={10} borderRadius={6} borderWidth={1} borderColor="$color6">
+      <Eyebrow>{W.exportAs}</Eyebrow>
+      <XStack gap={8} flexWrap="wrap">
+        <Action label={W.asPdf} onPress={() => go(() => exportPage(page))} ink={ink} />
+        {state === "ready" ? <Action label={W.asVoice} onPress={() => go(() => exportVoice(page, wholeVoice(spoken)!))} ink={ink} /> : null}
+        <Action label={W.cancel} onPress={onDone} />
+      </XStack>
+      {state !== "ready" ? <Small>{state === "making" ? W.listen.makingHint : W.notYet}</Small> : null}
     </YStack>
   );
 }

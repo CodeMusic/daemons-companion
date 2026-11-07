@@ -108,6 +108,18 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
 }
 
 // What was said, from a 16 kHz WAV. null without an ASR model, or when it hears nothing.
+// The Tiiny's hearing model answers with its pieces run together ("me.Did") and then the whole, spaced -- seen
+// 2026-11-06, every clip: "There.That was me.Did anything see?There, that was me. Did anything see? ...". The whole is
+// what follows the last piece's end; a hearing with no run-together end is kept as it came.
+export function lastHearing(text: string): string {
+  const t = text.trim();
+  let cut = -1;
+  for (const m of t.matchAll(/[.?!](?=[A-Z])/g)) cut = m.index! + 1;
+  if (cut < 0) return t;
+  const whole = t.slice(cut).trim();
+  return whole.split(/\s+/).length >= 3 ? whole : t;
+}
+
 export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = fetch, ms = 30_000): Promise<string | null> {
   if (!at.asr) return null;
   try {
@@ -118,7 +130,7 @@ export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = 
       form.append("file", new Blob([new Uint8Array(wav)], { type: "audio/wav" }), "said.wav");
       const r = await f(`${at.url}/audio/transcriptions`, { method: "POST", headers: headers(at, false), body: form, signal });
       if (!r.ok) return null;
-      const text = String((await r.json())?.text ?? "").trim();
+      const text = lastHearing(String((await r.json())?.text ?? ""));
       return text || null;
     });
   } catch { return null; }

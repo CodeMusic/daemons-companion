@@ -1,6 +1,6 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl } from "../src/ai/tiiny.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl } from "../src/ai/tiiny.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf } from "../src/self.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;
@@ -60,6 +60,14 @@ describe("talking to it", () => {
     expect((await tiinySpeak(at, "hi", "", mislabelled))!.mime).toBe("audio/wav");
     expect(await tiinyHear(at, new Uint8Array([0]), f)).toBe("hello there");
     expect(await tiinySpeak({ ...at, tts: "" }, "hi", "", f)).toBeNull();
+  });
+  it("keeps the whole of a hearing, not the pieces run together before it", () => {
+    expect(lastHearing("There.That was me.Did anything see?There, that was me. Did anything see? I will do it again."))
+      .toBe("There, that was me. Did anything see? I will do it again.");
+    expect(lastHearing("I used to stop in between.Yeah.I do not stop now.It is all one long.Long one.I used to stop in between. I do not stop now. It is all one long one."))
+      .toBe("I used to stop in between. I do not stop now. It is all one long one.");
+    expect(lastHearing(" hello there ")).toBe("hello there");
+    expect(lastHearing("Version 3.5 is out. Go.Now")).toBe("Version 3.5 is out. Go.Now");
   });
   it("hands its voice DAEMON as it is said (C-270)", async () => {
     let input = "";

@@ -32,25 +32,25 @@
  },
  "6": {
   "name": "NET BOX",
-  "description": "A somewhat different BOX that works especially well on WATER- and SWARM-type DAEMON.",
+  "description": "A somewhat different BOX that works especially well on FLOW- and SWARM-type DAEMONS.",
   "pocket": "POCKET_POKE_BALLS",
   "importance": 0
  },
  "7": {
   "name": "DESCEND BOX",
-  "description": "A somewhat different BOX that works especially well on DAEMON deep in the sea.",
+  "description": "A somewhat different BOX that works especially well on DAEMONS deep in the sea.",
   "pocket": "POCKET_POKE_BALLS",
   "importance": 0
  },
  "8": {
   "name": "NEST BOX",
-  "description": "A somewhat different BOX that works especially well on weaker DAEMON.",
+  "description": "A somewhat different BOX that works especially well on weaker DAEMONS.",
   "pocket": "POCKET_POKE_BALLS",
   "importance": 0
  },
  "9": {
   "name": "REPEAT BOX",
-  "description": "A somewhat different BOX that works especially well on DAEMON bound before.",
+  "description": "A somewhat different BOX that works especially well on DAEMONS bound before.",
   "pocket": "POCKET_POKE_BALLS",
   "importance": 0
  },
@@ -62,7 +62,7 @@
  },
  "11": {
   "name": "LUXURY BOX",
-  "description": "A comfortable BOX that makes a captured wild DAEMON quickly grow friendly.",
+  "description": "A comfortable BOX that makes a bound wild DAEMON quickly grow friendly.",
   "pocket": "POCKET_POKE_BALLS",
   "importance": 0
  },
@@ -224,7 +224,7 @@
  },
  "38": {
   "name": "LAVA COOKIE",
-  "description": "LAVARIDGE TOWN's local specialty. It heals all the status problems of one DAEMON.",
+  "description": "A cookie baked on hot stone, sold on TWO ISLAND. Ends every state of one DAEMON.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
@@ -590,19 +590,19 @@
  },
  "132": {
   "name": "RETRO MAIL",
-  "description": "A piece of MAIL featuring a print of three cute DAEMON. It is to be held by a DAEMON.",
+  "description": "A piece of MAIL featuring a print of three cute DAEMONS. It is to be held by a DAEMON.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
  "133": {
   "name": "THROTTLE TRAP",
-  "description": "Armed against one condition and spent on it. Ends THROTTLED, once.",
+  "description": "Armed against one condition, spent on it. Ends THROTTLED, once.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "134": {
   "name": "SUSPEND TRAP",
-  "description": "Fires the moment the daemon stops being scheduled. Ends SUSPENDED, once.",
+  "description": "Fires when the daemon stops being scheduled. Ends SUSPENDED, once.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
@@ -632,13 +632,13 @@
  },
  "139": {
   "name": "LOW MARK",
-  "description": "The level at which something is done about it. Restores 10 HP when health falls, once.",
+  "description": "A mark set low. When health falls, it restores 10 HP, once.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "140": {
   "name": "THRASH TRAP",
-  "description": "Catches a daemon making no progress against itself. Ends THRASHING, once.",
+  "description": "Catches a daemon working against itself. Ends THRASHING, once.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
@@ -650,37 +650,37 @@
  },
  "142": {
   "name": "HIGH MARK",
-  "description": "The same idea, set higher and worth more. Restores 30 HP when health falls, once.",
+  "description": "The same, set higher. When health falls, it restores 30 HP, once.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "143": {
   "name": "SPICY TRAP",
-  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon.",
+  "description": "Restores health. Whether it causes THRASHING depends on the daemon.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "144": {
   "name": "DRY TRAP",
-  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon.",
+  "description": "Restores health. Whether it causes THRASHING depends on the daemon.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "145": {
   "name": "SWEET TRAP",
-  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon.",
+  "description": "Restores health. Whether it causes THRASHING depends on the daemon.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "146": {
   "name": "BITTER TRAP",
-  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon.",
+  "description": "Restores health. Whether it causes THRASHING depends on the daemon.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
  "147": {
   "name": "SOUR TRAP",
-  "description": "Restores health, and may leave a daemon THRASHING. Which is which depends on the daemon.",
+  "description": "Restores health. Whether it causes THRASHING depends on the daemon.",
   "pocket": "POCKET_BERRY_POUCH",
   "importance": 0
  },
@@ -1166,7 +1166,7 @@
  },
  "231": {
   "name": "SUBTLE LAYER",
-  "description": "THE SUBTLE LAYER. A trainer's handbook of the craft: read, write and link.",
+  "description": "THE SUBTLE LAYER. A USER's handbook of the craft: read, write and link.",
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
@@ -1286,31 +1286,31 @@
  },
  "254": {
   "name": "RED SCARF",
-  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's COOL condition in CONTESTS.",
+  "description": "A red scarf, handed out on PARADE DAYS. It changes nothing in battle. It is worn for the day.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
  "255": {
   "name": "BLUE SCARF",
-  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's STYLIST condition in CONTESTS.",
+  "description": "A blue scarf, handed out on PARADE DAYS. It changes nothing in battle. It is worn for the day.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
  "256": {
   "name": "PINK SCARF",
-  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's CUTE condition in CONTESTS.",
+  "description": "A pink scarf, like the ones handed out on PARADE DAYS. It changes nothing in battle.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
  "257": {
   "name": "GREEN SCARF",
-  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's SMART condition in CONTESTS.",
+  "description": "A green scarf, handed out on CLOVER DAY and PARADE DAYS. It changes nothing in battle.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
  "258": {
   "name": "YELLOW SCARF",
-  "description": "An item to be held by a DAEMON. It boosts the holding DAEMON's TOUGH condition in CONTESTS.",
+  "description": "A yellow scarf, handed out on PARADE DAYS. It changes nothing in battle. It is worn for the day.",
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
@@ -1322,7 +1322,7 @@
  },
  "260": {
   "name": "TOKEN CASE",
-  "description": "Holds the tokens the GAME CORNER deals in. It holds up to 9,999.",
+  "description": "A token spends only where it was issued. Holds the GAME CORNER's COINS, up to 9,999.",
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
@@ -1352,7 +1352,7 @@
  },
  "265": {
   "name": "S.S. TICKET",
-  "description": "The ticket required for sailing on the ferry S.S. ANNE. It has a drawing of a ship on it.",
+  "description": "Passage on the S.S. ANNE, at ARDOR CITY. Made out to HOLT, who gave it to you instead.",
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
@@ -1862,7 +1862,7 @@
  },
  "352": {
   "name": "BIKE VOUCHER",
-  "description": "Take this voucher to the BIKE SHOP in DOLDRUM CITY and exchange it for a bicycle.",
+  "description": "One BICYCLE, owed to whoever holds this. The BIKE SHOP in DOLDRUM CITY pays it out.",
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },

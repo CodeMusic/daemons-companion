@@ -1,8 +1,10 @@
 // C-305 (DAEMONS T-528, vision 4.40): the aurora's nights -- the game's rule to the bit, so a phone and a cartridge agree.
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
-import { AURORA_BANDS, AURORA_LINE, auroraShows, auroraWeight, dayNumber, isLightNight, lightNight, nightNumber, nightOfClock,
-         nightOfPlay } from "../src/aurora.js";
+import { AURORA_BANDS, AURORA_CONJUGATE, AURORA_LINE, auroraShows, auroraWeight, conjugateLight, dayNumber, fromOtherSide, isLightNight,
+         lightNight, nightNumber, nightOfClock, nightOfPlay, skyBands } from "../src/aurora.js";
+import { readSave } from "../src/save/reader.js";
+import { buildSave } from "./build_save.js";
 
 const at = (y: number, m: number, d: number, h: number, min = 0) => new Date(y, m - 1, d, h, min);
 
@@ -56,5 +58,33 @@ describe("C-305: the light's nights", () => {
     expect(five(AURORA_LINE.CONTENT)).toEqual([30, 7, 9]);
     expect(five(AURORA_LINE.CONTEXT)).toEqual([10, 30, 15]);
     expect(c).toMatch(/72 \+ breath \* 96 \/ 255/);
+    const both = /sBandConjugate\[SKY_MAX\] = \{([^}]*)\}/.exec(c)![1].split(",").map((s) => Number(s.trim()));
+    expect(both).toEqual(AURORA_CONJUGATE.bands);
+    expect(Number(/#define CONJUGATE_RED_BANDS (\d+)/.exec(c)![1])).toBe(AURORA_CONJUGATE.redBands);
+  });
+});
+
+describe("C-306: the conjugate light", () => {
+  const mon = (metGame: number, egg = false) => ({ metGame, egg });
+  it("sees the other edition's daemons and no one else's", () => {
+    expect(fromOtherSide("CONTENT", [mon(5)])).toBe(true);                // LeafGreen's, in FireRed's game
+    expect(fromOtherSide("CONTEXT", [mon(4)])).toBe(true);
+    expect(fromOtherSide("CONTENT", [mon(4), mon(1), mon(2), mon(3), mon(15)])).toBe(false);   // its own, Ruby to Colosseum
+    expect(fromOtherSide("CONTENT", [mon(5, true)])).toBe(false);         // not an egg
+    expect(conjugateLight(false, "CONTENT", [mon(5)])).toBe(false);       // not before the mending
+    expect(conjugateLight(true, "CONTENT", [mon(4), mon(5)])).toBe(true);
+  });
+  it("reads the met game and the egg from the save", () => {
+    const save = buildSave({ player: "ROVER", trainerId: 1, slots: [1, 2].map((counter) => ({ counter, party: [
+      { personality: 0x12345678, otId: 1, species: 1, nickname: "PIP", level: 12, metLevel: 5, metGame: 5 },
+      { personality: 0x00000777, otId: 1, species: 7, nickname: "EGG", level: 5, metGame: 4, egg: true }] })) });
+    const [a, b] = readSave(save).party;
+    expect([a.metGame, a.metLevel, a.egg, b.metGame, b.egg]).toEqual([5, 5, false, 4, true]);
+  });
+  it("crowns the sky with the red and lays the green below, one line to a band", () => {
+    const sky = skyBands("CONTEXT", true);
+    expect(sky.map(([l]) => l)).toEqual([AURORA_LINE.CONTENT, ...Array(5).fill(AURORA_LINE.CONTEXT)]);
+    expect(sky.map(([, w]) => w)).toEqual([255, 255, 176, 64, 16, 0]);
+    expect(skyBands("CONTENT", false)).toEqual(AURORA_BANDS.CONTENT.map((w) => [AURORA_LINE.CONTENT, w]));
   });
 });

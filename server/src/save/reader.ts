@@ -65,6 +65,8 @@ export interface PartyDaemon {
   heldItem: number;        // C-31: the item it holds, 0 for none -- it goes with it to the device
   exp: number;             // C-24: its experience, from which a boxed daemon's level is read
   metLevel: number;        // C-24: the level it was met at (OPUS's margins: what it has gained since)
+  metGame: number;         // C-306: the game it was met in (originsInfo bits 7-10: 4 FireRed, CONTENT; 5 LeafGreen, CONTEXT)
+  egg: boolean;            // C-306: still an egg (the misc substruct's isEgg)
   holding: string | null;  // that item's name, as the game names it
   away: boolean;           // on the companion's device (T-358)
   asked: boolean;          // the game's half of a send or return, waiting for the app
@@ -177,6 +179,8 @@ export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): P
     heldItem,
     exp: sv.getUint32(growth + 4, true),                    // C-24: a boxed daemon's level is read from this
     metLevel: sv.getUint16(misc + 2, true) & 0x7f,          // originsInfo's low 7 bits: the level it was met at
+    metGame: (sv.getUint16(misc + 2, true) >> 7) & 0xf,     // C-306: its bits 7-10, the game it was met in
+    egg: ((sv.getUint32(misc + 4, true) >>> 30) & 1) === 1,  // C-306: the IVs word's bit 30
     holding: heldItem ? ITEMS[String(heldItem)]?.name ?? `item #${heldItem}` : null,
     away: !!(flags & (1 << l.away_bit)),
     asked: !!(flags & (1 << l.asked_bit)),

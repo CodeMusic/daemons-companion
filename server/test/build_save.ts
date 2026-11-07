@@ -17,7 +17,8 @@ export function encodeText(s: string, len: number): Uint8Array {
 
 export interface DaemonSpec { personality: number; otId: number; species: number; nickname: string; level: number;
                               friendship?: number; away?: boolean; asked?: boolean; held?: number;
-                              metLevel?: number; exp?: number; hp?: number; maxHP?: number }
+                              metLevel?: number; exp?: number; hp?: number; maxHP?: number;
+                              metGame?: number; egg?: boolean }   // C-306: the game it was met in; an egg
 
 export function buildDaemon(d: DaemonSpec): Uint8Array {
   const rec = new Uint8Array(l.pokemon_size);
@@ -35,7 +36,8 @@ export function buildDaemon(d: DaemonSpec): Uint8Array {
   sv.setUint16(growth + 2, d.held ?? 0, true);
   sv.setUint32(growth + 4, d.exp ?? 0, true);
   const misc = ORDERS[d.personality % 24].indexOf("M") * 12;
-  sv.setUint16(misc + 2, (d.metLevel ?? 0) & 0x7f, true);       // originsInfo: the level it was met at
+  sv.setUint16(misc + 2, ((d.metLevel ?? 0) & 0x7f) | (((d.metGame ?? 0) & 0xf) << 7), true);   // originsInfo: the level it was met at, the game
+  if (d.egg) sv.setUint32(misc + 4, (1 << 30) >>> 0, true);    // C-306: isEgg
   let sum = 0;
   for (let i = 0; i < 48; i += 2) sum = (sum + sv.getUint16(i, true)) & 0xffff;
   v.setUint16(28, sum, true);

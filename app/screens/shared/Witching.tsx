@@ -13,7 +13,7 @@ import { AS_ABOVE, creatorLevelNow, creatorNow, creatorToneNow, EMERALD, goldBre
          witchingLine, witchingNow, witchingRoutine } from "../../../server/src/witching";
 import { api, ON_PHONE } from "../../platform/net";
 import { auroraForced, dawnForced, hourForced, onSession } from "../../state/dev";   // C-275: </> sets the hour, in memory only; T-519 the creator's too; C-305 the aurora's nights
-import { AURORA_BANDS, AURORA_LINE, auroraShows, auroraWeight } from "../../../server/src/aurora";   // C-305
+import { auroraShows, auroraWeight, skyBands } from "../../../server/src/aurora";   // C-305, C-306
 import { dayRoot, soundLevel, soundOf } from "../../sound/tuneSound";
 import { dawnTone } from "../../sound/dawnTone";            // T-519: THE CREATOR'S HOUR's tone
 import { Action, Small } from "../../ui/ui";
@@ -239,22 +239,24 @@ export function HalloweenNote({ h, masked, name }: { h: HalloweenT; masked: bool
 // 8 PM to 5 AM, picked from the date by the game's own rule: server/src/aurora.ts), the den's sky takes the edition's
 // line, as the game's grove skies do: oxygen's red strongest in the top band in CONTENT, its green a band lower in
 // CONTEXT, breathing on the creator's hour's sixteen seconds -- the clock's, so a phone and a GBA breathe together.
-// Looked at each half minute; </> forces it on (as on a night of light) or off. Part 2's conjugate light is not here yet.
+// Looked at each half minute; </> forces it on (as on a night of light) or off. C-306 (T-528 part 2): under the
+// conjugate light -- a daemon from the other edition in the party -- both lines, the red crowning the top band and the
+// green in the three below, one line to a band as the game lays them (two mixed are olive).
 export function useAurora(mended: boolean): boolean {
   useFrame(30000);
   useSession();
   return mended && (auroraForced() ?? auroraShows(true));
 }
 // the den's wall is sixteen bands down to its floor; the top six are its sky, each laid toward the line by the game's weight
-export function AuroraSky({ w, fy, edition }: { w: number; fy: number; edition: string }) {
+export function AuroraSky({ w, fy, edition, both = false }: { w: number; fy: number; edition: string; both?: boolean }) {
   useFrame(125);
   if (!w) return null;
   const e = edition === "CONTEXT" ? "CONTEXT" : "CONTENT", b = goldBreathOf(), bh = fy / 16;
   return (
     <View pointerEvents="none" style={{ position: "absolute", left: 0, top: 0, width: w, height: fy }}>
-      {AURORA_BANDS[e].map((band, i) => band ? (
+      {skyBands(e, both).map(([line, band], i) => band ? (
         <View key={i} style={{ position: "absolute", left: 0, right: 0, top: Math.round(i * bh), height: Math.round((i + 1) * bh) - Math.round(i * bh),
-                               backgroundColor: AURORA_LINE[e], opacity: auroraWeight(band, b) / 256 }} />) : null)}
+                               backgroundColor: line, opacity: auroraWeight(band, b) / 256 }} />) : null)}
     </View>
   );
 }

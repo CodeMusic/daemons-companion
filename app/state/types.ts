@@ -7,7 +7,7 @@ export type Day = { day: string; colour: string; hue: string; note: string; chak
 
 export type Next = { goal: string; subitem: string; step: { id: number; text: string } } | null;
 
-export type Today = { date: string; edition: string; day: Day; season: string; next: Next; mended?: boolean };   // C-305: THE UNITY BOOK mended
+export type Today = { date: string; edition: string; day: Day; season: string; next: Next; mended?: boolean; both?: boolean };   // C-305: THE UNITY BOOK mended; C-306: the conjugate light
 
 export type Step = { id: number; text: string; done: boolean };
 

@@ -117,6 +117,12 @@ export function DevScreen({ ink }: { ink: string }) {
       </Card>
 
       <Card>
+        <Eyebrow>FROM THE OTHER SIDE</Eyebrow>
+        <Small>The conjugate light: with the book mended, a daemon met in the other edition in the party puts both lines in the den's sky -- the red crowning it, the green below. As the party has it, or as if one were there, or none.</Small>
+        <Choice value={s.otherSide ?? null} options={[[null, "As the party"], [true, "One is"], [false, "None"]]} onPick={(v) => setSession((x) => ({ ...x, otherSide: v }))} ink={ink} />
+      </Card>
+
+      <Card>
         <Eyebrow>YOUR DAEMON</Eyebrow>
         {life?.care ? <PretendPanel truth={life} onClose={() => {}} />
           : <Small color="$color8">{life ? "No care to set yet: this companion has not looked after a daemon." : "Asking the companion..."}</Small>}

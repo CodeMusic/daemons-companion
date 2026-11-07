@@ -48,3 +48,20 @@ export const lightNight = (d = new Date()) => isLightNight(nightOfClock(d));
 export const atNight = (d = new Date()) => d.getHours() >= 20 || d.getHours() < 5;
 // the den's sky takes the line: the book mended, at night, on a night of light
 export const auroraShows = (mended: boolean, d = new Date()) => mended && atNight(d) && lightNight(d);
+
+// C-306 (T-528 part 2, (f)): THE CONJUGATE LIGHT. With the book mended and a daemon from the other edition in the party
+// -- by trade, or through the companion's -- the sky shows both lines at once, as a real aurora does: the red crowning
+// it in the top band, the green below in the next three, each band one line and never a mix (the two mixed are olive).
+// The other edition is the one this game is not: CONTENT (FireRed, version byte 4) sees CONTEXT's (LeafGreen, 5) and the
+// other way round; a daemon met in Ruby, Sapphire, Emerald or Colosseum is from neither (daemons_aurora.c
+// Aurora_PartyFromOtherEdition, Aurora_ConjugateLight, sBandConjugate).
+export const VERSION_BYTE: Record<AuroraEdition, number> = { CONTENT: 4, CONTEXT: 5 };
+export const AURORA_CONJUGATE = { bands: [255, 255, 176, 64, 16, 0], redBands: 1 };
+export const fromOtherSide = (edition: AuroraEdition, party: { metGame: number; egg: boolean }[]) =>
+  party.some((d) => !d.egg && d.metGame === VERSION_BYTE[edition === "CONTENT" ? "CONTEXT" : "CONTENT"]);
+export const conjugateLight = (mended: boolean, edition: AuroraEdition, party: { metGame: number; egg: boolean }[]) =>
+  mended && fromOtherSide(edition, party);
+// a sky's bands as [line, weight out of 255], top first: the edition's own line, or both lines under the conjugate light
+export const skyBands = (edition: AuroraEdition, both: boolean): [string, number][] => both
+  ? AURORA_CONJUGATE.bands.map((w, i) => [i < AURORA_CONJUGATE.redBands ? AURORA_LINE.CONTENT : AURORA_LINE.CONTEXT, w])
+  : AURORA_BANDS[edition].map((w) => [AURORA_LINE[edition], w]);

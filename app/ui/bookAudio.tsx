@@ -8,7 +8,9 @@
 // LAYER's recording is sealed in DAEMONS: once the book is held, the device opens it with the key the book's own warning
 // gives (sealed.ts) and keeps it (the user, by multiple choice: "Unseal it on the device"); so are the dawn half's and THE
 // UNITY BOOK's, each with its own book's key (C-299, the user 2026-11-05; the mended book in "one voice"). A book plays on with its page
-// left or the screen locked, and shows on the lock screen. Every word DRAFT.
+// left or the screen locked, and shows on the lock screen. A kept book knows which reading it is (bookaudio.py's sources
+// hash); when DAEMONS has published a newer one, the next LISTEN fetches it (the user, 2026-11-07: "have build all audio?"
+// -- THE SUBTLE LAYER was read again, and a phone that kept it would never have heard). Every word DRAFT.
 import { createAudioPlayer, setAudioModeAsync, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
@@ -31,7 +33,7 @@ const BOOKS: Record<Recorded, { file: string; title: string; reads: string; seal
   textbook: { file: "principles-of-mind", title: "Principles of Mind", reads: "Read aloud by a professor, grave and warm." },             // DRAFT
 };
 type Chapter = { kind: "section" | "entry"; title: string; start: number; end: number };
-type Marks = { duration: number; chapters: Chapter[] };
+type Marks = { duration: number; chapters: Chapter[]; sources?: string };   // sources: which reading (bookaudio.py)
 type Heard = Marks & { uri: string; kept: boolean };
 
 const audioDir = () => new Directory(Paths.document, "audio");
@@ -71,17 +73,18 @@ async function fetched(url: string): Promise<Uint8Array> {
 // a book as it can be heard: kept, else fetched once (the phone) or streamed (the site) from DAEMONS -- or, sealed,
 // opened here. The phone keeps every one first: GitHub sends a large MP3 as application/octet-stream, nosniff, which a
 // phone's player need not stream, and a kept one plays with no signal and is the one SHARE hands on.
-async function heard(w: Recorded, key: string | null, say: (what: string) => void = () => {}): Promise<Heard> {
+async function heard(w: Recorded, key: string | null, say: (what: string) => void = () => {}, fresh = false): Promise<Heard> {
   const had = kept(w);
-  if (had) return had;
+  if (had && !fresh) return had;
   const B = BOOKS[w];
   if (B.sealed) {
     if (!key) throw new Error("The book names no reader, so its recording will not open.");   // DRAFT
     const files = await unseal(await fetched(`${AUDIO}${B.file}.zip`), key, () => new Promise((go) => setTimeout(go, 0)));
     if (!files["sealed.mp3"] || !files["sealed.chapters.json"]) throw new Error("The sealed recording is not all there.");   // DRAFT
     const m: Marks = JSON.parse(new TextDecoder().decode(files["sealed.chapters.json"]));
-    const marks = { duration: m.duration, chapters: m.chapters };
+    const marks = { duration: m.duration, chapters: m.chapters, sources: m.sources };
     if (ON_PHONE) {
+      if (marksFile(w).exists) marksFile(w).delete();   // the marks go last, so a write cut short is fetched again
       put(mp3File(w), files["sealed.mp3"]);
       put(marksFile(w), JSON.stringify(marks));
       return { ...marks, uri: mp3File(w).uri, kept: true };
@@ -89,14 +92,32 @@ async function heard(w: Recorded, key: string | null, say: (what: string) => voi
     return (shown[w] = { ...marks, uri: URL.createObjectURL(new Blob([files["sealed.mp3"] as BlobPart], { type: "audio/mpeg" })), kept: false });
   }
   const m: Marks = JSON.parse(new TextDecoder().decode(await fetched(`${AUDIO}${B.file}.chapters.json`)));
-  const marks = { duration: m.duration, chapters: m.chapters };
+  const marks = { duration: m.duration, chapters: m.chapters, sources: m.sources };
   if (!ON_PHONE) return (shown[w] = { ...marks, uri: `${AUDIO}${B.file}.mp3`, kept: false });
   if (!audioDir().exists) audioDir().create();
-  await File.downloadFileAsync(`${AUDIO}${B.file}.mp3`, mp3File(w), { idempotent: true, onProgress: ({ bytesWritten, totalBytes }) => {
-    if (totalBytes > 0) say(`Fetching it from DAEMONS, once… ${Math.round((100 * bytesWritten) / totalBytes)}%`);   // DRAFT
+  const part = new File(audioDir(), `${B.file}.part`);   // the kept one is replaced only by a whole one
+  await File.downloadFileAsync(`${AUDIO}${B.file}.mp3`, part, { idempotent: true, onProgress: ({ bytesWritten, totalBytes }) => {
+    if (totalBytes > 0) say(`Fetching it from DAEMONS… ${Math.round((100 * bytesWritten) / totalBytes)}%`);   // DRAFT
   } });
+  if (marksFile(w).exists) marksFile(w).delete();
+  await part.move(mp3File(w), { overwrite: true });
   put(marksFile(w), JSON.stringify(marks));   // last, so a fetch cut short is fetched again
   return { ...marks, uri: mp3File(w).uri, kept: true };
+}
+
+// The reading DAEMONS has published now (bookaudio.py's sources hash), or null when it cannot be asked: an open book's
+// from its chapters, a sealed one's from the comment at its zip's end -- its last bytes only, so nothing sealed is
+// fetched to ask (GitHub refuses a range counted from the end, so its size first). On the phone, where a book is kept.
+async function published(w: Recorded): Promise<string | null> {
+  const B = BOOKS[w];
+  try {
+    if (!B.sealed) return JSON.parse(new TextDecoder().decode(await fetched(`${AUDIO}${B.file}.chapters.json`))).sources ?? null;
+    const url = `${AUDIO}${B.file}.zip`;
+    const size = Number((await fetch(url, { method: "HEAD" })).headers.get("content-length"));
+    if (!size) return null;
+    const tail = new Uint8Array(await (await fetch(url, { headers: { range: `bytes=${Math.max(0, size - 512)}-` } })).arrayBuffer());
+    return /sources (\w+)/.exec(String.fromCharCode(...tail))?.[1] ?? null;
+  } catch { return null; }
 }
 
 const clock = (s: number) => {
@@ -140,11 +161,13 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
   const [marks, setMarks] = useState<Marks | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [stale, setStale] = useState(false);   // a newer reading is out than the one kept here
   const key = warning ? keyOfBook(which === "eudaimon" || which === "unity" ? which : "hermetic", warning) : null;
 
   useEffect(() => {   // how long it is, before anything is fetched (an open book's chapters are small)
     if (!kept(which) && !B.sealed) fetched(`${AUDIO}${B.file}.chapters.json`)
       .then((b) => setMarks(JSON.parse(new TextDecoder().decode(b)))).catch(() => {});
+    if (ON_PHONE && kept(which)) published(which).then((s) => { if (s && s !== kept(which)?.sources) setStale(true); });
   }, [which]);
 
   const mine = current?.which === which;   // this book is the one in the player
@@ -153,11 +176,21 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
   const now = mine ? status.currentTime ?? 0 : 0;
   const here = (info?.chapters ?? []).filter((c) => c.start <= now + 0.5).pop();
 
+  // the book to play or hand on: the one kept, or fetched -- again, when a newer reading is out; with no signal, the kept one
+  const ready = async (): Promise<Heard> => {
+    let got = h;
+    if (got && !stale) return got;
+    setBusy(B.sealed ? "Opening it…" : !ON_PHONE ? "Finding it…" : got ? "Fetching the newer reading…" : "Fetching it from DAEMONS, once…");   // DRAFT
+    if (got && current?.which === which) { leave(which, p.currentTime); p.pause(); current = null; }   // never write under the player
+    try { got = await heard(which, key, setBusy, !!got); setStale(false); }
+    catch (e) { if (!got) throw e; }
+    setH(got);
+    return got;
+  };
   const play = async () => {
     setError("");
     try {
-      let got = h;
-      if (!got) { setBusy(B.sealed ? "Opening it…" : ON_PHONE ? "Fetching it from DAEMONS, once…" : "Finding it…"); got = await heard(which, key, setBusy); setH(got); }   // DRAFT
+      const got = await ready();
       await setAudioModeAsync(BOOK_MODE);
       if (current?.uri !== got.uri) {
         if (current) leave(current.which, p.currentTime);
@@ -177,23 +210,20 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
   const share = async () => {
     setError("");
     try {
-      let got = h;
-      if (!got) { setBusy(B.sealed ? "Opening it…" : "Fetching it from DAEMONS, once…"); got = await heard(which, key, setBusy); setH(got); }   // DRAFT
+      const got = await ready();
       await Sharing.shareAsync(got.uri, { UTI: "public.mp3", mimeType: "audio/mpeg", dialogTitle: B.title });
     } catch (e) { setError((e as Error).message); } finally { setBusy(null); }
   };
   const tab = async () => {
     if (!B.sealed) { window.open(`${AUDIO}${B.file}.mp3`, "_blank"); return; }
-    let got = h;
-    if (!got) { setBusy("Opening it…"); try { got = await heard(which, key); setH(got); } finally { setBusy(null); } }   // DRAFT
-    window.open(got.uri, "_blank");
+    try { window.open((await ready()).uri, "_blank"); } finally { setBusy(null); }
   };
 
   return (
     <Card>
       <Eyebrow>{`LISTEN${info ? ` · ${Math.round(info.duration / 60)} MIN` : ""}`}</Eyebrow>
       <Small>{busy ?? (mine && here ? `${here.title} · ${clock(now)} of ${clock(info?.duration ?? status.duration)}`
-        : `${B.reads}${leftAt()[which] ? ` It goes on from ${clock(leftAt()[which]!)}.` : ""} DRAFT`)}</Small>
+        : `${B.reads}${leftAt()[which] ? ` It goes on from ${clock(leftAt()[which]!)}.` : ""}${stale ? " A newer reading is out; LISTEN fetches it." : ""} DRAFT`)}</Small>
       <XStack gap={10} flexWrap="wrap" alignItems="center">
         <ListenControl phase={busy ? "making" : mine && status.playing ? "speaking" : null} onListen={play} onStop={pause} ink={ink} />
         {mine && entries.length ? <Action label="‹ Chapter" onPress={back} /> : null}

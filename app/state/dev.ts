@@ -101,20 +101,23 @@ export function pretendLife<L extends { mood: number; word: string; tired: strin
 export type Book = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "play";   // C-297: the dawn half; C-299: the mended book
 export type Session = { books: Partial<Record<Book, boolean>>; events: Record<number, boolean>;
                         school: Partial<Record<"textbook" | "diploma", boolean>>; hour: boolean | null;
-                        dawn: boolean | null };   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12
-const blank = (): Session => ({ books: {}, events: {}, school: {}, hour: null, dawn: null });
+                        dawn: boolean | null;   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12
+                        aurora?: boolean | null };   // C-305: THE AURORA's nights, as the game's NIGHTS OF LIGHT
+const blank = (): Session => ({ books: {}, events: {}, school: {}, hour: null, dawn: null, aurora: null });
 let session: Session = blank();
 const changed = new Set<() => void>();                        // net.ts: read every screen again
 export const sessionNow = () => session;
 export const onSession = (f: () => void) => { changed.add(f); return () => { changed.delete(f); }; };
 export function setSession(f: (s: Session) => Session) { session = f(session); tell(); changed.forEach((h) => h()); }
 export const restoreSession = () => { pretend = null; setSession(() => blank()); };
-export const sessionTouched = () => !!pretend || session.hour !== null || session.dawn !== null || [session.books, session.events, session.school].some((o) => Object.keys(o).length > 0);
+export const sessionTouched = () => !!pretend || session.hour !== null || session.dawn !== null || (session.aurora ?? null) !== null || [session.books, session.events, session.school].some((o) => Object.keys(o).length > 0);
 
 // the witching hour as the session has it: null, the clock's
 export const hourForced = () => (read().on ? session.hour : null);
 // T-519: THE CREATOR'S HOUR as the session has it: null, the clock's; on, as at its middle (its light whole, its tone sounding)
 export const dawnForced = () => (read().on ? session.dawn ?? null : null);
+// C-305: THE AURORA's nights as the session has them: null, the date's and the clock's; on, as at night on a night of light
+export const auroraForced = () => (read().on ? session.aurora ?? null : null);
 // a book asked for as if held: the companion's own read-only ?preview=1 (never kept, never written)
 const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/eudaimon": "eudaimon", "/api/unity": "unity", "/api/play": "play" };
 export const bookForced = (b: Book) => (read().on ? session.books[b] : undefined);
@@ -125,6 +128,8 @@ export function devRoute(path: string): { path: string; answer?: (r: any) => any
   const bare = path.split("?")[0], b = BOOK_PATH[bare];
   if (b && session.books[b] === true) return { path: `${bare}?preview=1` };
   if (b && session.books[b] === false) return { path, answer: (r) => (bare === "/api/play" ? { ...r, unlocked: false } : { held: false }) };
+  // C-305: THE UNITY BOOK forced held or not is the mending the den's aurora waits on
+  if (bare === "/api/today" && session.books.unity !== undefined) return { path, answer: (r) => r && ({ ...r, mended: session.books.unity }) };
   if (bare === "/api/progress" && (Object.keys(session.events).length || Object.keys(session.school).length)) {
     return { path, answer: (r) => r && ({ ...r,
       events: (r.events ?? []).map((e: any) => (e.n in session.events ? { ...e, held: session.events[e.n] } : e)),

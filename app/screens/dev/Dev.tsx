@@ -111,6 +111,12 @@ export function DevScreen({ ink }: { ink: string }) {
       </Card>
 
       <Card>
+        <Eyebrow>NIGHTS OF LIGHT</Eyebrow>
+        <Small>The aurora in the den, once THE UNITY BOOK is mended (or held here): as the date has it -- about one night in three, 8 PM to 5 AM, the same nights as the game -- or on now as on a night of light, or off.</Small>
+        <Choice value={s.aurora ?? null} options={[[null, "As the date"], [true, "On"], [false, "Off"]]} onPick={(v) => setSession((x) => ({ ...x, aurora: v }))} ink={ink} />
+      </Card>
+
+      <Card>
         <Eyebrow>YOUR DAEMON</Eyebrow>
         {life?.care ? <PretendPanel truth={life} onClose={() => {}} />
           : <Small color="$color8">{life ? "No care to set yet: this companion has not looked after a daemon." : "Asking the companion..."}</Small>}

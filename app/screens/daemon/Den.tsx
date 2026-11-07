@@ -3,7 +3,7 @@
 // views (a line is a thin rotated bar), so it needs nothing native and draws the same on the site. The daemon walks it
 // side to side and faces the way it goes; asleep, it stays put with a z; `hop` changes when it is tended.
 import type { Thrive } from "../../../server/src/thrive";
-import { DawnLight, DawnRim, HourPie, WitchShimmer } from "../shared/Witching";
+import { AuroraSky, DawnLight, DawnRim, HourPie, WitchShimmer } from "../shared/Witching";   // C-305 the aurora
 import { Served, type Serving } from "./Provision";   // C-302   // C-236, C-237; T-519 the creator's hour
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
@@ -85,9 +85,9 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null }:
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null }:
   { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
-    witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null }) {   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
+    witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; aurora?: string | null }) {   // C-305: the edition whose line the sky takes   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
   const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
@@ -133,6 +133,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
       {Array.from({ length: 16 }, (_, i) => (                 // the wall over its deep, in bands
         <View key={i} style={{ position: "absolute", left: 0, right: 0, top: (fy * i) / 16, height: fy / 16 + 1, backgroundColor: mix(d.wall, d.deep, i / 15) }} />
       ))}
+      {aurora ? <AuroraSky w={w} fy={fy} edition={aurora} /> : null}{/* C-305: a night of light, the book mended */}
       <View style={[StyleSheet.absoluteFill, { opacity: 0.22 }]}>{shapes.map((s, i) => <ShapeView key={i} s={s} ink={ink} />)}</View>
       {thrive ? <WeekMarks thrive={thrive} w={w} fy={fy} ink={d.glow} /> : null}
       <View style={{ position: "absolute", left: 0, right: 0, top: fy, bottom: 0, backgroundColor: d.floor, borderTopWidth: 1.5, borderTopColor: mix(d.floor, faintInk, 0.25) }} />

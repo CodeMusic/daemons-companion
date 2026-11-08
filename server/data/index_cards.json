@@ -13820,6 +13820,11 @@
      "name": "OCCLUDE"
     },
     {
+     "level": 30,
+     "move": 383,
+     "name": "CRYPTOPHASIA"
+    },
+    {
      "level": 36,
      "move": 249,
      "name": "CRACK"

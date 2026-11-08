@@ -28,5 +28,6 @@
   "CONTENT": "north",
   "CONTEXT": "south"
  },
- "play_hours_per_season": 7
+ "play_hours_per_season": 7,
+ "forms": "T-532: MUSAI, CODEMUSAI, SEEKMUSAI, CAREMUSAI, LENSMUSAI and MASKMUSAI wear the season's form: season(edition, date) with a clock; with none, the play-time year, order[(2 + playTimeHours // 7) % 4] (from summer), then the edition's hemisphere. A battle keeps the season it began in. species.json's \"seasons\" holds each form's picture and INDEX entry."
 }

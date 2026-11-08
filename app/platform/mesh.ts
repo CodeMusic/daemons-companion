@@ -102,7 +102,7 @@ async function hedge(arms: (() => Promise<Thought>)[], cover: (() => Promise<Tho
 // ---- one talk ----
 export type Trail = { heard?: string; thought?: string; said?: string };
 export type MeshSpoken = Spoken & { trail: Trail; ring: Ring; voice: Promise<{ audioBase64?: string | null; voiced?: boolean } | null> };
-const talked: { said: string; answer: string }[] = [];   // the talk so far, whichever mind answered each turn
+const threads: Record<Kind, { said: string; answer: string }[]> = { talk: [], guide: [] };   // each kind's talk so far, whichever mind answered each turn
 
 export async function meshTalk(o: { kind: Kind; name: string; recording?: string; audioBase64?: () => Promise<string>;
                                     audioMime?: string; text?: string }): Promise<MeshSpoken> {
@@ -122,7 +122,7 @@ export async function meshTalk(o: { kind: Kind; name: string; recording?: string
   if (!said && (ring === "phone" || !hubOk)) throw new Error("Nothing could hear it: this phone cannot, and the hub is out of reach.");   // DRAFT
 
   // THOUGHT: the arms the ring allows, strongest first; this phone covers
-  const history = talked.slice(-4);
+  const history = threads[o.kind].slice(-4), talked = threads[o.kind];
   const askHub = async (): Promise<Thought> => {
     const body: Record<string, unknown> = { ...(history.length ? { history } : {}), speak: false, ring, ...(o.kind === "guide" ? { guide: true } : {}) };
     if (said) body.text = said; else { body.audioBase64 = await o.audioBase64!(); body.audioMime = o.audioMime ?? "audio/mp4"; trail.heard = "by the hub"; }   // DRAFT

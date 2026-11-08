@@ -30,7 +30,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index`, and `OwnVoice` (a daemon telling of itself over its card) |
 | `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud (and the voice button that says if a voice is made, `voiceButton.tsx`), the book recordings, the books' covers and pictures from the game, HALFTONE's two tones (`tone.tsx`), the LOGS |
 | `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |
-| `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), the voices kept on the phone (`voiceFile.ts`) and made in the background (`rendering.ts`), `useApi` |
+| `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), THE MIND that routes across every mind (`mesh.ts`, C-307) and an endpoint called from the phone (`endpoint.ts`), the voices kept on the phone (`voiceFile.ts`) and made in the background (`rendering.ts`), `useApi` |
 | `state/` | types, data, the look, the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`) |
 | `art/` | species sprites (`speciesArt.ts`, written by `tools/species-art.py`), device sprites, the casino's dress |
 | `game/` | the game's ROM and its gate |

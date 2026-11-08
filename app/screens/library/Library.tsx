@@ -6,7 +6,8 @@ import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { BOOK, GUIDE_COVER, TEXTBOOK_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../../state/data";
 import { useSubtleInk } from "../../state/look";   // C-203
-import { api, apiLater, ON_PHONE } from "../../platform/net";
+import { api, ON_PHONE } from "../../platform/net";
+import { meshTalk } from "../../platform/mesh";   // C-307
 import { songSound } from "../../sound/songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData, Spoken } from "../../state/types";
 import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small } from "../../ui/ui";
@@ -389,9 +390,17 @@ function AskGuide() {
   const [q, setQ] = useState("");
   const [state, setState] = useState<"" | "listening" | "thinking">("");
   const [said, setSaid] = useState<Spoken | null>(null);
-  const ask = async (b: Record<string, unknown>) => {
+  // C-307: through THE MIND -- heard on the phone where it can, answered by the hub (its pages are there) in the GUIDE's ring
+  const ask = async (b: { text?: string; recording?: string }) => {
     setState("thinking");
-    try { const r = await apiLater<Spoken>("/api/ai/talk", { ...b, guide: true }); setSaid(r); speak(r.audioBase64); }
+    try {
+      const uri = b.recording;
+      const r = await meshTalk({ kind: "guide", name: "THE GUIDE", text: b.text, recording: uri,
+                                 audioBase64: uri ? () => new File(uri).base64() : undefined, audioMime: "audio/mp4" });
+      setSaid(r); setState("");
+      const v = await r.voice;
+      if (v?.audioBase64) speak(v.audioBase64);
+    }
     catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
   };
   const typed = () => { const t = q.trim(); if (t && !state) { setSaid({ heard: t }); setQ(""); ask({ text: t }); } };
@@ -406,7 +415,7 @@ function AskGuide() {
     await recorder.stop();
     await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
     if (!recorder.uri) { setState(""); return; }
-    ask({ audioBase64: await new File(recorder.uri).base64(), audioMime: "audio/mp4" });
+    ask({ recording: recorder.uri });
   };
   const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
   return (

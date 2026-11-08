@@ -7,7 +7,7 @@ import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ACTS, castLine, playerId } from "../../state/data";
 import { DenStage } from "./Den";
-import { ALONE, api, apiLater, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
+import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
 import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../../state/types";
 import { Action, Art, Card, CareKey, careSound, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
 import { hearSettings, soundLevel } from "../../sound/tuneSound";
@@ -21,7 +21,7 @@ import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard, Under } from "../shared/Reads";   // C-203, C-204
 import { AsAbove, HalloweenNote, HourCount, useAurora, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../shared/Witching";   // C-236, C-237, C-240; T-519
 import { FirstSight } from "../shared/Hermetic";   // C-238
-import { talkHere, thinker } from "../../platform/mind";   // C-280
+import { meshTalk, trailSaid } from "../../platform/mesh";   // C-307
 import { useApi } from "../../platform/useApi";
 import { heardSync } from "../../ui/received";              // C-261
 import type { Arrival } from "../../../server/src/core";
@@ -221,6 +221,7 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
   const speak = useVoice();
   const [state, setState] = useState<"" | "listening" | "thinking">("");
   const [said, setSaid] = useState<Spoken | null>(null);
+  const [trail, setTrail] = useState("");   // C-307: which minds took part
   const [heard, setHeard] = useState<File | null>(null);   // the answer's voice, kept on the phone to hear again
   const answered = (r: Spoken) => {
     const f = r.audioBase64 && r.answer ? keepVoice(`talk:${r.answer}`, r.audioBase64) : null;
@@ -239,14 +240,13 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
     if (!recorder.uri) { setState(""); return; }
     setState("thinking");
     try {
-      if (await thinker() === "phone") {                       // C-280: heard and answered on this phone
-        const r = await talkHere(recorder.uri, name);
-        setSaid(r); answered(r);
-        return;
-      }
-      const audioBase64 = await new File(recorder.uri).base64();
-      const r = await apiLater<Spoken>("/api/ai/talk", { audioBase64, audioMime: "audio/mp4" });   // C-180: never held open
-      setSaid(r); answered(r);
+      // C-307: THE MIND -- heard, thought and said by whichever minds the ring allows; the words shown as soon as thought
+      const uri = recorder.uri;
+      const r = await meshTalk({ kind: "talk", name, recording: uri, audioBase64: () => new File(uri).base64(), audioMime: "audio/mp4" });
+      setSaid(r); setTrail(trailSaid(r.trail)); setState("");
+      const v = await r.voice;
+      setTrail(trailSaid(r.trail));
+      if (v?.audioBase64) answered({ ...r, audioBase64: v.audioBase64 });
     } catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
   };
   return (
@@ -260,6 +260,7 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
       </Button>
       {said?.heard ? <Small color="$color10">{`“${said.heard}”`}</Small> : null}
       {said?.answer ? <Text fontSize={16} lineHeight={24} color="$color12">{said.answer}</Text> : null}
+      {said?.answer && trail ? <Small color="$color8">{trail}</Small> : null}{/* C-307, DRAFT */}
       {heard && state === "" ? <Action label="HEAR IT AGAIN" ink={ink} onPress={() => speak(heard)} /> : null}{/* DRAFT */}
       {said?.error ? <Small color="$color8">{said.error}</Small> : null}
     </Card>

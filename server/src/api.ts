@@ -724,6 +724,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   setInterval(warmTalk, 30 * 60_000).unref();   // a no-op while both thinkers hold: setups only when a persona changed
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
+  // C-307: THE MIND's ring -- "home" keeps the work in the house: the Tiiny and the boards as they are, n8n only with its
+  // local model (C-66: the words never leave home), never OpenRouter
+  const ringed = (p: string, ring: unknown) => ring === "home" && (p === "auto" || p === "openrouter") ? "local" : p;
   // C-283: a night's dream, told by whoever WHO ANSWERS WHEN YOU TALK chose (the Tiiny, the house's module, or n8n's) with
   // the day before it as context; the written dream stays if none answers. In the background: the night is answered at once
   // C-293: every talker is told who is dreaming -- its INDEX self, feelings, care and bond (dreams.ts dreamerSaid) -- and asked
@@ -749,7 +752,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
     if (!d || dream.by !== "words" || telling.has(dream.id)) return;
     telling.add(dream.id);
-    const day = dayBefore(store, dream.from), who = dreamerOf(ecfg, deviceId), p = talkProvider();
+    const day = dayBefore(store, dream.from), who = dreamerOf(ecfg, deviceId), p = ringed(talkProvider(), store.getSetting("mind.ring.dream"));   // C-307
     const self = dreamerSaid(who), ask = dreamAsk(dream, day, who), text = `${self}\n${ask}`;
     const viaHouse = async () => (house.any ? (await house.talk({ text: `${dreamerSaid({ nickname: who.nickname, name: who.name, types: who.types, feelings: who.feelings })} ${dreamAsk(dream, day, who, "short")}`,
                                                                    history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
@@ -1153,7 +1156,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-180: or "module" -- the modules in the house first (ai/house.ts); and, beside it, who reads the INDEX aloud
       const talkView = async () => ({ provider: talkProvider(), first: talkFirstOf(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "",
-                                      tiiny: tiinyView((k) => store.getSetting(k)), voices: voiceGeneration((k) => store.getSetting(k)) });
+                                      tiiny: tiinyView((k) => store.getSetting(k)), voices: voiceGeneration((k) => store.getSetting(k)),
+                                      rings: { dream: store.getSetting("mind.ring.dream") === "home" ? "home" : "anywhere" } });   // C-307
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       // C-303: the voices' generation (ai/voices.ts) -- a phone keeps its voices under it, and forgets them when it moves
       if (req.method === "GET" && path === "/api/voices/generation") return send(res, 200, { generation: voiceGeneration((k) => store.getSetting(k)) });
@@ -1194,6 +1198,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
         if (b.first !== undefined && !["n8n", "module", "tiiny"].includes(b.first)) return send(res, 400, { error: "first is module, n8n or tiiny" });
         if (b.first === "tiiny" && !tiinyIn((k) => store.getSetting(k))) return send(res, 400, { error: "Give the Tiiny's address first." });   // DRAFT
+        if (b.rings?.dream !== undefined && !["anywhere", "home"].includes(b.rings.dream)) return send(res, 400, { error: "rings.dream is anywhere or home" });
+        if (b.rings?.dream !== undefined) store.setSetting("mind.ring.dream", b.rings.dream === "home" ? "home" : null);   // C-307
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
         if (b.first !== undefined) setTalkFirst(store, b.first);   // C-211
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);
@@ -1372,7 +1378,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           text: typeof b.text === "string" ? b.text.slice(0, 1000) : undefined,
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
           history: Array.isArray(b.history) ? b.history.slice(-6) : talks.history(who),
-          provider: b.provider ?? talkProvider(), speak: b.speak !== false, voice: "index",
+          provider: ringed(b.provider ?? talkProvider(), b.ring), speak: b.speak !== false, voice: "index",
           localModel: ecfg.talk.localModel,
           ...talkWho(ecfg, store, deviceId),
           ...(typeof b.guide === "function" ? { guide: b.guide as (heard: string) => string, history: [] } : {}),   // C-209: the GUIDE answers, afresh each time
@@ -1759,6 +1765,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         const told = ownTelling(ecfg, store, deviceId, b);   // C-303: {own: true} -- what it says of itself, in its own voice
         if (told) return answer(PRIORITY.reading, async () => ({ ...await readAloud(told.text, told.recipe), answer: told.text }));
+        // C-307: {text, daemon: true} -- a talk's answer thought elsewhere (this phone, an endpoint), said in the carried daemon's
+        // own voice; {ring: "home"}: only the house's voices (the Tiiny, the boards), never n8n's
+        // ({reader: true}: the same in the reader's voice -- the GUIDE's answers)
+        if ((b.daemon === true || b.reader === true) && typeof b.text === "string" && b.text.trim()) {
+          const text = b.text.replace(/\n/g, " ").slice(0, 600), recipe = b.daemon === true ? voiceFor(ecfg, store, deviceId).recipe : undefined;
+          if (b.ring === "home") return answer(PRIORITY.reading, async () => (await fromModule(text, recipe)) ?? { error: "No voice in the house could say it." });   // DRAFT
+          return answer(PRIORITY.reading, () => readAloud(text, recipe));
+        }
         // 2026-11-07: {text, whole: true} -- all of it (a dream, a journal's chapter), read in parts and joined into one voice
         if (b.whole === true && typeof b.text === "string" && b.text.trim()) {
           const parts = voicePieces(b.text.slice(0, WHOLE_MOST));

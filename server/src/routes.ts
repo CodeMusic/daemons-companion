@@ -36,7 +36,7 @@ export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
-import { checkNight, dreamsOf, keepNight, rested, type Dream } from "./dreams.js";   // C-200
+import { checkNight, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd } from "./evolve.js";
 import { WAKES } from "./life.js";   // C-293: the cares that wake it, one list
@@ -96,7 +96,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/groves") return ok(GROVES);     // C-137: the groves' universes and signs, for the Tab5 (no save needed)
     if (path === "/api/school") return ok(SCHOOL);     // C-137: CALLOW SCHOOL's floors and the paper, for the Tab5
     if (path === "/api/marks") return ok(MARKS);
-    if (path === "/api/dreams") return ok({ dreams: dreamsOf(store) });   // C-200: the dream journal, the newest first
+    if (path === "/api/dreams") return ok({ dreams: dreamsOf(store).map((d) => ({ ...d, title: titleOf(d) })) });   // C-200: the dream journal, the newest first; C-308: each titled
     if (path === "/api/where") {                          // C-174: the newest first; walked since the asker's midnight
       const fixes = fixesOf(store, a.query?.device || undefined), since = new Date(a.query?.since ?? "");
       return ok({ fixes, walked: isNaN(since.getTime()) ? null : walkedSince(fixes, since) });

@@ -13,7 +13,8 @@ import type { Store } from "./store.js";
 export type Night = { from: string; to: string; hours: number; stirs: number; tucked: boolean };
 export type Quality = "vivid" | "quiet" | "broken";
 export type Dream = Night & { id: number; at: string; quality: Quality; text: string; by: "module" | "words";
-                              nickname: string; species: number; personality: number | null; device: string };
+                              nickname: string; species: number; personality: number | null; device: string;
+                              title?: string; left?: string; right?: string };   // C-308: its title, and the two tellings it was made from
 
 // the night as the watch tells it: two times, an hour or more apart and at most sixteen; its stirs; tucked in or not
 export function checkNight(b: any): Night | string {
@@ -45,6 +46,13 @@ const IMAGES = [
   "you, small and far away, waving", "a garden where every seed was a word",
   "the hum of the house at night, and a song inside it", "a map that drew itself as it walked",
 ];
+// C-308: a written dream's title is the game's own for its image (DAEMONS docs/its_dreams.json, approved 2026-10-28), in
+// the same order as IMAGES -- the dream the cartridge files under ITS DREAMS is called the same here
+export const DREAM_TITLES = [
+  "THE HUMMING GRASS", "THE LIT CITY", "THE NAMED WAVES", "THE BOOKS ALOUD", "THE OPEN DOOR", "FALLING UPWARD",
+  "LEAVES FOR ROADS", "A NAME ON WATER", "THE SUNLIT SHELF", "THE LONG WALK", "RAIN FALLING UP", "THE MOONLIT BRIDGE",
+  "A WAVE FROM FAR", "THE WORD GARDEN", "THE HOUSE HUMMING", "THE WALKING MAP",
+];
 const WAKES = ["bright", "rested", "humming", "glad of you", "ready for the day"];
 // the same night, the same dream: chosen by the night's end and the daemon
 // (a whole mix of the bits: a plain multiply kept the low bits, and nights a day apart -- 24 hours -- told one dream)
@@ -67,6 +75,8 @@ export function dreamImage(d: { to: string; personality: number | null; quality:
   const k = d.quality === "vivid" ? 1 : d.quality === "broken" ? 3 : 5;
   return IMAGES.indexOf(pickFrom(IMAGES, seedOf(d, d.personality), k));
 }
+// C-308: a dream's title -- the one its making gave it, else the game's title for its image
+export const titleOf = (d: Dream): string => d.title || DREAM_TITLES[dreamImage(d)] || "A DREAM";
 // the dream's day, as the game counts it: days since 2026-01-01 by the local date the night ended
 export function dreamDay(d: { to: string }): number {
   const t = new Date(d.to);
@@ -140,7 +150,7 @@ export function dreamerSaid(w: Dreamer, trainer = w.trainer || "your trainer"): 
 }
 // what the daemon is asked, as the user would hear it: the night, the day before it (C-283), and how to tell it (C-293).
 // `short` for the house's small module, which keeps the words of a "never" (house.ts): its asks are all positive.
-export function dreamAsk(n: Night, day: string | null = null, w: Dreamer | null = null, length: "short" | "day" = "day"): string {
+export function dreamAsk(n: Night, day: string | null = null, w: Dreamer | null = null, length: "short" | "day" = "day", lens?: Lens): string {
   const how = { vivid: "a long, deep sleep", quiet: "a quiet night", broken: "a short, restless night" }[quality(n)];
   const trainer = w?.trainer || "your trainer";
   const night = `You have just woken after ${n.hours} hours of sleep${n.tucked ? `, tucked in by ${trainer}` : ""}: ${how}.`;
@@ -149,12 +159,68 @@ export function dreamAsk(n: Night, day: string | null = null, w: Dreamer | null 
            "Two or three sentences, in the past tense, in strange and gentle images.";
   return `${night}\n` + (day ? `Yesterday, with ${trainer}: ${day}.\n` : "") +
     `Tell ${trainer} the dream you had last night. Begin with the words "I dreamt", in the first person and the past tense, ` +
-    "three or four sentences, under 320 characters. It is a dream, not a report: everything real comes back changed into " +
+    (lens ? "four or five sentences, under 420 characters. " : "three or four sentences, under 320 characters. ") + "It is a dream, not a report: everything real comes back changed into " +
     "an image. The dream happens inside what your INDEX entry says you are -- its world is your nature, made a place. " +
     "Your feelings are its light and weather; how fed, watered and rested you are is what you carry; how close you feel " +
     "is how near your trainer is in it. Yesterday, and what your trainer is working toward, come back disguised, as " +
     "images only you would find for them. Say none of them plainly -- no goals, steps, meals, apps or devices by name -- " +
-    "and no advice, no lists. Strange, gentle, and your own.";
+    "and no advice, no lists. Strange, gentle, and your own." + (lens ? `\n${LENS[lens]}` : "");
+}
+
+// ---- C-308: a dream told twice and made whole ------------------------------------------------------------------------
+// The user, 2026-11-08: the same night, from the same dreamer and the same day, told by two perspectives at once -- "a
+// logical time-focused bottom up" one and "a creative free-associative top-down intuitive" one -- and then a third that
+// joins them makes the dream kept, and its title. The background thinker writes all three (the Tiiny thinking, then the
+// boards: minutes, overnight, nobody waiting). The app shows each telling through its own lens: red the in-order one,
+// blue the all-at-once one, purple the two made whole. Every word asked and every word kept is DRAFT; never "left" or
+// "right brain" to the daemon -- it is only asked how to tell it.
+export type Lens = "left" | "right";
+const LENS: Record<Lens, string> = {
+  left: "Tell it in order, as it went: from the start of the night to waking, one thing at a time -- first, then, after that, " +
+        "until. Build it up from small, exact details, each leading to the next: what caused what, how long it took, what " +
+        "you counted on the way.",
+  right: "Tell it as it arrived: all at once, the whole of it before any part. No clock and no order -- one image becoming " +
+         "another, things that rhyme with each other, the feeling first and then what it was like.",
+};
+export type Lenses = { title: string; left: string; right: string; text: string };
+export type Write = (system: string, user: string, most: number) => Promise<string | null>;
+export function mergeAsk(left: string, right: string, w: Dreamer | null = null): string {
+  const trainer = w?.trainer || "your trainer";
+  return `You told last night's dream two ways.\nIN ORDER: ${left}\nALL AT ONCE: ${right}\n` +
+    "Now tell it once, whole: keep what the in-order telling knows of what came after what, and what the all-at-once " +
+    "telling knows of images and feeling, and let each correct the other. Begin with the words \"I dreamt\", first person, " +
+    `past tense, four or five sentences, under 420 characters, told to ${trainer} in your own voice. Then give it a title: ` +
+    "two to five words that are the dream itself -- an image from it, not a summary and not a moral. " +
+    'Answer with JSON only: {"title": "...", "dream": "I dreamt ..."}';
+}
+// the joined telling and its title, from JSON or, failing that, a "TITLE:" line; null with no dream in it
+export function readMerged(raw: string | null | undefined): { title: string; dream: string } | null {
+  const t = String(raw ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  if (!t) return null;
+  let title = "", dream = "";
+  for (const m of t.match(/\{[\s\S]*?\}/g) ?? []) {
+    try { const j = JSON.parse(m); if (typeof j?.dream === "string") { dream = j.dream; title = String(j.title ?? ""); break; } } catch { /* the next */ }
+  }
+  if (!dream) {
+    const tl = t.match(/^\s*\**TITLE\**\s*:\s*(.+)$/im);
+    title = tl ? tl[1] : "";
+    dream = t.replace(/^\s*\**TITLE\**\s*:.*$/im, "").replace(/^\s*\**DREAM\**\s*:\s*/im, "").trim();
+    if (/^\s*[{\[]/.test(dream)) return null;
+  }
+  dream = asDreamt(dream, 480);
+  title = title.replace(/["'“”*.]+/g, " ").replace(/\s+/g, " ").trim().toUpperCase().slice(0, 40).trim();
+  return dream ? { title, dream } : null;
+}
+// The two tellings at once, then the one made of them -- null when any of the three does not come (the written dream
+// stays, and the night may be told the old way). Never throws.
+export async function dreamTwice(n: Night, day: string | null, w: Dreamer, write: Write): Promise<Lenses | null> {
+  const self = dreamerSaid(w);
+  const tell = (lens: Lens) => write(self, dreamAsk(n, day, w, "day", lens), 400).then((x) => (x ? asDreamt(x, 480) : "")).catch(() => "");
+  const [left, right] = await Promise.all([tell("left"), tell("right")]);
+  if (!left || !right) return null;
+  const made = readMerged(await write(self, mergeAsk(left, right, w), 500).catch(() => null));
+  if (!made) return null;
+  return { left, right, text: made.dream, title: made.title };   // no title: titleOf gives the game's for its image
 }
 // C-293: a telling kept as the daemon telling it -- "I dreamt ..." -- whatever the talker began with, cut at a sentence
 export function asDreamt(text: string, most = 360): string {
@@ -189,6 +255,14 @@ export function keepNight(store: Store, n: Night, who: { nickname: string; speci
   const d: Dream = { ...n, ...who, id: (list[0]?.id ?? 0) + 1, at: new Date().toISOString(), quality: quality(n),
                      text: dreamWords(n, who.nickname, who.personality), by: "words" };
   keep(store, [d, ...list]);
+  return d;
+}
+// C-308: a night made whole -- its two tellings, the one kept, and its title
+export function keepLenses(store: Store, id: number, l: Lenses): Dream | null {
+  const list = dreamsOf(store), d = list.find((x) => x.id === id);
+  if (!d || !l.text) return null;
+  Object.assign(d, { text: l.text, left: l.left, right: l.right, by: "module" }, l.title ? { title: l.title } : {});
+  keep(store, list);
   return d;
 }
 export function rewriteDream(store: Store, id: number, text: string): Dream | null {

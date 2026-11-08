@@ -63,7 +63,7 @@ import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303
 import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
-import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, rewriteDream, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
+import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
@@ -757,6 +757,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const viaHouse = async () => (house.any ? (await house.talk({ text: `${dreamerSaid({ nickname: who.nickname, name: who.name, types: who.types, feelings: who.feelings })} ${dreamAsk(dream, day, who, "short")}`,
                                                                    history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
     (async () => {
+      // C-308: with a thinker in the house, the night told twice at once and made whole, with its title -- the old single
+      // telling below only when that does not come
+      if (house.any) {
+        const made = await dreamTwice(dream, day, who, (system, user, most) => house.write(system, user, most)).catch(() => null);
+        if (made && keepLenses(store, dream.id, made)) return;
+      }
       let answer: string | undefined;
       const tiiny = tiinyIn((k) => store.getSetting(k));
       if (p === "tiiny" && tiiny) {

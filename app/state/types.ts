@@ -142,7 +142,8 @@ export type IndexEntry = { national: number; species: number; name: string; boun
                     category?: string; types?: string[]; entry?: string; margin?: { state: string; text: string }; native?: string[];
   colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null;   // C-186: grey until gleaned
   // C-303: what a bound daemon says of itself, and its open mouth as patches on its 64px picture (null: not found yet)
-  said?: string; mouth?: { x: number; y: number; w: number; h: number; rgb: [number, number, number] }[] | null };
+  said?: string; mouth?: { x: number; y: number; w: number; h: number; rgb: [number, number, number] }[] | null;
+  season?: "winter" | "spring" | "summer" | "autumn" };   // C-310: the season a daemon with seasonal forms is shown in
 
 export type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
 

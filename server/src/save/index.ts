@@ -14,6 +14,7 @@ import { blocks, readBoxes, readSave, LAYOUT, type Layout } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
 import { openMouthOf, type Patch } from "../expressions.js";   // C-303
+import { season as seasonOf, type Season } from "../seasons.js";   // C-310
 
 const P = profileJson;
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -23,7 +24,8 @@ const M = marginsJson as unknown as { levels_carried: number; instinct_gender: n
 export type IndexEntry = { national: number; species: number; name: string; seen: boolean; bound: boolean; art: string | null;
   category?: string; types?: string[]; entry?: string; margin?: { state: "carried" | "neglected"; text: string }; native?: string[];
   colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null;
-  said?: string; mouth?: Patch[] | null };   // C-303: what a bound daemon says of itself, and its open mouth on its picture
+  said?: string; mouth?: Patch[] | null;      // C-303: what a bound daemon says of itself, and its open mouth on its picture
+  season?: Season };                          // C-310: the season a daemon with seasonal forms is shown in
 
 // C-186 (the user, 2026-10-24: "full INDEX cards with margins (coloured by understanding gleaned)"; their rule, through
 // the game session: type match). A card stays grey until the save holds the understanding whose lobe shares one of the
@@ -59,7 +61,7 @@ export function nativeLines(n: Native): string[] {
   return out;
 }
 
-export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: Layout = LAYOUT) {
+export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: Layout = LAYOUT, now: Date = new Date()) {
   const { sb2 } = blocks(save, l);
   const profile = readProfile(save, l);
   const bit = (at: number, n: number) => !!(sb2[at + ((n - 1) >> 3)] & (1 << ((n - 1) & 7)));
@@ -79,12 +81,17 @@ export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: L
     if (id.startsWith("_") || !row.national) continue;
     const seen = bit(P.sb2.index_seen, row.national), bound = bit(P.sb2.index_bound, row.national);
     if (!seen && !bound) continue;                          // the game shows nothing of a daemon not yet met
-    const art = row.art?.front ? `/art/species/${id}.png` : null;
-    const e: IndexEntry = { national: row.national, species: Number(id), name: row.name, seen: true, bound, art, native: nativeLines(row.native) };
+    // C-310 (DAEMONS T-532, T-534): a daemon with seasonal forms -- the MUSAI branch -- is drawn and read in the season its
+    // edition keeps today (CONTENT the northern year, CONTEXT the southern), as the game's own INDEX shows it
+    const s = row.seasons ? seasonOf(edition, now) : null, form = s ? row.seasons[s] : null;
+    const art = form?.art ? `/art/species/${id}_${s}.png` : row.art?.front ? `/art/species/${id}.png` : null;
+    const e: IndexEntry = { national: row.national, species: Number(id), name: row.name, seen: true, bound, art, native: nativeLines(row.native),
+                            ...(form ? { season: s! } : {}) };
     if (bound) {
-      Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: row.entry?.[edition] ?? "",
+      Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: form?.entry ?? row.entry?.[edition] ?? "",
                          colour: cardColour(row.types ?? [], profile.roots) });
-      if (row.said) Object.assign(e, { said: row.said, mouth: openMouthOf(row.art?.front) });   // C-303: it tells of itself
+      // C-303: it tells of itself (a seasonal form's mouth is not found yet, so it speaks without one)
+      if (row.said) Object.assign(e, { said: row.said, mouth: form ? null : openMouthOf(row.art?.front) });
       const m = profile.opus ? M.margins[id] : undefined;
       const state = !m ? null : grown.get(Number(id)) ? "carried" : boxed.has(Number(id)) ? "neglected" : null;
       if (m && state) {

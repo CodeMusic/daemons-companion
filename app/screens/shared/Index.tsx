@@ -115,7 +115,8 @@ export function IndexScreen({ ink }: { ink: string }) {
             {e.art ? <ShimmerArt path={e.art} size={64} on={open === e.national && !!e.said && !busy}
                                  onPress={() => own.speak(e.species, e.said!)} /> : null}
             <YStack flex={1}>
-              <Text fontFamily="$mono" fontSize={11} color="$color10">{`No. ${String(e.national).padStart(3, "0")}`}</Text>
+              {/* C-310: a daemon with seasonal forms says which season it is shown in (DRAFT) */}
+              <Text fontFamily="$mono" fontSize={11} color="$color10">{`No. ${String(e.national).padStart(3, "0")}${e.season ? ` · ${e.season.toUpperCase()}` : ""}`}</Text>
               <Text fontSize={16} fontWeight="600" color="$color12">{e.name}</Text>
               {e.bound ? <Small>{`${e.category} · ${(e.types ?? []).join(" / ")}`}</Small> : <Small>Seen</Small>}
             </YStack>

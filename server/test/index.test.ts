@@ -7,6 +7,8 @@ import { buildSave, type DaemonSpec } from "./build_save.js";
 import facesJson from "../data/faces.json" with { type: "json" };
 import foundJson from "../data/mouths.found.json" with { type: "json" };
 import { openMouthOf } from "../src/expressions.js";
+import speciesJson from "../data/species.json" with { type: "json" };
+import { existsSync } from "node:fs";
 
 const P = profileJson;
 const M = (marginsJson as any).margins;
@@ -93,5 +95,36 @@ describe("a mouth for the speaking overlay (C-303)", () => {
     for (const [x, y, w, h] of Object.values(found)) {
       expect(x >= 0 && y >= 0 && w >= 1 && h >= 1 && x + w <= 64 && y + h + 1 <= 64).toBe(true);
     }
+  });
+});
+
+// C-310 (DAEMONS T-532, T-534): the MUSAI branch, drawn and read in the season its edition keeps on the day
+describe("each MUSAI in today's season (C-310)", () => {
+  const SPECIES = speciesJson as unknown as Record<string, any>;
+  const jan = new Date(2026, 0, 15), jul = new Date(2026, 6, 15);
+  const ix = (edition: "CONTENT" | "CONTEXT", date: Date) =>
+    readIndex(save({ opus: false, party: [], seen: [133, 136], bound: [133] }), edition, undefined, date).entries;
+  it("draws and reads a bound one in its edition's season, and draws a seen one so too", () => {
+    const [musai, code] = ix("CONTENT", jan);
+    expect([musai.season, musai.art]).toEqual(["winter", "/art/species/133_winter.png"]);
+    expect(musai.entry).toBe(SPECIES["133"].seasons.winter.entry);
+    expect(musai.mouth).toBeNull();                        // its seasonal mouth is not found yet: it speaks without one
+    expect([code.season, code.art, code.entry]).toEqual(["winter", "/art/species/136_winter.png", undefined]);
+    expect(ix("CONTENT", jul)[0].art).toBe("/art/species/133_summer.png");
+  });
+  it("keeps CONTEXT on the southern year", () => {
+    const [musai] = ix("CONTEXT", jan);
+    expect(musai.season).toBe("summer");
+    expect(musai.entry).toBe(SPECIES["133"].seasons.summer.entry);
+  });
+  it("leaves every other daemon as it was", () => {
+    const [cub] = readIndex(save({ opus: false, party: [], seen: [1], bound: [1] }), "CONTENT", undefined, jan).entries;
+    expect(cub.season).toBeUndefined();
+    expect(cub.art).toBe("/art/species/1.png");
+  });
+  it("has a picture for every seasonal form", () => {
+    const forms = Object.values(SPECIES).flatMap((r: any) => Object.values(r?.seasons ?? {})) as { art: string }[];
+    expect(forms.length).toBe(24);
+    for (const f of forms) expect(existsSync(new URL(`../data/art/${f.art}`, import.meta.url))).toBe(true);
   });
 });

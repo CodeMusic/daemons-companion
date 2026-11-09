@@ -458,10 +458,11 @@ export async function artByJson(path: string): Promise<string> {
     keepArt(path, `data:image/png;base64,${png}`);
     return ART.get(path)!;
   }
-  const m = /^\/art\/(party|species)\/(\d+)\.png(?:\?(expression|mouth)=(\w+))?$/.exec(path);   // C-119: in an expression's shade; C-213: the open mouth
+  // C-119: in an expression's shade; C-213: the open mouth; C-310: a species' seasonal form, /art/species/<id>_<season>.png
+  const m = /^\/art\/(party|species)\/(\d+)(?:_(winter|spring|summer|autumn))?\.png(?:\?(expression|mouth)=(\w+))?$/.exec(path);
   if (!m) throw new Error("no such picture");
   if (m[1] === "species" && ALONE) {                   // C-111: painted on the phone, one at a time as the INDEX asks
-    const { png } = await api<{ png: string }>(`/api/art?species=${m[2]}`);
+    const { png } = await api<{ png: string }>(`/api/art?species=${m[2]}${m[3] ? `&season=${m[3]}` : ""}`);
     keepArt(path, `data:image/png;base64,${png}`);
   } else if (m[1] === "species") {
     everySpecies ??= api<{ species: Record<string, string> }>("/api/art?all=species").then(({ species }) => {
@@ -469,7 +470,7 @@ export async function artByJson(path: string): Promise<string> {
     }).catch((e) => { everySpecies = null; throw e; });
     await everySpecies;
   } else {
-    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}${m[3] ? `&${m[3]}=${m[4]}` : ""}`);
+    const { png } = await api<{ png: string }>(`/api/art?party=${m[2]}${m[4] ? `&${m[4]}=${m[5]}` : ""}`);
     keepArt(path, `data:image/png;base64,${png}`);
   }
   const uri = ART.get(path);

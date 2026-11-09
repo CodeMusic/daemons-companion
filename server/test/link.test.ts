@@ -191,6 +191,13 @@ describe("the pictures, as JSON, so they cross the relay (C-59)", () => {
     expect(species[ids[0]].startsWith("iVBOR")).toBe(true);                    // a PNG, base64
     expect((await get(`/api/art?species=${ids[0]}`)).png).toBe(species[ids[0]]);
     expect((await fetch(base + "/api/art")).status).toBe(400);
+    // C-310: the MUSAI branch's seasonal forms ride along, and come one at a time too
+    expect(species["133_winter"].startsWith("iVBOR")).toBe(true);
+    expect((await get("/api/art?species=133&season=winter")).png).toBe(species["133_winter"]);
+    expect((await fetch(base + "/api/art?species=133&season=monsoon")).status).toBe(400);
+    const raw = await fetch(base + "/art/species/133_winter.png");             // and as a picture, for the site
+    expect([raw.status, raw.headers.get("content-type")]).toEqual([200, "image/png"]);
+    expect(Buffer.from(await raw.arrayBuffer()).toString("base64")).toBe(species["133_winter"]);
   });
 });
 

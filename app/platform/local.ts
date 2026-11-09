@@ -108,9 +108,11 @@ const NO_LINK = { linked: false, via: null, lastSeen: null, firmware: "", routin
 
 // A daemon's picture, painted as the server paints it (paint.ts): its own streaks for a daemon in the save, the body's
 // mid tone for a species in the INDEX.
-async function speciesPng(species: string, moves: number[] | null, e: Expression | null = null): Promise<string | null> {
+async function speciesPng(species: string, moves: number[] | null, e: Expression | null = null,
+                          season: string | null = null): Promise<string | null> {   // C-310: or a seasonal form
   const row = SPECIES[species];
-  const name = row?.art?.front?.split("/").pop()?.replace("_front.png", "");
+  const name = season ? (row?.seasons?.[season]?.art as string | undefined)?.split("/").pop()?.replace(".png", "")
+                      : row?.art?.front?.split("/").pop()?.replace("_front.png", "");
   const mod = name && SPECIES_ART[name];
   if (!mod) return null;
   const asset = await Asset.fromModule(mod).downloadAsync();
@@ -177,7 +179,7 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
         return png ? ok({ png }) : no(404, "no art for that slot");
       }
       if (query.has("species")) {
-        const png = await speciesPng(String(query.get("species")), null);
+        const png = await speciesPng(String(query.get("species")), null, null, query.get("season"));   // C-310
         return png ? ok({ png }) : no(404, "no art for that species");
       }
     }

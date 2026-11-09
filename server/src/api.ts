@@ -348,13 +348,17 @@ const BOOKS_WITH_ART = ["subtle", "hermetic", "eudaimon", "unity"] as const;
 // C-24: a species as the INDEX draws it, in its type's colours (no routines to paint: the streak slots take the body's
 // mid tone) -- or null when the species has no art
 const speciesPngCache = new Map<string, Buffer | null>();
-function speciesPng(species: string): Buffer | null {
-  if (speciesPngCache.has(species)) return speciesPngCache.get(species)!;
+const SEASON_NAMES = ["winter", "spring", "summer", "autumn"];
+// C-310: or one of its seasonal forms (the MUSAI branch: data/art/species/<name>_<season>.png), painted the same way
+function speciesPng(species: string, season: string | null = null): Buffer | null {
+  const key = season ? `${species}_${season}` : species;
+  if (speciesPngCache.has(key)) return speciesPngCache.get(key)!;
   const row = SPECIES[species];
-  const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
+  const rel = season ? row?.seasons?.[season]?.art : row?.art?.front && row.art.front.split("/").pop().replace("_front.png", ".png");
+  const file = rel && join(ART_DIR, rel);
   const png = file && existsSync(file) ? readFileSync(file) : null;
   const body = png && row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;
-  speciesPngCache.set(species, body);
+  speciesPngCache.set(key, body);
   return body;
 }
 
@@ -2019,7 +2023,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that slot" });
         }
         if (q.has("species")) {
-          const png = b64(speciesPng(String(q.get("species"))));
+          const season = q.get("season");   // C-310: a seasonal form's picture
+          if (season !== null && !SEASON_NAMES.includes(season)) return send(res, 400, { error: "season: winter, spring, summer or autumn" });
+          const png = b64(speciesPng(String(q.get("species")), season));
           return png ? send(res, 200, { png }) : send(res, 404, { error: "no art for that species" });
         }
         // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
@@ -2035,7 +2041,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         if (q.get("all") === "species") {
           const all: Record<string, string> = {};
-          for (const n of Object.keys(SPECIES)) { const png = b64(speciesPng(n)); if (png) all[n] = png; }
+          for (const n of Object.keys(SPECIES)) {
+            const png = b64(speciesPng(n)); if (png) all[n] = png;
+            for (const s of Object.keys(SPECIES[n]?.seasons ?? {})) { const p = b64(speciesPng(n, s)); if (p) all[`${n}_${s}`] = p; }   // C-310
+          }
           return send(res, 200, { species: all });
         }
         return send(res, 400, { error: "art for ?party=<slot>, ?species=<id> or ?all=species" });
@@ -2077,9 +2086,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(body);
       }
-      const speciesArt = path.match(/^\/art\/species\/(\d+)\.png$/);   // C-24: as the INDEX draws it, in its type's colours
+      // C-24: as the INDEX draws it, in its type's colours; C-310: /art/species/<id>_<season>.png, a seasonal form
+      const speciesArt = path.match(/^\/art\/species\/(\d+)(?:_(winter|spring|summer|autumn))?\.png$/);
       if (req.method === "GET" && speciesArt) {
-        const body = speciesPng(speciesArt[1]);
+        const body = speciesPng(speciesArt[1], speciesArt[2] ?? null);
         if (!body) return send(res, 404, { error: "no art for that species" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(body);

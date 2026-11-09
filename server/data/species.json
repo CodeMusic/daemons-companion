@@ -5705,7 +5705,7 @@
    "autumn": {
     "art": "species/seekmusai_autumn.png",
     "entry": "Ranges every track in reach and some\nthat are not. Finds the nearest field.\nNearest is not the same as right.",
-    "final": false
+    "final": true
    }
   }
  },
@@ -5743,7 +5743,7 @@
    "winter": {
     "art": "species/codemusai_winter.png",
     "entry": "Its chest lights blink a pattern nothing\nelse in the cold can read. Something on\nrunners blinks back.",
-    "final": false
+    "final": true
    },
    "spring": {
     "art": "species/codemusai_spring.png",
@@ -5758,7 +5758,7 @@
    "autumn": {
     "art": "species/codemusai_autumn.png",
     "entry": "Its lights blink across a field and are\nanswered from somewhere moving. Nobody\nelse knows what was agreed.",
-    "final": false
+    "final": true
    }
   }
  },
@@ -8302,7 +8302,7 @@
    "autumn": {
     "art": "species/lensmusai_autumn.png",
     "entry": "Flies low in autumn, under the wind. It\nrecords the leaves. It has never\nrecorded the tree.",
-    "final": false
+    "final": true
    }
   }
  },
@@ -8348,12 +8348,12 @@
    "winter": {
     "art": "species/maskmusai_winter.png",
     "entry": "Crosses the frozen lake at speed, its\nscreen up. Its track covers the last\none. What is covered goes on.",
-    "final": false
+    "final": true
    },
    "spring": {
     "art": "species/maskmusai_spring.png",
     "entry": "Its runners drip. It covers the thaw for\nas long as it can. What it covers is\nnot removed.",
-    "final": false
+    "final": true
    },
    "summer": {
     "art": "species/maskmusai_summer.png",
@@ -8363,7 +8363,7 @@
    "autumn": {
     "art": "species/maskmusai_autumn.png",
     "entry": "Watches the first frost from under its\nscreen. It knows before anyone what\nthe lake will do.",
-    "final": false
+    "final": true
    }
   }
  },

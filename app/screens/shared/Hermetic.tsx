@@ -15,6 +15,8 @@ import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: th
 import { ReadAloud } from "../../ui/readAloud";   // C-208
 import { Cards } from "../library/Arcana";   // C-239; C-273: ?deck=hermetic, ABOVE and BELOW
 import { Listen } from "../../ui/bookAudio";   // C-277: its recording, opened with the key its warning gives
+import { usePlace } from "../../state/place";   // C-309
+import { SpokenPara } from "../../ui/spoken";   // C-309
 
 type Para = { text: string; voice: "telling" | "asking" | "inscription" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
@@ -40,7 +42,7 @@ function Picture({ e, scale }: { e: Entry; scale: number }) {
 export function HermeticBook({ b }: { b: HermeticT }) {
   const breath = useBreath();
   const flat = (b.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
-  const [at, setTo] = useState<number | null>(null);
+  const [at, setTo] = usePlace<number | null>("library.hermetic.at", null);   // C-309
   const [w, setW] = useState(0);
   const setAt = (to: number | null) => { setTo(to); SCREEN.scroller?.scrollTo?.({ y: 0, animated: false }); };
   const wide = w >= 560;
@@ -69,8 +71,10 @@ export function HermeticBook({ b }: { b: HermeticT }) {
                 <ReadAloud id={`hermetic-${at}-${i}`} paragraphs={[p.text]} ink={EMERALD.lit} label="Say it" />
               </YStack>
             ) : (
-              <Text key={i} fontSize={16} lineHeight={25} color={p.voice === "asking" ? C.faint : C.ink}
-                    fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>
+              <SpokenPara key={i} id={`hermetic-${at}`} i={i + 1}>
+                <Text fontSize={16} lineHeight={25} color={p.voice === "asking" ? C.faint : C.ink}
+                      fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>
+              </SpokenPara>
             ))}
           </YStack>
         </XStack>

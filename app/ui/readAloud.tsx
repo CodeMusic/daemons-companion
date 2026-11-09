@@ -9,19 +9,23 @@ import { useEffect, useRef, useState } from "react";
 import { ON_PHONE } from "../platform/net";
 import { followVoice, setSpeaking } from "../sound/speaking";   // C-213
 import { Action } from "./ui";
+import { setSaying } from "./spoken";   // C-309
 
 const MAX = 560;
-function sayable(paragraphs: string[]): string[] {
-  const out: string[] = [];
-  for (const p of paragraphs.map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean)) {
-    if (p.length <= MAX) { out.push(p); continue; }
+// each piece to say, and which paragraph it came from (C-309: so the page can show the one being said)
+function sayable(paragraphs: string[]): { text: string; from: number }[] {
+  const out: { text: string; from: number }[] = [];
+  paragraphs.forEach((raw, from) => {
+    const p = raw.replace(/\s+/g, " ").trim();
+    if (!p) return;
+    if (p.length <= MAX) { out.push({ text: p, from }); return; }
     let cur = "";
     for (const s of p.match(/[^.!?]+[.!?]*\s*/g) ?? [p]) {
-      if ((cur + s).length > MAX && cur) { out.push(cur.trim()); cur = ""; }
+      if ((cur + s).length > MAX && cur) { out.push({ text: cur.trim(), from }); cur = ""; }
       cur += s.length > MAX ? s.slice(0, MAX) : s;
     }
-    if (cur.trim()) out.push(cur.trim());
-  }
+    if (cur.trim()) out.push({ text: cur.trim(), from });
+  });
   return out;
 }
 
@@ -29,18 +33,19 @@ export function useReadAloud() {
   const player = useAudioPlayer(null);
   const [reading, setReading] = useState<string | null>(null);
   const run = useRef(0);
-  useEffect(() => () => { run.current++; }, []);
+  useEffect(() => () => { run.current++; setSaying(null); }, []);   // C-309: a page left takes its mark with it
   const ended = () => new Promise<void>((done) => {
     const sub = player.addListener("playbackStatusUpdate", (s) => { if (s.didJustFinish) { sub.remove(); done(); } });
   });
-  const stop = () => { run.current++; try { player.pause(); } catch { /* nothing playing */ } setReading(null); setSpeaking(false); };
+  const stop = () => { run.current++; try { player.pause(); } catch { /* nothing playing */ } setReading(null); setSpeaking(false); setSaying(null); };
   const read = async (key: string, paragraphs: string[]) => {
     if (reading === key) return stop();
     const mine = ++run.current;
     setReading(key);
     try {
       await setAudioModeAsync({ playsInSilentMode: true });
-      const next = sayable(paragraphs).map((text) => () => readingVoice({ text }));   // each kept on the phone after the first time
+      const pieces = sayable(paragraphs);
+      const next = pieces.map(({ text }) => () => readingVoice({ text }));   // each kept on the phone after the first time
       let coming = next.length ? next[0]() : null;
       for (let i = 0; i < next.length && run.current === mine; i++) {
         const spoken = await coming;
@@ -48,10 +53,11 @@ export function useReadAloud() {
         if (run.current !== mine || !spoken) break;
         const f = spoken;
         player.replace({ uri: f.uri }); player.play(); followVoice(player);
+        setSaying(key, pieces[i].from);                             // C-309: the page shows this paragraph as the one being said
         await ended();
       }
     } catch { /* the voice is not here: the button says nothing new */ }
-    if (run.current === mine) setReading(null);
+    if (run.current === mine) { setReading(null); setSaying(null); }
   };
   return { reading, read, stop };
 }

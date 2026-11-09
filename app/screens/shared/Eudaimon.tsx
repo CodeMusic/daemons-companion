@@ -16,6 +16,8 @@ import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: th
 import { Listen } from "../../ui/bookAudio";   // C-299: its recording, sealed with its own key, from its BLESSING
 import { Toned, toneHex, tonePalette, type Tone } from "../../ui/tone";   // C-304: the mended book's lens
 import type { BookWithArt } from "../../ui/bookPicture";
+import { usePlace } from "../../state/place";   // C-309
+import { SpokenPara } from "../../ui/spoken";   // C-309
 
 export type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer" };
 export type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[]; book?: BookWithArt };
@@ -84,13 +86,13 @@ export function EudaimonBook({ b }: { b: EudaimonT }) {
 // entry -- its picture, its words; an inscription in the tablet's green, sayable on its own; the observer's line set apart.
 // C-304: the mended book's lens sits on top of every page (top), and each section may be read in a tone (toneFor; null:
 // the contents). The page kept is a section and a place in it, so the same section re-read with other words stays open.
-export function LayerPages({ b, P: P0, green: green0, id, cover, under, picture, rule, top, toneFor }: {
-  b: EudaimonT; P: LayerPalette; green: string; id: string; cover: ReactNode; under?: ReactNode;
+export function LayerPages({ b, P: P0, green: green0, id, place, cover, under, picture, rule, top, toneFor }: {
+  b: EudaimonT; P: LayerPalette; green: string; id: string; place?: string; cover: ReactNode; under?: ReactNode;
   picture: (e: Entry, scale: number) => ReactNode; rule?: (label: string) => ReactNode;
   top?: ReactNode; toneFor?: (section: number | null) => Tone }) {
   const secs = b.sections ?? [];
   const flat = secs.flatMap((sec, s) => sec.entries.map((e, j) => ({ sec, e, s, j })));
-  const [pos, setPos] = useState<{ s: number; j: number } | null>(null);
+  const [pos, setPos] = usePlace<{ s: number; j: number } | null>(`library.${place ?? id}.pos`, null);   // C-309
   const [w, setW] = useState(0);
   const found = pos && secs[pos.s]?.entries.length ? flat.findIndex((f) => f.s === pos.s && f.j === Math.min(pos.j, secs[pos.s].entries.length - 1)) : -1;
   const at = found >= 0 ? found : null;
@@ -128,8 +130,10 @@ export function LayerPages({ b, P: P0, green: green0, id, cover, under, picture,
                 <Text fontSize={16} lineHeight={25} fontStyle="italic" color={P.ink}>{p.text}</Text>
               </YStack>
             ) : (
-              <Text key={i} fontSize={16} lineHeight={25} color={p.voice === "asking" ? P.faint : P.ink}
-                    fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>
+              <SpokenPara key={i} id={`${id}-${at}`} i={i + 1}>
+                <Text fontSize={16} lineHeight={25} color={p.voice === "asking" ? P.faint : P.ink}
+                      fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>
+              </SpokenPara>
             ))}
           </YStack>
         </XStack>

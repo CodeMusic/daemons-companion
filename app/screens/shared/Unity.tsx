@@ -18,6 +18,7 @@ import { AccessibilityInfo, Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { EMERALD } from "../../../server/src/witching";
 import { Listen } from "../../ui/bookAudio";
+import { usePlace } from "../../state/place";   // C-309
 import { BookCover, CoverCrop, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
 import { Art, Card } from "../../ui/ui";
 import { Cards } from "../library/Arcana";
@@ -116,14 +117,14 @@ function LensSwitch({ lens, set }: { lens: Lens; set: (l: Lens) => void }) {
 }
 
 export function UnityBook({ b }: { b: UnityT }) {
-  const [lens, setLens] = useState<Lens>("whole");
+  const [lens, setLens] = usePlace<Lens>("library.unity.lens", "whole");   // C-309
   const L = LENSES.find((l) => l.k === lens)!;
   const whole = b.sections ?? [];
   // each section in the reading held: the half's words where it has them (its pictures its own), else the whole's
   const other = L.from ? b.lens?.[lens as "night" | "dawn"] : undefined;
   const read = other ? whole.map((s, i) => other[i] ? { ...other[i]!, entries: other[i]!.entries.map((e) => ({ ...e, book: L.from })) } : s) : whole;
   const toneFor = (s: number | null) => s === null ? L.tone : other?.[s] ? L.tone : null;
-  return <LayerPages b={{ ...b, sections: read }} P={UNITY} green={EMERALD.hue} id={`unity-${lens}`} cover={<Cover b={b} />}
+  return <LayerPages b={{ ...b, sections: read }} P={UNITY} green={EMERALD.hue} id={`unity-${lens}`} place="unity" cover={<Cover b={b} />}
                      under={<><Listen which="unity" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} /><Cards book="unity" /></>}
                      picture={(e, scale) => <Picture e={e} scale={scale} />} rule={rule}
                      top={b.lens ? <LensSwitch lens={lens} set={setLens} /> : null} toneFor={toneFor} />;

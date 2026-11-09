@@ -1,7 +1,7 @@
 // the LIBRARY -- THE PLAYER'S MANUAL, CALLOW SCHOOL, THE GUIDE, NOTEBOOK, SONGBOOK, STREAM (C-145, C-156, C-233). (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
 import { File } from "expo-file-system";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { BOOK, GUIDE_COVER, TEXTBOOK_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../../state/data";
@@ -25,6 +25,9 @@ import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the
 import { ManualBook, manualAbout } from "./Manual";   // C-233
 import { CoverCrop } from "../../ui/bookPicture";   // C-299: the third book's covers on the shelf
 import { Listen } from "../../ui/bookAudio";   // C-277
+import { usePlace } from "../../state/place";   // C-309: the open book and its page outlive a refresh
+import { BookLookProvider, LOOKS } from "../../ui/bookLook";   // C-309: the book brings its look to the library
+import { SpokenPara } from "../../ui/spoken";   // C-309: the paragraph being said
 
 // T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
 // GBA's black, its 224-pixel windows centred in 240 by 160 -- the game's own words, the player's name and the best mark
@@ -53,7 +56,7 @@ function Diploma({ name, best, grade }: { name: string; best: number | null; gra
 }
 
 export function Floor({ f, reached }: { f: SchoolData["floors"][number]; reached: boolean }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = usePlace(`library.school.floor.${f.floor}`, false);
   return (
     <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6} opacity={reached ? 1 : 0.45}>
       <XStack onPress={() => reached && setOpen((o) => !o)} justifyContent="space-between" alignItems="center" cursor={reached ? "pointer" : "default"}>
@@ -123,7 +126,8 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  const [book, setBook] = useState<"manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "notebook" | "songbook" | "stream" | null>(null);
+  type Shelf = "manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "notebook" | "songbook" | "stream";
+  const [book, setBook] = usePlace<Shelf | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
@@ -138,20 +142,45 @@ export function LibraryScreen() {
   }, []);
   const back = <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
-  if (book === "manual") return <YStack gap={14}>{back}<ManualBook /></YStack>;   // C-233
-  if (book === "quick") return <YStack gap={14}>{back}<ManualBook which="quick" /></YStack>;
-  if (book === "social") return <YStack gap={14}>{back}<ManualBook which="social" /></YStack>;
-  if (book === "tiiny") return <YStack gap={14}>{back}<ManualBook which="tiiny" /></YStack>;
-  if (book === "word") return <YStack gap={14}>{back}<ManualBook which="word" /></YStack>;   // C-274
-  if (book === "school") return <YStack gap={14}>{back}<SchoolScreen /></YStack>;
-  if (book === "guide" && g?.held) return <YStack gap={14}>{back}<GuideBook g={g} /></YStack>;
-  if (book === "subtle" && sub?.held) return <YStack gap={14}>{back}<SubtleBook b={sub} /></YStack>;
-  if (book === "hermetic" && her?.held) return <YStack gap={14}>{back}<HermeticBook b={her} /></YStack>;   // C-238
-  if (book === "eudaimon" && eud?.held) return <YStack gap={14}>{back}<EudaimonBook b={eud} /></YStack>;   // C-297
-  if (book === "unity" && uni?.held) return <YStack gap={14}>{back}<UnityBook b={uni} /></YStack>;   // C-299
-  if (book === "notebook") return <YStack gap={14}>{back}<NotebookCard skip="SONGBOOK" /></YStack>;   // C-156: moved here from YOU
-  if (book === "songbook") return <YStack gap={14}>{back}<SongbookBook /></YStack>;
-  if (book === "stream") return <YStack gap={14}>{back}<StreamBook /></YStack>;
+  // C-309: a book held in the save is opened only once the save has said so; while it is being asked again after a refresh
+  // the book stays open and says so, rather than dropping to the shelf and losing the page
+  const asked = { guide: g, subtle: sub, hermetic: her, eudaimon: eud, unity: uni } as Record<string, { held?: boolean } | null>;
+  const opening = book && book in asked && !asked[book];
+  if (opening) return <YStack gap={14}>{back}<Small>Opening the book where you left it…</Small></YStack>;   // DRAFT
+  // C-309: the open book lends the library its look -- its ink on the way back, its glyph and name, its rule
+  const open = (el: ReactElement) => {
+    const l = LOOKS[book!];
+    if (!l) return <YStack gap={14}>{back}{el}</YStack>;
+    return (
+      <BookLookProvider look={l}>
+        <YStack gap={14}>
+          <XStack alignItems="center" gap={10} paddingBottom={8} borderBottomWidth={2} borderBottomColor={l.ink}>
+            <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color={l.ink} cursor="pointer" role="button"
+                  onPress={() => setBook(null)}>‹ LIBRARY</Text>
+            <YStack flex={1} />
+            <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="$color10" numberOfLines={1}
+                  fontStyle={l.type.italic ? "italic" : "normal"}>{l.name}</Text>
+            <Text fontSize={15} color={l.ink}>{l.glyph}</Text>
+          </XStack>
+          {el}
+        </YStack>
+      </BookLookProvider>
+    );
+  };
+  if (book === "manual") return open(<ManualBook />);   // C-233
+  if (book === "quick") return open(<ManualBook which="quick" />);
+  if (book === "social") return open(<ManualBook which="social" />);
+  if (book === "tiiny") return open(<ManualBook which="tiiny" />);
+  if (book === "word") return open(<ManualBook which="word" />);   // C-274
+  if (book === "school") return open(<SchoolScreen />);
+  if (book === "guide" && g?.held) return open(<GuideBook g={g} />);
+  if (book === "subtle" && sub?.held) return open(<SubtleBook b={sub} />);
+  if (book === "hermetic" && her?.held) return open(<HermeticBook b={her} />);   // C-238
+  if (book === "eudaimon" && eud?.held) return open(<EudaimonBook b={eud} />);   // C-297
+  if (book === "unity" && uni?.held) return open(<UnityBook b={uni} />);   // C-299
+  if (book === "notebook") return open(<NotebookCard skip="SONGBOOK" />);   // C-156: moved here from YOU
+  if (book === "songbook") return open(<SongbookBook />);
+  if (book === "stream") return open(<StreamBook />);
   const s = pr?.school;
   const chapters = g?.sections?.reduce((n, x) => n + x.entries.length, 0) ?? 0;
   return (
@@ -333,7 +362,7 @@ export function SongbookBook() {
 // MARK and ROOT pages read them: the first box leading, the rest as points. DRAFT.
 export function StreamBook() {
   const [p] = useApi<Profile>("/api/profile");
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = usePlace<string | null>("library.stream.open", null);
   if (!p) return <Small>Reading your save…</Small>;
   const items = [
     ...MARKS.marks.map((m, i) => ({ id: `m${i}`, held: !!p.marks?.[i], title: m.title.toUpperCase(), from: `the BENCHMARK in ${m.found}`, paras: lessonParas(m.lesson, m.title) })),
@@ -445,7 +474,7 @@ function AskGuide() {
 
 export function GuideBook({ g }: { g: GuideBookT }) {
   const flat = (g.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
-  const [at, setTo] = useState<number | null>(null);
+  const [at, setTo] = usePlace<number | null>("library.guide.at", null);   // C-309
   const setAt = (to: number | null) => { setTo(to); SCREEN.scroller?.scrollTo?.({ y: 0, animated: false }); };
   const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
   if (at !== null && flat[at]) {
@@ -460,7 +489,7 @@ export function GuideBook({ g }: { g: GuideBookT }) {
         <Text fontSize={20} lineHeight={27} fontWeight="700" color={BOOK.ink}>{e.title}</Text>
         <YStack height={2} backgroundColor={BOOK.cyan} width={48} />
         <ReadAloud id={`guide-${at}`} paragraphs={[e.title, ...e.paragraphs]} ink={BOOK.cyan} />
-        {e.paragraphs.map((p, i) => <Text key={i} fontSize={16} lineHeight={25} color={BOOK.ink}>{p}</Text>)}
+        {e.paragraphs.map((p, i) => <SpokenPara key={i} id={`guide-${at}`} i={i + 1}><Text fontSize={16} lineHeight={25} color={BOOK.ink}>{p}</Text></SpokenPara>)}
         {/* the game ends the book on a QR code; here, the link it opens */}
         {e.link ? (
           <Text {...mono} fontSize={13} color={BOOK.cyan} cursor="pointer" role="link" marginTop={4}
@@ -514,7 +543,7 @@ export function SchoolScreen() {
   const [pr, setPr] = useState<Progress | null>(null);
   const [shown, setShown] = useState(false);       // the DIPLOMA as the game draws it
   const [p, setP] = useState<Profile | null>(null);
-  const [full, setFull] = useState(false);         // C-276: PRINCIPLES OF MIND, the TEXTBOOK in full
+  const [full, setFull] = usePlace("library.school.full", false);   // C-276: PRINCIPLES OF MIND, the TEXTBOOK in full (C-309: kept)
   useEffect(() => {
     api<Progress>("/api/progress").then(setPr).catch(() => {});
     api<Profile>("/api/profile").then(setP).catch(() => {});
@@ -594,7 +623,7 @@ export function SongStaff({ keyName, notes, colours, outline }: { keyName: strin
 // C-125: a NOTEBOOK page, tapped open to read. The game wraps its lines to its text box and re-flows them on a page,
 // so a single line break is a space here and a blank line a new paragraph.
 export function NotebookPage({ page, colours, outline, open: startOpen = false }: { page: Notebook["sections"][number]["pages"][number]; colours?: string[]; outline?: string; open?: boolean }) {
-  const [open, setOpen] = useState(startOpen);
+  const [open, setOpen] = usePlace(`library.notebook.${page.title}`, startOpen);   // C-309
   return (
     <YStack borderTopWidth={1} borderColor="$color5" paddingVertical={10} gap={6}>
       <XStack onPress={() => setOpen((o) => !o)} justifyContent="space-between" alignItems="center" gap={10} cursor="pointer">

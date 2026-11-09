@@ -46,15 +46,15 @@ export function useIndexReader() {
 // keeps its place and its size as it changes.
 // C-303: `gear` is the INDEX's own LISTEN -- the play mark in a cog, because what reads the record is the device.
 const COG = [0, 45, 90, 135];
-export function ListenControl({ phase, onListen, onStop, ink, gear = false }: { phase: "making" | "speaking" | null; onListen: () => void;
-                                                           onStop: () => void; ink: string; gear?: boolean }) {
+export function ListenControl({ phase, onListen, onStop, ink, gear = false, ring: tint = "$color9", word = "$color12" }: { phase: "making" | "speaking" | null; onListen: () => void;
+                                                           onStop: () => void; ink: string; gear?: boolean; ring?: string; word?: string }) {   // C-309: ring, word -- a book's own colours
   const Word = ({ children }: { children: string }) =>
-    <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} color="$color12">{children}</Text>;
+    <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} color={word}>{children}</Text>;
   const ring = { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" } as const;
   if (phase === "making") return (
     <XStack alignItems="center" gap={10} role="button" aria-label="Stop" cursor="pointer" onPress={onStop}>
       <YStack {...ring}>
-        <Spinner size="large" color="$color9" position="absolute" />
+        <Spinner size="large" color={tint} position="absolute" />
         <View style={{ width: 12, height: 12, borderRadius: 2, backgroundColor: "#888" }} />
       </YStack>
       <Word>STOP</Word>
@@ -62,9 +62,9 @@ export function ListenControl({ phase, onListen, onStop, ink, gear = false }: { 
   );
   if (phase === "speaking") return (
     <XStack alignItems="center" gap={10} role="button" aria-label="Hush" cursor="pointer" onPress={onStop}>
-      <YStack {...ring} borderWidth={2} borderColor="$color9">
+      <YStack {...ring} borderWidth={2} borderColor={tint}>
         <XStack gap={3} alignItems="flex-end">
-          {[8, 14, 10].map((h, i) => <YStack key={i} width={3} height={h} borderRadius={1} backgroundColor="$color9" />)}
+          {[8, 14, 10].map((h, i) => <YStack key={i} width={3} height={h} borderRadius={1} backgroundColor={tint} />)}
         </XStack>
       </YStack>
       <Word>HUSH</Word>
@@ -72,12 +72,12 @@ export function ListenControl({ phase, onListen, onStop, ink, gear = false }: { 
   );
   return (
     <XStack alignItems="center" gap={10} role="button" aria-label="Listen" cursor="pointer" onPress={onListen}>
-      <YStack {...ring} backgroundColor={gear ? "transparent" : "$color9"}>
+      <YStack {...ring} backgroundColor={gear ? "transparent" : tint}>
         {gear ? (<>
           {COG.map((a) => (   // four bars through the middle: eight teeth
-            <YStack key={a} position="absolute" width={9} height={44} borderRadius={2} backgroundColor="$color9" rotate={`${a}deg`} />
+            <YStack key={a} position="absolute" width={9} height={44} borderRadius={2} backgroundColor={tint} rotate={`${a}deg`} />
           ))}
-          <YStack position="absolute" width={34} height={34} borderRadius={17} backgroundColor="$color9" />
+          <YStack position="absolute" width={34} height={34} borderRadius={17} backgroundColor={tint} />
         </>) : null}
         <View style={{ width: 0, height: 0, marginLeft: 4, borderTopWidth: 8, borderBottomWidth: 8, borderLeftWidth: 13,
                        borderTopColor: "transparent", borderBottomColor: "transparent", borderLeftColor: ink }} />

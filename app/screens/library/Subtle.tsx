@@ -13,6 +13,8 @@ import { ReadAloud } from "../../ui/readAloud";   // C-208
 import { AskSubtle, TodaysQuestion } from "./AskSubtle";   // C-229, C-230
 import { Cards } from "./Arcana";   // C-232
 import { Listen } from "../../ui/bookAudio";   // C-277
+import { usePlace } from "../../state/place";   // C-309
+import { SpokenPara } from "../../ui/spoken";   // C-309
 
 type Para = { text: string; voice: "telling" | "asking" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };
@@ -26,7 +28,7 @@ const Picture = ({ e, scale }: { e: Entry; scale: number }) => <TurningPicture b
 
 export function SubtleBook({ b }: { b: SubtleT }) {
   const flat = (b.sections ?? []).flatMap((sec) => sec.entries.map((e) => ({ sec, e })));
-  const [at, setTo] = useState<number | null>(null);
+  const [at, setTo] = usePlace<number | null>("library.subtle.at", null);   // C-309
   const [w, setW] = useState(0);
   const setAt = (to: number | null) => { setTo(to); SCREEN.scroller?.scrollTo?.({ y: 0, animated: false }); };
   const wide = w >= 560;
@@ -53,8 +55,10 @@ export function SubtleBook({ b }: { b: SubtleT }) {
             <YStack height={2} backgroundColor={C.pink} width={48} />
             <ReadAloud id={`subtle-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={C.pink} />
             {e.paragraphs.map((p, i) => (
-              <Text key={i} fontSize={16} lineHeight={25} color={p.voice === "asking" ? C.faint : C.ink}
-                    fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>
+              <SpokenPara key={i} id={`subtle-${at}`} i={i + 1}>
+                <Text fontSize={16} lineHeight={25} color={p.voice === "asking" ? C.faint : C.ink}
+                      fontStyle={p.voice === "asking" ? "italic" : "normal"}>{p.text}</Text>
+              </SpokenPara>
             ))}
           </YStack>
         </XStack>

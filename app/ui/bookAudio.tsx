@@ -16,11 +16,12 @@ import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { useEffect, useState } from "react";
 import { AppState } from "react-native";
-import { XStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { ON_PHONE } from "../platform/net";
 import { keyOfBook, unseal } from "../state/sealed";
 import { ListenControl } from "../screens/shared/Index";
-import { Action, Card, Eyebrow, Small, useInk } from "./ui";
+import { Action, Small, useInk } from "./ui";
+import { barHeight, darkPaper, PLAIN, useBookLook, wash } from "./bookLook";   // C-309
 
 export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook";
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
@@ -219,18 +220,79 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
     try { window.open((await ready()).uri, "_blank"); } finally { setBusy(null); }
   };
 
+  // C-309: the voice module -- the open book's look (bookLook.tsx) on the player: its paper and ink, its glyph, its voice
+  // drawn in its own wave and grain and breathing on its tempo while it plays; the book as a ribbon of its chapters, the
+  // one being heard lit and named large, so the listener sees where in the book they are
+  const l = useBookLook(which);
+  const plain = l === PLAIN;
+  const dark = darkPaper(l);
+  const words = dark ? "#f1eef4" : plain ? "$color12" : "#24212a";
+  const playing = mine && status.playing;
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => setT(Date.now() / 1000), 110);
+    return () => clearInterval(id);
+  }, [playing]);
+  const breath = playing ? (1 - Math.cos((2 * Math.PI * t) / l.tempo)) / 2 : 0;
+  const name = (x: string) => (l.type.caps ? x.toUpperCase() : x);
+  const total = info?.duration ?? status.duration ?? 0;
+  const k = here && here.kind === "entry" ? entries.indexOf(here) : entries.filter((c) => c.start <= now + 0.5).length - 1;
+  const r = Math.min(l.edge, 3);
+  // the module's keys: the day's (Action) with no book open; in a book, outlined in its ink, cornered as it is
+  const Key = ({ label, onPress }: { label: string; onPress: () => unknown }) => plain ? <Action label={label} onPress={onPress} /> : (
+    <XStack role="button" cursor="pointer" onPress={() => { onPress(); }} paddingHorizontal={14} paddingVertical={8}
+            borderWidth={1.5} borderColor={l.ink} borderRadius={Math.min(l.edge, 14)} hoverStyle={{ backgroundColor: wash(l.ink, 0.12) }}
+            pressStyle={{ backgroundColor: wash(l.ink, 0.22) }}>
+      <Text fontFamily="$mono" fontSize={12} letterSpacing={1} fontWeight="700" color={l.ink}>{label}</Text>
+    </XStack>
+  );
   return (
-    <Card>
-      <Eyebrow>{`LISTEN${info ? ` · ${Math.round(info.duration / 60)} MIN` : ""}`}</Eyebrow>
-      <Small>{busy ?? (mine && here ? `${here.title} · ${clock(now)} of ${clock(info?.duration ?? status.duration)}`
-        : `${B.reads}${leftAt()[which] ? ` It goes on from ${clock(leftAt()[which]!)}.` : ""}${stale ? " A newer reading is out; LISTEN fetches it." : ""} DRAFT`)}</Small>
+    <YStack backgroundColor={plain ? "$color1" : l.paper} borderWidth={1} borderColor={plain ? "$color5" : wash(l.ink, 0.45)}
+            borderRadius={Math.max(4, l.edge)} padding={16} gap={10} aria-label={`${B.title}, the voice`}>
+      <XStack alignItems="center" gap={8}>
+        <Text fontSize={16} color={l.ink}>{l.glyph}</Text>
+        <Text fontFamily="$mono" fontSize={12} letterSpacing={2} fontWeight="700" color={l.ink}>
+          {`LISTEN${info ? ` · ${Math.round(info.duration / 60)} MIN` : ""}`}</Text>
+      </XStack>
+      {/* the voice, in the book's own wave */}
+      <XStack height={34} alignItems="center" gap={l.grain > 22 ? 2 : 3}>
+        {Array.from({ length: l.grain }, (_, i) => (
+          <YStack key={i} flex={1} borderRadius={r} backgroundColor={l.ink} opacity={playing ? 0.55 + 0.45 * breath : 0.35}
+                  height={Math.max(2, Math.round(34 * barHeight(l, i, l.grain, t, playing)))} />
+        ))}
+      </XStack>
+      {/* the book as its chapters, the one heard lit */}
+      {entries.length && total ? (
+        <XStack height={8} gap={2}>
+          {entries.map((c, i) => (
+            <YStack key={i} flex={Math.max(1, c.end - c.start)} borderRadius={r} cursor={mine ? "pointer" : "default"}
+                    onPress={() => mine && to(c.start)} aria-label={c.title}
+                    backgroundColor={i === k && mine ? l.ink : wash(l.ink, i < k && mine ? 0.45 : 0.16)}
+                    opacity={i === k && playing ? 0.6 + 0.4 * breath : 1} />
+          ))}
+        </XStack>
+      ) : null}
+      {mine && here ? (
+        <YStack gap={2} borderLeftWidth={3} borderLeftColor={l.ink} paddingLeft={10} paddingVertical={4}
+                backgroundColor={wash(l.ink, 0.08 + 0.06 * breath)} borderRadius={r}>
+          <Text fontFamily="$mono" fontSize={10} letterSpacing={2} color={l.faint}>
+            {`NOW READING${k >= 0 ? ` · ${k + 1} OF ${entries.length}` : ""}`}</Text>
+          <Text fontSize={19} lineHeight={25} fontWeight="700" fontStyle={l.type.italic ? "italic" : "normal"} color={words}>
+            {`${name(here.title)}  `}<Text color={l.ink}>{l.glyph}</Text></Text>
+          <Text fontFamily="$mono" fontSize={11} color={l.faint}>{`${clock(now)} of ${clock(total)}`}</Text>
+        </YStack>
+      ) : null}
+      <Text fontSize={13} lineHeight={19} color={l.faint} fontStyle={l.type.italic ? "italic" : "normal"}>
+        {busy ?? `${B.reads}${!mine && leftAt()[which] ? ` It goes on from ${clock(leftAt()[which]!)}.` : ""}${stale ? " A newer reading is out; LISTEN fetches it." : ""} DRAFT`}</Text>
       <XStack gap={10} flexWrap="wrap" alignItems="center">
-        <ListenControl phase={busy ? "making" : mine && status.playing ? "speaking" : null} onListen={play} onStop={pause} ink={ink} />
-        {mine && entries.length ? <Action label="‹ Chapter" onPress={back} /> : null}
-        {mine && entries.length ? <Action label="Chapter ›" onPress={on} /> : null}
-        {ON_PHONE ? <Action label="Share" onPress={share} /> : <Action label="Open in a tab" onPress={tab} />}
+        <ListenControl phase={busy ? "making" : playing ? "speaking" : null} onListen={play} onStop={pause}
+                       ink={plain ? ink : l.paper} ring={plain ? undefined : l.ink} word={plain ? undefined : words} />
+        {mine && entries.length ? <Key label="‹ Chapter" onPress={back} /> : null}
+        {mine && entries.length ? <Key label="Chapter ›" onPress={on} /> : null}
+        {ON_PHONE ? <Key label="Share" onPress={share} /> : <Key label="Open in a tab" onPress={tab} />}
       </XStack>
       {error ? <Small color="$color9">{error}</Small> : null}
-    </Card>
+    </YStack>
   );
 }

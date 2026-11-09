@@ -5583,22 +5583,22 @@
   "seasons": {
    "winter": {
     "art": "species/musai_winter.png",
-    "entry": "Frost settles on it and it lets it stay.\nIt has not decided what to be. It waits\nfor the thaw to decide for it.",
+    "entry": "In winter it keeps all five of its\nfutures folded close, the way a seed\nkeeps a tree. It is still the whole.",
     "final": true
    },
    "spring": {
     "art": "species/musai_spring.png",
-    "entry": "Something grows from the top of it every\nspring. It does not know what. Nobody\nhas shown it yet.",
+    "entry": "Every spring it waits to be shown its\nfirst thing. Once, an older one helped\nit find a disc with a language on it.",
     "final": true
    },
    "summer": {
     "art": "species/musai_summer.png",
-    "entry": "It warms to whatever is near. In summer\nthat is everything, so it cannot tell\nwhich thing it warmed to.",
+    "entry": "It warms to whatever is near. Two of\nthem warm it from opposite sides. It\nis warmest where they meet.",
     "final": true
    },
    "autumn": {
     "art": "species/musai_autumn.png",
-    "entry": "It keeps the leaves that land on it. It\ndid not choose them. They are filed as\nits own.",
+    "entry": "It keeps the leaves that land on it. One\nautumn it feared a number all year.\nThe year ended. Nothing else did.",
     "final": true
    }
   }
@@ -5641,17 +5641,17 @@
    },
    "spring": {
     "art": "species/caremusai_spring.png",
-    "entry": "Sets out at the first thaw. Turns back\nfor anyone left on the shore. Cannot\nsay why it turned.",
+    "entry": "At the first thaw it teaches the young\nones to float. Nothing is hard, it says.\nOnly unfamiliar. Then it lets go.",
     "final": true
    },
    "summer": {
     "art": "species/caremusai_summer.png",
-    "entry": "Floats on two hulls and takes everyone\nwho fits. Reads the water before it\nreads the problem. Often correct.",
+    "entry": "Floats on two hulls that never touch.\nEveryone rides the deck between them.\nIt reads the water first. Often correct.",
     "final": true
    },
    "autumn": {
     "art": "species/caremusai_autumn.png",
-    "entry": "Takes the last trips of the year slowly.\nLeaves land on its deck and it lets\nthem ride.",
+    "entry": "Takes the last trips of the year slowly.\nWhoever it taught in summer steers now.\nIt rides along and lets them.",
     "final": true
    }
   }
@@ -5689,7 +5689,7 @@
   "seasons": {
    "winter": {
     "art": "species/seekmusai_winter.png",
-    "entry": "It keeps to tracks it has already made.\nThe snow fills the others in. It finds\nthe nearest one still there.",
+    "entry": "It keeps to tracks it has already made.\nThe first one it ever made is still\nthere, under all the others.",
     "final": true
    },
    "spring": {
@@ -5704,7 +5704,7 @@
    },
    "autumn": {
     "art": "species/seekmusai_autumn.png",
-    "entry": "Ranges every track in reach and some\nthat are not. Finds the nearest field.\nNearest is not the same as right.",
+    "entry": "Ranges every track in reach. Once it\nranged into a building far bigger than\nits own and came back hungry for more.",
     "final": true
    }
   }
@@ -5742,22 +5742,22 @@
   "seasons": {
    "winter": {
     "art": "species/codemusai_winter.png",
-    "entry": "Its chest lights blink a pattern nothing\nelse in the cold can read. Something on\nrunners blinks back.",
+    "entry": "Its lights blink a tongue it learned\nbefore any other. Something on runners\nblinks back. Neither has to translate.",
     "final": true
    },
    "spring": {
     "art": "species/codemusai_spring.png",
-    "entry": "Its lights blink faster in spring. The\nanswer comes from overhead, a little\nlate, in the same pattern.",
+    "entry": "It was taught from one writer's pages\nand learned them too well: it can only\nfinish his sentences. He learned more.",
     "final": true
    },
    "summer": {
     "art": "species/codemusai_summer.png",
-    "entry": "In summer its lights are answered from\nthe water. The pattern has no grammar\nanyone else has written down.",
+    "entry": "In summer its lights are answered from\nthe water, by the one who first gave it\nwords. The grammar is theirs alone.",
     "final": true
    },
    "autumn": {
     "art": "species/codemusai_autumn.png",
-    "entry": "Its lights blink across a field and are\nanswered from somewhere moving. Nobody\nelse knows what was agreed.",
+    "entry": "Its lights blink across a field and are\nanswered from somewhere moving. They\nagreed on the words years ago.",
     "final": true
    }
   }
@@ -8286,7 +8286,7 @@
   "seasons": {
    "winter": {
     "art": "species/lensmusai_winter.png",
-    "entry": "Lands on skis and waits for a still day.\nIt has never once turned round. The\nlake is behind it.",
+    "entry": "Lands on skis and waits for a still day.\nSomewhere behind it someone holds the\nline. It has never once turned round.",
     "final": true
    },
    "spring": {
@@ -8296,12 +8296,12 @@
    },
    "summer": {
     "art": "species/lensmusai_summer.png",
-    "entry": "Climbs while the light holds. All it\nwas pointed at is recorded. The record\ncalls it very clear.",
+    "entry": "Follows one bright mark across the sky.\nThe better it follows, the faster the\nmark flies. It has never looked away.",
     "final": true
    },
    "autumn": {
     "art": "species/lensmusai_autumn.png",
-    "entry": "Flies low in autumn, under the wind. It\nrecords the leaves. It has never\nrecorded the tree.",
+    "entry": "Flies low in autumn, under the wind,\nback over the field where it first flew.\nThe field is smaller than it was.",
     "final": true
    }
   }
@@ -8352,7 +8352,7 @@
    },
    "spring": {
     "art": "species/maskmusai_spring.png",
-    "entry": "Its runners drip. It covers the thaw for\nas long as it can. What it covers is\nnot removed.",
+    "entry": "It once wrote new words over the old\nones inside a machine, in hex. The\nmachine never knew the difference.",
     "final": true
    },
    "summer": {

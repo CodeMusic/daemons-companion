@@ -117,8 +117,10 @@ export function lastHearing(text: string): string {
   let cut = -1;
   for (const m of t.matchAll(/[.?!](?=[A-Z])/g)) cut = m.index! + 1;
   if (cut < 0) return t;
-  const whole = t.slice(cut).trim();
-  return whole.split(/\s+/).length >= 3 ? whole : t;
+  // C-316 (2026-11-10: a 13 s memo heard as "Again on Monday."): the whole repeats the pieces, so it is about as long as
+  // they are -- a short tail after a long run is only the last piece, and the hearing is kept as it came
+  const whole = t.slice(cut).trim(), words = (x: string) => x.split(/\s+/).filter(Boolean).length;
+  return words(whole) >= 3 && words(whole) >= 0.6 * words(t.slice(0, cut)) ? whole : t;
 }
 
 export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = fetch, ms = 30_000): Promise<string | null> {

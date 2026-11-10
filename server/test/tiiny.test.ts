@@ -67,6 +67,9 @@ describe("talking to it", () => {
     expect(lastHearing("I used to stop in between.Yeah.I do not stop now.It is all one long.Long one.I used to stop in between. I do not stop now. It is all one long one."))
       .toBe("I used to stop in between. I do not stop now. It is all one long one.");
     expect(lastHearing(" hello there ")).toBe("hello there");
+    // C-316: a long hearing with one run-together end is not cut to its last words
+    const memo = "Okay team, quick sync. The garden beds are ready, but we still need soil. Sam will order ten bags by Friday. Let's meet.Again on Monday.";
+    expect(lastHearing(memo)).toBe(memo);
     expect(lastHearing("Version 3.5 is out. Go.Now")).toBe("Version 3.5 is out. Go.Now");
   });
   it("hands its voice DAEMON as it is said (C-270)", async () => {

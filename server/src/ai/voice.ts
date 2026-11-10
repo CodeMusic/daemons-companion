@@ -194,7 +194,8 @@ export async function streamParts(shelf: VoiceStreams, id: string, first: Stream
   let next = parts.length ? ask(parts[0]) : null;
   for (let i = 0; i < parts.length && next; i++) {
     if (Date.now() - started > STREAM_MOST_MS) break;
-    const got = await next.catch(() => null);
+    const asked = Date.now(), got = await next.catch(() => null);
+    console.log(`voice part ${i + 2}/${parts.length + 1}: ${got ? got.kind : "none"} after ${Date.now() - asked} ms waiting, ${Date.now() - started} ms in`);   // C-317, while it is tuned
     if (!got || got.kind === "mp3") break;
     next = i + 1 < parts.length ? ask(parts[i + 1]) : null;
     enc.feed(gap);

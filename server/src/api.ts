@@ -38,6 +38,7 @@ import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
+import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
 import { asWav, Conversations, joinVoices, phoneAudio, toDevicePcm, voicePieces, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
@@ -1172,6 +1173,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-303: the voices' generation (ai/voices.ts) -- a phone keeps its voices under it, and forgets them when it moves
       if (req.method === "GET" && path === "/api/voices/generation") return send(res, 200, { generation: voiceGeneration((k) => store.getSetting(k)) });
       // C-252: the daemon's self, exactly as a model is given it (the mind portal's SELF, C-254) -- this machine's own
+      // C-307: THE MIND remembers how it thought -- each talk's trace (where heard, thought and said, how long), shared by
+      // every phone and the site, and each mind's recent speed for the phone's hedge (ai/mindlog.ts)
+      if (req.method === "GET" && path === "/api/mind") {
+        const ts = traces((k) => store.getSetting(k));
+        return send(res, 200, { traces: ts.slice(0, 20), speeds: speeds(ts) });
+      }
+      if (req.method === "POST" && path === "/api/mind/trace") {
+        const t = traceOf(await body(req), String(url.searchParams.get("from") ?? "phone"));
+        if (!t) return send(res, 400, { error: "a trace is {kind, ring, heard, thought, said, ms}" });
+        keepTrace((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), t);
+        return send(res, 200, { ok: true });
+      }
       if (req.method === "GET" && path === "/api/self") {
         const length = (["short", "day", "full"] as const).find((l) => l === url.searchParams.get("length")) ?? "day";
         return send(res, 200, { length, text: selfText(ecfg, store, deviceId, length), trainer: store.getSetting("self.trainer") ?? "",

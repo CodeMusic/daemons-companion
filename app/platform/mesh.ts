@@ -10,7 +10,7 @@
 // to its house and n8n's local model), ONLY THIS PHONE. The one talk is kept here, so changing mind keeps the thread.
 // Every word DRAFT.
 import * as SecureStore from "expo-secure-store";
-import { ALONE, apiLater, apiLive, OFFLINE, ON_PHONE } from "./net";
+import { ALONE, api, apiLater, apiLive, OFFLINE, ON_PHONE } from "./net";
 import { canHear, canThink, hearHere, mindHere, sayHere, selfText, thinkHere } from "./mind";
 import { atHome, endpoint, endpointThink } from "./endpoint";
 import type { Spoken } from "../state/types";
@@ -68,6 +68,18 @@ const hubBy = (provider?: string | null) => {
   return p.startsWith("tiiny") ? "the Tiiny" : /module|house|board|llm/i.test(p) ? "the hub's board"
        : /openrouter/i.test(p) ? "OpenRouter" : /local/i.test(p) ? "the hub's own model" : "the hub";   // DRAFT
 };
+// who the hub will most likely think with, by what it says answers first -- for its recent speed
+const hubLikely = (h: HubSense) => h.first === "tiiny" && h.tiiny ? "the Tiiny" : h.first === "module" ? "the hub's board" : "the hub's own model";
+
+// each mind's recent speed of thought (the hub's /api/mind, every phone's traces), read once a minute
+let speedSeen: { at: number; s: Record<string, { ms: number; n: number }> } | null = null;
+async function recentSpeeds(): Promise<Record<string, { ms: number; n: number }>> {
+  if (speedSeen && Date.now() - speedSeen.at < 60_000) return speedSeen.s;
+  let s: Record<string, { ms: number; n: number }> = {};
+  try { s = (await within(apiLive<{ speeds?: typeof s }>("/api/mind"), 2500)).speeds ?? {}; } catch { /* an older hub, or none */ }
+  speedSeen = { at: Date.now(), s };
+  return s;
+}
 
 // the first of several to succeed (Promise.any, written out)
 function firstOf<T>(ps: Promise<T>[]): Promise<T> {
@@ -76,39 +88,45 @@ function firstOf<T>(ps: Promise<T>[]): Promise<T> {
     ps.forEach((p) => p.then(yes, (e) => { last = e; if (--left === 0) no(last); }));
   });
 }
-// The arms in order, each tried when the one before fails; the phone covering if the chain is late or fails
-async function hedge(arms: (() => Promise<Thought>)[], cover: (() => Promise<Thought>) | null): Promise<Thought> {
-  if (!arms.length && cover) return cover();
+type Hedged = Thought & { covered?: boolean; failed: string[] };
+// The arms in order, each tried when the one before fails; the phone covering if the chain is late or fails.
+// slow: the first arm has been slower than the budget lately -- the phone starts at once rather than at half the budget
+async function hedge(arms: { name: string; go: () => Promise<Thought> }[], cover: (() => Promise<Thought>) | null, slow = false): Promise<Hedged> {
+  const failed: string[] = [];
+  if (!arms.length && cover) return { ...await cover(), failed };
   const chain = (async () => {
     let last: unknown = new Error("No mind could be reached.");   // DRAFT
-    for (const a of arms) { try { return await a(); } catch (e) { last = e; } }
+    for (const a of arms) { try { return await a.go(); } catch (e) { last = e; failed.push(a.name); } }
     throw last;
   })();
-  if (!cover) return chain;
+  if (!cover) return { ...await chain, failed };
   let covering: Promise<Thought> | null = null;
   const startCover = () => {                                   // a cover not needed in the end is let go quietly
     if (!covering) { covering = cover(); covering.catch(() => {}); }
     return covering;
   };
-  const warm = setTimeout(startCover, HEDGE_MS / 2);           // started early, so it is ready when the budget runs out
+  const warm = setTimeout(startCover, slow ? 0 : HEDGE_MS / 2); // started early, so it is ready when the budget runs out
   const first = await Promise.race([chain.then((r) => ({ r }), (e) => ({ e })),
                                     new Promise<null>((ok) => setTimeout(() => ok(null), HEDGE_MS))]);
-  if (first && "r" in first) { clearTimeout(warm); return first.r; }
   clearTimeout(warm);
-  if (first && "e" in first) return startCover();
-  return firstOf([chain, startCover()]);                       // late: whichever answers now
+  if (first && "r" in first) return { ...first.r, failed };
+  const covered = (t: Thought) => ({ ...t, covered: t.by === "this phone", failed });
+  if (first && "e" in first) return covered(await startCover());
+  return covered(await firstOf([chain, startCover()]));       // late: whichever answers now
 }
 
 // ---- one talk ----
 export type Trail = { heard?: string; thought?: string; said?: string };
-export type MeshSpoken = Spoken & { trail: Trail; ring: Ring; voice: Promise<{ audioBase64?: string | null; voiced?: boolean } | null> };
+export type MeshSpoken = Spoken & { trail: Trail; ring: Ring; covered?: boolean; failed?: string[]; ms: { hear?: number; think?: number; voice?: number };
+                                    voice: Promise<{ audioBase64?: string | null; voiced?: boolean } | null> };
 const threads: Record<Kind, { said: string; answer: string }[]> = { talk: [], guide: [] };   // each kind's talk so far, whichever mind answered each turn
 
 export async function meshTalk(o: { kind: Kind; name: string; recording?: string; audioBase64?: () => Promise<string>;
                                     audioMime?: string; text?: string }): Promise<MeshSpoken> {
-  const ring = await ringOf(o.kind), s = await sense();
+  const [ring, s, sp] = await Promise.all([ON_PHONE ? ringOf(o.kind) : Promise.resolve<Ring>("anywhere"), sense(), recentSpeeds()]);
   const hubOk = s.hub.there && ring !== "phone" && !OFFLINE;
-  const trail: Trail = {};
+  const trail: Trail = {}, ms: MeshSpoken["ms"] = {};
+  const clock = () => { const t0 = Date.now(); return () => Date.now() - t0; };
   if (ring === "phone" && !s.phone.mind)
     throw new Error(`This phone cannot think for itself: ${s.phone.why ?? "it needs iOS 26 and Apple Intelligence"}.`);   // DRAFT
   if (o.kind === "guide" && !hubOk) throw new Error("Asking the GUIDE needs the hub: its pages are kept there.");   // DRAFT
@@ -116,8 +134,9 @@ export async function meshTalk(o: { kind: Kind; name: string; recording?: string
   // HEARD: on the phone where it can, else the hub hears the recording itself
   let said = o.text?.trim() ?? "";
   if (!said && o.recording && s.phone.hear) {
-    try { said = await hearHere(o.recording); trail.heard = "here"; } catch { /* the hub, below */ }
-    if (!said && trail.heard) return { error: "Nothing was heard. Hold, speak, then let go.", trail, ring, voice: Promise.resolve(null) };   // DRAFT
+    const took = clock();
+    try { said = await hearHere(o.recording); trail.heard = "here"; ms.hear = took(); } catch { /* the hub, below */ }
+    if (!said && trail.heard) return { error: "Nothing was heard. Hold, speak, then let go.", trail, ring, ms, voice: Promise.resolve(null) };   // DRAFT
   }
   if (!said && (ring === "phone" || !hubOk)) throw new Error("Nothing could hear it: this phone cannot, and the hub is out of reach.");   // DRAFT
 
@@ -135,29 +154,38 @@ export async function meshTalk(o: { kind: Kind; name: string; recording?: string
     ({ answer: await endpointThink(await selfText(o.name, "day"), history, said), by: s.endpoint.name ?? "your endpoint" });
   const askPhone = async (): Promise<Thought> => ({ answer: await thinkHere(await selfText(o.name), history, said), by: "this phone" });   // DRAFT
 
-  const arms: { tier: number; go: () => Promise<Thought> }[] = [];
-  if (hubOk) arms.push({ tier: s.hub.first === "tiiny" && s.hub.tiiny ? 3 : 2, go: askHub });
-  if (endpointOk && said) arms.push({ tier: 3, go: askEndpoint });
+  const arms: { tier: number; name: string; go: () => Promise<Thought> }[] = [];
+  if (hubOk) arms.push({ tier: s.hub.first === "tiiny" && s.hub.tiiny ? 3 : 2, name: hubLikely(s.hub), go: askHub });
+  if (endpointOk && said) arms.push({ tier: 3, name: s.endpoint.name ?? "your endpoint", go: askEndpoint });
   arms.sort((a, b) => b.tier - a.tier);                         // stable: the hub before an endpoint of the same strength
   const cover = s.phone.mind && o.kind === "talk" && said ? askPhone : null;
-  const t = ring === "phone" ? await askPhone() : await hedge(arms.map((a) => a.go), cover);
+  const slow = !!arms[0] && (sp[arms[0].name]?.ms ?? 0) > HEDGE_MS;   // lately slower than the budget
+  const thinking = clock();
+  const t: Hedged = ring === "phone" ? { ...await askPhone(), failed: [] } : await hedge(arms, cover, slow);
+  ms.think = thinking();
   trail.thought = t.by;
   const heard = said || t.heard || null;
   if (heard) talked.push({ said: heard, answer: t.answer });
   if (talked.length > 12) talked.splice(0, talked.length - 12);
 
   // SAID: the daemon's own voice from the hub where the ring allows, else this phone's
+  const voicing = clock();
   const voice = (async () => {
+    let v: { audioBase64?: string | null; voiced?: boolean } | null = null;
     if (hubOk) {
       try {
-        const v = await apiLater<Spoken>("/api/ai/speak", { text: t.answer, ring, ...(o.kind === "guide" ? { reader: true } : { daemon: true }) });
-        if (v.audioBase64) { trail.said = "by the hub"; return { audioBase64: v.audioBase64 }; }   // DRAFT
+        const r = await apiLater<Spoken>("/api/ai/speak", { text: t.answer, ring, ...(o.kind === "guide" ? { reader: true } : { daemon: true }) });
+        if (r.audioBase64) { trail.said = "by the hub"; v = { audioBase64: r.audioBase64 }; }   // DRAFT
       } catch { /* the phone's voice */ }
     }
-    if (mindHere()) { sayHere(t.answer); trail.said = "here"; return { voiced: true }; }
-    return null;
+    if (!v && mindHere()) { sayHere(t.answer); trail.said = "here"; v = { voiced: true }; }
+    ms.voice = voicing();
+    // the trace, for THE MIND's RECENT THOUGHTS on every phone and the site -- where and how long, never what was said
+    api("/api/mind/trace" + (ON_PHONE ? "" : "?from=site"), { kind: o.kind, ring, ...trail, ms, covered: t.covered, failed: t.failed }).catch(() => {});
+    speedSeen = null;
+    return v;
   })();
-  return { heard, answer: t.answer, provider: t.by, trail, ring, voice };
+  return { heard, answer: t.answer, provider: t.by, trail, ring, ms, covered: t.covered, failed: t.failed, voice };
 }
 
 // "heard here · thought on the Tiiny · said by the hub"

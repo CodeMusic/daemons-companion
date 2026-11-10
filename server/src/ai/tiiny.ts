@@ -109,18 +109,22 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
 }
 
 // What was said, from a 16 kHz WAV. null without an ASR model, or when it hears nothing.
-// The Tiiny's hearing model answers with its pieces run together ("me.Did") and then the whole, spaced -- seen
-// 2026-11-06, every clip: "There.That was me.Did anything see?There, that was me. Did anything see? ...". The whole is
-// what follows the last piece's end; a hearing with no run-together end is kept as it came.
+// The Tiiny's hearing model answers with its pieces run together ("me.Did"), then the whole, spaced -- and then, on a
+// longer clip, any piece that came after it (seen 2026-11-06: "There.That was me.Did anything see?There, that was me. Did
+// anything see? ..."; 2026-11-10, a 13 s memo: "...And the basil.Okay, team. Quick sync: ... and the basil.Let's meet
+// again on Monday."). Cut at each run-together end, the whole is the longest stretch, as long as the pieces before it:
+// kept with what followed it. A hearing whose longest stretch comes first is kept as it came.
 export function lastHearing(text: string): string {
-  const t = text.trim();
-  let cut = -1;
-  for (const m of t.matchAll(/[.?!](?=[A-Z])/g)) cut = m.index! + 1;
-  if (cut < 0) return t;
-  // C-316 (2026-11-10: a 13 s memo heard as "Again on Monday."): the whole repeats the pieces, so it is about as long as
-  // they are -- a short tail after a long run is only the last piece, and the hearing is kept as it came
-  const whole = t.slice(cut).trim(), words = (x: string) => x.split(/\s+/).filter(Boolean).length;
-  return words(whole) >= 3 && words(whole) >= 0.6 * words(t.slice(0, cut)) ? whole : t;
+  const t = text.trim(), cuts = [0];
+  for (const m of t.matchAll(/[.?!](?=[A-Z])/g)) cuts.push(m.index! + 1);
+  if (cuts.length < 2) return t;
+  const parts = cuts.map((c, i) => t.slice(c, cuts[i + 1] ?? t.length).trim()).filter(Boolean);
+  const words = (x: string) => x.split(/\s+/).filter(Boolean).length;
+  let w = 0;
+  parts.forEach((p, i) => { if (words(p) > words(parts[w])) w = i; });
+  const before = parts.slice(0, w).reduce((n, p) => n + words(p), 0);
+  if (w === 0 || words(parts[w]) < 3 || words(parts[w]) < 0.6 * before) return t;
+  return [parts[w], ...parts.slice(w + 1)].join(" ");
 }
 
 export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = fetch, ms = 30_000): Promise<string | null> {

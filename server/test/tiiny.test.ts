@@ -70,6 +70,9 @@ describe("talking to it", () => {
     // C-316: a long hearing with one run-together end is not cut to its last words
     const memo = "Okay team, quick sync. The garden beds are ready, but we still need soil. Sam will order ten bags by Friday. Let's meet.Again on Monday.";
     expect(lastHearing(memo)).toBe(memo);
+    // and the whole, with the piece heard after it (the Tiiny, 2026-11-10)
+    expect(lastHearing("Okay, team. Quick sync.The garden beds are ready, but we.Still need soil.And the basil.Okay, team. Quick sync: the garden beds are ready, but we still need soil, and the basil.Let's meet again on Monday."))
+      .toBe("Okay, team. Quick sync: the garden beds are ready, but we still need soil, and the basil. Let's meet again on Monday.");
     expect(lastHearing("Version 3.5 is out. Go.Now")).toBe("Version 3.5 is out. Go.Now");
   });
   it("hands its voice DAEMON as it is said (C-270)", async () => {

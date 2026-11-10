@@ -67,7 +67,7 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Hold TALK to speak with your daemon. What you say is turned into words on your own companion server."
+          "microphonePermission": "Hold TALK to speak with your daemon, or record a meeting for it to write up. What is recorded is turned into words on your own companion server."
         }
       ],
       "@bacons/apple-targets",

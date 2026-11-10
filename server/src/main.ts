@@ -14,6 +14,9 @@ const base = loadConfig(named);
 const store = new Store(base.database);
 const cfg = { ...base, host: store.getSetting("host") ?? base.host };
 if (cfg.watchSave !== false) watchSave(cfg, store);            // C-261: the save, SYNCed as it lands
-makeServer(cfg, store).listen(cfg.port, cfg.host, () =>
+const server = makeServer(cfg, store);
+// C-316: a meeting recorded on the phone (up to 300 MB) may take longer than Node's five minutes to arrive over the tailnet
+server.requestTimeout = 30 * 60_000;
+server.listen(cfg.port, cfg.host, () =>
   console.log(`daemons-companion server on http://${cfg.host}:${cfg.port}  (edition ${cfg.edition}, AI ${cfg.ai.enabled ? "on" : "off"})` +
               (cfg.host === "127.0.0.1" ? "" : "  -- listening on the local network: no secrets go over it")));

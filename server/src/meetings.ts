@@ -19,6 +19,7 @@ export type Meeting = {
   summary: string; takeaways: string[]; actions: string[]; daydream: string;
   daemon: string;                                            // who dreamt it (its nickname)
   audio: boolean;                                            // its recording is still kept
+  from?: "watch" | "phone" | "memo";                         // C-316: recorded on the watch (unset), on the phone, or a voice memo given
 };
 const KEEP = 200;
 export function meetingsOf(store: Store): Meeting[] {
@@ -33,11 +34,12 @@ function update(store: Store, id: number, f: (m: Meeting) => void): Meeting | nu
   return m;
 }
 
-export function startMeeting(store: Store, device: string, daemon: string, now = new Date()): Meeting {
+export function startMeeting(store: Store, device: string, daemon: string, now = new Date(),
+                             from?: "phone" | "memo", title?: string): Meeting {
   const list = meetingsOf(store);
   const m: Meeting = { id: (list[0]?.id ?? 0) + 1, device, startedAt: now.toISOString(), endedAt: null,
-    title: `MEETING ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,   // DRAFT, until the write-up names it
-    parts: [], state: "recording", summary: "", takeaways: [], actions: [], daydream: "", daemon, audio: true };
+    title: title?.trim().slice(0, 60) || `MEETING ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,   // DRAFT, until the write-up names it
+    parts: [], state: "recording", summary: "", takeaways: [], actions: [], daydream: "", daemon, audio: true, ...(from ? { from } : {}) };
   keep(store, [m, ...list]);
   return m;
 }
@@ -53,11 +55,20 @@ export function endMeeting(store: Store, id: number, parts: number, now = new Da
     m.state = "hearing";
   });
 }
+// C-316: a whole recording (the phone's, or a voice memo), as raw 16-bit mono PCM, cut into the watch's half-minute parts
+// -- so it goes down the same road: each part heard in turn, then written up. At most `most` parts (four hours).
+export function partsOfPcm(pcm: Uint8Array, rate = 16000, seconds = 30, most = 480): Uint8Array[] {
+  const size = rate * 2 * seconds, out: Uint8Array[] = [];
+  for (let at = 0; at < pcm.length && out.length < most; at += size) out.push(pcm.subarray(at, Math.min(at + size, pcm.length)));
+  return out.filter((p, i) => i === 0 || p.length >= rate * 2 / 2);   // a last scrap under half a second is dropped
+}
 export const transcriptOf = (m: Meeting) => m.parts.filter((p): p is string => !!p).join(" ").replace(/\s+/g, " ").trim();
 export const allHeard = (m: Meeting) => m.endedAt !== null && m.parts.every((p) => p !== null);
 export function setState(store: Store, id: number, state: MeetingState, error?: string) {
   return update(store, id, (m) => { m.state = state; if (error) m.error = error; else delete m.error; });
 }
+// C-316: a voice memo knows when it ended (its file's date), not when it began -- set once its length is known
+export function beganAt(store: Store, id: number, at: Date) { return update(store, id, (m) => { m.startedAt = at.toISOString(); }); }
 export function audioGone(store: Store, id: number) { return update(store, id, (m) => { m.audio = false; }); }
 export function forgetMeeting(store: Store, id: number) { keep(store, meetingsOf(store).filter((m) => m.id !== id)); }
 

@@ -103,7 +103,7 @@ import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter } from "./journal.js";   // C-298
-import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, partHeard, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
+import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { readSubtle } from "./save/subtle.js";   // C-204
 import { sayable } from "./ai/say.js";   // C-270
@@ -742,6 +742,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-293: every talker is told who is dreaming -- its INDEX self, feelings, care and bond (dreams.ts dreamerSaid) -- and asked
   // for the dream in its own voice, "I dreamt ...", as metaphor; one telling at a time for a night
   const telling = new Set<number>();
+  const meetEnded = new Map<number, Date>();                     // C-316: a memo's end, until its length is known
   // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
   // nobody waiting; with no thinker at all, laid out plainly. One at a time per chapter.
   const paging = new Set<number>();
@@ -1736,10 +1737,52 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "content-type": "audio/wav", "content-length": wav.length });
         return res.end(wav);
       }
+      // C-316 (the user, 2026-11-10: "from the meetings tab you should be able to trigger one from the phone, or even import
+      // from voice memo, it then does the same pipeline as the watch"): a whole recording -- the phone's own, or a voice memo
+      // given to it -- sent as it is (m4a, mp3, wav...), up to 300 MB. Answered at once with its id; then made 16 kHz here
+      // (ffmpeg), cut into the watch's half-minute parts, and heard and written up exactly as the watch's are.
+      // ?from=phone|memo, ?at=<ms> when it began (a memo's own date), ?name= a memo's name until the write-up names it.
+      const meetSource = (id: number) => join(meetDir(id), "source");
+      // ?ended=<ms> instead of ?at: when a memo ended (its file's date) -- it began its length before that
+      const meetCut = async (id: number) => {                 // the recording given, cut into parts and heard in turn
+        const m = meetingOf(store, id), src = meetSource(id);
+        if (!m || !existsSync(src)) return;
+        const pcm = await toDevicePcm(readFileSync(src));
+        if (!pcm || pcm.length < DEVICE_RATE) { setState(store, id, "failed", "That recording could not be read, or is under a second long."); return; }   // DRAFT
+        const parts = partsOfPcm(pcm, DEVICE_RATE);
+        parts.forEach((p, n) => writeFileSync(join(meetDir(id), `${n}.wav`), wavOf(Buffer.from(p))));
+        unlinkSync(src);
+        const ms = Math.round((Math.min(pcm.length, parts.length * DEVICE_RATE * 60) / (DEVICE_RATE * 2)) * 1000);
+        const ended = meetEnded.get(id);                        // a memo's date is when it ended: it began its length before
+        meetEnded.delete(id);
+        if (ended) beganAt(store, id, new Date(ended.getTime() - ms));
+        endMeeting(store, id, parts.length, ended ?? new Date(new Date(m.startedAt).getTime() + ms));
+        meetTidy();
+        for (let n = 0; n < parts.length && meetingOf(store, id)?.state === "hearing"; n++) await meetHear(id, n);   // stopped by a failure, TRY AGAIN goes on
+      };
+      if (req.method === "POST" && path === "/api/meeting/import") {
+        const from = url.searchParams.get("from") === "memo" ? "memo" : "phone";
+        const when = (k: string) => { const t = Number(url.searchParams.get(k)); return Number.isFinite(t) && t > 0 && t <= Date.now() + 60_000 ? new Date(t) : null; };
+        const ended = when("ended"), began = when("at") ?? ended ?? new Date();
+        const audio = await rawBody(req, 300 * 1024 ** 2);
+        if (!audio || audio.length < 1000) return send(res, 413, { error: "a recording is up to 300 MB" });   // DRAFT
+        const m = startMeeting(store, validDeviceId(deviceId) ? deviceId : "here", meetWho(deviceId).nickname, began, from,
+                               (url.searchParams.get("name") ?? "").replace(/\.[a-z0-9]{2,4}$/i, ""));
+        mkdirSync(meetDir(m.id), { recursive: true });
+        writeFileSync(meetSource(m.id), audio);
+        if (ended && !when("at")) meetEnded.set(m.id, ended);
+        setState(store, m.id, "hearing");
+        meetCut(m.id).catch((e) => setState(store, m.id, "failed", (e as Error).message));
+        return send(res, 200, { id: m.id });
+      }
       if (req.method === "POST" && path === "/api/meeting/retry") {   // heard again where it was not, then written up
         const id = Number((await body(req)).id), m = meetingOf(store, id);
         if (!m) return send(res, 404, { error: "no such meeting" });
         setState(store, id, "hearing");
+        if (existsSync(meetSource(id))) {                      // C-316: a recording given that was never cut -- cut it now
+          meetCut(id).catch((e) => setState(store, id, "failed", (e as Error).message));
+          return send(res, 200, { ok: true });
+        }
         (async () => { for (let n = 0; n < m.parts.length; n++) if (m.parts[n] === null) await meetHear(id, n); await meetWriteIfReady(id); })()
           .catch((e) => setState(store, id, "failed", (e as Error).message));
         return send(res, 200, { ok: true });

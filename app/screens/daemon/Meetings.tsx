@@ -2,15 +2,19 @@
 // full transcript if needed"): every meeting the watch recorded, the newest day first -- each one's write-up, the
 // daemon's day-dream of it (both readable aloud, C-208), and its whole transcript folded away until it is wanted. A
 // meeting still being heard or written says so; one that failed can be tried again. Every word DRAFT.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
+import { requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
+import * as DocumentPicker from "expo-document-picker";
+import { api, ALONE, ON_PHONE } from "../../platform/net";
+import { forgetWaiting, MEETING_RECORDING, sendOrKeep, sendWaiting, waiting, type Waiting } from "../../platform/meetings";
 import { ReadAloud } from "../../ui/readAloud";
 import { Action, Card, Eyebrow, Small } from "../../ui/ui";
 
 type Meeting = { id: number; startedAt: string; endedAt: string | null; title: string; parts: (string | null)[];
                  state: "recording" | "hearing" | "writing" | "done" | "failed"; error?: string;
-                 summary: string; takeaways: string[]; actions: string[]; daydream: string; daemon: string; audio: boolean };
+                 summary: string; takeaways: string[]; actions: string[]; daydream: string; daemon: string; audio: boolean;
+                 from?: "phone" | "memo" };
 const STATE = { recording: "Recording…", hearing: "Listening to it…", writing: "Writing it up…", done: "", failed: "Not written up" };   // DRAFT
 const dayOf = (iso: string) => new Date(iso).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
 const timeOf = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -28,7 +32,7 @@ function MeetingCard({ m, ink, reload }: { m: Meeting; ink?: string; reload: () 
       <XStack onPress={() => setOpen((o) => !o)} cursor="pointer" justifyContent="space-between" alignItems="center" gap={10}>
         <YStack flex={1}>
           <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{m.title}</Text>
-          <Small>{`${timeOf(m.startedAt)}${minutes(m) ? ` · ${minutes(m)} min` : ""}${STATE[m.state] ? ` · ${STATE[m.state]}` : ""}`}</Small>
+          <Small>{`${timeOf(m.startedAt)}${minutes(m) ? ` · ${minutes(m)} min` : ""}${m.from === "memo" ? " · a voice memo" : m.from === "phone" ? " · on the phone" : ""}${STATE[m.state] ? ` · ${STATE[m.state]}` : ""}`}</Small>
         </YStack>
         <Text fontSize={18} color="$color10">{open ? "−" : "+"}</Text>
       </XStack>
@@ -93,6 +97,90 @@ function VoiceNotes({ ink }: { ink?: string }) {
   );
 }
 
+// C-316 (the user, 2026-11-10): a meeting started here, or a voice memo given -- sent whole to the hub, which cuts, hears
+// and writes it up exactly as it does the watch's. The phone keeps recording with the screen locked; what cannot be sent
+// now waits on the phone. Every word DRAFT.
+const clock = (ms: number) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+function NewMeeting({ ink, sent }: { ink?: string; sent: () => void }) {
+  const recorder = useAudioRecorder(MEETING_RECORDING);
+  const state = useAudioRecorderState(recorder, 500);
+  const began = useRef(0);
+  const [said, setSaid] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [held, setHeld] = useState<Waiting[]>(waiting());
+  const after = (r: { id: number | null; why?: string }) => {
+    setHeld(waiting());
+    setSaid(r.id !== null ? "Sent. It is being heard now, and its write-up will be here." : `Kept on this phone to send later: ${r.why}`);
+    sent();
+  };
+  const record = async () => {
+    try {
+      if (!(await requestRecordingPermissionsAsync()).granted) { setSaid("The microphone is not allowed: Settings → DAEMONS → Microphone."); return; }
+      // on through the screen locking and the app put away (UIBackgroundModes audio is already held, C-277)
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true, allowsBackgroundRecording: true, shouldPlayInBackground: true });
+      await recorder.prepareToRecordAsync(); recorder.record(); began.current = Date.now(); setSaid("");
+    } catch (e) { setSaid((e as Error).message); }
+  };
+  const stop = async (send: boolean) => {
+    setBusy(true);
+    try {
+      await recorder.stop();
+      await setAudioModeAsync({ allowsRecording: false, allowsBackgroundRecording: false, shouldPlayInBackground: false });
+      if (!send) { setSaid("Not kept."); return; }
+      if (!recorder.uri) { setSaid("Nothing was recorded."); return; }
+      setSaid("Sending it to the companion…");
+      after(await sendOrKeep({ uri: recorder.uri, from: "phone", at: began.current }));
+    } catch (e) { setSaid((e as Error).message); } finally { setBusy(false); }
+  };
+  const memo = async () => {
+    try {
+      const r = await DocumentPicker.getDocumentAsync({ type: ["audio/*"], copyToCacheDirectory: true, multiple: false });
+      if (r.canceled || !r.assets?.[0]) return;
+      const a = r.assets[0];
+      setBusy(true); setSaid(`Sending ${a.name} to the companion…`);
+      after(await sendOrKeep({ uri: a.uri, from: "memo", name: a.name, at: 0, ...(a.lastModified ? { ended: a.lastModified } : {}) }));
+    } catch (e) { setSaid((e as Error).message); } finally { setBusy(false); }
+  };
+  const again = async () => {
+    setBusy(true); setSaid("Sending…");
+    try { const r = await sendWaiting(); setHeld(waiting()); setSaid(r.left ? `${r.sent} sent; ${r.left} still waiting: ${r.why}` : `${r.sent} sent.`); sent(); }
+    finally { setBusy(false); }
+  };
+  if (ALONE) return <Card><Small>{"Meetings are heard and written up by the companion on your computer: this phone, hosting alone, cannot.  DRAFT"}</Small></Card>;
+  return (
+    <Card>
+      <Eyebrow>A MEETING</Eyebrow>
+      {state.isRecording ? (<YStack gap={8}>
+        <XStack gap={8} alignItems="center">
+          <YStack width={12} height={12} borderRadius={6} backgroundColor="#e5534b" />
+          <Text fontFamily="$mono" fontSize={16} fontWeight="700" letterSpacing={1} color="#e5534b">{`RECORDING  ${clock(state.durationMillis)}`}</Text>
+        </XStack>
+        <Small>{ON_PHONE ? "It keeps recording with the screen locked. Stop it when the meeting ends." : "Keep this page open until the meeting ends."}</Small>
+        <XStack gap={8} flexWrap="wrap">
+          <Action label={busy ? "SENDING…" : "STOP AND WRITE IT UP"} ink={ink} onPress={() => stop(true)} />
+          <Action label="STOP, DON'T KEEP IT" ink={ink} onPress={() => stop(false)} />
+        </XStack>
+      </YStack>) : (<YStack gap={8}>
+        <Small>{"Record one on this phone, or give it a voice memo: it is heard and written up as the watch's are -- the summary, take-aways, action items and your daemon's day-dream."}</Small>
+        <XStack gap={8} flexWrap="wrap">
+          <Action label="RECORD A MEETING" ink={ink} onPress={record} />
+          <Action label={busy ? "SENDING…" : "FROM A VOICE MEMO"} ink={ink} onPress={memo} />
+        </XStack>
+        {ON_PHONE ? <Small color="$color10">{"A voice memo: in Voice Memos, ••• → Save to Files, then choose it here."}</Small> : null}
+      </YStack>)}
+      {held.length ? (<YStack gap={6} borderTopWidth={1} borderColor="$color5" paddingTop={8}>
+        <Small>{`${held.length} waiting on this phone to be sent:`}</Small>
+        {held.map((w) => (<XStack key={w.id} gap={8} alignItems="center" flexWrap="wrap">
+          <YStack flex={1}><Small>{`${w.name ?? (w.at ? `${dayOf(new Date(w.at).toISOString())}, ${timeOf(new Date(w.at).toISOString())}` : "a recording")}`}</Small></YStack>
+          <Action label="FORGET" ink={ink} onPress={() => { forgetWaiting(w.id); setHeld(waiting()); }} />
+        </XStack>))}
+        <Action label={busy ? "SENDING…" : "SEND THEM NOW"} ink={ink} onPress={again} />
+      </YStack>) : null}
+      {said ? <Small color="$color10">{said}</Small> : null}
+    </Card>
+  );
+}
+
 export function MeetingsScreen({ ink }: { ink?: string }) {
   const [list, setList] = useState<Meeting[] | null>(null);
   const [error, setError] = useState("");
@@ -105,12 +193,13 @@ export function MeetingsScreen({ ink }: { ink?: string }) {
   }, [list]);
   if (error) return <Small color="$color8">{error}</Small>;
   if (!list) return null;
-  if (!list.length) return (<YStack gap={14}><VoiceNotes ink={ink} />
-    <Card><Small>{"No meetings yet. On the Ultra, HOURS → RECORD A MEETING, and its write-up is here afterwards.  DRAFT"}</Small></Card></YStack>);
+  if (!list.length) return (<YStack gap={14}><NewMeeting ink={ink} sent={reload} /><VoiceNotes ink={ink} />
+    <Card><Small>{"No meetings yet. Record one above, give it a voice memo, or on the Ultra, HOURS → RECORD A MEETING; its write-up is here afterwards.  DRAFT"}</Small></Card></YStack>);
   const days: [string, Meeting[]][] = [];
   for (const m of list) { const d = dayOf(m.startedAt); const at = days.find(([x]) => x === d); if (at) at[1].push(m); else days.push([d, [m]]); }
   return (
     <YStack gap={14}>
+      <NewMeeting ink={ink} sent={reload} />
       <VoiceNotes ink={ink} />
       {days.map(([day, ms]) => (
         <YStack key={day} gap={8}>

@@ -203,7 +203,7 @@ export const LOCAL: typeof import("./local") | null = ON_PHONE ? require("./loca
 // not headers) -- so talk, its voice, care and life are for the daemon this phone carries, never the companion's first
 // away (the user, 2026-10-28: SEEKMUSAI carried, OVERLOADED answered)
 let MY_ID: string | null = null;
-async function asThisDevice(path: string): Promise<string> {
+export async function asThisDevice(path: string): Promise<string> {
   if (!ON_PHONE || !WIDGET || /[?&]device=/.test(path)) return path;
   try { MY_ID ??= await WIDGET.widgetId(); } catch { return path; }
   return MY_ID ? `${path}${path.includes("?") ? "&" : "?"}device=${encodeURIComponent(MY_ID)}` : path;

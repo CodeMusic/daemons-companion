@@ -12,7 +12,7 @@
 // (ai/voices.ts; MAKE THE VOICES AGAIN in the app's settings bumps it): when the hub's differs from the one the phone kept
 // its voices under, it forgets them all and asks again, so a newer voice is heard without a new build.
 import { Directory, File, Paths } from "expo-file-system";
-import { api, apiLater } from "./net";
+import { api, apiLater, ON_PHONE } from "./net";
 import type { Spoken } from "../state/types";
 
 export const voiceExt = (b64: string) => (b64.startsWith("UklGR") ? "wav" : "mp3");   // "UklGR": RIFF, base64
@@ -52,6 +52,19 @@ export function keepVoice(words: string, b64: string): File {
   f.create(); f.write(b64, { encoding: "base64" });
   try { tidy(); } catch { /* a full tidy next time */ }
   return f;
+}
+
+// C-317: a voice streamed from the hub, kept whole once it has all come (the hub sends the whole to a late asker): its
+// link fetched again into the kept voices, under these words. null on the site, or when it could not be fetched.
+export async function keepStreamed(words: string, url: string): Promise<File | null> {
+  if (!ON_PHONE) return null;
+  try {
+    const f = new File(kept(), `${keyOf(words)}.mp3`);
+    if (f.exists) f.delete();
+    const got = await File.downloadFileAsync(url, f);
+    try { tidy(); } catch { /* a full tidy next time */ }
+    return got.exists && (got.size ?? 0) > 0 ? got : null;
+  } catch { return null; }
 }
 
 function tidy() {

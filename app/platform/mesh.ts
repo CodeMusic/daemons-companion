@@ -10,7 +10,7 @@
 // to its house and n8n's local model), ONLY THIS PHONE. The one talk is kept here, so changing mind keeps the thread.
 // Every word DRAFT.
 import * as SecureStore from "expo-secure-store";
-import { ALONE, api, apiLater, apiLive, OFFLINE, ON_PHONE } from "./net";
+import { ALONE, api, apiLater, apiLive, OFFLINE, ON_PHONE, SERVER } from "./net";
 import { canHear, canThink, hearHere, mindHere, sayHere, selfText, thinkHere } from "./mind";
 import { atHome, endpoint, endpointThink } from "./endpoint";
 import type { Spoken } from "../state/types";
@@ -119,7 +119,9 @@ async function hedge(arms: { name: string; go: () => Promise<Thought> }[], cover
 // ---- one talk ----
 export type Trail = { heard?: string; thought?: string; said?: string };
 export type MeshSpoken = Spoken & { trail: Trail; ring: Ring; covered?: boolean; failed?: string[]; ms: { hear?: number; think?: number; voice?: number };
-                                    voice: Promise<{ audioBase64?: string | null; voiced?: boolean } | null> };
+                                    voice: Promise<Voiced | null> };
+// C-317: the hub's voice whole (audioBase64), or streamed -- a link to play as it is made; or said here (voiced)
+export type Voiced = { audioBase64?: string | null; stream?: string; voiced?: boolean };
 const threads: Record<Kind, { said: string; answer: string }[]> = { talk: [], guide: [] };   // each kind's talk so far, whichever mind answered each turn
 
 export async function meshTalk(o: { kind: Kind; name: string; recording?: string; audioBase64?: () => Promise<string>;
@@ -172,11 +174,13 @@ export async function meshTalk(o: { kind: Kind; name: string; recording?: string
   // SAID: the daemon's own voice from the hub where the ring allows, else this phone's
   const voicing = clock();
   const voice = (async () => {
-    let v: { audioBase64?: string | null; voiced?: boolean } | null = null;
+    let v: Voiced | null = null;
     if (hubOk) {
       try {
-        const r = await apiLater<Spoken>("/api/ai/speak", { text: t.answer, ring, ...(o.kind === "guide" ? { reader: true } : { daemon: true }) });
-        if (r.audioBase64) { trail.said = "by the hub"; v = { audioBase64: r.audioBase64 }; }   // DRAFT
+        // C-317: streamed where the hub can (the Tiiny's voice, not through the relay) -- its first words in seconds
+        const r = await apiLater<Spoken & { stream?: string }>("/api/ai/speak", { text: t.answer, ring, stream: true, ...(o.kind === "guide" ? { reader: true } : { daemon: true }) });
+        if (r.stream) { trail.said = "by the hub"; v = { stream: SERVER + r.stream }; }   // DRAFT
+        else if (r.audioBase64) { trail.said = "by the hub"; v = { audioBase64: r.audioBase64 }; }   // DRAFT
       } catch { /* the phone's voice */ }
     }
     if (!v && mindHere()) { sayHere(t.answer); trail.said = "here"; v = { voiced: true }; }

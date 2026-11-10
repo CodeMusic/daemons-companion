@@ -428,7 +428,7 @@ function AskGuide() {
                                  audioBase64: uri ? () => new File(uri).base64() : undefined, audioMime: "audio/mp4" });
       setSaid(r); setState("");
       const v = await r.voice;
-      if (v?.audioBase64) speak(v.audioBase64);
+      if (v?.stream) speak({ stream: v.stream }); else if (v?.audioBase64) speak(v.audioBase64);   // C-317
     }
     catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
   };

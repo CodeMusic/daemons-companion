@@ -1,7 +1,7 @@
 // DAEMON -- Yours (its life, care, TALK, SYNC, NEARBY, meetings), Party; the INDEX and the Routines are their own files. (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
 import { File } from "expo-file-system";
-import { keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
+import { keepStreamed, keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
@@ -203,13 +203,14 @@ const artQuery = (expression: string | undefined, mouth: boolean) => {
   const q = [expression && expression !== "awake" ? `expression=${expression}` : "", mouth ? "mouth=open" : ""].filter(Boolean).join("&");
   return q ? `?${q}` : "";
 };
-// a voice to play: the hub's base64, or a kept file (platform/voiceFile.ts) played from where it is
+// a voice to play: the hub's base64, a kept file (platform/voiceFile.ts) played from where it is, or (C-317) a voice
+// streamed from the hub, played from its link as it is made
 export function useVoice() {
   const player = useAudioPlayer(null);
-  return (v?: string | File | null) => {
+  return (v?: string | File | { stream: string } | null) => {
     if (!v) return;
-    const f = typeof v === "string" ? voiceFile("voice", v) : v;
-    player.replace({ uri: f.uri }); player.play();
+    const uri = typeof v === "string" ? voiceFile("voice", v).uri : v instanceof File ? v.uri : v.stream;
+    player.replace({ uri }); player.play();
     followVoice(player);                                   // C-213: its mouth moves while it speaks
   };
 }
@@ -226,6 +227,11 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
   const answered = (r: Spoken) => {
     const f = r.audioBase64 && r.answer ? keepVoice(`talk:${r.answer}`, r.audioBase64) : null;
     setHeard(f); speak(f ?? r.audioBase64);
+  };
+  // C-317: a streamed answer played as it comes, and kept whole once it has all come, to hear again
+  const streamed = (answer: string, stream: string) => {
+    setHeard(null); speak({ stream });
+    keepStreamed(`talk:${answer}`, stream).then((f) => { if (f) setHeard(f); });
   };
   const start = async () => {
     const ok = await requestRecordingPermissionsAsync();
@@ -246,7 +252,8 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
       setSaid(r); setTrail(trailSaid(r.trail)); setState("");
       const v = await r.voice;
       setTrail(trailSaid(r.trail));
-      if (v?.audioBase64) answered({ ...r, audioBase64: v.audioBase64 });
+      if (v?.stream && r.answer) streamed(r.answer, v.stream);
+      else if (v?.audioBase64) answered({ ...r, audioBase64: v.audioBase64 });
     } catch (e) { setSaid({ error: (e as Error).message }); } finally { setState(""); }
   };
   return (

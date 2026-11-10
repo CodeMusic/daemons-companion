@@ -58,7 +58,7 @@ export function MindCard({ ink }: { ink: string }) {
       setTrying({ answer: r.answer ?? "", trail: trailSaid(r.trail), error: r.error ?? undefined });
       const v = await r.voice;
       setTrying({ answer: r.answer ?? "", trail: trailSaid(r.trail) });
-      if (v?.audioBase64) speak(v.audioBase64);
+      if (v?.stream) speak({ stream: v.stream }); else if (v?.audioBase64) speak(v.audioBase64);   // C-317
       setTimeout(readTraces, 500);
     } catch (err) { setTrying({ error: (err as Error).message }); }
   };

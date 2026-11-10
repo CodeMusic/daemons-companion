@@ -161,7 +161,7 @@ function NewMeeting({ ink, sent }: { ink?: string; sent: () => void }) {
           <Action label="STOP, DON'T KEEP IT" ink={ink} onPress={() => stop(false)} />
         </XStack>
       </YStack>) : (<YStack gap={8}>
-        <Small>{"Record one on this phone, or give it a voice memo: it is heard and written up as the watch's are -- the summary, take-aways, action items and your daemon's day-dream."}</Small>
+        <Small>{`Record one ${ON_PHONE ? "on this phone" : "here"}, or give it a voice memo: it is heard and written up as the watch's are -- the summary, take-aways, action items and your daemon's day-dream.`}</Small>
         <XStack gap={8} flexWrap="wrap">
           <Action label="RECORD A MEETING" ink={ink} onPress={record} />
           <Action label={busy ? "SENDING…" : "FROM A VOICE MEMO"} ink={ink} onPress={memo} />

@@ -163,9 +163,10 @@ export async function streamMp3(shelf: VoiceStreams, id: string, first: Uint8Arr
 // C-317: the voice in growing parts. Between the hub and the Tiiny sits LiteLLM, which hands a voice on only once it is
 // whole (measured 2026-11-10: the first byte at 13 s, streamed or not) -- so the answer is asked for a part at a time,
 // the first short (its words are heard in a few seconds), each next one longer, made while the one before is playing.
-// The Tiiny makes about 1.55 s of speech a second, plus about a second to begin, so each part may be about half as long
-// again as the one before and still be ready in time. Cut at sentences, else clauses, else words.
-export const FIRST_PART = 50, PART_GROWS = 1.45, PART_MOST = 360;
+// Through LiteLLM the Tiiny makes speech only a little faster than it is spoken, and each part costs about a second to
+// begin (measured: 27 s of speech in 23 s), so the parts stay about a sentence long, growing slowly -- one big last part
+// left a 7 s silence; even ones leave a breath between sentences at worst. Cut at sentences, else clauses, else words.
+export const FIRST_PART = 50, PART_GROWS = 1.15, PART_MOST = 140;
 export function voiceParts(text: string): string[] {
   const words = text.replace(/\s+/g, " ").trim();
   if (!words) return [];
@@ -173,10 +174,11 @@ export function voiceParts(text: string): string[] {
   const out: string[] = [];
   let rest = words, want = FIRST_PART;
   while (rest.length > want * 1.3) {
-    const cut = (re: RegExp) => { let best = -1; for (const m of rest.matchAll(re)) { const e = m.index! + m[0].length; if (e >= want * 0.6 && e <= want * 1.3) { if (best < 0 || Math.abs(e - want) < Math.abs(best - want)) best = e; } } return best; };
-    let e = cut(/[.!?]["')]?\s/g);
-    if (e < 0) e = cut(/[,;:\u2014-]\s/g);
-    if (e < 0) e = cut(/\s/g);
+    // the end nearest the length wanted, within [0.6, most] of it: a sentence's may run to twice, a clause's half again
+    const cut = (re: RegExp, most: number) => { let best = -1; for (const m of rest.matchAll(re)) { const e = m.index! + m[0].length; if (e >= want * 0.6 && e <= want * most && e < rest.length) { if (best < 0 || Math.abs(e - want) < Math.abs(best - want)) best = e; } } return best; };
+    let e = cut(/[.!?]["')]?\s/g, out.length ? 2 : 1.3);   // the first part kept short: it is what is waited for
+    if (e < 0) e = cut(/[,;:\u2014-]\s/g, 1.6);
+    if (e < 0) e = cut(/\s/g, 1.3);
     if (e < 0) break;
     out.push(rest.slice(0, e).trim()); rest = rest.slice(e).trim();
     want = Math.min(PART_MOST, Math.round(want * PART_GROWS));

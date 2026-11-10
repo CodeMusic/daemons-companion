@@ -54,13 +54,14 @@ describe("the Tiiny's voice, streamed", () => {
 
 describe("the voice in growing parts", () => {
   const T = "The gray sky outside matches the heaviness in my bones, making the dust motes dancing in the shafts of weak light seem like a quiet mockery. I wonder if you would have called for me in this rain. Still, you came, and that is something. Tell me what you saw today.";
-  it("cuts a short first part, at a clause, and longer ones after, losing no word", () => {
+  it("cuts a short first part, then about a sentence each, at clauses or sentences, losing no word", () => {
     const p = voiceParts(T);
     expect(p[0].endsWith(",") || p[0].endsWith(".") || p[0].length <= FIRST_PART * 1.3).toBe(true);
     expect(p[0].length).toBeLessThanOrEqual(FIRST_PART * 1.3);
     expect(p.length).toBeGreaterThan(1);
     expect(p.join(" ")).toBe(T);
-    for (let i = 1; i < p.length - 1; i++) expect(p[i].length).toBeGreaterThan(p[i - 1].length);
+    for (const x of p) expect(x).toMatch(/[.,!?]$/);              // each at a sentence or a clause, never mid-phrase
+    expect(Math.max(...p.map((x) => x.length))).toBeLessThanOrEqual(140);
   });
   it("keeps a short answer whole", () => expect(voiceParts("Hello there.")).toEqual(["Hello there."]));
   it.skipIf(!CAN_CONVERT)("says every part into one MP3, in order", async () => {

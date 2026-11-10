@@ -103,7 +103,9 @@ export class VoiceStreams {
 
 // One MP3 encoder feeding the shelf: 16-bit mono PCM in, at `rate`, MP3 out as it is made (no ID3, no Xing frame -- a
 // player reading a stream would take that frame's "no length" at its word). A sample split across two pieces kept whole.
-function mp3Into(shelf: VoiceStreams, id: string, rate: number) {
+export type Mp3In = ReturnType<typeof mp3Into>;
+// started before the voice is asked for: ffmpeg takes a second or two to start on the hub's one core
+export function mp3Into(shelf: VoiceStreams, id: string, rate = 24000) {
   const enc = spawn(FFMPEG, ["-hide_banner", "-loglevel", "error", "-f", "s16le", "-ar", String(rate), "-ac", "1", "-i", "pipe:0",
                              "-codec:a", "libmp3lame", "-b:a", "64k", "-write_xing", "0", "-id3v2_version", "0",
                              "-flush_packets", "1", "-f", "mp3", "pipe:1"], { stdio: ["pipe", "pipe", "ignore"] });
@@ -121,6 +123,7 @@ function mp3Into(shelf: VoiceStreams, id: string, rate: number) {
       if (even) enc.stdin.write(all.subarray(0, even));
     },
     end() { enc.stdin.end(); return closed; },
+    kill() { enc.kill(); },
   };
 }
 export type Streamed = { first: Uint8Array; rest: ReadableStreamDefaultReader<Uint8Array>; kind: "wav" | "mp3" | "pcm" };
@@ -162,7 +165,7 @@ export async function streamMp3(shelf: VoiceStreams, id: string, first: Uint8Arr
 // the first short (its words are heard in a few seconds), each next one longer, made while the one before is playing.
 // The Tiiny makes about 1.55 s of speech a second, plus about a second to begin, so each part may be about half as long
 // again as the one before and still be ready in time. Cut at sentences, else clauses, else words.
-export const FIRST_PART = 70, PART_GROWS = 1.45, PART_MOST = 360;
+export const FIRST_PART = 50, PART_GROWS = 1.45, PART_MOST = 360;
 export function voiceParts(text: string): string[] {
   const words = text.replace(/\s+/g, " ").trim();
   if (!words) return [];
@@ -181,23 +184,19 @@ export function voiceParts(text: string): string[] {
   if (rest) out.push(rest);
   return out;
 }
-// Each part asked in turn and said into the one MP3, a breath between; `ask` gives a part's voice streamed, or null. The
-// first part asked by the caller (it waits on it), the rest here. Ends the flow; a part that will not come ends it there.
-export async function streamParts(shelf: VoiceStreams, id: string, first: Streamed, parts: string[],
+// Each part asked in turn and said into the one MP3 (`enc`, already started at the Tiiny's 24 kHz), a breath between;
+// `ask` gives a part's voice streamed, or null. The first part asked by the caller (it waits on it), the rest here, each
+// once the one before is wholly in -- the Tiiny refuses a voice while it is still sending one (seen 2026-11-10) -- and so
+// made while the one before plays. Ends the flow; a part that will not come ends it there. An MP3 is not joined: alone.
+export async function streamParts(shelf: VoiceStreams, id: string, enc: Mp3In, first: Streamed, parts: string[],
                                   ask: (part: string) => Promise<Streamed | null>, rate = 24000, gapMs = 120): Promise<void> {
-  if (first.kind === "mp3") return streamMp3(shelf, id, first.first, first.rest, "mp3");   // MP3s are not joined here: the first part alone
-  if (first.kind === "wav" && first.first.length >= 28) rate = Buffer.from(first.first).readUInt32LE(24) || rate;
-  const enc = mp3Into(shelf, id, rate), started = Date.now();
-  const gap = Buffer.alloc(Math.round((rate * gapMs) / 1000) * 2);
+  if (first.kind === "mp3") { enc.kill(); return streamMp3(shelf, id, first.first, first.rest, "mp3"); }
+  const started = Date.now(), gap = Buffer.alloc(Math.round((rate * gapMs) / 1000) * 2);
   await samplesOf(first, (b) => enc.feed(b), rate);
-  // the next part is asked as soon as the one before has arrived -- not when it has played
-  let next = parts.length ? ask(parts[0]) : null;
-  for (let i = 0; i < parts.length && next; i++) {
+  for (const part of parts) {
     if (Date.now() - started > STREAM_MOST_MS) break;
-    const asked = Date.now(), got = await next.catch(() => null);
-    console.log(`voice part ${i + 2}/${parts.length + 1}: ${got ? got.kind : "none"} after ${Date.now() - asked} ms waiting, ${Date.now() - started} ms in`);   // C-317, while it is tuned
+    const got = await ask(part).catch(() => null);
     if (!got || got.kind === "mp3") break;
-    next = i + 1 < parts.length ? ask(parts[i + 1]) : null;
     enc.feed(gap);
     await samplesOf(got, (b) => enc.feed(b), rate);
   }

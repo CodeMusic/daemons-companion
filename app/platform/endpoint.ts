@@ -3,6 +3,7 @@
 // key is never sent to the hub or shown again. Whether it is "at home" (a private, local or tailnet address) decides
 // which of THE MIND's rings may use it. Plain fetch, no node: imports.
 import * as SecureStore from "expo-secure-store";
+import { atHome as atHomeUrl } from "../../server/src/ai/endpoints";
 
 export type Endpoint = { url: string; model: string; name: string };
 const AT = "mind.endpoint", KEY = "mind.endpoint.key";
@@ -26,16 +27,8 @@ export async function forgetEndpoint() {
   await SecureStore.deleteItemAsync(KEY).catch(() => {});
 }
 
-// At home: this machine, a private network, the tailnet (100.64/10, *.ts.net), or a name only a home network answers
-export function atHome(url: string): boolean {
-  let h: string;
-  try { h = new URL(baseOf(url)).hostname.toLowerCase(); } catch { return false; }
-  if (h === "localhost" || h.endsWith(".local") || h.endsWith(".lan") || h.endsWith(".home") || h.endsWith(".ts.net") || !h.includes(".")) return true;
-  const m = /^(\d+)\.(\d+)\.\d+\.\d+$/.exec(h);
-  if (!m) return false;
-  const [a, b] = [Number(m[1]), Number(m[2])];
-  return a === 10 || a === 127 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31) || (a === 100 && b >= 64 && b <= 127);
-}
+// At home: the hub's own rule (server/src/ai/endpoints.ts), so the phone and the hub agree on what stays in the house
+export const atHome = (url: string) => atHomeUrl(baseOf(url));
 
 const timed = (ms: number) => { const c = new AbortController(); const t = setTimeout(() => c.abort(), ms); return { signal: c.signal, done: () => clearTimeout(t) }; };
 async function call(path: string, body?: unknown, ms = 30_000): Promise<any> {

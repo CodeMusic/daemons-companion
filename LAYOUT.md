@@ -49,7 +49,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 |---|---|
 | `src/main.ts`, `src/api.ts` | the server on a computer or the hub (Node): its HTTP API |
 | `src/core.ts`, `src/routes.ts`, `src/store.ts` | the rules themselves, and the requests a phone hosting alone answers -- **they run on the phone too** (C-111; every such file says so in its first line, C-290) |
-| `src/ai/` | talk, voices and the thinkers: the house's module, the Tiiny, `say.ts` (`sayable()`, DAY-mons) |
+| `src/ai/` | talk, voices and the thinkers: the house's module, the Tiiny, the player's endpoints after it (`endpoints.ts`, C-280: also `atHome`, which the phone imports), `say.ts` (`sayable()`, DAY-mons) |
 | `src/save/` | reading a DAEMONS save, and writing to it (`writer.ts`) |
 | `src/game/` | the player's ROM: patches, hashes, the live save and its mirror |
 | `src/commons*.ts` | THE COMMONS, which runs on its own machine |

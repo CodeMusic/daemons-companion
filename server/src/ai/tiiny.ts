@@ -65,7 +65,8 @@ export type Turn = { said: string; answer: string };
 // caller takes the talk elsewhere (the module, then n8n). think: the background path -- it reasons first, with
 // THINK_BUDGET more tokens and the caller's longer wait; if all of it went on reasoning, it is asked again without.
 export async function tiinyChat(at: TiinyAt, model: string, system: string, history: Turn[], said: string,
-                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false): Promise<string> {
+                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false, plain = false): Promise<string> {
+  // plain (C-280 (1)): a public endpoint is not sent chat_template_kwargs -- a strict API refuses an argument it does not know
   if (!model) throw new Error("no model chosen");
   const messages = [{ role: "system", content: system },
                     ...history.slice(-6).flatMap((t) => [{ role: "user", content: t.said }, { role: "assistant", content: t.answer }]),
@@ -75,7 +76,7 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
       // thinking off: Qwen3.6 otherwise spends every token reasoning and says nothing (2026-11-03: 220 tokens of
       // reasoning_content, content ""); off, it answered in 3-4 s. Read at the top level by the Tiiny, through LiteLLM.
       body: JSON.stringify({ model, messages, max_tokens: maxTokens + (think ? THINK_BUDGET : 0), temperature: think ? 0.7 : 0.8,
-                             chat_template_kwargs: { enable_thinking: think } }) });
+                             ...(plain ? {} : { chat_template_kwargs: { enable_thinking: think } }) }) });
     if (!r.ok) throw new Error(`the Tiiny answered ${r.status}`);
     const j = await r.json();
     // a thinking model's reasoning is left out: only what it says
@@ -83,7 +84,7 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
     // cut off by the cap: end on its last whole sentence, so a voice never stops mid-word
     if (j?.choices?.[0]?.finish_reason === "length") { const end = Math.max(...[".", "!", "?", "…"].map((c) => text.lastIndexOf(c)));
                                                        if (end > 20) text = text.slice(0, end + 1); }
-    if (!text && think) return tiinyChat(at, model, system, history, said, f, ms, maxTokens, false);
+    if (!text && think) return tiinyChat(at, model, system, history, said, f, ms, maxTokens, false, plain);
     if (!text) throw new Error("the Tiiny said nothing");
     return text;
   });

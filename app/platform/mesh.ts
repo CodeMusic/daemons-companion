@@ -65,6 +65,7 @@ export async function sense(fresh = false): Promise<Sense> {
 type Thought = { answer: string; by: string; heard?: string | null };
 const hubBy = (provider?: string | null) => {
   const p = String(provider ?? "");
+  if (p.startsWith("endpoint:")) return p.split(":")[1] || "the hub's endpoint";   // C-280 (1): one the player named on the hub
   return p.startsWith("tiiny") ? "the Tiiny" : /module|house|board|llm/i.test(p) ? "the hub's board"
        : /openrouter/i.test(p) ? "OpenRouter" : /local/i.test(p) ? "the hub's own model" : "the hub";   // DRAFT
 };

@@ -25,6 +25,7 @@ export type TalkAsk = {
   guide?: (heard: string, chars?: number) => string;      // C-209: asked of a book -- its pages nearest what was heard (guidePages), cut to chars
   book?: string;                                          // which book: THE GUIDE (the default), THE SUBTLE LAYER (C-229)
   fixed?: { setup: string; question: string };            // C-220: a fixed setup (one thinker for every meeting) and this turn's question
+  home?: boolean;                                         // C-307: THE MIND's "only at home" ring -- no endpoint off the house's networks
 };
 export type TalkAnswer = { answer: string; heard: string | null; audio: Uint8Array | null; provider: string; firstMs: number | null };
 

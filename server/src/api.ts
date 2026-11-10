@@ -62,6 +62,7 @@ import { StackFlow } from "./ai/stackflow.js";
 import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
+import { checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
@@ -319,7 +320,8 @@ export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId
 // on a minute's timer by the server (makeServer), never per request; every board's state carries it, so a watch draws
 // its dots without asking. Unset, the module is first once one is known (as talkProvider).
 export type TalkHealth = { n8n: { ok: boolean; at: string } | null; modules: { name: string; ok: boolean; at: string }[];
-                           tiiny?: { ok: boolean; at: string; models: string[] } | null };   // C-249
+                           tiiny?: { ok: boolean; at: string; models: string[] } | null;   // C-249
+                           endpoints?: EndpointHealth[] };                                  // C-280 (1)
 let TALK_HEALTH: TalkHealth = { n8n: null, modules: [] };
 export const talkFirst = (store: Store): "module" | "n8n" => {
   const p = store.getSetting("talk.provider");
@@ -696,7 +698,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     if (!at || !TALK_HEALTH.tiiny?.ok) return null;
     return { at, model: pickThinker(at, TALK_HEALTH.tiiny.models), quick: pickQuick(at, TALK_HEALTH.tiiny.models) };
   };
-  preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE);
+  // C-280 (1): then the player's endpoints, in order, each answering (checkTalk) -- only those at home for the home ring
+  const endpointsNowAll = (homeOnly: boolean) => endpointsNow(endpointsIn((k) => store.getSetting(k)), TALK_HEALTH.endpoints, homeOnly);
+  preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll);
   // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
   setMeetTalker(async (me, other, heard) => {
     if (!house.any) return null;
@@ -711,7 +715,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const n8nOk = cfg.talk.url ? { ok: await reachable(cfg.talk.url), at } : null;
     const modules = (await house.view()).map((m) => ({ name: m.name, ok: !m.error && !!m.llm, at }));
     const t = tiinyIn((k) => store.getSetting(k)), held = t ? await tiinyModels(t) : null;   // C-249
-    TALK_HEALTH = { n8n: n8nOk, modules, tiiny: t ? { ok: !!held && !!pickThinker(t, held), at, models: held ?? [] } : null };
+    const endpoints = await checkEndpoints(endpointsIn((k) => store.getSetting(k)));   // C-280 (1)
+    TALK_HEALTH = { n8n: n8nOk, modules, tiiny: t ? { ok: !!held && !!pickThinker(t, held), at, models: held ?? [] } : null, endpoints };
   };
   checkTalk().catch(() => {});
   setInterval(() => { checkTalk().catch(() => {}); }, 60_000).unref();
@@ -1168,6 +1173,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const talkView = async () => ({ provider: talkProvider(), first: talkFirstOf(store), health: { ...TALK_HEALTH, faults: house.faults }, connected: !!ecfg.talk.url, indexVoice: indexVoice(),
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "",
                                       tiiny: tiinyView((k) => store.getSetting(k)), voices: voiceGeneration((k) => store.getSetting(k)),
+                                      endpoints: endpointsView((k) => store.getSetting(k)),   // C-280 (1): never a key, only keySet
                                       rings: { dream: store.getSetting("mind.ring.dream") === "home" ? "home" : "anywhere" } });   // C-307
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       // C-303: the voices' generation (ai/voices.ts) -- a phone keeps its voices under it, and forgets them when it moves
@@ -1217,6 +1223,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             if (typeof t[k] === "string") store.setSetting(`tiiny.${k}`, t[k].trim().slice(0, 200) || null);
           const at = tiinyIn((k) => store.getSetting(k)), held = at ? await tiinyModels(at) : null;
           TALK_HEALTH = { ...TALK_HEALTH, tiiny: at ? { ok: !!held && !!pickThinker(at, held), at: new Date().toISOString(), models: held ?? [] } : null };
+        }
+        // C-280 (1): ENDPOINTS -- {endpoint: {id?, name, url, key?, model}} to give or change one, {forgetEndpoint: id},
+        // {moveEndpoint: {id, by: -1|1}}; each checked at once, so its dot is true before the minute's check
+        if (b.endpoint !== undefined || typeof b.forgetEndpoint === "string" || b.moveEndpoint !== undefined) {
+          const get = (k: string) => store.getSetting(k), set = (k: string, v: string | null) => store.setSetting(k, v);
+          if (b.endpoint !== undefined) { const r = keepEndpoint(get, set, b.endpoint); if (typeof r === "string") return send(res, 400, { error: r }); }
+          if (typeof b.forgetEndpoint === "string") forgetEndpoint(get, set, b.forgetEndpoint);
+          if (b.moveEndpoint !== undefined && typeof b.moveEndpoint?.id === "string" && (b.moveEndpoint.by === -1 || b.moveEndpoint.by === 1))
+            moveEndpoint(get, set, b.moveEndpoint.id, b.moveEndpoint.by);
+          TALK_HEALTH = { ...TALK_HEALTH, endpoints: await checkEndpoints(endpointsIn(get)) };
         }
         if (b.indexVoice !== undefined && !["n8n", "module"].includes(b.indexVoice)) return send(res, 400, { error: "indexVoice is n8n or module" });
         if (b.first !== undefined && !["n8n", "module", "tiiny"].includes(b.first)) return send(res, 400, { error: "first is module, n8n or tiiny" });
@@ -1402,6 +1418,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           audioBase64: typeof b.audioBase64 === "string" ? b.audioBase64 : undefined, audioMime: b.audioMime,
           history: Array.isArray(b.history) ? b.history.slice(-6) : talks.history(who),
           provider: ringed(b.provider ?? talkProvider(), b.ring), speak: b.speak !== false, voice: "index",
+          ...(b.ring === "home" ? { home: true } : {}),                                                         // C-280 (1): no endpoint off the house's networks
           localModel: ecfg.talk.localModel,
           ...talkWho(ecfg, store, deviceId),
           ...(typeof b.guide === "function" ? { guide: b.guide as (heard: string) => string, history: [] } : {}),   // C-209: the GUIDE answers, afresh each time
@@ -1426,6 +1443,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           history: (p.history as { text?: string; said?: string; answer: string }[]).map((x) => ({ said: x.said ?? x.text ?? "", answer: x.answer })),
           daemon: p.daemon, day: p.day, season: p.season, goal: p.goal, speak: p.speak, guide: (p as { guide?: (heard: string) => string }).guide,
           book: (p as { book?: string }).book,                                                                  // C-229
+          home: (p as { home?: boolean }).home,                                                                 // C-280 (1)
           voice: voiceFor(ecfg, store, deviceId).recipe };                         // its own voice, wherever it is answered
         const shaped = (r: Awaited<ReturnType<House["talk"]>>) => ({ answer: r.answer, heard: r.heard, provider: r.provider,
           ...(r.audio ? { audioBase64: Buffer.from(r.audio).toString("base64"), audioMime: "audio/wav" } : {}) });

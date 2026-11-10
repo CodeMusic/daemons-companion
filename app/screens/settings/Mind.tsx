@@ -8,6 +8,7 @@ import { endpoint, endpointModels, endpointThink, forgetEndpoint, keepEndpoint }
 import { api, ON_PHONE } from "../../platform/net";
 import { Action, Card, Choice, Entry, Eyebrow, Small } from "../../ui/ui";
 import { useVoice } from "../daemon/Daemon";
+import { HubEndpoints } from "./HubEndpoints";   // C-280 (1)
 
 const RING_SAID: Record<Ring, string> = { anywhere: "ANYWHERE", home: "AT HOME", phone: "THIS PHONE" };
 const KIND_SAID: Record<Kind, string> = { talk: "TALK", guide: "THE GUIDE" };
@@ -160,6 +161,7 @@ export function MindCard({ ink }: { ink: string }) {
       </XStack>
       </> : null}
       {note ? <Small color="$color10">{note}</Small> : null}
+      <HubEndpoints ink={ink} />
     </Card>
   );
 }

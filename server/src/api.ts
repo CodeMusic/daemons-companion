@@ -40,7 +40,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, joinVoices, phoneAudio, toDevicePcm, voicePieces, VoiceShelf, DEVICE_RATE, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, joinVoices, phoneAudio, streamMp3, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, wavOf } from "./ai/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
@@ -59,7 +59,7 @@ import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
-import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
+import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
@@ -613,7 +613,7 @@ export const DEVICE_DOOR = [
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
-  (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/")),   // C-180: an answer fetched
+  (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/") || p.startsWith("/api/ai/voice/")),   // C-317: a voice streamed, by an id nobody can guess   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   (m: string) => m === "OPTIONS",
 ];
@@ -679,6 +679,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   outlookLoop(store);                                          // C-203: rain in the next hours, for a read
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
   const remotesShared = new SharedRemotes(store);              // C-165: and of remotes
+  const streams = new VoiceStreams();                         // C-317: voices sent while they are made
   const voices = new VoiceShelf();                             // C-66: answers a handheld streams (ai/voice.ts)
   const talks = new Conversations();                           // C-66: the last few things said, per device
   const talkJobs = new TalkJobs<Record<string, unknown>>(2);   // C-180: every talk and voice, queued; fetched by id
@@ -1845,8 +1846,34 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                              "x-sample-rate": String(DEVICE_RATE) });
         return res.end(pcm);
       }
+      // C-317: a voice streamed -- what is made so far, then the rest as it comes (MP3, played as it arrives)
+      if (req.method === "GET" && path.startsWith("/api/ai/voice/")) {
+        const id = path.slice("/api/ai/voice/".length);
+        if (!streams.has(id)) return send(res, 404, { error: "that voice is gone; ask again" });
+        const whole = streams.whole(id);
+        res.writeHead(200, { "content-type": "audio/mpeg", "cache-control": "no-store", "access-control-allow-origin": "*",
+                             ...(whole ? { "content-length": whole.length } : {}) });
+        if (whole) return res.end(whole);
+        const un = streams.follow(id, (c) => res.write(c), () => res.end());
+        req.on("close", () => { if (un) un(); });
+        return;
+      }
       if (req.method === "POST" && path === "/api/ai/speak") {       // C-65: an INDEX entry (or a line) in the INDEX voice
         const b = await body(req);
+        // C-317 (the user, 2026-11-10: "look into the 23 s voice"): {stream: true} -- a talk's answer in the Tiiny's voice,
+        // sent as it is made: the link at once, the first words in about two seconds. Not through the relay (it carries a
+        // whole answer, not a stream), and only the Tiiny streams; anything else is said whole, as below.
+        if (b.stream === true && !relayed && (b.daemon === true || b.reader === true) && typeof b.text === "string" && b.text.trim()) {
+          const t = tiinyNow();
+          const recipe = b.daemon === true ? voiceFor(ecfg, store, deviceId).recipe : store.getSetting("voice.recipe.index") || INDEX_VOICE;
+          const s = t?.at.tts ? await tiinySpeakStream(t.at, b.text.replace(/\n/g, " ").slice(0, 600), recipe) : null;
+          if (s) {
+            const id = streams.open();
+            streamMp3(streams, id, s.first, s.rest, s.kind).catch(() => streams.end(id, true));
+            return send(res, 200, { stream: `/api/ai/voice/${id}`, provider: `tiiny:${t!.at.tts}`, final: true,
+                                    generation: voiceGeneration((k) => store.getSetting(k)) });
+          }
+        }
         const told = ownTelling(ecfg, store, deviceId, b);   // C-303: {own: true} -- what it says of itself, in its own voice
         if (told) return answer(PRIORITY.reading, async () => ({ ...await readAloud(told.text, told.recipe), answer: told.text }));
         // C-307: {text, daemon: true} -- a talk's answer thought elsewhere (this phone, an endpoint), said in the carried daemon's

@@ -61,6 +61,86 @@ export async function phoneAudio<T extends Record<string, unknown>>(r: T): Promi
   return mp3 ? { ...r, audioBase64: mp3.toString("base64"), audioMime: "audio/mpeg" } : r;
 }
 
+// C-317: a voice streamed to the phone while it is still being made -- the Tiiny's PCM (or WAV) turned to MP3 as it
+// arrives (iOS and the browsers play an MP3 as it comes; a WAV they want whole), kept on a shelf by an id nobody can
+// guess, and sent to whoever asks for it from its first bytes on: one that asks late gets what is made, then follows.
+// The hub has one core; LAME keeps up with a 24 kHz voice many times over.
+type Flow = { chunks: Buffer[]; done: boolean; failed: boolean; at: number; follow: Set<(c: Buffer | null) => void> };
+export const STREAM_KEEP_MS = 10 * 60_000, STREAM_MOST_MS = 120_000;
+export class VoiceStreams {
+  private flows = new Map<string, Flow>();
+  constructor(private now = () => Date.now()) {}
+  open(): string {
+    for (const [k, f] of this.flows) if (this.now() - f.at > STREAM_KEEP_MS) this.flows.delete(k);
+    const id = randomBytes(16).toString("hex");
+    this.flows.set(id, { chunks: [], done: false, failed: false, at: this.now(), follow: new Set() });
+    return id;
+  }
+  push(id: string, c: Buffer) {
+    const f = this.flows.get(id);
+    if (!f || f.done || !c.length) return;
+    f.chunks.push(c); f.follow.forEach((g) => g(c));
+  }
+  end(id: string, failed = false) {
+    const f = this.flows.get(id);
+    if (!f || f.done) return;
+    f.done = true; f.failed = failed; f.follow.forEach((g) => g(null)); f.follow.clear();
+  }
+  has = (id: string) => this.flows.has(id);
+  done = (id: string) => this.flows.get(id)?.done ?? true;
+  whole = (id: string) => { const f = this.flows.get(id); return f?.done ? Buffer.concat(f.chunks) : null; };
+  // what is made, then each new piece as it comes, and the end; false when there is no such voice
+  follow(id: string, take: (c: Buffer) => void, end: () => void): (() => void) | false {
+    const f = this.flows.get(id);
+    if (!f) return false;
+    f.chunks.forEach(take);
+    if (f.done) { end(); return () => {}; }
+    const g = (c: Buffer | null) => (c ? take(c) : end());
+    f.follow.add(g);
+    return () => f.follow.delete(g);
+  }
+}
+
+// The upstream voice into the shelf as MP3: its first bytes (already read) and the rest. Pcm is the Tiiny's 24 kHz, 16-bit
+// mono; a WAV says its own rate; an MP3 goes as it is. Ends the flow, failed or not, and never past STREAM_MOST_MS.
+export function streamMp3(shelf: VoiceStreams, id: string, first: Uint8Array, rest: ReadableStreamDefaultReader<Uint8Array>,
+                          kind: "wav" | "mp3" | "pcm", rate = 24000): Promise<void> {
+  const stop = setTimeout(() => { rest.cancel().catch(() => {}); }, STREAM_MOST_MS);
+  if (kind === "mp3") {
+    return (async () => {
+      shelf.push(id, Buffer.from(first));
+      try { for (;;) { const { done, value } = await rest.read(); if (done) break; shelf.push(id, Buffer.from(value)); } shelf.end(id); }
+      catch { shelf.end(id, true); } finally { clearTimeout(stop); }
+    })();
+  }
+  let head = Buffer.from(first);
+  if (kind === "wav") {                                   // the header off: its rate kept, its samples fed on as PCM
+    rate = head.length >= 28 ? head.readUInt32LE(24) || rate : rate;
+    const at = head.indexOf("data", 12, "latin1");
+    head = at >= 0 ? head.subarray(at + 8) : head.subarray(44);
+  }
+  const enc = spawn(FFMPEG, ["-hide_banner", "-loglevel", "error", "-f", "s16le", "-ar", String(rate), "-ac", "1", "-i", "pipe:0",
+                             "-codec:a", "libmp3lame", "-b:a", "64k", "-write_xing", "0", "-id3v2_version", "0",
+                             "-flush_packets", "1", "-f", "mp3", "pipe:1"], { stdio: ["pipe", "pipe", "ignore"] });
+  enc.stdout.on("data", (c: Buffer) => shelf.push(id, c));
+  enc.stdin.on("error", () => {});
+  return new Promise((resolve) => {
+    enc.on("error", () => { clearTimeout(stop); shelf.end(id, true); resolve(); });
+    enc.on("close", (code) => { clearTimeout(stop); shelf.end(id, code !== 0); resolve(); });
+    (async () => {
+      let odd: Buffer | null = null;                      // a sample split across two pieces is kept whole
+      const feed = (b: Buffer) => {
+        const all = odd ? Buffer.concat([odd, b]) : b, even = all.length & ~1;
+        odd = even < all.length ? all.subarray(even) : null;
+        if (even) enc.stdin.write(all.subarray(0, even));
+      };
+      try { feed(head); for (;;) { const { done, value } = await rest.read(); if (done) break; feed(Buffer.from(value)); } }
+      catch { /* what came is said */ }
+      enc.stdin.end();
+    })();
+  });
+}
+
 // 2026-11-07 (the user: a dream or a journal's chapter, its voice made once and kept, and exported): a long piece read
 // in parts the voice takes at once, cut at its sentences, and the parts' voices joined into one, a breath between.
 export const PIECE_MOST = 560;

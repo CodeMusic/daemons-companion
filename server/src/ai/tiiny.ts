@@ -108,6 +108,35 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
   } catch { return null; }
 }
 
+// C-317 (the user, 2026-11-10: "look into the 23 s voice"): the same voice, streamed -- the Tiiny makes it a little faster
+// than it is spoken (20 s of speech in 13 s, measured), so its first words arrive in about two seconds where the whole
+// took thirteen. The body as it comes, and what the first bytes say it is; null when it would not start (no TTS model,
+// refused, nothing within `ms`).
+export async function tiinySpeakStream(at: TiinyAt, text: string, instructions = "", f: typeof fetch = fetch, ms = 20_000):
+    Promise<{ first: Uint8Array; rest: ReadableStreamDefaultReader<Uint8Array>; kind: "wav" | "mp3" | "pcm" } | null> {
+  if (!at.tts) return null;
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await f(`${at.url}/audio/speech`, { method: "POST", headers: headers(at), signal: ctl.signal,
+      body: JSON.stringify({ model: at.tts, input: sayable(text).slice(0, 600), voice: at.voice || "default", response_format: "pcm",
+                             stream: true, ...(instructions ? { instructions } : {}) }) });
+    if (!r.ok || !r.body) return null;
+    const rest = r.body.getReader();
+    let first = new Uint8Array(0);
+    while (first.length < 64) {                          // enough to say what it is
+      const { done, value } = await rest.read();
+      if (done) break;
+      const both = new Uint8Array(first.length + value.length); both.set(first); both.set(value, first.length); first = both;
+    }
+    clearTimeout(timer);
+    if (!first.length) return null;
+    const head = String.fromCharCode(...first.subarray(0, 4));
+    const kind = head === "RIFF" ? "wav" : head.startsWith("ID3") || (first[0] === 0xff && (first[1] & 0xe0) === 0xe0) ? "mp3" : "pcm";
+    // the stream outlives the first bytes: the timer is gone, and a stall later is the reader's to notice
+    return { first, rest, kind };
+  } catch { clearTimeout(timer); return null; }
+}
+
 // What was said, from a 16 kHz WAV. null without an ASR model, or when it hears nothing.
 // The Tiiny's hearing model answers with its pieces run together ("me.Did"), then the whole, spaced -- and then, on a
 // longer clip, any piece that came after it (seen 2026-11-06: "There.That was me.Did anything see?There, that was me. Did

@@ -39,10 +39,10 @@ describe("expressions on any sprite (C-119)", () => {
   });
 
   it("closes the eyes it knows, and paints nothing for a daemon whose eyes no one has checked", () => {
-    const care = faceOf("caremusai")!;
+    const care = faceOf("crank")!;
     const closed = expressionFor({ tired: "asleep" }, null, care).patch;
     expect(closed.length).toBe(4);                                    // two eyes: each filled, then a line across
-    expect(closed[1]).toMatchObject({ h: 1, w: 4 });                  // the line
+    expect(closed[1]).toMatchObject({ h: 1, w: 6 });                  // the line (CRANK's eyes are six wide; C-311)
     expect(expressionFor({ tired: "asleep" }, null, null).patch).toEqual([]);
     expect(expressionFor({ tired: "awake" }, null, care).patch).toEqual([]);   // awake: its own eyes
   });
@@ -53,7 +53,7 @@ describe("expressions on any sprite (C-119)", () => {
   });
 
   it("lids half the eye when sleepy or sad, and draws an upturned arc when glad", () => {
-    const f = faceOf("caremusai")!;
+    const f = faceOf("crank")!;
     expect(eyePatch(f, EXPRESSIONS.drowsy).every((p) => p.h === 3)).toBe(true);   // the top half of a 6-high eye
     const glad = eyePatch(f, EXPRESSIONS.glad);
     const arc = glad.filter((p) => p.h === 1);
@@ -61,7 +61,7 @@ describe("expressions on any sprite (C-119)", () => {
   });
 
   it("draws any expression by name for a bench check, as a host would receive it, and nothing for a name it lacks", () => {
-    const care = faceOf("caremusai")!;
+    const care = faceOf("crank")!;
     expect(drawnAs("asleep", care)).toEqual(expressionFor({ tired: "asleep" }, null, care));
     expect(drawnAs("glad", null)?.patch).toEqual([]);
     expect(drawnAs("sulking", care)).toBeNull();

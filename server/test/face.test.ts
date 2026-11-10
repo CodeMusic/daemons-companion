@@ -32,9 +32,9 @@ describe("the BOX-3's faces, a picture a voice phase (C-138)", () => {
   it("blinks when idle, and only on the second frame", () => {
     expect(lookFor(EXPRESSIONS.awake, "idle", 0, false).eyes).toBeNull();
     expect(lookFor(EXPRESSIONS.awake, "idle", 1, false).eyes).toBe("closed");
-    const face = faceOf("caremusai")!;
-    const a = renderFace(sprite("caremusai"), EXPRESSIONS.awake, face, den([]), "idle", 0);
-    const b = renderFace(sprite("caremusai"), EXPRESSIONS.awake, face, den([]), "idle", 1);
+    const face = faceOf("crank")!;
+    const a = renderFace(sprite("crank"), EXPRESSIONS.awake, face, den([]), "idle", 0);
+    const b = renderFace(sprite("crank"), EXPRESSIONS.awake, face, den([]), "idle", 1);
     expect(a.equals(b)).toBe(false);                                        // its eyes closed: the picture changed
   });
 
@@ -49,9 +49,9 @@ describe("the BOX-3's faces, a picture a voice phase (C-138)", () => {
     expect(lookFor(EXPRESSIONS.awake, "replying", 0, true)).toMatchObject({ mouth: "open", mark: null });
     expect(lookFor(EXPRESSIONS.awake, "replying", 1, true).mouth).toBeNull();
     expect(lookFor(EXPRESSIONS.awake, "replying", 0, false).mark?.rows).toHaveLength(8);
-    const face = { ...faceOf("caremusai")!, mouth: [30, 30, 4, 1] as [number, number, number, number] };
-    const open = renderFace(sprite("caremusai"), EXPRESSIONS.awake, face, den([]), "replying", 0);
-    const plain = renderFace(sprite("caremusai"), EXPRESSIONS.awake, { ...face, mouth: undefined }, den([]), "replying", 0);
+    const face = { ...faceOf("crank")!, mouth: [30, 30, 4, 1] as [number, number, number, number] };
+    const open = renderFace(sprite("crank"), EXPRESSIONS.awake, face, den([]), "replying", 0);
+    const plain = renderFace(sprite("crank"), EXPRESSIONS.awake, { ...face, mouth: undefined }, den([]), "replying", 0);
     expect(open.equals(plain)).toBe(false);
   });
 

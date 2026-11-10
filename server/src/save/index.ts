@@ -90,7 +90,8 @@ export function readIndex(save: Uint8Array, edition: "CONTENT" | "CONTEXT", l: L
     if (bound) {
       Object.assign(e, { category: row.category ?? "", types: row.types ?? [], entry: form?.entry ?? row.entry?.[edition] ?? "",
                          colour: cardColour(row.types ?? [], profile.roots) });
-      // C-303: it tells of itself (a seasonal form's mouth is not found yet, so it speaks without one)
+      // C-303: it tells of itself (the MUSAI branch draws no mouths -- the user, 2026-11-09, C-311 -- so a seasonal form
+      // speaks without one, moving a little instead)
       if (row.said) Object.assign(e, { said: row.said, mouth: form ? null : openMouthOf(row.art?.front) });
       const m = profile.opus ? M.margins[id] : undefined;
       const state = !m ? null : grown.get(Number(id)) ? "carried" : boxed.has(Number(id)) ? "neglected" : null;

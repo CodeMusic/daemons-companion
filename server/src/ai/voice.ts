@@ -101,44 +101,106 @@ export class VoiceStreams {
   }
 }
 
-// The upstream voice into the shelf as MP3: its first bytes (already read) and the rest. Pcm is the Tiiny's 24 kHz, 16-bit
-// mono; a WAV says its own rate; an MP3 goes as it is. Ends the flow, failed or not, and never past STREAM_MOST_MS.
-export function streamMp3(shelf: VoiceStreams, id: string, first: Uint8Array, rest: ReadableStreamDefaultReader<Uint8Array>,
-                          kind: "wav" | "mp3" | "pcm", rate = 24000): Promise<void> {
-  const stop = setTimeout(() => { rest.cancel().catch(() => {}); }, STREAM_MOST_MS);
-  if (kind === "mp3") {
-    return (async () => {
-      shelf.push(id, Buffer.from(first));
-      try { for (;;) { const { done, value } = await rest.read(); if (done) break; shelf.push(id, Buffer.from(value)); } shelf.end(id); }
-      catch { shelf.end(id, true); } finally { clearTimeout(stop); }
-    })();
-  }
-  let head = Buffer.from(first);
-  if (kind === "wav") {                                   // the header off: its rate kept, its samples fed on as PCM
-    rate = head.length >= 28 ? head.readUInt32LE(24) || rate : rate;
-    const at = head.indexOf("data", 12, "latin1");
-    head = at >= 0 ? head.subarray(at + 8) : head.subarray(44);
-  }
+// One MP3 encoder feeding the shelf: 16-bit mono PCM in, at `rate`, MP3 out as it is made (no ID3, no Xing frame -- a
+// player reading a stream would take that frame's "no length" at its word). A sample split across two pieces kept whole.
+function mp3Into(shelf: VoiceStreams, id: string, rate: number) {
   const enc = spawn(FFMPEG, ["-hide_banner", "-loglevel", "error", "-f", "s16le", "-ar", String(rate), "-ac", "1", "-i", "pipe:0",
                              "-codec:a", "libmp3lame", "-b:a", "64k", "-write_xing", "0", "-id3v2_version", "0",
                              "-flush_packets", "1", "-f", "mp3", "pipe:1"], { stdio: ["pipe", "pipe", "ignore"] });
   enc.stdout.on("data", (c: Buffer) => shelf.push(id, c));
   enc.stdin.on("error", () => {});
-  return new Promise((resolve) => {
-    enc.on("error", () => { clearTimeout(stop); shelf.end(id, true); resolve(); });
-    enc.on("close", (code) => { clearTimeout(stop); shelf.end(id, code !== 0); resolve(); });
-    (async () => {
-      let odd: Buffer | null = null;                      // a sample split across two pieces is kept whole
-      const feed = (b: Buffer) => {
-        const all = odd ? Buffer.concat([odd, b]) : b, even = all.length & ~1;
-        odd = even < all.length ? all.subarray(even) : null;
-        if (even) enc.stdin.write(all.subarray(0, even));
-      };
-      try { feed(head); for (;;) { const { done, value } = await rest.read(); if (done) break; feed(Buffer.from(value)); } }
-      catch { /* what came is said */ }
-      enc.stdin.end();
-    })();
+  const closed = new Promise<void>((resolve) => {
+    enc.on("error", () => { shelf.end(id, true); resolve(); });
+    enc.on("close", (code) => { shelf.end(id, code !== 0); resolve(); });
   });
+  let odd: Buffer | null = null;
+  return {
+    feed(b: Buffer) {
+      const all = odd ? Buffer.concat([odd, b]) : b, even = all.length & ~1;
+      odd = even < all.length ? all.subarray(even) : null;
+      if (even) enc.stdin.write(all.subarray(0, even));
+    },
+    end() { enc.stdin.end(); return closed; },
+  };
+}
+export type Streamed = { first: Uint8Array; rest: ReadableStreamDefaultReader<Uint8Array>; kind: "wav" | "mp3" | "pcm" };
+// A streamed voice's samples, fed on as they come: a WAV's header taken off (its rate said), PCM as it is
+async function samplesOf(s: Streamed, feed: (b: Buffer) => void, rate: number): Promise<number> {
+  let head = Buffer.from(s.first);
+  if (s.kind === "wav") {
+    rate = head.length >= 28 ? head.readUInt32LE(24) || rate : rate;
+    const at = head.indexOf("data", 12, "latin1");
+    head = at >= 0 ? head.subarray(at + 8) : head.subarray(44);
+  }
+  feed(head);
+  try { for (;;) { const { done, value } = await s.rest.read(); if (done) break; feed(Buffer.from(value)); } }
+  catch { /* what came is said */ }
+  return rate;
+}
+
+// The upstream voice into the shelf as MP3. Pcm is the Tiiny's 24 kHz, 16-bit mono; a WAV says its own rate; an MP3 goes
+// as it is. Ends the flow, failed or not, and never past STREAM_MOST_MS.
+export async function streamMp3(shelf: VoiceStreams, id: string, first: Uint8Array, rest: ReadableStreamDefaultReader<Uint8Array>,
+                                kind: "wav" | "mp3" | "pcm", rate = 24000): Promise<void> {
+  const stop = setTimeout(() => { rest.cancel().catch(() => {}); }, STREAM_MOST_MS);
+  try {
+    if (kind === "mp3") {
+      shelf.push(id, Buffer.from(first));
+      try { for (;;) { const { done, value } = await rest.read(); if (done) break; shelf.push(id, Buffer.from(value)); } shelf.end(id); }
+      catch { shelf.end(id, true); }
+      return;
+    }
+    if (kind === "wav" && first.length >= 28) rate = Buffer.from(first).readUInt32LE(24) || rate;
+    const enc = mp3Into(shelf, id, rate);
+    await samplesOf({ first, rest, kind }, (b) => enc.feed(b), rate);
+    await enc.end();
+  } finally { clearTimeout(stop); }
+}
+
+// C-317: the voice in growing parts. Between the hub and the Tiiny sits LiteLLM, which hands a voice on only once it is
+// whole (measured 2026-11-10: the first byte at 13 s, streamed or not) -- so the answer is asked for a part at a time,
+// the first short (its words are heard in a few seconds), each next one longer, made while the one before is playing.
+// The Tiiny makes about 1.55 s of speech a second, plus about a second to begin, so each part may be about half as long
+// again as the one before and still be ready in time. Cut at sentences, else clauses, else words.
+export const FIRST_PART = 70, PART_GROWS = 1.45, PART_MOST = 360;
+export function voiceParts(text: string): string[] {
+  const words = text.replace(/\s+/g, " ").trim();
+  if (!words) return [];
+  // the places a part may end, best first: a sentence's end, then a clause's, then any space
+  const out: string[] = [];
+  let rest = words, want = FIRST_PART;
+  while (rest.length > want * 1.3) {
+    const cut = (re: RegExp) => { let best = -1; for (const m of rest.matchAll(re)) { const e = m.index! + m[0].length; if (e >= want * 0.6 && e <= want * 1.3) { if (best < 0 || Math.abs(e - want) < Math.abs(best - want)) best = e; } } return best; };
+    let e = cut(/[.!?]["')]?\s/g);
+    if (e < 0) e = cut(/[,;:\u2014-]\s/g);
+    if (e < 0) e = cut(/\s/g);
+    if (e < 0) break;
+    out.push(rest.slice(0, e).trim()); rest = rest.slice(e).trim();
+    want = Math.min(PART_MOST, Math.round(want * PART_GROWS));
+  }
+  if (rest) out.push(rest);
+  return out;
+}
+// Each part asked in turn and said into the one MP3, a breath between; `ask` gives a part's voice streamed, or null. The
+// first part asked by the caller (it waits on it), the rest here. Ends the flow; a part that will not come ends it there.
+export async function streamParts(shelf: VoiceStreams, id: string, first: Streamed, parts: string[],
+                                  ask: (part: string) => Promise<Streamed | null>, rate = 24000, gapMs = 120): Promise<void> {
+  if (first.kind === "mp3") return streamMp3(shelf, id, first.first, first.rest, "mp3");   // MP3s are not joined here: the first part alone
+  if (first.kind === "wav" && first.first.length >= 28) rate = Buffer.from(first.first).readUInt32LE(24) || rate;
+  const enc = mp3Into(shelf, id, rate), started = Date.now();
+  const gap = Buffer.alloc(Math.round((rate * gapMs) / 1000) * 2);
+  await samplesOf(first, (b) => enc.feed(b), rate);
+  // the next part is asked as soon as the one before has arrived -- not when it has played
+  let next = parts.length ? ask(parts[0]) : null;
+  for (let i = 0; i < parts.length && next; i++) {
+    if (Date.now() - started > STREAM_MOST_MS) break;
+    const got = await next.catch(() => null);
+    if (!got || got.kind === "mp3") break;
+    next = i + 1 < parts.length ? ask(parts[i + 1]) : null;
+    enc.feed(gap);
+    await samplesOf(got, (b) => enc.feed(b), rate);
+  }
+  await enc.end();
 }
 
 // 2026-11-07 (the user: a dream or a journal's chapter, its voice made once and kept, and exported): a long piece read

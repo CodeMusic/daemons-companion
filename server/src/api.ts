@@ -40,7 +40,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, joinVoices, phoneAudio, streamMp3, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, joinVoices, phoneAudio, streamParts, toDevicePcm, voiceParts, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, wavOf } from "./ai/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
@@ -1866,10 +1866,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.stream === true && !relayed && (b.daemon === true || b.reader === true) && typeof b.text === "string" && b.text.trim()) {
           const t = tiinyNow();
           const recipe = b.daemon === true ? voiceFor(ecfg, store, deviceId).recipe : store.getSetting("voice.recipe.index") || INDEX_VOICE;
-          const s = t?.at.tts ? await tiinySpeakStream(t.at, b.text.replace(/\n/g, " ").slice(0, 600), recipe) : null;
+          // in growing parts (voice.ts: LiteLLM hands a voice on only when it is whole), the first waited on here
+          const parts = voiceParts(b.text.slice(0, 600)), at = t?.at;
+          const ask = (part: string) => at ? tiinySpeakStream(at, part, recipe, fetch, 30_000) : Promise.resolve(null);
+          const s = at?.tts && parts.length ? await ask(parts[0]) : null;
           if (s) {
             const id = streams.open();
-            streamMp3(streams, id, s.first, s.rest, s.kind).catch(() => streams.end(id, true));
+            streamParts(streams, id, s, parts.slice(1), ask).catch(() => streams.end(id, true));
             return send(res, 200, { stream: `/api/ai/voice/${id}`, provider: `tiiny:${t!.at.tts}`, final: true,
                                     generation: voiceGeneration((k) => store.getSetting(k)) });
           }

@@ -1,7 +1,7 @@
 // C-317: a voice streamed -- the Tiiny's PCM turned to MP3 as it comes, followed from its first bytes
 import { describe, expect, it } from "vitest";
 import { tiinySpeakStream, type TiinyAt } from "../src/ai/tiiny.js";
-import { CAN_CONVERT, streamMp3, VoiceStreams } from "../src/ai/voice.js";
+import { CAN_CONVERT, FIRST_PART, streamMp3, streamParts, voiceParts, VoiceStreams } from "../src/ai/voice.js";
 
 const at: TiinyAt = { url: "http://tiiny.test/v1", key: "k", model: "m", quick: "", tts: "tiiny-voice", asr: "", voice: "" };
 // half a second of a 440 Hz tone, 24 kHz 16-bit mono, sent in pieces of odd sizes (a sample split between two)
@@ -49,5 +49,27 @@ describe("the Tiiny's voice, streamed", () => {
     const mp3 = shelf.whole(id)!;
     expect(mp3.length).toBeGreaterThan(1000);
     expect(mp3[0] === 0xff && (mp3[1] & 0xe0) === 0xe0).toBe(true);   // a frame first: no ID3, no Xing to say "no length"
+  });
+});
+
+describe("the voice in growing parts", () => {
+  const T = "The gray sky outside matches the heaviness in my bones, making the dust motes dancing in the shafts of weak light seem like a quiet mockery. I wonder if you would have called for me in this rain. Still, you came, and that is something. Tell me what you saw today.";
+  it("cuts a short first part, at a clause, and longer ones after, losing no word", () => {
+    const p = voiceParts(T);
+    expect(p[0]).toBe("The gray sky outside matches the heaviness in my bones,");
+    expect(p[0].length).toBeLessThanOrEqual(FIRST_PART * 1.3);
+    expect(p.length).toBeGreaterThan(1);
+    expect(p.join(" ")).toBe(T);
+    for (let i = 1; i < p.length - 1; i++) expect(p[i].length).toBeGreaterThan(p[i - 1].length);
+  });
+  it("keeps a short answer whole", () => expect(voiceParts("Hello there.")).toEqual(["Hello there."]));
+  it.skipIf(!CAN_CONVERT)("says every part into one MP3, in order", async () => {
+    const asked: string[] = [];
+    const f = (async (_u: string, init: RequestInit) => { asked.push(JSON.parse(String(init.body)).input); return new Response(sent(tone())); }) as unknown as typeof fetch;
+    const parts = voiceParts(T), shelf = new VoiceStreams(), id = shelf.open();
+    const ask = (x: string) => tiinySpeakStream(at, x, "", f);
+    await streamParts(shelf, id, (await ask(parts[0]))!, parts.slice(1), ask);
+    expect(asked).toEqual(parts);
+    expect(shelf.whole(id)!.length).toBeGreaterThan(parts.length * 3000);   // half a second of each, at 64 kbit
   });
 });

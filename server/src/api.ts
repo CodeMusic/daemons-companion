@@ -359,11 +359,11 @@ function speciesPng(species: string, season: string | null = null): Buffer | nul
   const key = season ? `${species}_${season}` : species;
   if (speciesPngCache.has(key)) return speciesPngCache.get(key)!;
   const row = SPECIES[species];
-  // C-315: a species drawn as several forms keeps them in a folder of its own (SYMBOL: gfx/daemons/symbol/a_front.png ->
-  // art/symbol/a.png); the INDEX shows its first, as the game's entry does
+  // C-315: a species drawn as several forms keeps them in a folder of its own (SYMBOL: gfx/daemons/symbol/a_front.png);
+  // DAEMONS companion_export writes its first form, A, as art/symbol.png -- the INDEX shows it, as the game's entry does
   const front: string | undefined = row?.art?.front, parts = front?.split("/") ?? [];
   const rel = season ? row?.seasons?.[season]?.art
-    : front && (parts.length > 3 && parts[parts.length - 2] !== "daemons" ? `${parts[parts.length - 2]}/` : "") + parts[parts.length - 1].replace("_front.png", ".png");
+    : front && (parts.length > 3 && parts[parts.length - 2] !== "daemons" ? `${parts[parts.length - 2]}.png` : parts[parts.length - 1].replace("_front.png", ".png"));
   const file = rel && join(ART_DIR, rel);
   const png = file && existsSync(file) ? readFileSync(file) : null;
   const body = png && row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;

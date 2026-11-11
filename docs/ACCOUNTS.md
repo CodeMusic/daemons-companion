@@ -121,7 +121,7 @@ guardians, profiles, kids' devices, controls, passkeys kept, delete -- no Node i
 ID token checked against the provider's JWKS: RS256, issuer, audience, expiry), `webauthn.ts` (passkeys with no library:
 the new key taken, every sign-in's signature, site, page, presence and counter checked), `accounts_api.ts` (the routes,
 listed at its top). Sign-in, a passkey sign-in and a device's code are rate-limited with the commons' own tries.
-`server/data/names.json` holds PLACEHOLDER lists until piece 2. Tests: `server/test/accounts.test.ts` (a fake provider's
+`server/data/names.json` holds the two lists (piece 2: 48 words each, every one kept by the user 2026-11-11, checked by `server/test/names.test.ts` against `server/data/names_check.json`). Tests: `server/test/accounts.test.ts` (a fake provider's
 keys, a P-256 passkey made as a phone would).
 
 Set on the commons' machine, in its environment (none are secrets):

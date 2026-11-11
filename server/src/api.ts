@@ -2295,7 +2295,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const text = typeof b.text === "string" && b.text.trim() ? b.text : row ? row.entry?.[ecfg.edition] : deviceState(ecfg, store, new Date(), deviceId).daemon?.entry;
         if (!text) return send(res, 400, { error: b.species !== undefined ? "no entry for that species" : "host a daemon to hear its entry" });
         // C-303: an INDEX entry is read in the device's voice; any other words in the reader's, as before
-        const how = typeof b.text === "string" && b.text.trim() ? undefined : store.getSetting("voice.recipe.entry") || ENTRY_VOICE;
+        // C-331 (2): {as: "daemon"} -- the words in the carried daemon's own voice (a dream it told, re-heard on the watch)
+        const his = b.as === "daemon" ? voiceFor(ecfg, store, deviceId)?.recipe : undefined;
+        const how = his ?? (typeof b.text === "string" && b.text.trim() ? undefined : store.getSetting("voice.recipe.entry") || ENTRY_VOICE);
         return answer(PRIORITY.reading, async () =>          // C-180: a reading -- the hub's Module LLM's first work
           forDevice({ ...await readAloud(String(text).replace(/\n/g, " ").slice(0, 600), how), answer: text }));
       }

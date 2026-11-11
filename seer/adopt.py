@@ -55,10 +55,16 @@ def main():
                 if v:
                     found["TIINY_API_KEY"] = v
         found["HARNESS_CONFIG"] = cfg     # its other models carried whole (make.py skips the names it writes itself)
-    parts = [p for p, port in (("sleep", 4002), ("local", 1234), ("commons", 4750), ("comfyui", 8008)) if answers(port)]
-    if parts:
-        found["SEER_PARTS"] = ",".join(parts)
-    new = {k: v for k, v in found.items() if not have.get(k)}
+    parts = [p for p, port in (("sleep", 4002), ("local", 1234), ("comfyui", 8008)) if answers(port)]
+    # THE COMMONS listens on the tailnet address only, so it is found by its launch agent (or systemd unit)
+    if any(os.path.exists(os.path.join(HOME, f)) for f in ("Library/LaunchAgents/ca.codemusic.daemons.commons.plist",
+                                                          ".config/systemd/user/daemons-commons.service")):
+        parts.append("commons")
+    chosen = [p for p in have.get("SEER_PARTS", "").split(",") if p]
+    merged = chosen + [p for p in parts if p not in chosen]
+    if merged != chosen:
+        found["SEER_PARTS"] = ",".join(merged)
+    new = {k: v for k, v in found.items() if not have.get(k) or k == "SEER_PARTS"}
     if not new:
         print("   adopt: nothing new to take (seer/.seer already has it)")
         return

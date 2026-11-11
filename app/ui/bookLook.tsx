@@ -40,6 +40,7 @@ export const LOOKS: Record<string, BookLook> = {
   hermetic: look("THE HERMETIC LAYER", "#50C878", "#0f1a15", "#8aa597", "☾", 8, "flicker", 2, 28),   // low and close, the night's breath
   eudaimon: look("THE EUDAIMON LAYER", "#C98A1E", "#FBF3E4", "#8C7357", "☀", 6, "swell", 10, 22, true, true),   // lighter, slower, the dawn
   unity:    look("THE UNITY BOOK", "#8E3F80", "#FFFDF8", "#756C7B", "◐", 5, "tide", 6, 26),         // one voice, leaned neither way
+  origin:   look("THE ORIGIN OF A DAEMON", "#B07038", "#C6BCA8", "#5E5242", "◎", 4, "swell", 4, 18),   // DAEMONS T-533: bone and amber, the disc it began on
   notebook: look("NOTEBOOK", "#7a5a2e", "#f5efe4", "#8a7a62", "¶", 3, "even", 3, 14, false, false),
   songbook: look("SONGBOOK", "#2d6a74", "#e9f3f4", "#5f8389", "♪", 1.2, "swell", 18, 16),
   stream:   look("STREAM", "#3d4f8a", "#ecf0f8", "#6c7696", "≈", 4, "tide", 8, 22),

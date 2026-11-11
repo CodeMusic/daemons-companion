@@ -21,6 +21,7 @@ import { SubtleBook, type SubtleT } from "./Subtle";
 import { HermeticBook, type HermeticT } from "../shared/Hermetic";   // C-238
 import { DAWN, EudaimonBook, type EudaimonT } from "../shared/Eudaimon";   // C-297
 import { Mending, UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
+import { ORIGIN, OriginBook, type OriginT } from "./Origin";   // DAEMONS T-533
 import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
 import { ManualBook, manualAbout } from "./Manual";   // C-233
 import { Bookcase, type CaseBook, type Shelf } from "./Bookcase";   // C-320: the LIBRARY as a bookcase
@@ -126,12 +127,13 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  type Opened = "manual" | "quick" | "companion" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "notebook" | "songbook" | "stream";
+  type Opened = "manual" | "quick" | "companion" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "notebook" | "songbook" | "stream";
   const [book, setBook] = usePlace<Opened | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
   const [uni] = useApi<UnityT>(`/api/unity${previewQuery() ? "?preview=1" : ""}`);   // C-299: THE UNITY BOOK, the halves mended
+  const [ori] = useApi<OriginT>(`/api/origin${previewQuery() ? "?preview=1" : ""}`);   // DAEMONS T-533: THE ORIGIN OF A DAEMON, as far as the save has it back
   const mended = !!uni?.held && (uni.how === "game" || bookForced("unity") === true);   // as in the game, the halves leave as the mended book comes
   const mendingSeen = useMendingSeen();                    // C-299: the first time it is found mended, the mending plays once
   const [g, setG] = useState<GuideBookT | null>(null);
@@ -144,7 +146,7 @@ export function LibraryScreen() {
                      onPress={() => setBook(null)}>‹ LIBRARY</Text>;
   // C-309: a book held in the save is opened only once the save has said so; while it is being asked again after a refresh
   // the book stays open and says so, rather than dropping to the shelf and losing the page
-  const asked = { guide: g, subtle: sub, hermetic: her, eudaimon: eud, unity: uni } as Record<string, { held?: boolean } | null>;
+  const asked = { guide: g, subtle: sub, hermetic: her, eudaimon: eud, unity: uni, origin: ori } as Record<string, { held?: boolean } | null>;
   const opening = book && book in asked && !asked[book];
   if (opening) return <YStack gap={14}>{back}<Small>Opening the book where you left it…</Small></YStack>;   // DRAFT
   // C-309: the open book lends the library its look -- its ink on the way back, its glyph and name, its rule
@@ -179,6 +181,7 @@ export function LibraryScreen() {
   if (book === "hermetic" && her?.held) return open(<HermeticBook b={her} />);   // C-238
   if (book === "eudaimon" && eud?.held) return open(<EudaimonBook b={eud} />);   // C-297
   if (book === "unity" && uni?.held) return open(<UnityBook b={uni} />);   // C-299
+  if (book === "origin" && ori?.held) return open(<OriginBook b={ori} />);   // DAEMONS T-533
   if (book === "notebook") return open(<NotebookCard skip="SONGBOOK" />);   // C-156: moved here from YOU
   if (book === "songbook") return open(<SongbookBook />);
   if (book === "stream") return open(<StreamBook />);
@@ -191,6 +194,7 @@ export function LibraryScreen() {
     ...(eud?.held && !mended ? [{ id: "eudaimon", title: eud.title ?? "THE EUDAIMON LAYER", about: eud.subtitle ?? "the dawn half", cloth: DAWN.boards, onPress: () => setBook("eudaimon"),
                                          ...((eud as { how?: string }).how === "app" ? { mark: "KEPT IN THE APP" } : {}) }] : []),   // C-314, DRAFT
     ...(uni?.held && mended && mendingSeen === true ? [{ id: "unity", title: uni.title ?? "THE UNITY BOOK", about: uni.subtitle ?? "mended", cloth: UNITY.boards, onPress: () => setBook("unity") }] : []),
+    ...(ori?.held ? [{ id: "origin", title: ori.title ?? "THE ORIGIN OF A DAEMON", about: ori.subtitle || "In its own words.", cloth: ORIGIN.boards, onPress: () => setBook("origin") }] : []),   // DAEMONS T-533, DRAFT
   ];
   const s = pr?.school;
   const shelves: Shelf[] = [

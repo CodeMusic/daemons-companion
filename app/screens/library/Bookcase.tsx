@@ -21,8 +21,8 @@ export type CaseBook = {
 export type Shelf = { name: string; books: CaseBook[]; empty?: string };
 
 // each cover's width at 320 tall, as shelfcovers.py draws it (the printed books are A5)
-const WIDE: Record<string, number> = { guide: 264, subtle: 264, hermetic: 299, eudaimon: 305, unity: 394, school: 260,
-                                       notebook: 216, songbook: 216, stream: 216 };
+const WIDE: Record<string, number> = { guide: 264, subtle: 264, hermetic: 299, eudaimon: 305, unity: 394, origin: 305, school: 260,
+                                       notebook: 216, songbook: 216, stream: 216 };   // DAEMONS T-533: origin
 const wide = (id: string) => WIDE[id] ?? 226;
 
 const WOOD = { case: "#3b2414", crown: "#4f311b", crownLit: "#7a5233", back: "#21140b", groove: "#2a1a0f",

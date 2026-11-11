@@ -98,7 +98,7 @@ export function pretendLife<L extends { mood: number; word: string; tired: strin
 // C-275: THE GAME SESSION -- what the </> tab sets: the books held or not, each GAME EVENT and CALLOW SCHOOL's rows, the
 // witching hour. IN MEMORY ONLY, like the pretend above: the app is shown it (net.ts asks devRoute() before every read)
 // and nothing is written anywhere; RESTORE, DEVELOPER MODE off or the app shut puts the save's own answers back.
-export type Book = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "play";   // C-297: the dawn half; C-299: the mended book
+export type Book = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "play";   // C-297: the dawn half; C-299: the mended book; DAEMONS T-533
 export type Session = { books: Partial<Record<Book, boolean>>; events: Record<number, boolean>;
                         school: Partial<Record<"textbook" | "diploma", boolean>>; hour: boolean | null;
                         dawn: boolean | null;   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12
@@ -120,7 +120,7 @@ export const dawnForced = () => (read().on ? session.dawn ?? null : null);
 // C-305: THE AURORA's nights as the session has them: null, the date's and the clock's; on, as at night on a night of light
 export const auroraForced = () => (read().on ? session.aurora ?? null : null);
 // a book asked for as if held: the companion's own read-only ?preview=1 (never kept, never written)
-const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/eudaimon": "eudaimon", "/api/unity": "unity", "/api/play": "play" };
+const BOOK_PATH: Record<string, Book> = { "/api/guide": "guide", "/api/subtle": "subtle", "/api/hermetic": "hermetic", "/api/eudaimon": "eudaimon", "/api/unity": "unity", "/api/origin": "origin", "/api/play": "play" };
 export const bookForced = (b: Book) => (read().on ? session.books[b] : undefined);
 
 // Before a read: the path to ask (a book forced held asks with ?preview=1), and what to do to the answer

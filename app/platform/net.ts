@@ -451,13 +451,13 @@ export function keepArt(path: string, uri: string) {
 }
 
 export async function artByJson(path: string): Promise<string> {
-  const sub = /^\/art\/subtle\/([a-z]{1,24}_\d{1,2}|cover)\.png$/.exec(path);   // T-423: THE SUBTLE LAYER's, kept as they are read
+  const sub = /^\/art\/(subtle|origin)\/([a-z]{1,24}_\d{1,2}|cover)\.png$/.exec(path);   // T-423: THE SUBTLE LAYER's, kept as they are read; DAEMONS T-533: THE ORIGIN OF A DAEMON's
   const face = /^\/art\/arcana\/((?:reason|instinct|above|below|spellcraft)(?:_shiny)?|back)\.png$/.exec(path);   // C-232: a card's face; C-273: ABOVE, BELOW, the back
   const shelf = /^\/art\/books\/([a-z]{1,16})\.png$/.exec(path);   // C-320: a book's cover on the LIBRARY's shelf
   const symbol = /^\/art\/symbol\/([a-z]|exclamation_mark|question_mark)\.png$/.exec(path);   // C-315: a SYMBOL form on a card
   if (sub || face || shelf || symbol) {
     const { png } = await api<{ png: string }>(face ? `/api/art?arcana=${face[1]}` : shelf ? `/api/art?book=${shelf[1]}`
-      : symbol ? `/api/art?symbol=${symbol[1]}` : `/api/art?subtle=${sub![1]}`);
+      : symbol ? `/api/art?symbol=${symbol[1]}` : `/api/art?${sub![1]}=${sub![2]}`);
     keepArt(path, `data:image/png;base64,${png}`);
     return ART.get(path)!;
   }

@@ -20,6 +20,7 @@ const BOOKS: [Book, string, string, (r: any) => boolean][] = [
   ["hermetic", "THE HERMETIC LAYER", "/api/hermetic", (r) => !!r?.held],
   ["eudaimon", "THE EUDAIMON LAYER", "/api/eudaimon", (r) => !!r?.held],   // C-297
   ["unity", "THE UNITY BOOK", "/api/unity", (r) => !!r?.held],   // C-299
+  ["origin", "THE ORIGIN OF A DAEMON", "/api/origin", (r) => !!r?.held],   // DAEMONS T-533: held here, the whole book
   ["play", "PLAY (its instrument)", "/api/play", (r) => !!r?.unlocked],
 ];
 

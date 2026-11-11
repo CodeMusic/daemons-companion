@@ -1,11 +1,12 @@
 // A book's picture as the game draws it -- DAEMONS companion_export writes each into data/art/<book>_<picture>_<frame>.png
-// and sets the entry's "frames" (T-423 THE SUBTLE LAYER; T-519 / C-299 the third book's three forms) -- its frames turning as
-// the game turns them, one every 0.7 s. A picture the game has not drawn yet (frames 0) shows what stands in for it.
+// and sets the entry's "frames" (T-423 THE SUBTLE LAYER; T-519 / C-299 the third book's three forms; DAEMONS T-533 THE ORIGIN
+// OF A DAEMON's emblems) -- its frames turning as the game turns them, one every 0.7 s. A picture the game has not drawn yet
+// (frames 0) shows what stands in for it.
 import { useEffect, useState, type ReactNode } from "react";
 import { Text, YStack } from "tamagui";
 import { Art } from "./ui";
 
-export type BookWithArt = "subtle" | "hermetic" | "eudaimon" | "unity";
+export type BookWithArt = "subtle" | "hermetic" | "eudaimon" | "unity" | "origin";
 export type Pictured = { picture: string; frames?: number };
 
 export function TurningPicture({ book, e, scale, standIn }: { book: BookWithArt; e: Pictured; scale: number; standIn?: ReactNode }) {

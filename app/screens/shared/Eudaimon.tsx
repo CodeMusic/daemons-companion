@@ -110,7 +110,7 @@ export function LayerPages({ b, P: P0, green: green0, id, place, cover, under, p
       <YStack onLayout={(ev) => setW(ev.nativeEvent.layout.width)} backgroundColor={P.page} borderColor={P.edge} borderWidth={1}
               borderRadius={4} padding={18} gap={12}>
         {top}
-        <Text {...mono} fontSize={11} color={P.faint}>{`${sec.label} · ${sec.heading.toUpperCase()}`}</Text>
+        <Text {...mono} fontSize={11} color={P.faint}>{sec.heading ? `${sec.label} · ${sec.heading.toUpperCase()}` : sec.label}</Text>{/* T-533: a section may have no heading */}
         <XStack gap={18} flexDirection={wide ? "row" : "column"} alignItems={wide ? "flex-start" : "center"}>
           <YStack alignItems="center" gap={6} width={wide ? 94 * 3 : undefined}>
             <YStack backgroundColor={P.boards} padding={8} borderRadius={3}><Toned tone={tone}>{picture(e, wide ? 3 : 2)}</Toned></YStack>
@@ -158,7 +158,7 @@ export function LayerPages({ b, P: P0, green: green0, id, place, cover, under, p
         {(b.sections ?? []).map((sec) => (
           <YStack key={sec.label} marginTop={10} gap={2}>
             <Text {...mono} fontSize={10} color={P.faint}>{sec.label}</Text>
-            <Text fontSize={15} fontWeight="700" color={P.ink} marginBottom={4}>{sec.heading}</Text>
+            {sec.heading ? <Text fontSize={15} fontWeight="700" color={P.ink} marginBottom={4}>{sec.heading}</Text> : null}
             {rule?.(sec.label)}
             {sec.entries.map((e) => {
               const i = n++;

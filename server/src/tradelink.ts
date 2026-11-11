@@ -19,6 +19,7 @@ import * as M from "./together.js";   // C-220: OUT TOGETHER
 import { dreamsOf } from "./dreams.js";   // C-223
 import * as D from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import type { PersonaFacts } from "./ai/personaof.js";
+import { exchangeBattle } from "./battleroute.js";   // C-328
 
 export interface Link {
   hub: string;                                                            // "" -- the exchange is this companion's own
@@ -103,6 +104,9 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
     case "dreams": return { dreams: M.sharedDreams(store, p.id, nameOf(store), reach) };   // C-223
     case "share": return M.shareDream(store, p.id, b);
     case "unshare": return M.unshareDream(store, p.id, b.id);
+    // C-328: BATTLES between players, the exchange's arena (battleroute.ts)
+    case "battle": case "battle/request": case "battle/answer": case "battle/choose": case "battle/leave": case "battle/award":
+      return exchangeBattle(store, p, name, b, X.players(store), reach);
     case "meet": return M.meet(store, p.id, b.with, reach).then((r) => ("error" in r ? r : M.outView(store, p.id, nameOf(store), reach)));
     // C-329: DAEMONS IN DIALOGUE -- this player's daemon out talks with another's out now; the talks, one talk, INTEGRATE
     case "converse": {

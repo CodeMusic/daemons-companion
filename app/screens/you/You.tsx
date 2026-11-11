@@ -9,6 +9,7 @@ import { Card, Eyebrow, Fact, Panel, Para, Points, Quote, Small, SubHead } from 
 import { useApi } from "../../platform/useApi";
 import { PlannerCard } from "./Planner";
 import { TradeScreen } from "./Trade";   // C-218, C-219
+import { BattleCard } from "./Battle";   // C-328
  // C-144: the badges are drawn for the paper -- in the dark each sits on a chip of it
 export function Badge({ n, size }: { n: number; size: number }) {
   const dark = useDark();
@@ -266,6 +267,7 @@ export function ProfileScreen() {
         {p.roots ? <RootsRow held={p.roots} marks={p.marks} wisdom={p.wisdom} /> : null}
       </Card>
       <TradeScreen />
+      <BattleCard />
       {p.thisGame !== false ? <PlannerCard /> : null}
       {p.groves ? <GrovesCard found={p.groves} /> : null}
       <EventsCard />

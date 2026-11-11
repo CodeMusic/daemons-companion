@@ -1,0 +1,4896 @@
+{
+ "_about": "C-328: the companion's battles -- chart: [attacking type, defending type, multiplier x10] in the game's order, types by TYPE_ORDER (routines.json names them), entries from `foresight` on are the ones FORESIGHT lifts; moves by move id (split 0 physical, 1 special, 2 status); exp: each species' experience yield",
+ "types": [
+  "NORMAL",
+  "FIGHTING",
+  "FLYING",
+  "POISON",
+  "GROUND",
+  "ROCK",
+  "BUG",
+  "GHOST",
+  "STEEL",
+  "MYSTERY",
+  "FIRE",
+  "WATER",
+  "GRASS",
+  "ELECTRIC",
+  "PSYCHIC",
+  "ICE",
+  "DRAGON",
+  "DARK"
+ ],
+ "chart": [
+  [
+   0,
+   5,
+   5
+  ],
+  [
+   0,
+   8,
+   5
+  ],
+  [
+   10,
+   10,
+   5
+  ],
+  [
+   10,
+   11,
+   5
+  ],
+  [
+   10,
+   12,
+   20
+  ],
+  [
+   10,
+   15,
+   20
+  ],
+  [
+   10,
+   6,
+   20
+  ],
+  [
+   10,
+   5,
+   5
+  ],
+  [
+   10,
+   16,
+   5
+  ],
+  [
+   10,
+   8,
+   20
+  ],
+  [
+   11,
+   10,
+   20
+  ],
+  [
+   11,
+   11,
+   5
+  ],
+  [
+   11,
+   12,
+   5
+  ],
+  [
+   11,
+   4,
+   20
+  ],
+  [
+   11,
+   5,
+   20
+  ],
+  [
+   11,
+   16,
+   5
+  ],
+  [
+   13,
+   11,
+   20
+  ],
+  [
+   13,
+   13,
+   5
+  ],
+  [
+   13,
+   12,
+   5
+  ],
+  [
+   13,
+   4,
+   0
+  ],
+  [
+   13,
+   2,
+   20
+  ],
+  [
+   13,
+   16,
+   5
+  ],
+  [
+   12,
+   10,
+   5
+  ],
+  [
+   12,
+   11,
+   20
+  ],
+  [
+   12,
+   12,
+   5
+  ],
+  [
+   12,
+   3,
+   5
+  ],
+  [
+   12,
+   4,
+   20
+  ],
+  [
+   12,
+   2,
+   5
+  ],
+  [
+   12,
+   6,
+   5
+  ],
+  [
+   12,
+   5,
+   20
+  ],
+  [
+   12,
+   16,
+   5
+  ],
+  [
+   12,
+   8,
+   5
+  ],
+  [
+   15,
+   11,
+   5
+  ],
+  [
+   15,
+   12,
+   20
+  ],
+  [
+   15,
+   15,
+   5
+  ],
+  [
+   15,
+   4,
+   20
+  ],
+  [
+   15,
+   2,
+   20
+  ],
+  [
+   15,
+   16,
+   20
+  ],
+  [
+   15,
+   8,
+   5
+  ],
+  [
+   15,
+   10,
+   5
+  ],
+  [
+   1,
+   0,
+   20
+  ],
+  [
+   1,
+   15,
+   20
+  ],
+  [
+   1,
+   3,
+   5
+  ],
+  [
+   1,
+   2,
+   5
+  ],
+  [
+   1,
+   14,
+   5
+  ],
+  [
+   1,
+   6,
+   5
+  ],
+  [
+   1,
+   5,
+   20
+  ],
+  [
+   1,
+   17,
+   20
+  ],
+  [
+   1,
+   8,
+   20
+  ],
+  [
+   3,
+   12,
+   20
+  ],
+  [
+   3,
+   3,
+   5
+  ],
+  [
+   3,
+   4,
+   5
+  ],
+  [
+   3,
+   5,
+   5
+  ],
+  [
+   3,
+   7,
+   5
+  ],
+  [
+   3,
+   8,
+   0
+  ],
+  [
+   4,
+   10,
+   20
+  ],
+  [
+   4,
+   13,
+   20
+  ],
+  [
+   4,
+   12,
+   5
+  ],
+  [
+   4,
+   3,
+   20
+  ],
+  [
+   4,
+   2,
+   0
+  ],
+  [
+   4,
+   6,
+   5
+  ],
+  [
+   4,
+   5,
+   20
+  ],
+  [
+   4,
+   8,
+   20
+  ],
+  [
+   2,
+   13,
+   5
+  ],
+  [
+   2,
+   12,
+   20
+  ],
+  [
+   2,
+   1,
+   20
+  ],
+  [
+   2,
+   6,
+   20
+  ],
+  [
+   2,
+   5,
+   5
+  ],
+  [
+   2,
+   8,
+   5
+  ],
+  [
+   14,
+   1,
+   20
+  ],
+  [
+   14,
+   3,
+   20
+  ],
+  [
+   14,
+   14,
+   5
+  ],
+  [
+   14,
+   17,
+   0
+  ],
+  [
+   14,
+   8,
+   5
+  ],
+  [
+   6,
+   10,
+   5
+  ],
+  [
+   6,
+   12,
+   20
+  ],
+  [
+   6,
+   1,
+   5
+  ],
+  [
+   6,
+   3,
+   5
+  ],
+  [
+   6,
+   2,
+   5
+  ],
+  [
+   6,
+   14,
+   20
+  ],
+  [
+   6,
+   7,
+   5
+  ],
+  [
+   6,
+   17,
+   20
+  ],
+  [
+   6,
+   8,
+   5
+  ],
+  [
+   5,
+   10,
+   20
+  ],
+  [
+   5,
+   15,
+   20
+  ],
+  [
+   5,
+   1,
+   5
+  ],
+  [
+   5,
+   4,
+   5
+  ],
+  [
+   5,
+   2,
+   20
+  ],
+  [
+   5,
+   6,
+   20
+  ],
+  [
+   5,
+   8,
+   5
+  ],
+  [
+   7,
+   0,
+   0
+  ],
+  [
+   7,
+   14,
+   20
+  ],
+  [
+   7,
+   17,
+   5
+  ],
+  [
+   7,
+   8,
+   5
+  ],
+  [
+   7,
+   7,
+   20
+  ],
+  [
+   16,
+   16,
+   20
+  ],
+  [
+   16,
+   8,
+   5
+  ],
+  [
+   17,
+   1,
+   5
+  ],
+  [
+   17,
+   14,
+   20
+  ],
+  [
+   17,
+   7,
+   20
+  ],
+  [
+   17,
+   17,
+   5
+  ],
+  [
+   17,
+   8,
+   5
+  ],
+  [
+   8,
+   10,
+   5
+  ],
+  [
+   8,
+   11,
+   5
+  ],
+  [
+   8,
+   13,
+   5
+  ],
+  [
+   8,
+   15,
+   20
+  ],
+  [
+   8,
+   5,
+   20
+  ],
+  [
+   8,
+   8,
+   5
+  ],
+  [
+   0,
+   7,
+   0
+  ],
+  [
+   1,
+   7,
+   0
+  ],
+  [
+   14,
+   7,
+   20
+  ]
+ ],
+ "foresight": 108,
+ "moves": {
+  "1": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "2": {
+   "power": 50,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "3": {
+   "power": 15,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "4": {
+   "power": 18,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 15,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "5": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "6": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "PAY_DAY",
+   "chance": 100
+  },
+  "7": {
+   "power": 75,
+   "type": 10,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "BURN_HIT",
+   "chance": 10
+  },
+  "8": {
+   "power": 75,
+   "type": 15,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FREEZE_HIT",
+   "chance": 10
+  },
+  "9": {
+   "power": 75,
+   "type": 13,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 10
+  },
+  "10": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "11": {
+   "power": 55,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "12": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 30,
+   "pp": 5,
+   "priority": 0,
+   "effect": "OHKO",
+   "chance": 0
+  },
+  "13": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "RAZOR_WIND",
+   "chance": 0
+  },
+  "14": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "ATTACK_UP_2",
+   "chance": 0
+  },
+  "15": {
+   "power": 50,
+   "type": 0,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 30,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "16": {
+   "power": 40,
+   "type": 2,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "GUST",
+   "chance": 0
+  },
+  "17": {
+   "power": 60,
+   "type": 2,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "18": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": -6,
+   "effect": "ROAR",
+   "chance": 0
+  },
+  "19": {
+   "power": 70,
+   "type": 2,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SEMI_INVULNERABLE",
+   "chance": 0
+  },
+  "20": {
+   "power": 15,
+   "type": 0,
+   "split": 0,
+   "accuracy": 75,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TRAP",
+   "chance": 100
+  },
+  "21": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 75,
+   "pp": 20,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "22": {
+   "power": 35,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "23": {
+   "power": 65,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "FLINCH_MINIMIZE_HIT",
+   "chance": 30
+  },
+  "24": {
+   "power": 30,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "DOUBLE_HIT",
+   "chance": 0
+  },
+  "25": {
+   "power": 120,
+   "type": 0,
+   "split": 0,
+   "accuracy": 75,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "26": {
+   "power": 70,
+   "type": 1,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 25,
+   "priority": 0,
+   "effect": "RECOIL_IF_MISS",
+   "chance": 0
+  },
+  "27": {
+   "power": 60,
+   "type": 1,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLINCH_HIT",
+   "chance": 30
+  },
+  "28": {
+   "power": 0,
+   "type": 4,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN",
+   "chance": 0
+  },
+  "29": {
+   "power": 70,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLINCH_HIT",
+   "chance": 30
+  },
+  "30": {
+   "power": 65,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "31": {
+   "power": 15,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "32": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 30,
+   "pp": 5,
+   "priority": 0,
+   "effect": "OHKO",
+   "chance": 0
+  },
+  "33": {
+   "power": 35,
+   "type": 0,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 35,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "34": {
+   "power": 85,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 30
+  },
+  "35": {
+   "power": 15,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TRAP",
+   "chance": 100
+  },
+  "36": {
+   "power": 90,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RECOIL",
+   "chance": 0
+  },
+  "37": {
+   "power": 90,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RAMPAGE",
+   "chance": 100
+  },
+  "38": {
+   "power": 120,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "DOUBLE_EDGE",
+   "chance": 0
+  },
+  "39": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN",
+   "chance": 0
+  },
+  "40": {
+   "power": 15,
+   "type": 3,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "POISON_HIT",
+   "chance": 30
+  },
+  "41": {
+   "power": 25,
+   "type": 6,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TWINEEDLE",
+   "chance": 20
+  },
+  "42": {
+   "power": 14,
+   "type": 6,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "43": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN",
+   "chance": 0
+  },
+  "44": {
+   "power": 60,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "FLINCH_HIT",
+   "chance": 30
+  },
+  "45": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 40,
+   "priority": 0,
+   "effect": "ATTACK_DOWN",
+   "chance": 0
+  },
+  "46": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": -6,
+   "effect": "ROAR",
+   "chance": 0
+  },
+  "47": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 55,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SLEEP",
+   "chance": 0
+  },
+  "48": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 55,
+   "pp": 20,
+   "priority": 0,
+   "effect": "CONFUSE",
+   "chance": 0
+  },
+  "49": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SONICBOOM",
+   "chance": 0
+  },
+  "50": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 55,
+   "pp": 20,
+   "priority": 0,
+   "effect": "DISABLE",
+   "chance": 0
+  },
+  "51": {
+   "power": 40,
+   "type": 3,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN_HIT",
+   "chance": 10
+  },
+  "52": {
+   "power": 40,
+   "type": 10,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "BURN_HIT",
+   "chance": 10
+  },
+  "53": {
+   "power": 95,
+   "type": 10,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "BURN_HIT",
+   "chance": 10
+  },
+  "54": {
+   "power": 0,
+   "type": 15,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "MIST",
+   "chance": 0
+  },
+  "55": {
+   "power": 40,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "56": {
+   "power": 120,
+   "type": 11,
+   "split": 1,
+   "accuracy": 80,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "57": {
+   "power": 95,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "58": {
+   "power": 95,
+   "type": 15,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "FREEZE_HIT",
+   "chance": 10
+  },
+  "59": {
+   "power": 120,
+   "type": 15,
+   "split": 1,
+   "accuracy": 70,
+   "pp": 5,
+   "priority": 0,
+   "effect": "FREEZE_HIT",
+   "chance": 10
+  },
+  "60": {
+   "power": 65,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "CONFUSE_HIT",
+   "chance": 10
+  },
+  "61": {
+   "power": 65,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SPEED_DOWN_HIT",
+   "chance": 10
+  },
+  "62": {
+   "power": 65,
+   "type": 15,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ATTACK_DOWN_HIT",
+   "chance": 10
+  },
+  "63": {
+   "power": 150,
+   "type": 0,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "RECHARGE",
+   "chance": 0
+  },
+  "64": {
+   "power": 35,
+   "type": 2,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "65": {
+   "power": 80,
+   "type": 2,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "66": {
+   "power": 80,
+   "type": 1,
+   "split": 0,
+   "accuracy": 80,
+   "pp": 25,
+   "priority": 0,
+   "effect": "RECOIL",
+   "chance": 0
+  },
+  "67": {
+   "power": 1,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "LOW_KICK",
+   "chance": 0
+  },
+  "68": {
+   "power": 1,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": -5,
+   "effect": "COUNTER",
+   "chance": 0
+  },
+  "69": {
+   "power": 1,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "LEVEL_DAMAGE",
+   "chance": 0
+  },
+  "70": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "71": {
+   "power": 20,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ABSORB",
+   "chance": 0
+  },
+  "72": {
+   "power": 40,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ABSORB",
+   "chance": 0
+  },
+  "73": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "LEECH_SEED",
+   "chance": 0
+  },
+  "74": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "SPECIAL_ATTACK_UP",
+   "chance": 0
+  },
+  "75": {
+   "power": 55,
+   "type": 12,
+   "split": 1,
+   "accuracy": 95,
+   "pp": 25,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "76": {
+   "power": 120,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SOLAR_BEAM",
+   "chance": 0
+  },
+  "77": {
+   "power": 0,
+   "type": 3,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 35,
+   "priority": 0,
+   "effect": "POISON",
+   "chance": 0
+  },
+  "78": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 30,
+   "priority": 0,
+   "effect": "PARALYZE",
+   "chance": 0
+  },
+  "79": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SLEEP",
+   "chance": 0
+  },
+  "80": {
+   "power": 70,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RAMPAGE",
+   "chance": 100
+  },
+  "81": {
+   "power": 0,
+   "type": 6,
+   "split": 2,
+   "accuracy": 95,
+   "pp": 40,
+   "priority": 0,
+   "effect": "SPEED_DOWN",
+   "chance": 0
+  },
+  "82": {
+   "power": 1,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "DRAGON_RAGE",
+   "chance": 0
+  },
+  "83": {
+   "power": 15,
+   "type": 10,
+   "split": 1,
+   "accuracy": 70,
+   "pp": 15,
+   "priority": 0,
+   "effect": "TRAP",
+   "chance": 100
+  },
+  "84": {
+   "power": 40,
+   "type": 13,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 10
+  },
+  "85": {
+   "power": 95,
+   "type": 13,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 10
+  },
+  "86": {
+   "power": 0,
+   "type": 13,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "PARALYZE",
+   "chance": 0
+  },
+  "87": {
+   "power": 120,
+   "type": 13,
+   "split": 1,
+   "accuracy": 70,
+   "pp": 10,
+   "priority": 0,
+   "effect": "THUNDER",
+   "chance": 30
+  },
+  "88": {
+   "power": 50,
+   "type": 5,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "89": {
+   "power": 100,
+   "type": 4,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "EARTHQUAKE",
+   "chance": 0
+  },
+  "90": {
+   "power": 1,
+   "type": 4,
+   "split": 0,
+   "accuracy": 30,
+   "pp": 5,
+   "priority": 0,
+   "effect": "OHKO",
+   "chance": 0
+  },
+  "91": {
+   "power": 60,
+   "type": 4,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SEMI_INVULNERABLE",
+   "chance": 0
+  },
+  "92": {
+   "power": 0,
+   "type": 3,
+   "split": 2,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "TOXIC",
+   "chance": 100
+  },
+  "93": {
+   "power": 50,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "CONFUSE_HIT",
+   "chance": 10
+  },
+  "94": {
+   "power": 90,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+   "chance": 10
+  },
+  "95": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 60,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SLEEP",
+   "chance": 0
+  },
+  "96": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "ATTACK_UP",
+   "chance": 0
+  },
+  "97": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "SPEED_UP_2",
+   "chance": 0
+  },
+  "98": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 1,
+   "effect": "QUICK_ATTACK",
+   "chance": 0
+  },
+  "99": {
+   "power": 20,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RAGE",
+   "chance": 0
+  },
+  "100": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TELEPORT",
+   "chance": 0
+  },
+  "101": {
+   "power": 1,
+   "type": 7,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "LEVEL_DAMAGE",
+   "chance": 0
+  },
+  "102": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "MIMIC",
+   "chance": 0
+  },
+  "103": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 85,
+   "pp": 40,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN_2",
+   "chance": 0
+  },
+  "104": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 15,
+   "priority": 0,
+   "effect": "EVASION_UP",
+   "chance": 0
+  },
+  "105": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RESTORE_HP",
+   "chance": 0
+  },
+  "106": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "DEFENSE_UP",
+   "chance": 0
+  },
+  "107": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "MINIMIZE",
+   "chance": 0
+  },
+  "108": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN",
+   "chance": 0
+  },
+  "109": {
+   "power": 0,
+   "type": 7,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "CONFUSE",
+   "chance": 0
+  },
+  "110": {
+   "power": 0,
+   "type": 11,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "DEFENSE_UP",
+   "chance": 0
+  },
+  "111": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "DEFENSE_CURL",
+   "chance": 0
+  },
+  "112": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "DEFENSE_UP_2",
+   "chance": 0
+  },
+  "113": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "LIGHT_SCREEN",
+   "chance": 0
+  },
+  "114": {
+   "power": 0,
+   "type": 15,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "HAZE",
+   "chance": 0
+  },
+  "115": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "REFLECT",
+   "chance": 0
+  },
+  "116": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "FOCUS_ENERGY",
+   "chance": 0
+  },
+  "117": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "BIDE",
+   "chance": 0
+  },
+  "118": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "METRONOME",
+   "chance": 0
+  },
+  "119": {
+   "power": 0,
+   "type": 2,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "MIRROR_MOVE",
+   "chance": 0
+  },
+  "120": {
+   "power": 200,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "EXPLOSION",
+   "chance": 0
+  },
+  "121": {
+   "power": 100,
+   "type": 0,
+   "split": 0,
+   "accuracy": 75,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "122": {
+   "power": 20,
+   "type": 7,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 30
+  },
+  "123": {
+   "power": 20,
+   "type": 3,
+   "split": 1,
+   "accuracy": 70,
+   "pp": 20,
+   "priority": 0,
+   "effect": "POISON_HIT",
+   "chance": 40
+  },
+  "124": {
+   "power": 65,
+   "type": 3,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "POISON_HIT",
+   "chance": 30
+  },
+  "125": {
+   "power": 65,
+   "type": 4,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "FLINCH_HIT",
+   "chance": 10
+  },
+  "126": {
+   "power": 120,
+   "type": 10,
+   "split": 1,
+   "accuracy": 85,
+   "pp": 5,
+   "priority": 0,
+   "effect": "BURN_HIT",
+   "chance": 10
+  },
+  "127": {
+   "power": 80,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "128": {
+   "power": 35,
+   "type": 11,
+   "split": 1,
+   "accuracy": 75,
+   "pp": 10,
+   "priority": 0,
+   "effect": "TRAP",
+   "chance": 100
+  },
+  "129": {
+   "power": 60,
+   "type": 0,
+   "split": 0,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "130": {
+   "power": 100,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SKULL_BASH",
+   "chance": 0
+  },
+  "131": {
+   "power": 20,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "132": {
+   "power": 10,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 35,
+   "priority": 0,
+   "effect": "SPEED_DOWN_HIT",
+   "chance": 10
+  },
+  "133": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_UP_2",
+   "chance": 0
+  },
+  "134": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 80,
+   "pp": 15,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN",
+   "chance": 0
+  },
+  "135": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SOFTBOILED",
+   "chance": 0
+  },
+  "136": {
+   "power": 85,
+   "type": 1,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RECOIL_IF_MISS",
+   "chance": 0
+  },
+  "137": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 30,
+   "priority": 0,
+   "effect": "PARALYZE",
+   "chance": 0
+  },
+  "138": {
+   "power": 100,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "DREAM_EATER",
+   "chance": 0
+  },
+  "139": {
+   "power": 0,
+   "type": 3,
+   "split": 2,
+   "accuracy": 55,
+   "pp": 40,
+   "priority": 0,
+   "effect": "POISON",
+   "chance": 0
+  },
+  "140": {
+   "power": 15,
+   "type": 0,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 20,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "141": {
+   "power": 20,
+   "type": 6,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "ABSORB",
+   "chance": 0
+  },
+  "142": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SLEEP",
+   "chance": 0
+  },
+  "143": {
+   "power": 140,
+   "type": 2,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "SKY_ATTACK",
+   "chance": 30
+  },
+  "144": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "TRANSFORM",
+   "chance": 0
+  },
+  "145": {
+   "power": 20,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "SPEED_DOWN_HIT",
+   "chance": 10
+  },
+  "146": {
+   "power": 70,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "CONFUSE_HIT",
+   "chance": 20
+  },
+  "147": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SLEEP",
+   "chance": 0
+  },
+  "148": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 70,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN",
+   "chance": 0
+  },
+  "149": {
+   "power": 1,
+   "type": 14,
+   "split": 1,
+   "accuracy": 80,
+   "pp": 15,
+   "priority": 0,
+   "effect": "PSYWAVE",
+   "chance": 0
+  },
+  "150": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "SPLASH",
+   "chance": 0
+  },
+  "151": {
+   "power": 0,
+   "type": 3,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "DEFENSE_UP_2",
+   "chance": 0
+  },
+  "152": {
+   "power": 90,
+   "type": 11,
+   "split": 1,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "153": {
+   "power": 250,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "EXPLOSION",
+   "chance": 0
+  },
+  "154": {
+   "power": 18,
+   "type": 0,
+   "split": 0,
+   "accuracy": 80,
+   "pp": 15,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "155": {
+   "power": 50,
+   "type": 4,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "DOUBLE_HIT",
+   "chance": 0
+  },
+  "156": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "REST",
+   "chance": 0
+  },
+  "157": {
+   "power": 75,
+   "type": 5,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "FLINCH_HIT",
+   "chance": 30
+  },
+  "158": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLINCH_HIT",
+   "chance": 10
+  },
+  "159": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "ATTACK_UP",
+   "chance": 0
+  },
+  "160": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 30,
+   "priority": 0,
+   "effect": "CONVERSION",
+   "chance": 0
+  },
+  "161": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "TRI_ATTACK",
+   "chance": 20
+  },
+  "162": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SUPER_FANG",
+   "chance": 0
+  },
+  "163": {
+   "power": 70,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "164": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SUBSTITUTE",
+   "chance": 0
+  },
+  "165": {
+   "power": 50,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 1,
+   "priority": 0,
+   "effect": "RECOIL",
+   "chance": 0
+  },
+  "166": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 1,
+   "priority": 0,
+   "effect": "SKETCH",
+   "chance": 0
+  },
+  "167": {
+   "power": 10,
+   "type": 1,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "TRIPLE_KICK",
+   "chance": 0
+  },
+  "168": {
+   "power": 40,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "THIEF",
+   "chance": 100
+  },
+  "169": {
+   "power": 0,
+   "type": 6,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "MEAN_LOOK",
+   "chance": 0
+  },
+  "170": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "LOCK_ON",
+   "chance": 0
+  },
+  "171": {
+   "power": 0,
+   "type": 7,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "NIGHTMARE",
+   "chance": 0
+  },
+  "172": {
+   "power": 60,
+   "type": 10,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "THAW_HIT",
+   "chance": 10
+  },
+  "173": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SNORE",
+   "chance": 30
+  },
+  "174": {
+   "power": 0,
+   "type": 9,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "CURSE",
+   "chance": 0
+  },
+  "175": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLAIL",
+   "chance": 0
+  },
+  "176": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "CONVERSION_2",
+   "chance": 0
+  },
+  "177": {
+   "power": 100,
+   "type": 2,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "178": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 85,
+   "pp": 40,
+   "priority": 0,
+   "effect": "SPEED_DOWN_2",
+   "chance": 0
+  },
+  "179": {
+   "power": 1,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLAIL",
+   "chance": 0
+  },
+  "180": {
+   "power": 0,
+   "type": 7,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SPITE",
+   "chance": 0
+  },
+  "181": {
+   "power": 40,
+   "type": 15,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "FREEZE_HIT",
+   "chance": 10
+  },
+  "182": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 3,
+   "effect": "PROTECT",
+   "chance": 0
+  },
+  "183": {
+   "power": 40,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 1,
+   "effect": "QUICK_ATTACK",
+   "chance": 0
+  },
+  "184": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SPEED_DOWN_2",
+   "chance": 0
+  },
+  "185": {
+   "power": 60,
+   "type": 17,
+   "split": 1,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "186": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 10,
+   "priority": 0,
+   "effect": "CONFUSE",
+   "chance": 0
+  },
+  "187": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "BELLY_DRUM",
+   "chance": 0
+  },
+  "188": {
+   "power": 90,
+   "type": 3,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "POISON_HIT",
+   "chance": 30
+  },
+  "189": {
+   "power": 20,
+   "type": 4,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN_HIT",
+   "chance": 100
+  },
+  "190": {
+   "power": 65,
+   "type": 11,
+   "split": 1,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN_HIT",
+   "chance": 50
+  },
+  "191": {
+   "power": 0,
+   "type": 4,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SPIKES",
+   "chance": 0
+  },
+  "192": {
+   "power": 100,
+   "type": 13,
+   "split": 1,
+   "accuracy": 50,
+   "pp": 5,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 100
+  },
+  "193": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 40,
+   "priority": 0,
+   "effect": "FORESIGHT",
+   "chance": 0
+  },
+  "194": {
+   "power": 0,
+   "type": 7,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "DESTINY_BOND",
+   "chance": 0
+  },
+  "195": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "PERISH_SONG",
+   "chance": 0
+  },
+  "196": {
+   "power": 55,
+   "type": 15,
+   "split": 1,
+   "accuracy": 95,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SPEED_DOWN_HIT",
+   "chance": 100
+  },
+  "197": {
+   "power": 0,
+   "type": 1,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 3,
+   "effect": "PROTECT",
+   "chance": 0
+  },
+  "198": {
+   "power": 25,
+   "type": 4,
+   "split": 0,
+   "accuracy": 80,
+   "pp": 10,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "199": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "LOCK_ON",
+   "chance": 0
+  },
+  "200": {
+   "power": 90,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "RAMPAGE",
+   "chance": 100
+  },
+  "201": {
+   "power": 0,
+   "type": 5,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SANDSTORM",
+   "chance": 0
+  },
+  "202": {
+   "power": 60,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ABSORB",
+   "chance": 0
+  },
+  "203": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 3,
+   "effect": "ENDURE",
+   "chance": 0
+  },
+  "204": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ATTACK_DOWN_2",
+   "chance": 0
+  },
+  "205": {
+   "power": 30,
+   "type": 5,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ROLLOUT",
+   "chance": 0
+  },
+  "206": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 40,
+   "priority": 0,
+   "effect": "FALSE_SWIPE",
+   "chance": 0
+  },
+  "207": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 90,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SWAGGER",
+   "chance": 100
+  },
+  "208": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SOFTBOILED",
+   "chance": 0
+  },
+  "209": {
+   "power": 65,
+   "type": 13,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 30
+  },
+  "210": {
+   "power": 10,
+   "type": 6,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 20,
+   "priority": 0,
+   "effect": "FURY_CUTTER",
+   "chance": 0
+  },
+  "211": {
+   "power": 70,
+   "type": 8,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 25,
+   "priority": 0,
+   "effect": "DEFENSE_UP_HIT",
+   "chance": 10
+  },
+  "212": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "MEAN_LOOK",
+   "chance": 0
+  },
+  "213": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "ATTRACT",
+   "chance": 0
+  },
+  "214": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SLEEP_TALK",
+   "chance": 0
+  },
+  "215": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HEAL_BELL",
+   "chance": 0
+  },
+  "216": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "RETURN",
+   "chance": 0
+  },
+  "217": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 15,
+   "priority": 0,
+   "effect": "PRESENT",
+   "chance": 0
+  },
+  "218": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "FRUSTRATION",
+   "chance": 0
+  },
+  "219": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 25,
+   "priority": 0,
+   "effect": "SAFEGUARD",
+   "chance": 0
+  },
+  "220": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "PAIN_SPLIT",
+   "chance": 0
+  },
+  "221": {
+   "power": 100,
+   "type": 10,
+   "split": 1,
+   "accuracy": 95,
+   "pp": 5,
+   "priority": 0,
+   "effect": "THAW_HIT",
+   "chance": 50
+  },
+  "222": {
+   "power": 1,
+   "type": 4,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "MAGNITUDE",
+   "chance": 0
+  },
+  "223": {
+   "power": 100,
+   "type": 1,
+   "split": 0,
+   "accuracy": 50,
+   "pp": 5,
+   "priority": 0,
+   "effect": "CONFUSE_HIT",
+   "chance": 100
+  },
+  "224": {
+   "power": 120,
+   "type": 6,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "225": {
+   "power": 60,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "PARALYZE_HIT",
+   "chance": 30
+  },
+  "226": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "BATON_PASS",
+   "chance": 0
+  },
+  "227": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ENCORE",
+   "chance": 0
+  },
+  "228": {
+   "power": 40,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "PURSUIT",
+   "chance": 0
+  },
+  "229": {
+   "power": 20,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 40,
+   "priority": 0,
+   "effect": "RAPID_SPIN",
+   "chance": 0
+  },
+  "230": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "EVASION_DOWN",
+   "chance": 0
+  },
+  "231": {
+   "power": 100,
+   "type": 8,
+   "split": 0,
+   "accuracy": 75,
+   "pp": 15,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN_HIT",
+   "chance": 30
+  },
+  "232": {
+   "power": 50,
+   "type": 8,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 35,
+   "priority": 0,
+   "effect": "ATTACK_UP_HIT",
+   "chance": 10
+  },
+  "233": {
+   "power": 70,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": -1,
+   "effect": "VITAL_THROW",
+   "chance": 0
+  },
+  "234": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "MORNING_SUN",
+   "chance": 0
+  },
+  "235": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "SYNTHESIS",
+   "chance": 0
+  },
+  "236": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "MOONLIGHT",
+   "chance": 0
+  },
+  "237": {
+   "power": 1,
+   "type": 0,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIDDEN_POWER",
+   "chance": 0
+  },
+  "238": {
+   "power": 100,
+   "type": 1,
+   "split": 0,
+   "accuracy": 80,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "239": {
+   "power": 40,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TWISTER",
+   "chance": 20
+  },
+  "240": {
+   "power": 0,
+   "type": 11,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "RAIN_DANCE",
+   "chance": 0
+  },
+  "241": {
+   "power": 0,
+   "type": 10,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "SUNNY_DAY",
+   "chance": 0
+  },
+  "242": {
+   "power": 80,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+   "chance": 20
+  },
+  "243": {
+   "power": 1,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": -5,
+   "effect": "MIRROR_COAT",
+   "chance": 0
+  },
+  "244": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "PSYCH_UP",
+   "chance": 0
+  },
+  "245": {
+   "power": 80,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 1,
+   "effect": "QUICK_ATTACK",
+   "chance": 0
+  },
+  "246": {
+   "power": 60,
+   "type": 5,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ALL_STATS_UP_HIT",
+   "chance": 10
+  },
+  "247": {
+   "power": 80,
+   "type": 7,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+   "chance": 20
+  },
+  "248": {
+   "power": 80,
+   "type": 14,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FUTURE_SIGHT",
+   "chance": 0
+  },
+  "249": {
+   "power": 20,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN_HIT",
+   "chance": 50
+  },
+  "250": {
+   "power": 15,
+   "type": 11,
+   "split": 1,
+   "accuracy": 70,
+   "pp": 15,
+   "priority": 0,
+   "effect": "TRAP",
+   "chance": 100
+  },
+  "251": {
+   "power": 10,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "BEAT_UP",
+   "chance": 0
+  },
+  "252": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 1,
+   "effect": "FAKE_OUT",
+   "chance": 0
+  },
+  "253": {
+   "power": 50,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "UPROAR",
+   "chance": 100
+  },
+  "254": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "STOCKPILE",
+   "chance": 0
+  },
+  "255": {
+   "power": 100,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SPIT_UP",
+   "chance": 0
+  },
+  "256": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SWALLOW",
+   "chance": 0
+  },
+  "257": {
+   "power": 100,
+   "type": 10,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "BURN_HIT",
+   "chance": 10
+  },
+  "258": {
+   "power": 0,
+   "type": 15,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HAIL",
+   "chance": 0
+  },
+  "259": {
+   "power": 0,
+   "type": 17,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "TORMENT",
+   "chance": 0
+  },
+  "260": {
+   "power": 0,
+   "type": 17,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLATTER",
+   "chance": 0
+  },
+  "261": {
+   "power": 0,
+   "type": 10,
+   "split": 2,
+   "accuracy": 75,
+   "pp": 15,
+   "priority": 0,
+   "effect": "WILL_O_WISP",
+   "chance": 0
+  },
+  "262": {
+   "power": 0,
+   "type": 17,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "MEMENTO",
+   "chance": 0
+  },
+  "263": {
+   "power": 70,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "FACADE",
+   "chance": 0
+  },
+  "264": {
+   "power": 150,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": -3,
+   "effect": "FOCUS_PUNCH",
+   "chance": 0
+  },
+  "265": {
+   "power": 60,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SMELLINGSALT",
+   "chance": 0
+  },
+  "266": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 3,
+   "effect": "FOLLOW_ME",
+   "chance": 0
+  },
+  "267": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "NATURE_POWER",
+   "chance": 0
+  },
+  "268": {
+   "power": 0,
+   "type": 13,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "CHARGE",
+   "chance": 0
+  },
+  "269": {
+   "power": 0,
+   "type": 17,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TAUNT",
+   "chance": 0
+  },
+  "270": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 5,
+   "effect": "HELPING_HAND",
+   "chance": 0
+  },
+  "271": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "TRICK",
+   "chance": 0
+  },
+  "272": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ROLE_PLAY",
+   "chance": 0
+  },
+  "273": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "WISH",
+   "chance": 0
+  },
+  "274": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ASSIST",
+   "chance": 0
+  },
+  "275": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "INGRAIN",
+   "chance": 0
+  },
+  "276": {
+   "power": 120,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "SUPERPOWER",
+   "chance": 0
+  },
+  "277": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 4,
+   "effect": "MAGIC_COAT",
+   "chance": 0
+  },
+  "278": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "RECYCLE",
+   "chance": 0
+  },
+  "279": {
+   "power": 60,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": -4,
+   "effect": "REVENGE",
+   "chance": 0
+  },
+  "280": {
+   "power": 75,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "BRICK_BREAK",
+   "chance": 0
+  },
+  "281": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "YAWN",
+   "chance": 0
+  },
+  "282": {
+   "power": 20,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "KNOCK_OFF",
+   "chance": 100
+  },
+  "283": {
+   "power": 1,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ENDEAVOR",
+   "chance": 0
+  },
+  "284": {
+   "power": 150,
+   "type": 10,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ERUPTION",
+   "chance": 0
+  },
+  "285": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SKILL_SWAP",
+   "chance": 0
+  },
+  "286": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "IMPRISON",
+   "chance": 0
+  },
+  "287": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "REFRESH",
+   "chance": 0
+  },
+  "288": {
+   "power": 0,
+   "type": 7,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "GRUDGE",
+   "chance": 0
+  },
+  "289": {
+   "power": 0,
+   "type": 17,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 4,
+   "effect": "SNATCH",
+   "chance": 0
+  },
+  "290": {
+   "power": 70,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SECRET_POWER",
+   "chance": 30
+  },
+  "291": {
+   "power": 60,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SEMI_INVULNERABLE",
+   "chance": 0
+  },
+  "292": {
+   "power": 15,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "293": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "CAMOUFLAGE",
+   "chance": 0
+  },
+  "294": {
+   "power": 0,
+   "type": 6,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SPECIAL_ATTACK_UP_2",
+   "chance": 0
+  },
+  "295": {
+   "power": 70,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_DOWN_HIT",
+   "chance": 50
+  },
+  "296": {
+   "power": 90,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "297": {
+   "power": 0,
+   "type": 2,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "ATTACK_DOWN_2",
+   "chance": 0
+  },
+  "298": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TEETER_DANCE",
+   "chance": 0
+  },
+  "299": {
+   "power": 85,
+   "type": 10,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "BLAZE_KICK",
+   "chance": 10
+  },
+  "300": {
+   "power": 0,
+   "type": 4,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "MUD_SPORT",
+   "chance": 0
+  },
+  "301": {
+   "power": 30,
+   "type": 15,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ROLLOUT",
+   "chance": 0
+  },
+  "302": {
+   "power": 60,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLINCH_MINIMIZE_HIT",
+   "chance": 30
+  },
+  "303": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "RESTORE_HP",
+   "chance": 0
+  },
+  "304": {
+   "power": 90,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "305": {
+   "power": 50,
+   "type": 3,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "POISON_FANG",
+   "chance": 30
+  },
+  "306": {
+   "power": 75,
+   "type": 0,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 10,
+   "priority": 0,
+   "effect": "DEFENSE_DOWN_HIT",
+   "chance": 50
+  },
+  "307": {
+   "power": 150,
+   "type": 10,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "RECHARGE",
+   "chance": 0
+  },
+  "308": {
+   "power": 150,
+   "type": 11,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "RECHARGE",
+   "chance": 0
+  },
+  "309": {
+   "power": 100,
+   "type": 8,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ATTACK_UP_HIT",
+   "chance": 20
+  },
+  "310": {
+   "power": 30,
+   "type": 7,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "FLINCH_MINIMIZE_HIT",
+   "chance": 30
+  },
+  "311": {
+   "power": 50,
+   "type": 0,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "WEATHER_BALL",
+   "chance": 0
+  },
+  "312": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HEAL_BELL",
+   "chance": 0
+  },
+  "313": {
+   "power": 0,
+   "type": 17,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_DOWN_2",
+   "chance": 0
+  },
+  "314": {
+   "power": 55,
+   "type": 2,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 25,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "315": {
+   "power": 140,
+   "type": 10,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "OVERHEAT",
+   "chance": 100
+  },
+  "316": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 40,
+   "priority": 0,
+   "effect": "FORESIGHT",
+   "chance": 0
+  },
+  "317": {
+   "power": 50,
+   "type": 5,
+   "split": 0,
+   "accuracy": 80,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SPEED_DOWN_HIT",
+   "chance": 100
+  },
+  "318": {
+   "power": 60,
+   "type": 6,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ALL_STATS_UP_HIT",
+   "chance": 10
+  },
+  "319": {
+   "power": 0,
+   "type": 8,
+   "split": 2,
+   "accuracy": 85,
+   "pp": 40,
+   "priority": 0,
+   "effect": "SPECIAL_DEFENSE_DOWN_2",
+   "chance": 0
+  },
+  "320": {
+   "power": 0,
+   "type": 12,
+   "split": 2,
+   "accuracy": 55,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SLEEP",
+   "chance": 0
+  },
+  "321": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "TICKLE",
+   "chance": 0
+  },
+  "322": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "COSMIC_POWER",
+   "chance": 0
+  },
+  "323": {
+   "power": 150,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "ERUPTION",
+   "chance": 0
+  },
+  "324": {
+   "power": 75,
+   "type": 6,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "CONFUSE_HIT",
+   "chance": 10
+  },
+  "325": {
+   "power": 60,
+   "type": 7,
+   "split": 0,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "326": {
+   "power": 80,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "FLINCH_MINIMIZE_HIT",
+   "chance": 10
+  },
+  "327": {
+   "power": 85,
+   "type": 1,
+   "split": 0,
+   "accuracy": 90,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SKY_UPPERCUT",
+   "chance": 0
+  },
+  "328": {
+   "power": 15,
+   "type": 4,
+   "split": 0,
+   "accuracy": 70,
+   "pp": 15,
+   "priority": 0,
+   "effect": "TRAP",
+   "chance": 100
+  },
+  "329": {
+   "power": 1,
+   "type": 15,
+   "split": 1,
+   "accuracy": 30,
+   "pp": 5,
+   "priority": 0,
+   "effect": "OHKO",
+   "chance": 0
+  },
+  "330": {
+   "power": 95,
+   "type": 11,
+   "split": 1,
+   "accuracy": 85,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ACCURACY_DOWN_HIT",
+   "chance": 30
+  },
+  "331": {
+   "power": 10,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "332": {
+   "power": 60,
+   "type": 2,
+   "split": 0,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "333": {
+   "power": 10,
+   "type": 15,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 30,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "334": {
+   "power": 0,
+   "type": 8,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 15,
+   "priority": 0,
+   "effect": "DEFENSE_UP_2",
+   "chance": 0
+  },
+  "335": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "MEAN_LOOK",
+   "chance": 0
+  },
+  "336": {
+   "power": 0,
+   "type": 0,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 40,
+   "priority": 0,
+   "effect": "ATTACK_UP",
+   "chance": 0
+  },
+  "337": {
+   "power": 80,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "338": {
+   "power": 150,
+   "type": 12,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "RECHARGE",
+   "chance": 0
+  },
+  "339": {
+   "power": 0,
+   "type": 1,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "BULK_UP",
+   "chance": 0
+  },
+  "340": {
+   "power": 85,
+   "type": 2,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 5,
+   "priority": 0,
+   "effect": "SEMI_INVULNERABLE",
+   "chance": 30
+  },
+  "341": {
+   "power": 55,
+   "type": 4,
+   "split": 0,
+   "accuracy": 95,
+   "pp": 15,
+   "priority": 0,
+   "effect": "SPEED_DOWN_HIT",
+   "chance": 100
+  },
+  "342": {
+   "power": 50,
+   "type": 3,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 25,
+   "priority": 0,
+   "effect": "POISON_TAIL",
+   "chance": 10
+  },
+  "343": {
+   "power": 40,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 40,
+   "priority": 0,
+   "effect": "THIEF",
+   "chance": 100
+  },
+  "344": {
+   "power": 120,
+   "type": 13,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "DOUBLE_EDGE",
+   "chance": 0
+  },
+  "345": {
+   "power": 60,
+   "type": 12,
+   "split": 1,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "346": {
+   "power": 0,
+   "type": 11,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "WATER_SPORT",
+   "chance": 0
+  },
+  "347": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "CALM_MIND",
+   "chance": 0
+  },
+  "348": {
+   "power": 70,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIGH_CRITICAL",
+   "chance": 0
+  },
+  "349": {
+   "power": 0,
+   "type": 16,
+   "split": 2,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "DRAGON_DANCE",
+   "chance": 0
+  },
+  "350": {
+   "power": 25,
+   "type": 5,
+   "split": 0,
+   "accuracy": 80,
+   "pp": 10,
+   "priority": 0,
+   "effect": "MULTI_HIT",
+   "chance": 0
+  },
+  "351": {
+   "power": 60,
+   "type": 13,
+   "split": 1,
+   "accuracy": 0,
+   "pp": 20,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "352": {
+   "power": 60,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 20,
+   "priority": 0,
+   "effect": "CONFUSE_HIT",
+   "chance": 20
+  },
+  "353": {
+   "power": 120,
+   "type": 8,
+   "split": 0,
+   "accuracy": 85,
+   "pp": 5,
+   "priority": 0,
+   "effect": "FUTURE_SIGHT",
+   "chance": 0
+  },
+  "354": {
+   "power": 140,
+   "type": 14,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 5,
+   "priority": 0,
+   "effect": "OVERHEAT",
+   "chance": 100
+  },
+  "355": {
+   "power": 90,
+   "type": 6,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "356": {
+   "power": 60,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "FURY_CUTTER",
+   "chance": 0
+  },
+  "357": {
+   "power": 1,
+   "type": 5,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 15,
+   "priority": 0,
+   "effect": "LEVEL_DAMAGE",
+   "chance": 0
+  },
+  "358": {
+   "power": 60,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": -4,
+   "effect": "REVENGE",
+   "chance": 0
+  },
+  "359": {
+   "power": 80,
+   "type": 13,
+   "split": 1,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "360": {
+   "power": 60,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ATTACK_UP_HIT",
+   "chance": 100
+  },
+  "361": {
+   "power": 1,
+   "type": 3,
+   "split": 1,
+   "accuracy": 90,
+   "pp": 10,
+   "priority": 0,
+   "effect": "SUPER_FANG",
+   "chance": 0
+  },
+  "362": {
+   "power": 75,
+   "type": 14,
+   "split": 1,
+   "accuracy": 0,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ALWAYS_HIT",
+   "chance": 0
+  },
+  "363": {
+   "power": 40,
+   "type": 10,
+   "split": 1,
+   "accuracy": 95,
+   "pp": 20,
+   "priority": 0,
+   "effect": "FURY_CUTTER",
+   "chance": 0
+  },
+  "364": {
+   "power": 90,
+   "type": 0,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "365": {
+   "power": 90,
+   "type": 1,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "366": {
+   "power": 90,
+   "type": 2,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "367": {
+   "power": 90,
+   "type": 3,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "368": {
+   "power": 90,
+   "type": 4,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "369": {
+   "power": 90,
+   "type": 5,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "370": {
+   "power": 90,
+   "type": 6,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "371": {
+   "power": 90,
+   "type": 7,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "372": {
+   "power": 90,
+   "type": 8,
+   "split": 0,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "373": {
+   "power": 90,
+   "type": 9,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "374": {
+   "power": 90,
+   "type": 10,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "375": {
+   "power": 90,
+   "type": 11,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "376": {
+   "power": 90,
+   "type": 12,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "377": {
+   "power": 90,
+   "type": 13,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "378": {
+   "power": 90,
+   "type": 14,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "379": {
+   "power": 90,
+   "type": 15,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "380": {
+   "power": 90,
+   "type": 16,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "381": {
+   "power": 90,
+   "type": 17,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 5,
+   "priority": 0,
+   "effect": "HIT",
+   "chance": 0
+  },
+  "382": {
+   "power": 0,
+   "type": 14,
+   "split": 2,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "ALIGN",
+   "chance": 0
+  },
+  "383": {
+   "power": 40,
+   "type": 1,
+   "split": 1,
+   "accuracy": 100,
+   "pp": 10,
+   "priority": 0,
+   "effect": "CRYPTOPHASIA",
+   "chance": 0
+  }
+ },
+ "exp": {
+  "1": 64,
+  "2": 141,
+  "3": 208,
+  "4": 65,
+  "5": 142,
+  "6": 209,
+  "7": 66,
+  "8": 143,
+  "9": 210,
+  "10": 53,
+  "11": 72,
+  "12": 160,
+  "13": 52,
+  "14": 71,
+  "15": 159,
+  "16": 55,
+  "17": 113,
+  "18": 172,
+  "19": 57,
+  "20": 116,
+  "21": 58,
+  "22": 162,
+  "23": 62,
+  "24": 147,
+  "25": 82,
+  "26": 122,
+  "27": 93,
+  "28": 163,
+  "29": 59,
+  "30": 117,
+  "31": 194,
+  "32": 60,
+  "33": 118,
+  "34": 195,
+  "35": 68,
+  "36": 129,
+  "37": 63,
+  "38": 178,
+  "39": 76,
+  "40": 109,
+  "41": 54,
+  "42": 171,
+  "43": 78,
+  "44": 132,
+  "45": 184,
+  "46": 70,
+  "47": 128,
+  "48": 75,
+  "49": 138,
+  "50": 81,
+  "51": 153,
+  "52": 69,
+  "53": 148,
+  "54": 80,
+  "55": 174,
+  "56": 74,
+  "57": 149,
+  "58": 91,
+  "59": 213,
+  "60": 77,
+  "61": 131,
+  "62": 185,
+  "63": 73,
+  "64": 145,
+  "65": 186,
+  "66": 88,
+  "67": 146,
+  "68": 193,
+  "69": 84,
+  "70": 151,
+  "71": 191,
+  "72": 105,
+  "73": 205,
+  "74": 86,
+  "75": 134,
+  "76": 177,
+  "77": 152,
+  "78": 192,
+  "79": 99,
+  "80": 164,
+  "81": 89,
+  "82": 161,
+  "83": 94,
+  "84": 96,
+  "85": 158,
+  "86": 100,
+  "87": 176,
+  "88": 90,
+  "89": 157,
+  "90": 97,
+  "91": 203,
+  "92": 95,
+  "93": 126,
+  "94": 190,
+  "95": 108,
+  "96": 102,
+  "97": 165,
+  "98": 115,
+  "99": 206,
+  "100": 103,
+  "101": 150,
+  "102": 98,
+  "103": 212,
+  "104": 87,
+  "105": 124,
+  "106": 139,
+  "107": 140,
+  "108": 127,
+  "109": 114,
+  "110": 173,
+  "111": 135,
+  "112": 204,
+  "113": 255,
+  "114": 166,
+  "115": 175,
+  "116": 83,
+  "117": 155,
+  "118": 111,
+  "119": 170,
+  "120": 106,
+  "121": 207,
+  "122": 136,
+  "123": 187,
+  "124": 137,
+  "125": 156,
+  "126": 167,
+  "127": 200,
+  "128": 211,
+  "129": 20,
+  "130": 214,
+  "131": 219,
+  "132": 61,
+  "133": 92,
+  "134": 196,
+  "135": 197,
+  "136": 198,
+  "137": 130,
+  "138": 120,
+  "139": 199,
+  "140": 119,
+  "141": 201,
+  "142": 202,
+  "143": 154,
+  "144": 215,
+  "145": 216,
+  "146": 217,
+  "147": 67,
+  "148": 144,
+  "149": 218,
+  "150": 220,
+  "151": 64,
+  "152": 64,
+  "153": 141,
+  "154": 208,
+  "155": 65,
+  "156": 142,
+  "157": 209,
+  "158": 66,
+  "159": 143,
+  "160": 210,
+  "161": 57,
+  "162": 116,
+  "163": 58,
+  "164": 162,
+  "165": 54,
+  "166": 134,
+  "167": 54,
+  "168": 134,
+  "169": 204,
+  "170": 90,
+  "171": 156,
+  "172": 42,
+  "173": 37,
+  "174": 39,
+  "175": 74,
+  "176": 114,
+  "177": 73,
+  "178": 171,
+  "179": 59,
+  "180": 117,
+  "181": 194,
+  "182": 184,
+  "183": 58,
+  "184": 153,
+  "185": 135,
+  "186": 185,
+  "187": 74,
+  "188": 136,
+  "189": 176,
+  "190": 94,
+  "191": 52,
+  "192": 146,
+  "193": 147,
+  "194": 52,
+  "195": 137,
+  "196": 197,
+  "197": 197,
+  "198": 107,
+  "199": 164,
+  "200": 147,
+  "201": 61,
+  "202": 177,
+  "203": 149,
+  "204": 60,
+  "205": 118,
+  "206": 75,
+  "207": 108,
+  "208": 196,
+  "209": 63,
+  "210": 178,
+  "211": 100,
+  "212": 200,
+  "213": 80,
+  "214": 200,
+  "215": 132,
+  "216": 124,
+  "217": 189,
+  "218": 78,
+  "219": 154,
+  "220": 78,
+  "221": 160,
+  "222": 113,
+  "223": 78,
+  "224": 164,
+  "225": 183,
+  "226": 168,
+  "227": 168,
+  "228": 114,
+  "229": 204,
+  "230": 207,
+  "231": 124,
+  "232": 189,
+  "233": 180,
+  "234": 165,
+  "235": 106,
+  "236": 91,
+  "237": 138,
+  "238": 87,
+  "239": 106,
+  "240": 117,
+  "241": 200,
+  "242": 255,
+  "243": 216,
+  "244": 217,
+  "245": 215,
+  "246": 67,
+  "247": 144,
+  "248": 218,
+  "249": 220,
+  "250": 220,
+  "251": 64,
+  "252": 0,
+  "253": 174,
+  "254": 215,
+  "255": 216,
+  "256": 217,
+  "257": 61,
+  "258": 213,
+  "259": 65,
+  "260": 138,
+  "261": 55,
+  "262": 120,
+  "263": 190,
+  "277": 65,
+  "278": 141,
+  "279": 208,
+  "280": 65,
+  "281": 142,
+  "282": 209,
+  "283": 65,
+  "284": 143,
+  "285": 210,
+  "286": 55,
+  "287": 128,
+  "288": 60,
+  "289": 128,
+  "290": 54,
+  "291": 71,
+  "292": 161,
+  "293": 72,
+  "294": 160,
+  "295": 74,
+  "296": 141,
+  "297": 181,
+  "298": 74,
+  "299": 141,
+  "300": 181,
+  "301": 65,
+  "302": 155,
+  "303": 95,
+  "304": 59,
+  "305": 162,
+  "306": 65,
+  "307": 165,
+  "308": 85,
+  "309": 64,
+  "310": 164,
+  "311": 63,
+  "312": 128,
+  "313": 140,
+  "314": 230,
+  "315": 65,
+  "316": 138,
+  "317": 132,
+  "318": 58,
+  "319": 189,
+  "320": 108,
+  "321": 161,
+  "322": 98,
+  "323": 92,
+  "324": 158,
+  "325": 110,
+  "326": 111,
+  "327": 161,
+  "328": 61,
+  "329": 213,
+  "330": 88,
+  "331": 175,
+  "332": 73,
+  "333": 126,
+  "334": 197,
+  "335": 87,
+  "336": 184,
+  "337": 104,
+  "338": 168,
+  "339": 88,
+  "340": 175,
+  "341": 140,
+  "342": 128,
+  "343": 192,
+  "344": 97,
+  "345": 177,
+  "346": 74,
+  "347": 187,
+  "348": 150,
+  "349": 150,
+  "350": 33,
+  "351": 89,
+  "352": 164,
+  "353": 120,
+  "354": 120,
+  "355": 98,
+  "356": 91,
+  "357": 153,
+  "358": 74,
+  "359": 188,
+  "360": 44,
+  "361": 97,
+  "362": 179,
+  "363": 152,
+  "364": 83,
+  "365": 126,
+  "366": 210,
+  "367": 75,
+  "368": 168,
+  "369": 169,
+  "370": 68,
+  "371": 126,
+  "372": 184,
+  "373": 142,
+  "374": 178,
+  "375": 178,
+  "376": 174,
+  "377": 97,
+  "378": 179,
+  "379": 165,
+  "380": 165,
+  "381": 198,
+  "382": 96,
+  "383": 152,
+  "384": 205,
+  "385": 145,
+  "386": 146,
+  "387": 146,
+  "388": 121,
+  "389": 201,
+  "390": 119,
+  "391": 200,
+  "392": 70,
+  "393": 140,
+  "394": 208,
+  "395": 89,
+  "396": 144,
+  "397": 218,
+  "398": 103,
+  "399": 153,
+  "400": 210,
+  "401": 217,
+  "402": 216,
+  "403": 215,
+  "404": 218,
+  "405": 218,
+  "406": 220,
+  "407": 211,
+  "408": 211,
+  "409": 215,
+  "410": 215,
+  "411": 147
+ },
+ "words": {
+  "AttackerUsedX": "{atk} invoked {buf2}",
+  "AttackMissed": "{atk}'s attack missed!",
+  "PkmnProtectedItself": "{def} protected itself!",
+  "ItDoesntAffect": "It doesn't affect {def}…",
+  "AttackerFainted": "{atk} HALTED!",
+  "TargetFainted": "{def} HALTED!",
+  "PkmnFellAsleep": "{eff} was suspended!",
+  "PkmnAlreadyAsleep": "{def} is already suspended!",
+  "PkmnWasntAffected": "{def} wasn't affected!",
+  "PkmnWasPoisoned": "{eff} started leaking!",
+  "PkmnHurtByPoison": "{atk} is hurt by the leak!",
+  "PkmnAlreadyPoisoned": "{def} is already leaking.",
+  "PkmnBadlyPoisoned": "{eff} is cascading!",
+  "PkmnEnergyDrained": "{def} had its energy drained!",
+  "PkmnWasBurned": "{eff} overheated!",
+  "PkmnHurtByBurn": "{atk} is hurt by the heat!",
+  "PkmnAlreadyHasBurn": "{def} is already overheated.",
+  "PkmnWasFrozen": "{eff} hung!",
+  "PkmnIsFrozen": "{atk} is hung!",
+  "PkmnWasDefrosted2": "{atk} responded again!",
+  "PkmnWasParalyzed": "{eff} is throttled! It may stall!",
+  "PkmnIsParalyzed": "{atk} is throttled! It can't act!",
+  "PkmnIsAlreadyParalyzed": "{def} is already throttled!",
+  "PkmnDreamEaten": "{def}'s held state was read!",
+  "StatsWontIncrease": "{atk}'s {buf1} won't go higher!",
+  "StatsWontDecrease": "{def}'s {buf1} won't go lower!",
+  "PkmnIsConfused": "{atk} is thrashing!",
+  "PkmnHealedConfusion": "{atk} stopped thrashing!",
+  "PkmnWasConfused": "{eff} started thrashing!",
+  "PkmnAlreadyConfused": "{def} is already thrashing!",
+  "PkmnFlinched": "{atk} flinched!",
+  "PkmnRegainedHealth": "{def} regained health!",
+  "PkmnHPFull": "{def}'s HP is full!",
+  "PkmnWentToSleep": "{atk} was suspended!",
+  "PkmnSleptHealthy": "{atk} suspended and came back clear!",
+  "PkmnHitWithRecoil": "{atk} is hit with recoil!",
+  "PkmnSeeded": "{def} was seeded!",
+  "PkmnSappedByLeechSeed": "{atk}'s health is sapped by SEED!",
+  "PkmnFastAsleep": "{atk} is suspended.",
+  "PkmnWokeUp": "{atk} resumed!",
+  "PkmnMustRecharge": "{atk} must recharge!",
+  "PkmnBracedItself": "{atk} braced itself!",
+  "PkmnEnduredHit": "{def} SURVIVED the hit!",
+  "PkmnCutHPMaxedAttack": "{atk} cut its own HP and maximized ATTACK!",
+  "PkmnStatusNormal": "{atk}'s status returned to normal!",
+  "PkmnHasNoMovesLeft": "{atk} has no moves left!",
+  "StatSharply": "sharply",
+  "StatHarshly": "harshly",
+  "StatFell": "fell!",
+  "AttackersStatRose": "{atk}'s {buf1} {buf2}",
+  "AttackersStatFell": "{atk}'s {buf1} {buf2}",
+  "DefendersStatFell": "{def}'s {buf1} {buf2}",
+  "OneHitKO": "It's a one-hit KO!",
+  "ButNothingHappened": "But nothing happened!",
+  "ButItFailed": "But it failed!",
+  "ItHurtConfusion": "It hurt itself thrashing!",
+  "StatChangesGone": "All stat changes were eliminated!",
+  "BellChimed": "A bell chimed!",
+  "CriticalHit": "A critical hit!",
+  "NotVeryEffective": "It's not very effective…",
+  "SuperEffective": "It's super effective!",
+  "HitXTimes": "Hit {buf1} time(s)!",
+  "PkmnGainedEXP": "{buf1} gained{buf2} {buf3} EXP. Points!",
+  "PlayerDefeatedLinkTrainer": "Player outscored {foe}!",
+  "PlayerLostAgainstLinkTrainer": "Player lost against {foe}!",
+  "LinkTrainerWantsToBattle": "{foe} wants to engage!",
+  "LinkTrainerSentOutPkmn": "{foe} sent out {def}!",
+  "PkmnLaidCurse": "{atk} cut its own HP and CONSULTED {def}!",
+  "GetPumped": "{atk} is getting pumped!",
+  "Rose": "rose!",
+  "_missing": []
+ },
+ "stats": [
+  "HP",
+  "ATTACK",
+  "DEFENSE",
+  "SPEED",
+  "SP. ATK",
+  "SP. DEF",
+  "accuracy",
+  "evasiveness"
+ ]
+}

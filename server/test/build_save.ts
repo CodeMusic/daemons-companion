@@ -18,7 +18,8 @@ export function encodeText(s: string, len: number): Uint8Array {
 export interface DaemonSpec { personality: number; otId: number; species: number; nickname: string; level: number;
                               friendship?: number; away?: boolean; asked?: boolean; held?: number;
                               metLevel?: number; exp?: number; hp?: number; maxHP?: number;
-                              metGame?: number; egg?: boolean }   // C-306: the game it was met in; an egg
+                              metGame?: number; egg?: boolean;   // C-306: the game it was met in; an egg
+                              moves?: number[]; ivs?: number }    // C-328: its routines, and its IVs packed as the game packs them
 
 export function buildDaemon(d: DaemonSpec): Uint8Array {
   const rec = new Uint8Array(l.pokemon_size);
@@ -38,6 +39,9 @@ export function buildDaemon(d: DaemonSpec): Uint8Array {
   const misc = ORDERS[d.personality % 24].indexOf("M") * 12;
   sv.setUint16(misc + 2, ((d.metLevel ?? 0) & 0x7f) | (((d.metGame ?? 0) & 0xf) << 7), true);   // originsInfo: the level it was met at, the game
   if (d.egg) sv.setUint32(misc + 4, (1 << 30) >>> 0, true);    // C-306: isEgg
+  if (d.ivs) sv.setUint32(misc + 4, (sv.getUint32(misc + 4, true) | (d.ivs & 0x3fffffff)) >>> 0, true);   // C-328
+  const attacks = ORDERS[d.personality % 24].indexOf("A") * 12;
+  (d.moves ?? []).slice(0, 4).forEach((m, k) => sv.setUint16(attacks + 2 * k, m, true));                   // C-328
   let sum = 0;
   for (let i = 0; i < 48; i += 2) sum = (sum + sv.getUint16(i, true)) & 0xffff;
   v.setUint16(28, sum, true);

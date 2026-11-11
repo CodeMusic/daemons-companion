@@ -33,6 +33,7 @@ import { useDev } from "./state/dev";       // C-268
 import { Logs } from "./ui/devpanel";
 import { DevScreen } from "./screens/dev/Dev";                  // C-275: </>
 import { Received } from "./ui/received";   // C-261
+import { BattleOverlay } from "./ui/battle";   // C-328
 import { HowToOverlay, openHowTo } from "./ui/howto";          // C-264
 import MENU from "./modules/daemons-menu";                    // C-264: the menu bar's Help
 import { TabStrip } from "./shell/TabStrip";
@@ -183,6 +184,7 @@ function Shell() {
       {beside && dev.on && logs.logsAway ? <LogsEdge bringBack={() => logs.logsPutAway(false)} /> : null}
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
       <Received />{/* C-261: over everything, the game too */}
+      <BattleOverlay />{/* C-328: a battle request to this device, and the battle, over every screen */}
       {!ON_PHONE ? <HowToOverlay playing={false} /> : null}{/* C-264: the site has no game panel: over the page */}
     </YStack>
   );

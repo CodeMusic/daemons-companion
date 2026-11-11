@@ -12,6 +12,8 @@
 //                                link the save, settle a daemon brought home without the app; the married save only
 //   GET  /api/trade              C-219: this companion's player on the exchange, its AWAY daemons, the offers and trades;
 //                                POST /api/trade/{join,offer,accept,withdraw,recall,password,hub,out,back,meet} (docs/TRADING.md)
+//   GET  /api/battle             C-328: BATTLE -- who is online, this device's daemon, its requests and battles (?device=);
+//                                POST /api/battle/{pick,request,answer,choose,leave} (battleroute.ts)
 //   /api/exchange/*              C-218, C-219: THE EXCHANGE, for every companion on the home network and the tailnet --
 //                                POST invite (home only), join {name, code | password}; the rest as a player (x-daemons-player)
 //   GET  /art/<name>_front.png   a daemon's art, from DAEMONS' own gfx/daemons/
@@ -86,6 +88,7 @@ import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
+import { BATTLE_PATHS, battleRoute } from "./battleroute.js";   // C-328
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { gameDream, mindNow } from "./mind.js";   // C-254: the mind portal
@@ -1261,6 +1264,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, r?.error ? 400 : 200, r);
       }
       if (req.method === "GET" && path === "/api/manual") return send(res, 200, await fetchManualText(store));   // C-233: the manual as words, for a device
+      // C-328: BATTLE -- a request to any device online here (or a player on the exchange), turns, a winner (battleroute.ts)
+      if (BATTLE_PATHS.includes(path)) {
+        const h = hostOf(ecfg);
+        return reply(res, await battleRoute({ save: h.save.read(), boards: () => devices.list(), link: tradeLink(store) }, store,
+                                            req.method ?? "", path, deviceId, Object.fromEntries(url.searchParams), req.method === "POST" ? await body(req) : {}));
+      }
       if (TRADE_PATHS.includes(path)) {
         const h = hostOf(ecfg);
         return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {},

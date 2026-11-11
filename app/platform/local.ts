@@ -21,6 +21,7 @@ import { repaint, streakColours } from "../../server/src/paint";
 import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../../server/src/expressions";
 import { readSave } from "../../server/src/save/reader";
 import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../../server/src/tradelink";   // C-219
+import { BATTLE_PATHS, battleRoute } from "../../server/src/battleroute";   // C-328
 import { SPECIES_ART } from "../art/speciesArt";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -142,6 +143,8 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
   // C-219: TRADE through the hub named in THE HUB -- the phone is a player like any companion, its exchange the hub's
   const hub = s.getSetting("trade.hub"), link = hub ? remoteLink(s, hub) : null;
   if (method === "POST" && path === "/api/trade/hub") { const r = setHub(s, body?.url); return typeof r === "string" ? no(400, r) : ok(r); }
+  // C-328: BATTLE -- a phone alone has no boards of its own; its battles are the exchange's, through the hub
+  if (BATTLE_PATHS.includes(path)) return battleRoute({ save: phoneSave.read(), boards: () => [], link }, s, method, path, deviceId, Object.fromEntries(query), body ?? {});
   if (TRADE_PATHS.includes(path)) return tradeRoute(link, s, phoneSave.read(), h.edition, method, path, body ?? {});
   if (method === "POST" && path === "/api/sync") {          // C-189: the game paused, its save handed over, around SYNC
     await GATE.hold();

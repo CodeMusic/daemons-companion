@@ -14,6 +14,10 @@ describe("the device's own door", () => {
   it("finds the firmware's calls", () => {
     expect(calls.size).toBeGreaterThan(10);
   });
+  it("lets a board reach its household (C-327)", () => {
+    for (const [m, p] of [["GET", "/api/household"], ["POST", "/api/household/swap"], ["POST", "/api/household/together"], ["POST", "/api/household/apart"]])
+      expect(DEVICE_DOOR.some((d) => d(m, p))).toBe(true);
+  });
   for (const [path, method] of calls)
     it(`lets a board ${method} ${path}`, () => {
       expect(DEVICE_DOOR.some((d) => d(method, path))).toBe(true);

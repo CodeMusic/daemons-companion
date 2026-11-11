@@ -639,6 +639,8 @@ export const DEVICE_DOOR = [
      "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/") || p.startsWith("/api/ai/voice/")),   // C-317: a voice streamed, by an id nobody can guess   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
+  // C-327: the household -- a watch swaps with, or shares a space with, another of the home's own devices
+  (m: string, p: string) => (m === "GET" && p === "/api/household") || (m === "POST" && ["/api/household/swap", "/api/household/together", "/api/household/apart"].includes(p)),
   (m: string) => m === "OPTIONS",
 ];
 

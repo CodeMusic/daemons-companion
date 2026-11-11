@@ -20,7 +20,13 @@ type View = { tasks: Task[]; users: string[]; minds: { name: string; ok: boolean
 const KIND: Record<string, { colour: string; said: string }> = {                    // DRAFT
   talk: { colour: "#5a7fa6", said: "TALK" }, guide: { colour: "#00a8d6", said: "THE GUIDE" },
   dream: { colour: "#8E3F80", said: "DREAMS" }, whatsnew: { colour: "#d9a74a", said: "WHAT'S NEW" },
+  journal: { colour: "#6fae6a", said: "JOURNAL" }, meeting: { colour: "#c9784a", said: "MEETINGS" },   // C-319 next
+  voice: { colour: "#b48ce0", said: "VOICES" }, chatter: { colour: "#4f6b8a", said: "CHATTER" },
 };
+// how much a task was given and gave back, and its tokens when the mind counted them -- DRAFT
+const kb = (n?: number) => (n === undefined ? "?" : n < 1000 ? `${n} chars` : `${(n / 1000).toFixed(1)}k chars`);
+const sizeSaid = (t: Task) => [t.size ? `${kb(t.size.in)} in, ${t.size.out !== undefined ? kb(t.size.out) : "nothing yet"} out` : "",
+                               t.tokens ? `${t.tokens.in ?? "?"} → ${t.tokens.out ?? "?"} tokens` : ""].filter(Boolean).join(" · ");
 const kindOf = (k: string) => KIND[k] ?? { colour: "#7a7f8a", said: k.toUpperCase() };
 const STATE_SAID: Record<Task["state"], string> = { waiting: "waiting", thinking: "thinking", done: "done", failed: "failed", stopped: "stopped" };
 const LIVE = (t: Task) => t.state === "waiting" || t.state === "thinking";
@@ -41,8 +47,8 @@ function Pill({ label, on, onPress }: { label: string; on: boolean; onPress: () 
 }
 
 // THE WEB: positions on two rings around the hub, a spark for each task thinking now
-function Web({ tasks, minds, devices, w, tick, pick }: { tasks: Task[]; minds: { name: string; ok: boolean | null }[]; devices: string[];
-                                                         w: number; tick: number; pick: (t: Task) => void }) {
+function Web({ tasks, minds, devices, w, tick, pick, queued }: { tasks: Task[]; minds: { name: string; ok: boolean | null }[]; devices: string[];
+                                                                 w: number; tick: number; pick: (t: Task) => void; queued: number }) {
   const H = 250, cx = w / 2, cy = H / 2, r1 = Math.min(cx, cy) * 0.5, r2 = Math.min(cx - 34, cy - 18);
   const at = (i: number, n: number, r: number, turn = 0) => {
     const a = -Math.PI / 2 + turn + (2 * Math.PI * i) / Math.max(1, n);
@@ -67,8 +73,10 @@ function Web({ tasks, minds, devices, w, tick, pick }: { tasks: Task[]; minds: {
               backgroundColor="#1d2436" alignItems="center" justifyContent="center">
         <Text fontFamily="$mono" fontSize={9} letterSpacing={1} color="#d9a74a">HUB</Text>
       </YStack>
-      {minds.map((m) => { const p = mindAt.get(m.name)!; const busy = live.some((t) => t.mind === m.name); return (
+      {queued ? <Depth x={cx + 14} y={cy - 26} n={queued} colour="#d9a74a" /> : null}
+      {minds.map((m) => { const p = mindAt.get(m.name)!, depth = live.filter((t) => t.mind === m.name).length, busy = depth > 0; return (
         <YStack key={m.name} position="absolute" left={p.x - 45} top={p.y - 9} width={90} alignItems="center">
+          {depth > 1 ? <Depth x={53} y={-8} n={depth} colour="#3fb950" /> : null}
           <YStack width={busy ? 16 : 13} height={busy ? 16 : 13} borderRadius={8} borderWidth={2}
                   borderColor={m.ok === null ? "#6c7696" : m.ok ? "#3fb950" : "#e5534b"}
                   backgroundColor={busy ? `rgba(63,185,80,${0.35 + 0.35 * Math.abs(Math.sin(tick / 4))})` : "#0f1420"} />
@@ -125,6 +133,15 @@ function River({ tasks, minds, span, w, now, pick, picked }: { tasks: Task[]; mi
   );
 }
 
+// C-319 next: how deep a mind's queue is -- its live tasks (the hub's: its talk queue waiting), as a small count
+function Depth({ x, y, n, colour }: { x: number; y: number; n: number; colour: string }) {
+  return (
+    <YStack position="absolute" left={x} top={y} minWidth={16} height={16} paddingHorizontal={3} borderRadius={8}
+            backgroundColor={colour} alignItems="center" justifyContent="center" aria-label={`${n} in its queue`}>
+      <Text fontFamily="$mono" fontSize={9} fontWeight="700" color="#0f1420">{n}</Text>
+    </YStack>
+  );
+}
 export function MindAtWork({ ink }: { ink: string }) {
   const [v, setV] = useState<View | null>(null);
   const [who, setWho] = useState<"mine" | "all" | string>("all");
@@ -167,7 +184,7 @@ export function MindAtWork({ ink }: { ink: string }) {
         {others.map((u) => <Pill key={u} label={u.toUpperCase()} on={who === u} onPress={() => setWho(u)} />)}
       </XStack>
       <YStack marginTop={8} onLayout={(e: any) => setW(Math.max(240, e.nativeEvent.layout.width))}>
-        <Web tasks={inWindow} minds={minds} devices={devices} w={w} tick={tick} pick={(t) => setPicked(t.id)} />
+        <Web tasks={inWindow} minds={minds} devices={devices} w={w} tick={tick} pick={(t) => setPicked(t.id)} queued={v.load.waiting} />
       </YStack>
       <XStack gap={6} marginTop={10} alignItems="center">
         <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10" flex={1}>THE RIVER</Text>
@@ -185,6 +202,7 @@ export function MindAtWork({ ink }: { ink: string }) {
           <Text fontSize={14} fontWeight="700" color="$color12">{sel.title}</Text>
           <Small color="$color10">{`${kindOf(sel.kind).said} · ${STATE_SAID[sel.state]}${sel.ms !== undefined ? ` in ${took(sel.ms)}` : ""} · ${ago(sel.at, now)}`}</Small>
           <Small color="$color10">{`for ${sel.user}, from ${sel.device}${sel.mind ? `, on ${sel.mind}` : ""}${sel.source === "trace" ? " (reported by the phone)" : sel.source === "queue" ? " (the hub's talk queue)" : ""}`}</Small>
+          {sizeSaid(sel) ? <Small color="$color10">{sizeSaid(sel)}</Small> : null}
           {sel.error ? <Small color="#e5534b">{sel.error}</Small> : null}
           <XStack gap={6} marginTop={4} flexWrap="wrap">
             {sel.can?.stop && LIVE(sel) ? <Action label="Stop" ink={ink} onPress={() => act(sel, "stop")} /> : null}

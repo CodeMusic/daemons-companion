@@ -1,9 +1,52 @@
 {
- "latest": 968,
+ "latest": 969,
  "builds": [
   {
+   "build": 969,
+   "commit": "ae5383d",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-319",
+     "title": "THE MIND AT WORK: every task in the mind mesh, seen and managed",
+     "lines": [
+      "Next: every write-up a task, its size and tokens, a mind's queue depth, and a STOP that really aborts"
+     ]
+    },
+    {
+     "ticket": "C-321",
+     "title": "THE COMPANION: a manual for the whole app, rebuilt as the app changes",
+     "lines": [
+      "THE COMPANION's shelf cover, from the reprint (DAEMONS d3a38f1c)"
+     ]
+    },
+    {
+     "ticket": "C-170",
+     "title": "C-170",
+     "lines": [
+      "The hub's pairing QR opens the app paired — PairScreen reads daemons://pair?server=&code= (initial URL and url event), fills both boxes and pairs at once; http(s) and six digits only"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.346.2 (T-447 pair 5)",
+      "LIBRARY shelf covers: THE PLAYER'S MANUAL and QUICK START reprinted against v11.346.2"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Notebook.json: each page from 64 up is read or unread by its own SEEN flag (DAEMONS 9a7c61ca)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 968,
-   "commit": "7d11778",
+   "commit": "0ff6418",
    "date": "2026-11-11",
    "sections": [
     {
@@ -11,6 +54,13 @@
      "title": "LISTEN in every MANUAL and in THE OLD WORD",
      "lines": [
       "LISTEN in every MANUAL and in THE OLD WORD — each in the voice the user picked from samples (DAEMONS T-543)"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 968's notes"
      ]
     },
     {

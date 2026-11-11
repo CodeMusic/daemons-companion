@@ -64,11 +64,11 @@ export function HermeticBook({ b }: { b: HermeticT }) {
           <YStack width={wide ? Math.max(0, w - 2 * 18 - 94 * 3 - 18) : "100%"} gap={10}>
             <Text fontSize={20} lineHeight={27} fontWeight="700" color={C.ink}>{e.title}</Text>
             <YStack height={2} backgroundColor={EMERALD.lit} width={48} />
-            <ReadAloud id={`hermetic-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={EMERALD.lit} />
+            <ReadAloud id={`hermetic-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={EMERALD.lit} voice="book:hermetic" />
             {e.paragraphs.map((p, i) => p.voice === "inscription" ? (
               <YStack key={i} gap={2} borderLeftWidth={2} borderColor={EMERALD.hue} paddingLeft={10}>
                 <Text fontSize={17} lineHeight={26} fontWeight="600" color={breath.glow}>{p.text}</Text>
-                <ReadAloud id={`hermetic-${at}-${i}`} paragraphs={[p.text]} ink={EMERALD.lit} label="Say it" />
+                <ReadAloud id={`hermetic-${at}-${i}`} paragraphs={[p.text]} ink={EMERALD.lit} label="Say it" voice="book:hermetic" />
               </YStack>
             ) : (
               <SpokenPara key={i} id={`hermetic-${at}`} i={i + 1}>

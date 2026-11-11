@@ -40,7 +40,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voiceParts, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, wavOf } from "./ai/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
@@ -59,8 +59,10 @@ import { isSitePath, serveSite } from "./site.js";
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
-import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView } from "./ai/tiiny.js";   // C-249
+import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
+import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
+import { playerContextOf } from "./playervoice.js";        // C-323: the player's, from their save
 import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
@@ -289,6 +291,15 @@ function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()
   if (!d) return { species: null as number | null, recipe: voiceRecipe({}, null), own: "" };
   const own = store.getSetting(`voice.recipe.${d.species}`) ?? "";
   return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category, species: d.species }, core.daemonFeelings(store, now), own) };
+}
+// C-323 (the user, 2026-11-10: "an abstract system for any voice representation which can take in context and form a
+// voice from it"): a voice by the name a caller gives -- "daemon" (the carried one), "player" (read from the save),
+// "index", "entry", "book:<id>" -- as a recipe; a trainer's own (voice.recipe.<name>) used whole. null: no such name.
+function namedRecipe(ecfg: Config, store: Store, deviceId: string, name: unknown): string | null {
+  if (name === "daemon") return voiceFor(ecfg, store, deviceId).recipe;
+  const s = speakerNamed(name, { daemon: () => ({ kind: "daemon" }), own: (n) => store.getSetting(`voice.recipe.${n}`),
+                                 player: () => { try { return playerContextOf(hostOf(ecfg).save.read(), ecfg.edition); } catch { return null; } } });
+  return s ? voiceOf(s).recipe : null;
 }
 // C-303 (DAEMONS T-522): what a daemon says of itself (species.json `said`), and the voice it says it in -- its own
 // (C-251), never the INDEX's. null when {own: true} was not asked, or it has no telling yet: its entry is read as before
@@ -712,33 +723,61 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-319: THE MIND's ledger of work (ai/tasks.ts), and which mind a write-up goes to first -- as house.write tries them
   const TASKS = new Tasks((k) => store.getSetting(k), (k, v) => store.setSetting(k, v));
   const writerNow = (): string | null => tiinyNow() ? "the Tiiny" : endpointsNowAll(false)[0]?.e.name || (house.any ? "the house's module" : null);
+  // C-319 next: every write-up the hub does is a task -- stoppable for real (its AbortController, held here while it
+  // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
+  // The work is given `write` (house.write, counted) and says how it ended with `end`.
+  const RUNNING = new Map<string, AbortController>();
+  const ledgered = (o: { kind: string; title: string; user?: string; device?: string; retry?: boolean; mind?: string }) => {
+    const ctl = new AbortController();
+    const task = TASKS.open({ kind: o.kind, title: o.title, user: o.user, device: o.device, mind: o.mind ?? writerNow() ?? undefined,
+                              state: "thinking", can: { stop: true, retry: !!o.retry } });
+    RUNNING.set(task.id, ctl);
+    let sizeIn = 0, sizeOut = 0;
+    const job: WriteJob = { signal: ctl.signal, spent: (t) => { TASKS.update(task.id, { tokens: t }); },
+                            by: (m) => { if (TASKS.find(task.id)?.state === "thinking") TASKS.update(task.id, { mind: m }); } };
+    const write = async (system: string, user: string, most?: number) => {
+      if (ctl.signal.aborted) throw new Error(STOPPED);
+      sizeIn += system.length + user.length; TASKS.update(task.id, { size: { in: sizeIn } });
+      const t = await house.write(system, user, most, job);
+      if (t) { sizeOut += t.length; TASKS.update(task.id, { size: { out: sizeOut } }); }
+      return t;
+    };
+    const live = () => TASKS.find(task.id)?.state === "thinking";
+    const end = (state: "done" | "failed", patch: { error?: string; mind?: string } = {}) => {
+      RUNNING.delete(task.id);
+      if (live()) TASKS.update(task.id, { state, ...patch });
+    };
+    return { task, write, end, live, signal: ctl.signal };
+  };
   // C-318: a span of WHAT'S NEW told by the hub's mind, in the background -- a task in the ledger, a digest when it lands
   const tellSpan = (from: number, to: number, by: string, device: string, again?: string) => {
     const builds = spanOf(NOTES, from, to), mind = writerNow();
-    const [lo, hi] = [Math.min(from, to), Math.max(from, to)];
-    const task = TASKS.open({ kind: "whatsnew", title: `WHAT'S NEW ${lo}–${hi}`, user: by, device, mind: mind ?? undefined,   // DRAFT
-                              state: mind && builds.length ? "thinking" : "failed", can: { stop: true, retry: true } });
-    const d: Digest = { id: again ?? `d${Date.now().toString(36)}`, from: lo, to: hi, at: task.at, by, task: task.id, state: "thinking", ...(mind ? { mind } : {}) };
+    const [lo, hi] = [Math.min(from, to), Math.max(from, to)], title = `WHAT'S NEW ${lo}–${hi}`;   // DRAFT
+    const id = again ?? `d${Date.now().toString(36)}`;
     if (!builds.length || !mind) {
       const error = !builds.length ? "no builds in that span" : "no mind in the house to tell it";   // DRAFT
-      TASKS.update(task.id, { state: "failed", error });
-      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "failed", error });
-      return { digest: { ...d, state: "failed" as const, error }, task: TASKS.find(task.id) };
+      const task = TASKS.open({ kind: "whatsnew", title, user: by, device, state: "failed", can: { retry: true } });
+      TASKS.update(task.id, { error });
+      const d: Digest = { id, from: lo, to: hi, at: task.at, by, task: task.id, state: "failed", error };
+      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), d);
+      return { digest: d, task: TASKS.find(task.id) };
     }
+    const w = ledgered({ kind: "whatsnew", title, user: by, device, retry: true, mind });
+    const d: Digest = { id, from: lo, to: hi, at: w.task.at, by, task: w.task.id, state: "thinking", mind };
     keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), d);
-    house.write(DIGEST_SYSTEM, digestAsk(builds), 900).then((text) => {
-      if (TASKS.find(task.id)?.state !== "thinking") return;   // stopped while it thought
+    w.write(DIGEST_SYSTEM, digestAsk(builds), 900).then((text) => {
+      if (!w.live()) return;                                   // stopped while it thought
       if (!text?.trim()) throw new Error("the mind said nothing");
       const r = readDigest(text);
-      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "done", ...r });
-      TASKS.update(task.id, { state: "done" });
+      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "done", mind: TASKS.find(w.task.id)?.mind ?? mind, ...r });
+      w.end("done");
     }).catch((e) => {
       const error = (e as Error)?.message?.slice(0, 120) || "it failed";
-      if (TASKS.find(task.id)?.state !== "thinking") return;
+      if (!w.live()) return;
       keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "failed", error });
-      TASKS.update(task.id, { state: "failed", error });
+      w.end("failed", { error });
     });
-    return { digest: d, task };
+    return { digest: d, task: w.task };
   };
   // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
   setMeetTalker(async (me, other, heard) => {
@@ -788,8 +827,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const writeJournalPage = (chapter: number) => {
     if (paging.has(chapter)) return;
     paging.add(chapter);
-    writeChapter(store, chapter, house.any ? (system, user, most) => house.write(system, user, most) : null)
-      .catch(() => {}).finally(() => paging.delete(chapter));
+    if (!house.any) { writeChapter(store, chapter, null).catch(() => {}).finally(() => paging.delete(chapter)); return; }
+    const w = ledgered({ kind: "journal", title: "a journal chapter written as a page" });   // C-319 next, DRAFT
+    writeChapter(store, chapter, w.write)
+      .then(() => w.end("done"), (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
+      .finally(() => paging.delete(chapter));
   };
   const dreamerOf = (ecfg: Config, deviceId: string): Dreamer => {
     const f = selfFacts(ecfg, store, deviceId), care = (f.life as { care?: Dreamer["care"] } | null)?.care ?? null;
@@ -806,14 +848,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const self = dreamerSaid(who), ask = dreamAsk(dream, day, who), text = `${self}\n${ask}`;
     const viaHouse = async () => (house.any ? (await house.talk({ text: `${dreamerSaid({ nickname: who.nickname, name: who.name, types: who.types, feelings: who.feelings })} ${dreamAsk(dream, day, who, "short")}`,
                                                                    history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
-    const job = TASKS.open({ kind: "dream", title: `a night's dream told (${who.nickname || who.name || "the daemon"})`,   // C-319, DRAFT
-                             device: "the hub", mind: house.any ? "the house's mind" : p, state: "thinking" });
+    const w = ledgered({ kind: "dream", title: `a night's dream told (${who.nickname || who.name || "the daemon"})`,   // C-319, DRAFT
+                         device: "the hub", mind: house.any ? writerNow() ?? "the house's mind" : p });
     (async () => {
       // C-308: with a thinker in the house, the night told twice at once and made whole, with its title -- the old single
       // telling below only when that does not come
       if (house.any) {
-        const made = await dreamTwice(dream, day, who, (system, user, most) => house.write(system, user, most)).catch(() => null);
-        if (made && keepLenses(store, dream.id, made)) { TASKS.update(job.id, { state: "done", mind: writerNow() ?? undefined }); return; }
+        const made = await dreamTwice(dream, day, who, w.write).catch(() => null);
+        if (!w.live()) return;                                 // stopped: the written dream stays
+        if (made && keepLenses(store, dream.id, made)) { w.end("done"); return; }
       }
       let answer: string | undefined;
       const tiiny = tiinyIn((k) => store.getSetting(k));
@@ -826,9 +869,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                                   voice: "index", localModel: ecfg.talk.localModel, ...talkWho(ecfg, store, deviceId) });
         answer = typeof r.answer === "string" ? r.answer : await viaHouse().catch(() => undefined);
       }
+      if (!w.live()) return;
       if (answer?.trim()) rewriteDream(store, dream.id, answer.trim());
-      TASKS.update(job.id, answer?.trim() ? { state: "done", mind: p } : { state: "failed", error: "no mind told it; the written dream stays" });   // DRAFT
-    })().catch((e) => { TASKS.update(job.id, { state: "failed", error: (e as Error)?.message?.slice(0, 120) }); }).finally(() => telling.delete(dream.id));
+      w.end(answer?.trim() ? "done" : "failed", answer?.trim() ? { mind: p } : { error: "no mind told it; the written dream stays" });   // DRAFT
+    })().catch((e) => { w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); }).finally(() => telling.delete(dream.id));
   };
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
   const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
@@ -1249,6 +1293,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!t) return send(res, 404, { error: "only the hub's own tasks can be managed" });   // DRAFT
         if (b.act === "stop") {
           if (!t.can?.stop) return send(res, 400, { error: "that one cannot be stopped" });
+          RUNNING.get(id)?.abort(); RUNNING.delete(id);        // C-319 next: the request itself is ended
           TASKS.update(id, { state: "stopped" });
           const d = digests((k) => store.getSetting(k)).find((x) => x.task === id);
           if (d && d.state === "thinking") keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "failed", error: "stopped" });
@@ -1765,11 +1810,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const meetWriteIfReady = async (id: number) => {
         const m = meetingOf(store, id);
         if (!m || !allHeard(m) || m.state !== "hearing") return;
-        await writeUp(store, id, async (system, user, most) => {
-          const t = await house.write(system, user, most);
-          if (t === null) throw new Error("No module can write: the hub's module is needed.");   // DRAFT
-          return t;
-        }, meetWho(m.device));
+        const w = ledgered({ kind: "meeting", title: "a meeting written up", device: m.device });   // C-319 next, DRAFT
+        try {
+          await writeUp(store, id, async (system, user, most) => {
+            const t = await w.write(system, user, most);
+            if (t === null) throw new Error("No module can write: the hub's module is needed.");   // DRAFT
+            return t;
+          }, meetWho(m.device));
+          w.end(meetingOf(store, id)?.state === "failed" ? "failed" : "done");
+        } catch (e) { w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); throw e; }
         meetTidy();
       };
       // the recordings kept to 1.5 GB: the oldest meetings' audio goes first (their words stay)
@@ -1953,8 +2002,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const t = tiinyNow();
           const recipe = b.daemon === true ? voiceFor(ecfg, store, deviceId).recipe : store.getSetting("voice.recipe.index") || INDEX_VOICE;
           // where a voice stream is named (roverbyteseer's forwarder past LiteLLM), all of it at once, streamed straight
-          // through; else, or when that will not start, in growing parts (voice.ts: LiteLLM hands a voice on only when
-          // it is whole), the first waited on here
+          // through; else, or when that will not start, all of it at once through LiteLLM (handed on only when whole).
+          // C-323 (the user, 2026-11-11: "Tiiny only for now"): never in parts -- the Tiiny's voice-design model makes a
+          // new speaker for every request (measured: the same line twice, two voices; a seed does not hold it), so a
+          // talk asked a sentence at a time changed voice between sentences
           const whole = b.text.slice(0, 600), at = t?.at;
           if (at?.tts && at.stream) {
             const id = streams.open(), enc = mp3Into(streams, id);          // the encoder starting while the Tiiny begins
@@ -1966,7 +2017,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                       generation: voiceGeneration((k) => store.getSetting(k)) });
             }
           }
-          const parts = voiceParts(whole);
+          const parts = [whole];
           const ask = (part: string) => at ? tiinySpeakStream(at, part, recipe, fetch, 30_000) : Promise.resolve(null);
           const id = at?.tts && parts.length ? streams.open() : null, enc = id ? mp3Into(streams, id) : null;
           const s = id ? await ask(parts[0]) : null;
@@ -1987,13 +2038,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (b.ring === "home") return answer(PRIORITY.reading, async () => (await fromModule(text, recipe)) ?? { error: "No voice in the house could say it." });   // DRAFT
           return answer(PRIORITY.reading, () => readAloud(text, recipe));
         }
+        // C-323: {voice} -- whose voice reads the words: "daemon", "player", "index", "entry", "book:<id>"
+        const named = namedRecipe(ecfg, store, deviceId, b.voice) ?? undefined;
         // 2026-11-07: {text, whole: true} -- all of it (a dream, a journal's chapter), read in parts and joined into one voice
         if (b.whole === true && typeof b.text === "string" && b.text.trim()) {
           const parts = voicePieces(b.text.slice(0, WHOLE_MOST));
           return answer(PRIORITY.reading, async () => {
             const got: Buffer[] = []; let provider = "";
             for (const p of parts) {
-              const r = await readAloud(p);
+              const r = await readAloud(p, named);
               if (typeof r.audioBase64 !== "string" || !r.audioBase64) return { error: String(r.error ?? "a part of it could not be voiced") };   // DRAFT
               got.push(Buffer.from(r.audioBase64, "base64")); provider ||= String(r.provider ?? "");
             }
@@ -2007,7 +2060,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const text = typeof b.text === "string" ? b.text : row ? row.entry?.[ecfg.edition] : carried?.entry;
         if (!text) return send(res, 400, { error: "speak {species} or {text}, or host a daemon" });
         // C-303: an INDEX entry is read in the device's voice; any other words in the reader's, as before
-        const how = typeof b.text === "string" ? undefined : store.getSetting("voice.recipe.entry") || ENTRY_VOICE;
+        const how = typeof b.text === "string" ? named : store.getSetting("voice.recipe.entry") || ENTRY_VOICE;
         return answer(PRIORITY.reading, () => readAloud(String(text).replace(/\n/g, " ").slice(0, 600), how));
       }
       if (req.method === "POST" && path === "/api/device/battery") {   // C-63: the handheld's charge, when it changes

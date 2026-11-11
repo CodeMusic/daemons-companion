@@ -38,14 +38,14 @@ export function useReadAloud() {
     const sub = player.addListener("playbackStatusUpdate", (s) => { if (s.didJustFinish) { sub.remove(); done(); } });
   });
   const stop = () => { run.current++; try { player.pause(); } catch { /* nothing playing */ } setReading(null); setSpeaking(false); setSaying(null); };
-  const read = async (key: string, paragraphs: string[]) => {
+  const read = async (key: string, paragraphs: string[], voice?: string) => {
     if (reading === key) return stop();
     const mine = ++run.current;
     setReading(key);
     try {
       await setAudioModeAsync({ playsInSilentMode: true });
       const pieces = sayable(paragraphs);
-      const next = pieces.map(({ text }) => () => readingVoice({ text }));   // each kept on the phone after the first time
+      const next = pieces.map(({ text }) => () => readingVoice(voice ? { text, voice } : { text }));   // each kept on the phone after the first time
       let coming = next.length ? next[0]() : null;
       for (let i = 0; i < next.length && run.current === mine; i++) {
         const spoken = await coming;
@@ -63,8 +63,9 @@ export function useReadAloud() {
 }
 
 // the button, for a chapter or a page: READ ALOUD, or STOP while it reads
-export function ReadAloud({ id, paragraphs, ink, label }: { id: string; paragraphs: string[]; ink?: string; label?: string }) {   // C-238: label, a spell's SAY IT
+// voice (C-323): "book:<id>" -- each book in its own reader's voice; THE NOTEBOOK's pages in the player's
+export function ReadAloud({ id, paragraphs, ink, label, voice }: { id: string; paragraphs: string[]; ink?: string; label?: string; voice?: string }) {   // C-238: label, a spell's SAY IT
   const r = useReadAloud();
   if (!ON_PHONE) return null;
-  return <Action label={r.reading === id ? "STOP READING" : label ?? "READ ALOUD"} onPress={() => r.read(id, paragraphs)} ink={ink} />;   // DRAFT
+  return <Action label={r.reading === id ? "STOP READING" : label ?? "READ ALOUD"} onPress={() => r.read(id, paragraphs, voice)} ink={ink} />;   // DRAFT
 }

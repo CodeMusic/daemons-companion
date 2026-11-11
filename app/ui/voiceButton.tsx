@@ -17,8 +17,9 @@ export const VOICE_WORDS = {   // DRAFT
 };
 const SPIN = ["◐", "◓", "◑", "◒"];
 
-export function VoiceButton({ text, ink, words = VOICE_WORDS }: { text: string; ink?: string; words?: typeof VOICE_WORDS }) {
-  const state = useVoiceState(text);
+// voice (C-323): whose voice reads it -- "daemon" (a dream), "player" (the journal), "book:<id>"; none: the reader's
+export function VoiceButton({ text, ink, words = VOICE_WORDS, voice }: { text: string; ink?: string; words?: typeof VOICE_WORDS; voice?: string }) {
+  const state = useVoiceState(text, voice);
   const player = useAudioPlayer(null);
   const [playing, setPlaying] = useState(false), [spin, setSpin] = useState(0);
   const wanted = useRef(false);
@@ -32,7 +33,7 @@ export function VoiceButton({ text, ink, words = VOICE_WORDS }: { text: string; 
     return () => clearInterval(t);
   }, [state]);
   const play = async () => {
-    const f = wholeVoice(text);
+    const f = wholeVoice(text, voice);
     if (!f) return;
     await setAudioModeAsync({ playsInSilentMode: true });
     player.replace({ uri: f.uri }); player.play(); followVoice(player); setPlaying(true);
@@ -43,7 +44,7 @@ export function VoiceButton({ text, ink, words = VOICE_WORDS }: { text: string; 
     if (playing) { try { player.pause(); } catch { /* nothing */ } setPlaying(false); setSpeaking(false); return; }
     if (state === "ready") return play();
     wanted.current = true;
-    if (state !== "making") makeVoice(text);
+    if (state !== "making") makeVoice(text, voice);
   };
   const label = playing ? words.stop : state === "making" ? `${SPIN[spin % 4]}  ${words.making}${".".repeat(1 + (spin % 3))}` : words[state];
   return (

@@ -1,6 +1,7 @@
 // C-319: THE MIND's ledger of work, and C-318: WHAT'S NEW's spans
 import { describe, expect, it } from "vitest";
 import { Tasks, queuedTask, traceTask, tasksView, usersOf } from "../src/ai/tasks.js";
+import { STOPPED, tiinyChat } from "../src/ai/tiiny.js";
 import { NOTES, digestAsk, digests, keepDigest, readDigest, spanOf, spanText } from "../src/whatsnew.js";
 
 const mem = () => { const m = new Map<string, string>(); return { get: (k: string) => m.get(k) ?? null, set: (k: string, v: string | null) => { if (v === null) m.delete(k); else m.set(k, v); } }; };
@@ -38,6 +39,32 @@ describe("tasks", () => {
     expect(usersOf(view)).toEqual(["B", "the house"]);
     expect(traceTask({ at: "2026-11-10T12:00:00Z", kind: "guide", ring: "anywhere", from: "site", ms: {}, failed: ["n8n"] })).toMatchObject({ state: "failed", error: "n8n" });
     expect(queuedTask({ id: "x", who: "", status: "done", at: 0, ended: 1500 }).ms).toBe(1500);
+  });
+});
+
+describe("tasks, next (C-319)", () => {
+  it("adds up a task's tokens and keeps its sizes", () => {
+    const s = mem(), tasks = new Tasks(s.get, s.set);
+    const t = tasks.open({ kind: "journal", title: "a page", state: "thinking" });
+    tasks.update(t.id, { size: { in: 1200 } }); tasks.update(t.id, { tokens: { in: 300, out: 90 } });
+    tasks.update(t.id, { tokens: { out: 40 } }); tasks.update(t.id, { size: { out: 500 } });
+    expect(tasks.find(t.id)).toMatchObject({ size: { in: 1200, out: 500 }, tokens: { in: 300, out: 130 } });
+  });
+  it("names a queued job by what it is", () => {
+    expect(queuedTask({ id: "a", who: "phone", status: "waiting", at: 0, priority: 1 })).toMatchObject({ kind: "voice", title: "a voice made" });
+    expect(queuedTask({ id: "b", who: "phone", status: "waiting", at: 0, what: "a chapter heard" }).title).toBe("a chapter heard");
+  });
+  it("ends a mind's request when the task is stopped, and counts its tokens when it is not", async () => {
+    const at = { url: "http://t", key: "", model: "m", quick: "", tts: "", asr: "", voice: "" };
+    const hang = ((_u: string, init: RequestInit) => new Promise((_r, no) => init.signal!.addEventListener("abort", () => no(new Error("aborted"))))) as unknown as typeof fetch;
+    const ctl = new AbortController();
+    const asked = tiinyChat(at, "m", "s", [], "hi", hang, 60_000, 50, false, false, { signal: ctl.signal });
+    setTimeout(() => ctl.abort(), 10);
+    await expect(asked).rejects.toThrow(STOPPED);
+    const spent: unknown[] = [];
+    const ok = (async () => new Response(JSON.stringify({ choices: [{ message: { content: "Hello there." } }], usage: { prompt_tokens: 12, completion_tokens: 3 } }))) as unknown as typeof fetch;
+    expect(await tiinyChat(at, "m", "s", [], "hi", ok, 1000, 50, false, false, { spent: (t) => spent.push(t) })).toBe("Hello there.");
+    expect(spent).toEqual([{ in: 12, out: 3 }]);
   });
 });
 

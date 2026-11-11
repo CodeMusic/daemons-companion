@@ -158,11 +158,16 @@ describe("talk that never makes a device wait (C-180)", () => {
 describe("the true voice, and the voices' generation (C-303)", () => {
   let tiiny: import("node:http").Server, tiinyBase = "", speechOk = true;
   const wav = Buffer.concat([Buffer.from("RIFF"), Buffer.alloc(40), Buffer.from([1, 2, 3])]);
+  const asked: { input: string; instructions?: string }[] = [];   // C-323: what each voice was asked for
   beforeAll(async () => {
     const { createServer } = await import("node:http");
     tiiny = createServer((req, res) => {
       if (req.url === "/v1/models") { res.setHeader("content-type", "application/json"); return res.end(JSON.stringify({ data: [{ id: "tiiny-voice" }, { id: "tiiny-9b" }] })); }
-      if (req.url === "/v1/audio/speech") { if (!speechOk) { res.statusCode = 503; return res.end(); } res.setHeader("content-type", "audio/wav"); return res.end(wav); }
+      if (req.url === "/v1/audio/speech") {
+        let raw = ""; req.on("data", (c) => { raw += c; });
+        return req.on("end", () => { try { asked.push(JSON.parse(raw)); } catch { /* not ours */ }
+          if (!speechOk) { res.statusCode = 503; return res.end(); } res.setHeader("content-type", "audio/wav"); res.end(wav); });
+      }
       res.statusCode = 404; res.end();
     });
     await new Promise<void>((r) => tiiny.listen(0, "127.0.0.1", () => r()));
@@ -184,6 +189,23 @@ describe("the true voice, and the voices' generation (C-303)", () => {
     expect(f.final).toBe(false);
     expect(f.generation).toBe("3.0");
     speechOk = true;
+  });
+
+  it("reads words in the voice named, and never in parts (C-323)", async () => {
+    await post("/api/talk/settings", { tiiny: { url: tiinyBase, tts: "tiiny-voice", model: "tiiny-9b" } });
+    const { BOOK_VOICE } = await import("../src/ai/voiceof.js");
+    asked.length = 0;
+    await post("/api/ai/speak", { text: "A page of the book.", voice: "book:subtle" });
+    expect(asked.at(-1)?.instructions).toBe(BOOK_VOICE.subtle);
+    await post("/api/ai/speak", { text: "A page of my notes.", voice: "book:notebook" });
+    expect(asked.at(-1)?.instructions).toContain("A young traveller's voice");
+    await post("/api/ai/speak", { text: "A dream I had. It went on.", whole: true, voice: "player" });
+    expect(asked.at(-1)?.instructions).toContain("A young traveller's voice");
+    asked.length = 0;
+    const r = await post("/api/ai/speak", { text: "One. Two, and then three. Four is a longer sentence than the others are.", daemon: true, stream: true });
+    expect(r.stream).toMatch(/^\/api\/ai\/voice\//);
+    expect(asked).toHaveLength(1);                          // the whole answer in one voice, not a voice a sentence
+    expect(asked[0].input).toContain("Four is a longer sentence");
   });
 
   it("tells the generation on its own, and MAKE THE VOICES AGAIN moves it", async () => {

@@ -11,7 +11,7 @@ which relates to the profile feature". Decided the same day by multiple choice; 
 | How a trade works | **Send it AWAY, swap at SYNC.** A daemon already AWAY is offered on the hub; another player takes it with one of theirs; each player's next SYNC writes the daemon they receive into the slot their own left. | Nobody needs to be online at the same moment, and it runs on the save writing the companion already does (C-185's gift, C-184's marker). The game's own TRADE CENTER over an emulated link cable is a later ticket (C-221). |
 | Two kinds | **TRADE IT** (it becomes theirs) or **LEND IT** (a loan both sides agree to). | A loan is the owner's to **call home** from the app. Each side then hands back the daemon it borrowed, as it is now, and gets its own back. |
 | Rules | **As in FireRed.** The original trainer is kept (boosted experience, obedience up to your MARKS), CONTENT and CONTEXT trade freely, and **trade evolutions happen as a daemon arrives**. A loaned daemon does not trade-evolve. | It is FireRed's rule. Invariant 3 means the type chart is the same on both sides anyway. |
-| Who can reach it | **The home network and the tailnet.** The hub (CoreMP135) is the exchange; nothing is on the internet. | A public lobby, through the n8n relay or similar, plus proximity links (Bluetooth, LoRa, NFC) is its own decision (C-222). |
+| Who can reach it | **The home network and the tailnet.** The hub (CoreMP135) is the exchange; nothing is on the internet. | Off the tailnet is decided (C-278, 2026-11-03): **`api.daemons.codemusic.ca` through a Cloudflare Tunnel to roverbyteseer**, nearer release. Proximity links (Bluetooth, LoRa, NFC) are C-222's and C-246's. |
 | Identity | **A player name plus the device's pairing; a password is optional**, and only for joining as the same player from a second device. | Kids may play: there is no email and nothing they must remember. |
 | Fairness | **A daemon is locked while it is offered, and the swap is atomic.** | See below. |
 
@@ -76,8 +76,12 @@ which relates to the profile feature". Decided the same day by multiple choice; 
      **Tiiny AI** gives roverbyteseer room for many requests and larger models, which C-220's chats would use. What
      already fits it: the exchange speaks HTTP with a per-player token, and a companion's THE HUB takes any address,
      so pointing it at the public exchange is a change of address. What it will need: https, accounts and abuse
-     handling decided first (kids), and the home hub passing its players' trades through.
-   - **Friends and gifts** (C-223): a friends list, a gift with no return (an item or a daemon), and shared dreams.
+     handling decided first (kids), and the home hub passing its players' trades through. **Made a decision
+     2026-11-03 (C-278)**: `api.daemons.codemusic.ca` -> a **Cloudflare Tunnel** -> roverbyteseer, never the home hub.
+     The tunnel dials out, so no port is opened and Cloudflare holds https and the abuse; roverbyteseer serves only
+     what is shared (accounts, the exchange, friends, THE COMMONS, the Tiiny's AI), and a home hub keeps its devices,
+     saves and settings and dials out to it. For beta testers before then, Tailscale Funnel on roverbyteseer.
+   - ~~**Friends and gifts** (C-223)~~ -- built 2026-10-29: a friends list, a gift with no return (an item or a daemon), and shared dreams.
    - **Battles** (C-224): one player's daemons against another's, through the hub, outside the link cable as well.
 
 Every word the player reads is DRAFT.

@@ -53,7 +53,7 @@ export function SubtleBook({ b }: { b: SubtleT }) {
           <YStack width={wide ? Math.max(0, w - 2 * 18 - 94 * 3 - 18) : "100%"} gap={10}>
             <Text fontSize={20} lineHeight={27} fontWeight="700" color={C.ink}>{e.title}</Text>
             <YStack height={2} backgroundColor={C.pink} width={48} />
-            <ReadAloud id={`subtle-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={C.pink} />
+            <ReadAloud id={`subtle-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={C.pink} voice="book:subtle" />
             {e.paragraphs.map((p, i) => (
               <SpokenPara key={i} id={`subtle-${at}`} i={i + 1}>
                 <Text fontSize={16} lineHeight={25} color={p.voice === "asking" ? C.faint : C.ink}

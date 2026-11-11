@@ -4,7 +4,7 @@
 // speaks); the ones given here follow it in the order given, then the house's boards, then n8n. A key is kept in the
 // hub's store and never shown again. Whether an endpoint is AT HOME (a private, local or tailnet address) decides
 // whether THE MIND's "only at home" ring may use it (C-307). No node: imports -- the phone reads atHome from here too.
-import { tiinyChat, tiinyModels, tiinyUrl, type TiinyAt, type Turn } from "./tiiny.js";
+import { STOPPED, tiinyChat, tiinyModels, tiinyUrl, type TiinyAt, type Turn, type WriteJob } from "./tiiny.js";
 
 export type Endpoint = { id: string; name: string; url: string; key: string; model: string };
 export type EndpointView = Omit<Endpoint, "key"> & { keySet: boolean; home: boolean };
@@ -78,9 +78,9 @@ export const modelsOn = (e: Endpoint, f: typeof fetch = fetch, ms = 5000) => tii
 const SIDE = /asr|tts|whisper|speech|voice|image|flux|embed|rerank|ocr|music|3d|dall-e|moderation/i;
 export const modelOf = (e: Endpoint, held: string[]) => e.model || held.find((m) => !SIDE.test(m)) || "";
 export async function chatOn(e: Endpoint, model: string, system: string, history: Turn[], said: string,
-                             f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false): Promise<string> {
-  try { return await tiinyChat(asAt(e), model, system, history, said, f, ms, maxTokens, think, !atHome(e.url)); }
-  catch (err) { throw new Error(`${e.name}: ${(err as Error).message.replace(/^the Tiiny /, "")}`); }
+                             f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false, job?: WriteJob): Promise<string> {
+  try { return await tiinyChat(asAt(e), model, system, history, said, f, ms, maxTokens, think, !atHome(e.url), job); }
+  catch (err) { if ((err as Error).message === STOPPED) throw err; throw new Error(`${e.name}: ${(err as Error).message.replace(/^the Tiiny /, "")}`); }
 }
 
 // Each one's health, for the dots (C-211) and so the chain skips one that is not answering

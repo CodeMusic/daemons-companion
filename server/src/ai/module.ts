@@ -54,11 +54,13 @@ export async function listModels(base: string, timeoutMs = 5000): Promise<Module
 
 // A chat, streamed: the time to its first words (what a device waits on) and to its last
 export async function chat(base: string, model: string, messages: { role: string; content: string }[],
-                           opts: { maxTokens?: number; timeoutMs?: number; firstWithinMs?: number; onPiece?: (s: string) => void } = {}): Promise<Said> {
+                           opts: { maxTokens?: number; timeoutMs?: number; firstWithinMs?: number; onPiece?: (s: string) => void; signal?: AbortSignal } = {}): Promise<Said> {
   const t0 = performance.now();
   // firstWithinMs: no first words by then and the chat is given up, as LATE (HUB.md Phase 5 item 4: the talk goes elsewhere)
   const stop = new AbortController(), whole = setTimeout(() => stop.abort(), opts.timeoutMs ?? 120000);
   let late = false;
+  const outer = () => stop.abort();                          // C-319 next: stopped from THE MIND AT WORK
+  opts.signal?.addEventListener("abort", outer, { once: true });
   const first = opts.firstWithinMs ? setTimeout(() => { late = true; stop.abort(); }, opts.firstWithinMs) : undefined;
   try {
   const r = await fetch(`${trim(base)}/v1/chat/completions`, {
@@ -89,7 +91,8 @@ export async function chat(base: string, model: string, messages: { role: string
   }
   take(rest);
   return { text, firstMs, totalMs: performance.now() - t0, pieces, tokens };
-  } catch (e) { throw late ? new Error(LATE) : e; } finally { clearTimeout(whole); clearTimeout(first); }
+  } catch (e) { throw late ? new Error(LATE) : opts.signal?.aborted ? new Error("stopped") : e; }
+  finally { clearTimeout(whole); clearTimeout(first); opts.signal?.removeEventListener("abort", outer); }
 }
 export const LATE = "the module had not begun an answer in time";
 

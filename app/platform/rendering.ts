@@ -16,8 +16,8 @@ type Making = { id: string | null; body: Record<string, unknown>; at: number; as
 const GIVE_UP_MS = 45 * 60 * 1000;           // past the hub's half hour, and a few tries more
 const POLL_MS = 3000, ASK_AGAIN_MS = 15000;
 
-// What one piece is known by: all of its words
-export const wholeKey = (text: string) => `whole:${text}`;
+// What one piece is known by: all of its words, and the voice it is read in (C-323: "daemon", "player", "book:<id>"...)
+export const wholeKey = (text: string, voice?: string) => voice ? `whole:${voice}:${text}` : `whole:${text}`;
 
 const ledger = () => new File(Paths.document, "voices-making.json");
 const making: Record<string, Making> = (() => {
@@ -32,23 +32,24 @@ function write() {
 }
 
 // A voice kept for these words: under its own name, or a short piece's older one (read aloud before 2026-11-07)
-export function wholeVoice(text: string): File | null {
-  return keptVoice(wholeKey(text)) ?? (text.length <= 600 ? keptVoice(`text:${text}`) : null);
+// (a piece in a voice of its own has no older name: it was read in the reader's voice before)
+export function wholeVoice(text: string, voice?: string): File | null {
+  return keptVoice(wholeKey(text, voice)) ?? (!voice && text.length <= 600 ? keptVoice(`text:${text}`) : null);
 }
 
-export function voiceState(text: string): VoiceState {
+export function voiceState(text: string, voice?: string): VoiceState {
   if (!ON_PHONE) return "none";                       // the site keeps no voices
-  if (wholeVoice(text)) return "ready";
-  if (making[wholeKey(text)]) return "making";
-  return failed.has(wholeKey(text)) ? "failed" : "none";
+  if (wholeVoice(text, voice)) return "ready";
+  if (making[wholeKey(text, voice)]) return "making";
+  return failed.has(wholeKey(text, voice)) ? "failed" : "none";
 }
 
 // Begin making it, if it is not kept or being made already
-export function makeVoice(text: string) {
-  const k = wholeKey(text);
-  if (wholeVoice(text) || making[k]) return;
+export function makeVoice(text: string, voice?: string) {
+  const k = wholeKey(text, voice);
+  if (wholeVoice(text, voice) || making[k]) return;
   failed.delete(k);
-  making[k] = { id: null, body: { text, whole: true }, at: Date.now(), asked: 0 };
+  making[k] = { id: null, body: { text, whole: true, ...(voice ? { voice } : {}) }, at: Date.now(), asked: 0 };
   write(); changed();
   ask(k).finally(soon);
 }
@@ -102,8 +103,8 @@ AppState.addEventListener("change", (s) => { if (s === "active") soon(); });
 soon();
 
 // The state of a piece's voice, kept current while the screen shows it
-export function useVoiceState(text: string | null): VoiceState {
+export function useVoiceState(text: string | null, voice?: string): VoiceState {
   const [, again] = useState(0);
   useEffect(() => { const f = () => again((n) => n + 1); heard.add(f); return () => { heard.delete(f); }; }, []);
-  return text ? voiceState(text) : "none";
+  return text ? voiceState(text, voice) : "none";
 }

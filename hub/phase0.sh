@@ -110,9 +110,10 @@ apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold
 
 say "apt: the packages the hub uses"
 # python3-serial: the cable bridges. spidev + libgpiod + gpiod: the LoRa radio. sqlite3 + time: the server's store and
-# timings. ffmpeg: the server's voice (voice.ts converts with it). evtest, python3-pil, python3-evdev: the screen.
+# timings. ffmpeg: the server's voice (voice.ts converts with it). evtest, python3-pil, python3-evdev: the screen;
+# python3-qrcode its pairing code as a QR (C-170).
 apt-get -y install curl git python3-serial python3-spidev python3-libgpiod gpiod sqlite3 time ffmpeg evtest \
-  python3-pil python3-evdev usbutils
+  python3-pil python3-evdev python3-qrcode usbutils
 
 say "probe: what this board has (read only)"
 echo "--- system";   grep PRETTY /etc/os-release; uname -r; df -h / | tail -1; free -m | sed -n 2p

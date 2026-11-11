@@ -10,7 +10,7 @@ export const PRIORITY = { inHand: 0, reading: 1, chatter: 2 } as const;   // low
 // the user is not able to wait, when they come back it play right away")
 const KEEP_MS = 30 * 60 * 1000;
 
-type Job<R> = { id: string; who: string; priority: number; at: number; run: () => Promise<R>;
+type Job<R> = { id: string; who: string; priority: number; at: number; run: () => Promise<R>; what?: string;
                 status: "waiting" | "thinking" | "done" | "failed"; result?: R; error?: string; ended?: number };
 
 export class TalkJobs<R = unknown> {
@@ -20,10 +20,10 @@ export class TalkJobs<R = unknown> {
   constructor(private at = 2, private now = () => Date.now()) {}
 
   // A job queued; its id at once
-  start(who: string, priority: number, run: () => Promise<R>): string {
+  start(who: string, priority: number, run: () => Promise<R>, what?: string): string {   // what: its name in THE MIND's ledger
     this.sweep();
     const id = randomBytes(12).toString("base64url");
-    const job: Job<R> = { id, who, priority, at: this.now(), run, status: "waiting" };
+    const job: Job<R> = { id, who, priority, at: this.now(), run, status: "waiting", ...(what ? { what } : {}) };
     this.jobs.set(id, job);
     let i = this.waiting.findIndex((w) => w.priority > priority);          // behind its equals, ahead of the less urgent
     if (i < 0) i = this.waiting.length;
@@ -44,9 +44,9 @@ export class TalkJobs<R = unknown> {
 
   get load() { return { running: this.running, waiting: this.waiting.length }; }
   // C-319: every job it still holds, for THE MIND's ledger -- who asked, how it stands, when (never what was said)
-  list(): { id: string; who: string; status: Job<R>["status"]; at: number; ended?: number; error?: string }[] {
+  list(): { id: string; who: string; status: Job<R>["status"]; at: number; ended?: number; error?: string; priority: number; what?: string }[] {
     this.sweep();
-    return [...this.jobs.values()].map((j) => ({ id: j.id, who: j.who, status: j.status, at: j.at, ...(j.ended !== undefined ? { ended: j.ended } : {}), ...(j.error ? { error: j.error } : {}) }));
+    return [...this.jobs.values()].map((j) => ({ id: j.id, who: j.who, status: j.status, at: j.at, priority: j.priority, ...(j.what ? { what: j.what } : {}), ...(j.ended !== undefined ? { ended: j.ended } : {}), ...(j.error ? { error: j.error } : {}) }));
   }
 
   private next() {

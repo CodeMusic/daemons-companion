@@ -400,7 +400,7 @@ export function GuideBook({ g }: { g: GuideBookT }) {
         <Text {...mono} fontSize={11} color={BOOK.faint}>{sec.label.toUpperCase() === sec.heading.toUpperCase() ? sec.label : `${sec.label} · ${sec.heading.toUpperCase()}`}</Text>
         <Text fontSize={20} lineHeight={27} fontWeight="700" color={BOOK.ink}>{e.title}</Text>
         <YStack height={2} backgroundColor={BOOK.cyan} width={48} />
-        <ReadAloud id={`guide-${at}`} paragraphs={[e.title, ...e.paragraphs]} ink={BOOK.cyan} />
+        <ReadAloud id={`guide-${at}`} paragraphs={[e.title, ...e.paragraphs]} ink={BOOK.cyan} voice="book:guide" />
         {e.paragraphs.map((p, i) => <SpokenPara key={i} id={`guide-${at}`} i={i + 1}><Text fontSize={16} lineHeight={25} color={BOOK.ink}>{p}</Text></SpokenPara>)}
         {/* the game ends the book on a QR code; here, the link it opens */}
         {e.link ? (
@@ -556,7 +556,7 @@ export function NotebookPage({ page, colours, outline, open: startOpen = false }
         : page.kind === "song" && page.key && page.notes?.length ? <SongStaff keyName={page.key} notes={page.notes} colours={colours} outline={outline} />
         : <Small>{page.kind === "song" ? "The game draws its notes in the key you played it in." : "Written by the game from your save each time you open it there."}</Small>) : null}
       {open && page.text && page.kind !== "reads" ? (           /* C-208: the page read aloud */
-        <ReadAloud id={`page-${page.title}`} paragraphs={[page.title, ...page.text.split(/\n\n+/).map((par) => par.replace(/\n/g, " "))]} />
+        <ReadAloud id={`page-${page.title}`} paragraphs={[page.title, ...page.text.split(/\n\n+/).map((par) => par.replace(/\n/g, " "))]} voice="book:notebook" />
       ) : null}
       {/* T-402: the page ends on a QR code in the game; here, the song or post it opens (DRAFT) */}
       {open && page.link ? <Action label={linkLabel(page.link)} onPress={() => { Linking.openURL(page.link!).catch(() => {}); }} /> : null}

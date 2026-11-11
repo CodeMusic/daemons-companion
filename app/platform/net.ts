@@ -112,7 +112,7 @@ export class Unreachable extends Error { name = "Unreachable"; }
 // the companion cannot be reached, and sent in order when it answers. Only what needs an answer NOW is not kept --
 // talking, a voice, a SYNC of the save, the Mac's own dialogs, pairing, and the handheld told to do something this
 // moment (run a routine, send a remote, join a network). A setting is kept once: only the latest of each is sent.
-export const NOT_KEPT = /^\/api\/(ai\/|sync|save\/|game\/|where\/find|device\/talk\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
+export const NOT_KEPT = /^\/api\/(ai\/|paint$|sync|save\/|game\/|where\/find|device\/talk\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
 
 export const LATEST_ONLY = /^\/api\/(settings|talk\/settings|device\/settings|profile)$/;
 
@@ -298,7 +298,7 @@ export const POLLED = /^\/api\/(device\/(link|state|commands)|broadcasts)/;
    // the review, 2026-10-18: news and the handheld's polls too
 // An answer the companion gives once and then forgets -- the board's waiting commands (taken as they are answered): never
 // kept, never served from what was kept, or an old command reaches the board again (the review, 2026-10-18)
-export const ONE_SHOT = /^\/api\/(device\/commands|device\/talk\/|save\/|game\/)/;   // C-188: a save is never kept; C-216: nor a testing build; a talk's answer (the review: kept, then served first, mid-talk)
+export const ONE_SHOT = /^\/api\/(device\/commands|device\/talk\/|paintings\/|save\/|game\/)/;   // C-188: a save is never kept; C-216: nor a testing build; a talk's answer (the review: kept, then served first, mid-talk)
 
 export async function liveAndKeep<T>(path: string, servedKept: () => boolean): Promise<T> {
   const j = await apiLive<T>(path);
@@ -455,8 +455,9 @@ export async function artByJson(path: string): Promise<string> {
   const face = /^\/art\/arcana\/((?:reason|instinct|above|below|spellcraft|dawn)(?:_shiny)?|back)\.png$/.exec(path);   // C-232: a card's face; C-273: ABOVE, BELOW, the back
   const shelf = /^\/art\/books\/([a-z]{1,16})\.png$/.exec(path);   // C-320: a book's cover on the LIBRARY's shelf
   const symbol = /^\/art\/symbol\/([a-z]|exclamation_mark|question_mark)\.png$/.exec(path);   // C-315: a SYMBOL form on a card
-  if (sub || face || shelf || symbol) {
-    const { png } = await api<{ png: string }>(face ? `/api/art?arcana=${face[1]}` : shelf ? `/api/art?book=${shelf[1]}`
+  const painting = /^\/art\/paintings\/([0-9a-f]{16})\.png$/.exec(path);   // C-338: a painting from THE EASEL
+  if (sub || face || shelf || symbol || painting) {
+    const { png } = await api<{ png: string }>(painting ? `/api/art?painting=${painting[1]}` : face ? `/api/art?arcana=${face[1]}` : shelf ? `/api/art?book=${shelf[1]}`
       : symbol ? `/api/art?symbol=${symbol[1]}` : `/api/art?${sub![1]}=${sub![2]}`);
     keepArt(path, `data:image/png;base64,${png}`);
     return ART.get(path)!;

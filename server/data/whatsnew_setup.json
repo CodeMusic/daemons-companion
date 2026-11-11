@@ -97,6 +97,22 @@
    ],
    "wiki": "Settings#in-the-app",
    "draft": true
+  },
+  "C-340": {
+   "title": "THE LOCAL CLOUD",
+   "where": "a second always-on computer beside the hub (seer/ in this repository)",
+   "needs": [
+    "a Mac or a Linux box that stays on, beside the hub",
+    "a Tiiny, if you have one (optional)",
+    "about 19 GB free, for sleep sounds"
+   ],
+   "steps": [
+    "On that computer, clone the companion (github.com/CodeMusic/daemons-companion) and run seer/bindSeer.sh. seer/README.md tells the whole of it.",
+    "Answer its questions: a Tiiny or not (its address and key, from tiiny auth key), sleep sounds, local models, THE COMMONS, ComfyUI, and an OpenRouter key if you want one.",
+    "When it finishes it prints what to give the hub (seer/out/hub.txt): its address and key go in SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY.",
+    "Run it again any time: it offers your last answers. seer/bindSeer.sh --plan says what it would do and installs nothing."
+   ],
+   "draft": true
   }
  }
 }

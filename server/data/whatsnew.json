@@ -1,6 +1,151 @@
 {
- "latest": 973,
+ "latest": 974,
  "builds": [
+  {
+   "build": 974,
+   "commit": "e8194cd",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-339",
+     "title": "WHAT'S NEW: SET UP opens each new thing's own setup steps",
+     "lines": [
+      "WHAT'S NEW's SET UP — a section that needs a device, a server or a setting opens its own setup steps"
+     ]
+    },
+    {
+     "ticket": "C-340",
+     "title": "The local cloud, packaged",
+     "lines": [
+      "The local cloud packaged (seer/) — seer/bindSeer.sh asks (a Tiiny or not, sleep sounds + ACE-Step, local models, THE COMMONS, ComfyUI, an OpenRouter key), writes seer/.seer, and make.py writes LiteLLM's config, n8n's env and the workflows from it so they agree: four names (seer-talk, -quick, -hear, -voice) whatever answers them; n8n in our docker compose; launchd or systemd; —adopt for a machine set up by hand. The Tiiny's voice, sleep sounds, Whisper and the companion's n8n workflows move here from DAEMONS ai/"
+     ],
+     "setup": {
+      "title": "THE LOCAL CLOUD",
+      "where": "a second always-on computer beside the hub (seer/ in this repository)",
+      "needs": [
+       "a Mac or a Linux box that stays on, beside the hub",
+       "a Tiiny, if you have one (optional)",
+       "about 19 GB free, for sleep sounds"
+      ],
+      "steps": [
+       "On that computer, clone the companion (github.com/CodeMusic/daemons-companion) and run seer/bindSeer.sh. seer/README.md tells the whole of it.",
+       "Answer its questions: a Tiiny or not (its address and key, from tiiny auth key), sleep sounds, local models, THE COMMONS, ComfyUI, and an OpenRouter key if you want one.",
+       "When it finishes it prints what to give the hub (seer/out/hub.txt): its address and key go in SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY.",
+       "Run it again any time: it offers your last answers. seer/bindSeer.sh --plan says what it would do and installs nothing."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-341",
+     "title": "A release brings the docs current, from WHAT'S NEW",
+     "lines": [
+      "A release brings the docs current from WHAT'S NEW — app/AGENTS.md and C-210's procedure run DAEMONS tools/releasedocs.py —companion at every build; a build never regenerates book audio; the first run's wiki gaps listed"
+     ]
+    },
+    {
+     "ticket": "C-272",
+     "title": "The arcana's words, rewritten as prophecy, and THE HERMETIC LAYER's two decks: ABOVE and BELOW",
+     "lines": [
+      "THE HERMETIC LAYER's eight redrafted faces, as the user picked them (2026-11-11) — I BELOW DEDUCTION, II BELOW RECALL, VI ABOVE MULTIMAL, VIII BELOW A loss, seen from after, is a fold. (WRAPAROUND), X ABOVE Reach as it passes. Rare is its gift., XII BELOW Not stopped. Resting, and ready. (STANDBY), XIII ABOVE Set it down, and walk on lighter., XXI BELOW POSTULATE; prophecies with them (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-226",
+     "title": "Personal accounts for players",
+     "lines": [
+      "ACCOUNTS, piece 1 — the server (DRAFT)",
+      "ACCOUNTS, piece 2 drafted — the name words and their check (DRAFT)",
+      "Piece 2 done — the user kept every name word (48 + 48)",
+      "ACCOUNTS, piece 3 — the GUARDIAN card in the app (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-273",
+     "title": "The CARDS section in each book, by touch",
+     "lines": [
+      "THE HERMETIC LAYER's cards seen on the site (MIND · BODY · SPIRIT, The Deck Below, the tile's backs); wide, the modes' column 240 so PAST · PRESENT · FUTURE keeps to one line"
+     ]
+    },
+    {
+     "ticket": "C-342",
+     "title": "THE ENGINE ROOM does what the command line did",
+     "lines": [
+      "(DRAFT): THE ENGINE ROOM does what the command line did"
+     ]
+    },
+    {
+     "ticket": "C-296",
+     "title": "SPIRITS in the companion",
+     "lines": [
+      "SPIRITS' leftovers (DRAFT) — the companion's four running totals (KEPT, BOND, WORK, PORTION) over four weeks of its log, a line in the brief, the tone on its pictures (lighter in good spirits, darker in low, the hue kept), and a SPIRITS card in THE MIND",
+      "The tone in the picture's key — core.ts artKeyOf adds ~<tone> when there is one (every key as it is unchanged), so a board fetches a daemon's new picture when its spirits move"
+     ]
+    },
+    {
+     "ticket": "C-191",
+     "title": "The planner",
+     "lines": [
+      "THE ROAD AHEAD's WAYS OPENED — the map's gates the steps done have passed, by what held them, latest first; none held by a step still ahead (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-334",
+     "title": "Sounds for sleep, made for him",
+     "lines": [
+      "/api/sleep answers in one read of the state — it took seven seconds through selfFacts (three reads and four weeks of the log), past the watch's four, so the Ultra's SLEEP SOUNDS said the hub had no piece and never asked for one"
+     ],
+     "setup": {
+      "title": "SLEEP SOUNDS",
+      "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+      "needs": [
+       "the hub",
+       "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
+       "headphones, for DRIFT DOWN"
+      ],
+      "steps": [
+       "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
+       "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
+       "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+       "It plays for thirty minutes and fades over the last ten.",
+       "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+      ],
+      "wiki": "Nights-and-dreams",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-344",
+     "title": "Panels hold still while the app refreshes",
+     "lines": [
+      "Panels hold still while the app refreshes"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "The header's button is always WHAT'S NEW, and WHAT'S NEW opens over the whole app"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.349.1 (MUSAI followers, the third book's covers)",
+      "Knows the game's ROM release v11.350.1 (T-447 pair 7, the S.S. ANNE)",
+      "Knows the game's ROM release v11.351.1 (DAEMONS 981c22cd)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "The third book's three covers regenerated (T-519, the user, 2026-11-11; DRAFT): the night half's tablet mirrored in a still pool, the dawn half's Christmas star, and the mended cover holding both on indigo boards"
+     ]
+    }
+   ]
+  },
   {
    "build": 973,
    "commit": "df8da3a",

@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { cardOf, cardOfDay, deckSize, draw, SHINY_ONE_IN, SPREAD } from "../src/arcana.js";
+import { cardOf, cardOfDay, deckSize, draw, SHINY_ONE_IN, SPREAD, symbolForm } from "../src/arcana.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national: number; art: { front: string } }>;
@@ -125,5 +125,19 @@ describe("C-239, C-240: SPELLCRAFT, and the thirteen", async () => {
     const c = thirteenOfDay("2026-10-31", "ROVER1");
     expect(c.species).toBeGreaterThan(0);
     expect(thirteen.cards.every((t) => t.species.length > 0)).toBe(true);
+  });
+});
+
+describe("C-315: SYMBOL on a card", () => {
+  it("shows the form for its keyword's first letter", () => {
+    expect(symbolForm("INCANTATION")).toBe("i");
+    expect(symbolForm("beginnings")).toBe("b");
+    expect(symbolForm("!")).toBe("exclamation_mark");
+    expect(symbolForm("")).toBe("question_mark");
+    const dealt = Array.from({ length: deckSize() }, (_, n) => ["reason", "instinct", "above", "below", "spellcraft"]
+      .map((side) => { try { return cardOf(n, side as any, false); } catch { return null; } })).flat()
+      .filter((c) => c?.name === "SYMBOL");
+    expect(dealt.length).toBeGreaterThan(0);
+    for (const c of dealt) expect(c!.art).toBe(`/art/symbol/${symbolForm(c!.keyword)}.png`);
   });
 });

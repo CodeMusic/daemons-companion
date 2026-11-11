@@ -359,7 +359,11 @@ function speciesPng(species: string, season: string | null = null): Buffer | nul
   const key = season ? `${species}_${season}` : species;
   if (speciesPngCache.has(key)) return speciesPngCache.get(key)!;
   const row = SPECIES[species];
-  const rel = season ? row?.seasons?.[season]?.art : row?.art?.front && row.art.front.split("/").pop().replace("_front.png", ".png");
+  // C-315: a species drawn as several forms keeps them in a folder of its own (SYMBOL: gfx/daemons/symbol/a_front.png ->
+  // art/symbol/a.png); the INDEX shows its first, as the game's entry does
+  const front: string | undefined = row?.art?.front, parts = front?.split("/") ?? [];
+  const rel = season ? row?.seasons?.[season]?.art
+    : front && (parts.length > 3 && parts[parts.length - 2] !== "daemons" ? `${parts[parts.length - 2]}/` : "") + parts[parts.length - 1].replace("_front.png", ".png");
   const file = rel && join(ART_DIR, rel);
   const png = file && existsSync(file) ? readFileSync(file) : null;
   const body = png && row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;
@@ -2229,6 +2233,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
         // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
+        if (q.has("symbol")) {   // C-315: a SYMBOL form, for a phone away
+          const f = q.get("symbol") ?? "", file = join(ART_DIR, "symbol", `${/^([a-z]|exclamation_mark|question_mark)$/.test(f) ? f : "-"}.png`);
+          return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such form" });
+        }
         if (q.has("book")) {   // C-320: a book's cover on the LIBRARY's shelf, for a phone away
           const file = join(ART_DIR, "books", `${/^[a-z]{1,16}$/.test(q.get("book") ?? "") ? q.get("book") : "-"}.png`);
           return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such cover" });
@@ -2268,6 +2276,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && bookArt) {
         const file = join(ART_DIR, `${bookArt[1]}_${bookArt[2]}.png`);
         if (!existsSync(file)) return send(res, 404, { error: "no such picture" });
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(readFileSync(file));
+      }
+      // C-315: SYMBOL's letter forms, one for each card that deals it (data/art/symbol/<form>.png)
+      const symbolArt = path.match(/^\/art\/symbol\/([a-z]|exclamation_mark|question_mark)\.png$/);
+      if (req.method === "GET" && symbolArt) {
+        const file = join(ART_DIR, "symbol", `${symbolArt[1]}.png`);
+        if (!existsSync(file)) return send(res, 404, { error: "no such form" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(readFileSync(file));
       }

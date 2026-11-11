@@ -34,10 +34,20 @@ export const BACK = "/art/arcana/back.png";                        // C-273: one
 export type Card = { n: number; roman: string; side: Side; keyword: string; phrase: string; prophecy?: string; species: number;
                      name: string; shiny: boolean; art: string; face: string; at?: string };
 
+// C-315 (the user, 2026-11-10, by multiple choice: "Card's keyword letter"): SYMBOL is drawn as its letter forms (DAEMONS
+// gfx/daemons/symbol/), so a card that deals it shows the form for its keyword's first letter -- INCANTATION, I. The
+// forms are data/art/symbol/<form>.png (a..z, exclamation_mark, question_mark), exported by DAEMONS companion_export.
+export const symbolForm = (keyword: string) => {
+  const c = keyword.trim().charAt(0).toLowerCase();
+  return /[a-z]/.test(c) ? c : c === "!" ? "exclamation_mark" : "question_mark";
+};
+const artOf = (name: string, species: number, keyword: string) =>
+  name === "SYMBOL" ? `/art/symbol/${symbolForm(keyword)}.png` : `/art/species/${species}.png`;
+
 export function cardOf(n: number, side: Side, shiny: boolean): Card {
   const c = DECK[n], f = c[side], species = BY_NAME.get(f.species) ?? 0;
   return { n: c.n, roman: c.roman, side, keyword: f.keyword, phrase: f.phrase, ...(f.prophecy ? { prophecy: f.prophecy } : {}), species,
-           name: f.species, shiny, art: `/art/species/${species}.png`, face: `/art/arcana/${side}${shiny ? "_shiny" : ""}.png` };
+           name: f.species, shiny, art: artOf(f.species, species, f.keyword), face: `/art/arcana/${side}${shiny ? "_shiny" : ""}.png` };
 }
 export const deckSize = () => DECK.length;
 
@@ -55,7 +65,7 @@ export const isHalloween = (date: string) => date.slice(5) === "10-31";
 export function thirteenOfDay(date: string, who = ""): Card {
   const h = hash(`${date}|${who}|thirteen`), t = THIRTEEN[h % THIRTEEN.length], species = BY_NAME.get(t.species) ?? 0;
   return { n: h % THIRTEEN.length, roman: t.n, side: "spellcraft", keyword: t.keyword, phrase: t.phrase, species, name: t.species,
-           shiny: false, art: `/art/species/${species}.png`, face: "/art/arcana/spellcraft.png" };
+           shiny: false, art: artOf(t.species, species, t.keyword), face: "/art/arcana/spellcraft.png" };
 }
 // a card, or a spread of three (no card twice in one spread) -- from one of the book's two decks, or both as one;
 // C-273: three are PAST / PRESENT / FUTURE, or MIND / BODY / SPIRIT

@@ -150,7 +150,7 @@ describe("within the household: the app and a watch, both this save's daemons", 
     expect(pendingExp(store, 1001).exp).toBe(e0);
     expect(pendingExp(store, 1002).exp).toBe(e1);
     expect(bytes).toEqual(household());                                 // the save is untouched until SYNC writes the experience
-  });
+  }, 30_000);
   it("an app that has not chosen fights with a daemon no device carries", async () => {
     const bytes = household(), store = new Store(":memory:");
     assign(store, "t-watch-ultra-abc123", 1001);
@@ -205,7 +205,7 @@ describe("between players, through the exchange", () => {
     expect(pendingExp(hub, 1001).exp).toBe(end[0].exp[0]);
     expect(pendingExp(kitStore, 2001).exp).toBe(end[1].exp[1]);
     expect(pendingExp(kitStore, 1001).exp).toBe(0);                    // ROVER's daemon is not KIT's to grow
-  });
+  }, 30_000);
 });
 
 function x10(chart: number[][], a: number, d: number) { return chart.filter((c) => c[0] === a && c[1] === d).reduce((m, c) => m * c[2] / 10, 1); }

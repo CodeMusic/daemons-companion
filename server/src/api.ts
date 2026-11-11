@@ -90,6 +90,7 @@ import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
+import { accountsRelay } from "./accountslink.js";   // C-226
 import { BATTLE_PATHS, battleRoute } from "./battleroute.js";   // C-328
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
@@ -1398,6 +1399,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const r = await commonsFriend(store, what, b);
         return send(res, r?.error ? 400 : 200, r);
       }
+      // C-226: ACCOUNTS -- passed to the linked commons, the device's tokens with it (accountslink.ts)
+      if (req.method === "POST" && path.startsWith("/api/accounts/")) { const r = await accountsRelay(store, path, await body(req)); return send(res, r.status, r.body); }
       if (req.method === "GET" && path === "/api/manual") return send(res, 200, await fetchManualText(store));   // C-233: the manual as words, for a device
       // C-328: BATTLE -- a request to any device online here (or a player on the exchange), turns, a winner (battleroute.ts)
       if (BATTLE_PATHS.includes(path)) {

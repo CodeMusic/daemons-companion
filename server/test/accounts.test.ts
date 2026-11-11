@@ -161,3 +161,30 @@ describe("ACCOUNTS on the commons (accounts_api.ts)", () => {
     expect(fresh.body.guardian.profiles).toEqual([]);                                                       // a new, empty guardian
   });
 });
+
+describe("ACCOUNTS through a home's hub (accountslink.ts), and the dev sign-in", () => {
+  it("passes the device's tokens to the linked commons as headers, and asks with GET when told", async () => {
+    const { accountsRelay } = await import("../src/accountslink.js");
+    const store = new Store(":memory:");
+    expect((await accountsRelay(store, "/api/accounts/me", {})).status).toBe(503);                 // no commons linked
+    store.setSetting("commons.url", "http://commons.test"); store.setSetting("commons.key", "k");
+    const seen: { url: string; init: any }[] = [];
+    const f = (async (url: string, init: any) => { seen.push({ url, init }); return { status: 200, json: async () => ({ ok: true }) }; }) as unknown as typeof fetch;
+    await accountsRelay(store, "/api/accounts/me", { guardian: "g-token", get: true }, f);
+    await accountsRelay(store, "/api/accounts/device/join", { profile: "p-token", body: { code: "ABCDEFGH" } }, f);
+    expect(seen[0]).toMatchObject({ url: "http://commons.test/accounts/me", init: { headers: { authorization: "Bearer g-token" } } });
+    expect(seen[0].init.method).toBeUndefined();
+    expect(seen[1].init).toMatchObject({ method: "POST", headers: { "x-daemons-profile": "p-token" }, body: JSON.stringify({ code: "ABCDEFGH" }) });
+    expect((await accountsRelay(store, "/api/accounts/../keeper", {}, f)).status).toBe(404);
+  });
+  it("signs a guardian in by name only where ACCOUNTS_DEV_SIGNIN is set, from the commons' own machine", async () => {
+    const { accountsRoute } = await import("../src/accounts_api.js");
+    const { ACCOUNT_KEYS } = await import("../src/keys.js");
+    const store = new Store(":memory:"), base = { audiences: { apple: [], google: [] }, rpId: null, origins: [] };
+    const dev = { provider: "dev", sub: "scratch" };
+    expect((await accountsRoute(store, ACCOUNT_KEYS, base, "POST", "/accounts/signin", dev, {}, true)).status).toBe(403);
+    expect((await accountsRoute(store, ACCOUNT_KEYS, { ...base, devSignIn: true }, "POST", "/accounts/signin", dev, {}, false)).status).toBe(403);
+    expect((await accountsRoute(store, ACCOUNT_KEYS, { ...base, devSignIn: true }, "POST", "/accounts/signin", dev, {}, true)).status).toBe(200);
+    expect(((await accountsRoute(store, ACCOUNT_KEYS, { ...base, devSignIn: true }, "GET", "/accounts/names", {}, {}, false)).body as any).dev).toBeUndefined();
+  });
+});

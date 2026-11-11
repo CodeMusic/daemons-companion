@@ -28,7 +28,9 @@ import { failed } from "./exchange.js";
 import { jwksFor, kidOf, PROVIDERS, verifyIdToken, type Provider } from "./idtoken.js";
 import * as W from "./webauthn.js";
 
-export type AccountsConfig = { audiences: Record<Provider, string[]>; rpId: string | null; origins: string[]; fetcher?: typeof fetch };
+// devSignIn (ACCOUNTS_DEV_SIGNIN=1): a guardian signed in by name with no provider, from the commons' own machine only --
+// for trying the app against a scratch commons. Never set where anyone else reaches it.
+export type AccountsConfig = { audiences: Record<Provider, string[]>; rpId: string | null; origins: string[]; fetcher?: typeof fetch; devSignIn?: boolean };
 export type Reply = { status: number; body: unknown };
 const ok = (body: unknown, status = 200): Reply => ({ status, body });
 const no = (status: number, error: string): Reply => ({ status, body: { error } });
@@ -37,14 +39,19 @@ const of = <T>(r: T | { error: string }, f: (v: T) => unknown = (v) => v): Reply
 export function accountsConfigFromEnv(env: Record<string, string | undefined>): AccountsConfig {
   const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
   return { audiences: { apple: list(env.ACCOUNTS_APPLE_AUD), google: list(env.ACCOUNTS_GOOGLE_AUD) },
-           rpId: env.ACCOUNTS_RP_ID || null, origins: list(env.ACCOUNTS_ORIGINS) };
+           rpId: env.ACCOUNTS_RP_ID || null, origins: list(env.ACCOUNTS_ORIGINS), devSignIn: env.ACCOUNTS_DEV_SIGNIN === "1" };
 }
 
 export async function accountsRoute(store: Store, keys: A.AccountKeys, cfg: AccountsConfig, method: string, path: string, b: any,
-                                    headers: Record<string, string | string[] | undefined>, now = new Date()): Promise<Reply> {
+                                    headers: Record<string, string | string[] | undefined>, here = false, now = new Date()): Promise<Reply> {
   const expect = (challenge: string) => ({ challenge, rpId: cfg.rpId ?? "", origins: cfg.origins });
-  if (method === "GET" && path === "/accounts/names") return ok(A.names());
+  if (method === "GET" && path === "/accounts/names") return ok({ ...A.names(), ...(cfg.devSignIn && here ? { dev: true } : {}) });
   if (method === "POST" && path === "/accounts/signin") {
+    if (b?.provider === "dev") {                              // ACCOUNTS_DEV_SIGNIN, this machine only
+      if (!cfg.devSignIn || !here || typeof b.sub !== "string" || !/^[a-z0-9-]{1,32}$/.test(b.sub)) return no(403, "no such sign-in here");
+      const r = A.signIn(store, keys, "dev", b.sub, now);
+      return ok({ token: r.token, guardian: A.guardianView(store, r.guardian) });
+    }
     const provider = b?.provider as Provider;
     if (!PROVIDERS.includes(provider)) return no(400, "sign in with apple or google");
     if (!cfg.audiences[provider].length) return no(503, `sign-in with ${provider} is not set up on this server`);   // DRAFT

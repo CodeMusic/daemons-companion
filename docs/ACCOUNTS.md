@@ -136,6 +136,14 @@ Set on the commons' machine, in its environment (none are secrets):
 Unset, sign-in and passkeys answer that they are not set up. Not yet: the app's GUARDIAN screen (piece 3), the
 exchange on profiles (piece 4), and the server reachable from outside the tailnet (C-278).
 
+## Piece 3, built 2026-11-11 (DRAFT)
+
+The app's GUARDIAN card on YOU (`app/screens/you/Guardian.tsx`), through the hub: the hub passes `/api/accounts/<path>`
+to `/accounts/<path>` on the commons it is linked to (`server/src/accountslink.ts`), with the device's own tokens, which
+the app keeps in the keychain or the site's storage (`app/platform/accounts.ts`) and never queues offline. Sign in with
+Apple waits on `expo-apple-authentication` in the phone lane's next build; until then the card says so. For trying it,
+`ACCOUNTS_DEV_SIGNIN=1` on a scratch commons signs a guardian in by name, from that machine only.
+
 ## Still open
 
 - The word lists themselves (the user picks from drafts).

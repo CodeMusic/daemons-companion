@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../../state/data";
-import { useSubtleInk } from "../../state/look";   // C-203
+import { useDark, useSubtleInk } from "../../state/look";   // C-203; T-533: useDark
 import { api, ON_PHONE } from "../../platform/net";
 import { meshTalk } from "../../platform/mesh";   // C-307
 import { songSound } from "../../sound/songSound";
@@ -136,6 +136,7 @@ export function LibraryScreen() {
   const [ori] = useApi<OriginT>(`/api/origin${previewQuery() ? "?preview=1" : ""}`);   // DAEMONS T-533: THE ORIGIN OF A DAEMON, as far as the save has it back
   const mended = !!uni?.held && (uni.how === "game" || bookForced("unity") === true);   // as in the game, the halves leave as the mended book comes
   const mendingSeen = useMendingSeen();                    // C-299: the first time it is found mended, the mending plays once
+  const dark = useDark();                                  // T-533: THE ORIGIN OF A DAEMON's header at night, below
   const [g, setG] = useState<GuideBookT | null>(null);
   const [pr, setPr] = useState<Progress | null>(null);
   useEffect(() => {
@@ -153,16 +154,18 @@ export function LibraryScreen() {
   const open = (el: ReactElement) => {
     const l = LOOKS[book!];
     if (!l) return <YStack gap={14}>{back}{el}</YStack>;
+    // T-533: THE ORIGIN OF A DAEMON's ink is the game's dark brown, lost on the night's page -- there its header is bone
+    const ink = book === "origin" && dark ? ORIGIN.page : l.ink;
     return (
       <BookLookProvider look={l}>
         <YStack gap={14}>
-          <XStack alignItems="center" gap={10} paddingBottom={8} borderBottomWidth={2} borderBottomColor={l.ink}>
-            <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color={l.ink} cursor="pointer" role="button"
+          <XStack alignItems="center" gap={10} paddingBottom={8} borderBottomWidth={2} borderBottomColor={ink}>
+            <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color={ink} cursor="pointer" role="button"
                   onPress={() => setBook(null)}>‹ LIBRARY</Text>
             <YStack flex={1} />
             <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="$color10" numberOfLines={1}
                   fontStyle={l.type.italic ? "italic" : "normal"}>{l.name}</Text>
-            <Text fontSize={15} color={l.ink}>{l.glyph}</Text>
+            <Text fontSize={15} color={ink}>{l.glyph}</Text>
           </XStack>
           {el}
         </YStack>

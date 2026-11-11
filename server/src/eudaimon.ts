@@ -33,8 +33,9 @@ export function observe(sections: Section[], lead: SpiritsClass = "as it is"): S
 }
 export const observedSections = (lead: SpiritsClass = "as it is") => observe(E.sections, lead);
 
-export interface Eudaimon { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; cover?: string; observer?: SpiritsClass; sections?: Section[] }
-export function readEudaimon(save: Uint8Array | null, preview = false, lead: SpiritsClass = "as it is"): Eudaimon {
-  const how = savedEudaimon(save) ? "game" : preview ? "preview" : null;
+export interface Eudaimon { held: boolean; how?: "game" | "app" | "preview";   // C-314: "app" -- seven dawns kept in the companion
+                             title?: string; subtitle?: string; draft?: boolean; cover?: string; observer?: SpiritsClass; sections?: Section[] }
+export function readEudaimon(save: Uint8Array | null, preview = false, lead: SpiritsClass = "as it is", earned = false): Eudaimon {
+  const how = savedEudaimon(save) ? "game" : earned ? "app" : preview ? "preview" : null;
   return how ? { held: true, how, title: E.title, subtitle: E.subtitle, draft: E.draft, cover: E.cover, observer: lead, sections: observedSections(lead) } : { held: false };
 }

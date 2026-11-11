@@ -188,7 +188,8 @@ export function LibraryScreen() {
     ...(g?.held ? [{ id: "guide", title: "THE GUIDE", about: g.title ?? "", cloth: BOOK.boards, onPress: () => setBook("guide") }] : []),
     ...(sub?.held ? [{ id: "subtle", title: sub.title ?? "THE SUBTLE LAYER", about: sub.subtitle ?? "", cloth: "#1b0f1f", onPress: () => setBook("subtle") }] : []),
     ...(her?.held && !mended ? [{ id: "hermetic", title: her.title ?? "THE HERMETIC LAYER", about: her.subtitle ?? "SPELLCRAFT", cloth: "#1d2a24", onPress: () => setBook("hermetic") }] : []),
-    ...(eud?.held && !mended ? [{ id: "eudaimon", title: eud.title ?? "THE EUDAIMON LAYER", about: eud.subtitle ?? "the dawn half", cloth: DAWN.boards, onPress: () => setBook("eudaimon") }] : []),
+    ...(eud?.held && !mended ? [{ id: "eudaimon", title: eud.title ?? "THE EUDAIMON LAYER", about: eud.subtitle ?? "the dawn half", cloth: DAWN.boards, onPress: () => setBook("eudaimon"),
+                                         ...((eud as { how?: string }).how === "app" ? { mark: "KEPT IN THE APP" } : {}) }] : []),   // C-314, DRAFT
     ...(uni?.held && mended && mendingSeen === true ? [{ id: "unity", title: uni.title ?? "THE UNITY BOOK", about: uni.subtitle ?? "mended", cloth: UNITY.boards, onPress: () => setBook("unity") }] : []),
   ];
   const s = pr?.school;

@@ -15,6 +15,7 @@ export type CaseBook = {
   title: string;          // what a reader of the screen hears, and what the cloth says until the cover comes
   about: string;          // said on hover (the site) and to a screen reader
   cloth: string;          // the colour behind the cover, while it comes
+  mark?: string;          // C-314: a small brass tag across its foot ("kept in the app")
   onPress: () => void;
 };
 export type Shelf = { name: string; books: CaseBook[]; empty?: string };
@@ -115,6 +116,9 @@ function Standing({ b, tall }: { b: CaseBook; tall: number }) {
       <YStack position="absolute" top={0} bottom={0} left={3} width={2} backgroundColor="rgba(255,255,255,0.16)" />
       <YStack position="absolute" top={0} bottom={0} left={5} width={1} backgroundColor="rgba(0,0,0,0.25)" />
       <YStack position="absolute" top={0} left={0} right={0} height={2} backgroundColor="rgba(255,255,255,0.10)" />
+      {b.mark ? <YStack position="absolute" left={0} right={0} bottom={6} alignItems="center">
+        <Text fontFamily="$mono" fontSize={8} fontWeight="700" letterSpacing={1} color={WOOD.engraved} backgroundColor={WOOD.brass}
+              paddingHorizontal={5} paddingVertical={1} borderRadius={2}>{b.mark}</Text></YStack> : null}
     </YStack>
   );
 }

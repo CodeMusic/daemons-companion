@@ -48,10 +48,11 @@ import { validDeviceId } from "./deviceid.js";
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { readUnity } from "./unity.js";
+import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
+const GETS = ["/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -130,8 +131,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/eudaimon" || path === "/api/unity") {            // C-297, C-299: the dawn half and the mended book, the observer's line as the lead reads it
       let lead;
       try { lead = save ? readSave(save).party[0]?.spirits.class : undefined; } catch { /* as it is */ }
-      return ok((path === "/api/unity" ? readUnity : readEudaimon)(save, a.query?.preview === "1", lead));
+      return ok(path === "/api/unity" ? readUnity(save, a.query?.preview === "1", lead)
+                : readEudaimon(save, a.query?.preview === "1", lead, dawnEarned(store)));   // C-314: or seven dawns kept
     }
+    if (path === "/api/dawns") { const k = dawnsKept(store).length; return ok({ kept: k, needed: DAWNS_TO_EARN, earned: k >= DAWNS_TO_EARN }); }   // C-314
     if (path === "/api/hermetic/first")                                 // C-238: the hour, first seen (?preview=1: the message, nothing kept)
       return ok({ message: a.query?.preview === "1" ? FIRST_SIGHT : firstSight(store, save, now) });
     if (path === "/api/halloween") {                                    // C-240: today, with the book held -- the costume and the treats
@@ -182,6 +185,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
   }
   if (method === "POST") {
+    if (path === "/api/dawn/kept") return ok(keepDawn(store, now));   // C-314: this morning, if it is the creator's hour here
     // C-229: ASK THE SUBTLE LAYER -- its own line and a question back, or TWO VOICES' asking voice (the hub's module may say
     // the line in its own words instead: api.ts); C-230: the day's question answered, kept in the journal
     if (path === "/api/subtle/ask" || path === "/api/subtle/today") {

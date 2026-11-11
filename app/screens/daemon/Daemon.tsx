@@ -1,5 +1,6 @@
 // DAEMON -- Yours (its life, care, TALK, SYNC, NEARBY, meetings), Party; the INDEX and the Routines are their own files. (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
+import { creatorNow } from "../../../server/src/witching";   // C-314: only the real hour keeps a dawn
 import { File } from "expo-file-system";
 import { keepStreamed, keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
 import { useCallback, useEffect, useState } from "react";
@@ -62,6 +63,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const shimmer = useWitchingLevel();                       // T-519: the shimmer as strong as the hour is now, caught up to
   const dawn = useDawn();                                   // T-519: THE CREATOR'S HOUR, 4:24 to 5:12 -- its light and its tone
   useDawnTone(dawn.tone, note);
+  const dawnKept = useDawnKept(dawn.level > 0);             // C-314: this morning kept with it, toward THE EUDAIMON LAYER
   const player = useAudioPlayer(null);
   useDev();                                                 // C-269: drawn again as </> moves its sliders
   useEffect(() => {
@@ -129,6 +131,8 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
       </Pressable>
       {witching ? <HourCount /> : null}
+      {dawnKept ? <Small color="$color10">{dawnKept.earned ? (dawnKept.kept === dawnKept.needed ? "Seven dawns kept together. THE EUDAIMON LAYER is on your shelf." : "A dawn kept together.")
+        : `A dawn kept together: ${dawnKept.kept} of ${dawnKept.needed}.`}</Small> : null}{/* C-314, DRAFT */}
       </YStack>
       {l.tired === "asleep"                                 // C-118: asleep, said plainly -- not the small word
         ? <Text fontSize={28} fontWeight="800" letterSpacing={2} color="$color12">ASLEEP</Text>
@@ -541,4 +545,17 @@ export function MeetingsCard() {
       ) : null}
     </Card>
   );
+}
+
+// C-314 (the user, 2026-11-10): in THE CREATOR'S HOUR, the den open tells the companion once a morning -- seven mornings
+// open THE EUDAIMON LAYER in the companion (server/src/dawns.ts; the hub checks the hour on its own clock). A forced dawn
+// (</>) is never counted: only the real hour.
+function useDawnKept(inHour: boolean) {
+  const [k, setK] = useState<{ kept: number; needed: number; earned: boolean } | null>(null);
+  useEffect(() => {
+    if (!inHour || !creatorNow()) return;
+    api<{ kept: number; needed: number; earned: boolean; now: boolean }>("/api/dawn/kept", {})
+      .then((r) => { if (r.now) setK(r); }).catch(() => {});
+  }, [inHour]);
+  return inHour ? k : null;
 }

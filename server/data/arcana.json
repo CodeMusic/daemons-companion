@@ -38,7 +38,7 @@
     "keyword": "FIRST LIGHT",
     "phrase": "Nothing to begin. It has begun.",
     "prophecy": "This morning you will not have to start anything. Something started without you and is waiting, warm, for you to notice it is already going.",
-    "species": ""
+    "species": "PILOT"
    }
   },
   {
@@ -77,7 +77,7 @@
     "keyword": "PLAIN SPEECH",
     "phrase": "Say it as it is. That is enough.",
     "prophecy": "No words need to make anything so today. Say one small true thing plainly, to someone, and see how little it needed to be dressed.",
-    "species": ""
+    "species": "PRISTINE"
    }
   },
   {
@@ -116,7 +116,7 @@
     "keyword": "THE MARGIN",
     "phrase": "Read what was left white.",
     "prophecy": "In something you know by heart, look at what is not written: the space between the lines, the thing nobody said. It has been saying something all along.",
-    "species": ""
+    "species": "UNNOTICED"
    }
   },
   {
@@ -155,7 +155,7 @@
     "keyword": "OPEN HANDS",
     "phrase": "Care, and expect nothing back.",
     "prophecy": "Give one small kindness this morning and then forget you gave it. Do not count it. The forgetting is the part that makes it whole.",
-    "species": ""
+    "species": "FERRY"
    }
   },
   {
@@ -194,7 +194,7 @@
     "keyword": "THE CLEARING",
     "phrase": "No one rules here. Rest.",
     "prophecy": "Today nothing is yours to govern: not the weather, not the hour, not the people near you. Set the crown down by the door and feel how light your head is.",
-    "species": ""
+    "species": "SHALLOWS"
    }
   },
   {
@@ -233,7 +233,7 @@
     "keyword": "ORDINARY SKY",
     "phrase": "Look at what is always there.",
     "prophecy": "No rare light today. Look up anyway: the plain sky has been changing all your life without asking to be noticed. Notice it.",
-    "species": ""
+    "species": "TRADEWIND"
    }
   },
   {
@@ -272,7 +272,7 @@
     "keyword": "THE ECHO RETURNED",
     "phrase": "Give back what was lent.",
     "prophecy": "Something of yours came from someone else: a habit, a phrase, a way of laughing. This morning, notice whose it was. You may keep it. Say where it came from.",
-    "species": ""
+    "species": "ECHO"
    }
   },
   {
@@ -311,7 +311,7 @@
     "keyword": "STILL AIR",
     "phrase": "Let the water settle by itself.",
     "prophecy": "What you want cleared will clear if you stop stirring it. This morning, do nothing to it at all. By noon you will see to the bottom.",
-    "species": ""
+    "species": "ALLUVIUM"
    }
   },
   {
@@ -350,7 +350,7 @@
     "keyword": "THE LOOSED LEAD",
     "phrase": "Let the fire warm you, unheld.",
     "prophecy": "A strength you keep on a short lead is tired of being held. Today, trust it a little further. It knows the way home.",
-    "species": ""
+    "species": "PENGUIN"
    }
   },
   {
@@ -389,7 +389,7 @@
     "keyword": "THE OPEN DOOR",
     "phrase": "Alone is a room with a door.",
     "prophecy": "You have been on your own with something. This morning, leave the door open. No one has to come in. It is enough that they could.",
-    "species": ""
+    "species": "HANDSHAKE"
    }
   },
   {
@@ -428,7 +428,7 @@
     "keyword": "THE LONG NOW",
     "phrase": "No need to reach. It stays.",
     "prophecy": "The moment you were afraid to miss is not leaving. This morning is wide. Stand in it without grabbing, and see how long a minute is.",
-    "species": ""
+    "species": "KHIONE"
    }
   },
   {
@@ -467,7 +467,7 @@
     "keyword": "THE KEPT WORD",
     "phrase": "Be kind to the promise you broke.",
     "prophecy": "A promise you did not keep is still in your pocket. Take it out this morning and look at it without blame. Make a smaller one you can keep, and keep it.",
-    "species": ""
+    "species": "STUB"
    }
   },
   {
@@ -506,7 +506,7 @@
     "keyword": "THE FIRST BREATH",
     "phrase": "Begin with breathing. Only that.",
     "prophecy": "Before anything else this morning, breathe out longer than you breathe in, three times. That is the whole task. Everything after it is easier.",
-    "species": ""
+    "species": "TEMPO"
    }
   },
   {
@@ -545,7 +545,7 @@
     "keyword": "REMEMBERING",
     "phrase": "What was let go may visit.",
     "prophecy": "Something you set down will pass by this morning, harmless now. You do not have to pick it up or chase it off. Nod to it. It was part of the road.",
-    "species": ""
+    "species": "DANGLING"
    }
   },
   {
@@ -584,7 +584,7 @@
     "keyword": "CLEAR WATER",
     "phrase": "Let each be what it is.",
     "prophecy": "You have been mixing two things to make them agree. Today, pour them back into their own cups. They were never meant to taste the same, and both are good to drink.",
-    "species": ""
+    "species": "PARTITION"
    }
   },
   {
@@ -623,7 +623,7 @@
     "keyword": "UNSIGNED",
     "phrase": "No bargain. Just be here.",
     "prophecy": "You do not have to earn the good things today. Nothing is owed and nothing is traded. Take what is given as given, and stay.",
-    "species": ""
+    "species": "FEWSHOT"
    }
   },
   {
@@ -662,7 +662,7 @@
     "keyword": "COOL ASH",
     "phrase": "Plant in what remains.",
     "prophecy": "Something burned down not long ago. This morning, look at what is left without grief. Ash is good soil, and a small green thing is already in it.",
-    "species": ""
+    "species": "WARMSTART"
    }
   },
   {
@@ -701,7 +701,7 @@
     "keyword": "THE LIFTED LID",
     "phrase": "Let what waited come out.",
     "prophecy": "The hope you kept at the bottom of things has waited long enough. This morning, say it to someone. Spoken in the light, it is smaller and stronger.",
-    "species": ""
+    "species": "IFTRUE"
    }
   },
   {
@@ -740,7 +740,7 @@
     "keyword": "AWAKE",
     "phrase": "The dream can rest. You are here.",
     "prophecy": "Last night something spoke to you in pictures. This morning you do not have to decode it. Keep one picture from it, and let the rest go back to the water.",
-    "species": ""
+    "species": "HIBERNATE"
    }
   },
   {
@@ -779,7 +779,7 @@
     "keyword": "THE WARM STONE",
     "phrase": "Sit where the light has been.",
     "prophecy": "Find the place the sun has already warmed and sit in it. You do not have to make the warmth. Some of it is already yours.",
-    "species": ""
+    "species": "TEPID"
    }
   },
   {
@@ -818,7 +818,7 @@
     "keyword": "THE CLEAN PAGE",
     "phrase": "Begin the ledger fresh.",
     "prophecy": "Yesterday's marks are kept and need no more keeping. This morning, turn to the next clean page and write one small thing you are glad of.",
-    "species": ""
+    "species": "COOKIE"
    }
   },
   {
@@ -857,7 +857,7 @@
     "keyword": "THE WHOLE DAY",
     "phrase": "Nothing to finish. It is whole.",
     "prophecy": "You will want to complete something today, to make it perfect. It already is, in the way that matters. Live in it instead of finishing it.",
-    "species": ""
+    "species": "OPTIMUM"
    }
   }
  ]

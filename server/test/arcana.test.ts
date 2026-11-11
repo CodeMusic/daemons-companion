@@ -145,16 +145,21 @@ describe("C-315: SYMBOL on a card", () => {
 });
 
 describe("C-313: the dawn readings", () => {
-  it("gives every card a dawn face, dealt from THE EUDAIMON LAYER's deck, on its gold face, its daemon still to be chosen", () => {
+  it("gives every card a dawn face, dealt from THE EUDAIMON LAYER's deck, on its gold face, each with the daemon the user picked", () => {
     for (let n = 0; n < deckSize(); n++) {
       const c = cardOf(n, "dawn", false);
       expect(c.keyword && c.phrase && c.prophecy, `card ${n}`).toBeTruthy();
-      expect(c.art).toBe("");                                        // the rising sun stands where the daemon will
+      expect(c.art, `card ${n}`).toBe(`/art/species/${c.species}.png`);   // the daemon picked for it, at the sun (2026-11-11)
+      expect(c.species, `card ${n}`).toBeGreaterThan(0);
       expect(c.face).toBe("/art/arcana/dawn.png");
     }
     expect(draw(3, seeded(7), "dawn").every((c) => c.side === "dawn")).toBe(true);
     expect(cardOfDay("2026-11-11", "ROVER1", "dawn").side).toBe("dawn");
     for (const f of ["arcana_dawn.png", "arcana_dawn_shiny.png"]) expect(existsSync(join(ART, f)), f).toBe(true);
     expect(cardOf(0, "dawn", false).keyword).toBe("FIRST LIGHT");    // the user's pick, B
+    expect(cardOf(0, "dawn", false).name).toBe("PILOT");             // the face's daemon, the user's pick, A
+    const elsewhere = new Set(Array.from({ length: deckSize() }, (_, n) =>
+      (["reason", "instinct", "above", "below"] as const).map((s) => cardOf(n, s, false).name)).flat());
+    for (let n = 0; n < deckSize(); n++) expect(elsewhere.has(cardOf(n, "dawn", false).name), `card ${n}`).toBe(false);   // "new": on no other face
   });
 });

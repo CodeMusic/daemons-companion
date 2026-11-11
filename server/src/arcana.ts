@@ -41,7 +41,7 @@ export const symbolForm = (keyword: string) => {
   const c = keyword.trim().charAt(0).toLowerCase();
   return /[a-z]/.test(c) ? c : c === "!" ? "exclamation_mark" : "question_mark";
 };
-// C-313: a dawn face's daemons are to be chosen (the user, 2026-11-10): none yet, and the face's rising sun stands there
+// C-313: each dawn face's daemon, picked by the user 2026-11-11 (none on any other face); an empty name draws only the sun
 const artOf = (name: string, species: number, keyword: string) => !name ? "" :
   name === "SYMBOL" ? `/art/symbol/${symbolForm(keyword)}.png` : `/art/species/${species}.png`;
 

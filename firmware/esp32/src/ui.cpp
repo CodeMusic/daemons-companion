@@ -59,6 +59,11 @@ static String hint(String s) {
   return s;
 }
 
+// C-325 (the user, 2026-11-11: "maybe the options are Care --> leads to the 2x2 care options, Index --> leads to its
+// index entry, and maybe the other options are ones which relate to some of the newer features like the social
+// features"): on the watch the daemon's screen is tiles -- CARE (the care grid), INDEX (its entry), TALK, its DREAM;
+// the social ones (C-327 TOGETHER and TRADE, C-328 BATTLE, C-329 a dialogue) join as they are built
+const int DAEMON_TILES = 4;
 static const char *CARE_ITEMS[] = { "DRINK", "FEED", "TRAIN", "SLEEP", "ITS INDEX ENTRY" };   // C-114: SLEEP; C-117: DRINK first, as the buttons (input.cpp CARE_ORDER), DRAFT
 // ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
 const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
@@ -718,7 +723,18 @@ void draw() {
     canvas.setTextFont(2);
   }
 
-  if (screen == CARE) {                                      // C-13
+  if (screen == CARE && gridLists()) {                       // C-325: the daemon's own screen, as tiles
+    static const String WORDS[DAEMON_TILES] = { "CARE", "INDEX", "TALK", "DREAM" };   // DRAFT
+    drawTiles(DAEMON_TILES, careAt, WORDS, upper(st.daemon.nickname).c_str(), [](int i, int cx, int cy) {
+      if (i == 0) { drawArt(cx - 32, cy - 36, 1, false); return; }
+      if (i == 1) { bookIcon(3, 0, cx, cy); return; }
+      if (i == 2) {                                            // a speech bubble
+        canvas.drawRoundRect(cx - 16, cy - 12, 32, 20, 6, PAPER); canvas.fillTriangle(cx - 8, cy + 8, cx - 2, cy + 8, cx - 10, cy + 15, PAPER);
+        return;
+      }
+      canvas.fillCircle(cx, cy, 13, canvas.color565(200, 196, 170)); canvas.fillCircle(cx + 6, cy - 4, 12, INK);   // a crescent
+    }, day, ink);
+  } else if (screen == CARE) {                                      // C-13
     canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("CARE FOR " + st.daemon.nickname, 10, 32);
     int fit = listRowsFit(), from = max(0, careAt - (fit - 1));   // C-161: as many as fit (four on the watch), scrolled

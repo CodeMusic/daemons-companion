@@ -494,13 +494,28 @@ void soundPcm(const int16_t *samples, size_t n) {
   voicesOff();                                 // C-164: a voice is heard alone
 #endif
   static int16_t buf[256];
-  float scale = (amplitude ? amplitude : 40 * 120) / 12000.0f;
+  // C-324 (the user, 2026-11-11: "reading is lower volumn and sound effects are much louder -- the reading aloud should be
+  // louder"): a voice was played at the volume times its own level, and a reader's voice sits far under full scale while
+  // the sounds are square waves at the volume itself. Now its peaks are brought up to the volume's top (as loud as a
+  // sound at that setting, speech being quieter between its peaks than a square wave is): turned down at once where a
+  // peak would go over, let back up slowly, never more than six times -- so a breath is not raised into a hiss. The
+  // level carries from one piece of a stream to the next, and starts again after a pause.
+  static float gain = 1.0f;
+  static uint32_t lastAt = 0;
+  const float top = 32000.0f * (amplitude ? amplitude : 40 * 120) / 12000.0f;
+  if (millis() - lastAt > 1500) gain = min(6.0f, top / 8000.0f);   // a new voice: start where a reader's usual peak would land
   for (size_t done = 0; done < n;) {
     size_t k = min((size_t)256, n - done);
-    for (size_t i = 0; i < k; i++) buf[i] = (int16_t)constrain((int)(samples[done + i] * scale), -32768, 32767);
+    int peak = 1;
+    for (size_t i = 0; i < k; i++) peak = max(peak, abs((int)samples[done + i]));
+    float want = min(6.0f, top / peak);
+    if (want < gain) gain = want;                                  // at once, before this piece is heard
+    else if (peak > 600) gain = min(want, gain * 1.02f);           // back up slowly, only on speech, not on silence
+    for (size_t i = 0; i < k; i++) buf[i] = (int16_t)constrain((int)(samples[done + i] * gain), -32768, 32767);
     play(buf, k);
     done += k;
   }
+  lastAt = millis();
 }
 
 static void rest(int ms) {

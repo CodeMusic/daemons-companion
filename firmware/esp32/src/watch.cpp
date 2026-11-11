@@ -450,6 +450,8 @@ bool watchFinger(int &x, int &y) { int16_t xs[1], ys[1]; bool on = haveTouch && 
 // C-134: a routine's own screen reads the touch itself (the loop, and so touchLoop, waits while it runs): a swipe
 // either way turns, a tap presses, a hold goes back -- each reported when the finger lifts.
 static int crownPoll();                                        // below, beside crownLoop
+static bool crownTwice = false;                                // C-326: the last short press was the second of two
+static bool crownHomeLater = false;                            // C-326: pressed twice inside a routine -- home once it has left
 static bool across = false;                                    // the last swipe went across, not up or down
 bool watchGestureAcross() { return across; }
 // C-256: where the last tap watchGesture returned fell, in the canvas's coordinates (TV's buttons)
@@ -458,7 +460,7 @@ bool watchTapPoint(int &x, int &y) { if (tapPx < 0) return false; x = tapPx; y =
 int watchGesture() {
   static bool was = false; static int16_t x0, y0, x1, y1; static uint32_t at = 0;
   // C-161: inside a routine the loop waits, and crownLoop with it -- so the crown is read here, and goes back
-  if (crownPoll() == 1) return -2;
+  if (crownPoll() == 1) { if (crownTwice) crownHomeLater = true; return -2; }
   if (!haveTouch) return 0;
 #if defined(BOARD_TWATCH_S3)
   Touch g;                                                     // C-171: the task's, in the screen's own coordinates
@@ -604,7 +606,10 @@ static void touchTap(int x, int y, uint32_t now) {
 }
 
 // ---- the crown: a short press wakes the watch, or goes back; a long one, asleep (the PMU powers off on a longer hold)
-// the crown, read once wherever it is asked: 1 a short press, 2 a long one, 0 neither
+// the crown, read once wherever it is asked: 1 a short press, 2 a long one, 0 neither. C-326 (the user, 2026-11-11: "I
+// tried double tap crown to go back home (watch face) but that didnt work"): a second short press within 700 ms is
+// counted HERE, wherever the first was read -- a routine's own loop (BOOKS, the INDEX, the CASINO) took the first, so
+// crownLoop saw only the second, as a first, and went back again
 static int crownPoll() {
   static uint32_t askedAt = 0;
   uint32_t now = millis();
@@ -614,16 +619,21 @@ static int crownPoll() {
   pmu.getIrqStatus();
   bool shortPress = pmu.isPekeyShortPressIrq(), longPress = pmu.isPekeyLongPressIrq();
   pmu.clearIrqStatus();
+  if (shortPress) {
+    static uint32_t lastShortAt = 0;
+    crownTwice = lastShortAt && now - lastShortAt < 700;
+    lastShortAt = crownTwice ? 0 : now;
+  }
   return shortPress ? 1 : longPress ? 2 : 0;
 }
 static void crownLoop(uint32_t now) {
+  if (crownHomeLater) { crownHomeLater = false; goHomeNow(); }
   int c = crownPoll();
   bool shortPress = c == 1, longPress = c == 2;
   if (shortPress) {                                            // C-161: the crown is a press, not a dial
-    static uint32_t lastShort = 0;
-    if (wake()) lastShort = now;                               // asleep, it only wakes (to home)
-    else if (lastShort && now - lastShort < 500) { lastShort = 0; goHomeNow(); }   // pressed twice: home, the face
-    else { lastShort = now; back(); }
+    if (wake()) {}                                             // asleep, it only wakes (to home)
+    else if (crownTwice) goHomeNow();                          // pressed twice: home, the face (C-326)
+    else back();
   }
   else if (longPress && !asleep) sleepNow();
 }

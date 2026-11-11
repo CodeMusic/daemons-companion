@@ -172,6 +172,7 @@ void pick(int off) {
   if (gridLists() && screen == LAUNCH) launchAt = constrain(launchAt + off, 0, LAUNCH_N - 1);
   else if (gridLists() && screen == TYPES) typeAt = constrain(typeAt + off, 0, typeCount - 1);
   else if (gridLists() && screen == LIST) routineAt = constrain(routineAt + off, 0, max(0, types[typeAt].count - 1));
+  else if (gridLists() && screen == CARE) careAt = constrain(careAt + off, 0, DAEMON_TILES - 1);   // C-325
   else turn(off);
   dirty = true;
 }
@@ -209,6 +210,7 @@ void turn(int step) {
   else if (screen == CARE_GRID) gridAt = (gridAt + 4 + step) % 4;                // C-163: a swipe, tile to tile
   else if (screen == PARTY && partyRows()) partyAt = partyAtRow((partyRowOf(partyAt) + partyRows() + step) % partyRows());   // C-68
   else if (screen == MOVES && st.party[partyAt].n) moveAt = (moveAt + st.party[partyAt].n + step) % st.party[partyAt].n;
+  else if (screen == CARE && gridLists()) {}                       // C-325: four tiles, one page
   else if (screen == CARE) careAt = (careAt + 5 + step) % 5;        // C-114: FEED WATER TRAIN SLEEP, its INDEX entry
   else if (screen == INDEX_ENTRY) entryTop = max(0, entryTop + step);   // C-99: the entry scrolls (the draw keeps it in)
   else if (screen == PICK_REMOTE && flareCount()) remoteAt = (remoteAt + flareCount() + step) % flareCount();
@@ -300,6 +302,10 @@ void press() {
     screen = RUN;
     reportRemotes();
   }
+  else if (screen == CARE && gridLists()) {                       // C-325: CARE, INDEX, TALK, DREAM -- as the face's quick buttons open them
+    static const int QUICK[] = { 0, 7, 1, 6 };
+    openQuick(QUICK[constrain(careAt, 0, DAEMON_TILES - 1)]);
+  }
   else if (screen == CARE) {
     if (careAt == 4) { screen = INDEX_ENTRY; entryTop = 0; }
     else {
@@ -334,7 +340,7 @@ void back() {
   if (screen == HOME && menuOpen) { menuOpen = false; page = homePage(); dirty = true; return; }   // C-117: out of the menu
   if (screen == TALK) { screen = HOME; }                         // C-66
   if (screen == COMPOSE) { screen = HOME; composing = ""; dirty = true; return; }   // C-123: not sent
-  else if (screen == INDEX_ENTRY) { if (quickScreen()) goHome(); else { screen = CARE; careAt = 4; } }   // C-149
+  else if (screen == INDEX_ENTRY) { if (quickScreen()) goHome(); else { screen = CARE; careAt = gridLists() ? 1 : 4; } }   // C-325: back to its tile   // C-149
   else if (screen == CARE_KEYS) goHome();                                    // C-149: nothing done
   else if (screen == CARE_GRID) goHome();                                    // C-163: nothing done
   else if (screen == CARE) { screen = HOME; page = DAEMON; }

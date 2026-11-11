@@ -9,6 +9,7 @@
 #include "talk.h"
 #include "sound.h"
 #include "card.h"
+#include <vector>
 
 void listRow(int i, int at, const String &text, uint16_t day, uint16_t ink, int width);   // ui.cpp
 int rowH();                                                                                // ui.cpp
@@ -81,6 +82,20 @@ static String drawBooks(uint16_t day, uint16_t ink) {
     canvas.setTextDatum(BL_DATUM); canvas.setTextFont(1); canvas.setTextColor(QUIET);
     canvas.drawString(String(at) + " / " + String(pages), 10, H - 14);
     canvas.setTextDatum(TL_DATUM);
+    return " ";
+  }
+  if (gridLists()) {                                     // C-325: the watch's shelf and chapters as tiles
+    static std::vector<String> words;
+    int n = listN(), tw = (W - 24) / 2;
+    words.assign(n, String());
+    for (int i = 0; i < n; i++) words[i] = tileWord(listName(i), tw);
+    String title = bMode == B_BOOKS ? String(fromCard ? "BOOKS  (FROM THE CARD)" : "BOOKS") : String((const char *)(shelf["books"][bBook]["title"] | ""));   // DRAFT
+    drawTiles(n, bAt, words.data(), tileWord(title, W - 20).c_str(), [](int i, int cx, int cy) {
+      if (bMode != B_BOOKS) { bookIcon(5, i + 1, cx, cy); return; }
+      if (i < asks()) { AskKind k = askAt(i); bookIcon(k >= ASK_CARD && k != ASK_ABOVE ? 2 : 1, 0, cx, cy); return; }
+      if (i < heads()) { bookIcon(3, 0, cx, cy); return; }
+      bookIcon(i >= heads() + (int)shelf["books"].size() ? 4 : 0, 0, cx, cy);
+    }, day, ink);
     return " ";
   }
   canvas.drawString(bMode == B_BOOKS ? (fromCard ? "BOOKS  (FROM THE CARD)" : "BOOKS") : String((const char *)(shelf["books"][bBook]["title"] | "")), 10, 30);   // DRAFT
@@ -187,7 +202,8 @@ String runBooks() {
       if (ev == 1) { listen(); progress(""); }
     } else {
       int n = listN();
-      if (step && n) { bAt = (bAt + n + step) % n; progress(""); }
+      if (step && n) { bAt = gridLists() ? tilesPage(bAt, n, step) : (bAt + n + step) % n; progress(""); }   // C-325: on the watch a page of tiles
+      if (ev == 1 && n && gridLists() && !tilesTap(bAt, n)) ev = 0;          // a tap between the tiles opens nothing
       if (ev == 1 && n) {
         if (bMode == B_BOOKS && bAt < asks()) {                // C-209: six seconds to ask, then the book's answer
           AskKind k = askAt(bAt);

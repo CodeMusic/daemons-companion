@@ -255,6 +255,11 @@ String launchWord(int i);
 int launchIndex(Page p);
 void openLaunch(int at = 0);
 void pageDots(int at, int n);
+extern const int DAEMON_TILES;             // C-325: the daemon's screen's tiles on the watch
+int tilesPage(int sel, int n, int step);  // C-325: a routine's list as tiles -- the page a swipe turns to
+bool tilesTap(int &sel, int n);           // C-325: the tile a tap fell on (false: between tiles)
+String tileWord(const String &w, int tw);
+void bookIcon(int kind, int n, int cx, int cy);
 void drawTiles(int n, int sel, const String *words, const char *title, void (*icon)(int, int, int), uint16_t day, uint16_t ink);
 void pageIcon(int i, int cx, int cy);
 void typeIcon(const char *name, int cx, int cy);

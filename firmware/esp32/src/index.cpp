@@ -102,7 +102,7 @@ String runIndex() {
     if (ev == -1) { if (ixOpen) { ixOpen = false; progress(""); continue; } break; }
     if (!ixOpen) {
       int n = ixList["entries"].size();
-      if (step) { ixAt = (ixAt + n + step) % n; progress(""); }
+      if (step) { ixAt = (ixAt + n + (isWatch() ? -step : step)) % n; progress(""); }   // C-325: on the watch a swipe up goes up the list (it went down); a dial as before
       if (ev == 1) { if (openEntry(ixAt)) ixOpen = true; else say("Not kept here"); progress(""); }               // DRAFT
     } else {
       if (step) { ixSkip = constrain(ixSkip + step * 6, 0, max(0, ixLines - 4)); progress(""); }

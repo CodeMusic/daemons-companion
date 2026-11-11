@@ -223,6 +223,48 @@ void drawTiles(int n, int sel, const String *words, const char *title, void (*ic
   if (n > 4) pageDots(page, (n + 3) / 4);
 }
 
+// C-325 (the user, 2026-11-11: "the books menu still has the older swipe/list view ... we replaced with the newer 2x2
+// options that u tap on, or swipe for next page -- we should implement that here too"): a routine's own list as the
+// tiles. A swipe turns the page of four (round); a tap opens the tile under the finger -- a tap between tiles opens
+// nothing. With no point to go by (a press down the cable) the chosen one opens.
+int tilesPage(int sel, int n, int step) {
+  if (n <= 0) return 0;
+  int pages = (n + 3) / 4, p = (sel / 4 + pages + (step > 0 ? 1 : -1)) % pages;
+  return p * 4;
+}
+bool tilesTap(int &sel, int n) {
+  int x, y, off;
+  if (!watchTapPoint(x, y)) return true;
+  if (!tapAt(x, y, off, false)) return false;
+  sel = constrain(sel + off, 0, max(0, n - 1));
+  return true;
+}
+// a word cut to a tile's width, at the small font drawTiles falls back to
+String tileWord(const String &w, int tw) {
+  int fit = max(4, (tw - 8) / 6);
+  return (int)w.length() <= fit ? w : w.substring(0, fit - 1) + ".";
+}
+// BOOKS' icons: an open book, a question, a card, the INDEX's four squares, the SD card, a chapter's number
+void bookIcon(int kind, int n, int cx, int cy) {
+  if (kind == 0) {                                                         // a book, open
+    canvas.drawRoundRect(cx - 17, cy - 12, 17, 24, 2, PAPER); canvas.drawRoundRect(cx, cy - 12, 17, 24, 2, PAPER);
+    for (int k = 0; k < 3; k++) { canvas.drawFastHLine(cx - 13, cy - 6 + 6 * k, 9, QUIET); canvas.drawFastHLine(cx + 4, cy - 6 + 6 * k, 9, QUIET); }
+  } else if (kind == 1) {                                                  // a question, asked aloud
+    canvas.drawCircle(cx, cy, 15, PAPER); canvas.setTextDatum(MC_DATUM); canvas.setTextFont(4); canvas.setTextColor(PAPER); canvas.drawString("?", cx, cy + 1);
+  } else if (kind == 2) {                                                  // a card, drawn
+    canvas.drawRoundRect(cx - 10, cy - 15, 20, 30, 3, PAPER); canvas.drawRoundRect(cx - 6, cy - 11, 12, 22, 2, QUIET);
+  } else if (kind == 3) {                                                  // THE INDEX
+    for (int k = 0; k < 4; k++) canvas.drawRect(cx - 14 + (k & 1) * 16, cy - 14 + (k >> 1) * 16, 12, 12, PAPER);
+  } else if (kind == 4) {                                                  // the SD card
+    canvas.drawLine(cx - 10, cy - 15, cx + 5, cy - 15, PAPER); canvas.drawLine(cx + 5, cy - 15, cx + 11, cy - 9, PAPER);
+    canvas.drawLine(cx + 11, cy - 9, cx + 11, cy + 15, PAPER); canvas.drawLine(cx + 11, cy + 15, cx - 10, cy + 15, PAPER);
+    canvas.drawLine(cx - 10, cy + 15, cx - 10, cy - 15, PAPER);
+    for (int k = 0; k < 4; k++) canvas.drawFastVLine(cx - 6 + 4 * k, cy - 12, 6, QUIET);
+  } else {                                                                 // a chapter: its number
+    canvas.setTextDatum(MC_DATUM); canvas.setTextFont(4); canvas.setTextColor(PAPER); canvas.drawString(String(n), cx, cy + 1);
+  }
+}
+
 // the pages' icons: TODAY a tick, ROUTINES a bolt, the daemon itself, THE DAY its colour and note, SETTINGS a wheel
 void pageIcon(int i, int cx, int cy) {
   if (i == 0) { canvas.drawCircle(cx, cy, 14, PAPER); canvas.drawWideLine(cx - 7, cy, cx - 2, cy + 6, 2.0f, PAPER); canvas.drawWideLine(cx - 2, cy + 6, cx + 8, cy - 6, 2.0f, PAPER); }

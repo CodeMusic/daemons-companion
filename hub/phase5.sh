@@ -4,7 +4,7 @@
 # never hands to phones and boards -- api.ts lanAddress). The hub shares its internet over it, so the module can fetch
 # its packages (llm-openai-api, the models); it is never the hub's way out. Run it ON THE HUB:
 #
-#   ssh -t debian@coremp135 'sudo bash /opt/daemons-companion/hub/phase5.sh'
+#   ssh -t debian@daemons-hearth 'sudo bash /opt/daemons-companion/hub/phase5.sh'
 #
 # The module takes its address by DHCP from the hub (M5's image asks for one on the Mate's port); the /30 leaves it
 # only .2, which is where server/src/ai/discover.ts looks. Safe to run again. Run on the hub 2026-10-28: the link and

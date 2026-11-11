@@ -38,8 +38,8 @@ describe("the exchange over HTTP", () => {
   it("names a hub only by its address, and forgets the old token when it changes", () => {
     const s = new Store(":memory:");
     s.setSetting("trade.token", "old");
-    expect(setHub(s, "coremp135")).toMatch(/http/);
-    expect(setHub(s, "http://coremp135:4730/")).toEqual({ hub: "http://coremp135:4730" });
+    expect(setHub(s, "daemons-hearth")).toMatch(/http/);
+    expect(setHub(s, "http://daemons-hearth:4730/")).toEqual({ hub: "http://daemons-hearth:4730" });
     expect(s.getSetting("trade.token")).toBeNull();
     expect(setHub(s, "")).toEqual({ hub: "" });
     expect(s.getSetting("trade.hub")).toBeNull();

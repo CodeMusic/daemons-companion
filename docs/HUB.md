@@ -32,7 +32,7 @@ Either works; choose by whether a computer is always on.
 | the save | the file `savePath` names, read in place | a copy in the hub's shared folder; `./syncCompanion.sh` keeps it and the computer's in step, both ways |
 | when the computer sleeps | the phone, the boards and the relay lose the companion | nothing changes |
 | the site | `./bindCompanion.sh`, at localhost:8081 | the hub serves it: `http://<hub>:4730` at home, or its tailnet name anywhere; a browser pairs once with a code from the hub's screen. `./syncCompanion.sh site` sends a new build. Machine-only settings (pairing codes, network, relay, Home Assistant) show only through the tunnel |
-| THE ENGINE ROOM (C-330) | -- | the hub's admin, one web app at `http://<hub>:4730/admin/` (home network and tailnet only), added to the phone's home screen; pairs once with a code from the hub's screen |
+| THE ENGINE ROOM (C-330) | -- | the hub's admin, one web app at `http://daemons-hearth:4730/admin/` (home network and tailnet only), added to the phone's home screen; pairs once with a code from the hub's screen |
 | pairing a phone | the site's PAIR A PHONE | hold the hub's screen for two seconds: a code, the address and the tailnet name (C-170) |
 | linking a board by cable | `./linkCompanion.sh` | the same, through the tunnel (the board then finds the hub over Wi-Fi) |
 
@@ -209,12 +209,20 @@ off its card. Its settings are in `.hub` (see `.hub.example`; never committed).
    pinned MAC, so the address stays); Wi-Fi boards take the hub's address from their next state; re-pair the phones and
    the Tab5 (through the tunnel's site); the BOX-3's companion address and Home Assistant's `/ollama` URL.
 
-**Updating the hub's server** after a push: `ssh -t debian@CoreMP135.local 'sudo bash /opt/daemons-companion/hub/deploy.sh'`
+**Updating the hub's server** after a push: `ssh -t debian@daemons-hearth 'sudo bash /opt/daemons-companion/hub/deploy.sh'`
 -- it pulls main, runs npm ci only when the lockfile changed, restarts, and goes back to the commit it was on if the
 new one does not answer within a minute.
 
 **Going back**: stop the hub's unit, `./syncCompanion.sh pull`, copy the hub's newest backup to the Mac's
 `server/companion.sqlite`, take `SERVER_ON_HUB` out of `.hub`, point the relay back, `./bindCompanion.sh always`.
+
+## Its name
+
+**`daemons-hearth`** (the user, 2026-11-11; it was `CoreMP135`, M5's): `daemons-hearth:4730` on the tailnet,
+`daemons-hearth.local` at home, `ssh debian@daemons-hearth`. `hub/rename.sh <name>` changes it everywhere the hub itself
+keeps it (its own name, `/etc/hosts`, avahi, Tailscale) and restarts the companion. What the hub is told by **address**
+(10.0.0.69: the pairing QR, every board) never notices; what was told its **name** -- a phone or a site pointed at it, a
+companion that joined THE EXCHANGE through it, the n8n relay -- is told the new one.
 
 ## Rebuilding the hub from nothing
 

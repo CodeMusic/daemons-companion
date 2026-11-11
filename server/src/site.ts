@@ -1,5 +1,5 @@
 // C-170 (the user, 2026-10-22, through the hub session): the companion's site from the companion itself, so it opens
-// anywhere on the home network and over the tailnet (http://coremp135:4730), not only on the computer that runs Metro.
+// anywhere on the home network and over the tailnet (http://daemons-hearth:4730), not only on the computer that runs Metro.
 // config.json's siteDir names the exported site; every GET that is not the API's (/api/, /art/, /ollama/) is a file in
 // it, and a path with no extension is the app's own (index.html). The files are the app's code and hold nothing of the
 // user's, so they need no key; what the site then asks of the API needs a paired key, as a phone's does.

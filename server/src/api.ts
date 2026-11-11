@@ -701,7 +701,7 @@ let bonjour: string | null | undefined;
 export function bonjourName(): string | null {
   if (bonjour !== undefined) return bonjour;
   try {
-    // C-170: on Linux the machine's own name, when avahi answers for it (the hub: CoreMP135.local)
+    // C-170: on Linux the machine's own name, when avahi answers for it (the hub: daemons-hearth.local)
     const n = process.platform === "darwin" ? execFileSync("/usr/sbin/scutil", ["--get", "LocalHostName"], { encoding: "utf8" }).trim()
             : existsSync("/run/avahi-daemon/pid") ? hostname().split(".")[0] : "";
     bonjour = /^[A-Za-z0-9-]+$/.test(n) ? `${n}.local` : null;
@@ -723,7 +723,7 @@ export function lanAddress(): string | null {
   return null;
 }
 // C-170: on a tailnet (an address in 100.64/10), the name MagicDNS gives this machine -- its own, short: the hub is
-// http://coremp135:4730 from every device on the tailnet, home or away. Null when it is on none.
+// http://daemons-hearth:4730 from every device on the tailnet, home or away. Null when it is on none.
 export function tailnetName(): string | null {
   const on = Object.values(networkInterfaces()).flat().some((a) => a && a.family === "IPv4" && tailnetAddress(a.address));
   const n = hostname().split(".")[0].toLowerCase();

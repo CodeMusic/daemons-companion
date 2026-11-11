@@ -30,7 +30,7 @@ function nearServer(asked: string | null): string | null {
 const linked = Platform.OS === "web" && typeof window !== "undefined" && window.location
   ? nearServer(new URLSearchParams(window.location.search).get("server")) : null;
 // C-170: a site exported for the companion to serve itself (EXPO_PUBLIC_DAEMONS_SERVER=origin) asks whatever served it --
-// the hub at 10.0.0.69:4730, coremp135:4730 on the tailnet or CoreMP135.local -- so one export works at every address
+// the hub at 10.0.0.69:4730, daemons-hearth:4730 on the tailnet or daemons-hearth.local -- so one export works at every address
 const built = process.env.EXPO_PUBLIC_DAEMONS_SERVER;
 const served = built === "origin" && Platform.OS === "web" && typeof window !== "undefined" && window.location ? window.location.origin : null;
 export let SERVER = linked ?? served ?? (built !== "origin" ? built : undefined) ?? "http://127.0.0.1:4730";

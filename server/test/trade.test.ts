@@ -173,7 +173,7 @@ describe("the exchange (C-218 players, C-219 trades)", () => {
   it("trades in full: both SYNCs write, a restored save cannot offer it again, and it can come back by trade", async () => {
     const hub = new Store(":memory:"), kitStore = new Store(":memory:");
     const A = { save: saveA() }, B = { save: saveB() };
-    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://coremp135:4730", viaHub(hub));
+    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://daemons-hearth:4730", viaHub(hub));
     await rover.join({ name: "ROVER" });                                                              // the hub's own: no invite
     expect(X.failed(await kit.join({ name: "KIT" }))).toBe(true);
     await kit.join({ name: "KIT", code: X.invite(hub, KEYS).code });
@@ -255,7 +255,7 @@ describe("a gift (C-223): given with nothing back", () => {
   it("leaves the giver's party, closing it up, and arrives in the receiver's first empty box slot", async () => {
     const hub = new Store(":memory:"), kitStore = new Store(":memory:");
     const A = { save: saveA() }, B = { save: saveB() };
-    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://coremp135:4730", viaHub(hub));
+    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://daemons-hearth:4730", viaHub(hub));
     await rover.join({ name: "ROVER" });
     await kit.join({ name: "KIT", code: X.invite(hub, KEYS).code });
     const given = await tradeRoute(rover, hub, A.save, "CONTENT", "POST", "/api/trade/offer", { personality: 1002, kind: "gift" });
@@ -314,7 +314,7 @@ describe("friends at home (C-223)", () => {
   it("are friends once both ask; an offer for friends is seen and taken only by them", async () => {
     const hub = new Store(":memory:"), kitStore = new Store(":memory:");
     const A = { save: saveA() }, B = { save: saveB() };
-    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://coremp135:4730", viaHub(hub));
+    const rover = localLink(hub, KEYS), kit = remoteLink(kitStore, "http://daemons-hearth:4730", viaHub(hub));
     await rover.join({ name: "ROVER" });
     await kit.join({ name: "KIT", code: X.invite(hub, KEYS).code });
     const [r, k] = X.players(hub).map((p) => p.id);

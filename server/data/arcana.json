@@ -66,7 +66,7 @@
     "keyword": "WORKBENCH",
     "phrase": "Four small proofs lift one large one.",
     "prophecy": "Four small things you have already proven are lying on the bench. Pick them up together and they will carry what none of them could lift alone. The work is nearly in reach.",
-    "species": "LEMMA MIND"
+    "species": "DEDUCTION"
    },
    "spellcraft": {
     "keyword": "INCANTATION",
@@ -104,8 +104,8 @@
    "below": {
     "keyword": "THE SCROLL",
     "phrase": "Read on, in order. It is wound deep.",
-    "prophecy": "The answer you want is wound deep, and the only way to it is through everything before it. Read on, in order. You are nearer the middle of the reel than you think.",
-    "species": "MAGTAPE"
+    "prophecy": "The answer you want is kept deep, and the only way to it is through everything before it. Read on, in order. It was all kept, exactly, and you are nearer the middle than you think.",
+    "species": "RECALL"
    },
    "spellcraft": {
     "keyword": "TRUE NAME",
@@ -254,8 +254,8 @@
    "above": {
     "keyword": "THE TWINS",
     "phrase": "Half of yours is theirs, and back.",
-    "prophecy": "Someone far away will feel what you feel this week, and come without being called. Half of what you have is theirs, and half of theirs is yours. Neither of you will call it unfair.",
-    "species": "POLYDEUCES"
+    "prophecy": "You carry more than one shape: everyone who ever shared with you is in it somewhere. Half of what you have is theirs, and half of theirs is yours. A small light stays lit between you.",
+    "species": "MULTIMAL"
    },
    "below": {
     "keyword": "CONJUNCTION",
@@ -337,9 +337,9 @@
    },
    "below": {
     "keyword": "TEMPERING",
-    "phrase": "Every loss folds the blade again.",
-    "prophecy": "You will lose a round soon, and come out of it stronger. Each blow is the metal folded once more. Keep every loss: they are what the blade is made of.",
-    "species": "SPARRING"
+    "phrase": "A loss, seen from after, is a fold.",
+    "prophecy": "Something will go against you soon, and it will feel loud. Give it a season and it comes round as a whisper: the fold that gave the blade its edge. What it was depends on where you stand to look.",
+    "species": "WRAPAROUND"
    },
    "spellcraft": {
     "keyword": "SULPHUR",
@@ -409,8 +409,8 @@
    },
    "above": {
     "keyword": "THE MOMENT",
-    "phrase": "Reach as it passes. It won't return.",
-    "prophecy": "A moment is coming that will not come twice. You will know it by how ordinary it looks. Reach as it passes. Being late is the only way to miss it.",
+    "phrase": "Reach as it passes. Rare is its gift.",
+    "prophecy": "A moment is coming that does not come often. You will know it by how ordinary it looks. Reach as it passes: that it comes so seldom is what makes it yours.",
     "species": "KAIROS"
    },
    "below": {
@@ -493,9 +493,9 @@
    },
    "below": {
     "keyword": "STILL POINT",
-    "phrase": "Not stopped. Not yet pushed.",
-    "prophecy": "Everything around you will seem level, and nothing will move. You have not stopped. You only have not been pushed the right way yet, and the push will come from a side you are not watching.",
-    "species": "SADDLE"
+    "phrase": "Not stopped. Resting, and ready.",
+    "prophecy": "Everything around you will seem level, and nothing will move. You have not stopped: you are resting ready, and waking will cost you less than starting did. The push, when it comes, will find you warm.",
+    "species": "STANDBY"
    },
    "spellcraft": {
     "keyword": "INVERSION",
@@ -526,8 +526,8 @@
    },
    "above": {
     "keyword": "LETHE",
-    "phrase": "Set it down. Don't go back for it.",
-    "prophecy": "Soon you will set something down without noticing which thing it was. You will feel lighter, and something new will fit where it was. Do not go back for it.",
+    "phrase": "Set it down, and walk on lighter.",
+    "prophecy": "Soon you will set something down without noticing which thing it was. You will feel lighter, and something new will fit where it was. Walk on: the room it left is the gift.",
     "species": "FORGETTING"
    },
    "below": {
@@ -845,8 +845,8 @@
    "below": {
     "keyword": "CORNERSTONE",
     "phrase": "Once it holds, build from there.",
-    "prophecy": "The long steps are nearly done. Soon one thing will hold for good, and you will never have to prove it again. Everything you build next will start from there.",
-    "species": "THEOREM"
+    "prophecy": "The long steps are nearly done. Soon you will plant your feet on one thing and not be moved. Everything you build next will start from there.",
+    "species": "POSTULATE"
    },
    "spellcraft": {
     "keyword": "RUBEDO",

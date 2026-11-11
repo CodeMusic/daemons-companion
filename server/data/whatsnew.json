@@ -1,9 +1,53 @@
 {
- "latest": 965,
+ "latest": 967,
  "builds": [
   {
-   "build": 965,
-   "commit": "4093afd",
+   "build": 967,
+   "commit": "1dcb09c",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-315",
+     "title": "SYMBOL's picture on its card",
+     "lines": [
+      "A card that deals SYMBOL shows the form for its keyword's first letter (the user's pick); the INDEX shows A; the forms served from data/art/symbol/",
+      "SYMBOL's INDEX picture found — art/symbol.png, the A form, exported since October but looked for as a.png",
+      "Built: SYMBOL's 28 forms on the cards (from DAEMONS companion_export); the test checks each card's form is there"
+     ]
+    },
+    {
+     "ticket": "C-312",
+     "title": "The aurora beyond the den: the widget, the boards and the watches",
+     "lines": [
+      "The aurora in the widget's sky — bands over its night, the den's rule to the bit (Swift's port checked against aurora.ts), drawn at the breath's middle; every device state carries sky {edition, mended, both} (skyOf in core.ts, /api/today reads it too); the widget redrawn at 20:00"
+     ]
+    },
+    {
+     "ticket": "C-314",
+     "title": "A way into the dawn half from the app",
+     "lines": [
+      "THE EUDAIMON LAYER earned in the companion — seven dawns kept with the daemon in THE CREATOR'S HOUR (the user's pick), marked KEPT IN THE APP on the shelf; the save's flag still opens it"
+     ]
+    },
+    {
+     "ticket": "C-313",
+     "title": "The decks' dawn readings",
+     "lines": [
+      "The dawn readings, as the user picked them — each card's DAWN face, dealt from THE EUDAIMON LAYER's own deck on a gold face (the sun where its daemon will stand, to be chosen later)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.345.13 (T-542 the edges and doors)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 966,
+   "commit": "2e821d5",
    "date": "2026-11-10",
    "sections": [
     {
@@ -12,6 +56,13 @@
      "lines": [
       "The LIBRARY as an antique bookcase — a shelf per kind (FOUND IN THE GAME, MANUALS, HISTORY AND STUDY, YOUR OWN PAGES), each book standing face-out by its cover",
       "Built: THE COMPANION on the MANUALS shelf with its cover; the house computer's name out of THE TIINY's settings; the wiki links the book"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 965's notes"
      ]
     },
     {

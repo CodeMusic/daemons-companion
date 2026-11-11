@@ -324,7 +324,7 @@ void talkSpot(int &x, int &y) {
 }
 
 // C-105: the face, wide -- the time large on the left, under it the date and the battery; on the right, beyond a line
-// in the day's colour, the day's theme, its virtue over its vice, its chakra and note, and the daemon carried, small.
+// in the day's colour, the day's theme, its virtue over its shadow, its chakra and note, and the daemon carried, small.
 // C-166 (the user, 2026-10-18: "watch should have a setting on the site for 12 or 24h mode"): the time as the device's
 // own setting asks -- 13:05, or 1:05 with its PM said apart (the seven-segment font has no letters)
 static bool clockTime(char *hm, size_t n, const char **ampm) {
@@ -387,7 +387,7 @@ static void drawFaceWide(uint16_t day, uint16_t ink) {
   canvas.setTextDatum(TL_DATUM);
 }
 
-// C-71: the watch's face -- the time, the day's theme, its virtue over its vice, its chakra and note, today's steps,
+// C-71: the watch's face -- the time, the day's theme, its virtue over its shadow, its chakra and note, today's steps,
 // and TALK, held to talk (C-66). The day's colour rings the face.
 // C-162 (the user, 2026-10-18: "most will have the daemon in the middle -- maybe some are standard clocks and some
 // digital"): the round face is the device's own setting -- DAEMON (the daemon in the middle, the time above it; the

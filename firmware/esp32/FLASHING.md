@@ -7,7 +7,7 @@
 
 The companion's firmware for the **LilyGO T-Embed CC1101, T-Embed and T-Embed SI4732** (one build, `env:t-embed`: each
 board knows which it is at start) and the **T-Watch S3** (its own build, `env:t-watch-s3`). It shows the day -- its
-theme, virtue over vice, chakra and note -- the season, **the one next step**, the daemon it hosts, and its
+theme, virtue over its shadow, chakra and note -- the season, **the one next step**, the daemon it hosts, and its
 **ROUTINES**: the board's radios in the game's words, and your party's own routines from the game.
 
 **Controls:**

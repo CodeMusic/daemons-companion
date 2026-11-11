@@ -32,7 +32,7 @@
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { copyFileSync, createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
@@ -68,6 +68,8 @@ import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   //
 import { checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
+import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
+import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
@@ -295,6 +297,17 @@ function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()
   const own = store.getSetting(`voice.recipe.${d.species}`) ?? "";
   return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category, species: d.species }, core.daemonFeelings(store, now), own) };
 }
+// C-334: the carried daemon as its sleep sounds are made from it -- its INDEX self, its feelings, its care (sleepsound.ts)
+function sleepContextFor(ecfg: Config, store: Store, deviceId: string, now = new Date()): SleepContext | null {
+  const d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
+  if (!d) return null;
+  const f = selfFacts(ecfg, store, deviceId, now);
+  return { species: d.species as number, nickname: f.nickname, types: d.types, category: d.category, entry: f.entry ?? null,
+           feelings: f.feelings ?? null, care: (f.life as { care?: SleepContext["care"] } | null)?.care ?? null };
+}
+// C-334: a piece as a device sees it -- where each of its files is fetched (by its id), and how big
+const trackOut = (t: SleepTrack) => ({ ...t, files: t.state === "ready"
+  ? Object.fromEntries(Object.keys(SLEEP_FILES).map((f) => [f, `/api/sleep/track/${t.id}/${f}`])) : null });
 // C-323 (the user, 2026-11-10: "an abstract system for any voice representation which can take in context and form a
 // voice from it"): a voice by the name a caller gives -- "daemon" (the carried one), "player" (read from the save),
 // "index", "entry", "book:<id>" -- as a recipe; a trainer's own (voice.recipe.<name>) used whole. null: no such name.
@@ -642,6 +655,8 @@ export const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   // C-327: the household -- a watch swaps with, or shares a space with, another of the home's own devices
   (m: string, p: string) => (m === "GET" && p === "/api/household") || (m === "POST" && ["/api/household/swap", "/api/household/together", "/api/household/apart"].includes(p)),
+  // C-334: sleep sounds -- the watch lists them, asks for one, and copies a piece to its card by an id nobody can guess
+  (m: string, p: string) => (m === "GET" && (p === "/api/sleep" || p === "/api/sleep/tracks" || p.startsWith("/api/sleep/track/"))) || (m === "POST" && p === "/api/sleep/make"),
   (m: string) => m === "OPTIONS",
 ];
 
@@ -865,6 +880,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-293: every talker is told who is dreaming -- its INDEX self, feelings, care and bond (dreams.ts dreamerSaid) -- and asked
   // for the dream in its own voice, "I dreamt ...", as metaphor; one telling at a time for a night
   const telling = new Set<number>();
+  // C-334: sleep sounds, kept beside the database (made on first use, so a test's in-memory store makes no folder)
+  let sleepKept: SleepTracks | null = null;
+  const sleepTracks = () => (sleepKept ??= new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))));
   const meetEnded = new Map<number, Date>();                     // C-316: a memo's end, until its length is known
   // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
   // nobody waiting; with no thinker at all, laid out plainly. One at a time per chapter.
@@ -1418,6 +1436,48 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                 box: store.getSetting("self.box") ?? "", instructions: store.getSetting("self.instructions") ?? "" });
       }
       // C-251: the carried daemon's voice recipe -- as said to the voice model, and the trainer's own words for it if any
+      // C-334: sleep sounds made for the carried daemon. GET: tonight's recipe, its piece if made, and the pieces kept for it.
+      // POST /api/sleep/make {again?}: its piece for tonight's context (kept, or asked for now: about three minutes, on
+      // roverbyteseer). /api/sleep/tracks: every piece (the watch's list). /api/sleep/track/<id>/<file>: a file.
+      if (req.method === "GET" && (path === "/api/sleep" || path === "/api/sleep/tracks")) {
+        const c = sleepContextFor(ecfg, store, deviceId), all = path === "/api/sleep/tracks";
+        const r = c ? sleepRecipe(c) : null, kept = sleepTracks().list(all ? null : c?.species ?? -1);
+        return send(res, 200, { maker: !!sleepDoor((k) => store.getSetting(k)),
+                                tonight: r && c ? { key: r.key, said: sleepSaid(r, c.nickname || "your daemon"), bpm: r.bpm, keyscale: r.keyscale } : null,
+                                current: (() => { const t = r && kept.find((x) => x.key === r.key && x.state !== "failed"); return t ? trackOut(t) : null; })(),
+                                tracks: kept.map(trackOut) });
+      }
+      if (req.method === "POST" && path === "/api/sleep/make") {
+        const b = await body(req).catch(() => ({})) as { again?: boolean };
+        const c = sleepContextFor(ecfg, store, deviceId);
+        if (!c) return send(res, 400, { error: "No daemon is carried." });   // DRAFT
+        const first = sleepRecipe(c), have = sleepTracks().list(c.species).find((t) => t.key === first.key && t.state !== "failed");
+        if (have && !(b.again && have.state === "ready")) return send(res, 200, { track: trackOut(have) });
+        // a talker in the house picks one image from the INDEX entry to colour it (a few music words; never shown)
+        const image = house.any && c.entry
+          ? cleanImage(await Promise.race([house.write(SLEEP_SYSTEM, sleepAsk(c), 40).catch(() => null),
+                                           new Promise<null>((r) => setTimeout(() => r(null), 25000))]))
+          : null;
+        const r = sleepRecipe(c, image);
+        try { return send(res, 202, { track: trackOut(sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: sleepSaid(r, c.nickname || "your daemon") }, !!b.again)) }); }
+        catch (e) { return send(res, 503, { error: (e as Error).message }); }
+      }
+      if (req.method === "GET" && path.startsWith("/api/sleep/track/")) {
+        const [, , , , id, name] = path.split("/");
+        const f = sleepTracks().file(id ?? "", name ?? "");
+        if (!f) return send(res, 404, { error: "no such piece" });
+        const size = statSync(f).size, range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ""));
+        const type = SLEEP_FILES[name as keyof typeof SLEEP_FILES];
+        if (range && (range[1] || range[2])) {     // AVPlayer and a watch resuming a copy ask in ranges
+          const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+          const end = range[1] && range[2] ? Math.min(size - 1, Number(range[2])) : size - 1;
+          if (start >= size || start > end) { res.writeHead(416, { "content-range": `bytes */${size}` }); return res.end(); }
+          res.writeHead(206, { "content-type": type, "content-length": end - start + 1, "content-range": `bytes ${start}-${end}/${size}`, "accept-ranges": "bytes" });
+          return createReadStream(f, { start, end }).pipe(res);
+        }
+        res.writeHead(200, { "content-type": type, "content-length": size, "accept-ranges": "bytes", "cache-control": "max-age=31536000, immutable" });
+        return createReadStream(f).pipe(res);
+      }
       if (req.method === "GET" && path === "/api/voice") return send(res, 200, voiceFor(ecfg, store, deviceId));
       if (req.method === "POST" && path === "/api/voice") {
         const b = await body(req), v = voiceFor(ecfg, store, deviceId);

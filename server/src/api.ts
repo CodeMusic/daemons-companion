@@ -921,7 +921,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-338: THE PERSONA OF THE DAY (persona.ts), one per daemon sent to the companion, kept as persona.<personality>: built
   // from its card (personaCard) with the weather, fresh until the next wake or until its signature moves; what it writes
   // of meeting the day is asked of the house's mind in the background, a task in the ledger. null: no such daemon here.
-  const writingToday = new Set<string>();
+  // One daemon's words at a time (the Tiiny makes one answer at once; a painting must not wait behind a crowd), and a
+  // write that failed is not asked again for a quarter of an hour
+  let writingToday: string | null = null;
+  const todayFailed = new Map<string, number>();
+  const personaAsked = (): Record<string, string> => { try { return JSON.parse(store.getSetting("persona.asked") ?? "{}"); } catch { return {}; } };
   const personaNow = (personality: number, now = new Date()): { persona: Persona; facts: DayPersonaFacts } | null => {
     const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
     const card = personaCard(ecfg, store, personality >>> 0, now);
@@ -930,21 +934,34 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const key = `persona.${personality >>> 0}`, had = readPersona(store.getSetting(key)), person = store.getSetting("self.trainer") || undefined;
     const persona = had && personaFresh(had, signatureOf(facts), now) ? had : buildPersona(key, facts, now, had, person);
     if (persona !== had) store.setSetting(key, JSON.stringify(persona));
-    if (!persona.today && !writingToday.has(key) && writerNow()) {
-      writingToday.add(key);
+    const asked = personaAsked();
+    if (asked[key]?.slice(0, 10) !== now.toISOString().slice(0, 10)) store.setSetting("persona.asked", JSON.stringify({ ...asked, [key]: now.toISOString() }));
+    if (!persona.today && !writingToday && now.getTime() - (todayFailed.get(key) ?? 0) > 15 * 60_000 && writerNow()) {
+      writingToday = key;
       const w = ledgered({ kind: "persona", title: `${card.nickname}'s day, as it wakes` });   // DRAFT
       w.write(TODAY_SYSTEM, persona.text, 220).then((t) => {
         const said = (t ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-        if (!said) return w.end("failed", { error: "no words came" });   // DRAFT
+        if (!said) { todayFailed.set(key, Date.now()); return w.end("failed", { error: "no words came" }); }   // DRAFT
         const cur = readPersona(store.getSetting(key));
         if (cur && cur.signature === persona.signature) store.setSetting(key, JSON.stringify(withToday(cur, facts, said, person)));
         w.end("done");
-      }).catch((e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) })).finally(() => writingToday.delete(key));
+      }).catch((e) => { todayFailed.set(key, Date.now()); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); })
+        .finally(() => { writingToday = null; });
     }
     return { persona, facts };
   };
-  // built at wake: every ten minutes each daemon here is looked at, and only a stale one is built again
-  const wakePersonas = () => { try { for (const d of awayNow({ ...cfg, savePath: savePathOf(cfg, store) })) personaNow(d.personality); } catch { /* next time */ } };
+  // built at wake: every ten minutes the daemon carried, and any other asked for in the last three days, is looked at;
+  // only a stale one is built again. Not every daemon in the boxes: they are not out living a day.
+  const wakePersonas = () => {
+    try {
+      const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, now = Date.now();
+      const keys = new Set(Object.entries(personaAsked()).filter(([, at]) => now - Date.parse(at) < 3 * 86_400_000).map(([k]) => k));
+      const carried = carriedDaemon(ecfg, store, "");
+      if (carried) keys.add(`persona.${carried.personality >>> 0}`);
+      const here = new Set(awayNow(ecfg).map((d) => `persona.${d.personality >>> 0}`));
+      for (const k of keys) if (here.has(k)) personaNow(Number(k.slice("persona.".length)));
+    } catch { /* next time */ }
+  };
   setTimeout(wakePersonas, 90_000).unref();
   setInterval(wakePersonas, 10 * 60_000).unref();
 
@@ -969,6 +986,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     store.setSetting("easel.paintings", JSON.stringify(l));
   };
   const paintingFile = (id: string) => join(PAINTINGS_DIR, `${/^[0-9a-f]{16}$/.test(id) ? id : "-"}.png`);
+  // a painting cut off by a restart is not left painting forever: it says so, and can be asked for again
+  for (const p of paintings()) if (p.state === "painting") updatePainting(p.id, { state: "failed", error: "the hub restarted while it painted" });   // DRAFT
   const paint = (personality: number, request: string): PaintingRow | { error: string } => {
     const now = new Date(), got = personaNow(personality, now);
     if (!got) return { error: "That daemon is not here to paint." };   // DRAFT

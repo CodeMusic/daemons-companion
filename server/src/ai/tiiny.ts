@@ -37,7 +37,8 @@ const headers = (at: TiinyAt, json = true): Record<string, string> =>
 
 // C-319 next: a write-up that can be stopped from THE MIND AT WORK, and what it cost -- the mind that took it, its tokens
 export type WriteJob = { signal?: AbortSignal; spent?: (t: { in?: number; out?: number }) => void; by?: (mind: string) => void;
-                         fell?: (error: string) => void };   // C-319 later: the mind just tried failed, and the write goes on
+                         fell?: (error: string) => void;   // C-319 later: the mind just tried failed, and the write goes on
+                         quick?: boolean };                 // C-338: someone is waiting -- the quick thinker, thinking off
 export const STOPPED = "stopped";
 async function timed<T>(ms: number, run: (signal: AbortSignal) => Promise<T>, outer?: AbortSignal): Promise<T> {
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms), stop = () => ctl.abort();

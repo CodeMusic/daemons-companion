@@ -784,14 +784,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
   // The work is given `write` (house.write, counted) and says how it ended with `end`.
   const RUNNING = new Map<string, AbortController>();
-  const ledgered = (o: { kind: string; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string }) => {
+  const ledgered = (o: { kind: string; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string;
+                         quick?: boolean }) => {   // C-338: quick -- someone stands waiting: the quick thinker, thinking off
     const ctl = new AbortController();
     const task = TASKS.open({ kind: o.kind, title: o.title, user: o.user, device: o.device, mind: o.mind ?? writerNow() ?? undefined,
                               state: "thinking", can: { stop: true, retry: !!o.retry }, parent: o.parent, plan: o.plan });
     RUNNING.set(task.id, ctl);
     let sizeIn = 0, sizeOut = 0;
     const job: WriteJob = { signal: ctl.signal, spent: (t) => { TASKS.update(task.id, { tokens: t }); },
-                            by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e) };   // C-319 later: its hand-offs
+                            by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e), quick: o.quick };   // C-319 later: its hand-offs
     const write = async (system: string, user: string, most?: number) => {
       if (ctl.signal.aborted) throw new Error(STOPPED);
       sizeIn += system.length + user.length; TASKS.update(task.id, { size: { in: sizeIn } });
@@ -938,7 +939,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     if (asked[key]?.slice(0, 10) !== now.toISOString().slice(0, 10)) store.setSetting("persona.asked", JSON.stringify({ ...asked, [key]: now.toISOString() }));
     if (!persona.today && !writingToday && now.getTime() - (todayFailed.get(key) ?? 0) > 15 * 60_000 && writerNow()) {
       writingToday = key;
-      const w = ledgered({ kind: "persona", title: `${card.nickname}'s day, as it wakes` });   // DRAFT
+      const w = ledgered({ kind: "persona", title: `${card.nickname}'s day, as it wakes`, quick: true });   // DRAFT: a few sentences, no long reasoning
       w.write(TODAY_SYSTEM, persona.text, 220).then((t) => {
         const said = (t ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
         if (!said) { todayFailed.set(key, Date.now()); return w.end("failed", { error: "no words came" }); }   // DRAFT
@@ -996,7 +997,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const style = paintStyle({ types: f.types, species: f.species, category: f.category }, core.daemonFeelings(store, now),
                              store.getSetting(`paint.style.${f.species}`));
     const id = randomBytes(8).toString("hex"), seed = randomBytes(4).readUInt32BE(0);
-    const w = ledgered({ kind: "painting", title: `${f.nickname} paints: ${request.slice(0, 40)}` });   // DRAFT
+    const w = ledgered({ kind: "painting", title: `${f.nickname} paints: ${request.slice(0, 40)}`, quick: true });   // DRAFT: the trainer watches the easel
     const row: PaintingRow = { id, at: now.toISOString(), personality: personality >>> 0, species: f.species, nickname: f.nickname,
                                name: sp?.name ?? f.name ?? "", types: f.types ?? [], request, title: "", scene: "", about: "", style, seed,
                                state: "painting", task: w.task.id };

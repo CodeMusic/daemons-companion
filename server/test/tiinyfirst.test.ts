@@ -57,6 +57,12 @@ describe("the Tiiny first", () => {
     expect(sent[1].body).toMatchObject({ model: "tiiny-35b", chat_template_kwargs: { enable_thinking: true } });
     expect(sent[1].body.max_tokens).toBeGreaterThan(300);
   });
+  it("writes on the quick thinker, thinking off, when someone stands waiting (C-338)", async () => {
+    tiinyUp();
+    const h = preferTiiny(boards(), () => ({ at, model: "tiiny-35b", quick: "tiiny-9b" }));
+    await h.write("system", "user", 300, { quick: true });
+    expect(sent[0].body).toMatchObject({ model: "tiiny-9b", chat_template_kwargs: { enable_thinking: false } });
+  });
   it("hears on the board when the Tiiny has no hearing model", async () => {
     tiinyUp();
     expect(await preferTiiny(boards(), () => ({ at, model: "m" })).transcribe(new Uint8Array([1]))).toBe("heard on the board");

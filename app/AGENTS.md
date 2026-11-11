@@ -76,6 +76,25 @@ Every step is DRAFT until the user reads it, and the repository is public: no pe
 frightening word. `server/test/whatsnew_setup.test.ts` checks each entry (its wiki page exists, its book is known) and
 that the notes carry it.
 
+## A release brings the docs current (C-341)
+
+Every TestFlight build, after `whatsnew.py --write --build N` and before archiving, looks back from WHAT'S NEW to the
+build before it and brings every public word current (the user, 2026-11-11). From the DAEMONS repository:
+
+```sh
+python3 tools/releasedocs.py --companion --online
+```
+
+It groups the commits since the previous WHAT'S NEW build by ticket, joins each to its WHAT'S NEW section and SET UP,
+and checks the READMEs, the five wikis (`wiki/`, published with `wiki/publish.sh` -- from HEAD when another session
+has wiki edits open), `docs/`, the manuals the app shows (DAEMONS `docs/manual-companion`, `docs/manual-watch`, ...)
+and `wiki/Server-API.md` (every `/api/...` a build's notes name). **STALE** lines are fixed in the same build;
+each **CANDIDATE** is written or becomes a TODO row. Public writing: nothing personal, never the frightening word.
+
+**A TestFlight build is a patch: it never regenerates a book's recording.** Only a major or minor release does (the
+app.json version's first two numbers, or a new design bible group in DAEMONS), and only for books whose words changed;
+DAEMONS `CLAUDE.md` "Releasing ROMs" has the rule.
+
 ## Where things live
 
 **`LAYOUT.md` at the repository's root** is the map of `app/` and everything else, and says where a new file goes

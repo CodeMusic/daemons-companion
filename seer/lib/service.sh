@@ -34,8 +34,13 @@ seer_service() {
 </dict></plist>
 EOF
     umask 022
+    # bootout returns before the old one has gone; bootstrapping over it fails ("5: Input/output error") and leaves
+    # nothing running -- so wait until it is gone, and try the bootstrap again a few times (roverbyteseer, 2026-11-11)
+    local i
     launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
-    launchctl bootstrap "gui/$(id -u)" "$plist"
+    for i in $(seq 1 40); do launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1 || break; sleep 0.25; done
+    for i in 1 2 3 4 5; do launchctl bootstrap "gui/$(id -u)" "$plist" 2>/dev/null && break; sleep 1; done
+    launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1 || { echo "   launchd would not take $label (see $plist)" >&2; return 1; }
     launchctl kickstart "gui/$(id -u)/$label" 2>/dev/null || true   # a fresh bootstrap over ssh may wait to run
   else
     local unit="$HOME/.config/systemd/user/daemons-$name.service" cmd=""

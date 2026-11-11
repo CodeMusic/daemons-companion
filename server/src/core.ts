@@ -28,6 +28,8 @@ import { tradeLocks, tradesToWrite, tradesWritten } from "./tradelink.js";   // 
 import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
 import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
+import { validDeviceId } from "./deviceid.js";
+import { shareCare, togetherView } from "./household.js";   // C-327
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./casino.js";   // C-149, C-151, C-167
 import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.js";   // C-158
@@ -305,6 +307,12 @@ export function speciesHeld(h: Host): number[] {
 export const CARES_A_DAY = 9;
 export function careGiven(h: Host, store: Store, kind: string, deviceId = "", now = new Date()) {
   if (!["feed", "water", "train"].includes(kind)) return;
+  // C-327: given in a household space, both devices draw it and the other daemon's bond counts it too
+  const other = validDeviceId(deviceId) ? shareCare(store, deviceId, kind, now) : null;
+  bondCare(h, store, deviceId, now);
+  if (other) bondCare(h, store, other, now);
+}
+function bondCare(h: Host, store: Store, deviceId: string, now: Date) {
   const d = carriedDaemon(h, store, deviceId);
   if (!d) return;
   const k = `bond.caresToday.${d.personality >>> 0}`, day = now.toLocaleDateString("en-CA");
@@ -476,6 +484,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            ...(subtle ? { subtle } : {}),                // C-203: what there is to read, and how often a lean is right
            hermetic,                                     // C-238: THE HERMETIC LAYER held; the hour's first sight still to be said
            ...(isGlass(deviceId) ? { glass: glassForDevice(store, now.getTime()) } : {}),   // C-262: a T-Glass's one screen
+           ...(togetherNow(h, store, deviceId, now) ?? {}),   // C-327: in a household space with another device's daemon
            ...(halloween ? { halloween } : {}),          // C-240: the costume, a treat just left
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
@@ -483,6 +492,17 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon, party };
 }
 
+
+// C-327: the other daemon in this device's household space, as a device draws it -- its picture, name and level, the
+// side this device's own stands on, and a care given on either in the last minute and a half
+function togetherNow(h: Host, store: Store, deviceId: string, now: Date) {
+  const v = togetherView(store, awayNow(h), deviceId, now);
+  if (!v) return null;
+  const d = v.daemon;
+  return { together: { device: v.device, side: v.side, since: v.since, until: v.until, care: v.care,
+                       daemon: d && { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level,
+                                      art: `/art/party/${d.slot}.png`, artKey: `${d.species}-${d.moves.join(".")}` } } };
+}
 
 export function ownBeacons(store: Store): { peer: string; at: number }[] {
   try { return JSON.parse(store.getSetting("beacons.own") ?? "[]"); } catch { return []; }

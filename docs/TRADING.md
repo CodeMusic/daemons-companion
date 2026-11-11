@@ -192,3 +192,23 @@ daemon, devices near each other, during a trade); lines written by the model and
 ## An item given (C-223)
 
 GIVE AN ITEM offers up to 99 of an item from the bag's ITEMS or BALLS pockets, or from the PC. Key items, berries and PLUGINs are never offered: in the game, a berry or a PLUGIN added to the bag brings its case with it. Nothing comes back. Once someone takes it, the giver's next SYNC removes the items: from the bag first (its quantities are XOR the low 16 bits of the encryption key, and an emptied slot closes up), then from the PC. **Only after that write** does the receiver's next SYNC put them in their PC: stacked onto the same item while the total stays at or under 999, else in the first empty slot, else it waits. The giver can call it off until their SYNC has removed it. A restored save could give the same item twice, because items, unlike daemons, have no identity. It works once `profile_layout.json` names the PC's items (`pc_items`); without that, nothing is written.
+
+## In the household: swap, a shared space, care seen on both (C-327, server built 2026-11-11, DRAFT)
+
+*The user, 2026-11-11: "many of them should work not just to another account but within the house-hold".* Between one
+home's own devices (the phone is one, by its widget's id) nothing goes through the exchange and nothing is written to
+the save -- `server/src/household.ts`, answered by the hub and by a phone alone (`routes.ts`):
+
+| | Request | What it does |
+|---|---|---|
+| Who carries whom | `GET /api/household` | `carrying` (device id -> its daemon), `unplaced` (away, in no device), `spaces` |
+| SWAP | `POST /api/household/swap` `{ a?, b }` | the two devices exchange daemons; one carrying none takes the other's. `a` is the asker (`?device=` / `x-device`) when left out |
+| TOGETHER | `POST /api/household/together` `{ a?, b }` | the two daemons share one space for twelve hours; a device is in one space at a time |
+| Apart | `POST /api/household/apart` `{ device? }` | ends the asker's space |
+
+While in a space, every device's `GET /api/device/state` carries **`together`**: `{ device, side, since, until,
+daemon: { slot, species, name, nickname, level, art, artKey }, care }` -- `side` is where **its own** daemon stands
+(`left` for `a`, `right` for `b`), the other on the other side; `daemon.art` is fetched as the device's own is.
+`care` is the last care given on either device in the last 90 seconds, `{ kind: feed|water|train, by, at, mine }`, or
+null: each device draws it once per `at` -- C-302's PROVISION for the kind in the middle, a daemon either side eating.
+A care given on either counts for **both** daemons' bonds (within each one's nine a day).

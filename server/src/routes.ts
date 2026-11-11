@@ -45,6 +45,8 @@ import { thriveOf } from "./thrive.js";   // C-207
 import { again, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
+import { carryView } from "./carry.js";
+import { apart, spaces as householdSpaces, swap, together } from "./household.js";   // C-327
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { readUnity } from "./unity.js";
@@ -52,8 +54,8 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -66,6 +68,15 @@ const ok = (body: unknown, status = 200): Reply => ({ status, body });
 const no = (status: number, error: string, more: object = {}): Reply => ({ status, body: { error, ...more } });
 const NO_SAVE = "no save named -- set it in Settings";
 
+// C-327: each device's daemon, by device id, and the household spaces in use
+function householdView(h: Host, store: Store, now: Date) {
+  const { byDevice, unplaced } = carryView(store, awayNow(h));
+  const brief = (d: { personality: number; slot: number; species: number; name: string; nickname: string; level: number }) =>
+    ({ personality: d.personality, slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level });
+  return { carrying: Object.fromEntries(Object.entries(byDevice).map(([id, d]) => [id, brief(d)])), unplaced: unplaced.map(brief),
+           spaces: householdSpaces(store, now).map(({ a, b, since, until }) => ({ a, b, since, until })) };
+}
+
 export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   const { method, path, body: b, deviceId } = a;
   if (method === "GET") {
@@ -76,6 +87,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const { mended, both } = skyOf(h);                               // with a daemon from the other edition in the party
       return ok({ ...today(h, store, now), mended, both });
     }
+    if (path === "/api/household") return ok(householdView(h, store, now));   // C-327: who carries whom, and the spaces shared
     if (path === "/api/glass") return ok(glassView(store, now.getTime()));   // C-262: what the glasses show, and the notes
     if (path === "/api/goals") return ok(store.goals());
     // C-298: the JOURNAL -- every journal, or one with its entries and chapters (journal.ts)
@@ -191,6 +203,17 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
   }
   if (method === "POST") {
+    // C-327: social within the household -- a swap of what two devices carry, two daemons in one space, and out of it.
+    // A device names the other; its own is `a`, or the asker itself (?device=)
+    if (path === "/api/household/swap" || path === "/api/household/together") {
+      const one = typeof b?.a === "string" ? b.a : deviceId, two = typeof b?.b === "string" ? b.b : "";
+      const r = path.endsWith("swap") ? swap(store, awayNow(h), one, two) : together(store, one, two, now);
+      return typeof r === "string" ? no(400, r) : ok(householdView(h, store, now));
+    }
+    if (path === "/api/household/apart") {
+      apart(store, typeof b?.device === "string" ? b.device : deviceId, now);
+      return ok(householdView(h, store, now));
+    }
     if (path === "/api/dawn/kept") return ok(keepDawn(store, now));   // C-314: this morning, if it is the creator's hour here
     // C-229: ASK THE SUBTLE LAYER -- its own line and a question back, or TWO VOICES' asking voice (the hub's module may say
     // the line in its own words instead: api.ts); C-230: the day's question answered, kept in the journal
@@ -245,7 +268,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       // C-196: the daemon's written line for it, as the boards show (chosen before the care counts, as api.ts's careLine)
       const l = daemonLife(store, now), kind = care[1] as LineKind;
       const said = writtenLine(kind, l.mood, now.toLocaleDateString("en-CA"), kind === "feed" ? l.fed.today : kind === "water" ? l.watered.today : 0);
-      store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId);
+      store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId, now);
       const r = lifeNow(h, store, deviceId, now), save = h.save.read();
       return { ...r, body: { ...(r.body as object), ...saying(said, !!save && readSubtle(save).held),   // C-204: and under it
                              ...(night ? { dream: { id: night.id, text: night.text, by: night.by, quality: night.quality } } : {}) } };

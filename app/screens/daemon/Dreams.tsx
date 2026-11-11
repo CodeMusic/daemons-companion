@@ -6,6 +6,7 @@ import { Button, Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { Action, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { VoiceButton } from "../../ui/voiceButton";
+import { SleepSoundsCard } from "./SleepSounds";   // C-334
 
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string;
@@ -50,10 +51,11 @@ export function DreamsScreen({ ink }: { ink?: string }) {
     catch (e) { setShared((x) => ({ ...x, [d.id]: (e as Error).message })); }
   };
   useEffect(() => { api<{ dreams: Dream[] }>("/api/dreams").then((r) => setDreams(r.dreams)).catch((e) => setError(e.message)); }, []);
-  if (error) return <Small color="$color8">{error}</Small>;
-  if (!dreams) return null;
+  if (error) return <YStack gap={12}><SleepSoundsCard ink={ink} /><Small color="$color8">{error}</Small></YStack>;
+  if (!dreams) return <SleepSoundsCard ink={ink} />;
   return (
     <YStack gap={12}>
+      <SleepSoundsCard ink={ink} />
       <Small>{"What the daemon dreamt, each night it slept -- tucked in on the watch, the phone or the widget.  DRAFT"}</Small>
       {dreams.length ? dreams.map((d) => { const lit = litOf(d.id), view = shown(d, lit); return (
         <Card key={d.id}>

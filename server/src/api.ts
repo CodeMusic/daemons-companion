@@ -72,6 +72,7 @@ import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type S
 import { readProfile } from "./save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
+import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
@@ -678,7 +679,7 @@ export const DEVICE_DOOR = [
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
      "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/") || p.startsWith("/api/ai/voice/")),   // C-317: a voice streamed, by an id nobody can guess   // C-180: an answer fetched
-  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
+  (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/book/recording" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   // C-327: the household -- a watch swaps with, or shares a space with, another of the home's own devices
   (m: string, p: string) => (m === "GET" && p === "/api/household") || (m === "POST" && ["/api/household/swap", "/api/household/together", "/api/household/apart",
                                                                    "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate"].includes(p)),   // C-329: the watch's dialogue
@@ -924,6 +925,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const telling = new Set<number>();
   // C-334: sleep sounds, kept beside the database (made on first use, so a test's in-memory store makes no folder)
   let sleepKept: SleepTracks | null = null;
+  const bookRecordings = new BookRecordings(join(dirname(cfg.database), "recordings"));   // C-331 (1)
   const sleepTracks = () => (sleepKept ??= new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))));
   const meetEnded = new Map<number, Date>();                     // C-316: a memo's end, until its length is known
   // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
@@ -1504,6 +1506,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const r = sleepRecipe(c, image);
         try { return send(res, 202, { track: trackOut(sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: sleepSaid(r, c.nickname || "your daemon") }, !!b.again)) }); }
         catch (e) { return send(res, 503, { error: (e as Error).message }); }
+      }
+      // C-331 (1): a book's own recording, one chapter, as a board plays a voice (raw 16 kHz PCM) -- the Ultra keeps it on
+      // its card. ?book=<shelf id>&title=<the chapter's title>. 404 when that chapter has no recording (the board reads it
+      // in the INDEX voice instead).
+      if (req.method === "GET" && path === "/api/book/recording") {
+        const f = await bookRecordings.chapter(String(url.searchParams.get("book") ?? ""), String(url.searchParams.get("title") ?? ""));
+        if (!f) return send(res, 404, { error: "no recording of that chapter" });
+        res.writeHead(200, { "content-type": "application/octet-stream", "content-length": statSync(f).size, "cache-control": "max-age=86400" });
+        return createReadStream(f).pipe(res);
       }
       if (req.method === "GET" && path.startsWith("/api/sleep/track/")) {
         const [, , , , id, name] = path.split("/");

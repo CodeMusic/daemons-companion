@@ -263,7 +263,7 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
       <YStack gap={6} marginTop={6}>
         <Eyebrow>THE TIINY</Eyebrow>
         <Input value={tiinyTyped?.url ?? t.tiiny?.url ?? ""} onChangeText={(url) => setTiinyTyped({ ...tiinyTyped, url })}
-               placeholder="http://roverbyteseer:4000/v1" autoCapitalize="none" autoCorrect={false} keyboardType="url" />
+               placeholder="http://<the house computer>:4000/v1" autoCapitalize="none" autoCorrect={false} keyboardType="url" />
         <XStack gap={8} flexWrap="wrap" alignItems="center">
           <Input flexGrow={1} minWidth={140} value={tiinyTyped?.key ?? ""} onChangeText={(key) => setTiinyTyped({ ...tiinyTyped, key })}
                  placeholder={t.tiiny?.keySet ? "its key is kept" : "its key"} secureTextEntry autoCapitalize="none" autoCorrect={false} />
@@ -282,9 +282,9 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
         </XStack>
         {/* C-317: its voice streamed past LiteLLM, which holds a voice back until it is whole */}
         <Input value={tiinyTyped?.stream ?? t.tiiny?.stream ?? ""} onChangeText={(stream) => setTiinyTyped({ ...tiinyTyped, stream })}
-               placeholder="its voice, streamed: http://roverbyteseer:4001/v1 (or through the address above)" autoCapitalize="none" autoCorrect={false} keyboardType="url" />{/* DRAFT */}
+               placeholder="its voice, streamed: http://<the house computer>:4001/v1 (or through the address above)" autoCapitalize="none" autoCorrect={false} keyboardType="url" />{/* DRAFT */}
         <Small color={tiinyHealth ? (tiinyHealth.ok ? "$color10" : "$color9") : undefined}>
-          {tiinyNote || (!tiinyOn ? "Its address: roverbyteseer's, which lists the Tiiny's models with its own, or the Tiiny's own, ending /openai/v1."
+          {tiinyNote || (!tiinyOn ? "Its address: the house computer's (its LiteLLM), which lists the Tiiny's models with its own, or the Tiiny's own, ending /openai/v1."
             : tiinyHealth?.ok ? `Answering: ${tiinyHealth.models.length} models.` : "Not answering yet.")}
         </Small>{/* DRAFT */}
       </YStack>

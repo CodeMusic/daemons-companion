@@ -204,7 +204,7 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
       setHand(r.cards); setTurned(r.cards.map(() => false)); setRound((x) => x + 1);
     } catch (e) { setErr((e as Error).message); }
   };
-  const inner = Math.max(0, w - 32 - (w >= 560 ? 218 : 0));      // wide, the modes stand beside the cards
+  const inner = Math.max(0, w - 32 - (w >= 560 ? 258 : 0));      // wide, the modes stand beside the cards
   const one = Math.min(240, Math.max(150, inner)), three = Math.max(90, Math.min(200, (inner - 2 * 10) / 3));
   const places = mode === "day" ? [] : PLACES[mode];
   const size = places.length === 3 ? three : one;
@@ -230,7 +230,7 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
   const dayCaption = halloween ? `HALLOWEEN · THE THIRTEEN · ${day.roman} -- a spell for the day.  DRAFT`
     : `${sideName(day.side)} · ${day.roman}${day.shiny ? " · shiny" : ""}  DRAFT`;
   const modes = (
-    <YStack gap={6} flexDirection={w >= 560 ? "column" : "row"} flexWrap="wrap" width={w >= 560 ? 200 : undefined}>
+    <YStack gap={6} flexDirection={w >= 560 ? "column" : "row"} flexWrap="wrap" width={w >= 560 ? 240 : undefined}>
       {MODES.map((m) => (
         <Text key={m.k} role="button" aria-label={m.label} aria-pressed={mode === m.k} cursor="pointer" onPress={() => deal(m.k, pick)}
               {...mono} fontSize={11} paddingVertical={8} paddingHorizontal={10} borderRadius={3} borderWidth={1} borderColor={C.pink}

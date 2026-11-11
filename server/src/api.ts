@@ -67,7 +67,7 @@ import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   //
 import { checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
-import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
+import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
@@ -82,6 +82,7 @@ import { fetchManualText } from "./manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
+import { gameDream, mindNow } from "./mind.js";   // C-254: the mind portal
 import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
 import { appNight, handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
 import { WAKES as WAKING_KINDS } from "./life.js";   // C-293
@@ -367,6 +368,12 @@ const BOOKS_WITH_ART = ["subtle", "hermetic", "eudaimon", "unity", "origin"] as 
 // mid tone) -- or null when the species has no art
 const speciesPngCache = new Map<string, Buffer | null>();
 const SEASON_NAMES = ["winter", "spring", "summer", "autumn"];
+// a species' picture in data/art/, from its front's path in species.json: <name>.png, or for one drawn as several forms
+// in a folder of its own (C-315, SYMBOL: gfx/daemons/symbol/a_front.png) the folder's name, <folder>.png
+function artFileOf(front: string | undefined): string | undefined {
+  const parts = front?.split("/") ?? [];
+  return front && (parts.length > 3 && parts[parts.length - 2] !== "daemons" ? `${parts[parts.length - 2]}.png` : parts[parts.length - 1].replace("_front.png", ".png"));
+}
 // C-310: or one of its seasonal forms (the MUSAI branch: data/art/species/<name>_<season>.png), painted the same way
 function speciesPng(species: string, season: string | null = null): Buffer | null {
   const key = season ? `${species}_${season}` : species;
@@ -374,9 +381,7 @@ function speciesPng(species: string, season: string | null = null): Buffer | nul
   const row = SPECIES[species];
   // C-315: a species drawn as several forms keeps them in a folder of its own (SYMBOL: gfx/daemons/symbol/a_front.png);
   // DAEMONS companion_export writes its first form, A, as art/symbol.png -- the INDEX shows it, as the game's entry does
-  const front: string | undefined = row?.art?.front, parts = front?.split("/") ?? [];
-  const rel = season ? row?.seasons?.[season]?.art
-    : front && (parts.length > 3 && parts[parts.length - 2] !== "daemons" ? `${parts[parts.length - 2]}.png` : parts[parts.length - 1].replace("_front.png", ".png"));
+  const rel = season ? row?.seasons?.[season]?.art : artFileOf(row?.art?.front);
   const file = rel && join(ART_DIR, rel);
   const png = file && existsSync(file) ? readFileSync(file) : null;
   const body = png && row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, [0, 0, 0, 0])) : png;
@@ -499,7 +504,7 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   const bytes = new Uint8Array(readFileSync(cfg.savePath));
   const d = [...readSave(bytes).party, ...readAway(bytes)].find(which);   // C-103: a daemon away in a box has its art too
   const row = d && SPECIES[String(d.species)];
-  const file = row?.art?.front && join(ART_DIR, row.art.front.split("/").pop().replace("_front.png", ".png"));
+  const rel = artFileOf(row?.art?.front), file = rel && join(ART_DIR, rel);   // C-254: SYMBOL's, found by its folder as the INDEX's is
   if (!d || !file || !existsSync(file)) return null;
   const png = readFileSync(file);
   return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
@@ -1370,6 +1375,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!t) return send(res, 400, { error: "a trace is {kind, ring, heard, thought, said, ms}" });
         keepTrace((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), t);
         return send(res, 200, { ok: true });
+      }
+      // C-254: the mind portal (GET /api/mind/portal; /api/mind is C-307's traces) -- NOW (each feeling, the room's weather, the event behind the strongest), the companion's
+      // last dream beside the one the save carries, the voice it speaks in, and the words a model is given about it
+      if (req.method === "GET" && path === "/api/mind/portal") {
+        const now = new Date(), d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
+        if (!d) return send(res, 200, { daemon: null });
+        const last = [...dreamsOf(store)].sort((a, b) => Date.parse(b.to) - Date.parse(a.to))[0] ?? null;
+        let game = null;
+        try { const file = hostOf(ecfg).save.read(); game = file ? gameDream(file) : null; } catch { /* no dream read */ }
+        return send(res, 200, {
+          daemon: { nickname: d.nickname, slot: d.slot, species: d.species, expression: core.daemonExpression(store, now, undefined, d.species)?.name ?? null },
+          now: mindNow(core.daemonFeelings(store, now)),
+          dream: last ? { title: titleOf(last), text: last.text, at: last.to, quality: last.quality } : null, game,
+          remembered: { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month") },
+          voice: voiceFor(ecfg, store, deviceId, now), self: selfText(ecfg, store, deviceId, "full") });
       }
       if (req.method === "GET" && path === "/api/self") {
         const length = (["short", "day", "full"] as const).find((l) => l === url.searchParams.get("length")) ?? "day";

@@ -1,7 +1,7 @@
 // pairing a phone with its companion, or the phone alone with Delta (C-53, C-111). (C-157: out of App.tsx.)
 import * as SecureStore from "expo-secure-store";
-import { useState } from "react";
-import { Platform } from "react-native";
+import { useEffect, useState } from "react";
+import { Linking, Platform } from "react-native";
 import { Input, Text, YStack } from "tamagui";
 import { api, AWAY, hostAlone, KEEP, keepSiteToken, LOCAL, ON_PHONE, SERVER, setConnection, WIDGET } from "../../platform/net";
 import { Action, Choice, Small } from "../../ui/ui";
@@ -13,12 +13,12 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
   // hosting alone is folded away (2026-10-24: on the user's mom's iPad, its "choose a save" under the pairing boxes read
   // as the app wanting a save, when all it needed was the code)
   const [alone, setAlone] = useState(false);
-  const pair = async () => {
+  const pair = async (at = server, with_ = code) => {
     try {
       setError("");
-      const base = server.trim().replace(/\/$/, "").replace(/^(?!https?:\/\/)/, "http://");
+      const base = at.trim().replace(/\/$/, "").replace(/^(?!https?:\/\/)/, "http://");
       const r = await fetch(base + "/api/pair", { method: "POST", headers: { "content-type": "application/json" },
-                                                  body: JSON.stringify({ code: code.trim(), name: name.trim() }) });
+                                                  body: JSON.stringify({ code: with_.trim(), name: name.trim() }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? `the companion answered ${r.status}`);
       if (!ON_PHONE) { keepSiteToken(j.token, base); setConnection({ server: base, token: j.token }); onPaired(); return; }   // C-170: kept under the server it was paired with
@@ -30,6 +30,20 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
       onPaired();
     } catch (e) { setError(`${(e as Error).message}. Is the companion running, and is it open to your network (Settings on the site)?`); }
   };
+  // C-170: the hub's screen shows its code as a QR -- daemons://pair?server=<url, encoded>&code=<six digits>; the camera
+  // opens the app with it, and here, unpaired, both boxes are filled and the phone pairs at once
+  useEffect(() => {
+    if (!ON_PHONE) return;
+    const open = (url: string | null) => {
+      const q = url ? pairLink(url) : null;
+      if (!q) return;
+      setServer(q.server); setCode(q.code);
+      void pair(q.server, q.code);
+    };
+    Linking.getInitialURL().then(open).catch(() => {});
+    const sub = Linking.addEventListener("url", (e) => open(e.url));
+    return () => sub.remove();
+  }, []);
   return (
     <YStack flex={1} backgroundColor="$color2" padding={24} paddingTop={80} gap={14}>
       <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
@@ -42,7 +56,7 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
       <Input value={name} onChangeText={setName} placeholder="this phone's name" maxLength={40}
              backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
-      <Action label="Pair" onPress={pair} />
+      <Action label="Pair" onPress={() => pair()} />
       {error ? <Small color="$color9">{error}</Small> : null}
       {!ON_PHONE ? <Small>DRAFT</Small> : null}
       {LOCAL && !alone ? <Text fontSize={14} color="$color10" marginTop={18} textDecorationLine="underline" role="button"
@@ -50,6 +64,19 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
       {LOCAL && alone ? <PhoneAlone onPaired={onPaired} /> : null}
     </YStack>
   );
+}
+
+// C-170: a pairing link's server and code, or null for anything else (only http(s) addresses, only six digits)
+export function pairLink(url: string): { server: string; code: string } | null {
+  const m = /^daemons:\/\/pair\?(.*)$/.exec(url.trim());
+  if (!m) return null;
+  const q: Record<string, string> = {};
+  for (const kv of m[1].split("&")) {
+    const i = kv.indexOf("=");
+    if (i > 0) { try { q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); } catch { return null; } }
+  }
+  if (!/^https?:\/\/[^\s/?#]+\/?$/.test(q.server ?? "") || !/^\d{6}$/.test(q.code ?? "")) return null;
+  return { server: q.server.replace(/\/$/, ""), code: q.code };
 }
 
 // C-111 (DRAFT): no computer -- the phone hosts the daemon itself, from the save Delta shares through Files

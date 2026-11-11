@@ -1,16 +1,17 @@
 {
- "latest": 969,
+ "latest": 970,
  "builds": [
   {
-   "build": 969,
-   "commit": "ae5383d",
+   "build": 970,
+   "commit": "41944fe",
    "date": "2026-11-11",
    "sections": [
     {
      "ticket": "C-319",
      "title": "THE MIND AT WORK: every task in the mind mesh, seen and managed",
      "lines": [
-      "Next: every write-up a task, its size and tokens, a mind's queue depth, and a STOP that really aborts"
+      "Next: every write-up a task, its size and tokens, a mind's queue depth, and a STOP that really aborts",
+      "Later: LATER filled by the hub's plans, tasks as trees, and hand-offs between minds made visible"
      ]
     },
     {
@@ -28,6 +29,20 @@
      ]
     },
     {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 969's notes"
+     ]
+    },
+    {
+     "ticket": "C-323",
+     "title": "Every voice from its speaker and context",
+     "lines": [
+      "Every voice from its speaker and context — a talk never voiced in parts; dreams in the daemon's voice, the journal and THE NOTEBOOK in the player's, each book in its own (DRAFT)"
+     ]
+    },
+    {
      "ticket": null,
      "title": "THE GAME",
      "lines": [
@@ -39,7 +54,8 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "Notebook.json: each page from 64 up is read or unread by its own SEEN flag (DAEMONS 9a7c61ca)"
+      "Notebook.json: each page from 64 up is read or unread by its own SEEN flag (DAEMONS 9a7c61ca)",
+      "T-533: THE ORIGIN OF A DAEMON's recording, sealed, played whole once every chapter is back (DRAFT)"
      ]
     }
    ]

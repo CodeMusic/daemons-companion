@@ -30,10 +30,12 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
               says: "CALLOW SCHOOL's TEXTBOOK in full, the seven floors taught as a university textbook" },                     // DRAFT (C-276)
   companion: { title: "THE COMPANION", about: "Everything the companion does: your daemon AWAY, the days, the house's mind, the devices.",   // DRAFT (C-321)
                says: "The DAEMONS companion: the app, the site, the hub and the devices" },                                       // DRAFT (C-321)
+  watch: { title: "THE WATCH", about: "Your daemon on your wrist: the T-Watch Ultra and the T-Watch S3.",                    // DRAFT (C-326)
+           says: "The DAEMONS companion on a watch: the T-Watch Ultra and the T-Watch S3" },                                // DRAFT (C-326)
 };
 // the recording each book is heard in (DAEMONS docs/books/audio); the TEXTBOOK's is CALLOW SCHOOL's own (Library.tsx)
 const HEARD: Partial<Record<Which, Recorded>> = { player: "manual", quick: "quick", companion: "companion", social: "social",
-  tiiny: "tiiny", word: "word" };
+  tiiny: "tiiny", word: "word", watch: "watch" };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;
   return `${BOOK[w].about}${r ? ` For v${r}.` : ""}`;   // DRAFT

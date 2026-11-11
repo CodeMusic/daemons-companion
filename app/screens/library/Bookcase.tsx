@@ -47,17 +47,21 @@ export function Bookcase({ shelves }: { shelves: Shelf[] }) {
   );
 }
 
-// books laid along a board until it is full, then a board more
+// C-326 (the user, 2026-11-11: "limit how many books on one horizontal shelf -- we do not want the books getting too
+// small ... it looks weird when books are all different sizes"): at most MOST to a board, and a shelf's books shared
+// evenly over as few boards as hold them -- six are three and three, never five and one -- each book at the one height
+const MOST = 4;
 function rows(books: CaseBook[], tall: number, inner: number, gap: number) {
-  const out: CaseBook[][] = [[]];
-  let at = 0;
-  for (const b of books) {
-    const bw = (wide(b.id) * tall) / 320;
-    if (out[out.length - 1].length && at + gap + bw > inner) { out.push([]); at = 0; }
-    at += (out[out.length - 1].length ? gap : 0) + bw;
-    out[out.length - 1].push(b);
+  const fits = (r: CaseBook[]) => r.reduce((at, b, i) => at + (i ? gap : 0) + (wide(b.id) * tall) / 320, 0) <= inner;
+  for (let n = Math.ceil(books.length / MOST); n <= books.length; n++) {
+    const out: CaseBook[][] = [];
+    for (let k = 0, i = 0; k < n; k++) {
+      const take = Math.ceil((books.length - i) / (n - k));
+      out.push(books.slice(i, i + take)); i += take;
+    }
+    if (out.every((r) => r.length === 1 || fits(r))) return out;
   }
-  return out;
+  return books.map((b) => [b]);
 }
 
 function OneShelf({ s, tall, inner }: { s: Shelf; tall: number; inner: number }) {

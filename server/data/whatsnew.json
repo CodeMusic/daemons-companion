@@ -1,9 +1,41 @@
 {
- "latest": 967,
+ "latest": 968,
  "builds": [
   {
+   "build": 968,
+   "commit": "7d11778",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-322",
+     "title": "LISTEN in every MANUAL and in THE OLD WORD",
+     "lines": [
+      "LISTEN in every MANUAL and in THE OLD WORD — each in the voice the user picked from samples (DAEMONS T-543)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: T-533 THE ORIGIN OF A DAEMON's item and GAME EVENTS row (companion_export, v11.346.1)",
+      "Knows the game's ROM release v11.346.1 (T-533, T-447 pair 4)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "T-533: THE ORIGIN OF A DAEMON in the companion (DRAFT) — the LIBRARY's new book from the game (data/origin.json and its emblems, from DAEMONS companion_export; the shelf's cover from shelfcovers), read only as far as the save has it back: the first section with the book, one more with each understanding held (whichever it is), VII with SCORN's TRUE MARK as well; a section not yet back is never sent, shown faint or counted (GET /api/origin, ?preview=1 the whole book; tested). Its open book on a bone page (LayerPages), the game's cover and emblems, its look, </> THE BOOKS",
+      "T-533: THE ORIGIN OF A DAEMON's marks in the game's ink (DRAFT) — LOOKS.origin's ink and the page's marks (CONTENTS, the entries' names, BACK and NEXT, READ ALOUD) dark brown #2C241E, 8.1:1 on bone, where the amber read 2.1:1; neither palette has a field for decoration alone, so the amber stays only in the game's emblems; faint #5E5242 kept",
+      "T-533: THE ORIGIN OF A DAEMON's library header at night (DRAFT) — in the DARK look \"‹ LIBRARY\", its rule and the ◎ glyph above the book are bone #C6BCA8 (9.5:1 on the night's page), where the game's dark brown was lost (1.2:1); the light look and the bone page keep #2C241E, and every other book's header is drawn as before (an origin-only override where the header is drawn: LOOKS has no colour per scheme)",
+      "T-533: THE ORIGIN OF A DAEMON's chapter titles drop their numeral, as in the game (origin.json regenerated; DRAFT)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 967,
-   "commit": "1dcb09c",
+   "commit": "161e336",
    "date": "2026-11-11",
    "sections": [
     {
@@ -34,6 +66,13 @@
      "title": "The decks' dawn readings",
      "lines": [
       "The dawn readings, as the user picked them — each card's DAWN face, dealt from THE EUDAIMON LAYER's own deck on a gold face (the sun where its daemon will stand, to be chosen later)"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 967's notes"
      ]
     },
     {

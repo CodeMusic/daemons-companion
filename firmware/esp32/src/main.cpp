@@ -9,6 +9,7 @@
 #include "link.h"
 #include "meet.h"
 #include "lora.h"
+#include <driver/gpio.h>
 #include "broadcast.h"
 #include "glass.h"
 
@@ -31,6 +32,12 @@ static void step(const char *what) { Serial.printf("boot: %s (heap %u, largest %
 void setup() {
   // The bridge's STATE line is ~300 bytes and the USB receive buffer defaults to 256: while the screen is being drawn
   // the rest was dropped, the JSON arrived cut short, and the corner said NO LINK with the bridge plainly connected.
+  // The GPIO interrupt service, before anything else can interrupt: ESP-IDF 4.4 installs it inside the ipc1 task, whose
+  // stack is 1 KB and is left with ~230 bytes by it. Installed later (the first attachInterrupt, the AXP2101's in
+  // watchPower), one interrupt from the USB cable landing at that moment overflowed it: "Stack canary watchpoint
+  // triggered (ipc1)" at every start with the cable in, never without (the Ultra, 2026-11-11). attachInterrupt takes
+  // an installed service as its own (esp32-hal-gpio.c: ESP_ERR_INVALID_STATE).
+  gpio_install_isr_service((int)ARDUINO_ISR_FLAG);
   Serial.setRxBufferSize(psramFound() ? 8192 : 4096);   // C-179: room for a state and the line after it, where there is PSRAM
   Serial.begin(115200);
   cableFlush(0);                              // C-105: note the send buffer's room while it is empty

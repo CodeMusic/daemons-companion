@@ -1,10 +1,11 @@
 // LIBRARY > THE ORIGIN OF A DAEMON (DAEMONS T-533, bible 9.35): the book found in the game, read here as far as the save
 // has given it back (GET /api/origin) -- the same open book as the dawn half and the mended book (Eudaimon.tsx LayerPages:
 // the contents, then each entry, its emblem on the left and its words on the right). A section the save has not given
-// back is not here at all: not faint, and not counted. Its page is bone, its ink an old book's brown, its rules umber and
-// its marks a lit amber, as the game prints it (DAEMONS tools/gensubtle.py ORIGIN_PALETTE); the cover and the emblems are
-// the game's own (data/art/origin_*.png), the cover's title set here in our type where the game letters it (the game's
-// font is FireRed's). Every word DRAFT.
+// back is not here at all: not faint, and not counted. Its page is bone, its ink an old book's brown and its rules umber,
+// as the game prints it (DAEMONS tools/gensubtle.py ORIGIN_PALETTE); its marks -- CONTENTS, the entries' names, BACK and
+// NEXT -- are in its ink too, so they read (the game's amber is too faint on bone for words, and stays in its pictures).
+// The cover and the emblems are the game's own (data/art/origin_*.png), the cover's title set here in our type where the
+// game letters it (the game's font is FireRed's). Every word DRAFT.
 import { useState } from "react";
 import { Text, YStack } from "tamagui";
 import { Art } from "../../ui/ui";
@@ -12,9 +13,10 @@ import { TurningPicture } from "../../ui/bookPicture";
 import { LayerPages, type EudaimonT, type LayerPalette } from "../shared/Eudaimon";
 
 export type OriginT = EudaimonT;
-// bone; an old book's brown; the boards, bone gone brown with handling; umber rules; amber marks
+// bone; an old book's brown, for the words and the marks alike (8.1:1 on bone); the boards, bone gone brown with handling;
+// umber rules
 export const ORIGIN: LayerPalette = { page: "#C6BCA8", boards: "#7B6B52", ink: "#2C241E", faint: "#5E5242", edge: "#8A6846",
-                                      mark: "#B07038", lit: "#8A6846" };
+                                      mark: "#2C241E", lit: "#8A6846" };
 const CHALK = "#F7EFDE";                                  // the cover's lettering
 
 // where the book lies on the game's cover (DAEMONS tools/origin_art.py: x 48..191, y 4..154), and the rows its title's two

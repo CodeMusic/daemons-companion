@@ -1,9 +1,9 @@
 {
- "latest": 972,
+ "latest": 973,
  "builds": [
   {
-   "build": 972,
-   "commit": "8d72166",
+   "build": 973,
+   "commit": "b17993a",
    "date": "2026-11-11",
    "sections": [
     {
@@ -20,7 +20,8 @@
       "Sleep sounds, the hub's half (DRAFT) — a recipe from the daemon's context (sleepsound.ts: type the instruments, feelings the key and pace, care what it carries, closeness how near the melody), made by ACE-Step on roverbyteseer's keyed door, kept as phone.m4a, watch.wav (16 kHz mono PCM) and watch-adpcm.wav; /api/sleep, /api/sleep/make, /api/sleep/tracks, /api/sleep/track/<id>/<file>",
       "Sleep sounds, the app's half (DRAFT) — SLEEP SOUNDS above the dreams: the piece made for the daemon tonight, kept on the phone, played thirty minutes and faded over the last ten; DRIFT DOWN, a binaural layer (alpha, theta, delta) for headphones, from PulseEntrain's idea; DaemonsNight.headphones()",
       "A sleep piece survives the hub restarting — its roverbyteseer job is kept, and waited on again at start (a deploy dropped the first one)",
-      "A sleep piece fetched before a restart is converted from the hub's own copy; roverbyteseer's goes only once the hub's files are made"
+      "A sleep piece fetched before a restart is converted from the hub's own copy; roverbyteseer's goes only once the hub's files are made",
+      "The INDEX image asked of the Tiiny's quick thinker first, then the player's endpoints, then the house (the hub runs with the house's module off, so it was never asked)"
      ]
     },
     {
@@ -42,7 +43,8 @@
      "ticket": "C-331",
      "title": "What the app gained, on the Ultra's card",
      "lines": [
-      "A book's own recording, one chapter at a time, for the watch's card — GET /api/book/recording?book&title (raw 16 kHz PCM, cut once by ffmpeg from the published reading; the open books only)"
+      "A book's own recording, one chapter at a time, for the watch's card — GET /api/book/recording?book&title (raw 16 kHz PCM, cut once by ffmpeg from the published reading; the open books only)",
+      "POST /api/device/speak {text, as: \"daemon\"} — the words in the carried daemon's own voice, for a dream re-heard on the watch"
      ]
     },
     {
@@ -58,14 +60,25 @@
      "lines": [
       "THE EASEL on the hub — a daemon paints what it is asked, in its own style, from its persona of the day; and THE PERSONA OF THE DAY, built at wake (DRAFT)",
       "The persona of the day is built at wake only for the daemon carried and any asked for in three days, its words one daemon at a time; a painting cut off by a restart says so",
-      "A write someone waits for goes to the quick thinker, thinking off — the easel's and the morning's words"
+      "A write someone waits for goes to the quick thinker, thinking off — the easel's and the morning's words",
+      "THE EASEL in the app — the daemon walks to its easel and paints while you wait; THE GALLERY, a wall per daemon, each painting framed, shown large on a tap, its prompt on a hold (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.348.1 (T-447 pair 6, the DUET)",
+      "LIBRARY shelf: the manuals' covers reprinted against v11.348.1",
+      "Knows the game's ROM release v11.348.2 (T-528 sparks, T-519 torn lines)"
      ]
     },
     {
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "LIBRARY shelf: the manuals' new covers, each its own colour and its device (DAEMONS covers-d)"
+      "LIBRARY shelf: the manuals' new covers, each its own colour and its device (DAEMONS covers-d)",
+      "The hub's name: daemons-hearth (was CoreMP135) — hub/rename.sh changes it on the hub (hostname, /etc/hosts, avahi, Tailscale) and restarts the companion; the docs, .hub.example and comments name it; HUB.md says what a rename touches"
      ]
     }
    ]

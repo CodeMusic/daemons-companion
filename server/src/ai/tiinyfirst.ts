@@ -7,7 +7,7 @@
 import { GUIDE_SETUP, guideQuestion } from "../guideask.js";
 import type { House, TalkAnswer, TalkAsk } from "./house.js";
 import { persona } from "./house.js";
-import { tiinyChat, tiinyHear, tiinySpeak, type TiinyAt } from "./tiiny.js";
+import { STOPPED, tiinyChat, tiinyHear, tiinySpeak, type TiinyAt, type WriteJob } from "./tiiny.js";
 import { voiceRecipe } from "./voices.js";
 import { chatOn, type EndpointNow } from "./endpoints.js";   // C-280 (1)
 
@@ -73,13 +73,16 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     if (t?.at.asr) { const heard = await tiinyHear(t.at, wav, fetch, 120_000); if (heard) return heard; }
     return was.transcribe(wav);
   };
-  house.write = async (system: string, user: string, maxTokens = 400) => {
+  house.write = async (system: string, user: string, maxTokens = 400, job?: WriteJob) => {
     const t = now();
+    // C-319 next: stopped from THE MIND AT WORK -- no other mind is asked; job.by names each mind as it is tried
+    const halt = () => { if (job?.signal?.aborted) throw new Error(STOPPED); };
     // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed
-    if (t) try { return await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true); } catch { /* the endpoints */ }
+    if (t) try { job?.by?.("the Tiiny"); return await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job); } catch { halt(); }
     for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
-      try { return await chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens); } catch { /* the next */ }
-    return was.write(system, user, maxTokens);
+      try { job?.by?.(n.e.name); return await chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job); } catch { halt(); }
+    halt(); job?.by?.("the house's module");
+    return was.write(system, user, maxTokens, job);
   };
   return house;
 }

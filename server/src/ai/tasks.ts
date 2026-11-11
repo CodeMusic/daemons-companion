@@ -14,6 +14,8 @@ export type Task = {
   state: TaskState; at: string; started?: string; ended?: string; ms?: number; error?: string;
   can?: { stop?: boolean; retry?: boolean };          // what the ledger lets a phone do with it
   source?: "ledger" | "trace" | "queue";              // where the view found it
+  // C-319 next: how much it was given and gave back, in characters, and what the mind counted in tokens (when it says)
+  size?: { in?: number; out?: number }; tokens?: { in?: number; out?: number };
 };
 export const LIVE: TaskState[] = ["waiting", "thinking"];
 export const MOST_TASKS = 120;
@@ -48,13 +50,16 @@ export class Tasks {
     return t;
   }
   find(id: string) { return this.all().find((t) => t.id === id) ?? null; }
-  update(id: string, patch: Partial<Pick<Task, "state" | "mind" | "error" | "title">>): Task | null {
+  update(id: string, patch: Partial<Pick<Task, "state" | "mind" | "error" | "title" | "size" | "tokens">>): Task | null {
     let out: Task | null = null;
     const nowIso = this.now().toISOString();
     this.keep(this.all().map((t) => {
       if (t.id !== id) return t;
       if (!LIVE.includes(t.state) && patch.state) return (out = t);          // settled is settled: a late answer changes nothing
       const n: Task = { ...t, ...patch };
+      if (patch.size) n.size = { ...t.size, ...patch.size };
+      if (patch.tokens) n.tokens = { in: (t.tokens?.in ?? 0) + (patch.tokens.in ?? 0) || undefined,   // a write asked twice counts both
+                                     out: (t.tokens?.out ?? 0) + (patch.tokens.out ?? 0) || undefined };
       if (patch.state === "thinking" && !t.started) n.started = nowIso;
       if (patch.state && !LIVE.includes(patch.state)) {
         n.ended = nowIso;
@@ -88,9 +93,13 @@ export function traceTask(t: TraceLike): Task {
            ...(ok ? {} : { error: t.failed?.join(", ") || "no mind answered" }), source: "trace" };
 }
 // A talk in the hub's queue (talkjobs.ts), live or just settled
-export type QueuedJob = { id: string; who: string; status: "waiting" | "thinking" | "done" | "failed"; at: number; ended?: number; error?: string };
+export type QueuedJob = { id: string; who: string; status: "waiting" | "thinking" | "done" | "failed"; at: number; ended?: number; error?: string;
+                          priority?: number; what?: string };
+// what a queued job is, by its priority (talkjobs.ts PRIORITY) when it was not named -- DRAFT
+const QUEUED = [["talk", "a talk, someone waiting"], ["voice", "a voice made"], ["chatter", "a daemon's chatter"]] as const;
 export function queuedTask(j: QueuedJob): Task {
-  return { id: `queue-${j.id}`, kind: "talk", title: "a talk in the hub's queue", user: "the house", device: j.who || "a device",   // DRAFT
+  const [kind, title] = QUEUED[j.priority ?? 0] ?? QUEUED[0];
+  return { id: `queue-${j.id}`, kind, title: j.what || title, user: "the house", device: j.who || "a device",   // DRAFT
            state: j.status, at: new Date(j.at).toISOString(), ...(j.ended ? { ended: new Date(j.ended).toISOString(), ms: j.ended - j.at } : {}),
            ...(j.error ? { error: j.error } : {}), source: "queue" };
 }

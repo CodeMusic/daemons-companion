@@ -8,6 +8,7 @@
 // (n8n, the way it goes today). No node: imports -- the words and the WAV are plain bytes.
 import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } from "./module.js";
 import type { StackFlow, Thought } from "./stackflow.js";
+import type { WriteJob } from "./tiiny.js";   // C-319 next
 import { GUIDE_SETUP, guideQuestion } from "../guideask.js";   // C-209
 
 export type ModuleAt = { url: string; name: string; found?: string };
@@ -326,9 +327,12 @@ export class House {
     return this.turn((h) => !!h.stt, async (m, h) => (await hear(m.url, h.stt!, Buffer.from(wav), 120000)).text.trim());
   }
   // words written to a prompt, at length (a write-up, a day-dream); null when no module can think
-  async write(system: string, user: string, maxTokens = 400): Promise<string | null> {
-    return this.turn((h) => !!h.llm, async (m, h) =>
-      (await chat(m.url, h.llm!, [{ role: "system", content: system }, { role: "user", content: user }], { maxTokens, timeoutMs: 180000 })).text.trim());
+  async write(system: string, user: string, maxTokens = 400, job?: WriteJob): Promise<string | null> {
+    return this.turn((h) => !!h.llm, async (m, h) => {
+      const said = await chat(m.url, h.llm!, [{ role: "system", content: system }, { role: "user", content: user }], { maxTokens, timeoutMs: 180000, signal: job?.signal });
+      if (said.tokens) job?.spent?.({ out: said.tokens });
+      return said.text.trim();
+    });
   }
 }
 

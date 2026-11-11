@@ -35,9 +35,16 @@ export function tiinyIn(get: (k: string) => string | null): TiinyAt | null {
 const headers = (at: TiinyAt, json = true): Record<string, string> =>
   ({ ...(json ? { "content-type": "application/json" } : {}), ...(at.key ? { authorization: `Bearer ${at.key}` } : {}) });
 
-async function timed<T>(ms: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
-  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms);
-  try { return await run(ctl.signal); } finally { clearTimeout(timer); }
+// C-319 next: a write-up that can be stopped from THE MIND AT WORK, and what it cost -- the mind that took it, its tokens
+export type WriteJob = { signal?: AbortSignal; spent?: (t: { in?: number; out?: number }) => void; by?: (mind: string) => void };
+export const STOPPED = "stopped";
+async function timed<T>(ms: number, run: (signal: AbortSignal) => Promise<T>, outer?: AbortSignal): Promise<T> {
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms), stop = () => ctl.abort();
+  if (outer?.aborted) throw new Error(STOPPED);
+  outer?.addEventListener("abort", stop, { once: true });
+  try { return await run(ctl.signal); }
+  catch (e) { throw outer?.aborted ? new Error(STOPPED) : e; }
+  finally { clearTimeout(timer); outer?.removeEventListener("abort", stop); }
 }
 
 // The models it holds, by id -- null when it cannot be reached (the health dot, C-211)
@@ -67,7 +74,8 @@ export type Turn = { said: string; answer: string };
 // caller takes the talk elsewhere (the module, then n8n). think: the background path -- it reasons first, with
 // THINK_BUDGET more tokens and the caller's longer wait; if all of it went on reasoning, it is asked again without.
 export async function tiinyChat(at: TiinyAt, model: string, system: string, history: Turn[], said: string,
-                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false, plain = false): Promise<string> {
+                                f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false, plain = false,
+                                job?: WriteJob): Promise<string> {
   // plain (C-280 (1)): a public endpoint is not sent chat_template_kwargs -- a strict API refuses an argument it does not know
   if (!model) throw new Error("no model chosen");
   const messages = [{ role: "system", content: system },
@@ -81,15 +89,16 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
                              ...(plain ? {} : { chat_template_kwargs: { enable_thinking: think } }) }) });
     if (!r.ok) throw new Error(`the Tiiny answered ${r.status}`);
     const j = await r.json();
+    if (j?.usage) job?.spent?.({ in: Number(j.usage.prompt_tokens) || undefined, out: Number(j.usage.completion_tokens) || undefined });
     // a thinking model's reasoning is left out: only what it says
     let text = String(j?.choices?.[0]?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
     // cut off by the cap: end on its last whole sentence, so a voice never stops mid-word
     if (j?.choices?.[0]?.finish_reason === "length") { const end = Math.max(...[".", "!", "?", "…"].map((c) => text.lastIndexOf(c)));
                                                        if (end > 20) text = text.slice(0, end + 1); }
-    if (!text && think) return tiinyChat(at, model, system, history, said, f, ms, maxTokens, false, plain);
+    if (!text && think) return tiinyChat(at, model, system, history, said, f, ms, maxTokens, false, plain, job);
     if (!text) throw new Error("the Tiiny said nothing");
     return text;
-  });
+  }, job?.signal);
 }
 
 // A line in a daemon's voice: the TTS model, its speaker and an instruction (C-251's recipe). null without a TTS model.

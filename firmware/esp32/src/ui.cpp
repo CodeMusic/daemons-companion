@@ -103,7 +103,7 @@ bool keysUnder() { return board.kind == BoardKind::M5Core && st.carrying; }
 // what each of the three does at home, as it is now -- asleep, any of them wakes it. C-149: at home CARE, ROUTINES and
 // INDEX; in CARE the three cares; in the INDEX entry READ, MORE and HOME
 static const char *keyWord(int k) {
-  bool bed = st.daemon.tired == "drowsy";
+  bool bed = bedKeys();
   if (screen == CARE_KEYS) return k == 0 ? "DRINK" : k == 1 ? "FEED" : bed ? "SLEEP" : "TRAIN";   // DRAFT
   if (screen == INDEX_ENTRY) return k == 0 ? (talkCan() ? "READ" : "-") : k == 1 ? "MORE" : "HOME";   // DRAFT
   if (st.daemon.tired == "asleep") return "WAKE";                               // DRAFT
@@ -111,7 +111,7 @@ static const char *keyWord(int k) {
 }
 // C-121: a button held is drawn pressed -- filled white, its word dark -- the moment it goes down, before it does anything
 static void keyLabels(uint16_t day, uint16_t ink) {
-  bool sleeping = st.daemon.tired == "asleep" && screen == HOME, bed = st.daemon.tired == "drowsy";
+  bool sleeping = st.daemon.tired == "asleep" && screen == HOME, bed = bedKeys();
   canvas.setTextFont(2); canvas.setTextDatum(MC_DATUM);
   if (sleeping) {
     canvas.fillRoundRect(4, H - 24, W - 8, 22, 5, keysHeld ? PAPER : day);
@@ -698,10 +698,10 @@ void draw() {
   uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
   tapN = 0; areaW = 0;                                      // C-161, C-172: the rows and tiles this frame draws
   canvas.fillSprite(INK);
-  if (screen == HOME) auroraSky(W, H);                      // C-312: a night of light -- behind everything the screen draws
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
   canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(board.round ? MC_DATUM : ML_DATUM);
+  if (screen == HOME) auroraSky(26, W, H);                  // C-312: a night of light -- under the band, behind the rest
   canvas.drawString(st.have ? upper(st.day) + "  " + st.note + (W >= 300 ? "  " + upper(st.season) : String(""))   // the watch: no room
                             : String(W >= 300 ? "DAEMONS COMPANION" : "DAEMONS"), board.round ? W / 2 : 8, 13);   // C-102: centred in the circle
   canvas.setTextDatum(MR_DATUM);
@@ -739,7 +739,7 @@ void draw() {
     canvas.setTextDatum(TL_DATUM);
     if (under) keyLabels(day, ink);
     else { canvas.setTextFont(1); canvas.setTextColor(QUIET); canvas.setTextDatum(BL_DATUM);
-           footer(st.daemon.tired == "drowsy" ? "A drink  B feed  C sleep    hold A: back" : "A drink  B feed  C train    hold A: back"); }   // DRAFT
+           footer(bedKeys() ? "A drink  B feed  C sleep    hold A: back" : "A drink  B feed  C train    hold A: back"); }   // DRAFT
   } else if (screen == INDEX_ENTRY) {                         // C-36: its INDEX entry, in the edition's voice
     canvas.setTextFont(2); canvas.setTextColor(readable(day)); canvas.setTextDatum(TL_DATUM);
     canvas.drawString("INDEX  " + st.daemon.name, 10, 32);

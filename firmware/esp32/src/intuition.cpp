@@ -377,22 +377,31 @@ static bool auroraLightNight(int n) {
   x = (x * 40503u) % 65536u;
   return (x >> 8) % 3 == 0;
 }
-void auroraSky(int w, int h) {
-  if (!st.mended) return;
-  struct tm t; if (!watchLocalTime(t)) return;
-  if (!(t.tm_hour >= 20 || t.tm_hour < 5)) return;
+// tonight's bands, top first: each one's weight out of 256 as the breath goes, and its line -- none when the rule says no
+bool auroraNow(uint8_t weight[6], uint32_t line[6]) {
+  if (!st.mended) return false;
+  struct tm t; if (!watchLocalTime(t)) return false;
+  if (!(t.tm_hour >= 20 || t.tm_hour < 5)) return false;
   int day = auroraDayNumber(t.tm_year + 1900, t.tm_mon + 1, t.tm_mday), minute = t.tm_hour * 60 + t.tm_min;
-  if (!auroraLightNight((minute < 12 * 60 ? day - 1 : day) & 0xFFFF)) return;
+  if (!auroraLightNight((minute < 12 * 60 ? day - 1 : day) & 0xFFFF)) return false;
   static const uint8_t RED[6] = { 255, 160, 64, 16, 0, 0 }, GREEN[6] = { 96, 255, 160, 48, 16, 0 }, BOTH[6] = { 255, 255, 176, 64, 16, 0 };
   const bool context = st.edition == "CONTEXT";
   const uint8_t *bands = st.both ? BOTH : context ? GREEN : RED;
-  const int b = (int)roundf(goldBreathNow() * 255), bh = max(1, h / 24);
+  const int b = (int)roundf(goldBreathNow() * 255);
   for (int i = 0; i < 6; i++) {
-    if (!bands[i]) continue;
-    int weight = ((72 + b * 96 / 255) * bands[i]) / 255;                  // out of 256, aurora.ts auroraWeight
+    weight[i] = (uint8_t)min(255, ((72 + b * 96 / 255) * bands[i]) / 255);   // out of 256, aurora.ts auroraWeight
     bool red = st.both ? i < 1 : !context;
-    canvas.fillRectAlpha(0, i * bh, w, bh, (uint8_t)min(255, weight), red ? canvas.color888(0xF7, 0x39, 0x4A) : canvas.color888(0x52, 0xF7, 0x7B));
+    line[i] = red ? canvas.color888(0xF7, 0x39, 0x4A) : canvas.color888(0x52, 0xF7, 0x7B);
   }
+  return true;
+}
+// the bands across the top quarter of the sky from top down to h -- under the day's band, where nothing else paints
+// over them (the watch faces draw their own sky and take the bands into it: faces.cpp faceSky)
+void auroraSky(int top, int w, int h) {
+  uint8_t wt[6]; uint32_t c[6];
+  if (!auroraNow(wt, c)) return;
+  const int bh = max(1, (h - top) / 24);
+  for (int i = 0; i < 6; i++) if (wt[i]) canvas.fillRectAlpha(0, top + i * bh, w, bh, wt[i], c[i]);
 }
 
 // the creator's hour: a soft gold rim about it, breathing slowly -- not a glitch, a light (DRAFT)

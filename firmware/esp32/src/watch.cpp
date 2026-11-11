@@ -55,6 +55,7 @@ static TwoWire &touchWire = Wire;
 #elif defined(BOARD_TWATCH_ULTRA)
 // C-173: the Ultra's touch is on the main bus (3, 2), its interrupt on 12; the power chip's on 7
 static const int PMU_IRQ = 7, TOUCH_INT = 12;
+static volatile uint32_t touchIntAt = 0;                         // when the touch's line last fell (touchRead)
 static TwoWire &touchWire = Wire;
 #else
 static const int PMU_IRQ = 21, TOUCH_SDA = 39, TOUCH_SCL = 40;
@@ -234,6 +235,7 @@ void watchBegin() {
   // No step counter yet: the BHI260AP needs its firmware loaded first (a later ticket).
   touchPanel.setPins(-1, TOUCH_INT);
   pinMode(TOUCH_INT, INPUT_PULLUP);
+  attachInterrupt(TOUCH_INT, [] { touchIntAt = millis(); }, FALLING);   // a pulse too short for the loop to see (touchRead)
   Wire.beginTransmission(0x1A);
   uint8_t addr = Wire.endTransmission() == 0 ? 0x1A : 0x5A;
   haveTouch = touchPanel.begin(touchWire, addr, board.sda, board.scl);
@@ -353,8 +355,21 @@ static uint8_t touchRead(int16_t *x, int16_t *y) {
   // 2026-10-18: a tap at 54,34 "ended" at 239,61, a 185 px swipe, so a CARE tile tapped did the chosen one). Such a
   // point is not taken: the last real one stands, and the lift after it ends the touch there.
   static int16_t lastX = -1, lastY = -1;
+#if defined(BOARD_TWATCH_ULTRA)
+  // the review of 2026-11-11: read on every loop, the CST9217 answers a read with no finger down by refusing it -- a
+  // "Write read command error" and an I2C length error each time, all through the boot log. Its interrupt goes low as it
+  // has a point, so it is read only then and for a moment after (a held finger reports again before that). The gate
+  // closes only once the line has been seen low with a real point under it; until then, and on a watch whose line is
+  // never low, it is read every loop as before, so a touch is never lost to it.
+  static int8_t intWorks = -1;                                   // -1 not yet known, 1 the line tells, 0 it does not
+  if (digitalRead(TOUCH_INT) == LOW) touchIntAt = millis();      // held low, or a pulse the interrupt caught (watchBegin)
+  const uint32_t intLowAt = touchIntAt;
+  const bool recent = intLowAt && millis() - intLowAt < 150;
+  if (intWorks == 1 && !recent) { lastX = -1; return 0; }
+#endif
   if (touchPanel.getPoint(x, y, 1) <= 0) { lastX = -1; return 0; }
 #if defined(BOARD_TWATCH_ULTRA)
+  if (intWorks < 0) intWorks = recent ? 1 : 0;                   // the first real point says whether the line can be trusted
   // C-173: the glass's pixels to the canvas's -- shown 1.6 times larger, inset, a face lowered by screenOY (present)
   x[0] = (int16_t)((x[0] - board.screenX) / board.zoom); y[0] = (int16_t)((y[0] - board.screenY) / board.zoom) - screenOY;
 #endif

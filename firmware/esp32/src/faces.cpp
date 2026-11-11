@@ -6,6 +6,7 @@
 #include "app.h"
 #include "display.h"
 #include "sound.h"
+#include "watch.h"
 void drawArt(int x, int y, int scale, bool mirrored);   // ui.cpp: the daemon carried, in its expression
 
 // ---- the sky behind ---------------------------------------------------------------------------------------------
@@ -23,6 +24,15 @@ static uint16_t mix(uint32_t a, uint32_t b, float k) {
   auto ch = [&](int s) { return (int)(((a >> s) & 255) * (1 - k) + ((b >> s) & 255) * k); };
   return canvas.color565(ch(16), ch(8), ch(0));
 }
+// C-301 (the user, 2026-11-05: "the Train option turn to Sleep after Dusk ... after dawn the option would then show train
+// again"): the widget's day key, on the watches and boards too -- SLEEP from dusk (18:00) until dawn (5:00), unless he is
+// already asleep; with no clock yet, the hub's drowsy decides
+bool bedKeys() {
+  if (st.daemon.tired == "asleep") return false;
+  struct tm t;
+  if (watchLocalTime(t)) return t.tm_hour >= 18 || t.tm_hour < 5;
+  return st.daemon.tired == "drowsy";
+}
 bool faceSkyOn() { return cfg.faceSky && st.season.length(); }
 // the circle's inside, line by line: the sky's gradient, and the hill (an ellipse whose top is hillTop) across it
 void faceSky(int hillTop) {
@@ -30,9 +40,12 @@ void faceSky(int hillTop) {
   Sky s = skyNow();
   int cx = W / 2, cy = H / 2, r = min(W, H) / 2 - 4;
   int hx = 180, hy = 72, hcy = hillTop + hy;                    // the hill: wider than the screen, its top at hillTop
+  uint8_t aw[6]; uint32_t ac[6]; const bool aurora = auroraNow(aw, ac);   // C-312: the bands in the sky's top quarter (RGB888)
   for (int y = cy - r; y <= cy + r; y++) {
     int dy = y - cy, half = (int)sqrtf((float)(r * r - dy * dy));
     canvas.drawFastHLine(cx - half, y, 2 * half + 1, mix(s.top, s.bottom, (float)(y - (cy - r)) / (2 * r)));
+    int band = (y - (cy - r)) * 24 / (2 * r + 1);
+    if (aurora && band < 6 && aw[band]) canvas.fillRectAlpha(cx - half, y, 2 * half + 1, 1, aw[band], ac[band]);
     if (y >= hillTop) {
       float e = (float)(y - hcy) / hy;
       int hh = (int)(hx * sqrtf(max(0.0f, 1 - e * e))), w = min(half, hh);
@@ -114,7 +127,7 @@ int careGridAt(int x, int y) {
   return (y >= TOP + tileH() + GAP / 2 ? 2 : 0) + (x >= W / 2 ? 1 : 0);
 }
 void openCareGrid() {
-  screen = CARE_GRID; gridAt = st.daemon.tired == "drowsy" ? 3 : 0; dirty = true;   // at bedtime, SLEEP first
+  screen = CARE_GRID; gridAt = bedKeys() ? 3 : 0; dirty = true;   // at bedtime, SLEEP first
   soundSelect();
 }
 static void icon(int kind, int cx, int cy) {
@@ -146,7 +159,7 @@ void drawCareGrid(uint16_t day, uint16_t ink) {
   canvas.drawString("CARE FOR " + upper(st.daemon.nickname), W / 2, 36);       // DRAFT
   canvas.setTextFont(1); canvas.setTextColor(QUIET);
   canvas.drawString("fed " + String(st.daemon.fed) + "/3   water " + String(st.daemon.watered) + "/3", W / 2, 50);   // DRAFT
-  bool bed = st.daemon.tired == "drowsy";
+  bool bed = bedKeys();
   for (int t = 0; t < 4; t++) {
     int x = GAP + (t & 1) * (tileW() + GAP), y = TOP + (t >> 1) * (tileH() + GAP), kind = careGridKind(t);
     bool chosen = false, lit = bed && t == 3;                    // a tap chooses; bedtime: SLEEP lit, as the buttons light it

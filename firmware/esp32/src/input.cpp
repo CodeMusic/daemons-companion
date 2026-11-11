@@ -540,7 +540,7 @@ void readKeyCore() {
       wake();
       bool tend = !menuOpen && screen == HOME;                   // C-117: home, the menu closed -- the buttons tend it
       // C-118: asleep, any button wakes it; at bedtime (drowsy, not yet put to bed) CARE's C puts it to bed, not trains
-      bool sleeping = st.daemon.tired == "asleep", bed = st.daemon.tired == "drowsy";
+      bool sleeping = st.daemon.tired == "asleep", bed = bedKeys();
       if (tend && sleeping && held < 500) careDo(4);
       else if (k == 2 && held >= 2000) sleepNow();
       else if (k == 0 && held >= 500) back();

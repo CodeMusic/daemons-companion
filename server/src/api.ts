@@ -313,12 +313,13 @@ function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()
   return { species: d.species as number, own, recipe: voiceRecipe({ types: d.types, category: d.category, species: d.species }, core.daemonFeelings(store, now), own) };
 }
 // C-334: the carried daemon as its sleep sounds are made from it -- its INDEX self, its feelings, its care (sleepsound.ts)
+// One read of the state, not selfFacts: that reads it three times and walks four weeks of the log for the spirits, and
+// /api/sleep took seven seconds -- past the watch's four, so the Ultra heard nothing and asked for nothing (2026-11-11)
 function sleepContextFor(ecfg: Config, store: Store, deviceId: string, now = new Date()): SleepContext | null {
   const d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
   if (!d) return null;
-  const f = selfFacts(ecfg, store, deviceId, now);
-  return { species: d.species as number, nickname: f.nickname, types: d.types, category: d.category, entry: f.entry ?? null,
-           feelings: f.feelings ?? null, care: (f.life as { care?: SleepContext["care"] } | null)?.care ?? null };
+  return { species: d.species as number, nickname: d.nickname, types: d.types, category: d.category, entry: d.entry ?? null,
+           feelings: core.daemonFeelings(store, now) ?? null, care: (d.life as { care?: SleepContext["care"] } | null)?.care ?? null };
 }
 // C-334: a piece as a device sees it -- where each of its files is fetched (by its id), and how big
 const trackOut = (t: SleepTrack) => ({ ...t, files: t.state === "ready"

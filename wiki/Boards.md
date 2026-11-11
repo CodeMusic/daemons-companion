@@ -17,7 +17,7 @@ parts, with sources: [docs/HARDWARE.md](https://github.com/CodeMusic/daemons-com
 | **LilyGO T-Embed SI4732** | 320x170 | dial and its press | yes (two mics) | ring of 7, moving with the radio | AM/FM: **CHANNEL**, a move it learns | voltage | `t-embed` | **runs** |
 | **LilyGO T-Watch S3** | 240x240 touch | touch, the crown (a press) | yes (TALK on the face) | -- | LoRa (MESH), IR out | power chip | `t-watch-s3` | **runs** |
 | **LilyGO T-Watch Ultra** | 410x502 touch (AMOLED) | touch, the crown (a press), lift, shake and double tap | yes (TALK on the face) | -- | LoRa (MESH), GNSS (walks), NFC (cards), haptics | power chip | `t-watch-ultra` | **runs**; its sleep, walks, cards and TOUCH, HOURS, THE INDEX and meetings built and being tried on the wrist -- [The T-Watch Ultra](The-T-Watch-Ultra) |
-| **LilyGO T-Glass** | 126x126, seen through its prism (a 126x294 AMOLED) | one touch button and BOOT; a vibration motor | -- (a microphone, not yet used) | -- | -- | voltage | `t-glass` | built, not yet on the glasses -- [below](#the-t-glass) |
+| **LilyGO T-Glass** | 126x126, seen through its prism (a 126x294 AMOLED) | one touch button and BOOT; a vibration motor | -- (a microphone, not yet used) | -- | -- | voltage | `t-glass` | built, not yet on the glasses -- [The T-Glass](The-T-Glass) |
 | **LilyGO T-Deck, T-Deck Plus** | 320x240 | keyboard and trackball -- it **types** | yes (two mics) | -- | LoRa (MESH); GPS on the Plus, not yet used | voltage | `t-deck` | **runs** |
 | **LilyGO T-Display-S3 Pro** | 480x222 touch | touch, its home key, three buttons | -- (no microphone) | -- | -- | charger (voltage) | `t-display-pro` | **runs** |
 | **LilyGO T-Display-S3 AMOLED 1.91** | 536x240, touch on the touch version | touch and BOOT, or two buttons | -- (no microphone) | -- | -- | voltage | `t-display-amoled` | **runs** |
@@ -202,7 +202,9 @@ line. **Tap a note to send it**: its row stays selected while, and only while, t
 left -- and anything else sent clears it. Something new sent buzzes the glasses once.
 
 **On the glasses**, the touch button: a tap turns a note's page (asleep, it only wakes them; on DARK, it goes back
-HOME), a hold goes HOME, and two taps go DARK. The app's selection follows.
+HOME), a hold goes HOME, and two taps go DARK. The app's selection follows. **Held three seconds it shows the code that
+pairs your phone** -- the glasses have no menus, so this is their PAIR MY PHONE. **The morning's dream** wakes them and is
+read a page a tap; missed, HOME says one is waiting. The whole manual: [The T-Glass](The-T-Glass).
 
 It has no speaker, and Wi-Fi drains it, so it is meant to reach the companion through your phone's Bluetooth or its
 cable. **The picture is fitted to the prism by eye**, since the V1 and V2 glasses reflect it differently: down the

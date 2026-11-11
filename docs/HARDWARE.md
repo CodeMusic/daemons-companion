@@ -323,8 +323,8 @@ MADCTL bit 0x02), `GLASS ROW n` (where the seen square starts; 168, the last 126
 BRIGHT n`, `GLASS?`; kept in flash. Brightness is the register 0x51.
 
 **Input: one capacitive touch button on GPIO 14** (the S3's own touch pad -- read with `touchRead`, a touch reading
-higher) **and BOOT (0)**: a tap turns a note's page (asleep, it only wakes), a hold goes HOME, two taps go DARK; `GLASS
-TAP|TWICE|HOLD` presses it from the computer. **A vibration motor on 38** (a 1 kHz tone, as LilyGO drives it): one buzz
+higher) **and BOOT (0)**: a tap turns a note's page (asleep, it only wakes), a hold goes HOME, two taps go DARK; held three seconds it shows the pairing code (PAIR MY PHONE: the glasses
+have no menus; `GLASS PAIR` from the computer); `GLASS TAP|TWICE|HOLD` presses it from the computer. **A vibration motor on 38** (a 1 kHz tone, as LilyGO drives it): one buzz
 when something new is sent. **Battery** by voltage on **IO13, halved** (LilyGO gives no capacity). A PCF85063A (I2C SDA
 9 / SCL 8), a **BHI260AP** on its own SPI (33-37, enabled by 48: off until read -- it needs its firmware loaded, as the
 Ultra's), a PDM microphone (data 5, clock 6) not yet used. **No speaker.** Its LilyGO figures: about 300 uA asleep, 90-230+

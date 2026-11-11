@@ -138,7 +138,7 @@ bool nightQuiet();                       // C-285: the Ultra's daemon tucked in 
 bool nightTap();                         // C-285: a tap asleep -- the glance, then (tapped again) awake; true, taken
 bool dreamShowing(); void dreamDismiss(); void drawDream(uint16_t day);       // play.cpp: an instrument forced for testing (and PLAY open), or "default"
 bool dreamTap(int x, int y);
-bool dreamWaiting(); bool dreamAgain();
+bool dreamWaiting(); bool dreamAgain(); const String &dreamWords();
 bool quickTap(int x, int y);                               // C-206 (ui.cpp): a button under the Ultra's face                    // C-206: a dream not yet read; shown again
 bool lastNight(float &hours, String &quality, long &endedAt);   // C-206: the last night told, for the heads-up                                // the dream's LISTEN tapped: read aloud
 extern State st;

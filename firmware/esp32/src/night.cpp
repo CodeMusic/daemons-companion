@@ -58,6 +58,7 @@ static void showDream(const String &text, bool later) {
 bool dreamShowing() { return dreamUntil && (int32_t)(dreamUntil - millis()) > 0; }
 void dreamDismiss() { dreamUntil = 0; dreamSeen = true; dirty = true; }
 bool dreamWaiting() { return !dreamSeen && dreamText.length() && millis() - dreamAt < 18UL * 3600000; }
+const String &dreamWords() { return dreamText; }   // C-262: the T-Glass draws the dream itself, a page at a time
 bool dreamAgain() { if (!dreamText.length()) return false; dreamUntil = millis() + 30000; wake(); dirty = true; return true; }
 
 // C-206: the last night, for the face's heads-up -- its hours and quality, kept in flash with when it ended

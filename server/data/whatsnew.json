@@ -3,7 +3,7 @@
  "builds": [
   {
    "build": 971,
-   "commit": "c128886",
+   "commit": "cce956a",
    "date": "2026-11-11",
    "sections": [
     {
@@ -44,6 +44,36 @@
      ]
     },
     {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 971's notes"
+     ]
+    },
+    {
+     "ticket": "C-330",
+     "title": "Admin in one place",
+     "lines": [
+      "THE ENGINE ROOM (DRAFT) — the hub's admin in one installable web app at /admin/"
+     ]
+    },
+    {
+     "ticket": "C-334",
+     "title": "Sounds for sleep, made for him",
+     "lines": [
+      "Sleep sounds, the hub's half (DRAFT) — a recipe from the daemon's context (sleepsound.ts: type the instruments, feelings the key and pace, care what it carries, closeness how near the melody), made by ACE-Step on roverbyteseer's keyed door, kept as phone.m4a, watch.wav (16 kHz mono PCM) and watch-adpcm.wav; /api/sleep, /api/sleep/make, /api/sleep/tracks, /api/sleep/track/<id>/<file>",
+      "Sleep sounds, the app's half (DRAFT) — SLEEP SOUNDS above the dreams: the piece made for the daemon tonight, kept on the phone, played thirty minutes and faded over the last ten; DRIFT DOWN, a binaural layer (alpha, theta, delta) for headphones, from PulseEntrain's idea; DaemonsNight.headphones()"
+     ]
+    },
+    {
+     "ticket": "C-329",
+     "title": "Daemons in dialogue: TWO VOICES and the bicameral conversation, kept and integrated",
+     "lines": [
+      "DAEMONS IN DIALOGUE across accounts (DRAFT) — STANDARD (red logical / blue creative) and TWO VOICES (tells / asks), 1-11 turns each, the Tiiny first; personas from common functions (ai/personaof.ts, voiceof.ts's sibling) with a card that travels with a daemon out; bubbles with thinking dots and replay in each daemon's own voice; INTEGRATE to a titled write-up; past talks by week with weekday dots",
+      "In dialogue within the household (DRAFT) — two devices put TOGETHER (C-327) talk from YOUR HOUSEHOLD, unfiltered, kept as the home's; /api/household/{converse,talks,talk,integrate} in routes.ts and on the device's door for the watch; a stopped talk says so in `stopped`, not `error`"
+     ]
+    },
+    {
      "ticket": null,
      "title": "ALSO",
      "lines": [
@@ -59,11 +89,45 @@
    "date": "2026-11-11",
    "sections": [
     {
+     "ticket": "C-323",
+     "title": "Every voice from its speaker and context",
+     "lines": [
+      "Every voice from its speaker and context — a talk never voiced in parts; dreams in the daemon's voice, the journal and THE NOTEBOOK in the player's, each book in its own (DRAFT)"
+     ]
+    },
+    {
      "ticket": "C-319",
      "title": "THE MIND AT WORK: every task in the mind mesh, seen and managed",
      "lines": [
-      "Next: every write-up a task, its size and tokens, a mind's queue depth, and a STOP that really aborts",
       "Later: LATER filled by the hub's plans, tasks as trees, and hand-offs between minds made visible"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 970's notes"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "T-533: THE ORIGIN OF A DAEMON's recording, sealed, played whole once every chapter is back (DRAFT)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 969,
+   "commit": "591623e",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-319",
+     "title": "THE MIND AT WORK: every task in the mind mesh, seen and managed",
+     "lines": [
+      "Next: every write-up a task, its size and tokens, a mind's queue depth, and a STOP that really aborts"
      ]
     },
     {
@@ -84,15 +148,7 @@
      "ticket": "C-318",
      "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
      "lines": [
-      "Whatsnew.json with build 969's notes",
-      "Whatsnew.json with build 970's notes"
-     ]
-    },
-    {
-     "ticket": "C-323",
-     "title": "Every voice from its speaker and context",
-     "lines": [
-      "Every voice from its speaker and context — a talk never voiced in parts; dreams in the daemon's voice, the journal and THE NOTEBOOK in the player's, each book in its own (DRAFT)"
+      "Whatsnew.json with build 969's notes"
      ]
     },
     {
@@ -107,8 +163,7 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "Notebook.json: each page from 64 up is read or unread by its own SEEN flag (DAEMONS 9a7c61ca)",
-      "T-533: THE ORIGIN OF A DAEMON's recording, sealed, played whole once every chapter is back (DRAFT)"
+      "Notebook.json: each page from 64 up is read or unread by its own SEEN flag (DAEMONS 9a7c61ca)"
      ]
     }
    ]

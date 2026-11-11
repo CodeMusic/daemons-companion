@@ -28,6 +28,7 @@ def font(px):
 
 
 F_BIG, F_MID, F_SMALL, F_TINY, F_CODE = font(40), font(16), font(12), font(10), font(46)
+F_QRCODE = font(34)
 
 
 def get(path, method="GET"):
@@ -147,12 +148,39 @@ def page_holding(frac):
     return im
 
 
+# C-170: the code as a QR too, for the phone's camera -- daemons://pair?server=...&code=..., which the app opens on its
+# PAIR page with both filled in. Drawn only where python3-qrcode is installed (hub/phase0.sh); the digits always are.
+try:
+    import qrcode
+except ImportError:
+    qrcode = None
+
+
+def pair_link(code, address):
+    from urllib.parse import quote
+    return f"daemons://pair?server={quote(f'http://{address}:4730', safe='')}&code={code}"
+
+
+def qr_image(text, box=3):
+    q = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=box, border=2)
+    q.add_data(text); q.make(fit=True)
+    return q.make_image(fill_color="black", back_color="white").convert("RGB")
+
+
 def page_code(code, address, until, tailnet=None):
     im = Image.new("RGB", (W, H), PAPER); d = ImageDraw.Draw(im)
     header(d, "PAIR A PHONE", None)
-    d.text((W // 2, 40), "ON THE APP, ENTER", font=F_SMALL, fill=DIM, anchor="ma")
-    d.text((W // 2, 60), f"{address}:4730", font=F_MID, fill=INK, anchor="ma")
-    d.text((W // 2, 92), code, font=F_CODE, fill=INK, anchor="ma")
+    qr = qr_image(pair_link(code, address)) if qrcode else None
+    if qr and qr.width <= 120:                  # the digits on the left, the camera's square on the right
+        im.paste(qr, (W - qr.width - 10, 34))
+        cx = (W - qr.width - 10) // 2
+        d.text((cx, 40), "SCAN, OR ENTER", font=F_SMALL, fill=DIM, anchor="ma")   # DRAFT
+        d.text((cx, 60), f"{address}:4730", font=F_MID, fill=INK, anchor="ma")
+        d.text((cx, 92), code, font=F_QRCODE, fill=INK, anchor="ma")
+    else:
+        d.text((W // 2, 40), "ON THE APP, ENTER", font=F_SMALL, fill=DIM, anchor="ma")
+        d.text((W // 2, 60), f"{address}:4730", font=F_MID, fill=INK, anchor="ma")
+        d.text((W // 2, 92), code, font=F_CODE, fill=INK, anchor="ma")
     left = max(0, int(until - time.time()))
     if tailnet:
         d.text((W // 2, 150), f"away, on the tailnet: {tailnet}:4730", font=F_SMALL, fill=DIM, anchor="ma")

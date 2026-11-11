@@ -9,12 +9,15 @@
 //     its kind's colour; the live run on to NOW; past NOW, LATER -- empty until the mind can be given work for later
 //   - THE LIST: what is thinking now, with STOP; what finished, with TRY AGAIN and FORGET
 // MINE, EVERYONE or one user; the ledger is the hub's (/api/mind/tasks, server/src/ai/tasks.ts). Every word DRAFT.
+// C-330: the app keeps this phone's user's own (MINE); EVERYONE, each other user and LATER (the hub's plans) are THE
+// ENGINE ROOM's, the hub's admin -- a link to it below.
 import { useEffect, useMemo, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import type { Task } from "../../../server/src/ai/tasks";
 import { api } from "../../platform/net";
 import { me, whoAmI } from "../../state/me";
 import { Action, Card, Eyebrow, Small } from "../../ui/ui";
+import { EngineRoom } from "../../ui/engineRoom";   // C-330
 
 type Plan = { id: string; kind: string; title: string; said: string; on: boolean; last: string | null; next: string };
 type View = { tasks: Task[]; users: string[]; minds: { name: string; ok: boolean }[]; load: { running: number; waiting: number }; at: string; plans?: Plan[] };
@@ -172,8 +175,7 @@ function Depth({ x, y, n, colour }: { x: number; y: number; n: number; colour: s
   );
 }
 export function MindAtWork({ ink }: { ink: string }) {
-  const [v, setV] = useState<View | null>(null);
-  const [who, setWho] = useState<"mine" | "all" | string>("all");
+  const [v, setV] = useState<View | null>(null);   // C-330: only MINE here -- everyone's is THE ENGINE ROOM's
   const [win, setWin] = useState<(typeof WINDOWS)[number][0]>("hour");
   const [w, setW] = useState(320);
   const [tick, setTick] = useState(0);
@@ -186,7 +188,7 @@ export function MindAtWork({ ink }: { ink: string }) {
   useEffect(() => { const id = setInterval(read, anyLive ? 2000 : 5000); return () => clearInterval(id); }, [anyLive]);
   useEffect(() => { if (!anyLive) return; const id = setInterval(() => setTick((n) => n + 1), 100); return () => clearInterval(id); }, [anyLive]);
   const now = Date.now(), span = WINDOWS.find((x) => x[0] === win)![1];
-  const shown = useMemo(() => (v?.tasks ?? []).filter((t) => who === "all" || (who === "mine" ? t.user === mine : t.user === who)), [v, who, mine]);
+  const shown = useMemo(() => (v?.tasks ?? []).filter((t) => t.user === mine), [v, mine]);
   const inWindow = shown.filter((t) => t.state !== "scheduled" && (LIVE(t) || Date.parse(t.ended ?? t.at) >= now - span));
   const later = shown.filter((t) => t.state === "scheduled");
   const minds = useMemo(() => {
@@ -200,9 +202,6 @@ export function MindAtWork({ ink }: { ink: string }) {
   const act = async (t: Task, a: "stop" | "retry" | "forget") => {
     try { await api("/api/mind/tasks", { id: t.id, act: a }); setNote(""); read(); } catch (e) { setNote((e as Error).message); }
   };
-  const plan = async (id: string, o: { on?: boolean; now?: true }) => {   // C-319 later
-    try { await api("/api/mind/tasks", { act: "plan", plan: id, ...o }); setNote(""); read(); } catch (e) { setNote((e as Error).message); }
-  };
   const sel = v.tasks.find((t) => t.id === picked) ?? null;
   const parts = sel ? v.tasks.filter((t) => t.parent === sel.id) : [];
   const sum = (f: (t: Task) => number | undefined) => parts.reduce((n, t) => n + (f(t) ?? 0), 0) || undefined;
@@ -210,17 +209,12 @@ export function MindAtWork({ ink }: { ink: string }) {
                                                      tokens: sum((t) => t.tokens?.in) || sum((t) => t.tokens?.out) ? { in: sum((t) => t.tokens?.in), out: sum((t) => t.tokens?.out) } : undefined }) : "";
   const parentOf = sel?.parent ? v.tasks.find((t) => t.id === sel.parent) : null;
   const live = inWindow.filter(LIVE), done = inWindow.filter((t) => !LIVE(t));
-  const others = v.users.filter((u) => u !== mine);
   return (
     <Card>
       <Eyebrow>THE MIND AT WORK</Eyebrow>
       <Small color="$color10">{`${live.length ? `${live.length} thinking now` : "Quiet"} · ${done.length} finished in ${WINDOWS.find((x) => x[0] === win)![2].toLowerCase()}` +
                                `${v.load.waiting ? ` · ${v.load.waiting} in the hub's queue` : ""}`}</Small>
-      <XStack gap={6} flexWrap="wrap" marginTop={4}>
-        <Pill label={`MINE${mine ? ` (${mine})` : ""}`} on={who === "mine"} onPress={() => setWho("mine")} />
-        <Pill label="EVERYONE" on={who === "all"} onPress={() => setWho("all")} />
-        {others.map((u) => <Pill key={u} label={u.toUpperCase()} on={who === u} onPress={() => setWho(u)} />)}
-      </XStack>
+      <Small color="$color10">{`Yours${mine ? ` (${mine})` : ""}.`}</Small>
       <YStack marginTop={8} onLayout={(e: any) => setW(Math.max(240, e.nativeEvent.layout.width))}>
         <Web tasks={inWindow} minds={minds} devices={devices} w={w} tick={tick} pick={(t) => setPicked(t.id)} queued={v.load.waiting} />
       </YStack>
@@ -249,7 +243,6 @@ export function MindAtWork({ ink }: { ink: string }) {
           <XStack gap={6} marginTop={4} flexWrap="wrap">
             {sel.can?.stop && LIVE(sel) ? <Action label="Stop" ink={ink} onPress={() => act(sel, "stop")} /> : null}
             {sel.can?.retry && (sel.state === "failed" || sel.state === "stopped") ? <Action label="Try again" ink={ink} onPress={() => act(sel, "retry")} /> : null}
-            {sel.state === "scheduled" && sel.plan ? <Action label="Do it now" ink={ink} onPress={() => { plan(sel.plan!, { now: true }); setPicked(null); }} /> : null}
             {sel.source === "ledger" && !LIVE(sel) ? <Action label="Forget" ink={ink} onPress={() => { act(sel, "forget"); setPicked(null); }} /> : null}
             <Action label="Close" ink={ink} onPress={() => setPicked(null)} />
           </XStack>
@@ -267,29 +260,13 @@ export function MindAtWork({ ink }: { ink: string }) {
           ))}
         </YStack>
       ) : null)}
-      {/* C-319 later: LATER -- the hub's plans, each with its next time, on or off, or done now */}
-      {v.plans?.length ? (
-        <YStack marginTop={10} gap={6}>
-          <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10">LATER</Text>
-          {v.plans.map((p) => (
-            <YStack key={p.id} gap={2}>
-              <XStack gap={8} alignItems="center">
-                <YStack width={8} height={8} borderRadius={2} borderWidth={1.5} borderStyle="dashed" borderColor={kindOf(p.kind).colour} />
-                <Text flex={1} fontSize={12} color={p.on ? "$color12" : "$color9"} numberOfLines={1}>{p.title}</Text>
-                <Pill label={p.on ? "ON" : "OFF"} on={p.on} onPress={() => plan(p.id, { on: !p.on })} />
-                <Pill label="NOW" on={false} onPress={() => plan(p.id, { now: true })} />
-              </XStack>
-              <Small color="$color10">{`${p.said} ${p.on ? `Next: ${whenSaid(p.next, now)}.` : "Off."}${p.last ? ` Last: ${ago(p.last, now)}.` : ""}`}</Small>
-            </YStack>
-          ))}
-        </YStack>
-      ) : null}
       <XStack gap={6} marginTop={8}>
         <Action label="Clear finished" ink={ink} onPress={async () => {
-          try { await api("/api/mind/tasks", { act: "clear", ...(who === "all" ? {} : { user: who === "mine" ? mine : who }) }); read(); } catch (e) { setNote((e as Error).message); }
+          try { await api("/api/mind/tasks", { act: "clear", user: mine }); read(); } catch (e) { setNote((e as Error).message); }
         }} />
       </XStack>
       {note ? <Small color="$color10">{note}</Small> : null}
+      <EngineRoom page="mind" ink={ink} what="Everyone's work, and LATER -- the hub's plans -- are the hub's." />
       <Small color="$color9">DRAFT</Small>
     </Card>
   );

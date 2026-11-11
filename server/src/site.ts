@@ -28,7 +28,8 @@ export function siteFile(dir: string, path: string): string | null {
   try { return statSync(file).isFile() ? file : null; } catch { return null; }
 }
 
-export function serveSite(dir: string, req: IncomingMessage, res: ServerResponse, path: string) {
+// `fresh`: every file asked again, as THE ENGINE ROOM's are (C-330) -- unhashed, so a deploy reaches it at once
+export function serveSite(dir: string, req: IncomingMessage, res: ServerResponse, path: string, fresh = false) {
   let file = siteFile(dir, path);
   if (!file && !extname(path)) file = siteFile(dir, "/index.html");           // the app's own routes
   if (!file || !existsSync(file)) { res.writeHead(404, { "content-type": "text/plain" }); return res.end("not found"); }
@@ -36,7 +37,7 @@ export function serveSite(dir: string, req: IncomingMessage, res: ServerResponse
   res.writeHead(200, {
     "content-type": TYPES[extname(file).toLowerCase()] ?? "application/octet-stream",
     // the page itself always asked again (a new export reaches the next visit); its hashed bundles kept a year
-    "cache-control": index ? "no-cache" : /[.-][0-9a-f]{8,}\./i.test(file) ? "public, max-age=31536000, immutable" : "public, max-age=3600",
+    "cache-control": index || fresh ? "no-cache" : /[.-][0-9a-f]{8,}\./i.test(file) ? "public, max-age=31536000, immutable" : "public, max-age=3600",
     "x-content-type-options": "nosniff",
   });
   if (req.method === "HEAD") return res.end();

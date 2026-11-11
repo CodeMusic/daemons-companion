@@ -6,11 +6,11 @@ import { dayRoot, hearSettings, soundLevel, tuneSound } from "../../sound/tuneSo
 import { Text, XStack, YStack } from "tamagui";
 import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
          stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../../server/src/slots";
-import { KIND_NAMES, playerId } from "../../state/data";
-import { lookFor } from "../../art/deviceSprites";
+import { playerId } from "../../state/data";
 import { api } from "../../platform/net";
-import { Cast, CasinoHouse, PlayerState, Reason } from "../../state/types";
+import { Cast, PlayerState } from "../../state/types";
 import { Action, Art, Card, Eyebrow, Small } from "../../ui/ui";
+import { EngineRoom } from "../../ui/engineRoom";   // C-330
 export const CASINO_BOOT = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
    // this start of the app
 export let casinoSeq = 0;
@@ -27,7 +27,7 @@ export function RoutinesCard({ ink }: { ink: string }) {
         <Action label={open === "party" ? "Close" : "YOUR PARTY'S ROUTINES"} ink={ink} onPress={() => setOpen(open === "party" ? null : "party")} />
       </XStack>
       {open === "casino" ? <Casino ink={ink} /> : null}
-      {open === "house" ? <House ink={ink} /> : null}
+      {open === "house" ? <EngineRoom page="house" ink={ink} what="THE HOUSE -- the day's odds and why, everyone at the reels, what the house keeps -- is the hub's." /> : null}
       {open === "party" ? <PartyRoutines /> : null}
     </Card>
   );
@@ -299,101 +299,4 @@ export function Casino({ ink }: { ink: string }) {
   );
 }
 
-// C-158 (the user, 2026-10-18: "a casino admin section where you can see who all is gambling and the current odds the
-// instance is experiencing -- clicking on it explains why those odds are active (eg win streak, holiday, etc)"): THE HOUSE,
-// from GET /api/casino -- the day's odds and everyone at the reels, each opening on its reasons. Every word DRAFT.
-const seatName = (device: string) => {                  // every board's own name (devices.json), else the hand-kept list
-  if (device.startsWith("site-")) return "A site";
-  const kind = Object.keys(KIND_NAMES).filter((k) => device.startsWith(k)).sort((a, b) => b.length - a.length)[0];
-  return lookFor(device)?.name ?? (kind ? KIND_NAMES[kind] : device);
-};
-const back = (rtp: number) => `${(rtp * 100).toFixed(1)} back of every 100`;
-// a reason's part in points of return: the day's luck moves it 5 a whole step (slots.ts RETURN_AT); the string's is said so
-const points = (r: Reason) => { const n = r.source === "the string" ? r.effect : r.effect * 5; return `${n > 0 ? "+" : ""}${n.toFixed(1)}`; };
-function Reasons({ reasons }: { reasons: Reason[] }) {
-  return (
-    <YStack gap={3} marginTop={6} paddingLeft={10} borderLeftWidth={2} borderColor="$color6">
-      {reasons.map((r, i) => (
-        <XStack key={i} gap={8} alignItems="baseline">
-          <Text width={44} textAlign="right" fontFamily="$mono" fontSize={12} fontWeight="700"
-                color={r.effect > 0 ? "#3f8f4f" : r.effect < 0 ? "#b0413e" : "$color10"}>{points(r)}</Text>
-          <Text flex={1} fontSize={14} color="$color12">{r.why}</Text>
-        </XStack>
-      ))}
-    </YStack>
-  );
-}
-// C-167 (the user, 2026-10-18: "the money lost to the casino is kept track of"): what THE HOUSE has kept, net, the
-// bets less what they paid back -- settled at a SYNC, and what waits for the next -- and, opened, each board's share.
-// Negative while the player is ahead: then the house owes. Where it goes is the game's to show. Every word DRAFT.
-type Kept = NonNullable<CasinoHouse["house"]>;
-function Shares({ devices }: { devices: Kept["devices"] }) {
-  return (
-    <YStack gap={3} marginTop={6} paddingLeft={10} borderLeftWidth={2} borderColor="$color6">
-      {devices.map((d) => (
-        <XStack key={d.device} gap={8} alignItems="baseline">
-          <Text width={80} textAlign="right" fontFamily="$mono" fontSize={12} fontWeight="700"
-                color={d.take > 0 ? "#b0413e" : d.take < 0 ? "#3f8f4f" : "$color10"}>{d.take.toLocaleString()}</Text>
-          <Text flex={1} fontSize={14} color="$color12">{`${seatName(d.device)} · ${d.spins.toLocaleString()} pulls`}</Text>
-        </XStack>
-      ))}
-    </YStack>
-  );
-}
-function Keeps({ house, open, onToggle }: { house: Kept; open: boolean; onToggle: () => void }) {
-  const waits = house.pending > 0 ? `${house.pending.toLocaleString()} more at the next SYNC`
-              : house.pending < 0 ? `${(-house.pending).toLocaleString()} back at the next SYNC` : "nothing waits for a SYNC";
-  return (
-    <YStack padding={10} borderRadius={6} borderWidth={1} borderColor="$color6" cursor="pointer" role="button" onPress={onToggle}>
-      <Eyebrow>{house.kept < 0 ? "THE HOUSE OWES" : "THE HOUSE KEEPS"}</Eyebrow>
-      <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{Math.abs(house.kept).toLocaleString()}</Text>
-      <Small>{`${waits} · ${house.spins.toLocaleString()} pulls in all`}</Small>
-      {open ? <Shares devices={house.devices} /> : house.devices.length ? <Small color="$color11">By board ›</Small> : null}
-    </YStack>
-  );
-}
-export function House({ ink }: { ink: string }) {
-  const [h, setH] = useState<CasinoHouse | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [open, setOpen] = useState<string | null>(null);
-  useEffect(() => {
-    const get = () => api<CasinoHouse>("/api/casino").then((v) => { setH(v); setFailed(false); }).catch(() => setFailed(true));
-    get();
-    const t = setInterval(get, 15000);
-    return () => clearInterval(t);
-  }, []);
-  if (!h) return <Small>{failed ? "THE HOUSE is kept on the computer: it answers when the phone can reach it." : "Asking the house…"}</Small>;
-  const w = h.world?.weather;
-  return (
-    <YStack gap={8} marginTop={10}>
-      <YStack padding={10} borderRadius={6} borderWidth={1} borderColor="$color6" cursor="pointer" role="button"
-              onPress={() => setOpen(open === "day" ? null : "day")}>
-        <Eyebrow>TODAY'S ODDS</Eyebrow>
-        <Text fontFamily="$mono" fontSize={18} fontWeight="700" color="$color12">{back(h.context.rtp)}</Text>
-        <Small>{`${h.holiday?.name ? `${h.holiday.name} · ` : ""}${(h.world?.watch ?? "").toLowerCase()}${w ? ` · ${w.kind}, ${Math.round(w.tempC)}°C in ${w.city}` : " · no city set for the weather (SETTINGS)"}`}</Small>
-        {open === "day" ? <Reasons reasons={h.context.reasons} /> : <Small color="$color11">Why ›</Small>}
-      </YStack>
-      {h.house ? <Keeps house={h.house} open={open === "house.keeps"} onToggle={() => setOpen(open === "house.keeps" ? null : "house.keeps")} /> : null}
-      <Eyebrow>AT THE REELS</Eyebrow>
-      {h.players.length === 0 ? <Small color="$color10">Nobody is playing just now.</Small> : null}
-      {h.players.map((p) => (
-        <YStack key={p.device} padding={10} borderRadius={6} borderWidth={1} borderColor="$color6" cursor="pointer" role="button"
-                onPress={() => setOpen(open === p.device ? null : p.device)}>
-          <XStack gap={10} alignItems="center">
-            {p.species ? <Art path={`/art/species/${p.species}.png`} size={44} /> : <YStack width={44} height={44} />}
-            <YStack flex={1}>
-              <Text fontFamily="$mono" fontSize={14} fontWeight="700" color="$color12">{p.name}</Text>
-              <Small>{`${seatName(p.device)} · ${p.odds ? back(p.odds.rtp) : "the day's odds"}`}</Small>
-            </YStack>
-          </XStack>
-          {open === p.device ? (<>
-            {p.odds ? <Small color="$color10">{`${p.odds.dry} pulls since a win · ${p.odds.streak} wins running · the string at ${p.odds.reach > 0 ? "+" : ""}${p.odds.reach.toFixed(2)}`}</Small> : null}
-            <Reasons reasons={p.reasons} />
-          </>) : null}
-        </YStack>
-      ))}
-      <Small color="$color10">Every table keeps between 90 and 100 back of every 100 bet over many pulls: the day sets where,
-        and each player's run of luck moves a pull a little either way.</Small>
-    </YStack>
-  );
-}
+// C-158's THE HOUSE -- the day's odds, everyone at the reels, what the house keeps -- moved to THE ENGINE ROOM (C-330)

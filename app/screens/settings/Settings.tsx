@@ -5,7 +5,7 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { BUILD } from "../../state/data";
 import { LOOK, Look, setLook } from "../../state/look";
 import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER, SITE_HOME } from "../../platform/net";
-import { forgetGeneration, forgetVoices } from "../../platform/voiceFile";   // C-303: MAKE THE VOICES AGAIN
+import { EngineRoom } from "../../ui/engineRoom";   // C-330: MAKE THE VOICES AGAIN moved there
 import { Settings } from "../../state/types";
 import { Action, Card, Choice, Entry, Eyebrow, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
@@ -235,14 +235,6 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
                             health?: { tiiny?: { ok: boolean; models: string[] } | null } }>("/api/talk/settings");
   const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; quick?: string; asr?: string; tts?: string; stream?: string } | null>(null);
   const [tiinyNote, setTiinyNote] = useState("");
-  const [voicesNote, setVoicesNote] = useState("");
-  const voicesAgain = async () => {                                   // C-303: the hub's generation moves; every phone forgets its kept voices
-    try {
-      setT(await api<typeof t>("/api/talk/settings", { voicesAgain: true }));
-      if (ON_PHONE) { forgetVoices(); forgetGeneration(); }
-      setVoicesNote("Every voice will be made afresh the next time it is heard.");   // DRAFT
-    } catch (e) { setVoicesNote((e as Error).message); }
-  };
   const [typed, setTyped] = useState<string | null>(null);
   const [looking, setLooking] = useState("");
   if (!t) return null;
@@ -318,13 +310,11 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
             : tiinyHealth?.ok ? `Answering: ${tiinyHealth.models.length} models.` : "Not answering yet.")}
         </Small>{/* DRAFT */}
       </YStack>
-      {/* C-303: the voices kept on every phone are made again -- after a recipe or a voice model changes */}
+      {/* C-303: the voices kept on every phone are made again -- MAKE THE VOICES AGAIN is THE ENGINE ROOM's now (C-330);
+          a phone forgets its kept voices when it sees the hub's generation move (platform/voiceFile.ts) */}
       <YStack gap={6} marginTop={6}>
         <Eyebrow>THE VOICES</Eyebrow>
-        <XStack gap={10} alignItems="center" flexWrap="wrap">
-          <Action label="Make the voices again" onPress={voicesAgain} ink={ink} />
-          <Small>{voicesNote || `Generation ${t.voices ?? "?"}. A voice heard once is kept on the phone; this forgets them all.`}</Small>{/* DRAFT */}
-        </XStack>
+        <EngineRoom page="voices" ink={ink} what={`Generation ${t.voices ?? "?"}. A voice heard once is kept on the phone; making them all again is the hub's.`} />
       </YStack>
       {house ? (
         <YStack gap={6} marginTop={6}>

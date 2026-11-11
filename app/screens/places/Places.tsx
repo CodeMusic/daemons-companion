@@ -1,6 +1,7 @@
 // PLACES -- the devices under their makers, each one's settings, routines and remotes; the handheld's link. (C-157: out of App.tsx.)
 import { useEffect, useState } from "react";
 import { Linking } from "react-native";
+import { EngineRoom } from "../../ui/engineRoom";   // C-330
 import { Input, Text, XStack, YStack } from "tamagui";
 import { KIND_NAMES } from "../../state/data";
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "../../art/deviceSprites";
@@ -236,10 +237,9 @@ function WhereRow({ id, ink }: { id: string; ink: string }) {
     </YStack>
   );
 }
-function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: string; daemon?: Carried | null; onForgot?: () => void }) {
+function OwnSettingsCard({ id, ink, daemon }: { id: string; ink: string; daemon?: Carried | null }) {
   const [s, setS] = useState<OwnSettings | null>(null);
   const [said, setSaid] = useState("");
-  const [forgetting, setForgetting] = useState(false);   // the README pass, 2026-10-18: the redesign had lost the way to forget one
   const path = `/api/devices/${encodeURIComponent(id)}/settings`;
   useEffect(() => { api<OwnSettings>(path).then(setS).catch((e) => setSaid((e as Error).message)); }, [path]);
   if (!s) return said ? <Small color="$color8">{said}</Small> : <Small>Asking the companion…</Small>;
@@ -315,16 +315,9 @@ function OwnSettingsCard({ id, ink, daemon, onForgot }: { id: string; ink: strin
           <Small color="$color10">For testing PLAY: HARP or FLUTE plays that one, open whatever the save holds.</Small>
         </OwnRow>
       ) : null}
-      {/* forgetting a device: it leaves the list (and its daemon goes back to none) until it next says hello (DRAFT) */}
-      {forgetting ? (
-        <YStack gap={2} marginTop={10}>
-          <Small>It leaves this list, and its daemon goes back to none, until it next says hello. Forget it?</Small>
-          <XStack gap={8}>
-            <Action label="Yes, forget it" ink={ink} onPress={async () => { await api("/api/devices/forget", { id }); setForgetting(false); onForgot?.(); }} />
-            <Action label="No" ink={ink} onPress={() => setForgetting(false)} />
-          </XStack>
-        </YStack>
-      ) : <Text marginTop={10} fontSize={12} color="$color9" cursor="pointer" role="button" onPress={() => setForgetting(true)}>Forget this device</Text>}
+      {/* forgetting a device -- it leaves the list, its daemon back to none, until it next says hello -- is THE ENGINE
+          ROOM's now (C-330), the hub's admin */}
+      <EngineRoom page="devices" ink={ink} what="Forgetting a device is the hub's." />
       {said ? <Small color="$color8">{said}</Small> : null}
     </YStack>
   );
@@ -471,9 +464,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
                     redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
-              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} onForgot={() => {
-                setMine(null); setLink((l) => l && { ...l, devices: (l.devices ?? []).filter((x) => x.id !== d.id) });
-              }} /> : null}
+              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} /> : null}
             </YStack>
             </XStack>
           ))}

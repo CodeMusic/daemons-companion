@@ -9,7 +9,7 @@
 // C-303 (the user, 2026-11-06): only the TRUE voice is kept -- the hub says `final` when the voice is the one meant (the
 // Tiiny's, in the daemon's own recipe). A voice that fell back to the hub's own is played once and not kept, "that way if
 // I retry it will try to make the true voice". And every kept voice is under the voices' GENERATION the hub names
-// (ai/voices.ts; MAKE THE VOICES AGAIN in the app's settings bumps it): when the hub's differs from the one the phone kept
+// (ai/voices.ts; MAKE THE VOICES AGAIN in THE ENGINE ROOM bumps it, C-330): when the hub's differs from the one the phone kept
 // its voices under, it forgets them all and asks again, so a newer voice is heard without a new build.
 import { Directory, File, Paths } from "expo-file-system";
 import { api, apiLater, ON_PHONE } from "./net";

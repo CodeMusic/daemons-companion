@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- C-330: THE ENGINE ROOM (DRAFT) -- the hub's admin in one place, installable from the phone's home screen.
+     Served by the hub at /admin/ (server/src/admin.ts); everything it shows comes from the API behind a paired key. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>THE ENGINE ROOM</title>
+  <meta name="description" content="The companion hub's admin: the minds at work, the house, the voices, the devices, the exchange and the commons.">
+  <meta name="theme-color" content="#0f1420">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ENGINE ROOM">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="top">
+    <img src="icon-192.png" alt="" width="28" height="28">
+    <span class="title">THE ENGINE ROOM</span>
+    <span class="draft">DRAFT</span>
+    <span id="where" class="where"></span>
+  </header>
+  <div class="frame">
+    <nav id="nav" class="nav" aria-label="THE ENGINE ROOM"></nav>
+    <main id="page" class="page" tabindex="-1"></main>
+  </div>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

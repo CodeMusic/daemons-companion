@@ -8,6 +8,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { api, ON_PHONE } from "../../platform/net";
 import { Action, Art, Card, Choice, Entry, Eyebrow, Small, useInk } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
+import { EngineRoom } from "../../ui/engineRoom";   // C-330
 import { KIND_NAMES, playerId } from "../../state/data";
 import type { DeviceRow } from "../../state/types";
 
@@ -46,7 +47,6 @@ export function TradeScreen({ ink }: { ink?: string }) {
   const [scope, setScope] = useState<"home" | "friends">("home");   // C-222: this home, or friends' homes on THE COMMONS
   const [to, setTo] = useState<string>("");   // a player's id, "" anyone, "friends" C-223
   const [giving, setGiving] = useState<string | null>(null);   // the offer being taken
-  const [invite, setInvite] = useState<{ code: string; until: string } | null>(null);
   const reload = async () => setV(await api<View>("/api/trade"));
   const act = async (path: string, body: unknown, done: string) => { await api(path, body); setSaid(done); await reload(); };
 
@@ -191,9 +191,8 @@ export function TradeScreen({ ink }: { ink?: string }) {
       {!v.hub ? (
         <Card gap={6}>
           <Eyebrow>INVITE A PLAYER</Eyebrow>
-          <Small>Another player's companion joins this hub with a code. It works once, for fifteen minutes.</Small>
-          <Action label="MAKE A CODE" ink={ink} onPress={async () => setInvite(await api("/api/exchange/invite", {}))} />
-          {invite ? <Text fontFamily="$mono" fontSize={22} letterSpacing={4} color="$color12">{invite.code}</Text> : null}
+          {/* C-330: the code is made in THE ENGINE ROOM, the hub's admin */}
+          <EngineRoom page="exchange" ink={ink} what="Another player's companion joins this hub with a code, made on the hub." />
         </Card>
       ) : null}
       {!v.hub ? <CommonsCard ink={ink} /> : null}
@@ -338,7 +337,7 @@ function FriendsCard({ f, players, ink, act }: { f: { friends: Named[]; asked: N
 // friend code, a friend added by theirs, asks to accept, friends to forget. Every word DRAFT.
 function CommonsCard({ ink }: { ink: string }) {
   const [c, setC, error] = useApi<Commons>("/api/commons");
-  const [url, setUrl] = useState(""), [name, setName] = useState(""), [code, setCode] = useState(""), [said, setSaid] = useState("");
+  const [code, setCode] = useState(""), [said, setSaid] = useState("");
   const again = async () => setC(await api<Commons>("/api/commons"));
   const friend = async (what: string, body: unknown, done: string) => { await api(`/api/commons/${what}`, body); setSaid(done); await again(); };
   if (error) return null;                                   // a companion that is not the hub has no commons of its own
@@ -347,12 +346,9 @@ function CommonsCard({ ink }: { ink: string }) {
   return (
     <Card gap={6}>
       <Eyebrow>THE COMMONS</Eyebrow>
-      {!c.url ? (<>
-        <Small>Link this home to the commons, and trade with friends' homes. Your players and devices still talk only to this hub.</Small>
-        <Entry value={url} onChange={setUrl} onSubmit={() => {}} placeholder="http://roverbyteseer:4750" limit={80} />
-        <Entry value={name} onChange={setName} onSubmit={() => {}} placeholder="this home's name, as friends see it" limit={16} />
-        <Action label="LINK" ink={ink} onPress={async () => { setC(await api<Commons>("/api/commons", { url, name })); setSaid("Linked. The commons' keeper lets this home in."); }} />
-      </>) : !h ? (
+      {!c.url ? (
+        <EngineRoom page="commons" ink={ink} what="Link this home to the commons, and trade with friends' homes." />   // C-330
+      ) : !h ? (
         <Small>{`The commons at ${c.url} did not answer${c.error ? `: ${c.error}` : "."}`}</Small>
       ) : !h.approved ? (
         <Small>{`${h.name} is waiting for the commons' keeper to let it in.`}</Small>
@@ -377,7 +373,6 @@ function CommonsCard({ ink }: { ink: string }) {
           </XStack>
         ))}
       </>)}
-      {c.url ? <Action label="UNLINK" ink={ink} onPress={async () => { setC(await api<Commons>("/api/commons", { url: "" })); setSaid("Unlinked."); }} /> : null}
       {said ? <Small>{said}</Small> : null}
     </Card>
   );

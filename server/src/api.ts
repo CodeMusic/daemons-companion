@@ -56,6 +56,7 @@ import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
+import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
@@ -995,6 +996,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.headers.origin !== undefined && !ourHost(String(req.headers.origin)))
         return send(res, 403, { error: "not from a page of the companion's" });
       if (!ourHost(String(req.headers.host ?? ""))) return send(res, 403, { error: "not an address of the companion's" });
+      // C-330: THE ENGINE ROOM, the hub's admin -- its files to the home network and the tailnet, never through the relay
+      if (isAdminPath(req.method ?? "", path)) {
+        if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "THE ENGINE ROOM is on the home network and the tailnet only" });   // DRAFT
+        return serveAdmin(req, res, path);
+      }
       if (cfg.siteDir && isSitePath(req.method ?? "", path)) return serveSite(cfg.siteDir, req, res, path);   // C-170
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
@@ -1031,6 +1037,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!phone && !board) return send(res, 401, { error: "away from home, only a paired phone or a linked board -- link it at home first" });
         if (LOCAL_ONLY.includes(path) || path.startsWith("/api/pair"))
           return send(res, 403, { error: "that is done at home, on the computer the companion runs on" });
+        if (ADMIN_HOME_ONLY.some((d) => d(req.method ?? "", path)))   // C-330: the house is run from home or the tailnet
+          return send(res, 403, { error: "that is THE ENGINE ROOM's, on the home network and the tailnet only" });   // DRAFT
       }
       // C-55: "phone" is the companion app carrying the device's link over Bluetooth -- a paired phone speaking for it.
       const asked = url.searchParams.get("via");
@@ -1351,6 +1359,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.act === "clear") { TASKS.clear(typeof b.user === "string" ? b.user : undefined); return send(res, 200, { ok: true }); }
         // C-319 later: {act: "plan", plan, on?: boolean, now?: true} -- a plan switched on or off, or run at once
         if (b.act === "plan") {
+          if (relayed) return send(res, 403, { error: "that is THE ENGINE ROOM's, on the home network and the tailnet only" });   // C-330, DRAFT
           const pid = String(b.plan ?? "");
           if (typeof b.on === "boolean" && !keepPlan((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), pid, { on: b.on })) return send(res, 404, { error: "no such plan" });
           if (b.now === true && !runPlan(pid)) return send(res, 404, { error: "no such plan" });
@@ -1457,6 +1466,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
         if (b.first !== undefined) setTalkFirst(store, b.first);   // C-211
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);
+        if (b.voicesAgain === true && relayed)                 // C-330: THE ENGINE ROOM's, from home or the tailnet
+          return send(res, 403, { error: "that is THE ENGINE ROOM's, on the home network and the tailnet only" });   // DRAFT
         if (b.voicesAgain === true)                            // C-303: MAKE THE VOICES AGAIN -- every phone forgets the voices it kept
           store.setSetting("voice.generation", String((Number(store.getSetting("voice.generation")) || 0) + 1));
         if (typeof b.moduleAddresses === "string") {          // a board's address, given by hand (ai/discover.ts), looked for now

@@ -1,6 +1,6 @@
 # Accounts and safety (C-226)
 
-*A design, DRAFT, 2026-11-11. Nothing here is built yet. It is the account half of going public (C-278): before
+*A design, DRAFT, 2026-11-11. **Piece 1, the server, is built** (below); the rest is not. It is the account half of going public (C-278): before
 `api.daemons.codemusic.ca` opens, a player needs an identity that does not depend on a home hub, and kids may be among
 them.*
 
@@ -113,6 +113,28 @@ since nothing depends on roverbyteseer being a Mac.
 3. **App**: the GUARDIAN screen (sign in, profiles, devices, controls, ledger, delete) and a profile picker.
 4. **The exchange on accounts**: offers, friends and the ledger keyed by profile; a hub player claimed into one.
 5. **Before it opens**: the privacy policy, the consent review, the tunnel, rate limits at Cloudflare.
+
+## Piece 1, built 2026-11-11 (DRAFT)
+
+On THE COMMONS' server (`npm run commons`, roverbyteseer), every `/accounts/` request: `server/src/accounts.ts` (the
+guardians, profiles, kids' devices, controls, passkeys kept, delete -- no Node imports), `idtoken.ts` (an Apple or Google
+ID token checked against the provider's JWKS: RS256, issuer, audience, expiry), `webauthn.ts` (passkeys with no library:
+the new key taken, every sign-in's signature, site, page, presence and counter checked), `accounts_api.ts` (the routes,
+listed at its top). Sign-in, a passkey sign-in and a device's code are rate-limited with the commons' own tries.
+`server/data/names.json` holds PLACEHOLDER lists until piece 2. Tests: `server/test/accounts.test.ts` (a fake provider's
+keys, a P-256 passkey made as a phone would).
+
+Set on the commons' machine, in its environment (none are secrets):
+
+| Variable | What |
+|---|---|
+| `ACCOUNTS_APPLE_AUD` | the app's ids with Apple (its bundle id; a Services ID for the web), comma list |
+| `ACCOUNTS_GOOGLE_AUD` | the app's OAuth client ids with Google, comma list |
+| `ACCOUNTS_RP_ID` | the passkeys' site: `api.daemons.codemusic.ca` once C-278's tunnel is up |
+| `ACCOUNTS_ORIGINS` | the pages a passkey may answer from, comma list |
+
+Unset, sign-in and passkeys answer that they are not set up. Not yet: the app's GUARDIAN screen (piece 3), the
+exchange on profiles (piece 4), and the server reachable from outside the tailnet (C-278).
 
 ## Still open
 

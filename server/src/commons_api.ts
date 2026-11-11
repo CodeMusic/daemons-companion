@@ -10,6 +10,8 @@
 //   POST /commons/player {name}            vouch for one of its players: a token for that player
 //   -- as a home's player (x-daemons-home and x-daemons-player) --
 //   GET/POST /commons/x/<name>             the exchange's requests (tradelink.ts exchangeRoute), within REACH
+//   -- C-226 --
+//   /accounts/*                            ACCOUNTS: guardians, profiles, kids' devices, passkeys (accounts_api.ts)
 //
 // The tailnet only for now (the user, 2026-10-28): it listens where its config says, and nothing here is for the
 // internet until accounts and abuse are decided.
@@ -19,6 +21,8 @@ import { KEYS } from "./keys.js";
 import * as C from "./commons.js";
 import * as X from "./exchange.js";
 import { exchangeRoute } from "./tradelink.js";
+import { ACCOUNT_KEYS } from "./keys.js";
+import { accountsRoute, type AccountsConfig } from "./accounts_api.js";   // C-226
 
 const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
 const send = (res: ServerResponse, status: number, body: unknown) => {
@@ -32,7 +36,7 @@ async function body(req: IncomingMessage, most = 256 * 1024): Promise<any> {
 }
 const TRIES = new Map<string, number[]>(), MOST = 20, WINDOW_MS = 10 * 60 * 1000;   // registrations and friend codes
 
-export function makeCommons(store: Store): Server {
+export function makeCommons(store: Store, accounts: AccountsConfig | null = null): Server {
   return createServer(async (req, res) => {
     try {
       const path = new URL(req.url ?? "/", "http://localhost").pathname, method = req.method ?? "GET";
@@ -40,6 +44,14 @@ export function makeCommons(store: Store): Server {
       // the keeper's machine: loopback, or the machine's own address when the commons listens only on the tailnet's
       const here = isLoopback(req.socket.remoteAddress) || req.socket.remoteAddress === req.socket.localAddress, who = req.socket.remoteAddress ?? "";
       const tried = () => { const now = Date.now(), t = (TRIES.get(who) ?? []).filter((x) => now - x < WINDOW_MS); TRIES.set(who, [...t, now]); return t.length >= MOST; };
+      // C-226: ACCOUNTS beside the commons (accounts_api.ts); a sign-in, a passkey's or a device's code tried too often waits
+      if (path.startsWith("/accounts/")) {
+        if (!accounts) return send(res, 404, { error: "accounts are not on this commons" });
+        if (method === "POST" && ["/accounts/signin", "/accounts/passkey/login", "/accounts/device/join"].includes(path) && tried())
+          return send(res, 429, { error: "too many tries -- wait ten minutes" });
+        const r = await accountsRoute(store, ACCOUNT_KEYS, accounts, method, path, b, req.headers);
+        return send(res, r.status, r.body);
+      }
       if (method === "GET" && path === "/commons/keeper") return here ? send(res, 200, { homes: C.homes(store) }) : send(res, 403, { error: "the keeper's, on the commons' machine" });
       if (method === "POST" && path === "/commons/approve") {
         if (!here) return send(res, 403, { error: "the keeper's, on the commons' machine" });

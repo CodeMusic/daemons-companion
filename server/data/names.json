@@ -1,0 +1,5 @@
+{
+  "_": "C-226: a player's public name is one word from each list, picked, never typed (docs/ACCOUNTS.md). PLACEHOLDER (DRAFT): piece 2 drafts the real lists for the user to choose from, with a build-time filter. Never reorder -- a profile keeps the two indexes it chose; add only at the end, and retire a word by setting it to null.",
+  "first": ["QUIET", "BRIGHT", "KIND", "SWIFT", "CALM", "BRAVE", "CLEVER", "GENTLE", "STEADY", "CURIOUS", "PATIENT", "LUCKY", "SUNNY", "MERRY", "NIMBLE", "HUMBLE"],
+  "second": ["KERNEL", "SOCKET", "CACHE", "SIGNAL", "PIXEL", "CIRCUIT", "BEACON", "LANTERN", "COMPASS", "ACORN", "PEBBLE", "COMET", "RIVER", "MAPLE", "ORBIT", "ECHO"]
+}

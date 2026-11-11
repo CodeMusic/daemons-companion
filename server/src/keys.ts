@@ -3,6 +3,7 @@
 // by core.ts or routes.ts.
 import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import type { Keys } from "./exchange.js";
+import type { AccountKeys } from "./accounts.js";
 
 const INVITE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const KEYS: Keys = {
@@ -18,3 +19,5 @@ export const KEYS: Keys = {
   code: () => Array.from({ length: 8 }, () => INVITE_LETTERS[randomInt(INVITE_LETTERS.length)]).join(""),
 };
 
+// C-226: an account's keys -- the exchange's, and a profile's four-digit tag
+export const ACCOUNT_KEYS: AccountKeys = { ...KEYS, tag: () => randomInt(1000, 10000) };

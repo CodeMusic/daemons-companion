@@ -5,6 +5,7 @@
 //   approve a home, on that machine:  hub/commons.sh homes   then   hub/commons.sh approve h1
 import { fileURLToPath } from "node:url";
 import { makeCommons } from "./commons_api.js";
+import { accountsConfigFromEnv } from "./accounts_api.js";
 import { Store } from "./db.js";
 import { reach } from "./commons.js";
 import { llmTalker } from "./llmtalker.js";
@@ -19,5 +20,7 @@ const store = new Store(db);
 const llm = process.env.COMMONS_LLM_URL, model = process.env.COMMONS_LLM_MODEL;
 if (llm && model) setMeetTalker(llmTalker(llm, model, process.env.COMMONS_LLM_KEY ?? ""));
 setInterval(() => { meetOnTheirOwn(store, reach(store)).catch(() => {}); }, 15 * 60 * 1000).unref();
-makeCommons(store).listen(port, host, () =>
+// C-226: ACCOUNTS beside it -- ACCOUNTS_APPLE_AUD / ACCOUNTS_GOOGLE_AUD (the app's ids with each provider, comma lists),
+// ACCOUNTS_RP_ID and ACCOUNTS_ORIGINS (the passkeys' site and pages); unset, sign-in and passkeys say they are not set up
+makeCommons(store, accountsConfigFromEnv(process.env)).listen(port, host, () =>
   console.log(`THE COMMONS on http://${host}:${port}  (database ${db}; meetings' lines ${llm && model ? `from ${model}` : "written"})`));

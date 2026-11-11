@@ -84,8 +84,10 @@ def run(version):
         keep = states(11.0)
         check("v%d: a keepalive within 15 s" % version, len(keep) >= 1)
     finally:
-        p.terminate(); p.communicate(timeout=5)
+        p.terminate(); log = p.communicate(timeout=5)[0]
         STATE.update(step=None, daemon={"species": 1, "artKey": "1-a", "entry": "A long INDEX entry.", "name": "PIP"})
+    if version >= 4:
+        check("v4: an unread STATE is logged with what was sent", "4090 bytes arrived of " in log and " sent" in log)
 
 
 run(4)

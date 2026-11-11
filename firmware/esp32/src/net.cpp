@@ -40,7 +40,7 @@
 String serverUrl;
 String knownSsid[MAX_NETS], knownPass[MAX_NETS]; int knownCount = 0;
 uint32_t usbSeen = 0, phoneSeen = 0, lastPoll = 0, lastHello = 0;
-static String lineIn;
+String lineIn;   // C-179: the cable's line so far -- the casino's reader finishes it too, so a line begun in one is never split
 void runRoutineByName(long id, const String &want);
 
 // ---- C-33: the board's own Wi-Fi ----------------------------------------------------------------------------------------

@@ -538,7 +538,8 @@ bool casinoTakeArt(const char *json) {
 // Each result is said down the cable too -- CASINO <result 0..6> <bet> <won> <money> -- so a check knows when to SHOT.
 // the cable, read here while the reels turn (the loop is not running): SHOT, the keys, and the bridge's own lines --
 // a STATE taken as ever (it keeps the bridge fresh), a party daemon's picture. Anything else waits for the loop.
-static String cableIn, cableKeys;              // C-151: KEY TYPE's letters, ENTER and BKSP, read as the keyboard's
+static String &cableIn = lineIn;               // C-179: the loop's own line -- one half-read as the reels start or stop is not split and lost
+static String cableKeys;                       // C-151: KEY TYPE's letters, ENTER and BKSP, read as the keyboard's
 static int cableEvent = 0;                       // 1 press, 2 bet up, 3 bet down, -1 leave, 10 + k a key A|B|C
 static int rigNext = -1;                         // C-151: KEY RIG <0..6> -- the next pull's result, for a check (never paid)
 static void readCable() {

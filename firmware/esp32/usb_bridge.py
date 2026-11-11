@@ -138,7 +138,7 @@ def bridge(a, port):
     # Pro's 4090 bytes); and the daemon's INDEX entry only when its artKey changes -- the board keeps the one it has, and
     # says ENTRY? when it has none
     hello = False
-    told = {"key": None, "at": 0.0, "entry": None, "keeps": False}   # keeps: its HELLO says 4 or more -- it keeps its entry
+    told = {"key": None, "at": 0.0, "entry": None, "keeps": False, "sent": 0}   # keeps: its HELLO says 4 or more -- it keeps its entry
     KEEPALIVE = 10.0
 
     def send_state(state, force=False):
@@ -151,7 +151,9 @@ def bridge(a, port):
                 out = dict(state, daemon={k: v for k, v in d.items() if k != "entry"})
             else:
                 told["entry"] = d.get("artKey")
-        dev.write(("STATE " + json.dumps(out, separators=(",", ":")) + "\n").encode())
+        line = "STATE " + json.dumps(out, separators=(",", ":"))
+        dev.write((line + "\n").encode())
+        told["sent"] = len(line)                    # C-179: so an UNREAD says whether bytes were lost (fewer arrived) or not
         changed = key != told["key"]
         told["key"], told["at"] = key, time.time()
         return changed
@@ -234,7 +236,8 @@ def bridge(a, port):
                 words = msg.split()                         # UNREAD <bytes> [STATE|ART|CMD...]: which line (C-179)
                 kind = words[2].lower() if len(words) > 2 else "state"
                 why = " -- " + " ".join(words[3:]) if len(words) > 3 else ""
-                print("usb_bridge: the device could not read the %s it was sent (%s bytes arrived%s)" % (kind, words[1], why),
+                sent = " of %d sent" % told["sent"] if kind == "state" and told["sent"] else ""
+                print("usb_bridge: the device could not read the %s it was sent (%s bytes arrived%s%s)" % (kind, words[1], sent, why),
                       flush=True)
                 if kind == "state":
                     told["key"], told["entry"] = None, None     # C-179: the whole state again, at the next turn

@@ -144,6 +144,7 @@ void soundSetHere(bool on);               // C-159: SOUND turned on or off on th
 bool takeState(const String &json);
 bool takeState(const char *json);
 extern String stateError;                // C-179: why the last state was not read (told with UNREAD)
+extern String lineIn;                    // C-179: the cable's line so far, one buffer for both its readers
 bool takeArt(const String &json);
 bool artFromCache(const String &key);   // the picture kept for that daemon, made the one shown
 bool artCached(const String &key);

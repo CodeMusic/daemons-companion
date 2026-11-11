@@ -43,6 +43,11 @@ export class TalkJobs<R = unknown> {
   }
 
   get load() { return { running: this.running, waiting: this.waiting.length }; }
+  // C-319: every job it still holds, for THE MIND's ledger -- who asked, how it stands, when (never what was said)
+  list(): { id: string; who: string; status: Job<R>["status"]; at: number; ended?: number; error?: string }[] {
+    this.sweep();
+    return [...this.jobs.values()].map((j) => ({ id: j.id, who: j.who, status: j.status, at: j.at, ...(j.ended !== undefined ? { ended: j.ended } : {}), ...(j.error ? { error: j.error } : {}) }));
+  }
 
   private next() {
     while (this.running < this.at && this.waiting.length) {

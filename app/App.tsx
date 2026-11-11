@@ -14,6 +14,7 @@ import { forgetPlaces, forgetScroll, keepScroll, scrolledTo } from "./state/plac
 import { loadLook, LOOK, lookHeard, PALETTE } from "./state/look";
 import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
 import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
+import { openWhatsNew, useWhatsNewDue, WhatsNewOverlay } from "./ui/whatsnew";   // C-318
 import { JourneyScreen } from "./screens/journey/Journey";   // C-298: GOALS and the JOURNAL
 import { LibraryScreen } from "./screens/library/Library";
 import { PairScreen } from "./screens/settings/Pair";
@@ -110,6 +111,7 @@ function Shell() {
   const ink = onColour(day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c");
   const showToast = !!OFFLINE && toastGone !== OFFLINE;
   const newsBanner = useNews(() => setTab("daemon"), ink);  // C-154
+  const whatsNewDue = useWhatsNewDue();                      // C-318
   const [saved, setSaved] = useState(0);                    // C-189: each save the game writes, read again beside it
   const found = useFound(saved);
 
@@ -140,9 +142,12 @@ function Shell() {
                 <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
               </YStack>
             ) : null}
-            <YStack marginLeft={10} paddingHorizontal={8} paddingVertical={3} borderRadius={999} borderWidth={1.5} borderColor="$color9"
-                    cursor="pointer" role="button" aria-label="how to play" onPress={howToPlay}>{/* C-264 (DRAFT) */}
-              <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">{narrowHeader ? "?" : "? HOW TO PLAY"}</Text>
+            {/* C-264 (DRAFT); C-318: WHAT'S NEW in its place until this build's notes are read */}
+            <YStack marginLeft={10} paddingHorizontal={8} paddingVertical={3} borderRadius={999} borderWidth={1.5}
+                    borderColor={whatsNewDue ? "#d9a74a" : "$color9"} backgroundColor={whatsNewDue ? "rgba(217,167,74,0.14)" : undefined}
+                    cursor="pointer" role="button" aria-label={whatsNewDue ? "what's new" : "how to play"} onPress={whatsNewDue ? openWhatsNew : howToPlay}>
+              <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color={whatsNewDue ? "#d9a74a" : "$color11"}>
+                {whatsNewDue ? (narrowHeader ? "✦ NEW" : "✦ WHAT'S NEW") : narrowHeader ? "?" : "? HOW TO PLAY"}</Text>
             </YStack>
             <YStack marginLeft={6} padding={4} cursor="pointer" role="button" aria-label="settings"
                     onPress={() => setTab(tab === "settings" ? "today" : "settings")}>
@@ -160,6 +165,7 @@ function Shell() {
           <Fragment key={tab}>{TAB_VIEW[tab]({ ink, today, reload, setTab, devOn: dev.on })}</Fragment>
         </ScrollView> : null}
         {newsBanner}
+        <WhatsNewOverlay />{/* C-318 */}
         {showToast ? (
           <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}
                   padding={14} borderRadius={10} backgroundColor="$color12" maxWidth={720} alignSelf="center">

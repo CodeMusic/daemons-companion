@@ -13,6 +13,7 @@ import { SavesCard } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../../state/away";
 import { DevModeCard } from "../../ui/devpanel";
 import { MindCard } from "./Mind";   // C-307 (was C-280's PhoneMind)
+import { MindAtWork } from "./MindMap";   // C-319
 import { HomeAssistantCard } from "../places/Home";
  // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
@@ -97,6 +98,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
       {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
       <TalkSettingsCard ink={ink} />
       <MindCard ink={ink} />{/* C-307 */}
+      <MindAtWork ink={ink} />{/* C-319 */}
       <LeaveCompanionCard ink={ink} />
     </YStack>
   );
@@ -132,6 +134,7 @@ export function SavePathSettings({ ink }: { ink: string }) {
       <WeatherCard ink={ink} />
       <TalkSettingsCard ink={ink} />
       <MindCard ink={ink} />{/* C-307 */}
+      <MindAtWork ink={ink} />{/* C-319 */}
       <LeaveCompanionCard ink={ink} />
     </YStack>
   );

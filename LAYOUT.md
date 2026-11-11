@@ -28,10 +28,10 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `shell/` | the tab strip, the beside split's panes and sizes (`panes.tsx`, `split.ts`), the background syncs (`sync.ts`) |
 | `screens/<tab>/` | each tab's page and the pages only it opens: `today/`, `daemon/`, `journey/` (GOALS, the JOURNAL), `library/`, `you/`, `places/`, `settings/`, `game/`, `dev/` |
 | `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index`, and `OwnVoice` (a daemon telling of itself over its card) |
-| `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud (and the voice button that says if a voice is made, `voiceButton.tsx`), the book recordings (the voice module, in the open book's look: `bookLook.tsx`, and the paragraph being said, `spoken.tsx`, C-309), the books' covers and pictures from the game, HALFTONE's two tones (`tone.tsx`), the LOGS |
+| `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud (and the voice button that says if a voice is made, `voiceButton.tsx`), the book recordings (the voice module, in the open book's look: `bookLook.tsx`, and the paragraph being said, `spoken.tsx`, C-309), the books' covers and pictures from the game, HALFTONE's two tones (`tone.tsx`), the LOGS, WHAT'S NEW (`whatsnew.tsx`, C-318) |
 | `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |
 | `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), THE MIND that routes across every mind (`mesh.ts`, C-307) and an endpoint called from the phone (`endpoint.ts`), a meeting recorded or a voice memo sent to the hub (`meetings.ts`, C-316), the voices kept on the phone (`voiceFile.ts`) and made in the background (`rendering.ts`), `useApi` |
-| `state/` | types, data, the look, the reader's places that outlive a refresh (`place.ts`, C-309), the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`) |
+| `state/` | types, data, the look, the reader's places that outlive a refresh (`place.ts`, C-309), the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`), who this phone is to THE MIND (`me.ts`, C-319) |
 | `art/` | species sprites (`speciesArt.ts`, written by `tools/species-art.py`), device sprites, the casino's dress |
 | `game/` | the game's ROM and its gate |
 | `modules/` | native modules, one folder each (`daemons-beacon`, `-menu`, `-mind`, `-night`, `-pad`, `-pixels`) |
@@ -49,7 +49,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 |---|---|
 | `src/main.ts`, `src/api.ts` | the server on a computer or the hub (Node): its HTTP API |
 | `src/core.ts`, `src/routes.ts`, `src/store.ts` | the rules themselves, and the requests a phone hosting alone answers -- **they run on the phone too** (C-111; every such file says so in its first line, C-290) |
-| `src/ai/` | talk, voices and the thinkers: the house's module, the Tiiny, the player's endpoints after it (`endpoints.ts`, C-280: also `atHome`, which the phone imports), `say.ts` (`sayable()`, DAY-mons) |
+| `src/ai/` | talk, voices and the thinkers: the house's module, the Tiiny, the player's endpoints after it (`endpoints.ts`, C-280: also `atHome`, which the phone imports), `say.ts` (`sayable()`, DAY-mons), THE MIND's ledger of work (`tasks.ts`, C-319) |
 | `src/save/` | reading a DAEMONS save, and writing to it (`writer.ts`) |
 | `src/game/` | the player's ROM: patches, hashes, the live save and its mirror |
 | `src/commons*.ts` | THE COMMONS, which runs on its own machine |

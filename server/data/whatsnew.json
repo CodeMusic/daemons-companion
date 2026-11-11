@@ -1,0 +1,873 @@
+{
+ "latest": 963,
+ "builds": [
+  {
+   "build": 963,
+   "commit": "894d08f",
+   "date": "2026-11-10",
+   "sections": [
+    {
+     "ticket": "C-267",
+     "title": "The app is called DAEMONS, with a new icon",
+     "lines": [
+      "The photo and Health prompts say DAEMONS, not DAEMONS companion (DRAFT; ios/'s Info.plist by hand); first in 962"
+     ]
+    },
+    {
+     "ticket": "C-280",
+     "title": "Any thinker: an OpenAI-compatible endpoint of the player's own, and the iPhone's own mind",
+     "lines": [
+      "ENDPOINTS on the hub — any OpenAI-compatible model, after the Tiiny and before the boards; THE HUB'S ENDPOINTS in THE MIND (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-316",
+     "title": "A meeting from the phone, or from a voice memo",
+     "lines": [
+      "A meeting recorded on the phone, or a voice memo given, written up as the watch's (DRAFT)",
+      "A long hearing is not cut to its last words (lastHearing keeps the tail only when it repeats the pieces)",
+      "A hearing keeps the Tiiny's whole and the piece heard after it, not the pieces run together",
+      "The site says 'here', not 'on this phone'"
+     ]
+    },
+    {
+     "ticket": "C-317",
+     "title": "The hub's voice in seconds, not 23",
+     "lines": [
+      "The Tiiny's voice streamed — POST /api/ai/speak {stream:true} hands back a link at the first bytes, GET /api/ai/voice/<id> sends MP3 as it is made",
+      "The voice streamed in growing parts — LiteLLM hands a voice on only when whole, so the first clause is asked alone and each next part made while the last plays",
+      "Each voice part's wait logged, while the parts are tuned",
+      "Each part asked once the last is wholly in (the Tiiny refuses a voice while sending one), the encoder started while the first is made",
+      "The voice in parts about a sentence long — through LiteLLM the Tiiny barely outpaces speech, and one big last part left a 7 s silence",
+      "The app plays the hub's voice as it streams — mesh asks for {stream:true}, useVoice plays a link, TALK keeps the whole to hear again",
+      "Tiiny.stream — the Tiiny's voice streamed whole from roverbyteseer's keyed forwarder past LiteLLM, the parts through LiteLLM when it will not start"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.345.8 (T-538 batches 1-2, T-539)",
+      "Knows the game's ROM release v11.345.9 (T-437 SCREEN, T-538 batch 3)",
+      "Knows the game's ROM release v11.345.10 (T-541 the museum)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Art: T-539 A PASSING — THE UNITY BOOK's LENS picture (unity_lens_0.png) from the game"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 961,
+   "commit": "5035b15",
+   "date": "2026-11-10",
+   "sections": [
+    {
+     "ticket": "C-267",
+     "title": "The app is called DAEMONS, with a new icon",
+     "lines": [
+      "The app is DAEMONS everywhere a player sees it — app.json's name, and PRODUCT_NAME in ios/ (by hand); first in 960"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 959,
+   "commit": "1796edc",
+   "date": "2026-11-10",
+   "sections": [
+    {
+     "ticket": "C-310",
+     "title": "The MUSAI's seasons in the app, with the MUSAI pass",
+     "lines": [
+      "Each MUSAI in today's season — the INDEX draws and reads the MUSAI branch in the season its edition keeps (DAEMONS T-532, T-534)"
+     ]
+    },
+    {
+     "ticket": "C-311",
+     "title": "The MUSAI faces after T-532",
+     "lines": [
+      "The MUSAI faces on their new pictures — CODEMUSAI's visor, CAREMUSAI's glint, SEEKMUSAI's two eyes, LENSMUSAI's lens glint; no mouths"
+     ]
+    },
+    {
+     "ticket": "C-307",
+     "title": "THE MIND: one mind from every brain -- a mesh, not a setting",
+     "lines": [
+      "THE MIND remembers how it thought — TRY IT and RECENT THOUGHTS, on the site too; the hedge covers a mind that has been slow"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.345.7 (T-537 the desks and machines)",
+      "and 3 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: T-534 the MUSAI pass — 17 seasonal INDEX entries redrafted; CAREMUSAI's twin hulls, LENSMUSAI's control line, CODEMUSAI's 1101 lights (DAEMONS af2e19bc, engine a9026628f)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 958,
+   "commit": "745762e",
+   "date": "2026-11-09",
+   "sections": [
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.345.2",
+      "Knows the game's ROM release v11.345.3"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Items.json: T-535 — 39 item descriptions in our own words (DAEMONS d5dd894c, engine 2bc6f670d)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 957,
+   "commit": "2838abc",
+   "date": "2026-11-09",
+   "sections": [
+    {
+     "ticket": "C-309",
+     "title": "A library that keeps its place, and books that bring their own look",
+     "lines": [
+      "The library keeps its place through a refresh, and each book brings its look — seven morphemes, the voice module in the book's look with its chapters as a ribbon, the paragraph being said (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.345.1"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: T-532 the MUSAI branch's seasonal forms — art/species/<name>_<season>.png, species.json seasons, the four new summer fronts, CRYPTOPHASIA in moves/routines/index_cards (DAEMONS cfc8a274, engine 3ce5d9790)",
+      "Data: T-532 the eight MUSAI redraws final (MASKMUSAI in all four seasons, SEEKMUSAI and LENSMUSAI autumn, CODEMUSAI winter and autumn) — every seasonal form final (DAEMONS 0fb28750, engine 1d68b678b)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 955,
+   "commit": "6ca400a",
+   "date": "2026-11-08",
+   "sections": [
+    {
+     "ticket": "C-308",
+     "title": "A dream told twice and made whole: two perspectives and a title",
+     "lines": [
+      "A dream told twice at once and made whole, with its title; the journal's red, blue and purple lenses (DRAFT)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 954,
+   "commit": "9414060",
+   "date": "2026-11-08",
+   "sections": [
+    {
+     "ticket": "C-307",
+     "title": "THE MIND: one mind from every brain -- a mesh, not a setting",
+     "lines": [
+      "THE MIND — one mind from every mind the phone can reach",
+      "The GUIDE keeps its own thread, apart from the daemon's talk"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.343.5",
+      "Knows the game's ROM release v11.344.1"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 953,
+   "commit": "27aaf6f",
+   "date": "2026-11-07",
+   "sections": [
+    {
+     "ticket": "C-305",
+     "title": "THE AURORA's nights in the den",
+     "lines": [
+      "The aurora's nights in the den — once THE UNITY BOOK is mended, on a night of light (the game's own rule, about one in three, 8 PM to 5 AM), the den's sky breathes the edition's line: oxygen red in CONTENT, green in CONTEXT (DAEMONS T-528 part 1, vision 4.40)"
+     ]
+    },
+    {
+     "ticket": "C-306",
+     "title": "THE CONJUGATE LIGHT in the den",
+     "lines": [
+      "The conjugate light in the den — with the book mended and a daemon met in the other edition in the party, the den's sky takes both lines: the red crowning the top band, the green in the three below, one line to a band (DAEMONS T-528 part 2, (f); vision 4.40)"
+     ]
+    },
+    {
+     "ticket": "C-277",
+     "title": "LISTEN inside every book that has a recording, and SHARE",
+     "lines": [
+      "A kept book fetches a newer reading — it knows which reading it is, and asks DAEMONS which is out"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.343.4",
+      "and 3 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Events.json: T-528 EVERY GROVE LIT (DAEMONS companion_export)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 952,
+   "commit": "55ce0fe",
+   "date": "2026-11-07",
+   "sections": [
+    {
+     "ticket": "C-304",
+     "title": "THE UNITY BOOK's lens: each page in its night, whole or dawn reading",
+     "lines": [
+      "THE UNITY BOOK's lens — NIGHT, WHOLE, DAWN on top of every page, each section re-read in place in its half's words and tone (DAEMONS T-529, vision 4.40; the user, 2026-11-07)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 951,
+   "commit": "0b6a659",
+   "date": "2026-11-07",
+   "sections": [
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.342.7",
+      "and 4 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: T-526 — 26 item descriptions redrafted (16 + the ten two-line TRAPs); THE SUBTLE LAYER's subtitle 'a USER's handbook' (DAEMONS f7aa41ff, engine 978e4ec10)",
+      "THE SUBTLE LAYER: 'a USER's handbook' in the comments and the wiki too (the user, 2026-11-07; data in 01c3986)",
+      "Voices made in the background, and shown: a dream's and a chapter's"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 950,
+   "commit": "8dc77e1",
+   "date": "2026-11-06",
+   "sections": [
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Tiiny: keep the whole of a hearing, not the pieces run before it",
+      "Art: 21 daemons' fronts redrawn (DAEMONS T-452 arm C, engine a01ea9d67); LODESTAR, REFLECTION, BASTET streaks on"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 949,
+   "commit": "19f6e14",
+   "date": "2026-11-06",
+   "sections": [
+    {
+     "ticket": "C-303",
+     "title": "A daemon tells its entry itself, in its own voice",
+     "lines": [
+      "14 more found mouths, from a second pass — 138 of 397 daemons now (DRAFT)",
+      "Only the true voice is kept on the phone (the hub marks a voice final; a fallback plays once), the voices' generation (VOICE_GENERATION 3, MAKE THE VOICES AGAIN), a play mark on the shimmering sprite, the daemon's name over its overlay; a recipe says the species' own voice first"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.342.1 (the game's release)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 948,
+   "commit": "4b6143b",
+   "date": "2026-11-06",
+   "sections": [
+    {
+     "ticket": "C-299",
+     "title": "THE UNITY BOOK in the companion",
+     "lines": [
+      "The third book's covers and pictures from the game, as THE SUBTLE LAYER's are (T-519, data 38233c8)"
+     ]
+    },
+    {
+     "ticket": "C-303",
+     "title": "A daemon tells its entry itself, in its own voice",
+     "lines": [
+      "Tap a daemon's sprite and it tells of itself over its card — its den, THINKING, its own voice, its mouth; the INDEX entry read in the device's voice (the user's design, DRAFT)",
+      "101 more daemons open a mouth when they speak — found by a tool, accepted by eye, kept apart from the checked faces (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.341.2 (the game's release)",
+      "Data: patches.json for v11.341.3 (the game's release)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: the third book's art from the game (T-519) — each form's letterless cover and its drawn pictures, and hermetic/eudaimon/unity.json's cover, frontispiece and frames",
+      "Data: the third book's last 68 pictures from the game (T-519) — every entry in all three books now has its own"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 947,
+   "commit": "1a1a399",
+   "date": "2026-11-05",
+   "sections": [
+    {
+     "ticket": "C-303",
+     "title": "A daemon tells its entry itself, in its own voice",
+     "lines": [
+      "A daemon tells of itself in its own voice — species.json said (DAEMONS T-522), {own: true} on the speak endpoints, the party card (DRAFT)",
+      "Every daemon tells of itself — species.json said for all 397 (DAEMONS T-522, DRAFT)",
+      "A daemon's telling in its talk and its dreams — self.ts, dreams.ts, persona(), the agent's daemon (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-299",
+     "title": "THE UNITY BOOK in the companion",
+     "lines": [
+      "The mending, once, and LISTEN in the dawn half and THE UNITY BOOK (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.341.1 (the game's release)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Voices: each daemon a voice of its own, kin by type (C-251)",
+      "Eudaimon.json: THE UNFOLDING's SPACE gets its own picture key, space (it shared room with THE WHEEL's ROOM; T-519)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 946,
+   "commit": "69cae8e",
+   "date": "2026-11-05",
+   "sections": [
+    {
+     "ticket": null,
+     "title": "SMALL FIXES",
+     "lines": [
+      "Nothing new to see: fixes, or what Apple asked for."
+     ]
+    }
+   ]
+  },
+  {
+   "build": 945,
+   "commit": "e0be294",
+   "date": "2026-11-05",
+   "sections": [
+    {
+     "ticket": "C-299",
+     "title": "THE UNITY BOOK in the companion",
+     "lines": [
+      "THE UNITY BOOK in the companion — the halves mended (DAEMONS T-519 item 3, v11.340.2)"
+     ]
+    },
+    {
+     "ticket": "C-302",
+     "title": "Eating and drinking you can see",
+     "lines": [
+      "A glass of water and a fruit, eaten and drunk in four stages over the care's phrase (DRAFT)",
+      "The user keeps the glass and the fruit as drawn"
+     ]
+    },
+    {
+     "ticket": "C-300",
+     "title": "The app and the widget show the same daemon",
+     "lines": [
+      "The app and the widget in step, and the widget's day key and JOURNEY"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.340.2 (the game's release)",
+      "Data: patches.json for v11.340.3 (the game's release)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 944,
+   "commit": "3ac90dd",
+   "date": "2026-11-05",
+   "sections": [
+    {
+     "ticket": "C-298",
+     "title": "JOURNEY: GOALS and a JOURNAL, and its one page to print",
+     "lines": [
+      "JOURNEY, where GOALS was — GOALS and a JOURNAL, and its one page to print"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: THE UNITY BOOK from the game (T-519) — unity.json (flag 1213), items.json 250, events.json's MENDED row"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 943,
+   "commit": "5bfbf39",
+   "date": "2026-11-05",
+   "sections": [
+    {
+     "ticket": "C-292",
+     "title": "LAYOUT.md, the map of the repository, kept true",
+     "lines": [
+      "LAYOUT.md, the repository's map, with CLAUDE.md's rule to keep it true and a test that checks it"
+     ]
+    },
+    {
+     "ticket": "C-294",
+     "title": "Every note PLAY shows is heard, on the iPhone",
+     "lines": [
+      "Every note PLAY shows is heard, on the iPhone — a few players a pitch, each kept waiting at its start (app/sound/noteVoices.ts)"
+     ]
+    },
+    {
+     "ticket": "C-293",
+     "title": "He sleeps until he is woken, and dreams as himself",
+     "lines": [
+      "He sleeps until he is woken (noon at the latest, not 6am), every watch wake told, a night tucked on one device and woken on another dreamt too; the dream told as himself — \"I dreamt ...\", a metaphor from his INDEX self, feelings, care, bond and the day, by every talker (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-295",
+     "title": "THE CREATOR'S HOUR in the companion, and the catch-up for both hours",
+     "lines": [
+      "THE CREATOR'S HOUR in the companion, and the catch-up for both hours (DAEMONS T-519); THE LOG's Saturday line (T-516 S1)",
+      "The creator's hour's gold breathes on the clock, as the witching breath does (C-237), so devices breathe together"
+     ]
+    },
+    {
+     "ticket": "C-296",
+     "title": "SPIRITS in the companion",
+     "lines": [
+      "SPIRITS read from the save (DAEMONS T-519) — the class and its lean, and the game's two words in the party"
+     ]
+    },
+    {
+     "ticket": "C-297",
+     "title": "THE EUDAIMON LAYER in the companion, and the mended book",
+     "lines": [
+      "THE EUDAIMON LAYER in the LIBRARY — the third book's dawn half (DAEMONS T-519), its observer's line by the lead's SPIRITS",
+      "The dawn half's inscriptions in the tablet's green, as the game prints them and as the book itself says"
+     ]
+    },
+    {
+     "ticket": "C-249",
+     "title": "The Tiiny Pocket on roverbyteseer, the hub's big worker",
+     "lines": [
+      "The Tiiny's voice played as static on the phone — it is a WAV, and the app filed every voice as .mp3 (iOS decodes by the name)",
+      "Two thinkers on the Tiiny — a quick one for talking (thinking off), the big one for slow work (thinking on); its hearing asks for json",
+      "Every voice made for the phone is kept on it and played from there again — dreams, INDEX entries, pages read aloud, a talk's answer (HEAR IT AGAIN)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.340.1 (the game's release)",
+      "and 4 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: profile_layout.json — THE LOG's Saturday line (T-516 S1)",
+      "T-519: THE EUDAIMON LAYER as data/eudaimon.json, the third book's dawn half (approved 2026-11-04, DRAFT words)",
+      "Data: save_layout.json — SPIRITS' class and lean bits (T-519), read only",
+      "T-519: the night half's warning revised for THE UNITY BOOK — the user's first line, OSRIC HATTER its reader, a line for the other half (DRAFT)",
+      "Data: PLAY's seven songs re-taken from the user's recordings, each note its sung length (DAEMONS T-521)",
+      "Data: THE EUDAIMON LAYER from the game (T-519) — eudaimon.json's flag 3327, items.json 249, events.json's new row"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 942,
+   "commit": "20e25ab",
+   "date": "2026-11-04",
+   "sections": [
+    {
+     "ticket": "C-249",
+     "title": "The Tiiny Pocket on roverbyteseer, the hub's big worker",
+     "lines": [
+      "A talk through the Tiiny is heard and spoken by the house board when the Tiiny has no hearing or voice model chosen",
+      "THE HUB card can choose the Tiiny first, with its own dot",
+      "The Tiiny first for all the house's AI, and its thinking off",
+      "A spoken Tiiny answer kept to a few sentences, ending on a whole one"
+     ]
+    },
+    {
+     "ticket": "C-280",
+     "title": "Any thinker: an OpenAI-compatible endpoint of the player's own, and the iPhone's own mind",
+     "lines": [
+      "THIS PHONE'S MIND — a talk heard, thought and answered on the iPhone by Apple's on-device model, the hub as always by default (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-251",
+     "title": "Daemon voices as recipes, lines rendered ahead",
+     "lines": [
+      "A voice per daemon from a description, and the Tiiny's own hearing",
+      "A Tiiny voice is labelled by its bytes — it sends WAV called audio/mpeg"
+     ]
+    },
+    {
+     "ticket": "C-286",
+     "title": "app/AGENTS.md tells the truth about navigation",
+     "lines": [
+      "App/AGENTS.md's navigation is the app's own, not Expo Router's template",
+      "App/AGENTS.md's map of where things live after C-289"
+     ]
+    },
+    {
+     "ticket": "C-287",
+     "title": "Each tab owns its page",
+     "lines": [
+      "Each tab owns its page — PlacesScreen, Settings' own site cards, and one TAB_VIEW table in Shell"
+     ]
+    },
+    {
+     "ticket": "C-288",
+     "title": "Shell thinned into app/shell/",
+     "lines": [
+      "Shell thinned — the tab strip, the beside panes (one useDrag for both dividers), the split and logs sizes, and the background syncs into app/shell/"
+     ]
+    },
+    {
+     "ticket": "C-289",
+     "title": "app/ sorted into folders",
+     "lines": [
+      "App/ sorted into folders — moves and import paths only",
+      "The app's files named by their new paths in comments and docs (comments only)"
+     ]
+    },
+    {
+     "ticket": "C-290",
+     "title": "The server files the phone runs are marked",
+     "lines": [
+      "The 63 server files the phone runs say so in their first line (comments only)"
+     ]
+    },
+    {
+     "ticket": "C-291",
+     "title": "modules/daemons-pixels settled",
+     "lines": [
+      "Modules/daemons-pixels is native only and in use (C-147's nearest-pixel enlarging); its README says so"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 941,
+   "commit": "1a16ce8",
+   "date": "2026-11-03",
+   "sections": [
+    {
+     "ticket": "C-279",
+     "title": "Feed, drink, train, sleep -- and a moon for its sleep",
+     "lines": [
+      "Feed, drink, train, sleep on the widget and the app, and a moon after the pips for how well it slept"
+     ]
+    },
+    {
+     "ticket": "C-283",
+     "title": "A night from SLEEP to WAKE, and its dream from the whole day by the talk AI",
+     "lines": [
+      "A night from SLEEP to the waking care, and every night's dream told by the talk AI with the day before it as context"
+     ]
+    },
+    {
+     "ticket": "C-284",
+     "title": "The phone's own night: picked up while it sleeps",
+     "lines": [
+      "The phone's own night — its stirs while the daemon slept, from iOS's motion record, sent with the waking care"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 940,
+   "commit": "90e238a",
+   "date": "2026-11-03",
+   "sections": [
+    {
+     "ticket": "C-277",
+     "title": "LISTEN inside every book that has a recording, and SHARE",
+     "lines": [
+      "LISTEN inside every book with a recording, and SHARE — streamed from DAEMONS on GitHub, the sealed one opened on the device",
+      "The phone keeps a book before it plays it — GitHub sends a large MP3 as application/octet-stream",
+      "A book plays on with its page left or the screen locked, and shows on the lock screen"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 939,
+   "commit": "81cb2a6",
+   "date": "2026-11-03",
+   "sections": [
+    {
+     "ticket": "C-276",
+     "title": "C-276",
+     "lines": [
+      "PRINCIPLES OF MIND inside CALLOW SCHOOL — FULL TEXTBOOK under the seventh board, and the cover on the shelf"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.337.4 (the game's release)"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 938,
+   "commit": "53d48f1",
+   "date": "2026-11-02",
+   "sections": [
+    {
+     "ticket": "C-274",
+     "title": "THE OLD WORD on LIBRARY's shelf",
+     "lines": [
+      "THE OLD WORD on LIBRARY's shelf, after A BIGGER MIND — DAEMONS docs/DAEMONS-etymology.pdf (T-517), how daimon branched and why it is said DAY-mons, fetched and kept as the other books are (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-203",
+     "title": "THE SUBTLE LAYER on the companion: reads, leans and noticing, in the book's purple",
+     "lines": [
+      "THE LOG writes a read's weekday before it (DAEMONS T-511), once the export names the days"
+     ]
+    },
+    {
+     "ticket": "C-270",
+     "title": "The voice says DAEMONS as DAY-mons",
+     "lines": [
+      "Respell any word ending in daemon (eudaemon, cacodaemon), and app/AGENTS.md says DAEMONS is said DAY-mons"
+     ]
+    },
+    {
+     "ticket": "C-275",
+     "title": "</> -- one DEVELOPER MODE, and its own tab",
+     "lines": [
+      "One DEVELOPER MODE and its </> tab — the game session for this app alone, in memory only: the books, CALLOW SCHOOL and every GAME EVENT as the save has them and changeable, the witching hour, the daemon's mood and care (moved here), LOGS, and RESTORE THE GAME SESSION; PREVIEW folded in; THE GUIDE answers ?preview=1"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.337.1 (the game's release)",
+      "Data: patches.json for v11.337.2 (the game's release)",
+      "Data: patches.json for v11.337.3 (the game's release)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Data: notebook.json — THE CARD HOME (T-515) and THE LOG's weekday words (T-511), from the game",
+      "Data: profile_layout.json — THE LOG's weekday (T-511): day_shift 12, day_mask 7, the days, day_comma"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 936,
+   "commit": "0b1a012",
+   "date": "2026-11-01",
+   "sections": [
+    {
+     "ticket": "C-271",
+     "title": "Every face sits on the redrawn eyes",
+     "lines": [
+      "Every face sits on the T-452 redrawn art — the 44 daemons' eyes (and their mouths) in faces.json found again and checked by the user from the sheets"
+     ]
+    },
+    {
+     "ticket": "C-272",
+     "title": "The arcana's words, rewritten as prophecy, and THE HERMETIC LAYER's two decks: ABOVE and BELOW",
+     "lines": [
+      "The arcana's words as prophecy, and THE HERMETIC LAYER's ABOVE and BELOW faces (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-264",
+     "title": "HOW TO PLAY, from the game's title and while playing",
+     "lines": [
+      "HOW TO PLAY under the menu bar's Help (the iPad's, and the Mac's for the iPad app on it), and over the pairing too"
+     ]
+    },
+    {
+     "ticket": "C-273",
+     "title": "The CARDS section in each book, by touch",
+     "lines": [
+      "The CARDS section in each book, by touch; C-272: a short phrase and a prophecy on every face"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 934,
+   "commit": "357b316",
+   "date": "2026-11-01",
+   "sections": [
+    {
+     "ticket": "C-262",
+     "title": "The T-Glass: the companion in front of one eye",
+     "lines": [
+      "The T-Glass — env:t-glass (the JD9613 behind the prism, its touch button and motor), one screen chosen in the app's GLASSES: HOME, a NOTE, the DAEMON, DARK, and a care's moment over it; the row selected only while the glasses show it (DRAFT, not yet on the glasses)"
+     ]
+    },
+    {
+     "ticket": "C-265",
+     "title": "The screen's buttons stop after the app is left and come back to",
+     "lines": [
+      "The game's buttons answer again after the app is left and come back to — a resume always ends in PLAY, and the page plays a game the app still wants running when it finds it paused, and lets go of a button whose touch was lost"
+     ]
+    },
+    {
+     "ticket": "C-266",
+     "title": "Its look shows how it has been cared for -- and the app shows its stats",
+     "lines": [
+      "Its look shows how it has been cared for — REST, HUNGER, THIRST, WEIGHT (0 its balance, bounded) and COMPANIONSHIP, derived from two weeks of tending (care.ts); a short night shadows its eyes, three bloodshot them, hunger thins it and no training fattens it, hunger and thirst cost mood and push SAD; drawn by every host as pose.girth and eye patches; the app's daemon card shows the stats (DRAFT, not yet on a device)",
+      "DEVELOPER MODE — the frames line and EmulatorJS's warnings only when it is on, and LOGS beside the game and the companion with their own divider; and the start no longer fails on the way in (the web view has no MediaRecorder, which EmulatorJS's settings menu asked for before showing the game)",
+      "The care bars filled in the day's colour, not ink — near white on a light day, the empty part read as the bar"
+     ]
+    },
+    {
+     "ticket": "C-267",
+     "title": "The app is called DAEMONS, with a new icon",
+     "lines": [
+      "The app is called DAEMONS (its display name); the bundle id and slug stay",
+      "The icon the user picked, H — MUSAI before DAEMONS, the crossing notes its M",
+      "The name DAEMONS as the display name only (CFBundleDisplayName) — renaming expo's name renamed the native project and broke the build"
+     ]
+    },
+    {
+     "ticket": "C-268",
+     "title": "DEVELOPER MODE, and no \"Failed to start game\" on the way in",
+     "lines": [
+      "DEVELOPER MODE renumbered from C-266, which the care stats had taken a moment before"
+     ]
+    },
+    {
+     "ticket": "C-269",
+     "title": "</> in DEVELOPER MODE: its mood and care as you set them, in memory only",
+     "lines": [
+      "</> in DEVELOPER MODE — the daemon's mood, rest, hunger, thirst, weight and companionship set by sliders, drawn from memory only and put back by RESET, CLOSE or DEVELOPER MODE off; and PING and COPY in LOGS, DEVELOPER MODE on the site too"
+     ]
+    },
+    {
+     "ticket": "C-270",
+     "title": "The voice says DAEMONS as DAY-mons",
+     "lines": [
+      "The voice says DAEMONS as DAY-mons — every line the hub hands a voice has daemon(s) respelled daymon(s)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Data: patches.json for v11.335.6 (the game's release)",
+      "and 3 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "GAME: A on X and B on Z (the user, 2026-11-01), as mGBA has them — EmulatorJS's defaults swapped, and its kept keys once"
+     ]
+    }
+   ]
+  },
+  {
+   "build": 932,
+   "commit": "a449dbc",
+   "date": "2026-10-31",
+   "sections": [
+    {
+     "ticket": null,
+     "title": "THE FIRST BUILD",
+     "lines": [
+      "The companion on TestFlight for the first time: the iPhone, the iPad and the Mac."
+     ]
+    }
+   ]
+  }
+ ]
+}

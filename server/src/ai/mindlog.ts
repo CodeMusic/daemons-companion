@@ -9,6 +9,7 @@ export type Trace = {
   ms: { hear?: number; think?: number; voice?: number };
   covered?: boolean;                                                                     // the phone answered for a late mind
   failed?: string[];                                                                     // minds that failed on the way
+  user?: string; device?: string;                                                        // C-319: whose, and which phone
 };
 const MOST = 40, KEY = "mind.traces";
 const clip = (s: unknown, n = 60) => (typeof s === "string" ? s.slice(0, n) : undefined);
@@ -24,6 +25,7 @@ export function traceOf(b: Record<string, any>, from: string, now = new Date()):
            heard: clip(b.heard), thought: clip(b.thought), said: clip(b.said),
            ms: { hear: num(ms.hear), think: num(ms.think), voice: num(ms.voice) },
            ...(b.covered === true ? { covered: true } : {}),
+           ...(clip(b.user, 40) ? { user: clip(b.user, 40) } : {}), ...(clip(b.device, 40) ? { device: clip(b.device, 40) } : {}),   // C-319
            ...(Array.isArray(b.failed) && b.failed.length ? { failed: b.failed.slice(0, 4).map((f: unknown) => clip(f) ?? "?") } : {}) };
 }
 type Get = (k: string) => string | null;

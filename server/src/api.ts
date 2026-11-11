@@ -105,6 +105,8 @@ import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicen
 import { journalOf, writeChapter } from "./journal.js";   // C-298
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
+import { Tasks, tasksView, usersOf } from "./ai/tasks.js";   // C-319
+import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
 import { readSubtle } from "./save/subtle.js";   // C-204
 import { sayable } from "./ai/say.js";   // C-270
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
@@ -702,6 +704,37 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-280 (1): then the player's endpoints, in order, each answering (checkTalk) -- only those at home for the home ring
   const endpointsNowAll = (homeOnly: boolean) => endpointsNow(endpointsIn((k) => store.getSetting(k)), TALK_HEALTH.endpoints, homeOnly);
   preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll);
+  // C-319: THE MIND's ledger of work (ai/tasks.ts), and which mind a write-up goes to first -- as house.write tries them
+  const TASKS = new Tasks((k) => store.getSetting(k), (k, v) => store.setSetting(k, v));
+  const writerNow = (): string | null => tiinyNow() ? "the Tiiny" : endpointsNowAll(false)[0]?.e.name || (house.any ? "the house's module" : null);
+  // C-318: a span of WHAT'S NEW told by the hub's mind, in the background -- a task in the ledger, a digest when it lands
+  const tellSpan = (from: number, to: number, by: string, device: string, again?: string) => {
+    const builds = spanOf(NOTES, from, to), mind = writerNow();
+    const [lo, hi] = [Math.min(from, to), Math.max(from, to)];
+    const task = TASKS.open({ kind: "whatsnew", title: `WHAT'S NEW ${lo}–${hi}`, user: by, device, mind: mind ?? undefined,   // DRAFT
+                              state: mind && builds.length ? "thinking" : "failed", can: { stop: true, retry: true } });
+    const d: Digest = { id: again ?? `d${Date.now().toString(36)}`, from: lo, to: hi, at: task.at, by, task: task.id, state: "thinking", ...(mind ? { mind } : {}) };
+    if (!builds.length || !mind) {
+      const error = !builds.length ? "no builds in that span" : "no mind in the house to tell it";   // DRAFT
+      TASKS.update(task.id, { state: "failed", error });
+      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "failed", error });
+      return { digest: { ...d, state: "failed" as const, error }, task: TASKS.find(task.id) };
+    }
+    keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), d);
+    house.write(DIGEST_SYSTEM, digestAsk(builds), 900).then((text) => {
+      if (TASKS.find(task.id)?.state !== "thinking") return;   // stopped while it thought
+      if (!text?.trim()) throw new Error("the mind said nothing");
+      const r = readDigest(text);
+      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "done", ...r });
+      TASKS.update(task.id, { state: "done" });
+    }).catch((e) => {
+      const error = (e as Error)?.message?.slice(0, 120) || "it failed";
+      if (TASKS.find(task.id)?.state !== "thinking") return;
+      keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "failed", error });
+      TASKS.update(task.id, { state: "failed", error });
+    });
+    return { digest: d, task };
+  };
   // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
   setMeetTalker(async (me, other, heard) => {
     if (!house.any) return null;
@@ -768,12 +801,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const self = dreamerSaid(who), ask = dreamAsk(dream, day, who), text = `${self}\n${ask}`;
     const viaHouse = async () => (house.any ? (await house.talk({ text: `${dreamerSaid({ nickname: who.nickname, name: who.name, types: who.types, feelings: who.feelings })} ${dreamAsk(dream, day, who, "short")}`,
                                                                    history: [], daemon: { nickname: d.nickname, name: d.name }, speak: false }, null)).answer : undefined);
+    const job = TASKS.open({ kind: "dream", title: `a night's dream told (${who.nickname || who.name || "the daemon"})`,   // C-319, DRAFT
+                             device: "the hub", mind: house.any ? "the house's mind" : p, state: "thinking" });
     (async () => {
       // C-308: with a thinker in the house, the night told twice at once and made whole, with its title -- the old single
       // telling below only when that does not come
       if (house.any) {
         const made = await dreamTwice(dream, day, who, (system, user, most) => house.write(system, user, most)).catch(() => null);
-        if (made && keepLenses(store, dream.id, made)) return;
+        if (made && keepLenses(store, dream.id, made)) { TASKS.update(job.id, { state: "done", mind: writerNow() ?? undefined }); return; }
       }
       let answer: string | undefined;
       const tiiny = tiinyIn((k) => store.getSetting(k));
@@ -787,7 +822,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         answer = typeof r.answer === "string" ? r.answer : await viaHouse().catch(() => undefined);
       }
       if (answer?.trim()) rewriteDream(store, dream.id, answer.trim());
-    })().catch(() => {}).finally(() => telling.delete(dream.id));
+      TASKS.update(job.id, answer?.trim() ? { state: "done", mind: p } : { state: "failed", error: "no mind told it; the written dream stays" });   // DRAFT
+    })().catch((e) => { TASKS.update(job.id, { state: "failed", error: (e as Error)?.message?.slice(0, 120) }); }).finally(() => telling.delete(dream.id));
   };
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
   const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
@@ -1186,6 +1222,48 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/mind") {
         const ts = traces((k) => store.getSetting(k));
         return send(res, 200, { traces: ts.slice(0, 20), speeds: speeds(ts) });
+      }
+      // C-319: THE MIND AT WORK -- the ledger, the talks phones reported and the hub's talk queue as one list, with the
+      // users and minds in it; ?user= keeps one user's, ?since= what began after it
+      if (req.method === "GET" && path === "/api/mind/tasks") {
+        const all = tasksView(TASKS.all(), traces((k) => store.getSetting(k)), talkJobs.list(),
+                              { since: url.searchParams.get("since") ?? undefined });
+        const user = url.searchParams.get("user");
+        const minds = [...(tiinyIn((k) => store.getSetting(k)) ? [{ name: "the Tiiny", ok: !!TALK_HEALTH.tiiny?.ok }] : []),
+                       ...(TALK_HEALTH.modules ?? []).map((m) => ({ name: m.name, ok: m.ok })),
+                       ...(TALK_HEALTH.endpoints ?? []).map((h) => ({ name: endpointsIn((k) => store.getSetting(k)).find((e) => e.id === h.id)?.name ?? h.id, ok: h.ok })),
+                       ...(TALK_HEALTH.n8n ? [{ name: "n8n", ok: TALK_HEALTH.n8n.ok }] : [])];
+        return send(res, 200, { tasks: (user ? all.filter((t) => t.user === user) : all).slice(0, 150), users: usersOf(all), minds,
+                                load: talkJobs.load, at: new Date().toISOString() });
+      }
+      // C-319: a task managed -- {id, act: "stop" | "retry" | "forget"}, or {act: "clear", user?} for the settled
+      if (req.method === "POST" && path === "/api/mind/tasks") {
+        const b = await body(req), id = String(b.id ?? "");
+        if (b.act === "clear") { TASKS.clear(typeof b.user === "string" ? b.user : undefined); return send(res, 200, { ok: true }); }
+        const t = TASKS.find(id);
+        if (!t) return send(res, 404, { error: "only the hub's own tasks can be managed" });   // DRAFT
+        if (b.act === "stop") {
+          if (!t.can?.stop) return send(res, 400, { error: "that one cannot be stopped" });
+          TASKS.update(id, { state: "stopped" });
+          const d = digests((k) => store.getSetting(k)).find((x) => x.task === id);
+          if (d && d.state === "thinking") keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), { ...d, state: "failed", error: "stopped" });
+          return send(res, 200, { task: TASKS.find(id) });
+        }
+        if (b.act === "retry") {
+          const d = digests((k) => store.getSetting(k)).find((x) => x.task === id);
+          if (!t.can?.retry || !d) return send(res, 400, { error: "that one cannot be tried again" });
+          return send(res, 200, tellSpan(d.from, d.to, t.user, t.device, d.id));
+        }
+        if (b.act === "forget") return TASKS.forget(id) ? send(res, 200, { ok: true }) : send(res, 400, { error: "stop it first" });
+        return send(res, 400, { error: "act is stop, retry, forget or clear" });
+      }
+      // C-318: WHAT'S NEW's spans told by the hub's mind; POST {from, to, user, device} asks for one, in the background
+      if (req.method === "GET" && path === "/api/whatsnew/digests") return send(res, 200, { digests: digests((k) => store.getSetting(k)), latest: NOTES.latest });
+      if (req.method === "POST" && path === "/api/whatsnew/digest") {
+        const b = await body(req), from = Number(b.from), to = Number(b.to);
+        if (b.forget) { forgetDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), String(b.forget)); return send(res, 200, { ok: true }); }
+        if (!Number.isInteger(from) || !Number.isInteger(to)) return send(res, 400, { error: "a span is {from, to}: two build numbers" });
+        return send(res, 202, tellSpan(from, to, String(b.user ?? "").slice(0, 40) || "the house", String(b.device ?? "").slice(0, 40) || "a phone"));
       }
       if (req.method === "POST" && path === "/api/mind/trace") {
         const t = traceOf(await body(req), String(url.searchParams.get("from") ?? "phone"));

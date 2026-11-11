@@ -59,7 +59,10 @@ export function HowToOverlay({ playing, toTitle }: { playing: boolean; toTitle?:
               <Text fontSize={12} color={SOFT}>{b.note}</Text>
             </YStack>
           ))}
-          <XStack justifyContent="center" marginTop={12}><Key label="CLOSE" onPress={closeHowTo} /></XStack>
+          <XStack justifyContent="center" gap={8} marginTop={12}>
+            <Key label="✦ WHAT'S NEW" onPress={() => { closeHowTo(); require("./whatsnew").openWhatsNew(); }} />{/* C-318; required here: whatsnew imports this file */}
+            <Key label="CLOSE" onPress={closeHowTo} />
+          </XStack>
           <Text fontSize={10} color={SOFT} textAlign="center">DRAFT</Text>
         </YStack>
       </YStack>

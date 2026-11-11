@@ -14,6 +14,7 @@ import { ALONE, api, apiLater, apiLive, OFFLINE, ON_PHONE, SERVER } from "./net"
 import { canHear, canThink, hearHere, mindHere, sayHere, selfText, thinkHere } from "./mind";
 import { atHome, endpoint, endpointThink } from "./endpoint";
 import type { Spoken } from "../state/types";
+import { deviceName, whoAmI } from "../state/me";   // C-319
 
 export type Ring = "anywhere" | "home" | "phone";
 export type Kind = "talk" | "guide";
@@ -186,7 +187,8 @@ export async function meshTalk(o: { kind: Kind; name: string; recording?: string
     if (!v && mindHere()) { sayHere(t.answer); trail.said = "here"; v = { voiced: true }; }
     ms.voice = voicing();
     // the trace, for THE MIND's RECENT THOUGHTS on every phone and the site -- where and how long, never what was said
-    api("/api/mind/trace" + (ON_PHONE ? "" : "?from=site"), { kind: o.kind, ring, ...trail, ms, covered: t.covered, failed: t.failed }).catch(() => {});
+    api("/api/mind/trace" + (ON_PHONE ? "" : "?from=site"), { kind: o.kind, ring, ...trail, ms, covered: t.covered, failed: t.failed,
+                                                                   user: await whoAmI(), device: deviceName() }).catch(() => {});   // C-319: whose
     speedSeen = null;
     return v;
   })();

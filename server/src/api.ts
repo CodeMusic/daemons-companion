@@ -59,6 +59,8 @@ import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
+import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
+import { siteNow, siteUpdate, siteView } from "./sitefetch.js";           // C-342: the site, built on every push
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { StackFlow } from "./ai/stackflow.js";
@@ -675,6 +677,8 @@ export function relaySecret(store: Store): string {
   if (!s) { s = randomBytes(24).toString("base64url"); store.setSetting("relay.secret", s); }
   return s;
 }
+// C-342: of LOCAL_ONLY, what opens a dialog on the computer itself -- never anyone's but that machine's
+const MACHINE_ONLY = ["/api/settings/pick", "/api/settings/reveal"];
 export const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && ["/api/device/state", "/api/device/art", "/api/device/commands", "/api/device/face", "/api/device/greet", "/api/device/tvs"].includes(p),
   (m: string, p: string) => m === "POST" &&
@@ -919,6 +923,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   };
   setTimeout(warmTalk, 60_000).unref();
   setInterval(warmTalk, 30 * 60_000).unref();   // a no-op while both thinkers hold: setups only when a persona changed
+  // C-342: the site, built on GitHub at every push -- asked for a minute after starting and every quarter of an hour
+  if (cfg.siteDir && !process.env.VITEST) {
+    setTimeout(() => { siteUpdate(cfg.siteDir!).catch(() => {}); }, 60_000).unref();
+    setInterval(() => { siteUpdate(cfg.siteDir!).catch(() => {}); }, 15 * 60_000).unref();
+  }
   // C-338: THE PERSONA OF THE DAY (persona.ts), one per daemon sent to the companion, kept as persona.<personality>: built
   // from its card (personaCard) with the weather, fresh until the next wake or until its signature moves; what it writes
   // of meeting the day is asked of the house's mind in the background, a task in the ledger. null: no such daemon here.
@@ -1168,7 +1177,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "THE ENGINE ROOM is on the home network and the tailnet only" });   // DRAFT
         return serveAdmin(req, res, path);
       }
-      if (cfg.siteDir && isSitePath(req.method ?? "", path)) return serveSite(cfg.siteDir, req, res, path);   // C-170
+      if (cfg.siteDir && isSitePath(req.method ?? "", path)) return serveSite(siteNow(cfg.siteDir), req, res, path);   // C-170; C-342: the newest build
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
 
@@ -1255,8 +1264,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const privateDoor = path.startsWith("/api/device/meeting") || path === "/api/device/voicenote";
       if (privateDoor && !board && !phone && !isLoopback(req.socket.remoteAddress))
         return send(res, 403, { error: "a meeting is taken only from a linked board -- link it by its cable at home first" });   // DRAFT
-      if (!isLoopback(req.socket.remoteAddress) && LOCAL_ONLY.includes(path))
+      // C-342 (the user, 2026-11-11): a paired ENGINE ROOM reaches the hub's own settings too -- pairing codes, the paired
+      // phones, the relay, Home Assistant, the network -- at home and on the tailnet (the relay was refused above); only the
+      // dialogs that open on the computer itself stay its own
+      if (!isLoopback(req.socket.remoteAddress) && LOCAL_ONLY.includes(path) && !(phone && !MACHINE_ONLY.includes(path)))
         return send(res, 403, { error: "that is done on the computer the companion runs on" });
+      // ---- C-342: THE ENGINE ROOM's JOBS -- asked for here, taken and run by THE HANDS on the computer (jobs.ts) ----
+      if (path.startsWith("/api/engine/")) {
+        const who = phone?.name ?? (isLoopback(req.socket.remoteAddress) ? "this machine" : "");
+        const name = path.slice("/api/engine/".length), b = req.method === "POST" ? await body(req) : {};
+        if (req.method === "GET" && name === "jobs") return send(res, 200, { jobs: JOBS.list(store), kinds: JOBS.kinds(), hands: JOBS.hands(store) });
+        if (req.method === "POST" && name === "jobs") { const r = JOBS.ask(store, b.name, b.arg, who); return send(res, "error" in r ? 400 : 200, r); }
+        if (req.method === "POST" && name === "jobs/calloff") return JOBS.callOff(store, String(b.id ?? "")) ? send(res, 200, { ok: true }) : send(res, 400, { error: "only a waiting job is called off" });
+        if (req.method === "POST" && name === "next") return send(res, 200, { job: JOBS.next(store, who) });   // THE HANDS
+        if (req.method === "POST" && name === "report")
+          return JOBS.report(store, String(b.id ?? ""), typeof b.output === "string" ? b.output : "", typeof b.exit === "number" || b.exit === null ? b.exit : undefined)
+            ? send(res, 200, { ok: true }) : send(res, 400, { error: "no such running job" });
+        if (req.method === "GET" && name === "site") return send(res, 200, siteView(cfg.siteDir ?? null));
+        if (req.method === "POST" && name === "site") return send(res, 200, await siteUpdate(cfg.siteDir ?? null));
+        return send(res, 404, { error: "not found" });
+      }
       if (req.method === "OPTIONS") {
         res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-methods": "GET,POST",
                              "access-control-allow-headers": "content-type, authorization" });

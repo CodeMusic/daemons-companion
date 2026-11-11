@@ -18,6 +18,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `bindCompanion.sh` | starts the server and the app (a site by default; `ios`, `android`, `server`, `test`) |
 | `updateCompanion.sh`, `linkCompanion.sh` | flash a handheld; link it to the server over its USB cable |
 | `syncCompanion.sh` | the save kept in step between this computer and the hub, both ways (C-168), and its art and backups |
+| `.github/` | GitHub's workflows: the site built at every push to main, onto the `site` release the hub fetches (C-342) |
 | `.hub.example`, `.nvmrc`, `.gitignore` | `syncCompanion.sh`'s settings (copied to `.hub`, never committed), the Node version, what git ignores |
 
 ## `app/` -- the Expo app (iPhone, iPad, the Mac, and the site)
@@ -53,6 +54,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `src/save/` | reading a DAEMONS save, and writing to it (`writer.ts`) |
 | `src/game/` | the player's ROM: patches, hashes, the live save and its mirror |
 | `src/commons*.ts` | THE COMMONS, which runs on its own machine |
+| `src/jobs.ts`, `src/hands_main.ts`, `src/sitefetch.ts` | THE ENGINE ROOM's JOBS and THE HANDS that run them on the computer, and the site the hub fetches from the release (C-342) |
 | `src/admin.ts`, `admin/` | THE ENGINE ROOM (C-330): the hub's admin -- one installable web app the server serves at `/admin/` (its page, script, manifest, worker and icons, the icons drawn by `tools/admin_icons.py`), never through the relay |
 | `src/*.ts` | one file per feature otherwise (care, dreams, casino, trade, glass, ...; BATTLES: the fight `battle.ts`, the arena `battles.ts`, its requests `battleroute.ts`, C-328) |
 | `data/` | what the game is built from, exported by DAEMONS (species, art, sounds, maps, ...) |
@@ -74,7 +76,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | Folder | What it is |
 |---|---|
 | `seer/` | the local cloud: the always-on machine beside the hub (LiteLLM, n8n and its workflows, the Tiiny's voice, sleep sounds, ACE-Step, local models, ComfyUI), set up by `seer/bindSeer.sh` from one settings file (`seer/README.md`); a folder for each part |
-| `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), THE COMMONS (`commons.sh`), backups |
+| `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), its name (`rename.sh`), THE COMMONS (`commons.sh`), THE HANDS on the computer (`hands.sh`, C-342), backups |
 | `n8n/` | the n8n relay workflow (C-56) a phone away from home reaches the companion through |
 | `docs/` | the design: `PLAN.md`, `vision.md`, one file per subject (devices, hardware, the hub, trading, ...) |
 | `wiki/` | the public wiki, published by `wiki/publish.sh` |

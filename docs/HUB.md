@@ -32,7 +32,7 @@ Either works; choose by whether a computer is always on.
 | the save | the file `savePath` names, read in place | a copy in the hub's shared folder; `./syncCompanion.sh` keeps it and the computer's in step, both ways |
 | when the computer sleeps | the phone, the boards and the relay lose the companion | nothing changes |
 | the site | `./bindCompanion.sh`, at localhost:8081 | the hub serves it: `http://<hub>:4730` at home, or its tailnet name anywhere; a browser pairs once with a code from the hub's screen. `./syncCompanion.sh site` sends a new build. Machine-only settings (pairing codes, network, relay, Home Assistant) show only through the tunnel |
-| THE ENGINE ROOM (C-330) | -- | the hub's admin, one web app at `http://daemons-hearth:4730/admin/` (home network and tailnet only), added to the phone's home screen; pairs once with a code from the hub's screen |
+| THE ENGINE ROOM (C-330, C-342) | -- | the hub's admin, one web app at `http://daemons-hearth:4730/admin/` (home network and tailnet only), added to the phone's home screen; pairs once with a code from the hub's screen or from any paired ENGINE ROOM (KEYS). Its JOBS do what the command line did: the save, art, DEBUG patches, backups, deploy and the commons' keeper, run by THE HANDS on the computer (`hub/hands.sh install`, once); the site is built on GitHub at every push and the hub fetches it by itself |
 | pairing a phone | the site's PAIR A PHONE | hold the hub's screen for two seconds: a code, the address and the tailnet name (C-170) |
 | linking a board by cable | `./linkCompanion.sh` | the same, through the tunnel (the board then finds the hub over Wi-Fi) |
 

@@ -26,4 +26,5 @@ export const ADMIN_HOME_ONLY: ((method: string, path: string) => boolean)[] = [
   (m, p) => m === "GET" && p === "/api/casino",                   // C-158: THE HOUSE
   (m, p) => m === "POST" && p === "/api/devices/forget",          // a device forgotten
   (m, p) => m === "POST" && p === "/api/commons",                 // C-222: this home linked to the commons, or not
+  (_, p) => p.startsWith("/api/engine/"),                          // C-342: its jobs, THE HANDS, the site
 ];

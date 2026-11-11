@@ -1,5 +1,7 @@
 # syncCompanion.sh's settings: copy to .hub (never committed) and fill in. C-168, docs/HUB.md.
 HUB=debian@daemons-hearth
+# C-342: THE COMMONS' machine, by ssh, for THE ENGINE ROOM's keeper jobs (THE HANDS run them from this computer)
+COMMONS=user@commons-machine
 # the save the emulator plays and the companion serves (on the hub it is shared/save.sav)
 SAVE=~/path/to/the/game.sav
 # DAEMONS' own art, for the hub's pictures (default: the DAEMONS checkout beside this repo)

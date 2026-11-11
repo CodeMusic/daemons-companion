@@ -6,7 +6,8 @@
 #   ./syncCompanion.sh push       this computer's save to the hub, over a change there (the hub's is kept aside)
 #   ./syncCompanion.sh pull       the hub's save to this computer, over a change here (this one is kept aside)
 #   ./syncCompanion.sh art        DAEMONS' own art (gfx/daemons) to the hub, for its pictures
-#   ./syncCompanion.sh site       the companion's site, built here, to the hub -- which serves it at its own address (C-170)
+#   ./syncCompanion.sh site       the companion's site, built here, to the hub -- which serves it at its own address (C-170);
+#                                 since C-342 every push builds it on GitHub and the hub fetches it itself, so this is the fallback
 #   ./syncCompanion.sh debug      the newest DEBUG patches from DAEMONS' ROM RELEASE to the hub -- private (C-216)
 #   ./syncCompanion.sh backups    the hub's nightly backups of its store, to this computer (off the hub's card)
 #   ./syncCompanion.sh --help

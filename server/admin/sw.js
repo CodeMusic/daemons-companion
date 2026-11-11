@@ -1,6 +1,6 @@
 // C-330: THE ENGINE ROOM's worker -- what lets it install and open from the home screen. Its own files come from the hub
 // first and from this cache when the hub cannot be reached; the API is never kept (it is the hub's, and live).
-const CACHE = "engine-room-1";
+const CACHE = "engine-room-2";
 const SHELL = ["./", "admin.css", "admin.js", "manifest.webmanifest", "icon-192.png", "apple-touch-icon.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => {

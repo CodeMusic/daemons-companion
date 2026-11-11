@@ -5,7 +5,9 @@
 //   VOICES       MAKE THE VOICES AGAIN (C-303)
 //   DEVICES      every device heard, what it carries, forgetting one (C-80)
 //   EXCHANGE     its players, and an invite code for a new one (C-218)
-//   THE COMMONS  this home's link to the commons, and its keeper's commands (C-222)
+//   THE COMMONS  this home's link to the commons, and its keeper's list (C-222), run by THE HANDS
+//   KEYS         pairing codes, the paired phones, the relay, Home Assistant (C-342: once the hub's own machine's alone)
+//   JOBS         the site built at every push, THE HANDS on the computer, the command line's jobs (C-342)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
 const KEY = "engine-room.key";
@@ -41,6 +43,8 @@ const PAGES = [
   { id: "devices", glyph: "▣", label: "DEVICES", short: "DEVICES", draw: drawDevices, every: 20000 },
   { id: "exchange", glyph: "⇄", label: "EXCHANGE", short: "EXCHANGE", draw: drawExchange },
   { id: "commons", glyph: "◇", label: "THE COMMONS", short: "COMMONS", draw: drawCommons },
+  { id: "keys", glyph: "◈", label: "KEYS", short: "KEYS", draw: drawKeys },                    // C-342
+  { id: "jobs", glyph: "▶", label: "JOBS", short: "JOBS", draw: drawJobs, every: 3000 },       // C-342
 ];
 let timer = null, ui = {}, drawing = null;          // ui: what a page keeps between its redraws (a filter, a task picked, a note)
 // a page asked for before another was opened, answering after it: it writes nothing
@@ -57,7 +61,9 @@ async function show(again = false) {
   const p = pageNow();
   drawing = p;
   if (!again) { ui = {}; drawNav(); $page.innerHTML = `<p class="small">Asking the hub…</p>`; }
-  try { await p.draw(again); }
+  // a redraw waits while something is being typed into the page (a home's id, an address)
+  const typing = again && document.activeElement?.matches?.("input") && $page.contains(document.activeElement);
+  try { if (!typing) await p.draw(again); }
   catch (e) {
     if (e instanceof Refused) return drawPair(e.message);
     if (!again) $page.innerHTML = `<h1>${esc(p.label)}</h1><div class="card bad">${esc(e.message)}</div>`;
@@ -122,10 +128,10 @@ async function drawHub() {
     </div>
     <div class="grid" style="margin-top:12px">${PAGES.slice(1).map((p) => `<a class="card" style="text-decoration:none;color:inherit" href="#${p.id}">
       <p class="eyebrow">${p.glyph} ${p.label}</p><div class="small">${esc(BLURB[p.id])}</div></a>`).join("")}</div>
-    <div class="card" style="margin-top:12px"><p class="eyebrow">ON THE HUB'S OWN MACHINE ONLY</p>
-      <p class="small">Pairing codes (the hub's screen, held), the list of paired phones, the relay's address and secret, and
-      Home Assistant's address and key are set on the machine the companion runs on, and never over the network -- so a
-      key that leaked could not hand out more keys. Open the companion's site there for them.</p></div>
+    <div class="card" style="margin-top:12px"><p class="eyebrow">WHAT IS STILL THE COMMAND LINE'S</p>
+      <p class="small">Flashing or linking a board on a cable (<span class="mono">updateCompanion.sh</span>,
+      <span class="mono">linkCompanion.sh</span>), renaming the hub (<span class="mono">hub/rename.sh</span>, its password),
+      and installing THE HANDS once (<span class="mono">hub/hands.sh install</span>). Everything else is here.</p></div>
     <div class="card"><p class="eyebrow">ADD TO THE HOME SCREEN</p>
       <p class="small">On the iPhone: Safari's share button, then <b>Add to Home Screen</b>. On Android: the menu, then
       <b>Install app</b>. It opens on its own, without the browser around it.</p>
@@ -137,7 +143,9 @@ const BLURB = {
   voices: "Make every kept voice again, on every phone.",
   devices: "Every device heard, what it carries, and forgetting one.",
   exchange: "The exchange's players, and a code to invite a new one.",
-  commons: "This home's link to the commons, and its keeper's commands.",
+  commons: "This home's link to the commons, and its keeper's list: let a home in or out.",
+  keys: "A pairing code for a new phone or browser, every one paired, the relay, Home Assistant.",
+  jobs: "The site (built at every push), THE HANDS on the computer, and every job the command line did.",
 };
 
 // ---- THE MIND (C-319): everyone's tasks, LATER ----
@@ -302,12 +310,17 @@ async function drawCommons() {
     ${c.url ? (ui.sure ? `<div class="row" style="margin-top:8px"><span class="grow">Unlink this home from the commons?</span><button class="btn danger" data-act="unlink">YES, UNLINK</button><button class="btn quiet" data-act="sure">NO</button></div>`
                        : `<div class="row" style="margin-top:8px"><button class="btn quiet" data-act="sure">UNLINK</button></div>`) : ""}</div>
     <div class="card"><p class="eyebrow">THE KEEPER</p>
-      <p class="small">The keeper lets a home in on the commons' own machine, never over the network. There, from the companion's folder:</p>
-      <pre class="cmd">hub/commons.sh homes</pre>
-      <pre class="cmd">hub/commons.sh approve ${esc(h?.id ?? "ID")}</pre>
-      <pre class="cmd">hub/commons.sh refuse ${esc(h?.id ?? "ID")}</pre>
+      <p class="small">The keeper answers only on the commons' own machine; THE HANDS reach it there and bring back what it said (JOBS).</p>
+      <div class="row" style="margin-top:6px"><button class="btn" data-act="job" data-name="commons-homes">EVERY HOME</button></div>
+      <form class="row" data-form="keeper" style="margin-top:8px"><input class="text mono" name="id" value="${esc(h?.id ?? "")}" placeholder="a home's id" aria-label="a home's id">
+        <button class="btn" name="go" value="commons-approve">LET IT IN</button><button class="btn danger" name="go" value="commons-refuse">LET IT OUT</button></form>
       <p class="small faint">Friends -- codes, asks, accepting -- are each player's, in the app (YOU, TRADE).</p></div>
     ${note()}`;
+  $page.querySelector('[data-form="keeper"]')?.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    try { await api("/api/engine/jobs", { name: ev.submitter?.value ?? "commons-approve", arg: ev.target.id.value.trim() }); location.hash = "jobs"; }
+    catch (e) { said(e.message); show(true); }
+  });
   $page.querySelector('[data-form="link"]')?.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     try { await api("/api/commons", { url: ev.target.url.value.trim(), name: ev.target.name.value.trim() }); said("Linked. The commons' keeper lets this home in."); }
@@ -316,6 +329,99 @@ async function drawCommons() {
   });
 }
 ACTS.unlink = async () => { await api("/api/commons", { url: "" }); ui.sure = false; said("Unlinked."); };
+
+// ---- KEYS (C-342): pairing codes, the paired, the relay, Home Assistant -- once the hub's own machine's alone ----
+async function drawKeys() {
+  const [phones, relay, home] = await Promise.all([api("/api/pair/phones"), api("/api/settings/relay"), api("/api/settings/home").catch(() => null)]);
+  const pc = ui.code, now = Date.now();
+  $page.innerHTML = `<h1>KEYS</h1>
+    <p class="lede">Who may open the companion, and the two doors into it from outside: the relay and Home Assistant.</p>
+    <div class="card"><p class="eyebrow">PAIR A PHONE OR A BROWSER</p>
+      ${pc ? `<div class="code">${esc(pc.code)}</div><div class="small">Type it into the app or THE ENGINE ROOM there, within ${pc.minutes} minutes.
+        The hub is ${esc(pc.lan?.tailnet ?? "")}${pc.lan?.tailnet ? ":4730 on the tailnet, " : ""}${esc(pc.lan?.name ?? pc.lan?.address ?? "")}:4730 at home.</div>` : ""}
+      <button class="btn" data-act="paircode">${pc ? "ANOTHER CODE" : "SHOW A CODE"}</button></div>
+    <div class="card"><p class="eyebrow">PAIRED</p><div class="list">${phones.map((p) => `<div class="item" style="cursor:default">
+      <span class="t">${esc(p.name)}</span><span class="small">${p.seen ? `seen ${esc(ago(p.seen, now))}` : "never seen"}</span>
+      ${ui.forget === p.name ? `<button class="btn danger" data-act="forgetphone" data-name="${esc(p.name)}">YES, FORGET</button><button class="btn quiet" data-act="forgetask" data-id="">NO</button>`
+        : `<button class="btn quiet" data-act="forgetask" data-id="${esc(p.name)}">FORGET</button>`}</div>`).join("") || `<p class="small">Nothing is paired.</p>`}</div>
+      <p class="small faint">A forgotten key stops working at once -- this browser's too, if it is the one forgotten.</p></div>
+    <div class="card"><p class="eyebrow">THE RELAY</p>
+      <p class="small">How a phone away from home reaches the companion: through n8n, which marks each request with the secret.</p>
+      <form class="row" data-form="relay"><input class="text" name="url" value="${esc(relay.url ?? "")}" placeholder="https://... (its webhook)" aria-label="the relay's address"><button class="btn">SAVE</button></form>
+      <div class="small" style="margin-top:6px">The secret: <span class="mono">${ui.secret ? esc(relay.secret) : "••••••••"}</span>
+        <button class="pill" data-act="secret">${ui.secret ? "HIDE" : "SHOW"}</button></div>
+      ${ui.renew ? `<div class="row" style="margin-top:6px"><span class="grow">A new secret: n8n must be given it, or every phone away loses the companion.</span>
+        <button class="btn danger" data-act="renew">YES, A NEW ONE</button><button class="btn quiet" data-act="renewask">NO</button></div>`
+        : `<button class="btn quiet" data-act="renewask" style="margin-top:6px">A NEW SECRET</button>`}</div>
+    ${home ? `<div class="card"><p class="eyebrow">HOME ASSISTANT</p>
+      <p class="small">${home.url ? `${esc(home.url)} · ${home.hasToken ? "a token kept" : "no token"}${home.ok === false ? ` · <span class="bad">not answering</span>` : home.ok ? ` · <span class="good">answering</span>` : ""}` : "Not set."}</p>
+      <form class="row" data-form="home"><input class="text" name="url" value="${esc(home.url ?? "")}" placeholder="http://homeassistant.local:8123" aria-label="Home Assistant's address">
+        <input class="text" name="token" type="password" placeholder="its long-lived token (kept, never shown)" aria-label="Home Assistant's token" autocomplete="off"><button class="btn">SAVE</button></form>
+      ${home.agent?.url ? `<div class="small" style="margin-top:6px">Its way in, for Home Assistant's Ollama setting: <span class="mono">${esc(home.agent.url)}</span></div>` : ""}</div>` : ""}
+    ${note()}`;
+  $page.querySelector('[data-form="relay"]').addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    try { await api("/api/settings/relay", { url: ev.target.url.value.trim() }); said("Saved. Paired phones learn it the next time they open at home."); } catch (e) { said(e.message); }
+    show(true);
+  });
+  $page.querySelector('[data-form="home"]')?.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const t = ev.target.token.value;
+    try { await api("/api/settings/home", { url: ev.target.url.value.trim(), ...(t ? { token: t } : {}) }); said("Saved."); } catch (e) { said(e.message); }
+    show(true);
+  });
+}
+ACTS.paircode = async () => { ui.code = await api("/api/pair/code", {}); said(""); };
+ACTS.forgetphone = async (d) => { await api("/api/pair/forget", { name: d.name }); ui.forget = null; said(`${d.name} forgotten.`); };
+ACTS.secret = () => { ui.secret = !ui.secret; };
+ACTS.renewask = () => { ui.renew = !ui.renew; };
+ACTS.renew = async () => { await api("/api/settings/relay", { renew: true }); ui.renew = false; ui.secret = true; said("A new secret: give it to n8n's relay."); };
+
+// ---- JOBS (C-342): the site, THE HANDS, and the command line's jobs ----
+const LIVE_JOB = (j) => j.state === "waiting" || j.state === "running";
+async function drawJobs() {
+  const [v, site] = await Promise.all([api("/api/engine/jobs"), api("/api/engine/site")]);
+  const now = Date.now(), h = v.hands, awake = h && now - Date.parse(h.seen) < 30000;
+  const groups = [...new Set(v.kinds.map((k) => k.group))];
+  const open = ui.open ?? v.jobs.find(LIVE_JOB)?.id ?? null;
+  $page.innerHTML = `<h1>JOBS</h1>
+    <p class="lede">What the command line did, done from here. The site comes by itself; the rest THE HANDS do on the computer.</p>
+    <div class="grid">
+      <div class="card"><p class="eyebrow">THE SITE</p>
+        <div class="big mono">${esc((site.commit ?? "?").slice(0, 7))}</div>
+        <div class="small">${site.serving === "release" ? "built on GitHub" : site.serving === "sent" ? "sent from the computer" : "none yet"}${site.at ? `, ${esc(ago(site.at, now))}` : ""}
+          ${site.latest && site.latest !== site.commit ? ` · <span class="warm">${esc(site.latest.slice(0, 7))} waits</span>` : site.latest ? " · the newest" : ""}</div>
+        ${site.error ? `<div class="small bad">${esc(site.error)}</div>` : ""}
+        <button class="btn" data-act="siteupdate" style="margin-top:6px" ${site.fetching ? "disabled" : ""}>${site.fetching ? "FETCHING…" : "UPDATE NOW"}</button></div>
+      <div class="card"><p class="eyebrow">THE HANDS</p>
+        <div class="big ${awake ? "good" : "warm"}">${awake ? "AWAKE" : h ? "AWAY" : "NOT YET"}</div>
+        <div class="small">${h ? `${esc(h.name)} · asked ${esc(ago(h.seen, now))}` : "On the computer, once: hub/hands.sh install"}</div>
+        <div class="small faint">${awake ? "A job asked for is taken within five seconds." : "Jobs wait until it wakes (the computer asleep, or not installed)."}</div></div>
+    </div>
+    ${groups.map((g) => `<div class="card" style="margin-top:12px"><p class="eyebrow">${esc(g)}</p>${v.kinds.filter((k) => k.group === g).map((k) => `
+      <div class="row" style="padding:6px 0"><span class="grow small">${esc(k.said)}</span>
+        ${ui.sure === k.name ? `<button class="btn danger" data-act="job" data-name="${k.name}">YES</button><button class="btn quiet" data-act="sure" data-name="">NO</button>`
+          : k.arg ? `<input class="text mono" style="max-width:150px" id="arg-${k.name}" placeholder="${esc(k.arg)}" aria-label="${esc(k.arg)}"><button class="btn ${k.danger ? "danger" : ""}" data-act="job" data-name="${k.name}" data-witharg="1">RUN</button>`
+          : `<button class="btn ${k.danger ? "danger" : ""}" data-act="${k.danger ? "sure" : "job"}" data-name="${k.name}">RUN</button>`}</div>`).join("")}</div>`).join("")}
+    <div class="card"><p class="eyebrow">WHAT RAN</p><div class="list">${v.jobs.map((j) => `<div style="padding:8px 0">
+      <div class="item" data-act="openjob" data-id="${esc(j.id)}" style="padding:0">
+        <span class="dot" style="background:${j.state === "done" ? "var(--good)" : j.state === "failed" ? "var(--bad)" : LIVE_JOB(j) ? "var(--gold)" : "var(--faint)"}"></span>
+        <span class="t mono">${esc(j.name)}${j.arg ? ` ${esc(j.arg)}` : ""}</span>
+        <span class="small">${esc(j.state)} · ${esc(ago(j.ended ?? j.started ?? j.asked, now))}${j.by ? ` · ${esc(j.by)}` : ""}</span></div>
+      ${open === j.id ? `<pre class="cmd" style="max-height:340px;white-space:pre-wrap">${esc(j.output || (j.state === "waiting" ? "(waiting for THE HANDS)" : ""))}</pre>
+        ${j.state === "waiting" ? `<button class="btn quiet" data-act="calloff" data-id="${esc(j.id)}">CALL IT OFF</button>` : ""}` : ""}</div>`).join("") || `<p class="small">Nothing has run yet.</p>`}</div></div>
+    ${note()}`;
+}
+ACTS.sure = (d) => { ui.sure = ui.sure === d.name ? null : d.name || null; };
+ACTS.job = async (d) => {
+  const arg = d.witharg ? document.getElementById(`arg-${d.name}`)?.value ?? "" : undefined;
+  const j = await api("/api/engine/jobs", { name: d.name, ...(arg !== undefined ? { arg } : {}) });
+  ui.sure = null; ui.open = j.id; said("");
+  if (pageNow().id !== "jobs") location.hash = "jobs";
+};
+ACTS.openjob = (d) => { ui.open = ui.open === d.id ? "" : d.id; };
+ACTS.calloff = async (d) => { await api("/api/engine/jobs/calloff", { id: d.id }); said("Called off."); };
+ACTS.siteupdate = async () => { const v = await api("/api/engine/site", {}); said(v.error ? v.error : "The site is the newest build."); };
 
 // ---- start: the worker that lets it install and open without the browser, then the page ----
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {});

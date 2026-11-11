@@ -36,7 +36,7 @@ describe("THE ENGINE ROOM's files (C-330)", () => {
 
   it("reaches every admin feature from its one navigation", () => {
     const js = readFileSync(join(ADMIN_DIR, "admin.js"), "utf8");
-    for (const id of ["hub", "mind", "house", "voices", "devices", "exchange", "commons"]) expect(js).toContain(`id: "${id}"`);
+    for (const id of ["hub", "mind", "house", "voices", "devices", "exchange", "commons", "keys", "jobs"]) expect(js).toContain(`id: "${id}"`);
     for (const api of ["/api/mind/tasks", "/api/casino", "voicesAgain", "/api/devices/forget", "/api/exchange/invite", "/api/commons"])
       expect(js).toContain(api);
   });

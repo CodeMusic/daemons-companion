@@ -59,6 +59,8 @@ describe.skipIf(!lan)("from another computer (C-170)", () => {
                                                   body: JSON.stringify({ code, name: "a browser" }) });
     const { token } = await paired.json();
     expect((await fetch(at("/api/today"), { headers: { authorization: `Bearer ${token}` } })).status).toBe(200);
-    expect((await fetch(at("/api/pair/code"), { method: "POST", headers: { authorization: `Bearer ${token}` } })).status).toBe(403);   // LOCAL_ONLY stays
+    // C-342: a paired key may show a pairing code (THE ENGINE ROOM's KEYS); the computer's own dialogs stay its own
+    expect((await fetch(at("/api/pair/code"), { method: "POST", headers: { authorization: `Bearer ${token}` } })).status).toBe(200);
+    expect((await fetch(at("/api/settings/reveal"), { method: "POST", headers: { authorization: `Bearer ${token}` } })).status).toBe(403);
   });
 });

@@ -76,7 +76,7 @@ describe("on the network, only the device's door answers", () => {
     expect((await from("/api/settings", undefined, token)).status).toBe(200);
     expect((await from("/api/goal", undefined, token)).status).toBe(200);
     expect((await from("/api/settings/pick", {}, token)).status).toBe(403);
-    expect((await from("/api/pair/code", {}, token)).status).toBe(403);
+    expect((await from("/api/pair/code", {}, token)).status).toBe(200);   // C-342: a paired key shows a code (KEYS)
     expect((await from("/api/settings", undefined, "not-a-key")).status).toBe(403);
   });
 });

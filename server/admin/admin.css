@@ -32,7 +32,7 @@ a { color: var(--gold); }
   .frame { display: block; }
   .nav { position: fixed; bottom: 0; left: 0; right: 0; top: auto; z-index: 3; width: auto; flex-direction: row; gap: 0;
          padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); overflow-x: auto; }
-  .nav a { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 2px; padding: 6px 1px; font-size: 9px; letter-spacing: .5px; }
+  .nav a { flex: 1 0 auto; min-width: 54px; flex-direction: column; gap: 2px; padding: 6px 1px; font-size: 9px; letter-spacing: .5px; }
   .nav a .long { display: none; } .nav a .short { display: block; }
   .where { display: none; }
   .nav a .glyph { font-size: 17px; width: auto; }

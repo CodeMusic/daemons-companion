@@ -160,7 +160,10 @@ llm-* units brought up to lib-llm 1.10, `llm-openai-api` (port 8000), MeloTTS `m
 the OpenAI plugin keeps a pooled client's first system message and returns nothing for a user turn past ~70 characters).
 **llm-llm leaks about 26 file handles a setup** (exit does not close the model's files): its limit is raised
 (`/etc/systemd/system/llm-llm.service.d/nofile.conf`, 65536) and `llm-nightly.timer` restarts the AI units at 04:00
-the hub's time (16:00 on the module's CST clock; the user approved it). Restart them together, never llm-openai-api
+the hub's time (the user approved it). **The module has no internet, so no clock of its own**: it came up on Shanghai
+time a year behind, and the 04:00 restart fired at a random hour. Since 2026-11-11 (the user approved it) the module is
+on America/Toronto, its timer says `OnCalendar=*-*-* 04:00:00`, and the hub's `debian` crontab sets its clock every 15
+minutes: `ssh -o BatchMode=yes root@192.168.50.2 date -s @$(date +\%s)`. Restart them together, never llm-openai-api
 alone (it leaks the llm unit's slots): llm-sys, then llm-llm, llm-melotts, llm-whisper, llm-openai-api.
 
 **Phase 6 -- LoRa.** The 433 gateway on SPI (CS, IRQ and RST on the module's DIP switches). The hub's own broadcasts are

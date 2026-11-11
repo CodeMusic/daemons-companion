@@ -456,7 +456,7 @@ async function rawBody(req: IncomingMessage, most = 2 * 1024 * 1024): Promise<Bu
   return Buffer.concat(parts);
 }
 
-// C-64, C-65, C-66: the daemon's voice and its answers come from the user's n8n (DAEMONS ai/n8n: daemon/talk, and
+// C-64, C-65, C-66: the daemon's voice and its answers come from the user's n8n (seer/n8n: daemon/talk, and
 // daemon/voice for the INDEX entry read aloud). The server calls it, never a device: the secret stays here, and the
 // server knows which daemon is carried and what day it is.
 // Whether the voice server can be reached at all, asked with a bare connection (three seconds), kept twenty: a fetch to

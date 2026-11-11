@@ -56,13 +56,13 @@ The board's voice cannot be cloned, which is why the INDEX keeps n8n's by defaul
 
 ## What it takes
 
-All on your own machines:
+All on your own machines, and set up together by one script: on the always-on computer beside the hub (the
+**local cloud**), from a clone of this repository, run `seer/bindSeer.sh`. It asks whether a Tiiny is plugged in and
+which parts you want, then installs them and writes n8n's workflows to match ([`seer/README.md`](https://github.com/CodeMusic/daemons-companion/tree/main/seer)).
 
-1. **n8n** with DAEMONS' workflows
-   ([DAEMONS `ai/n8n/`](https://github.com/CodeMusic/DAEMONS/tree/main/ai): `daemon/talk` and `daemon/voice`; its
-   README says how to import them and what each needs).
-2. **Speech to text** on the machine n8n runs on: DAEMONS' `ai/stt/` -- MLX Whisper on port 8770; its README has the
-   install and the launch agent that keeps it running. Without it the daemon still answers, but has not heard you.
+1. **n8n** with the companion's workflows (`daemon/talk` and `daemon/hear`, from `seer/n8n/`), in Docker.
+2. **Speech to text** on that machine: the Tiiny's, or `seer/stt/` (MLX Whisper on port 8770) when you choose local
+   models. Without it the daemon still answers, but has not heard you.
 3. **A model**: LM Studio on that machine (asked for by name, `google/gemma-3-4b`), and optionally an OpenRouter key
    in n8n for when it is busy or down.
 4. **The voice**: the INDEX voice on a Chatterbox server, which `daemon/voice` calls.

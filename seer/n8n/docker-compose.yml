@@ -1,0 +1,14 @@
+# n8n for the local cloud (seer/bindSeer.sh starts it). Its environment is written by seer/make.py from seer/.seer, so
+# the workflows (seer/n8n/make_workflows.py) and LiteLLM's names always agree. Pinned to the version roverbyteseer runs.
+name: daemons-seer
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.16.1
+    container_name: daemons-n8n
+    restart: unless-stopped
+    ports: ["5678:5678"]
+    env_file: ../out/n8n.env
+    extra_hosts: ["host.docker.internal:host-gateway"]   # LiteLLM and the rest, on this machine itself
+    volumes: ["daemons-n8n:/home/node/.n8n"]
+volumes:
+  daemons-n8n:

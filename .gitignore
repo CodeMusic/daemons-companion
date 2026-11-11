@@ -15,3 +15,7 @@ config.json
 
 # C-188: the mirror save's backups (server/companion-backups/mirror.sav.<time>) -- a save holds the player's name
 companion-backups/
+
+# the local cloud (seer/): its settings and keys, and what make.py writes from them
+seer/.seer
+seer/out/

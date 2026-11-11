@@ -73,6 +73,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 
 | Folder | What it is |
 |---|---|
+| `seer/` | the local cloud: the always-on machine beside the hub (LiteLLM, n8n and its workflows, the Tiiny's voice, sleep sounds, ACE-Step, local models, ComfyUI), set up by `seer/bindSeer.sh` from one settings file (`seer/README.md`); a folder for each part |
 | `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), THE COMMONS (`commons.sh`), backups |
 | `n8n/` | the n8n relay workflow (C-56) a phone away from home reaches the companion through |
 | `docs/` | the design: `PLAN.md`, `vision.md`, one file per subject (devices, hardware, the hub, trading, ...) |

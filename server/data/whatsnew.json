@@ -43,11 +43,11 @@
       "where": "DAEMON › DREAMS › SLEEP SOUNDS",
       "needs": [
        "the hub",
-       "the music maker beside THE TIINY's LiteLLM (port 4002)",
+       "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
        "headphones, for DRIFT DOWN"
       ],
       "steps": [
-       "The pieces are made by ACE-Step on the machine that runs THE TIINY's LiteLLM. From the DAEMONS repository, copy ai/litellm/sleep-sounds/ to that machine and run its install.sh there. It answers on port 4002 and turns away anyone without a key.",
+       "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
        "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
        "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
        "It plays for thirty minutes and fades over the last ten.",

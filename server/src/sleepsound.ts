@@ -2,7 +2,7 @@
 // C-334 (the user, 2026-11-11: "generitive sleep sounds ... DAEMON-ified (using again context to steer the output -- such
 // as the daemons index entry or care/mood/companionship)"): a daemon's sleep sounds from its context, as C-323's voiceof.ts
 // makes a voice from its speaker. Who it is, in; a RECIPE out -- the music words said to the music model (ACE-Step 1.5 on
-// roverbyteseer, ai/litellm/sleep-sounds in DAEMONS), its tempo and key -- and a KEY naming that recipe exactly, so the
+// the local cloud, seer/sleep-sounds), its tempo and key -- and a KEY naming that recipe exactly, so the
 // same sounds are made once and kept, and a changed context (by bands, so not every feeling's tick) is a new piece.
 //
 //   its type(s)       the instruments: the colour of the room it sleeps in (TYPE_SOUND)

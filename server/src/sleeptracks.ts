@@ -1,6 +1,6 @@
 // The hub's only (it runs ffmpeg and keeps files): never imported by core.ts or routes.ts.
 // C-334: sleep sounds, made and kept. A recipe (sleepsound.ts, from the daemon's context) is sent to roverbyteseer's
-// keyed door to ACE-Step (DAEMONS ai/litellm/sleep-sounds, :4002), which answers with a piece already made to loop without
+// keyed door to ACE-Step (seer/sleep-sounds, :4002), which answers with a piece already made to loop without
 // a seam. The hub keeps each piece in three files, each for one player:
 //
 //   phone.m4a        AAC, 44.1 kHz stereo, ~96 kb/s -- the app loops it for thirty minutes, fading over the last ten

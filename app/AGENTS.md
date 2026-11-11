@@ -95,6 +95,6 @@ said **DAY-mon**: the Greek *daimon*, a guiding spirit, and the background proce
 - **A new speech path must call it.** Today these do: the hub's `/api/ai/speak` (`server/src/api.ts`), the house module
   (`server/src/ai/module.ts`), the Tiiny (`server/src/ai/tiiny.ts`), the phone's own voice when it answers by itself (`app/platform/mind.ts` sayHere, reached through THE MIND, `app/platform/mesh.ts`,
   C-280), and n8n's daemon/voice, daemon/talk and
-  daemon/chat (the DAEMONS repo's `ai/n8n/make_workflows.py`, `SAYABLE`). The book recordings respell the same way.
+  daemon/chat (`seer/n8n/make_workflows.py`, `SAYABLE`). The book recordings respell the same way.
 - **Not covered yet**: the LLM630 board's on-device MeloTTS (`firmware/esp32/src/brain.cpp`) and the BOX-3's Home
   Assistant voice pipeline both speak without going through the hub.

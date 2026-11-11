@@ -105,28 +105,35 @@ export class SleepTracks {
     const door = this.door();
     if (!door) throw new Error("No music maker is set up.");   // DRAFT
     const h = { authorization: `Bearer ${door.key}`, "content-type": "application/json" };
-    const until = Date.now() + WAIT_MS;
-    let st: { state: string; error?: string; seconds?: number } = { state: "queued" };
-    while (Date.now() < until) {
-      await this.wait(this.pollMs);
-      const q = await fetch(`${door.base}/v1/sleep/job/${job}`, { headers: h });
-      if (!q.ok) throw new Error(`roverbyteseer lost the piece (${q.status})`);
-      st = await q.json() as typeof st;
-      if (st.state === "done" || st.state === "failed") break;
-    }
-    if (st.state !== "done") throw new Error(st.error ?? "the piece took too long");
-    const got = await fetch(`${door.base}/v1/sleep/file/${job}.flac`, { headers: h });
-    if (!got.ok) throw new Error(`roverbyteseer kept no file (${got.status})`);
     const out = join(this.dir, t.id), src = join(out, "source.flac");
-    mkdirSync(out, { recursive: true });
-    writeFileSync(src, Buffer.from(await got.arrayBuffer()));
-    await fetch(`${door.base}/v1/sleep/file/${job}`, { method: "DELETE", headers: h }).catch(() => {});   // nothing kept there
+    // the piece is fetched whole (written aside, then renamed) before anything else; a restart that finds it here
+    // converts it again without asking roverbyteseer, whose copy goes only once the hub's own files are made
+    if (!existsSync(src)) {
+      const until = Date.now() + WAIT_MS;
+      let st: { state: string; error?: string; seconds?: number } = { state: "queued" };
+      while (Date.now() < until) {
+        await this.wait(this.pollMs);
+        const q = await fetch(`${door.base}/v1/sleep/job/${job}`, { headers: h });
+        if (!q.ok) throw new Error(`roverbyteseer lost the piece (${q.status})`);
+        st = await q.json() as typeof st;
+        if (st.state === "done" || st.state === "failed") break;
+      }
+      if (st.state !== "done") throw new Error(st.error ?? "the piece took too long");
+      t.seconds = st.seconds ?? seconds ?? undefined;
+      const got = await fetch(`${door.base}/v1/sleep/file/${job}.flac`, { headers: h });
+      if (!got.ok) throw new Error(`roverbyteseer kept no file (${got.status})`);
+      mkdirSync(out, { recursive: true });
+      writeFileSync(`${src}.part`, Buffer.from(await got.arrayBuffer()));
+      renameSync(`${src}.part`, src);
+      this.save();
+    }
     await run(["-i", src, "-c:a", "aac", "-b:a", "96k", "-ar", "44100", "-movflags", "+faststart", join(out, "phone.m4a")]);
     await run(["-i", src, "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", join(out, "watch.wav")]);
     await run(["-i", src, "-ac", "1", "-ar", "16000", "-c:a", "adpcm_ima_wav", join(out, "watch-adpcm.wav")]);
+    await fetch(`${door.base}/v1/sleep/file/${job}`, { method: "DELETE", headers: h }).catch(() => {});   // nothing kept there
     rmSync(src, { force: true });
     const size = (f: string) => statSync(join(out, f)).size;
-    Object.assign(t, { state: "ready", made: new Date().toISOString(), seconds: st.seconds ?? seconds ?? undefined,
+    Object.assign(t, { state: "ready", made: new Date().toISOString(),
                        bytes: { phone: size("phone.m4a"), watch: size("watch.wav"), watchAdpcm: size("watch-adpcm.wav") } });
     delete t.error; delete t.job;
     // keep the newest KEEP of this daemon's

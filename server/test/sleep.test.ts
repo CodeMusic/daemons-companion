@@ -126,6 +126,20 @@ describe.skipIf(!FOUND_FFMPEG)("SleepTracks", () => {
     expect(kept.byId("a".repeat(32))?.state).toBe("ready");
     expect(kept.byId("a".repeat(32))?.job).toBeUndefined();
   }, 60000);
+  it("converts a piece already fetched when it restarts, without asking roverbyteseer", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sleep-"));
+    const { writeFileSync, mkdirSync } = await import("node:fs");
+    const id = "c".repeat(32);
+    mkdirSync(join(dir, id));
+    writeFileSync(join(dir, id, "source.flac"), flac);
+    writeFileSync(join(dir, "tracks.json"), JSON.stringify([{ id, key: "kc", species: 9, nickname: "", caption: "", bpm: 60, keyscale: "C major",
+                                                               said: "", state: "making", asked: new Date().toISOString(), job: "gone" }]));
+    const kept = new SleepTracks(dir, () => ({ base, key: "the-key" }), async () => {}, 0);
+    for (let i = 0; i < 1000 && kept.byId(id)?.state === "making"; i++) await new Promise((x) => setTimeout(x, 50));
+    expect(kept.byId(id)?.error).toBeUndefined();
+    expect(kept.byId(id)?.state).toBe("ready");
+    expect(existsSync(join(dir, id, "source.flac"))).toBe(false);
+  }, 60000);
   it("says so when no music maker is set up", () => {
     const kept = new SleepTracks(mkdtempSync(join(tmpdir(), "sleep-")), () => null);
     expect(() => kept.ask(sleepRecipe({ species: 1 }), { species: 1, nickname: "", said: "" })).toThrow(/music maker/);

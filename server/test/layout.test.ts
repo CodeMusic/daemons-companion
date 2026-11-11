@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,8 +27,11 @@ describe("LAYOUT.md", () => {
   }
 
   it("names every file at the root", () => {
+    // the files git keeps there (a stray log or a scratch file is not part of the layout); without git, every file
+    let tracked: Set<string> | null = null;
+    try { tracked = new Set(execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter((f) => f && !f.includes("/"))); } catch { /* no git */ }
     const files = readdirSync(ROOT, { withFileTypes: true })
-      .filter((d) => d.isFile() && !d.name.startsWith(".")).map((d) => d.name);
+      .filter((d) => d.isFile() && !d.name.startsWith(".") && (!tracked || tracked.has(d.name))).map((d) => d.name);
     const missing = files.filter((f) => !MAP.includes(`\`${f}\``));
     expect(missing, `add these to LAYOUT.md: ${missing.join(", ")}`).toEqual([]);
   });

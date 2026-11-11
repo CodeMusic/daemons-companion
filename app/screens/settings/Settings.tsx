@@ -7,7 +7,7 @@ import { LOOK, Look, setLook } from "../../state/look";
 import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER, SITE_HOME } from "../../platform/net";
 import { forgetGeneration, forgetVoices } from "../../platform/voiceFile";   // C-303: MAKE THE VOICES AGAIN
 import { Settings } from "../../state/types";
-import { Action, Card, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Choice, Entry, Eyebrow, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { SavesCard } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../../state/away";
@@ -67,6 +67,7 @@ export function LeaveCompanionCard({ ink }: { ink: string }) {
   return (
     <Card>
       <Eyebrow>THIS PHONE</Eyebrow>
+      {!ALONE ? <Names ink={ink} /> : null}
       <Small>{`Paired with ${SERVER}. Leave it to host your daemon on this phone alone, or to pair with another companion. ` +
         "Everything stays on the companion; pairing back needs a new code from its site (SETTINGS, PAIR A PHONE)."}</Small>
       <XStack marginTop={4}>
@@ -74,6 +75,35 @@ export function LeaveCompanionCard({ ink }: { ink: string }) {
                 onPress={() => { if (sure) pairAgain(); else { setSure(true); setTimeout(() => setSure(false), 5000); } }} />
       </XStack>
     </Card>
+  );
+}
+
+// C-337 (the user, 2026-11-11): the QR pairs at once, past the name box -- so this phone's name on the companion, and
+// the name your daemon calls you (the self's trainer, C-252), are set here after. Every word DRAFT.
+function Names({ ink }: { ink: string }) {
+  const [phone, setPhone] = useState(""), [you, setYou] = useState(""), [note, setNote] = useState("");
+  useEffect(() => {
+    api<{ name: string }>("/api/phone/name").then((r) => setPhone(r.name)).catch(() => {});
+    api<{ trainer?: string }>("/api/self?length=short").then((r) => setYou(r.trainer ?? "")).catch(() => {});
+  }, []);
+  const save = async () => {
+    try {
+      if (phone.trim()) await api("/api/phone/name", { name: phone.trim() });
+      await api("/api/self", { trainer: you.trim() });
+      setNote("Kept.");
+    } catch (e) { setNote((e as Error).message); }
+  };
+  return (
+    <YStack gap={6} marginBottom={6}>
+      <Small>{"This phone's name on the companion"}</Small>
+      <Entry value={phone} onChange={setPhone} onSubmit={save} placeholder="this phone's name" limit={40} />
+      <Small>{"What your daemon calls you"}</Small>
+      <Entry value={you} onChange={setYou} onSubmit={save} placeholder="your name, or leave it empty" limit={40} />
+      <XStack marginTop={2} gap={10} alignItems="center">
+        <Action label="Keep these names" ink={ink} onPress={save} />
+        {note ? <Small>{note}</Small> : null}
+      </XStack>
+    </YStack>
   );
 }
 

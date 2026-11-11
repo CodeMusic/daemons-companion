@@ -1101,6 +1101,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { token, name, away: store.getSetting("relay.url") });   // C-56: the way back from anywhere
       }
       if (req.method === "GET" && path === "/api/pair/phones") return send(res, 200, store.phones());
+      // C-337: a paired phone's own name on this companion -- read and changed by the phone itself, with its own key
+      // (the QR pairs at once, past the name box); "/api/phone", not "/api/pair", so it is done away from home too
+      if (path === "/api/phone/name" && (req.method === "GET" || req.method === "POST")) {
+        if (!phone || !bearer) return send(res, 403, { error: "only a paired phone has a name here" });   // DRAFT
+        if (req.method === "GET") return send(res, 200, { name: phone.name });
+        const b = await body(req), name = typeof b.name === "string" ? b.name.trim().slice(0, 40) : "";
+        if (!name) return send(res, 400, { error: "a name, up to 40 letters" });   // DRAFT
+        store.renamePhone(bearer, name);
+        return send(res, 200, { name });
+      }
       if (req.method === "POST" && path === "/api/pair/forget") {
         const b = await body(req);
         if (typeof b.name !== "string") return send(res, 400, { error: "forget {name}" });

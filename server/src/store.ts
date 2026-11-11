@@ -79,6 +79,8 @@ export class Store {
     return this.db.prepare("SELECT name, paired, seen FROM phones ORDER BY paired").all() as any;
   }
   forgetPhone(name: string) { this.db.prepare("DELETE FROM phones WHERE name = ?").run(name); }
+  // C-337: a paired phone renames itself -- by its own key, so it can name nothing but itself
+  renamePhone(token: string, name: string): boolean { return this.db.prepare("UPDATE phones SET name = ? WHERE token = ?").run(name, token).changes > 0; }
 
   // C-15: the meetings not yet written into the save (after the last one a SYNC wrote)
   meetingsAfter(id: number): { id: number; at: string; detail: string | null }[] {

@@ -136,6 +136,22 @@ describe("pairing a phone (C-53)", () => {
     expect((await get("/api/pair/phones")).map((p: any) => p.name)).toContain("CodeMusicai");
   });
 
+  it("lets a paired phone read and change its own name, and no one else (C-337)", async () => {
+    const { code } = (await post("/api/pair/code", {})).json;
+    const { token } = (await post("/api/pair", { code, name: "my phone" })).json;
+    const as = (b?: unknown) => fetch(base + "/api/phone/name", b === undefined ? { headers: { authorization: `Bearer ${token}` } }
+      : { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify(b) })
+      .then(async (r) => ({ status: r.status, json: await r.json() }));
+    expect((await as()).json.name).toBe("my phone");
+    expect((await as({ name: "  " })).status).toBe(400);
+    expect((await as({ name: "  Rover's phone " })).json.name).toBe("Rover's phone");
+    expect((await as()).json.name).toBe("Rover's phone");
+    const names = (await get("/api/pair/phones")).map((p: any) => p.name);
+    expect(names).toContain("Rover's phone");
+    expect(names).not.toContain("my phone");
+    expect((await post("/api/phone/name", { name: "taken" })).status).toBe(403);   // this machine, but no phone's key
+  });
+
   it("retires a code after five wrong guesses", async () => {
     const { code } = (await post("/api/pair/code", {})).json;
     const wrong = code === "123456" ? "654321" : "123456";

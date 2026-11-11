@@ -2229,6 +2229,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         // C-131: the player as the game draws them (REASON, INSTINCT; the card's picture or the walking frame) and the
         // trainer card's MARK badges -- for the Tab5, which keeps no copy of the app's bundled pictures
+        if (q.has("book")) {   // C-320: a book's cover on the LIBRARY's shelf, for a phone away
+          const file = join(ART_DIR, "books", `${/^[a-z]{1,16}$/.test(q.get("book") ?? "") ? q.get("book") : "-"}.png`);
+          return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such cover" });
+        }
         const bookQ = BOOKS_WITH_ART.find((k) => q.has(k));   // T-423: ?subtle=<picture>_<frame>|cover; C-299: ?hermetic=, ?eudaimon=, ?unity= alike
         if (q.has("player") || q.has("mark") || q.has("guide") || bookQ || q.has("arcana")) {   // C-145: ?guide=cover; C-232: ?arcana=<face>
           const sub = bookQ ? q.get(bookQ) ?? "" : "", face = q.get("arcana") ?? "";
@@ -2265,6 +2269,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const file = join(ART_DIR, `${bookArt[1]}_${bookArt[2]}.png`);
         if (!existsSync(file)) return send(res, 404, { error: "no such picture" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(readFileSync(file));
+      }
+      // C-320: every book's cover on the LIBRARY's shelf (DAEMONS tools/shelfcovers.py writes data/art/books/<book>.png)
+      const shelfArt = path.match(/^\/art\/books\/([a-z]{1,16})\.png$/);
+      if (req.method === "GET" && shelfArt) {
+        const file = join(ART_DIR, "books", `${shelfArt[1]}.png`);
+        if (!existsSync(file)) return send(res, 404, { error: "no such cover" });
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=3600" });
         return res.end(readFileSync(file));
       }
       // C-158: where a daemon's head is in its picture (a party slot's, or a species'), for THE CASINO's holiday hats

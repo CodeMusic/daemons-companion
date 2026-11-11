@@ -4,7 +4,7 @@ import { File } from "expo-file-system";
 import { useEffect, useState, type ReactElement } from "react";
 import { Image, Linking } from "react-native";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { BOOK, GUIDE_COVER, TEXTBOOK_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../../state/data";
+import { BOOK, GUIDE_COVER, lessonParas, letterOf, MARKS, pitch, reflow, SCHOOL, SCREEN } from "../../state/data";
 import { useSubtleInk } from "../../state/look";   // C-203
 import { api, ON_PHONE } from "../../platform/net";
 import { meshTalk } from "../../platform/mesh";   // C-307
@@ -23,7 +23,7 @@ import { DAWN, EudaimonBook, type EudaimonT } from "../shared/Eudaimon";   // C-
 import { Mending, UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
 import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
 import { ManualBook, manualAbout } from "./Manual";   // C-233
-import { CoverCrop } from "../../ui/bookPicture";   // C-299: the third book's covers on the shelf
+import { Bookcase, type CaseBook, type Shelf } from "./Bookcase";   // C-320: the LIBRARY as a bookcase
 import { Listen } from "../../ui/bookAudio";   // C-277
 import { usePlace } from "../../state/place";   // C-309: the open book and its page outlive a refresh
 import { BookLookProvider, LOOKS } from "../../ui/bookLook";   // C-309: the book brings its look to the library
@@ -126,8 +126,8 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  type Shelf = "manual" | "quick" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "notebook" | "songbook" | "stream";
-  const [book, setBook] = usePlace<Shelf | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
+  type Opened = "manual" | "quick" | "companion" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "notebook" | "songbook" | "stream";
+  const [book, setBook] = usePlace<Opened | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
@@ -169,6 +169,7 @@ export function LibraryScreen() {
   };
   if (book === "manual") return open(<ManualBook />);   // C-233
   if (book === "quick") return open(<ManualBook which="quick" />);
+  if (book === "companion") return open(<ManualBook which="companion" />);   // C-321
   if (book === "social") return open(<ManualBook which="social" />);
   if (book === "tiiny") return open(<ManualBook which="tiiny" />);
   if (book === "word") return open(<ManualBook which="word" />);   // C-274
@@ -181,140 +182,43 @@ export function LibraryScreen() {
   if (book === "notebook") return open(<NotebookCard skip="SONGBOOK" />);   // C-156: moved here from YOU
   if (book === "songbook") return open(<SongbookBook />);
   if (book === "stream") return open(<StreamBook />);
+  // C-320: the bookcase -- a shelf per kind, each book standing by its cover. The game's books stand only once found;
+  // the halves leave as the mended book comes, and the mending plays once before it stands. DRAFT
+  const game: CaseBook[] = [
+    ...(g?.held ? [{ id: "guide", title: "THE GUIDE", about: g.title ?? "", cloth: BOOK.boards, onPress: () => setBook("guide") }] : []),
+    ...(sub?.held ? [{ id: "subtle", title: sub.title ?? "THE SUBTLE LAYER", about: sub.subtitle ?? "", cloth: "#1b0f1f", onPress: () => setBook("subtle") }] : []),
+    ...(her?.held && !mended ? [{ id: "hermetic", title: her.title ?? "THE HERMETIC LAYER", about: her.subtitle ?? "SPELLCRAFT", cloth: "#1d2a24", onPress: () => setBook("hermetic") }] : []),
+    ...(eud?.held && !mended ? [{ id: "eudaimon", title: eud.title ?? "THE EUDAIMON LAYER", about: eud.subtitle ?? "the dawn half", cloth: DAWN.boards, onPress: () => setBook("eudaimon") }] : []),
+    ...(uni?.held && mended && mendingSeen === true ? [{ id: "unity", title: uni.title ?? "THE UNITY BOOK", about: uni.subtitle ?? "mended", cloth: UNITY.boards, onPress: () => setBook("unity") }] : []),
+  ];
   const s = pr?.school;
-  const chapters = g?.sections?.reduce((n, x) => n + x.entries.length, 0) ?? 0;
+  const shelves: Shelf[] = [
+    { name: "FOUND IN THE GAME", books: game, empty: "The books you find in the game will stand here." },
+    { name: "MANUALS", books: [
+      { id: "quick", title: "QUICK START", about: manualAbout("quick"), cloth: "#a6825a", onPress: () => setBook("quick") },
+      { id: "player", title: "THE PLAYER'S MANUAL", about: manualAbout(), cloth: "#6b5aa6", onPress: () => setBook("manual") },
+      { id: "companion", title: "THE COMPANION", about: manualAbout("companion"), cloth: "#a65a4f", onPress: () => setBook("companion") },   // C-321
+      { id: "social", title: "PLAYING TOGETHER", about: manualAbout("social"), cloth: "#5a7fa6", onPress: () => setBook("social") },
+      { id: "tiiny", title: "A BIGGER MIND", about: manualAbout("tiiny"), cloth: "#4f8a6e", onPress: () => setBook("tiiny") },
+    ] },
+    { name: "HISTORY AND STUDY", books: [
+      { id: "word", title: "THE OLD WORD", about: manualAbout("word"), cloth: "#8a6a4a", onPress: () => setBook("word") },
+      { id: "school", title: "CALLOW SCHOOL", cloth: "#c4932f", onPress: () => setBook("school"),
+        about: !s ? "The seven floors, the TEXTBOOK and the paper."
+          : s.diploma ? `DIPLOMA${s.best !== null ? ` · MARK ${s.best}` : ""}`
+          : s.textbook ? `The TEXTBOOK · ${s.floors.filter(Boolean).length} of ${s.floors.length} floors` : "The seven floors and the paper." },
+    ] },
+    { name: "YOUR OWN PAGES", books: [
+      { id: "notebook", title: "NOTEBOOK", about: "The pages you have found, read as the game keeps them.", cloth: "#7a5a2e", onPress: () => setBook("notebook") },
+      { id: "songbook", title: "SONGBOOK", about: "The songs you have learned, in their colours, to hear again.", cloth: "#2d6a74", onPress: () => setBook("songbook") },
+      { id: "stream", title: "STREAM", about: "Every lesson a MARK or a ROOT has opened.", cloth: "#3d4f8a", onPress: () => setBook("stream") },
+    ] },
+  ];
   return (
     <YStack gap={14}>
-      {/* C-233: the manual first on the shelf, for everyone -- it tells how, never where. DRAFT */}
-      <ShelfBook colour="#6b5aa6" spine="MANUAL" title="THE PLAYER'S MANUAL" about={manualAbout()} onPress={() => setBook("manual")} />
-      {/* QUICK START (2026-10-31): the short way in. DRAFT */}
-      <ShelfBook colour="#a6825a" spine="QUICK" title="QUICK START" about={manualAbout("quick")} onPress={() => setBook("quick")} />
-      {/* its companion, PLAYING TOGETHER (2026-10-31): trading, loans, gifts, meetings, friends. DRAFT */}
-      <ShelfBook colour="#5a7fa6" spine="TOGETHER" title="PLAYING TOGETHER" about={manualAbout("social")} onPress={() => setBook("social")} />
-      {/* the third, A BIGGER MIND (2026-10-31): the Tiiny Pocket set up for the companion. DRAFT */}
-      <ShelfBook colour="#4f8a6e" spine="TIINY" title="A BIGGER MIND" about={manualAbout("tiiny")} onPress={() => setBook("tiiny")} />
-      {/* C-274: THE OLD WORD (2026-11-01): how daimon branched, and why it is said DAY-mons. DRAFT */}
-      <ShelfBook colour="#8a6a4a" spine="WORD" title="THE OLD WORD" about={manualAbout("word")} onPress={() => setBook("word")} />
-      <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("school")}>
-        <XStack gap={14} alignItems="center">
-          {/* C-276: the TEXTBOOK's own cover, PRINCIPLES OF MIND, where a yellow CALLOW stood */}
-          <YStack width={72} height={48} borderRadius={3} backgroundColor="#c4932f" alignItems="center" justifyContent="center">
-            <YStack width={39} height={48} overflow="hidden">
-              <Image source={TEXTBOOK_COVER} style={{ width: 39, height: 48 }} resizeMode="stretch"
-                     accessibilityLabel="the TEXTBOOK's cover, PRINCIPLES OF MIND" />
-            </YStack>
-          </YStack>
-          <YStack flex={1} gap={2}>
-            <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">CALLOW SCHOOL</Text>
-            <Small>{!s ? "The seven floors, the TEXTBOOK and the paper."
-              : s.diploma ? `DIPLOMA${s.best !== null ? ` · MARK ${s.best}` : ""}`
-              : s.textbook ? `The TEXTBOOK · ${s.floors.filter(Boolean).length} of ${s.floors.length} floors` : "The seven floors and the paper."}</Small>
-          </YStack>
-          <Text fontSize={18} color="$color10">›</Text>
-        </XStack>
-      </Card>
-      {g?.held ? (
-        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("guide")}>
-          <XStack gap={14} alignItems="center">
-            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor={BOOK.boards} borderRadius={3}>
-              <YStack width={33} height={40} overflow="hidden">
-                <Image source={GUIDE_COVER} style={{ width: 60, height: 40, marginLeft: -13.5 }} resizeMode="stretch"
-                       accessibilityLabel="the GUIDE's cover" />
-              </YStack>
-            </YStack>
-            <YStack flex={1} gap={2}>
-              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">THE GUIDE</Text>
-              <Small>{`${g.title ?? ""} · ${chapters} chapters`}</Small>
-            </YStack>
-            <Text fontSize={18} color="$color10">›</Text>
-          </XStack>
-        </Card>
-      ) : null}
-      {sub?.held ? (
-        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={() => setBook("subtle")}>
-          <XStack gap={14} alignItems="center">
-            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor="#1b0f1f" borderRadius={3}>
-              <YStack width={33} height={40} overflow="hidden">
-                <YStack marginLeft={-13.5}><Art path="/art/subtle/cover.png" size={60} height={40} /></YStack>
-              </YStack>
-            </YStack>
-            <YStack flex={1} gap={2}>
-              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{sub.title ?? "THE SUBTLE LAYER"}</Text>
-              <Small>{`${sub.subtitle ?? ""} · ${(sub.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages`}</Small>
-            </YStack>
-            <Text fontSize={18} color="$color10">›</Text>
-          </XStack>
-        </Card>
-      ) : null}
-      {her?.held && !mended ? (                              /* C-238: the third book, beside the other two */
-        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "#50C878" }} onPress={() => setBook("hermetic")}>
-          <XStack gap={14} alignItems="center">
-            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor="#1d2a24" borderRadius={3}>
-              {her.cover ? <CoverCrop book="hermetic" k={0.31} /> : <Art path="/art/arcana/spellcraft.png" size={27} height={45} />}
-            </YStack>
-            <YStack flex={1} gap={2}>
-              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="#50C878">{her.title ?? "THE HERMETIC LAYER"}</Text>
-              <Small>{`${her.subtitle ?? ""} · ${(her.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages · SPELLCRAFT`}</Small>
-            </YStack>
-            <Text fontSize={18} color="#50C878">›</Text>
-          </XStack>
-        </Card>
-      ) : null}
-      {eud?.held && !mended ? (                              /* C-297: the third book's dawn half, beside its night half */
-        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: DAWN.lit }} onPress={() => setBook("eudaimon")}>
-          <XStack gap={14} alignItems="center">
-            <YStack width={72} height={48} alignItems="center" justifyContent="center" backgroundColor={DAWN.boards} borderRadius={3}>
-              {eud.cover ? <CoverCrop book="eudaimon" k={0.31} /> : <Art path="/art/arcana/above.png" size={27} height={45} />}
-            </YStack>
-            <YStack flex={1} gap={2}>
-              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color={DAWN.gold}>{eud.title ?? "THE EUDAIMON LAYER"}</Text>
-              <Small>{`${eud.subtitle ?? ""} · ${(eud.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages · the dawn half`}</Small>
-            </YStack>
-            <Text fontSize={18} color={DAWN.gold}>›</Text>
-          </XStack>
-        </Card>
-      ) : null}
-      {uni?.held && mended && mendingSeen !== true ? (mendingSeen === false ? <Mending b={uni} onDone={seeMending} night={her} dawn={eud} /> : null)
-       : uni?.held ? (                                       /* C-299: the halves mended -- both covers, the seam between */
-        <Card cursor="pointer" role="button" hoverStyle={{ borderColor: UNITY.lit }} onPress={() => setBook("unity")}>
-          <XStack gap={14} alignItems="center">
-            <XStack width={72} height={48} alignItems="center" justifyContent="center" gap={2} backgroundColor={UNITY.boards} borderRadius={3}>
-              {uni.cover ? <CoverCrop book="unity" k={0.31} /> : (<>
-                <Art path="/art/arcana/spellcraft.png" size={27} height={45} />
-                <YStack width={3} height={40} backgroundColor={UNITY.ink} />
-                <Art path="/art/arcana/above.png" size={27} height={45} />
-              </>)}
-            </XStack>
-            <YStack flex={1} gap={2}>
-              <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color={UNITY.mark}>{uni.title ?? "THE UNITY BOOK"}</Text>
-              <Small>{`${uni.subtitle ?? ""} · ${(uni.sections ?? []).reduce((k, x) => k + x.entries.length, 0)} pages · mended`}</Small>
-            </YStack>
-            <Text fontSize={18} color={UNITY.mark}>›</Text>
-          </XStack>
-        </Card>
-      ) : null}
-      <ShelfBook colour="#7a5a2e" spine="NOTES" title="NOTEBOOK" about="The pages you have found, read as the game keeps them." onPress={() => setBook("notebook")} />
-      <ShelfBook colour="#2d6a74" spine="♪" title="SONGBOOK" about="The songs you have learned, in their colours, to hear again." onPress={() => setBook("songbook")} />
-      <ShelfBook colour="#3d4f8a" spine="STREAM" title="STREAM" about="Every lesson a MARK or a ROOT has opened." onPress={() => setBook("stream")} />
+      {uni?.held && mended && mendingSeen === false ? <Mending b={uni} onDone={seeMending} night={her} dawn={eud} /> : null}
+      <Bookcase shelves={shelves} />
     </YStack>
-  );
-}
-
-// C-156: a book on LIBRARY's shelf -- a coloured spine, its name, a line about it
-export function ShelfBook({ colour, spine, title, about, onPress }: { colour: string; spine: string; title: string; about: string; onPress: () => void }) {
-  return (
-    <Card cursor="pointer" role="button" hoverStyle={{ borderColor: "$color9" }} onPress={onPress}>
-      <XStack gap={14} alignItems="center">
-        <YStack width={72} height={48} borderRadius={3} backgroundColor={colour} alignItems="center" justifyContent="center">
-          <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color="#fbfaf6">{spine}</Text>
-        </YStack>
-        <YStack flex={1} gap={2}>
-          <Text fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1} color="$color12">{title}</Text>
-          <Small>{about}</Small>
-        </YStack>
-        <Text fontSize={18} color="$color10">›</Text>
-      </XStack>
-    </Card>
   );
 }
 

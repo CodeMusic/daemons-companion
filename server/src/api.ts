@@ -544,7 +544,7 @@ function partyFace(cfg: Config, slot: number): Face | null {
   return f?.mouth ? f : null;
 }
 // the key a device files a daemon's picture under -- the same as the state's `artKey` (core.ts), so the reply names whose it is
-const artKeyOf = (d: { species: number; moves: number[] }) => `${d.species}-${d.moves.join(".")}`;
+const artKeyOf = core.artKeyOf;   // C-296: with its spirits' tone
 function partyArtKey(cfg: Config, which: (p: any) => boolean): string | null {
   if (!cfg.savePath || !existsSync(cfg.savePath)) return null;
   const bytes = new Uint8Array(readFileSync(cfg.savePath));

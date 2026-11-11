@@ -62,3 +62,13 @@ describe("C-296: the tone", () => {
     expect(Math.abs(hue(dark) - hue(red))).toBeLessThan(0.15);
   });
 });
+
+describe("C-296: the picture's key carries the tone", () => {
+  it("is unchanged as it is, and moves when the tone does", async () => {
+    const { artKeyOf } = await import("../src/core.js");
+    expect(artKeyOf({ species: 4, moves: [1, 2] })).toBe("4-1.2");
+    expect(artKeyOf({ species: 4, moves: [1, 2], spirits: sp("as it is", 6) })).toBe("4-1.2");
+    expect(artKeyOf({ species: 4, moves: [1, 2], spirits: sp("good", 11) })).toBe("4-1.2~1.0");
+    expect(artKeyOf({ species: 4, moves: [1, 2], spirits: sp("low", 3) })).toBe("4-1.2~-0.4");
+  });
+});

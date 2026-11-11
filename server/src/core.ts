@@ -41,6 +41,15 @@ import { senseFor, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LA
 import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
 import { careworn, withCare } from "./care.js";   // C-266: the care group -- its girth, its eyes, its sadness
 import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
+import { toneOf } from "./spirits.js";   // C-296: the tone is part of what a picture is
+import type { Spirits } from "./save/reader.js";
+
+// the key a device files a daemon's picture under: changes when the picture would -- its species, its moves (the
+// streaks), and (C-296) its spirits' tone, left off when there is none so every key before it is unchanged
+export const artKeyOf = (d: { species: number; moves: number[]; spirits?: Spirits | null }) => {
+  const t = toneOf(d.spirits);
+  return `${d.species}-${d.moves.join(".")}${t ? `~${t.toFixed(1)}` : ""}`;
+};
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -439,7 +448,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
-                                     slot: p.slot, artKey: `${p.species}-${p.moves.join(".")}`,   // a device fetches their pictures ahead
+                                     slot: p.slot, artKey: artKeyOf(p),   // a device fetches their pictures ahead
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
     // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
     const g = d ? grown(d, store) : null;
@@ -455,7 +464,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
                       holding: d.holding, art: ev ? `/art/${artName(d.species)}.png` : `/art/party/${d.slot}.png`, mood: null,   // C-184: its new face
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
-                      artKey: `${d.species}-${d.moves.join(".")}`, life: daemonLife(store, now),
+                      artKey: artKeyOf(d), life: daemonLife(store, now),
                       expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
                       thrive: thriveOf(store, now),                 // C-207: the glow and the small marks, drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
@@ -501,7 +510,7 @@ function togetherNow(h: Host, store: Store, deviceId: string, now: Date) {
   const d = v.daemon;
   return { together: { device: v.device, side: v.side, since: v.since, until: v.until, care: v.care,
                        daemon: d && { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level,
-                                      art: `/art/party/${d.slot}.png`, artKey: `${d.species}-${d.moves.join(".")}` } } };
+                                      art: `/art/party/${d.slot}.png`, artKey: artKeyOf(d) } } };
 }
 
 export function ownBeacons(store: Store): { peer: string; at: number }[] {

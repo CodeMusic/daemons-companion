@@ -34,3 +34,16 @@ def open_port(port, timeout=None):
     s.rts = False
     s.open()
     return s
+
+
+def close_port(s):
+    """Let a board go without restarting it (2026-11-11): RTS released before DTR, then closed. Left to the system (a
+    killed bridge), both lines dropped at once and the T-Watch Ultra came back up waiting for a download (rst 0x15)."""
+    if s is None or not s.is_open:
+        return
+    try:
+        s.rts = False
+        s.dtr = False
+    except Exception:
+        pass
+    s.close()

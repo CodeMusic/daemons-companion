@@ -24,6 +24,7 @@ except ImportError:
 import boardport  # noqa: E402  (beside this file: where boards appear, and opening one without a reset -- C-75)
 
 
+OPEN = {"dev": None}      # the board's port, while one is open
 DEVICE = {"id": None}     # C-80: the board's own name, from its HELLO, passed on as x-device
 # What only means something filed under the board -- its battery, and the routines that carry its firmware build -- is
 # held until the board has said who it is. Both are said as the link opens, before the first HELLO (every 3 s), and
@@ -129,6 +130,7 @@ def main():
 
 def bridge(a, port):
     dev = boardport.open_port(port, timeout=0.2)   # C-75: without restarting an M5GO or Fire
+    OPEN["dev"] = dev                             # let go of by close_port when the bridge stops, not by the system
     print("usb_bridge: %s <-> %s" % (port, a.server), flush=True)
     last, listed, polled = 0.0, 0.0, 0.0
     buf = b""
@@ -350,7 +352,11 @@ def bridge(a, port):
 
 
 if __name__ == "__main__":
+    import signal
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))   # stopped by another program: let the board go cleanly too
     try:
         main()
     except KeyboardInterrupt:
         pass
+    finally:
+        boardport.close_port(OPEN["dev"])

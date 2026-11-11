@@ -6,6 +6,10 @@
 #   seer_service NAME ENVFILE PROGRAM [ARGS...]     ENVFILE ("" for none): KEY=VALUE lines given to it as its environment
 #   seer_wait URL [SECONDS]                          until URL answers (any HTTP status), or say it did not
 
+# Over ssh a Mac's PATH is /usr/bin:/bin only, so Homebrew's ffmpeg and Docker's CLI are not found -- add them
+for d in /opt/homebrew/bin /usr/local/bin; do case ":$PATH:" in *":$d:"*) ;; *) [ -d "$d" ] && PATH="$d:$PATH" ;; esac; done
+export PATH
+
 seer_service() {
   local name="$1" envfile="$2"; shift 2
   local label="ca.codemusic.daemons.$name"

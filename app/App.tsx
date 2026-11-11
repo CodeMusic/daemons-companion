@@ -140,12 +140,14 @@ function Shell() {
                 <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color="$color11">AWAY</Text>
               </YStack>
             ) : null}
-            {/* C-264 (DRAFT); C-318: WHAT'S NEW in its place until this build's notes are read */}
+            {/* C-318 (the user, 2026-11-11: "having that button as 'whats new' all the time is better, and you access the how
+                to play via the game menu"): always WHAT'S NEW, lit until this build's notes are read; HOW TO PLAY is GAME's
+                title and the menu bar's Help (C-264) */}
             <YStack marginLeft={10} paddingHorizontal={8} paddingVertical={3} borderRadius={999} borderWidth={1.5}
                     borderColor={whatsNewDue ? "#d9a74a" : "$color9"} backgroundColor={whatsNewDue ? "rgba(217,167,74,0.14)" : undefined}
-                    cursor="pointer" role="button" aria-label={whatsNewDue ? "what's new" : "how to play"} onPress={whatsNewDue ? openWhatsNew : () => howToPlay()}>
+                    cursor="pointer" role="button" aria-label="what's new" onPress={openWhatsNew}>
               <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color={whatsNewDue ? "#d9a74a" : "$color11"}>
-                {whatsNewDue ? (narrowHeader ? "✦ NEW" : "✦ WHAT'S NEW") : narrowHeader ? "?" : "? HOW TO PLAY"}</Text>
+                {narrowHeader ? "✦ NEW" : "✦ WHAT'S NEW"}</Text>
             </YStack>
             <YStack marginLeft={6} padding={4} cursor="pointer" role="button" aria-label="settings"
                     onPress={() => setTab(tab === "settings" ? "today" : "settings")}>
@@ -162,7 +164,6 @@ function Shell() {
           <Fragment key={tab}>{TAB_VIEW[tab]({ ink, today, reload, setTab, devOn: dev.on })}</Fragment>
         </ScrollView> : null}
         {newsBanner}
-        <WhatsNewOverlay />{/* C-318 */}
         {showToast ? (
           <XStack position="absolute" left={16} right={16} bottom={ON_PHONE ? 36 : 20} alignItems="center" gap={10}
                   padding={14} borderRadius={10} backgroundColor="$color12" maxWidth={720} alignSelf="center">
@@ -181,6 +182,11 @@ function Shell() {
       <StatusBar style="auto" />{/* C-144: as the look is -- wearLook() tells the phone */}
       <Received />{/* C-261: over everything, the game too */}
       <BattleOverlay />{/* C-328: a battle request to this device, and the battle, over every screen */}
+      {/* C-318: over the whole app, below the status bar -- inside the companion's column it was squeezed into the header
+          while GAME was open */}
+      <YStack position="absolute" top={ON_PHONE ? 50 : 0} left={0} right={0} bottom={0} pointerEvents="box-none" zIndex={950}>
+        <WhatsNewOverlay />
+      </YStack>
       {!ON_PHONE ? <HowToOverlay playing={false} /> : null}{/* C-264: the site has no game panel: over the page */}
     </YStack>
   );

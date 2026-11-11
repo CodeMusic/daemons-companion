@@ -3,7 +3,7 @@
 // (however full wide or resized it is) which shows the pdf of what u selected..... along with an option to return to the
 // main menu"; and by multiple choice, MICRO-START first): HOW TO PLAY -- a purple frame with the three books, shortest
 // first, and a reader that fills the room it is given (the game panel, at whatever size it is dragged to; on the site, the
-// page), with the way back. Opened from GAME's title and from the companion's header (? HOW TO PLAY); the menu bar's Help
+// page), with the way back. Opened from GAME's title (the header's button is WHAT'S NEW since C-318); the menu bar's Help
 // is still to come. The books are DAEMONS' own PDFs as the LIBRARY fetches and keeps them (manual.ts). Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
@@ -65,7 +65,6 @@ export function HowToOverlay({ playing, toTitle }: { playing: boolean; toTitle?:
             </YStack>
           ))}
           <XStack justifyContent="center" gap={8} marginTop={12}>
-            <Key label="✦ WHAT'S NEW" onPress={() => { closeHowTo(); require("./whatsnew").openWhatsNew(); }} />{/* C-318; required here: whatsnew imports this file */}
             <Key label="CLOSE" onPress={closeHowTo} />
           </XStack>
           <Text fontSize={10} color={SOFT} textAlign="center">DRAFT</Text>

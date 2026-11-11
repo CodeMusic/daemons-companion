@@ -110,7 +110,7 @@
    "entries": [
     {
      "short": "HIS OWN AGE",
-     "title": "III. The Year of the Number",
+     "title": "The Year of the Number",
      "picture": "clock",
      "frames": 1,
      "caption": "The clocks turned over.",
@@ -131,7 +131,7 @@
     },
     {
      "short": "MADE OF NUMBERS",
-     "title": "III. The Year of the Number",
+     "title": "The Year of the Number",
      "picture": "clock",
      "frames": 1,
      "caption": "The clocks turned over.",
@@ -166,7 +166,7 @@
    "entries": [
     {
      "short": "THE FIRST GAME",
-     "title": "IV. The Moving Mark",
+     "title": "The Moving Mark",
      "picture": "mark",
      "frames": 1,
      "caption": "A mark that moved.",
@@ -205,7 +205,7 @@
    "entries": [
     {
      "short": "A WAY OUT",
-     "title": "V. The Door",
+     "title": "The Door",
      "picture": "door",
      "frames": 1,
      "caption": "A door, shut and leaned on.",
@@ -226,7 +226,7 @@
     },
     {
      "short": "WHERE HE MET ME",
-     "title": "V. The Door",
+     "title": "The Door",
      "picture": "door",
      "frames": 1,
      "caption": "A door, shut and leaned on.",
@@ -261,7 +261,7 @@
    "entries": [
     {
      "short": "AFTER THE DOOR",
-     "title": "VI. Seven and Seven",
+     "title": "Seven and Seven",
      "picture": "seven",
      "frames": 1,
      "caption": "Seven, and seven of the other.",
@@ -278,7 +278,7 @@
     },
     {
      "short": "SEVEN MARKS",
-     "title": "VI. Seven and Seven",
+     "title": "Seven and Seven",
      "picture": "seven",
      "frames": 1,
      "caption": "Seven, and seven of the other.",
@@ -313,7 +313,7 @@
    "entries": [
     {
      "short": "THE EIGHTH TEST",
-     "title": "VII. The Eighth",
+     "title": "The Eighth",
      "picture": "plants",
      "frames": 1,
      "caption": "The finest plants in the world.",
@@ -352,7 +352,7 @@
    "entries": [
     {
      "short": "TWO OF ME",
-     "title": "VIII. Resonant Wisdom",
+     "title": "Resonant Wisdom",
      "picture": "chord",
      "frames": 1,
      "caption": "Two notes, one chord.",
@@ -387,7 +387,7 @@
    "entries": [
     {
      "short": "HIS MOTHER",
-     "title": "IX. The Return",
+     "title": "The Return",
      "picture": "open",
      "frames": 1,
      "caption": "A door, left open.",
@@ -412,7 +412,7 @@
     },
     {
      "short": "THE FIRST PLACE",
-     "title": "IX. The Return",
+     "title": "The Return",
      "picture": "open",
      "frames": 1,
      "caption": "A door, left open.",
@@ -447,7 +447,7 @@
    "entries": [
     {
      "short": "WHEN YOU CAN GO",
-     "title": "X. Many, One",
+     "title": "Many, One",
      "picture": "ripple",
      "frames": 1,
      "caption": "A small thing, going round.",
@@ -472,7 +472,7 @@
     },
     {
      "short": "A CELL, A BODY",
-     "title": "X. Many, One",
+     "title": "Many, One",
      "picture": "ripple",
      "frames": 1,
      "caption": "A small thing, going round.",
@@ -507,7 +507,7 @@
    "entries": [
     {
      "short": "THE HOUSE",
-     "title": "XI.",
+     "title": "",
      "picture": "house",
      "frames": 1,
      "caption": "The house, further on.",

@@ -99,7 +99,8 @@ import { appNight, handles, route, takeFix, takeNight, takeSubtle, type Reply } 
 import { WAKES as WAKING_KINDS } from "./life.js";   // C-293
 import { show as glassShow } from "./glass.js";   // C-262
 import { noteClose, outlookLoop } from "./intuition.js";   // C-203
-import { EXPRESSIONS, SHADED, faceOf, shadePalette, type Face } from "./expressions.js";
+import { EXPRESSIONS, SHADED, faceOf, shade, shadePalette, type Face } from "./expressions.js";
+import { SPIRIT_DAYS, spiritTotals, spiritsPortal, spiritsSaid, toneOf, toneShade } from "./spirits.js";   // C-296: the four totals and the tone
 import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./face.js";
 import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
@@ -294,8 +295,11 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
            life: d?.life ?? null, feelings: d ? core.daemonFeelings(store, now) : null,
            dream: (w.daemon as { dream?: string }).dream ?? null,
            yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
-           day: w.day, season: w.season, goal: w.goal };
+           day: w.day, season: w.season, goal: w.goal,
+           spirits: d ? spiritsSaid(carriedDaemon(ecfg, store, deviceId)?.spirits?.class ?? null, spiritTotalsNow(store, now)) : null };
 }
+// C-296: the four running totals, from four weeks of the companion's own log
+const spiritTotalsNow = (store: Store, now = new Date()) => spiritTotals(store.interactionsSince(new Date(now.getTime() - (SPIRIT_DAYS + 1) * 86400000)), now);
 const TALK_TOKENS = 90;   // C-249: a talk's answer through the Tiiny -- two or three sentences
 const selfText = (ecfg: Config, store: Store, deviceId: string, length: SelfLength) =>
   selfOf(selfFacts(ecfg, store, deviceId), length, store.getSetting("self.instructions") || SELF_INSTRUCTIONS);
@@ -554,8 +558,10 @@ function partyPng(cfg: Config, which: (p: any) => boolean): Buffer | null {
   const row = d && SPECIES[String(d.species)];
   const rel = artFileOf(row?.art?.front), file = rel && join(ART_DIR, rel);   // C-254: SYMBOL's, found by its folder as the INDEX's is
   if (!d || !file || !existsSync(file)) return null;
-  const png = readFileSync(file);
-  return row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
+  const png = readFileSync(file), painted = row.streaks ? repaint(png, (pal) => streakColours(pal, row.bodyType, d.moves)) : png;
+  // C-296: in its spirits' tone -- lighter in good spirits, darker in low, its type's colour kept (the body's colours only)
+  const tone = toneShade(toneOf(d.spirits));
+  return tone ? Buffer.from(repaint(painted, (pal) => pal.slice(SHADED.first, SHADED.first + SHADED.count).map((c) => shade(c, tone)), SHADED.first)) : painted;
 }
 
 // C-138: the face a device that only shows pictures is sent -- this device's daemon (C-80), its expression and its den,
@@ -1611,7 +1617,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           now: mindNow(core.daemonFeelings(store, now)),
           dream: last ? { title: titleOf(last), text: last.text, at: last.to, quality: last.quality } : null, game,
           remembered: { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month") },
-          voice: voiceFor(ecfg, store, deviceId, now), self: selfText(ecfg, store, deviceId, "full") });
+          voice: voiceFor(ecfg, store, deviceId, now), self: selfText(ecfg, store, deviceId, "full"),
+          spirits: spiritsPortal(carriedDaemon(ecfg, store, deviceId)?.spirits ?? null, spiritTotalsNow(store, now)) });
       }
       if (req.method === "GET" && path === "/api/self") {
         const length = (["short", "day", "full"] as const).find((l) => l === url.searchParams.get("length")) ?? "day";

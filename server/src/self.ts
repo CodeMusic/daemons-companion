@@ -27,6 +27,7 @@ export type SelfFacts = {
   day?: { day: string; theme?: string } | null;
   season?: string;
   goal?: { goal: string; step: string } | null;
+  spirits?: string | null;           // C-296: the class the save holds and the four weeks behind it (spirits.ts)
 };
 export type BondTrend = "STRONGER" | "the SAME" | "WEAKER";
 
@@ -104,6 +105,7 @@ export function selfOf(f: SelfFacts, length: SelfLength = "day", instructions = 
                        : `Last night you slept ${f.life.rested ? "WELL" : "POORLY"}.`);
   } else if (f.dream) lines.push(`Last night you dreamt: "${clip(f.dream, 240)}"`);
   if (f.feelings) lines.push(`Today you feel ${feelingsSaid(f.feelings)}.`);
+  if (f.spirits) lines.push(f.spirits);
   if (f.day) lines.push(`Today is ${f.day.day}${f.day.theme ? ` (${f.day.theme})` : ""}${f.season ? `, in ${f.season}` : ""}.`);
   if (f.goal) lines.push(`${trainer} is working on: ${f.goal.goal} -- next, ${f.goal.step}.`);
   if (f.yesterday) lines.push(`Yesterday: ${clip(f.yesterday, length === "full" ? 900 : 400)}`);

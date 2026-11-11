@@ -22,7 +22,10 @@ type Mind = {
   remembered?: { yesterday: string | null; month: string | null };
   voice?: { species: number | null; recipe: string; own: string };
   self?: string;
+  spirits?: { class: "good" | "as it is" | "low" | null; words: string | null; tone: number;
+              totals: Record<Axis, number>; said: Record<Axis, string> };   // C-296
 };
+type Axis = "kept" | "bond" | "work" | "portion";
 type Part = "now" | "dreams" | "voice" | "self" | "remembered";
 
 export function MindScreen() {
@@ -37,6 +40,7 @@ export function MindScreen() {
       <Small>{`A look around ${m.daemon.nickname}'s mind.  DRAFT`}</Small>
       <Segments value={part} onChange={setPart} options={[["now", "NOW"], ["dreams", "BOTH DREAMS"], ["voice", "VOICE"], ["self", "SELF"], ["remembered", "REMEMBERED"]]} />
       {part === "now" && m.now ? <Now m={m} /> : null}
+      {part === "now" && m.spirits ? <SpiritsCard s={m.spirits} /> : null}
       {part === "dreams" ? <Dreams m={m} /> : null}
       {part === "voice" && m.voice ? <Voice v={m.voice} /> : null}
       {part === "self" ? <Card><Eyebrow>{"WHAT A MIND IS GIVEN"}</Eyebrow>
@@ -81,6 +85,28 @@ function Now({ m }: { m: Mind }) {
       </YStack>
       <Small color="$color10">{"Tap a colour for its words.  DRAFT"}</Small>
     </YStack>
+  );
+}
+
+// C-296: its SPIRITS -- the class the save holds, in the game's own words, and the four weeks the companion has seen
+const AXES: [Axis, string][] = [["kept", "KEPT"], ["bond", "BOND"], ["work", "WORK"], ["portion", "PORTION"]];
+const CLASS_LINE = { good: "In good spirits: its pictures here are a shade lighter.", low: "In low spirits: its pictures here are a shade darker. The way back is always open.",
+                     "as it is": "As it is." } as const;
+function SpiritsCard({ s }: { s: NonNullable<Mind["spirits"]> }) {
+  return (
+    <Card>
+      <Eyebrow>{"SPIRITS"}</Eyebrow>
+      <Small>{s.class ? CLASS_LINE[s.class] : "The save does not say yet. Its spirits arrive with the game's next release."}</Small>
+      <YStack gap={6}>
+        {AXES.map(([a, label]) => (
+          <XStack key={a} gap={10} alignItems="baseline">
+            <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} width={78} color="$color10">{label}</Text>
+            <Text fontSize={15} color="$color12" flex={1}>{s.said[a]}</Text>
+          </XStack>
+        ))}
+      </YStack>
+      <Small color="$color10">{"The last four weeks here. The game keeps its spirits; the companion only reads them.  DRAFT"}</Small>
+    </Card>
   );
 }
 

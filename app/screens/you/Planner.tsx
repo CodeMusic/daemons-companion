@@ -14,6 +14,7 @@ type Plan = {
   levels: { wild: [number, number] | null; trainers: [number, number] | null };
   fights: { who: string; class: string; place: string; level: number }[];
   trainers: { place: string; count: number; levels: [number, number] }[];
+  opened?: { why: string; places: string[]; step: number; draft: boolean }[];   // C-191: the gates passed
 };
 type Wild = { place: string; ways: Record<string, { name: string; species: number; levels: [number, number]; rate: number }[]> };
 const lv = (r: [number, number]) => (r[0] === r[1] ? `L${r[0]}` : `L${r[0]}-${r[1]}`);
@@ -50,6 +51,12 @@ export function PlannerCard() {
         <YStack gap={2} marginTop={6}>
           <Eyebrow>TRAINERS NOT YET MET</Eyebrow>
           {p.trainers.map((t) => <Small key={t.place}>{`${t.place}: ${t.count} daemon${t.count === 1 ? "" : "s"}, ${lv(t.levels)}`}</Small>)}
+        </YStack>
+      ) : null}
+      {p.opened?.length ? (
+        <YStack gap={2} marginTop={6}>
+          <Eyebrow>WAYS OPENED</Eyebrow>
+          {p.opened.map((w) => <Small key={w.why}>{`${w.why[0].toUpperCase()}${w.why.slice(1)}: ${w.places.join(", ")}.`}</Small>)}
         </YStack>
       ) : null}
       <YStack gap={6} marginTop={6}>

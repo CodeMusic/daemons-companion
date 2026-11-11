@@ -14,7 +14,8 @@ import { blocks, LAYOUT, type Layout } from "./save/reader.js";
 import { flagReader, readProfile } from "./save/profile.js";
 
 type Step = { step: number; id: string; label: string; done_flag: number; map: string; place: string; spot: string; area?: string | null; draft?: boolean };
-type MapRow = { place: string; type: string; step: number };
+type MapRow = { place: string; type: string; step: number; gate?: string; draft?: boolean };
+type JoinGate = { between: [string, string]; step: number; why: string; draft?: boolean };
 type Mon = { species: number; name: string; level: number };
 type Trainer = { trainer: string; flag: number; class: string; name: string | null; party: Mon[]; boss: boolean; rival?: boolean;
                  map: string; place: string; area?: string | null; step: number };
@@ -24,6 +25,7 @@ type WildMap = { place: string; step: number } & Record<string, unknown>;
 
 const STEPS = (storyJson as unknown as { steps: Step[] }).steps;
 const MAPS = (mapsJson as unknown as { maps: Record<string, MapRow> }).maps;
+const JOIN_GATES = (mapsJson as unknown as { join_gates?: JoinGate[] }).join_gates ?? [];
 const TRAINERS = (trainersJson as unknown as { trainers: Trainer[] }).trainers;
 const CURVE = (curveJson as unknown as { curve: CurveRow[] }).curve;
 const WILD = (wildJson as unknown as { maps: Record<string, WildMap> }).maps;
@@ -35,6 +37,7 @@ export interface Plan {
   levels: { wild: [number, number] | null; trainers: [number, number] | null };         // the latest the curve gives so far
   fights: { who: string; class: string; place: string; level: number }[];               // the bosses open now, not yet beaten
   trainers: { place: string; count: number; levels: [number, number] }[];               // the rest not yet beaten, by place
+  opened: { why: string; places: string[]; step: number; draft: boolean }[];          // the ways the steps done have opened, latest first
 }
 
 const ORDER = ["town", "route", "underground", "indoor"];
@@ -77,8 +80,21 @@ export function readPlan(save: Uint8Array, l: Layout = LAYOUT): Plan {
       fights.set(key, { who: t.rival ? rival : t.name ?? t.class, class: t.class, place: t.place, level: Math.max(top, was?.level ?? 0) });
     } else rest.set(t.place, [...(rest.get(t.place) ?? []), ...t.party.map((p) => p.level)]);
   }
+  // the map's gates the save has passed (C-191): each held way, by what held it, the latest first. Only a gate at or
+  // under the count is named -- one held until a step still ahead would name what is past the next step
+  const ways = new Map<string, Plan["opened"][number]>();
+  const gate = (why: string, step: number, place: string, draft: boolean) => {
+    if (step < 1 || step > done) return;
+    const w = ways.get(why) ?? { why, places: [], step, draft };
+    if (!w.places.includes(place)) w.places.push(place);
+    w.step = Math.max(w.step, step); w.draft = w.draft || draft;
+    ways.set(why, w);
+  };
+  for (const m of Object.values(MAPS)) if (m.gate) gate(m.gate, m.step, m.place, !!m.draft);
+  for (const j of JOIN_GATES) for (const id of j.between) if (MAPS[id]) gate(j.why, j.step, MAPS[id].place, !!j.draft);
+  const opened = [...ways.values()].sort((a, b) => b.step - a.step || a.why.localeCompare(b.why));
   return {
-    done, total: STEPS.length,
+    done, total: STEPS.length, opened,
     next: ahead ? { label: ahead.label, place: ahead.place, area: ahead.area ?? null, draft: !!ahead.draft } : null,
     places, levels: { wild: latest("wild"), trainers: latest("trainers") },
     fights: [...fights.values()].sort((a, b) => a.level - b.level),

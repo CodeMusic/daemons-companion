@@ -28,6 +28,18 @@ describe("the planner (C-191)", () => {
     expect(p.levels.trainers).not.toBeNull();
   });
 
+  it("the ways opened: only gates the steps done have passed, the latest first", () => {
+    expect(readPlan(saveWith([])).opened).toEqual([]);
+    expect(readPlan(saveWith([2088])).opened).toEqual([]);   // ROUTE 2's old man is held until step 2
+    const two = readPlan(saveWith([2088, 2089]));
+    expect(two.opened.map((w) => w.why)).toEqual(["the old man across CALLOW's north road until the parcel is home"]);
+    expect(two.opened[0].places).toContain("ROUTE 2");
+    expect(two.opened.some((w) => w.step > two.done)).toBe(false);
+    const eight = readPlan(saveWith([2088, 2089, 785, 788, 2080, 2195, 2081, 135]));
+    expect(eight.opened[0].step).toBe(8);                      // PRUNE's tree, on the map and between ROUTE 2 and the cave
+    expect(eight.opened.every((w, i, all) => i === 0 || all[i - 1].step >= w.step)).toBe(true);
+  });
+
   it("a place's wild daemons only once it is open, in the edition asked", () => {
     expect(readWild(saveWith([]), "THE UNDERTONE", "CONTENT")).toBeNull();
     const w = readWild(saveWith([2088, 2089]), "THE UNDERTONE", "CONTENT");

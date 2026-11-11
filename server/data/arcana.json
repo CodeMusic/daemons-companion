@@ -1,5 +1,5 @@
 {
- "_about": "C-232 (the user, 2026-10-28, by multiple choice): THE SUBTLE LAYER's cards -- twenty-two, our own arcana, each with two faces on the book's purple: REASON (a circuit board under a green gradient; a daemon of the mainland, where the game teaches computer science and machine learning) and INSTINCT (a living net of nodes under gold; a daemon of the seven islands, where it teaches the mind). A keyword at the top, a phrase under the daemon. Drawn upright only; now and then shiny. A card is a prompt for noticing, never a prediction (4.33). Every word DRAFT -- the user reviews them on a sheet. C-239: and a third face, SPELLCRAFT -- THE HERMETIC LAYER's deck, words as spells and the alchemist's work, each daemon as it is in the witching hour. C-272 (the user, 2026-11-01, DAEMONS T-509): every face given a PROPHECY under its short phrase -- the phrase stays the game's and the watches', the prophecy is the app's alone (the user: \"in the game, it's the shorter version\"), drawn from its daemon, its type and its INDEX entry -- \"like these universe cards that I have which make predictions\" (this reverses 'never a prediction'); and THE HERMETIC LAYER's two decks, ABOVE (top-down: creativity, emotion, free association, the heavens, the timeless, the pattern that descends whole) and BELOW (bottom-up: logic, time, earth, the fixed and sequential, built brick by brick), as above, so below. 'spellcraft' is the old single hermetic face, kept until the app and watches move to above/below (C-273).",
+ "_about": "C-232 (the user, 2026-10-28, by multiple choice): THE SUBTLE LAYER's cards -- twenty-two, our own arcana, each with two faces on the book's purple: REASON (a circuit board under a green gradient; a daemon of the mainland, where the game teaches computer science and machine learning) and INSTINCT (a living net of nodes under gold; a daemon of the seven islands, where it teaches the mind). A keyword at the top, a phrase under the daemon. Drawn upright only; now and then shiny. A card is a prompt for noticing, never a prediction (4.33). Every word DRAFT -- the user reviews them on a sheet. C-239: and a third face, SPELLCRAFT -- THE HERMETIC LAYER's deck, words as spells and the alchemist's work, each daemon as it is in the witching hour. C-272 (the user, 2026-11-01, DAEMONS T-509): every face given a PROPHECY under its short phrase -- the phrase stays the game's and the watches', the prophecy is the app's alone (the user: \"in the game, it's the shorter version\"), drawn from its daemon, its type and its INDEX entry -- \"like these universe cards that I have which make predictions\" (this reverses 'never a prediction'); and THE HERMETIC LAYER's two decks, ABOVE (top-down: creativity, emotion, free association, the heavens, the timeless, the pattern that descends whole) and BELOW (bottom-up: logic, time, earth, the fixed and sequential, built brick by brick), as above, so below. 'spellcraft' is the old single hermetic face, kept until the app and watches move to above/below (C-273). C-313 (the user, 2026-11-10, picked on a sheet card by card): each card's DAWN face, dealt from THE EUDAIMON LAYER's own deck once the dawn half is held -- a reading for the morning, in the dawn's gold; its daemons are to be chosen later (species empty: the face's rising sun stands where the daemon will).",
  "draft": true,
  "cards": [
   {
@@ -33,6 +33,12 @@
     "keyword": "RAW MATTER",
     "phrase": "Unformed is not unfinished. Begin.",
     "species": "SUBSTRATE"
+   },
+   "dawn": {
+    "keyword": "FIRST LIGHT",
+    "phrase": "Nothing to begin. It has begun.",
+    "prophecy": "This morning you will not have to start anything. Something started without you and is waiting, warm, for you to notice it is already going.",
+    "species": ""
    }
   },
   {
@@ -66,6 +72,12 @@
     "keyword": "INCANTATION",
     "phrase": "Say it as if it were already so.",
     "species": "SYMBOL"
+   },
+   "dawn": {
+    "keyword": "PLAIN SPEECH",
+    "phrase": "Say it as it is. That is enough.",
+    "prophecy": "No words need to make anything so today. Say one small true thing plainly, to someone, and see how little it needed to be dressed.",
+    "species": ""
    }
   },
   {
@@ -99,6 +111,12 @@
     "keyword": "TRUE NAME",
     "phrase": "Know its name and it answers.",
     "species": "UNSPOKEN"
+   },
+   "dawn": {
+    "keyword": "THE MARGIN",
+    "phrase": "Read what was left white.",
+    "prophecy": "In something you know by heart, look at what is not written: the space between the lines, the thing nobody said. It has been saying something all along.",
+    "species": ""
    }
   },
   {
@@ -132,6 +150,12 @@
     "keyword": "CAULDRON",
     "phrase": "Mix, warm, wait. It becomes.",
     "species": "SIMMER"
+   },
+   "dawn": {
+    "keyword": "OPEN HANDS",
+    "phrase": "Care, and expect nothing back.",
+    "prophecy": "Give one small kindness this morning and then forget you gave it. Do not count it. The forgetting is the part that makes it whole.",
+    "species": ""
    }
   },
   {
@@ -165,6 +189,12 @@
     "keyword": "SALT",
     "phrase": "Salt keeps. Fix what must stay.",
     "species": "FIRMWARE"
+   },
+   "dawn": {
+    "keyword": "THE CLEARING",
+    "phrase": "No one rules here. Rest.",
+    "prophecy": "Today nothing is yours to govern: not the weather, not the hour, not the people near you. Set the crown down by the door and feel how light your head is.",
+    "species": ""
    }
   },
   {
@@ -198,6 +228,12 @@
     "keyword": "LITANY",
     "phrase": "Said by many, it holds for all.",
     "species": "SYLLABUS"
+   },
+   "dawn": {
+    "keyword": "ORDINARY SKY",
+    "phrase": "Look at what is always there.",
+    "prophecy": "No rare light today. Look up anyway: the plain sky has been changing all your life without asking to be noticed. Notice it.",
+    "species": ""
    }
   },
   {
@@ -231,6 +267,12 @@
     "keyword": "CONJUNCTION",
     "phrase": "Two natures, one vessel.",
     "species": "PAIRWISE"
+   },
+   "dawn": {
+    "keyword": "THE ECHO RETURNED",
+    "phrase": "Give back what was lent.",
+    "prophecy": "Something of yours came from someone else: a habit, a phrase, a way of laughing. This morning, notice whose it was. You may keep it. Say where it came from.",
+    "species": ""
    }
   },
   {
@@ -264,6 +306,12 @@
     "keyword": "SIGIL",
     "phrase": "Draw the will. Then ride it.",
     "species": "DRIVE"
+   },
+   "dawn": {
+    "keyword": "STILL AIR",
+    "phrase": "Let the water settle by itself.",
+    "prophecy": "What you want cleared will clear if you stop stirring it. This morning, do nothing to it at all. By noon you will see to the bottom.",
+    "species": ""
    }
   },
   {
@@ -297,6 +345,12 @@
     "keyword": "SULPHUR",
     "phrase": "The fire is yours. So is the leash.",
     "species": "BASTET"
+   },
+   "dawn": {
+    "keyword": "THE LOOSED LEAD",
+    "phrase": "Let the fire warm you, unheld.",
+    "prophecy": "A strength you keep on a short lead is tired of being held. Today, trust it a little further. It knows the way home.",
+    "species": ""
    }
   },
   {
@@ -330,6 +384,12 @@
     "keyword": "DISTILL",
     "phrase": "Boil it down to what stays.",
     "species": "STILLRUN"
+   },
+   "dawn": {
+    "keyword": "THE OPEN DOOR",
+    "phrase": "Alone is a room with a door.",
+    "prophecy": "You have been on your own with something. This morning, leave the door open. No one has to come in. It is enough that they could.",
+    "species": ""
    }
   },
   {
@@ -363,6 +423,12 @@
     "keyword": "OUROBOROS",
     "phrase": "The end eats the start, and lives.",
     "species": "LOOPBACK"
+   },
+   "dawn": {
+    "keyword": "THE LONG NOW",
+    "phrase": "No need to reach. It stays.",
+    "prophecy": "The moment you were afraid to miss is not leaving. This morning is wide. Stand in it without grabbing, and see how long a minute is.",
+    "species": ""
    }
   },
   {
@@ -396,6 +462,12 @@
     "keyword": "OATH",
     "phrase": "Say it once. Be held by it.",
     "species": "REPAY"
+   },
+   "dawn": {
+    "keyword": "THE KEPT WORD",
+    "phrase": "Be kind to the promise you broke.",
+    "prophecy": "A promise you did not keep is still in your pocket. Take it out this morning and look at it without blame. Make a smaller one you can keep, and keep it.",
+    "species": ""
    }
   },
   {
@@ -429,6 +501,12 @@
     "keyword": "INVERSION",
     "phrase": "Hang it upside down. Now read it.",
     "species": "REFLECTION"
+   },
+   "dawn": {
+    "keyword": "THE FIRST BREATH",
+    "phrase": "Begin with breathing. Only that.",
+    "prophecy": "Before anything else this morning, breathe out longer than you breathe in, three times. That is the whole task. Everything after it is easier.",
+    "species": ""
    }
   },
   {
@@ -462,6 +540,12 @@
     "keyword": "NIGREDO",
     "phrase": "It blackens first. Then it can turn.",
     "species": "CINDER"
+   },
+   "dawn": {
+    "keyword": "REMEMBERING",
+    "phrase": "What was let go may visit.",
+    "prophecy": "Something you set down will pass by this morning, harmless now. You do not have to pick it up or chase it off. Nod to it. It was part of the road.",
+    "species": ""
    }
   },
   {
@@ -495,6 +579,12 @@
     "keyword": "TINCTURE",
     "phrase": "A drop of one changes the whole.",
     "species": "SEEPAGE"
+   },
+   "dawn": {
+    "keyword": "CLEAR WATER",
+    "phrase": "Let each be what it is.",
+    "prophecy": "You have been mixing two things to make them agree. Today, pour them back into their own cups. They were never meant to taste the same, and both are good to drink.",
+    "species": ""
    }
   },
   {
@@ -528,6 +618,12 @@
     "keyword": "BARGAIN",
     "phrase": "Read the bargain before you sign.",
     "species": "ENTRAPMENT"
+   },
+   "dawn": {
+    "keyword": "UNSIGNED",
+    "phrase": "No bargain. Just be here.",
+    "prophecy": "You do not have to earn the good things today. Nothing is owed and nothing is traded. Take what is given as given, and stay.",
+    "species": ""
    }
   },
   {
@@ -561,6 +657,12 @@
     "keyword": "CALCINATION",
     "phrase": "Burn it to what will not burn.",
     "species": "ARCFLASH"
+   },
+   "dawn": {
+    "keyword": "COOL ASH",
+    "phrase": "Plant in what remains.",
+    "prophecy": "Something burned down not long ago. This morning, look at what is left without grief. Ash is good soil, and a small green thing is already in it.",
+    "species": ""
    }
   },
   {
@@ -594,6 +696,12 @@
     "keyword": "ALBEDO",
     "phrase": "After the black, the washing white.",
     "species": "LODESTAR"
+   },
+   "dawn": {
+    "keyword": "THE LIFTED LID",
+    "phrase": "Let what waited come out.",
+    "prophecy": "The hope you kept at the bottom of things has waited long enough. This morning, say it to someone. Spoken in the light, it is smaller and stronger.",
+    "species": ""
    }
   },
   {
@@ -627,6 +735,12 @@
     "keyword": "GRAMARYE",
     "phrase": "Grammar was the old word for magic.",
     "species": "ILLUSION"
+   },
+   "dawn": {
+    "keyword": "AWAKE",
+    "phrase": "The dream can rest. You are here.",
+    "prophecy": "Last night something spoke to you in pictures. This morning you do not have to decode it. Keep one picture from it, and let the rest go back to the water.",
+    "species": ""
    }
   },
   {
@@ -660,6 +774,12 @@
     "keyword": "CITRINITAS",
     "phrase": "The yellowing. Dawn inside the glass.",
     "species": "ILLUMINED"
+   },
+   "dawn": {
+    "keyword": "THE WARM STONE",
+    "phrase": "Sit where the light has been.",
+    "prophecy": "Find the place the sun has already warmed and sit in it. You do not have to make the warmth. Some of it is already yours.",
+    "species": ""
    }
   },
   {
@@ -693,6 +813,12 @@
     "keyword": "INVOCATION",
     "phrase": "Call it by name and it rises.",
     "species": "PHOENIX"
+   },
+   "dawn": {
+    "keyword": "THE CLEAN PAGE",
+    "phrase": "Begin the ledger fresh.",
+    "prophecy": "Yesterday's marks are kept and need no more keeping. This morning, turn to the next clean page and write one small thing you are glad of.",
+    "species": ""
    }
   },
   {
@@ -726,6 +852,12 @@
     "keyword": "RUBEDO",
     "phrase": "Red at last. The work is whole.",
     "species": "OURANOS"
+   },
+   "dawn": {
+    "keyword": "THE WHOLE DAY",
+    "phrase": "Nothing to finish. It is whole.",
+    "prophecy": "You will want to complete something today, to make it perfect. It already is, in the way that matters. Live in it instead of finishing it.",
+    "species": ""
    }
   }
  ]

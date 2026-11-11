@@ -7,6 +7,7 @@
 // the lead daemon's SPIRITS chose, set apart so it can be seen to be read by someone (GET /api/eudaimon). Every word DRAFT.
 // The decks' dawn readings, the mending at DAEMON TOWER and BALANCE come later (C-297's row).
 import { useEffect, useState, type ReactNode } from "react";
+import { Cards } from "../library/Arcana";   // C-313: the dawn readings, its own deck
 import { Text, XStack, YStack } from "tamagui";
 import { EMERALD, goldBreathOf } from "../../../server/src/witching";
 import { SCREEN } from "../../state/data";
@@ -79,7 +80,7 @@ export type LayerPalette = { page: string; boards: string; ink: string; faint: s
 export function EudaimonBook({ b }: { b: EudaimonT }) {
   const breath = useBreath();
   return <LayerPages b={b} P={{ ...DAWN, mark: DAWN.gold }} green={breath.green} id="eudaimon" cover={<Cover b={b} glow={breath.glow} />}
-                     under={<Listen which="eudaimon" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} />} picture={(e, scale) => <Picture e={e} scale={scale} />} />;
+                     under={<><Listen which="eudaimon" warning={b.sections?.[0]?.entries?.[0]?.paragraphs.map((p) => p.text).join(" ")} /><Cards book="eudaimon" /></>} picture={(e, scale) => <Picture e={e} scale={scale} />} />;
 }
 
 // the open book the dawn half and the mended book share (C-299): its cover, what goes under it, its contents, then each

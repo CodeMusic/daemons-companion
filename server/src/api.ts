@@ -2244,7 +2244,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const bookQ = BOOKS_WITH_ART.find((k) => q.has(k));   // T-423: ?subtle=<picture>_<frame>|cover; C-299: ?hermetic=, ?eudaimon=, ?unity= alike
         if (q.has("player") || q.has("mark") || q.has("guide") || bookQ || q.has("arcana")) {   // C-145: ?guide=cover; C-232: ?arcana=<face>
           const sub = bookQ ? q.get(bookQ) ?? "" : "", face = q.get("arcana") ?? "";
-          const name = q.has("arcana") ? (/^((reason|instinct|above|below|spellcraft)(_shiny)?|back)$/.test(face) ? `arcana_${face}.png` : "") : bookQ ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `${bookQ}_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
+          const name = q.has("arcana") ? (/^((reason|instinct|above|below|spellcraft|dawn)(_shiny)?|back)$/.test(face) ? `arcana_${face}.png` : "") : bookQ ? (/^([a-z]{1,24}_\d{1,2}|cover)$/.test(sub) ? `${bookQ}_${sub}.png` : "") : q.has("guide") ? "guide_cover.png" : q.has("player")
             ? `player_${q.get("player") === "instinct" ? "instinct" : "reason"}${q.get("walk") ? "_walk" : ""}.png`
             : `mark_${Math.max(1, Math.min(8, Number(q.get("mark")) || 1))}.png`;
           const file = join(ART_DIR, name);
@@ -2272,7 +2272,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // T-423: THE SUBTLE LAYER's pictures -- /art/subtle/<picture>_<frame>.png, and /art/subtle/cover.png; C-299: the third
       // book's three forms' alike, /art/hermetic/..., /art/eudaimon/..., /art/unity/... (data/art/<book>_<picture>_<frame>.png)
-      const bookArt = path.match(/^\/art\/(subtle|hermetic|eudaimon|unity)\/([a-z]{1,24}_\d{1,2}|cover)\.png$/) ?? path.match(/^\/art\/(arcana)\/((?:reason|instinct|above|below|spellcraft)(?:_shiny)?|back)\.png$/);   // C-232: a card's face; C-273: ABOVE, BELOW, the back
+      const bookArt = path.match(/^\/art\/(subtle|hermetic|eudaimon|unity)\/([a-z]{1,24}_\d{1,2}|cover)\.png$/) ?? path.match(/^\/art\/(arcana)\/((?:reason|instinct|above|below|spellcraft|dawn)(?:_shiny)?|back)\.png$/);   // C-232: a card's face; C-273: ABOVE, BELOW, the back
       if (req.method === "GET" && bookArt) {
         const file = join(ART_DIR, `${bookArt[1]}_${bookArt[2]}.png`);
         if (!existsSync(file)) return send(res, 404, { error: "no such picture" });

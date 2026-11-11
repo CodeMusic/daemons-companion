@@ -143,17 +143,20 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     // C-232: THE SUBTLE LAYER's deck; C-239: ?deck=spellcraft, THE HERMETIC LAYER's -- each only once its book is held;
     // C-273: ?deck=hermetic, its ABOVE and BELOW; ?pick= one of the book's two decks (or both, as one); ?spread=mbs
-    const deckOf = (q?: string): Deck => q === "spellcraft" ? "spellcraft" : q === "hermetic" ? "hermetic" : "subtle";
+    const deckOf = (q?: string): Deck => q === "spellcraft" ? "spellcraft" : q === "hermetic" ? "hermetic" : q === "dawn" ? "dawn" : "subtle";
+    // C-313: the dawn half's deck, once THE EUDAIMON LAYER is held -- by the game's flag or seven dawns kept (C-314)
+    const dawnHeld = (pv: boolean) => readEudaimon(save, pv, undefined, dawnEarned(store)).held;
     if (path === "/api/arcana/draw") {                                   // C-232: a card, or a spread of three (a GET: the watch may ask it)
       const deck = deckOf(a.query?.deck), spell = deck !== "subtle", pv = a.query?.preview === "1";   // the user, 2026-10-29: the preview shows both decks
-      if (spell ? !readHermetic(save, store, pv).held : !readSubtle(save, undefined, pv).held)
-        return no(403, spell ? "Find THE HERMETIC LAYER first." : "Find THE SUBTLE LAYER first.");   // DRAFT
-      const pick = (["reason", "instinct", "above", "below"] as const).find((k) => k === a.query?.pick) ?? "both";
+      if (deck === "dawn" ? !dawnHeld(pv) : spell ? !readHermetic(save, store, pv).held : !readSubtle(save, undefined, pv).held)
+        return no(403, deck === "dawn" ? "Find THE EUDAIMON LAYER first." : spell ? "Find THE HERMETIC LAYER first." : "Find THE SUBTLE LAYER first.");   // DRAFT
+      const pick = (["reason", "instinct", "above", "below", "dawn"] as const).find((k) => k === a.query?.pick) ?? "both";
       return ok({ cards: draw(a.query?.count === "3" ? 3 : 1, Math.random, deck, pick, a.query?.spread === "mbs" ? "mbs" : "ppf") });
     }
     if (path === "/api/arcana/today") {                                  // C-232: the day's card, the same all day for this trainer
       const deck = deckOf(a.query?.deck), spell = deck !== "subtle", pv = a.query?.preview === "1", hermetic = readHermetic(save, store, pv).held;
-      if (spell ? !hermetic : !readSubtle(save, undefined, pv).held) return ok({ held: false });
+      if (deck === "dawn" ? !dawnHeld(pv) : spell ? !hermetic : !readSubtle(save, undefined, pv).held) return ok({ held: false });
+      if (deck === "dawn") return ok({ held: true, card: cardOfDay(today(h, store, now).date, (() => { const p = readProfile(save); return `${p.name}${p.trainerId}`; })(), "dawn") });   // C-313
       const p = readProfile(save), date = today(h, store, now).date, who = `${p.name}${p.trainerId}`;
       if (hermetic && isHalloween(date)) return ok({ held: true, card: thirteenOfDay(date, who), halloween: true });   // C-240
       return ok({ held: true, card: cardOfDay(date, who, deck) });

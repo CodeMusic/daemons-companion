@@ -1610,9 +1610,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const first = sleepRecipe(c), have = sleepTracks().list(c.species).find((t) => t.key === first.key && t.state !== "failed");
         if (have && !(b.again && have.state === "ready")) return send(res, 200, { track: trackOut(have) });
         // a talker in the house picks one image from the INDEX entry to colour it (a few music words; never shown)
-        const image = house.any && c.entry
-          ? cleanImage(await Promise.race([house.write(SLEEP_SYSTEM, sleepAsk(c), 40).catch(() => null),
-                                           new Promise<null>((r) => setTimeout(() => r(null), 25000))]))
+        // -- the Tiiny's quick thinker first (it answers in a few seconds), then the player's endpoints, then the house's
+        // module, as DAEMONS IN DIALOGUE asks; none in 25 s, and the piece is made without it
+        const imageOf = async (): Promise<string | null> => {
+          const t = tiinyNow();
+          if (t) try { return await tiinyChat(t.at, t.quick || t.model, SLEEP_SYSTEM, [], sleepAsk(c), fetch, 25_000, 40); } catch { /* the next mind */ }
+          for (const n of endpointsNowAll(false)) try { return await chatOn(n.e, n.model, SLEEP_SYSTEM, [], sleepAsk(c), fetch, 25_000, 40); } catch { /* the next */ }
+          return house.any ? await house.write(SLEEP_SYSTEM, sleepAsk(c), 40).catch(() => null) : null;
+        };
+        const image = c.entry
+          ? cleanImage(await Promise.race([imageOf().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), 25000))]))
           : null;
         const r = sleepRecipe(c, image);
         try { return send(res, 202, { track: trackOut(sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: sleepSaid(r, c.nickname || "your daemon") }, !!b.again)) }); }

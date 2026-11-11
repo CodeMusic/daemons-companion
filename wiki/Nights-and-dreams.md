@@ -47,6 +47,20 @@ the dream, how long and how still the night was, and whether the daemon was tuck
 lenses over it: tap **REASON** or **INSTINCT** to read that telling, or light both for the **WHOLE**, in purple. LISTEN
 reads whatever is shown. **SHARE** shows a dream to the other players at your home.
 
+## SLEEP SOUNDS (C-334)
+
+Above the dreams in the app, **SLEEP SOUNDS** is music made for the carried daemon as it is tonight, to fall asleep to
+together. Its type chooses the instruments, its feelings the key and the pace, its care what the music carries (rain
+for a thirsty one, a hearth for a hungry one, little at all for one worn out), its closeness to you how near the melody
+comes, and an image from its INDEX entry colours it. **MAKE TONIGHT'S** asks the hub, which has it made on the house's
+music model (about three minutes) and keeps it; the phone fetches it once. **PLAY 30 MINUTES** fades it out over the
+last ten; **MAKE ANOTHER** makes a new one; **KEPT FROM OTHER NIGHTS** holds the ones before. A new piece is made when
+its context moves.
+
+**DRIFT DOWN**, for headphones: a slow binaural beat under the music, easing from alpha (10 Hz) to theta (6 Hz) to
+delta (2 Hz) as you fall asleep. Without headphones the music plays alone until they are on. The watch's half -- the
+piece from its card, everything else asleep -- is still to come. Every word is DRAFT.
+
 ## Into the game (ITS DREAMS)
 
 At a SYNC with a new dream, the companion writes the last one into your save: its quality, which of sixteen images it

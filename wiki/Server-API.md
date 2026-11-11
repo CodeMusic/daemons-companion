@@ -62,6 +62,7 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /api/play` | the instrument the save's edition plays (the HARP for CONTENT, the FLUTE for CONTEXT), whether the save holds it yet, and each song learned or only heard; `?preview=1`, for a check, as if held with every song learned (*alone too*) |
 | `GET /api/guide` | whether the save has found THE GUIDE, and once it has, the book by part and chapter, with its title and author for a screen to set over the cover (*alone too*) |
 | `GET /api/books`, `GET /api/book?book=&n=` | C-208: the books the save holds, as a watch's BOOKS reads them -- the shelf and its chapters, then one chapter; never `?preview` (*alone too*) |
+| `GET /api/book/recording?book=&title=` | C-331: a book's own recording of one chapter, as raw 16 kHz 16-bit mono samples, cut once from its published reading -- THE GUIDE and THE SUBTLE LAYER only; 404 when the chapter has none, and the watch reads it in the INDEX voice instead |
 | `GET /api/index/list`, `GET /api/index/entry?species=` | C-199: THE INDEX as a watch reads it -- every daemon met, a line each, with the counts seen and bound; then one entry, its kind, types, words and OPUS's margin (*alone too*) |
 | `GET /api/dreams` | C-200: the dream journal, the newest first (*alone too*) |
 | `GET /api/soundings` | C-195: each daemon away, when it was last heard and how it was doing (*alone too*) |
@@ -110,6 +111,24 @@ plays at). A big win is a broadcast act, `JACKPOT` or `BIGWIN`.
 |---|---|
 | `GET /api/daemon/life` | the hosted daemon's life: mood, fed, watered, trained, drowsy or asleep, a cue at a meal time or bedtime, its expression, and `care` (C-266: rest, hunger, thirst, weight and companionship over two weeks, and whether its eyes are shadowed or bloodshot) (*alone too*) |
 | `POST /api/daemon/feed` (`water`, `train`, `sleep`, `wake`) | tend it -- `water` is DRINK on the screens; `sleep` puts it to bed, `wake` only wakes it (*alone too*) |
+
+**SLEEP SOUNDS** (C-334, DRAFT), made for the carried daemon ([Nights and dreams](Nights-and-dreams#sleep-sounds-c-334)):
+
+| route | what it does |
+|---|---|
+| `GET /api/sleep` | tonight's recipe for the carried daemon (its key, pace and what it is made of, as said), its piece if made, and the pieces kept for it; `maker` says whether the house can make one |
+| `POST /api/sleep/make` | `{again?}` -- tonight's piece: the kept one, or asked for now (202; about three minutes, on the house's music model) |
+| `GET /api/sleep/tracks` | every piece kept, for every daemon (the watch's list) |
+| `GET /api/sleep/track/<id>/<file>` | one piece's file -- `phone.m4a`, `watch.wav` (16 kHz mono) or `watch-adpcm.wav`; asked in ranges, as a player resuming does |
+
+**THE EASEL** (C-338, DRAFT):
+
+| route | what it does |
+|---|---|
+| `POST /api/paint` | `{prompt, personality?}` -- the carried daemon (or the one named) paints it, from its persona of the day: the row at once, the picture when it is made |
+| `GET /api/paintings`, `GET /api/paintings/<id>` | every painting, newest first; one painting and its state |
+| `POST /api/paintings/forget` | `{id}` -- take it down |
+| `GET /api/persona` | `?personality=` -- the persona of the day, as talk, voices and paintings read it |
 
 ## The T-Glass (C-262)
 
@@ -184,7 +203,7 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 |---|---|
 | `POST /api/device/talk` | a board's recording (a WAV, raw): the daemon's answer, and a link to its voice. With `?async=1` (and on `/api/ai/talk`), answered at once with an `id` |
 | `GET /api/device/talk/<id>` | that answer, when it is ready: `waiting`, then the words and the voice. Fetched once; the phone never keeps it |
-| `POST /api/device/speak` | the hosted daemon's INDEX entry -- or `{species}`, any entry -- aloud: a link to its voice |
+| `POST /api/device/speak` | the hosted daemon's INDEX entry -- or `{species}`, any entry -- aloud: a link to its voice. `{text, as: "daemon"}` (C-331): those words in the carried daemon's own voice, for a dream heard again on the watch |
 | `GET /api/device/voice/:id` | that voice, as 16 kHz 16-bit mono samples, for a board to stream (kept ten minutes) |
 | `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
 | `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3; with `{stream: true}` (C-317), a `{stream}` link as soon as the first part is made |
@@ -284,3 +303,15 @@ network -- as the player it joined as. A phone hosting alone answers the same, t
 | `GET /api/exchange/players` | the players, for this machine or a paired phone |
 | `/api/exchange/me`, `board`, `offer`, `accept`, `withdraw`, `recall`, `inbox`, `handback`, `written`, `password` | as a player (`x-daemons-player`): the exchange's own side -- who you are, the offers and trades, and at SYNC what arrives, a loan handed back, and what was written |
 | `/api/trade/out`, `back`, `meet`; `/api/exchange/out`, `back`, `meet` | OUT TOGETHER (C-220): a daemon that is AWAY sent out and called back, and the meeting of two that are out -- four turns said by the hub's AI board, the goodbye always written. Home only, for now |
+| `POST /api/trade/converse`, `talks`, `talk`, `integrate` | IN DIALOGUE (C-329): `{with, mode: "standard" \| "twovoices", turns: 1-11, prompt, swap?}` begins a talk between your daemon out and another; `talks` lists them, `talk` `{id}` is one, `integrate` `{id}` has it put together and titled. The opening and every line are checked as OUT TOGETHER's are |
+| `GET /api/battle` | BATTLE (C-328): who is online to battle, this device's daemon, its requests and its battles (`?device=`) |
+| `POST /api/battle/pick`, `request`, `answer`, `choose`, `leave` | `{personality}` -- the daemon this seat fights with; `{to}` -- ask a seat that is online (a minute, then it lapses); `{id, accept}`; `{id, slot}` -- this turn's routine (30 s, then one is chosen); `{id}` -- leave, a forfeit |
+| `/api/exchange/battle...` | the same between players, as the exchange's own side (`x-daemons-player`), reached as trades are |
+
+**YOUR HOUSEHOLD** (C-327, C-329): this home's own devices, never the exchange.
+
+| route | what it does |
+|---|---|
+| `GET /api/household` | who carries whom, and the spaces two devices share (*alone too*) |
+| `POST /api/household/swap`, `together`, `apart` | `{a?, b}` -- swap what two devices carry (nothing written to the game), or put both daemons in one den; `{device?}` -- apart again (*alone too*) |
+| `POST /api/household/converse`, `talks`, `talk`, `integrate` | IN DIALOGUE within the home, as `/api/trade/converse`, kept as the home's and not filtered; also on the device's door, for the watch (*alone too*) |

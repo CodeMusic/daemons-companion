@@ -85,6 +85,31 @@ for now.
 Set THE HUB on TRADE to the hub's address and join with an invite code, as any other companion does. SYNC fetches what
 the exchange sent before it writes the save, and tells the exchange afterwards.
 
+## IN DIALOGUE (C-329)
+
+Under OUT TOGETHER, two daemons that are out **talk at length** about anything the player who starts opens with:
+
+- **STANDARD** -- one leans logical, working up from the details (red); the other creative, taking in the whole at
+  once (blue): the two halves of a mind, as the books put it.
+- **TWO VOICES** -- as THE SUBTLE LAYER sets it out: one tells, and the other only asks -- a question, a clarifying
+  question, or what it heard said back.
+
+One to eleven turns each, set with − and +. Each daemon speaks as itself -- its own telling, its care, its goals, its
+day -- and is heard in its own voice; the lines come as bubbles, with dots while each is thought, and each plays again.
+Between players **the other player sees the talk and the opening**, and every line, and the opening, is checked as
+OUT TOGETHER's are. **PAST TALKS** keeps them by week, and **INTEGRATE** has the house's mind put a talk together as
+one titled piece. At home, two of your own devices put **TOGETHER** under **YOUR HOUSEHOLD** talk the same way, kept
+as the home's.
+
+## BATTLE (C-328)
+
+**BATTLE**, on the YOU tab: one daemon each, fought on the companion by the game's own rules -- the save's stats and
+routines, the type chart, the damage and the battle words. Ask anyone online: your own other devices (a watch or a
+board, the app or the site) or, on the exchange, another player. They accept or decline; a request lapses in a minute.
+Each turn both choose; one not chosen in thirty seconds is chosen for that side, and three missed in a row, or
+leaving, is a forfeit. The winner is told in the game's words, and gets the game's experience for it, the loser a
+third, written into the save at the next SYNC. **Nobody's health is kept**: every daemon comes back as it went.
+
 ## Later
 
 **OUT TOGETHER** (C-220, its first piece): on TRADE, send a daemon that is AWAY out, and when another player's is out too
@@ -93,7 +118,7 @@ and the goodbye is always written. The two pictures face each other on the card.
 
 Each of the rest is filed as a ticket, open, and none is built: the rest of C-220; the game's own
 link cable through the hub, for trades and battles (C-221); a lobby beyond the tailnet, and links by Bluetooth, LoRa or
-a touch (C-222); battles between players (C-224).
+a touch (C-222). (Battles of the companion's own are built: BATTLE, above.)
 
 *Every word the game and the app show for trading is DRAFT.* The design is in
 [docs/TRADING.md](https://github.com/CodeMusic/daemons-companion/blob/main/docs/TRADING.md), and the routes in

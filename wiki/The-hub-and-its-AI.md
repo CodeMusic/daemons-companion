@@ -108,12 +108,31 @@ minute, and one inside your home keeps to the AT HOME ring.
 hub in the middle, its minds on a ring, the devices that asked on the outer ring, a spark on the line of each task
 thinking now. **THE RIVER** -- a lane per mind over an hour, a day or a week, up to NOW. **NOW** and **BEFORE** list
 the tasks (who asked, from which device, on which mind) with **STOP**, **TRY AGAIN**, **FORGET** and **CLEAR
-FINISHED**; **MINE**, **EVERYONE** or one player chooses whose. STOP marks a task stopped and its answer is ignored
-when it lands.
+FINISHED**. The app shows **MINE**; everyone's is in THE ENGINE ROOM, below. STOP marks a task stopped and its answer
+is ignored when it lands.
 
 **The voice, in seconds** (C-317). A daemon's spoken answer from the hub is **streamed**: the Tiiny is asked for it a
 part at a time, the phone is handed a link once the first part is ready and plays it as it comes, so the voice starts
 in about three seconds rather than twenty. Once it has all come the phone keeps it, to hear again at once.
+
+## THE ENGINE ROOM (C-330)
+
+Everything that looks after the whole house rather than one player is in **THE ENGINE ROOM**, the hub's admin: one
+installable web app the hub serves at **`/admin/`**, on the home network and the tailnet only -- never through the
+relay, neither its files nor its requests. It pairs once, with a code from the hub's screen. Its pages:
+
+| page | what it keeps |
+|---|---|
+| **THE HUB** | what the hub is running, and what is done on its own machine only |
+| **THE MIND** | every mind's work, for everyone -- stop, try again, forget -- and **LATER**, the hub's plans |
+| **THE HOUSE** | the CASINO's odds today and why, who is at the reels, what the house keeps |
+| **VOICES** | every kept voice made again, on every phone |
+| **DEVICES** | every device heard, what it carries, and forgetting one |
+| **EXCHANGE** | the exchange's players, and a code to invite a new one |
+| **THE COMMONS** | this home's link to the commons, and its keeper's commands |
+
+Where the app used to hold one of these, it now says so, with **Open THE ENGINE ROOM ›**; each player's own things
+stay in the app. Every word is DRAFT.
 
 ## Coming
 

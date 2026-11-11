@@ -1,9 +1,78 @@
 {
- "latest": 971,
+ "latest": 972,
  "builds": [
   {
+   "build": 972,
+   "commit": "8d72166",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-330",
+     "title": "Admin in one place",
+     "lines": [
+      "THE ENGINE ROOM (DRAFT) — the hub's admin in one installable web app at /admin/"
+     ]
+    },
+    {
+     "ticket": "C-334",
+     "title": "Sounds for sleep, made for him",
+     "lines": [
+      "Sleep sounds, the hub's half (DRAFT) — a recipe from the daemon's context (sleepsound.ts: type the instruments, feelings the key and pace, care what it carries, closeness how near the melody), made by ACE-Step on roverbyteseer's keyed door, kept as phone.m4a, watch.wav (16 kHz mono PCM) and watch-adpcm.wav; /api/sleep, /api/sleep/make, /api/sleep/tracks, /api/sleep/track/<id>/<file>",
+      "Sleep sounds, the app's half (DRAFT) — SLEEP SOUNDS above the dreams: the piece made for the daemon tonight, kept on the phone, played thirty minutes and faded over the last ten; DRIFT DOWN, a binaural layer (alpha, theta, delta) for headphones, from PulseEntrain's idea; DaemonsNight.headphones()",
+      "A sleep piece survives the hub restarting — its roverbyteseer job is kept, and waited on again at start (a deploy dropped the first one)",
+      "A sleep piece fetched before a restart is converted from the hub's own copy; roverbyteseer's goes only once the hub's files are made"
+     ]
+    },
+    {
+     "ticket": "C-329",
+     "title": "Daemons in dialogue: TWO VOICES and the bicameral conversation, kept and integrated",
+     "lines": [
+      "DAEMONS IN DIALOGUE across accounts (DRAFT) — STANDARD (red logical / blue creative) and TWO VOICES (tells / asks), 1-11 turns each, the Tiiny first; personas from common functions (ai/personaof.ts, voiceof.ts's sibling) with a card that travels with a daemon out; bubbles with thinking dots and replay in each daemon's own voice; INTEGRATE to a titled write-up; past talks by week with weekday dots",
+      "In dialogue within the household (DRAFT) — two devices put TOGETHER (C-327) talk from YOUR HOUSEHOLD, unfiltered, kept as the home's; /api/household/{converse,talks,talk,integrate} in routes.ts and on the device's door for the watch; a stopped talk says so in `stopped`, not `error`"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 971's notes"
+     ]
+    },
+    {
+     "ticket": "C-331",
+     "title": "What the app gained, on the Ultra's card",
+     "lines": [
+      "A book's own recording, one chapter at a time, for the watch's card — GET /api/book/recording?book&title (raw 16 kHz PCM, cut once by ffmpeg from the published reading; the open books only)"
+     ]
+    },
+    {
+     "ticket": "C-328",
+     "title": "Battles: in the household and between accounts",
+     "lines": [
+      "BATTLES, in the household and between players (DRAFT) — one daemon each, simulated on the companion from the save's own stats and routines and the game's type chart, damage formula and battle words (data/battle.json, exported by DAEMONS); a request to any device online (a board or watch by x-device, the app or site as its own seat, a player on the exchange), accept or decline, 30 s a turn then the hub picks (three missed: a forfeit), the winner in the game's words, the game's experience to the winner and a third to the loser written at the next SYNC, nobody's health kept; GET /api/battle, POST /api/battle/{pick,request,answer,choose,leave}, /api/exchange/battle*; THE BATTLE over every screen and BATTLE on the YOU tab"
+     ]
+    },
+    {
+     "ticket": "C-338",
+     "title": "THE EASEL: the daemon paints what you ask, and a gallery of what it painted",
+     "lines": [
+      "THE EASEL on the hub — a daemon paints what it is asked, in its own style, from its persona of the day; and THE PERSONA OF THE DAY, built at wake (DRAFT)",
+      "The persona of the day is built at wake only for the daemon carried and any asked for in three days, its words one daemon at a time; a painting cut off by a restart says so",
+      "A write someone waits for goes to the quick thinker, thinking off — the easel's and the morning's words"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "LIBRARY shelf: the manuals' new covers, each its own colour and its device (DAEMONS covers-d)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 971,
-   "commit": "cce956a",
+   "commit": "fbbaab9",
    "date": "2026-11-11",
    "sections": [
     {
@@ -48,29 +117,6 @@
      "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
      "lines": [
       "Whatsnew.json with build 971's notes"
-     ]
-    },
-    {
-     "ticket": "C-330",
-     "title": "Admin in one place",
-     "lines": [
-      "THE ENGINE ROOM (DRAFT) — the hub's admin in one installable web app at /admin/"
-     ]
-    },
-    {
-     "ticket": "C-334",
-     "title": "Sounds for sleep, made for him",
-     "lines": [
-      "Sleep sounds, the hub's half (DRAFT) — a recipe from the daemon's context (sleepsound.ts: type the instruments, feelings the key and pace, care what it carries, closeness how near the melody), made by ACE-Step on roverbyteseer's keyed door, kept as phone.m4a, watch.wav (16 kHz mono PCM) and watch-adpcm.wav; /api/sleep, /api/sleep/make, /api/sleep/tracks, /api/sleep/track/<id>/<file>",
-      "Sleep sounds, the app's half (DRAFT) — SLEEP SOUNDS above the dreams: the piece made for the daemon tonight, kept on the phone, played thirty minutes and faded over the last ten; DRIFT DOWN, a binaural layer (alpha, theta, delta) for headphones, from PulseEntrain's idea; DaemonsNight.headphones()"
-     ]
-    },
-    {
-     "ticket": "C-329",
-     "title": "Daemons in dialogue: TWO VOICES and the bicameral conversation, kept and integrated",
-     "lines": [
-      "DAEMONS IN DIALOGUE across accounts (DRAFT) — STANDARD (red logical / blue creative) and TWO VOICES (tells / asks), 1-11 turns each, the Tiiny first; personas from common functions (ai/personaof.ts, voiceof.ts's sibling) with a card that travels with a daemon out; bubbles with thinking dots and replay in each daemon's own voice; INTEGRATE to a titled write-up; past talks by week with weekday dots",
-      "In dialogue within the household (DRAFT) — two devices put TOGETHER (C-327) talk from YOUR HOUSEHOLD, unfiltered, kept as the home's; /api/household/{converse,talks,talk,integrate} in routes.ts and on the device's door for the watch; a stopped talk says so in `stopped`, not `error`"
      ]
     },
     {

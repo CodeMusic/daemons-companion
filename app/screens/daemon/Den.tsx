@@ -85,14 +85,16 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null, both = false }:
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null, both = false, together = null }:
   { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
-    witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; aurora?: string | null; both?: boolean }) {   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
+    witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; aurora?: string | null; both?: boolean;
+    together?: Together | null }) {   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
   const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
   const shapes = useMemo(() => (w ? motif(d.motif, w, height) : []), [d.motif, w, height]);
-  const side = Math.min(Math.round(height * 0.8), 192), fy = height * FLOOR_AT;
+  // C-327: two in one den -- each smaller, this one walking its own half, the other standing in the other half facing it
+  const side = together ? Math.min(Math.round(height * 0.62), w ? Math.floor(w / 2) - 8 : 192) : Math.min(Math.round(height * 0.8), 192), fy = height * FLOOR_AT;
   const x = useRef(new Animated.Value(0.5)).current, bob = useRef(new Animated.Value(0)).current, up = useRef(new Animated.Value(0)).current;
   const [right, setRight] = useState(false);
 
@@ -126,6 +128,8 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
   }, [hop, up, side]);
 
   const room = Math.max(0, w - side);
+  const half = Math.max(0, w / 2 - side), from = together?.mine === "right" ? w / 2 : 0;   // C-327: its own half
+  const px = Math.max(2, Math.round(side / 48));
   const ink = d.glow, faintInk = d.glow;
   return (
     <View onLayout={(e) => setW(Math.round(e.nativeEvent.layout.width))}
@@ -140,7 +144,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
       <DawnLight w={w} height={height} level={dawn} />{/* T-519: 4:24 to 5:12, light from the floor up, motes rising */}
       {w ? (
         <Animated.View style={{ position: "absolute", left: 0, top: fy - side + side * 0.06, width: side, height: side,
-                                transform: [{ translateX: Animated.add(x.interpolate({ inputRange: [0, 1], outputRange: [0, room] }), shake) }, { translateY: Animated.add(bob, up) }] }}>
+                                transform: [{ translateX: Animated.add(x.interpolate({ inputRange: [0, 1], outputRange: together ? [from, from + half] : [0, room] }), shake) }, { translateY: Animated.add(bob, up) }] }}>
           {thrive && thrive.glow > 0 ? [0.84, 0.68, 0.52].map((r, i) => (   // C-207: a good week, a soft light about it -- rings
             <View key={i} style={{ position: "absolute", left: side * (0.5 - r / 2), top: side * (0.52 - r / 2), width: side * r, height: side * r,   // that fade
                                    borderRadius: side, backgroundColor: ink, opacity: 0.045 * Math.min(1, thrive.glow / 100) }} />)) : null}
@@ -157,15 +161,28 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
           {witching ? <WitchShimmer side={side} level={shimmer} /> : null}
           <DawnRim side={side} level={dawn} />
           {/* C-302: what it was given, on the floor in front of it -- the way it faces */}
-          <Served serving={serving} px={Math.max(2, Math.round(side / 48))}
-                  style={{ top: side * 0.95 - 12 * Math.max(2, Math.round(side / 48)), ...(right ? { right: -side * 0.06 } : { left: -side * 0.06 }) }} />
+          {together ? null : <Served serving={serving} px={px}
+                  style={{ top: side * 0.95 - 12 * px, ...(right ? { right: -side * 0.06 } : { left: -side * 0.06 }) }} />}
           {expression?.mark ? <Mark mark={expression.mark} size={Math.round(side * 0.2)} style={{ position: "absolute", right: side * 0.04, top: side * 0.02 }} />
             : asleep && !expression ? <Text allowFontScaling={false} style={{ position: "absolute", right: side * 0.02, top: side * 0.05, color: d.glow, fontWeight: "700", fontSize: Math.max(11, side * 0.13), fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>z  z</Text> : null}
         </Animated.View>
       ) : null}
+      {w && together ? (
+        <>
+          <View style={{ position: "absolute", left: (together.mine === "left" ? w * 0.75 : w * 0.25) - side / 2, top: fy - side + side * 0.06, width: side, height: side }}>
+            <View style={{ position: "absolute", left: side * 0.22, top: side * 0.9, width: side * 0.55, height: side * 0.09, borderRadius: side, backgroundColor: "rgba(0,0,0,0.28)" }} />
+            <View style={[{ width: side, height: side, transform: [{ scaleX: together.mine === "left" ? 1 : -1 }] }, PIXELATED as any]}>{together.art}</View>
+          </View>
+          {/* C-327: what either device gave, in the middle, the two either side of it */}
+          <Served serving={serving} px={px} style={{ left: w / 2 - 6 * px, top: fy - 12 * px + side * 0.06 }} />
+        </>
+      ) : null}
     </View>
   );
 }
+
+// C-327: the other daemon in this den -- its picture, and which side THIS device's own daemon stands on
+export type Together = { art: React.ReactNode; mine: "left" | "right" };
 
 // C-207 (the user, 2026-10-28: "it reflects in the way your daemon appears ... subtly"): the week, on the den's wall -- a
 // small star for each goal finished (at most five), and a crescent after a vivid night. Pixels in the den's own light.

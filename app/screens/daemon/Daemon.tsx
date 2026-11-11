@@ -3,7 +3,7 @@ import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, 
 import { creatorNow } from "../../../server/src/witching";   // C-314: only the real hour keeps a dawn
 import { File } from "expo-file-system";
 import { keepStreamed, keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ACTS, castLine, playerId } from "../../state/data";
@@ -31,6 +31,10 @@ import type { Care } from "../../../server/src/care";   // C-266
 import { pretendLife, useDev } from "../../state/dev";
 import { onLifeHeard } from "../../state/lifeHeard";   // C-300
 import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-302
+// C-327: the household space, as /api/device/state carries it (server/src/household.ts)
+type TogetherState = { device: string; side: "left" | "right"; since: string; until: string;
+                       daemon: { slot: number; species: number; name: string; nickname: string; level: number; art: string; artKey: string } | null;
+                       care: { kind: string; by: string; at: string; mine: boolean } | null };
 import NIGHT from "../../modules/daemons-night";                       // C-284: the phone's own night   // C-269: as </> sets its mood and care (C-275: in the </> tab)
  // C-119: how it looks now, decided on the server
 
@@ -81,6 +85,28 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     const off = onLifeHeard(again), t = setInterval(again, 30000);
     return () => { off(); clearInterval(t); };
   }, []);
+  // C-327: another household device's daemon in this one's space -- read every few seconds, so a care given on the other
+  // device is seen here too: its PROVISION in the middle and both daemons eating (each care once, by its time)
+  const [together, setTogether] = useState<TogetherState | null>(null);
+  const seenCare = useRef("");
+  useEffect(() => {
+    let on = true;
+    const look = () => playerId().then((id) => api<{ together?: TogetherState }>(`/api/device/state?device=${encodeURIComponent(id)}`)).then((st) => {
+      if (!on) return;
+      const t = st.together ?? null;
+      setTogether(t);
+      const c = t?.care;
+      if (c && c.at !== seenCare.current) {
+        const first = !seenCare.current; seenCare.current = c.at;
+        if (!first && !c.mine && (c.kind === "feed" || c.kind === "water")) {
+          setServing({ provision: PROVISIONS[GIVEN[c.kind]], at: Date.now(), ms: phraseMs(c.kind) }); setHop((n) => n + 1);
+        }
+      }
+    }).catch(() => {});
+    look();
+    const t = setInterval(look, 5000);
+    return () => { on = false; clearInterval(t); };
+  }, []);
   if (!l) return null;
   const shown = pretendLife(l);                             // C-269: as </> sets it, or as it is
   const care = async (what: "feed" | "water" | "train" | "sleep" | "wake", word: string) => {
@@ -129,7 +155,9 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
       <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both}   // C-113, C-119; C-240: Halloween shimmers all day
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
-                          path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={144} />} height={180} />
+                          path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={together?.daemon ? 108 : 144} />} height={180}
+                together={together?.daemon ? { mine: together.side, art: <Art key={together.daemon.artKey} path={together.daemon.art} size={108} /> } : null} />
+      {together?.daemon ? <Small color="$color10">{`With ${together.daemon.nickname || together.daemon.name}, from another of your devices.`}</Small> : null}{/* C-327, DRAFT */}
       </Pressable>
       {witching ? <HourCount /> : null}
       {dawnKept ? <Small color="$color10">{dawnKept.earned ? (dawnKept.kept === dawnKept.needed ? "Seven dawns kept together. THE EUDAIMON LAYER is on your shelf." : "A dawn kept together.")

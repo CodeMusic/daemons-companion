@@ -3,11 +3,13 @@
 // (an invite code from the hub, unless this is the hub); offer a daemon that is AWAY, in full or on loan, to anyone or to
 // one player; take another's offer with one of yours; call a loan home. Nothing moves in the game until each side's
 // next SYNC writes it. Every word is DRAFT.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
+import { api, ON_PHONE } from "../../platform/net";
 import { Action, Art, Card, Choice, Entry, Eyebrow, Small, useInk } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
+import { KIND_NAMES, playerId } from "../../state/data";
+import type { DeviceRow } from "../../state/types";
 
 type Brief = { player: string; personality: number; species: number; nickname: string; level: number; edition: string } | null;
 type Offer = { id: string; at: string; kind: "full" | "loan" | "gift" | "item"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean;
@@ -64,7 +66,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
       </XStack>
     </Card>
   );
-  if (v.needsHub) return <YStack gap={14}>{hubCard}{said ? <Small>{said}</Small> : null}<Small color="$color8">DRAFT</Small></YStack>;
+  if (v.needsHub) return <YStack gap={14}><HouseholdCard ink={ink} />{hubCard}{said ? <Small>{said}</Small> : null}<Small color="$color8">DRAFT</Small></YStack>;
   if (!v.me) return (
     <YStack gap={14}>
       <Card gap={6}>
@@ -77,6 +79,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
         {said ? <Small>{said}</Small> : null}
       </Card>
       {hubCard}
+      <HouseholdCard ink={ink} />
       <Small color="$color8">DRAFT</Small>
     </YStack>
   );
@@ -145,6 +148,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
 
       {v.items ? <ItemCard items={v.items} players={(b?.players ?? []).filter((p) => p.id !== v.me!.id && !p.commons)} friends={!!b?.friends?.friends.length} ink={ink} act={act} /> : null}
       <OutCard v={v} ink={ink} act={act} />
+      <HouseholdCard ink={ink} />
       {b?.friends ? <FriendsCard f={b.friends} players={(b.players ?? []).filter((p) => p.id !== v.me!.id && !p.commons)} ink={ink} act={act} /> : null}
 
       {v.dreams ? (
@@ -375,6 +379,48 @@ function CommonsCard({ ink }: { ink: string }) {
       </>)}
       {c.url ? <Action label="UNLINK" ink={ink} onPress={async () => { setC(await api<Commons>("/api/commons", { url: "" })); setSaid("Unlinked."); }} /> : null}
       {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
+// C-327 (the user, 2026-11-11: "trading if within the house-hold could be a way to just swap the selection of the device"):
+// YOUR HOUSEHOLD -- this phone and the household's other devices, what each carries; SWAP exchanges two devices' daemons
+// (nothing written to the game), TOGETHER puts both in one den, shown on each, a care given on either seen on both.
+type Brief2 = { personality: number; species: number; name: string; nickname: string; level: number };
+type Household = { carrying: Record<string, Brief2>; unplaced: Brief2[]; spaces: { a: string; b: string; until: string }[] };
+const kindOfId = (id: string) => id.replace(/-[0-9a-f]{6}$/, "");
+function HouseholdCard({ ink }: { ink: string }) {
+  const [h, setH] = useApi<Household>("/api/household");
+  const [devs] = useApi<{ devices?: DeviceRow[] }>("/api/devices");
+  const [me, setMe] = useState(""), [said, setSaid] = useState("");
+  useEffect(() => { playerId().then(setMe).catch(() => {}); }, []);
+  if (!h || !me) return null;
+  const others = (devs?.devices ?? []).map((d) => d.id).filter((id) => id !== me);
+  const name = (id: string) => KIND_NAMES[kindOfId(id)] ?? id;
+  const show = (d: Brief2 | undefined) => (d ? `${d.nickname || d.name} · LV ${d.level}` : "nothing");
+  const mine = h.spaces.find((s) => s.a === me || s.b === me), withMe = mine ? (mine.a === me ? mine.b : mine.a) : "";
+  const go = async (path: string, body: unknown, done: string) => {
+    try { setH(await api<Household>(path, body)); setSaid(done); } catch (e) { setSaid((e as Error).message); }
+  };
+  return (
+    <Card gap={6}>
+      <Eyebrow>YOUR HOUSEHOLD</Eyebrow>
+      <Small>{`${ON_PHONE ? "This phone" : "This page"} carries ${show(h.carrying[me])}. Swap with another of your devices, or put the two together in one den.`}</Small>
+      {others.length === 0 ? <Small color="$color10">No other devices yet.</Small> : null}
+      {others.map((id) => (
+        <XStack key={id} gap={10} alignItems="center" flexWrap="wrap" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>
+          <YStack flex={1} minWidth={140}>
+            <Text fontSize={15} color="$color12">{name(id)}</Text>
+            <Small>{withMe === id ? `${show(h.carrying[id])} -- together with yours` : show(h.carrying[id])}</Small>
+          </YStack>
+          <Action label="SWAP" ink={ink} onPress={() => go("/api/household/swap", { a: me, b: id }, `Swapped with the ${name(id)}.`)} />
+          {withMe === id
+            ? <Action label="APART" ink={ink} onPress={() => go("/api/household/apart", { device: me }, "Apart again.")} />
+            : <Action label="TOGETHER" ink={ink} onPress={() => go("/api/household/together", { a: me, b: id }, `Together with the ${name(id)}: both dens show the two.`)} />}
+        </XStack>
+      ))}
+      {said ? <Small>{said}</Small> : null}
+      <Small color="$color8">DRAFT</Small>
     </Card>
   );
 }

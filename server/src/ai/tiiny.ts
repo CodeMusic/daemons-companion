@@ -36,7 +36,8 @@ const headers = (at: TiinyAt, json = true): Record<string, string> =>
   ({ ...(json ? { "content-type": "application/json" } : {}), ...(at.key ? { authorization: `Bearer ${at.key}` } : {}) });
 
 // C-319 next: a write-up that can be stopped from THE MIND AT WORK, and what it cost -- the mind that took it, its tokens
-export type WriteJob = { signal?: AbortSignal; spent?: (t: { in?: number; out?: number }) => void; by?: (mind: string) => void };
+export type WriteJob = { signal?: AbortSignal; spent?: (t: { in?: number; out?: number }) => void; by?: (mind: string) => void;
+                         fell?: (error: string) => void };   // C-319 later: the mind just tried failed, and the write goes on
 export const STOPPED = "stopped";
 async function timed<T>(ms: number, run: (signal: AbortSignal) => Promise<T>, outer?: AbortSignal): Promise<T> {
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms), stop = () => ctl.abort();

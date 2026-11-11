@@ -108,6 +108,7 @@ import { journalOf, writeChapter } from "./journal.js";   // C-298
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf } from "./ai/tasks.js";   // C-319
+import { isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later
 import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
 import { readSubtle } from "./save/subtle.js";   // C-204
 import { sayable } from "./ai/say.js";   // C-270
@@ -727,14 +728,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
   // The work is given `write` (house.write, counted) and says how it ended with `end`.
   const RUNNING = new Map<string, AbortController>();
-  const ledgered = (o: { kind: string; title: string; user?: string; device?: string; retry?: boolean; mind?: string }) => {
+  const ledgered = (o: { kind: string; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string }) => {
     const ctl = new AbortController();
     const task = TASKS.open({ kind: o.kind, title: o.title, user: o.user, device: o.device, mind: o.mind ?? writerNow() ?? undefined,
-                              state: "thinking", can: { stop: true, retry: !!o.retry } });
+                              state: "thinking", can: { stop: true, retry: !!o.retry }, parent: o.parent, plan: o.plan });
     RUNNING.set(task.id, ctl);
     let sizeIn = 0, sizeOut = 0;
     const job: WriteJob = { signal: ctl.signal, spent: (t) => { TASKS.update(task.id, { tokens: t }); },
-                            by: (m) => { if (TASKS.find(task.id)?.state === "thinking") TASKS.update(task.id, { mind: m }); } };
+                            by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e) };   // C-319 later: its hand-offs
     const write = async (system: string, user: string, most?: number) => {
       if (ctl.signal.aborted) throw new Error(STOPPED);
       sizeIn += system.length + user.length; TASKS.update(task.id, { size: { in: sizeIn } });
@@ -747,10 +748,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       RUNNING.delete(task.id);
       if (live()) TASKS.update(task.id, { state, ...patch });
     };
-    return { task, write, end, live, signal: ctl.signal };
+    // C-319 later: a part of this task -- its own child task (drawn under it, stopped with it), written with its own count
+    const part = (title: string) => async (system: string, user: string, most?: number) => {
+      const c = ledgered({ kind: o.kind, title, user: o.user, device: o.device, parent: task.id });
+      const stop = () => c.abort();
+      ctl.signal.addEventListener("abort", stop, { once: true });
+      try { const t = await c.write(system, user, most); c.end(t?.trim() ? "done" : "failed", t?.trim() ? {} : { error: "no words came" }); return t; }   // DRAFT
+      catch (e) { c.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); throw e; }
+      finally { ctl.signal.removeEventListener("abort", stop); }
+    };
+    return { task, write, part, end, live, signal: ctl.signal, abort: () => { ctl.abort(); RUNNING.delete(task.id); } };
   };
   // C-318: a span of WHAT'S NEW told by the hub's mind, in the background -- a task in the ledger, a digest when it lands
-  const tellSpan = (from: number, to: number, by: string, device: string, again?: string) => {
+  const tellSpan = (from: number, to: number, by: string, device: string, again?: string, plan?: string) => {
     const builds = spanOf(NOTES, from, to), mind = writerNow();
     const [lo, hi] = [Math.min(from, to), Math.max(from, to)], title = `WHAT'S NEW ${lo}–${hi}`;   // DRAFT
     const id = again ?? `d${Date.now().toString(36)}`;
@@ -762,7 +772,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), d);
       return { digest: d, task: TASKS.find(task.id) };
     }
-    const w = ledgered({ kind: "whatsnew", title, user: by, device, retry: true, mind });
+    const w = ledgered({ kind: "whatsnew", title, user: by, device, retry: true, mind, plan });
     const d: Digest = { id, from: lo, to: hi, at: w.task.at, by, task: w.task.id, state: "thinking", mind };
     keepDigest((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), d);
     w.write(DIGEST_SYSTEM, digestAsk(builds), 900).then((text) => {
@@ -779,6 +789,33 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     });
     return { digest: d, task: w.task };
   };
+  // C-319 later: THE MIND's plans (ai/schedule.ts) -- each run when it falls due, checked every minute; a plan first seen
+  // starts from now (no run for a time that passed before it existed). A plan with nothing to do says so in the ledger.
+  const PLAN_RUN: Record<string, () => string | null> = {
+    "whatsnew.week": () => {
+      const s = weekSpan(NOTES.builds, new Date());
+      if (!s) return "no new builds this week";               // DRAFT
+      tellSpan(s.from, s.to, "the house", "the hub", undefined, "whatsnew.week");
+      return null;
+    },
+  };
+  const runPlan = (id: string) => {
+    const p = plans((k) => store.getSetting(k)).find((x) => x.id === id);
+    if (!p) return null;
+    keepPlan((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), id, { last: new Date().toISOString() });
+    const idle = PLAN_RUN[id]?.() ?? null;
+    if (idle) { const t = TASKS.open({ kind: p.kind, title: `${p.title}: ${idle}`, state: "thinking", plan: id }); TASKS.update(t.id, { state: "done" }); }
+    return p;
+  };
+  const runPlans = () => {
+    const now = new Date();
+    for (const p of plans((k) => store.getSetting(k))) {
+      if (!p.last) keepPlan((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), p.id, { last: now.toISOString() });
+      else if (isDue(p, now)) runPlan(p.id);
+    }
+  };
+  runPlans();
+  setInterval(runPlans, 60_000).unref();
   // C-220: OUT TOGETHER -- a meeting's turns said by the module, each in time or written instead (meet.ts)
   setMeetTalker(async (me, other, heard) => {
     if (!house.any) return null;
@@ -854,7 +891,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-308: with a thinker in the house, the night told twice at once and made whole, with its title -- the old single
       // telling below only when that does not come
       if (house.any) {
-        const made = await dreamTwice(dream, day, who, w.write).catch(() => null);
+        // C-319 later: its three writes are its parts -- the left telling, the right, and the two made whole (in the order asked)
+        const parts = ["the left hemisphere's telling", "the right hemisphere's telling", "the two made whole"];   // DRAFT
+        let n = 0;
+        const made = await dreamTwice(dream, day, who, (s, u, most) => w.part(parts[n++] ?? "a telling")(s, u, most)).catch(() => null);
         if (!w.live()) return;                                 // stopped: the written dream stays
         if (made && keepLenses(store, dream.id, made)) { w.end("done"); return; }
       }
@@ -1282,13 +1322,23 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                        ...(TALK_HEALTH.modules ?? []).map((m) => ({ name: m.name, ok: m.ok })),
                        ...(TALK_HEALTH.endpoints ?? []).map((h) => ({ name: endpointsIn((k) => store.getSetting(k)).find((e) => e.id === h.id)?.name ?? h.id, ok: h.ok })),
                        ...(TALK_HEALTH.n8n ? [{ name: "n8n", ok: TALK_HEALTH.n8n.ok }] : [])];
-        return send(res, 200, { tasks: (user ? all.filter((t) => t.user === user) : all).slice(0, 150), users: usersOf(all), minds,
-                                load: talkJobs.load, at: new Date().toISOString() });
+        const now = new Date(), ps = plans((k) => store.getSetting(k));   // C-319 later: LATER -- each plan's next time
+        const later = ps.filter((p) => p.on).map((p) => planTask(p, now, writerNow() ?? undefined));
+        return send(res, 200, { tasks: [...(user ? all.filter((t) => t.user === user) : all).slice(0, 150), ...later], users: usersOf(all), minds,
+                                load: talkJobs.load, at: now.toISOString(),
+                                plans: ps.map((p) => ({ id: p.id, kind: p.kind, title: p.title, said: p.said, on: p.on, last: p.last ?? null, next: nextDue(p, now).toISOString() })) });
       }
       // C-319: a task managed -- {id, act: "stop" | "retry" | "forget"}, or {act: "clear", user?} for the settled
       if (req.method === "POST" && path === "/api/mind/tasks") {
         const b = await body(req), id = String(b.id ?? "");
         if (b.act === "clear") { TASKS.clear(typeof b.user === "string" ? b.user : undefined); return send(res, 200, { ok: true }); }
+        // C-319 later: {act: "plan", plan, on?: boolean, now?: true} -- a plan switched on or off, or run at once
+        if (b.act === "plan") {
+          const pid = String(b.plan ?? "");
+          if (typeof b.on === "boolean" && !keepPlan((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), pid, { on: b.on })) return send(res, 404, { error: "no such plan" });
+          if (b.now === true && !runPlan(pid)) return send(res, 404, { error: "no such plan" });
+          return send(res, 200, { plans: plans((k) => store.getSetting(k)) });
+        }
         const t = TASKS.find(id);
         if (!t) return send(res, 404, { error: "only the hub's own tasks can be managed" });   // DRAFT
         if (b.act === "stop") {

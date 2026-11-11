@@ -7,13 +7,19 @@
 // see the same mesh; the talks a phone reports (mindlog.ts's traces) and the hub's live talk queue (talkjobs.ts) are
 // read in as tasks too, so nothing that thinks is missing. Only titles, names and times -- never what was said.
 
-export type TaskState = "waiting" | "thinking" | "done" | "failed" | "stopped";
+// "scheduled" is never kept in the ledger: it is a plan's next time (ai/schedule.ts), shown in LATER
+export type TaskState = "waiting" | "thinking" | "done" | "failed" | "stopped" | "scheduled";
+// C-319 later: each mind a task was given to, in order -- a hand-off when one failed or was slow
+export type Hop = { mind: string; at: string; error?: string };
 export type Task = {
   id: string; kind: string; title: string;
   user: string; device: string; mind?: string;
   state: TaskState; at: string; started?: string; ended?: string; ms?: number; error?: string;
   can?: { stop?: boolean; retry?: boolean };          // what the ledger lets a phone do with it
-  source?: "ledger" | "trace" | "queue";              // where the view found it
+  source?: "ledger" | "trace" | "queue" | "schedule"; // where the view found it
+  parent?: string;                                    // C-319 later: the task that asked for this one (a tree)
+  hops?: Hop[];                                       // C-319 later: the minds it went through
+  due?: string; plan?: string;                        // C-319 later: a plan's next time, and which plan
   // C-319 next: how much it was given and gave back, in characters, and what the mind counted in tokens (when it says)
   size?: { in?: number; out?: number }; tokens?: { in?: number; out?: number };
 };
@@ -40,12 +46,14 @@ export class Tasks {
     const live = ts.filter((t) => LIVE.includes(t.state)), settled = ts.filter((t) => !LIVE.includes(t.state));
     this.set(KEY, JSON.stringify([...live, ...settled].sort((a, b) => b.at.localeCompare(a.at)).slice(0, Math.max(MOST_TASKS, live.length))));
   }
-  open(o: { kind: string; title: string; user?: string; device?: string; mind?: string; state?: TaskState; can?: Task["can"] }): Task {
+  open(o: { kind: string; title: string; user?: string; device?: string; mind?: string; state?: TaskState; can?: Task["can"];
+            parent?: string; plan?: string }): Task {
     const at = this.now().toISOString();
     const t: Task = { id: `t${Date.now().toString(36)}${(this.n++).toString(36)}`, kind: clip(o.kind, 20) ?? "work",
                       title: clip(o.title) ?? "thinking", user: clip(o.user, 40) ?? "the house", device: clip(o.device, 40) ?? "the hub",
                       ...(o.mind ? { mind: clip(o.mind, 40) } : {}), state: o.state ?? "waiting", at,
-                      ...(o.state === "thinking" ? { started: at } : {}), ...(o.can ? { can: o.can } : {}), source: "ledger" };
+                      ...(o.state === "thinking" ? { started: at } : {}), ...(o.can ? { can: o.can } : {}), source: "ledger",
+                      ...(o.parent ? { parent: o.parent } : {}), ...(o.plan ? { plan: clip(o.plan, 40) } : {}) };
     this.keep([t, ...this.all()]);
     return t;
   }
@@ -70,6 +78,19 @@ export class Tasks {
     }));
     return out;
   }
+  // C-319 later: a mind given the task (it becomes the task's mind), and the last one's failure when it passed it on
+  hop(id: string, mind: string) {
+    const t = this.find(id);
+    if (!t || !LIVE.includes(t.state)) return;
+    const hops = [...(t.hops ?? []), { mind: clip(mind, 40) ?? "a mind", at: this.now().toISOString() }].slice(-6);
+    this.keep(this.all().map((x) => (x.id === id ? { ...x, mind: hops[hops.length - 1].mind, hops } : x)));
+  }
+  fell(id: string, error: string) {
+    const t = this.find(id);
+    if (!t?.hops?.length) return;
+    const hops = t.hops.map((h, i) => (i === t.hops!.length - 1 ? { ...h, error: clip(error, 80) ?? "failed" } : h));
+    this.keep(this.all().map((x) => (x.id === id ? { ...x, hops } : x)));
+  }
   forget(id: string): boolean {
     const was = this.all();
     const left = was.filter((t) => t.id !== id || LIVE.includes(t.state));   // the live are stopped, not forgotten
@@ -87,7 +108,11 @@ type TraceLike = { at: string; kind: string; ring: string; from: string; user?: 
 export function traceTask(t: TraceLike): Task {
   const ms = (t.ms.hear ?? 0) + (t.ms.think ?? 0) + (t.ms.voice ?? 0);
   const ok = !!t.thought;
-  return { id: `trace-${t.at}`, kind: t.kind, title: t.kind === "guide" ? "asked THE GUIDE" : "talked with a daemon",   // DRAFT
+  // C-319 later: the phone's hedge made visible -- the minds that failed or were too slow, then the one that answered
+  const began = new Date(Date.parse(t.at) - ms).toISOString();
+  const hops: Hop[] = [...(t.failed ?? []).map((m) => ({ mind: m, at: began, error: t.covered ? "too slow; covered" : "failed" })),
+                       ...(t.thought ? [{ mind: t.thought, at: began }] : [])];
+  return { ...(hops.length > 1 ? { hops } : {}), id: `trace-${t.at}`, kind: t.kind, title: t.kind === "guide" ? "asked THE GUIDE" : "talked with a daemon",   // DRAFT
            user: t.user ?? "the house", device: t.device ?? t.from, ...(t.thought ? { mind: t.thought } : {}),
            state: ok ? "done" : "failed", at: new Date(Date.parse(t.at) - ms).toISOString(), ended: t.at, ms,
            ...(ok ? {} : { error: t.failed?.join(", ") || "no mind answered" }), source: "trace" };

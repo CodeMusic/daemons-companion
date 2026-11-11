@@ -92,3 +92,12 @@ export function voiceRecipe(d: VoiceOf, feelings?: Feelings | null, own?: string
   const kind = mine ? `${mine} Like all of its kind it has ${base}${second}.` : `${base}${second}.`;
   return `${kind}${cat} Not a human adult: a small living creature.${mood ? " " + mood : ""}`;
 }
+
+// C-323: FNV-1a as hex -- the same recipe is always the same key (kept here, not in voiceof.ts, so the phone's files
+// that need it do not import the thinkers voiceof.ts reaches, C-329)
+export function voiceKey(kind: string, recipe: string): string {
+  let h = 0x811c9dc5;
+  const s = `${kind}\n${recipe}`;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
+  return `${kind}-${h.toString(16).padStart(8, "0")}`;
+}

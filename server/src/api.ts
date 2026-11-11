@@ -63,9 +63,11 @@ import { StackFlow } from "./ai/stackflow.js";
 import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
+import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
+import { setDialogueThinker } from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import { playerContextOf } from "./playervoice.js";        // C-323: the player's, from their save
 import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
-import { checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
+import { chatOn, checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
@@ -311,11 +313,35 @@ const trackOut = (t: SleepTrack) => ({ ...t, files: t.state === "ready"
 // C-323 (the user, 2026-11-10: "an abstract system for any voice representation which can take in context and form a
 // voice from it"): a voice by the name a caller gives -- "daemon" (the carried one), "player" (read from the save),
 // "index", "entry", "book:<id>" -- as a recipe; a trainer's own (voice.recipe.<name>) used whole. null: no such name.
-function namedRecipe(ecfg: Config, store: Store, deviceId: string, name: unknown): string | null {
+function namedRecipe(ecfg: Config, store: Store, deviceId: string, name: unknown, given?: unknown): string | null {
   if (name === "daemon") return voiceFor(ecfg, store, deviceId).recipe;
+  // C-329: "daemon:<species>" (":<its voice's key>" after, for the phone's keeping) -- any daemon's own voice: the recipe
+  // given (a talk's party carries the one its own companion made), else its trainer's here, else its species'
+  const sp = typeof name === "string" ? /^daemon:(\d{1,4})(?::[a-z0-9-]{1,40})?$/.exec(name) : null;
+  if (sp) {
+    const row = SPECIES[sp[1]];
+    if (!row) return null;
+    if (typeof given === "string" && given.trim()) return given.trim().slice(0, 600);
+    return voiceRecipe({ types: row.types, category: row.category, species: Number(sp[1]) }, null, store.getSetting(`voice.recipe.${sp[1]}`) ?? "");
+  }
   const s = speakerNamed(name, { daemon: () => ({ kind: "daemon" }), own: (n) => store.getSetting(`voice.recipe.${n}`),
                                  player: () => { try { return playerContextOf(hostOf(ecfg).save.read(), ecfg.edition); } catch { return null; } } });
   return s ? voiceOf(s).recipe : null;
+}
+// C-329: a daemon's persona card (ai/personaof.ts) by its personality, as it travels to the hub: its telling and record,
+// the day's virtue over its shadow and its chakra, the goals by title and the next step (the user's choice: titles only
+// across accounts) -- and, for the daemon carried, how it is cared for, its mood and last night's dream. Its voice is its
+// trainer's own recipe or its species', without the mood, so a talk's voice does not move with it.
+function personaCard(ecfg: Config, store: Store, personality: number, now = new Date()): PersonaFacts | null {
+  const d = awayNow(ecfg).find((x) => x.personality >>> 0 === personality);
+  if (!d) return null;
+  const w = talkWho(ecfg, store, ""), carried = carriedDaemon(ecfg, store);
+  const goals = store.goals().filter((g) => !g.done).slice(0, 4).map((g) => ({ goal: g.title, ...(w.goal?.goal === g.title ? { step: w.goal.step } : {}) }));
+  const f = speciesFacts(d.species, d.nickname, ecfg.edition);
+  const life = carried && carried.personality >>> 0 === personality ? core.daemonLife(store, now) : null;
+  return cardOf({ ...f, level: d.level, goals, day: dayFacts(now),
+                  ...(life ? { mood: life.word, care: life.care, dream: (w.daemon as { dream?: string }).dream } : {}),
+                  voice: voiceRecipe({ types: f.types, category: f.category, species: d.species }, null, store.getSetting(`voice.recipe.${d.species}`) ?? "") });
 }
 // C-303 (DAEMONS T-522): what a daemon says of itself (species.json `said`), and the voice it says it in -- its own
 // (C-251), never the INDEX's. null when {own: true} was not asked, or it has no telling yet: its entry is read as before
@@ -845,6 +871,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const q = meetQuestion(me, other, heard);
     return (await house.talk({ text: q, history: [], daemon: { nickname: me.nickname }, speak: false, fixed: { setup: MEET_SETUP, question: q } })).answer;
   });
+  // C-329: DAEMONS IN DIALOGUE -- each line thought by the Tiiny's quick thinker first (someone is watching the dots), then
+  // the player's endpoints, then the house's write-up path; INTEGRATE is a write-up (the Tiiny's big thinker first), a
+  // task in THE MIND's ledger
+  setDialogueThinker(async (system, user, most) => {
+    const t = tiinyNow();
+    if (t) try { return { text: await tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 60_000, most), by: `tiiny:${t.quick || t.model}` }; } catch { /* the next mind */ }
+    for (const n of endpointsNowAll(false))
+      try { return { text: await chatOn(n.e, n.model, system, [], user, fetch, 60_000, most), by: `endpoint:${n.e.name}` }; } catch { /* the next */ }
+    if (!house.any) throw new Error("no mind is answering");
+    return { text: await house.write(system, user, most), by: "the house" };
+  }, async (system, user, most) => {
+    const w = ledgered({ kind: "dialogue", title: "A talk put together" });   // DRAFT
+    try { const text = await w.write(system, user, most); w.end(text?.trim() ? "done" : "failed"); return { text, by: writerNow() ?? "the house" }; }
+    catch (e) { w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); throw e; }
+  });
   // C-220: daemons out together meet on their own, one pair each quarter hour
   setInterval(() => { meetOnTheirOwn(store).catch(() => {}); }, 15 * 60_000).unref();
   discoveryLoop(store);                                        // C-180: the hub's link and the addresses given (ai/discover.ts)
@@ -1219,7 +1260,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path === "/api/manual") return send(res, 200, await fetchManualText(store));   // C-233: the manual as words, for a device
       if (TRADE_PATHS.includes(path)) {
         const h = hostOf(ecfg);
-        return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {}));
+        return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {},
+                                           (p) => personaCard(ecfg, store, p)));   // C-329
       }
       if (req.method === "POST" && path === "/api/sync")             // C-219: what the exchange sent, fetched first; told after
         return reply(res, await runSync(ecfg, store, { deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) }));
@@ -2192,7 +2234,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return answer(PRIORITY.reading, () => readAloud(text, recipe));
         }
         // C-323: {voice} -- whose voice reads the words: "daemon", "player", "index", "entry", "book:<id>"
-        const named = namedRecipe(ecfg, store, deviceId, b.voice) ?? undefined;
+        const named = namedRecipe(ecfg, store, deviceId, b.voice, b.recipe) ?? undefined;   // C-329: {voice: "daemon:<n>", recipe?}
         // 2026-11-07: {text, whole: true} -- all of it (a dream, a journal's chapter), read in parts and joined into one voice
         if (b.whole === true && typeof b.text === "string" && b.text.trim()) {
           const parts = voicePieces(b.text.slice(0, WHOLE_MOST));

@@ -13,7 +13,7 @@
 // Every word here is DRAFT, the user's to rewrite. No node: imports (core.ts reaches this on the phone).
 import type { Feelings } from "../feelings.js";
 import { ENTRY_VOICE, INDEX_VOICE } from "./tiinyfirst.js";
-import { TYPE_VOICE, voiceRecipe } from "./voices.js";
+import { TYPE_VOICE, voiceKey, voiceRecipe } from "./voices.js";
 
 export type Speaker =
   | { kind: "daemon"; species?: number | null; types?: string[] | string; category?: string; feelings?: Feelings | null; own?: string | null }
@@ -87,13 +87,8 @@ export const BOOK_VOICE: Record<string, string> = {
   origin: "An even, unhurried voice, neither a man's nor a woman's but both at once, calm and whole.",
 };
 
-// FNV-1a as hex: the same recipe is always the same key
-export function voiceKey(kind: string, recipe: string): string {
-  let h = 0x811c9dc5;
-  const s = `${kind}\n${recipe}`;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
-  return `${kind}-${h.toString(16).padStart(8, "0")}`;
-}
+// the key a voice is kept by (voices.ts, so a file the phone imports reaches it without this one's imports, C-329)
+export { voiceKey } from "./voices.js";
 
 // A voice by the name a caller gives it -- "daemon", "player", "index", "entry", "book:<id>" -- with what the hub knows:
 // the carried daemon's speaker, and the player's context (read from the save only when asked for). null: no such name.

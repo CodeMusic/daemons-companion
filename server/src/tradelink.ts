@@ -17,6 +17,8 @@ import * as X from "./exchange.js";
 import { homeRoute } from "./commonslink.js";
 import * as M from "./together.js";   // C-220: OUT TOGETHER
 import { dreamsOf } from "./dreams.js";   // C-223
+import * as D from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
+import type { PersonaFacts } from "./ai/personaof.js";
 
 export interface Link {
   hub: string;                                                            // "" -- the exchange is this companion's own
@@ -95,12 +97,21 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
     case "befriend": return X.befriend(store, p.id, b.id, reach);    // C-223: friends at home
     case "unfriend": return X.unfriend(store, p.id, b.id);
     // C-220: OUT TOGETHER -- one daemon out, called back, met
-    case "out": return b.nickname === undefined ? M.outView(store, p.id, nameOf(store), reach) : M.sendOut(store, p.id, b);
+    case "out": if (b.card && b.nickname !== undefined) D.keepCard(store, p.id, b.card, b.edition);   // C-329: its persona's card
+                return b.nickname === undefined ? M.outView(store, p.id, nameOf(store), reach) : M.sendOut(store, p.id, b);
     case "back": return M.callBack(store, p.id);
     case "dreams": return { dreams: M.sharedDreams(store, p.id, nameOf(store), reach) };   // C-223
     case "share": return M.shareDream(store, p.id, b);
     case "unshare": return M.unshareDream(store, p.id, b.id);
     case "meet": return M.meet(store, p.id, b.with, reach).then((r) => ("error" in r ? r : M.outView(store, p.id, nameOf(store), reach)));
+    // C-329: DAEMONS IN DIALOGUE -- this player's daemon out talks with another's out now; the talks, one talk, INTEGRATE
+    case "converse": {
+      const v = M.outView(store, p.id, nameOf(store), reach);
+      return D.startOut(store, p.id, v.mine, v.others.find((o) => o.id === b.with) ?? null, b);
+    }
+    case "talks": return D.list(store, p.id, nameOf(store));
+    case "talk": return D.one(store, p.id, b.id, nameOf(store));
+    case "integrate": return D.integrate(store, p.id, b.id, nameOf(store));
     default: return { error: "not found" };
   }
 }
@@ -164,7 +175,10 @@ const ok = (body: unknown, status = 200): Reply => ({ status, body });
 const no = (status: number, error: string): Reply => ({ status, body: { error } });
 const answer = (r: any): Reply => (r?.error ? no(400, r.error) : ok(r));
 
-export async function tradeRoute(link: Link | null, store: Store, save: Uint8Array | null, edition: string, method: string, path: string, b: any): Promise<Reply> {
+// cardFor (C-329): this companion's card for one of its daemons, by its personality -- its persona's facts as they travel to
+// the hub (ai/personaof.ts); none, and the hub knows it by its species alone
+export async function tradeRoute(link: Link | null, store: Store, save: Uint8Array | null, edition: string, method: string, path: string, b: any,
+                                 cardFor?: (personality: number) => PersonaFacts | null): Promise<Reply> {
   // no exchange in reach (a phone hosting alone with no hub named): TRADE asks for the hub's address and nothing else
   if (!link) return method === "GET" && path === "/api/trade"
     ? ok({ hub: null, needsHub: true, me: null, game: save ? gameOf(save).name : null, edition, away: [], board: null, pending: 0, waiting: 0 })
@@ -193,8 +207,17 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
     if (!save) return no(404, "no save named -- set it in Settings");
     const d = readAway(save).find((x) => x.personality >>> 0 === Number(b.personality) >>> 0);
     if (!d) return no(400, "only a daemon AWAY goes out -- SEND it from the game first");       // DRAFT
-    return answer(await link.call("out", { personality: d.personality >>> 0, species: d.species, nickname: d.nickname, level: d.level, edition }));
+    const card = cardFor?.(d.personality >>> 0) ?? undefined;   // C-329
+    return answer(await link.call("out", { personality: d.personality >>> 0, species: d.species, nickname: d.nickname, level: d.level, edition, card }));
   }
+  // C-329: DAEMONS IN DIALOGUE -- begun with a fresh card for the daemon out (its care, mood and dream move in a day)
+  if (path === "/api/trade/converse") {
+    const out = await link.call("out", {});
+    const mine = save && out?.mine ? readAway(save).find((x) => x.species === out.mine.species && x.nickname.trim().slice(0, 12).toUpperCase() === out.mine.nickname) : null;
+    const card = mine ? cardFor?.(mine.personality >>> 0) ?? undefined : undefined;
+    return answer(await link.call("converse", { with: b.with, mode: b.mode, turns: b.turns, prompt: b.prompt, swap: b.swap === true, card }));
+  }
+  if (path === "/api/trade/talks" || path === "/api/trade/talk" || path === "/api/trade/integrate") return answer(await link.call(path.slice("/api/trade/".length), b));
   if (path === "/api/trade/back" || path === "/api/trade/meet" || path === "/api/trade/unshare" || path === "/api/trade/befriend" || path === "/api/trade/unfriend") return answer(await link.call(path.slice("/api/trade/".length), b));
   // C-223: one of this companion's dreams (dreams.ts), shared with the players at home
   if (path === "/api/trade/share") {
@@ -230,4 +253,5 @@ export function setHub(store: Store, raw: unknown): { hub: string } | string {
   return { hub: url };
 }
 export const TRADE_PATHS = ["/api/trade", "/api/trade/join", "/api/trade/offer", "/api/trade/accept", "/api/trade/withdraw", "/api/trade/recall", "/api/trade/password",
-                            "/api/trade/out", "/api/trade/back", "/api/trade/meet", "/api/trade/share", "/api/trade/unshare", "/api/trade/befriend", "/api/trade/unfriend"];
+                            "/api/trade/out", "/api/trade/back", "/api/trade/meet", "/api/trade/share", "/api/trade/unshare", "/api/trade/befriend", "/api/trade/unfriend",
+                            "/api/trade/converse", "/api/trade/talks", "/api/trade/talk", "/api/trade/integrate"];   // C-329

@@ -11,6 +11,7 @@ import { useApi } from "../../platform/useApi";
 import { EngineRoom } from "../../ui/engineRoom";   // C-330
 import { KIND_NAMES, playerId } from "../../state/data";
 import type { DeviceRow } from "../../state/types";
+import { DialogueCard } from "./Dialogue";   // C-329: IN DIALOGUE
 
 type Brief = { player: string; personality: number; species: number; nickname: string; level: number; edition: string } | null;
 type Offer = { id: string; at: string; kind: "full" | "loan" | "gift" | "item"; state: string; to: string | null; mine: boolean; from: Brief; with: Brief; done: boolean; held: boolean;
@@ -296,6 +297,7 @@ function OutCard({ v, ink, act }: { v: View; ink: string; act: (path: string, bo
           ))}
         </YStack>
       ))}
+      <DialogueCard mine={mine} others={out.others} ink={ink} />
     </Card>
   );
 }

@@ -13,9 +13,11 @@ import { sayable } from "./say.js";   // C-270
 // quick is the FOREGROUND one -- a talk, the GUIDE, a command, someone waiting -- thinking off, a few sentences. quick
 // unset is the background model with thinking off (measured 2026-11-05 on the Tiiny: Qwen3.6-35B-A3B answers a talk in
 // 1-1.5 s, first words streamed in 0.4 s, no slower than Qwen3.5-9B -- it wakes only 3B of itself per word).
-export type TiinyAt = { url: string; key: string; model: string; quick: string; tts: string; asr: string; voice: string };
+// stream (C-317): where its voice streams from, a /v1 base (roverbyteseer's keyed forwarder, :4001) -- LiteLLM holds a voice
+// back until it is whole; "" asks LiteLLM, in parts
+export type TiinyAt = { url: string; key: string; model: string; quick: string; tts: string; asr: string; voice: string; stream?: string };
 
-export const TIINY_SETTINGS = ["tiiny.url", "tiiny.key", "tiiny.model", "tiiny.quick", "tiiny.tts", "tiiny.asr", "tiiny.voice"] as const;
+export const TIINY_SETTINGS = ["tiiny.url", "tiiny.key", "tiiny.model", "tiiny.quick", "tiiny.tts", "tiiny.asr", "tiiny.voice", "tiiny.stream"] as const;
 
 export const tiinyUrl = (raw: string): string | null => {
   const u = raw.trim().replace(/\/+$/, "");
@@ -27,7 +29,7 @@ export function tiinyIn(get: (k: string) => string | null): TiinyAt | null {
   const url = tiinyUrl(get("tiiny.url") ?? "");
   if (!url) return null;
   return { url, key: get("tiiny.key") ?? "", model: get("tiiny.model") ?? "", quick: get("tiiny.quick") ?? "", tts: get("tiiny.tts") ?? "",
-           asr: get("tiiny.asr") ?? "", voice: get("tiiny.voice") ?? "" };
+           asr: get("tiiny.asr") ?? "", voice: get("tiiny.voice") ?? "", stream: tiinyUrl(get("tiiny.stream") ?? "") ?? "" };
 }
 
 const headers = (at: TiinyAt, json = true): Record<string, string> =>
@@ -175,5 +177,5 @@ export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = 
 // The settings as the app is shown them: the key never, only whether there is one
 export const tiinyView = (get: (k: string) => string | null) => ({
   url: get("tiiny.url") ?? "", keySet: !!get("tiiny.key"), model: get("tiiny.model") ?? "", quick: get("tiiny.quick") ?? "",
-  tts: get("tiiny.tts") ?? "", asr: get("tiiny.asr") ?? "", voice: get("tiiny.voice") ?? "",
+  tts: get("tiiny.tts") ?? "", asr: get("tiiny.asr") ?? "", voice: get("tiiny.voice") ?? "", stream: get("tiiny.stream") ?? "",
 });

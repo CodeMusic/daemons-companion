@@ -194,13 +194,13 @@ export function VersionCard({ ink }: { ink: string }) {
 // C-66: who answers when you talk to your daemon -- a privacy choice, so it is said plainly. C-180: or the modules in the
 // house (the hub's Module LLM, an AX630 board), and, beside it, the one voice that reads the INDEX aloud.
 type Provider = "module" | "auto" | "local" | "openrouter" | "tiiny";
-type Tiiny = { url: string; keySet: boolean; model: string; quick?: string; tts: string; asr: string; voice: string };   // C-249
+type Tiiny = { url: string; keySet: boolean; model: string; quick?: string; tts: string; asr: string; voice: string; stream?: string };   // C-249, C-317
 type HouseModule = { url: string; name: string; busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null };
 export function TalkSettingsCard({ ink }: { ink: string }) {
   const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
                             moduleAddresses?: string; tiiny?: Tiiny; voices?: string;
                             health?: { tiiny?: { ok: boolean; models: string[] } | null } }>("/api/talk/settings");
-  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; quick?: string; asr?: string; tts?: string } | null>(null);
+  const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; quick?: string; asr?: string; tts?: string; stream?: string } | null>(null);
   const [tiinyNote, setTiinyNote] = useState("");
   const [voicesNote, setVoicesNote] = useState("");
   const voicesAgain = async () => {                                   // C-303: the hub's generation moves; every phone forgets its kept voices
@@ -277,6 +277,9 @@ export function TalkSettingsCard({ ink }: { ink: string }) {
           <Input flexGrow={1} minWidth={140} value={tiinyTyped?.tts ?? t.tiiny?.tts ?? ""} onChangeText={(tts) => setTiinyTyped({ ...tiinyTyped, tts })}
                  placeholder="its voice model (or the board's)" autoCapitalize="none" autoCorrect={false} />
         </XStack>
+        {/* C-317: its voice streamed past LiteLLM, which holds a voice back until it is whole */}
+        <Input value={tiinyTyped?.stream ?? t.tiiny?.stream ?? ""} onChangeText={(stream) => setTiinyTyped({ ...tiinyTyped, stream })}
+               placeholder="its voice, streamed: http://roverbyteseer:4001/v1 (or through the address above)" autoCapitalize="none" autoCorrect={false} keyboardType="url" />{/* DRAFT */}
         <Small color={tiinyHealth ? (tiinyHealth.ok ? "$color10" : "$color9") : undefined}>
           {tiinyNote || (!tiinyOn ? "Its address: roverbyteseer's, which lists the Tiiny's models with its own, or the Tiiny's own, ending /openai/v1."
             : tiinyHealth?.ok ? `Answering: ${tiinyHealth.models.length} models.` : "Not answering yet.")}

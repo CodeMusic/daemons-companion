@@ -1221,6 +1221,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (typeof t.url === "string" && t.url.trim() && !tiinyUrl(t.url))
             return send(res, 400, { error: "the Tiiny's address ends in /v1: http://roverbyteseer:4000/v1, or http://<its address>/openai/v1" });   // DRAFT
           if (typeof t.url === "string") store.setSetting("tiiny.url", t.url.trim() ? tiinyUrl(t.url) : null);
+          if (typeof t.stream === "string" && t.stream.trim() && !tiinyUrl(t.stream))                          // C-317
+            return send(res, 400, { error: "its voice stream's address ends in /v1: http://roverbyteseer:4001/v1" });   // DRAFT
+          if (typeof t.stream === "string") store.setSetting("tiiny.stream", t.stream.trim() ? tiinyUrl(t.stream) : null);
           for (const k of ["key", "model", "quick", "tts", "asr", "voice"] as const)
             if (typeof t[k] === "string") store.setSetting(`tiiny.${k}`, t[k].trim().slice(0, 200) || null);
           const at = tiinyIn((k) => store.getSetting(k)), held = at ? await tiinyModels(at) : null;
@@ -1866,8 +1869,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.stream === true && !relayed && (b.daemon === true || b.reader === true) && typeof b.text === "string" && b.text.trim()) {
           const t = tiinyNow();
           const recipe = b.daemon === true ? voiceFor(ecfg, store, deviceId).recipe : store.getSetting("voice.recipe.index") || INDEX_VOICE;
-          // in growing parts (voice.ts: LiteLLM hands a voice on only when it is whole), the first waited on here
-          const parts = voiceParts(b.text.slice(0, 600)), at = t?.at;
+          // where a voice stream is named (roverbyteseer's forwarder past LiteLLM), all of it at once, streamed straight
+          // through; else, or when that will not start, in growing parts (voice.ts: LiteLLM hands a voice on only when
+          // it is whole), the first waited on here
+          const whole = b.text.slice(0, 600), at = t?.at;
+          if (at?.tts && at.stream) {
+            const id = streams.open(), enc = mp3Into(streams, id);          // the encoder starting while the Tiiny begins
+            const st = await tiinySpeakStream({ ...at, url: at.stream }, whole, recipe, fetch, 20_000);
+            if (!st) enc.kill();
+            else {
+              streamParts(streams, id, enc, st, [], async () => null).catch(() => streams.end(id, true));
+              return send(res, 200, { stream: `/api/ai/voice/${id}`, provider: `tiiny:${at.tts}`, final: true,
+                                      generation: voiceGeneration((k) => store.getSetting(k)) });
+            }
+          }
+          const parts = voiceParts(whole);
           const ask = (part: string) => at ? tiinySpeakStream(at, part, recipe, fetch, 30_000) : Promise.resolve(null);
           const id = at?.tts && parts.length ? streams.open() : null, enc = id ? mp3Into(streams, id) : null;
           const s = id ? await ask(parts[0]) : null;

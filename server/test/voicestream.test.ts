@@ -74,3 +74,13 @@ describe("the voice in growing parts", () => {
     expect(shelf.whole(id)!.length).toBeGreaterThan(parts.length * 3000);   // half a second of each, at 64 kbit
   });
 });
+
+describe("the voice stream's own address", () => {
+  it("is kept as a /v1 base, and nothing when it is not one", async () => {
+    const { tiinyIn } = await import("../src/ai/tiiny.js");
+    const s: Record<string, string> = { "tiiny.url": "http://roverbyteseer:4000/v1", "tiiny.stream": "http://roverbyteseer:4001/v1/" };
+    expect(tiinyIn((k) => s[k] ?? null)?.stream).toBe("http://roverbyteseer:4001/v1");
+    s["tiiny.stream"] = "http://roverbyteseer:4001";
+    expect(tiinyIn((k) => s[k] ?? null)?.stream).toBe("");
+  });
+});

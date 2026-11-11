@@ -1,9 +1,61 @@
 {
- "latest": 970,
+ "latest": 971,
  "builds": [
   {
+   "build": 971,
+   "commit": "c128886",
+   "date": "2026-11-11",
+   "sections": [
+    {
+     "ticket": "C-254",
+     "title": "The mind portal",
+     "lines": [
+      "THE MIND, a look around the daemon's mind (DRAFT) — NOW (its face in a room whose weather and colour are the strongest feeling's, each feeling a band, the words and the event behind a tap), BOTH DREAMS (the companion's last beside the one the save carries), VOICE, SELF and REMEMBERED; GET /api/mind/portal; a SYMBOL in the party drawn again (artFileOf shared with the INDEX)"
+     ]
+    },
+    {
+     "ticket": "C-327",
+     "title": "Social within the household: swap, share a space, care seen on both",
+     "lines": [
+      "Social within the household, the server's half (DRAFT) — swap, a shared space, care seen on both",
+      "Social within the household, the app's half (DRAFT) — YOUR HOUSEHOLD, and two daemons in one den",
+      "The household's requests on the device's own door, so a watch on the network can swap and share a space"
+     ]
+    },
+    {
+     "ticket": "C-326",
+     "title": "The crown's shortcuts, and a manual for the T-Watch",
+     "lines": [
+      "THE WATCH on the LIBRARY's MANUALS shelf — its PDF fetched and kept as the others are, LISTEN in its own voice (pocket, the user's pick); the bookcase shares a shelf's books evenly over its boards, at most four to a board (the user: never too small, never a lone book beside five)"
+     ]
+    },
+    {
+     "ticket": "C-313",
+     "title": "The decks' dawn readings",
+     "lines": [
+      "The dawn faces' daemons, the user's 22 picks (each on no other face), drawn at the sun on THE DECK OF DAWN"
+     ]
+    },
+    {
+     "ticket": "C-337",
+     "title": "A phone paired by its own name, and renamed from the phone",
+     "lines": [
+      "A phone names itself after pairing — SETTINGS > THIS PHONE: its name on the companion and what your daemon calls you; GET/POST /api/phone/name by the phone's own key (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "LIBRARY shelf: THE WATCH's cover (C-326)",
+      "Unity.json: THE UNITY BOOK's last line finishes both torn sentences — 'Look again, and you will see them both.' (T-519, the user, 2026-11-11, by multiple choice; DRAFT)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 970,
-   "commit": "41944fe",
+   "commit": "1140ba2",
    "date": "2026-11-11",
    "sections": [
     {
@@ -32,7 +84,8 @@
      "ticket": "C-318",
      "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
      "lines": [
-      "Whatsnew.json with build 969's notes"
+      "Whatsnew.json with build 969's notes",
+      "Whatsnew.json with build 970's notes"
      ]
     },
     {

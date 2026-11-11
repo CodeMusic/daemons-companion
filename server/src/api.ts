@@ -106,7 +106,9 @@ import { createSocket } from "node:dgram";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
-import { weatherNow } from "./context.js";
+import { weatherNow, weatherToday } from "./context.js";
+import { buildPersona, personaFresh, readPersona, signatureOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
+import { comfyPaint, EASEL_HOST, imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages, keptToPage } from "./guideask.js";   // C-209
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
@@ -916,6 +918,86 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   };
   setTimeout(warmTalk, 60_000).unref();
   setInterval(warmTalk, 30 * 60_000).unref();   // a no-op while both thinkers hold: setups only when a persona changed
+  // C-338: THE PERSONA OF THE DAY (persona.ts), one per daemon sent to the companion, kept as persona.<personality>: built
+  // from its card (personaCard) with the weather, fresh until the next wake or until its signature moves; what it writes
+  // of meeting the day is asked of the house's mind in the background, a task in the ledger. null: no such daemon here.
+  const writingToday = new Set<string>();
+  const personaNow = (personality: number, now = new Date()): { persona: Persona; facts: DayPersonaFacts } | null => {
+    const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
+    const card = personaCard(ecfg, store, personality >>> 0, now);
+    if (!card) return null;
+    const facts: DayPersonaFacts = { ...card, weather: weatherNow(store, now), forecast: weatherToday(store, now) };
+    const key = `persona.${personality >>> 0}`, had = readPersona(store.getSetting(key)), person = store.getSetting("self.trainer") || undefined;
+    const persona = had && personaFresh(had, signatureOf(facts), now) ? had : buildPersona(key, facts, now, had, person);
+    if (persona !== had) store.setSetting(key, JSON.stringify(persona));
+    if (!persona.today && !writingToday.has(key) && writerNow()) {
+      writingToday.add(key);
+      const w = ledgered({ kind: "persona", title: `${card.nickname}'s day, as it wakes` });   // DRAFT
+      w.write(TODAY_SYSTEM, persona.text, 220).then((t) => {
+        const said = (t ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+        if (!said) return w.end("failed", { error: "no words came" });   // DRAFT
+        const cur = readPersona(store.getSetting(key));
+        if (cur && cur.signature === persona.signature) store.setSetting(key, JSON.stringify(withToday(cur, facts, said, person)));
+        w.end("done");
+      }).catch((e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) })).finally(() => writingToday.delete(key));
+    }
+    return { persona, facts };
+  };
+  // built at wake: every ten minutes each daemon here is looked at, and only a stale one is built again
+  const wakePersonas = () => { try { for (const d of awayNow({ ...cfg, savePath: savePathOf(cfg, store) })) personaNow(d.personality); } catch { /* next time */ } };
+  setTimeout(wakePersonas, 90_000).unref();
+  setInterval(wakePersonas, 10 * 60_000).unref();
+
+  // C-338: THE EASEL -- a daemon paints what it is asked (ai/easel.ts): its persona of the day and the request to the house's
+  // mind, which answers as the daemon with a title, the scene and a line about it; the scene in the daemon's own style to
+  // the image model on roverbyteseer (easel.host). Each painting a row in easel.paintings (newest first), its picture in
+  // <data>/paintings/<id>.png; a task in the ledger while it is made.
+  const PAINTINGS_DIR = join(dirname(cfg.database), "paintings");
+  const PAINTINGS_MOST = 400;
+  type PaintingRow = { id: string; at: string; personality: number; species: number; nickname: string; name: string; types: string[];
+                       request: string; title: string; scene: string; about: string; style: string; seed: number;
+                       state: "painting" | "done" | "failed"; error?: string; task?: string; ms?: number };
+  const paintings = (): PaintingRow[] => { try { const l = JSON.parse(store.getSetting("easel.paintings") ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; } };
+  const keepPainting = (row: PaintingRow) => {
+    const rest = paintings().filter((p) => p.id !== row.id);
+    store.setSetting("easel.paintings", JSON.stringify([row, ...rest].slice(0, PAINTINGS_MOST)));
+  };
+  const updatePainting = (id: string, patch: Partial<PaintingRow>) => {
+    const l = paintings(), i = l.findIndex((p) => p.id === id);
+    if (i < 0) return;
+    l[i] = { ...l[i], ...patch };
+    store.setSetting("easel.paintings", JSON.stringify(l));
+  };
+  const paintingFile = (id: string) => join(PAINTINGS_DIR, `${/^[0-9a-f]{16}$/.test(id) ? id : "-"}.png`);
+  const paint = (personality: number, request: string): PaintingRow | { error: string } => {
+    const now = new Date(), got = personaNow(personality, now);
+    if (!got) return { error: "That daemon is not here to paint." };   // DRAFT
+    if (!writerNow()) return { error: "No mind in the house to think it through." };   // DRAFT
+    const f = got.facts, sp = SPECIES[String(f.species)];
+    const style = paintStyle({ types: f.types, species: f.species, category: f.category }, core.daemonFeelings(store, now),
+                             store.getSetting(`paint.style.${f.species}`));
+    const id = randomBytes(8).toString("hex"), seed = randomBytes(4).readUInt32BE(0);
+    const w = ledgered({ kind: "painting", title: `${f.nickname} paints: ${request.slice(0, 40)}` });   // DRAFT
+    const row: PaintingRow = { id, at: now.toISOString(), personality: personality >>> 0, species: f.species, nickname: f.nickname,
+                               name: sp?.name ?? f.name ?? "", types: f.types ?? [], request, title: "", scene: "", about: "", style, seed,
+                               state: "painting", task: w.task.id };
+    keepPainting(row);
+    (async () => {
+      const said = await w.write(PAINT_SYSTEM, paintAsk(got.persona.text, request, style), 400);
+      const p = readPainting(said, request);
+      updatePainting(id, { title: p.title, scene: p.scene, about: p.about });
+      const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style), seed, fetch, w.signal);
+      mkdirSync(PAINTINGS_DIR, { recursive: true });
+      writeFileSync(paintingFile(id), png);
+      updatePainting(id, { state: "done", ms: Date.now() - now.getTime() });
+      w.end("done");
+    })().catch((e) => {
+      const error = (e as Error)?.message?.slice(0, 120) || "it could not be painted";   // DRAFT
+      updatePainting(id, { state: "failed", error });
+      w.end("failed", { error });
+    });
+    return row;
+  };
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
   // C-307: THE MIND's ring -- "home" keeps the work in the house: the Tiiny and the boards as they are, n8n only with its
@@ -2507,6 +2589,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const f = q.get("symbol") ?? "", file = join(ART_DIR, "symbol", `${/^([a-z]|exclamation_mark|question_mark)$/.test(f) ? f : "-"}.png`);
           return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such form" });
         }
+        if (q.has("painting")) {   // C-338: a painting, for a phone away
+          const file = paintingFile(q.get("painting") ?? "");
+          return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such painting" });
+        }
         if (q.has("book")) {   // C-320: a book's cover on the LIBRARY's shelf, for a phone away
           const file = join(ART_DIR, "books", `${/^[a-z]{1,16}$/.test(q.get("book") ?? "") ? q.get("book") : "-"}.png`);
           return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such cover" });
@@ -2557,6 +2643,45 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!existsSync(file)) return send(res, 404, { error: "no such form" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(readFileSync(file));
+      }
+      // C-338: a painting, by an id nobody can guess
+      const paintingArt = path.match(/^\/art\/paintings\/([0-9a-f]{16})\.png$/);
+      if (req.method === "GET" && paintingArt) {
+        const file = paintingFile(paintingArt[1]);
+        if (!existsSync(file)) return send(res, 404, { error: "no such painting" });
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=31536000, immutable" });
+        return res.end(readFileSync(file));
+      }
+      // C-338: THE EASEL -- {prompt, personality?}: the daemon carried (or the one named) paints it; the row at once, the
+      // picture when it is made (GET /api/paintings/<id> to look). GET /api/paintings: every painting, newest first.
+      if (req.method === "POST" && path === "/api/paint") {
+        const b = await body(req);
+        const request = typeof b.prompt === "string" ? b.prompt.replace(/\s+/g, " ").trim().slice(0, 300) : "";
+        if (!request) return send(res, 400, { error: "paint {prompt}: what to paint" });   // DRAFT
+        const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
+        const who = b.personality !== undefined ? Number(b.personality) : carriedDaemon(ecfg, store, deviceId)?.personality;
+        if (who === undefined || !Number.isFinite(who)) return send(res, 400, { error: "Host a daemon for it to paint." });   // DRAFT
+        const r = paint(who, request);
+        return "error" in r ? send(res, 409, r) : send(res, 200, { painting: r });
+      }
+      if (req.method === "GET" && path === "/api/paintings") return send(res, 200, { paintings: paintings() });
+      if (req.method === "GET" && path.startsWith("/api/paintings/")) {
+        const p = paintings().find((x) => x.id === path.slice("/api/paintings/".length));
+        return p ? send(res, 200, { painting: p }) : send(res, 404, { error: "no such painting" });
+      }
+      if (req.method === "POST" && path === "/api/paintings/forget") {
+        const id = String((await body(req)).id ?? "");
+        if (!paintings().some((p) => p.id === id)) return send(res, 404, { error: "no such painting" });
+        store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== id)));
+        if (existsSync(paintingFile(id))) unlinkSync(paintingFile(id));
+        return send(res, 200, { ok: true });
+      }
+      // C-338: the persona of the day, as talk, voices and paintings read it -- {personality?}: the daemon carried
+      if (req.method === "GET" && path === "/api/persona") {
+        const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
+        const q = url.searchParams.get("personality"), who = q !== null ? Number(q) : carriedDaemon(ecfg, store, deviceId)?.personality;
+        const got = who === undefined || !Number.isFinite(who) ? null : personaNow(who);
+        return got ? send(res, 200, { persona: got.persona }) : send(res, 404, { error: "no daemon here" });
       }
       // C-320: every book's cover on the LIBRARY's shelf (DAEMONS tools/shelfcovers.py writes data/art/books/<book>.png)
       const shelfArt = path.match(/^\/art\/books\/([a-z]{1,16})\.png$/);

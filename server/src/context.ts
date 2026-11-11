@@ -26,6 +26,14 @@ export function watchOf(date: Date): Watch {
 // the weather, as weather.ts keeps it: its kind (WMO's codes, gathered), the temperature, the city, and when
 export type Sky = "clear" | "cloudy" | "fog" | "rain" | "snow" | "storm";
 export interface Weather { kind: Sky; code: number; tempC: number; city: string; at: string }
+// C-338: the day ahead, as the forecast told it: its sky, high, low and chance of rain (%)
+export interface WeatherToday { day: string; kind: Sky; hiC: number; loC: number; rain: number | null; city: string }
+export function weatherToday(store: Store, now = new Date()): WeatherToday | null {
+  try {
+    const w = JSON.parse(store.getSetting("weather.today") ?? "null") as WeatherToday | null;
+    return w && w.day === now.toLocaleDateString("en-CA") ? w : null;
+  } catch { return null; }
+}
 export function skyOf(code: number): Sky {
   if (code === 0 || code === 1) return "clear";
   if (code === 2 || code === 3) return "cloudy";

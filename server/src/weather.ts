@@ -4,7 +4,7 @@
 // place are kept ("weather.city"); the weather now is kept as "weather.now" (context.ts reads it), fetched every fifteen
 // minutes while a city is set. Node's own fetch; the phone hosting alone has no weather of its own.
 import type { Store } from "./store.js";
-import { skyOf, type Weather } from "./context.js";
+import { skyOf, type Weather, type WeatherToday } from "./context.js";
 import { fixesOf } from "./where.js";
 
 export interface Place { name: string; country: string; latitude: number; longitude: number }
@@ -42,11 +42,22 @@ export function kmBetween(a: number, b: number, c: number, d: number) {
 export async function refreshWeather(store: Store, get: typeof fetch = fetch): Promise<Weather | null> {
   const p = weatherSpot(store);
   if (!p) return null;
-  const r = await get(`${NOW}?latitude=${p.latitude}&longitude=${p.longitude}&current=weather_code,temperature_2m`);
-  const c = (await r.json() as { current?: { weather_code: number; temperature_2m: number } }).current;
+  // C-338: and the day ahead -- its sky, its high and low, its chance of rain (the persona of the day reads it)
+  const r = await get(`${NOW}?latitude=${p.latitude}&longitude=${p.longitude}&current=weather_code,temperature_2m` +
+                      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone=auto`);
+  const j = await r.json() as { current?: { weather_code: number; temperature_2m: number };
+                                daily?: { time?: string[]; weather_code?: number[]; temperature_2m_max?: number[]; temperature_2m_min?: number[]; precipitation_probability_max?: number[] } };
+  const c = j.current;
   if (!c) return null;
   const w: Weather = { kind: skyOf(c.weather_code), code: c.weather_code, tempC: Math.round(c.temperature_2m), city: p.name, at: new Date().toISOString() };
   store.setSetting("weather.now", JSON.stringify(w));
+  const d = j.daily;
+  if (d?.weather_code?.length && d.temperature_2m_max?.length && d.temperature_2m_min?.length) {
+    const today: WeatherToday = { day: d.time?.[0] ?? new Date().toLocaleDateString("en-CA"), kind: skyOf(d.weather_code[0]),
+                                  hiC: Math.round(d.temperature_2m_max[0]), loC: Math.round(d.temperature_2m_min[0]),
+                                  rain: d.precipitation_probability_max?.[0] ?? null, city: p.name };
+    store.setSetting("weather.today", JSON.stringify(today));
+  }
   return w;
 }
 

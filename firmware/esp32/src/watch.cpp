@@ -525,7 +525,7 @@ static void touchLoop(uint32_t now) {
     }
     Touch g;
     while (touchTake(g)) {
-      if (asleep) { touchDrop(); return; }                     // only the crown wakes the watch (C-79)
+      if (asleep) { if (g.kind == 1) nightTap(); touchDrop(); return; }   // only the crown wakes the watch (C-79) -- C-285: or, its daemon asleep, a tap the glance (the manual session, 2026-11-11: this path never asked)
       if (g.kind == 2 && screen == HOME && page == FACE_PAGE) { wake(); openLaunch(0); }   // C-172: off the face, the tiles
       else if (g.kind == 2) {
         if (abs(g.dx) > abs(g.dy)) turn(g.dx < 0 ? 1 : -1);   // right to left: the next
@@ -593,7 +593,7 @@ static void touchTap(int x, int y, uint32_t now) {
   if (!dreamShowing() && quickTap(x, y)) { lastInput = millis(); return; }   // C-206: a button under the face
   if (dreamShowing()) { dreamDismiss(); lastInput = now; return; }   // C-200: good morning
   if (readShowing()) { readDismiss(); lastInput = now; return; }     // C-203: the read, put away
-  if (screen == CARE_GRID && (tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); return; }   // C-163
+  if (screen == CARE_GRID) { if ((tile = careGridAt(x, y)) >= 0) { gridAt = tile; press(); } return; }   // C-163; a tap above the tiles does nothing (it fed or put to bed)
   if (screen == HOME && page == FACE_PAGE) {                   // C-163: a double tap on the face opens CARE; one does nothing
     static uint32_t tappedAt = 0;
     if (tappedAt && now - tappedAt < 450) { tappedAt = 0; if (st.carrying && witchingNow()) openAsAbove(); else if (st.carrying) openCareGrid(); else say("No daemon here"); }   // DRAFT; C-237: in the hour, AS ABOVE SO BELOW

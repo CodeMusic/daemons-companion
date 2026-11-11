@@ -45,10 +45,14 @@ struct Casino { bool have = false, known = false;   // known: the companion send
 // C-211: who answers a talk first -- the hub's module or n8n, the other after the deadline -- and whether each answered
 // the server's last check (a minute apart); `have` false from a companion that does not send it
 struct Talk { bool have = false; String first = "n8n"; bool n8n = false, module = false; };
+// C-327: the household's shared space -- the other device's daemon, which side this one's own stands on, and the last
+// care given on either (device state's together)
+struct Together { bool on = false; String device, side, name, nickname, artKey, wantKey, careKind, careAt; int slot = -1, level = 0; bool careMine = false; };
 struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {
   bool have = false;
   bool mended = false, both = false;   // C-312: what the aurora waits on (device state's sky)
+  Together together;                    // C-327
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue, chakra, theme;
   long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
   bool carrying = false; Daemon daemon;
@@ -111,7 +115,11 @@ void hermeticFromState(JsonVariant h);    // C-238: THE HERMETIC LAYER's first s
 void halloweenFromState(JsonVariant h);   // C-240: Halloween, with the book held
 bool halloweenNow(); bool shimmerNow(); bool costumeNow(); void toggleMask();
 void auroraSky(int top, int w, int h);   // C-312: a night of light, the book mended -- the den's bands across the sky's top quarter
-bool bedKeys();                           // C-301: SLEEP in place of TRAIN, dusk to dawn (the widget's day key)
+bool bedKeys();
+bool drawKeptArt(const String &key, int x, int y, int sc, bool mirrored);   // C-327: a picture kept by its key (the other daemon), plain
+void fetchTogetherArt();                  // C-327: the other daemon's picture, fetched once
+String runHousehold(int mode);            // C-327: 0 TOGETHER, 1 SWAP -- choose a device of the household
+void servedDraw(int cx, int floorY, int px);   // C-327: a care's PROVISION between the two, eaten in four stages                           // C-301: SLEEP in place of TRAIN, dusk to dawn (the widget's day key)
 bool auroraNow(uint8_t weight[6], uint32_t line[6]);   // C-312: tonight's bands, or false
 float witchLevel(); float creatorLevelNow(); void creatorRim(int cx, int cy, int side);   // C-295: each hour's strength now, with the catch-up
 void indexArtDraw(int x, int y, int sc);  // index.cpp: the picture indexArtFor loaded (C-240: a costume)

@@ -17,6 +17,10 @@ static String hint(String s) {
   if (isWatch()) {                            // C-161, C-173: swipes and taps, the crown back (DRAFT)
     s.replace("top button: back", "crown: back"); s.replace("top: back", "crown: back"); s.replace("top button: stop", "crown: stop");
     s.replace("top button: undo", "hold: undo"); s.replace("top: delete", "hold: delete");
+    s.replace("top button: give up", "crown: give up"); s.replace("top button: leave", "crown: leave");   // C-326: the routines' own (DRAFT)
+    s.replace("top button: done", "crown: done"); s.replace("any key: read", "tap: read");
+    s.replace("hold the dial: talk again", "hold it on the face: talk again");   // C-326: a hold goes back here; the face is where it listens
+    s.replace("Hold the dial to talk", "Hold the daemon on the face to talk");
     s.replace("hold the dial", "hold the daemon"); s.replace("turn:", "swipe:"); s.replace("press:", "tap:");
     return s;
   }
@@ -63,7 +67,7 @@ static String hint(String s) {
 // index entry, and maybe the other options are ones which relate to some of the newer features like the social
 // features"): on the watch the daemon's screen is tiles -- CARE (the care grid), INDEX (its entry), TALK, its DREAM;
 // the social ones (C-327 TOGETHER and TRADE, C-328 BATTLE, C-329 a dialogue) join as they are built
-const int DAEMON_TILES = 4;
+const int DAEMON_TILES = 6;   // C-327: TOGETHER (APART while in a space) and SWAP
 static const char *CARE_ITEMS[] = { "DRINK", "FEED", "TRAIN", "SLEEP", "ITS INDEX ENTRY" };   // C-114: SLEEP; C-117: DRINK first, as the buttons (input.cpp CARE_ORDER), DRAFT
 // ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
 const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
@@ -243,8 +247,9 @@ void drawRoutines(uint16_t day) {
       canvas.setTextColor(i == moveAt ? ink : QUIET); canvas.drawString(m.type[i], W - 96, 52 + i * 19);
     }
   } else if (screen == TYPES && gridLists()) {   // C-172: the types as tiles, four to a page
-    String words[10]; for (int i = 0; i < typeCount; i++) words[i] = types[i].name;
-    drawTiles(typeCount, typeAt, words, "ROUTINES", [](int i, int cx, int cy) { typeIcon(types[i].name, cx, cy); }, day, ink);
+    static String words[32]; const int n = min(typeCount, 32);   // the manual session, 2026-11-11: eleven types on the watches (twelve in the hour) overran ten
+    for (int i = 0; i < n; i++) words[i] = types[i].name;
+    drawTiles(n, typeAt, words, "ROUTINES", [](int i, int cx, int cy) { typeIcon(types[i].name, cx, cy); }, day, ink);
   } else if (screen == LIST && gridLists() && t.count > 0) {   // C-172: a type's routines as tiles, its icon on each
     String words[10]; for (int i = 0; i < t.count && i < 10; i++) words[i] = t.routines[i].name;
     drawTiles(min(t.count, 10), routineAt, words, t.name, [](int, int cx, int cy) { typeIcon(types[typeAt].name, cx, cy); }, day, ink);
@@ -398,6 +403,19 @@ static int faceDaemonY() { return cfg.face == "clock" ? 120 : 130; }   // the mi
 
 // the daemon on a face, alive as at home (C-42, C-113, C-119): it breathes, now and then hops, and walks a little from
 // side to side, facing the way it goes -- in its expression, its eyes and its mark; no den, a shadow under it
+static void faceDaemon(int cx, int floorY, int sc, int room, int markTop);
+// C-327: in a household space, this device's daemon on its own side and the other's facing it, a care's PROVISION
+// between them -- on every face that stands the daemon on its hill
+static void faceBoth(int cx, int floorY, int sc, int room, int markTop) {
+  if (!st.together.on) { faceDaemon(cx, floorY, sc, room, markTop); servedDraw(cx, floorY, max(2, sc + 1)); return; }
+  const int s1 = max(1, sc - 1), off = 32 * s1 + 20;
+  const bool mineLeft = st.together.side != "right";
+  faceDaemon(cx + (mineLeft ? -off : off), floorY, s1, 12, markTop);
+  const int ox = cx + (mineLeft ? off : -off) - 32 * s1, oy = floorY - 64 * s1 + 4 * s1;
+  canvas.fillEllipse(ox + 32 * s1, floorY + 2, 16 * s1, max(2, s1 * 2), 0x0841);
+  if (!drawKeptArt(st.together.artKey, ox, oy, s1, !mineLeft)) canvas.drawCircle(ox + 32 * s1, oy + 40 * s1, 14 * s1, QUIET);   // facing the middle; a shadow until it comes
+  servedDraw(cx, floorY, max(2, s1 + 1));
+}
 static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   // markTop: its mark kept under the words
   uint32_t t = millis();
   bool still = expression.still;
@@ -473,7 +491,7 @@ static void drawFaceDaemon(uint16_t day) {
   faceRing(day);
   char hm[6]; const char *ampm; clockTime(hm, sizeof hm, &ampm);
   canvas.setTextDatum(MC_DATUM);
-  if (st.carrying) { faceDaemon(W / 2, 188, 2, 56, 72); faceListening(day); }
+  if (st.carrying) { faceBoth(W / 2, 188, 2, 56, 72); faceListening(day); }
   faceWeather();
   const bool hour = witchingNow();                            // C-237: in the hour, the date and the minutes left, no time
   canvas.setTextFont(2); edgedString(hour ? witchDate() : upper(st.theme.length() ? st.theme : st.day), W / 2, 34, hour ? emeraldInk() : readable(day));
@@ -501,7 +519,7 @@ static void drawFaceClock(uint16_t day) {
     int in = i % 3 ? 104 : 96;
     canvas.drawWideLine(cx + in * sinf(a), cy - in * cosf(a), cx + 112 * sinf(a), cy - 112 * cosf(a), i % 3 ? 1.0f : 2.0f, tick);   // r: half the width
   }
-  if (st.carrying) { faceDaemon(cx, 176, 2, 48, 60); faceListening(day); }
+  if (st.carrying) { faceBoth(cx, 176, 2, 48, 60); faceListening(day); }
   faceWeather();
   canvas.setTextDatum(MC_DATUM); canvas.setTextFont(1);
   const bool hour = witchingNow();                            // C-237: in the hour no hands -- the date, the minutes left
@@ -553,7 +571,7 @@ static void drawFaceOrbit(uint16_t day) {
   float m = timed ? t.tm_min / 60.0f : 0;
   canvas.drawArc(cx, cy, 116, 112, 0, 360, canvas.color565(40, 44, 52));
   if (m > 0) canvas.drawArc(cx, cy, 116, 112, 270, 270 + 360 * m, day);                // the minutes, filling the edge
-  if (st.carrying) faceDaemon(cx, 170, 2, 24, 56);
+  if (st.carrying) faceBoth(cx, 170, 2, 24, 56);
   if (timed) {                                                                         // the hour, a bead going round
     float a = ((t.tm_hour % 12) + t.tm_min / 60.0f) * PI / 6;
     int bx = cx + 92 * sinf(a), by = cy - 92 * cosf(a);
@@ -724,8 +742,19 @@ void draw() {
   }
 
   if (screen == CARE && gridLists()) {                       // C-325: the daemon's own screen, as tiles
-    static const String WORDS[DAEMON_TILES] = { "CARE", "INDEX", "TALK", "DREAM" };   // DRAFT
+    static String WORDS[DAEMON_TILES] = { "CARE", "INDEX", "TALK", "DREAM", "TOGETHER", "SWAP" };   // DRAFT
+    WORDS[4] = st.together.on ? "APART" : "TOGETHER";                                                 // DRAFT
     drawTiles(DAEMON_TILES, careAt, WORDS, upper(st.daemon.nickname).c_str(), [](int i, int cx, int cy) {
+      if (i == 4) {                                            // two side by side, or (APART) drawn apart
+        int g = st.together.on ? 9 : 3;
+        canvas.drawCircle(cx - 6 - g, cy, 9, PAPER); canvas.drawCircle(cx + 6 + g, cy, 9, PAPER);
+        return;
+      }
+      if (i == 5) {                                            // two arrows, crossing
+        canvas.drawLine(cx - 14, cy - 6, cx + 14, cy - 6, PAPER); canvas.fillTriangle(cx + 14, cy - 10, cx + 14, cy - 2, cx + 19, cy - 6, PAPER);
+        canvas.drawLine(cx - 14, cy + 6, cx + 14, cy + 6, PAPER); canvas.fillTriangle(cx - 14, cy + 2, cx - 14, cy + 10, cx - 19, cy + 6, PAPER);
+        return;
+      }
       if (i == 0) { drawArt(cx - 32, cy - 36, 1, false); return; }
       if (i == 1) { bookIcon(3, 0, cx, cy); return; }
       if (i == 2) {                                            // a speech bubble
@@ -1033,7 +1062,7 @@ void draw() {
     canvas.drawString("FROM " + upper(mFrom) + ", NEARBY", bx + 8, by + 6);      // DRAFT
     wrap(mText, bx + 8, by + 26, bw - 16, 2, 16, 3, ink);
     canvas.setTextFont(1); canvas.setTextDatum(BR_DATUM); canvas.setTextColor(ink);
-    canvas.drawString("any key: read", bx + bw - 8, by + bh - 4);                 // DRAFT
+    canvas.drawString(hint("any key: read"), bx + bw - 8, by + bh - 4);                 // DRAFT
   }
   if (millis() < flashUntil) {               // a word that something happened
     canvas.setTextFont(4);                     // the box fits the word (seen with SHOT 2026-10-07: it overflowed)
@@ -1082,7 +1111,7 @@ bool routineRunning = false;
 int cableKey = 0;
 
 void progress(const String &text) {
-  runResult = text; lastInput = millis();                   // a routine at work is the board in use: no sleeping after it
+  runResult = isWatch() ? hint(text) : text;                 // C-326: a routine's words name the watch's own controls lastInput = millis();                   // a routine at work is the board in use: no sleeping after it
   draw();
   static String in;
   while (Serial.available()) {

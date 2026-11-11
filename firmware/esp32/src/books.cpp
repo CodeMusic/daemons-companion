@@ -79,6 +79,7 @@ static String drawBooks(uint16_t day, uint16_t ink) {
     int pages = max(1, (bLines + pageLines() - 1) / pageLines()), at = bSkip / pageLines() + 1;
     canvas.drawRoundRect(W - 86, H - 38, 78, 30, 8, day);
     canvas.setTextDatum(MC_DATUM); canvas.setTextColor(day); canvas.drawString(talkCan() ? "LISTEN" : "", W - 47, H - 23);   // DRAFT
+    tapRect(W - 86, H - 38, 78, 30, 0);                    // C-326: on the watch only LISTEN itself starts it
     canvas.setTextDatum(BL_DATUM); canvas.setTextFont(1); canvas.setTextColor(QUIET);
     canvas.drawString(String(at) + " / " + String(pages), 10, H - 14);
     canvas.setTextDatum(TL_DATUM);
@@ -141,7 +142,15 @@ static void todaysQuestion() {
 }
 
 // the chapter aloud, a paragraph at a time, from the one the page shows; a tap, a hold or the crown stops it
+bool talkPlayRecording(const String &book, const String &title, const String &keepName);   // talk.cpp, C-331 (1)
 static void listen() {
+  // C-331 (1): the book's own recording of this chapter first -- kept on the card, or fetched and kept
+  { String id = shelf["books"][bBook]["id"] | "", title = shelf["books"][bBook]["chapters"][bChapter] | "";
+    if (id != "notebook" && title.length()) {
+      progress("THE READING...");                                                       // DRAFT
+      if (talkPlayRecording(id, title, "rec/" + id + "/" + String(bChapter) + ".pcm")) { screen = RUN; progress(""); return; }
+    }
+  }
   if (!talkCan()) return;
   int from = 0;                                           // the paragraph the page begins in
   for (int i = 0, line = 0; i < (int)chap["paragraphs"].size(); i++) {
@@ -199,6 +208,7 @@ String runBooks() {
     if (bWhy.length()) { delay(10); continue; }
     if (bMode == B_PAGE) {
       if (step) { bSkip = constrain(bSkip + step * pageLines(), 0, max(0, bLines - pageLines())); progress(""); }
+      if (ev == 1 && gridLists()) { int x, y, off; if (watchTapPoint(x, y) && !tapAt(x, y, off, false)) ev = 0; }   // C-326: a tap on the words is not LISTEN
       if (ev == 1) { listen(); progress(""); }
     } else {
       int n = listN();

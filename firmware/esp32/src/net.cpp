@@ -886,7 +886,20 @@ static void fetchPartyArt() {
     return;
   }
 }
+// C-327: the other daemon's picture, as the party's are fetched -- by its slot, kept under the key the reply names
+void fetchTogetherArt() {
+  Together &t = st.together;
+  static uint32_t nextAt = 0;
+  if (!t.on || t.slot < 0 || !t.artKey.length() || artCached(t.artKey) || (int32_t)(millis() - nextAt) < 0) return;
+  if (artFromCache(t.artKey)) return;
+  if (!online()) { nextAt = millis() + 30000; return; }
+  bool ok; String got = http("GET", "/api/device/art?slot=" + String(t.slot), "", &ok);
+  JsonDocument d;
+  if (ok && !deserializeJson(d, got)) { String k = d["artKey"] | ""; if (k.length()) t.artKey = k; }
+  nextAt = millis() + (ok && takeArt(got) ? 3000 : 30000);
+}
 void askForArt() {
+  fetchTogetherArt();
   const String &key = st.daemon.artKey;
   if (!st.carrying || !key.length() || key == artKeyHave) { fetchPartyArt(); return; }
   static String wanted; static bool bridged = false;

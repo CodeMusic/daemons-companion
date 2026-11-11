@@ -175,6 +175,45 @@ static void playVoice(const String &path) {
   if (mouthOpen) { mouthOpen = false; draw(); }
   h.end();
 }
+static bool playKept(const String &name);
+// C-331 (1) (the user, 2026-11-11, by multiple choice: "Books' real recordings"): a book's own recording of one chapter
+// (the app's LISTEN, in the book's own voice) -- from the card where it was kept, else from the hub as it streams, and
+// kept as it comes. False when there is none, and the caller reads the chapter in the INDEX voice instead.
+static String urlPart(const String &s) {
+  String o; char b[4];
+  for (size_t i = 0; i < s.length(); i++) {
+    char c = s[i];
+    if (isalnum((unsigned char)c) || c == '-' || c == '_' || c == '.' || c == '~') o += c;
+    else { snprintf(b, sizeof b, "%%%02X", (uint8_t)c); o += b; }
+  }
+  return o;
+}
+bool talkPlayRecording(const String &book, const String &title, const String &keepName) {
+  if (playKept(keepName)) return true;
+  if (!online()) return false;
+  HTTPClient h;
+  h.setTimeout(120000);                                   // the first time, the hub fetches the book's reading and cuts it
+  h.begin(serverUrl + "/api/book/recording?book=" + urlPart(book) + "&title=" + urlPart(title));
+  h.addHeader("x-device", deviceId());
+  if (h.GET() != 200) { h.end(); return false; }
+  WiFiClient *in = h.getStreamPtr();
+  int left = h.getSize();
+  bool keeping = cardStreamBegin(keepName);
+  static int16_t buf[512];
+  uint32_t quietSince = millis();
+  while (left != 0 && millis() - quietSince < 6000) {
+    int got = in->readBytes((uint8_t *)buf, min((int)sizeof buf, left > 0 ? left : (int)sizeof buf));
+    if (got <= 0) continue;
+    quietSince = millis();
+    if (left > 0) left -= got;
+    if (keeping) cardStreamWrite((const uint8_t *)buf, got);
+    soundPcm(buf, got / 2);
+    if (giveUp()) { left = -2; break; }
+  }
+  if (keeping) cardStreamEnd(left == 0);                   // kept only when whole
+  h.end();
+  return true;
+}
 // C-213: the mouth on the beat -- open while the voice is loud, shut between words; drawn a few times a second
 static void mouthBeat(const int16_t *buf, int n) {
   static uint32_t beatAt = 0;
@@ -451,7 +490,7 @@ void talkHold(uint32_t forMs) {
   { long long sq = 0; int peak = 0;                                           // how loud it was, for the check
     for (size_t i = 0; i < n; i++) { int v = abs((int)pcm[i]); peak = max(peak, v); sq += (long long)v * v; }
     talkPeak = peak; talkRms = n ? (int)sqrt((double)sq / n) : 0; }
-  if (n < RATE / 3) { free(rec); screen = HOME; say("Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
+  if (n < RATE / 3) { free(rec); screen = HOME; say(isWatch() ? "Hold the daemon on the face to talk" : "Hold the dial to talk"); return; }   // DRAFT -- a tap, not a talk
   wavHeader(rec, n);
   talkStatus = "Thinking..."; draw();                                         // DRAFT
   if ((!atHome() || talkByCable) && usbLive()) { overCable(rec, n); return; } // C-66: the cable's bridge carries it

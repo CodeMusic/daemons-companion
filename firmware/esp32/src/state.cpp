@@ -193,6 +193,20 @@ bool takeState(const char *json) {
     if (!gf.isNull()) activityGift(gf["name"] | "", gf["at"] | "", gf["home"] | false); }
   st.watch = doc["world"]["watch"] | ""; st.sky = doc["world"]["weather"]["kind"] | "";   // C-158: the real world
   st.mended = doc["sky"]["mended"] | false; st.both = doc["sky"]["both"] | false;   // C-312: the aurora's
+  { JsonVariant tg = doc["together"];                          // C-327: the household's shared space
+    Together &t = st.together;
+    if (tg.isNull()) t = Together();
+    else {
+      t.on = true; t.device = tg["device"] | ""; t.side = tg["side"] | "left";
+      JsonVariant d = tg["daemon"];
+      t.name = d["name"] | ""; t.nickname = d["nickname"] | ""; t.slot = d["slot"] | -1; t.level = d["level"] | 0;
+      String key = d["artKey"] | "";
+      if (key != t.wantKey) { t.wantKey = key; t.artKey = key; }   // a new daemon there; the reply's own key replaces it once fetched
+      JsonVariant c = tg["care"];
+      t.careKind = c.isNull() ? String("") : String((const char *)(c["kind"] | "")); t.careMine = c["mine"] | false;
+      t.careAt = c.isNull() ? String("") : String((const char *)(c["at"] | ""));
+    }
+  }
   JsonVariant hd = doc["holiday"];
   st.holiday = Holiday();
   if (!hd.isNull()) {
@@ -333,6 +347,17 @@ static void flashKeep(const String &, const String &) {}
 static String flashRead(const String &) { return ""; }
 #endif
 
+// C-327: a kept picture drawn as it is -- the other daemon in the shared space (no expression: it is not this board's)
+bool drawKeptArt(const String &key, int x, int y, int sc, bool mirrored) {
+  KeptArt *k = keptFor(key);
+  if (!k) return false;
+  k->used = millis();
+  for (int j = 0; j < 64; j++) for (int i = 0; i < 64; i++) {
+    uint8_t b = k->pix[(j * 64 + i) >> 1], c = (i & 1) ? (b & 15) : (b >> 4);
+    if (c) canvas.fillRect(x + (mirrored ? 63 - i : i) * sc, y + j * sc, sc, sc, k->pal[c]);
+  }
+  return true;
+}
 bool takeArt(const String &json) {
   JsonDocument doc;
   if (deserializeJson(doc, json) || (doc["w"] | 0) != 64 || (doc["h"] | 0) != 64) return false;

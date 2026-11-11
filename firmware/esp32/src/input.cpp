@@ -304,6 +304,21 @@ void press() {
   }
   else if (screen == CARE && gridLists()) {                       // C-325: CARE, INDEX, TALK, DREAM -- as the face's quick buttons open them
     static const int QUICK[] = { 0, 7, 1, 6 };
+    if (careAt >= 4) {                                          // C-327: the household -- TOGETHER (or APART), SWAP
+      if (careAt == 4 && st.together.on) {
+        bool ok; http("POST", "/api/household/apart", "{}", &ok);
+        if (ok) st.together = Together();
+        say(ok ? "APART" : "NOT NOW");                          // DRAFT
+      } else {
+        screen = RUN; routineRunning = true;
+        String r = runHousehold(careAt == 4 ? 0 : 1);
+        routineRunning = false; screen = CARE;
+        if (r.length()) say(r);
+        if (online()) httpState("GET", "/api/device/state", "");   // the space or the swap, at once
+      }
+      dirty = true;
+      return;
+    }
     openQuick(QUICK[constrain(careAt, 0, DAEMON_TILES - 1)]);
   }
   else if (screen == CARE) {
@@ -336,6 +351,7 @@ void back() {
   if (screen == HOME && page == TODAY && undoable()) { untick(); return; }   // C-49
   // C-172: on the watch a page goes back to the tiles it was opened from, and the tiles to the face
   if (gridLists() && screen == HOME && page != FACE_PAGE && launchIndex(page) >= 0) { openLaunch(launchIndex(page)); return; }
+  if (gridLists() && screen == HOME && page != FACE_PAGE && !menuOpen && launchIndex(page) < 0) { goHome(); return; }   // C-326: TALK, LOW POWER -- pages with no tile go to the face (a back did nothing there)
   if (screen == LAUNCH) { goHome(); dirty = true; return; }
   if (screen == HOME && menuOpen) { menuOpen = false; page = homePage(); dirty = true; return; }   // C-117: out of the menu
   if (screen == TALK) { screen = HOME; }                         // C-66

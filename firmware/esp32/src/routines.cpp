@@ -119,6 +119,7 @@ String runChooseRemote() {
 uint32_t routinesRun = 0;                     // C-240
 void runRoutine() {
   const RoutineType &t = types[typeAt];
+  const Screen from = screen;                 // C-326: where it was opened, for a routine that leaves with nothing to say
   runResult = "Running...";
   screen = RUN;
   draw();
@@ -129,6 +130,13 @@ void runRoutine() {
   if (joinNext) { joinNext = false; screen = PICK_NET; netAt = 0; }       // C-33: JOIN A NETWORK goes on to choose one
   if (pickRemoteNext) { pickRemoteNext = false; screen = PICK_REMOTE; }    // C-51: CHOOSE A REMOTE, a list
   if (board.ir && !strcmp(t.name, "FLARE") && routineAt == 0) reportRemotes();         // a remote taught: the site hears of it
+  // C-326 (the manual session, 2026-11-11: "after leaving BOOKS, the RUN screen comes up empty"): a routine with its own
+  // screens (BOOKS, the CASINO) that is left with nothing to say goes back where it was opened -- the ROUTINES tiles, or
+  // home when a quick button or the face opened it
+  if (isWatch() && screen == RUN && !runResult.length()) {
+    if (from == TYPES || from == LIST) screen = TYPES;
+    else { screen = HOME; page = homePage(); }
+  }
   while (giveUp()) delay(10);                 // a give-up press is spent here, not read again as "back"
   sideWas = true;
   report("routine", String(t.name) + "/" + t.routines[routineAt].name);

@@ -9,6 +9,7 @@
 extern "C" unsigned lodepng_decode32(unsigned char **out, unsigned *w, unsigned *h, const unsigned char *in, size_t insize);
 #include "den.h"
 #include "store.h"
+#include "net.h"     // C-312: the clock and the aurora's facts
 
 namespace {
 
@@ -125,6 +126,45 @@ void paintDen(Stage &s, JsonObject den) {
 }
 
 // A frame: the den, its shadow, and the daemon where the walk has it -- mirrored when it goes right.
+// C-312 (the user, 2026-11-10, by multiple choice: "Breathing top bands"): THE AURORA in the den's night sky, as the
+// app's den draws it -- the den's rule to the bit (server/src/aurora.ts, the cartridge's daemons_aurora.c): the book
+// mended, 20:00 to 5:00, one night in three from the date; six bands of a sixteenth of the sky, the edition's line (red
+// over green under the conjugate light), breathing with the sixteen-second breath on the clock. Blended into the frame
+// over the den, under the daemon.
+int auroraDay(int y, int m, int d) {
+  static const int before[12] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+  int yy = (y - 2000) & 0xFFFF, days = yy * 365 + (yy + 3) / 4 + before[(m - 1) % 12] + d - 1;
+  if (m > 2 && yy % 4 == 0) days++;
+  return days & 0xFFFF;
+}
+bool auroraLight(int n) {
+  uint32_t x = ((uint32_t)(n & 0xFFFF) * 40503u) % 65536u;
+  x ^= x >> 7; x = (x * 40503u) % 65536u;
+  return (x >> 8) % 3 == 0;
+}
+bool aurora(Stage &s) {   // true when it is drawn: then the frame keeps moving, asleep or not, so the light breathes
+  bool both = false, context = false; struct tm t;
+  if (!auroraFacts(both, context) || !localTime(t) || !(t.tm_hour >= 20 || t.tm_hour < 5)) return false;
+  int day = auroraDay(t.tm_year + 1900, t.tm_mon + 1, t.tm_mday), minute = t.tm_hour * 60 + t.tm_min;
+  if (!auroraLight((minute < 12 * 60 ? day - 1 : day) & 0xFFFF)) return false;
+  static const uint8_t RED[6] = { 255, 160, 64, 16, 0, 0 }, GREEN[6] = { 96, 255, 160, 48, 16, 0 }, BOTH[6] = { 255, 255, 176, 64, 16, 0 };
+  const uint8_t *bands = both ? BOTH : context ? GREEN : RED;
+  uint32_t secs = (uint32_t)((t.tm_hour * 60 + t.tm_min) * 60 + t.tm_sec);
+  float breath = (1 - cosf(2 * PI * ((secs * 1000u + millis() % 1000u) % 16000u) / 16000.0f)) / 2;
+  int b = (int)roundf(breath * 255), bh = max(1, s.floorY / 16);
+  for (int i = 0; i < 6; i++) {
+    if (!bands[i]) continue;
+    int w8 = ((72 + b * 96 / 255) * bands[i]) / 255;                     // out of 256, aurora.ts auroraWeight
+    uint32_t line = (both ? i < 1 : !context) ? 0xF7394A : 0x52F77B;
+    for (int y = i * bh; y < min(s.h, (i + 1) * bh); y++) for (int x = 0; x < s.w; x++) {
+      uint16_t &px = s.frame[y * s.w + x];
+      uint32_t under = ((px & 0xF800) << 8) | ((px & 0x07E0) << 5) | ((px & 0x001F) << 3);
+      px = c565(mixRgb(under, line, w8 / 256.0f));
+    }
+  }
+  return true;
+}
+
 void tick(lv_timer_t *t) {
   Stage &s = *(Stage *)lv_timer_get_user_data(t);
   uint32_t ms = millis();
@@ -134,6 +174,7 @@ void tick(lv_timer_t *t) {
   int side = 64 * s.scale, ax = (int)((s.w - side) * walk) + (s.shake ? ((ms / 70) % 2 ? s.scale : -s.scale) : 0);
   int ay = s.floorY - side + 4 * s.scale + bob;
   memcpy(s.frame, s.bg, s.w * s.h * 2);
+  const bool lit = aurora(s);                    // C-312: a night of light, over the den and under the daemon
   Pen p{ s.frame, s.w, s.h, s.h };
   p.ellipse(ax + side / 2.f, s.floorY + 3, side / 4.f, s.scale * 2.5f, 0x0000, true);   // its shadow
   if (s.sprite) {
@@ -171,7 +212,7 @@ void tick(lv_timer_t *t) {
   }
   lv_image_cache_drop(&s.dsc);
   lv_obj_invalidate(s.img);
-  if (s.still && !s.shake) lv_timer_pause(t);   // asleep it stays put: one frame is enough
+  if (s.still && !s.shake && !lit) lv_timer_pause(t);   // asleep it stays put: one frame is enough (C-312: but the light breathes)
 }
 
 void gone(lv_event_t *e) {

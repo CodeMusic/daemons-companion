@@ -311,6 +311,7 @@ static void fetchHome() {
 // ---- keeping everything --------------------------------------------------------------------------------------------
 // The companion's clock, from the state it hands a device (C-71): the Tab5 has no other way to know the time here.
 static int offsetMin = 0; static bool clockSet = false;
+static bool skyMended = false, skyBoth = false, skyContext = false;   // C-312: the aurora's, from the same state
 static void takeClock(const String &json) {
   JsonDocument d = newDoc();
   if (deserializeJson(d, json) || d["clock"].isNull()) return;
@@ -318,7 +319,10 @@ static void takeClock(const String &json) {
   if (epoch < 1700000000) return;
   struct timeval tv = { epoch, 0 }; settimeofday(&tv, nullptr);
   offsetMin = d["clock"]["offset"] | 0; clockSet = true;
+  skyMended = d["sky"]["mended"] | false; skyBoth = d["sky"]["both"] | false;   // C-312: what the aurora waits on
+  skyContext = strcmp(d["sky"]["edition"] | (d["edition"] | "CONTENT"), "CONTEXT") == 0;
 }
+bool auroraFacts(bool &both, bool &context) { both = skyBoth; context = skyContext; return skyMended; }
 bool localTime(struct tm &out) {
   if (!clockSet) return false;
   time_t t = time(nullptr) + offsetMin * 60; gmtime_r(&t, &out);

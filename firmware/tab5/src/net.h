@@ -45,7 +45,8 @@ void netSend(const char *method, const String &path, const String &body);   // a
 // the network task is free, without downloading everything again after it as netSend does
 void netSendQuiet(const char *method, const String &path, const String &body);
 String serverAddress();
-bool localTime(struct tm &out);      // the time where the companion is, once it has said (its state carries the clock)
+bool localTime(struct tm &out);
+bool auroraFacts(bool &both, bool &context);   // C-312: THE UNITY BOOK mended (and both lines, and the edition), from the state      // the time where the companion is, once it has said (its state carries the clock)
 String relayAddress();
 // C-99: an INDEX entry read aloud in the INDEX voice (the companion makes it; only at home -- the relay carries no voice)
 enum Voice { V_QUIET, V_MAKING, V_SPEAKING };

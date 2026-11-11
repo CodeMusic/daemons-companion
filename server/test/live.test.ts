@@ -5,6 +5,7 @@ import { buildSave } from "./build_save.js";
 import { LAYOUT as l, readSlot, sectionSize } from "../src/save/reader.js";
 import { syncSave } from "../src/save/writer.js";
 import { applyPlan, livePlan, WRAM_AT, WRAM_SIZE } from "../src/game/live.js";
+import { tradeRecord } from "../src/save/trade.js";
 import P from "../data/profile_layout.json" with { type: "json" };
 
 // a game's SaveBlock2 is not empty, as the builder's is: its INDEX, options and records, here as noise
@@ -48,6 +49,28 @@ describe("SYNC into the running game (C-261)", () => {
     expect(blocks(after).sb2[P.sb2.daemons_flags + ((P.flags.companion_linked - P.flags.daemons_flags_start) >> 3)])
       .toBe(st[WRAM_AT + SB2_AT + P.sb2.daemons_flags + ((P.flags.companion_linked - P.flags.daemons_flags_start) >> 3)]);
     expect([...st.subarray(WRAM_AT + WRAM_SIZE + 32, WRAM_AT + WRAM_SIZE + 32 + after.length)]).toEqual([...after]);   // and the save beside it
+  });
+
+  it("writes a trade's arrival into the slot the AWAY daemon left, in both places the game keeps the party (C-219)", () => {
+    const mine = buildSave({ player: "ASH", trainerId: 0x12345678, edit: lived, slots: [{ counter: 7, party: [
+      { personality: 0xdeadbeef, otId: 0x12345678, species: 4, nickname: "KERNEL", level: 9 },
+      { personality: 0x0badf00d, otId: 0x12345678, species: 7, nickname: "SHELL", level: 8, away: true }] }] });
+    const theirs = buildSave({ player: "KIT", trainerId: 0x00220009, slots: [{ counter: 4, party: [
+      { personality: 0x00c0ffee, otId: 0x00220009, species: 1, nickname: "SEED", level: 12, away: true }] }] });
+    const coming = tradeRecord(theirs, 0x00c0ffee);
+    if (typeof coming === "string") throw new Error(coming);
+    const before = mine, r = syncSave(before, { link: false, trade: [{ id: "t1:swap", out: 0x0badf00d, record: coming.record }] });
+    expect(r.traded).toHaveLength(1);
+    const plan = livePlan(before, r.save)!;
+    expect(plan).not.toBeNull();
+    const st = stateOf(before), got = applyPlan(st, plan, { before, after: r.save });
+    expect(got.ok).toBe(true);
+    for (const at of [PARTY_AT, SB1_AT + l.party_offset]) {
+      const dv = new DataView(st.buffer, WRAM_AT + at);
+      expect(dv.getUint32(0, true)).toBe(0xdeadbeef);                       // the one staying, untouched
+      expect(dv.getUint32(l.pokemon_size, true)).toBe(0x00c0ffee);          // the one coming, where SHELL was
+      expect(dv.getUint32(l.pokemon_size + 4, true)).toBe(0x00220009);      // its own trainer kept
+    }
   });
 
   it("finds the mGBA state inside RetroArch's RASTATE wrapping, as EmulatorJS gives it", () => {

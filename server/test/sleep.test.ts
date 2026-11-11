@@ -114,6 +114,18 @@ describe.skipIf(!FOUND_FFMPEG)("SleepTracks", () => {
     // kept across a restart
     expect(new SleepTracks(dir, () => null).byId(t.id)?.state).toBe("ready");
   }, 60000);   // three ffmpeg runs: slow on a busy machine
+  it("waits on its job again after a restart, and drops one never sent", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sleep-"));
+    const { writeFileSync } = await import("node:fs");
+    const was = (id: string, job?: string) => ({ id, key: `k${id}`, species: 9, nickname: "", caption: "", bpm: 60, keyscale: "C major", said: "",
+                                                  state: "making", asked: new Date().toISOString(), ...(job ? { job } : {}) });
+    writeFileSync(join(dir, "tracks.json"), JSON.stringify([was("a".repeat(32), "j1"), was("b".repeat(32))]));
+    const kept = new SleepTracks(dir, () => ({ base, key: "the-key" }), async () => {}, 0);
+    expect(kept.byId("b".repeat(32))?.state).toBe("failed");
+    for (let i = 0; i < 1000 && kept.byId("a".repeat(32))?.state === "making"; i++) await new Promise((x) => setTimeout(x, 50));
+    expect(kept.byId("a".repeat(32))?.state).toBe("ready");
+    expect(kept.byId("a".repeat(32))?.job).toBeUndefined();
+  }, 60000);
   it("says so when no music maker is set up", () => {
     const kept = new SleepTracks(mkdtempSync(join(tmpdir(), "sleep-")), () => null);
     expect(() => kept.ask(sleepRecipe({ species: 1 }), { species: 1, nickname: "", said: "" })).toThrow(/music maker/);

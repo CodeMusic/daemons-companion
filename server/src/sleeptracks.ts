@@ -21,6 +21,7 @@ export type SleepTrack = {
   id: string; key: string; species: number; nickname: string;
   caption: string; bpm: number; keyscale: string; said: string;
   state: "making" | "ready" | "failed"; error?: string;
+  job?: string;                                     // roverbyteseer's job, while it is being made (a restart waits on it again)
   asked: string; made?: string; seconds?: number;
   bytes?: { phone: number; watch: number; watchAdpcm: number };
 };
@@ -41,8 +42,12 @@ export class SleepTracks {
               private wait = (ms: number) => new Promise((r) => setTimeout(r, ms)), private pollMs = 5000) {
     mkdirSync(dir, { recursive: true });
     try { this.tracks = JSON.parse(readFileSync(join(dir, "tracks.json"), "utf8")); } catch { this.tracks = []; }
-    // a piece left making when the server stopped is not coming: let it be asked again
-    for (const t of this.tracks) if (t.state === "making") Object.assign(t, { state: "failed", error: "the server restarted" });
+    // a piece left making when the server stopped: wait on its job again (a deploy restarts the hub often); one never
+    // sent to roverbyteseer is not coming, so it may be asked again
+    for (const t of this.tracks.filter((t) => t.state === "making")) {
+      if (!t.job) { Object.assign(t, { state: "failed", error: "the server restarted" }); continue; }
+      this.queue(t, () => this.finish(t, t.job!, null));
+    }
     this.save();
   }
   private save() {
@@ -70,11 +75,15 @@ export class SleepTracks {
     this.tracks.push(t);
     this.save();
     const seed = again ? undefined : r.seed;
-    this.busy = this.busy.then(() => this.make(t, r, seed)).catch((e) => {
+    this.queue(t, () => this.make(t, r, seed));
+    return t;
+  }
+  private queue(t: SleepTrack, work: () => Promise<void>) {
+    this.busy = this.busy.then(work).catch((e) => {
       Object.assign(t, { state: "failed", error: String((e as Error)?.message ?? e).slice(0, 160) });
+      delete t.job;
       this.save();
     });
-    return t;
   }
   private drop(t: SleepTrack) {
     rmSync(join(this.dir, t.id), { recursive: true, force: true });
@@ -88,6 +97,14 @@ export class SleepTracks {
       body: JSON.stringify({ caption: r.caption, seconds: r.seconds, bpm: r.bpm, keyscale: r.keyscale, ...(seed != null ? { seed } : {}) }) });
     if (!asked.ok) throw new Error(`roverbyteseer said ${asked.status}`);
     const { job } = await asked.json() as { job: string };
+    t.job = job;
+    this.save();
+    await this.finish(t, job, r.seconds);
+  }
+  private async finish(t: SleepTrack, job: string, seconds: number | null) {
+    const door = this.door();
+    if (!door) throw new Error("No music maker is set up.");   // DRAFT
+    const h = { authorization: `Bearer ${door.key}`, "content-type": "application/json" };
     const until = Date.now() + WAIT_MS;
     let st: { state: string; error?: string; seconds?: number } = { state: "queued" };
     while (Date.now() < until) {
@@ -109,9 +126,9 @@ export class SleepTracks {
     await run(["-i", src, "-ac", "1", "-ar", "16000", "-c:a", "adpcm_ima_wav", join(out, "watch-adpcm.wav")]);
     rmSync(src, { force: true });
     const size = (f: string) => statSync(join(out, f)).size;
-    Object.assign(t, { state: "ready", made: new Date().toISOString(), seconds: st.seconds ?? r.seconds,
+    Object.assign(t, { state: "ready", made: new Date().toISOString(), seconds: st.seconds ?? seconds ?? undefined,
                        bytes: { phone: size("phone.m4a"), watch: size("watch.wav"), watchAdpcm: size("watch-adpcm.wav") } });
-    delete t.error;
+    delete t.error; delete t.job;
     // keep the newest KEEP of this daemon's
     for (const old of this.list(t.species).filter((x) => x.state === "ready").slice(KEEP)) this.drop(old);
     this.save();

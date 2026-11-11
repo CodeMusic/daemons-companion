@@ -698,6 +698,7 @@ void draw() {
   uint16_t day = hex565(st.menu), ink = lightColour(st.menu) ? INK : PAPER;   // C-37
   tapN = 0; areaW = 0;                                      // C-161, C-172: the rows and tiles this frame draws
   canvas.fillSprite(INK);
+  if (screen == HOME) auroraSky(W, H);                      // C-312: a night of light -- behind everything the screen draws
   // the day's band
   canvas.fillRect(0, 0, W, 26, day);
   canvas.setTextFont(2); canvas.setTextColor(ink); canvas.setTextDatum(board.round ? MC_DATUM : ML_DATUM);

@@ -360,6 +360,41 @@ float creatorLevelNow() {                                  // 0..1: the gold rim
   return lv * caughtUp(arrivedInCreator);
 }
 bool shimmerNow() { return witchLevel() > 0.04f; }         // no shadow once it shows: not in the catch-up's quiet minute
+// C-312 (the user, 2026-11-10, by multiple choice: "Breathing top bands"): THE AURORA on a board's night screen -- the
+// den's rule to the bit (server/src/aurora.ts, the cartridge's daemons_aurora.c): THE UNITY BOOK mended, the game's night
+// watch (20:00 to 5:00), one night in three picked from the date; the edition's line in six bands across the top quarter
+// (red crowning green under the conjugate light, once both editions have met), each as strong as the den's and breathing
+// with the same sixteen-second breath. Drawn first, behind the daemon and every word.
+static int auroraDayNumber(int y, int m, int d) {
+  static const int before[12] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+  int yy = (y - 2000) & 0xFFFF, days = yy * 365 + (yy + 3) / 4 + before[(m - 1) % 12] + d - 1;
+  if (m > 2 && yy % 4 == 0) days++;
+  return days & 0xFFFF;
+}
+static bool auroraLightNight(int n) {
+  uint32_t x = ((uint32_t)(n & 0xFFFF) * 40503u) % 65536u;
+  x ^= x >> 7;
+  x = (x * 40503u) % 65536u;
+  return (x >> 8) % 3 == 0;
+}
+void auroraSky(int w, int h) {
+  if (!st.mended) return;
+  struct tm t; if (!watchLocalTime(t)) return;
+  if (!(t.tm_hour >= 20 || t.tm_hour < 5)) return;
+  int day = auroraDayNumber(t.tm_year + 1900, t.tm_mon + 1, t.tm_mday), minute = t.tm_hour * 60 + t.tm_min;
+  if (!auroraLightNight((minute < 12 * 60 ? day - 1 : day) & 0xFFFF)) return;
+  static const uint8_t RED[6] = { 255, 160, 64, 16, 0, 0 }, GREEN[6] = { 96, 255, 160, 48, 16, 0 }, BOTH[6] = { 255, 255, 176, 64, 16, 0 };
+  const bool context = st.edition == "CONTEXT";
+  const uint8_t *bands = st.both ? BOTH : context ? GREEN : RED;
+  const int b = (int)roundf(goldBreathNow() * 255), bh = max(1, h / 24);
+  for (int i = 0; i < 6; i++) {
+    if (!bands[i]) continue;
+    int weight = ((72 + b * 96 / 255) * bands[i]) / 255;                  // out of 256, aurora.ts auroraWeight
+    bool red = st.both ? i < 1 : !context;
+    canvas.fillRectAlpha(0, i * bh, w, bh, (uint8_t)min(255, weight), red ? canvas.color888(0xF7, 0x39, 0x4A) : canvas.color888(0x52, 0xF7, 0x7B));
+  }
+}
+
 // the creator's hour: a soft gold rim about it, breathing slowly -- not a glitch, a light (DRAFT)
 void creatorRim(int cx, int cy, int side) {
   float lv = creatorLevelNow(); if (lv < 0.03f) return;

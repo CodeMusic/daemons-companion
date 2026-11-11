@@ -192,6 +192,7 @@ bool takeState(const char *json) {
   { JsonVariant gf = doc["gift"];                            // C-185: the HANDSHAKE given -- told once
     if (!gf.isNull()) activityGift(gf["name"] | "", gf["at"] | "", gf["home"] | false); }
   st.watch = doc["world"]["watch"] | ""; st.sky = doc["world"]["weather"]["kind"] | "";   // C-158: the real world
+  st.mended = doc["sky"]["mended"] | false; st.both = doc["sky"]["both"] | false;   // C-312: the aurora's
   JsonVariant hd = doc["holiday"];
   st.holiday = Holiday();
   if (!hd.isNull()) {

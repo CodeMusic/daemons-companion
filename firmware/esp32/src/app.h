@@ -48,6 +48,7 @@ struct Talk { bool have = false; String first = "n8n"; bool n8n = false, module 
 struct Holiday { String name, look = "none", hat = "none"; uint32_t colour[2] = { 0, 0 }; bool quiet = false, flip = false; };
 struct State {
   bool have = false;
+  bool mended = false, both = false;   // C-312: what the aurora waits on (device state's sky)
   String date, edition, season, day, colour = "#5b6b8c", menu = "#5b6b8c", led = "#4060ff", note, virtue, chakra, theme;
   long step = -1; String stepText, goal, milestone; int msAt = 0, msOf = 0;   // C-49: its milestone, if in one
   bool carrying = false; Daemon daemon;
@@ -109,6 +110,7 @@ void openAsAbove();                       // C-237: AS ABOVE SO BELOW, a touch i
 void hermeticFromState(JsonVariant h);    // C-238: THE HERMETIC LAYER's first sight, from the state
 void halloweenFromState(JsonVariant h);   // C-240: Halloween, with the book held
 bool halloweenNow(); bool shimmerNow(); bool costumeNow(); void toggleMask();
+void auroraSky(int w, int h);   // C-312: a night of light, the book mended -- the den's bands across the top quarter
 float witchLevel(); float creatorLevelNow(); void creatorRim(int cx, int cy, int side);   // C-295: each hour's strength now, with the catch-up
 void indexArtDraw(int x, int y, int sc);  // index.cpp: the picture indexArtFor loaded (C-240: a costume)
 extern uint32_t routinesRun;              // C-240: how many routines have run (one may have used the INDEX's picture)   // C-236: 3 to 4 AM

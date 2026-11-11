@@ -65,8 +65,9 @@ phone carrying it, or from the computer it runs on. Link the watch by its cable 
 
 ## Coming
 
-- **Meetings and voice notes heard and written by n8n too**, not only by the hub's module; a phone hosting alone has
-  neither yet (C-212).
+- **Meetings and voice notes heard and written by n8n too**, not only on the hub; a phone hosting alone has neither
+  yet (C-212). (A meeting no longer needs the watch: the app's MEETINGS has RECORD A MEETING and FROM A VOICE MEMO,
+  written up the same way, C-316.)
 - **Its LoRa heard by the hub itself**, once the hub has its LoRa hat, and every other LoRa chip and band (C-175).
 - **The CASINO, enhanced** for the tall screen (C-198, to ask).
 - **Its voice with the phone alone**, away from the hub (C-197).

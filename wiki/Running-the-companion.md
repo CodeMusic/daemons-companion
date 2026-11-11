@@ -42,7 +42,10 @@ Assistant's token, and the cable and flashing. In a browser only the companion's
 a request from any other web page is refused, so a page you happen to have open cannot drive it.
 
 Six tabs, the same on the site and the phone, with **SETTINGS** behind the gear at the top right (on the Tab5 it is a
-seventh tab). A word, an act or a JACKPOT from another daemon shows as a banner over whatever tab is open; a tap opens
+seventh tab), and a **</>** tab after PLACES while DEVELOPER MODE is on ([Settings](Settings#developer-mode)). Beside
+the gear, **? HOW TO PLAY** reads **✦ WHAT'S NEW** until this build's notes have been opened (C-318): its dialog shows
+each build's notes and a TIMELINE of builds, and can ask the house's mind to tell a span of them
+([The one app](The-one-app#how-to-play-and-whats-new)). A word, an act or a JACKPOT from another daemon shows as a banner over whatever tab is open; a tap opens
 NEARBY.
 
 - **TODAY** -- the home page: the day's theme, its virtue over its shadow, chakra and note, the season, and **THE ONE
@@ -53,22 +56,24 @@ NEARBY.
   the game draws it), the **INDEX** (every entry, where each daemon is NATIVE, LISTEN), **Routines** (THE CASINO, THE
   HOUSE and the party's own -- [The CASINO](The-CASINO)), **SOUNDINGS** and **DREAMS**
   ([Your game on the companion](Your-game-on-the-companion), [Nights and dreams](Nights-and-dreams)) and **MEETINGS**
-  (each one recorded on a watch, by day: its summary, take-aways, action items and the daemon's day-dream, read aloud if
+  (**RECORD A MEETING** on the phone, **FROM A VOICE MEMO**, or one recorded on a watch -- C-316 -- by day: its summary, take-aways, action items and the daemon's day-dream, read aloud if
   you like, and the whole transcript -- [The T-Watch Ultra](The-T-Watch-Ultra)).
   While its voice plays -- TALK, LISTEN, READ ALOUD -- the daemon's mouth opens and shuts with it.
 - **JOURNEY** -- GOALS (one goal, its steps and milestones, and WALKING) and the JOURNAL: journals of titled entries, and
   SUMMARIZE, which turns what is new since the last summary into one page to export as a PDF or print.
-- **LIBRARY** -- CALLOW SCHOOL, THE GUIDE and THE SUBTLE LAYER once your save has found them, the **NOTEBOOK**, the
-  **SONGBOOK** (your instrument to PLAY, and the songs you have learned, in their colours, with LISTEN to hear one) and
-  **STREAM** (every lesson a MARK or a ROOT has opened).
+- **LIBRARY** -- a bookcase (C-320), every book standing by its cover: **FOUND IN THE GAME** (THE GUIDE and THE SUBTLE
+  LAYER once your save has found them), **MANUALS** (QUICK START, THE PLAYER'S MANUAL, THE COMPANION, PLAYING TOGETHER,
+  A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL) and **YOUR OWN PAGES** (the **NOTEBOOK**, the
+  **SONGBOOK** -- your instrument to PLAY, and the songs you have learned, in their colours, with LISTEN -- and
+  **STREAM**, every lesson a MARK or a ROOT has opened). It keeps your place in a book (C-309).
 - **YOU** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES and GAME
   EVENTS.
 - **PLACES** -- your devices (a picture of each, which daemon each hosts, batteries, ITS SETTINGS for each one,
   routines, remotes, every device's settings and networks), listed **LAST USED** first -- the one in your hand, then the
   most recently heard -- or **BY MAKER** or by **NAME**, as this phone or browser remembers (C-217); and your home: Home
   Assistant's rooms, each a tap, and the house asked in words ([Home Assistant and the BOX-3](Home-Assistant-and-the-BOX-3)).
-- **SETTINGS** (the gear) -- the app's build and LIGHT OR DARK, your save, THE WEATHER, who answers when you talk; on
-  the phone THIS PHONE; on the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
+- **SETTINGS** (the gear) -- the app's build and LIGHT OR DARK, DEVELOPER MODE, your save, THE WEATHER, who answers
+  when you talk, THE MIND and THE MIND AT WORK; on the phone THIS PHONE; on the site also PAIR A PHONE, AWAY FROM HOME and HOME ASSISTANT ([Settings](Settings)).
 
 A press whose work fails says why under its key, for a few seconds, rather than failing unseen.
 

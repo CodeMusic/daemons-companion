@@ -74,12 +74,17 @@ Home Assistant's address and token are not in this file, and neither is THE WEAT
   and **Set**, or **Forget** it (C-158). The server asks [Open-Meteo](https://open-meteo.com) for it every fifteen
   minutes while a city is set -- no account, and only the city is kept, with the weather it last had. With none set,
   nothing is fetched ([The CASINO](The-CASINO#the-days-odds)).
-- **SETTINGS, PREVIEW** -- off unless you turn it on: PLAY and THE SUBTLE LAYER shown as if the game had already given
-  them, to try them before the game does. The companion is asked with `?preview=1` and your save is never touched; the
-  site also takes `?preview=1` (or `harp`, `flute`) in its address.
-- **SETTINGS, DEVELOPER MODE** -- off unless you turn it on: the game's workings, LOGS, and **</>** on the daemon's
-  card ([below](#developer-mode)).
-- **SETTINGS, WHO ANSWERS WHEN YOU TALK** -- where your words go when you talk.
+- **SETTINGS, DEVELOPER MODE** -- off unless you turn it on: the game's workings, and a **</>** tab after PLACES with
+  the game session, your daemon's sliders and LOGS ([below](#developer-mode)). There is no PREVIEW card any more
+  (C-275): a book or the hour is previewed from **</>**, or on the site with `?preview=1` (or `harp`, `flute`) in its
+  address. Either way the companion is asked with `?preview=1` and your save is never touched.
+- **SETTINGS, WHO ANSWERS WHEN YOU TALK** -- the hub's first choice for your words (the Tiiny, the boards in the house,
+  your own model or OpenRouter), with AN AI BOARD ON YOUR NETWORK, THE TIINY, THE VOICES and THE INDEX READS IN
+  ([The hub and its AI](The-hub-and-its-AI)).
+- **SETTINGS, THE MIND** (C-307) -- every mind the app can reach, each with its dot: THIS PHONE, THE HUB and AN
+  ENDPOINT OF YOUR OWN; how far each kind of work may go (ANYWHERE, AT HOME, THIS PHONE); TRY IT, RECENT THOUGHTS; and
+  at its foot **THE HUB'S ENDPOINTS** (C-280). Under it, **THE MIND AT WORK** (C-319): every task the house's mind has
+  in hand, with STOP, TRY AGAIN and FORGET ([The hub and its AI](The-hub-and-its-AI#the-mind-c-307)).
 - **SETTINGS, YOUR SAVES** -- every save the companion knows, and which it reads; tap one to read it
   ([above](#your-saves)).
 - **SETTINGS, THIS PHONE** -- on the phone: the companion it is paired with, and **Leave this companion** (tap twice),
@@ -87,6 +92,8 @@ Home Assistant's address and token are not in this file, and neither is THE WEAT
 - **SETTINGS, THIS PHONE HOSTS ON ITS OWN** -- on a phone hosting alone: **Take a newer save from Files** and **Give
   the save back to Delta**; and **A COMPANION ON A COMPUTER**, to pair with one instead
   ([Host on your phone](Host-on-your-phone#or-the-phone-on-its-own-c-111)).
+- **SETTINGS, MUTE THE GAME WHILE IT IS PUT AWAY** -- on an iPad on its side (or the Mac), with the game beside the
+  companion: whether the game keeps its sound when the divider's ‹ puts it away (C-260).
 - **SETTINGS, PAIR A PHONE** and **AWAY FROM HOME** -- on the site only: pairing
   ([Host on your phone](Host-on-your-phone#5-pair-it)) and the relay ([Away from home](Away-from-home)).
 - **SETTINGS, HOME ASSISTANT** -- on the site only: Home Assistant's address and a long-lived access token, for HOME in
@@ -142,15 +149,23 @@ on the device; the site keeps it for the visit. Off, the game shows none of its 
 
 - **Under the game**, the frames run and drawn each second and whether the sound is running, and what EmulatorJS
   warned of while starting ([The one app](The-one-app#the-game-in-the-app-c-187)).
+- **</>**, a tab of its own after PLACES (C-275), there only while DEVELOPER MODE is on: **THE GAME SESSION** as a
+  developer wants to see it, section by section -- **THE BOOKS** (each held or not, as the save has it, and changeable;
+  a book held here is read as a preview), **CALLOW SCHOOL** (the TEXTBOOK and the DIPLOMA), every **GAME EVENT** by
+  section, **THE WITCHING HOUR**, **THE CREATOR'S HOUR**, **NIGHTS OF LIGHT** and **FROM THE OTHER SIDE** (as the clock,
+  the date or the party has it, or on or off now), **YOUR DAEMON** (the sliders below) and **LOGS**. Each row is
+  pre-checked as the save has it, and says so where you have moved it. **Everything here is in memory only**: nothing
+  reaches the companion, the save or the game, and **Restore the game session**, DEVELOPER MODE off or the app closed
+  puts the save's own answers back.
 - **LOGS** -- the game's pace, how much memory the app's JavaScript holds (where it can say), whether the device hosts
   alone or the companion it is paired with, and every warning the game and the app gave, newest first. **PING** times a
   request to the companion, **COPY** shares the lines, **CLEAR** empties them. On an iPad on its side, LOGS is a panel
   at the right, beside the game and the companion, with a divider of its own to drag (its width is kept) and **›** to
-  put it away. Elsewhere it opens under the card in SETTINGS.
-- **</>** (C-269), on the daemon's card in DAEMON: sliders for its MOOD, REST, HUNGER, THIRST, WEIGHT and COMPANY, each
+  put it away. Elsewhere it is at the foot of the **</>** tab.
+- **YOUR DAEMON** (C-269), in the **</>** tab (it was once a **</>** on the daemon's card): sliders for its MOOD, REST, HUNGER, THIRST, WEIGHT and COMPANY, each
   beside its true value, and the card's bars, its word and its width follow them
   ([Feelings and expressions](Feelings-and-expressions#how-it-has-been-cared-for-c-266)). **In memory only**: nothing
-  reaches the companion, the save or the game, and **RESET**, **CLOSE**, leaving the card, DEVELOPER MODE off or the
+  reaches the companion, the save or the game, and **RESET**, the game session restored, DEVELOPER MODE off or the
   app closed puts it back. The shadows under its eyes are drawn by the companion, which never hears of the sliders, so
   they stay as they truly are.
 

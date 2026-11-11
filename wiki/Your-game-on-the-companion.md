@@ -17,7 +17,7 @@ the game's are.
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
-| **LIBRARY** | THE PLAYER'S MANUAL, QUICK START, PLAYING TOGETHER, A BIGGER MIND, THE OLD WORD, CALLOW SCHOOL, THE GUIDE, THE SUBTLE LAYER, the NOTEBOOK, the SONGBOOK and STREAM |
+| **LIBRARY** | a bookcase, a shelf per kind: FOUND IN THE GAME (THE GUIDE, THE SUBTLE LAYER), MANUALS (QUICK START, THE PLAYER'S MANUAL, THE COMPANION, PLAYING TOGETHER, A BIGGER MIND), HISTORY AND STUDY (THE OLD WORD, CALLOW SCHOOL) and YOUR OWN PAGES (the NOTEBOOK, the SONGBOOK and STREAM) |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
 ## When the game saves
@@ -73,19 +73,33 @@ not named; **?** means the save cannot say.
 
 ## The LIBRARY
 
-A shelf of what can be read (C-145, C-156), each book opening as a page of its own.
+**A bookcase** (C-145, C-156, C-320): an antique walnut case, a brass plate on each shelf, and every book standing face
+out by its own cover; tap one and it opens as a page of its own, **‹ LIBRARY** back to the shelves. Four shelves:
 
-- **THE PLAYER'S MANUAL** (C-233) -- first on the shelf, for everyone: DAEMONS' own manual (the PDF in DAEMONS' `docs/`,
+| shelf | its books |
+|---|---|
+| **FOUND IN THE GAME** | the books your save has found -- THE GUIDE, THE SUBTLE LAYER -- each only once found; until then *The books you find in the game will stand here.* |
+| **MANUALS** | QUICK START, THE PLAYER'S MANUAL, **THE COMPANION**, PLAYING TOGETHER, A BIGGER MIND |
+| **HISTORY AND STUDY** | THE OLD WORD, CALLOW SCHOOL |
+| **YOUR OWN PAGES** | the NOTEBOOK, the SONGBOOK, STREAM |
+
+**It keeps your place** (C-309): a sync, a redraw or the app opened again comes back to the same book and page, at the
+same line; a book still being fetched says *Opening the book where you left it…* Tapping the LIBRARY tab again goes
+back to the shelves.
+
+- **THE PLAYER'S MANUAL** (C-233) -- on the MANUALS shelf, for everyone: DAEMONS' own manual (the PDF in DAEMONS' `docs/`,
   rebuilt at every release), every way to play and how it all works, telling how and never where. On the iPhone and
   iPad it is fetched from DAEMONS on GitHub as published, kept on the device (so it opens away from home and offline),
   fetched again when a newer one is out, and read in the app's own page, scrolled and pinched as any PDF; **Share**
   keeps it in Books or Files. On the site it opens in the page, or in a tab of its own. None of it is in this
   repository.
-- **QUICK START** (C-233) -- next on the shelf: DAEMONS' short way in, what it is and how to play it, step by step (the
-  QUICK-START PDF), fetched, kept and read as the manual is. After it, DAEMONS' two other manuals, kept the same way:
-  **PLAYING TOGETHER** (trading, loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS) and **A BIGGER MIND**
-  (setting up a Tiiny Pocket for the companion). Then **THE OLD WORD** (C-274): how the Greek *daimon* branched, and why
-  it is said *DAY-mons*.
+- **QUICK START** (C-233) -- first on the MANUALS shelf: DAEMONS' short way in, what it is and how to play it, step by
+  step (the QUICK-START PDF), fetched, kept and read as the manual is. Beside them, kept the same way: **THE
+  COMPANION** (C-321, [the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf), 71
+  pages) -- this app's own manual, every tab and page, reprinted as the app changes -- **PLAYING TOGETHER** (trading,
+  loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS) and **A BIGGER MIND** (setting up a Tiiny Pocket for
+  the companion). On HISTORY AND STUDY, **THE OLD WORD** (C-274): how the Greek *daimon* branched, and why it is said
+  *DAY-mons*.
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its
   board once you have stood on it (greyed and closed until then). And **THE PAPER, TO SIT AGAIN**: the whole paper, a
@@ -158,8 +172,9 @@ A shelf of what can be read (C-145, C-156), each book opening as a page of its o
   holes held while you breathe into the microphone (a finger alone where there is none); an octave either way. Each
   note drifts up in its key's colour as the game draws it, and the companion listens as the game does: a learned song
   in its key joins on the staff and echoes, and the right notes in another key are ALMOST. A song only heard is to be
-  played back in the game. On the phone the harp takes every finger, for a chord or a strum. SETTINGS' **PREVIEW**
-  shows it (and THE SUBTLE LAYER) as if the game had given it, to try before then -- your save is never touched.
+  played back in the game. On the phone the harp takes every finger, for a chord or a strum. DEVELOPER MODE's **</>**
+  tab (THE BOOKS, PLAY) -- or `?preview=1` in the site's address -- shows it (and THE SUBTLE LAYER) as if the game had
+  given it, to try before then; your save is never touched ([Settings](Settings#developer-mode)).
 - **STREAM** -- every lesson a MARK or a ROOT has opened, read as their pages read them: its first line leading and the
   rest as points, and where it was opened.
 
@@ -194,7 +209,9 @@ streak: only what was heard.
 
 ## DREAMS
 
-In DAEMON, **DREAMS**: the journal of every night a watch told the companion, and the dream your daemon had. At a SYNC
+In DAEMON, **DREAMS**: the journal of every night -- put to bed and woken in the app, on the widget or on a watch --
+and the dream your daemon had, with its title and, when the house's mind told it, its REASON, INSTINCT and WHOLE
+lenses, LISTEN and SHARE. At a SYNC
 the last one goes into your save for the game. All of it: [Nights and dreams](Nights-and-dreams).
 
 ## THE ROAD AHEAD

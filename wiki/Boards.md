@@ -241,8 +241,9 @@ game's own music, in the day's key.
 
 - **A press answers at once** (C-121): the word, the face and the hop are drawn first, and the companion is told
   after, in the background -- kept and sent again until it answers, so the board never waits on the network.
-- **SLEEP**: put to bed from 8pm, it sleeps until 6; put down in the day, it naps an hour and a half; tended in
-  between, it wakes. Not put to bed, it grows drowsy, with one quiet line at bedtime.
+- **SLEEP**: put to bed from dusk (18:00, C-300), it sleeps until it is woken -- WAKE, or the first care of the
+  morning -- and at noon at the latest (C-293); put down in the day, it naps an hour and a half; tended in between, it
+  wakes. Not put to bed, it grows drowsy from 8pm, with one quiet line at bedtime.
 - **Your goals nourish it**: each step you finish counts as a meal and one experience point, which it takes home at the
   next SYNC. It never nags.
 

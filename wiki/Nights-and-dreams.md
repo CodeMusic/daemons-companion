@@ -1,7 +1,8 @@
 # Nights and dreams
 
-**Your daemon sleeps when you do, and in the morning it has had a dream** (C-200). The night is kept by a watch, the
-dream is kept in a journal, and at the next SYNC the last dream goes home with the daemon, into your game.
+**Your daemon sleeps when you do, and in the morning it has had a dream** (C-200). The night is begun and ended in
+the app, on the widget or on a watch, the dream is kept in a journal, and at the next SYNC the last dream goes home with
+the daemon, into your game.
 
 *Built on 2026-10-28 and still being tried on the wrist. Every word the daemon dreams is DRAFT.*
 
@@ -9,12 +10,17 @@ dream is kept in a journal, and at the next SYNC the last dream goes home with t
 
 A night begins either way:
 
-- **Tuck the daemon in**: CARE, SLEEP, on a watch. It begins at once.
+- **Tuck the daemon in**: **Sleep** on the app's DAEMON tab, the widget's SLEEP, or CARE, SLEEP on a watch. It begins
+  at once. **A night starts at dusk, 18:00** (C-300): put to bed from then until six in the morning, the daemon sleeps
+  until it is woken -- **Wake**, or the first care of the morning -- and wakes by itself at noon at the latest (C-293).
+  Put down in the day, it naps an hour and a half. Not put to bed, it grows drowsy from eight and waits for you; it
+  never falls asleep alone.
 - **Or just sleep**, on the [T-Watch Ultra](The-T-Watch-Ultra): half an hour of stillness between eight at night and
   four in the morning, felt by its motion sensor (C-201). The night counts from when the stillness began.
 
-It ends when you wake the daemon (CARE, WAKE), after three minutes on the move, or after sixteen hours. Every stir in
-between is counted. A night of an hour or more is told to the companion, over the cable, the phone or Wi-Fi alike. The
+It ends when you wake the daemon (**Wake** in the app or on the widget, CARE, WAKE on a watch) or tend it in the
+morning; a watch's night also ends after three minutes on the move, or after sixteen hours. Every stir in between is
+counted -- in the app, how often the phone was picked up in the night counts as stirring. A night of an hour or more is told to the companion, over the cable, the phone or Wi-Fi alike. The
 watch keeps it in flash, so a restart in the night does not lose it. Out of reach of all three, a watch with LoRa also
 puts it on the air, and one of your LoRa boards that can reach home tells the companion for it (C-175, built, not yet on
 the air -- [Meeting others nearby](Meeting-others-nearby#the-relay-a-watch-out-of-reach)).
@@ -24,14 +30,22 @@ app shows them as *A deep night*, *A quiet night* and *A restless night*.
 
 ## The dream
 
-The quality shapes the dream. The watch shows one at once, **WHILE YOU SLEPT**, from the companion's own written
-dreams; the same night always gives the same dream. If [the hub's AI board](The-hub-and-its-AI) is there, it is asked
-for its own telling in the daemon's voice, and the watch shows that too when it comes: **IT REMEMBERS MORE**.
+The quality shapes the dream. **On waking it shows at once**: in a line on the daemon's card in the app, and on the
+watch as **WHILE YOU SLEPT**, from the companion's own written dreams; the same night always gives the same dream. If
+the house has a mind to spare ([The hub and its AI](The-hub-and-its-AI)), it is asked for its own telling in the
+daemon's voice, which takes the written one's place within a minute -- on the watch, **IT REMEMBERS MORE**.
 
-**LISTEN** on the watch reads a dream aloud; so does **Read aloud** in the app's journal.
+**Told twice, and made whole** (C-308). The house's mind tells the night two ways at once, as two halves of a mind
+would -- **REASON**, in red: in order, from falling asleep to waking, one exact detail at a time; **INSTINCT**, in blue:
+all at once, one image becoming another -- and then joins them into the dream that is kept, with a **title**. A dream
+written without a mind takes the game's own title for its image.
 
-**The journal**: DAEMON, **DREAMS**, in the app and on the site. Every night a watch told, newest first, ninety kept --
-the dream, how long and how still the night was, and whether the daemon was tucked in.
+**LISTEN** on the watch reads a dream aloud; so does **LISTEN** in the app's journal.
+
+**The journal**: DAEMON, **DREAMS**, in the app and on the site. Every night, newest first, ninety kept -- its title,
+the dream, how long and how still the night was, and whether the daemon was tucked in. A dream told twice has two
+lenses over it: tap **REASON** or **INSTINCT** to read that telling, or light both for the **WHOLE**, in purple. LISTEN
+reads whatever is shown. **SHARE** shows a dream to the other players at your home.
 
 ## Into the game (ITS DREAMS)
 
@@ -64,5 +78,6 @@ On the Ultra, the line under the face says **A DREAM IS WAITING** until you read
 
 ## Coming
 
-The day-dream: a meeting recorded on the Ultra, summed up, and dreamt over by the daemon (C-212). The daemon's mouth
-moving as it reads a dream aloud (C-213).
+The daemon's mouth moving as it reads a dream aloud (C-213). (The day-dream is here already: a meeting recorded on the
+Ultra or the phone, or brought in from a voice memo, is written up and dreamt over by the daemon -- DAEMON, MEETINGS,
+C-212, C-316.)

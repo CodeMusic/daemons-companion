@@ -118,16 +118,24 @@ alongside any boards, each saying which daemon it hosts (*"Hosts …"*). Choose 
 AWAY. A daemon hosted by another device moves to the widget. The widget shows it, its level, its word for how it is,
 how it has eaten and drunk today, and its cue.
 
-## 8. DRINK, FEED, TRAIN, SLEEP
+## 8. FEED, DRINK, TRAIN or SLEEP, and JOURNEY
 
-Press the buttons on the widget. Each answers at once, without opening the app:
+Press the buttons on the widget. They are **FEED**, **DRINK**, then one key that follows the day (C-301) -- **TRAIN**
+by day, **SLEEP** from dusk (18:00), **WAKE** while it sleeps -- and last **JOURNEY**. Each care answers at once,
+without opening the app:
 
 | button | it says |
 |---|---|
-| **DRINK** | *Drank.* |
 | **FEED** | *Eaten.* |
-| **TRAIN** | *Trained.* |
-| **SLEEP** | *Asleep.* -- put to bed from 8pm it sleeps until 6; in the day, a nap of an hour and a half |
+| **DRINK** | *Drank.* |
+| **TRAIN** (from dawn) | *Trained.* |
+| **SLEEP** (from dusk) | *Asleep.* -- put to bed from dusk, 18:00 (C-300), it sleeps until it is woken or tended, and wakes by itself at noon at the latest; in the day, a nap of an hour and a half |
+| **WAKE** (while it sleeps) | *Awake.* -- the night ends, and its dream follows ([Nights and dreams](Nights-and-dreams)) |
+| **JOURNEY** | opens the app on its JOURNEY tab, your goals |
+
+The widget and the app show the same daemon (C-300): a care in the app redraws the widget, the app reads the daemon's
+life again when it comes to the front, and the widget redraws itself when its state would change by itself -- a nap's
+end, noon, dusk or dawn.
 
 **A press answers before the companion is asked** (C-122): the button lights with a check while the daemon hops, the
 counts move, and its phrase plays on your game's own instrument -- the HARP for a CONTENT save, the FLUTE for CONTEXT (a
@@ -136,7 +144,7 @@ says *Kept until home answers.*: it is kept on the phone and sent the next time 
 companion. Nothing is lost.
 
 The app's **DAEMON** tab, **Yours**, has the same buttons, large, the daemon's day, **NEARBY** and **HOLD TO TALK**
-([Talk to your daemon](Talk-to-your-daemon)); **TODAY** has DRINK, FEED and TRAIN too. At bedtime **SLEEP** is lit;
+([Talk to your daemon](Talk-to-your-daemon)); **TODAY** has FEED, DRINK and TRAIN too. When it grows drowsy, from eight, **SLEEP** is lit (it can be put to bed for the night from dusk);
 while it sleeps one **WAKE** button wakes it, and the card says **ASLEEP** plainly. Its face shows how it feels -- glad
 after a meal, sleepy at night, its eyes closed asleep -- drawn from its own sprite, in its den
 ([Feelings and expressions](Feelings-and-expressions)). Your **goals** feed it too: every step you finish counts as a

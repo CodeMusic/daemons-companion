@@ -53,9 +53,14 @@ YOUR NETWORK**, in SETTINGS, takes the address of another one -- a standalone bo
    rather than giving n8n's error. The first talk with a daemon the board has not yet spoken as waits for the board to
    free a place for it.
 
-**Who answers first** (C-211): the AI board or n8n, the other after it. It is one choice for the whole companion, made
-in the app's THE HUB card, in a watch's own settings or on the watch. Each has a dot, green or red, for whether it can
-answer now; the companion checks every minute.
+**Who answers first** (C-211): the Tiiny (once its address is given), the AI board or n8n, the others after it. It is
+one choice for the whole companion, made in the app's THE HUB card, in a watch's own settings or on the watch. Each has
+a dot, green or red, for whether it can answer now; the companion checks every minute.
+
+**With a Tiiny and endpoints, the order is**: the **Tiiny** first (C-249), then **THE HUB'S ENDPOINTS** in the order
+you gave them (any OpenAI-compatible address, C-280), then the house's **AI boards**, then **n8n**. Each is asked only
+when the one before is away, silent or fails. It is the same chain for a talk, THE GUIDE, a meeting's write-up and a
+dream.
 
 **The INDEX's voice** is a separate choice (SETTINGS, WHO ANSWERS WHEN YOU TALK). By default it is n8n, which keeps the
 voice made for the INDEX. Each falls back on the other: when n8n cannot be reached or fails, the AI board reads the
@@ -64,15 +69,51 @@ entry; when the board cannot, n8n does.
 ## What the AI board does for your daemon
 
 - **Talks as your daemon**: hearing, thinking and voice all in the house, so a recording never leaves home.
-- **Tells its dreams.** After a night on a watch, the companion writes a dream at once, then asks the AI board for its
-  own telling, which the watch shows when it comes ([Nights and dreams](Nights-and-dreams)).
-- **Hears meetings and voice notes** (C-212, C-199). A meeting recorded on the T-Watch Ultra is heard a part at a
-  time as it comes, then written up -- a summary, take-aways and action items -- and the daemon day-dreams it. A voice
-  note's words go to the app's VOICE NOTES. Only the hub's module does this for now, not n8n
-  ([The T-Watch Ultra](The-T-Watch-Ultra)).
+- **Tells its dreams.** After a night -- begun and ended in the app or on a watch -- the companion writes a dream at
+  once, then asks the house's mind for its own telling, twice over and made one (C-308): REASON, INSTINCT and the WHOLE
+  with its title ([Nights and dreams](Nights-and-dreams)).
+- **Hears meetings and voice notes** (C-212, C-199, C-316). A meeting recorded on the T-Watch Ultra, or on the phone
+  (MEETINGS, **RECORD A MEETING**), or brought in from Voice Memos (**FROM A VOICE MEMO**), is heard a part at a time,
+  then written up -- a summary, take-aways and action items -- and the daemon day-dreams it. A voice note's words go to
+  the app's VOICE NOTES. The hub does this, not n8n ([The T-Watch Ultra](The-T-Watch-Ultra)).
 - **Answers as THE GUIDE** (C-209). Once your save has found THE GUIDE, ask it a question by voice from a watch's
   BOOKS, or in the app's GUIDE -- typed, or held and spoken. The pages nearest the question go to the model with it, and it answers as the book, only from
   them. Like any talk, it goes to whichever answers first.
+
+## THE MIND (C-307)
+
+**SETTINGS, THE MIND** treats every mind the app can reach as one: **THIS PHONE** (Apple's own model, on an iPhone that
+can think for itself), **THE HUB** (and through it the chain above) and **AN ENDPOINT OF YOUR OWN**, asked by the phone
+itself with its key kept in the phone's Keychain. The strongest that can answer is asked; if it is slow, another
+answers instead. Each has a dot; **TRY IT** sends a typed line through it, and **RECENT THOUGHTS** says where each talk
+was heard, thought and said, and how long each took -- never what was said.
+
+**How far each may go** -- three rings, for TALK and THE GUIDE on a phone, and for DREAMS on the hub:
+
+| ring | what may answer |
+|---|---|
+| **ANYWHERE** | every mind, an endpoint on the internet too |
+| **AT HOME** | nothing leaves the house: the phone, the hub, the Tiiny, the AI boards, an endpoint inside your home |
+| **THIS PHONE** | nothing leaves the phone -- TALK only, on a phone that can think |
+
+THE GUIDE and dreams are kept on the hub, so they cannot be thought on the phone alone; the JOURNAL is always written
+at home.
+
+**THE HUB'S ENDPOINTS** (C-280), at the foot of THE MIND: any number of OpenAI-compatible models -- an address ending
+`/v1`, a key, a model and a name -- asked in the order listed (↑ and ↓ move one), after the Tiiny and before the
+boards. A key stays on the hub and is never shown again; each endpoint's dot says whether it answered in the last
+minute, and one inside your home keeps to the AT HOME ring.
+
+**THE MIND AT WORK** (C-319), under THE MIND: everything the house's mind is doing and has done. **THE WEB** -- the
+hub in the middle, its minds on a ring, the devices that asked on the outer ring, a spark on the line of each task
+thinking now. **THE RIVER** -- a lane per mind over an hour, a day or a week, up to NOW. **NOW** and **BEFORE** list
+the tasks (who asked, from which device, on which mind) with **STOP**, **TRY AGAIN**, **FORGET** and **CLEAR
+FINISHED**; **MINE**, **EVERYONE** or one player chooses whose. STOP marks a task stopped and its answer is ignored
+when it lands.
+
+**The voice, in seconds** (C-317). A daemon's spoken answer from the hub is **streamed**: the Tiiny is asked for it a
+part at a time, the phone is handed a link once the first part is ready and plays it as it comes, so the voice starts
+in about three seconds rather than twenty. Once it has all come the phone keeps it, to hear again at once.
 
 ## Coming
 

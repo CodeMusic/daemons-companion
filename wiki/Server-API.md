@@ -81,7 +81,8 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /art/<name>_front.png` | a daemon's art, from DAEMONS' own `gfx/daemons/` |
 | `GET /art/party/<slot>.png` | a party daemon as the game draws it, its streaks painted for its routines; `?expression=` shades it |
 | `GET /art/species/<id>.png` | a species as the INDEX draws it |
-| `GET /api/art` | the same pictures as JSON, so they cross the relay: `?party=<slot>` (and `&expression=`), `?species=<id>`, `?all=species`, `?player=reason` or `instinct` (and `&walk=1`), `?mark=1` to `8`, `?guide=cover` |
+| `GET /api/art` | the same pictures as JSON, so they cross the relay: `?party=<slot>` (and `&expression=`), `?species=<id>`, `?all=species`, `?player=reason` or `instinct` (and `&walk=1`), `?mark=1` to `8`, `?guide=cover`, `?book=<book>` |
+| `GET /art/books/<book>.png` | C-320: a book's cover, as it stands on the LIBRARY's bookcase |
 
 ## THE CASINO
 
@@ -186,14 +187,22 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 | `POST /api/device/speak` | the hosted daemon's INDEX entry -- or `{species}`, any entry -- aloud: a link to its voice |
 | `GET /api/device/voice/:id` | that voice, as 16 kHz 16-bit mono samples, for a board to stream (kept ten minutes) |
 | `POST /api/ai/talk` | `{text}` or `{audioBase64, audioMime}` -- the phone's push to talk: the answer, what was heard, and the voice as mp3 |
-| `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3 |
-| `GET`/`POST /api/talk/settings` | who answers: `auto`, `local` or `openrouter` |
+| `POST /api/ai/speak` | `{species}` or `{text}` -- an INDEX entry or a line in the INDEX voice, as mp3; with `{stream: true}` (C-317), a `{stream}` link as soon as the first part is made |
+| `GET /api/ai/voice/<id>` | C-317: that streamed voice, as mp3, played as it arrives (an id nobody can guess, kept ten minutes) |
+| `GET`/`POST /api/talk/settings` | who answers: the provider (`tiiny`, `module`, `auto`, `local` or `openrouter`), who answers first, THE TIINY, the AI boards' addresses, THE HUB'S ENDPOINTS (C-280; a key is never sent back) and DREAMS' ring (C-307) |
+| `GET /api/mind` | C-307: THE MIND's RECENT THOUGHTS -- where each talk was heard, thought and said, and how long each took -- and each mind's recent speed |
+| `POST /api/mind/trace` | a phone's talk, reported to RECENT THOUGHTS and THE MIND AT WORK |
+| `GET /api/mind/tasks` | C-319: THE MIND AT WORK -- every task (`?user=`, `?since=`), the users and minds in it, and the talk queue's load |
+| `POST /api/mind/tasks` | `{id, act: "stop" \| "retry" \| "forget"}`, or `{act: "clear", user?}` for the finished ones |
+| `GET /api/whatsnew/digests` | C-318: WHAT'S NEW's spans told so far, and the latest build |
+| `POST /api/whatsnew/digest` | `{from, to, user, device}` -- a span of builds told by the house's mind, in the background (202); `{forget: id}` |
 | `POST /api/ai/modules` | the AI boards to ask, set by hand (AN AI BOARD ON YOUR NETWORK) or from the hub's own search ([The hub and its AI](The-hub-and-its-AI)) |
 
-## Meetings and voice notes (C-212, C-199)
+## Meetings and voice notes (C-212, C-199, C-316)
 
-A watch records a meeting in parts; the companion hears each part on the hub's module as it arrives, writes the
-meeting up and has the daemon day-dream about it. A voice note is one recording of up to a minute, heard the same way
+A watch records a meeting in parts; the companion hears each part as it arrives, writes the meeting up and has the
+daemon day-dream about it. A meeting recorded on the phone, or a voice memo, is sent whole, made 16 kHz and cut into
+the watch's half-minute parts, then heard and written up the same way. A voice note is one recording of up to a minute, heard the same way
 ([The T-Watch Ultra](The-T-Watch-Ultra)). The device routes are on the device's own door, and take a recording only
 from a board with its own key, a paired phone or this machine ([above](#who-may-ask)). A board's LAST MEETING is
 only its own.
@@ -202,6 +211,7 @@ only its own.
 |---|---|
 | `POST /api/device/meeting/start`, `/part`, `/end` | a watch's recording: begun, a half-minute part (raw audio), finished -- with how many parts there were and which were lost on the way, heard as nothing. 480 parts (four hours) and 500 MB a meeting at most |
 | `GET /api/device/meeting` | the latest write-up, for the watch's LAST MEETING |
+| `POST /api/meeting/import?from=phone\|memo` | C-316: a whole recording from the app's RECORD A MEETING or FROM A VOICE MEMO (`?at=` or a memo's `?ended=`, `?name=`), up to 300 MB |
 | `GET /api/meeting/list` | every meeting recorded, for the app's MEETINGS. (`GET /api/meetings` is C-60's: who was met nearby) |
 | `GET /api/meeting/audio` | one part's recording, while it is kept (1.5 GB at most, the oldest cleared first) |
 | `POST /api/meeting/retry` | hear again what was not heard, then write it up |

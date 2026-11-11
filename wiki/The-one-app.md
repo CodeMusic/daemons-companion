@@ -2,7 +2,9 @@
 
 **One app for everything: the game, the companion, the LIBRARY and the NOTEBOOK** (C-186, docs/ONEAPP.md). The
 companion's app grew into it -- there is no second app. Play DAEMONS, SEND a daemon out of your party, care for it,
-read what the game has given you, and bring it home again, all in one place.
+read what the game has given you, and bring it home again, all in one place. The whole app is told in its own book,
+**[THE COMPANION](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf)** (a PDF of 71
+pages, C-321), which also stands on the LIBRARY's MANUALS shelf.
 
 *In testing.* It is handed out through TestFlight (C-210): to our own testers now, and to testers outside once Apple's
 beta review has passed the build uploaded for them. It is not on the App Store; whether and how it is published is
@@ -55,7 +57,9 @@ was lost is let go. *Not yet seen on a device.*
 books, shortest first -- **MICRO-START** (five pages), **QUICK-START** and the **USER MANUAL** -- each opening in a reader
 over the game panel, at whatever size the panel is (drag the divider and it follows), with **‹ MAIN MENU** back to the
 title. While playing, the game holds still under it and **‹ BACK TO THE GAME** goes on where it was. It opens while
-playing from **? HOW TO PLAY** in the companion's header (beside ⚙), which brings the game panel into view for it.
+playing from **? HOW TO PLAY** in the companion's header (beside ⚙), which brings the game panel into view for it --
+the button reads **✦ WHAT'S NEW** until this build's notes have been opened
+([below](#how-to-play-and-whats-new)).
 It is under **Help** on the menu bar too, the iPad's and the Mac's (**How to Play DAEMONS**), and from there it opens
 before pairing as well, over the pairing screen. The books are DAEMONS' own PDFs, fetched as published and
 kept on the device, as the LIBRARY keeps them; none of them is in this repository. On the site, the header's button opens
@@ -100,6 +104,17 @@ many), and **"From {who sent it}"** -- you, for a daemon you SENT; the other pla
 time; a tap puts it away. The site shows the same, for its own SYNC and for any it did not ask for (a save watched on
 the computer, the playground's game, a paired phone). Words DRAFT.
 
+## HOW TO PLAY and WHAT'S NEW
+
+The header's **? HOW TO PLAY** (C-264, above) reads **✦ WHAT'S NEW** (**✦ NEW** where the header is narrow) until this
+build's notes have been opened, or until a span told by the house's mind lands unread (C-318). It opens a dialog with
+the build you are running and its notes, as headed sections. Tap the build's number for the **TIMELINE**: every
+TestFlight build a bead on one line, any span already told shown as a tag over the beads it covers. Choose an older
+build and **✦ TELL ME** asks the house's mind (the Tiiny first, then the hub's endpoints, then its boards) to tell
+everything that changed from then to now; **⟷ ANY SPAN** picks both ends. While it thinks, the daemons dance and the
+house mutters; you may close the dialog, and the tag lands anyway, as a page of its own. HOW TO PLAY is still a tap
+away, in the dialog. Every word DRAFT.
+
 ## The iPad on its side (C-189)
 
 Turn the iPad on its side (both sides 700 points or more) and the game stays on the left, always playing, with the
@@ -118,6 +133,15 @@ NOTEBOOK, THE GUIDE, THE SUBTLE LAYER, the full INDEX cards in their colours. Ea
 before. **READ ALOUD** reads any chapter of THE SUBTLE LAYER or THE GUIDE, or any NOTEBOOK page, a paragraph at a time
 (C-208).
 
+**The LIBRARY is a bookcase** (C-320): a walnut case with a brass plate on each shelf, every book standing face out by
+its own cover -- **FOUND IN THE GAME** (the books your save has found), **MANUALS** (QUICK START, THE PLAYER'S MANUAL,
+**THE COMPANION**, PLAYING TOGETHER, A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL) and **YOUR OWN
+PAGES** (NOTEBOOK, SONGBOOK, STREAM). The manuals are DAEMONS' own PDFs, fetched as published and kept on the device.
+**THE COMPANION** ([PDF, 71 pages](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf),
+C-321) is this app's own manual, reprinted as the app changes. **The reader keeps its place** (C-309): a sync, a redraw
+or the app opened again comes back to the same book, page and line. While a book reads aloud, it lends the reader its
+own look -- its colours, a ribbon of its chapters with the one heard lit, and NOW READING.
+
 **THE ROAD AHEAD** (YOU, C-191): where your save is and the next step, the fights and trainers still ahead, the places
 open to you and their wild daemons. Nothing past the next step is shown, and no hidden book or secret is ever in it.
 Its words are DRAFT.
@@ -126,8 +150,10 @@ Its words are DRAFT.
 
 **THE HUB** card, at the top of DEVICES in PLACES, says what the companion you are paired with adds beyond a phone
 alone: the save it mirrors, its AI boards answering, its LoRa boards and when each was last heard. A phone alone says
-plainly that everything works there but the AI. Under it, **WHO ANSWERS FIRST WHEN YOU TALK** (C-211): the hub's AI
-board or n8n, each with a green or red dot ([The hub and its AI](The-hub-and-its-AI)).
+plainly that everything works there but the AI. Under it, **WHO ANSWERS FIRST WHEN YOU TALK** (C-211): the Tiiny
+(once its address is given), the hub's AI board or n8n, each with a green or red dot. SETTINGS' **THE MIND** and **THE
+MIND AT WORK** show every mind the app can reach and everything they are doing
+([The hub and its AI](The-hub-and-its-AI#the-mind-c-307)).
 
 The boards are reached over Bluetooth as the phone already carries them ([Boards](Boards)).
 

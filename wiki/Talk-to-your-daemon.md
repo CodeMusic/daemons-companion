@@ -1,10 +1,15 @@
 # Talk to your daemon
 
-**Hold to talk, let go, and the daemon you host answers** -- in its own words, as itself. The words come from an AI
-board in your house ([the hub's AX630](The-hub-and-its-AI)) or from a model on your own machine through n8n (or
-OpenRouter when that one is busy, if you set it up), and nothing goes anywhere you did not set up. No device waits: a
-talk is answered at once with an id, and the answer is fetched when it is ready (C-180, C-181). A care or a hello is
-answered at once from written lines, with no model at all (C-196).
+**Hold to talk, let go, and the daemon you host answers** -- in its own words, as itself. On the hub the words come
+from a Tiiny first, if you have one, then from **THE HUB'S ENDPOINTS** in the order you gave them (any OpenAI-compatible
+model, C-280), then from an AI board in your house ([the hub's AX630](The-hub-and-its-AI)), then from a model on your
+own machine through n8n (or OpenRouter when that one is busy, if you set it up) -- and nothing goes anywhere you did not
+set up. The app also has minds of its own: **SETTINGS, THE MIND** (C-307) asks the strongest of this phone, the hub
+and an endpoint of your own, keeps each kind of work within its ring (ANYWHERE, AT HOME, THIS PHONE), and lets a
+quicker one answer when the first is slow ([The hub and its AI](The-hub-and-its-AI#the-mind-c-307)). No device waits: a
+talk is answered at once with an id, and the answer is fetched when it is ready (C-180, C-181). The hub's voice is
+streamed, so it starts in about three seconds (C-317). A care or a hello is answered at once from written lines, with
+no model at all (C-196).
 
 ## Where
 
@@ -32,8 +37,11 @@ tells you your goal's one next step; otherwise it does not bring your goal up.
 
 The app's SETTINGS, **WHO ANSWERS WHEN YOU TALK**, says plainly whether your words stay on your own machines or may go
 to OpenRouter when your model is busy, and chooses the INDEX's voice: n8n's (the voice made for it, the default) or the
-AI board's, each falling back on the other. **WHO ANSWERS FIRST WHEN YOU TALK** (C-211), in THE HUB card and a watch's
-settings, chooses the AI board or n8n first, with a green or red dot for each. The recording never leaves home.
+AI board's, each falling back on the other; and **THE TIINY**, its address, key and models. **WHO ANSWERS FIRST WHEN
+YOU TALK** (C-211), in THE HUB card and a watch's settings, chooses the Tiiny, the AI board or n8n first, with a green
+or red dot for each. **THE MIND** and **THE HUB'S ENDPOINTS** are under it in SETTINGS, and **THE MIND AT WORK** shows
+every talk, write-up, dream and WHAT'S NEW span the house's mind has in hand
+([The hub and its AI](The-hub-and-its-AI#the-mind-c-307)). The recording never leaves home.
 
 **Every voice says DAEMONS as DAY-mons** (C-270). The words the companion hands a voice -- the AI board's and any other
 in the house, and the INDEX voice through n8n -- have *daemon* and *daemons* respelled the way they are said, whatever

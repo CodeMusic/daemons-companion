@@ -12,12 +12,19 @@ hub both read (the app's own build is the newest entry in it when it is bundled)
   python3 server/tools/whatsnew.py --write --build 964   # and a build about to be archived, from HEAD
 
 Run from the companion's root. Every word it writes is the commits' own; the headers are TODO.md's.
+
+C-339, SET UP: a section whose ticket needs setting up carries "setup", copied from server/data/whatsnew_setup.json
+(kept by hand, one entry per ticket: title, steps, and optionally needs, where, wiki, book, draft -- that file's
+"about" says what each is). WHAT'S NEW shows SET UP › on that section and opens the steps. A release that adds a
+device, a server or a setting adds its ticket there before running this; the report names any ticket it holds that
+no build mentions.
 """
 import json, re, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "server/data/whatsnew.json"
+SETUP = ROOT / "server/data/whatsnew_setup.json"     # C-339: each ticket's setup steps, by hand
 PATHS = ["app", "server/src", "server/data"]          # what reaches a build: the app, the rules it runs, its data
 FIRST = 930                                           # the first TestFlight build
 # C-210 names most builds' commits in its own words; these it names another way
@@ -101,6 +108,18 @@ def main(argv: list[str]) -> int:
                         [{"ticket": None, "title": "THE FIRST BUILD", "lines": ["The companion on TestFlight for the first time: the iPhone, the iPad and the Mac."]}]})
         prev = c
     entries.reverse()                                    # newest first
+    setup = json.loads(SETUP.read_text())["setup"] if SETUP.exists() else {}
+    for t, st in setup.items():                          # C-339: a ticket's steps on every section that names it
+        if not st.get("title") or not st.get("steps"):
+            raise SystemExit(f"whatsnew_setup.json: {t} needs a title and steps")
+    used = set()
+    for e in entries:
+        for s in e["sections"]:
+            if s["ticket"] in setup:
+                s["setup"] = setup[s["ticket"]]
+                used.add(s["ticket"])
+    for t in sorted(set(setup) - used):
+        print(f"whatsnew_setup.json: {t} is in no build's notes yet")
     data = {"latest": entries[0]["build"], "builds": entries}
     text = json.dumps(data, indent=1, ensure_ascii=False) + "\n"
     was = OUT.read_text() if OUT.exists() else ""

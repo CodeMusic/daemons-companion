@@ -15,6 +15,11 @@ let now: HowTo = "closed";
 const heard = new Set<(h: HowTo) => void>();
 export function openHowTo(h: HowTo = "choose") { now = h; heard.forEach((f) => f(h)); }
 export const closeHowTo = () => openHowTo("closed");
+// C-339: HOW TO PLAY opened from elsewhere (WHAT'S NEW's SET UP) with the game panel brought into view first, as the
+// header's button does; App registers how
+let shower: ((h: HowTo) => void) | null = null;
+export const showHowToWith = (f: ((h: HowTo) => void) | null) => { shower = f; };
+export const showHowTo = (h: HowTo = "choose") => (shower ?? openHowTo)(h);
 export function useHowTo(): HowTo {
   const [h, set] = useState<HowTo>(now);
   useEffect(() => { heard.add(set); set(now); return () => { heard.delete(set); }; }, []);

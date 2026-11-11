@@ -50,6 +50,32 @@ user deciding it. Navigation is local React state:
   `ui/ui.tsx` `sound/careSound`, inside a check. A top-level import would pull native modules into the site's build.
 - **Code comments cite tickets** (`// C-264: ...`) from the companion's `TODO.md`. Keep them when code moves.
 
+## WHAT'S NEW, and its SET UP (C-318, C-339)
+
+WHAT'S NEW (`ui/whatsnew.tsx`) reads `server/data/whatsnew.json`, written from history by `server/tools/whatsnew.py`
+(`--write --build N` before each TestFlight build, C-210). **Never edit whatsnew.json by hand** -- the next run
+rewrites it. A section is `{ticket, title, lines, setup?}`.
+
+**SET UP:** when a build brings something that needs a device, a server or a setting, add its ticket to
+`server/data/whatsnew_setup.json` before running whatsnew.py, which copies the entry onto every section naming that
+ticket. The dialog then shows SET UP › on the section and opens the steps. One entry per ticket, plain JSON:
+
+```json
+"C-334": {
+  "title": "SLEEP SOUNDS",                       // the sheet's header (required)
+  "steps": ["...", "..."],                       // what to do, in order (required); {hub} = the hub's address
+  "needs": ["the hub", "headphones, for DRIFT DOWN"],   // devices, servers, settings
+  "where": "DAEMON › DREAMS › SLEEP SOUNDS",     // where it lives in the app
+  "wiki": "Nights-and-dreams",                   // a page in wiki/ (Page or Page#anchor)
+  "book": "watch",                               // a HOW TO PLAY book: micro, quick, player, companion, watch, tiiny, social
+  "draft": true
+}
+```
+
+Every step is DRAFT until the user reads it, and the repository is public: no personal detail, and never the
+frightening word. `server/test/whatsnew_setup.test.ts` checks each entry (its wiki page exists, its book is known) and
+that the notes carry it.
+
 ## Where things live
 
 **`LAYOUT.md` at the repository's root** is the map of `app/` and everything else, and says where a new file goes

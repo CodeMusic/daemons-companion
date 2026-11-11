@@ -3,7 +3,7 @@
  "builds": [
   {
    "build": 973,
-   "commit": "b17993a",
+   "commit": "df8da3a",
    "date": "2026-11-11",
    "sections": [
     {
@@ -11,7 +11,22 @@
      "title": "Admin in one place",
      "lines": [
       "THE ENGINE ROOM (DRAFT) — the hub's admin in one installable web app at /admin/"
-     ]
+     ],
+     "setup": {
+      "title": "THE ENGINE ROOM",
+      "where": "a web app on the hub, at /admin/",
+      "needs": [
+       "the hub",
+       "the home network or the tailnet"
+      ],
+      "steps": [
+       "On the home network or the tailnet, open {hub}/admin/ in a browser, or tap any ENGINE ROOM link in the app.",
+       "Pair it once: hold the hub's screen for two seconds and type the code it shows.",
+       "To keep it as an app, add it to the home screen (Share, then Add to Home Screen)."
+      ],
+      "wiki": "The-hub-and-its-AI",
+      "draft": true
+     }
     },
     {
      "ticket": "C-334",
@@ -22,7 +37,25 @@
       "A sleep piece survives the hub restarting — its roverbyteseer job is kept, and waited on again at start (a deploy dropped the first one)",
       "A sleep piece fetched before a restart is converted from the hub's own copy; roverbyteseer's goes only once the hub's files are made",
       "The INDEX image asked of the Tiiny's quick thinker first, then the player's endpoints, then the house (the hub runs with the house's module off, so it was never asked)"
-     ]
+     ],
+     "setup": {
+      "title": "SLEEP SOUNDS",
+      "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+      "needs": [
+       "the hub",
+       "the music maker beside THE TIINY's LiteLLM (port 4002)",
+       "headphones, for DRIFT DOWN"
+      ],
+      "steps": [
+       "The pieces are made by ACE-Step on the machine that runs THE TIINY's LiteLLM. From the DAEMONS repository, copy ai/litellm/sleep-sounds/ to that machine and run its install.sh there. It answers on port 4002 and turns away anyone without a key.",
+       "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
+       "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+       "It plays for thirty minutes and fades over the last ten.",
+       "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+      ],
+      "wiki": "Nights-and-dreams",
+      "draft": true
+     }
     },
     {
      "ticket": "C-329",
@@ -30,13 +63,30 @@
      "lines": [
       "DAEMONS IN DIALOGUE across accounts (DRAFT) — STANDARD (red logical / blue creative) and TWO VOICES (tells / asks), 1-11 turns each, the Tiiny first; personas from common functions (ai/personaof.ts, voiceof.ts's sibling) with a card that travels with a daemon out; bubbles with thinking dots and replay in each daemon's own voice; INTEGRATE to a titled write-up; past talks by week with weekday dots",
       "In dialogue within the household (DRAFT) — two devices put TOGETHER (C-327) talk from YOUR HOUSEHOLD, unfiltered, kept as the home's; /api/household/{converse,talks,talk,integrate} in routes.ts and on the device's door for the watch; a stopped talk says so in `stopped`, not `error`"
-     ]
+     ],
+     "setup": {
+      "title": "DAEMONS IN DIALOGUE",
+      "where": "YOU › TRADE › OUT TOGETHER, and YOUR HOUSEHOLD",
+      "needs": [
+       "the hub",
+       "THE TIINY, or another mind the hub can ask",
+       "another player on the exchange, or two of the home's devices"
+      ],
+      "steps": [
+       "With another player: join the exchange (YOU › TRADE › JOIN THE EXCHANGE, with a code made in THE ENGINE ROOM › EXCHANGE), send your daemon OUT TOGETHER with theirs, and IN DIALOGUE is under it.",
+       "In your home: put two of the household's devices TOGETHER under YOUR HOUSEHOLD on the same page, and IN DIALOGUE appears there.",
+       "Pick STANDARD or TWO VOICES and how many turns. THE TIINY thinks first (SETTINGS › WHO ANSWERS WHEN YOU TALK); with no mind answering, the talk cannot start."
+      ],
+      "wiki": "Trading",
+      "draft": true
+     }
     },
     {
      "ticket": "C-318",
      "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
      "lines": [
-      "Whatsnew.json with build 971's notes"
+      "Whatsnew.json with build 971's notes",
+      "Whatsnew.json with build 973's notes"
      ]
     },
     {
@@ -45,14 +95,44 @@
      "lines": [
       "A book's own recording, one chapter at a time, for the watch's card — GET /api/book/recording?book&title (raw 16 kHz PCM, cut once by ffmpeg from the published reading; the open books only)",
       "POST /api/device/speak {text, as: \"daemon\"} — the words in the carried daemon's own voice, for a dream re-heard on the watch"
-     ]
+     ],
+     "setup": {
+      "title": "BOOKS AND DREAMS ON THE WATCH",
+      "where": "the T-Watch Ultra: BOOKS › a chapter › LISTEN",
+      "needs": [
+       "a T-Watch Ultra linked in PLACES, with its card in",
+       "the hub"
+      ],
+      "steps": [
+       "Link the watch to the hub in PLACES, and leave its card in.",
+       "On the watch, open BOOKS, pick a chapter and press LISTEN. The first time, the hub cuts that chapter from the book's own recording, in seconds; after that the watch plays it from its card.",
+       "A book whose reading is sealed is read in the INDEX voice instead."
+      ],
+      "wiki": "The-T-Watch-Ultra",
+      "book": "watch",
+      "draft": true
+     }
     },
     {
      "ticket": "C-328",
      "title": "Battles: in the household and between accounts",
      "lines": [
       "BATTLES, in the household and between players (DRAFT) — one daemon each, simulated on the companion from the save's own stats and routines and the game's type chart, damage formula and battle words (data/battle.json, exported by DAEMONS); a request to any device online (a board or watch by x-device, the app or site as its own seat, a player on the exchange), accept or decline, 30 s a turn then the hub picks (three missed: a forfeit), the winner in the game's words, the game's experience to the winner and a third to the loser written at the next SYNC, nobody's health kept; GET /api/battle, POST /api/battle/{pick,request,answer,choose,leave}, /api/exchange/battle*; THE BATTLE over every screen and BATTLE on the YOU tab"
-     ]
+     ],
+     "setup": {
+      "title": "BATTLES",
+      "where": "YOU › BATTLE",
+      "needs": [
+       "the hub",
+       "a device online, or another player on the exchange"
+      ],
+      "steps": [
+       "YOU › BATTLE lists the household's devices that are online (each linked in PLACES) and the players on the exchange.",
+       "Pick one and send the request; the battle is drawn over every screen when it is accepted.",
+       "Boards and watches cannot answer a battle yet: their half waits on their firmware."
+      ],
+      "draft": true
+     }
     },
     {
      "ticket": "C-338",
@@ -62,7 +142,23 @@
       "The persona of the day is built at wake only for the daemon carried and any asked for in three days, its words one daemon at a time; a painting cut off by a restart says so",
       "A write someone waits for goes to the quick thinker, thinking off — the easel's and the morning's words",
       "THE EASEL in the app — the daemon walks to its easel and paints while you wait; THE GALLERY, a wall per daemon, each painting framed, shown large on a tap, its prompt on a hold (DRAFT)"
-     ]
+     ],
+     "setup": {
+      "title": "THE EASEL",
+      "where": "DAEMON › Yours › THE EASEL ›",
+      "needs": [
+       "the hub (not a phone on its own)",
+       "an image maker: ComfyUI, on port 8008 of the house's machine",
+       "a daemon carried"
+      ],
+      "steps": [
+       "The hub paints on ComfyUI at http://roverbyteseer:8008, unless its easel.host setting names another. That machine needs ComfyUI running, with its image model loaded.",
+       "Carry a daemon: THE EASEL › appears under its card on DAEMON › Yours.",
+       "Type what to paint. It takes a minute or two; the daemon walks to its easel while it works.",
+       "THE GALLERY keeps every painting: tap one to see it large, hold it to see what was asked."
+      ],
+      "draft": true
+     }
     },
     {
      "ticket": null,
@@ -102,7 +198,22 @@
       "Social within the household, the server's half (DRAFT) — swap, a shared space, care seen on both",
       "Social within the household, the app's half (DRAFT) — YOUR HOUSEHOLD, and two daemons in one den",
       "The household's requests on the device's own door, so a watch on the network can swap and share a space"
-     ]
+     ],
+     "setup": {
+      "title": "YOUR HOUSEHOLD",
+      "where": "YOU › TRADE › YOUR HOUSEHOLD",
+      "needs": [
+       "the hub",
+       "a second device of the household, linked in PLACES"
+      ],
+      "steps": [
+       "Link a second device to the hub (PLACES): another phone, a board or a watch.",
+       "YOU › TRADE › YOUR HOUSEHOLD shows each device and the daemon it carries.",
+       "TOGETHER puts both daemons in one den; SWAP trades them between the two devices. A care given on either is seen on both."
+      ],
+      "wiki": "Trading",
+      "draft": true
+     }
     },
     {
      "ticket": "C-326",
@@ -123,7 +234,20 @@
      "title": "A phone paired by its own name, and renamed from the phone",
      "lines": [
       "A phone names itself after pairing — SETTINGS > THIS PHONE: its name on the companion and what your daemon calls you; GET/POST /api/phone/name by the phone's own key (DRAFT)"
-     ]
+     ],
+     "setup": {
+      "title": "THIS PHONE'S NAMES",
+      "where": "SETTINGS › THIS PHONE",
+      "needs": [
+       "a phone paired to the hub"
+      ],
+      "steps": [
+       "Open SETTINGS (the gear) › THIS PHONE.",
+       "Type the phone's name on the companion, and what your daemon calls you, and save."
+      ],
+      "wiki": "Settings#in-the-app",
+      "draft": true
+     }
     },
     {
      "ticket": "C-318",

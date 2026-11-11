@@ -8,10 +8,17 @@
 // (ai/tasks.ts). Every word the hub writes here is DRAFT.
 import notesJson from "../data/whatsnew.json" with { type: "json" };
 
-export type Section = { ticket: string | null; title: string; lines: string[] };
+// C-339: a section that needs setting up carries its steps (server/data/whatsnew_setup.json, copied in by whatsnew.py)
+export type Setup = { title: string; steps: string[]; needs?: string[]; where?: string; wiki?: string; book?: string; draft?: boolean };
+export type Section = { ticket: string | null; title: string; lines: string[]; setup?: Setup };
 export type BuildNotes = { build: number; commit: string; date: string; sections: Section[] };
 export type Notes = { latest: number; builds: BuildNotes[] };
 export const NOTES = notesJson as unknown as Notes;
+
+// C-339: a step as shown: {hub} is the hub's address as this app knows it
+export const stepText = (step: string, hub: string) => step.replace(/\{hub\}/g, hub.replace(/\/+$/, ""));
+export const WIKI = "https://github.com/CodeMusic/daemons-companion/wiki/";
+export const wikiUrl = (page: string) => WIKI + page.replace(/^\/+/, "");
 
 // A span told by the hub's mind: builds from..to (from the older), its words, and how it stands
 export type Digest = { id: string; from: number; to: number; at: string; by: string; task: string;

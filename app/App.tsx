@@ -34,7 +34,7 @@ import { Logs } from "./ui/devpanel";
 import { DevScreen } from "./screens/dev/Dev";                  // C-275: </>
 import { Received } from "./ui/received";   // C-261
 import { BattleOverlay } from "./ui/battle";   // C-328
-import { HowToOverlay, openHowTo } from "./ui/howto";          // C-264
+import { HowToOverlay, openHowTo, showHowToWith, type HowTo } from "./ui/howto";          // C-264; C-339
 import MENU from "./modules/daemons-menu";                    // C-264: the menu bar's Help
 import { TabStrip } from "./shell/TabStrip";
 import { Divider, Edge, LogsDivider, LogsEdge } from "./shell/panes";
@@ -71,13 +71,13 @@ function Shell() {
   const pageWidth = beside && !gameAway ? besideWidth : Math.min(720, width);
   // C-264: HOW TO PLAY from the companion's header -- over the game panel, which is brought into view for it (GAME on a
   // phone, the game side brought back beside); on the site, over the page
-  const howToPlay = () => {
+  const howToPlay = (h: HowTo = "choose") => {
     if (ON_PHONE && !beside) setTab("game");
     else if (gameAway) putAway("none");
-    openHowTo();
+    openHowTo(h);
   };
   const [tab, setTab] = useState<Tab>("today");
-  useEffect(() => { menuHowTo = howToPlay; return () => { menuHowTo = null; }; });   // C-264: the menu bar's Help, here
+  useEffect(() => { menuHowTo = howToPlay; showHowToWith(howToPlay); return () => { menuHowTo = null; showHowToWith(null); }; });   // C-264: the menu bar's Help, here; C-339: WHAT'S NEW's manuals
   useDeepLinks(setTab);                                       // C-176
   useEffect(() => { if (beside && tab === "game") setTab("today"); }, [beside, tab]);
   useEffect(() => { if (!dev.on && tab === "dev") setTab("settings"); }, [dev.on, tab]);   // C-275: </> goes with DEVELOPER MODE
@@ -146,7 +146,7 @@ function Shell() {
             {/* C-264 (DRAFT); C-318: WHAT'S NEW in its place until this build's notes are read */}
             <YStack marginLeft={10} paddingHorizontal={8} paddingVertical={3} borderRadius={999} borderWidth={1.5}
                     borderColor={whatsNewDue ? "#d9a74a" : "$color9"} backgroundColor={whatsNewDue ? "rgba(217,167,74,0.14)" : undefined}
-                    cursor="pointer" role="button" aria-label={whatsNewDue ? "what's new" : "how to play"} onPress={whatsNewDue ? openWhatsNew : howToPlay}>
+                    cursor="pointer" role="button" aria-label={whatsNewDue ? "what's new" : "how to play"} onPress={whatsNewDue ? openWhatsNew : () => howToPlay()}>
               <Text fontFamily="$mono" fontSize={10} letterSpacing={1.5} fontWeight="700" color={whatsNewDue ? "#d9a74a" : "$color11"}>
                 {whatsNewDue ? (narrowHeader ? "✦ NEW" : "✦ WHAT'S NEW") : narrowHeader ? "?" : "? HOW TO PLAY"}</Text>
             </YStack>

@@ -12,14 +12,19 @@
 //   - while it thinks, the daemons' signs dance and the house mutters; the dialog may be closed, and the tag lands anyway
 // Notes from server/data/whatsnew.json (server/tools/whatsnew.py); spans from the hub (server/src/whatsnew.ts), each a
 // task in THE MIND AT WORK. Every word DRAFT.
+// C-339 (the user, 2026-11-11: "in the whats new, if there are instructions to any parts added in the whats new, you
+// should be able to select that to see the specific setup instructions"): a section that needs setting up shows
+// SET UP ›, which opens its steps here (server/data/whatsnew_setup.json, copied into the notes by whatsnew.py), with
+// its manual in HOW TO PLAY and its wiki page a tap away.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView } from "react-native";
+import { Linking, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { NOTES, type BuildNotes, type Digest } from "../../server/src/whatsnew";
-import { api } from "../platform/net";
+import { NOTES, stepText, wikiUrl, type BuildNotes, type Digest, type Section } from "../../server/src/whatsnew";
+import { api, SERVER } from "../platform/net";
+import type { Which } from "../state/manual";
 import { deviceName, whoAmI } from "../state/me";   // C-319
 import { placeOf, setPlace } from "../state/place";
-import { openHowTo } from "./howto";
+import { showHowTo } from "./howto";
 
 // a chronicle's colours: night paper, a lamp's gold, pale words
 const PAPER = "#141a2a", EDGE = "#d9a74a", INNER = "#3a4466", WORD = "#eef1f8", SOFT = "#9aa6c4", TOLD = "#7fd1c7";
@@ -63,11 +68,12 @@ const seenTold = (id: string) => { if (toldUnread.includes(id)) { toldUnread = t
 
 // ---- the words ----------------------------------------------------------------------------------------------------
 const dayOf = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString([], { day: "numeric", month: "short" });
-function Heading({ children, big }: { children: string; big?: boolean }) {
+function Heading({ children, big, onSetUp }: { children: string; big?: boolean; onSetUp?: () => void }) {
   return (
     <XStack gap={8} alignItems="center" marginTop={big ? 0 : 14} marginBottom={4}>
       <YStack width={3} alignSelf="stretch" backgroundColor={EDGE} borderRadius={2} />
       <Text flex={1} fontFamily="$mono" fontSize={big ? 15 : 12} letterSpacing={big ? 1.5 : 1} fontWeight="700" color={big ? EDGE : WORD}>{children}</Text>
+      {onSetUp ? <Key label="SET UP ›" hint={`set up ${children.toLowerCase()}`} lit onPress={onSetUp} /> : null}{/* C-339, DRAFT */}
     </XStack>
   );
 }
@@ -77,15 +83,46 @@ const Line = ({ children }: { children: string }) => (
     <Text flex={1} fontSize={13} lineHeight={19} color={WORD}>{children}</Text>
   </XStack>
 );
-function BuildPage({ b }: { b: BuildNotes }) {
+function BuildPage({ b, onSetUp }: { b: BuildNotes; onSetUp: (s: Section) => void }) {
   return (
     <YStack>
       {b.sections.map((s, i) => (
         <YStack key={i}>
-          <Heading>{s.title.replace(/\s*\(.*$/, "").toUpperCase()}</Heading>
+          <Heading onSetUp={s.setup ? () => onSetUp(s) : undefined}>{s.title.replace(/\s*\(.*$/, "").toUpperCase()}</Heading>
           {s.lines.map((l, j) => <Line key={j}>{l}</Line>)}
         </YStack>
       ))}
+    </YStack>
+  );
+}
+// C-339: one section's setup steps -- what it needs, where it lives, the steps in order, and its manual and wiki page
+const BOOKS = new Set(["micro", "quick", "player", "social", "tiiny", "companion", "watch"]);
+function SetupPage({ s, back }: { s: Section; back: () => void }) {
+  const u = s.setup!;
+  return (
+    <YStack>
+      <XStack marginBottom={8}><Key label="‹ BACK" hint="back to the notes" onPress={back} /></XStack>
+      <Heading big>{`SET UP · ${u.title}`}</Heading>
+      <Text fontSize={11} color={SOFT} paddingLeft={11}>{`${s.title}${s.ticket ? ` (${s.ticket})` : ""}`}</Text>
+      {u.where ? <Text fontSize={12} color={TOLD} paddingLeft={11} marginTop={4}>{`Where: ${u.where}`}</Text> : null}
+      {u.needs?.length ? (<>
+        <Heading>IT NEEDS</Heading>
+        {u.needs.map((n, i) => <Line key={i}>{n}</Line>)}
+      </>) : null}
+      <Heading>STEPS</Heading>
+      {u.steps.map((t, i) => (
+        <XStack key={i} gap={8} paddingLeft={11} marginTop={5}>
+          <Text fontFamily="$mono" fontSize={12} lineHeight={19} color={EDGE} width={18}>{`${i + 1}.`}</Text>
+          <Text flex={1} fontSize={13} lineHeight={19} color={WORD}>{stepText(t, SERVER)}</Text>
+        </XStack>
+      ))}
+      {u.book && BOOKS.has(u.book) || u.wiki ? (
+        <XStack gap={8} marginTop={14} flexWrap="wrap">
+          {u.book && BOOKS.has(u.book) ? <Key label="THE MANUAL ›" onPress={() => { closeWhatsNew(); showHowTo(u.book as Which); }} /> : null}
+          {u.wiki ? <Key label="THE WIKI PAGE ›" onPress={() => { Linking.openURL(wikiUrl(u.wiki!)).catch(() => {}); }} /> : null}
+        </XStack>
+      ) : null}
+      {u.draft !== false ? <Text fontSize={9} color={SOFT} marginTop={10}>DRAFT</Text> : null}
     </YStack>
   );
 }
@@ -195,6 +232,8 @@ export function WhatsNewOverlay() {
   const [rail, setRail] = useState(false);
   const [any, setAny] = useState<number[] | null>(null);            // ⟷ ANY SPAN: the ends picked so far
   const [note, setNote] = useState("");
+  const [setup, setSetup] = useState<Section | null>(null);           // C-339: a section's steps, open over its build
+  useEffect(() => { setSetup(null); }, [at]);
   useEffect(() => { if (open) { readTold().then(() => { if (told.some((d) => d.state === "thinking")) pollWhileThinking(); }); } }, [open]);
   const build = typeof at === "number" ? NOTES.builds.find((b) => b.build === at) ?? null : null;
   const digest = typeof at === "string" ? told.find((d) => d.id === at) ?? null : null;
@@ -262,10 +301,11 @@ export function WhatsNewOverlay() {
           {note ? <Text fontSize={11} color={EDGE} marginTop={6}>{note}</Text> : null}
           <YStack height={1} backgroundColor={INNER} marginVertical={10} />
           <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 6 }}>
-            {digest ? <ToldPage d={digest} /> : build ? <BuildPage b={build} /> : null}
+            {digest ? <ToldPage d={digest} /> : setup ? <SetupPage s={setup} back={() => setSetup(null)} />
+              : build ? <BuildPage b={build} onSetUp={setSetup} /> : null}
           </ScrollView>
           <XStack marginTop={10} gap={8} alignItems="center">
-            <Key label="? HOW TO PLAY" onPress={() => { closeWhatsNew(); openHowTo(); }} />
+            <Key label="? HOW TO PLAY" onPress={() => { closeWhatsNew(); showHowTo(); }} />
             <YStack flex={1} />
             {digest && digest.state !== "thinking" ? <Key label="FORGET THIS SPAN" onPress={async () => {
               try { await api("/api/whatsnew/digest", { forget: digest.id }); } catch { /* it stays */ }

@@ -139,5 +139,7 @@ describe("C-315: SYMBOL on a card", () => {
       .filter((c) => c?.name === "SYMBOL");
     expect(dealt.length).toBeGreaterThan(0);
     for (const c of dealt) expect(c!.art).toBe(`/art/symbol/${symbolForm(c!.keyword)}.png`);
+    for (const c of dealt) expect(existsSync(join(ART, "symbol", `${symbolForm(c!.keyword)}.png`)), c!.keyword).toBe(true);   // exported by DAEMONS
+    expect(existsSync(join(ART, "symbol.png"))).toBe(true);   // the INDEX's, the A form
   });
 });

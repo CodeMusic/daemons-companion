@@ -20,6 +20,16 @@
   },
   {
    "n": 2,
+   "name": "THE ORIGIN OF A DAEMON",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2752
+    ]
+   }
+  },
+  {
+   "n": 3,
    "name": "RUNNING SHOES",
    "section": "GAME EVENTS",
    "held": {
@@ -29,7 +39,7 @@
    }
   },
   {
-   "n": 3,
+   "n": 4,
    "name": "THE INDEX",
    "section": "GAME EVENTS",
    "held": {
@@ -39,7 +49,7 @@
    }
   },
   {
-   "n": 4,
+   "n": 5,
    "name": "OPUS",
    "section": "GAME EVENTS",
    "held": {
@@ -49,7 +59,7 @@
    }
   },
   {
-   "n": 5,
+   "n": 6,
    "name": "SLATE",
    "section": "MARKS",
    "held": {
@@ -59,7 +69,7 @@
    }
   },
   {
-   "n": 6,
+   "n": 7,
    "name": "SLOPE",
    "section": "MARKS",
    "held": {
@@ -69,7 +79,7 @@
    }
   },
   {
-   "n": 7,
+   "n": 8,
    "name": "SENSE",
    "section": "MARKS",
    "held": {
@@ -79,7 +89,7 @@
    }
   },
   {
-   "n": 8,
+   "n": 9,
    "name": "FIT",
    "section": "MARKS",
    "held": {
@@ -89,7 +99,7 @@
    }
   },
   {
-   "n": 9,
+   "n": 10,
    "name": "SKEW",
    "section": "MARKS",
    "held": {
@@ -99,7 +109,7 @@
    }
   },
   {
-   "n": 10,
+   "n": 11,
    "name": "FRAME",
    "section": "MARKS",
    "held": {
@@ -109,7 +119,7 @@
    }
   },
   {
-   "n": 11,
+   "n": 12,
    "name": "HEAT",
    "section": "MARKS",
    "held": {
@@ -119,7 +129,7 @@
    }
   },
   {
-   "n": 12,
+   "n": 13,
    "name": "TRUE",
    "section": "MARKS",
    "held": {
@@ -129,7 +139,7 @@
    }
   },
   {
-   "n": 13,
+   "n": 14,
    "name": "THE NOTEBOOK, EMPTY",
    "section": "NOTEBOOK",
    "held": {
@@ -139,7 +149,7 @@
    }
   },
   {
-   "n": 14,
+   "n": 15,
    "name": "TEXTBOOK AND DIPLOMA",
    "section": "GAME EVENTS",
    "held": {
@@ -149,7 +159,7 @@
    }
   },
   {
-   "n": 15,
+   "n": 16,
    "name": "THE FLUTE",
    "section": "GAME EVENTS",
    "held": null,
@@ -162,7 +172,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 16,
+   "n": 17,
    "name": "O CHRISTMAS TREE",
    "section": "SONGBOOK",
    "held": {
@@ -172,7 +182,7 @@
    }
   },
   {
-   "n": 17,
+   "n": 18,
    "name": "TWELVE DAYS",
    "section": "SONGBOOK",
    "held": {
@@ -182,7 +192,7 @@
    }
   },
   {
-   "n": 18,
+   "n": 19,
    "name": "REALIZATION",
    "section": "SONGBOOK",
    "held": {
@@ -192,7 +202,7 @@
    }
   },
   {
-   "n": 19,
+   "n": 20,
    "name": "FORGIVENESS",
    "section": "SONGBOOK",
    "held": {
@@ -202,7 +212,7 @@
    }
   },
   {
-   "n": 20,
+   "n": 21,
    "name": "GUARDIAN",
    "section": "SONGBOOK",
    "held": {
@@ -212,7 +222,7 @@
    }
   },
   {
-   "n": 21,
+   "n": 22,
    "name": "HARMONY",
    "section": "SONGBOOK",
    "held": {
@@ -222,7 +232,7 @@
    }
   },
   {
-   "n": 22,
+   "n": 23,
    "name": "CANVAS",
    "section": "SONGBOOK",
    "held": {
@@ -232,7 +242,7 @@
    }
   },
   {
-   "n": 23,
+   "n": 24,
    "name": "REFLECTIONS",
    "section": "SONGBOOK",
    "held": {
@@ -242,7 +252,7 @@
    }
   },
   {
-   "n": 24,
+   "n": 25,
    "name": "THE NEXUS LIT",
    "section": "SONGBOOK",
    "held": {
@@ -252,7 +262,7 @@
    }
   },
   {
-   "n": 25,
+   "n": 26,
    "name": "S.S. ANNE TICKET",
    "section": "GAME EVENTS",
    "held": {
@@ -262,7 +272,7 @@
    }
   },
   {
-   "n": 26,
+   "n": 27,
    "name": "THE FIR IN ITS KEY",
    "section": "GAME EVENTS",
    "held": {
@@ -272,7 +282,7 @@
    }
   },
   {
-   "n": 27,
+   "n": 28,
    "name": "EVERY GROVE FOUND",
    "section": "GAME EVENTS",
    "held": {
@@ -295,7 +305,7 @@
    }
   },
   {
-   "n": 28,
+   "n": 29,
    "name": "PRUNE",
    "section": "DRIVERS",
    "held": null,
@@ -308,7 +318,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 29,
+   "n": 30,
    "name": "GOTO",
    "section": "DRIVERS",
    "held": null,
@@ -321,7 +331,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 30,
+   "n": 31,
    "name": "TRAVERSE",
    "section": "DRIVERS",
    "held": null,
@@ -334,7 +344,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 31,
+   "n": 32,
    "name": "DISPLACE",
    "section": "DRIVERS",
    "held": null,
@@ -347,7 +357,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 32,
+   "n": 33,
    "name": "VERBOSE",
    "section": "DRIVERS",
    "held": null,
@@ -360,7 +370,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 33,
+   "n": 34,
    "name": "CRACK",
    "section": "DRIVERS",
    "held": null,
@@ -373,7 +383,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 34,
+   "n": 35,
    "name": "ASCEND",
    "section": "DRIVERS",
    "held": null,
@@ -386,7 +396,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 35,
+   "n": 36,
    "name": "DESCEND",
    "section": "DRIVERS",
    "held": null,
@@ -399,7 +409,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 36,
+   "n": 37,
    "name": "TEA, FOR BRAZEN'S GUARDS",
    "section": "GAME EVENTS",
    "held": null,
@@ -412,7 +422,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 37,
+   "n": 38,
    "name": "BRAZEN'S GATES OPEN",
    "section": "GAME EVENTS",
    "held": {
@@ -426,7 +436,7 @@
    }
   },
   {
-   "n": 38,
+   "n": 39,
    "name": "REVEAL",
    "section": "GAME EVENTS",
    "held": {
@@ -436,7 +446,7 @@
    }
   },
   {
-   "n": 39,
+   "n": 40,
    "name": "RESOLVER",
    "section": "GAME EVENTS",
    "held": null,
@@ -449,7 +459,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 40,
+   "n": 41,
    "name": "INTERRUPT",
    "section": "GAME EVENTS",
    "held": null,
@@ -462,7 +472,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 41,
+   "n": 42,
    "name": "EVERY GOTO POINT",
    "section": "GAME EVENTS",
    "held": {
@@ -472,7 +482,7 @@
    }
   },
   {
-   "n": 42,
+   "n": 43,
    "name": "THE GUIDE",
    "section": "GAME EVENTS",
    "held": {
@@ -482,7 +492,7 @@
    }
   },
   {
-   "n": 43,
+   "n": 44,
    "name": "THE SUBTLE LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -492,7 +502,7 @@
    }
   },
   {
-   "n": 44,
+   "n": 45,
    "name": "THE HERMETIC LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -502,7 +512,7 @@
    }
   },
   {
-   "n": 45,
+   "n": 46,
    "name": "THE EUDAIMON LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -512,7 +522,7 @@
    }
   },
   {
-   "n": 46,
+   "n": 47,
    "name": "EVERY SPELL READ",
    "section": "GAME EVENTS",
    "held": {
@@ -526,7 +536,7 @@
    }
   },
   {
-   "n": 47,
+   "n": 48,
    "name": "MENDED",
    "section": "GAME EVENTS",
    "held": {
@@ -536,7 +546,7 @@
    }
   },
   {
-   "n": 48,
+   "n": 49,
    "name": "EVERY GROVE LIT",
    "section": "GAME EVENTS",
    "held": {
@@ -559,7 +569,7 @@
    }
   },
   {
-   "n": 49,
+   "n": 50,
    "name": "GLOBAL INDEX",
    "section": "GAME EVENTS",
    "held": {
@@ -581,7 +591,7 @@
    "note": "IsNationalPokedexEnabled: also sb2 pokedex.nationalMagic == 0xB9 (sb2_byte)"
   },
   {
-   "n": 50,
+   "n": 51,
    "name": "STILL",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -591,7 +601,7 @@
    }
   },
   {
-   "n": 51,
+   "n": 52,
    "name": "NAMING",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -601,7 +611,7 @@
    }
   },
   {
-   "n": 52,
+   "n": 53,
    "name": "NOTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -611,7 +621,7 @@
    }
   },
   {
-   "n": 53,
+   "n": 54,
    "name": "REFLECT",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -621,7 +631,7 @@
    }
   },
   {
-   "n": 54,
+   "n": 55,
    "name": "STANCE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -631,7 +641,7 @@
    }
   },
   {
-   "n": 55,
+   "n": 56,
    "name": "MEND",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -641,7 +651,7 @@
    }
   },
   {
-   "n": 56,
+   "n": 57,
    "name": "PRACTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -651,7 +661,7 @@
    }
   },
   {
-   "n": 57,
+   "n": 58,
    "name": "ROLLOVER",
    "section": "THE YEAR",
    "held": {
@@ -661,7 +671,7 @@
    }
   },
   {
-   "n": 58,
+   "n": 59,
    "name": "EVEN LIGHT, SPRING",
    "section": "THE YEAR",
    "held": {
@@ -671,7 +681,7 @@
    }
   },
   {
-   "n": 59,
+   "n": 60,
    "name": "EVEN LIGHT, AUTUMN",
    "section": "THE YEAR",
    "held": {
@@ -681,7 +691,7 @@
    }
   },
   {
-   "n": 60,
+   "n": 61,
    "name": "DAWN VIGIL",
    "section": "THE YEAR",
    "held": {
@@ -691,7 +701,7 @@
    }
   },
   {
-   "n": 61,
+   "n": 62,
    "name": "FIRST FROST",
    "section": "THE YEAR",
    "held": {
@@ -701,7 +711,7 @@
    }
   },
   {
-   "n": 62,
+   "n": 63,
    "name": "DEN DAY",
    "section": "THE YEAR",
    "held": {
@@ -711,7 +721,7 @@
    }
   },
   {
-   "n": 63,
+   "n": 64,
    "name": "FLEDGLING DAY",
    "section": "THE YEAR",
    "held": {
@@ -721,7 +731,7 @@
    }
   },
   {
-   "n": 64,
+   "n": 65,
    "name": "LANTERN NIGHTS",
    "section": "THE YEAR",
    "held": {
@@ -731,7 +741,7 @@
    }
   },
   {
-   "n": 65,
+   "n": 66,
    "name": "SCIENCE FAIR",
    "section": "THE YEAR",
    "held": {
@@ -741,7 +751,7 @@
    }
   },
   {
-   "n": 66,
+   "n": 67,
    "name": "TRUCE DAY",
    "section": "THE YEAR",
    "held": {
@@ -751,7 +761,7 @@
    }
   },
   {
-   "n": 67,
+   "n": 68,
    "name": "MARIGOLD DAYS",
    "section": "THE YEAR",
    "held": {
@@ -761,7 +771,7 @@
    }
   },
   {
-   "n": 68,
+   "n": 69,
    "name": "GIVING THANKS",
    "section": "THE YEAR",
    "held": {
@@ -771,7 +781,7 @@
    }
   },
   {
-   "n": 69,
+   "n": 70,
    "name": "STREAM AND HEARSAY",
    "section": "GAME EVENTS",
    "held": null,
@@ -788,7 +798,7 @@
    "note": "the page only gives this row (the STREAM and HEARSAY in the bag, every show told)"
   },
   {
-   "n": 70,
+   "n": 71,
    "name": "COMPANION LINKED",
    "section": "GAME EVENTS",
    "held": {

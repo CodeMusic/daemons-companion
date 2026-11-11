@@ -1284,6 +1284,12 @@
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
+ "251": {
+  "name": "ORIGIN BOOK",
+  "description": "A book with nothing on its spine. Most of its pages are blank.",
+  "pocket": "POCKET_KEY_ITEMS",
+  "importance": 1
+ },
  "254": {
   "name": "RED SCARF",
   "description": "A red scarf, handed out on PARADE DAYS. It changes nothing in battle. It is worn for the day.",

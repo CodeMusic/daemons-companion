@@ -1,6 +1,27 @@
 {
- "latest": 963,
+ "latest": 964,
  "builds": [
+  {
+   "build": 964,
+   "commit": "5c7826f",
+   "date": "2026-11-10",
+   "sections": [
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "WHAT'S NEW drawn from history, spans told by the house's mind; C-319 THE MIND AT WORK — the hub's ledger of tasks, its web and river, managed (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.345.11 (T-542 the road gates)"
+     ]
+    }
+   ]
+  },
   {
    "build": 963,
    "commit": "894d08f",

@@ -2,6 +2,7 @@
 // back: the first section with the book, one more with each understanding held (whichever it is) up to four, VII with
 // SCORN's TRUE MARK as well, and every section with all seven and the TRUE MARK. A section not yet back is never sent --
 // not faint, not counted -- and the run always starts at the first and goes in order. ?preview=1 is the whole book.
+// `whole` is a yes or a no -- every section back, or not -- never a count: it opens the sealed recording's LISTEN.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { mkdtempSync, writeFileSync } from "node:fs";
@@ -93,7 +94,7 @@ describe("DAEMONS T-533: THE ORIGIN OF A DAEMON", () => {
       const sent = JSON.stringify(o);
       for (const s of O.sections.slice(k))                                                    // nothing of the rest, anywhere
         for (const e of s.entries) for (const p of e.paragraphs) expect(sent.includes(p.text), `${why}: ${s.label}`).toBe(false);
-      expect(Object.keys(o).sort(), why).toEqual(["cover", "draft", "held", "how", "sections", "subtitle", "title"]);
+      expect(Object.keys(o).sort(), why).toEqual(["cover", "draft", "held", "how", "sections", "subtitle", "title", "whole"]);
       for (const s of o.sections ?? []) expect(Object.keys(s).sort(), why).toEqual(["entries", "heading", "label"]);   // no `opens`
     }
   });
@@ -105,6 +106,21 @@ describe("DAEMONS T-533: THE ORIGIN OF A DAEMON", () => {
       expect(labels(o)).toEqual(LABELS);
       expect(JSON.stringify(o)).not.toContain("opens");
     }
+  });
+
+  it("is whole only with all seven understandings and the TRUE MARK: false at every partial count, and only ever a yes or a no", () => {
+    for (let n = 0; n <= 7; n++) for (const mark of [false, true]) for (const roots of [first(n), last(n)]) {
+      const o = readWith({ roots, mark }), why = `${n} understandings, ${mark ? "" : "no "}TRUE MARK`;
+      expect(o.whole, why).toBe(n === 7 && mark);
+      expect(o.whole, why).toBe(labels(o).length === LABELS.length);       // whole exactly when every section is back
+      expect(typeof o.whole, why).toBe("boolean");                          // never a count
+    }
+  });
+
+  it("is whole in a preview, held or not; a book the save does not hold says nothing more than that", () => {
+    for (const save of [null, saveWith({ book: false }), saveWith({}), saveWith({ roots: first(3), mark: true })])
+      expect(readOrigin(save, true).whole).toBe(true);
+    expect(readOrigin(saveWith({ book: false, roots: SEVEN, mark: true }))).toEqual({ held: false });
   });
 });
 
@@ -129,10 +145,11 @@ describe("GET /api/origin", () => {
   it("answers nothing of a book the save does not hold, and the whole book as a preview", async () => {
     expect(await get("not", "/api/origin")).toEqual({ held: false });
     expect(labels(await get("not", "/api/origin?preview=1"))).toEqual(LABELS);
+    expect((await get("not", "/api/origin?preview=1")).whole).toBe(true);
   });
   it("answers the sections the save has back, and no more", async () => {
     const o = await get("two", "/api/origin");
-    expect(o).toMatchObject({ held: true, how: "game" });
+    expect(o).toMatchObject({ held: true, how: "game", whole: false });
     expect(labels(o)).toEqual(LABELS.slice(0, 3));
   });
 });

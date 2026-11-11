@@ -5,7 +5,10 @@
 // game has given it back: the first section comes with the book, each one after it with one more understanding held,
 // whichever it is, and VII with SCORN's TRUE MARK as well; a section also waits for the one before it. A section not yet
 // back is left out entirely -- never shown faint, and nothing counts it (the book never says how many). ?preview=1 shows
-// the whole book, as the other books' previews do. Every word DRAFT. No node: imports.
+// the whole book, as the other books' previews do. `whole` says only whether every section is back (and is true in a
+// preview): never a count, never how many are still to come. Once it is, the device holds the book's last page, whose
+// last word opens its sealed recording (bookkeys.ts keyOfOrigin; LISTEN, app/screens/library/Origin.tsx). Every word
+// DRAFT. No node: imports.
 import originJson from "../data/origin.json" with { type: "json" };
 import { LAYOUT, type Layout } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
@@ -34,10 +37,12 @@ export function openSections(understandings: number, trueMark: boolean): Section
   return out;
 }
 
-export interface Origin { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; cover?: string; sections?: Section[] }
+// whole: every section of the book is back (a yes or a no, never how many)
+export interface Origin { held: boolean; how?: "game" | "preview"; title?: string; subtitle?: string; draft?: boolean; cover?: string; sections?: Section[]; whole?: boolean }
 export function readOrigin(save: Uint8Array | null, preview = false, l: Layout = LAYOUT): Origin {
   const book = (how: "game" | "preview", sections: Section[]): Origin =>
-    ({ held: true, how, title: O.title, subtitle: O.subtitle, draft: O.draft, cover: O.cover, sections });
+    ({ held: true, how, title: O.title, subtitle: O.subtitle, draft: O.draft, cover: O.cover, sections,
+       whole: sections.length === O.sections.length });
   if (preview) return book("preview", O.sections.map(bare));                    // a bench check: the whole book
   if (!save || !savedOrigin(save, l)) return { held: false };
   const p = readProfile(save, l);                                               // the understandings, as the USER card has them

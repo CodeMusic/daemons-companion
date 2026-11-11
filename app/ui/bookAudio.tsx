@@ -12,7 +12,9 @@
 // hash); when DAEMONS has published a newer one, the next LISTEN fetches it (the user, 2026-11-07: "have build all audio?"
 // -- THE SUBTLE LAYER was read again, and a phone that kept it would never have heard). The shelf's other books have
 // their voices too (DAEMONS T-543, the user 2026-11-10: "if we have new books we should follow suit so they also have a
-// voice"): the five MANUALS and THE OLD WORD, LISTEN in each (Manual.tsx). Every word DRAFT.
+// voice"): the five MANUALS and THE OLD WORD, LISTEN in each (Manual.tsx). THE ORIGIN OF A DAEMON's whole-book recording
+// is sealed too (DAEMONS T-533), and LISTEN is there only once every section of the book is back: the device opens it with
+// the last word of the book's own last page (keyOfBook("origin", ...)), which it holds only then (Origin.tsx). Every word DRAFT.
 import { createAudioPlayer, setAudioModeAsync, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
@@ -26,7 +28,7 @@ import { Action, Small, useInk } from "./ui";
 import { barHeight, darkPaper, PLAIN, useBookLook, wash } from "./bookLook";   // C-309
 
 export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook"
-  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word";
+  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word" | "origin";
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
 const BOOKS: Record<Recorded, { file: string; title: string; reads: string; sealed?: boolean }> = {
   guide:    { file: "guide", title: "The Programmer's Guide to the Human Mind", reads: "Read aloud in reason's voice, even and unhurried." },   // DRAFT
@@ -42,6 +44,8 @@ const BOOKS: Record<Recorded, { file: string; title: string; reads: string; seal
   social:    { file: "playing-together", title: "Playing Together", reads: "Read aloud by two voices speaking as one." },                  // DRAFT
   tiiny:     { file: "a-bigger-mind", title: "A Bigger Mind", reads: "Read aloud calm and exact, a little like a machine." },             // DRAFT
   word:      { file: "the-old-word", title: "The Old Word", reads: "Read aloud by an elder, slowly, as an old story is." },                // DRAFT
+  // DAEMONS T-533: the whole book, sealed; its key is on its last page
+  origin:    { file: "the-origin-audio", title: "The Origin of a Daemon", reads: "Read aloud in its teller's own voice, the whole before it branched.", sealed: true },  // DRAFT
 };
 type Chapter = { kind: "section" | "entry"; title: string; start: number; end: number };
 type Marks = { duration: number; chapters: Chapter[]; sources?: string };   // sources: which reading (bookaudio.py)
@@ -162,7 +166,7 @@ function bookPlayer(): AudioPlayer {
 }
 
 // LISTEN, its chapters and SHARE, for one book; `warning` is a sealed book's own first entry (its WARNING, BLESSING or
-// ATTESTATION), which holds its key
+// ATTESTATION) -- or, for THE ORIGIN OF A DAEMON, its last page (T-533) -- which holds its key
 export function Listen({ which, warning }: { which: Recorded; warning?: string }) {
   const B = BOOKS[which];
   const ink = useInk();
@@ -173,7 +177,7 @@ export function Listen({ which, warning }: { which: Recorded; warning?: string }
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [stale, setStale] = useState(false);   // a newer reading is out than the one kept here
-  const key = warning ? keyOfBook(which === "eudaimon" || which === "unity" ? which : "hermetic", warning) : null;
+  const key = warning ? keyOfBook(which === "eudaimon" || which === "unity" || which === "origin" ? which : "hermetic", warning) : null;
 
   useEffect(() => {   // how long it is, before anything is fetched (an open book's chapters are small)
     if (!kept(which) && !B.sealed) fetched(`${AUDIO}${B.file}.chapters.json`)

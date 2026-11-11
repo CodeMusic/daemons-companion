@@ -2,7 +2,9 @@
 // seals THE HERMETIC LAYER's recording with `zip -0 -P`, as tools/bookpdf.py seals the vault). Its key is never written
 // anywhere: it is the author's name as the book's own warning gives it ("... read it"; it was "... set it down"), in title
 // case with a space, so only a device that holds the book can open its recording. The dawn half's and THE UNITY BOOK's
-// recordings are sealed too, each with its own book's key (C-299, the user 2026-11-05): keyOfBook, below. Plain code, no React Native, so a test can run it.
+// recordings are sealed too, each with its own book's key (C-299, the user 2026-11-05): keyOfBook, below. So is THE ORIGIN
+// OF A DAEMON's whole-book recording (DAEMONS T-533), opened with the last word of the book's own last page, which a device
+// holds only once every section has come back: keyOfBook("origin", ...), i.e. keyOfOrigin. Plain code, no React Native, so a test can run it.
 
 const TABLE = (() => {
   const t = new Uint32Array(256);
@@ -15,8 +17,9 @@ const TABLE = (() => {
 })();
 const crc = (c: number, b: number) => (TABLE[(c ^ b) & 0xff] ^ (c >>> 8)) >>> 0;
 
-// the keys: read from each torn book's own first entry (server/src/bookkeys.ts, where a test can reach them)
-export { keyOfBook, keyOfWarning, type TornBook } from "../../server/src/bookkeys";
+// the keys: read from each torn book's own first entry, and THE ORIGIN OF A DAEMON's from its last page (T-533)
+// (server/src/bookkeys.ts, where a test can reach them)
+export { keyOfBook, keyOfOrigin, keyOfWarning, type SealedBook, type TornBook } from "../../server/src/bookkeys";
 
 // Every file in the zip, opened with the key: { name: bytes }. Throws "wrong key" before any bytes are kept, or when a
 // file's CRC does not match. `rest` is given the chance to breathe between pieces, so a phone's screen keeps moving.

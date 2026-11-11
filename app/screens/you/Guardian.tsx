@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { accounts, appleHere, appleToken, keepToken, readToken } from "../../platform/accounts";
-import { Action, Card, Entry, Eyebrow, Segments, Small, useInk } from "../../ui/ui";
+import { Action, Card, Entry, Eyebrow, Pending, Segments, Small, useInk } from "../../ui/ui";
 
 type Controls = { friends: "approve" | "own"; trade: "friends" | "home" | "lobby"; meet: "friends" | "trades" | "off"; lobby: "off" | "on" };
 type Profile = { id: string; name: string; tag: number; first: number; second: number; nickname: string | null; controls: Controls; at: string;
@@ -50,7 +50,7 @@ export function GuardianCard({ ink: given }: { ink?: string }) {
   };
   const signedIn = async (r: { token: string }) => { await keepToken("guardian", r.token); };
 
-  if (!loaded) return null;
+  if (!loaded) return <Pending title="GUARDIAN" height={[129, 109]} />;   // C-344: its place held until the first answer
   if (!names) return (
     <Card gap={6}><Eyebrow>GUARDIAN</Eyebrow><Small>{error || "Accounts are not reachable from here."}</Small><Small color="$color8">DRAFT</Small></Card>
   );

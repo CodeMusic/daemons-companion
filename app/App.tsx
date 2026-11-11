@@ -6,13 +6,14 @@
 // C-288: Shell wires together what lives in shell/ -- the tab strip, the beside split's panes and sizes, and the
 // background syncs.
 import { StatusBar } from "expo-status-bar";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Platform, useColorScheme, useWindowDimensions } from "react-native";
 import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagui";
 import { SCREEN } from "./state/data";
-import { forgetPlaces, forgetScroll, keepScroll, scrolledTo } from "./state/place";   // C-309
+import { forgetPlaces, forgetScroll, keepScroll } from "./state/place";   // C-309
 import { loadLook, LOOK, lookHeard, PALETTE } from "./state/look";
 import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
+import { bumpFresh } from "./platform/useApi";   // C-344
 import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
 import { openWhatsNew, useWhatsNewDue, WhatsNewOverlay } from "./ui/whatsnew";   // C-318
 import { JourneyScreen } from "./screens/journey/Journey";   // C-298: GOALS and the JOURNAL
@@ -88,17 +89,13 @@ function Shell() {
       .catch((e) => setError(`${e.message} -- is the server running? (./bindCompanion.sh)`));
   }, []);
   useEffect(reload, [reload]);
-  // C-86: a screen first drawn from what the phone kept is drawn again when the companion's fresher answer arrives
-  const [fresh, setFresh] = useState(0);
+  // C-86: a screen first drawn from what the phone kept is drawn again when the companion's fresher answer arrives --
+  // C-344: in place (useFresh), never by re-making the page, which emptied every card and made the panels jump
   // the tab already open, tapped again: back to its own first page -- out of a book to the LIBRARY (the user, 2026-10-28)
   const [again, setAgain] = useState(0);
   // C-309: the reader's places are kept outside the page (state/place.ts), so the tab tapped again forgets them itself
   const pickTab = (t: Tab) => { if (t === tab) { forgetPlaces(t); forgetScroll(t); setAgain((n) => n + 1); } setTab(t); };
-  // C-309: where a page drawn again by a sync should scroll back to, set before it is drawn
-  const backTo = useRef(0), tabNow = useRef(tab);
-  tabNow.current = tab;
-  const redraw = useCallback((f: (n: number) => number) => { backTo.current = scrolledTo(tabNow.current); setFresh(f); }, []);
-  useEffect(() => { backTo.current = 0; }, [tab, again]);
+  const redraw = useCallback((_f: (n: number) => number) => bumpFresh(), []);
   useBackgroundSync(reload, redraw);                        // C-62, C-55, C-56, C-27, C-48, C-100, C-87
   useSiteHeard(reload, redraw);                             // C-261
   // C-92: away from the companion, a toast once -- dismissed, a small AWAY in the title bar, which brings it back
@@ -158,10 +155,9 @@ function Shell() {
           <TabStrip tab={tab} setTab={pickTab} tabs={[...(beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS), ...(dev.on ? ["dev" as const] : [])]} />
         </YStack>
         {beside ? <FoundBeside {...found} /> : null}
-        {/* C-309: drawn again by a sync, the page comes back to the line it was on -- once its content is tall enough */}
-        {tab !== "game" ? <ScrollView key={`${fresh}.${again}`} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}
-                                      scrollEventThrottle={100} onScroll={(e) => { if (!backTo.current) keepScroll(tab, e.nativeEvent.contentOffset.y); }}
-                                      onContentSizeChange={(_w, h) => { const y = backTo.current; if (y && h > y) { backTo.current = 0; SCREEN.scroller?.scrollTo?.({ y, animated: false }); } }}>
+        {/* C-344: a sync no longer re-makes the page (it stays where it was); only the tab tapped again does */}
+        {tab !== "game" ? <ScrollView key={again} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}
+                                      scrollEventThrottle={100} onScroll={(e) => keepScroll(tab, e.nativeEvent.contentOffset.y)}>
           {error ? <Stuck error={error} ink={ink} /> : null}
           <Fragment key={tab}>{TAB_VIEW[tab]({ ink, today, reload, setTab, devOn: dev.on })}</Fragment>
         </ScrollView> : null}

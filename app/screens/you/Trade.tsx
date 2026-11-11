@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api, ON_PHONE } from "../../platform/net";
-import { Action, Art, Card, Choice, Entry, Eyebrow, Small, useInk } from "../../ui/ui";
+import { Action, Art, Card, Choice, Entry, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { EngineRoom } from "../../ui/engineRoom";   // C-330
 import { KIND_NAMES, playerId } from "../../state/data";
@@ -52,7 +52,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
   const act = async (path: string, body: unknown, done: string) => { await api(path, body); setSaid(done); await reload(); };
 
   if (error) return <Card><Eyebrow>TRADE</Eyebrow><Small>{error}</Small><Small color="$color8">DRAFT</Small></Card>;
-  if (!v) return null;
+  if (!v) return <Pending title="TRADE" height={[516, 456]} />;   // C-344: its place held until the first answer
   const free = v.away.filter((d) => !d.busy);
 
   const hubCard = (

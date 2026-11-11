@@ -11,6 +11,7 @@ import { Button, Text, XStack, YStack } from "tamagui";
 import { api, apiLater, ON_PHONE } from "../../platform/net";
 import { Entry, Small } from "../../ui/ui";
 import { useVoice } from "../daemon/Daemon";
+import { useFresh } from "../../platform/useApi";   // C-344
 
 const C = { boards: "#1b0f1f", page: "#2c1c32", edge: "#4a3352", ink: "#f0e6f2", faint: "#9a86a0", pink: "#e07ad0" };   // the book's own
 const mono = { fontFamily: "$mono" as const, letterSpacing: 2 };
@@ -94,7 +95,8 @@ export function TodaysQuestion() {
   const [a, setA] = useState("");
   const [err, setErr] = useState("");
   const [journal, setJournal] = useState<Kept[] | null>(null);
-  useEffect(() => { api<Today>("/api/subtle/today").then(setT).catch(() => {}); }, []);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(() => { api<Today>("/api/subtle/today").then(setT).catch(() => {}); }, [fresh]);
   if (!t?.held || !t.question) return null;
   const keep = async () => {
     const x = a.trim();

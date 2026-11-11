@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Action, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Action, Choice, Eyebrow, Small, useHeld } from "../../ui/ui";
 
 type View = { id: string; name: string; url: string; model: string; keySet: boolean; home: boolean };
 type Health = { id: string; ok: boolean; at: string; models: string[] };
@@ -18,9 +18,11 @@ export function HubEndpoints({ ink }: { ink: string }) {
   const [f, setF] = useState(BLANK);
   const [note, setNote] = useState("");
   const take = (t: Settings) => { setList(t.endpoints ?? []); setHealth(t.health?.endpoints ?? []); };
-  const read = () => api<Settings>("/api/talk/settings").then(take).catch(() => setList(null));
+  const [failed, setFailed] = useState(false);
+  const read = () => api<Settings>("/api/talk/settings").then(take).catch(() => { setList(null); setFailed(true); });
   useEffect(() => { read(); }, []);
-  if (!list) return null;
+  const held = useHeld([399, 303]);   // C-344: its place in THE MIND held until the hub answers
+  if (!list) return failed ? null : <YStack minHeight={held} />;
 
   const send = async (b: Record<string, unknown>, said: string) => {
     setNote("Asking the hub…");

@@ -166,7 +166,7 @@ export type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; last
 // C-80: a daemon in each device -- what each carries, and every daemon away (SENT in the game) to choose from
 export type Carried = { personality: number; slot: number; species: number; nickname: string; name: string; level: number };
 
-export type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "relay" | null; lastSeen: string; here: boolean;
+export type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "relay" | null; firstSeen?: string; lastSeen: string; here: boolean;
                    firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null;
                    daemon?: Carried | null };
    // C-74, C-75, C-77, C-100

@@ -16,7 +16,7 @@ import { Text, XStack, YStack } from "tamagui";
 import type { Task } from "../../../server/src/ai/tasks";
 import { api } from "../../platform/net";
 import { me, whoAmI } from "../../state/me";
-import { Action, Card, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Eyebrow, Pending, Small } from "../../ui/ui";
 import { EngineRoom } from "../../ui/engineRoom";   // C-330
 
 type Plan = { id: string; kind: string; title: string; said: string; on: boolean; last: string | null; next: string };
@@ -197,7 +197,7 @@ export function MindAtWork({ ink }: { ink: string }) {
     return [...known].map(([name, ok]) => ({ name, ok }));
   }, [v, inWindow.length]);
   const devices = useMemo(() => [...new Set(inWindow.map((t) => t.device))].slice(0, 10), [inWindow.length]);
-  if (!v) return note ? <Small color="$color10">{`THE MIND AT WORK: ${note}`}</Small> : null;
+  if (!v) return note ? <Small color="$color10">{`THE MIND AT WORK: ${note}`}</Small> : <Pending title="THE MIND AT WORK" height={[777, 704]} />;   // C-344
 
   const act = async (t: Task, a: "stop" | "retry" | "forget") => {
     try { await api("/api/mind/tasks", { id: t.id, act: a }); setNote(""); read(); } catch (e) { setNote((e as Error).message); }

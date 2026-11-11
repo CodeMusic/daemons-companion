@@ -6,7 +6,7 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { meshTalk, RINGS, ringOf, sense, setRing, trailSaid, type Kind, type Ring, type Sense } from "../../platform/mesh";
 import { endpoint, endpointModels, endpointThink, forgetEndpoint, keepEndpoint } from "../../platform/endpoint";
 import { api, ON_PHONE } from "../../platform/net";
-import { Action, Card, Choice, Entry, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../../ui/ui";
 import { useVoice } from "../daemon/Daemon";
 import { HubEndpoints } from "./HubEndpoints";   // C-280 (1)
 
@@ -39,7 +39,7 @@ function Arm({ name, ok, note }: { name: string; ok: boolean | null; note: strin
 export function MindCard({ ink }: { ink: string }) {
   const [s, setS] = useState<Sense | null>(null);
   const [rings, setRings] = useState<Record<Kind, Ring> | null>(null);
-  const [dream, setDream] = useState<"anywhere" | "home" | null>(null);
+  const [dream, setDream] = useState<"anywhere" | "home" | null | undefined>(undefined);   // C-344: undefined, not asked yet
   const [e, setE] = useState<{ url: string; model: string; name: string; key: string; keySet: boolean } | null>(null);
   const [models, setModels] = useState<string[]>([]);
   const [note, setNote] = useState("");
@@ -71,9 +71,9 @@ export function MindCard({ ink }: { ink: string }) {
     look();
     if (ON_PHONE) Promise.all([ringOf("talk"), ringOf("guide")]).then(([talk, guide]) => setRings({ talk, guide }));
     else setRings({ talk: "anywhere", guide: "anywhere" });   // the site: every ring is a phone's own
-    api<{ rings?: { dream?: "anywhere" | "home" } }>("/api/talk/settings").then((t) => setDream(t.rings?.dream ?? "anywhere")).catch(() => {});
+    api<{ rings?: { dream?: "anywhere" | "home" } }>("/api/talk/settings").then((t) => setDream(t.rings?.dream ?? "anywhere")).catch(() => setDream(null));
   }, []);
-  if (!s || !rings || !e) return null;
+  if (!s || !rings || !e || dream === undefined) return <Pending title="THE MIND" height={ON_PHONE ? [1650, 1300] : [1199, 857]} />;   // C-344: its place held
 
   const pick = async (k: Kind, r: Ring) => { await setRing(k, r); setRings({ ...rings, [k]: r }); };
   const pickDream = async (r: "anywhere" | "home") => {

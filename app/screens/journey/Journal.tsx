@@ -10,6 +10,7 @@ import { useVoiceState, wholeVoice } from "../../platform/rendering";
 import { VoiceButton } from "../../ui/voiceButton";
 import { Action, Card, Entry, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { exportPage, exportVoice, printPage, spanOf, spokenOf, type Page } from "./page";
+import { useFresh } from "../../platform/useApi";   // C-344
 
 type Row = { id: number; title: string; created: string; entries: number; last: string | null; waiting: number };
 type JEntry = { id: number; title: string; body: string; at: string; edited: string | null };
@@ -45,7 +46,8 @@ export function JournalSection({ ink }: { ink: string }) {
   const [rows, setRows] = useState<Row[] | null>(null), [open, setOpen] = useState<number | null>(null);
   const [title, setTitle] = useState(""), [said, setSaid] = useState("");
   const load = useCallback(() => { api<{ journals: Row[] }>("/api/journals").then((r) => setRows(r.journals)).catch((e) => setSaid(e.message)); }, []);
-  useEffect(load, [load]);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(load, [load, fresh]);
   const make = async () => {
     if (!title.trim()) return;
     try { const j = await api<Journal>("/api/journal", { title }); setTitle(""); setOpen(j.id); } catch (e) { setSaid((e as Error).message); }
@@ -81,7 +83,8 @@ function JournalPage({ id, ink, onBack }: { id: number; ink: string; onBack: () 
   const [reading, setReading] = useState<number | null>(null);
   const [exporting, setExporting] = useState<number | null>(null);
   const load = useCallback(() => api<Journal>(`/api/journal?id=${id}`).then(setJ).catch((e) => setSaid(e.message)), [id]);
-  useEffect(() => { load(); }, [load]);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(() => { load(); }, [load, fresh]);
   const thinking = !!j?.chapters.some((c) => c.state === "writing");
   useEffect(() => { if (!thinking) return; const t = setInterval(load, 15_000); return () => clearInterval(t); }, [thinking, load]);   // check back
   const act = async (path: string, body: object) => {

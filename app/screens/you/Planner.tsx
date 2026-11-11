@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Card, Eyebrow, Fact, Small } from "../../ui/ui";
+import { Card, Eyebrow, Fact, Pending, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 
 type Plan = {
@@ -23,7 +23,8 @@ export function PlannerCard() {
   const [p, , error] = useApi<Plan>("/api/planner");
   const [wild, setWild] = useState<Wild | null>(null);
   const [asked, setAsked] = useState("");
-  if (error || !p) return null;
+  if (error) return null;
+  if (!p) return <Pending title="THE ROAD AHEAD" height={[641, 520]} />;   // C-344: its place held until the first answer
   const look = async (place: string) => {
     if (asked === place) { setAsked(""); setWild(null); return; }
     setAsked(place); setWild(null);

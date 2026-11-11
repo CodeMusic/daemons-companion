@@ -4,7 +4,7 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { GoalNow, Step, Walk } from "../../state/types";
 import { Action, Card, Entry, Eyebrow, Small } from "../../ui/ui";
-import { useApi } from "../../platform/useApi";
+import { useApi, useFresh } from "../../platform/useApi";
 export function StepRow({ step, onToggle, onRemove }: { step: Step; onToggle: () => void; onRemove: () => void }) {
   return (
     <XStack alignItems="center" gap={10} paddingVertical={4}>
@@ -50,7 +50,8 @@ export function GoalsScreen({ reload, ink }: { reload: () => void; ink: string }
   const [into, setInto] = useState<Record<number, string>>({});
   const [error, setError] = useState("");
   const load = useCallback(() => { api<GoalNow>("/api/goal").then(setNow).catch((e) => setError(e.message)); }, []);
-  useEffect(load, [load]);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(load, [load, fresh]);
   const act = async (f: () => Promise<unknown>) => { try { setError(""); await f(); load(); reload(); } catch (e) { setError((e as Error).message); } };
   if (!now) return <Small>{error || "Loading…"}</Small>;
   const limit = now.limit, g = now.goal;

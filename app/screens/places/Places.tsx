@@ -9,7 +9,7 @@ import { setPalette } from "../../state/look";
 import * as SecureStore from "expo-secure-store";
 import { ALONE, api, HANDHELD, HandheldNow, isAway, KEEP, OFFLINE, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
 import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../../state/types";
-import { Action, Art, Card, Choice, Eyebrow, Result, Small } from "../../ui/ui";
+import { Action, Art, Card, Choice, Eyebrow, Pending, Result, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { HubCard, TalkFirstRow } from "./Hub";   // C-190; C-211
 import { GlassCard } from "./Glass";   // C-262
@@ -19,8 +19,8 @@ import { TvCard } from "./Tv";
 const Row = (p: { label: string; children: React.ReactNode }) =>
   <YStack gap={4} marginTop={6}><Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{p.label}</Text>{p.children}</YStack>;
 export function DeviceSettingsCard({ ink }: { ink: string }) {
-  const [s, setS] = useApi<DeviceSettings>("/api/device/settings");
-  if (!s) return null;
+  const [s, setS, failed] = useApi<DeviceSettings>("/api/device/settings");
+  if (!s) return failed ? null : <Pending title="EVERY DEVICE'S SETTINGS" height={[698, 635]} />;   // C-344
   const set = async (patch: Partial<DeviceSettings>) => {
     const r = await api<DeviceSettings>("/api/device/settings", patch);
     setS(r); setPalette(r.palette);                                 // C-90: the app wears it at once
@@ -339,7 +339,11 @@ function saveOrder(o: Order) {
   catch { /* remembered for this visit only */ }
 }
 const nameOf = (d: DeviceRow) => lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind;
-const lastUsed = (a: DeviceRow, b: DeviceRow) => Number(b.here) - Number(a.here) || Date.parse(b.lastSeen) - Date.parse(a.lastSeen);
+// C-344: the devices here keep the order they were first seen in -- lastSeen moves with every heartbeat and re-sorted them
+// under the finger on each poll (C-115 found the same on the server); those away, the most recently seen first
+const firstSeen = (d: DeviceRow) => Date.parse(d.firstSeen ?? "") || 0;
+const lastUsed = (a: DeviceRow, b: DeviceRow) => Number(b.here) - Number(a.here)
+  || (a.here ? firstSeen(a) - firstSeen(b) : Date.parse(b.lastSeen) - Date.parse(a.lastSeen)) || a.id.localeCompare(b.id);
 function grouped(ds: DeviceRow[], order: Order): { maker: string | null; ds: DeviceRow[] }[] {
   if (order === "maker") return MAKERS.map((maker) => ({ maker, ds: ds.filter((d) => makerOf(d.kind) === maker).sort(lastUsed) })).filter((g) => g.ds.length);
   return [{ maker: null, ds: [...ds].sort(order === "name" ? (a, b) => nameOf(a).localeCompare(nameOf(b)) || lastUsed(a, b) : lastUsed) }];
@@ -350,15 +354,17 @@ export function PlacesScreen({ ink, goSettings }: { ink: string; goSettings: () 
   return <YStack gap={14}><DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={goSettings} /><TvCard ink={ink} goSettings={goSettings} /></YStack>;
 }
 
+// C-344: the last link and brands heard, for this run of the app -- PLACES opened again is drawn at once, at its height
+const SEEN: { link: Link | null; brands: Brand[] } = { link: null, brands: [] };
 export function DeviceScreen({ ink }: { ink: string }) {
   const [mine, setMine] = useState<string | null>(null);   // C-160: the device whose own settings are open
   const [order, setOrder] = useState<Order>("recent");     // C-217
   useEffect(() => { loadOrder().then(setOrder); }, []);
-  const [link, setLink] = useState<Link | null>(null);
+  const [link, setLink] = useState<Link | null>(SEEN.link);   // C-344: drawn at once from the last answer
   const [error, setError] = useState("");
   const [ran, setRan] = useState<number | null>(null);
   const [ssid, setSsid] = useState(""), [pass, setPass] = useState(""), [wifiSent, setWifiSent] = useState<number | null>(null);
-  const [brands, setBrands] = useState<Brand[]>([]), [brand, setBrand] = useState<string>(""), [at, setAt] = useState(0);
+  const [brands, setBrands] = useState<Brand[]>(SEEN.brands), [brand, setBrand] = useState<string>(""), [at, setAt] = useState(0);
   const [tried, setTried] = useState<number | null>(null), [kept, setKept] = useState<number | null>(null);
   const [managed, setManaged] = useState<number | null>(null), [forgot, setForgot] = useState<number | null>(null);
   const [shared] = useApi<{ rev: number; remotes: string[] }>("/api/remotes");   // C-165: every device's remotes, by name
@@ -374,18 +380,30 @@ export function DeviceScreen({ ink }: { ink: string }) {
       // only when something changed: a redraw for nothing re-made every row under the finger (the user, 2026-10-11)
       api<Link>("/api/device/link").then((l) => {
         const now = JSON.stringify(l);
-        if (now !== shown) { shown = now; setLink(l); }
+        if (now !== shown) { shown = now; SEEN.link = l; setLink(l); }
         setError("");
       }).catch((e) => setError(e.message))
         .finally(() => { busy = false; });
     };
     poll();
     const t = setInterval(poll, 1500);
-    api<Brand[]>("/api/ir/brands").then(setBrands).catch(() => {});
+    api<Brand[]>("/api/ir/brands").then((b) => { SEEN.brands = b; setBrands(b); }).catch(() => {});
     return () => clearInterval(t);
   }, []);
   // a poll that failed keeps what was shown, with a word -- the whole tab swapped for the error and back was the flicker
-  if (!link) return <Small>{error || "Loading…"}</Small>;
+  // C-344: until the first answer, the cards it will show hold their places (HubCard where it will stay, so it is not
+  // asked again), rather than one line of "Loading…" that the whole page then grows out of
+  if (!link) return error ? <Small>{error}</Small> : (
+    <YStack gap={14}>
+      {null}
+      <HubCard ink={ink} />
+      {HANDHELD && !ALONE ? <HandheldCard ink={ink} /> : null}
+      <Pending title="THE HANDHELD" height={[132, 112]} />
+      <DeviceSettingsCard ink={ink} />
+      <Pending title="EVERY DEVICE'S REMOTES" height={[402, 253]} />
+      <Pending title="EVERY DEVICE'S NETWORKS" height={[547, 303]} />
+    </YStack>
+  );
   const run = async (routine: string) => setRan((await api<{ id: number }>("/api/device/run", { routine })).id);
   // C-51: a brand's remote -- try its POWER, and keep the whole remote (its volume buttons come with it)
   const sets = brands.find((b) => b.brand === brand)?.sets ?? [];

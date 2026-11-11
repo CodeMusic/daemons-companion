@@ -11,6 +11,7 @@ import { api, apiLater } from "../../platform/net";
 import type { Spoken } from "../../state/types";
 import { Action, Art, Card, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
 import { useVoice } from "./Daemon";
+import { useFresh } from "../../platform/useApi";   // C-344
 
 type FeltName = "GLAD" | "MAD" | "SAD" | "CALM" | "AFRAID" | "RESTLESS";
 type Felt = { name: FeltName; value: number; said: string; colour: string };
@@ -31,7 +32,8 @@ type Part = "now" | "dreams" | "voice" | "self" | "remembered";
 export function MindScreen() {
   const [m, setM] = useState<Mind | null>(null), [error, setError] = useState("");
   const [part, setPart] = useState<Part>("now");                 // the portal opens on NOW
-  useEffect(() => { api<Mind>("/api/mind/portal").then(setM).catch((e) => setError(e.message)); }, []);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(() => { api<Mind>("/api/mind/portal").then(setM).catch((e) => setError(e.message)); }, [fresh]);
   if (error) return <Small color="$color8">{/404|not found/i.test(error) ? "THE MIND opens when the app is paired with a companion.  DRAFT" : error}</Small>;
   if (!m) return null;
   if (!m.daemon) return <Card><Small>{"No daemon is carried. Send one from the game, and its mind opens here.  DRAFT"}</Small></Card>;

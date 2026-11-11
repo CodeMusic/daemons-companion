@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { api, apiLive, ON_PHONE, SITE_HOME } from "../../platform/net";
 import { HomeSettings, HomeView, Thing } from "../../state/types";
-import { Action, Card, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../ui/ui";
    // C-142: the daemon as its agent
 export const HOME_POLL_MS = 30000;
 
@@ -176,7 +176,7 @@ export function HomeScreen({ ink, goSettings }: { ink: string; goSettings: () =>
     setTimeout(() => setSlip((s) => (s?.id === t.id ? null : s)), 5000);
   };
 
-  if (!view) return <Small>{error || HOME_WORDS.loading}</Small>;
+  if (!view) return error ? <Small>{error}</Small> : <Pending title={HOME_WORDS.head} height={[207, 167]} />;   // C-344: its place held
   if (!view.ok) return (
     <Card borderLeftWidth={6} borderLeftColor="$color5">
       <Eyebrow>{HOME_WORDS.head}</Eyebrow>

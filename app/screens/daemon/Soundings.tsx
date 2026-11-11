@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Text, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
+import { useFresh } from "../../platform/useApi";   // C-344
 
 type Heard = { personality: number; nickname: string; name: string; species: number; level: 0 | 1 | 2 | 3; at: string | null };
 const HOW = ["No signal yet", "Quiet today", "Doing fine", "Doing well"];   // DRAFT
@@ -12,7 +13,8 @@ const HOW = ["No signal yet", "Quiet today", "Doing fine", "Doing well"];   // D
 export function SoundingsScreen() {
   const [heard, setHeard] = useState<Heard[] | null>(null);
   const [error, setError] = useState("");
-  useEffect(() => { api<{ daemons: Heard[] }>("/api/soundings").then((r) => setHeard(r.daemons)).catch((e) => setError(e.message)); }, []);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(() => { api<{ daemons: Heard[] }>("/api/soundings").then((r) => setHeard(r.daemons)).catch((e) => setError(e.message)); }, [fresh]);
   if (error) return <Small color="$color8">{error}</Small>;
   if (!heard) return null;
   return (

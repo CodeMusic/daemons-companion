@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { KIND_NAMES } from "../../state/data";
-import { Action, Card, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 
 type Hub = { hub: false } | {
@@ -24,9 +24,9 @@ type TalkSettings = { first: First; tiiny?: { url: string };
 const Dot = ({ ok }: { ok: boolean | null }) =>
   <YStack width={10} height={10} borderRadius={5} backgroundColor={ok === null ? "$color6" : ok ? "#3fb950" : "#e5534b"} />;
 export function TalkFirstRow({ ink }: { ink?: string }) {
-  const [t, setT] = useApi<TalkSettings>("/api/talk/settings");
+  const [t, setT, failed] = useApi<TalkSettings>("/api/talk/settings");
   const [said, setSaid] = useState("");
-  if (!t) return null;
+  if (!t) return failed ? null : <YStack minHeight={222} />;   // C-344: its place in the card held until the first answer
   // an older companion (or a kept answer) has no health: grey dots, never a crash (the review)
   const mods = t.health?.modules ?? [], moduleOk = mods.length ? mods.some((m) => m.ok) : null;
   const n8nOk = t.health?.n8n ? t.health.n8n.ok : null;
@@ -68,7 +68,7 @@ export function HubCard({ ink }: { ink?: string }) {
       setH(await api<Hub>("/api/hub"));
     } finally { setLooking(false); }
   };
-  if (!h) return null;
+  if (!h) return <Pending title="THE COMPANION" height={[555, 495]} />;   // C-344: its place held until the first answer
   if (!h.hub) return (
     <Card borderLeftWidth={6} borderLeftColor="$color5" gap={4}>
       <Eyebrow>THE HUB</Eyebrow>

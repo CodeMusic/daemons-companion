@@ -7,6 +7,7 @@ import { api } from "../../platform/net";
 import { Action, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { VoiceButton } from "../../ui/voiceButton";
 import { SleepSoundsCard } from "./SleepSounds";   // C-334
+import { useFresh } from "../../platform/useApi";   // C-344
 
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string;
@@ -50,7 +51,8 @@ export function DreamsScreen({ ink }: { ink?: string }) {
     try { await api("/api/trade/share", { id: d.id }); setShared((x) => ({ ...x, [d.id]: "Shared with the players at home." })); }
     catch (e) { setShared((x) => ({ ...x, [d.id]: (e as Error).message })); }
   };
-  useEffect(() => { api<{ dreams: Dream[] }>("/api/dreams").then((r) => setDreams(r.dreams)).catch((e) => setError(e.message)); }, []);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(() => { api<{ dreams: Dream[] }>("/api/dreams").then((r) => setDreams(r.dreams)).catch((e) => setError(e.message)); }, [fresh]);
   if (error) return <YStack gap={12}><SleepSoundsCard ink={ink} /><Small color="$color8">{error}</Small></YStack>;
   if (!dreams) return <SleepSoundsCard ink={ink} />;
   return (

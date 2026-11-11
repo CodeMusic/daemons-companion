@@ -1,6 +1,6 @@
 // The app's building blocks -- cards, words, keys, pictures, the lesson's parts (C-157: out of App.tsx).
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { Image, Platform } from "react-native";
+import { Image, Platform, useWindowDimensions } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ALONE, ART, artByJson, FRESH_ART, isAway, KEYED, ON_PHONE, pairAgain, SERVER } from "../platform/net";
 import { Link } from "../state/types";
@@ -37,6 +37,19 @@ export const Small = (p: { children: React.ReactNode; struck?: boolean; color?: 
 
 export const Card = (p: React.ComponentProps<typeof YStack>) =>
   <YStack backgroundColor="$color1" borderWidth={1} borderColor="$color5" borderRadius={4} padding={16} gap={6} {...p} />;
+
+// C-344 (the user, 2026-11-11: panels "shift and jump around"): a card waiting for its first answer holds its place --
+// its frame, its title and about its usual height -- instead of drawing nothing and arriving later under the finger.
+// `height` is the card's as measured on a page 375 wide and on one 720 wide (the page's widest), or one for both.
+export function useHeld(height: number | [number, number]): number {
+  const { width } = useWindowDimensions();
+  const [narrow, wide] = typeof height === "number" ? [height, height] : height;
+  const f = Math.min(1, Math.max(0, (Math.min(720, width) - 375) / (720 - 375)));
+  return Math.round(narrow + (wide - narrow) * f);
+}
+export function Pending({ title, height }: { title: string; height: number | [number, number] }) {
+  return <Card minHeight={useHeld(height)}><Eyebrow>{title}</Eyebrow><Small color="$color8">…</Small></Card>;
+}
 
 // C-61: what a screen shows when the companion did not answer -- the reason, and on the phone a way to pair again
 export function Stuck({ error, ink }: { error: string; ink: string }) {

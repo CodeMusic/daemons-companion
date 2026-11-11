@@ -10,6 +10,7 @@ import { Action, Art, Card, careSound, Eyebrow, Small } from "../../ui/ui";
 import { Under } from "../shared/Reads";   // C-204
 import { useWitching } from "../shared/Witching";   // C-237
 import { EMERALD, hourLine } from "../../../server/src/witching";
+import { useFresh } from "../../platform/useApi";   // C-344
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
   const witching = useWitching();                           // C-237: in the hour the day's line is turned under
@@ -64,7 +65,8 @@ export function TodayMore({ goTo, ink, note }: { goTo: (t: (typeof TABS)[number]
     api<Notebook>("/api/notebook").then(setNb).catch(() => {});
     api<{ items: Cast[] }>("/api/broadcasts").then((r) => setLast([...r.items].reverse().find((c) => !c.mine) ?? null)).catch(() => {});
   }, []);
-  useEffect(load, [load]);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(load, [load, fresh]);
   // the phone's own; only once it is known to have none, the first away -- never another daemon shown first, then swapped
   const d = own === undefined ? null : own ?? party?.find((x) => x.away) ?? null;
   // as the DAEMON page and the boards tend it: the day's phrase (C-114), the boards' word, then the daemon's own line (C-196)

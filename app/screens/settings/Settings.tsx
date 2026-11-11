@@ -7,15 +7,20 @@ import { LOOK, Look, setLook } from "../../state/look";
 import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER, SITE_HOME } from "../../platform/net";
 import { EngineRoom } from "../../ui/engineRoom";   // C-330: MAKE THE VOICES AGAIN moved there
 import { Settings } from "../../state/types";
-import { Action, Card, Choice, Entry, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Choice, Entry, Eyebrow, Pending, Small, useHeld } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
-import { SavesCard } from "./Saves";   // C-215
+import { SavesCard, useSaves } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../../state/away";
 import { DevModeCard } from "../../ui/devpanel";
 import { MindCard } from "./Mind";   // C-307 (was C-280's PhoneMind)
 import { MindAtWork } from "./MindMap";   // C-319
 import { HomeAssistantCard } from "../places/Home";
- // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
+
+// C-344: each card's usual height on a page 375 and 720 wide, held while its first answer is awaited (measured on the
+// site, 2026-11-11)
+const WEATHER_H: [number, number] = [231, 191], TALK_H: [number, number] = [1180, 773];
+const PAIR_H: [number, number] = [181, 161], RELAY_H: [number, number] = [306, 266];
+// C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
 export function SettingsScreen({ ink }: { ink: string }) {
   return (
@@ -108,35 +113,30 @@ function Names({ ink }: { ink: string }) {
 }
 
 export function SavePathSettings({ ink }: { ink: string }) {
-  const [s, setS] = useState<Settings | null>(null);
-  const [typed, setTyped] = useState("");
+  // C-344: through useApi, so SETTINGS opened again draws this card at once from its last answer
+  const [s, setS, failed] = useApi<Settings>("/api/settings");
+  const [typed, setTyped] = useState<string | null>(null);   // null: the path as the companion has it
+  const shownPath = typed ?? s?.savePath ?? "";
   const [note, setNote] = useState("");
-  const load = useCallback(() => {
-    api<Settings>("/api/settings").then((r) => { setS(r); setTyped(r.savePath ?? ""); }).catch((e) => setNote(e.message));
-  }, []);
-  useEffect(load, [load]);
+  const saves = useSaves();
+  const load = useCallback(() => { api<Settings>("/api/settings").then((r) => { setS(r); setTyped(null); }).catch((e) => setNote(e.message)); }, [setS]);
   const said = (r: Settings) => !r.exists ? "No file at that path yet." : r.valid ? "Save set." : "That file is not a DAEMONS save.";
-  const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(r.savePath ?? ""); setNote(said(r)); };
-  const save = async () => { const r = await api<Settings>("/api/settings", { savePath: typed }); setS(r); setNote(said(r)); };
+  const pick = async () => { const r = await api<Settings>("/api/settings/pick", {}); setS(r); setTyped(null); setNote(said(r)); };
+  const save = async () => { const r = await api<Settings>("/api/settings", { savePath: shownPath }); setS(r); setTyped(null); setNote(said(r)); };
   const reveal = async () => { await api("/api/settings/reveal", {}); };
-  // C-92: away, the companion's own settings may not be kept yet -- say so and show the rest, not an error
-  if (!s) return (
-    <YStack gap={14}>
-      <VersionCard ink={ink} />
-      {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
-      <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
-      {note ? <Card><Eyebrow>YOUR DAEMONS SAVE</Eyebrow><Small>Shown when the companion answers.</Small></Card> : <Small>Loading…</Small>}
-      <TalkSettingsCard ink={ink} />
-      <MindCard ink={ink} />{/* C-307 */}
-      <MindAtWork ink={ink} />{/* C-319 */}
-      <LeaveCompanionCard ink={ink} />
-    </YStack>
-  );
+  // C-92: away, the companion's own settings may not be kept yet -- say so and show the rest, not an error. C-344: the
+  // same cards in the same places before the first answer and after it, so nothing below moves when it comes
   return (
     <YStack gap={14}>
       <VersionCard ink={ink} />
       {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
       <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
+      {!s || (!saves[0] && !saves[2]) ? (
+        <Card minHeight={174} borderLeftWidth={6} borderLeftColor="$color5">
+          <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
+          <Small color="$color8">{failed ? "Shown when the companion answers." : "…"}</Small>
+        </Card>
+      ) : (
       <Card borderLeftWidth={6} borderLeftColor={s.valid ? "$color9" : "$color5"}>
         <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
         <Text fontFamily="$mono" fontSize={13} color="$color12" wordWrap="break-word">{s.savePath ?? "not set"}</Text>
@@ -150,16 +150,17 @@ export function SavePathSettings({ ink }: { ink: string }) {
           {s.dir && s.canPick ? <Action label="Open the folder" onPress={reveal} ink={ink} /> : null}{/* C-170: this machine's Finder */}
         </XStack>
       </Card>
-      <SavesCard onChosen={load} />
+      )}
+      <SavesCard saves={saves} onChosen={load} />
       <Card>
         <Eyebrow>OR TYPE THE PATH</Eyebrow>
         <Small>From an emulator, the .sav beside the ROM. From a cartridge, pull the save to your computer first. Point the emulator and the app at the same file and it just works.</Small>
         <XStack gap={8} alignItems="center" flexWrap="wrap" marginTop={4}>
-          <Input flexGrow={1} minWidth={220} value={typed} onChangeText={setTyped} onSubmitEditing={save}
+          <Input flexGrow={1} minWidth={220} value={shownPath} onChangeText={setTyped} onSubmitEditing={save}
                  placeholder="/path/to/your.sav" backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={13} fontFamily="$mono" />
           <Action label="Save" onPress={save} ink={ink} />
         </XStack>
-        {note ? <Small>{note}</Small> : null}
+        {note && s ? <Small>{note}</Small> : null}
       </Card>
       <WeatherCard ink={ink} />
       <TalkSettingsCard ink={ink} />
@@ -176,8 +177,9 @@ type Weather = { place: { name: string; country: string } | null; now: { kind: s
 export function WeatherCard({ ink }: { ink: string }) {
   const [w, setW] = useState<Weather | null>(null);
   const [typed, setTyped] = useState(""), [said, setSaid] = useState("");
-  useEffect(() => { api<Weather>("/api/weather").then((x) => { setW(x); setTyped(x.place?.name ?? ""); }).catch(() => {}); }, []);
-  if (!w) return null;
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { api<Weather>("/api/weather").then((x) => { setW(x); setTyped(x.place?.name ?? ""); }).catch(() => setFailed(true)); }, []);
+  if (!w) return failed ? null : <Pending title="THE WEATHER" height={WEATHER_H} />;   // C-344
   const save = async (city: string) => {
     setSaid("Asking…");
     try { const x = await api<Weather>("/api/weather", { city }); setW(x); setTyped(x.place?.name ?? ""); setSaid(x.place ? "" : "Forgotten: no weather now."); }
@@ -205,8 +207,9 @@ export function VersionCard({ ink }: { ink: string }) {
   const commit = BUILD.split(" ")[0];
   const [v] = useApi<{ server: string | null; appChanged: boolean | null }>(`/api/version${commit ? `?build=${commit}` : ""}`);
   const [look, seeLook] = useState(LOOK);                                    // C-144
+  const held = useHeld([208, 162]);   // C-344: on the site, its height once the companion's version has come
   return (
-    <Card>
+    <Card minHeight={ON_PHONE ? undefined : held}>
       <Eyebrow>THIS APP</Eyebrow>
       <Text fontFamily="$mono" fontSize={13} color="$color12">
         {ON_PHONE ? (BUILD ? `build ${BUILD}` : "a development build") : `the site, with the companion at ${v?.server ?? "..."}`}
@@ -230,14 +233,14 @@ type Provider = "module" | "auto" | "local" | "openrouter" | "tiiny";
 type Tiiny = { url: string; keySet: boolean; model: string; quick?: string; tts: string; asr: string; voice: string; stream?: string };   // C-249, C-317
 type HouseModule = { url: string; name: string; busy: boolean; llm: string | null; tts: string | null; stt: string | null; error: string | null };
 export function TalkSettingsCard({ ink }: { ink: string }) {
-  const [t, setT] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
+  const [t, setT, failed] = useApi<{ provider: Provider; connected: boolean; indexVoice?: "n8n" | "module"; modules?: HouseModule[];
                             moduleAddresses?: string; tiiny?: Tiiny; voices?: string;
                             health?: { tiiny?: { ok: boolean; models: string[] } | null } }>("/api/talk/settings");
   const [tiinyTyped, setTiinyTyped] = useState<{ url?: string; key?: string; model?: string; quick?: string; asr?: string; tts?: string; stream?: string } | null>(null);
   const [tiinyNote, setTiinyNote] = useState("");
   const [typed, setTyped] = useState<string | null>(null);
   const [looking, setLooking] = useState("");
-  if (!t) return null;
+  if (!t) return failed ? null : <Pending title="WHO ANSWERS WHEN YOU TALK" height={TALK_H} />;   // C-344
   const look = async () => {
     setLooking("Looking...");   // DRAFT
     try { setT(await api<typeof t>("/api/talk/settings", { moduleAddresses: typed ?? t.moduleAddresses ?? "" })); setTyped(null); setLooking(""); }
@@ -340,7 +343,7 @@ export function PairCard({ ink }: { ink: string }) {
     api<typeof phones>("/api/pair/phones").then(setPhones).catch(() => {});
   }, []);
   useEffect(load, [load]);
-  if (!net) return null;
+  if (!net) return <Pending title="PAIR A PHONE" height={PAIR_H} />;   // C-344
   // the computer's own name first: it stays the same on every network, where its address does not
   const address = net.name ? `http://${net.name}:${net.port}` : net.address ? `http://${net.address}:${net.port}` : "(no network address)";
   const fallback = net.name && net.address ? `http://${net.address}:${net.port}` : null;
@@ -381,7 +384,7 @@ export function RelayCard({ ink }: { ink: string }) {
   const [r, setR] = useState<{ url: string | null; secret: string } | null>(null);
   const [url, setUrl] = useState(""), [said, setSaid] = useState("");
   useEffect(() => { api<NonNullable<typeof r>>("/api/settings/relay").then((x) => { setR(x); setUrl(x.url ?? ""); }).catch(() => {}); }, []);
-  if (!r) return null;
+  if (!r) return <Pending title="AWAY FROM HOME" height={RELAY_H} />;   // C-344
   const save = async (b: object) => {
     try { const x = await api<NonNullable<typeof r>>("/api/settings/relay", b); setR(x); setSaid("Saved. Paired phones learn it the next time they open at home."); }
     catch (e) { setSaid((e as Error).message); }

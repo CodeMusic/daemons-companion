@@ -3,10 +3,11 @@
 // request to this device, show over every screen (ui/battle.tsx). Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { Action, Art, Card, Eyebrow, Small, useInk } from "../../ui/ui";
+import { Action, Art, Card, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
 import { useArena } from "../../ui/battle";
 import { act, arenaError } from "../../platform/battle";
 
+const BATTLE_H: [number, number] = [289, 209];   // C-344: its usual height, 375 and 720 wide
 const KIND: Record<string, string> = { device: "a device here", app: "the app or site here", player: "a player on the exchange" };   // DRAFT
 
 export function BattleCard({ ink }: { ink?: string }) {
@@ -14,7 +15,8 @@ export function BattleCard({ ink }: { ink?: string }) {
   ink = ink ?? dayInk;
   const a = useArena();
   const [said, setSaid] = useState("");
-  if (!a) return arenaError() ? <Card><Eyebrow>BATTLE</Eyebrow><Small>{arenaError()}</Small></Card> : null;
+  // C-344: its place held until the first answer, rather than arriving under the finger a few seconds after YOU opens
+  if (!a) return arenaError() ? <Card><Eyebrow>BATTLE</Eyebrow><Small>{arenaError()}</Small></Card> : <Pending title="BATTLE" height={BATTLE_H} />;
   const waiting = a.fights.find((f) => f.phase === "asked" && f.me === 0);
   const choose = async (personality: number) => { setSaid(""); try { await act("/api/battle/pick", { personality }); } catch (e) { setSaid((e as Error).message); } };
   const ask = async (to: string, label: string) => {

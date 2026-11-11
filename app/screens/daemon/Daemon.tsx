@@ -25,7 +25,7 @@ import { ReadsCard, Under } from "../shared/Reads";   // C-203, C-204
 import { AsAbove, HalloweenNote, HourCount, useAurora, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../shared/Witching";   // C-236, C-237, C-240; T-519
 import { FirstSight } from "../shared/Hermetic";   // C-238
 import { meshTalk, trailSaid } from "../../platform/mesh";   // C-307
-import { useApi } from "../../platform/useApi";
+import { useApi, useFresh } from "../../platform/useApi";
 import { heardSync } from "../../ui/received";              // C-261
 import type { Arrival } from "../../../server/src/core";
 import type { Care } from "../../../server/src/care";   // C-266
@@ -338,7 +338,8 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
       setOwn(!!own);
     }).catch(() => {});
   }, []);
-  useEffect(load, [load]);
+  const fresh = useFresh();   // C-344: a fresher answer read again in place
+  useEffect(load, [load, fresh]);
   // C-21: the one SYNC. It reads the save, receives or returns a daemon if the game asked, links the save (so the
   // game shows SEND), and settles a daemon brought home without the app. Close the game first.
   const doSync = async () => {

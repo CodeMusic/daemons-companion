@@ -313,9 +313,13 @@ export async function liveAndKeep<T>(path: string, servedKept: () => boolean): P
 
 export let freshTimer: ReturnType<typeof setTimeout> | null = null;
 
+// C-344: the screens that ask again because of a fresher answer are answered from what was just kept, for a moment, and
+// not from the companion -- asked live, a slow answer that changes every time (THE TALK's health) heard fresher again,
+// and again, for as long as the screen was open
+let keptOnlyUntil = 0;
 export function freshSoon() {                     // many answers at once (keepEverything) redraw the screen once, not each
   if (freshTimer) clearTimeout(freshTimer);
-  freshTimer = setTimeout(() => { freshTimer = null; freshHeard.forEach((f) => f()); }, 600);
+  freshTimer = setTimeout(() => { freshTimer = null; keptOnlyUntil = Date.now() + 1500; freshHeard.forEach((f) => f()); }, 600);
 }
 
 // C-275: DEVELOPER MODE's game session -- a read asked as </> has it (a book as if held, an event unheld), in memory
@@ -338,6 +342,7 @@ export async function apiTruth<T>(path: string, body?: unknown): Promise<T> {
     try { return await apiLive<T>(path, body); } finally { GATE.release(); }
   }
   if (ON_PHONE && body === undefined && !path.startsWith("/api/art") && !ONE_SHOT.test(path) && path in KEPT.paths) {
+    if (Date.now() < keptOnlyUntil && !POLLED.test(path)) return KEPT.paths[path] as T;   // C-344
     let servedKept = false;
     const live = liveAndKeep<T>(path, () => servedKept).catch((e) => {
       if (!(e instanceof Unreachable)) throw e;                     // the companion answered "no"

@@ -10,8 +10,11 @@ import { useApi } from "../../platform/useApi";
 type SaveEntry = { id: string; kind: "given" | "mirror" | "kept"; label: string; current: boolean; at: string;
                    name: string; trainerId: number; playTime: string; marks: number; seen: number; place: string | null };
 
-export function SavesCard({ onChosen }: { onChosen?: () => void }) {
-  const [r, setR] = useApi<{ saves: SaveEntry[] }>("/api/saves");
+// C-344: asked by SETTINGS itself, so YOUR DAEMONS SAVE holds its place until this has answered too and YOUR SAVES does
+// not arrive later between it and the cards below
+export const useSaves = () => useApi<{ saves: SaveEntry[] }>("/api/saves");
+export function SavesCard({ saves, onChosen }: { saves: ReturnType<typeof useSaves>; onChosen?: () => void }) {
+  const [r, setR] = saves;
   const [said, setSaid] = useState("");
   if (!r || r.saves.length < 2) return null;               // one save: nothing to choose between
   const choose = async (e: SaveEntry) => {

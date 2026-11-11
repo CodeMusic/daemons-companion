@@ -20,7 +20,7 @@ type Mode = "standard" | "twovoices";
 type Party = { player: string; species: number; nickname: string; name: string; level: number; lean?: "red" | "blue"; role?: "tells" | "asks"; voice: string; voiceKey: string };
 type Line = { who: "a" | "b"; said: string; at: string; by: string };
 type Talk = { id: string; at: string; mode: Mode; turns: number; prompt: string; starter: string; a: Party; b: Party; lines: Line[];
-              status: "thinking" | "done" | "failed"; next?: "a" | "b" | null; error?: string;
+              status: "thinking" | "done" | "failed"; next?: "a" | "b" | null; stopped?: string;
               written?: { title: string; text: string; at: string; by: string } | null; integrating?: boolean };
 type Brief = { id: string; at: string; mode: Mode; turns: number; status: string; title: string | null; lines: number; integrating: boolean; a: Party; b: Party };
 type OutOne = { id?: string; species: number; nickname: string; level: number; name: string };
@@ -168,7 +168,7 @@ function TalkView({ t, ink, voice, onIntegrate, fresh }: { t: Talk; ink: string;
           <YStack borderRadius={16} backgroundColor="$color4"><Dots ink={nextInk} /></YStack>
         </XStack>
       ) : null}
-      {t.error ? <Small color="$color9">{t.error}</Small> : null}
+      {t.stopped ? <Small color="$color9">{t.stopped}</Small> : null}
       {t.written ? (
         <YStack gap={4} paddingTop={6} borderTopWidth={1} borderColor="$color5">
           <Text fontSize={16} fontWeight="700" color="$color12">{t.written.title}</Text>
@@ -185,7 +185,11 @@ function TalkView({ t, ink, voice, onIntegrate, fresh }: { t: Talk; ink: string;
 }
 
 // ---- the card: begin a talk, the open one, the history ----
-export function DialogueCard({ mine, others, ink }: { mine: OutOne | null; others: OutOne[]; ink: string }) {
+// base (C-329): "/api/trade" across accounts (OUT TOGETHER, filtered), or "/api/household" -- two of the home's own devices
+// in one space (C-327), `device` this one; nothing filtered within the home
+export function DialogueCard({ mine, others, ink, base = "/api/trade", device }: { mine: OutOne | null; others: OutOne[]; ink: string;
+                                                                                  base?: "/api/trade" | "/api/household"; device?: string }) {
+  const home = base === "/api/household", at = (p: string) => `${base}/${p}`;
   const [mode, setMode] = useState<Mode>("standard");
   const [turns, setTurns] = useState(3);
   const [swap, setSwap] = useState(false);
@@ -198,13 +202,13 @@ export function DialogueCard({ mine, others, ink }: { mine: OutOne | null; other
   const voice = useLineVoice();
   const other = others.find((o) => o.id === withId) ?? others[0] ?? null;
 
-  const reloadList = async () => { try { setList((await apiLive<{ dialogues: Brief[] }>("/api/trade/talks", {})).dialogues); } catch { /* not joined yet */ } };
+  const reloadList = async () => { try { setList((await apiLive<{ dialogues: Brief[] }>(at("talks"), { device })).dialogues); } catch { /* not joined yet */ } };
   useEffect(() => { reloadList(); }, []);
   useEffect(() => {                                                    // a talk being made, or put together: asked again
     if (!open || (open.status !== "thinking" && !open.integrating)) return;
     const t = setInterval(async () => {
       try {
-        const n = await apiLive<Talk>("/api/trade/talk", { id: open.id });
+        const n = await apiLive<Talk>(at("talk"), { id: open.id, device });
         setOpen(n);
         if (n.status !== "thinking" && !n.integrating) reloadList();
       } catch { /* asked again */ }
@@ -215,14 +219,14 @@ export function DialogueCard({ mine, others, ink }: { mine: OutOne | null; other
   const begin = async () => {
     if (!other?.id) return;
     setError("");
-    const t = await apiLive<Talk>("/api/trade/converse", { with: other.id, mode, turns, prompt, swap });
+    const t = await apiLive<Talk>(at("converse"), { with: other.id, device, mode, turns, prompt, swap });
     setFresh(true); setOpen(t); setPrompt(""); reloadList();
   };
   const show = async (id: string) => {
     voice.stop(); setFresh(false);
-    try { setOpen(await apiLive<Talk>("/api/trade/talk", { id })); } catch (e) { setError((e as Error).message); }
+    try { setOpen(await apiLive<Talk>(at("talk"), { id, device })); } catch (e) { setError((e as Error).message); }
   };
-  const integrate = async () => { if (open) { setOpen(await apiLive<Talk>("/api/trade/integrate", { id: open.id })); reloadList(); } };
+  const integrate = async () => { if (open) { setOpen(await apiLive<Talk>(at("integrate"), { id: open.id, device })); reloadList(); } };
 
   // who leans which way, or who tells, as the talk would begin (the server decides the same: dialogue.ts begin)
   const mineLabel = mine?.nickname ?? "YOURS", otherLabel = other?.nickname ?? "THEIRS";
@@ -241,7 +245,7 @@ export function DialogueCard({ mine, others, ink }: { mine: OutOne | null; other
     <YStack gap={8} paddingTop={10} borderTopWidth={1} borderColor="$color5">
       <Eyebrow>IN DIALOGUE</Eyebrow>
       {!mine || !others.length ? (
-        <Small>{!mine ? "Send one of yours out, and it can talk with another player's daemon that is out." : "When another player's daemon is out, yours can talk with it."}</Small>
+        <Small>{home ? "Put two of your devices together, and their daemons can talk." : !mine ? "Send one of yours out, and it can talk with another player's daemon that is out." : "When another player's daemon is out, yours can talk with it."}</Small>
       ) : (
         <YStack gap={8}>
           {others.length > 1 ? (
@@ -277,7 +281,7 @@ export function DialogueCard({ mine, others, ink }: { mine: OutOne | null; other
           <Entry value={prompt} onChange={setPrompt} onSubmit={() => { if (prompt.trim()) begin().catch((e) => setError((e as Error).message)); }}
                  placeholder={mode === "standard" ? "What should they talk about?" : "What should be asked?"} limit={PROMPT_MOST} />
           {prompt.trim() ? <Action label="BEGIN" ink={ink} onPress={begin} /> : null}
-          <Small color="$color10">The other player sees this talk and what you type.</Small>
+          {home ? null : <Small color="$color10">The other player sees this talk and what you type.</Small>}
         </YStack>
       )}
       {error ? <Small color="$color9">{error}</Small> : null}

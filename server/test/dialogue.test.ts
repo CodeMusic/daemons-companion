@@ -7,6 +7,10 @@ import * as D from "../src/dialogue.js";
 import { cardOf, dayFacts, factsFrom, personaOf, speciesFacts } from "../src/ai/personaof.js";
 import { exchangeRoute } from "../src/tradelink.js";
 import { Store } from "../src/db.js";
+import * as core from "../src/core.js";
+import { carriedFor } from "../src/carry.js";
+import { route } from "../src/routes.js";
+import { buildSave } from "./build_save.js";
 
 let n = 0;
 const KEYS: X.Keys = { token: () => `tok${++n}`, hash: (t) => `h:${t}`, password: (pw) => `pw:${pw}`, check: (pw, kept) => kept === `pw:${pw}`, code: () => `CODE${++n}` };
@@ -109,7 +113,7 @@ describe("DAEMONS IN DIALOGUE (C-329)", () => {
     let k = 0;
     D.setDialogueThinker(async () => { if (++k > 1) throw new Error("the Tiiny answered 503"); return { text: "Hello there.", by: "t" }; });
     const d = await settle(hub, rover.id, exchangeRoute(hub, KEYS, rover, "converse", { with: kit.id, prompt: "Hi", turns: 3 }).id);
-    expect(d.status).toBe("done"); expect(d.lines).toHaveLength(1); expect(d.error).toMatch(/503/);
+    expect(d.status).toBe("done"); expect(d.lines).toHaveLength(1); expect(d.stopped).toMatch(/503/);
     D.setDialogueThinker(null);
     const none = await settle(hub, rover.id, exchangeRoute(hub, KEYS, rover, "converse", { with: kit.id, prompt: "Hi" }).id);
     expect(none.status).toBe("failed");
@@ -142,5 +146,29 @@ describe("DAEMONS IN DIALOGUE (C-329)", () => {
     expect(D.dayColour(at)).toMatch(/^#[0-9A-Fa-f]{6}$/);
     const g = D.byWeek([{ at }, { at: new Date(2026, 10, 7).toISOString() }, { at: new Date(2026, 10, 9).toISOString() }]);
     expect(g.map((w) => [w.key, w.items.length])).toEqual([["2026-11-08", 2], ["2026-11-01", 1]]);
+  });
+});
+
+describe("in dialogue within the household (C-329 on C-327's spaces)", () => {
+  it("needs a shared space, then the two devices' daemons talk, nothing filtered, kept as the home's", async () => {
+    const PIP = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, away: true };
+    const LABEL = { personality: 0x0000002f, otId: 0x00ab1234, species: 4, nickname: "LABEL", level: 9, away: true };
+    const WATCH = "t-watch-ultra-a1b2c3", PHONE = "iphone-widget-0a0b0c";
+    const save = buildSave({ player: "ASH", trainerId: 0x00ab1234, slots: [{ counter: 3, party: [PIP, LABEL] }] });
+    const h: core.Host = { edition: "CONTENT", save: { read: () => save, write: () => null } };
+    const store = new Store(":memory:"), away = core.awayNow(h);
+    carriedFor(store, away, WATCH); carriedFor(store, away, PHONE);
+    const post = (path: string, body: object, deviceId = "") => route(h, store, { method: "POST", path, body, deviceId }, new Date());
+    expect(post("/api/household/converse", { prompt: "Hello?" }, WATCH).status).toBe(400);
+    post("/api/household/together", { b: PHONE }, WATCH);
+    D.setDialogueThinker(async () => ({ text: "Call 555 1234, Bob.", by: "t" }));   // unfiltered at home
+    const r = post("/api/household/converse", { prompt: "What is home?", turns: 1, mode: "twovoices" }, WATCH);
+    expect(r.status).toBe(200);
+    const t = r.body as any;
+    expect([t.a.nickname, t.b.nickname]).toEqual(["PIP", "LABEL"]);
+    expect(t.space).toBe("household");
+    const d = await settle(store, "home", t.id);
+    expect(d.lines.map((l: D.Line) => l.said)).toEqual(["Call 555 1234, Bob.", "Call 555 1234, Bob."]);
+    expect((post("/api/household/talks", {}).body as any).dialogues[0].id).toBe(t.id);
   });
 });

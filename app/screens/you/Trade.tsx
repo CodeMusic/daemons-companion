@@ -417,6 +417,9 @@ function HouseholdCard({ ink }: { ink: string }) {
         </XStack>
       ))}
       {said ? <Small>{said}</Small> : null}
+      {mine && h.carrying[me] && h.carrying[withMe] ? (   // C-329: the two in one den, in dialogue
+        <DialogueCard base="/api/household" device={me} ink={ink} mine={h.carrying[me]} others={[{ id: withMe, ...h.carrying[withMe] }]} />
+      ) : null}
       <Small color="$color8">DRAFT</Small>
     </Card>
   );

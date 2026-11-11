@@ -680,7 +680,8 @@ export const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/") || p.startsWith("/api/ai/voice/")),   // C-317: a voice streamed, by an id nobody can guess   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   // C-327: the household -- a watch swaps with, or shares a space with, another of the home's own devices
-  (m: string, p: string) => (m === "GET" && p === "/api/household") || (m === "POST" && ["/api/household/swap", "/api/household/together", "/api/household/apart"].includes(p)),
+  (m: string, p: string) => (m === "GET" && p === "/api/household") || (m === "POST" && ["/api/household/swap", "/api/household/together", "/api/household/apart",
+                                                                   "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate"].includes(p)),   // C-329: the watch's dialogue
   // C-334: sleep sounds -- the watch lists them, asks for one, and copies a piece to its card by an id nobody can guess
   (m: string, p: string) => (m === "GET" && (p === "/api/sleep" || p === "/api/sleep/tracks" || p.startsWith("/api/sleep/track/"))) || (m === "POST" && p === "/api/sleep/make"),
   (m: string) => m === "OPTIONS",

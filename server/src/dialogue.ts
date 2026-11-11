@@ -37,7 +37,7 @@ export type Dialogue = {
   lines: Line[];
   status: "thinking" | "done" | "failed";
   next?: Side | null;                                     // whose line is being thought now (the thinking dots)
-  error?: string;
+  stopped?: string;                                      // why it stopped early (not `error`: a reply with one reads as a failed request)
   written?: Written | null;
   integrating?: boolean;
 };
@@ -138,7 +138,7 @@ export async function run(store: Store, id: string, personas: Record<Side, strin
   return inTurn(async () => {
     const d0 = load(store).list.find((x) => x.id === id);
     if (!d0) return null;
-    if (!think) return persist(store, id, (d) => { d.status = "failed"; d.next = null; d.error = "no mind is answering on the hub"; });   // DRAFT
+    if (!think) return persist(store, id, (d) => { d.status = "failed"; d.next = null; d.stopped = "no mind is answering on the hub"; });   // DRAFT
     const seq = order(d0), count: Record<Side, number> = { a: 0, b: 0 }, known = [d0.a.nickname, d0.b.nickname, d0.a.name, d0.b.name];
     for (let i = 0; i < seq.length; i++) {
       const who = seq[i];
@@ -157,7 +157,7 @@ export async function run(store: Store, id: string, personas: Record<Side, strin
       count[who]++;
       if (line) persist(store, id, (x) => { x.lines.push({ who, said: line!.said, at: new Date().toISOString(), by: line!.by }); });
       else if (failed !== "a line did not pass")                      // no mind at all: stop here, keep what was said
-        return persist(store, id, (x) => { x.status = x.lines.length ? "done" : "failed"; x.next = null; x.error = `stopped: ${failed}`.slice(0, 120); });
+        return persist(store, id, (x) => { x.status = x.lines.length ? "done" : "failed"; x.next = null; x.stopped = `stopped: ${failed}`.slice(0, 120); });
     }
     return persist(store, id, (x) => { x.status = "done"; x.next = null; });
   });
@@ -190,7 +190,7 @@ export function begin(store: Store, starter: string, a: { player: string; facts:
   });
   const personas = { a: personaOf(a.facts, { roomy: true }), b: personaOf(b.facts, { roomy: true }) };
   void run(store, d.id, personas, o.filtered, o.think === undefined ? thinker : o.think).catch(() =>
-    persist(store, d.id, (x) => { x.status = "failed"; x.next = null; x.error = "the talk stopped"; }));   // DRAFT
+    persist(store, d.id, (x) => { x.status = "failed"; x.next = null; x.stopped = "the talk stopped"; }));   // DRAFT
   return d;
 }
 

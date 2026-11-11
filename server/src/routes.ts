@@ -46,7 +46,10 @@ import { again, chapterWords, finishChapter, journalOf as aJournal, journalsOf, 
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { carryView } from "./carry.js";
-import { apart, spaces as householdSpaces, swap, together } from "./household.js";   // C-327
+import { apart, partnerIn, spaceOf, spaces as householdSpaces, swap, together } from "./household.js";   // C-327
+import * as Dialogue from "./dialogue.js";   // C-329: two daemons of the household in dialogue
+import { dayFacts, speciesFacts } from "./ai/personaof.js";   // C-329
+import { carriedFor } from "./carry.js";   // C-329
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { readUnity } from "./unity.js";
@@ -55,7 +58,7 @@ import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   /
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
 const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
+const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -209,6 +212,28 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const one = typeof b?.a === "string" ? b.a : deviceId, two = typeof b?.b === "string" ? b.b : "";
       const r = path.endsWith("swap") ? swap(store, awayNow(h), one, two) : together(store, one, two, now);
       return typeof r === "string" ? no(400, r) : ok(householdView(h, store, now));
+    }
+    // C-329: the two daemons in this device's household space talk (dialogue.ts) -- within the home, so nothing is
+    // filtered; each one's persona from its species, the day and the home's goals (the talk is the house's own: "home")
+    if (path === "/api/household/converse") {
+      const device = typeof b?.device === "string" ? b.device : deviceId ?? "", space = spaceOf(store, device, now);
+      if (!space) return no(400, "put two of your devices together first");                          // DRAFT
+      const away = awayNow(h), mine = carriedFor(store, away, device), theirs = carriedFor(store, away, partnerIn(space, device));
+      if (!mine || !theirs) return no(400, "both devices must carry a daemon");                     // DRAFT
+      const goals = store.goals().filter((g) => !g.done).slice(0, 4).map((g) => ({ goal: g.title }));
+      const facts = (d: typeof mine) => ({ ...speciesFacts(d.species, d.nickname, h.edition), level: d.level, goals, day: dayFacts(now) });
+      const r = Dialogue.begin(store, "home", { player: "home", facts: facts(mine), edition: h.edition }, { player: "home", facts: facts(theirs), edition: h.edition },
+                               b ?? {}, { filtered: false, space: "household", now });
+      return "id" in r ? ok(Dialogue.shown(r)) : no(400, r.error);
+    }
+    if (path === "/api/household/talks") return ok(Dialogue.list(store, "home"));
+    if (path === "/api/household/talk" || path === "/api/household/integrate") {
+      if (path.endsWith("integrate")) {
+        const r = Dialogue.integrate(store, "home", b?.id);                        // begins at once; the write-up follows
+        void r.catch(() => {});
+      }
+      const r = Dialogue.one(store, "home", b?.id);
+      return "id" in r ? ok(r) : no(404, r.error);
     }
     if (path === "/api/household/apart") {
       apart(store, typeof b?.device === "string" ? b.device : deviceId, now);

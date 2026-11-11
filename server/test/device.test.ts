@@ -30,7 +30,8 @@ describe("the sync protocol's server side (C-09)", () => {
   it("gives a device its day, season, next step and the party's AWAY daemon", async () => {
     await post("/api/goals", { title: "Tidy the garage", breakdown: true });
     const s = await get("/api/device/state");
-    expect(Object.keys(s).sort()).toEqual(["beacons", "cardNote", "casino", "casts", "clock", "companion", "daemon", "date", "day", "edition", "hermetic", "holiday", "netsRev", "party", "play", "season", "server", "settings", "step", "talk", "tvs", "world"]);   // C-238: hermetic; C-256: tvs
+    expect(Object.keys(s).sort()).toEqual(["beacons", "cardNote", "casino", "casts", "clock", "companion", "daemon", "date", "day", "edition", "hermetic", "holiday", "netsRev", "party", "play", "season", "server", "settings", "sky", "step", "talk", "tvs", "world"]);   // C-238: hermetic; C-256: tvs; C-312: sky
+    expect(s.sky).toEqual({ edition: s.edition, mended: false, both: false });   // C-312: what the aurora waits on, never the night itself
     expect(s.daemon).toMatchObject({ nickname: "LABEL", slot: 1, art: "/art/party/1.png", mood: null });
     expect(s.clock.epoch).toBeGreaterThan(1.7e9);                          // C-71: the watch sets its clock by it
     // C-68: the party and their routines, named as the game names them, each with its streak's colour

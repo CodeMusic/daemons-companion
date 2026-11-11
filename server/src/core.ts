@@ -9,6 +9,8 @@ import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 import { readAway, readBoxes, readSave, type Sounding } from "./save/reader.js";
+import { savedUnity } from "./unity.js";            // C-312: the aurora waits on the mending
+import { conjugateLight } from "./aurora.js";       // C-312: and both lines on the other edition's daemon
 import { readProfile } from "./save/profile.js";
 import { HOUSE_AT, syncSave } from "./save/writer.js";
 import { firstSight, HERMETIC_FLAG, readHermetic, spellcraftToWrite } from "./hermetic.js";   // C-238
@@ -385,6 +387,15 @@ export function grown(d: { species: number; exp: number; level: number; personal
 }
 
 // `as`: an expression to draw it in instead of its own (GET /api/device/state?expression=, for a bench check)
+// C-305, C-306, C-312: what the aurora waits on -- THE UNITY BOOK mended, and a daemon from the other edition in the
+// party for both lines. Each screen works out the night itself (aurora.ts auroraShows), as the den does, never re-derived here.
+export function skyOf(h: Host): { edition: string; mended: boolean; both: boolean } {
+  const file = h.save.read(), mended = savedUnity(file);
+  let both = false;
+  try { both = !!file && conjugateLight(mended, h.edition, readSave(file).party); } catch { /* its own line only */ }
+  return { edition: h.edition, mended, both };
+}
+
 export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null, as: string | null = null) {
   const t = today(h, store, now);
   let daemon = null, party: unknown[] = [], casino: any = null;
@@ -448,7 +459,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
-  return { date: t.date, edition: t.edition, season: t.season, server,
+  return { date: t.date, edition: t.edition, season: t.season, server, sky: skyOf(h),   // C-312: the aurora's, for every screen
            companion: companionId(store), cardNote: noteFor(store),   // C-124: whose cards are ours; a note to write
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },

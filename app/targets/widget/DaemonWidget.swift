@@ -310,7 +310,21 @@ struct DaemonWidgetView: View {
     }
     .containerBackground(for: .widget) {
       if family == .accessoryCircular || family == .accessoryRectangular { Color.clear }
-      else { LinearGradient(colors: [Color(hex: den.wall), Color(hex: den.deep)], startPoint: .top, endPoint: .bottom) }
+      else {
+        ZStack(alignment: .top) {
+          LinearGradient(colors: [Color(hex: den.wall), Color(hex: den.deep)], startPoint: .top, endPoint: .bottom)
+          // C-312: on a night of light, the book mended, the den's bands in the sky -- the top six sixteenths, as the den
+          if let sky = entry.snapshot?.sky, Aurora.shows(sky, at: entry.date) {
+            GeometryReader { g in
+              VStack(spacing: 0) {
+                ForEach(Array(Aurora.sky(sky).enumerated()), id: \.offset) { _, b in
+                  Color(hex: b.0).opacity(b.1).frame(height: g.size.height / 16)
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 

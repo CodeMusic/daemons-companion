@@ -27,7 +27,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, sync, today, walk, type Host } from "./core.js";
+import { awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -47,8 +47,7 @@ import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
 import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
-import { readUnity, savedUnity } from "./unity.js";
-import { conjugateLight } from "./aurora.js";   // C-306: the conjugate light   // C-299: THE UNITY BOOK, the halves mended
+import { readUnity } from "./unity.js";
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
 const GETS = ["/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
@@ -72,9 +71,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/broadcasts") return ok({ items: castsSince(store, Number(a.query?.since) || 0) });
     if (path === "/api/broadcast/acts") return ok({ acts: ACTS, casino: (actsJson as { casino?: unknown[] }).casino ?? [] });   // C-151: JACKPOT, BIGWIN
     if (path === "/api/today") {                                        // C-305: the aurora waits on the mending; C-306: both lines,
-      const file = h.save.read(), mended = savedUnity(file);           // with a daemon from the other edition in the party
-      let both = false;
-      try { both = !!file && conjugateLight(mended, h.edition, readSave(file).party); } catch { /* its own line only */ }
+      const { mended, both } = skyOf(h);                               // with a daemon from the other edition in the party
       return ok({ ...today(h, store, now), mended, both });
     }
     if (path === "/api/glass") return ok(glassView(store, now.getTime()));   // C-262: what the glasses show, and the notes

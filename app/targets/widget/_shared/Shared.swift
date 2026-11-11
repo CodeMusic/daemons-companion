@@ -39,6 +39,49 @@ struct Snapshot: Codable {
   var edition: String? = nil        // T-425: the save's -- its instrument, the harp (CONTENT) or the flute (CONTEXT)
   var rest: Int? = nil              // C-279: how well it has slept, 0..100 (C-266's care.rest), for the moon
   var wakesAt: Date? = nil          // C-300: asleep -- when it would wake by itself, so the widget is drawn again then
+  var sky: Sky? = nil               // C-312: what the aurora waits on (the book mended; both editions met)
+}
+
+// C-312 (the user, 2026-11-10, by multiple choice: "Bands over its sky"): the aurora in the widget's night sky -- the den's
+// rule to the bit (server/src/aurora.ts, itself the cartridge's daemons_aurora.c): THE UNITY BOOK mended, the game's night
+// watch (20:00 to 5:00), and one night in three picked from the date. A widget cannot breathe, so its bands are drawn at
+// the breath's middle. Every edge of it is the den's; nothing here is decided again.
+struct Sky: Codable { let edition: String; let mended: Bool; let both: Bool }
+enum Aurora {
+  static let line = ["CONTENT": "#F7394A", "CONTEXT": "#52F77B"]
+  static let bands = ["CONTENT": [255, 160, 64, 16, 0, 0], "CONTEXT": [96, 255, 160, 48, 16, 0]]
+  static let conjugate = [255, 255, 176, 64, 16, 0]          // red in the top band, green below (C-306)
+  static func dayNumber(_ y: Int, _ m: Int, _ d: Int) -> Int {
+    let before = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
+    let yy = (y - 2000) & 0xFFFF
+    var days = yy * 365 + (yy + 3) / 4 + before[(m - 1) % 12] + d - 1
+    if m > 2 && yy % 4 == 0 { days += 1 }
+    return days & 0xFFFF
+  }
+  static func night(_ date: Date) -> Int {
+    let c = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+    let day = dayNumber(c.year!, c.month!, c.day!), minute = c.hour! * 60 + c.minute!
+    return (minute < 12 * 60 ? day - 1 : day) & 0xFFFF
+  }
+  static func isLightNight(_ n: Int) -> Bool {
+    var x = ((n & 0xFFFF) * 40503) % 65536
+    x ^= x >> 7
+    x = (x * 40503) % 65536
+    return (x >> 8) % 3 == 0
+  }
+  static func shows(_ sky: Sky?, at date: Date) -> Bool {
+    guard let sky, sky.mended else { return false }
+    let h = Calendar.current.component(.hour, from: date)
+    return (h >= 20 || h < 5) && isLightNight(night(date))
+  }
+  // each band top first: its colour and how strongly (0..1), at the breath's middle -- aurora.ts auroraWeight(band, 0.5)
+  static func sky(_ sky: Sky) -> [(String, Double)] {
+    let e = sky.edition == "CONTEXT" ? "CONTEXT" : "CONTENT"
+    let ws = sky.both ? conjugate : bands[e]!
+    return ws.enumerated().map { i, w in
+      (sky.both ? (i < 1 ? line["CONTENT"]! : line["CONTEXT"]!) : line[e]!, Double((72 + 128 * 96 / 255) * w / 255) / 256)
+    }
+  }
 }
 
 // C-301: the watches of the day the care key turns on -- server/src/life.ts DUSK and DAWN (context.ts watchOf)
@@ -47,7 +90,8 @@ func isNight(_ d: Date) -> Bool { let h = Calendar.current.component(.hour, from
 // the next dusk or dawn after this moment -- when the care key would change by itself
 func nextTurn(after d: Date) -> Date {
   let cal = Calendar.current
-  let turns = [DAWN_HOUR, DUSK_HOUR].compactMap { cal.nextDate(after: d, matching: DateComponents(hour: $0, minute: 0), matchingPolicy: .nextTime) }
+  // C-312: and 20:00, when a night of light begins
+  let turns = [DAWN_HOUR, DUSK_HOUR, 20].compactMap { cal.nextDate(after: d, matching: DateComponents(hour: $0, minute: 0), matchingPolicy: .nextTime) }
   return turns.min() ?? d.addingTimeInterval(3600)
 }
 func isoDate(_ s: String?) -> Date? {
@@ -73,6 +117,7 @@ struct DeviceState: Decodable {
   struct Hearing: Decodable { let sound: Bool?; let volume: Int? }
   let settings: Hearing?            // C-160: its own over every device's
   let edition: String?              // T-425: the save's edition
+  let sky: Sky?                     // C-312: the aurora's
 }
 struct Art: Decodable { let png: String }
 
@@ -189,7 +234,7 @@ enum Companion {
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
                        cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date(),
                        sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition, rest: d.life.care?.rest,
-                       wakesAt: isoDate(d.life.wakesAt))
+                       wakesAt: isoDate(d.life.wakesAt), sky: st.sky)
       Shared.snapshot = s
       return s
     } catch {

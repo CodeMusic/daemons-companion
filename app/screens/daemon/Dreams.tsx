@@ -71,7 +71,7 @@ export function DreamsScreen({ ink }: { ink?: string }) {
           <Small color="$color10">{`${d.nickname || "Your daemon"}, woke ${whenSaid(d.to)}`}</Small>
           <XStack gap={8} flexWrap="wrap">
             {/* the user, 2026-10-28: a dream read aloud, in the INDEX voice -- 2026-11-07: made in the background, and kept */}
-            <VoiceButton text={view.text} ink={ink} />
+            <VoiceButton text={view.text} ink={ink} voice="daemon" />
             <Action label="SHARE" onPress={() => share(d)} ink={ink} />
           </XStack>
           {shared[d.id] ? <Small>{shared[d.id]}</Small> : null}

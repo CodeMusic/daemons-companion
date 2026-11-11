@@ -111,9 +111,10 @@ export function voiceGeneration(): Promise<string> {
 // null when no voice came.
 // C-303: {own: true} is what the daemon says of itself, in its own voice -- kept by its words (`said`) as well as its
 // species, so a telling that is rewritten is asked for again and never heard stale.
-export async function readingVoice(body: { text?: string; species?: number; own?: boolean }, said?: string): Promise<File | null> {
+// C-323: {text, voice} -- the words in a named voice ("player", "book:<id>"...), kept apart from the reader's
+export async function readingVoice(body: { text?: string; species?: number; own?: boolean; voice?: string }, said?: string): Promise<File | null> {
   const g = await voiceGeneration();
-  const words = body.text !== undefined ? `text:${g}:${body.text}` : body.own ? `said:${g}:${body.species}:${said ?? ""}`
+  const words = body.text !== undefined ? (body.voice ? `text:${g}:${body.voice}:${body.text}` : `text:${g}:${body.text}`) : body.own ? `said:${g}:${body.species}:${said ?? ""}`
               : `species:${g}:${body.species}`;
   const had = keptVoice(words);
   if (had) return had;

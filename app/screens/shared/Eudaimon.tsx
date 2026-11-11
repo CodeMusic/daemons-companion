@@ -120,11 +120,11 @@ export function LayerPages({ b, P: P0, green: green0, id, place, cover, under, p
           <YStack width={wide ? Math.max(0, w - 2 * 18 - 94 * 3 - 18) : "100%"} gap={10}>
             <Text fontSize={20} lineHeight={27} fontWeight="700" color={P.ink}>{e.title}</Text>
             <YStack height={2} backgroundColor={P.lit} width={48} />
-            <ReadAloud id={`${id}-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={P.mark} />
+            <ReadAloud id={`${id}-${at}`} paragraphs={[e.title, ...e.paragraphs.map((p) => p.text)]} ink={P.mark} voice={`book:${id}`} />
             {e.paragraphs.map((p, i) => p.voice === "inscription" ? (
               <YStack key={i} gap={2} borderLeftWidth={2} borderColor={tablet} paddingLeft={10}>
                 <Text fontSize={17} lineHeight={26} fontWeight="600" color={green}>{p.text}</Text>
-                <ReadAloud id={`${id}-${at}-${i}`} paragraphs={[p.text]} ink={tablet} label="Say it" />
+                <ReadAloud id={`${id}-${at}-${i}`} paragraphs={[p.text]} ink={tablet} label="Say it" voice={`book:${id}`} />
               </YStack>
             ) : p.voice === "observer" ? (                           // read by someone: the lead daemon's own wording
               <YStack key={i} gap={2} backgroundColor={P.boards} borderRadius={3} padding={10}>

@@ -142,7 +142,7 @@ function JournalPage({ id, ink, onBack }: { id: number; ink: string; onBack: () 
                 <>
                   <XStack gap={8} flexWrap="wrap">
                     <Action label={reading === c.id ? W.hide : W.read} onPress={() => setReading(reading === c.id ? null : c.id)} ink={ink} />
-                    <VoiceButton text={spokenOf(c)} words={W.listen} />
+                    <VoiceButton text={spokenOf(c)} words={W.listen} voice="player" />
                     <Action label={W.export} onPress={() => ON_PHONE ? setExporting(exporting === c.id ? null : c.id) : out(exportPage, c)} />
                     <Action label={W.print} onPress={() => out(printPage, c)} />
                   </XStack>

@@ -134,6 +134,7 @@ String stepsWords(long steps);                             // "1234 STEPS", and 
 void nightBegin(); void nightLoop(uint32_t now); void nightTuck(); void nightWake();
 void nightWakeDaemon();                   // C-293: woken from the watch (the glance, the alarm) -- told as WAKE, as CARE's is
 void nightFromState(JsonVariantConst d); String nightStatus();
+bool sleepSoundsPlaying();               // C-334: SLEEP SOUNDS playing on the Ultra (sleepsounds.cpp) -- the radios off
 bool nightQuiet();                       // C-285: the Ultra's daemon tucked in -- GPS, Wi-Fi and the always-on face off
 bool nightTap();                         // C-285: a tap asleep -- the glance, then (tapped again) awake; true, taken
 bool dreamShowing(); void dreamDismiss(); void drawDream(uint16_t day);       // play.cpp: an instrument forced for testing (and PLAY open), or "default"

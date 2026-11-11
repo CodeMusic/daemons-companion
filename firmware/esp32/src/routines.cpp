@@ -25,6 +25,7 @@ String runSeeTheHeat(); String runWarmestThing(); String runSomeonesHere(); Stri
 String runWakeMe(); String runStopwatch(); String runCountdown();   // C-205: HOURS, clock.cpp
 String runMeeting(); String runLastMeeting(); String runSendKept(); String runVoiceNote();  // C-212, C-199 (5): meeting.cpp
 String runBooks();                        // C-208: BOOKS, books.cpp
+String runSleepSounds();                  // C-334: NIGHT, sleepsounds.cpp
 String runTv();                           // C-256: TV, tv.cpp
 static const Routine FLARE_ROUTINES[]      = { { "TEACH A REMOTE", runTeachRemote }, { "POWER", runPower },
                                                { "VOLUME UP", runVolumeUp }, { "VOLUME DOWN", runVolumeDown },
@@ -52,6 +53,7 @@ static const Routine HOURS_ROUTINES[]      = { { "WAKE ME", runWakeMe }, { "STOP
                                                { "RECORD A MEETING", runMeeting }, { "LAST MEETING", runLastMeeting },
                                                { "VOICE NOTE", runVoiceNote }, { "SEND KEPT", runSendKept } };   // C-205; C-212; C-199 (5), DRAFT
 static const Routine BOOKS_ROUTINES[]      = { { "READ", runBooks } };   // C-208, DRAFT
+static const Routine NIGHT_ROUTINES[]      = { { "SLEEP SOUNDS", runSleepSounds } };   // C-334, DRAFT
 static const Routine TV_ROUTINES[]         = { { "REMOTE", runTv } };   // C-256, DRAFT
 static const Routine CASINO_ROUTINES[]     = { { "SLOTS", runSlots } };   // C-149, DRAFT
 static const Routine UPLINK_ROUTINES[]     = { { "NETWORKS IN RANGE", runNetworksInRange }, { "TEACH A NETWORK", runJoinNetwork },
@@ -72,6 +74,7 @@ void routinesBegin() {
                                                          : RoutineType{ "FLARE", "IR out", FLARE_SEND_ROUTINES, 5 };   // C-150
   types[typeCount++] =                     { "CHORUS",     "every way", CHORUS_ROUTINES,     2 };   // C-134: every board, DRAFT
   if (isWatch()) types[typeCount++] = { "BOOKS", "the books the save holds", BOOKS_ROUTINES, 1 };   // C-208, DRAFT
+  if (board.kind == BoardKind::TWatchUltra) types[typeCount++] = { "NIGHT", "sounds for sleep, from the card", NIGHT_ROUTINES, 1 };   // C-334, DRAFT
   // C-256: the TV remote over Wi-Fi -- FLARE on a watch with no IR light, as on the boards that have one (the user,
   // 2026-10-31: "Yes, call it FLARE"); TV beside FLARE (IR out) on a watch that has one
   if (isWatch()) types[typeCount++] = board.ir ? RoutineType{ "TV", "the TV, over Wi-Fi", TV_ROUTINES, 1 }

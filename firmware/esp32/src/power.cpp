@@ -25,8 +25,8 @@ bool powerMoving() {
 uint32_t powerStillMs() { return (uint32_t)constrain(cfg.power.stillMinutes, 1, 60) * 60000UL; }
 bool powerGps() { return cfg.power.gps && !cfg.power.low && !nightQuiet(); }   // C-285: none while it sleeps
 bool powerGpsPolls() { return !cfg.power.gpsOnMove; }
-bool powerLora() { return cfg.power.lora && !cfg.power.low && (!cfg.power.radiosOnMove || powerMoving()); }
-bool powerMeet() { return cfg.meet && cfg.power.meet && !cfg.power.low && (!cfg.power.radiosOnMove || powerMoving()); }
+bool powerLora() { return cfg.power.lora && !cfg.power.low && !sleepSoundsPlaying() && (!cfg.power.radiosOnMove || powerMoving()); }
+bool powerMeet() { return cfg.meet && cfg.power.meet && !cfg.power.low && !sleepSoundsPlaying() && (!cfg.power.radiosOnMove || powerMoving()); }
 uint32_t powerPollMs() { return (uint32_t)max(cfg.power.poll, cfg.power.low ? 300 : 30) * 1000UL; }
 int powerSleepAfter() {
   if (!cfg.power.low) return cfg.sleepAfter;

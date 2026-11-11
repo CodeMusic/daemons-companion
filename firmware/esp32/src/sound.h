@@ -21,6 +21,7 @@ void soundBack();                          // the day's note an octave down, sof
 void soundRoutine(const char *type);       // a routine starting: its tune, the ring dancing to it
 void soundGameRoutine(const String &name, const String &type, uint32_t rgb);   // C-68: a game routine, the ring its colour
 void soundPcm(const int16_t *samples, size_t n);
+void soundPcmLevel(const int16_t *samples, size_t n, float level);   // C-334: sleep sounds, unlifted, at a level
 void soundInstrumentNote(int midi, int ms);   // C-164: one note, MIDI (C4 60), on the save's instrument where there is one
 void soundInstrumentStart(int midi, int ms, float level = 0.7f);  // C-202: the same, begun and left ringing -- returns at once
 void soundInstrumentRelease();                 // C-202: what is held let go into its release (the flute, unblown)

@@ -518,6 +518,24 @@ void soundPcm(const int16_t *samples, size_t n) {
   lastAt = millis();
 }
 
+// C-334: music for sleep, played as it is -- soundPcm lifts a voice to the volume's top, which would undo a fade -- at the
+// volume times level (0..1). The pieces are made quiet (-23 LUFS), so the volume's top is twice a voice's.
+void soundPcmLevel(const int16_t *samples, size_t n, float level) {
+  if (!ready) return;
+  quiet();
+#if SAMPLED
+  voicesOff();
+#endif
+  static int16_t buf[256];
+  const float g = 2.0f * level * (amplitude ? amplitude : 40 * 120) / 12000.0f;
+  for (size_t done = 0; done < n;) {
+    size_t k = min((size_t)256, n - done);
+    for (size_t i = 0; i < k; i++) buf[i] = (int16_t)constrain((int)(samples[done + i] * g), -32768, 32767);
+    play(buf, k);
+    done += k;
+  }
+}
+
 static void rest(int ms) {
   quiet();
   if (!ready || !enabled || board.buzzer >= 0) { for (int left = ms; left > 0 && !stopped(); left -= 10) delay(min(10, left)); return; }

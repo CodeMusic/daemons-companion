@@ -21,6 +21,7 @@ GOLD, GOLD_LIT = (224, 150, 40), (255, 214, 140)
 FOIL = (255, 226, 122)
 EMERALD, EMERALD_LIT = (31, 143, 95), (80, 200, 120)                  # C-239: the tablet's ink (server/src/witching.ts EMERALD)
 P_RED, P_BLUE = (200, 64, 90), (79, 107, 216)                          # C-237: the breath's two ends (witching.ts PULSE)
+DAWN_SKY, DAWN_GOLD, DAWN_LIT = (26, 30, 62), (201, 138, 30), (232, 169, 58)   # C-313: the night's last blue, the dawn's gold (Eudaimon.tsx DAWN)
 
 
 def gradient(top, bottom, fade_from=0.35):
@@ -199,25 +200,65 @@ def shimmer():
     return layer
 
 
+def dawn_sky():
+    """C-313: the dawn face's ground -- the night's last blue at the top, the gold coming up from the horizon"""
+    im = Image.new("RGB", (W, H))
+    px = im.load()
+    hz = CARD["sprite_cy"] + 34
+    for y in range(H):
+        t = min(1.0, max(0.0, (y - 20) / (hz - 20)))
+        k = t ** 2.2
+        c = tuple(int(DAWN_SKY[i] + (DAWN_LIT[i] - DAWN_SKY[i]) * k) for i in range(3)) if y <= hz else \
+            tuple(int(DAWN_GOLD[i] * 0.55 + DAWN_SKY[i] * 0.45 * (1 - (y - hz) / (H - hz))) for i in range(3))
+        for x in range(W):
+            px[x, y] = c
+    return im
+
+
+def dawn(rng):
+    """C-313, DAWN (the user picked the words card by card, 2026-11-10): the sun coming up on the horizon where the daemon
+    will stand -- its daemons are to be chosen -- its light fanning up the sky, the last stars going out above"""
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    cx, hz = W / 2, CARD["sprite_cy"] + 34
+    for k in range(15):                                                  # the light fanning up from the sun
+        a = math.pi * (k + 0.5) / 15
+        d.line((cx, hz, cx - math.cos(a) * 220, hz - math.sin(a) * 220), fill=(255, 226, 150, 46 if k % 2 else 78), width=2)
+    for r, al in ((58, 40), (46, 70), (36, 120)):                        # the glow
+        d.ellipse((cx - r, hz - r, cx + r, hz + r), fill=DAWN_LIT + (al,))
+    d.pieslice((cx - 30, hz - 30, cx + 30, hz + 30), 180, 360, fill=(255, 236, 180, 255))   # the sun, half up
+    d.line((16, hz, W - 17, hz), fill=(255, 236, 180, 200), width=1)                         # the horizon
+    for _ in range(26):                                                  # the last stars, fading toward the light
+        x, y = rng.randint(18, W - 18), rng.randint(22, 120)
+        a = int(200 * (1 - y / 130))
+        d.rectangle((x, y, x + 1, y + 1), fill=(255, 250, 235, max(30, a)))
+    # a lark, small, rising (the dawn half is read by one)
+    d.line((cx + 44, hz - 92, cx + 50, hz - 96, cx + 56, hz - 92), fill=(40, 34, 52, 230), width=2)
+    return Image.alpha_composite(layer.filter(ImageFilter.GaussianBlur(1.1)), layer)
+
+
 def face(kind, shiny=False, seed=231):
-    rng = random.Random(seed + {"reason": 0, "instinct": 1, "spellcraft": 2, "above": 3, "below": 4}[kind])
+    rng = random.Random(seed + {"reason": 0, "instinct": 1, "spellcraft": 2, "above": 3, "below": 4, "dawn": 5}[kind])
     hermetic = kind in ("spellcraft", "above", "below")
-    im = gradient(HUE, EMERALD if hermetic else {"reason": GREEN, "instinct": GOLD}[kind]).convert("RGBA")
-    im = Image.alpha_composite(im, {"reason": circuit, "instinct": neural, "spellcraft": sigils, "above": above, "below": below}[kind](rng))
-    halo = Image.new("RGBA", (W, H), (0, 0, 0, 0))                      # where the daemon stands
-    s, cy = CARD["sprite_size"], CARD["sprite_cy"]
-    ImageDraw.Draw(halo).ellipse((W / 2 - s * 0.62, cy - s * 0.58, W / 2 + s * 0.62, cy + s * 0.58), fill=DEEP + (150,))
-    im = Image.alpha_composite(im, halo.filter(ImageFilter.GaussianBlur(10)))
+    if kind == "dawn":                                                   # C-313: its own sky, no purple, no dark halo
+        im = Image.alpha_composite(dawn_sky().convert("RGBA"), dawn(rng))
+    else:
+        im = gradient(HUE, EMERALD if hermetic else {"reason": GREEN, "instinct": GOLD}[kind]).convert("RGBA")
+        im = Image.alpha_composite(im, {"reason": circuit, "instinct": neural, "spellcraft": sigils, "above": above, "below": below}[kind](rng))
+        halo = Image.new("RGBA", (W, H), (0, 0, 0, 0))                      # where the daemon stands
+        s, cy = CARD["sprite_size"], CARD["sprite_cy"]
+        ImageDraw.Draw(halo).ellipse((W / 2 - s * 0.62, cy - s * 0.58, W / 2 + s * 0.62, cy + s * 0.58), fill=DEEP + (150,))
+        im = Image.alpha_composite(im, halo.filter(ImageFilter.GaussianBlur(10)))
     band = Image.new("RGBA", (W, H), (0, 0, 0, 0))                      # the phrase's panel, so its words read over the pattern
     py = CARD["phrase_y"]
-    ImageDraw.Draw(band).rounded_rectangle((14, py - 22, W - 15, py + 36), radius=10, fill=DEEP + (190,))
+    ImageDraw.Draw(band).rounded_rectangle((14, py - 22, W - 15, py + 36), radius=10, fill=(DAWN_SKY if kind == "dawn" else DEEP) + (190,))
     im = Image.alpha_composite(im, band.filter(ImageFilter.GaussianBlur(1)))
     if hermetic: im = Image.alpha_composite(im, shimmer())
     if shiny:
         rgb = ImageOps.invert(im.convert("RGB")).convert("RGBA")
         im = rgb
     d = ImageDraw.Draw(im)
-    edge = FOIL if shiny else EMERALD_LIT if hermetic else LIT
+    edge = FOIL if shiny else DAWN_LIT if kind == "dawn" else EMERALD_LIT if hermetic else LIT
     d.rounded_rectangle((1, 1, W - 2, H - 2), radius=14, outline=edge, width=3)
     d.rounded_rectangle((7, 7, W - 8, H - 8), radius=10, outline=edge + (140,), width=1)
     if shiny:                                                            # a few glints
@@ -234,7 +275,7 @@ def face(kind, shiny=False, seed=231):
 
 def main():
     write = "--write" in sys.argv
-    for kind in ("reason", "instinct", "spellcraft", "above", "below"):
+    for kind in ("reason", "instinct", "spellcraft", "above", "below", "dawn"):   # C-313: dawn
         for shiny in (False, True):
             name = f"arcana_{kind}{'_shiny' if shiny else ''}.png"
             img = face(kind, shiny)

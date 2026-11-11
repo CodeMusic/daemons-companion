@@ -2,7 +2,8 @@
 // should feature the user Manuel so you can bring up the PDF and read it from the app"): DAEMONS' own manual, fetched from
 // DAEMONS as published now (app/state/manual.ts) and read here -- on the iPhone and iPad in the app's own page, scrolled and
 // pinched as any PDF is, with SHARE to keep it in Books or Files; on the site, in the page. DRAFT. Its companion book,
-// PLAYING TOGETHER (2026-10-31), is read the same way.
+// PLAYING TOGETHER (2026-10-31), is read the same way. Each one recorded is heard here too, LISTEN above the page
+// (DAEMONS T-543: every book on the shelf has its own voice).
 import * as Sharing from "expo-sharing";
 import { createElement, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
@@ -11,6 +12,7 @@ import { XStack, YStack } from "tamagui";
 import { freshManual, keptManual, manualDir, type Manual, type Which } from "../../state/manual";
 import { ON_PHONE } from "../../platform/net";
 import { Action, Card, Eyebrow, Small } from "../../ui/ui";
+import { Listen, type Recorded } from "../../ui/bookAudio";
 
 // what the shelf says of it: the release it was made for, once one is kept
 // Each book's words
@@ -29,6 +31,9 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
   companion: { title: "THE COMPANION", about: "Everything the companion does: your daemon AWAY, the days, the house's mind, the devices.",   // DRAFT (C-321)
                says: "The DAEMONS companion: the app, the site, the hub and the devices" },                                       // DRAFT (C-321)
 };
+// the recording each book is heard in (DAEMONS docs/books/audio); the TEXTBOOK's is CALLOW SCHOOL's own (Library.tsx)
+const HEARD: Partial<Record<Which, Recorded>> = { player: "manual", quick: "quick", companion: "companion", social: "social",
+  tiiny: "tiiny", word: "word" };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;
   return `${BOOK[w].about}${r ? ` For v${r}.` : ""}`;   // DRAFT
@@ -79,6 +84,7 @@ export function ManualBook({ which = "player" }: { which?: Which }) {
           </XStack>
         ) : null}
       </Card>
+      {HEARD[which] ? <Listen which={HEARD[which]!} /> : null}
       {m && viewer ? (
         <YStack height={Math.max(440, height - 210)} borderWidth={1} borderColor="$color6" borderRadius={4} overflow="hidden"
                 backgroundColor="#525659">

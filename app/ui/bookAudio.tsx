@@ -10,7 +10,9 @@
 // UNITY BOOK's, each with its own book's key (C-299, the user 2026-11-05; the mended book in "one voice"). A book plays on with its page
 // left or the screen locked, and shows on the lock screen. A kept book knows which reading it is (bookaudio.py's sources
 // hash); when DAEMONS has published a newer one, the next LISTEN fetches it (the user, 2026-11-07: "have build all audio?"
-// -- THE SUBTLE LAYER was read again, and a phone that kept it would never have heard). Every word DRAFT.
+// -- THE SUBTLE LAYER was read again, and a phone that kept it would never have heard). The shelf's other books have
+// their voices too (DAEMONS T-543, the user 2026-11-10: "if we have new books we should follow suit so they also have a
+// voice"): the five MANUALS and THE OLD WORD, LISTEN in each (Manual.tsx). Every word DRAFT.
 import { createAudioPlayer, setAudioModeAsync, useAudioPlayerStatus, type AudioPlayer } from "expo-audio";
 import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
@@ -23,7 +25,8 @@ import { ListenControl } from "../screens/shared/Index";
 import { Action, Small, useInk } from "./ui";
 import { barHeight, darkPaper, PLAIN, useBookLook, wash } from "./bookLook";   // C-309
 
-export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook";
+export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook"
+  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word";
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
 const BOOKS: Record<Recorded, { file: string; title: string; reads: string; sealed?: boolean }> = {
   guide:    { file: "guide", title: "The Programmer's Guide to the Human Mind", reads: "Read aloud in reason's voice, even and unhurried." },   // DRAFT
@@ -32,6 +35,13 @@ const BOOKS: Record<Recorded, { file: string; title: string; reads: string; seal
   eudaimon: { file: "the-vault-audio-2", title: "The Eudaimon Layer", reads: "Read aloud lighter and slower, as the dawn would.", sealed: true },  // DRAFT
   unity:    { file: "the-vault-audio-3", title: "The Unity Book", reads: "Read aloud in one voice, leaned neither way.", sealed: true },  // DRAFT
   textbook: { file: "principles-of-mind", title: "Principles of Mind", reads: "Read aloud by a professor, grave and warm." },             // DRAFT
+  // T-543: each picked by the user from three samples, 2026-11-10
+  quick:     { file: "quick-start", title: "Quick Start", reads: "Read aloud slowly and kindly, with time between." },                     // DRAFT
+  manual:    { file: "the-players-manual", title: "The Player's Manual", reads: "Read aloud like the voice on the box, clear and keen." },   // DRAFT
+  companion: { file: "the-companion", title: "The Companion", reads: "Read aloud as a friend would, warm and encouraging." },               // DRAFT
+  social:    { file: "playing-together", title: "Playing Together", reads: "Read aloud by two voices speaking as one." },                  // DRAFT
+  tiiny:     { file: "a-bigger-mind", title: "A Bigger Mind", reads: "Read aloud calm and exact, a little like a machine." },             // DRAFT
+  word:      { file: "the-old-word", title: "The Old Word", reads: "Read aloud by an elder, slowly, as an old story is." },                // DRAFT
 };
 type Chapter = { kind: "section" | "entry"; title: string; start: number; end: number };
 type Marks = { duration: number; chapters: Chapter[]; sources?: string };   // sources: which reading (bookaudio.py)

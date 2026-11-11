@@ -15,12 +15,12 @@ import thirteenJson from "../data/thirteen.json" with { type: "json" };
 // C-239: and SPELLCRAFT, THE HERMETIC LAYER's face of the same twenty-two -- its own deck, drawn once that book is held.
 // C-272/C-273 (the user, 2026-11-01): THE HERMETIC LAYER's two decks are ABOVE and BELOW, as THE SUBTLE LAYER's are REASON
 // and INSTINCT; deck "hermetic" draws them. "spellcraft" is the old single face, kept for the watches until they move.
-export type Side = "reason" | "instinct" | "above" | "below" | "spellcraft";
-export type Deck = "subtle" | "spellcraft" | "hermetic";
-export type Pick = "reason" | "instinct" | "above" | "below" | "both";   // one of the book's two decks, or both as one
+export type Side = "reason" | "instinct" | "above" | "below" | "spellcraft" | "dawn";
+export type Deck = "subtle" | "spellcraft" | "hermetic" | "dawn";   // C-313: THE EUDAIMON LAYER's, its cards' dawn faces
+export type Pick = "reason" | "instinct" | "above" | "below" | "dawn" | "both";   // one of the book's two decks, or both as one
 type Face = { keyword: string; phrase: string; prophecy?: string; species: string };
 const DECK = (arcanaJson as unknown as { cards: ({ n: number; roman: string } & Record<Side, Face>)[] }).cards;
-const SIDES: Record<Deck, Side[]> = { subtle: ["reason", "instinct"], hermetic: ["above", "below"], spellcraft: ["spellcraft"] };
+const SIDES: Record<Deck, Side[]> = { subtle: ["reason", "instinct"], hermetic: ["above", "below"], spellcraft: ["spellcraft"], dawn: ["dawn"] };
 const THIRTEEN = (thirteenJson as unknown as { cards: { n: string; keyword: string; phrase: string; species: string }[] }).cards;
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national: number }>;
 const BY_NAME = new Map(Object.entries(SPECIES).map(([id, s]) => [s.name, Number(id)]));
@@ -41,7 +41,8 @@ export const symbolForm = (keyword: string) => {
   const c = keyword.trim().charAt(0).toLowerCase();
   return /[a-z]/.test(c) ? c : c === "!" ? "exclamation_mark" : "question_mark";
 };
-const artOf = (name: string, species: number, keyword: string) =>
+// C-313: a dawn face's daemons are to be chosen (the user, 2026-11-10): none yet, and the face's rising sun stands there
+const artOf = (name: string, species: number, keyword: string) => !name ? "" :
   name === "SYMBOL" ? `/art/symbol/${symbolForm(keyword)}.png` : `/art/species/${species}.png`;
 
 export function cardOf(n: number, side: Side, shiny: boolean): Card {
@@ -56,8 +57,8 @@ const hash = (s: string) => { let h = 2166136261; for (const c of s) h = Math.im
 // lane so the GBA shows the same card: the hermetic deck keeps SPELLCRAFT's seed, and the bit that gives INSTINCT gives
 // ABOVE -- above pairs with instinct, below with reason. The day's card ignores the reader's choice of deck.)
 export function cardOfDay(date: string, who = "", deck: Deck = "subtle"): Card {
-  const h = hash(`${date}|${who}|${deck === "subtle" ? "arcana" : "spellcraft"}`), odd = (h >>> 8) % 2 === 1;
-  const side: Side = deck === "spellcraft" ? "spellcraft" : deck === "hermetic" ? (odd ? "above" : "below") : odd ? "instinct" : "reason";
+  const h = hash(`${date}|${who}|${deck === "subtle" ? "arcana" : deck === "dawn" ? "dawn" : "spellcraft"}`), odd = (h >>> 8) % 2 === 1;
+  const side: Side = deck === "dawn" ? "dawn" : deck === "spellcraft" ? "spellcraft" : deck === "hermetic" ? (odd ? "above" : "below") : odd ? "instinct" : "reason";
   return cardOf(h % DECK.length, side, (h >>> 12) % SHINY_ONE_IN === 0);
 }
 // C-240: Halloween's card, with THE HERMETIC LAYER held -- one of the Book of Thirteen's spells (three and a half among them)

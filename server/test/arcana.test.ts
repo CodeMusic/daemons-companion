@@ -143,3 +143,18 @@ describe("C-315: SYMBOL on a card", () => {
     expect(existsSync(join(ART, "symbol.png"))).toBe(true);   // the INDEX's, the A form
   });
 });
+
+describe("C-313: the dawn readings", () => {
+  it("gives every card a dawn face, dealt from THE EUDAIMON LAYER's deck, on its gold face, its daemon still to be chosen", () => {
+    for (let n = 0; n < deckSize(); n++) {
+      const c = cardOf(n, "dawn", false);
+      expect(c.keyword && c.phrase && c.prophecy, `card ${n}`).toBeTruthy();
+      expect(c.art).toBe("");                                        // the rising sun stands where the daemon will
+      expect(c.face).toBe("/art/arcana/dawn.png");
+    }
+    expect(draw(3, seeded(7), "dawn").every((c) => c.side === "dawn")).toBe(true);
+    expect(cardOfDay("2026-11-11", "ROVER1", "dawn").side).toBe("dawn");
+    for (const f of ["arcana_dawn.png", "arcana_dawn_shiny.png"]) expect(existsSync(join(ART, f)), f).toBe(true);
+    expect(cardOf(0, "dawn", false).keyword).toBe("FIRST LIGHT");    // the user's pick, B
+  });
+});

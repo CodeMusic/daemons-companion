@@ -15,7 +15,7 @@ import { api } from "../../platform/net";
 import { previewing } from "../../state/preview";
 import { Art, Small } from "../../ui/ui";
 
-export type Card = { n: number; roman: string; side: "reason" | "instinct" | "above" | "below" | "spellcraft"; keyword: string; phrase: string;
+export type Card = { n: number; roman: string; side: "reason" | "instinct" | "above" | "below" | "spellcraft" | "dawn"; keyword: string; phrase: string;
                      prophecy?: string; name: string; shiny: boolean; art: string; face: string; at?: string };
 const CS = { page: "#2c1c32", edge: "#4a3352", ink: "#f0e6f2", faint: "#9a86a0", pink: "#e07ad0", deep: "#3a1838" };
 const C = CS;
@@ -32,7 +32,7 @@ export function ArcanaCard({ card, width }: { card: Card; width: number }) {
   return (
     <YStack width={width} height={h} position="relative" aria-label={`${card.keyword}: ${card.phrase}`}>
       <YStack position="absolute" top={0} left={0}><Art path={card.face} size={width} height={h} /></YStack>
-      <YStack position="absolute" top={186 * k - sprite / 2} left={width / 2 - sprite / 2}><Art path={card.art} size={sprite} /></YStack>
+      {card.art ? <YStack position="absolute" top={186 * k - sprite / 2} left={width / 2 - sprite / 2}><Art path={card.art} size={sprite} /></YStack> : null}{/* C-313: a dawn face's daemons are to be chosen; its sun stands there */}
       {at(10, <Text allowFontScaling={false} {...mono} fontSize={11 * k} color={ink}>{card.roman}</Text>, "roman")}
       {at(32, <Text allowFontScaling={false} {...mono} letterSpacing={1} fontWeight="800" fontSize={(card.keyword.length <= 8 ? 24 : card.keyword.length <= 10 ? 20 : 18) * k}
                     color={ink} {...edge}>{card.keyword}</Text>, "keyword")}
@@ -130,16 +130,17 @@ function Landing({ children }: { children: React.ReactNode }) {
   );
 }
 
-type Book = "subtle" | "hermetic" | "unity";   // C-299: the mended book deals the hermetic deck, Both as One only
+type Book = "subtle" | "hermetic" | "unity" | "eudaimon";   // C-313: the dawn half deals its own deck, the cards' dawn faces   // C-299: the mended book deals the hermetic deck, Both as One only
 type Mode = "day" | "one" | "ppf" | "mbs";
-type Pick = "reason" | "instinct" | "above" | "below" | "both";
+type Pick = "reason" | "instinct" | "above" | "below" | "dawn" | "both";
 const MODES: { k: Mode; label: string }[] = [
   { k: "day", label: "THE CARD OF THE DAY" }, { k: "one", label: "A SINGLE DRAW" },
   { k: "ppf", label: "PAST · PRESENT · FUTURE" }, { k: "mbs", label: "MIND · BODY · SPIRIT" },   // DRAFT
 ];
 const PLACES: Record<"one" | "ppf" | "mbs", string[]> = { one: [""], ppf: ["PAST", "PRESENT", "FUTURE"], mbs: ["MIND", "BODY", "SPIRIT"] };
 const SPELL = { page: "#1d2a24", edge: "#1F8F5F", pink: "#50C878" };
-const MENDED = { page: "#211C26", edge: "#5C4766", pink: "#E8A93A" };   // C-299: the mended book's deck, the dawn's gold on the night's plum
+const MENDED = { page: "#211C26", edge: "#5C4766", pink: "#E8A93A" };
+const DAWNING = { page: "#1F2240", edge: "#C98A1E", pink: "#E8A93A", ink: "#FBF3E4", faint: "#C9B48E", deep: "#1A1E3E" };   // C-313: the night's last blue, the dawn's gold   // C-299: the mended book's deck, the dawn's gold on the night's plum
 
 // which deck: THE SUBTLE LAYER's names one under another; THE HERMETIC LAYER's read as one sentence, only the names
 // bold -- "as The Deck Above, so The Deck Below, or Both as One" -- and in the thin half-hour Within and Without (the user)
@@ -153,6 +154,7 @@ function DeckChoice({ book, pick, setPick, colour }: { book: Book; pick: Pick; s
   if (book === "subtle") return (
     <YStack gap={2}>{[name("reason", "The Deck of Reason"), name("instinct", "The Deck of Instinct"), name("both", "A Combined Deck")]}</YStack>
   );
+  if (book === "eudaimon") return <Text>{name("dawn", "The Deck of Dawn")}</Text>;   // C-313: one deck, the dawn faces. DRAFT
   if (book === "unity") return (                                      // C-299 (vision 4.40): "the mended book deals Both as One only"
     <Text>{name("both", "Both as One")}</Text>
   );
@@ -170,15 +172,15 @@ const sideName = (side: Card["side"]) =>
   side === "above" ? (thinNow() ? "WITHIN" : "ABOVE") : side === "below" ? (thinNow() ? "WITHOUT" : "BELOW") : side.toUpperCase();
 
 export function Cards({ book = "subtle" }: { book?: Book }) {
-  const C = book === "hermetic" ? { ...CS, ...SPELL } : book === "unity" ? { ...CS, ...MENDED } : CS;
-  const deck = book === "subtle" ? "subtle" : "hermetic";
+  const C = book === "hermetic" ? { ...CS, ...SPELL } : book === "unity" ? { ...CS, ...MENDED } : book === "eudaimon" ? { ...CS, ...DAWNING } : CS;
+  const deck = book === "subtle" ? "subtle" : book === "eudaimon" ? "dawn" : "hermetic";
   const pv = previewing() ? "&preview=1" : "";                          // the preview: both decks, read only
   const [day, setDay] = useState<Card | null>(null);
   const [halloween, setHalloween] = useState(false);
   const [held, setHeld] = useState(false);
   const [open, setOpen] = useState(false);                            // folded under the cover until the deck is touched
   const [mode, setMode] = useState<Mode>("day");
-  const [pick, setPick] = useState<Pick>("both");
+  const [pick, setPick] = useState<Pick>(book === "eudaimon" ? "dawn" : "both");
   const [dayTurned, setDayTurned] = useState(false);
   const [hand, setHand] = useState<Card[]>([]);                       // this round's cards, in the order they come out
   const [placed, setPlaced] = useState(0);

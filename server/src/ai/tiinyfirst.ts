@@ -78,9 +78,10 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     // C-319 next: stopped from THE MIND AT WORK -- no other mind is asked; job.by names each mind as it is tried
     const halt = () => { if (job?.signal?.aborted) throw new Error(STOPPED); };
     // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed
-    if (t) try { job?.by?.("the Tiiny"); return await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job); } catch { halt(); }
+    const fell = (e: unknown) => { halt(); job?.fell?.((e as Error)?.message?.slice(0, 80) || "failed"); };
+    if (t) try { job?.by?.("the Tiiny"); return await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job); } catch (e) { fell(e); }
     for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
-      try { job?.by?.(n.e.name); return await chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job); } catch { halt(); }
+      try { job?.by?.(n.e.name); return await chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job); } catch (e) { fell(e); }
     halt(); job?.by?.("the house's module");
     return was.write(system, user, maxTokens, job);
   };

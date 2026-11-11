@@ -16,7 +16,8 @@ import { api } from "../../platform/net";
 import { me, whoAmI } from "../../state/me";
 import { Action, Card, Eyebrow, Small } from "../../ui/ui";
 
-type View = { tasks: Task[]; users: string[]; minds: { name: string; ok: boolean }[]; load: { running: number; waiting: number }; at: string };
+type Plan = { id: string; kind: string; title: string; said: string; on: boolean; last: string | null; next: string };
+type View = { tasks: Task[]; users: string[]; minds: { name: string; ok: boolean }[]; load: { running: number; waiting: number }; at: string; plans?: Plan[] };
 const KIND: Record<string, { colour: string; said: string }> = {                    // DRAFT
   talk: { colour: "#5a7fa6", said: "TALK" }, guide: { colour: "#00a8d6", said: "THE GUIDE" },
   dream: { colour: "#8E3F80", said: "DREAMS" }, whatsnew: { colour: "#d9a74a", said: "WHAT'S NEW" },
@@ -28,7 +29,23 @@ const kb = (n?: number) => (n === undefined ? "?" : n < 1000 ? `${n} chars` : `$
 const sizeSaid = (t: Task) => [t.size ? `${kb(t.size.in)} in, ${t.size.out !== undefined ? kb(t.size.out) : "nothing yet"} out` : "",
                                t.tokens ? `${t.tokens.in ?? "?"} → ${t.tokens.out ?? "?"} tokens` : ""].filter(Boolean).join(" · ");
 const kindOf = (k: string) => KIND[k] ?? { colour: "#7a7f8a", said: k.toUpperCase() };
-const STATE_SAID: Record<Task["state"], string> = { waiting: "waiting", thinking: "thinking", done: "done", failed: "failed", stopped: "stopped" };
+const STATE_SAID: Record<Task["state"], string> = { waiting: "waiting", thinking: "thinking", done: "done", failed: "failed", stopped: "stopped", scheduled: "planned" };
+// C-319 later: when a plan comes next, in words -- DRAFT
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const whenSaid = (iso: string, now: number) => {
+  const d = new Date(iso), s = Math.round((d.getTime() - now) / 1000);
+  const clock = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return `${DAYS[d.getDay()]} ${clock} (in ${s < 3600 ? `${Math.max(1, Math.round(s / 60))}m` : s < 86400 ? `${Math.round(s / 3600)}h` : `${Math.round(s / 86400)}d`})`;
+};
+// C-319 later: the minds a task went through, with why it moved on
+const hopsSaid = (t: Task) => (t.hops && t.hops.length > 1 ? t.hops.map((h) => `${h.mind}${h.error ? ` ✕ (${h.error})` : ""}`).join(" → ") : "");
+// a list with each task's parts under it (a tree), parts whose parent is not in the list left at the top level
+const treed = (ts: Task[]) => {
+  const ids = new Set(ts.map((t) => t.id)), out: { t: Task; depth: number }[] = [];
+  const walk = (t: Task, depth: number) => { out.push({ t, depth }); ts.filter((c) => c.parent === t.id).sort((x, y) => (x.started ?? x.at).localeCompare(y.started ?? y.at)).forEach((c) => walk(c, depth + 1)); };   // parts in the order they ran
+  ts.filter((t) => !t.parent || !ids.has(t.parent)).forEach((t) => walk(t, 0));
+  return out;
+};
 const LIVE = (t: Task) => t.state === "waiting" || t.state === "thinking";
 const WINDOWS = [["hour", 3600e3, "AN HOUR"], ["day", 86400e3, "A DAY"], ["week", 7 * 86400e3, "A WEEK"]] as const;
 const ago = (iso: string, now: number) => {
@@ -68,6 +85,11 @@ function Web({ tasks, minds, devices, w, tick, pick, queued }: { tasks: Task[]; 
       {[...mindAt.values()].map((p, i) => <YStack key={`h${i}`}>{line({ x: cx, y: cy }, p, "#3a4466", 0.9, 1)}</YStack>)}
       {recent.map((t) => { const { a, b } = ends(t); return <YStack key={`r${t.id}`}>{line(a, b, t.state === "failed" ? "#e5534b" : kindOf(t.kind).colour, 0.28)}</YStack>; })}
       {live.map((t) => { const { a, b } = ends(t); return <YStack key={`l${t.id}`}>{line(a, b, kindOf(t.kind).colour, 0.75, 2)}</YStack>; })}
+      {/* C-319 later: a hand-off -- the line from the mind that failed or was slow to the one that took it on */}
+      {tasks.filter((t) => (t.hops?.length ?? 0) > 1).slice(0, 10).flatMap((t) => t.hops!.slice(1).map((h, i) => {
+        const a = mindAt.get(t.hops![i].mind), b = mindAt.get(h.mind);
+        return a && b ? <YStack key={`h${t.id}${i}`}>{line(a, b, "#e08a3c", LIVE(t) ? 0.9 : 0.45, 2)}</YStack> : null;
+      }))}
       {/* the hub */}
       <YStack position="absolute" left={cx - 22} top={cy - 22} width={44} height={44} borderRadius={22} borderWidth={2} borderColor="#d9a74a"
               backgroundColor="#1d2436" alignItems="center" justifyContent="center">
@@ -100,9 +122,9 @@ function Web({ tasks, minds, devices, w, tick, pick, queued }: { tasks: Task[]; 
 }
 
 // THE RIVER: a lane per mind, the window's time across, NOW near the right and LATER after it
-function River({ tasks, minds, span, w, now, pick, picked }: { tasks: Task[]; minds: string[]; span: number; w: number; now: number;
-                                                               pick: (t: Task) => void; picked: string | null }) {
-  const LABEL = 76, LATER = 34, plot = Math.max(60, w - LABEL - LATER), from = now - span;
+function River({ tasks, minds, span, w, now, pick, picked, later = [] }: { tasks: Task[]; minds: string[]; span: number; w: number; now: number;
+                                                               pick: (t: Task) => void; picked: string | null; later?: Task[] }) {
+  const LABEL = 76, LATER = later.length ? 48 : 34, plot = Math.max(60, w - LABEL - LATER), from = now - span;
   const xOf = (iso: string) => LABEL + Math.max(0, Math.min(1, (Date.parse(iso) - from) / span)) * plot;
   const lanes = minds.length ? minds : ["(no mind)"];
   return (
@@ -113,10 +135,17 @@ function River({ tasks, minds, span, w, now, pick, picked }: { tasks: Task[]; mi
           <YStack position="absolute" left={0} top={0} width={w} height={22}>
             {tasks.filter((t) => (t.mind ?? "(no mind)") === m && Date.parse(t.ended ?? new Date(now).toISOString()) >= from).map((t) => {
               const a = xOf(t.started ?? t.at), b = LIVE(t) ? LABEL + plot : xOf(t.ended ?? t.at);
-              return <YStack key={t.id} position="absolute" left={a} top={5} width={Math.max(4, b - a)} height={12} borderRadius={3}
+              return <YStack key={t.id} position="absolute" left={a} top={t.parent ? 8 : 5} width={Math.max(4, b - a)} height={t.parent ? 6 : 12} borderRadius={3}
                              backgroundColor={kindOf(t.kind).colour} opacity={LIVE(t) ? 0.95 : t.state === "done" ? 0.7 : 0.35}
                              borderWidth={picked === t.id ? 2 : t.state === "failed" ? 1.5 : 0} borderColor={picked === t.id ? "$color12" : "#e5534b"}
                              role="button" cursor="pointer" aria-label={t.title} onPress={() => pick(t)} />;
+            })}
+            {/* C-319 later: a plan's next time, in LATER -- as far along as it is within one more window, at the edge if beyond */}
+            {later.filter((t) => (t.mind ?? "(no mind)") === m || (!lanes.includes(t.mind ?? "") && m === lanes[0])).map((t) => {
+              const f = Math.max(0, Math.min(1, (Date.parse(t.due ?? t.at) - now) / span));
+              return <YStack key={t.id} position="absolute" left={LABEL + plot + 4 + f * (LATER - 14)} top={5} width={10} height={12} borderRadius={3}
+                             borderWidth={1.5} borderStyle="dashed" borderColor={kindOf(t.kind).colour} role="button" cursor="pointer"
+                             aria-label={t.title} onPress={() => pick(t)} />;
             })}
           </YStack>
         </XStack>
@@ -158,10 +187,11 @@ export function MindAtWork({ ink }: { ink: string }) {
   useEffect(() => { if (!anyLive) return; const id = setInterval(() => setTick((n) => n + 1), 100); return () => clearInterval(id); }, [anyLive]);
   const now = Date.now(), span = WINDOWS.find((x) => x[0] === win)![1];
   const shown = useMemo(() => (v?.tasks ?? []).filter((t) => who === "all" || (who === "mine" ? t.user === mine : t.user === who)), [v, who, mine]);
-  const inWindow = shown.filter((t) => LIVE(t) || Date.parse(t.ended ?? t.at) >= now - span);
+  const inWindow = shown.filter((t) => t.state !== "scheduled" && (LIVE(t) || Date.parse(t.ended ?? t.at) >= now - span));
+  const later = shown.filter((t) => t.state === "scheduled");
   const minds = useMemo(() => {
     const known = new Map((v?.minds ?? []).map((m) => [m.name, m.ok as boolean | null]));
-    for (const t of inWindow) if (t.mind && !known.has(t.mind)) known.set(t.mind, null);
+    for (const t of [...inWindow, ...later]) if (t.mind && !known.has(t.mind)) known.set(t.mind, null);
     return [...known].map(([name, ok]) => ({ name, ok }));
   }, [v, inWindow.length]);
   const devices = useMemo(() => [...new Set(inWindow.map((t) => t.device))].slice(0, 10), [inWindow.length]);
@@ -170,7 +200,15 @@ export function MindAtWork({ ink }: { ink: string }) {
   const act = async (t: Task, a: "stop" | "retry" | "forget") => {
     try { await api("/api/mind/tasks", { id: t.id, act: a }); setNote(""); read(); } catch (e) { setNote((e as Error).message); }
   };
+  const plan = async (id: string, o: { on?: boolean; now?: true }) => {   // C-319 later
+    try { await api("/api/mind/tasks", { act: "plan", plan: id, ...o }); setNote(""); read(); } catch (e) { setNote((e as Error).message); }
+  };
   const sel = v.tasks.find((t) => t.id === picked) ?? null;
+  const parts = sel ? v.tasks.filter((t) => t.parent === sel.id) : [];
+  const sum = (f: (t: Task) => number | undefined) => parts.reduce((n, t) => n + (f(t) ?? 0), 0) || undefined;
+  const partsSaid = parts.length ? sizeSaid({ ...sel!, size: { in: sum((t) => t.size?.in), out: sum((t) => t.size?.out) },
+                                                     tokens: sum((t) => t.tokens?.in) || sum((t) => t.tokens?.out) ? { in: sum((t) => t.tokens?.in), out: sum((t) => t.tokens?.out) } : undefined }) : "";
+  const parentOf = sel?.parent ? v.tasks.find((t) => t.id === sel.parent) : null;
   const live = inWindow.filter(LIVE), done = inWindow.filter((t) => !LIVE(t));
   const others = v.users.filter((u) => u !== mine);
   return (
@@ -190,7 +228,7 @@ export function MindAtWork({ ink }: { ink: string }) {
         <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10" flex={1}>THE RIVER</Text>
         {WINDOWS.map(([k, , said]) => <Pill key={k} label={said} on={win === k} onPress={() => setWin(k)} />)}
       </XStack>
-      <River tasks={inWindow} minds={minds.map((m) => m.name)} span={span} w={w} now={now} pick={(t) => setPicked(t.id)} picked={picked} />
+      <River tasks={inWindow} minds={minds.map((m) => m.name)} span={span} w={w} now={now} pick={(t) => setPicked(t.id)} picked={picked} later={later} />
       <XStack gap={10} flexWrap="wrap" marginTop={4}>
         {Object.entries(KIND).map(([k, x]) => (
           <XStack key={k} gap={4} alignItems="center"><YStack width={10} height={10} borderRadius={2} backgroundColor={x.colour} />
@@ -202,11 +240,16 @@ export function MindAtWork({ ink }: { ink: string }) {
           <Text fontSize={14} fontWeight="700" color="$color12">{sel.title}</Text>
           <Small color="$color10">{`${kindOf(sel.kind).said} · ${STATE_SAID[sel.state]}${sel.ms !== undefined ? ` in ${took(sel.ms)}` : ""} · ${ago(sel.at, now)}`}</Small>
           <Small color="$color10">{`for ${sel.user}, from ${sel.device}${sel.mind ? `, on ${sel.mind}` : ""}${sel.source === "trace" ? " (reported by the phone)" : sel.source === "queue" ? " (the hub's talk queue)" : ""}`}</Small>
+          {sel.state === "scheduled" && sel.due ? <Small color="$color10">{`next: ${whenSaid(sel.due, now)}`}</Small> : null}
           {sizeSaid(sel) ? <Small color="$color10">{sizeSaid(sel)}</Small> : null}
+          {hopsSaid(sel) ? <Small color="#e08a3c">{`handed on: ${hopsSaid(sel)}`}</Small> : null}
+          {parts.length ? <Small color="$color10">{`${parts.length} parts${partsSaid ? `: ${partsSaid}` : ""}`}</Small> : null}
+          {parentOf ? <YStack role="button" cursor="pointer" onPress={() => setPicked(parentOf.id)}><Small color="$color10">{`a part of: ${parentOf.title}`}</Small></YStack> : null}
           {sel.error ? <Small color="#e5534b">{sel.error}</Small> : null}
           <XStack gap={6} marginTop={4} flexWrap="wrap">
             {sel.can?.stop && LIVE(sel) ? <Action label="Stop" ink={ink} onPress={() => act(sel, "stop")} /> : null}
             {sel.can?.retry && (sel.state === "failed" || sel.state === "stopped") ? <Action label="Try again" ink={ink} onPress={() => act(sel, "retry")} /> : null}
+            {sel.state === "scheduled" && sel.plan ? <Action label="Do it now" ink={ink} onPress={() => { plan(sel.plan!, { now: true }); setPicked(null); }} /> : null}
             {sel.source === "ledger" && !LIVE(sel) ? <Action label="Forget" ink={ink} onPress={() => { act(sel, "forget"); setPicked(null); }} /> : null}
             <Action label="Close" ink={ink} onPress={() => setPicked(null)} />
           </XStack>
@@ -215,15 +258,32 @@ export function MindAtWork({ ink }: { ink: string }) {
       {[["NOW", live], ["BEFORE", done.slice(0, 8)]].map(([head, list]) => (list as Task[]).length ? (
         <YStack key={head as string} marginTop={10} gap={4}>
           <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10">{head as string}</Text>
-          {(list as Task[]).map((t) => (
-            <XStack key={t.id} gap={8} alignItems="center" role="button" cursor="pointer" onPress={() => setPicked(t.id)}>
+          {treed(list as Task[]).map(({ t, depth }) => (
+            <XStack key={t.id} gap={8} alignItems="center" role="button" cursor="pointer" onPress={() => setPicked(t.id)} paddingLeft={depth * 16}>
               <YStack width={8} height={8} borderRadius={4} backgroundColor={t.state === "failed" ? "#e5534b" : kindOf(t.kind).colour} />
-              <Text flex={1} fontSize={12} color="$color12" numberOfLines={1}>{t.title}</Text>
+              <Text flex={1} fontSize={depth ? 11 : 12} color={depth ? "$color11" : "$color12"} numberOfLines={1}>{`${depth ? "└ " : ""}${t.title}${hopsSaid(t) ? " ⇢" : ""}`}</Text>
               <Text fontSize={10} color="$color10">{LIVE(t) ? STATE_SAID[t.state] : `${took(t.ms)} · ${ago(t.ended ?? t.at, now)}`}</Text>
             </XStack>
           ))}
         </YStack>
       ) : null)}
+      {/* C-319 later: LATER -- the hub's plans, each with its next time, on or off, or done now */}
+      {v.plans?.length ? (
+        <YStack marginTop={10} gap={6}>
+          <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10">LATER</Text>
+          {v.plans.map((p) => (
+            <YStack key={p.id} gap={2}>
+              <XStack gap={8} alignItems="center">
+                <YStack width={8} height={8} borderRadius={2} borderWidth={1.5} borderStyle="dashed" borderColor={kindOf(p.kind).colour} />
+                <Text flex={1} fontSize={12} color={p.on ? "$color12" : "$color9"} numberOfLines={1}>{p.title}</Text>
+                <Pill label={p.on ? "ON" : "OFF"} on={p.on} onPress={() => plan(p.id, { on: !p.on })} />
+                <Pill label="NOW" on={false} onPress={() => plan(p.id, { now: true })} />
+              </XStack>
+              <Small color="$color10">{`${p.said} ${p.on ? `Next: ${whenSaid(p.next, now)}.` : "Off."}${p.last ? ` Last: ${ago(p.last, now)}.` : ""}`}</Small>
+            </YStack>
+          ))}
+        </YStack>
+      ) : null}
       <XStack gap={6} marginTop={8}>
         <Action label="Clear finished" ink={ink} onPress={async () => {
           try { await api("/api/mind/tasks", { act: "clear", ...(who === "all" ? {} : { user: who === "mine" ? mine : who }) }); read(); } catch (e) { setNote((e as Error).message); }

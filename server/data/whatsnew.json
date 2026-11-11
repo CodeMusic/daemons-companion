@@ -1,30 +1,31 @@
 {
- "latest": 964,
+ "latest": 965,
  "builds": [
   {
-   "build": 964,
-   "commit": "5c7826f",
+   "build": 965,
+   "commit": "4093afd",
    "date": "2026-11-10",
    "sections": [
     {
-     "ticket": "C-318",
-     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "ticket": "C-320",
+     "title": "THE LIBRARY as a bookcase: shelves by kind, every book a cover",
      "lines": [
-      "WHAT'S NEW drawn from history, spans told by the house's mind; C-319 THE MIND AT WORK — the hub's ledger of tasks, its web and river, managed (DRAFT)"
+      "The LIBRARY as an antique bookcase — a shelf per kind (FOUND IN THE GAME, MANUALS, HISTORY AND STUDY, YOUR OWN PAGES), each book standing face-out by its cover",
+      "Built: THE COMPANION on the MANUALS shelf with its cover; the house computer's name out of THE TIINY's settings; the wiki links the book"
      ]
     },
     {
      "ticket": null,
      "title": "THE GAME",
      "lines": [
-      "Knows the game's ROM release v11.345.11 (T-542 the road gates)"
+      "Knows the game's ROM release v11.345.12 (T-542 the town pieces)"
      ]
     }
    ]
   },
   {
    "build": 963,
-   "commit": "894d08f",
+   "commit": "7dde81d",
    "date": "2026-11-10",
    "sections": [
     {
@@ -65,12 +66,19 @@
      ]
     },
     {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "WHAT'S NEW drawn from history, spans told by the house's mind; C-319 THE MIND AT WORK — the hub's ledger of tasks, its web and river, managed (DRAFT)",
+      "Whatsnew.json with build 964's notes"
+     ]
+    },
+    {
      "ticket": null,
      "title": "THE GAME",
      "lines": [
-      "Knows the game's ROM release v11.345.8 (T-538 batches 1-2, T-539)",
-      "Knows the game's ROM release v11.345.9 (T-437 SCREEN, T-538 batch 3)",
-      "Knows the game's ROM release v11.345.10 (T-541 the museum)"
+      "Knows the game's ROM release v11.345.11 (T-542 the road gates)",
+      "and 3 earlier game releases known"
      ]
     },
     {

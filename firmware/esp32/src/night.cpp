@@ -133,7 +133,7 @@ void nightWakeDaemon() {
 // seconds; a second tap in them wakes the daemon and the night ends; otherwise it goes dark and the night goes on. The
 // wrist raised or shaken does nothing while it sleeps. WAKE, the first three minutes on the move, or sixteen hours end it.
 static uint32_t glanceUntil = 0;
-bool nightQuiet() { return board.kind == BoardKind::TWatchUltra && ((on && tucked) || sleepSoundsPlaying()); }   // C-334: and while SLEEP SOUNDS play
+bool nightQuiet() { return powerWatch() && ((on && tucked) || sleepSoundsPlaying()); }   // C-334: and while SLEEP SOUNDS play; C-347 the S3 too
 static void glanceShow() {
   panelRest(false);
   screen = HOME; menuOpen = false; page = homePage();

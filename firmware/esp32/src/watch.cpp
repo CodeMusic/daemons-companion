@@ -69,6 +69,8 @@ static SensorPCF85063 rtc;
 static SensorPCF8563 rtc;
 #endif
 static SensorBMA423 accel;
+static bool haveAccelS3 = false;                      // C-348: motion.cpp's, once begun
+SensorBMA423 *watchAccel() { return haveAccelS3 ? &accel : nullptr; }
 #if defined(BOARD_TDISPLAY_PRO) || defined(BOARD_TDISPLAY_AMOLED)
 // C-135: the AMOLED's touch version has a CST816 (0x15), read by the same driver. C-105: the T-Display-S3 Pro's CST226SE (0x5A, RST 13, INT 21), set up as LilyGO's CapacitiveTouch example sets it for
 // the screen turned to landscape (rotation 1): its coordinates swapped and Y mirrored, so a point is the screen's own.
@@ -159,6 +161,17 @@ void watchPower() {
   pmu.setALDO3Voltage(3300); pmu.enableALDO3();   // the screen and the touch
   pmu.setALDO4Voltage(3300); pmu.enableALDO4();   // the LoRa radio (C-72)
   pmu.setBLDO2Voltage(3300); pmu.enableBLDO2();   // the vibration motor
+#if defined(BOARD_TWATCH_S3)
+  // C-347: what the S3 does not use, off, as LilyGO's own LilyGoLib (beginPower) turns off for it -- DC2, DC4, DC5, the
+  // CPUSLDO and DLDO2 ("No use"); each draws a little and its cell is 400 mAh. Not DC3 (the first S3s run from it), BLDO1
+  // (a GPS on some backs) or DLDO1 (the speaker). Its TS pin has no thermistor on it, so its measuring is off ("otherwise
+  // it will cause abnormal charging"), and it charges at LilyGO's 125 mA (about 0.3 C), ending at 25.
+  pmu.disableDC2(); pmu.disableDC4(); pmu.disableDC5(); pmu.disableCPUSLDO(); pmu.disableDLDO2();
+  pmu.disableTSPinMeasure();
+  pmu.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
+  pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_125MA);
+  pmu.setChargerTerminationCurr(XPOWERS_AXP2101_CHG_ITERM_25MA);
+#endif
 #endif
   pmu.enableBattDetection(); pmu.enableBattVoltageMeasure(); pmu.enableVbusVoltageMeasure();
   pmu.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
@@ -167,6 +180,14 @@ void watchPower() {
   if (PMU_IRQ >= 0) { pinMode(PMU_IRQ, INPUT_PULLUP); attachInterrupt(PMU_IRQ, [] { pmuIrq = true; }, FALLING); }
   delay(20);
 }
+
+#if defined(BOARD_TWATCH_S3) && !defined(BOARD_TWATCH_ULTRA)
+// C-347: the backlight's own rail (ALDO2), off while the screen rests, as LilyGO's setBrightness(0) turns it off
+void watchBacklightRail(bool on) {
+  if (!havePmu) return;
+  if (on) pmu.enableALDO2(); else pmu.disableALDO2();
+}
+#endif
 
 #if defined(BOARD_TWATCH_ULTRA)
 // C-174: the GNSS's rail (BLDO1), on only while gps.cpp wants a fix; its backup (VRTC) is always on
@@ -245,6 +266,9 @@ void watchBegin() {
 #else
   haveAccel = accel.begin(Wire, BMA423_I2C_ADDR_SECONDARY, board.sda, board.scl);
   if (haveAccel) { accel.configAccelerometer(); accel.enableAccelerometer(); accel.enablePedometer(); }
+#if defined(BOARD_TWATCH_S3)
+  haveAccelS3 = haveAccel; motionBegin();             // C-348: its activity, the wrist and a double tap (motion.cpp)
+#endif
   Wire1.begin(TOUCH_SDA, TOUCH_SCL);
   haveTouch = touchPanel.begin(touchWire, FT6X36_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL);
 #endif
@@ -638,7 +662,7 @@ static void crownLoop(uint32_t now) {
   else if (longPress && !asleep) sleepNow();
 }
 
-#if defined(BOARD_TWATCH_ULTRA)
+#if defined(BOARD_TWATCH_S3)
 // C-201: what the motion sensor noticed -- the wrist lifted wakes the screen; a shake wakes the daemon (or, awake, it
 // hops: glad of it); a double tap opens CARE; and the daemon answers a change in how you move (once a minute at most)
 static void motionLoop(uint32_t now) {
@@ -666,7 +690,7 @@ static void motionLoop(uint32_t now) {
 void watchLoop(uint32_t now) {
   touchLoop(now);
   crownLoop(now);
-#if defined(BOARD_TWATCH_ULTRA)
+#if defined(BOARD_TWATCH_S3)                                    // C-348: the S3's BMA423 too
   motionLoop(now);
 #endif
   static uint32_t tickAt = 0;                                   // the face's clock and steps: once a second is enough

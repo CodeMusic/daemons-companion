@@ -12,7 +12,71 @@
 //                           The thresholds are first guesses, to be tuned on the wrist.
 #include "motion.h"
 
-#if !defined(BOARD_TWATCH_ULTRA)
+#if defined(BOARD_TWATCH_S3) && !defined(BOARD_TWATCH_ULTRA)
+
+// C-348 (the user, 2026-11-12: the regular T-Watch brought up to the Ultra's features, mindful of its battery): the S3's
+// BMA423 does in its own silicon what the Ultra's BHI260AP does -- the steps (watch.cpp still counts them), still, walking
+// or running, the wrist tilted up, and a double tap -- so nothing is streamed: its status is asked ten times a second over
+// the main bus and the kind of moving read (register 0x27) only when it says that changed. No cycling or vehicle here,
+// and no shake (that would mean reading the accelerometer itself). Set up as LilyGO's BMA423_Feature example and its
+// LilyGoLib set it (the axes REMAP_BOTTOM_LAYER_TOP_RIGHT_CORNER); the tilt and the tap to be judged on the wrist.
+#include <Wire.h>
+#include <SensorBMA423.hpp>
+SensorBMA423 *watchAccel();                                  // watch.cpp: the S3's, begun there; null if it did not answer
+static bool ready = false, raised = false, tapped2 = false, kindChanged = false;
+static uint32_t stillSince = 0, stirs = 0, polledAt = 0;
+static MotionKind kind = M_UNKNOWN;
+
+static int activityOut() {                                   // BMA423_ACTIVITY_OUT: 0 still, 1 walking, 2 running, 3 unsure
+  Wire.beginTransmission(BMA423_I2C_ADDR_SECONDARY); Wire.write(0x27);
+  if (Wire.endTransmission(false) != 0 || Wire.requestFrom((int)BMA423_I2C_ADDR_SECONDARY, 1) != 1) return -1;
+  return Wire.read() & 3;
+}
+static void setKind(MotionKind k) {
+  if (k == kind) return;
+  if (kind == M_STILL && k != M_STILL) stirs++;              // C-200: off stillness, a stir
+  stillSince = k == M_STILL ? millis() : 0;
+  kind = k; kindChanged = true;
+}
+static void poll() {
+  if (!ready || millis() - polledAt < 100) return;
+  polledAt = millis();
+  SensorBMA423 *a = watchAccel();
+  a->readIrqStatus();                                        // read clears it
+  if (a->isTilt()) { raised = true; stirs++; }
+  if (a->isDoubleTap()) tapped2 = true;
+  if (a->isActivity() || kind == M_UNKNOWN) {
+    int r = activityOut();
+    if (r == 0) setKind(M_STILL); else if (r == 1) setKind(M_WALKING); else if (r == 2) setKind(M_RUNNING);
+  }
+}
+
+void motionBegin() {
+  SensorBMA423 *a = watchAccel();
+  if (!a) return;
+  a->setRemapAxes(SensorBMA423::REMAP_BOTTOM_LAYER_TOP_RIGHT_CORNER);
+  a->configInterrupt();
+  ready = a->enableFeature(SensorBMA423::FEATURE_STEP_CNTR | SensorBMA423::FEATURE_ACTIVITY |
+                           SensorBMA423::FEATURE_TILT | SensorBMA423::FEATURE_WAKEUP, true);
+  a->enablePedometerIRQ(); a->enableActivityIRQ(); a->enableTiltIRQ(); a->enableWakeupIRQ();
+  a->readIrqStatus();
+}
+bool motionReady() { return ready; }
+bool motionHoldsBus() { return false; }
+long motionSteps() { return -1; }                            // watch.cpp reads the counter itself on the S3
+MotionKind motionKind() { poll(); return kind; }
+uint32_t motionStillFor() { poll(); return kind == M_STILL && stillSince ? millis() - stillSince : 0; }
+uint32_t motionStirs() { poll(); return stirs; }
+bool motionTakeRaise() { poll(); bool r = raised; raised = false; return r; }
+bool motionTakeShake() { return false; }
+bool motionTakeDoubleTap() { poll(); bool r = tapped2; tapped2 = false; return r; }
+bool motionTakeKindChange(MotionKind &now) { poll(); bool r = kindChanged; kindChanged = false; now = kind; return r; }
+String motionStatus() {
+  static const char *const K[] = { "unknown", "still", "walking", "running", "cycling", "vehicle" };
+  return String("MOTION bma423 ") + (ready ? "ready " : "off ") + K[kind] + " stirs " + String(stirs);
+}
+
+#elif !defined(BOARD_TWATCH_ULTRA)
 
 void motionBegin() {}
 bool motionReady() { return false; }

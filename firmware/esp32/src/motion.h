@@ -1,7 +1,8 @@
 #pragma once
 // C-201: the T-Watch Ultra's BHI260AP -- Bosch's motion sensor with its own processor: the steps, what kind of moving
 // (still, walking, running, cycling, in a vehicle), the wrist lifted, and a shake or a double tap read from its
-// accelerometer. Every other board has none of it (the stubs say so).
+// accelerometer. C-348: the T-Watch S3 has the same from its BMA423 (no cycling, vehicle or shake); every other board
+// has none of it (the stubs say so).
 #include <Arduino.h>
 
 enum MotionKind : uint8_t { M_UNKNOWN, M_STILL, M_WALKING, M_RUNNING, M_CYCLING, M_VEHICLE };

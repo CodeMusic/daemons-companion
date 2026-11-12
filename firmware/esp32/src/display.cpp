@@ -240,20 +240,39 @@ void Display::configure() {
 #endif
 
 uint8_t powerBright();   // power.cpp: C-243 dims it
-// C-242: the always-on face's glow -- the AMOLEDs only (powerAod asks for the Ultra alone)
+#if BOARD_TWATCH_S3 && !BOARD_TWATCH_ULTRA
+// C-347: the T-Watch S3's backlight (GPIO 45) driven by PWM, not switched full on -- the LCD's light is most of what its
+// 400 mAh cell spends awake, so it shines at BATTERY's level (200, 70 in low power) as the Ultra's AMOLED does, and the
+// night's glance is dim. Channel 7 at 5 kHz: the watch's other PWM (none) is elsewhere.
+static void s3Light(uint8_t level) {
+  static bool ready = false;
+  if (!ready) { ledcSetup(7, 5000, 8); ledcAttachPin(board.lcdBl, 7); ready = true; }
+  ledcWrite(7, level);
+}
+#endif
+// C-242: the always-on face's glow -- the AMOLEDs only (powerAod asks for the Ultra alone); C-347 the S3's glance
 void backlightDim() {
 #if BOARD_TDISPLAY_AMOLED || BOARD_TWATCH_ULTRA
   tft.setBrightness(18);
+#elif BOARD_TWATCH_S3
+  s3Light(24);
 #endif
 }
 // C-255: the Ultra's AMOLED put to sleep (its SLPIN) while the watch sleeps without the always-on face -- dark at
 // brightness 0 it still scans; asleep it draws almost nothing, and keeps what it held
 void panelRest(bool rest) {
-#if BOARD_TWATCH_ULTRA || BOARD_TGLASS   // C-262: the glasses' too
+#if BOARD_TWATCH_ULTRA || BOARD_TGLASS || BOARD_TWATCH_S3   // C-262: the glasses' too; C-347 the S3's ST7789 (SLPIN)
   static bool resting = false;
   if (rest == resting) return;
   resting = rest;
+#if BOARD_TWATCH_S3 && !BOARD_TWATCH_ULTRA
+  void watchBacklightRail(bool on);                       // watch.cpp: C-347, the light's rail off while it rests
+  if (!rest) watchBacklightRail(true);
+#endif
   if (rest) tft.sleep(); else tft.wakeup();
+#if BOARD_TWATCH_S3 && !BOARD_TWATCH_ULTRA
+  if (rest) watchBacklightRail(false);
+#endif
 #endif
 }
 void backlight(bool on) {
@@ -266,6 +285,9 @@ void backlight(bool on) {
 #endif
 #if BOARD_TDISPLAY_AMOLED || BOARD_TWATCH_ULTRA
   tft.setBrightness(on ? powerBright() : 0); return;      // C-135: the AMOLED's own register (0x51); C-173 the Ultra's; C-243 dimmer when low
+#endif
+#if BOARD_TWATCH_S3 && !BOARD_TWATCH_ULTRA
+  s3Light(on ? powerBright() : 0); return;                // C-347: the S3's, by PWM
 #endif
   if (board.lcdBl >= 0) { pinMode(board.lcdBl, OUTPUT); digitalWrite(board.lcdBl, on ? HIGH : LOW); }
 }

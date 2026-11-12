@@ -193,6 +193,7 @@ extern String flash; extern uint32_t flashUntil;
 extern bool asleep;
 void tvFromState(JsonArrayConst tvs);   // C-256 (tv.cpp)
 void powerAsleep(bool on); int powerLoopRest(); void panelRest(bool rest);   // C-255
+bool powerWatch();                                  // the T-Watch S3 or Ultra (power.cpp)
 extern uint32_t lastInput;
 extern long lastDone; extern String lastDoneText; extern uint32_t lastDoneAt;
 bool undoable();

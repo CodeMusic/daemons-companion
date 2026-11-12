@@ -10,6 +10,7 @@ import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } fro
 import type { StackFlow, Thought } from "./stackflow.js";
 import type { WriteJob } from "./tiiny.js";   // C-319 next
 import { GUIDE_SETUP, guideQuestion } from "../guideask.js";   // C-209
+import { shortSelf } from "../self.js";   // C-252: the one short self
 
 export type ModuleAt = { url: string; name: string; found?: string };
 export type TalkAsk = {
@@ -62,22 +63,10 @@ export const TALK_SYSTEM = "You are a character in the game DAEMONS. Become who 
 // with the window for it) is given both: the record, then how it speaks of itself.
 export function persona(a: TalkAsk, heard = "", roomy = false): string {
   if (a.guide) return `${GUIDE_SETUP} From ${a.book ?? "THE GUIDE"}: ${a.guide(heard)}`;   // C-209: a book answers, not the daemon (its pages, a.guide)
-  const d = a.daemon;
-  const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
-               d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
-  // said positively, and never the word AI: a 0.5B loses the "never" and keeps the word (the hardware lane, 2026-10-28:
-  // OVERLOADED answered "I'm OVERLOADED, an AI ... no body" under "Never say you are an AI")
-  return [`${who}: a small living creature with a body of your own, from the INDEX of the game DAEMONS, who travels with the person who carries you.`,
-          d.entry && (roomy || !d.said) ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
-          d.said ? `You say of yourself: "${d.said.replace(/\s+/g, " ").slice(0, 160)}"` : "",
-          d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
-          d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 90)}` : "",
-          a.day ? `Today is ${a.day.day}${a.day.theme ? ` (${a.day.theme})` : ""}${a.season ? `, in ${a.season}` : ""}.` : "",
-          a.goal ? `The user is working on: ${a.goal.goal} -- next, ${a.goal.step}.` : "",
-          // the style rides here, not in the system message: a long system message at a pooled client's setup made every
-          // answer from it empty (the hardware lane, 2026-10-28); the name said again, the 0.5B drifts from it
-          `Speak as ${d.nickname}, warmly, in one or two short sentences, about your own life: your food, your sleep, your dreams, the weather.`]
-    .filter(Boolean).join(" ");
+  // C-252's rest: the one short self (self.ts shortSelf). Said positively, never the word AI: a 0.5B loses the "never" and
+  // keeps the word (the hardware lane, 2026-10-28); the style rides here, not in the system message (a long system message
+  // at a pooled client's setup made every answer empty); the name said again at the end, the 0.5B drifts from it
+  return shortSelf({ ...a.daemon, day: a.day, season: a.season, goal: a.goal }, roomy);
 }
 // The persona a thinker is set up with: what changes within a day (mood, fed and watered, the goal's next step) left out,
 // so one daemon's thinker is set up about once a day rather than at every meal

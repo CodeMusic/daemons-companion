@@ -1,7 +1,7 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
 import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl } from "../src/ai/tiiny.js";
-import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf } from "../src/self.js";
+import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;
 const at = tiinyIn(settings({ "tiiny.url": "http://tiiny.test/openai/v1", "tiiny.key": "k", "tiiny.tts": "qwen3-tts", "tiiny.asr": "qwen3-asr" }))!;
@@ -112,13 +112,15 @@ describe("the self", () => {
     expect(text).toContain("Yesterday: We walked to the lake.");
     expect(text).not.toContain("Over the last month");
   });
-  it("gives a daemon what it says of itself beside its record, never in the short self (C-303)", () => {
+  it("gives a daemon what it says of itself beside its record; the short self, as the module's, gives the telling in its place (C-303, C-252)", () => {
     const f = { nickname: "PING", entry: "Asks one question and requires an answer.", said: "Are you there? Good. I will ask again." };
     const day = selfOf(f, "day");
     expect(day).toContain("Your INDEX entry: Asks one question and requires an answer.");
     expect(day).toContain('You say of yourself, in your own words: "Are you there? Good. I will ask again."');
     expect(day.indexOf("Your INDEX entry")).toBeLessThan(day.indexOf("You say of yourself"));
-    expect(selfOf(f, "short")).not.toContain("Are you there?");
+    expect(selfOf(f, "short")).toContain('You say of yourself: "Are you there? Good. I will ask again."');
+    expect(selfOf(f, "short")).not.toContain("Your INDEX entry");
+    expect(selfOf(f, "short")).toBe(shortSelf(f));                    // one short self: the module's persona is this
     expect(selfOf({ nickname: "PING", entry: "Asks." }, "day")).not.toContain("You say of yourself");
   });
   it("keeps the short self short, and the month for the full one", () => {

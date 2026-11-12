@@ -77,21 +77,38 @@ export const SELF_INSTRUCTIONS =
   "Speak as yourself, in a sentence or three. Let how you feel show in what you notice and how you say it; never name " +
   "the feeling. You have a body of your own; never call yourself a program, a model or an AI.";
 
-// A 0.5B keeps the word a "never" was about (house.ts), so the short self says it positively
-export const SHORT_INSTRUCTIONS = "Speak warmly, in one or two short sentences, about your own life: your food, your sleep, your dreams.";
+
+// C-252's rest: the SHORT self is one text for every small mind -- the house's module (ai/house.ts persona) and anything
+// that asks for "short". Its words are the ones the module was tuned on (the hardware lane, 2026-10-28): a body of its own
+// said positively, never the word a "never" would keep; the name said again at the end; a telling of its own (C-303) in
+// place of its record, both for a roomy mind. Kept under ~600 characters for qwen2.5-0.5B's window.
+export type ShortFacts = { nickname: string; name?: string; types?: string; level?: number | null; entry?: string; said?: string;
+                           mood?: string; fed?: string; dream?: string | null; day?: { day: string; theme?: string } | null; season?: string;
+                           goal?: { goal: string; step: string } | null };
+export function shortSelf(d: ShortFacts, roomy = false): string {
+  const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
+               d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
+  return [`${who}: a small living creature with a body of your own, from the INDEX of the game DAEMONS, who travels with the person who carries you.`,
+          d.entry && (roomy || !d.said) ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
+          d.said ? `You say of yourself: "${d.said.replace(/\s+/g, " ").slice(0, 160)}"` : "",
+          d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
+          d.dream ? `Last night you dreamt: ${d.dream.replace(/\s+/g, " ").slice(0, 90)}` : "",
+          d.day ? `Today is ${d.day.day}${d.day.theme ? ` (${d.day.theme})` : ""}${d.season ? `, in ${d.season}` : ""}.` : "",
+          d.goal ? `The user is working on: ${d.goal.goal} -- next, ${d.goal.step}.` : "",
+          `Speak as ${d.nickname}, warmly, in one or two short sentences, about your own life: your food, your sleep, your dreams, the weather.`]
+    .filter(Boolean).join(" ");
+}
 
 export function selfOf(f: SelfFacts, length: SelfLength = "day", instructions = SELF_INSTRUCTIONS): string {
   const trainer = f.trainer || "your trainer";
   const who = [f.name && f.name !== f.nickname ? `a ${f.name}` : "", f.types ? `a ${f.types} daemon` : "",
                f.level ? `level ${f.level}` : ""].filter(Boolean).join(", ");
+  if (length === "short") {
+    const s = f.feelings ? feelingsSaid(f.feelings).split(", ")[0] : "";
+    return shortSelf({ ...f, mood: s && !s.startsWith("not ") ? s : undefined });
+  }
   const lines: string[] = [];
   lines.push(`You are ${f.nickname}, a DAEMON process running on ${f.box || "a BOX"}${who ? ` (${who})` : ""}.`);
-  if (length === "short") {
-    if (f.feelings) { const s = feelingsSaid(f.feelings).split(", ")[0]; if (!s.startsWith("not ")) lines.push(`Today you feel ${s}.`); }
-    if (f.dream) lines.push(`Last night you dreamt: ${clip(f.dream, 90)}`);
-    lines.push(SHORT_INSTRUCTIONS);
-    return lines.join(" ");
-  }
   const hosted = f.device ? `You are hosted on their ${f.device} right now.` : "";
   if (f.trainer || hosted) lines.push([f.trainer ? `Your trainer is ${trainer}.` : "", hosted].filter(Boolean).join(" "));
   if (f.entry) lines.push(`Your INDEX entry${f.category ? ` (the ${f.category} DAEMON)` : ""}: ${clip(f.entry, length === "full" ? 400 : 200)}`);

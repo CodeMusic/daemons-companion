@@ -22,7 +22,7 @@ It answers `127.0.0.1` unless it is given an address. **No ROM and no save is ev
 | `/` | the page: both screens, or `?p=0` / `?p=1` for one player's; arrows, X = A, Z = B, Enter, Shift, A/S = L/R |
 | `/f/N` | player N's screen, 240x160 RGBX bytes, deflated when the request accepts it (every browser's `fetch` does) |
 | `/k/N/KEYS` | player N's buttons held, the GBA's key bits (A 1, B 2, SELECT 4, START 8, RIGHT 16, LEFT 32, UP 64, DOWN 128, R 256, L 512) |
-| `/p/N/ADDR/8or16/VALUE` | a byte or halfword into player N's memory (the DEBUG build's theatre warp, `gDaemonsDebugWarp`) |
+| `/p/N/ADDR/8or16/VALUE` | a byte or halfword into player N's memory (the DEBUG build's theatre warp, `gDaemonsDebugWarp`) -- **only when started with `LINKHOST_POKE=1`**, for testing; the hub never passes it on |
 | `/state` | frames run by each game, and players on the cable |
 
 The lockstep's callbacks are mGBA's Qt `MultiplayerController` ported to C; player 1 is the cable's master and keeps
@@ -30,5 +30,10 @@ the GBA's 59.73 frames a second, player 2 is paced by the cycles it is posted. m
 that keeps only errors -- left as it is, it writes megabytes a second. Saves are written as the games write
 them, and flushed when it is stopped (SIGINT or SIGTERM).
 
-**Next**: reach each player's screen from the app's GAME tab -- the saves
-carried there and back by C-188's mirror, the screen sent as video rather than raw frames.
+**In the app (2026-11-12)**: the hub passes a player's screen, buttons and the cable's state on at `/api/link/`
+(`server/src/linkcable.ts`; never `/p/`, never through the relay) and serves a phone-sized page with touch buttons at
+`/link/`; the GAME tab's title has **LINK CABLE** for a paired phone, a seat for each player. The hub finds linkhost by
+the setting `link.host` or `DAEMONS_LINKHOST` (e.g. `http://roverbyteseer:4795`, linkhost started with that address).
+
+**Next**: the saves carried there and back by C-188's mirror (each player's own, not copies), linkhost kept running on
+roverbyteseer, and the screen sent as video rather than polled frames.

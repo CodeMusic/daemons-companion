@@ -47,6 +47,7 @@ static pthread_mutex_t lockMutex = PTHREAD_MUTEX_INITIALIZER;
 static const char* page;
 static const char* bindAddr = "127.0.0.1";
 static volatile int quit = 0;
+static int poke = 0;                  // LINKHOST_POKE=1: /p/ answers (testing only)
 
 static void lk(struct mLockstep* l) { (void) l; pthread_mutex_lock(&lockMutex); }
 static void ulk(struct mLockstep* l) { (void) l; pthread_mutex_unlock(&lockMutex); }
@@ -216,8 +217,9 @@ static void* serve(void* arg) {
 		} else if (sscanf(req, "GET /k/%d/%u", &who, &keys) == 2 && who >= 0 && who < N) {
 			P[who].core->setKeys(P[who].core, keys & 0x3FF);
 			reply(c, "text/plain", "ok", 2);
-		} else if (sscanf(req, "GET /p/%d/%x/%u/%u", &who, &addr, &width, &val) == 4 && who >= 0 && who < N) {
-			// the DEBUG build's theatre warp and the like: a byte or a halfword into the game's memory
+		} else if (poke && sscanf(req, "GET /p/%d/%x/%u/%u", &who, &addr, &width, &val) == 4 && who >= 0 && who < N) {
+			// the DEBUG build's theatre warp and the like: a byte or a halfword into the game's memory -- only with
+			// LINKHOST_POKE=1, for testing; a linkhost the hub reaches never answers it
 			if (width == 16) P[who].core->busWrite16(P[who].core, addr, (uint16_t) val);
 			else P[who].core->busWrite8(P[who].core, addr, (uint8_t) val);
 			reply(c, "text/plain", "ok", 2);
@@ -242,6 +244,7 @@ static void stop(int s) { (void) s; quit = 1; }
 int main(int argc, char** argv) {
 	if (argc < 7) { fprintf(stderr, "linkhost ROM0 SAV0 ROM1 SAV1 PORT PAGE [ADDRESS]\n"); return 2; }
 	page = argv[6];
+	poke = getenv("LINKHOST_POKE") && !strcmp(getenv("LINKHOST_POKE"), "1");
 	if (argc > 7) bindAddr = argv[7];
 	int port = atoi(argv[5]);
 	mLogFilterInit(&quietFilter);

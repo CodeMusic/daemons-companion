@@ -9,6 +9,7 @@
 // A newer release, once published, shows as a strip above the game: one tap makes it from the player's original kept
 // here, and the game starts again from the same save.
 import { GameTitle, type TitleChoice } from "./GameTitle";
+import { LinkView } from "./Link";                                          // C-221
 import { useEffect, useRef, useState } from "react";
 import { Directory, File, Paths } from "expo-file-system";
 import { WebView } from "react-native-webview";
@@ -270,6 +271,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
   // the title (GameTitle.tsx): GAME opens on it, and PLAY starts the emulator -- once a session; leaving the tab and
   // coming back finds the game where it was
   const [playing, setPlaying] = useState(false);
+  const [linking, setLinking] = useState(false);          // C-221: THE LINK CABLE, the hub running both games
   const lowPower = useLowPowerMode();                     // C-258
   // C-263: a controller held -- the app hears it come and go (and its buttons), and the game takes the controller's
   // layout then, or when CONTROLLER is pressed; ON-SCREEN CONTROLS goes back
@@ -468,6 +470,11 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
       </YStack>
     );
   }
+  if (linking && !playing) return (
+    <YStack flex={active ? 1 : undefined} display={active ? "flex" : "none"}>
+      <LinkView edition={game.edition} onBack={() => setLinking(false)} />
+    </YStack>
+  );
   if (!playing) {
     const choices: TitleChoice[] = [
       { key: "play", label: "PLAY", note: game.testing ? `the TESTING BUILD, v${game.release}` : `v${game.release}`, onPick: () => setPlaying(true) },
@@ -477,6 +484,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
                       onPick: () => { if (!step) renew(); } }] : []),
       ...(game.testing ? [{ key: "release", label: "THE RELEASE", note: step ? STEPS[step] : "back from the TESTING BUILD", onPick: () => { if (!step) swap(false); } }]
         : testing ? [{ key: "debug", label: "DEBUG", note: step ? STEPS[step] : `the TESTING BUILD, v${testing}, with its DEBUG menu`, onPick: () => { if (!step) swap(true); } }] : []),
+      ...(paired() ? [{ key: "link", label: "LINK CABLE", note: "trade with another player, both games on the companion", onPick: () => setLinking(true) }] : []),   // C-221 (DRAFT)
       { key: "another", label: "ANOTHER GAME", note: "FireRed for CONTENT, LeafGreen for CONTEXT", onPick: () => { if (!step) bring(); } },
     ];
     return (

@@ -58,6 +58,7 @@ import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
+import { LINK_PAGE, linkHost, linkRoute } from "./linkcable.js";   // C-221: THE LINK CABLE
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
 import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
 import { siteNow, siteUpdate, siteView } from "./sitefetch.js";           // C-342: the site, built on every push
@@ -1241,6 +1242,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "THE ENGINE ROOM is on the home network and the tailnet only" });   // DRAFT
         return serveAdmin(req, res, path);
       }
+      // C-221: THE LINK CABLE's page, for a phone's GAME tab -- the home network and the tailnet only, as its screens are
+      if (req.method === "GET" && path === "/link/") {
+        if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "the link cable is on the home network and the tailnet only" });   // DRAFT
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+        return res.end(LINK_PAGE);
+      }
       if (cfg.siteDir && isSitePath(req.method ?? "", path)) return serveSite(siteNow(cfg.siteDir), req, res, path);   // C-170; C-342: the newest build
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
@@ -1333,6 +1340,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // dialogs that open on the computer itself stay its own
       if (!isLoopback(req.socket.remoteAddress) && LOCAL_ONLY.includes(path) && !(phone && !MACHINE_ONLY.includes(path)))
         return send(res, 403, { error: "that is done on the computer the companion runs on" });
+      // ---- C-221: THE LINK CABLE -- a player's screen and buttons, passed to the two linked games (linkcable.ts) ----
+      if (path.startsWith("/api/link/")) {
+        if (relayed) return send(res, 403, { error: "the link cable is on the home network and the tailnet only" });   // DRAFT
+        return await linkRoute(res, linkHost(store.getSetting("link.host")), path, String(req.headers["accept-encoding"] ?? ""));
+      }
       // ---- C-342: THE ENGINE ROOM's JOBS -- asked for here, taken and run by THE HANDS on the computer (jobs.ts) ----
       if (path.startsWith("/api/engine/")) {
         const who = phone?.name ?? (isLoopback(req.socket.remoteAddress) ? "this machine" : "");

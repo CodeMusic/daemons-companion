@@ -62,6 +62,8 @@ const when = (at: string) => new Date(at).toLocaleString([], { month: "short", d
 
 type Tried = { said: string; answer: string | null; provider: string | null; error: string | null; ms: number };
 const WHO: Record<string, string> = { module: "the hub's AI board", n8n: "n8n", tiiny: "the Tiiny", openrouter: "OpenRouter", local: "a model on the computer" };
+// a provider as the hub says it, "tiiny:tiiny-35b" -> "the Tiiny (tiiny-35b)"
+const whoAnswered = (p: string | null) => { const [k, model] = (p ?? "").split(":"); return `${WHO[k] ?? (k || "Something")}${model ? ` (${model})` : ""}`; };
 
 export function HubCard({ ink, onOpenDevice }: { ink?: string; onOpenDevice?: (id: string) => void }) {
   const [h, setH] = useApi<Hub>("/api/hub");
@@ -119,7 +121,7 @@ export function HubCard({ ink, onOpenDevice }: { ink?: string; onOpenDevice?: (i
         <Action label={trying || "TRY THE AI"} ink={ink} onPress={tryAi} />
       </XStack>
       {tried ? <Small>{tried.error || !tried.answer ? `No answer: ${tried.error ?? "nothing came back"}`
-        : `${WHO[tried.provider ?? ""] ?? tried.provider ?? "Something"} answered in ${(tried.ms / 1000).toFixed(1)} s: "${tried.answer}" (not kept in its talk)`}</Small> : null}
+        : `${whoAnswered(tried.provider).replace(/^t/, "T")} answered in ${(tried.ms / 1000).toFixed(1)} s: "${tried.answer}" (not kept in its talk)`}</Small> : null}
       {h.lora.boards.length ? (
         <YStack gap={2}>
           <Small>{`LORA${h.lora.heard ? `, last heard ${when(h.lora.heard)}` : ", nothing heard yet"}:`}</Small>

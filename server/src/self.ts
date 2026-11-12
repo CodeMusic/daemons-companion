@@ -27,6 +27,8 @@ export type SelfFacts = {
   day?: { day: string; theme?: string } | null;
   season?: string;
   goal?: { goal: string; step: string } | null;
+  sky?: string | null;               // C-338: the day's forecast, in a sentence (persona.ts skyLine)
+  today?: string | null;             // C-338: what it wrote at wake of meeting the day (the persona of the day's TODAY)
   spirits?: string | null;           // C-296: the class the save holds and the four weeks behind it (spirits.ts)
 };
 export type BondTrend = "STRONGER" | "the SAME" | "WEAKER";
@@ -107,7 +109,9 @@ export function selfOf(f: SelfFacts, length: SelfLength = "day", instructions = 
   if (f.feelings) lines.push(`Today you feel ${feelingsSaid(f.feelings)}.`);
   if (f.spirits) lines.push(f.spirits);
   if (f.day) lines.push(`Today is ${f.day.day}${f.day.theme ? ` (${f.day.theme})` : ""}${f.season ? `, in ${f.season}` : ""}.`);
+  if (f.sky) lines.push(f.sky);
   if (f.goal) lines.push(`${trainer} is working on: ${f.goal.goal} -- next, ${f.goal.step}.`);
+  if (f.today) lines.push(`How you meet today, in your own words: ${clip(f.today, length === "full" ? 600 : 300)}`);
   if (f.yesterday) lines.push(`Yesterday: ${clip(f.yesterday, length === "full" ? 900 : 400)}`);
   if (length === "full") {
     if (f.month) lines.push(`Over the last month: ${clip(f.month, 4000)}`);

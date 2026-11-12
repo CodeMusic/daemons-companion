@@ -7,7 +7,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { comfyPaint, imagePromptOf, kleinGraph, moodOfPaint, ownTouch, paintStyle, readPainting, TOUCHES, TYPE_STYLE } from "../src/ai/easel.js";
-import { buildPersona, lastWake, nextWake, personaFresh, personaText, signatureOf, withToday, type DayPersonaFacts } from "../src/persona.js";
+import { buildPersona, lastWake, nextWake, personaFresh, personaText, signatureOf, todayOf, withToday, type DayPersonaFacts } from "../src/persona.js";
+import { selfOf } from "../src/self.js";
 import { dayFacts, speciesFacts } from "../src/ai/personaof.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
@@ -90,6 +91,15 @@ describe("the persona of the day", () => {
     expect(buildPersona("k", facts(), new Date(2026, 10, 11, 15, 0), p).today).toBe("Rain again.");
     expect(buildPersona("k", facts({ mood: "sad" }), at, p).today).toBeNull();
     expect(buildPersona("k", facts(), new Date(2026, 10, 12, 7, 0), p).today).toBeNull();
+  });
+  it("talk reads it: what it wrote this morning and the forecast go into the self, gone once a new wake passes", () => {
+    const p = withToday(buildPersona("k", facts(), at), facts(), "Rain again, and the shed waits.");
+    expect(todayOf(p, new Date(2026, 10, 11, 20, 0))).toBe("Rain again, and the shed waits.");
+    expect(todayOf(p, new Date(2026, 10, 12, 6, 0))).toBeNull();
+    const self = selfOf({ nickname: "SPARK", sky: "The forecast for Toronto today: rain.", today: todayOf(p, at) }, "day", "Speak.");
+    expect(self).toContain("The forecast for Toronto today: rain.");
+    expect(self).toContain("How you meet today, in your own words: Rain again, and the shed waits.");
+    expect(selfOf({ nickname: "SPARK", today: "x" }, "short", "Speak.")).not.toContain("How you meet today");
   });
 });
 

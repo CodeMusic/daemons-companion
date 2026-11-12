@@ -41,11 +41,18 @@ export function signatureOf(f: DayPersonaFacts): string {
 
 const SKY: Record<string, string> = { clear: "clear skies", cloudy: "clouds", fog: "fog", snow: "snow", storm: "storms", rain: "rain" };
 
+// C-338: the forecast in a sentence, for the persona and for the self every talk sends
+export const skyLine = (fc: WeatherToday | null | undefined) => fc
+  ? `The forecast for ${fc.city} today: ${SKY[fc.kind] ?? fc.kind}, ${fc.loC} to ${fc.hiC} degrees${fc.rain != null ? `, a ${fc.rain}% chance of rain` : ""}.` : "";
+
+// What it wrote of meeting the day, while this morning's persona still stands (what talk reads without building one)
+export const todayOf = (p: Persona | null, now: Date) => p?.today && Date.parse(p.builtAt) >= lastWake(now).getTime() ? p.today : null;
+
 // The persona as words: the common persona, then the weather, then what it wrote of today
 export function personaText(f: DayPersonaFacts, today?: string | null, person?: string): string {
   const lines = [personaOf(f, { roomy: true, person })];
   const fc = f.forecast, now = f.weather;
-  if (fc) lines.push(`The forecast for ${fc.city} today: ${SKY[fc.kind] ?? fc.kind}, ${fc.loC} to ${fc.hiC} degrees${fc.rain != null ? `, a ${fc.rain}% chance of rain` : ""}.`);
+  if (fc) lines.push(skyLine(fc));
   if (now) lines.push(`Outside right now: ${SKY[now.kind] ?? now.kind}, ${now.tempC} degrees.`);
   if (today?.trim()) lines.push(`How you meet today, in your own words: ${today.trim()}`);
   return lines.filter(Boolean).join("\n");

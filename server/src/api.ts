@@ -111,7 +111,7 @@ import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollama
 import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow, weatherToday } from "./context.js";
-import { buildPersona, personaFresh, readPersona, signatureOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
+import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
 import { comfyPaint, EASEL_HOST, imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages, keptToPage } from "./guideask.js";   // C-209
@@ -289,6 +289,9 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
     if (days[today] === undefined) store.setSetting("self.bondDays", JSON.stringify(keepBondDay(days, today, d.friendship)));
   }
   const kind = validDeviceId(deviceId) ? kindOf(deviceId) : "";
+  // C-338: the persona of the day, as it stands -- what it wrote at wake of meeting today, and the forecast (read, never built here)
+  const carried = d ? carriedDaemon(ecfg, store, deviceId) : null;
+  const today = carried ? todayOf(readPersona(store.getSetting(`persona.${carried.personality >>> 0}`)), now) : null;
   return { ...w.daemon, nickname: w.daemon.nickname, box: store.getSetting("self.box") || undefined,
            device: kind ? (store.getSetting(`self.device.${kind}`) || kind.toUpperCase()) : undefined,
            trainer: store.getSetting("self.trainer") || undefined,
@@ -296,8 +299,8 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
            life: d?.life ?? null, feelings: d ? core.daemonFeelings(store, now) : null,
            dream: (w.daemon as { dream?: string }).dream ?? null,
            yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
-           day: w.day, season: w.season, goal: w.goal,
-           spirits: d ? spiritsSaid(carriedDaemon(ecfg, store, deviceId)?.spirits?.class ?? null, spiritTotalsNow(store, now)) : null };
+           day: w.day, season: w.season, goal: w.goal, sky: skyLine(weatherToday(store, now)) || null, today,
+           spirits: d ? spiritsSaid(carried?.spirits?.class ?? null, spiritTotalsNow(store, now)) : null };
 }
 // C-296: the four running totals, from four weeks of the companion's own log
 const spiritTotalsNow = (store: Store, now = new Date()) => spiritTotals(store.interactionsSince(new Date(now.getTime() - (SPIRIT_DAYS + 1) * 86400000)), now);

@@ -1,7 +1,7 @@
 // TODAY -- the home page: the day, the one thing, a glance at each place (C-156). (C-157: out of App.tsx.)
 import { useCallback, useEffect, useState } from "react";
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { Text, XStack, YStack } from "tamagui";
+import { Text, Theme, XStack, YStack } from "tamagui";
 import { castLine, playerId } from "../../state/data";
 import { api, ON_PHONE } from "../../platform/net";
 import { hearSettings, soundLevel } from "../../sound/tuneSound";
@@ -12,18 +12,53 @@ import { useWitching } from "../shared/Witching";   // C-237
 import { EMERALD, hourLine } from "../../../server/src/witching";
 import { useFresh } from "../../platform/useApi";   // C-344
 import { TendingCard } from "./Tending";   // C-357 (3)
+import { useDay } from "../../ui/ui";
+import { ForkKey, SingingBowl, type BowlOf } from "../../ui/bowl";   // C-351
+import { CalendarSprite } from "../../ui/calendarSprite";   // C-353
+import { CalendarScreen } from "./Calendar";   // C-354
+import { useMonth } from "../../state/month";   // C-352, C-355
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
   const witching = useWitching();                           // C-237: in the hour the day's line is turned under
   const done = async () => { if (today.next) { await api(`/api/steps/${today.next.step.id}/done`, {}); reload(); } };
+  const day = useDay();                                     // C-349: the day's own colour, under any accent
+  const month = useMonth(today);
+  const [bowl, setBowl] = useState<BowlOf | null>(null);
+  const [calendar, setCalendar] = useState(false);
+  const dayBowl = (): BowlOf => ({                          // C-351: the day's bowl, ringing the day's note
+    colours: [day.colour], lit: [today.day.chakra], notes: [today.day.note],
+    title: `${today.day.day.toUpperCase()} · ${today.day.note}`,
+    lines: [today.day.cue ?? today.day.virtue, `${today.day.chakra} · ${today.day.hue}`],
+  });
+  if (calendar) return <CalendarScreen today={today} onClose={() => setCalendar(false)} ink={ink} />;
+  const card = (
+      <Card>
+        <XStack gap={12} alignItems="flex-start">
+          <YStack flex={1} gap={2}>
+            {/* C-351: the tuning fork beside the day's note -- tapped, the singing bowl */}
+            <XStack alignItems="center" gap={2} flexWrap="wrap">
+              <Eyebrow>{today.day.day.toUpperCase()} · {today.day.note}</Eyebrow>
+              <ForkKey colour={day.colour} onPress={() => setBowl(dayBowl())} label={`ring ${today.day.note}, the day's note`} />
+              <Eyebrow>· {today.season.toUpperCase()}</Eyebrow>
+            </XStack>
+            <Text fontSize={24} fontWeight="600" color="$color12">{today.day.theme ?? today.day.virtue}</Text>
+            <Text fontSize={16} color={witching ? EMERALD.lit : "$color11"}>{witching ? hourLine() : today.day.cue ?? today.day.virtue}</Text>{/* C-237: turned under */}
+            <Small>{today.day.chakra} · {today.day.hue} · {today.edition}</Small>
+          </YStack>
+          {/* C-353: the calendar beside the day, and under it the month's tone (C-355) */}
+          <YStack alignItems="center" gap={4} maxWidth={96}>
+            <CalendarSprite day={Number(today.date.slice(8, 10)) || new Date().getDate()} short={month.short} colours={month.colours}
+                            dayColour={day.colour} onPress={() => setCalendar(true)} />
+            <Text fontFamily="$mono" fontSize={10} letterSpacing={0.5} color="$color10" textAlign="center">{`${month.tone} · ${month.movement}`.toUpperCase()}</Text>
+          </YStack>
+        </XStack>
+      </Card>
+  );
   return (
     <YStack gap={14}>
-      <Card>
-        <Eyebrow>{today.day.day.toUpperCase()} · {today.day.note} · {today.season.toUpperCase()}</Eyebrow>
-        <Text fontSize={24} fontWeight="600" color="$color12">{today.day.theme ?? today.day.virtue}</Text>
-        <Text fontSize={16} color={witching ? EMERALD.lit : "$color11"}>{witching ? hourLine() : today.day.cue ?? today.day.virtue}</Text>{/* C-237: turned under */}
-        <Small>{today.day.chakra} · {today.day.hue} · {today.edition}</Small>
-      </Card>
+      {/* C-349: back to the paper (reset leaves the accent), then the day's own theme */}
+      {day.theme ? <Theme reset><Theme name={day.theme as any}>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></Theme></Theme>
+        : <>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></>}
       <TendingCard />
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
         <Eyebrow>THE ONE THING</Eyebrow>

@@ -1,13 +1,15 @@
 // SETTINGS -- the save, the app, the look, the voice; on the phone THIS PHONE; on the site PAIR A PHONE and AWAY FROM HOME. (C-157: out of App.tsx.)
+// C-350 (the user, 2026-11-12, by multiple choice): in four inner tabs -- GENERAL (the save, the weather, the game put
+// away), THEME (light or dark, the palette, the accents from the game, the hemisphere), VOICES (who answers, THE MIND)
+// and SYSTEM (this app, hosting, pairing, away from home, developer mode).
 import { useCallback, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { BUILD } from "../../state/data";
-import { LOOK, Look, setLook } from "../../state/look";
 import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER, SITE_HOME } from "../../platform/net";
 import { EngineRoom } from "../../ui/engineRoom";   // C-330: MAKE THE VOICES AGAIN moved there
 import { Settings } from "../../state/types";
-import { Action, Card, Choice, Entry, Eyebrow, Pending, Small, useHeld } from "../../ui/ui";
+import { Action, Card, Choice, Entry, Eyebrow, Pending, Segments, Small, useHeld } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { SavesCard, useSaves } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../../state/away";
@@ -15,6 +17,8 @@ import { DevModeCard } from "../../ui/devpanel";
 import { MindCard } from "./Mind";   // C-307 (was C-280's PhoneMind)
 import { MindAtWork } from "./MindMap";   // C-319
 import { HomeAssistantCard } from "../places/Home";
+import { ThemeSettings } from "./Theme";   // C-349, C-350
+import { usePlace } from "../../state/place";
 
 // C-344: each card's usual height on a page 375 and 720 wide, held while its first answer is awaited (measured on the
 // site, 2026-11-11)
@@ -22,13 +26,48 @@ const WEATHER_H: [number, number] = [231, 191], TALK_H: [number, number] = [1180
 const PAIR_H: [number, number] = [181, 161], RELAY_H: [number, number] = [306, 266];
 // C-29: the save path, set here and kept by the server. The user picks a file once (emulator or cart) and SYNC just
 // works; "open the folder" shows where to put a save.
+type SettingsTab = "general" | "theme" | "voices" | "system";
+const SETTINGS_TABS: [SettingsTab, string][] = [["general", "GENERAL"], ["theme", "THEME"], ["voices", "VOICES"], ["system", "SYSTEM"]];   // DRAFT
 export function SettingsScreen({ ink }: { ink: string }) {
+  const [tab, pick] = usePlace<SettingsTab>("settings.tab", "general");   // C-309: kept while the app runs
   return (
-    <>
-      {ALONE ? <AloneSettings ink={ink} /> : <SavePathSettings ink={ink} />}
-      {/* C-287: the site at home's own cards -- PAIR A PHONE, the relay, HOME ASSISTANT (they were added in App.tsx) */}
-      {SITE_HOME ? <YStack marginTop={14} gap={14}><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></YStack> : null}
-    </>
+    <YStack gap={14}>
+      <Segments value={tab} onChange={pick} options={SETTINGS_TABS} />
+      {tab === "general" ? (
+        <YStack gap={14}>
+          {ALONE ? <AloneSettings ink={ink} /> : <SavePathSettings ink={ink} />}
+          <WeatherCard ink={ink} />
+          {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
+        </YStack>
+      ) : tab === "theme" ? <ThemeSettings ink={ink} />
+      : tab === "voices" ? (
+        <YStack gap={14}>
+          {ALONE ? null : <TalkSettingsCard ink={ink} />}
+          <MindCard ink={ink} />{/* C-307 */}
+          <MindAtWork ink={ink} />{/* C-319 */}
+        </YStack>
+      ) : (
+        <YStack gap={14}>
+          <VersionCard ink={ink} />
+          {ALONE ? <CompanionOnAComputerCard ink={ink} /> : null}
+          {/* C-287: the site at home's own cards -- PAIR A PHONE, the relay, HOME ASSISTANT (they were added in App.tsx) */}
+          {SITE_HOME ? <><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></> : null}
+          <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
+          <LeaveCompanionCard ink={ink} />
+        </YStack>
+      )}
+    </YStack>
+  );
+}
+
+// C-350: SYSTEM -- a phone hosting on its own can pair with a companion on a computer instead
+function CompanionOnAComputerCard({ ink }: { ink: string }) {
+  return (
+    <Card>
+      <Eyebrow>A COMPANION ON A COMPUTER</Eyebrow>
+      <Small>For a handheld, talking with your daemon, or reaching it from another device, the companion runs on a computer.</Small>
+      <Action label="Pair with a companion instead" onPress={() => { pairAgain(); }} ink={ink} />
+    </Card>
   );
 }
 
@@ -42,9 +81,6 @@ export function AloneSettings({ ink }: { ink: string }) {
   const give = async () => { try { await LOCAL!.shareSave(); } catch (e) { setNote((e as Error).message); } };
   return (
     <YStack gap={14}>
-      <VersionCard ink={ink} />
-      {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
-      <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
       <Card borderLeftWidth={6} borderLeftColor={LOCAL?.hasSave() ? "$color9" : "$color5"}>
         <Eyebrow>THIS PHONE HOSTS ON ITS OWN</Eyebrow>
         <Small>{`Your ${LOCAL?.edition() ?? "DAEMONS"} save is kept on this phone, a copy of Delta's. After you play, bring the newer ` +
@@ -54,11 +90,6 @@ export function AloneSettings({ ink }: { ink: string }) {
           <Action label="Give the save back to Delta" onPress={give} ink={ink} />
         </XStack>
         {note ? <Small>{note}</Small> : null}
-      </Card>
-      <Card>
-        <Eyebrow>A COMPANION ON A COMPUTER</Eyebrow>
-        <Small>For a handheld, talking with your daemon, or reaching it from another device, the companion runs on a computer.</Small>
-        <Action label="Pair with a companion instead" onPress={() => { pairAgain(); }} ink={ink} />
       </Card>
     </YStack>
   );
@@ -128,9 +159,6 @@ export function SavePathSettings({ ink }: { ink: string }) {
   // same cards in the same places before the first answer and after it, so nothing below moves when it comes
   return (
     <YStack gap={14}>
-      <VersionCard ink={ink} />
-      {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
-      <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
       {!s || (!saves[0] && !saves[2]) ? (
         <Card minHeight={174} borderLeftWidth={6} borderLeftColor="$color5">
           <Eyebrow>YOUR DAEMONS SAVE</Eyebrow>
@@ -162,11 +190,6 @@ export function SavePathSettings({ ink }: { ink: string }) {
         </XStack>
         {note && s ? <Small>{note}</Small> : null}
       </Card>
-      <WeatherCard ink={ink} />
-      <TalkSettingsCard ink={ink} />
-      <MindCard ink={ink} />{/* C-307 */}
-      <MindAtWork ink={ink} />{/* C-319 */}
-      <LeaveCompanionCard ink={ink} />
     </YStack>
   );
 }
@@ -206,8 +229,7 @@ export function WeatherCard({ ink }: { ink: string }) {
 export function VersionCard({ ink }: { ink: string }) {
   const commit = BUILD.split(" ")[0];
   const [v] = useApi<{ server: string | null; appChanged: boolean | null }>(`/api/version${commit ? `?build=${commit}` : ""}`);
-  const [look, seeLook] = useState(LOOK);                                    // C-144
-  const held = useHeld([208, 162]);   // C-344: on the site, its height once the companion's version has come
+  const held = useHeld([150, 122]);   // C-350: the look moved to THEME; C-344: on the site, its height once the companion's version has come
   return (
     <Card minHeight={ON_PHONE ? undefined : held}>
       <Eyebrow>THIS APP</Eyebrow>
@@ -216,13 +238,6 @@ export function VersionCard({ ink }: { ink: string }) {
       </Text>
       {ON_PHONE && v?.appChanged ? <Small color="$color11">A newer app is ready. On the computer: ./bindCompanion.sh phone</Small>   // DRAFT
         : ON_PHONE && v?.appChanged === false ? <Small>Up to date.</Small> : null}
-      <YStack gap={4} marginTop={6}>
-        <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">
-          {ON_PHONE ? "LIGHT OR DARK -- AUTO AS THE PHONE IS SET" : "LIGHT OR DARK -- AUTO AS THIS COMPUTER IS SET"}
-        </Text>{/* DRAFT */}
-        <Choice<Look> value={look} options={[["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]]}
-                      onPick={(l) => { setLook(l); seeLook(l); }} ink={ink} />
-      </YStack>
     </Card>
   );
 }

@@ -78,6 +78,9 @@ export function CareKey({ label, onPress, ink, lit = false }: { label: string; o
 // $color9 that hard-coded white was too faint on Tuesday's yellow and Wednesday's green (the review, 2026-10-18)
 export const InkContext = createContext("#fbfaf6");
 export const useInk = () => useContext(InkContext);
+// C-349: the day's own theme and colour, kept for the daily signal (TODAY's day card, the calendar) under an accent
+export const DayContext = createContext<{ theme: string | null; colour: string; ink: string }>({ theme: null, colour: "#5b6b8c", ink: "#fbfaf6" });
+export const useDay = () => useContext(DayContext);
 
 // C-157 (the review: ~20 handlers with no catch): a press whose work fails says so under its key for a while, instead of
 // failing unseen -- every Action's, so no screen has to remember to catch

@@ -12,6 +12,8 @@ import { ScrollView, TamaguiProvider, Text, Theme, XStack, YStack } from "tamagu
 import { SCREEN } from "./state/data";
 import { forgetPlaces, forgetScroll, keepScroll } from "./state/place";   // C-309
 import { loadLook, LOOK, lookHeard, PALETTE } from "./state/look";
+import { loadAccent, useAccentSetting, useUnlocked, wornAccent } from "./state/accent";   // C-349
+import { AccentBand } from "./ui/accentBand";   // C-349
 import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
 import { bumpFresh } from "./platform/useApi";   // C-344
 import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
@@ -27,7 +29,7 @@ import { TodayScreen } from "./screens/today/Today";
 import { ProfileScreen } from "./screens/you/You";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import { SHOWN_TABS, TABS, Today } from "./state/types";
-import { InkContext, onColour, Stuck } from "./ui/ui";
+import { DayContext, InkContext, onColour, Stuck } from "./ui/ui";
 import { voiceFor } from "./sound/tuneSound";
 import { muteAway } from "./state/away";
 import { useDev } from "./state/dev";       // C-268
@@ -106,7 +108,14 @@ function Shell() {
   const day = asked && DAYS.includes(asked) ? asked
     : today && DAYS.includes(today.day.day.toLowerCase()) ? today.day.day.toLowerCase() : null;
   const rainbow = PALETTE === "rainbow";                                      // C-90
-  const ink = onColour(day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c");
+  const dayColour = day ? (rainbow ? RAINBOW_COLOURS : WEEK_COLOURS)[day] : "#5b6b8c";
+  const dayTheme = day ? (rainbow ? `${day}rainbow` : day) : null;
+  // C-349: an accent from the game dresses the app over the day's colour; the day keeps the daily signal (DayContext)
+  useEffect(() => { loadAccent(); }, []);
+  const accentSetting = useAccentSetting();
+  const unlocked = useUnlocked();
+  const worn = wornAccent(accentSetting.mode, unlocked);
+  const ink = onColour(worn ? worn.colours.main : dayColour);
   const showToast = !!OFFLINE && toastGone !== OFFLINE;
   const newsBanner = useNews(() => setTab("daemon"), ink);  // C-154
   const whatsNewDue = useWhatsNewDue();                      // C-318
@@ -129,7 +138,7 @@ function Shell() {
       {companionAway ? <Edge side="right" putAway={putAway} /> : null}
       <YStack flex={(!beside && tab !== "game") || gameAway ? 1 : undefined} width={beside && !gameAway ? besideWidth : undefined}
               display={companionAway ? "none" : "flex"}>
-        <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor="$color9" backgroundColor="$color1">
+        <YStack paddingTop={ON_PHONE ? 60 : 24} paddingHorizontal={20} borderBottomWidth={3} borderBottomColor={dayColour} backgroundColor="$color1">
           <XStack alignItems="center">
             <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="600" color="$color10">DAEMONS · companion</Text>
             <YStack flex={1} />
@@ -156,6 +165,7 @@ function Shell() {
           </XStack>
           <TabStrip tab={tab} setTab={pickTab} tabs={[...(beside ? SHOWN_TABS.filter((t) => t !== "game") : SHOWN_TABS), ...(dev.on ? ["dev" as const] : [])]} />
         </YStack>
+        {worn ? <AccentBand colours={worn.colours} /> : null}{/* C-349: the place's four colours, under the day's rule */}
         {beside ? <FoundBeside {...found} /> : null}
         {/* C-344: a sync no longer re-makes the page (it stays where it was); only the tab tapped again does */}
         {tab !== "game" ? <ScrollView key={again} ref={(r: any) => { SCREEN.scroller = r; }} contentContainerStyle={{ padding: 20, width: pageWidth, alignSelf: "center" }}
@@ -190,8 +200,10 @@ function Shell() {
       {!ON_PHONE ? <HowToOverlay playing={false} /> : null}{/* C-264: the site has no game panel: over the page */}
     </YStack>
   );
-  const inked = <InkContext.Provider value={ink}>{page}</InkContext.Provider>;   // the day's ink for every key and banner
-  return day ? <Theme name={(rainbow ? `${day}rainbow` : day) as any}>{inked}</Theme> : inked;
+  const inked = <DayContext.Provider value={{ theme: dayTheme, colour: dayColour, ink: onColour(dayColour) }}>
+    <InkContext.Provider value={ink}>{page}</InkContext.Provider></DayContext.Provider>;   // the day's ink for every key and banner
+  const theme = worn ? worn.theme : dayTheme;                                 // C-349: the accent, or the day
+  return theme ? <Theme name={theme as any}>{inked}</Theme> : inked;
 }
 
 export default function App() {

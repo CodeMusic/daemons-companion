@@ -10,6 +10,7 @@ import { Platform } from "react-native";
 import { createTamagui } from "tamagui";
 import week from "../server/data/week.json";
 import palettes from "../server/data/palettes.json";
+import accentsJson from "../server/data/accents.json";   // C-349
 
 type RGB = [number, number, number];
 const hex = (h: string): RGB => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)) as RGB;
@@ -41,12 +42,19 @@ export const WEEK_COLOURS: Record<string, string> = Object.fromEntries(week.days
 // C-90: the rainbow week (the handhelds' old palette), a theme of its own for each day -- "sundayrainbow" ...
 export const RAINBOW_COLOURS: Record<string, string> = Object.fromEntries(
   Object.entries(palettes.rainbow).map(([day, c]) => [day.toLowerCase(), (c as { menu: string }).menu]));
+// C-349: each place's four colours from the game (server/tools/accents.py), and the theme its MAIN gives the app
+export type AccentColours = { deep: string; main: string; light: string; spark: string; breathe?: boolean };
+export const ACCENT_PLACES = (accentsJson as unknown as { accents: Record<string, AccentColours> }).accents;
+export const accentTheme = (main: string) => `accent${main.slice(1).toLowerCase()}`;
 const childrenThemes = Object.fromEntries([
   ...week.days.map((d) => {
     const n = d.day.toLowerCase();
     return [n, { light: scale(n, d.colour, false), dark: scale(n, d.colour, true) }];
   }),
   ...Object.entries(RAINBOW_COLOURS).map(([n, c]) => [`${n}rainbow`, { light: scale(`${n}rainbow`, c, false), dark: scale(`${n}rainbow`, c, true) }]),
+  // C-349: THE ACCENTS -- a theme for each place's MAIN colour from the game (one per colour, places share them), mixed as
+  // a weekday's is; App.tsx wears it over the day's when an accent is on
+  ...[...new Set(Object.values(ACCENT_PLACES).map((a) => a.main))].map((c) => [accentTheme(c), { light: scale(accentTheme(c), c, false), dark: scale(accentTheme(c), c, true) }]),
 ]);
 
 // The paper, light to ink: the page, the cards, the rules between them, the quiet words, the words.

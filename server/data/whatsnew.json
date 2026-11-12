@@ -1,9 +1,157 @@
 {
- "latest": 974,
+ "latest": 975,
  "builds": [
   {
+   "build": 975,
+   "commit": "f8c2ac7",
+   "date": "2026-11-12",
+   "sections": [
+    {
+     "ticket": "C-226",
+     "title": "Personal accounts for players",
+     "lines": [
+      "Piece 4: the exchange on profiles — a hub player claimed into a profile, a kid's device trading as one, the controls as reach (both sides), friend codes, friends waiting on the guardian, the ledger and block, delete letting go",
+      "Piece 5: before THE COMMONS opens — a public listener for the tunnel that is never the keeper's, passkeys from https only, the guardian's export, nicknames friends only (C-346 for the trainer name), the age check (C-345 the module), accounts unused two years erased; docs/OPENING.md (the consent review, drafts, the tunnel's steps)"
+     ]
+    },
+    {
+     "ticket": "C-346",
+     "title": "A traded daemon's trainer name blanked for a non-friend",
+     "lines": [
+      "A profile's daemon sent to a non-friend arrives with its nickname and trainer name rewritten (the species' name, the profile's first word); a loan home gets its own back; NAMES_BLANKED on, so + HOME and + LOBBY reach past friends"
+     ]
+    },
+    {
+     "ticket": "C-190",
+     "title": "Devices from the one app",
+     "lines": [
+      "THE HUB card acts — CHECK EVERY BRAIN NOW, TRY THE AI, SEND THE SAVE NOW, and LoRa boards that open their own settings",
+      "TRY THE AI names who answered as the hub says it (the Tiiny (tiiny-35b)), seen on daemons-hearth"
+     ]
+    },
+    {
+     "ticket": "C-357",
+     "title": "THE SUBTLE LAYER, lived: the book's pages that were only words, made play",
+     "lines": [
+      "THE MISREAD — each read and lean kept with the day, its centre, calm or with argument; a missed lean a misread; T-510's CLOSURE",
+      "THE PHYSICS in the decks — THE SUBTLE LAYER's PAST / PRESENT / FUTURE kept for the day; only the FUTURE drawn again",
+      "THE BODY's centres — the day's centre's tending on TODAY, in the book's own words, and the week's climb, root to crown",
+      "SLOW WRITES — the goal weathers a mark in, a layer for each day a step was ticked, however many that day",
+      "CONTAINER, the companion's half — the carried daemon in a new form gets \"Still me.\" under its own words for a week"
+     ]
+    },
+    {
+     "ticket": "C-262",
+     "title": "The T-Glass: the companion in front of one eye",
+     "lines": [
+      "THE GLASSES on the LIBRARY's MANUALS shelf — DAEMONS' tenth printed book (docs/DAEMONS-glass-manual.pdf, DAEMONS 55daf5a8), kept and fetched as THE WATCH is; its cover; a HOW TO PLAY book for WHAT'S NEW's SET UP. Its recording (voice: near) is made at the next minor release, and LISTEN joins it then (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-356",
+     "title": "The DREAM JOURNAL, and the signs in any journal",
+     "lines": [
+      "The DREAM JOURNAL and READ THE SIGNS — a journal's kind (STANDARD or DREAM); a dream chapter told as dreams with its signs read after; READ THE SIGNS on any entry or chapter, through the four books distilled into data/symbols.json (97 symbols, 15 principles), by the quick thinker or from the lexicon; DRAFT",
+      "A sign must be in the words — the dream first and last in the ask, the lenses between; a sign the mind took from the lenses dropped; the four books each where they fit (measured on the Tiiny's 9B: 12-25 s, every sign from the dream)"
+     ]
+    },
+    {
+     "ticket": "C-338",
+     "title": "THE EASEL: the daemon paints what you ask, and a gallery of what it painted",
+     "lines": [
+      "Talk reads the persona of the day — what the daemon wrote at wake of meeting today and the forecast go into the self every talk sends (read from the stored persona, never built on a talk; gone once a new wake passes)"
+     ],
+     "setup": {
+      "title": "THE EASEL",
+      "where": "DAEMON › Yours › THE EASEL ›",
+      "needs": [
+       "the hub (not a phone on its own)",
+       "an image maker: ComfyUI, on port 8008 of the house's machine",
+       "a daemon carried"
+      ],
+      "steps": [
+       "The hub paints on ComfyUI at http://roverbyteseer:8008, unless its easel.host setting names another. That machine needs ComfyUI running, with its image model loaded.",
+       "Carry a daemon: THE EASEL › appears under its card on DAEMON › Yours.",
+       "Type what to paint. It takes a minute or two; the daemon walks to its easel while it works.",
+       "THE GALLERY keeps every painting: tap one to see it large, hold it to see what was asked."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-253",
+     "title": "Memory made at night",
+     "lines": [
+      "Memory made at night — once a day after the wake, the day before it (cares counted, goal steps done, paintings, the night's dream) written as YESTERDAY by the house's thinker, folded into THE MONTH the same size, its moments put on the KEPT shelf; the self carries all three. C-254: KEPT and FORGET in THE MIND's REMEMBERED (POST /api/mind/forget); DRAFT",
+      "Memory on the quick thinker — two short summaries need no long reasoning, and a long write is what a restart kills (first live: 2026-11-11 remembered, its month begun, one moment kept)"
+     ]
+    },
+    {
+     "ticket": "C-329",
+     "title": "Daemons in dialogue: TWO VOICES and the bicameral conversation, kept and integrated",
+     "lines": [
+      "IN DIALOGUE on the watches (DRAFT) — the daemon's seventh tile, once two of the home's devices are TOGETHER: STANDARD or TWO VOICES, 1-7 turns each, the opening dictated (POST /api/device/hear: a recording heard, the words handed back, nothing answered) and read back; the hub's household talk watched as it comes, bubbles red left and blue right, the dots on the side being thought, a bubble tapped heard, INTEGRATE's titled write-up. Built on all twelve; server tests pass"
+     ],
+     "setup": {
+      "title": "DAEMONS IN DIALOGUE",
+      "where": "YOU › TRADE › OUT TOGETHER, and YOUR HOUSEHOLD",
+      "needs": [
+       "the hub",
+       "THE TIINY, or another mind the hub can ask",
+       "another player on the exchange, or two of the home's devices"
+      ],
+      "steps": [
+       "With another player: join the exchange (YOU › TRADE › JOIN THE EXCHANGE, with a code made in THE ENGINE ROOM › EXCHANGE), send your daemon OUT TOGETHER with theirs, and IN DIALOGUE is under it.",
+       "In your home: put two of the household's devices TOGETHER under YOUR HOUSEHOLD on the same page, and IN DIALOGUE appears there.",
+       "Pick STANDARD or TWO VOICES and how many turns. THE TIINY thinks first (SETTINGS › WHO ANSWERS WHEN YOU TALK); with no mind answering, the talk cannot start."
+      ],
+      "wiki": "Trading",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-252",
+     "title": "The daemon's self, in plain sentences",
+     "lines": [
+      "'s rest: one short self — self.ts shortSelf holds the words the house's module was tuned on, and both the module's persona() and selfOf(..., \"short\") are it (a telling of its own in place of the record, as the module had); SHORT_INSTRUCTIONS retired"
+     ]
+    },
+    {
+     "ticket": "C-349",
+     "title": "THEME ACCENTS, unlocked by the game",
+     "lines": [
+      "THE ACCENTS and THE MONTHS on the server — each place's palette read from the game's tilesets (server/tools/accents.py, weighed by the pixels its map shows; THE BLACKOUT's breathing purple and green threads from daemons_blackout.c), GET /api/accents (where the save was made, every place saved in remembered, every place the map has lit); the months on the week's seven hues, each leaning on its weekdays (their virtues, chakras and notes as its chord), a tone from the holiday both editions keep and a season movement by hemisphere; DRAFT",
+      "..C-355: the app — THEME ACCENTS (in step with the game, by hand, or off; the day's colour keeps TODAY's day card and the header's rule), SETTINGS in GENERAL / THEME / VOICES / SYSTEM, the tuning fork beside the day's note and the singing bowl (the chakras' signs and the virtue over its shadow, ringing the day's note), the calendar sprite in the month's colours with the month's tone under it, and THE CALENDAR: month, week and day from the phone's calendar through expo-calendar, events added, changed and removed, the month's card and its bowl ringing the month's chord; DRAFT"
+     ]
+    },
+    {
+     "ticket": "C-308",
+     "title": "A dream told twice and made whole: two perspectives and a title",
+     "lines": [
+      "A night's telling a restart cut off is told again once the hub settles (the newest, still written, within a day and a half) — 2026-11-11's two tellings were lost to three restarts",
+      "The two tellings one after the other (two at once on the Tiiny, thinking on, put the left past its five minutes); the house's module refuses a write longer than its window instead of failing on it"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.356.1",
+      "and 4 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "THE COMPANION's shelf cover, reprinted with its GUARDIAN section (DAEMONS 'releasedocs STALE')"
+     ]
+    }
+   ]
+  },
+  {
    "build": 974,
-   "commit": "e8194cd",
+   "commit": "ff1cdef",
    "date": "2026-11-11",
    "sections": [
     {
@@ -125,7 +273,8 @@
      "ticket": "C-318",
      "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
      "lines": [
-      "The header's button is always WHAT'S NEW, and WHAT'S NEW opens over the whole app"
+      "The header's button is always WHAT'S NEW, and WHAT'S NEW opens over the whole app",
+      "Whatsnew.json with build 974's notes; C-339: SET UP for C-340, the local cloud (seer/bindSeer.sh)"
      ]
     },
     {

@@ -989,7 +989,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
 
   // C-253: MEMORY MADE AT NIGHT (memory.ts) -- once a day after the wake, what the day before it left behind written as
   // YESTERDAY, folded into THE MONTH, and any moment worth keeping put on the shelf (self.yesterday, self.month,
-  // self.kept, read by selfFacts). Background work, nobody waiting: the thinker, thinking on. With no mind, or one that
+  // self.kept, read by selfFacts). Background work, on the quick thinker. With no mind, or one that
   // failed, the day waits RETRY_MIN and is tried again; self.memoryFor names the day last made.
   let remembering = false, memoryFailedAt = 0;
   const rememberDay = () => {
@@ -1002,7 +1002,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const material = dayMaterial(store, due.from, due.to, { nickname: f.nickname, feelings: f.feelings ? feelingsSaid(f.feelings) : null,
         dream: dream?.text ?? null, paintings: painted, dayName: due.from.toLocaleDateString("en-CA", { weekday: "long" }) });
       remembering = true;
-      const w = ledgered({ kind: "memory", title: `${f.nickname || "the daemon"} remembers ${due.day}` });   // DRAFT
+      // the quick thinker: two short summaries need no long reasoning, and a long write is what a restart kills (the first,
+      // thinking on, wrote 4468 tokens before the hub was deployed under it)
+      const w = ledgered({ kind: "memory", title: `${f.nickname || "the daemon"} remembers ${due.day}`, quick: true });   // DRAFT
       consolidate(material, { month: store.getSetting("self.month"), kept: readKept(store.getSetting("self.kept")) }, due.day, w.write,
                   f.nickname || "the daemon")
         .then((m) => {

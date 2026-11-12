@@ -1,9 +1,52 @@
 {
- "latest": 975,
+ "latest": 977,
  "builds": [
   {
+   "build": 977,
+   "commit": "a4836cf",
+   "date": "2026-11-12",
+   "sections": [
+    {
+     "ticket": "C-221",
+     "title": "The link cable through the hub",
+     "lines": [
+      "'s second step: THE LINK CABLE in the GAME tab — the hub passes a seat's screen, buttons and state to linkhost (/api/link/, never its memory write, never the relay), a phone-sized page at /link/, LINK CABLE on the title (DRAFT); today's goal 8"
+     ]
+    },
+    {
+     "ticket": "C-354",
+     "title": "THE CALENDAR: the phone's calendar, by month, week and day",
+     "lines": [
+      "SET UP sheets for THE CALENDAR (calendar access, once) and C-349's THEME ACCENTS (DRAFT)"
+     ],
+     "setup": {
+      "title": "THE CALENDAR",
+      "where": "TODAY › the calendar beside the date",
+      "needs": [
+       "calendar access on the phone (asked once)"
+      ],
+      "steps": [
+       "On TODAY, tap the calendar beside the date. The first time, the phone asks to share its calendar with DAEMONS: allow full access to see and change your events.",
+       "MONTH, WEEK and DAY show the phone's events. Tap one to change or remove it, or + to add one; a repeating event changes only at the time you tapped.",
+       "Said no by mistake? The phone's Settings › Privacy & Security › Calendars › DAEMONS turns it back on."
+      ],
+      "wiki": "Settings",
+      "book": "companion",
+      "draft": true
+     }
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "THE COMPANION's shelf cover, redrawn with its manual (C-356 in it)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 975,
-   "commit": "f8c2ac7",
+   "commit": "4d079ce",
    "date": "2026-11-12",
    "sections": [
     {
@@ -122,7 +165,22 @@
      "lines": [
       "THE ACCENTS and THE MONTHS on the server — each place's palette read from the game's tilesets (server/tools/accents.py, weighed by the pixels its map shows; THE BLACKOUT's breathing purple and green threads from daemons_blackout.c), GET /api/accents (where the save was made, every place saved in remembered, every place the map has lit); the months on the week's seven hues, each leaning on its weekdays (their virtues, chakras and notes as its chord), a tone from the holiday both editions keep and a season movement by hemisphere; DRAFT",
       "..C-355: the app — THEME ACCENTS (in step with the game, by hand, or off; the day's colour keeps TODAY's day card and the header's rule), SETTINGS in GENERAL / THEME / VOICES / SYSTEM, the tuning fork beside the day's note and the singing bowl (the chakras' signs and the virtue over its shadow, ringing the day's note), the calendar sprite in the month's colours with the month's tone under it, and THE CALENDAR: month, week and day from the phone's calendar through expo-calendar, events added, changed and removed, the month's card and its bowl ringing the month's chord; DRAFT"
-     ]
+     ],
+     "setup": {
+      "title": "THEME ACCENTS",
+      "where": "SETTINGS › THEME › ACCENTS",
+      "needs": [
+       "a save the hub can read"
+      ],
+      "steps": [
+       "Accents come from the game: every place you have saved in, or reached, gives its colours. The hub reads them from your save, so keep the save it watches current.",
+       "SETTINGS › THEME › ACCENTS: IN STEP WITH YOUR SAVE wears the place you saved in last. Pick any place you have unlocked to wear it instead, or OFF.",
+       "The day's colour stays on TODAY's card and on the rule under the header, whatever accent you wear."
+      ],
+      "wiki": "Settings",
+      "book": "companion",
+      "draft": true
+     }
     },
     {
      "ticket": "C-308",
@@ -144,7 +202,8 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "THE COMPANION's shelf cover, reprinted with its GUARDIAN section (DAEMONS 'releasedocs STALE')"
+      "THE COMPANION's shelf cover, reprinted with its GUARDIAN section (DAEMONS 'releasedocs STALE')",
+      "WHAT'S NEW for build 975 (C-356's dream journal and signs, C-253's nightly memory, C-357, C-338's persona in talk)"
      ]
     }
    ]

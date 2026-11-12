@@ -5,6 +5,33 @@ import { api } from "../../platform/net";
 import { GoalNow, Step, Walk } from "../../state/types";
 import { Action, Card, Entry, Eyebrow, Small } from "../../ui/ui";
 import { useApi, useFresh } from "../../platform/useApi";
+import { useSubtleInk } from "../../state/look";
+
+// C-357 (4), SLOW WRITES (the user's pick, 2026-11-12): once the save holds THE SUBTLE LAYER, the goal weathers a mark in
+// -- a layer for each day a step was ticked, however many that day, seven to a mark (server/src/weathering.ts). In the
+// book's one purple. Every word DRAFT.
+type Weathering = { held: boolean; goal?: number; days?: number; layers?: number; of?: number; today?: number };
+function WeatherMark({ goal, tick }: { goal: number; tick: number }) {
+  const [w, setW] = useState<Weathering | null>(null);
+  const ink = useSubtleInk();
+  useEffect(() => { api<Weathering>("/api/goal/weathering").then(setW).catch(() => {}); }, [goal, tick]);
+  if (!w?.held || w.goal !== goal || !w.days || !w.of) return null;
+  const said = w.days === 1 ? "Weathered in over one day." : `Weathered in over ${w.days} days.`;
+  return (
+    <XStack gap={10} alignItems="center" marginTop={6} aria-label={`a slow write: ${said}`}>
+      <YStack width={22} gap={2}>
+        {Array.from({ length: w.of }, (_, i) => w.of! - 1 - i).map((i) => (
+          <YStack key={i} height={3} borderRadius={1} backgroundColor={i < (w.layers ?? 0) ? ink : "transparent"} borderWidth={1} borderColor={ink}
+                  opacity={i < (w.layers ?? 0) ? 1 : 0.35} />
+        ))}
+      </YStack>
+      <YStack flex={1}>
+        <Text fontSize={14} lineHeight={20} color={ink}>{said}</Text>
+        {(w.today ?? 0) > 1 ? <Small color="$color9">Today counts once, however many steps.</Small> : null}
+      </YStack>
+    </XStack>
+  );
+}
 export function StepRow({ step, onToggle, onRemove }: { step: Step; onToggle: () => void; onRemove: () => void }) {
   return (
     <XStack alignItems="center" gap={10} paddingVertical={4}>
@@ -49,7 +76,8 @@ export function GoalsScreen({ reload, ink }: { reload: () => void; ink: string }
   const [title, setTitle] = useState(""), [row, setRow] = useState(""), [kind, setKind] = useState<"step" | "milestone">("step");
   const [into, setInto] = useState<Record<number, string>>({});
   const [error, setError] = useState("");
-  const load = useCallback(() => { api<GoalNow>("/api/goal").then(setNow).catch((e) => setError(e.message)); }, []);
+  const [tick, setTick] = useState(0);                     // C-357 (4): the mark read again after each step
+  const load = useCallback(() => { api<GoalNow>("/api/goal").then(setNow).catch((e) => setError(e.message)); setTick((t) => t + 1); }, []);
   const fresh = useFresh();   // C-344: a fresher answer read again in place
   useEffect(load, [load, fresh]);
   const act = async (f: () => Promise<unknown>) => { try { setError(""); await f(); load(); reload(); } catch (e) { setError((e as Error).message); } };
@@ -77,6 +105,7 @@ export function GoalsScreen({ reload, ink }: { reload: () => void; ink: string }
       <Card borderLeftWidth={6} borderLeftColor="$color9">
         <Eyebrow>YOUR GOAL</Eyebrow>
         <Text fontSize={20} fontWeight="700" color="$color12">{g.title}</Text>
+        <WeatherMark goal={g.id} tick={tick} />
         <Small>{`What are its steps? Add a step, or a milestone that holds its own. Each is ${limit} letters at most -- simpler is better.`}</Small>
         {g.subitems.map((m) => m.title ? (
           <YStack key={m.id} marginTop={10} gap={2} paddingLeft={10} borderLeftWidth={2} borderLeftColor={m.done ? "$color6" : "$color9"}>

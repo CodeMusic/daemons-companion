@@ -178,6 +178,12 @@ export class Store {
 
   // ---- C-46: ONE goal, built from milestones and steps. A milestone is a named sub-item; a step added straight to the
   // goal lives in an unnamed one (consecutive loose steps share it), so the store keeps its one shape.
+  // C-357 (4): when each of a goal's done steps was ticked (ISO times), for SLOW WRITES
+  stepTimes(goal: number): string[] {
+    return (this.db.prepare("SELECT steps.done AS done FROM steps JOIN subitems ON steps.subitem = subitems.id WHERE subitems.goal = ? AND steps.done IS NOT NULL")
+      .all(goal) as any[]).map((r) => String(r.done));
+  }
+
   currentGoal(): Goal | null {
     const r = this.db.prepare("SELECT id FROM goals WHERE done IS NULL ORDER BY id LIMIT 1").get() as any;
     return r ? this.goal(r.id) : null;

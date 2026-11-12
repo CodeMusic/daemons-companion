@@ -19,6 +19,7 @@ import { readSubtle } from "./save/subtle.js";
 import { howOf, readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./tending.js";   // C-357 (3)
+import { weatheringOf } from "./weathering.js";   // C-357 (4)
 import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
@@ -58,7 +59,7 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/goal/weathering", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
 const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -99,6 +100,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/journal") { const j = aJournal(store, Number(a.query?.id), now); return j ? ok(j) : no(404, "no such journal"); }
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48
     if (path === "/api/goal") return ok({ goal: store.currentGoal(), limit: ENTRY_LIMIT });   // C-46: ONE goal
+    if (path === "/api/goal/weathering") {                               // C-357 (4): SLOW WRITES, once the book is held
+      const g = store.currentGoal(), s = h.save.read();
+      return ok(g && s && readSubtle(s, undefined, a.query?.preview === "1").held ? { held: true, goal: g.id, ...weatheringOf(store, g.id, now) } : { held: false });
+    }
     if (path === "/api/daemon/life") return lifeNow(h, store, deviceId, now);
     if (path === "/api/soundings") return ok({ daemons: soundings(h, store) });   // C-195
     const sp = path.match(SPECIES_ID);

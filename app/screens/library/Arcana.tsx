@@ -7,6 +7,9 @@
 // BODY / SPIRIT from the deck the reader chooses; the deck shuffles and spreads, a touched card comes out and lands face
 // down on the board, and is turned there. The backs are all one (they never show the type). C-272: under a turned card,
 // its PROPHECY -- the app's alone; the game and the watches keep the short phrase. Only read, never an effect.
+// C-357 (2), THE PHYSICS (the user's pick, 2026-11-12): in THE SUBTLE LAYER, PAST / PRESENT / FUTURE is laid once a day and
+// kept (server/src/arcana.ts daySpread). All twenty-two lie faint before it is drawn (ALL PATHS); once turned, PAST and
+// PRESENT stay where they fell -- touched, they say so (DECOHERENCE) -- and only the FUTURE may be drawn again (WHICH PATH).
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
@@ -44,7 +47,7 @@ export function ArcanaCard({ card, width }: { card: Card; width: number }) {
 }
 
 // a card that turns over where it lies: the one back, then (halfway through the turn) its face
-function TurningCard({ card, width, turned, onTurn }: { card: Card; width: number; turned: boolean; onTurn?: () => void }) {
+function TurningCard({ card, width, turned, onTurn, onTouch }: { card: Card; width: number; turned: boolean; onTurn?: () => void; onTouch?: () => void }) {
   const spin = useRef(new Animated.Value(turned ? 1 : 0)).current;
   const [showFace, setShowFace] = useState(turned);
   useEffect(() => {
@@ -58,7 +61,7 @@ function TurningCard({ card, width, turned, onTurn }: { card: Card; width: numbe
   return (
     <Animated.View style={{ transform: [{ scaleX }] }}>
       <YStack role="button" aria-label={showFace ? `${card.keyword}: ${card.phrase}` : "a card, face down: turn it over"} cursor={showFace ? "default" : "pointer"}
-              onPress={() => !turned && onTurn?.()}>
+              onPress={() => (turned ? onTouch?.() : onTurn?.())}>
         {showFace ? <ArcanaCard card={card} width={width} /> : <Art path={BACK} size={width} height={width * 400 / 240} />}
       </YStack>
     </Animated.View>
@@ -77,7 +80,9 @@ function Reading({ card, colour }: { card: Card; colour: string }) {
 
 // the deck, shuffled and spread: touch a place and one card comes out from there. When enough have come out, it moves away.
 const FAN = 11;
-function Spread({ width, left, colour, onPick, onGone }: { width: number; left: number; colour: string; onPick: () => void; onGone: () => void }) {
+function Spread({ width, left, colour, onPick, onGone, fan = FAN, faint = false }:
+                { width: number; left: number; colour: string; onPick: () => void; onGone: () => void; fan?: number; faint?: boolean }) {
+  const FAN = fan;
   const open = useRef(new Animated.Value(0)).current;
   const gone = useRef(new Animated.Value(0)).current;
   const pulls = useRef(Array.from({ length: FAN }, () => new Animated.Value(0))).current;
@@ -99,13 +104,13 @@ function Spread({ width, left, colour, onPick, onGone }: { width: number; left: 
     <Animated.View style={{ height: ch + 40, opacity: gone.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
                             transform: [{ translateY: gone.interpolate({ inputRange: [0, 1], outputRange: [0, 30] }) }] }}>
       {Array.from({ length: FAN }, (_, i) => {
-        const off = i - (FAN - 1) / 2;
+        const off = i - (FAN - 1) / 2, k = 5 / ((FAN - 1) / 2);   // a wider fan keeps the eleven's curve (k = 1 at eleven)
         const x = open.interpolate({ inputRange: [0, 1], outputRange: [width / 2 - cw / 2, width / 2 - cw / 2 + off * step] });
-        const rot = open.interpolate({ inputRange: [0, 1], outputRange: ["0deg", `${off * 4}deg`] });
-        const y = Animated.add(open.interpolate({ inputRange: [0, 1], outputRange: [10, 10 + Math.abs(off) * Math.abs(off) * 1.2] }),
+        const rot = open.interpolate({ inputRange: [0, 1], outputRange: ["0deg", `${off * k * 4}deg`] });
+        const y = Animated.add(open.interpolate({ inputRange: [0, 1], outputRange: [10, 10 + (off * k) * (off * k) * 1.2] }),
                                pulls[i].interpolate({ inputRange: [0, 1], outputRange: [0, -60] }));
         return (
-          <Animated.View key={i} style={{ position: "absolute", left: x, top: y, opacity: pulls[i].interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+          <Animated.View key={i} style={{ position: "absolute", left: x, top: y, opacity: pulls[i].interpolate({ inputRange: [0, 1], outputRange: [faint ? 0.5 : 1, 0] }),
                                           transform: [{ rotate: rot }] }}>
             <YStack role="button" aria-label="a card in the spread: draw it" cursor="pointer" onPress={() => pick(i)}
                     borderRadius={6} borderWidth={1} borderColor={colour}>
@@ -189,6 +194,10 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
   const [spreadGone, setSpreadGone] = useState(false);
   const [err, setErr] = useState("");
   const [w, setW] = useState(0);
+  const [laidBefore, setLaidBefore] = useState(false);               // C-357 (2): today's spread was laid already
+  const [again, setAgain] = useState(0);                              // how many times the FUTURE has been drawn again
+  const [lever, setLever] = useState(false);                          // a PAST or PRESENT touched once turned
+  const physics = book === "subtle";
   useEffect(() => {
     api<{ held: boolean; card?: Card; halloween?: boolean }>(`/api/arcana/today?deck=${deck}${pv}`)
       .then((r) => { setHeld(r.held); setDay(r.card ?? null); setHalloween(!!r.halloween); }).catch(() => {});
@@ -196,9 +205,17 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
   if (!held || !day) return null;
 
   const deal = async (m: Mode, p: Pick) => {                          // a new mode (or deck) clears the last, and shuffles
-    setMode(m); setPick(p); setHand([]); setPlaced(0); setTurned([]); setErr(""); setSpreadGone(false);
+    setMode(m); setPick(p); setHand([]); setPlaced(0); setTurned([]); setErr(""); setSpreadGone(false); setLaidBefore(false); setLever(false);
     if (m === "day") return;
     const n = PLACES[m].length;
+    if (physics && m === "ppf") {                                    // C-357 (2): the day's, kept -- laid once, then where it fell
+      try {
+        const r = await api<{ cards: Card[]; kept: boolean; again: number }>(`/api/arcana/spread?pick=${p}${pv}`);
+        setHand(r.cards); setTurned(r.cards.map(() => false)); setRound((x) => x + 1); setAgain(r.again);
+        if (r.kept) { setPlaced(r.cards.length); setSpreadGone(true); setLaidBefore(true); }
+      } catch (e) { setErr((e as Error).message); }
+      return;
+    }
     try {
       const r = await api<{ cards: Card[] }>(`/api/arcana/draw?deck=${deck}&count=${n}&pick=${p}${m === "mbs" ? "&spread=mbs" : ""}${pv}`);
       setHand(r.cards); setTurned(r.cards.map(() => false)); setRound((x) => x + 1);
@@ -208,6 +225,14 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
   const one = Math.min(240, Math.max(150, inner)), three = Math.max(90, Math.min(200, (inner - 2 * 10) / 3));
   const places = mode === "day" ? [] : PLACES[mode];
   const size = places.length === 3 ? three : one;
+  const kept = physics && mode === "ppf";                             // C-357 (2)
+  const allTurned = hand.length === 3 && placed === 3 && turned.every(Boolean);
+  const drawAgain = async () => {                                     // only the FUTURE: PAST and PRESENT stay as they are
+    try {
+      const r = await api<{ cards: Card[]; again: number }>(`/api/arcana/spread?pick=${pick}&again=future${pv}`);
+      setHand(r.cards); setAgain(r.again); setLever(false); setTurned((t) => t.map((x, j) => (j === 2 ? false : x)));
+    } catch (e) { setErr((e as Error).message); }
+  };
 
   // folded: the deck as a tile under the cover -- touch it to open the cards, and again to fold them away
   const tile = (
@@ -250,8 +275,10 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
       <DeckChoice book={book} pick={pick} setPick={(p) => deal(mode, p)} colour={C.pink} />
       {hand.length && !spreadGone ? (
         <Spread key={round} width={inner} left={hand.length - placed} colour={C.edge} onPick={() => setPlaced((x) => Math.min(hand.length, x + 1))}
-                onGone={() => setSpreadGone(true)} />
+                onGone={() => setSpreadGone(true)} fan={kept ? 22 : FAN} faint={kept} />
       ) : null}
+      {kept && hand.length && !spreadGone && placed === 0 ? <Small color={C.faint}>Nothing was chosen. Everything was added up.</Small> : null}
+      {kept && laidBefore ? <Small color={C.faint}>Laid earlier today. They lie where they fell.</Small> : null}
       {hand.length && placed < hand.length ? <Small color={C.faint}>{places.length === 3 ? `Touch the spread for the ${places[placed]} card.` : "Touch the spread to draw a card."}</Small> : null}
       <XStack gap={10} justifyContent="center">
         {places.map((label, i) => (
@@ -259,7 +286,11 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
             <YStack width={size + 8} height={size * 400 / 240 + 8} padding={3} borderRadius={6} borderWidth={1}
                     borderColor={C.pink} borderStyle={i < placed ? "solid" : "dashed"} alignItems="center" justifyContent="center">
               {i < placed && hand[i] ? (
-                <Landing><TurningCard card={hand[i]} width={size} turned={!!turned[i]} onTurn={() => setTurned((t) => t.map((x, j) => (j === i ? true : x)))} /></Landing>
+                <Landing key={kept && i === 2 ? `future-${again}` : "card"}>
+                  <TurningCard key={kept && i === 2 ? `future-${again}` : "card"} card={hand[i]} width={size} turned={!!turned[i]}
+                               onTurn={() => setTurned((t) => t.map((x, j) => (j === i ? true : x)))}
+                               onTouch={kept && i < 2 ? () => setLever(true) : undefined} />
+                </Landing>
               ) : null}
             </YStack>
             {label ? <Text {...mono} fontSize={10} color={i < placed ? C.pink : C.faint}>{label}</Text> : null}
@@ -267,7 +298,15 @@ export function Cards({ book = "subtle" }: { book?: Book }) {
         ))}
       </XStack>
       {placed && turned.slice(0, placed).some((t) => !t) ? <Small color={C.faint}>Touch a card on the board to turn it over.</Small> : null}
-      {hand.map((c, i) => (turned[i] ? <Reading key={`${round}-r${i}`} card={c} colour={C.pink} /> : null))}
+      {hand.map((c, i) => (turned[i] ? <Reading key={`${round}-r${i}-${i === 2 ? again : 0}`} card={c} colour={C.pink} /> : null))}
+      {kept && lever ? <Small color={C.faint}>That is the lever you cannot pull.</Small> : null}
+      {kept && allTurned ? (
+        <YStack gap={6} alignItems="flex-start">
+          <Text role="button" aria-label="draw the FUTURE again" cursor="pointer" onPress={drawAgain} {...mono} fontSize={11}
+                paddingVertical={8} paddingHorizontal={10} borderRadius={3} borderWidth={1} borderColor={C.pink} color={C.pink}>DRAW THE FUTURE AGAIN</Text>
+          <Small color={C.faint}>You can only steer which way you go from here.</Small>
+        </YStack>
+      ) : null}
     </YStack>
   );
   return (

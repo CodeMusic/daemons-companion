@@ -18,7 +18,7 @@ import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
 import { howOf, readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
-import { cardOfDay, draw, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232
+import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
@@ -57,7 +57,7 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
 const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -170,6 +170,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
         return no(403, deck === "dawn" ? "Find THE EUDAIMON LAYER first." : spell ? "Find THE HERMETIC LAYER first." : "Find THE SUBTLE LAYER first.");   // DRAFT
       const pick = (["reason", "instinct", "above", "below", "dawn"] as const).find((k) => k === a.query?.pick) ?? "both";
       return ok({ cards: draw(a.query?.count === "3" ? 3 : 1, Math.random, deck, pick, a.query?.spread === "mbs" ? "mbs" : "ppf") });
+    }
+    if (path === "/api/arcana/spread") {                                 // C-357 (2): THE SUBTLE LAYER's PAST / PRESENT / FUTURE, kept for the day
+      if (!readSubtle(save, undefined, a.query?.preview === "1").held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
+      const pick = (["reason", "instinct"] as const).find((k) => k === a.query?.pick) ?? "both", date = today(h, store, now).date;
+      const s = a.query?.again === "future" ? { ...futureAgain(store, date, pick, Math.random, now), kept: true } : daySpread(store, date, pick, Math.random, now);
+      return ok(s);
     }
     if (path === "/api/arcana/today") {                                  // C-232: the day's card, the same all day for this trainer
       const deck = deckOf(a.query?.deck), spell = deck !== "subtle", pv = a.query?.preview === "1", hermetic = readHermetic(save, store, pv).held;

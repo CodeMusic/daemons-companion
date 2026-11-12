@@ -11,6 +11,7 @@
 import arcanaJson from "../data/arcana.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import thirteenJson from "../data/thirteen.json" with { type: "json" };
+import type { Store } from "./store.js";
 
 // C-239: and SPELLCRAFT, THE HERMETIC LAYER's face of the same twenty-two -- its own deck, drawn once that book is held.
 // C-272/C-273 (the user, 2026-11-01): THE HERMETIC LAYER's two decks are ABOVE and BELOW, as THE SUBTLE LAYER's are REASON
@@ -70,8 +71,9 @@ export function thirteenOfDay(date: string, who = ""): Card {
 }
 // a card, or a spread of three (no card twice in one spread) -- from one of the book's two decks, or both as one;
 // C-273: three are PAST / PRESENT / FUTURE, or MIND / BODY / SPIRIT
-export function draw(count: 1 | 3, rand: () => number = Math.random, deck: Deck = "subtle", pick: Pick = "both", spread: Spread = "ppf"): Card[] {
-  const ns = [...DECK.keys()];
+export function draw(count: 1 | 3, rand: () => number = Math.random, deck: Deck = "subtle", pick: Pick = "both", spread: Spread = "ppf",
+                     except: number[] = []): Card[] {
+  const ns = [...DECK.keys()].filter((n) => !except.includes(n));
   const sides = SIDES[deck].includes(pick as Side) ? [pick as Side] : SIDES[deck];
   const out: Card[] = [];
   for (let i = 0; i < count; i++) {
@@ -80,4 +82,33 @@ export function draw(count: 1 | 3, rand: () => number = Math.random, deck: Deck 
     out.push({ ...cardOf(n, side, Math.floor(rand() * SHINY_ONE_IN) === 0), ...(count === 3 ? { at: SPREADS[spread][i] } : {}) });
   }
   return out;
+}
+
+// C-357 (2), THE PHYSICS in the decks (the user's pick, 2026-11-12): THE SUBTLE LAYER's PAST / PRESENT / FUTURE is laid once
+// a day for each deck the reader picks, and kept. PAST and PRESENT stay where they fell -- "You cannot change which path the
+// record holds" (WHICH PATH; DECOHERENCE, the lever you cannot pull); only the FUTURE may be drawn again, never as a card
+// already on the board -- "You can only steer which way you go from here." Its own deck and its own day: the watches' and
+// the other books' spreads are drawn fresh, as before. DRAFT.
+export type DaySpread = { date: string; pick: Pick; cards: Card[]; again: number; laid: string };
+const SPREAD_KEY = "arcana.ppf";
+function keptSpreads(store: Store, date: string): DaySpread[] {
+  try { const l = JSON.parse(store.getSetting(SPREAD_KEY) ?? "[]") as DaySpread[]; return Array.isArray(l) ? l.filter((s) => s.date === date) : []; }
+  catch { return []; }
+}
+// the day's spread for this pick, laid now if it was not laid yet today; `kept` says it was there already
+export function daySpread(store: Store, date: string, pick: Pick, rand: () => number = Math.random, now = new Date()): DaySpread & { kept: boolean } {
+  const all = keptSpreads(store, date), had = all.find((s) => s.pick === pick);
+  if (had) return { ...had, kept: true };
+  const s: DaySpread = { date, pick, cards: draw(3, rand, "subtle", pick, "ppf"), again: 0, laid: now.toISOString() };
+  store.setSetting(SPREAD_KEY, JSON.stringify([...all, s]));
+  return { ...s, kept: false };
+}
+// the FUTURE drawn again: a new third card, never one already on the board; PAST and PRESENT untouched
+export function futureAgain(store: Store, date: string, pick: Pick, rand: () => number = Math.random, now = new Date()): DaySpread {
+  const all = keptSpreads(store, date), s = all.find((x) => x.pick === pick) ?? daySpread(store, date, pick, rand, now);
+  const [past, present] = s.cards;
+  const future = { ...draw(1, rand, "subtle", pick, "ppf", [past.n, present.n, s.cards[2].n])[0], at: "FUTURE" };
+  const next: DaySpread = { ...s, cards: [past, present, future], again: s.again + 1 };
+  store.setSetting(SPREAD_KEY, JSON.stringify([...keptSpreads(store, date).filter((x) => x.pick !== pick), next]));
+  return next;
 }

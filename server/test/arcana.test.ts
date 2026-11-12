@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { cardOf, cardOfDay, deckSize, draw, SHINY_ONE_IN, SPREAD, symbolForm } from "../src/arcana.js";
+import { cardOf, cardOfDay, daySpread, deckSize, draw, futureAgain, SHINY_ONE_IN, SPREAD, symbolForm } from "../src/arcana.js";
+import { Store } from "../src/db.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national: number; art: { front: string } }>;
@@ -161,5 +162,32 @@ describe("C-313: the dawn readings", () => {
     const elsewhere = new Set(Array.from({ length: deckSize() }, (_, n) =>
       (["reason", "instinct", "above", "below"] as const).map((s) => cardOf(n, s, false).name)).flat());
     for (let n = 0; n < deckSize(); n++) expect(elsewhere.has(cardOf(n, "dawn", false).name), `card ${n}`).toBe(false);   // "new": on no other face
+  });
+});
+
+describe("C-357 (2): THE PHYSICS -- THE SUBTLE LAYER's PAST / PRESENT / FUTURE, kept for the day", () => {
+  it("lays the day's spread once for each pick, and gives the same one again that day", () => {
+    const store = new Store(":memory:");
+    const a = daySpread(store, "2026-11-12", "both", seeded(3));
+    expect(a.kept).toBe(false);
+    expect(a.cards.map((c) => c.at)).toEqual(["PAST", "PRESENT", "FUTURE"]);
+    const b = daySpread(store, "2026-11-12", "both", seeded(99));
+    expect(b.kept).toBe(true);
+    expect(b.cards.map((c) => c.n)).toEqual(a.cards.map((c) => c.n));          // where they fell
+    expect(daySpread(store, "2026-11-12", "instinct", seeded(5)).kept).toBe(false);   // another deck, its own spread
+    expect(daySpread(store, "2026-11-13", "both", seeded(5)).kept).toBe(false);       // a new day, a new spread
+  });
+  it("draws only the FUTURE again: PAST and PRESENT untouched, never a card already on the board", () => {
+    for (let k = 0; k < 40; k++) {
+      const store = new Store(":memory:"), r = seeded(k);
+      const first = daySpread(store, "2026-11-12", "reason", r);
+      let s = futureAgain(store, "2026-11-12", "reason", r);
+      for (let i = 0; i < 5; i++) s = futureAgain(store, "2026-11-12", "reason", r);
+      expect(s.again).toBe(6);
+      expect(s.cards.slice(0, 2)).toEqual(first.cards.slice(0, 2));
+      expect(new Set(s.cards.map((c) => c.n)).size).toBe(3);
+      expect(s.cards[2]).toMatchObject({ at: "FUTURE", side: "reason" });
+      expect(daySpread(store, "2026-11-12", "reason", r).cards[2].n).toBe(s.cards[2].n);   // the new FUTURE is the one kept
+    }
   });
 });

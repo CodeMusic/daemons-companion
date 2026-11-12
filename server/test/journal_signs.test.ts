@@ -128,3 +128,15 @@ describe("C-356: the DREAM JOURNAL", () => {
     expect(journalOf(s, id)!.signs[0].state).toBe("failed");
   });
 });
+
+describe("C-356: a sign must be in the words", () => {
+  it("drops what the mind took from the lenses instead of the dream", () => {
+    const answer = JSON.stringify({ signs: [
+      { sign: "shadow", seen: "a part no longer watched", reading: "an old instruction", books: ["THE SUBTLE LAYER"] },
+      { sign: "white bird", seen: "a white bird flew over the water", reading: "a message arriving", books: ["THE UNITY BOOK"] },
+    ], thread: "" });
+    expect(readSigns(answer, undefined, DREAM)!.signs.map((s) => s.sign)).toEqual(["WHITE BIRD"]);
+    expect(readSigns(answer)!.signs).toHaveLength(2);
+    expect(signsAsk("dream", DREAM, symbolsIn(DREAM)).indexOf("THE DREAM")).toBe(0);
+  });
+});

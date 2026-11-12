@@ -312,7 +312,7 @@ export async function writeSigns(store: Store, id: number, write: Writer | null)
     return;
   }
   try {
-    const r = readSigns(await write(SIGNS_ASK[w.kind], signsAsk(w.kind, w.text, found), 900));
+    const r = readSigns(await write(SIGNS_ASK[w.kind], signsAsk(w.kind, w.text, found), 900), undefined, w.text);
     if (r) return void finishSigns(store, id, r, "thinker");
     if (plain.signs.length) return void finishSigns(store, id, plain, "lexicon");
     throw new Error("No mind could read them this time.");   // DRAFT

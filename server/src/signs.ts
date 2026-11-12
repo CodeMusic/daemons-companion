@@ -57,24 +57,38 @@ const SHAPE = "Answer with JSON only, no other words: {\"signs\": [{\"sign\": th
   "in the words, under 12 words, \"reading\": what it may mean here, under 60 words, \"books\": the books whose lens you used, by name}], " +
   "\"thread\": one or two sentences on what the signs say together, under 50 words}.";
 export const SIGNS_ASK: Record<Kind, string> = {
-  dream: "You read the symbols in a person's dream, through the four books given as lenses. Find the three to six images in the dream that " +
+  dream: "You read the symbols in a person's dream, through the four books given as lenses. Find the three to six images IN THE DREAM that " +
     "carry the most -- a place, a creature, an object, a colour, a number, a figure, an act -- and read each: what it may be saying, for this " +
-    "dreamer, in the books' own spirit, tied to how it appears in the dream. Prefer the symbols the books know, but read any strong image. " +
+    "dreamer, in the books' own spirit, tied to how it appears in the dream. Every sign must be something the dream itself contains, and " +
+    "'seen' quotes the dream's own words; the lenses are only how you read, never signs themselves. Draw on whichever of the four " +
+    "books fits each sign best -- not always the same ones. " +
     "Offer, never pronounce: 'may', 'often', 'asks'. Never diagnose, never predict, never advise. " + SHAPE,
   standard: "You find the hidden signs, symbols and patterns in a person's journal, through the four books given as lenses: images that recur, " +
     "numbers, colours, creatures, places, people's roles, coincidences, a feeling that keeps returning, a turn in the days. Find three to six " +
-    "and read each: what it may be pointing to, in the books' own spirit, tied to where it appears. Offer, never pronounce: 'may', 'often', " +
+    "IN THE JOURNAL and read each: what it may be pointing to, in the books' own spirit, tied to where it appears. Every sign must be something " +
+    "the journal itself contains, and 'seen' quotes its own words; the lenses are only how you read, never signs themselves. Offer, never pronounce: 'may', 'often', " +
     "'asks'. Never diagnose, never predict, never advise. " + SHAPE,
 };
 
 export const READ_MOST = 6000;
-export const signsAsk = (kind: Kind, text: string, found: ReturnType<typeof symbolsIn>, lex: Lexicon = LEXICON) =>
-  `${lensesOf(found, lex)}\n\n${kind === "dream" ? "THE DREAM" : "THE JOURNAL"}:\n\n${text.length > READ_MOST ? `${text.slice(0, READ_MOST)}…` : text}`;
+// The words first and last: a small mind reads the lenses as the subject if the words come only before them
+export const signsAsk = (kind: Kind, text: string, found: ReturnType<typeof symbolsIn>, lex: Lexicon = LEXICON) => {
+  const what = kind === "dream" ? "THE DREAM" : "THE JOURNAL", words = text.length > READ_MOST ? `${text.slice(0, READ_MOST)}…` : text;
+  return `${what}:\n\n${words}\n\n---\n\n${lensesOf(found, lex)}\n\n---\n\nNow read the signs in ${what.toLowerCase()} above -- only what it ` +
+    `contains -- through these lenses, as JSON.`;
+};
 
 const clip = (s: unknown, most: number) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, most);
 
-// The mind's answer as a reading; null if it gave nothing usable
-export function readSigns(text: string | null | undefined, lex: Lexicon = LEXICON): Reading | null {
+// Is this sign in the words? Some word of its name or of where it was seen (four letters or more, or its stem) is there
+const stem = (w: string) => w.replace(/(ing|ed|es|s)$/, "");
+export function inWords(sign: Sign, text: string): boolean {
+  const have = new Set(words(text).map(stem));
+  return words(`${sign.sign} ${sign.seen}`).filter((w) => w.length >= 4).some((w) => have.has(stem(w)));
+}
+
+// The mind's answer as a reading; null if it gave nothing usable. With the words given, a sign not in them is dropped
+export function readSigns(text: string | null | undefined, lex: Lexicon = LEXICON, source?: string): Reading | null {
   const raw = String(text ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) return null;
@@ -85,7 +99,7 @@ export function readSigns(text: string | null | undefined, lex: Lexicon = LEXICO
       sign: clip(s?.sign, 40).toUpperCase(), seen: clip(s?.seen, 120), reading: clip(s?.reading, 480),
       books: (Array.isArray(s?.books) ? s.books : [s?.books]).map((b: unknown) => clip(b, 40).toUpperCase())
         .map((b: string) => names.find((n) => n === b || n.includes(b.replace(/^THE /, ""))) ?? "").filter(Boolean),
-    })).filter((s: Sign) => s.sign && s.reading);
+    })).filter((s: Sign) => s.sign && s.reading && (source == null || inWords(s, source)));
     return signs.length ? { signs, thread: clip(j.thread, 360) } : null;
   } catch { return null; }
 }

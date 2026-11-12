@@ -55,6 +55,7 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 |---|---|
 | `GET /api/party` | the party of the configured save copy (*alone too*) |
 | `GET /api/profile` | the save's trainer, the player's choice and rival, play time, money, shoes, INDEX counts, MARKS and their wisdom, ROOTS, the DIPLOMA, OPUS, the places visited, the groves found, where it was saved, whether it is the companion's game -- and `casino`: what the CASINO has won or lost since the last SYNC (`pending`, `spins`, `balance`) and who is at the reels now (`table`) (*alone too*) |
+| `GET /api/accents` | C-349: the game's colours the save has unlocked -- `here`, the place it was saved in (or none), and `unlocked`, each place saved in or reached with its `deep`, `main`, `light` and `spark` (and `breathe` for a place that breathes); places saved in are remembered by the hub (*alone too*) |
 | `GET /api/index` | the save's INDEX: seen and bound, each entry, OPUS's margins, and each entry's NATIVE lines (*alone too*) |
 | `GET /api/species/:id` | one daemon's name, types, category and its edition's INDEX entry (*alone too*) |
 | `GET /api/notebook` | the NOTEBOOK pages the save holds, by section: each page's words, its kind (a song is `song`, with its key, notes and frames), whether it is still unread in the game, where it was found, and its link where the game draws a QR code; and the twelve key colours and the outline the SONGBOOK's staff is drawn in (*alone too*) |

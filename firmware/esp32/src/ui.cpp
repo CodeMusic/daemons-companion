@@ -67,7 +67,7 @@ static String hint(String s) {
 // index entry, and maybe the other options are ones which relate to some of the newer features like the social
 // features"): on the watch the daemon's screen is tiles -- CARE (the care grid), INDEX (its entry), TALK, its DREAM;
 // the social ones (C-327 TOGETHER and TRADE, C-328 BATTLE, C-329 a dialogue) join as they are built
-const int DAEMON_TILES = 6;   // C-327: TOGETHER (APART while in a space) and SWAP
+const int DAEMON_TILES = 7;   // C-327: TOGETHER (APART while in a space) and SWAP; C-329 IN DIALOGUE
 static const char *CARE_ITEMS[] = { "DRINK", "FEED", "TRAIN", "SLEEP", "ITS INDEX ENTRY" };   // C-114: SLEEP; C-117: DRINK first, as the buttons (input.cpp CARE_ORDER), DRAFT
 // ("\x01" "abc...", two literals: "\x01abcdef" in one is a single hex escape that eats a-f -- seen with SHOT)
 const char WHEEL[] = "\x01" "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-_=+.,?/:;'\"<>[]{}|\\~`";
@@ -742,12 +742,17 @@ void draw() {
   }
 
   if (screen == CARE && gridLists()) {                       // C-325: the daemon's own screen, as tiles
-    static String WORDS[DAEMON_TILES] = { "CARE", "INDEX", "TALK", "DREAM", "TOGETHER", "SWAP" };   // DRAFT
+    static String WORDS[DAEMON_TILES] = { "CARE", "INDEX", "TALK", "DREAM", "TOGETHER", "SWAP", "DIALOGUE" };   // DRAFT
     WORDS[4] = st.together.on ? "APART" : "TOGETHER";                                                 // DRAFT
     drawTiles(DAEMON_TILES, careAt, WORDS, upper(st.daemon.nickname).c_str(), [](int i, int cx, int cy) {
       if (i == 4) {                                            // two side by side, or (APART) drawn apart
         int g = st.together.on ? 9 : 3;
         canvas.drawCircle(cx - 6 - g, cy, 9, PAPER); canvas.drawCircle(cx + 6 + g, cy, 9, PAPER);
+        return;
+      }
+      if (i == 6) {                                            // C-329: two bubbles, red and blue
+        canvas.fillRoundRect(cx - 20, cy - 12, 22, 14, 4, canvas.color565(200, 52, 52));
+        canvas.fillRoundRect(cx - 2, cy + 2, 22, 14, 4, canvas.color565(72, 104, 232));
         return;
       }
       if (i == 5) {                                            // two arrows, crossing

@@ -304,6 +304,15 @@ void press() {
   }
   else if (screen == CARE && gridLists()) {                       // C-325: CARE, INDEX, TALK, DREAM -- as the face's quick buttons open them
     static const int QUICK[] = { 0, 7, 1, 6 };
+    if (careAt == 6) {                                          // C-329: IN DIALOGUE, the two daemons of a space talking
+      screen = RUN; routineRunning = true;
+      String runDialogue();                                     // dialogue.cpp
+      String r = runDialogue();
+      routineRunning = false; screen = CARE;
+      if (r.length()) say(r);
+      dirty = true;
+      return;
+    }
     if (careAt >= 4) {                                          // C-327: the household -- TOGETHER (or APART), SWAP
       if (careAt == 4 && st.together.on) {
         bool ok; http("POST", "/api/household/apart", "{}", &ok);

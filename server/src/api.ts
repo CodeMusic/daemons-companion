@@ -698,7 +698,7 @@ export const DEVICE_DOOR = [
      "/api/device/remotes", "/api/device/networks", "/api/device/beacon", "/api/device/met", "/api/device/message", "/api/device/listen",
      "/api/device/battery", "/api/ai/talk", "/api/ai/speak", "/api/device/talk", "/api/device/speak",
      "/api/device/hello", "/api/device/card", "/api/device/note", "/api/device/note/written",
-     "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
+     "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote", "/api/device/hear"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/") || p.startsWith("/api/ai/voice/")),   // C-317: a voice streamed, by an id nobody can guess   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/book/recording" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   // C-327: the household -- a watch swaps with, or shares a space with, another of the home's own devices
@@ -2199,6 +2199,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return answer(PRIORITY.inHand, async () => {
           const t0 = Date.now(), r = await talkOn({ ...talkPayload({ text: said, speak: false }), history: [] });
           return { said, answer: r.answer ?? null, provider: r.provider ?? null, error: r.error ?? null, ms: Date.now() - t0 };
+        });
+      }
+      // C-329: words dictated on a watch -- its recording heard, and the words handed back, nothing answered (the opening of
+      // a dialogue between two daemons, said on the wrist rather than typed)
+      if (req.method === "POST" && path === "/api/device/hear") {
+        const audio = await rawBody(req);
+        if (!audio || audio.length < 44) return send(res, 400, { error: "hear takes a recording (up to 2 MB)" });
+        if (!house.any) return send(res, 503, { error: "nothing here can hear yet" });                              // DRAFT
+        return answer(PRIORITY.inHand, async () => {
+          const b: Record<string, any> = await heardAs(audio, String(req.headers["content-type"] ?? "audio/wav"));
+          const heard = typeof b.audioBase64 === "string"
+            ? ((await house.transcribe(new Uint8Array(Buffer.from(b.audioBase64, "base64"))).catch(() => null)) ?? "").trim() : "";
+          return heard ? { heard } : { error: "Nothing was heard." };                                                 // DRAFT
         });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw

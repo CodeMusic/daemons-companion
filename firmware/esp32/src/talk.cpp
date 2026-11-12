@@ -581,3 +581,44 @@ void talkReadText(const String &text, bool asDaemon) {
   keepAs = "";                                            // C-199: only the reading's own voice is kept
   lastInput = millis();
 }
+
+// C-329: words dictated on the watch -- recorded as talkHold records them, heard by the hub (POST /api/device/hear) and
+// handed back, nothing answered: the opening of a dialogue said on the wrist. False with why in `heard`.
+bool talkDictate(uint32_t forMs, String &heard) {
+  heard = "";
+  if (!talkCan() || board.mic == Mic::Analog) { heard = "NO MICROPHONE"; return false; }              // DRAFT
+  if (!atHome()) { heard = online() ? "Saying it needs home." : "NEEDS WI-FI"; return false; }         // DRAFT
+  size_t most = min((size_t)(RATE * MOST_S), (size_t)(RATE * (forMs / 1000)));
+  uint8_t *rec = (uint8_t *)bigAlloc(44 + most * 2);
+  if (!rec || !micOn()) { free(rec); heard = "NO MICROPHONE"; return false; }                       // DRAFT
+  screen = TALK; talkHeard = talkAnswer = ""; talkStatus = "Listening..."; talkListening = true; draw();   // DRAFT
+  int16_t *pcm = (int16_t *)(rec + 44);
+  size_t n = 0; uint32_t t0 = millis();
+  while (millis() - t0 < forMs && n < most) {
+    size_t got = 0;
+    i2s_read(MIC, pcm + n, min((size_t)512, most - n) * 2, &got, 100 / portTICK_PERIOD_MS);
+    n += got / 2;
+  }
+  talkListening = false;
+  i2s_driver_uninstall(MIC);
+  soundResume();
+  lastInput = millis();
+  if (n < RATE / 3) { free(rec); heard = "Nothing was heard."; return false; }                       // DRAFT
+  wavHeader(rec, n);
+  talkStatus = "Hearing..."; draw();                                                                 // DRAFT
+  HTTPClient h;
+  h.setTimeout(30000);
+  h.begin(serverUrl + "/api/device/hear");
+  h.addHeader("x-device", deviceId());
+  h.addHeader("content-type", "audio/wav");
+  int code = h.POST(rec, 44 + n * 2);
+  String body = code > 0 ? h.getString() : "";
+  h.end();
+  free(rec);
+  JsonDocument d;
+  if (deserializeJson(d, body)) { heard = "The companion did not answer."; return false; }            // DRAFT
+  heard = String((const char *)(d["heard"] | ""));
+  if (code == 200 && heard.length()) return true;
+  heard = String((const char *)(d["error"] | "Nothing was heard."));                                  // DRAFT
+  return false;
+}

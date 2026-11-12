@@ -4,6 +4,25 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-12, the mind and the Tiiny
+
+*The user, 2026-11-12: "plan and run your goal loop for anything ai mind/tiiny related please", with a new piece: the DREAM
+JOURNAL (C-356).* Worked top down as the others are: build it, test it, deploy the hub, commit by path, push, strike it
+here. Nothing on the phone is seen until the next TestFlight build, which is the user's to upload.
+
+1. **C-356, the DREAM JOURNAL and its signs** -- a new journal is STANDARD or DREAM; a dream journal's summaries are a
+   dream's, and every summary (a chapter, or one entry on its own) can READ THE SIGNS: the symbols found and read through
+   THE SUBTLE LAYER, THE HERMETIC LAYER, THE EUDAIMON LAYER and THE UNITY BOOK, from a distilled lexicon
+   (`server/data/symbols.json`); a standard journal gets the same as SIGNS AND PATTERNS.
+2. **C-338's next half: talk reads the persona of the day** -- TALK, a dream and the daemon's lines told with what it wrote
+   of today, the forecast and its day's virtue, from the one persona built at wake.
+3. **C-253, memory made at night** -- yesterday's paragraph and the month's, written by the Tiiny after each night and fed
+   to the self (C-252's YESTERDAY slot is empty today); then C-254's REMEMBERED, FORGET and KEPT in THE MIND.
+4. **C-252's rest** -- the house module's `persona()` onto `selfOf(..., "short")`, so every mind hears one self.
+5. **C-319's STOP that stops** -- a stopped task's write aborted on the Tiiny, not only ignored when it lands.
+6. **Heard from the real Tiiny** -- C-308's two tellings on a real night and C-329's dialogue, run on the hub and filed.
+7. **On the phone** (*waits on the user*): the next TestFlight build with all of the above; 973's easel hold.
+
 ## Today's goals -- 2026-11-12, the devices, the site and the app
 
 *The user, 2026-11-12: "keep going with the goal loop, plan one for today please (devices/site/app focused)".* Worked
@@ -438,3 +457,4 @@ at the first open one. Each names its ticket; the ticket holds the detail.
 | **C-353** | **A calendar sprite on TODAY** (*the user, 2026-11-12, with a sketch: a box reading "12 NOV" beside the day*): right of the day's block, the month's colour(s) its border (two outlines when the month has two), its fill a lighter version of them, MMM centred at the bottom in the outline colour, the day of the month above it, larger, in the day's colour with a thin outline in the month's. "It should feel like a calendar." | *open* | `app/ui/calendarSprite.tsx` | C-352 |
 | **C-354** | **THE CALENDAR: the phone's calendar, by month, week and day** (*the user, 2026-11-12*): the sprite tapped opens month, week and day views of the iOS calendar's events, managed there (EventKit, a purpose string in app.json AND by hand in `app/ios/DAEMONScompanion/Info.plist`); the same tuning fork inside it brings a singing bowl in the month's colours. | *open* | `app/screens/today/Calendar.tsx` | C-351, C-353 |
 | **C-355** | **The month's symbolism** (*the user, 2026-11-12: "what symbolism beyond just a color fits for each 12 months -- like the 7 day system is a small cycle [virtues/shadows + chakras], months relate to seasons which relates to your hemisphere location and months contain those week-sets, months also contain holidays that link to emotions like Love for February, perhaps we could use all that to drive a month symbolism which in day to day practice you hold as an overall tone or mood as you practice the 7 day system"*): a proposal for both hemispheres, put to the user before any of it is built in. | *open: a proposal to the user* | | C-352, C-149 |
+| **C-356** | **The DREAM JOURNAL, and the signs in any journal** (*the user, 2026-11-12: "when you start a new journal you can select the standard kind we have, or dream journal -- a dream journal type in addition to producing dream summaries (for either individual or spans of entries) it also finds the symbols in your dream and give interpretation -- it should use the wisdom we have in the subtle layer and the hermetic+eudaimon layer+unity book ... perhaps we make some distilled context for this ... even in the regular journal type, we could have some symbolism notes, or a similar ability to find hidden signs, symbols and patterns in your regular journal notes"*): a journal's KIND (STANDARD or DREAM) chosen when it is made; a dream journal's chapter is the dream told, and READ THE SIGNS on one entry or a chapter finds its symbols and reads each through the four books; a standard journal's is SIGNS AND PATTERNS, the threads that recur. The books are distilled by hand into `server/data/symbols.json` (principles always sent, symbols retrieved by their words) so the Tiiny's quick thinker can read them; with no thinker the lexicon's own readings are shown. Every word DRAFT. | *open* | C-298, C-230 |

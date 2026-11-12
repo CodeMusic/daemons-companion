@@ -96,7 +96,7 @@ function BuildPage({ b, onSetUp }: { b: BuildNotes; onSetUp: (s: Section) => voi
   );
 }
 // C-339: one section's setup steps -- what it needs, where it lives, the steps in order, and its manual and wiki page
-const BOOKS = new Set(["micro", "quick", "player", "social", "tiiny", "companion", "watch"]);
+const BOOKS = new Set(["micro", "quick", "player", "social", "tiiny", "companion", "watch", "glass"]);
 function SetupPage({ s, back }: { s: Section; back: () => void }) {
   const u = s.setup!;
   return (

@@ -67,7 +67,7 @@ ticket. The dialog then shows SET UP › on the section and opens the steps. One
   "needs": ["the hub", "headphones, for DRIFT DOWN"],   // devices, servers, settings
   "where": "DAEMON › DREAMS › SLEEP SOUNDS",     // where it lives in the app
   "wiki": "Nights-and-dreams",                   // a page in wiki/ (Page or Page#anchor)
-  "book": "watch",                               // a HOW TO PLAY book: micro, quick, player, companion, watch, tiiny, social
+  "book": "watch",                               // a HOW TO PLAY book: micro, quick, player, companion, watch, glass, tiiny, social
   "draft": true
 }
 ```
@@ -87,7 +87,7 @@ python3 tools/releasedocs.py --companion --online
 
 It groups the commits since the previous WHAT'S NEW build by ticket, joins each to its WHAT'S NEW section and SET UP,
 and checks the READMEs, the five wikis (`wiki/`, published with `wiki/publish.sh` -- from HEAD when another session
-has wiki edits open), `docs/`, the manuals the app shows (DAEMONS `docs/manual-companion`, `docs/manual-watch`, ...)
+has wiki edits open), `docs/`, the manuals the app shows (DAEMONS `docs/manual-companion`, `docs/manual-watch`, `docs/manual-glass`, ...)
 and `wiki/Server-API.md` (every `/api/...` a build's notes name). **STALE** lines are fixed in the same build;
 each **CANDIDATE** is written or becomes a TODO row. Public writing: nothing personal, never the frightening word.
 

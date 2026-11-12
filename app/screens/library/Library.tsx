@@ -127,7 +127,7 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  type Opened = "manual" | "quick" | "companion" | "watch" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "notebook" | "songbook" | "stream";
+  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "notebook" | "songbook" | "stream";
   const [book, setBook] = usePlace<Opened | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
@@ -176,6 +176,7 @@ export function LibraryScreen() {
   if (book === "quick") return open(<ManualBook which="quick" />);
   if (book === "companion") return open(<ManualBook which="companion" />);   // C-321
   if (book === "watch") return open(<ManualBook which="watch" />);           // C-326
+  if (book === "glass") return open(<ManualBook which="glass" />);           // C-262
   if (book === "social") return open(<ManualBook which="social" />);
   if (book === "tiiny") return open(<ManualBook which="tiiny" />);
   if (book === "word") return open(<ManualBook which="word" />);   // C-274
@@ -208,6 +209,7 @@ export function LibraryScreen() {
       { id: "player", title: "THE PLAYER'S MANUAL", about: manualAbout(), cloth: "#6b5aa6", onPress: () => setBook("manual") },
       { id: "companion", title: "THE COMPANION", about: manualAbout("companion"), cloth: "#a65a4f", onPress: () => setBook("companion") },   // C-321
       { id: "watch", title: "THE WATCH", about: manualAbout("watch"), cloth: "#3d4260", onPress: () => setBook("watch") },   // C-326
+      { id: "glass", title: "THE GLASSES", about: manualAbout("glass"), cloth: "#4a3f6b", onPress: () => setBook("glass") },   // C-262
       { id: "social", title: "PLAYING TOGETHER", about: manualAbout("social"), cloth: "#5a7fa6", onPress: () => setBook("social") },
       { id: "tiiny", title: "A BIGGER MIND", about: manualAbout("tiiny"), cloth: "#4f8a6e", onPress: () => setBook("tiiny") },
     ] },

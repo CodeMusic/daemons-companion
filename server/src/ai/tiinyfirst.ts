@@ -73,6 +73,7 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     if (t?.at.asr) { const heard = await tiinyHear(t.at, wav, fetch, 120_000); if (heard) return heard; }
     return was.transcribe(wav);
   };
+  const MODULE_WRITE_MOST = 1800;   // characters, system and user together
   house.write = async (system: string, user: string, maxTokens = 400, job?: WriteJob) => {
     const t = now();
     // C-319 next: stopped from THE MIND AT WORK -- no other mind is asked; job.by names each mind as it is tried
@@ -85,7 +86,11 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
                                    : await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job); } catch (e) { fell(e); }
     for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
       try { job?.by?.(n.e.name); return await chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job); } catch (e) { fell(e); }
-    halt(); job?.by?.("the house's module");
+    halt();
+    // the module's window is small: a write longer than it holds is refused here, not sent to fail there ("The input
+    // content exceeds the maximum length supported by the model", a dream's telling, 2026-11-12)
+    if (system.length + user.length > MODULE_WRITE_MOST) throw new Error("too long for the house's module, and no other mind answered");   // DRAFT
+    job?.by?.("the house's module");
     return was.write(system, user, maxTokens, job);
   };
   return house;

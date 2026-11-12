@@ -216,7 +216,9 @@ export function readMerged(raw: string | null | undefined): { title: string; dre
 export async function dreamTwice(n: Night, day: string | null, w: Dreamer, write: Write): Promise<Lenses | null> {
   const self = dreamerSaid(w);
   const tell = (lens: Lens) => write(self, dreamAsk(n, day, w, "day", lens), 400).then((x) => (x ? asDreamt(x, 480) : "")).catch(() => "");
-  const [left, right] = await Promise.all([tell("left"), tell("right")]);
+  // one after the other: the Tiiny answers one at a time, and two at once, thinking on, put one past its five minutes
+  // (2026-11-12: the left telling aborted at 300 s while the right took six and a half minutes)
+  const left = await tell("left"), right = left ? await tell("right") : "";
   if (!left || !right) return null;
   const made = readMerged(await write(self, mergeAsk(left, right, w), 500).catch(() => null));
   if (!made) return null;

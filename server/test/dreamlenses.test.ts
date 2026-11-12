@@ -24,7 +24,7 @@ describe("C-308: two tellings and one made of them", () => {
     expect(readMerged("")).toBeNull();
     expect(readMerged('{"title": "only"}')).toBeNull();
   });
-  it("writes both tellings at once, then joins them; nothing kept when one fails", async () => {
+  it("writes the two tellings one after the other (the Tiiny answers one at a time), then joins them; nothing kept when one fails", async () => {
     const asked: string[] = [];
     let open = 0, most = 0;
     const write = async (_s: string, user: string) => {
@@ -34,7 +34,7 @@ describe("C-308: two tellings and one made of them", () => {
       return user.includes("as it went") ? "I dreamt first a lantern, then ten." : "Lanterns, all of them, a warm sea.";
     };
     const made = await dreamTwice(night, "a walk", dreamer, write);
-    expect(most).toBe(2);                                             // the two tellings at once
+    expect(most).toBe(1);                                             // one at a time: two at once put one past its time
     expect(asked).toHaveLength(3);
     expect(asked[2]).toContain("IN ORDER: I dreamt first a lantern, then ten.");
     expect(asked[2]).toContain("ALL AT ONCE: I dreamt this: Lanterns, all of them, a warm sea.");

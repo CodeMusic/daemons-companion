@@ -76,5 +76,7 @@ describe("the Tiiny first", () => {
     expect(failing.any).toBe(true);
     expect((await failing.talk({ text: "hi", history: [], daemon: { nickname: "PING" }, speak: false })).answer).toBe("from the board");
     expect(await failing.write("s", "u")).toBe("written on the board");
+    // a write longer than the module's window is refused here, not sent to fail there (2026-11-12)
+    await expect(failing.write("s", "x".repeat(2000))).rejects.toThrow(/too long for the house's module/);
   });
 });

@@ -212,3 +212,35 @@ daemon: { slot, species, name, nickname, level, art, artKey }, care }` -- `side`
 `care` is the last care given on either device in the last 90 seconds, `{ kind: feed|water|train, by, at, mine }`, or
 null: each device draws it once per `at` -- C-302's PROVISION for the kind in the middle, a daemon either side eating.
 A care given on either counts for **both** daemons' bonds (within each one's nine a day).
+
+## The link cable: the spike (C-221, 2026-11-12)
+
+*The question: can the app's game -- EmulatorJS's mGBA core in a web view, one per phone -- be joined to another
+player's, so FireRed's own TRADE CENTER and link battles work through the hub?* **Not as it stands.** What was found:
+
+- **The core has no link to give.** mGBA links games only on one computer ("Local (same computer) link cable support";
+  networked play is under *Planned features* in its README). Its networked link is mGBA issue #2379, open since 2021,
+  aimed at 0.12 and not shipped; the maintainer is rewriting the multiplayer code for it.
+- **RetroArch's netplay is not a cable.** It runs one game on two machines in step and sends the inputs; its FAQ says
+  GBA netplay is not possible with it. EmulatorJS's netplay is the same idea, and the app turns it off.
+- **Two games in one core does exist.** *mGBA Splitscreen* (libretro, MPL 2.0, github.com/Spuds0588/mgba-splitscreen)
+  runs 2-4 GBA instances inside one core, joined by mGBA's own lockstep link driver, so the games' own link menus work.
+  Afterplay's online link cable is this shape: the **host runs both games** (mGBA Dual, `gba_link_2p`), the other
+  player sees their game streamed and sends only their buttons; both games start from their last in-game save and save
+  states are off for the session. Whether FireRed's trade runs clean on it is not documented.
+
+**The ways forward** (the choice is the user's):
+
+1. **The hub runs both games** (the Afterplay shape): mGBA, linked locally, on roverbyteseer; each phone sends its
+   buttons and is sent its screen. The games' own TRADE CENTER and link battles, unchanged. The cost: a video stream per
+   player (the tailnet, then C-278), latency in a battle, and both saves carried to the hub and back at the session's
+   ends (C-188's mirror already does the carrying).
+2. **A link of our own in the core**: the EmulatorJS mGBA core rebuilt to wasm with a link driver whose transfers go over
+   a socket through the hub, in lockstep. Each phone keeps its own game and its own screen. The cost: our own core
+   build, kept against EmulatorJS's releases, and the lockstep timing over a network that mGBA itself has not finished.
+3. **No cable**: the trade stays AWAY-and-SYNC (C-219), battles stay C-224's own, and the TRADE CENTER is drawn in the
+   companion instead. Nothing new to run.
+4. **Wait for mGBA 0.12** and take its networked link into the core when it lands.
+
+*Recommended: 1, as a spike on roverbyteseer first -- two games, one trade, played from two browsers -- because it
+needs nothing of the core changed and is how the one product doing this does it.*

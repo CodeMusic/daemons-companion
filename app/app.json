@@ -25,7 +25,9 @@
         "NSMotionUsageDescription": "While your daemon sleeps, picking up your phone stirs it. The app reads only how often the phone moved in the night.",
         "ITSAppUsesNonExemptEncryption": false,
         "NSCalendarsUsageDescription": "THE CALENDAR shows your calendar's events by month, week and day, and adds, changes or removes the ones you ask it to. They stay on this phone.",
-        "NSCalendarsFullAccessUsageDescription": "THE CALENDAR shows your calendar's events by month, week and day, and adds, changes or removes the ones you ask it to. They stay on this phone."
+        "NSCalendarsFullAccessUsageDescription": "THE CALENDAR shows your calendar's events by month, week and day, and adds, changes or removes the ones you ask it to. They stay on this phone.",
+        "NSRemindersUsageDescription": "DAEMONS never reads or changes your reminders. Only THE CALENDAR's events are shown.",
+        "NSRemindersFullAccessUsageDescription": "DAEMONS never reads or changes your reminders. Only THE CALENDAR's events are shown."
       },
       "entitlements": {
         "com.apple.security.application-groups": [
@@ -80,7 +82,7 @@
         "expo-calendar",
         {
           "calendarPermission": "THE CALENDAR shows your calendar's events by month, week and day, and adds, changes or removes the ones you ask it to. They stay on this phone.",
-          "remindersPermission": "DAEMONS does not read your reminders."
+          "remindersPermission": "DAEMONS never reads or changes your reminders. Only THE CALENDAR's events are shown."
         }
       ]
     ],

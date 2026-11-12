@@ -11,6 +11,7 @@ import { Under } from "../shared/Reads";   // C-204
 import { useWitching } from "../shared/Witching";   // C-237
 import { EMERALD, hourLine } from "../../../server/src/witching";
 import { useFresh } from "../../platform/useApi";   // C-344
+import { TendingCard } from "./Tending";   // C-357 (3)
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
   const witching = useWitching();                           // C-237: in the hour the day's line is turned under
@@ -23,6 +24,7 @@ export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload
         <Text fontSize={16} color={witching ? EMERALD.lit : "$color11"}>{witching ? hourLine() : today.day.cue ?? today.day.virtue}</Text>{/* C-237: turned under */}
         <Small>{today.day.chakra} · {today.day.hue} · {today.edition}</Small>
       </Card>
+      <TendingCard />
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
         <Eyebrow>THE ONE THING</Eyebrow>
         {today.next ? (

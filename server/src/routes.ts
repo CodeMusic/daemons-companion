@@ -18,6 +18,7 @@ import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
 import { howOf, readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
+import { tend, tendingView } from "./tending.js";   // C-357 (3)
 import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
@@ -57,8 +58,8 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/profile", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -185,6 +186,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       if (hermetic && isHalloween(date)) return ok({ held: true, card: thirteenOfDay(date, who), halloween: true });   // C-240
       return ok({ held: true, card: cardOfDay(date, who, deck) });
     }
+    if (path === "/api/subtle/tending") {                                // C-357 (3): the day's centre, its tending, the week's climb
+      return ok(readSubtle(save, undefined, a.query?.preview === "1").held ? { held: true, ...tendingView(store, now) } : { held: false });
+    }
     if (path === "/api/subtle/today" || path === "/api/subtle/journal") {   // C-230: the book's question of the day, and what was answered
       if (!readSubtle(save, undefined, a.query?.preview === "1").held) return ok({ held: false });   // ?preview=1: as if held, read only
       const t = today(h, store, now), q = todaysQuestion(t.date, dayOf(t));
@@ -248,6 +252,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/dawn/kept") return ok(keepDawn(store, now));   // C-314: this morning, if it is the creator's hour here
     // C-229: ASK THE SUBTLE LAYER -- its own line and a question back, or TWO VOICES' asking voice (the hub's module may say
     // the line in its own words instead: api.ts); C-230: the day's question answered, kept in the journal
+    if (path === "/api/subtle/tending") {                                // C-357 (3): tended, by a touch -- once a day
+      const save = h.save.read();
+      if (!save || !readSubtle(save).held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
+      tend(store, now);
+      return ok({ held: true, ...tendingView(store, now) });
+    }
     if (path === "/api/subtle/ask" || path === "/api/subtle/today") {
       const save = h.save.read(), s = save ? readSubtle(save) : null;
       if (!s?.held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT

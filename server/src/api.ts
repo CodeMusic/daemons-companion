@@ -1151,6 +1151,15 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       w.end(answer?.trim() ? "done" : "failed", answer?.trim() ? { mind: p } : { error: "no mind told it; the written dream stays" });   // DRAFT
     })().catch((e) => { w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); }).finally(() => telling.delete(dream.id));
   };
+  // A night whose telling a restart cut off (the hub is deployed many times a day): the newest, if it is still only the
+  // written dream and ended in the last day and a half, told again once the hub has settled -- each restart tries once more
+  setTimeout(() => {
+    try {
+      const last = [...dreamsOf(store)].sort((a, b) => Date.parse(b.to) - Date.parse(a.to))[0];
+      if (!last || last.by !== "words" || Date.now() - Date.parse(last.to) > 36 * 3600_000) return;
+      tellDream({ ...cfg, savePath: savePathOf(cfg, store) }, last, validDeviceId(last.device) ? last.device : "");
+    } catch { /* the written dream stays */ }
+  }, 3 * 60_000).unref();
   // Who reads the INDEX aloud: n8n's cloned voice (the user's choice, HUB.md Phase 5 item 7) or the module's
   const indexVoice = () => store.getSetting("index.voice") === "module" ? "module" : "n8n";
   const home = new Home({ get: (k) => store.getSetting(k), set: (k, v) => store.setSetting(k, v) });   // C-139: Home Assistant

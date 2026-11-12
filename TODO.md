@@ -21,6 +21,24 @@ on the cable this morning, so the boards' goal waits on the user and the rest ne
 4. **The boards on the cable** (*waits on the user plugging them in*): the Tab5 flashed with C-217's sort, C-63's deep
    sleep and its wake on the top button, C-166 set from the site and seen on the watch.
 
+## Today's goals -- 2026-11-12, the watches
+
+*The user, 2026-11-12: "keep going with the goal loop, plan one for today please (watch specific -- both ultra, and even
+brining any of the other t-watches up to any more of the current features < note for the regular t-watch battery is a
+limiting factor so we should be mindful and perhaps include some of the battery enhancements we added to the ultra back
+port/adapted to the regular t3 s3)".* Worked top down in the watch lane's checkout: build all twelve, commit by path,
+push, strike it here. Flashing waits on the user and a watch proved by its HELLO.
+
+1. **C-347, the T-Watch S3's battery** -- what the Ultra learned, carried back: its daemon tucked in quiets the S3 too
+   (Wi-Fi off, the glance); the LCD put to sleep (SLPIN) when it is dark; the AXP2101's unused rails off, as LilyGO's
+   own S3 code does. *(The S3's cell is 400 mAh to the Ultra's 1100.)*
+2. **C-348, the S3's BMA423 as the Ultra's motion** -- its own activity (still, walking, running), wrist tilt and double
+   tap, so the S3 wakes on the wrist raised, opens CARE on a double tap, counts the night on its own and keeps BATTERY's
+   "radios on the move".
+3. **The Ultra's next halves** -- C-331 (2) DREAMS on the card, then C-329's dialogue on the watch.
+4. **Asked of the user** (multiple choice): the S3's LoRa at night, and low power on its own at a low battery.
+5. **On the wrist** (*waits on the user*): both watches flashed and their HELLOs seen.
+
 ## Today's goals -- 2026-10-15, the devices
 
 *The user, 2026-10-15: "build a goal loop for todays companion device focused work".* A session works these top down,
@@ -409,3 +427,5 @@ at the first open one. Each names its ticket; the ticket holds the detail.
 | ~~**C-344**~~ | **Panels hold still while the app refreshes** (*the user, 2026-11-11: "on the settings page (maybe others) it has a refresh issue where components refresh or something, and it makes panels shift and jump around, it should have the order and height so if content does refresh it doesnt cause the ux to get unusable for those periods"*): a fresher answer re-made the whole page (the ScrollView's key, C-86), so every card went back to nothing and came in again one by one -- and on a phone a slow answer that changes every time (THE TALK's health) re-made SETTINGS over and over. Now the page stays mounted and screens ask again in place (useFresh), the last answer kept on screen; cards waiting for their first answer hold their place at their usual height (Pending); the devices here keep the order they were first seen in. Seen on the site at 375 and 1024 wide with every answer slowed 1-3 s: every tab still on a second visit; a first visit moves once only where a card cannot be known ahead (YOUR SAVES, when there are two saves or more). | *done, 69cdfb6*
 | **C-345** | **The age check's native module** (C-226 piece 5; *the user, 2026-11-11, by multiple choice: Apple/Google age signals at guardian sign-in*): an Expo module `DaemonsAgeRange` with `grownUp(): Promise<boolean \| null>` -- on iOS 26+, DeclaredAgeRange's `requestAgeRange(ageGates: 18)`: false when the range is under 18, true at 18+, null when declined or unavailable (older iOS, the Mac before macOS 26); the Declared Age Range entitlement on the app id. `app/platform/accounts.ts` `grownUpHere()` finds it already; Google Play's age signals when there is an Android build. | *open (the phone lane's next build, with C-343; the entitlement changes the App ID -- confirm with the user then)* | C-226, C-343 |
 | ~~**C-346**~~ | **A traded daemon's trainer name blanked for a non-friend** (C-226 piece 5; *the user, 2026-11-11: nicknames friends only*): a Gen 3 record's nickname (0x08) and trainer name (0x14) sit outside its checksummed, encrypted block, so the exchange can rewrite both when a profile's daemon goes to a player who is not its friend -- the species name for the nickname, the profile's first word for the trainer name -- then set `NAMES_BLANKED` in `server/src/profiletrade.ts`, which lets the GUARDIAN's "+ HOME" and "+ LOBBY" take effect. Tested on a real save that the game shows and keeps both. | ***DONE 2026-11-11*** *(the user: "Yes, C-346"): `blankNames` / `ownNames` in `server/src/save/trade.ts`; the exchange's inbox rewrites a profile's daemon for a receiver who is not its friend (swaps, loans and gifts), and gives a loan coming home its own names from the original record; `NAMES_BLANKED` on, so "+ HOME" and "+ LOBBY" reach past friends. 2 tests (`server/test/blanknames.test.ts`: a loan both ways, and a blanked daemon written into a save that reads back whole). Not yet seen in the game itself (mGBA): the next field test.* | C-226 |
+| **C-347** | **The T-Watch S3's battery, from the Ultra's** (*the user, 2026-11-12: "the regular t-watch battery is a limiting factor so we should be mindful and perhaps include some of the battery enhancements we added to the ultra back port/adapted"*): C-285's quiet night (Wi-Fi off while the daemon is tucked in, the glance on a tap), C-255's panel asleep, and the power chip's unused rails off, on the S3. | *open (the watch lane)* | `firmware/esp32/src/night.cpp`, `display.cpp`, `watch.cpp` | C-285, C-255, C-242 |
+| **C-348** | **The T-Watch S3's motion, from its BMA423** (*the same*): the Ultra's motion (C-201) on the S3's own accelerometer -- activity, the wrist raised, a double tap, stillness -- so raise-to-wake, CARE on a double tap, the night counted on its own and BATTERY's "radios on the move" work there too. | *open (the watch lane)* | `firmware/esp32/src/motion.cpp`, `watch.cpp` | C-201, C-200, C-242 |

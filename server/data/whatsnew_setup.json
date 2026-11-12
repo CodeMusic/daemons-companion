@@ -113,6 +113,32 @@
     "Run it again any time: it offers your last answers. seer/bindSeer.sh --plan says what it would do and installs nothing."
    ],
    "draft": true
+  },
+  "C-349": {
+   "title": "THEME ACCENTS",
+   "where": "SETTINGS › THEME › ACCENTS",
+   "needs": ["a save the hub can read"],
+   "steps": [
+    "Accents come from the game: every place you have saved in, or reached, gives its colours. The hub reads them from your save, so keep the save it watches current.",
+    "SETTINGS › THEME › ACCENTS: IN STEP WITH YOUR SAVE wears the place you saved in last. Pick any place you have unlocked to wear it instead, or OFF.",
+    "The day's colour stays on TODAY's card and on the rule under the header, whatever accent you wear."
+   ],
+   "wiki": "Settings",
+   "book": "companion",
+   "draft": true
+  },
+  "C-354": {
+   "title": "THE CALENDAR",
+   "where": "TODAY › the calendar beside the date",
+   "needs": ["calendar access on the phone (asked once)"],
+   "steps": [
+    "On TODAY, tap the calendar beside the date. The first time, the phone asks to share its calendar with DAEMONS: allow full access to see and change your events.",
+    "MONTH, WEEK and DAY show the phone's events. Tap one to change or remove it, or + to add one; a repeating event changes only at the time you tapped.",
+    "Said no by mistake? The phone's Settings › Privacy & Security › Calendars › DAEMONS turns it back on."
+   ],
+   "wiki": "Settings",
+   "book": "companion",
+   "draft": true
   }
  }
 }

@@ -25,7 +25,10 @@ bool powerMoving() {
 uint32_t powerStillMs() { return (uint32_t)constrain(cfg.power.stillMinutes, 1, 60) * 60000UL; }
 bool powerGps() { return cfg.power.gps && !cfg.power.low && !nightQuiet(); }   // C-285: none while it sleeps
 bool powerGpsPolls() { return !cfg.power.gpsOnMove; }
-bool powerLora() { return cfg.power.lora && !cfg.power.low && !sleepSoundsPlaying() && (!cfg.power.radiosOnMove || powerMoving()); }
+// C-347 (the user, 2026-11-12, by multiple choice: "Off at night"): the T-Watch S3's LoRa sleeps while its daemon is
+// tucked in -- its 400 mAh is worth more than the night's relaying; the Ultra keeps its mesh
+static bool s3Night() { return board.kind == BoardKind::TWatchS3 && nightQuiet(); }
+bool powerLora() { return cfg.power.lora && !cfg.power.low && !sleepSoundsPlaying() && !s3Night() && (!cfg.power.radiosOnMove || powerMoving()); }
 bool powerMeet() { return cfg.meet && cfg.power.meet && !cfg.power.low && !sleepSoundsPlaying() && (!cfg.power.radiosOnMove || powerMoving()); }
 uint32_t powerPollMs() { return (uint32_t)max(cfg.power.poll, cfg.power.low ? 300 : 30) * 1000UL; }
 int powerSleepAfter() {
@@ -60,4 +63,12 @@ void powerLoop(uint32_t now) {
   if (in == 1 && inAt && now - inAt > 1000) { inAt = 0; if (cfg.power.low) { powerSetLow(false); say("LOW POWER OFF"); } }   // DRAFT
   if (in == 0) inAt = 0;
   was = in;
+  // C-347 (the user, 2026-11-12, by multiple choice: "At 20%"): the T-Watch S3 goes to LOW POWER on its own at 20%, once
+  // a discharge -- switched off by hand after, it is not switched on again until the charger has been in
+  static bool autoDone = false;
+  if (in == 1) autoDone = false;
+  else if (board.kind == BoardKind::TWatchS3 && !autoDone && bat.present && !bat.usb && bat.percent >= 0 && bat.percent <= 20) {
+    autoDone = true;
+    if (!cfg.power.low) { powerSetLow(true); if (!asleep) say("LOW POWER ON"); }   // DRAFT; asleep, the face's mark says it
+  }
 }

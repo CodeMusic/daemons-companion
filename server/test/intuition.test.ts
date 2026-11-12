@@ -11,7 +11,7 @@ import { buildSave } from "./build_save.js";
 import { Store } from "../src/db.js";
 import { checkNight, keepNight } from "../src/dreams.js";
 import { keepFix } from "../src/where.js";
-import { landReads, leanRight, lineOf, noteClose, noteSky, readsView, senseFor, takeLean, takeRead, threeOf, wayOf } from "../src/intuition.js";
+import { howOf, landReads, leanRight, lineOf, noteClose, noteSky, readsView, senseFor, takeLean, takeRead, threeOf, virtueHeldToday, wayOf } from "../src/intuition.js";
 import { readsLog } from "../src/save/notebook.js";
 import layout from "../data/profile_layout.json" with { type: "json" };
 import subtle from "../data/subtle.json" with { type: "json" };
@@ -113,7 +113,8 @@ describe("C-203: reads, judged by what happens after", () => {
     takeRead(store, "rain 0", "w", at(10));
     const v = readsView(store, at(20));
     expect(v.reads).toEqual({ given: 2, landed: 1 });
-    expect(v.recent[0]).toEqual({ at: at(10).toISOString(), about: "rain", line: "rain, before long.", landed: null, open: true });
+    expect(v.recent[0]).toEqual({ at: at(10).toISOString(), about: "rain", line: "rain, before long.", landed: null, open: true,
+                                 day: null, centre: null, calm: null });   // a read kept before it noted how it came
     expect(JSON.stringify(v)).not.toContain("based");
   });
 });
@@ -124,6 +125,40 @@ describe("C-203: leans at the CASINO's reels", () => {
     expect(takeLean(store, "maybe 1")).toBe("a lean is <pays|not> <0|1>");
     takeLean(store, "pays 1", T0); takeLean(store, "not 0", at(1)); takeLean(store, "not 1", at(2));
     expect(readsView(store, at(3)).leans).toEqual({ told: 3, landed: 2 });
+  });
+});
+
+describe("THE SUBTLE LAYER, lived (2026-11-12): T-510, TRUE OR NOT and THE MISREAD", () => {
+  const afraid = { ...calm, calm: -60 };
+  it("lifts CLOSURE one while today's virtue's INSIGHT is held, as the game's Derive (T-510), never past four", () => {
+    expect(threeOf(70, calm, true)).toEqual({ closure: 3, attunement: 2, voltage: 1 });
+    expect(threeOf(230, calm, true).closure).toBe(4);
+    const wisdom = [true, false, false, false, false, false, false].map((insight) => ({ insight }));   // MARK 1: DILIGENCE
+    expect(virtueHeldToday(wisdom, T0)).toBe(true);                   // a Wednesday: DILIGENCE over SLOTH
+    expect(virtueHeldToday(wisdom, at(24 * 60))).toBe(false);         // Thursday asks for FORGIVENESS
+  });
+  it("keeps each read and lean with the day, its centre, and calm or with argument", () => {
+    expect(howOf(calm, T0)).toEqual({ day: "Wednesday", centre: "Heart", calm: true });
+    expect(howOf(afraid, T0).calm).toBe(false);                       // the volume over the calm
+    const store = new Store(":memory:");
+    takeRead(store, "rain 1", "w", T0, howOf(calm, T0));
+    takeRead(store, "near 0", "w", at(1));                            // a read from before: nothing said of how it came
+    const v = readsView(store, at(2));
+    expect(v.recent[1]).toMatchObject({ day: "Wednesday", centre: "Heart", calm: true });
+    expect(v.recent[0]).toMatchObject({ day: null, centre: null, calm: null });
+  });
+  it("keeps a lean that missed as a misread, and tallies what landed by how it came", () => {
+    const store = new Store(":memory:");
+    takeLean(store, "pays 1", T0, howOf(calm, T0));
+    takeLean(store, "not 0", at(1), howOf(afraid, at(1)));
+    takeLean(store, "pays 0", at(2), howOf(calm, at(2)));
+    takeRead(store, "rain 1", "w", at(3), howOf(afraid, at(3)));
+    store.setSetting("weather.now", JSON.stringify({ kind: "rain", code: 61, tempC: 9, city: "TORONTO", at: at(55).toISOString() }));
+    noteSky(store, at(60));                                           // rain seen: that read lands
+    const v = readsView(store, at(61));
+    expect(v.recentLeans.map((l) => l.misread)).toEqual([true, true, false]);
+    expect(v.recentLeans[1]).toMatchObject({ line: "not this one.", landed: false, calm: false });
+    expect(v.byHow).toEqual({ calm: { given: 2, landed: 1 }, argument: { given: 2, landed: 1 } });
   });
 });
 

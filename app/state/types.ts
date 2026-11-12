@@ -196,5 +196,8 @@ export const TABS = ["today", "game", "daemon", "journey", "library", "you", "pl
 
 export const SHOWN_TABS = TABS.filter((t) => t !== "settings" && t !== "dev" && (t !== "game" || Platform.OS !== "web"));   // the site has the playground
 // C-203: the companion's own log of reads and leans (server/src/intuition.ts readsView), once the save holds the book
+export type ReadHow = { day: string | null; centre: string | null; calm: boolean | null };   // TRUE OR NOT: none before 2026-11-12
 export type Reads = { held: boolean; reads: { given: number; landed: number }; leans: { told: number; landed: number };
-                      recent: { at: string; about: "near" | "rain" | "night" | "walk"; line: string; landed: string | null; open: boolean }[] };
+                      recent: ({ at: string; about: "near" | "rain" | "night" | "walk"; line: string; landed: string | null; open: boolean } & ReadHow)[];
+                      recentLeans?: ({ at: string; line: string; landed: boolean; misread: boolean } & ReadHow)[];   // THE MISREAD
+                      byHow?: { calm: { given: number; landed: number }; argument: { given: number; landed: number } } };

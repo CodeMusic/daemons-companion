@@ -3,9 +3,14 @@
 // counts and never vouches (DAEMONS T-459, 4.33). Every word DRAFT.
 import { Text, YStack } from "tamagui";
 import { useSubtleInk } from "../../state/look";
-import { Reads } from "../../state/types";
+import { ReadHow, Reads } from "../../state/types";
 import { Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
+
+// TRUE OR NOT and AT REST: each read kept "with the day and the centre, and whether it came calm or with argument" (DRAFT)
+const howSaid = (x: ReadHow) => [x.day, x.centre && `the ${x.centre.toLowerCase()}`, x.calm === null ? null : x.calm ? "calm" : "with argument"]
+  .filter(Boolean).join(" · ");
+const MISREAD = "The information was accurate. The conclusion is the misread.";   // THE MISREAD, the book's own words
 
 export function ReadsCard() {
   const [r] = useApi<Reads>("/api/reads");
@@ -21,11 +26,29 @@ export function ReadsCard() {
           {r.recent.map((x, i) => (
             <YStack key={i}>
               <Text fontSize={15} lineHeight={21} color={ink}>{`A read: ${x.line}${x.landed ? " Landed." : ""}`}</Text>
-              <Small color="$color9">{whenSaid(x.at)}{x.open ? " · still open" : ""}</Small>
+              <Small color="$color9">{[whenSaid(x.at), howSaid(x)].filter(Boolean).join(" · ")}{x.open ? " · still open" : ""}</Small>
             </YStack>
           ))}
         </YStack>
       ) : <Small>None yet. Now and then a watch gives one: someone close by, rain, the night, a walk.</Small>}
+      {r.recentLeans?.length ? (
+        <YStack gap={6} marginTop={10}>
+          {r.recentLeans.map((x, i) => (
+            <YStack key={i}>
+              <Text fontSize={15} lineHeight={21} color={ink}>{`A lean: ${x.line}${x.landed ? " Landed." : " A misread."}`}</Text>
+              <Small color="$color9">{[whenSaid(x.at), howSaid(x)].filter(Boolean).join(" · ")}</Small>
+            </YStack>
+          ))}
+          {r.recentLeans.some((x) => x.misread) ? <Small color="$color9">{MISREAD}</Small> : null}
+        </YStack>
+      ) : null}
+      {r.byHow && r.byHow.calm.given + r.byHow.argument.given >= 3 ? (
+        <YStack marginTop={10}>
+          <Text fontSize={15} lineHeight={22} color={ink}>{`Calm: ${r.byHow.calm.given} kept, ${r.byHow.calm.landed} landed.`}</Text>
+          <Text fontSize={15} lineHeight={22} color={ink}>{`With argument: ${r.byHow.argument.given} kept, ${r.byHow.argument.landed} landed.`}</Text>
+          <Small color="$color9">The log decides. The calm only points.</Small>
+        </YStack>
+      ) : null}
     </Card>
   );
 }

@@ -16,7 +16,7 @@ import { readNotebook } from "./save/notebook.js";
 import { readProgress } from "./save/progress.js";
 import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
-import { readsView, takeLean, takeRead } from "./intuition.js";   // C-203
+import { howOf, readsView, takeLean, takeRead } from "./intuition.js";   // C-203
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { cardOfDay, draw, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232
 import marksJson from "../data/marks.json" with { type: "json" };
@@ -27,7 +27,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -412,7 +412,8 @@ export function takeNight(h: Host, store: Store, detail: string, deviceId: strin
 // "lean <pays|not> <0|1>". Kept for the log (intuition.ts), never logged as tending. The server's interact and a phone
 // hosting alone (app/platform/local.ts) both take them here.
 export function takeSubtle(store: Store, kind: string, detail: string, deviceId: string, now = new Date()): Reply {
-  if (kind === "read") { const r = takeRead(store, detail, deviceId, now); return typeof r === "string" ? no(400, r) : ok({ read: r }); }
-  const l = takeLean(store, detail, now);
+  const how = howOf(daemonFeelings(store, now), now);   // the day, its centre, and calm or with argument (TRUE OR NOT)
+  if (kind === "read") { const r = takeRead(store, detail, deviceId, now, how); return typeof r === "string" ? no(400, r) : ok({ read: r }); }
+  const l = takeLean(store, detail, now, how);
   return typeof l === "string" ? no(400, l) : ok({ leans: { told: l.told, landed: l.landed } });
 }

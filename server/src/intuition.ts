@@ -29,6 +29,7 @@ import { dreamsOf } from "./dreams.js";
 import { fixesOf, type Fix } from "./where.js";
 import { weatherPlace } from "./weather.js";
 import { weatherNow } from "./context.js";
+import weekJson from "../data/week.json" with { type: "json" };
 
 // ---- THE THREE: the game's table, as approved 2026-10-27 (engine include/daemons_three.h) -------------------------------
 export const THREE = { max: 4, friend1: 50, friend3: 150, friend4: 220, madLine: 40,
@@ -37,10 +38,18 @@ export const THREE = { max: 4, friend1: 50, friend3: 150, friend4: 220, madLine:
 export type Three = { closure: number; attunement: number; voltage: number };
 const level = (n: number) => Math.max(0, Math.min(THREE.max, n));
 
-export function threeOf(friendship: number, f: Pick<Feelings, "glad" | "mad" | "sad" | "calm">): Three {
+// The MARKS' virtues in the save's order: the insight flags 0x88..0x8E (engine include/constants/flags.h), MARK 1 first.
+export const MARK_VIRTUES = ["Diligence", "Chastity", "Charity", "Kindness", "Temperance", "Forgiveness", "Humility"] as const;
+// T-510 (DAEMONS, the user 2026-11-01): CLOSURE one higher while today's virtue's INSIGHT is held, as the game's Derive.
+export function virtueHeldToday(wisdom: { insight: boolean }[], now = new Date()): boolean {
+  const i = (MARK_VIRTUES as readonly string[]).indexOf(weekJson.days[now.getDay()].virtue);
+  return i >= 0 && !!wisdom[i]?.insight;
+}
+export function threeOf(friendship: number, f: Pick<Feelings, "glad" | "mad" | "sad" | "calm">, virtueHeld = false): Three {
   const T = THREE;
   let closure = friendship < T.friend1 ? 1 : friendship < T.friend3 ? 2 : friendship < T.friend4 ? 3 : 4;
   if (f.mad >= T.madLine) closure--;
+  if (virtueHeld) closure++;                                   // T-510: THREE_CLOSURE_VIRTUE
   let attunement = 2;
   if (f.calm >= T.calm3) attunement++;
   if (f.calm >= T.calm4) attunement++;
@@ -65,9 +74,9 @@ function json<T>(store: Store, key: string, none: T): T {
   try { return (JSON.parse(store.getSetting(key) ?? "null") as T) ?? none; } catch { return none; }
 }
 
-export function senseFor(store: Store, friendship: number, f: Feelings, now = new Date()): Sense {
+export function senseFor(store: Store, friendship: number, f: Feelings, now = new Date(), virtueHeld = false): Sense {
   noteSky(store, now);
-  const t = threeOf(friendship, f);
+  const t = threeOf(friendship, f, virtueHeld);
   const o = json<{ at: string; chance: number } | null>(store, "subtle.outlook", null);
   const rain = o && now.getTime() - Date.parse(o.at) < SENSE.outlookFresh && o.chance >= SENSE.rainChance ? 1 : 0;
   const nights = dreamsOf(store).filter((d) => now.getTime() - Date.parse(d.to) < 3 * 86400000);
@@ -120,7 +129,16 @@ export function noteClose(store: Store, peer: string, now = new Date()) {
 // ---- reads ------------------------------------------------------------------------------------------------------------------
 export const ABOUTS = ["near", "rain", "night", "walk"] as const;
 export type About = (typeof ABOUTS)[number];
-export type Read = { id: number; at: string; about: About; based: boolean; way: string; device: string; landed: string | null; closed: boolean };
+export type Read = { id: number; at: string; about: About; based: boolean; way: string; device: string; landed: string | null; closed: boolean } & Partial<How>;
+// TRUE OR NOT and AT REST (the book): "write it ... with the day and the centre, and whether it came calm or with argument".
+// Kept with every read and lean as it arrives (none before 2026-11-12): the day and its centre (week.json, Sunday the
+// root), and calm when the daemon's ATTUNEMENT is at least its VOLTAGE -- READ 0 or more, its volume down; with argument
+// when the volume is over the calm. The calm only points: the log shows which tend to land.
+export type How = { day: string; centre: string; calm: boolean };
+export function howOf(f: Pick<Feelings, "glad" | "mad" | "sad" | "calm">, now = new Date()): How {
+  const d = weekJson.days[now.getDay()];
+  return { day: d.day, centre: d.chakra, calm: readOf(threeOf(0, f)) >= 0 };
+}
 const LINES: Record<About, string> = { near: "someone close by.", rain: "rain, before long.", night: "a long, still night.", walk: "" };   // DRAFT
 export const lineOf = (r: Pick<Read, "about" | "way">) => r.about === "walk" ? `something to the ${r.way}.` : LINES[r.about];   // DRAFT
 
@@ -132,11 +150,11 @@ export function checkRead(detail: string): Pick<Read, "about" | "based" | "way">
   if (about === "walk" && !(WAYS as readonly string[]).includes(way)) return "a read on a walk names its way: north, east, south or west";
   return { about: about as About, based: based === "1", way: about === "walk" ? way : "" };
 }
-export function takeRead(store: Store, detail: string, device: string, now = new Date()): Read | string {
+export function takeRead(store: Store, detail: string, device: string, now = new Date(), how?: How): Read | string {
   const c = checkRead(detail);
   if (typeof c === "string") return c;
   const list = readsOf(store);
-  const r: Read = { id: (list[0]?.id ?? 0) + 1, at: now.toISOString(), ...c, device, landed: null, closed: false };
+  const r: Read = { id: (list[0]?.id ?? 0) + 1, at: now.toISOString(), ...c, device, landed: null, closed: false, ...how };
   store.setSetting("subtle.reads", JSON.stringify([r, ...list].slice(0, KEEP)));
   return r;
 }
@@ -179,27 +197,36 @@ export function landReads(store: Store, now = new Date()): Read[] {
 }
 
 // ---- leans ------------------------------------------------------------------------------------------------------------------
-export type Leans = { told: number; landed: number; recent: { at: string; claim: "pays" | "not"; landed: boolean }[] };
+export type Leans = { told: number; landed: number; recent: ({ at: string; claim: "pays" | "not"; landed: boolean } & Partial<How>)[] };
 export function leansOf(store: Store): Leans { return { told: 0, landed: 0, recent: [], ...json<Partial<Leans>>(store, "subtle.leans", {}) }; }
-export function takeLean(store: Store, detail: string, now = new Date()): Leans | string {
+export function takeLean(store: Store, detail: string, now = new Date(), how?: How): Leans | string {
   const [said, landed] = detail.split(" ");
   if ((said !== "pays" && said !== "not") || (landed !== "0" && landed !== "1")) return "a lean is <pays|not> <0|1>";
   const claim: "pays" | "not" = said;
   const l = leansOf(store);
   const next: Leans = { told: l.told + 1, landed: l.landed + (landed === "1" ? 1 : 0),
-                        recent: [{ at: now.toISOString(), claim, landed: landed === "1" }, ...l.recent].slice(0, KEEP_LEANS) };
+                        recent: [{ at: now.toISOString(), claim, landed: landed === "1", ...how }, ...l.recent].slice(0, KEEP_LEANS) };
   store.setSetting("subtle.leans", JSON.stringify(next));
   return next;
 }
 
 // ---- the log, for the app -----------------------------------------------------------------------------------------------
 export const LEAN_LINES = { pays: "this one pays.", not: "not this one." };   // DRAFT
+const howView = (x: Partial<How>) => ({ day: x.day ?? null, centre: x.centre ?? null, calm: x.calm ?? null });
+// THE MISREAD (the book, the user's pick 2026-11-12): a lean that did not land is a misread -- the information true, the
+// conclusion wrong -- kept and shown as one, never hidden. And TRUE OR NOT's log by its hint: of the reads and leans kept
+// with how they came, how many came calm and how many with argument, and how many of each landed.
 export function readsView(store: Store, now = new Date()) {
   const reads = landReads(store, now), leans = leansOf(store);
+  const judged = [...reads.filter((r) => r.landed || r.closed).map((r) => ({ calm: r.calm, landed: !!r.landed })),
+                  ...leans.recent.map((l) => ({ calm: l.calm, landed: l.landed }))];
+  const tally = (calm: boolean) => { const k = judged.filter((x) => x.calm === calm); return { given: k.length, landed: k.filter((x) => x.landed).length }; };
   return {
     reads: { given: reads.length, landed: reads.filter((r) => r.landed).length },
     leans: { told: leans.told, landed: leans.landed },
-    recent: reads.slice(0, 10).map((r) => ({ at: r.at, about: r.about, line: lineOf(r), landed: r.landed, open: !r.landed && !r.closed })),
+    recent: reads.slice(0, 10).map((r) => ({ at: r.at, about: r.about, line: lineOf(r), landed: r.landed, open: !r.landed && !r.closed, ...howView(r) })),
+    recentLeans: leans.recent.slice(0, 10).map((l) => ({ at: l.at, line: LEAN_LINES[l.claim], landed: l.landed, misread: !l.landed, ...howView(l) })),
+    byHow: { calm: tally(true), argument: tally(false) },
   };
 }
 

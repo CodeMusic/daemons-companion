@@ -37,7 +37,7 @@ import { holiday } from "./holidays.js";                 // C-149
 import { readIndex } from "./save/index.js";
 import { readPlay } from "./save/play.js";            // T-426: the instrument, on the boards with keys
 import { readSubtle } from "./save/subtle.js";
-import { senseFor, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards
+import { senseFor, virtueHeldToday, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards
 import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
 import { careworn, withCare } from "./care.js";   // C-266: the care group -- its girth, its eyes, its sadness
 import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
@@ -470,7 +470,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
-    if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now);
+    if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now, virtueHeldToday(profile.wisdom, now));   // T-510
     if (d) { const msg = firstSight(store, bytes, now); hermetic = { held: readHermetic(bytes, store).held ? 1 : 0, first: msg ? 1 : 0 }; }   // C-238
     if (d) halloween = halloweenView(store, d.species, readHermetic(bytes, store).held, now);   // C-240
   }

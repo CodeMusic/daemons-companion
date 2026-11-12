@@ -3194,7 +3194,7 @@
   },
   "SafariZone_Center": {
    "id": "MAP_SAFARI_ZONE_CENTER",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "route",
    "width": 51,
@@ -3211,7 +3211,7 @@
   },
   "SafariZone_Center_RestHouse": {
    "id": "MAP_SAFARI_ZONE_CENTER_REST_HOUSE",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "indoor",
    "width": 13,
@@ -3224,7 +3224,7 @@
   },
   "SafariZone_East": {
    "id": "MAP_SAFARI_ZONE_EAST",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "route",
    "width": 54,
@@ -3239,7 +3239,7 @@
   },
   "SafariZone_East_RestHouse": {
    "id": "MAP_SAFARI_ZONE_EAST_REST_HOUSE",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "indoor",
    "width": 13,
@@ -3252,7 +3252,7 @@
   },
   "SafariZone_North": {
    "id": "MAP_SAFARI_ZONE_NORTH",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "route",
    "width": 57,
@@ -3268,7 +3268,7 @@
   },
   "SafariZone_North_RestHouse": {
    "id": "MAP_SAFARI_ZONE_NORTH_REST_HOUSE",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "indoor",
    "width": 13,
@@ -3281,7 +3281,7 @@
   },
   "SafariZone_SecretHouse": {
    "id": "MAP_SAFARI_ZONE_SECRET_HOUSE",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "indoor",
    "width": 13,
@@ -3294,7 +3294,7 @@
   },
   "SafariZone_West": {
    "id": "MAP_SAFARI_ZONE_WEST",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "route",
    "width": 48,
@@ -3310,7 +3310,7 @@
   },
   "SafariZone_West_RestHouse": {
    "id": "MAP_SAFARI_ZONE_WEST_REST_HOUSE",
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "section": "MAPSEC_KANTO_SAFARI_ZONE",
    "type": "indoor",
    "width": 13,

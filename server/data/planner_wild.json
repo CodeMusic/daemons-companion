@@ -1608,7 +1608,7 @@
    }
   },
   "SafariZone_Center": {
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "step": 14,
    "CONTENT": {
     "day": {
@@ -1924,7 +1924,7 @@
    }
   },
   "SafariZone_East": {
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "step": 14,
    "CONTENT": {
     "day": {
@@ -2240,7 +2240,7 @@
    }
   },
   "SafariZone_North": {
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "step": 14,
    "CONTENT": {
     "day": {
@@ -2556,7 +2556,7 @@
    }
   },
   "SafariZone_West": {
-   "place": "SAFARI ZONE",
+   "place": "THE WALLED GARDEN",
    "step": 14,
    "CONTENT": {
     "day": {

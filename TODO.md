@@ -63,6 +63,9 @@ on the cable this morning, so the boards' goal waits on the user and the rest ne
    gaps left as rows for the cable. ***Found done 2026-11-12***: *every surface already shows it; C-73 struck.*
 7. **C-221's first step: one trade, two linked games, on roverbyteseer** -- mGBA linked locally running both editions'
    saves (copies), a FireRed TRADE CENTER trade completed, then each game's screen and buttons reached from a browser.
+   ***First half done 2026-11-12***: *`seer/linkhost/` (mGBA 0.10.5's lockstep cable, headless, each screen and its
+   buttons over HTTP): CONTENT and CONTEXT's DEBUG builds traded DEADLOCK for CODEMUSAI in the TRADE CENTER, both saves
+   (copies) holding it; DAEMONS qa 12Nov2026 C221. Left: running it on roverbyteseer.*
 
 ## Today's goals -- 2026-11-12, the watches
 

@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Link cable</title>
+<style>body{background:#0f1115;color:#ccd;font:14px monospace;margin:16px}canvas{width:480px;height:320px;image-rendering:pixelated;border:2px solid #333;margin:4px}.on{border-color:#7c7}</style></head>
+<body><div id="v"></div><p>C-221 spike (DRAFT). Click a screen to play it: arrows, X = A, Z = B, Enter = START, Shift = SELECT, A / S = L / R.</p><pre id="s"></pre>
+<script>
+const q = new URLSearchParams(location.search), only = q.has("p") ? [Number(q.get("p"))] : [0, 1];
+let me = only[0];
+const cv = only.map((i) => { const c = document.createElement("canvas"); c.width = 240; c.height = 160; c.onclick = () => { me = i; mark(); };
+  document.getElementById("v").appendChild(c); return { i, c, x: c.getContext("2d"), img: new ImageData(240, 160) }; });
+const mark = () => cv.forEach((k) => k.c.classList.toggle("on", k.i === me)); mark();
+async function draw(k) { try { const b = new Uint8Array(await (await fetch("/f/" + k.i)).arrayBuffer());
+  for (let p = 0; p < b.length; p += 4) { k.img.data[p] = b[p]; k.img.data[p + 1] = b[p + 1]; k.img.data[p + 2] = b[p + 2]; k.img.data[p + 3] = 255; }
+  k.x.putImageData(k.img, 0, 0); } catch (e) {} setTimeout(() => draw(k), 33); }
+cv.forEach(draw);
+const BIT = { x: 1, z: 2, Shift: 4, Enter: 8, ArrowRight: 16, ArrowLeft: 32, ArrowUp: 64, ArrowDown: 128, s: 256, a: 512 };
+let keys = 0; const send = () => fetch(`/k/${me}/${keys}`);
+onkeydown = (e) => { const b = BIT[e.key.length === 1 ? e.key.toLowerCase() : e.key]; if (b && !(keys & b)) { keys |= b; send(); } if (b) e.preventDefault(); };
+onkeyup = (e) => { const b = BIT[e.key.length === 1 ? e.key.toLowerCase() : e.key]; if (b) { keys &= ~b; send(); } };
+setInterval(async () => { try { document.getElementById("s").textContent = await (await fetch("/state")).text(); } catch (e) {} }, 1000);
+</script></body></html>

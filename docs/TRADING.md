@@ -242,5 +242,10 @@ player's, so FireRed's own TRADE CENTER and link battles work through the hub?* 
    companion instead. Nothing new to run.
 4. **Wait for mGBA 0.12** and take its networked link into the core when it lands.
 
+**Chosen 2026-11-12: 1, the hub runs both games.** *The first step the same day*: `seer/linkhost/` -- mGBA 0.10.5's
+lockstep cable, two games headless on one machine, each screen and its buttons over HTTP -- and on it CONTENT and
+CONTEXT (DEBUG builds, copies of their saves) met at the Cable Club, entered the TRADE CENTER and traded DEADLOCK for
+CODEMUSAI; both saves hold the trade. Next: on roverbyteseer, and each screen in the app's GAME tab.
+
 *Recommended: 1, as a spike on roverbyteseer first -- two games, one trade, played from two browsers -- because it
 needs nothing of the core changed and is how the one product doing this does it.*

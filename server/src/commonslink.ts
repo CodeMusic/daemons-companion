@@ -12,6 +12,7 @@ import type { Store } from "./store.js";
 import * as X from "./exchange.js";
 import type { HomeView } from "./commons.js";
 import { exchangeRoute } from "./tradelink.js";
+import { kindOf } from "./profiletrade.js";   // C-226 piece 4
 
 const C = "c:";
 type Linked = { url: string; key: string };
@@ -75,10 +76,36 @@ const marked = (o: any) => (o && !o.error && o.id ? { ...o, id: C + o.id, common
 const strip = (id: unknown) => String(id ?? "").slice(C.length);
 const isC = (id: unknown) => String(id ?? "").startsWith(C);
 
+// C-226 piece 4: a player here claimed into an ACCOUNTS profile carries its guardian's controls home too (the commons
+// hands them back with each board, and the hub keeps them): at home, a profile that trades or meets only with friends
+// does so only with its friends here. Making friends at home stays open -- the home is the family's own.
+type Controls = { trade: string; meet: string };
+const controlsHere = (store: Store): Record<string, Controls> => { try { return JSON.parse(store.getSetting("accounts.controls") ?? "{}"); } catch { return {}; } };
+function keepControls(store: Store, player: string, c: Controls | undefined) {
+  const all = controlsHere(store);
+  if (c) all[player] = { trade: c.trade, meet: c.meet }; else delete all[player];
+  store.setSetting("accounts.controls", Object.keys(all).length ? JSON.stringify(all) : null);
+}
+export function localReach(store: Store, name: string): X.Reach | undefined {
+  const all = controlsHere(store), kind = kindOf(name);
+  if (!Object.keys(all).length || name === "befriend" || name === "unfriend") return undefined;
+  const friends = (a: string, b: string) => (X.playerById(store, a)?.friends ?? []).includes(b), traded = X.traded(store);
+  const allows = (a: string, b: string) => {
+    const c = all[a];
+    if (!c) return true;
+    if (kind === "meet") return c.meet === "off" ? false : c.meet === "trades" ? friends(a, b) || traded(a, b) : friends(a, b);
+    return c.trade === "friends" ? friends(a, b) : true;
+  };
+  return (a, b) => a === b || (allows(a, b) && allows(b, a));
+}
+const sides = (v: any) => ({ friends: (v?.friends ?? []).map((x: any) => ({ ...x, id: C + x.id, commons: true })),
+                             asked: (v?.asked ?? []).map((x: any) => ({ ...x, id: C + x.id, commons: true })),
+                             asks: (v?.asks ?? []).map((x: any) => ({ ...x, id: C + x.id, commons: true })) });
+
 export async function homeRoute(store: Store, keys: X.Keys, p: X.Player, name: string, b: any, f: typeof fetch = fetch): Promise<any> {
-  const here = (n: string, body: any) => exchangeRoute(store, keys, p, n, body);
+  const here = (n: string, body: any) => exchangeRoute(store, keys, p, n, body, localReach(store, n));
   const c = commonsOf(store);
-  if (!c) return here(name, b);
+  if (!c) return name === "claim" ? { error: "Accounts live on THE COMMONS: link this home to it first (TRADE, THE COMMONS)." } : here(name, b);   // DRAFT
   const there = async (n: string, body: any): Promise<any> => {
     try {
       const token = await tokenFor(store, c, p, f);
@@ -90,12 +117,22 @@ export async function homeRoute(store: Store, keys: X.Keys, p: X.Player, name: s
     case "board": {
       const home = here("board", b), far = await there("board", {});
       if (far.error) return { ...home, commons: false };
-      return { friends: home.friends,                                                       // C-223: friends at home
+      keepControls(store, p.id, far.profile?.controls);                                     // C-226 piece 4
+      const fs = sides(far.friends);
+      return { friends: { friends: [...home.friends.friends, ...fs.friends], asked: [...home.friends.asked, ...fs.asked], asks: [...home.friends.asks, ...fs.asks] },   // C-223: friends at home, and on the commons
+               ...(far.profile ? { profile: far.profile } : {}),                             // C-226 piece 4: the profile it is
                open: [...home.open, ...far.open.map(marked)], trades: [...home.trades, ...far.trades.map(marked)],
                // the friends' players; this home's own are listed already, from home
                players: [...home.players, ...far.players.filter((x: any) => !x.name.endsWith(` · ${store.getSetting("commons.name") ?? ""}`))
                                                      .map((x: any) => ({ ...x, id: C + x.id, commons: true }))],
                commons: true };
+    }
+    // C-226 piece 4: claimed into a guardian's profile; friends on the commons, by a profile's friend code or a "c:" id
+    case "claim": return there("claim", b);
+    case "befriend": case "unfriend": {
+      if (b.code === undefined && !isC(b.id)) return here(name, b);
+      const r = await there(name, b.code !== undefined ? { code: b.code } : { id: strip(b.id) });
+      return r.error ? r : { ...sides(r), ...(r.waiting ? { waiting: r.waiting } : {}) };
     }
     case "offer":
       return b.scope === "friends" || isC(b.to) ? marked(await there("offer", { ...b, to: isC(b.to) ? strip(b.to) : undefined })) : here("offer", b);

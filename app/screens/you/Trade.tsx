@@ -28,9 +28,11 @@ type Out = { mine: OutOne | null; others: OutOne[]; met: Met[] };
 type SharedDream = { id: string; at: string; player: string; mine: boolean; species: number; nickname: string; quality: string; text: string; woke: string };
 type View = { items?: Held[]; dreams?: SharedDream[] | null; out?: Out | null; hub: string | null; needsHub?: boolean; me: { id: string; name: string; password: boolean } | null; game: string | null; edition: string; away: Mine[];
               board: { open: Offer[]; trades: Offer[]; players: { id: string; name: string; commons?: boolean }[]; commons?: boolean;
-                       friends?: { friends: Named[]; asked: Named[]; asks: Named[] } } | null;   // C-223
+                       friends?: { friends: Named[]; asked: Named[]; asks: Named[] }; profile?: Playing } | null;   // C-223; C-226 piece 4
               pending: number; waiting: number };
 type Named = { id: string; name: string };
+// C-226 piece 4: the guardian's profile this player is, its friend code, and the friends waiting for its guardian
+type Playing = { name: string; tag: number; code: string; waiting: { player: string; name: string }[] };
 type Commons = { url: string | null; error?: string; home: { id: string; name: string; approved: boolean; code: string; friends: Named[]; asks: Named[]; asked: Named[] } | null };
 
 const who = (b: Brief) => (b ? `${b.nickname} · LV ${b.level}${b.edition ? ` · ${b.edition}` : ""}` : "");
@@ -150,7 +152,7 @@ export function TradeScreen({ ink }: { ink?: string }) {
       {v.items ? <ItemCard items={v.items} players={(b?.players ?? []).filter((p) => p.id !== v.me!.id && !p.commons)} friends={!!b?.friends?.friends.length} ink={ink} act={act} /> : null}
       <OutCard v={v} ink={ink} act={act} />
       <HouseholdCard ink={ink} />
-      {b?.friends ? <FriendsCard f={b.friends} players={(b.players ?? []).filter((p) => p.id !== v.me!.id && !p.commons)} ink={ink} act={act} /> : null}
+      {b?.friends ? <FriendsCard f={b.friends} profile={b.profile} players={(b.players ?? []).filter((p) => p.id !== v.me!.id && !p.commons)} ink={ink} act={act} /> : null}
 
       {v.dreams ? (
         <Card gap={6}>
@@ -304,13 +306,25 @@ function OutCard({ v, ink, act }: { v: View; ink: string; act: (path: string, bo
 
 // C-223 (the user, 2026-10-28, by multiple choice): FRIENDS at home -- ask a player, they ask back (or ACCEPT), and you
 // are friends: an offer can then be for FRIENDS only. Every word DRAFT.
-function FriendsCard({ f, players, ink, act }: { f: { friends: Named[]; asked: Named[]; asks: Named[] }; players: Named[]; ink: string;
+// C-226 piece 4: a player that is a guardian's profile also has a FRIEND CODE -- given to another player, or another's
+// typed here -- and a friend it asks for may wait for its guardian.
+function FriendsCard({ f, profile, players, ink, act }: { f: { friends: Named[]; asked: Named[]; asks: Named[] }; profile?: Playing; players: Named[]; ink: string;
                                                   act: (path: string, body: unknown, done: string) => Promise<void> }) {
   const known = new Set([...f.friends, ...f.asked, ...f.asks].map((x) => x.id));
   const others = players.filter((p) => !known.has(p.id));
+  const [code, setCode] = useState("");
   return (
     <Card gap={6}>
       <Eyebrow>FRIENDS</Eyebrow>
+      {profile ? (<>
+        <Small>{`You play as ${profile.name} #${profile.tag}. Your friend code is`}</Small>
+        <Text fontFamily="$mono" fontSize={20} letterSpacing={4} color="$color12">{profile.code}</Text>
+        <XStack gap={8} flexWrap="wrap" alignItems="center">
+          <Entry value={code} onChange={(x) => setCode(x.toUpperCase())} onSubmit={() => {}} placeholder="a friend's code" limit={8} />
+          <Action label="ASK" ink={ink} onPress={() => act("/api/trade/befriend", { code }, "Asked.").then(() => setCode(""))} />
+        </XStack>
+        {profile.waiting.map((w) => <Small key={w.player}>{`${w.name}: waiting for your guardian to say yes.`}</Small>)}
+      </>) : null}
       {!f.friends.length && !f.asks.length && !f.asked.length ? <Small>Ask a player to be friends. Once they ask back, you can offer to friends only.</Small> : null}
       {f.asks.map((a) => (
         <XStack key={a.id} gap={10} alignItems="center" borderTopWidth={1} borderColor="$color5" paddingVertical={6}>

@@ -9,7 +9,9 @@
 //   POST /commons/friend/accept {id}       accept an ask;  POST /commons/friend/forget {id}
 //   POST /commons/player {name}            vouch for one of its players: a token for that player
 //   -- as a home's player (x-daemons-home and x-daemons-player) --
-//   GET/POST /commons/x/<name>             the exchange's requests (tradelink.ts exchangeRoute), within REACH
+//   GET/POST /commons/x/<name>             the exchange's requests (tradelink.ts exchangeRoute), within REACH -- a player
+//                                          that is a profile within its guardian's controls (profiletrade.ts, C-226 piece 4)
+//   POST /commons/x/claim {guardian, profile}   C-226 piece 4: this player claimed into the guardian's profile
 //   -- C-226 --
 //   /accounts/*                            ACCOUNTS: guardians, profiles, kids' devices, passkeys (accounts_api.ts)
 //
@@ -20,7 +22,8 @@ import type { Store } from "./store.js";
 import { KEYS } from "./keys.js";
 import * as C from "./commons.js";
 import * as X from "./exchange.js";
-import { exchangeRoute } from "./tradelink.js";
+import * as A from "./accounts.js";
+import * as P from "./profiletrade.js";   // C-226 piece 4
 import { ACCOUNT_KEYS } from "./keys.js";
 import { accountsRoute, type AccountsConfig } from "./accounts_api.js";   // C-226
 
@@ -78,7 +81,14 @@ export function makeCommons(store: Store, accounts: AccountsConfig | null = null
       if (path.startsWith("/commons/x/")) {
         const p = X.playerFor(store, KEYS, String(req.headers["x-daemons-player"] ?? ""));
         if (!p || p.home !== home.id) return send(res, 401, { error: "that player is not this home's" });
-        const r = await exchangeRoute(store, KEYS, p, path.slice("/commons/x/".length), b, C.reach(store));   // a meeting or a hello waits on its lines
+        const name = path.slice("/commons/x/".length);
+        if (name === "claim") {                                     // piece 4: the guardian's token, passed by the hub
+          const g = accounts ? A.guardianFor(store, ACCOUNT_KEYS, String(b.guardian ?? "")) : null;
+          if (!g) return send(res, 401, { error: "sign in first" });
+          const r = P.claim(store, g, b.profile, p);
+          return send(res, X.failed(r) ? 400 : 200, r);
+        }
+        const r = await P.profileRoute(store, KEYS, p, name, b);   // a meeting or a hello waits on its lines
         return send(res, r?.error === "not found" ? 404 : r?.error ? 400 : 200, r);
       }
       return send(res, 404, { error: "not found" });

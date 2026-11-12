@@ -112,7 +112,7 @@ export class Unreachable extends Error { name = "Unreachable"; }
 // the companion cannot be reached, and sent in order when it answers. Only what needs an answer NOW is not kept --
 // talking, a voice, a SYNC of the save, the Mac's own dialogs, pairing, and the handheld told to do something this
 // moment (run a routine, send a remote, join a network). A setting is kept once: only the latest of each is sent.
-export const NOT_KEPT = /^\/api\/(accounts\/|ai\/|paint$|sync|save\/|game\/|where\/find|device\/talk\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
+export const NOT_KEPT = /^\/api\/(accounts\/|trade\/claim|ai\/|paint$|sync|save\/|game\/|where\/find|device\/talk\/|art|pair|settings\/(pick|reveal|network|relay)|device\/(run|remote|wifi|network)|networks)/;
 
 export const LATEST_ONLY = /^\/api\/(settings|talk\/settings|device\/settings|profile)$/;
 

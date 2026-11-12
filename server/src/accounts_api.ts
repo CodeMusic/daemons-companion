@@ -18,7 +18,14 @@
 //   POST /accounts/device/revoke {id}
 //   POST /accounts/delete {confirm: "DELETE"}     the guardian and everything theirs
 //   -- as a profile's device (x-daemons-profile: <device token>) --
-//   GET  /accounts/profile/me                     its own name, tag, nickname and controls
+//   GET  /accounts/profile/me                     its own name, tag, nickname, controls and friend code
+//   GET/POST /accounts/x/<name>                   C-226 piece 4: the exchange's requests as the profile (profiletrade.ts)
+//   -- piece 4, as a guardian --
+//   POST /accounts/profile/ledger {id}            a profile's every trade, loan and gift, and its friends
+//   POST /accounts/profile/friend {profile, player, yes?}   a friend waiting for the guardian: let it, or not
+//   POST /accounts/profile/block {profile, player, yes?}    a player kept away from a profile (yes: false lets it back)
+//   POST /accounts/profile/claim {id}             a home's player claimed into a profile -- through /commons/x/claim
+//                                                 (the hub speaks for its player), never here
 //
 // Who the app is with each provider, and the passkeys' site, come from the environment (commons_main.ts): unset, sign-in
 // and passkeys say so rather than taking anything.
@@ -27,6 +34,7 @@ import * as A from "./accounts.js";
 import { failed } from "./exchange.js";
 import { jwksFor, kidOf, PROVIDERS, verifyIdToken, type Provider } from "./idtoken.js";
 import * as W from "./webauthn.js";
+import * as P from "./profiletrade.js";   // piece 4
 
 // devSignIn (ACCOUNTS_DEV_SIGNIN=1): a guardian signed in by name with no provider, from the commons' own machine only --
 // for trying the app against a scratch commons. Never set where anyone else reaches it.
@@ -78,13 +86,22 @@ export async function accountsRoute(store: Store, keys: A.AccountKeys, cfg: Acco
   if (method === "POST" && path === "/accounts/device/join") return of(A.joinDevice(store, keys, b ?? {}, now));
   if (method === "GET" && path === "/accounts/profile/me") {
     const p = A.profileForDevice(store, keys, String(headers["x-daemons-profile"] ?? ""));
-    return p ? ok(A.profileView(p)) : no(401, "this device is not open on a profile");
+    return p ? ok({ ...A.profileView(p), code: P.codeOf(store, keys, p.id) }) : no(401, "this device is not open on a profile");
+  }
+  if (path.startsWith("/accounts/x/")) {                       // piece 4: a kid's device plays as its profile
+    const p = A.profileForDevice(store, keys, String(headers["x-daemons-profile"] ?? ""));
+    if (!p) return no(401, "this device is not open on a profile");
+    const name = path.slice("/accounts/x/".length);
+    if (name === "claim") return no(404, "not found");
+    const r = await P.profileRoute(store, keys, P.playerFor(store, p), name, b ?? {});
+    return r?.error === "not found" ? no(404, r.error) : r?.error ? no(400, r.error) : ok(r);
   }
 
   const bearer = String(headers.authorization ?? "").replace(/^Bearer\s+/i, "");
   const g = A.guardianFor(store, keys, bearer, now);
   if (!g) return no(401, "sign in first");
-  if (method === "GET" && path === "/accounts/me") return ok(A.guardianView(store, g));
+  const seen = () => { const v = A.guardianView(store, g); return { ...v, profiles: v.profiles.map((p) => ({ ...p, ...P.socialOf(store, keys, p.id) })) }; };
+  if (method === "GET" && path === "/accounts/me") return ok(seen());
   if (method !== "POST") return no(404, "not found");
   switch (path) {
     case "/accounts/signout": A.signOut(store, keys, bearer, now); return ok({ signedOut: true });
@@ -94,18 +111,26 @@ export async function accountsRoute(store: Store, keys: A.AccountKeys, cfg: Acco
       if (!c || c.guardian !== g.id) return no(400, "that question has expired -- ask again");
       const k = W.register(b ?? {}, expect(c.value));
       if (typeof k === "string") return no(400, `that passkey is refused: ${k}`);
-      return of(A.keepPasskey(store, g, k, b?.label, now), () => A.guardianView(store, g));
+      return of(A.keepPasskey(store, g, k, b?.label, now), seen);
     }
-    case "/accounts/passkey/remove": return of(A.removePasskey(store, g, b?.id, now), () => A.guardianView(store, g));
+    case "/accounts/passkey/remove": return of(A.removePasskey(store, g, b?.id, now), seen);
     case "/accounts/profile": return of(A.addProfile(store, keys, g, b ?? {}, now), A.profileView);
     case "/accounts/profile/rename": return of(A.rename(store, g, b ?? {}, now), A.profileView);
     case "/accounts/profile/controls": return of(A.setControls(store, g, b ?? {}, now), A.profileView);
     case "/accounts/profile/nickname": return of(A.setNickname(store, g, b ?? {}, now), A.profileView);
-    case "/accounts/profile/remove": return of(A.removeProfile(store, g, b?.id, now), () => A.guardianView(store, g));
+    case "/accounts/profile/remove": {
+      const r = A.removeProfile(store, g, b?.id, now);
+      if (!failed(r)) P.forget(store, [r.removed]);              // piece 4: off the exchange
+      return of(r, seen);
+    }
+    case "/accounts/profile/ledger": return of(P.ledger(store, g, b?.id));
+    case "/accounts/profile/friend": return of(P.decide(store, g, b ?? {}));
+    case "/accounts/profile/block": return of(P.block(store, g, b ?? {}));
     case "/accounts/device/code": return of(A.deviceCode(store, keys, g, b?.profile, now));
-    case "/accounts/device/revoke": return of(A.revokeDevice(store, g, b?.id, now), () => A.guardianView(store, g));
+    case "/accounts/device/revoke": return of(A.revokeDevice(store, g, b?.id, now), seen);
     case "/accounts/delete":
       if (b?.confirm !== "DELETE") return no(400, 'to delete everything, send confirm: "DELETE"');   // DRAFT
+      P.forget(store, A.profilesOf(store, g));                   // piece 4: every profile off the exchange first
       return ok(A.deleteGuardian(store, g, now));
   }
   return no(404, "not found");

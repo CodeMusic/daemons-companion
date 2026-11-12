@@ -222,7 +222,8 @@ export async function tradeRoute(link: Link | null, store: Store, save: Uint8Arr
     return answer(await link.call("converse", { with: b.with, mode: b.mode, turns: b.turns, prompt: b.prompt, swap: b.swap === true, card }));
   }
   if (path === "/api/trade/talks" || path === "/api/trade/talk" || path === "/api/trade/integrate") return answer(await link.call(path.slice("/api/trade/".length), b));
-  if (path === "/api/trade/back" || path === "/api/trade/meet" || path === "/api/trade/unshare" || path === "/api/trade/befriend" || path === "/api/trade/unfriend") return answer(await link.call(path.slice("/api/trade/".length), b));
+  if (path === "/api/trade/back" || path === "/api/trade/meet" || path === "/api/trade/unshare" || path === "/api/trade/befriend" || path === "/api/trade/unfriend"
+      || path === "/api/trade/claim") return answer(await link.call(path.slice("/api/trade/".length), b));
   // C-223: one of this companion's dreams (dreams.ts), shared with the players at home
   if (path === "/api/trade/share") {
     const d = dreamsOf(store).find((x) => x.id === Number(b.id));
@@ -258,4 +259,5 @@ export function setHub(store: Store, raw: unknown): { hub: string } | string {
 }
 export const TRADE_PATHS = ["/api/trade", "/api/trade/join", "/api/trade/offer", "/api/trade/accept", "/api/trade/withdraw", "/api/trade/recall", "/api/trade/password",
                             "/api/trade/out", "/api/trade/back", "/api/trade/meet", "/api/trade/share", "/api/trade/unshare", "/api/trade/befriend", "/api/trade/unfriend",
-                            "/api/trade/converse", "/api/trade/talks", "/api/trade/talk", "/api/trade/integrate"];   // C-329
+                            "/api/trade/converse", "/api/trade/talks", "/api/trade/talk", "/api/trade/integrate",
+                            "/api/trade/claim"];   // C-226 piece 4: this player claimed into a guardian's profile   // C-329

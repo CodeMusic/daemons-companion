@@ -1,6 +1,6 @@
 # Accounts and safety (C-226)
 
-*A design, DRAFT, 2026-11-11. **Piece 1, the server, is built** (below); the rest is not. It is the account half of going public (C-278): before
+*A design, DRAFT, 2026-11-11. **Pieces 1-4 are built** (below); piece 5, before it opens, is not. It is the account half of going public (C-278): before
 `api.daemons.codemusic.ca` opens, a player needs an identity that does not depend on a home hub, and kids may be among
 them.*
 
@@ -143,6 +143,41 @@ to `/accounts/<path>` on the commons it is linked to (`server/src/accountslink.t
 the app keeps in the keychain or the site's storage (`app/platform/accounts.ts`) and never queues offline. Sign in with
 Apple waits on `expo-apple-authentication` in the phone lane's next build; until then the card says so. For trying it,
 `ACCOUNTS_DEV_SIGNIN=1` on a scratch commons signs a guardian in by name, from that machine only.
+
+## Piece 4, built 2026-11-11 (DRAFT)
+
+The exchange on profiles, on THE COMMONS (`server/src/profiletrade.ts`). A profile is a player there in one of two ways:
+
+- **Claimed**: a home's player, claimed into a profile by its guardian with PLAY AS IT HERE on the GUARDIAN card. The
+  app sends the guardian's token to its companion (`/api/trade/claim`), the hub passes it to the commons with its
+  player (`/commons/x/claim`), and the player keeps its offers, ledger and friends and takes the profile's name
+  (QUIET KERNEL #4410). Its hub goes on speaking for it as before.
+- **Made for it**: a kid's device with no home trades as its profile through `/accounts/x/<name>` (the exchange's
+  own requests, the device token as `x-daemons-profile`). The app does not use this path yet: it is for when the
+  commons is reachable from outside the tailnet (C-278).
+
+The controls decide who reaches a profile, and **both sides' rules hold** (two players reach each other only when
+each one's controls allow the other):
+
+| | |
+|---|---|
+| TRADES WITH | friends -- only friends; + home -- friends, or the players its home already reaches; + lobby -- anyone |
+| MEETINGS | friends / anyone it has traded with / off -- meetings, OUT TOGETHER, shared dreams, battles |
+| FRIENDS | I approve -- a friend it asks for or accepts waits on the guardian's YES; it decides -- it accepts its own |
+| Blocked | a player the guardian blocked never reaches the profile, either way, and is unfriended |
+
+Each profile has a **friend code** (eight letters and digits), shown on TRADE's FRIENDS card and on a kid's device,
+which another player types to ask. The GUARDIAN card shows each profile's code, the friends waiting (YES / NO), the
+players blocked (UNBLOCK), and ITS TRADES: the ledger (every trade, loan and gift) and its friends, each of whom can be
+blocked. Removing a profile or deleting the account takes it off the exchange: open offers withdrawn, loans called
+home, friends forgotten; a claimed player goes back to its home.
+
+At home, a claimed player carries its trade and meeting controls (the commons hands them back with each board and
+the hub keeps them, `commonslink.ts localReach`): a profile that trades only with friends does so at home too. Making
+friends at home stays open -- the home is the family's own. Tests: `server/test/profiletrade.test.ts`.
+
+Not yet: the commons on roverbyteseer runs the old code until sign-in is set up there (piece 5); blocking from an
+offer rather than a friend; the lobby itself (C-227), which the "+ lobby" choice anticipates.
 
 ## Still open
 

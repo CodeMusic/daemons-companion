@@ -25,7 +25,8 @@ import { describe, fromB64, gameId, type GameKey } from "./save/trade.js";
 export interface Keys { token(): string; hash(token: string): string; password(pw: string): string; check(pw: string, kept: string): boolean; code(): string }
 export interface Player { id: string; name: string; at: string; tokens: string[]; password: string | null;
                           home?: string; label?: string;    // THE COMMONS (below)
-                          friends?: string[]; asks?: string[] }   // C-223: friends at home (both ways), and the asks this one has made (commons.ts): the home that vouches for it, and "KIT · ITS HOME"
+                          friends?: string[]; asks?: string[];
+                          profile?: string; was?: string }   // C-226 piece 4: the ACCOUNTS profile this player is, and its label before it was claimed   // C-223: friends at home (both ways), and the asks this one has made (commons.ts): the home that vouches for it, and "KIT · ITS HOME"
 // THE COMMONS: whether two players may see and trade with each other -- on a home hub, everyone; on the commons, the
 // same home or homes that are friends
 export type Reach = (a: string, b: string) => boolean;
@@ -105,6 +106,60 @@ export type PlayerView = { id: string; name: string; at: string; password: boole
 const view = (p: Player): PlayerView => ({ id: p.id, name: p.label ?? p.name, at: p.at, password: !!p.password });
 export const homeOf = (store: Store, player: string) => load(store).players.find((p) => p.id === player)?.home ?? null;
 export const players = (store: Store) => load(store).players.map(view);
+
+// ---- C-226 piece 4: players that are ACCOUNTS profiles (profiletrade.ts) ----
+export const playerById = (store: Store, id: string): Player | null => load(store).players.find((p) => p.id === id) ?? null;
+export const playerOfProfile = (store: Store, profile: string): Player | null => load(store).players.find((p) => p.profile === profile) ?? null;
+// a profile's own player on the commons (one made for it, with no home and no token: its devices are the accounts')
+export function profilePlayer(store: Store, profile: string, label: string, now = new Date()): Player {
+  return change(store, (s) => {
+    const was = s.players.find((p) => p.profile === profile);
+    if (was) { was.label = label; return was; }
+    const p: Player = { id: `p${s.next++}`, name: label, label, at: now.toISOString(), tokens: [], password: null, profile };
+    s.players.push(p);
+    return p;
+  });
+}
+// a home's player claimed into a profile: it keeps its offers, ledger and friends and takes the profile's name
+export function claim(store: Store, player: string, profile: string, label: string): Result<Player> {
+  return change(store, (s) => {
+    const p = s.players.find((x) => x.id === player);
+    if (!p) return fail("no such player");
+    if (p.profile && p.profile !== profile) return fail("that player is another profile's already");    // DRAFT
+    if (s.players.some((x) => x.profile === profile && x.id !== player)) return fail("that profile plays as another player already");   // DRAFT
+    if (!p.profile) p.was = p.label ?? p.name;
+    p.profile = profile; p.label = label;
+    return p;
+  });
+}
+// a profile gone (removed, or its guardian deleted): its open offers withdrawn, its loans called home, its friends
+// forgotten; a claimed home player goes back to its home, one made for the profile is left with no way in
+export function unclaim(store: Store, profile: string): string | null {
+  return change(store, (s) => {
+    const p = s.players.find((x) => x.profile === profile);
+    if (!p) return null;
+    for (const o of s.offers) {
+      if (o.from.player === p.id && o.state === "open") o.state = "withdrawn";
+      if (o.kind === "loan" && o.state === "agreed" && (o.from.player === p.id || o.with?.player === p.id)) o.state = "returning";
+    }
+    for (const x of s.players) { x.friends = (x.friends ?? []).filter((f) => f !== p.id); x.asks = (x.asks ?? []).filter((f) => f !== p.id); }
+    p.friends = []; p.asks = [];
+    delete p.profile;
+    if (p.home) { p.label = p.was ?? p.label; delete p.was; } else { p.label = "A PLAYER WHO LEFT"; p.tokens = []; }   // DRAFT
+    return p.id;
+  });
+}
+export const friendsNow = (store: Store, player: string) => friendsView(load(store), player);
+// every offer a player is in, as that player sees it -- a guardian's LEDGER of a profile
+export function offersOf(store: Store, player: string) {
+  const s = load(store);
+  return s.offers.filter((o) => o.from.player === player || o.with?.player === player).map((o) => shown(store, player, o, s)).reverse();
+}
+// whether two players have traded, lent or given (an offer between them that was taken)
+export function traded(store: Store): (a: string, b: string) => boolean {
+  const pairs = new Set(load(store).offers.filter((o) => o.with && o.state !== "open" && o.state !== "withdrawn").flatMap((o) => [`${o.from.player}|${o.with!.player}`, `${o.with!.player}|${o.from.player}`]));
+  return (a, b) => pairs.has(`${a}|${b}`);
+}
 
 // ---- C-223: friends at home -- one asks, the other asks back (or accepts), and both are friends; either can forget ----
 const friendsOf = (s: State, id: string) => s.players.find((p) => p.id === id)?.friends ?? [];

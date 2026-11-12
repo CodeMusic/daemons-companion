@@ -2,17 +2,25 @@
 // Signed out: sign in with Apple (a build that carries it), or open one profile on this device with the guardian's
 // code. A kid's device: which profile it is, and a way to leave it. Signed in: the profiles, each named from the two
 // lists (never typed), its controls (safest first), its friends-only nickname, a code to open it on a device, the
-// devices it is open on; then sign out, or delete everything. Every word is DRAFT; it all lives on THE COMMONS, reached
+// devices it is open on; then sign out, or delete everything. Piece 4: each profile's friend code, the friends waiting
+// for the guardian's yes, the players it blocks, its LEDGER (every trade, loan and gift), and PLAY AS IT HERE -- this
+// companion's player on the exchange claimed into the profile. Every word is DRAFT; it all lives on THE COMMONS, reached
 // through the hub (platform/accounts.ts).
 import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { accounts, appleHere, appleToken, keepToken, readToken } from "../../platform/accounts";
+import { api } from "../../platform/net";
 import { Action, Card, Entry, Eyebrow, Pending, Segments, Small, useInk } from "../../ui/ui";
 
 type Controls = { friends: "approve" | "own"; trade: "friends" | "home" | "lobby"; meet: "friends" | "trades" | "off"; lobby: "off" | "on" };
 type Profile = { id: string; name: string; tag: number; first: number; second: number; nickname: string | null; controls: Controls; at: string;
-                 devices?: { id: string; label: string; at: string }[] };
+                 devices?: { id: string; label: string; at: string }[];
+                 code?: string; waiting?: { player: string; name: string }[]; blocked?: { player: string; name: string }[] };   // piece 4
+type Brief = { player: string | null; nickname: string; level: number } | null;
+type Ledger = { offers: { id: string; at: string; kind: string; state: string; side: "from" | "with" | null; from: Brief; with: Brief; item?: { count: number; name: string } }[];
+                friends: { friends: { id: string; name: string }[] } };
+const KINDS: Record<string, string> = { full: "TRADE", loan: "LOAN", gift: "GIFT", item: "ITEM" };
 type GuardianView = { id: string; provider: string; profiles: Profile[]; passkeys: { id: string; label: string }[] };
 type Names = { first: (string | null)[]; second: (string | null)[]; dev?: boolean };
 
@@ -79,6 +87,7 @@ export function GuardianCard({ ink: given }: { ink?: string }) {
       {mine ? (<>
         <Text fontFamily="$mono" fontSize={18} letterSpacing={1} color="$color12">{`${mine.name} #${mine.tag}`}</Text>
         <Small>{`This device plays as ${mine.name}${mine.nickname ? ` (${mine.nickname} to friends)` : ""}. Its guardian sets what it may do.`}</Small>
+        {mine.code ? <Small>{`Its friend code: ${mine.code}`}</Small> : null}
         <Action label="LEAVE THIS PROFILE" ink={ink} onPress={() => act(() => keepToken("profile", null), "This device has left the profile.")} />
       </>) : (<>
         <Small>A grown-up signs in to make profiles for the players at home. A player never signs in.</Small>
@@ -110,6 +119,7 @@ function ProfileRow({ p, ink, act }: { p: Profile; ink: string; act: (what: () =
   const [nick, setNick] = useState(p.nickname ?? "");
   const [code, setCode] = useState<{ code: string; until: string } | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [ledger, setLedger] = useState<Ledger | null>(null);
   return (
     <YStack gap={8} borderTopWidth={1} borderColor="$color5" paddingTop={10}>
       <Text fontFamily="$mono" fontSize={17} letterSpacing={1} color="$color12">{`${p.name} #${p.tag}`}</Text>
@@ -135,11 +145,51 @@ function ProfileRow({ p, ink, act }: { p: Profile; ink: string; act: (what: () =
           <Action label="CLOSE IT" ink={ink} onPress={() => act(() => accounts("device/revoke", { id: d.id }), `Closed on ${d.label}.`)} />
         </XStack>
       ))}
+      {p.code ? <Small>{`Friend code ${p.code}: another player types it to ask to be friends.`}</Small> : null}
+      {(p.waiting ?? []).map((w) => (
+        <XStack key={w.player} gap={8} flexWrap="wrap" alignItems="center">
+          <Small>{`${w.name} wants to be friends.`}</Small>
+          <Action label="YES" ink={ink} onPress={() => act(() => accounts("profile/friend", { profile: p.id, player: w.player }), `${w.name} is ${p.name}'s friend.`)} />
+          <Action label="NO" ink={ink} onPress={() => act(() => accounts("profile/friend", { profile: p.id, player: w.player, yes: false }), `Not ${w.name}.`)} />
+        </XStack>
+      ))}
+      {(p.blocked ?? []).map((x) => (
+        <XStack key={x.player} gap={8} flexWrap="wrap" alignItems="center">
+          <Small>{`${x.name} is blocked.`}</Small>
+          <Action label="UNBLOCK" ink={ink} onPress={() => act(() => accounts("profile/block", { profile: p.id, player: x.player, yes: false }), `${x.name} is not blocked now.`)} />
+        </XStack>
+      ))}
+      <XStack gap={8} flexWrap="wrap">
+        <Action label={ledger ? "HIDE ITS TRADES" : "ITS TRADES"} ink={ink} onPress={() => ledger ? setLedger(null) : act(async () => setLedger(await accounts<Ledger>("profile/ledger", { id: p.id })), "Its trades, loans and gifts.")} />
+        <Action label="PLAY AS IT HERE" ink={ink} onPress={() => act(async () => api("/api/trade/claim", { guardian: await readToken("guardian"), profile: p.id }),
+                                                                           `This companion's player is ${p.name} now: its trades and friends came with it.`)} />
+      </XStack>
+      {ledger ? <LedgerList l={ledger} ink={ink} block={(player, name) => act(async () => setLedger(await accounts<Ledger>("profile/block", { profile: p.id, player })), `${name} is blocked.`)} /> : null}
       {removing
         ? <XStack gap={8} flexWrap="wrap" alignItems="center"><Small>{`Remove ${p.name} and close it on every device?`}</Small>
             <Action label="REMOVE" ink={ink} onPress={() => act(() => accounts("profile/remove", { id: p.id }), `${p.name} is removed.`)} />
             <Action label="KEEP" ink={ink} onPress={() => setRemoving(false)} /></XStack>
         : <Pressable onPress={() => setRemoving(true)} accessibilityRole="button"><Small color="$color10">Remove this profile…</Small></Pressable>}
+    </YStack>
+  );
+}
+
+// A profile's LEDGER: each trade, loan and gift, the other player in it, and its friends -- any of them blocked from here
+function LedgerList({ l, ink, block }: { l: Ledger; ink: string; block: (player: string, name: string) => void }) {
+  if (!l.offers.length && !l.friends.friends.length) return <Small>No trades, loans, gifts or friends yet.</Small>;
+  return (
+    <YStack gap={6}>
+      {l.offers.map((o) => {
+        const mine = o.side === "with" ? o.with : o.from, theirs = o.side === "with" ? o.from : o.with;
+        const what = o.item ? `${o.item.count} × ${o.item.name}` : mine ? `${mine.nickname} LV ${mine.level}` : "";
+        return <Small key={o.id}>{`${KINDS[o.kind] ?? o.kind} · ${what}${theirs?.player ? ` · with ${theirs.player}` : ""} · ${o.state}`}</Small>;
+      })}
+      {l.friends.friends.map((f) => (
+        <XStack key={f.id} gap={8} alignItems="center" flexWrap="wrap">
+          <Small>{`Friend: ${f.name}`}</Small>
+          <Action label="BLOCK" ink={ink} onPress={() => block(f.id, f.name)} />
+        </XStack>
+      ))}
     </YStack>
   );
 }

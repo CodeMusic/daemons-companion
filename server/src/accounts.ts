@@ -9,8 +9,8 @@
 //     device token, revocable by the guardian;
 //   * the guardian's controls per profile, safest first; and DELETE, which erases the guardian and everything theirs.
 //
-// The exchange, friends and THE COMMONS move onto profiles in piece 4; this is piece 1, the accounts themselves, on
-// roverbyteseer beside the commons (accounts_api.ts). Tokens are kept only as hashes. No node: imports -- the keys are
+// This is piece 1, the accounts themselves, on roverbyteseer beside the commons (accounts_api.ts); the exchange,
+// friends and THE COMMONS on profiles are piece 4 (profiletrade.ts). Tokens are kept only as hashes. No node: imports -- the keys are
 // the caller's, as exchange.ts's are.
 import type { Store } from "./store.js";
 import type { Keys, Result } from "./exchange.js";
@@ -108,6 +108,9 @@ export function addProfile(store: Store, keys: AccountKeys, g: Guardian, b: { fi
     return p;
   });
 }
+export const profiles = (store: Store): Profile[] => load(store).profiles;                  // piece 4 (profiletrade.ts)
+export const profileById = (store: Store, id: string): Profile | null => load(store).profiles.find((p) => p.id === id) ?? null;
+export const profilesOf = (store: Store, g: Guardian): string[] => load(store).profiles.filter((p) => p.guardian === g.id).map((p) => p.id);
 function mine(s: State, g: Guardian, id: unknown) { return s.profiles.find((p) => p.id === id && p.guardian === g.id) ?? null; }
 
 export function rename(store: Store, g: Guardian, b: { id?: unknown; first?: unknown; second?: unknown }, now = new Date()): Result<Profile> {

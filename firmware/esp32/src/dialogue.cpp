@@ -17,7 +17,7 @@ static String dHeard, dWhy;
 static const int TURN_CHOICES[] = { 1, 3, 5, 7 };
 enum { D_MODE, D_TURNS, D_SAY, D_TALK, D_WRITTEN };
 
-static const uint16_t RED = 0xC9A6, BLUE = 0x4B3D;           // the book's inks, as the app's bubbles
+static const uint16_t INK_RED = 0xC9A6, INK_BLUE = 0x4B3D;           // the book's inks, as the app's bubbles
 
 static int bubbleLines(const String &t, int w) { canvas.setTextFont(2); return wrap(t, 0, -1000, w, 2, 16, 0, PAPER); }
 
@@ -31,8 +31,8 @@ static String drawDialogue(uint16_t day, uint16_t ink) {
     else for (int i = 0; i < 4; i++) words[i] = String(TURN_CHOICES[i]) + (TURN_CHOICES[i] == 1 ? " TURN" : " TURNS");   // DRAFT
     drawTiles(n, dPick, words, dStage == D_MODE ? "IN DIALOGUE" : "TURNS EACH", [](int i, int cx, int cy) {   // DRAFT
       if (dStage == D_MODE) {                                // two bubbles: red and blue, or the asker faint
-        canvas.fillRoundRect(cx - 20, cy - 12, 22, 14, 4, i == 0 ? RED : QUIET);
-        canvas.fillRoundRect(cx - 2, cy + 2, 22, 14, 4, BLUE);
+        canvas.fillRoundRect(cx - 20, cy - 12, 22, 14, 4, i == 0 ? INK_RED : QUIET);
+        canvas.fillRoundRect(cx - 2, cy + 2, 22, 14, 4, INK_BLUE);
         return;
       }
       for (int k = 0; k < TURN_CHOICES[i] && k < 7; k++) canvas.fillCircle(cx - 18 + k * 6, cy, 2, PAPER);
@@ -63,7 +63,7 @@ static String drawDialogue(uint16_t day, uint16_t ink) {
     bool left = who == "a";
     int h = bubbleLines(said, bw - 12) * 16 + 10, x = left ? 6 : W - 6 - bw;
     if (y + h > 20 && y < H - 44) {
-      uint16_t fill = left ? (two ? QUIET : RED) : BLUE;
+      uint16_t fill = left ? (two ? QUIET : INK_RED) : INK_BLUE;
       canvas.fillRoundRect(x, y, bw, h, 8, fill);
       wrap(said, x + 6, y + 5, bw - 12, 2, 16, 40, PAPER);
       tapRect(x, max(y, 20), bw, min(h, H - 44 - max(y, 20)), i);

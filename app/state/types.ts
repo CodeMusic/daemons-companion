@@ -26,7 +26,8 @@ export type Walk = { date: string; goal: number; steps: number; reached: boolean
 export type Settings = { savePath: string | null; dir: string | null; exists: boolean; valid: boolean; source: string; canPick: boolean };
 
 // C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
-export type Life = { mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
+export type Life = { vesselUnder?: string | null;   // C-357 (5): CONTAINER, once the book is held
+                     mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
               trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null;
               expression?: import("../../server/src/expressions").Drawn;

@@ -20,6 +20,7 @@ import { howOf, readsView, takeLean, takeRead } from "./intuition.js";   // C-20
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./tending.js";   // C-357 (3)
 import { weatheringOf } from "./weathering.js";   // C-357 (4)
+import { VESSEL_UNDER, vesselOf } from "./vessel.js";   // C-357 (5)
 import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
@@ -40,7 +41,7 @@ const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
 import { checkNight, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
-import { bondAdd } from "./evolve.js";
+import { bondAdd, evolvedOf } from "./evolve.js";
 import { WAKES } from "./life.js";   // C-293: the cares that wake it, one list
 import { openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches
 import { thriveOf } from "./thrive.js";   // C-207
@@ -386,8 +387,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
 function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const d = carriedDaemon(h, store, deviceId);
   const lf = daemonLife(store, now);
+  // C-357 (5): CONTAINER -- the form it is now (what it became here, until SYNC writes it), and a line under it for a week
+  const save = d ? h.save.read() : null, form = d ? (evolvedOf(store, d.personality)?.to ?? d.species) : null;
+  const vessel = d && form !== null ? vesselOf(store, d.personality, form, now) : null;
+  const vesselUnder = vessel && save && readSubtle(save).held ? VESSEL_UNDER : null;
   return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null,
-            thrive: thriveOf(store, now) });   // C-119; C-207: the week, for the den's glow and marks
+            thrive: thriveOf(store, now), vesselUnder });   // C-119; C-207: the week, for the den's glow and marks
 }
 
 // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's

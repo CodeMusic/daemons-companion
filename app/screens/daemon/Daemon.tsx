@@ -187,7 +187,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
         </XStack>
       )}
       {said ? <Small>{said}</Small> : null}
-      <Under words={under} />
+      <Under words={under || l.vesselUnder || ""} />{/* C-357 (5): CONTAINER -- a new form, the same one */}
       {witching ? <WitchingHour nickname={name} species={daemon.species} note={note} /> : null}
       <HalloweenNote h={halloween} masked={masked} name={name} />
     </Card>

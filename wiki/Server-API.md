@@ -65,6 +65,10 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 | `GET /api/book/recording?book=&title=` | C-331: a book's own recording of one chapter, as raw 16 kHz 16-bit mono samples, cut once from its published reading -- THE GUIDE and THE SUBTLE LAYER only; 404 when the chapter has none, and the watch reads it in the INDEX voice instead |
 | `GET /api/index/list`, `GET /api/index/entry?species=` | C-199: THE INDEX as a watch reads it -- every daemon met, a line each, with the counts seen and bound; then one entry, its kind, types, words and OPUS's margin (*alone too*) |
 | `GET /api/dreams` | C-200: the dream journal, the newest first (*alone too*) |
+| `GET /api/journals`, `GET`/`POST /api/journal` | C-298: the JOURNALs; POST `{title, kind}` starts one, `kind` `standard` or `dream` (C-356) (*alone too*) |
+| `POST /api/journal/entry`, `/entry/remove`, `/rename`, `/remove` | an entry written or removed, a journal renamed or removed (*alone too*) |
+| `POST /api/journal/summarize`, `/again`, `/plain` | a chapter written by the house's mind (a dream journal's told as dreams, with `signing` for its signs, C-356), tried again, or laid out as written |
+| `POST /api/journal/signs` | C-356: READ THE SIGNS -- `{journal, entry}` or `{journal, chapter}`; the four books' lexicon read by the quick thinker, or alone the lexicon's own readings |
 | `GET /api/soundings` | C-195: each daemon away, when it was last heard and how it was doing (*alone too*) |
 | `GET /api/planner`, `GET /api/planner/wild?place=` | C-191: THE ROAD AHEAD, up to the next step and nothing past it; then one open place's wild daemons (*alone too*) |
 | `GET /api/reads` | C-203: the companion's own log of THE SUBTLE LAYER's reads and leans -- `held` (the save has found the book; nothing else matters before), how many reads were given and landed, leans told and landed, and the last ten reads, each with its line, when it landed, or `open` while it still can (*alone too*) |
@@ -213,6 +217,8 @@ Every device's state carries the last ten minutes' broadcasts as `casts`.
 | `POST /api/mind/trace` | a phone's talk, reported to RECENT THOUGHTS and THE MIND AT WORK |
 | `GET /api/mind/tasks` | C-319: THE MIND AT WORK -- every task (`?user=`, `?since=`), the users and minds in it, and the talk queue's load |
 | `POST /api/mind/tasks` | `{id, act: "stop" \| "retry" \| "forget"}`, or `{act: "clear", user?}` for the finished ones |
+| `GET /api/mind/portal` | C-254: a look around the daemon's mind -- its self, and REMEMBERED: yesterday with its day, the month and the moments kept (C-253) |
+| `POST /api/mind/forget` | C-253: `{kept}` lets one kept moment go, or `{what: "yesterday" \| "month"}` |
 | `GET /api/whatsnew/digests` | C-318: WHAT'S NEW's spans told so far, and the latest build |
 | `POST /api/whatsnew/digest` | `{from, to, user, device}` -- a span of builds told by the house's mind, in the background (202); `{forget: id}` |
 | `POST /api/ai/modules` | the AI boards to ask, set by hand (AN AI BOARD ON YOUR NETWORK) or from the hub's own search ([The hub and its AI](The-hub-and-its-AI)) |

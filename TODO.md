@@ -4,6 +4,23 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-12, the devices, the site and the app
+
+*The user, 2026-11-12: "keep going with the goal loop, plan one for today please (devices/site/app focused)".* Worked
+top down as the 2026-10-15 loop was: build or see it, commit by path, push, deploy the hub, strike it here. No board is
+on the cable this morning, so the boards' goal waits on the user and the rest needs nobody.
+
+1. **The site pass** -- what was built and never seen on the site, seen there and its row brought up to date: C-166's
+   CLOCK row (12 or 24 hours) in ITS SETTINGS, C-217's sort (LAST USED, BY MAKER, NAME), C-337's THIS PHONE, C-339's
+   SET UP in WHAT'S NEW. Pictures filed in DAEMONS qa.
+2. **C-190's rest: acting from THE HUB card** -- the card says what the hub is doing; now it can be asked to: keep the
+   save in step now, try the AI, and open a LoRa board's own settings. App and site at once, words DRAFT, tested, hub
+   deployed.
+3. **The second Simulator pass** -- C-337, C-339, C-190's card, and C-301's day key and JOURNEY link, seen in the iOS
+   app on the Simulator (a locally signed build) and filed.
+4. **The boards on the cable** (*waits on the user plugging them in*): the Tab5 flashed with C-217's sort, C-63's deep
+   sleep and its wake on the top button, C-166 set from the site and seen on the watch.
+
 ## Today's goals -- 2026-10-15, the devices
 
 *The user, 2026-10-15: "build a goal loop for todays companion device focused work".* A session works these top down,

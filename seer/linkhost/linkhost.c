@@ -5,6 +5,8 @@
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
 #include <mgba/core/lockstep.h>
+#include <mgba/core/log.h>
+#include <stdarg.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/sio/lockstep.h>
 #include <mgba-util/vfs.h>
@@ -19,6 +21,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <zlib.h>
 
 #define W 240
 #define H 160
@@ -108,6 +111,17 @@ static void unload(struct mLockstep* l, int id) {
 	}
 }
 
+// mGBA's own logger prints every DMA and BIOS call -- megabytes a second; only what went wrong is kept
+static struct mLogFilter quietFilter;
+static void quietLog(struct mLogger* l, int category, enum mLogLevel level, const char* format, va_list args) {
+	(void) l;
+	if (!(level & (mLOG_FATAL | mLOG_ERROR))) return;
+	fprintf(stderr, "%s: ", mLogCategoryName(category));
+	vfprintf(stderr, format, args);
+	fputc('\n', stderr);
+}
+static struct mLogger quiet = { .log = quietLog, .filter = &quietFilter };
+
 static double now(void) { struct timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return t.tv_sec + t.tv_nsec / 1e9; }
 
 // every frame: the screen copied out for the server; player 1 (the lockstep's master) held to the GBA's 59.73 fps,
@@ -145,6 +159,7 @@ static bool startPlayer(int i, const char* rom, const char* sav) {
 	p->thread.core = p->core;
 	p->thread.userData = p;
 	p->thread.frameCallback = onFrame;
+	p->thread.logger.logger = &quiet;
 	return true;
 }
 
@@ -161,12 +176,14 @@ static void sendAll(int fd, const void* b, size_t n) {
 	const char* c = b;
 	while (n) { ssize_t w = write(fd, c, n); if (w <= 0) return; c += w; n -= (size_t) w; }
 }
-static void reply(int fd, const char* type, const void* body, size_t n) {
-	char h[256];
-	int l = snprintf(h, sizeof(h), "HTTP/1.1 200 OK\r\nContent-Type: %s\r\nContent-Length: %zu\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n", type, n);
+static void replyAs(int fd, const char* type, const char* encoding, const void* body, size_t n) {
+	char h[320];
+	int l = snprintf(h, sizeof(h), "HTTP/1.1 200 OK\r\nContent-Type: %s\r\n%s%s%sContent-Length: %zu\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n",
+	                 type, encoding ? "Content-Encoding: " : "", encoding ? encoding : "", encoding ? "\r\n" : "", n);
 	sendAll(fd, h, (size_t) l);
 	sendAll(fd, body, n);
 }
+static void reply(int fd, const char* type, const void* body, size_t n) { replyAs(fd, type, NULL, body, n); }
 
 static void* serve(void* arg) {
 	int port = *(int*) arg;
@@ -189,7 +206,13 @@ static void* serve(void* arg) {
 			pthread_mutex_lock(&P[who].fl);
 			memcpy(buf, P[who].frame, sizeof(buf));
 			pthread_mutex_unlock(&P[who].fl);
-			reply(c, "application/octet-stream", buf, sizeof(buf));
+			// a screen deflates to a tenth or less: what makes it playable over the tailnet rather than the room
+			static uint8_t z[W * H * 4 + 1024];
+			uLongf zn = sizeof(z);
+			if (strstr(req, "deflate") && compress2(z, &zn, buf, sizeof(buf), 1) == Z_OK)
+				replyAs(c, "application/octet-stream", "deflate", z, zn);
+			else
+				reply(c, "application/octet-stream", buf, sizeof(buf));
 		} else if (sscanf(req, "GET /k/%d/%u", &who, &keys) == 2 && who >= 0 && who < N) {
 			P[who].core->setKeys(P[who].core, keys & 0x3FF);
 			reply(c, "text/plain", "ok", 2);
@@ -221,6 +244,9 @@ int main(int argc, char** argv) {
 	page = argv[6];
 	if (argc > 7) bindAddr = argv[7];
 	int port = atoi(argv[5]);
+	mLogFilterInit(&quietFilter);
+	quietFilter.defaultLevels = mLOG_FATAL | mLOG_ERROR;
+	mLogSetDefaultLogger(&quiet);
 	GBASIOLockstepInit(&lock);
 	lock.d.context = NULL;
 	lock.d.lock = lk; lock.d.unlock = ulk; lock.d.signal = sig; lock.d.wait = wt;

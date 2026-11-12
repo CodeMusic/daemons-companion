@@ -6,7 +6,9 @@ EmulatorJS core cannot link two phones, so the always-on machine runs both games
 
 **Proven 2026-11-12**: CONTENT and CONTEXT (the DEBUG builds, on copies of their saves) met at the Cable Club, entered
 the TRADE CENTER, saw each other's parties and traded; both saves hold the trade (read back by the server's own save
-reader). mGBA 0.10.5, on a Mac.
+reader). mGBA 0.10.5, on a Mac. **The same day on roverbyteseer** (built here with `MACOSX_DEPLOYMENT_TARGET=14.0` and
+copied, as it has no cmake): the two games played from the Mac over the tailnet reached 2P LINK and the TRADE CENTER; a
+screen deflated is about 2 KB and arrives in 60-80 ms.
 
 ```sh
 seer/linkhost/build.sh                       # mGBA 0.10.5 as a library (checked by hash), then linkhost
@@ -18,14 +20,15 @@ It answers `127.0.0.1` unless it is given an address. **No ROM and no save is ev
 | Path | What it does |
 |---|---|
 | `/` | the page: both screens, or `?p=0` / `?p=1` for one player's; arrows, X = A, Z = B, Enter, Shift, A/S = L/R |
-| `/f/N` | player N's screen, 240x160 RGBX bytes |
+| `/f/N` | player N's screen, 240x160 RGBX bytes, deflated when the request accepts it (every browser's `fetch` does) |
 | `/k/N/KEYS` | player N's buttons held, the GBA's key bits (A 1, B 2, SELECT 4, START 8, RIGHT 16, LEFT 32, UP 64, DOWN 128, R 256, L 512) |
 | `/p/N/ADDR/8or16/VALUE` | a byte or halfword into player N's memory (the DEBUG build's theatre warp, `gDaemonsDebugWarp`) |
 | `/state` | frames run by each game, and players on the cable |
 
 The lockstep's callbacks are mGBA's Qt `MultiplayerController` ported to C; player 1 is the cable's master and keeps
-the GBA's 59.73 frames a second, player 2 is paced by the cycles it is posted. Saves are written as the games write
+the GBA's 59.73 frames a second, player 2 is paced by the cycles it is posted. mGBA's own logger is replaced by one
+that keeps only errors -- left as it is, it writes megabytes a second. Saves are written as the games write
 them, and flushed when it is stopped (SIGINT or SIGTERM).
 
-**Next** (TODO goal 7): run it on roverbyteseer, and reach each player's screen from the app's GAME tab -- the saves
+**Next**: reach each player's screen from the app's GAME tab -- the saves
 carried there and back by C-188's mirror, the screen sent as video rather than raw frames.

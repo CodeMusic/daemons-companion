@@ -61,11 +61,14 @@ on the cable this morning, so the boards' goal waits on the user and the rest ne
 6. ~~**C-73's audit: the Xenith day everywhere**~~ -- the day's virtue over its shadow, chakra, note and theme word, checked
    on the site, the app and the boards' firmware; every gap on the site and the app built (DRAFT words), the boards'
    gaps left as rows for the cable. ***Found done 2026-11-12***: *every surface already shows it; C-73 struck.*
-7. **C-221's first step: one trade, two linked games, on roverbyteseer** -- mGBA linked locally running both editions'
+7. ~~**C-221's first step: one trade, two linked games, on roverbyteseer**~~ -- mGBA linked locally running both editions'
    saves (copies), a FireRed TRADE CENTER trade completed, then each game's screen and buttons reached from a browser.
    ***First half done 2026-11-12***: *`seer/linkhost/` (mGBA 0.10.5's lockstep cable, headless, each screen and its
    buttons over HTTP): CONTENT and CONTEXT's DEBUG builds traded DEADLOCK for CODEMUSAI in the TRADE CENTER, both saves
-   (copies) holding it; DAEMONS qa 12Nov2026 C221. Left: running it on roverbyteseer.*
+   (copies) holding it; DAEMONS qa 12Nov2026 C221. Left: running it on roverbyteseer.* ***On roverbyteseer the same
+   day***: *the pair, played from the Mac over the tailnet, reached 2P LINK and the TRADE CENTER; a screen deflated is
+   ~2 KB in 60-80 ms; mGBA's logger quietened (it wrote 6 MB in three seconds). Stopped after, not left running. Next for
+   C-221: each player's screen in the app's GAME tab, the saves carried by C-188's mirror.*
 
 ## Today's goals -- 2026-11-12, the watches
 

@@ -55,7 +55,9 @@ static AskKind askAt(int i) { AskKind k[12]; askKinds(k); return k[i]; }
 String runArcana(int mode, bool spell = false);            // arcana.cpp; C-239: spell, THE HERMETIC LAYER's deck
 // C-199 (3): THE INDEX heads the shelf (index.cpp), after ASK THE GUIDE
 String runIndex(); int indexKeepAll();
-static int heads() { return asks() + 1; }
+// C-331 (2): DREAMS after it (dreamshelf.cpp) -- the journal, kept on the card
+String runDreams(); bool dreamsKeep();
+static int heads() { return asks() + 2; }
 static int listN() {
   if (bMode == B_BOOKS) return heads() + shelf["books"].size() + keeps();
   return shelf["books"][bBook]["chapters"].size();
@@ -63,7 +65,7 @@ static int listN() {
 static String listName(int i) {
   if (bMode == B_BOOKS && i >= heads() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                        // DRAFT
   if (bMode == B_BOOKS && i < asks()) return ASK_NAMES[askAt(i)];
-  if (bMode == B_BOOKS && i < heads()) return "THE INDEX";                                                            // DRAFT
+  if (bMode == B_BOOKS && i < heads()) return i == asks() ? "THE INDEX" : "DREAMS";                                 // DRAFT
   if (bMode == B_BOOKS) return String((const char *)(shelf["books"][i - heads()]["title"] | ""));
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
 }
@@ -94,7 +96,8 @@ static String drawBooks(uint16_t day, uint16_t ink) {
     drawTiles(n, bAt, words.data(), tileWord(title, W - 20).c_str(), [](int i, int cx, int cy) {
       if (bMode != B_BOOKS) { bookIcon(5, i + 1, cx, cy); return; }
       if (i < asks()) { AskKind k = askAt(i); bookIcon(k >= ASK_CARD && k != ASK_ABOVE ? 2 : 1, 0, cx, cy); return; }
-      if (i < heads()) { bookIcon(3, 0, cx, cy); return; }
+      if (i == asks()) { bookIcon(3, 0, cx, cy); return; }
+      if (i < heads()) { canvas.fillCircle(cx, cy, 11, QUIET); canvas.fillCircle(cx + 5, cy - 4, 10, TFT_BLACK); return; }   // C-331 (2): a moon
       bookIcon(i >= heads() + (int)shelf["books"].size() ? 4 : 0, 0, cx, cy);
     }, day, ink);
     return " ";
@@ -183,6 +186,7 @@ static void keepAll() {
     }
   }
   int ix = indexKeepAll();                                   // C-199 (3): and THE INDEX
+  dreamsKeep();                                              // C-331 (2): and the dream journal
   say(String(kept == all ? "ALL " + String(all) : "KEPT " + String(kept) + " OF " + String(all)) + " + " + String(ix) + " INDEX ON THE CARD");   // DRAFT
 }
 
@@ -227,7 +231,7 @@ String runBooks() {
             while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }
           screen = RUN;
         }
-        else if (bMode == B_BOOKS && bAt < heads()) { String r = runIndex(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3)
+        else if (bMode == B_BOOKS && bAt < heads()) { String r = bAt == asks() ? runIndex() : runDreams(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3); C-331 (2)
         else if (bMode == B_BOOKS && bAt >= heads() + (int)shelf["books"].size()) keepAll();                 // C-199
         else if (bMode == B_BOOKS) { bBook = bAt - heads(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
         else { bChapter = bAt; if (fetchChapter()) bMode = B_PAGE; else say("Not found"); }          // DRAFT

@@ -560,9 +560,9 @@ bool talkWaiting() { return talkJob.length() > 0; }
 static uint32_t hashOf(const String &s) { uint32_t h = 2166136261u; for (unsigned i = 0; i < s.length(); i++) h = (h ^ (uint8_t)s[i]) * 16777619u; return h; }   // FNV-1a
 void talkReadEntry() { talkReadText(""); }
 // the user, 2026-10-28: any words read aloud the same way -- a dream; "" the carried daemon's INDEX entry
-void talkReadText(const String &text) {
-  // C-199: a reading heard before is on the card -- played from there, anywhere
-  String words = text.length() ? text : st.daemon.entry, kept = "voices/" + String((uint32_t)words.length(), HEX) + "-" + String(hashOf(words), HEX) + ".pcm";
+void talkReadText(const String &text, bool asDaemon) {
+  // C-199: a reading heard before is on the card -- played from there, anywhere (C-331 (2): its own voice kept apart)
+  String words = text.length() ? text : st.daemon.entry, kept = String(asDaemon ? "voices/d" : "voices/") + String((uint32_t)words.length(), HEX) + "-" + String(hashOf(words), HEX) + ".pcm";
   if (cardHas(kept)) { screen = TALK; talkHeard = ""; talkAnswer = words; talkStatus = ""; draw(); playKept(kept); lastInput = millis(); return; }
   if (!atHome()) { say(online() ? "NEEDS HOME" : "NEEDS WI-FI"); return; }      // DRAFT -- C-82: a voice is not JSON
   keepAs = cardReady() ? kept : "";
@@ -572,7 +572,7 @@ void talkReadText(const String &text) {
   h.begin(serverUrl + "/api/device/speak");
   h.addHeader("x-device", deviceId());
   h.addHeader("content-type", "application/json");
-  JsonDocument q; q.to<JsonObject>(); if (text.length()) q["text"] = text;   // {} not null: the INDEX entry is the server's to find
+  JsonDocument q; q.to<JsonObject>(); if (text.length()) q["text"] = text; if (asDaemon && text.length()) q["as"] = "daemon";   // {} not null: the INDEX entry is the server's to find
   String req; serializeJson(q, req);
   int code = h.POST(req);
   String body = code == 200 ? h.getString() : "";

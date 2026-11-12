@@ -92,7 +92,7 @@ void drawDream(uint16_t day) {
 // a tap on the dream: LISTEN reads it aloud (true: taken); anywhere else puts it away (the caller)
 bool dreamTap(int x, int y) {
   if (!dreamShowing() || !talkCan() || x < W - 90 || y < H - 42) return false;
-  String t = dreamText; dreamDismiss(); talkReadText(t);
+  String t = dreamText; dreamDismiss(); talkReadText(t, true);   // C-331 (2): told in its own voice
   return true;
 }
 

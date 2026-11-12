@@ -1,8 +1,110 @@
 {
  "_about": "T-453 (C-186): DAEMONS' BPS patches, newest first, as published on GitHub (the assets of each release on CodeMusic/DAEMONS). Nothing of Nintendo's is here: the app fetches url, checks patch.sha1 (or sha256, which GitHub also reports), checks the player's own ROM against source (sha1, or crc32 as a BPS patcher does; md5 for tools that show only that), applies the patch, and checks the result against target.sha1. A patch fits only its own source revision; 1.0 and Rev 1 are both common. CONTENT is FireRed's edition, CONTEXT LeafGreen's. latest is the newest version.",
  "repo": "CodeMusic/DAEMONS",
- "latest": "11.352.1",
+ "latest": "11.353.1",
  "releases": [
+  {
+   "version": "11.353.1",
+   "tag": "v11.353.1",
+   "bible": "11.353",
+   "engine": "676f4cb6b",
+   "made": "2026-11-11T21:45:06",
+   "page": "https://github.com/CodeMusic/DAEMONS/releases/tag/v11.353.1",
+   "patches": [
+    {
+     "edition": "CONTENT",
+     "file": "DAEMONS.CONTENT.for.FireRed.1.0.bps",
+     "source": {
+      "game": "FireRed",
+      "region": "USA",
+      "revision": "1.0",
+      "name": "Pokemon FireRed (USA) 1.0",
+      "sha1": "41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc",
+      "crc32": "DD88761C",
+      "md5": "e26ee0d44e809351c8ce2d73c7400cdd"
+     },
+     "target": {
+      "sha1": "837c6b24225b3f318547f1a00f609bd92af02766",
+      "crc32": "4A9D5D5D"
+     },
+     "patch": {
+      "size": 5152790,
+      "sha1": "fb3a433fe9f189e9f7ecd4bd9f227416ba366ebe",
+      "sha256": "8b7b89bbed68b153a3eceac370b0e4d5d1660a41eedb93dd2e740bb973041e47"
+     },
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.353.1/DAEMONS.CONTENT.for.FireRed.1.0.bps"
+    },
+    {
+     "edition": "CONTENT",
+     "file": "DAEMONS.CONTENT.for.FireRed.Rev.1.bps",
+     "source": {
+      "game": "FireRed",
+      "region": "USA, Europe",
+      "revision": "Rev 1",
+      "name": "Pokemon FireRed (USA, Europe) Rev 1",
+      "sha1": "dd5945db9b930750cb39d00c84da8571feebf417",
+      "crc32": "84EE4776",
+      "md5": "51901a6e40661b3914aa333c802e24e8"
+     },
+     "target": {
+      "sha1": "837c6b24225b3f318547f1a00f609bd92af02766",
+      "crc32": "4A9D5D5D"
+     },
+     "patch": {
+      "size": 5153236,
+      "sha1": "8849857dcd05d7c06c6157cada8786ec620d1afe",
+      "sha256": "a11f82cf8a83bb66951e6ec785b5e0ee16014e10635db2250e5bc635aa4f94b5"
+     },
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.353.1/DAEMONS.CONTENT.for.FireRed.Rev.1.bps"
+    },
+    {
+     "edition": "CONTEXT",
+     "file": "DAEMONS.CONTEXT.for.LeafGreen.1.0.bps",
+     "source": {
+      "game": "LeafGreen",
+      "region": "USA",
+      "revision": "1.0",
+      "name": "Pokemon LeafGreen (USA) 1.0",
+      "sha1": "574fa542ffebb14be69902d1d36f1ec0a4afd71e",
+      "crc32": "D69C96CC",
+      "md5": "612ca9473451fa42b51d1711031ed5f6"
+     },
+     "target": {
+      "sha1": "04ddb2a1cb114487ec496c83311b8a942242b0d9",
+      "crc32": "CE8ED2A2"
+     },
+     "patch": {
+      "size": 5153180,
+      "sha1": "d603147087a418cc3bd5de8d41be450adfe4341f",
+      "sha256": "f9bce3906e027034857efdac1dd0bb721be22ec3375bc266bae91325b56bfb40"
+     },
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.353.1/DAEMONS.CONTEXT.for.LeafGreen.1.0.bps"
+    },
+    {
+     "edition": "CONTEXT",
+     "file": "DAEMONS.CONTEXT.for.LeafGreen.Rev.1.bps",
+     "source": {
+      "game": "LeafGreen",
+      "region": "USA, Europe",
+      "revision": "Rev 1",
+      "name": "Pokemon LeafGreen (USA, Europe) Rev 1",
+      "sha1": "7862c67bdecbe21d1d69ce082ce34327e1c6ed5e",
+      "crc32": "DAFFECEC",
+      "md5": "9d33a02159e018d09073e700e1fd10fd"
+     },
+     "target": {
+      "sha1": "04ddb2a1cb114487ec496c83311b8a942242b0d9",
+      "crc32": "CE8ED2A2"
+     },
+     "patch": {
+      "size": 5153149,
+      "sha1": "fdae898c6b7260b719df947bfdebe66c7fac4c4d",
+      "sha256": "64c740500c69b57bfe35207f64e1d2e8a8d5013cbacb06138e947b50bcd845d4"
+     },
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.353.1/DAEMONS.CONTEXT.for.LeafGreen.Rev.1.bps"
+    }
+   ]
+  },
   {
    "version": "11.352.1",
    "tag": "v11.352.1",

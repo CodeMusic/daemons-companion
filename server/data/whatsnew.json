@@ -1,9 +1,9 @@
 {
- "latest": 977,
+ "latest": 978,
  "builds": [
   {
-   "build": 977,
-   "commit": "a4836cf",
+   "build": 978,
+   "commit": "6d77a91",
    "date": "2026-11-12",
    "sections": [
     {
@@ -17,7 +17,8 @@
      "ticket": "C-354",
      "title": "THE CALENDAR: the phone's calendar, by month, week and day",
      "lines": [
-      "SET UP sheets for THE CALENDAR (calendar access, once) and C-349's THEME ACCENTS (DRAFT)"
+      "SET UP sheets for THE CALENDAR (calendar access, once) and C-349's THEME ACCENTS (DRAFT)",
+      "The Reminders purpose strings Apple asks for once expo-calendar is in (977 refused without them; DRAFT)"
      ],
      "setup": {
       "title": "THE CALENDAR",
@@ -39,7 +40,8 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "THE COMPANION's shelf cover, redrawn with its manual (C-356 in it)"
+      "THE COMPANION's shelf cover, redrawn with its manual (C-356 in it)",
+      "WHAT'S NEW for build 977 (C-354's SET UP, C-221's link cable)"
      ]
     }
    ]

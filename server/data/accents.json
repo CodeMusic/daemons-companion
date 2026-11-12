@@ -1,0 +1,720 @@
+{
+ "_about": "C-349: each place's palette from the game -- deep, main (the app's theme is mixed from it), light, spark -- weighed by how much of its first outdoor map shows each colour by server/tools/accents.py. `breathe`: the app breathes it, as the game does (THE BLACKOUT, T-546).",
+ "accents": {
+  "ARDOR CITY": {
+   "deep": "#5a3941",
+   "main": "#ffbd20",
+   "light": "#eee68b",
+   "spark": "#4a7bde",
+   "map": "VermilionCity"
+  },
+  "BLANCHE TOWN": {
+   "deep": "#c4d4ba",
+   "main": "#414a6a",
+   "light": "#c4d4ba",
+   "spark": "#c4d4ba",
+   "map": "PalletTown"
+  },
+  "BRAZEN CITY": {
+   "deep": "#2a522c",
+   "main": "#a2762e",
+   "light": "#d5d5a4",
+   "spark": "#7cc068",
+   "map": "SaffronCity"
+  },
+  "CALLOW CITY": {
+   "deep": "#2a522c",
+   "main": "#6080aa",
+   "light": "#ccec84",
+   "spark": "#ccec84",
+   "map": "ViridianCity"
+  },
+  "CORPUS HIDEOUT": {
+   "deep": "#968060",
+   "main": "#b8a27c",
+   "light": "#e2dcd2",
+   "spark": "#6e5c44",
+   "map": "RocketHideout_B1F"
+  },
+  "CORPUS WAREHOUSE": {
+   "deep": "#968060",
+   "main": "#f08c28",
+   "light": "#e2dcd2",
+   "spark": "#ffd278",
+   "map": "FiveIsland_RocketWarehouse"
+  },
+  "DAEMON LEAGUE": {
+   "deep": "#d2dce2",
+   "main": "#d2dce2",
+   "light": "#d2dce2",
+   "spark": "#e8dcb8",
+   "map": "PokemonLeague_LoreleisRoom"
+  },
+  "DAEMON MANSION": {
+   "deep": "#48464c",
+   "main": "#747276",
+   "light": "#e0ded8",
+   "spark": "#a4744a",
+   "map": "PokemonMansion_1F"
+  },
+  "DAEMON TOWER": {
+   "deep": "#e4ded0",
+   "main": "#e4ded0",
+   "light": "#e4ded0",
+   "spark": "#c4bad2",
+   "map": "PokemonTower_1F"
+  },
+  "DEADSTACK": {
+   "deep": "#c0be98",
+   "main": "#deb858",
+   "light": "#c0be98",
+   "spark": "#c0be98",
+   "map": "MtMoon_1F"
+  },
+  "DENSE WOOD": {
+   "deep": "#397318",
+   "main": "#a4a431",
+   "light": "#ffff94",
+   "spark": "#7cc068",
+   "map": "ThreeIsland_BerryForest"
+  },
+  "DILFORD CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#9cc5d5",
+   "map": "SevenIsland_TanobyRuins_DilfordChamber"
+  },
+  "DOLDRUM CAVE": {
+   "deep": "#39624a",
+   "main": "#39624a",
+   "light": "#acd594",
+   "spark": "#4a7bde",
+   "map": "CeruleanCave_1F"
+  },
+  "DOLDRUM CITY": {
+   "deep": "#2a522c",
+   "main": "#6c9db6",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "CeruleanCity"
+  },
+  "FINDERS BEACH": {
+   "deep": "#5a3941",
+   "main": "#cd524a",
+   "light": "#eee68b",
+   "spark": "#4a7bde",
+   "map": "OneIsland_TreasureBeach"
+  },
+  "FIVE ISLAND": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "FiveIsland"
+  },
+  "FIVE ISLE MEADOW": {
+   "deep": "#5a3941",
+   "main": "#ac6231",
+   "light": "#ccec84",
+   "spark": "#4a7bde",
+   "map": "FiveIsland_Meadow"
+  },
+  "FOUNDRY CO.": {
+   "deep": "#604232",
+   "main": "#dca660",
+   "light": "#e2dcd2",
+   "spark": "#c6222c",
+   "map": "SilphCo_1F"
+  },
+  "FOUR ISLAND": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#eee68b",
+   "spark": "#7cc068",
+   "map": "FourIsland"
+  },
+  "GLAUCOUS ISLES": {
+   "deep": "#223648",
+   "main": "#447c96",
+   "light": "#c8deb4",
+   "spark": "#c8deb4",
+   "map": "SeafoamIslands_1F"
+  },
+  "HALFTONE TOWN": {
+   "deep": "#5a3941",
+   "main": "#9473bd",
+   "light": "#dec5ff",
+   "spark": "#7cc068",
+   "map": "LavenderTown"
+  },
+  "KEEPALIVE PLANT": {
+   "deep": "#323a4c",
+   "main": "#52863e",
+   "light": "#80fa68",
+   "spark": "#323a4c",
+   "map": "PowerPlant"
+  },
+  "KETTLE SPRING": {
+   "deep": "#78281c",
+   "main": "#78281c",
+   "light": "#8bcdf6",
+   "spark": "#8bcdf6",
+   "map": "OneIsland_KindleRoad_EmberSpa"
+  },
+  "LIPTOO CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#e8dab6",
+   "map": "SevenIsland_TanobyRuins_LiptooChamber"
+  },
+  "LONG DROP": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#d5c583",
+   "spark": "#7cc068",
+   "map": "SevenIsland_SevaultCanyon"
+  },
+  "LONG WADE": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#dec5a4",
+   "spark": "#7cc068",
+   "map": "SixIsland_WaterPath"
+  },
+  "LONGCROSS": {
+   "deep": "#5a3941",
+   "main": "#42803a",
+   "light": "#ccec84",
+   "spark": "#4a7bde",
+   "map": "ThreeIsland_BondBridge"
+  },
+  "LURID CITY": {
+   "deep": "#6b185a",
+   "main": "#6b185a",
+   "light": "#eee68b",
+   "spark": "#7cc068",
+   "map": "FuchsiaCity"
+  },
+  "MARGIN ISLE 6": {
+   "deep": "#4a7bde",
+   "main": "#4a7bde",
+   "light": "#8ba4ff",
+   "spark": "#4a94de",
+   "map": "Prototype_SeviiIsle_6"
+  },
+  "MARGIN ISLE 7": {
+   "deep": "#3162b4",
+   "main": "#3162b4",
+   "light": "#cddeee",
+   "spark": "#cddeee",
+   "map": "Prototype_SeviiIsle_7"
+  },
+  "MARGIN ISLE 8": {
+   "deep": "#5a3941",
+   "main": "#4a7bde",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Prototype_SeviiIsle_8"
+  },
+  "MARGIN ISLE 9": {
+   "deep": "#4a7bde",
+   "main": "#4a7bde",
+   "light": "#cddeee",
+   "spark": "#7cc068",
+   "map": "Prototype_SeviiIsle_9"
+  },
+  "MONEAN CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#e8dab6",
+   "map": "SevenIsland_TanobyRuins_MoneanChamber"
+  },
+  "MT. SMOULDER": {
+   "deep": "#eee68b",
+   "main": "#7cc068",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "MtEmber_Exterior"
+  },
+  "NAVEL ROCK": {
+   "deep": "#5a3941",
+   "main": "#cd524a",
+   "light": "#d5c583",
+   "spark": "#417bbd",
+   "map": "NavelRock_Exterior"
+  },
+  "NOBODY'S ISLE": {
+   "deep": "#5a3941",
+   "main": "#4a7bde",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "SixIsland_OutcastIsland"
+  },
+  "ONE ISLAND": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#aedc92",
+   "spark": "#7cc068",
+   "map": "OneIsland"
+  },
+  "OTHER CAVE": {
+   "deep": "#522060",
+   "main": "#522060",
+   "light": "#ec96f0",
+   "spark": "#2c9648",
+   "map": "SixIsland_AlteringCave"
+  },
+  "QUICKSILVER IS.": {
+   "deep": "#363c58",
+   "main": "#ac944a",
+   "light": "#d5c583",
+   "spark": "#4a7bde",
+   "map": "CinnabarIsland"
+  },
+  "RESORT SUBLIME": {
+   "deep": "#5a3941",
+   "main": "#c57331",
+   "light": "#eee68b",
+   "spark": "#4a7bde",
+   "map": "FiveIsland_ResortGorgeous"
+  },
+  "RIXY CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#e8dab6",
+   "map": "SevenIsland_TanobyRuins_RixyChamber"
+  },
+  "ROUTE 1": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#c4d4ba",
+   "spark": "#eee68b",
+   "map": "Route1"
+  },
+  "ROUTE 10": {
+   "deep": "#5a3941",
+   "main": "#a46262",
+   "light": "#d5c583",
+   "spark": "#7cc068",
+   "map": "Route10"
+  },
+  "ROUTE 11": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#d5c583",
+   "spark": "#d5c583",
+   "map": "Route11"
+  },
+  "ROUTE 12": {
+   "deep": "#7b5a18",
+   "main": "#7b5a18",
+   "light": "#eee69c",
+   "spark": "#4a7bde",
+   "map": "Route12"
+  },
+  "ROUTE 13": {
+   "deep": "#7b5a18",
+   "main": "#7b5a18",
+   "light": "#ccec84",
+   "spark": "#3162b4",
+   "map": "Route13"
+  },
+  "ROUTE 14": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#ccec84",
+   "spark": "#3162b4",
+   "map": "Route14"
+  },
+  "ROUTE 15": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Route15"
+  },
+  "ROUTE 16": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Route16"
+  },
+  "ROUTE 17": {
+   "deep": "#5a3941",
+   "main": "#62bd94",
+   "light": "#c5d5de",
+   "spark": "#62a4de",
+   "map": "Route17"
+  },
+  "ROUTE 18": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#eee68b",
+   "spark": "#4a7bde",
+   "map": "Route18"
+  },
+  "ROUTE 19": {
+   "deep": "#5a3941",
+   "main": "#4a7bde",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Route19"
+  },
+  "ROUTE 2": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#ccec84",
+   "spark": "#eee68b",
+   "map": "Route2"
+  },
+  "ROUTE 20": {
+   "deep": "#5a3941",
+   "main": "#4a7bde",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Route20"
+  },
+  "ROUTE 21": {
+   "deep": "#d6e6ea",
+   "main": "#4a7bde",
+   "light": "#d6e6ea",
+   "spark": "#eee68b",
+   "map": "Route21_North"
+  },
+  "ROUTE 22": {
+   "deep": "#5a3941",
+   "main": "#b46200",
+   "light": "#d5e6c5",
+   "spark": "#7cc068",
+   "map": "Route22"
+  },
+  "ROUTE 23": {
+   "deep": "#5a3941",
+   "main": "#c56200",
+   "light": "#ccec84",
+   "spark": "#4a7bde",
+   "map": "Route23"
+  },
+  "ROUTE 24": {
+   "deep": "#5a3941",
+   "main": "#c5ac6a",
+   "light": "#eee68b",
+   "spark": "#4a7bde",
+   "map": "Route24"
+  },
+  "ROUTE 25": {
+   "deep": "#5a3941",
+   "main": "#6ab46a",
+   "light": "#dec5a4",
+   "spark": "#3162b4",
+   "map": "Route25"
+  },
+  "ROUTE 3": {
+   "deep": "#5a3941",
+   "main": "#7cc068",
+   "light": "#dec5a4",
+   "spark": "#eed5c5",
+   "map": "Route3"
+  },
+  "ROUTE 4": {
+   "deep": "#5a3941",
+   "main": "#60b8b0",
+   "light": "#d5c583",
+   "spark": "#7cc068",
+   "map": "Route4"
+  },
+  "ROUTE 5": {
+   "deep": "#2a522c",
+   "main": "#73a4bd",
+   "light": "#ccec84",
+   "spark": "#ccec84",
+   "map": "Route5"
+  },
+  "ROUTE 6": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Route6"
+  },
+  "ROUTE 7": {
+   "deep": "#2a522c",
+   "main": "#7cc068",
+   "light": "#ccec84",
+   "spark": "#ccec84",
+   "map": "Route7"
+  },
+  "ROUTE 8": {
+   "deep": "#5a3941",
+   "main": "#7cc068",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "Route8"
+  },
+  "ROUTE 9": {
+   "deep": "#5a3941",
+   "main": "#7cc068",
+   "light": "#d5c583",
+   "spark": "#d5c583",
+   "map": "Route9"
+  },
+  "S.S. ANNE": {
+   "deep": "#5a3941",
+   "main": "#bd6a39",
+   "light": "#acbdcd",
+   "spark": "#3162b4",
+   "map": "SSAnne_Exterior"
+  },
+  "SAFARI ZONE": {
+   "deep": "#295a4a",
+   "main": "#bdf729",
+   "light": "#e6d58b",
+   "spark": "#39ac9c",
+   "map": "SafariZone_Center"
+  },
+  "SCUFIB CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#e8dab6",
+   "map": "SevenIsland_TanobyRuins_ScufibChamber"
+  },
+  "SEVEN ISLAND": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#aedc92",
+   "spark": "#7cc068",
+   "map": "SevenIsland"
+  },
+  "SIX ISLAND": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#aedc92",
+   "spark": "#7cc068",
+   "map": "SixIsland"
+  },
+  "SLATE CITY": {
+   "deep": "#2a522c",
+   "main": "#8a603c",
+   "light": "#ccec84",
+   "spark": "#7cc068",
+   "map": "PewterCity"
+  },
+  "SLOW WALK": {
+   "deep": "#2a522c",
+   "main": "#42803a",
+   "light": "#ccec84",
+   "spark": "#4a7bde",
+   "map": "SixIsland_GreenPath"
+  },
+  "SMOKE ROAD": {
+   "deep": "#5a3941",
+   "main": "#4a7bde",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "OneIsland_KindleRoad"
+  },
+  "SOMEONE'S STONE": {
+   "deep": "#5a3941",
+   "main": "#4a7bde",
+   "light": "#eee68b",
+   "spark": "#eee68b",
+   "map": "FiveIsland_MemorialPillar"
+  },
+  "STILLFALL CAVE": {
+   "deep": "#223648",
+   "main": "#5e9cb0",
+   "light": "#d6e6e2",
+   "spark": "#d6e6e2",
+   "map": "FourIsland_IcefallCave_Entrance"
+  },
+  "TANGLEWATER": {
+   "deep": "#3162b4",
+   "main": "#4a7bde",
+   "light": "#cddeee",
+   "spark": "#eee68b",
+   "map": "FiveIsland_WaterLabyrinth"
+  },
+  "TANOBY KEY": {
+   "deep": "#644a32",
+   "main": "#ccaa70",
+   "light": "#e6c68c",
+   "spark": "#402e22",
+   "map": "SevenIsland_SevaultCanyon_TanobyKey"
+  },
+  "TANOBY RUINS": {
+   "deep": "#5a3941",
+   "main": "#ac944a",
+   "light": "#eee68b",
+   "spark": "#4a7bde",
+   "map": "SevenIsland_TanobyRuins"
+  },
+  "TAPPOINT'S CAVE": {
+   "deep": "#644a32",
+   "main": "#926640",
+   "light": "#e6c68c",
+   "spark": "#ccaa70",
+   "map": "DiglettsCave_NorthEntrance"
+  },
+  "THE ANNEX": {
+   "deep": "#5a3941",
+   "main": "#cd524a",
+   "light": "#7b9cee",
+   "spark": "#417bbd",
+   "map": "BirthIsland_Exterior"
+  },
+  "THE BLACKOUT": {
+   "deep": "#200a2a",
+   "main": "#8838a4",
+   "light": "#ec96f0",
+   "spark": "#a8ff78",
+   "map": "RockTunnel_1F",
+   "breathe": true
+  },
+  "THE DOTS": {
+   "deep": "#523e30",
+   "main": "#ac926e",
+   "light": "#f4e4c2",
+   "spark": "#f4e4c2",
+   "map": "SixIsland_DottedHole_1F"
+  },
+  "THE NEXUS": {
+   "deep": "#081048",
+   "main": "#102070",
+   "light": "#081048",
+   "spark": "#082830",
+   "map": "Nexus"
+  },
+  "THE OVERLOOK": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#dec5a4",
+   "spark": "#7cc068",
+   "map": "TwoIsland_CapeBrink"
+  },
+  "THE SAME BUSH": {
+   "deep": "#2a522c",
+   "main": "#84bc54",
+   "light": "#ccec84",
+   "spark": "#42803a",
+   "map": "SixIsland_PatternBush"
+  },
+  "THE UNDERTONE": {
+   "deep": "#2a522c",
+   "main": "#84bc54",
+   "light": "#ccec84",
+   "spark": "#d5c583",
+   "map": "ViridianForest"
+  },
+  "THE WAY IN": {
+   "deep": "#5a3941",
+   "main": "#7cc068",
+   "light": "#dec5a4",
+   "spark": "#417bbd",
+   "map": "SevenIsland_SevaultCanyon_Entrance"
+  },
+  "THE WRONG WAY": {
+   "deep": "#deb858",
+   "main": "#deb858",
+   "light": "#deb858",
+   "spark": "#deb858",
+   "map": "FiveIsland_LostCave_Entrance"
+  },
+  "THREE ISLAND": {
+   "deep": "#5a3941",
+   "main": "#9462a4",
+   "light": "#eee68b",
+   "spark": "#7cc068",
+   "map": "ThreeIsland"
+  },
+  "THREE ISLE PATH": {
+   "deep": "#d0dabc",
+   "main": "#d0dabc",
+   "light": "#d0dabc",
+   "spark": "#d0dabc",
+   "map": "ThreeIsland_DunsparceTunnel"
+  },
+  "THREE ISLE PORT": {
+   "deep": "#5a3941",
+   "main": "#cd524a",
+   "light": "#eee68b",
+   "spark": "#417bbd",
+   "map": "ThreeIsland_Port"
+  },
+  "TWO ISLAND": {
+   "deep": "#5a3941",
+   "main": "#eee64a",
+   "light": "#dec5a4",
+   "spark": "#417bbd",
+   "map": "TwoIsland"
+  },
+  "UMBRA PLATEAU": {
+   "deep": "#5a3941",
+   "main": "#c56200",
+   "light": "#ccec84",
+   "spark": "#7cc068",
+   "map": "IndigoPlateau_Exterior"
+  },
+  "UMBRAL ASCENT": {
+   "deep": "#d0dabc",
+   "main": "#d0dabc",
+   "light": "#d0dabc",
+   "spark": "#d0dabc",
+   "map": "VictoryRoad_1F"
+  },
+  "UNDERGROUND PATH": {
+   "deep": "#b26846",
+   "main": "#b26846",
+   "light": "#f2e8d2",
+   "spark": "#f2e8d2",
+   "map": "UndergroundPath_NorthEntrance"
+  },
+  "USER TOWER": {
+   "deep": "#5a3941",
+   "main": "#417bac",
+   "light": "#dec5a4",
+   "spark": "#eee68b",
+   "map": "SevenIsland_TrainerTower"
+  },
+  "VERDIGRIS CITY": {
+   "deep": "#2a522c",
+   "main": "#d5ac4a",
+   "light": "#ccec84",
+   "spark": "#7cc068",
+   "map": "CeladonCity"
+  },
+  "VERDIGRIS DEPT.": {
+   "deep": "#f6b452",
+   "main": "#d59429",
+   "light": "#ace6cd",
+   "spark": "#ace6cd",
+   "map": "BattleColosseum_2P"
+  },
+  "VIAPOIS CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#e8dab6",
+   "map": "SevenIsland_TanobyRuins_ViapoisChamber"
+  },
+  "WEEPTH CHAMBER": {
+   "deep": "#604a38",
+   "main": "#b09268",
+   "light": "#e8dab6",
+   "spark": "#e8dab6",
+   "map": "SevenIsland_TanobyRuins_WeepthChamber"
+  },
+  "WHAT REMAINS": {
+   "deep": "#5a3941",
+   "main": "#7cc068",
+   "light": "#dec5a4",
+   "spark": "#eed5c5",
+   "map": "SixIsland_RuinValley"
+  }
+ }
+}

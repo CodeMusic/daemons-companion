@@ -11,7 +11,7 @@ decisions still open. Not legal advice: a review by someone qualified is the las
 | 1 | The public listener: the tunnel reaches only it; nothing there is the keeper's machine; a budget per address | server | **built** |
 | 2 | Passkeys answer only from https pages (or the Android app's signing key) | server | **built** |
 | 3 | A guardian can export everything held (`GET /accounts/export`) and delete it all (`/accounts/delete`) | server | **built** (export in the app: not yet) |
-| 3a | A profile's daemons by species to non-friends; its trades with friends only until C-346 | server | **built** |
+| 3a | A profile's daemons by species to non-friends, and both names rewritten in a daemon sent to one (C-346) | server | **built** |
 | 3b | The age check at guardian sign-in | app; C-345 the module | **built** in the app; the module open |
 | 3c | An account unused for two years erased (daily) | server | **built** |
 | 4 | The consent review, below, and its three questions | the user | **decided** 2026-11-11 (below) |
@@ -65,8 +65,9 @@ know each other. It matters once players who are not friends can trade (THE COMM
 
 **Decided by the user, 2026-11-11, by multiple choice:**
 
-1. **A daemon's nickname and trainer name: friends only.** Non-friends see a profile's daemons by species; a profile
-   trades, lends and gives only with friends until the exchange blanks the trainer name on the way (C-346).
+1. **A daemon's nickname and trainer name: friends only.** Non-friends see a profile's daemons by species, and a
+   daemon a profile trades, lends or gives to one arrives with both names rewritten on the way (C-346): the species'
+   own name, and the profile's first word as its trainer. A loan coming home gets its own names back.
 2. **An age check at guardian sign-in: the device's age signals.** A device that says its person is under 18 cannot
    make a guardian; with no signal, sign-in goes on (C-345 makes the iOS module).
 3. **An account nobody uses for two years is erased**, as its guardian's DELETE would.

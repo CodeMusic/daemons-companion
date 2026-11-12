@@ -184,8 +184,8 @@ offer rather than a friend; the lobby itself (C-227), which the "+ lobby" choice
 
 `docs/OPENING.md` holds the checklist, the consent review, the drafts (privacy policy, labels, retention, security)
 and the tunnel's steps. Decided by the user, by multiple choice: **nicknames friends only** -- a profile's daemons
-show their species name to anyone not its friend, and it trades only with friends until C-346 blanks the trainer name
-on the way; **an age check at guardian sign-in** from the device's own signal (C-345 makes the iOS module); **an
+show their species name to anyone not its friend, and a daemon it trades, lends or gives to a non-friend arrives with
+its nickname and trainer name rewritten (C-346: the species' name, the profile's first word; a loan gets its own back); **an age check at guardian sign-in** from the device's own signal (C-345 makes the iOS module); **an
 account unused for two years is erased**. Built: the public listener the tunnel points at, where nothing is the
 keeper's machine; passkeys only from https; the guardian's export; the daily erasing. Tests: `server/test/opening.test.ts`.
 

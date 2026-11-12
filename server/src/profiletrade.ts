@@ -15,9 +15,9 @@
 //
 // Piece 5 (the user, 2026-11-11, by multiple choice: "friends only"): nothing a child typed reaches a player who is not
 // its friend. A daemon's nickname is typed in the game, so a profile's daemons show their SPECIES name to anyone who
-// is not a friend (in offers, trades, OUT TOGETHER and shared dreams); and since a traded daemon carries its trainer's
-// name inside its record, a profile trades, lends and gives only with friends until that name can be blanked on the
-// way -- "+ HOME" and "+ LOBBY" are kept, and take effect then (NAMES_BLANKED). No node: imports.
+// is not a friend (in offers, trades, OUT TOGETHER and shared dreams); and a daemon it trades, lends or gives to a
+// player who is not its friend arrives with both names rewritten (C-346, exchange.ts inbox: the species' name, and the
+// profile's first word as its trainer), so "+ HOME" and "+ LOBBY" reach past friends (NAMES_BLANKED). No node: imports.
 import type { Store } from "./store.js";
 import * as A from "./accounts.js";
 import * as C from "./commons.js";
@@ -26,8 +26,8 @@ import { exchangeRoute } from "./tradelink.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string }>;
-// whether a traded daemon's trainer name is blanked for a player who is not a friend -- not yet: trades stay with friends
-export const NAMES_BLANKED = false;
+// whether a traded daemon's names are blanked for a player who is not a friend (C-346) -- until they were, trades stayed with friends
+export const NAMES_BLANKED = true;
 
 const KEY = "accounts.social";
 type Waiting = { profile: string; player: string; at: string };

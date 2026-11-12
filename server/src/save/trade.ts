@@ -4,7 +4,7 @@
 // companion's then, not the game's -- so what goes to the exchange is its whole BoxPokemon as the save keeps it (80
 // bytes: its own trainer, its own encryption), and what comes back is written by syncSave (writer.ts, `trade`) into the
 // slot the one traded for it left. Read only here. No node: imports (the phone hosting alone runs it).
-import { blocks, LAYOUT, type Layout, ORDERS, readDaemon, sectionSize, soundingShift, tradeBits } from "./reader.js";
+import { blocks, encodeText, LAYOUT, type Layout, ORDERS, readDaemon, sectionSize, soundingShift, tradeBits } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
 import speciesJson from "../../data/species.json" with { type: "json" };
@@ -76,6 +76,25 @@ export function arriving(record: Uint8Array, l: Layout = LAYOUT, how: { loan?: b
   for (let k = 0; k < 48; k += 2) sum = (sum + plain.getUint16(k, true)) & 0xffff;
   v.setUint16(28, sum, true);
   for (let k = 0; k < 48; k += 4) v.setUint32(32 + k, (plain.getUint32(k, true) ^ key) >>> 0, true);
+  return r;
+}
+
+// C-346 (C-226 piece 5; the user, 2026-11-11: "friends only"): nothing a child typed reaches a player who is not its
+// friend. A record's nickname (bytes 8-17) and its trainer's name (20-26) sit outside the checksummed, encrypted block,
+// so the exchange rewrites both on the way: the species' own name (what the game shows for a daemon never named) and a
+// trainer name the child did not type. A loan coming home gets its own names back (`ownNames`).
+export function blankNames(record: Uint8Array, trainer: string, l: Layout = LAYOUT): Uint8Array {
+  const d = describe(record, l);
+  if (!d) return record;
+  const r = record.slice();
+  r.set(encodeText((SPECIES[String(d.species)]?.name ?? d.name).toUpperCase(), 10), 8);
+  r.set(encodeText(trainer.toUpperCase().slice(0, 7), 7), 20);
+  return r;
+}
+export function ownNames(record: Uint8Array, original: Uint8Array): Uint8Array {
+  if (record.length < 27 || original.length < 27) return record;
+  const r = record.slice();
+  r.set(original.subarray(8, 18), 8); r.set(original.subarray(20, 27), 20);
   return r;
 }
 

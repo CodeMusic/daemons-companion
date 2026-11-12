@@ -125,7 +125,7 @@ function ProfileRow({ p, ink, act }: { p: Profile; ink: string; act: (what: () =
   return (
     <YStack gap={8} borderTopWidth={1} borderColor="$color5" paddingTop={10}>
       <Text fontFamily="$mono" fontSize={17} letterSpacing={1} color="$color12">{`${p.name} #${p.tag}`}</Text>
-      <Small color="$color10">Until a traded daemon's trainer name can be hidden, a profile trades, lends and gives only with friends, and players who are not friends see its daemons by kind, never by the name it typed.</Small>
+      <Small color="$color10">Players who are not its friends see its daemons by kind, never by a name it typed; a daemon it trades, lends or gives them arrives named as its kind, its trainer the profile's first word.</Small>
       {CONTROLS.map((c) => (
         <YStack key={c.key} gap={4}>
           <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{c.label}</Text>

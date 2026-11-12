@@ -20,7 +20,7 @@
 //
 // No node: imports: the keys (tokens, password hashes) are the caller's to make.
 import type { Store } from "./store.js";
-import { describe, fromB64, gameId, type GameKey } from "./save/trade.js";
+import { blankNames, describe, fromB64, gameId, ownNames, toB64, type GameKey } from "./save/trade.js";
 
 export interface Keys { token(): string; hash(token: string): string; password(pw: string): string; check(pw: string, kept: string): boolean; code(): string }
 export interface Player { id: string; name: string; at: string; tokens: string[]; password: string | null;
@@ -319,6 +319,15 @@ export function inbox(store: Store, player: string, game: GameKey): { deliveries
     else if (o.state === "returning" && theirs && !o.written.includes(`${player}:return`)) locked.push(theirs.personality);
   }
   const name = (id: string) => { const p = s.players.find((x) => x.id === id); return p?.label ?? p?.name ?? "?"; };
+  // C-346: a profile's daemon going to a player who is not its friend arrives without the names its child typed --
+  // the species' name, and the profile's first word for its trainer; a loan coming home gets its own names back
+  const sent = (record: string, giver: string) => {
+    const g = s.players.find((x) => x.id === giver);
+    if (!g?.profile || (g.friends ?? []).includes(player)) return record;
+    const b = fromB64(record);
+    return b ? toB64(blankNames(b, (g.label ?? g.name).split(" ")[0])) : record;
+  };
+  const home = (record: string, original: string) => { const b = fromB64(record), o = fromB64(original); return b && o ? toB64(ownNames(b, o)) : record; };
   for (const o of s.offers) {
     if (!o.with || (o.state !== "agreed" && o.state !== "returning")) continue;
     // C-223: an item -- out of the giver's save first; into the receiver's PC only once that is written
@@ -336,21 +345,21 @@ export function inbox(store: Store, player: string, game: GameKey): { deliveries
         deliveries.push({ id: `${o.id}:give`, out: o.from.personality, record: "", from: name(o.with.player), kind: "gift", phase: "give",
                           ot: (() => { const b = fromB64(o.from.record), d = b && describe(b); return d ? d.otId : undefined; })() });
       if (o.with.player === player && gameId(o.with.game) === me && !o.written.includes(`${player}:swap`))
-        deliveries.push({ id: `${o.id}:swap`, out: 0, record: o.from.record, from: name(o.from.player), kind: "gift", phase: "swap" });
+        deliveries.push({ id: `${o.id}:swap`, out: 0, record: sent(o.from.record, o.from.player), from: name(o.from.player), kind: "gift", phase: "swap" });
       continue;
     }
     const mine = [o.from, o.with].find((x) => x.player === player && gameId(x.game) === me);
     if (!mine) continue;
     const theirs = mine === o.from ? o.with : o.from;
     if (!o.written.includes(`${player}:swap`)) {
-      deliveries.push({ id: `${o.id}:swap`, out: mine.personality, record: theirs.record, from: name(theirs.player), kind: o.kind, phase: "swap" });
+      deliveries.push({ id: `${o.id}:swap`, out: mine.personality, record: sent(theirs.record, theirs.player), from: name(theirs.player), kind: o.kind, phase: "swap" });
       continue;
     }
     if (o.state !== "returning") continue;
     // both sides must have the borrowed daemon in hand before either is given its own back
     if (!o.written.includes(`${theirs.player}:swap`)) continue;
     if (!o.written.includes(`${player}:return`)) {
-      if (o.handback[theirs.player]) deliveries.push({ id: `${o.id}:return`, out: theirs.personality, record: o.handback[theirs.player], from: name(theirs.player), kind: o.kind, phase: "return" });
+      if (o.handback[theirs.player]) deliveries.push({ id: `${o.id}:return`, out: theirs.personality, record: home(o.handback[theirs.player], mine.record), from: name(theirs.player), kind: o.kind, phase: "return" });
       if (!o.handback[player]) handbacks.push({ id: o.id, personality: theirs.personality });
     }
   }

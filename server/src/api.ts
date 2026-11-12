@@ -111,6 +111,7 @@ import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollama
 import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow, weatherToday } from "./context.js";
+import { consolidate, dayMaterial, memoryDue, readKept, RETRY_MIN } from "./memory.js";   // C-253
 import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
 import { comfyPaint, EASEL_HOST, imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
@@ -298,7 +299,7 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
            friendship: d && typeof d.friendship === "number" ? d.friendship : null, bondTrend: trend,
            life: d?.life ?? null, feelings: d ? core.daemonFeelings(store, now) : null,
            dream: (w.daemon as { dream?: string }).dream ?? null,
-           yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
+           yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"), kept: readKept(store.getSetting("self.kept")),
            day: w.day, season: w.season, goal: w.goal, sky: skyLine(weatherToday(store, now)) || null, today,
            spirits: d ? spiritsSaid(carried?.spirits?.class ?? null, spiritTotalsNow(store, now)) : null };
 }
@@ -986,6 +987,35 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   setTimeout(wakePersonas, 90_000).unref();
   setInterval(wakePersonas, 10 * 60_000).unref();
 
+  // C-253: MEMORY MADE AT NIGHT (memory.ts) -- once a day after the wake, what the day before it left behind written as
+  // YESTERDAY, folded into THE MONTH, and any moment worth keeping put on the shelf (self.yesterday, self.month,
+  // self.kept, read by selfFacts). Background work, nobody waiting: the thinker, thinking on. With no mind, or one that
+  // failed, the day waits RETRY_MIN and is tried again; self.memoryFor names the day last made.
+  let remembering = false, memoryFailedAt = 0;
+  const rememberDay = () => {
+    try {
+      const now = new Date(), due = memoryDue(store.getSetting("self.memoryFor"), now);
+      if (!due || remembering || !writerNow() || now.getTime() - memoryFailedAt < RETRY_MIN * 60_000) return;
+      const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, f = selfFacts(ecfg, store, "", now);
+      const dream = dreamsOf(store).find((d) => { const e = Date.parse(d.to); return e >= due.from.getTime() && e <= due.to.getTime() + 6 * 3600_000; });
+      const painted = paintings().filter((p) => p.state === "done" && Date.parse(p.at) >= due.from.getTime() && Date.parse(p.at) < due.to.getTime()).map((p) => p.title);
+      const material = dayMaterial(store, due.from, due.to, { nickname: f.nickname, feelings: f.feelings ? feelingsSaid(f.feelings) : null,
+        dream: dream?.text ?? null, paintings: painted, dayName: due.from.toLocaleDateString("en-CA", { weekday: "long" }) });
+      remembering = true;
+      const w = ledgered({ kind: "memory", title: `${f.nickname || "the daemon"} remembers ${due.day}` });   // DRAFT
+      consolidate(material, { month: store.getSetting("self.month"), kept: readKept(store.getSetting("self.kept")) }, due.day, w.write,
+                  f.nickname || "the daemon")
+        .then((m) => {
+          store.setSetting("self.yesterday", m.yesterday); store.setSetting("self.month", m.month);
+          store.setSetting("self.kept", JSON.stringify(m.kept)); store.setSetting("self.memoryFor", due.day);
+          w.end("done");
+        }, (e) => { memoryFailedAt = Date.now(); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); })
+        .finally(() => { remembering = false; });
+    } catch { /* next time */ }
+  };
+  setTimeout(rememberDay, 4 * 60_000).unref();
+  setInterval(rememberDay, 30 * 60_000).unref();
+
   // C-338: THE EASEL -- a daemon paints what it is asked (ai/easel.ts): its persona of the day and the request to the house's
   // mind, which answers as the daemon with a title, the scene and a line about it; the scene in the daemon's own style to
   // the image model on roverbyteseer (easel.host). Each painting a row in easel.paintings (newest first), its picture in
@@ -1645,9 +1675,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           daemon: { nickname: d.nickname, slot: d.slot, species: d.species, expression: core.daemonExpression(store, now, undefined, d.species)?.name ?? null },
           now: mindNow(core.daemonFeelings(store, now)),
           dream: last ? { title: titleOf(last), text: last.text, at: last.to, quality: last.quality } : null, game,
-          remembered: { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month") },
+          remembered: { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
+                        kept: readKept(store.getSetting("self.kept")), day: store.getSetting("self.memoryFor") },   // C-253, C-254 KEPT
           voice: voiceFor(ecfg, store, deviceId, now), self: selfText(ecfg, store, deviceId, "full"),
           spirits: spiritsPortal(carriedDaemon(ecfg, store, deviceId)?.spirits ?? null, spiritTotalsNow(store, now)) });
+      }
+      // C-254: FORGET -- a kept moment ({kept: its line}), or yesterday or the month ({what}); what the daemon is told forgets it too
+      if (req.method === "POST" && path === "/api/mind/forget") {
+        const b = await body(req);
+        if (typeof b.kept === "string") store.setSetting("self.kept", JSON.stringify(readKept(store.getSetting("self.kept")).filter((k) => k !== b.kept)));
+        else if (b.what === "yesterday" || b.what === "month") store.setSetting(`self.${b.what}`, "");
+        else return send(res, 400, { error: "forget {kept} or {what: yesterday | month}" });
+        return send(res, 200, { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"), kept: readKept(store.getSetting("self.kept")) });
       }
       if (req.method === "GET" && path === "/api/self") {
         const length = (["short", "day", "full"] as const).find((l) => l === url.searchParams.get("length")) ?? "day";

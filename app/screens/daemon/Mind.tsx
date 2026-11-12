@@ -20,7 +20,7 @@ type Mind = {
   now?: { felt: Felt[]; weather: string; colour: string | null; cause: { said: string; at: string; name: FeltName } | null };
   dream?: { title: string; text: string; at: string; quality: string } | null;
   game?: { title: string; quality: string; tucked: boolean; hours: number; nights: number; rested: number } | null;
-  remembered?: { yesterday: string | null; month: string | null };
+  remembered?: { yesterday: string | null; month: string | null; kept?: string[]; day?: string | null };
   voice?: { species: number | null; recipe: string; own: string };
   self?: string;
   spirits?: { class: "good" | "as it is" | "low" | null; words: string | null; tone: number;
@@ -48,7 +48,8 @@ export function MindScreen() {
       {part === "self" ? <Card><Eyebrow>{"WHAT A MIND IS GIVEN"}</Eyebrow>
         <Small>{"These are the sentences a model reads before it speaks as your daemon, exactly as it reads them.  DRAFT"}</Small>
         <Text fontFamily="$mono" fontSize={12} lineHeight={18} color="$color12">{m.self ?? ""}</Text></Card> : null}
-      {part === "remembered" ? <Remembered r={m.remembered} /> : null}
+      {part === "remembered" ? <Remembered r={m.remembered} onForget={(b) => api<NonNullable<Mind["remembered"]>>("/api/mind/forget", b)
+        .then((r) => setM((x) => (x ? { ...x, remembered: { ...x.remembered, ...r } } : x))).catch(() => {})} /> : null}
     </YStack>
   );
 }
@@ -158,12 +159,31 @@ function Voice({ v }: { v: NonNullable<Mind["voice"]> }) {
   );
 }
 
-function Remembered({ r }: { r?: Mind["remembered"] }) {
-  const any = r && (r.yesterday || r.month);
+// C-253: written each night by the house's mind; C-254: KEPT, the shelf past the month, and FORGET (DRAFT, every word)
+function Remembered({ r, onForget }: { r?: Mind["remembered"]; onForget: (b: { kept?: string; what?: "yesterday" | "month" }) => void }) {
+  const any = r && (r.yesterday || r.month || r.kept?.length);
+  const [sure, setSure] = useState<string | null>(null);
+  const forget = (key: string, b: { kept?: string; what?: "yesterday" | "month" }) =>
+    <Text fontFamily="$mono" fontSize={11} color={sure === key ? "$color9" : "$color10"} cursor="pointer" role="button"
+          onPress={() => { if (sure === key) { setSure(null); onForget(b); } else setSure(key); }}>{sure === key ? "Forget it?" : "FORGET"}</Text>;
   return (
     <YStack gap={12}>
-      {r?.yesterday ? <Card><Eyebrow>{"YESTERDAY"}</Eyebrow><Text fontSize={15} color="$color12">{r.yesterday}</Text></Card> : null}
-      {r?.month ? <Card><Eyebrow>{"THE MONTH"}</Eyebrow><Text fontSize={15} color="$color12">{r.month}</Text></Card> : null}
+      {r?.yesterday ? <Card><XStack alignItems="center"><YStack flex={1}><Eyebrow>{r.day ? `YESTERDAY · ${r.day}` : "YESTERDAY"}</Eyebrow></YStack>{forget("y", { what: "yesterday" })}</XStack>
+        <Text fontSize={15} color="$color12">{r.yesterday}</Text></Card> : null}
+      {r?.month ? <Card><XStack alignItems="center"><YStack flex={1}><Eyebrow>{"THE MONTH"}</Eyebrow></YStack>{forget("m", { what: "month" })}</XStack>
+        <Text fontSize={15} color="$color12">{r.month}</Text></Card> : null}
+      {r?.kept?.length ? (
+        <Card>
+          <Eyebrow>{"KEPT"}</Eyebrow>
+          <Small>{"Moments kept past the month."}</Small>
+          {r.kept.map((k) => (
+            <XStack key={k} alignItems="center" gap={8} paddingVertical={6} borderBottomWidth={1} borderBottomColor="$color4">
+              <Text flex={1} fontSize={14} color="$color12">{k}</Text>
+              {forget(`k${k}`, { kept: k })}
+            </XStack>
+          ))}
+        </Card>
+      ) : null}
       {!any ? <Card><Small>{"Its days are not yet kept as memory. When the house's mind writes each night's memory, yesterday and the month are read here.  DRAFT"}</Small></Card> : null}
     </YStack>
   );

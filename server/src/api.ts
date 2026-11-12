@@ -1539,6 +1539,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                       endpoints: endpointsView((k) => store.getSetting(k)),   // C-280 (1): never a key, only keySet
                                       rings: { dream: store.getSetting("mind.ring.dream") === "home" ? "home" : "anywhere" } });   // C-307
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
+      // C-190 (the user, 2026-11-12, by multiple choice): THE HUB card's CHECK EVERY BRAIN NOW -- the minute's health check
+      // (C-211's dots: the AI board, n8n, the Tiiny, the endpoints) run at once, and the view with its answer
+      if (req.method === "POST" && path === "/api/talk/check") { await checkTalk().catch(() => {}); return send(res, 200, await talkView()); }
       // C-303: the voices' generation (ai/voices.ts) -- a phone keeps its voices under it, and forgets them when it moves
       if (req.method === "GET" && path === "/api/voices/generation") return send(res, 200, { generation: voiceGeneration((k) => store.getSetting(k)) });
       // C-252: the daemon's self, exactly as a model is given it (the mind portal's SELF, C-254) -- this machine's own
@@ -2125,6 +2128,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             Object.assign(b, await heardAs(Buffer.from(b.audioBase64, "base64"), String(b.audioMime ?? "audio/mp4")));
           if (b.guide === true && !asGuide(b)) return { error: "Find the GUIDE first." };            // C-209, DRAFT
           return b.guide ? withAside(b, await toPage(b, await talkOn(talkPayload(b)))) : remember(b, await talkOn(talkPayload(b)));
+        });
+      }
+      // C-190 (the user, 2026-11-12, by multiple choice): THE HUB card's TRY THE AI -- one line through whoever answers
+      // first, timed, and who answered. Never kept in the daemon's talk (no remember) and never spoken. DRAFT
+      if (req.method === "POST" && path === "/api/ai/try") {
+        const b = await body(req);
+        const said = typeof b.text === "string" && b.text.trim() ? b.text.trim().slice(0, 200) : "Say hello in one short sentence.";
+        return answer(PRIORITY.inHand, async () => {
+          const t0 = Date.now(), r = await talkOn({ ...talkPayload({ text: said, speak: false }), history: [] });
+          return { said, answer: r.answer ?? null, provider: r.provider ?? null, error: r.error ?? null, ms: Date.now() - t0 };
         });
       }
       if (req.method === "POST" && path === "/api/device/talk") {     // C-66: a handheld's recording, raw

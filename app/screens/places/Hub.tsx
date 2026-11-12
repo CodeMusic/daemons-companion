@@ -3,9 +3,13 @@
 // when one was last heard). A phone alone says so plainly: everything works here but the AI. Every word is DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
+import { api, apiLater, ON_PHONE } from "../../platform/net";
+import { sendSaveNow } from "../game/Game";   // C-190: SEND THE SAVE NOW
 import { KIND_NAMES } from "../../state/data";
+import { lookFor } from "../../art/deviceSprites";
+const kindName = (k: string) => lookFor(k)?.name ?? KIND_NAMES[k] ?? k;   // as YOUR DEVICES names it
 import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../ui/ui";
+import { Pressable } from "react-native";
 import { useApi } from "../../platform/useApi";
 
 type Hub = { hub: false } | {
@@ -56,9 +60,27 @@ export function TalkFirstRow({ ink }: { ink?: string }) {
 
 const when = (at: string) => new Date(at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-export function HubCard({ ink }: { ink?: string }) {
+type Tried = { said: string; answer: string | null; provider: string | null; error: string | null; ms: number };
+const WHO: Record<string, string> = { module: "the hub's AI board", n8n: "n8n", tiiny: "the Tiiny", openrouter: "OpenRouter", local: "a model on the computer" };
+
+export function HubCard({ ink, onOpenDevice }: { ink?: string; onOpenDevice?: (id: string) => void }) {
   const [h, setH] = useApi<Hub>("/api/hub");
   const [looking, setLooking] = useState(false);
+  // C-190 (the user, 2026-11-12, by multiple choice: all four) -- the card acts as well as says. Every word DRAFT.
+  const [checking, setChecking] = useState(false), [checked, setChecked] = useState(0);   // CHECK EVERY BRAIN NOW
+  const [trying, setTrying] = useState(""), [tried, setTried] = useState<Tried | null>(null);   // TRY THE AI
+  const [sending, setSending] = useState(false), [sent, setSent] = useState("");          // SEND THE SAVE NOW
+  const checkNow = async () => {
+    setChecking(true);
+    try { await api("/api/talk/check", {}); setChecked((n) => n + 1); setH(await api<Hub>("/api/hub")); } finally { setChecking(false); }
+  };
+  const tryAi = async () => {
+    setTried(null); setTrying("Asking…");
+    try { setTried(await apiLater<Tried>("/api/ai/try", {}, (st, ahead) => setTrying(ahead ? `Waiting: ${ahead} ahead` : "Thinking…"))); }
+    catch (e) { setTried({ said: "", answer: null, provider: null, error: (e as Error).message, ms: 0 }); }
+    finally { setTrying(""); }
+  };
+  const sendNow = async () => { setSending(true); setSent(""); try { setSent(await sendSaveNow()); } finally { setSending(false); } };
   // the AI's boards looked for again now, not at the next five-minute round (ai/discover.ts), with the addresses kept
   const lookAgain = async () => {
     setLooking(true);
@@ -85,15 +107,33 @@ export function HubCard({ ink }: { ink?: string }) {
       <Small>{h.mirror.on
         ? `THE SAVE: kept in step with this device${h.mirror.at ? `, last ${when(h.mirror.at)}` : ""}.`
         : "THE SAVE: read from a file the companion was given, not from this device."}</Small>
+      {ON_PHONE && h.mirror.on ? <Action label={sending ? "Sending…" : "SEND THE SAVE NOW"} ink={ink} onPress={sendNow} /> : null}
+      {sent ? <Small>{sent}</Small> : null}
       <Small>{answering.length
         ? `THE AI: ${answering.map((m) => m.name).join(", ")}, answering.`
         : h.ai.modules.length ? "THE AI: its modules are not answering just now." : `THE AI: no module on the hub; talk goes to ${h.ai.provider}.`}</Small>
       <Action label={looking ? "Looking…" : "LOOK FOR AI BOARDS AGAIN"} ink={ink} onPress={lookAgain} />
-      <TalkFirstRow ink={ink} />
-      <Small>{h.lora.boards.length
-        ? `LORA: ${h.lora.boards.map((b) => `${KIND_NAMES[b.kind] ?? b.kind}${b.here ? "" : " (away)"}`).join(", ")}` +
-          (h.lora.heard ? ` · last heard ${when(h.lora.heard)}` : " · nothing heard yet")
-        : "LORA: no board with LoRa has been in touch."}</Small>
+      <TalkFirstRow ink={ink} key={checked} />
+      <XStack gap={8} flexWrap="wrap">
+        <Action label={checking ? "Checking…" : "CHECK EVERY BRAIN NOW"} ink={ink} onPress={checkNow} />
+        <Action label={trying || "TRY THE AI"} ink={ink} onPress={tryAi} />
+      </XStack>
+      {tried ? <Small>{tried.error || !tried.answer ? `No answer: ${tried.error ?? "nothing came back"}`
+        : `${WHO[tried.provider ?? ""] ?? tried.provider ?? "Something"} answered in ${(tried.ms / 1000).toFixed(1)} s: "${tried.answer}" (not kept in its talk)`}</Small> : null}
+      {h.lora.boards.length ? (
+        <YStack gap={2}>
+          <Small>{`LORA${h.lora.heard ? `, last heard ${when(h.lora.heard)}` : ", nothing heard yet"}:`}</Small>
+          <XStack gap={12} flexWrap="wrap">
+            {h.lora.boards.map((b) => (
+              <Pressable key={b.id} onPress={() => onOpenDevice?.(b.id)} disabled={!onOpenDevice} aria-label={`open its settings`}>
+                <Text fontFamily="$mono" fontSize={12} letterSpacing={1} color="$color9">
+                  {`${kindName(b.kind)}${b.here ? "" : " (away)"}${onOpenDevice ? " ›" : ""}`}</Text>
+              </Pressable>
+            ))}
+          </XStack>
+          {onOpenDevice ? <Small color="$color10">A tap opens its own settings, under YOUR DEVICES.</Small> : null}
+        </YStack>
+      ) : <Small>LORA: no board with LoRa has been in touch.</Small>}
       <Small color="$color8">DRAFT</Small>
     </Card>
   );

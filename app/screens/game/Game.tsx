@@ -53,6 +53,22 @@ async function mirrorOut(b64: string, refused?: (b64: string, why: string) => vo
     return false;
   }
 }
+// C-190 (the user, 2026-11-12, by multiple choice): THE HUB card's SEND THE SAVE NOW -- this device's save out to the paired
+// companion at once, rather than at the game's next save. Out only, never back: the companion's copy is taken in only where
+// the game starts (a running game would save over it), and mirrorOut's base still refuses a copy a SYNC has moved on, and
+// another game (C-215). Every word DRAFT.
+export async function sendSaveNow(): Promise<string> {
+  if (!paired()) return "Not paired with a companion.";
+  const f = saveFile();
+  if (!f.exists) return "No game saved on this device yet.";
+  const bytes = f.bytesSync();
+  if (sha1(bytes) === agreed()) return "Already in step: the companion holds this save.";
+  let refusal = "";
+  const ok = await mirrorOut(b64Of(bytes), (_b64, why) => { refusal = why; });
+  return ok ? "Sent: the companion now holds this device's save."
+    : refusal ? `Not sent: ${refusal}`
+    : "Not sent: the companion has a newer copy (a SYNC), or it is away. Open GAME and it settles itself.";
+}
 async function mirrorIn() {
   if (!paired()) return;
   try {

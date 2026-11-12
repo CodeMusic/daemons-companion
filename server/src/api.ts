@@ -120,7 +120,7 @@ import { ackSpellcraft, readHermetic } from "./hermetic.js";   // C-238
 import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
-import { journalOf, writeChapter } from "./journal.js";   // C-298
+import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf } from "./ai/tasks.js";   // C-319
@@ -1053,14 +1053,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
   // nobody waiting; with no thinker at all, laid out plainly. One at a time per chapter.
   const paging = new Set<number>();
-  const writeJournalPage = (chapter: number) => {
+  const writeJournalPage = (chapter: number, then?: () => void) => {
     if (paging.has(chapter)) return;
     paging.add(chapter);
-    if (!house.any) { writeChapter(store, chapter, null).catch(() => {}).finally(() => paging.delete(chapter)); return; }
+    if (!house.any) { writeChapter(store, chapter, null).catch(() => {}).finally(() => { paging.delete(chapter); then?.(); }); return; }
     const w = ledgered({ kind: "journal", title: "a journal chapter written as a page" });   // C-319 next, DRAFT
     writeChapter(store, chapter, w.write)
       .then(() => w.end("done"), (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
-      .finally(() => paging.delete(chapter));
+      .finally(() => { paging.delete(chapter); then?.(); });
+  };
+  // C-356: READ THE SIGNS -- the symbols in an entry or a chapter, read through the four books by the quick thinker (someone
+  // is waiting for it); with no mind, from the lexicon at once. One at a time per reading.
+  const signing = new Set<number>();
+  const readJournalSigns = (id: number) => {
+    if (signing.has(id)) return;
+    signing.add(id);
+    if (!house.any) { writeSigns(store, id, null).catch(() => {}).finally(() => signing.delete(id)); return; }
+    const w = ledgered({ kind: "signs", title: "the signs in a journal read", quick: true });   // DRAFT
+    writeSigns(store, id, w.write)
+      .then(() => w.end("done"), (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
+      .finally(() => signing.delete(id));
   };
   const dreamerOf = (ecfg: Config, deviceId: string): Dreamer => {
     const f = selfFacts(ecfg, store, deviceId), care = (f.life as { care?: Dreamer["care"] } | null)?.care ?? null;
@@ -1425,11 +1437,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const kept = night ? dreamsOf(store).find((x) => x.id === night.id) : undefined;
         if (kept) tellDream(ecfg, kept, deviceId);
         const writing = (r.body as { writing?: number } | null)?.writing;   // C-298: a chapter closed -- its page, by the background thinker
+        const signs = (r.body as { signing?: number } | null)?.signing;     // C-356: and its signs (a dream chapter's after its page)
+        if (signs && !writing) readJournalSigns(signs);
         if (writing) {
-          writeJournalPage(writing);
+          writeJournalPage(writing, signs && house.any ? () => readJournalSigns(signs) : undefined);
+          if (signs && !house.any) readJournalSigns(signs);                 // the lexicon's reading, at once
           // no thinker: laid out plainly at once (writeChapter's plain path is synchronous) -- answered finished
           const id = (r.body as { id?: number }).id;
-          if (!house.any && id) return reply(res, { status: r.status, body: { ...journalOf(store, id), writing } });
+          if (!house.any && id) return reply(res, { status: r.status, body: { ...journalOf(store, id), writing, signing: signs } });
+        }
+        if (signs && !house.any) {                                         // read from the lexicon at once -- answered finished
+          const id = (r.body as { id?: number }).id;
+          if (id) return reply(res, { status: r.status, body: { ...journalOf(store, id), signing: signs } });
         }
         return reply(res, r);
       }

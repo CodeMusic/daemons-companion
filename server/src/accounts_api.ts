@@ -17,6 +17,8 @@
 //   POST /accounts/device/code {profile}          a one-time code for one profile (eight letters, fifteen minutes)
 //   POST /accounts/device/revoke {id}
 //   POST /accounts/delete {confirm: "DELETE"}     the guardian and everything theirs
+//   GET  /accounts/export                         piece 5: everything held for the guardian and each profile (COPPA's
+//                                                 and GDPR's right to see it), as one JSON document
 //   -- as a profile's device (x-daemons-profile: <device token>) --
 //   GET  /accounts/profile/me                     its own name, tag, nickname, controls and friend code
 //   GET/POST /accounts/x/<name>                   C-226 piece 4: the exchange's requests as the profile (profiletrade.ts)
@@ -44,10 +46,19 @@ const ok = (body: unknown, status = 200): Reply => ({ status, body });
 const no = (status: number, error: string): Reply => ({ status, body: { error } });
 const of = <T>(r: T | { error: string }, f: (v: T) => unknown = (v) => v): Reply => (failed(r as any) ? no(400, (r as any).error) : ok(f(r as T)));
 
+// piece 5: a passkey answers only from https pages (or an Android app's signing key), never plain http off this machine
+export const safeOrigin = (o: string) => /^https:\/\/[^\s/]+$/.test(o) || /^http:\/\/localhost(:\d+)?$/.test(o) || /^android:apk-key-hash:[\w-]+$/.test(o);
 export function accountsConfigFromEnv(env: Record<string, string | undefined>): AccountsConfig {
   const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
   return { audiences: { apple: list(env.ACCOUNTS_APPLE_AUD), google: list(env.ACCOUNTS_GOOGLE_AUD) },
-           rpId: env.ACCOUNTS_RP_ID || null, origins: list(env.ACCOUNTS_ORIGINS), devSignIn: env.ACCOUNTS_DEV_SIGNIN === "1" };
+           rpId: env.ACCOUNTS_RP_ID || null, origins: list(env.ACCOUNTS_ORIGINS).filter(safeOrigin), devSignIn: env.ACCOUNTS_DEV_SIGNIN === "1" };
+}
+
+// piece 5: every account nobody has used for two years, erased as its guardian's DELETE would (commons_main.ts, daily)
+export function eraseIdle(store: Store, now = new Date()): number {
+  const gone = A.idle(store, now);
+  for (const g of gone) { P.forget(store, A.profilesOf(store, g)); A.deleteGuardian(store, g, now); }
+  return gone.length;
 }
 
 export async function accountsRoute(store: Store, keys: A.AccountKeys, cfg: AccountsConfig, method: string, path: string, b: any,
@@ -85,11 +96,11 @@ export async function accountsRoute(store: Store, keys: A.AccountKeys, cfg: Acco
   }
   if (method === "POST" && path === "/accounts/device/join") return of(A.joinDevice(store, keys, b ?? {}, now));
   if (method === "GET" && path === "/accounts/profile/me") {
-    const p = A.profileForDevice(store, keys, String(headers["x-daemons-profile"] ?? ""));
+    const p = A.profileForDevice(store, keys, String(headers["x-daemons-profile"] ?? ""), now);
     return p ? ok({ ...A.profileView(p), code: P.codeOf(store, keys, p.id) }) : no(401, "this device is not open on a profile");
   }
   if (path.startsWith("/accounts/x/")) {                       // piece 4: a kid's device plays as its profile
-    const p = A.profileForDevice(store, keys, String(headers["x-daemons-profile"] ?? ""));
+    const p = A.profileForDevice(store, keys, String(headers["x-daemons-profile"] ?? ""), now);
     if (!p) return no(401, "this device is not open on a profile");
     const name = path.slice("/accounts/x/".length);
     if (name === "claim") return no(404, "not found");
@@ -102,6 +113,12 @@ export async function accountsRoute(store: Store, keys: A.AccountKeys, cfg: Acco
   if (!g) return no(401, "sign in first");
   const seen = () => { const v = A.guardianView(store, g); return { ...v, profiles: v.profiles.map((p) => ({ ...p, ...P.socialOf(store, keys, p.id) })) }; };
   if (method === "GET" && path === "/accounts/me") return ok(seen());
+  if (method === "GET" && path === "/accounts/export") return ok({
+    exported: now.toISOString(),
+    held: "Everything THE COMMONS holds for this account. Besides this, it keeps the sign-in provider's id for you (never shown) and a hash of each sign-in, device and code -- never the token itself.",   // DRAFT
+    guardian: seen(),
+    profiles: A.profilesOf(store, g).map((id) => { const l = P.ledger(store, g, id); return failed(l) ? { id } : { id, offers: l.offers, friends: l.friends }; }),
+  });
   if (method !== "POST") return no(404, "not found");
   switch (path) {
     case "/accounts/signout": A.signOut(store, keys, bearer, now); return ok({ signedOut: true });

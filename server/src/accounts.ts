@@ -18,6 +18,9 @@ import namesJson from "../data/names.json" with { type: "json" };
 
 const KEY = "accounts";
 export const SESSION_MS = 30 * 24 * 60 * 60 * 1000, CODE_MS = 15 * 60 * 1000, CHALLENGE_MS = 5 * 60 * 1000;
+// piece 5 (the user, 2026-11-11, by multiple choice): an account nobody uses for two years -- no sign-in, no device
+// playing as one of its profiles -- is erased, as its guardian's DELETE would (accounts_api.ts eraseIdle)
+export const IDLE_MS = 2 * 365 * 24 * 60 * 60 * 1000, SEEN_EVERY_MS = 24 * 60 * 60 * 1000;
 export const PROFILES_MOST = 8, DEVICES_MOST = 16, PASSKEYS_MOST = 10;
 const NAMES = namesJson as { first: (string | null)[]; second: (string | null)[] };
 
@@ -32,7 +35,7 @@ export type Controls = { [K in keyof typeof CONTROLS]: (typeof CONTROLS)[K][numb
 const DEFAULT_CONTROLS = Object.fromEntries(Object.entries(CONTROLS).map(([k, v]) => [k, v[0]])) as Controls;
 
 export interface AccountKeys extends Keys { tag(): number }   // a profile's four digits, 1000-9999
-export type Guardian = { id: string; provider: string; sub: string; at: string };
+export type Guardian = { id: string; provider: string; sub: string; at: string; seen?: string };   // seen: piece 5, the day it was last used
 export type Profile = { id: string; guardian: string; first: number; second: number; tag: number; nickname: string | null; controls: Controls; at: string };
 type Session = { hash: string; guardian: string; until: string };
 type DeviceCode = { hash: string; profile: string; until: string };
@@ -69,6 +72,7 @@ export function signIn(store: Store, keys: AccountKeys, provider: string, sub: s
   return change(store, now, (s) => {
     let g = s.guardians.find((x) => x.provider === provider && x.sub === sub);
     if (!g) { g = { id: `g${s.next++}`, provider, sub, at: now.toISOString() }; s.guardians.push(g); }
+    g.seen = now.toISOString();
     const token = keys.token();
     s.sessions.push({ hash: keys.hash(token), guardian: g.id, until: later(now, SESSION_MS) });
     return { token, guardian: g };
@@ -78,8 +82,21 @@ export function guardianFor(store: Store, keys: Keys, token: string, now = new D
   if (!token) return null;
   const s = load(store), h = keys.hash(token), t = now.getTime();
   const sess = s.sessions.find((x) => x.hash === h && Date.parse(x.until) > t);
-  return sess ? s.guardians.find((g) => g.id === sess.guardian) ?? null : null;
+  const g = sess ? s.guardians.find((x) => x.id === sess.guardian) ?? null : null;
+  if (g) seen(store, g.id, now);
+  return g;
 }
+// the day an account was last used, written at most once a day
+function seen(store: Store, guardian: string, now: Date) {
+  const g = load(store).guardians.find((x) => x.id === guardian);
+  if (!g || (g.seen && now.getTime() - Date.parse(g.seen) < SEEN_EVERY_MS)) return;
+  change(store, now, (s) => { const x = s.guardians.find((y) => y.id === guardian); if (x) x.seen = now.toISOString(); });
+}
+// a profile in use (a claimed player trading through its hub) keeps its guardian's account in use
+export const usedProfile = (store: Store, profile: string, now = new Date()) => { const p = load(store).profiles.find((x) => x.id === profile); if (p) seen(store, p.guardian, now); };
+// the guardians nobody has used for IDLE_MS
+export const idle = (store: Store, now = new Date()): Guardian[] =>
+  load(store).guardians.filter((g) => now.getTime() - Date.parse(g.seen ?? g.at) > IDLE_MS);
 export function signOut(store: Store, keys: Keys, token: string, now = new Date()) {
   change(store, now, (s) => { const h = keys.hash(token); s.sessions = s.sessions.filter((x) => x.hash !== h); });
 }
@@ -172,10 +189,12 @@ export function joinDevice(store: Store, keys: AccountKeys, b: { code?: unknown;
     return { token, profile: profileView(p) };
   });
 }
-export function profileForDevice(store: Store, keys: Keys, token: string): Profile | null {
+export function profileForDevice(store: Store, keys: Keys, token: string, now = new Date()): Profile | null {
   if (!token) return null;
   const s = load(store), h = keys.hash(token), d = s.devices.find((x) => x.hash === h);
-  return d ? s.profiles.find((p) => p.id === d.profile) ?? null : null;
+  const p = d ? s.profiles.find((x) => x.id === d.profile) ?? null : null;
+  if (p) seen(store, p.guardian, now);                       // a kid playing keeps the account in use
+  return p;
 }
 export function revokeDevice(store: Store, g: Guardian, id: unknown, now = new Date()): Result<{ revoked: string }> {
   return change(store, now, (s) => {
@@ -216,7 +235,7 @@ export function passkeyUsed(store: Store, keys: AccountKeys, id: string, count: 
   return change(store, now, (s) => {
     const k = s.passkeys.find((x) => x.id === id), g = k && s.guardians.find((x) => x.id === k.guardian);
     if (!k || !g) return null;
-    k.count = count;
+    k.count = count; g.seen = now.toISOString();
     const token = keys.token();
     s.sessions.push({ hash: keys.hash(token), guardian: g.id, until: later(now, SESSION_MS) });
     return { token, guardian: g };

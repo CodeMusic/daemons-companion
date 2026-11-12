@@ -1,6 +1,7 @@
 # Accounts and safety (C-226)
 
-*A design, DRAFT, 2026-11-11. **Pieces 1-4 are built** (below); piece 5, before it opens, is not. It is the account half of going public (C-278): before
+*A design, DRAFT, 2026-11-11. **All five pieces are built** (below); what is left before it opens is the user's,
+step by step in `docs/OPENING.md`. It is the account half of going public (C-278): before
 `api.daemons.codemusic.ca` opens, a player needs an identity that does not depend on a home hub, and kids may be among
 them.*
 
@@ -179,8 +180,16 @@ friends at home stays open -- the home is the family's own. Tests: `server/test/
 Not yet: the commons on roverbyteseer runs the old code until sign-in is set up there (piece 5); blocking from an
 offer rather than a friend; the lobby itself (C-227), which the "+ lobby" choice anticipates.
 
+## Piece 5, built 2026-11-11 (DRAFT)
+
+`docs/OPENING.md` holds the checklist, the consent review, the drafts (privacy policy, labels, retention, security)
+and the tunnel's steps. Decided by the user, by multiple choice: **nicknames friends only** -- a profile's daemons
+show their species name to anyone not its friend, and it trades only with friends until C-346 blanks the trainer name
+on the way; **an age check at guardian sign-in** from the device's own signal (C-345 makes the iOS module); **an
+account unused for two years is erased**. Built: the public listener the tunnel points at, where nothing is the
+keeper's machine; passkeys only from https; the guardian's export; the daily erasing. Tests: `server/test/opening.test.ts`.
+
 ## Still open
 
-- The word lists themselves (the user picks from drafts).
 - Whether a teenager (13+) may hold a profile its guardian does not manage.
 - What the keeper reviews when a report comes in, and how quickly.

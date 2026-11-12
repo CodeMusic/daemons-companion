@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { accounts, appleHere, appleToken, keepToken, readToken } from "../../platform/accounts";
+import { accounts, appleHere, appleToken, grownUpHere, keepToken, readToken } from "../../platform/accounts";
 import { api } from "../../platform/net";
 import { Action, Card, Entry, Eyebrow, Pending, Segments, Small, useInk } from "../../ui/ui";
 
@@ -93,6 +93,8 @@ export function GuardianCard({ ink: given }: { ink?: string }) {
         <Small>A grown-up signs in to make profiles for the players at home. A player never signs in.</Small>
         {apple
           ? <Action label="SIGN IN WITH APPLE" ink={ink} onPress={() => act(async () => {
+              // piece 5: a device that says its person is under 18 does not make a guardian
+              if (await grownUpHere() === false) throw new Error("A grown-up signs in here. Ask a parent or guardian to sign in on their own device.");   // DRAFT
               const t = await appleToken();
               if (!t) throw new Error("Sign in with Apple was not finished.");
               await signedIn(await accounts<{ token: string }>("signin", { provider: "apple", idToken: t }));
@@ -123,6 +125,7 @@ function ProfileRow({ p, ink, act }: { p: Profile; ink: string; act: (what: () =
   return (
     <YStack gap={8} borderTopWidth={1} borderColor="$color5" paddingTop={10}>
       <Text fontFamily="$mono" fontSize={17} letterSpacing={1} color="$color12">{`${p.name} #${p.tag}`}</Text>
+      <Small color="$color10">Until a traded daemon's trainer name can be hidden, a profile trades, lends and gives only with friends, and players who are not friends see its daemons by kind, never by the name it typed.</Small>
       {CONTROLS.map((c) => (
         <YStack key={c.key} gap={4}>
           <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{c.label}</Text>

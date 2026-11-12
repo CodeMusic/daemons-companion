@@ -15,8 +15,12 @@
 //   -- C-226 --
 //   /accounts/*                            ACCOUNTS: guardians, profiles, kids' devices, passkeys (accounts_api.ts)
 //
-// The tailnet only for now (the user, 2026-10-28): it listens where its config says, and nothing here is for the
-// internet until accounts and abuse are decided.
+// The tailnet only for now (the user, 2026-10-28): it listens where its config says. C-226 piece 5: the internet reaches
+// it only through a Cloudflare Tunnel (C-278) to a second, PUBLIC listener on this machine's loopback (commons_main.ts
+// COMMONS_PUBLIC_PORT): there nothing is ever "the keeper's machine" -- cloudflared connects from loopback, so without
+// this every request from the internet would look like the keeper's -- each address is Cloudflare's CF-Connecting-IP,
+// and every address has a budget of requests besides the tries below. A request that carries a forwarding header is
+// never the keeper's on either listener.
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import type { Store } from "./store.js";
 import { KEYS } from "./keys.js";
@@ -38,14 +42,26 @@ async function body(req: IncomingMessage, most = 256 * 1024): Promise<any> {
   try { return parts.length ? JSON.parse(Buffer.concat(parts).toString("utf8")) : {}; } catch { return {}; }
 }
 const TRIES = new Map<string, number[]>(), MOST = 20, WINDOW_MS = 10 * 60 * 1000;   // registrations and friend codes
+// piece 5: on the public listener, every request counts against its address -- generous for a person, not for a script
+export const PUBLIC_MOST = 600;
+const SEEN = new Map<string, number[]>();
+const FORWARDED = ["cf-connecting-ip", "x-forwarded-for", "forwarded", "x-real-ip", "cf-ray"];
 
-export function makeCommons(store: Store, accounts: AccountsConfig | null = null): Server {
+export function makeCommons(store: Store, accounts: AccountsConfig | null = null, opts: { public?: boolean } = {}): Server {
   return createServer(async (req, res) => {
     try {
       const path = new URL(req.url ?? "/", "http://localhost").pathname, method = req.method ?? "GET";
       const b = method === "POST" ? await body(req) : {};
-      // the keeper's machine: loopback, or the machine's own address when the commons listens only on the tailnet's
-      const here = isLoopback(req.socket.remoteAddress) || req.socket.remoteAddress === req.socket.localAddress, who = req.socket.remoteAddress ?? "";
+      // the keeper's machine: loopback, or the machine's own address when the commons listens only on the tailnet's --
+      // never the public listener, and never a request something passed on (piece 5)
+      const forwarded = FORWARDED.some((h) => req.headers[h] !== undefined);
+      const here = !opts.public && !forwarded && (isLoopback(req.socket.remoteAddress) || req.socket.remoteAddress === req.socket.localAddress);
+      const who = opts.public ? `cf:${String(req.headers["cf-connecting-ip"] ?? req.socket.remoteAddress ?? "")}` : req.socket.remoteAddress ?? "";
+      if (opts.public) {
+        const now = Date.now(), t = (SEEN.get(who) ?? []).filter((x) => now - x < WINDOW_MS);
+        SEEN.set(who, [...t, now]);
+        if (t.length >= PUBLIC_MOST) return send(res, 429, { error: "too many requests -- wait ten minutes" });   // DRAFT
+      }
       const tried = () => { const now = Date.now(), t = (TRIES.get(who) ?? []).filter((x) => now - x < WINDOW_MS); TRIES.set(who, [...t, now]); return t.length >= MOST; };
       // C-226: ACCOUNTS beside the commons (accounts_api.ts); a sign-in, a passkey's or a device's code tried too often waits
       if (path.startsWith("/accounts/")) {

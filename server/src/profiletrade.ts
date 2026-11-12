@@ -11,12 +11,23 @@
 // Both sides' rules hold: two players reach each other only when each one's controls allow the other. A profile has a
 // FRIEND CODE (eight letters) its players give each other; that is how two profiles with no home in common meet.
 // The guardian sees each profile's LEDGER (every trade, loan and gift), approves or refuses the friends waiting, and
-// blocks a player. No node: imports.
+// blocks a player.
+//
+// Piece 5 (the user, 2026-11-11, by multiple choice: "friends only"): nothing a child typed reaches a player who is not
+// its friend. A daemon's nickname is typed in the game, so a profile's daemons show their SPECIES name to anyone who
+// is not a friend (in offers, trades, OUT TOGETHER and shared dreams); and since a traded daemon carries its trainer's
+// name inside its record, a profile trades, lends and gives only with friends until that name can be blanked on the
+// way -- "+ HOME" and "+ LOBBY" are kept, and take effect then (NAMES_BLANKED). No node: imports.
 import type { Store } from "./store.js";
 import * as A from "./accounts.js";
 import * as C from "./commons.js";
 import * as X from "./exchange.js";
 import { exchangeRoute } from "./tradelink.js";
+import speciesJson from "../data/species.json" with { type: "json" };
+
+const SPECIES = speciesJson as unknown as Record<string, { name: string }>;
+// whether a traded daemon's trainer name is blanked for a player who is not a friend -- not yet: trades stay with friends
+export const NAMES_BLANKED = false;
 
 const KEY = "accounts.social";
 type Waiting = { profile: string; player: string; at: string };
@@ -46,7 +57,8 @@ export function reachFor(store: Store, kind: "trade" | "meet"): X.Reach {
     if (!pa.profile) return home(a, b) || friends(a, b);                    // a home's player, as THE COMMONS has it
     if (!c || blocked.has(`${pa.profile}|${b}`)) return false;
     if (kind === "meet") return c.meet === "friends" ? friends(a, b) : c.meet === "trades" ? friends(a, b) || traded(a, b) : false;
-    return c.trade === "friends" ? friends(a, b) : c.trade === "home" ? friends(a, b) || home(a, b) : true;
+    if (c.trade === "friends" || !NAMES_BLANKED) return friends(a, b);
+    return c.trade === "home" ? friends(a, b) || home(a, b) : true;
   };
   return (a, b) => a === b || (allows(a, b) && allows(b, a));
 }
@@ -85,10 +97,29 @@ export function profileRoute(store: Store, keys: X.Keys, p: X.Player, name: stri
     }
     return X.befriend(store, p.id, other, () => true);
   }
+  if (prof) A.usedProfile(store, prof.id);                         // piece 5: a profile playing keeps its account in use
+  const hide = hidden(store, p.id), mask = (r: any) => (hide.size ? masked(r, hide) : r);
   const r = exchangeRoute(store, keys, p, name, b, reach);
+  if (r instanceof Promise) return r.then(mask);
   if (name === "board" && prof && r && !r.error)
-    return { ...r, profile: { ...A.publicView(prof), code: codeOf(store, keys, prof.id), controls: prof.controls, waiting: waitingFor(store, prof.id) } };
-  return r;
+    return mask({ ...r, profile: { ...A.publicView(prof), code: codeOf(store, keys, prof.id), controls: prof.controls, waiting: waitingFor(store, prof.id) } });
+  return mask(r);
+}
+// the names of the profiles' players this one is not a friend of: their daemons' nicknames are not for it
+function hidden(store: Store, viewer: string): Set<string> {
+  const me = X.playerById(store, viewer), friends = new Set(me?.friends ?? []);
+  return new Set(A.profiles(store).map((p) => X.playerOfProfile(store, p.id)).filter((q): q is X.Player => !!q && q.id !== viewer && !friends.has(q.id))
+                                   .map((q) => q.label ?? q.name));
+}
+// every daemon in an answer that is one of theirs (an object naming its player, species and nickname), by its species
+export function masked(v: any, hide: Set<string>): any {
+  if (Array.isArray(v)) return v.map((x) => masked(x, hide));
+  if (!v || typeof v !== "object") return v;
+  const o: any = {};
+  for (const [k, x] of Object.entries(v)) o[k] = masked(x, hide);
+  if (typeof o.player === "string" && hide.has(o.player) && typeof o.nickname === "string" && typeof o.species === "number")
+    o.nickname = SPECIES[String(o.species)]?.name ?? "?";
+  return o;
 }
 const label = (store: Store, profile: string) => { const p = A.profileById(store, profile); return p ? `${A.nameOf(p)} #${p.tag}` : "?"; };
 const waitingFor = (store: Store, profile: string) =>

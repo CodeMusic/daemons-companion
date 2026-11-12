@@ -5,7 +5,7 @@
 //   approve a home, on that machine:  hub/commons.sh homes   then   hub/commons.sh approve h1
 import { fileURLToPath } from "node:url";
 import { makeCommons } from "./commons_api.js";
-import { accountsConfigFromEnv } from "./accounts_api.js";
+import { accountsConfigFromEnv, eraseIdle } from "./accounts_api.js";
 import { Store } from "./db.js";
 import { reach } from "./commons.js";
 import { llmTalker } from "./llmtalker.js";
@@ -22,5 +22,13 @@ if (llm && model) setMeetTalker(llmTalker(llm, model, process.env.COMMONS_LLM_KE
 setInterval(() => { meetOnTheirOwn(store, reach(store)).catch(() => {}); }, 15 * 60 * 1000).unref();
 // C-226: ACCOUNTS beside it -- ACCOUNTS_APPLE_AUD / ACCOUNTS_GOOGLE_AUD (the app's ids with each provider, comma lists),
 // ACCOUNTS_RP_ID and ACCOUNTS_ORIGINS (the passkeys' site and pages); unset, sign-in and passkeys say they are not set up
-makeCommons(store, accountsConfigFromEnv(process.env)).listen(port, host, () =>
+const accounts = accountsConfigFromEnv(process.env);
+// C-226 piece 5: an account nobody has used for two years is erased -- looked for at start and once a day
+const sweep = () => { const n = eraseIdle(store); if (n) console.log(`THE COMMONS erased ${n} account(s) unused for two years`); };
+sweep(); setInterval(sweep, 24 * 60 * 60 * 1000).unref();
+makeCommons(store, accounts).listen(port, host, () =>
   console.log(`THE COMMONS on http://${host}:${port}  (database ${db}; meetings' lines ${llm && model ? `from ${model}` : "written"})`));
+// C-226 piece 5: COMMONS_PUBLIC_PORT, the one the Cloudflare Tunnel points at (docs/OPENING.md) -- on this machine's
+// loopback only, where nothing is the keeper's and every address has a budget. Unset, nothing public listens.
+const pub = Number(process.env.COMMONS_PUBLIC_PORT || 0);
+if (pub) makeCommons(store, accounts, { public: true }).listen(pub, "127.0.0.1", () => console.log(`THE COMMONS, public, on http://127.0.0.1:${pub} (for cloudflared only)`));

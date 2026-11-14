@@ -11,20 +11,38 @@ import { api } from "../../platform/net";
 import { Cast, PlayerState } from "../../state/types";
 import { Action, Art, Card, Eyebrow, Small } from "../../ui/ui";
 import { EngineRoom } from "../../ui/engineRoom";   // C-330
+import { SingScreen } from "./Sing";   // C-362
+import { EaselScreen } from "./Easel";   // C-338
+import { SleepSoundsCard } from "./SleepSounds";   // C-334
 export const CASINO_BOOT = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
    // this start of the app
 export let casinoSeq = 0;
 
 
-export function RoutinesCard({ ink }: { ink: string }) {
-  const [open, setOpen] = useState<"casino" | "house" | "party" | null>(null);
+// The user, 2026-11-14: "'it sings', 'the easel', and 'the creations' (the meditation/sleep sounds) should be listed under
+// the routines section as they are routines the daemon performs" -- its own first (IT SINGS and THE EASEL need the hub, as
+// they did), then the casino, the house and the party's. Dreams keeps SLEEP SOUNDS as a shortcut; YOURS keeps a link to the
+// galleries. Every word DRAFT.
+type Open = "sing" | "easel" | "sleep" | "casino" | "house" | "party";
+export function RoutinesCard({ ink, daemon }: { ink: string; daemon?: { nickname: string; slot: number | null } | null }) {
+  const [open, setOpen] = useState<Open | null>(null);
+  const flip = (o: Open) => () => setOpen(open === o ? null : o);
   return (
     <Card>
       <Eyebrow>ROUTINES</Eyebrow>
+      {daemon ? <Small>{`What ${daemon.nickname} does: sings, paints and makes the night's sleep sounds.  DRAFT`}</Small> : null}
       <XStack gap={8} flexWrap="wrap" marginTop={4}>
-        <Action label={open === "casino" ? "Leave the CASINO" : "THE CASINO"} ink={ink} onPress={() => setOpen(open === "casino" ? null : "casino")} />
-        <Action label={open === "house" ? "Close" : "THE HOUSE"} ink={ink} onPress={() => setOpen(open === "house" ? null : "house")} />
-        <Action label={open === "party" ? "Close" : "YOUR PARTY'S ROUTINES"} ink={ink} onPress={() => setOpen(open === "party" ? null : "party")} />
+        {daemon ? <Action label={open === "sing" ? "Close" : "IT SINGS"} ink={ink} onPress={flip("sing")} /> : null}
+        {daemon ? <Action label={open === "easel" ? "Close" : "THE EASEL"} ink={ink} onPress={flip("easel")} /> : null}
+        <Action label={open === "sleep" ? "Close" : "SLEEP SOUNDS"} ink={ink} onPress={flip("sleep")} />
+      </XStack>
+      {open === "sing" && daemon ? <SingScreen ink={ink} name={daemon.nickname} onClose={() => setOpen(null)} /> : null}
+      {open === "easel" && daemon ? <EaselScreen ink={ink} name={daemon.nickname} slot={daemon.slot} /> : null}
+      {open === "sleep" ? <SleepSoundsCard ink={ink} /> : null}
+      <XStack gap={8} flexWrap="wrap" marginTop={8}>
+        <Action label={open === "casino" ? "Leave the CASINO" : "THE CASINO"} ink={ink} onPress={flip("casino")} />
+        <Action label={open === "house" ? "Close" : "THE HOUSE"} ink={ink} onPress={flip("house")} />
+        <Action label={open === "party" ? "Close" : "YOUR PARTY'S ROUTINES"} ink={ink} onPress={flip("party")} />
       </XStack>
       {open === "casino" ? <Casino ink={ink} /> : null}
       {open === "house" ? <EngineRoom page="house" ink={ink} what="THE HOUSE -- the day's odds and why, everyone at the reels, what the house keeps -- is the hub's." /> : null}

@@ -1742,7 +1742,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { hub: true, server: REPO_COMMIT, onHub: process.platform === "linux",
                                 mirror: { on: mirrored, at: mirrored ? statSync(mirrorPath(ecfg)).mtime.toISOString() : null },
                                 ai: { provider: talkProvider(), modules },
-                                lora: { boards: devices.list().filter((d) => LORA_KINDS.test(d.kind)).map((d) => ({ id: d.id, kind: d.kind, here: d.here })), heard } });
+                                lora: { boards: devices.list().filter((d) => LORA_KINDS.test(d.kind)).map((d) => ({ id: d.id, kind: d.kind, here: d.here })), heard },
+                                // the hub on the tailnet, home or away: where the app opens THE ENGINE ROOM when home does not answer
+                                tailnet: tailnetName() ? `http://${tailnetName()}:${cfg.port}` : null });
       }
       // C-91: which build the companion is, and -- given the phone's build -- whether the app has changed since it
       if (req.method === "GET" && path === "/api/version") {

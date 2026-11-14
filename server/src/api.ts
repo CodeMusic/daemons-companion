@@ -2544,10 +2544,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           // asked again in the short ones
           const parts = voicePieces(b.text.slice(0, WHOLE_MOST), tiinyNow()?.at.tts ? TIINY_PIECE_MOST : PIECE_MOST);
           return answer(PRIORITY.reading, async () => {
-            const got: Buffer[] = []; let provider = "";
+            const got: Buffer[] = []; let provider = "", short = false;
             for (const p of parts) {
-              let rs = [await readAloud(p, named)];
-              if (p.length > PIECE_MOST && !String(rs[0].provider ?? "").startsWith("tiiny:"))
+              // once the Tiiny has not answered a long part, the rest go in short parts from the start
+              let rs = short && p.length > PIECE_MOST ? [] : [await readAloud(p, named)];
+              if (rs.length && p.length > PIECE_MOST && !String(rs[0].provider ?? "").startsWith("tiiny:")) short = true;
+              if (short && p.length > PIECE_MOST)
                 { rs = []; for (const q of voicePieces(p, PIECE_MOST)) rs.push(await readAloud(q, named)); }
               for (const r of rs) {
                 if (typeof r.audioBase64 !== "string" || !r.audioBase64) return { error: String(r.error ?? "a part of it could not be voiced") };   // DRAFT

@@ -103,6 +103,14 @@ export class SleepTracks {
     const t = this.byId(id), f = t ? join(this.dir, t.id, "cover.png") : "";
     return f && existsSync(f) ? f : null;
   }
+  // C-361: a piece let go from the hub -- its files, exports and cover with it
+  forget(id: string): boolean {
+    const t = this.byId(id);
+    if (!t || t.state === "making") return false;
+    this.drop(t);
+    this.save();
+    return true;
+  }
   folder(id: string): string | null { const t = this.byId(id); return t ? join(this.dir, t.id) : null; }
   private queue(t: SleepTrack, work: () => Promise<void>) {
     this.busy = this.busy.then(work).catch((e) => {

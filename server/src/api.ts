@@ -1844,6 +1844,26 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return createReadStream(f).pipe(res);
       }
       // C-358: CREATIONS -- every made thing this hub keeps (?kind=sleep|painting), for MINE, HOUSEHOLD and COMMUNITY
+      // C-361: THE ENGINE ROOM lets creations go -- {uids}: each one's files from the hub (a sleep piece's exports and cover
+      // too, a painting's picture), and what this home shared of it from THE COMMONS. A piece still being made stays.
+      if (req.method === "POST" && path === "/api/creations/forget") {
+        const b = await body(req), uids: string[] = Array.isArray(b.uids) ? b.uids.map(String).slice(0, 200) : [];
+        const all = creationsNow(), link = commonsOf(store), gone: string[] = [], kept: string[] = [];
+        for (const uid of uids) {
+          const c = all.find((x) => x.uid === uid);
+          let ok = false;
+          if (c?.kind === "sleep") ok = sleepTracks().forget(c.id);
+          if (c?.kind === "painting" && c.state !== "making") {
+            store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== c.id)));
+            if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id));
+            ok = true;
+          }
+          (ok ? gone : kept).push(uid);
+          if (ok && link) await fetch(`${link.url}/commons/creations/unshare`, { method: "POST", signal: AbortSignal.timeout(8000),
+            headers: { "x-daemons-home": link.key, "content-type": "application/json" }, body: JSON.stringify({ uid }) }).catch(() => {});
+        }
+        return send(res, 200, { gone, kept });
+      }
       if (req.method === "GET" && path === "/api/creations") {
         const kind = url.searchParams.get("kind");
         return send(res, 200, { home: homeName(), creations: creationsNow().filter((c) => !kind || c.kind === kind) });

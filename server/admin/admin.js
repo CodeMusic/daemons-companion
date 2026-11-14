@@ -8,6 +8,7 @@
 //   THE COMMONS  this home's link to the commons, and its keeper's list (C-222), run by THE HANDS
 //   KEYS         pairing codes, the paired phones, the relay, Home Assistant (C-342: once the hub's own machine's alone)
 //   JOBS         the site built at every push, THE HANDS on the computer, the command line's jobs (C-342)
+//   CREATIONS    what the daemons made that the hub keeps -- sleep sounds, paintings -- each let go, or many (C-361)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
 const KEY = "engine-room.key";
@@ -45,6 +46,7 @@ const PAGES = [
   { id: "commons", glyph: "◇", label: "THE COMMONS", short: "COMMONS", draw: drawCommons },
   { id: "keys", glyph: "◈", label: "KEYS", short: "KEYS", draw: drawKeys },                    // C-342
   { id: "jobs", glyph: "▶", label: "JOBS", short: "JOBS", draw: drawJobs, every: 3000 },       // C-342
+  { id: "creations", glyph: "❖", label: "CREATIONS", short: "MADE", draw: drawCreations },     // C-361
 ];
 let timer = null, ui = {}, drawing = null;          // ui: what a page keeps between its redraws (a filter, a task picked, a note)
 // a page asked for before another was opened, answering after it: it writes nothing
@@ -254,6 +256,57 @@ async function drawVoices() {
 }
 ACTS.sure = () => { ui.sure = !ui.sure; };
 ACTS.voices = async () => { await api("/api/talk/settings", { voicesAgain: true }); ui.sure = false; said("Every voice will be made afresh the next time it is heard."); };
+
+// ---- CREATIONS (C-361; the user, 2026-11-14: "the engine room we should be able to administrate what content is in
+// the household -- such as deleting sleep sounds or easel art"): every creation the hub keeps (C-358), by kind and
+// daemon, its size and who asked; let one go, or every one ticked. What this home shared is taken from THE COMMONS too.
+const mb = (b) => (b ? `${(b / 1048576).toFixed(1)} MB` : "");
+async function drawCreations() {
+  const [h, c] = await Promise.all([api("/api/creations"), api("/api/community").catch(() => ({ linked: false, creations: [] }))]);
+  if (stale()) return;
+  const shared = new Set((c.creations ?? []).map((x) => x.uid));
+  ui.kind ??= "all"; ui.daemon ??= "all"; ui.ticked ??= new Set();
+  const daemons = [...new Set(h.creations.map((x) => x.daemon.nickname || "?"))].sort();
+  const shown = h.creations.filter((x) => (ui.kind === "all" || x.kind === ui.kind) && (ui.daemon === "all" || (x.daemon.nickname || "?") === ui.daemon));
+  for (const u of [...ui.ticked]) if (!h.creations.some((x) => x.uid === u)) ui.ticked.delete(u);
+  const total = h.creations.reduce((s, x) => s + (x.bytes ?? 0), 0);
+  const chip = (act, val, on, label) => `<button class="btn ${on ? "" : "quiet"}" data-act="${act}" data-v="${esc(val)}">${esc(label)}</button>`;
+  $page.innerHTML = `<h1>CREATIONS</h1>
+    <p class="lede">What the daemons made that this hub keeps: ${h.creations.length} in all${total ? `, about ${mb(total)} of music` : ""}. A phone that downloaded one keeps its own copy.</p>
+    <div class="row">${chip("ckind", "all", ui.kind === "all", "ALL")}${chip("ckind", "sleep", ui.kind === "sleep", "SLEEP SOUNDS")}${chip("ckind", "painting", ui.kind === "painting", "PAINTINGS")}</div>
+    <div class="row" style="margin-top:8px">${chip("cdaemon", "all", ui.daemon === "all", "EVERY DAEMON")}${daemons.map((d) => chip("cdaemon", d, ui.daemon === d, d)).join("")}</div>
+    <div class="row" style="margin:12px 0">
+      <button class="btn quiet" data-act="ctickall">${shown.every((x) => ui.ticked.has(x.uid)) && shown.length ? "UNTICK ALL" : "TICK ALL SHOWN"}</button>
+      ${ui.ticked.size ? (ui.sure
+        ? `<span class="grow">Let ${ui.ticked.size} go from the hub, their exports and covers with them${c.linked ? ", and from THE COMMONS if shared" : ""}?</span>
+           <button class="btn danger" data-act="cforget">YES, LET ${ui.ticked.size} GO</button><button class="btn quiet" data-act="sure">NO</button>`
+        : `<button class="btn danger" data-act="sure">LET ${ui.ticked.size} GO…</button>`) : ""}
+    </div>
+    ${note()}
+    <div class="grid">${shown.map((x) => `<div class="card">
+        <label class="row" style="align-items:flex-start;cursor:pointer">
+          <input type="checkbox" data-act="ctick" data-uid="${esc(x.uid)}" ${ui.ticked.has(x.uid) ? "checked" : ""} aria-label="tick ${esc(x.title)}">
+          <span class="grow">
+            ${x.cover ? `<img src="${esc(x.cover)}" alt="" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:${x.kind === "sleep" ? "50%" : "6px"};margin-bottom:6px">` : ""}
+            <span class="eyebrow">${x.kind === "sleep" ? "SLEEP SOUNDS" : "PAINTING"} · ${esc(x.daemon.nickname || "?")}${shared.has(x.uid) ? " · SHARED" : ""}</span><br>
+            <b>${esc(x.title)}</b><br>
+            <span class="small">${esc(ago(x.made))}${x.by ? ` · asked on ${esc(x.by)}` : ""}${x.bytes ? ` · ${mb(x.bytes)}` : ""}${x.state !== "ready" ? ` · ${esc(x.state)}` : ""}</span>
+          </span></label></div>`).join("") || `<p class="small">Nothing here.</p>`}</div>`;
+}
+ACTS.ckind = (d) => { ui.kind = d.v; };
+ACTS.cdaemon = (d) => { ui.daemon = d.v; };
+ACTS.ctick = (d) => { ui.ticked.has(d.uid) ? ui.ticked.delete(d.uid) : ui.ticked.add(d.uid); ui.sure = false; };
+ACTS.ctickall = () => {
+  const boxes = [...$page.querySelectorAll("input[data-act=ctick]")].map((b) => b.dataset.uid);
+  const all = boxes.length && boxes.every((u) => ui.ticked.has(u));
+  for (const u of boxes) all ? ui.ticked.delete(u) : ui.ticked.add(u);
+  ui.sure = false;
+};
+ACTS.cforget = async () => {
+  const r = await api("/api/creations/forget", { uids: [...ui.ticked] });
+  ui.ticked = new Set(r.kept); ui.sure = false;
+  said(`${r.gone.length} let go.${r.kept.length ? ` ${r.kept.length} kept (still being made).` : ""}`);
+};
 
 // ---- DEVICES (C-80) ----
 async function drawDevices() {

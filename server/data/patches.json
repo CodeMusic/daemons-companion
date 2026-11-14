@@ -1,15 +1,15 @@
 {
  "_about": "T-453 (C-186): DAEMONS' BPS patches, newest first, as published on GitHub (the assets of each release on CodeMusic/DAEMONS). Nothing of Nintendo's is here: the app fetches url, checks patch.sha1 (or sha256, which GitHub also reports), checks the player's own ROM against source (sha1, or crc32 as a BPS patcher does; md5 for tools that show only that), applies the patch, and checks the result against target.sha1. A patch fits only its own source revision; 1.0 and Rev 1 are both common. CONTENT is FireRed's edition, CONTEXT LeafGreen's. latest is the newest version.",
  "repo": "CodeMusic/DAEMONS",
- "latest": "11.362.1",
+ "latest": "11.363.1",
  "releases": [
   {
-   "version": "11.362.1",
-   "tag": "v11.362.1",
-   "bible": "11.362",
-   "engine": "be1d32e95",
-   "made": "2026-11-14T13:31:36",
-   "page": "https://github.com/CodeMusic/DAEMONS/releases/tag/v11.362.1",
+   "version": "11.363.1",
+   "tag": "v11.363.1",
+   "bible": "11.363",
+   "engine": "e9a023b4b",
+   "made": "2026-11-14T14:31:20",
+   "page": "https://github.com/CodeMusic/DAEMONS/releases/tag/v11.363.1",
    "patches": [
     {
      "edition": "CONTENT",
@@ -24,15 +24,15 @@
       "md5": "e26ee0d44e809351c8ce2d73c7400cdd"
      },
      "target": {
-      "sha1": "da9240cb15c7d34e36e1495d84e9ecad1fd1535f",
-      "crc32": "210D11B3"
+      "sha1": "e7e024b846a26eac1ef38d120dd7e9d9f2813ee6",
+      "crc32": "85F21D20"
      },
      "patch": {
-      "size": 5164460,
-      "sha1": "b5940396af2ce875c2d568655e4d9ea397e53010",
-      "sha256": "cd0503ccb1f6797424e35fd3ca8bf284af0f9a764c6c1ad1fcb806da99211963"
+      "size": 5165549,
+      "sha1": "8addbf100090791724abbb85f0f1b311f05a459e",
+      "sha256": "47ace1e572aa57cc70caeff460ff4b7fbf050af72c3b643f1a0f0b0d16dc60cb"
      },
-     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.362.1/DAEMONS.CONTENT.for.FireRed.1.0.bps"
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.363.1/DAEMONS.CONTENT.for.FireRed.1.0.bps"
     },
     {
      "edition": "CONTENT",
@@ -47,15 +47,15 @@
       "md5": "51901a6e40661b3914aa333c802e24e8"
      },
      "target": {
-      "sha1": "da9240cb15c7d34e36e1495d84e9ecad1fd1535f",
-      "crc32": "210D11B3"
+      "sha1": "e7e024b846a26eac1ef38d120dd7e9d9f2813ee6",
+      "crc32": "85F21D20"
      },
      "patch": {
-      "size": 5164870,
-      "sha1": "c7857f3a687e55b3744c861f3a05044e1098b37e",
-      "sha256": "b7d8fa48e2ec7ff284d13b6eb33388e002fbcb4f7f5bb8552e2982395c50a3a9"
+      "size": 5165773,
+      "sha1": "5e297c1662afad5a5bb3d3807195800c541f10b9",
+      "sha256": "e69d63ae0f0adef2e760a97827df90684b08c3fa243f44c82e1639c371a8a428"
      },
-     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.362.1/DAEMONS.CONTENT.for.FireRed.Rev.1.bps"
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.363.1/DAEMONS.CONTENT.for.FireRed.Rev.1.bps"
     },
     {
      "edition": "CONTEXT",
@@ -70,15 +70,15 @@
       "md5": "612ca9473451fa42b51d1711031ed5f6"
      },
      "target": {
-      "sha1": "83f49f9ab3e042f082e989207045bfb0f39d466a",
-      "crc32": "153513A6"
+      "sha1": "98854a4b6215a7cfc7b6681654a26631b433fef2",
+      "crc32": "CF32FD9C"
      },
      "patch": {
-      "size": 5165483,
-      "sha1": "19e9bfdf47b57ccbab6f2f6901ac70b72d05dcb5",
-      "sha256": "929a54141df3f514a4b7fc899bee812b33af3906166ae07080ac1ebf380e6efc"
+      "size": 5166031,
+      "sha1": "e570d9fd0a8b04c5c41eaa16304485710062e898",
+      "sha256": "92beaa22b29bc26da48242054c73338dea31b3b76494b3cafefd028d00659c7c"
      },
-     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.362.1/DAEMONS.CONTEXT.for.LeafGreen.1.0.bps"
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.363.1/DAEMONS.CONTEXT.for.LeafGreen.1.0.bps"
     },
     {
      "edition": "CONTEXT",
@@ -93,15 +93,15 @@
       "md5": "9d33a02159e018d09073e700e1fd10fd"
      },
      "target": {
-      "sha1": "83f49f9ab3e042f082e989207045bfb0f39d466a",
-      "crc32": "153513A6"
+      "sha1": "98854a4b6215a7cfc7b6681654a26631b433fef2",
+      "crc32": "CF32FD9C"
      },
      "patch": {
-      "size": 5164917,
-      "sha1": "80d4f6c5fde5ea661779fe969b309bfdac96e37b",
-      "sha256": "3f462ca0f5a5ab5109515bb377324afbbfceca83b738a42ea666de5b7fe9986a"
+      "size": 5166422,
+      "sha1": "9527be64bc4ef3b4b67d95ad526f494cf0e123ab",
+      "sha256": "a7c4622d51a66d2f04e930a147cbc5224cc74f908225130f2350be29559a7929"
      },
-     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.362.1/DAEMONS.CONTEXT.for.LeafGreen.Rev.1.bps"
+     "url": "https://github.com/CodeMusic/DAEMONS/releases/download/v11.363.1/DAEMONS.CONTEXT.for.LeafGreen.Rev.1.bps"
     }
    ]
   },

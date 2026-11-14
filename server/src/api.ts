@@ -112,7 +112,7 @@ import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollama
 import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
 import { weatherNow, weatherToday } from "./context.js";
-import { consolidate, dayMaterial, memoryDue, readKept, RETRY_MIN } from "./memory.js";   // C-253
+import { consolidate, dayMaterial, gameDay, gameNow, memoryDue, readGame, readKept, RETRY_MIN, type GameNow } from "./memory.js";   // C-253
 import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
 import { comfyPaint, EASEL_HOST, imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
@@ -1000,8 +1000,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, f = selfFacts(ecfg, store, "", now);
       const dream = dreamsOf(store).find((d) => { const e = Date.parse(d.to); return e >= due.from.getTime() && e <= due.to.getTime() + 6 * 3600_000; });
       const painted = paintings().filter((p) => p.state === "done" && Date.parse(p.at) >= due.from.getTime() && Date.parse(p.at) < due.to.getTime()).map((p) => p.title);
+      let game: GameNow | null = null;                         // the save now, beside the last memory's (memory.game)
+      try { const bytes = hostOf(ecfg).save.read(); game = bytes ? gameNow(readProfile(bytes)) : null; } catch { /* no save */ }
       const material = dayMaterial(store, due.from, due.to, { nickname: f.nickname, feelings: f.feelings ? feelingsSaid(f.feelings) : null,
-        dream: dream?.text ?? null, paintings: painted, dayName: due.from.toLocaleDateString("en-CA", { weekday: "long" }) });
+        dream: dream?.text ?? null, paintings: painted, dayName: due.from.toLocaleDateString("en-CA", { weekday: "long" }),
+        game: gameDay(readGame(store.getSetting("memory.game")), game) });
       remembering = true;
       // the quick thinker: two short summaries need no long reasoning, and a long write is what a restart kills (the first,
       // thinking on, wrote 4468 tokens before the hub was deployed under it)
@@ -1011,6 +1014,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         .then((m) => {
           store.setSetting("self.yesterday", m.yesterday); store.setSetting("self.month", m.month);
           store.setSetting("self.kept", JSON.stringify(m.kept)); store.setSetting("self.memoryFor", due.day);
+          if (game) store.setSetting("memory.game", JSON.stringify(game));
           w.end("done");
         }, (e) => { memoryFailedAt = Date.now(); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); })
         .finally(() => { remembering = false; });

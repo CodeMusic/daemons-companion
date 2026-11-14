@@ -1,7 +1,7 @@
 // C-253: memory made at night -- yesterday, the month folded, the moments kept
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { consolidate, dayMaterial, keepMoments, memoryDue, readKept, readYesterday, KEPT_MOST, MONTH_ASK, YESTERDAY_ASK } from "../src/memory.js";
+import { consolidate, dayMaterial, gameDay, gameNow, keepMoments, memoryDue, readGame, readKept, readYesterday, KEPT_MOST, MONTH_ASK, YESTERDAY_ASK } from "../src/memory.js";
 import { selfOf } from "../src/self.js";
 
 describe("C-253: memory made at night", () => {
@@ -58,5 +58,32 @@ describe("C-253: memory made at night", () => {
     expect(t).toContain("Yesterday: You walked.");
     expect(t).toContain("Over the last month: Quiet days.");
     expect(t).toContain("Moments you keep: 2026-11-11: the first walk");
+  });
+});
+
+describe("C-253's rest: the game's day", () => {
+  const p = (o: Partial<{ marks: boolean[]; seen: number; bound: number; h: number; m: number; visited: string[]; place: string; clear: boolean }>) => ({
+    marks: o.marks ?? [true, true, false, false, false, false, false, false], index: { seen: o.seen ?? 20, bound: o.bound ?? 10 },
+    playTime: { hours: o.h ?? 10, minutes: o.m ?? 0 }, visited: o.visited ?? ["PALLET", "VIRIDIAN"], savedIn: { place: o.place ?? "VIRIDIAN" }, gameClear: o.clear ?? false });
+  it("says what moved in the save since the last memory, in plain words", () => {
+    const was = gameNow(p({})), now = gameNow(p({ marks: [true, true, true, false, false, false, false, false], seen: 24, bound: 12, h: 11, m: 30,
+                                                   visited: ["PALLET", "VIRIDIAN", "PEWTER"], place: "PEWTER" }));
+    const said = gameDay(was, now);
+    expect(said).toContain("1.5 hours played");
+    expect(said).toContain("a MARK won (3 of eight now)");
+    expect(said).toContain("first reached: PEWTER");
+    expect(said).toContain("2 daemons bound");
+    expect(said).toContain("last saved in PEWTER");
+    expect(readGame(JSON.stringify(now))).toEqual(now);
+  });
+  it("says nothing with no snapshot, or no play", () => {
+    expect(gameDay(null, gameNow(p({})))).toBe("");
+    expect(gameDay(gameNow(p({})), gameNow(p({ seen: 30 })))).toBe("");     // a save changed without play: not this day's
+    expect(gameDay(gameNow(p({})), gameNow(p({ m: 20 })))).toBe("In the game together: 20 minutes played.");
+  });
+  it("goes into the day's material", () => {
+    const s = new Store(":memory:");
+    const m = dayMaterial(s, new Date(2026, 10, 11, 5, 30), new Date(2026, 10, 12, 5, 30), { game: "In the game together: 20 minutes played." });
+    expect(m).toContain("20 minutes played");
   });
 });

@@ -29,7 +29,35 @@ export function memoryDue(madeFor: string | null, now: Date): { day: string; fro
   return madeFor === day ? null : { day, from, to };
 }
 
-export type Extra = { nickname?: string; feelings?: string | null; dream?: string | null; paintings?: string[]; dayName?: string | null };
+// 2026-11-14 (C-253's rest): THE GAME'S DAY -- the save as it stood at the last memory, kept (memory.game), and what moved
+// since in plain words: MARKS won, places first reached, daemons seen and bound, hours played. Nothing, with no save or
+// no snapshot to compare (the first day only takes one).
+export type GameNow = { marks: number; seen: number; bound: number; minutes: number; visited: string[]; place: string | null; clear: boolean };
+export function gameNow(p: { marks: boolean[]; index: { seen: number; bound: number }; playTime: { hours: number; minutes: number };
+                             visited?: string[]; savedIn: { place: string } | null; gameClear: boolean }): GameNow {
+  return { marks: p.marks.filter(Boolean).length, seen: p.index.seen, bound: p.index.bound, minutes: p.playTime.hours * 60 + p.playTime.minutes,
+           visited: [...(p.visited ?? [])], place: p.savedIn?.place ?? null, clear: p.gameClear };
+}
+export function readGame(raw: string | null | undefined): GameNow | null {
+  try { const g = JSON.parse(raw ?? "null"); return g && typeof g.marks === "number" && Array.isArray(g.visited) ? g as GameNow : null; } catch { return null; }
+}
+const n = (k: number, one: string, many: string) => k === 1 ? one : `${k} ${many}`;
+export function gameDay(was: GameNow | null, now: GameNow | null): string {
+  if (!was || !now) return "";
+  const bits: string[] = [], played = now.minutes - was.minutes;
+  if (played <= 0) return "";
+  bits.push(played >= 60 ? `${Math.round(played / 6) / 10} hours played` : `${played} minutes played`);
+  if (now.marks > was.marks) bits.push(`${n(now.marks - was.marks, "a MARK", "MARKS")} won (${now.marks} of eight now)`);
+  const fresh = now.visited.filter((v) => !was.visited.includes(v));
+  if (fresh.length) bits.push(`first reached: ${fresh.slice(0, 4).join(", ")}`);
+  if (now.bound > was.bound) bits.push(`${n(now.bound - was.bound, "a daemon", "daemons")} bound`);
+  else if (now.seen > was.seen) bits.push(`${n(now.seen - was.seen, "a daemon", "daemons")} seen for the first time`);
+  if (now.clear && !was.clear) bits.push("the game finished");
+  if (now.place && now.place !== was.place) bits.push(`last saved in ${now.place}`);
+  return `In the game together: ${bits.join("; ")}.`;
+}
+
+export type Extra = { nickname?: string; feelings?: string | null; dream?: string | null; paintings?: string[]; dayName?: string | null; game?: string };
 
 // What the day left behind, in words (the mind's material; never shown)
 export function dayMaterial(store: Store, from: Date, to: Date, extra: Extra = {}): string {
@@ -42,6 +70,7 @@ export function dayMaterial(store: Store, from: Date, to: Date, extra: Extra = {
   const lines = [
     extra.dayName ? `The day was a ${extra.dayName}.` : "",
     `Together you had: ${counts.length ? counts.join(", ") : "a quiet day, little done together"}.`,
+    extra.game ?? "",
     steps.length ? `Steps done toward goals: ${steps.map((s) => `"${s.step}" (for ${s.goal})`).join("; ")}.` : "",
     goals.length ? `Goals finished: ${goals.map((g) => `"${g.title}"`).join(", ")}.` : "",
     extra.paintings?.length ? `You painted: ${extra.paintings.map((p) => `"${p}"`).join(", ")}.` : "",

@@ -1,4 +1,4 @@
-// C-334 (the user, 2026-11-11: "generitive sleep sounds ... you fall asleep with him, they fade out"; by multiple choice:
+// C-334 (the user, 2026-11-11: "generitive sleep sounds" -- fading as you both drift to sleep; by multiple choice:
 // thirty minutes, fading over the last ten): one night's sleep sounds -- the daemon's piece looped, held for twenty
 // minutes, then faded to nothing over ten and stopped -- and, when DRIFT DOWN is on and headphones are in, the binaural
 // layer under it (sound/binaural.ts), drifting alpha, theta, delta. One session at a time, kept as long as the app runs:

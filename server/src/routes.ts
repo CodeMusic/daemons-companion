@@ -43,7 +43,7 @@ import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";
 import { checkNight, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./evolve.js";
-import { WAKES } from "./life.js";   // C-293: the cares that wake it, one list
+import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
 import { openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches
 import { thriveOf } from "./thrive.js";   // C-207
 import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
@@ -412,16 +412,23 @@ export function takeFix(store: Store, detail: string, deviceId: string, now = ne
 // in the evening or the night (SLEEP, on any device) and then woken or tended has had a night -- from the SLEEP to that
 // moment, tucked in, its stirs as the phone counted them (C-284, `stirs` with the care) -- unless a watch told that night
 // already. Kept as the watch's are (takeNight); api.ts asks the talk AI for its telling. A nap in the day is no night.
-export function appNight(h: Host, store: Store, deviceId: string, now: Date, stirs: unknown): Dream | null {
-  const since = store.interactionsSince(new Date(now.getTime() - 16 * 3600000)), at = (e: { at: string }) => Date.parse(e.at);
+// 2026-11-14: the night ends when it was woken or when it woke by itself (noon, life.ts wakesBy), whichever came first,
+// and at most NIGHT_MOST after the SLEEP -- a daemon put to bed at seven and left till one was a seventeen-hour night,
+// which checkNight refuses, and its dream was lost. `byItself` (the hub's own round, api.ts): only once it has woken.
+export const NIGHT_MOST = 16 * 3600000;
+export function appNight(h: Host, store: Store, deviceId: string, now: Date, stirs: unknown, byItself = false): Dream | null {
+  const since = store.interactionsSince(new Date(now.getTime() - 40 * 3600000)), at = (e: { at: string }) => Date.parse(e.at);
   const sleep = [...since].reverse().find((e) => e.kind === "sleep");
   if (!sleep) return null;
   const h0 = new Date(sleep.at).getHours();
   if (h0 < 18 && h0 >= 6) return null;                                       // a nap
   if (since.some((e) => at(e) > at(sleep) && WAKES.includes(e.kind))) return null;   // woken already
   if (dreamsOf(store).some((d) => Date.parse(d.to) > at(sleep))) return null;    // the watch told this night
+  const woke = wakesBy(new Date(sleep.at)).getTime();
+  if (byItself && now.getTime() < woke) return null;                          // still asleep
+  const end = Math.min(now.getTime(), woke, at(sleep) + NIGHT_MOST);
   const s = Number.isInteger(stirs) && (stirs as number) >= 0 ? (stirs as number) : 0;
-  const r = takeNight(h, store, `${Math.floor(at(sleep) / 1000)} ${Math.floor(now.getTime() / 1000)} ${s} 1`, deviceId);
+  const r = takeNight(h, store, `${Math.floor(at(sleep) / 1000)} ${Math.floor(end / 1000)} ${s} 1`, deviceId);
   return typeof r === "string" ? null : r.dream;
 }
 // C-200: a night ended on the watch -- "night <from> <to> <stirs> <tucked>" (seconds since 1970), so it travels as every

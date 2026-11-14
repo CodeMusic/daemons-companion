@@ -90,3 +90,25 @@ describe("C-293: he dreams as himself", () => {
     expect(dreamsOf(store)[0]).toMatchObject({ stirs: 2 });
   });
 });
+
+describe("2026-11-14: a night it woke from by itself", () => {
+  it("ends at noon, at most sixteen hours, when the first tap comes late", () => {
+    const store = new Store(":memory:");
+    store.logInteraction("sleep", null, at("2026-11-13T19:00:00"));
+    const d = appNight(h, store, "phone", at("2026-11-14T15:00:00"), 0)!;   // put to bed at seven, fed at three
+    expect(d).not.toBeNull();
+    expect(d.hours).toBe(16);                                                 // not seventeen (refused), not twenty
+    const late = new Store(":memory:");
+    late.logInteraction("sleep", null, at("2026-11-13T22:00:00"));
+    expect(appNight(h, late, "phone", at("2026-11-14T16:30:00"), 0)!.hours).toBe(14);   // till noon, though tapped at half four
+  });
+  it("is closed by the hub's own round only once it has woken, and once", () => {
+    const store = new Store(":memory:");
+    store.logInteraction("sleep", null, at("2026-11-13T22:00:00"));
+    expect(appNight(h, store, "", at("2026-11-14T11:50:00"), 0, true)).toBeNull();   // still asleep
+    const d = appNight(h, store, "", at("2026-11-14T12:05:00"), 0, true)!;
+    expect(d).toMatchObject({ hours: 14, by: "words" });
+    expect(appNight(h, store, "", at("2026-11-14T12:15:00"), 0, true)).toBeNull();   // told already
+    expect(appNight(h, store, "phone", at("2026-11-14T13:00:00"), 0)).toBeNull();     // and the first tap finds it told
+  });
+});

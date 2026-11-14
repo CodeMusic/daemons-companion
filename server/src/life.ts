@@ -24,6 +24,13 @@ import { care, moodCost, type Care } from "./care.js";   // C-266: how it has be
 
 export const MEALS: [number, number][] = [[6, 10], [11, 14], [17, 21]];
 const TOGETHER = ["feed", "water", "train", "routine", "step", "tick", "met", "walk", "sleep"];   // met: nearby (C-15); walk: the day's walking goal (C-48)
+// When a daemon put to bed at this moment wakes by itself: noon after a night's sleep, an hour and a half after a nap
+export function wakesBy(slept: Date): Date {
+  const h = slept.getHours(), until = new Date(slept);
+  if (h >= DUSK || h < MORNING) { if (h >= MORNING) until.setDate(until.getDate() + 1); until.setHours(SLEEPS_UNTIL, 0, 0, 0); }
+  else until.setTime(slept.getTime() + NAP_MS);
+  return until;
+}
 export const DUSK = 18, DAWN = 5;   // C-301: the watches of the day (context.ts watchOf), where a night's sleep and the widget's key turn
 const NIGHT_FROM = 20, MORNING = 6, BEDTIME = 21, NAP_MS = 90 * 60000, SLEEPS_UNTIL = 12;   // C-293: a night's sleep waits to be woken, until noon
 export const WAKES = ["feed", "water", "train", "routine", "step", "tick", "walk", "wake"];   // tending it wakes it -- or WAKE (C-118); a meeting nearby does not
@@ -74,9 +81,7 @@ export function life(events: Interaction[], now = new Date()): Life {
   const woken = lastSleep !== null && events.some((e) => WAKES.includes(e.kind) && at(e) > at(lastSleep));
   let asleep = false, wakesAt: Date | null = null;
   if (lastSleep && !woken) {
-    const slept = new Date(lastSleep.at), h = slept.getHours(), until = new Date(slept);
-    if (h >= DUSK || h < MORNING) { if (h >= MORNING) until.setDate(until.getDate() + 1); until.setHours(SLEEPS_UNTIL, 0, 0, 0); }
-    else until.setTime(slept.getTime() + NAP_MS);
+    const until = wakesBy(new Date(lastSleep.at));
     asleep = now.getTime() < until.getTime();
     if (asleep) wakesAt = until;
   }

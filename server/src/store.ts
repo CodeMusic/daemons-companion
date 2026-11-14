@@ -28,7 +28,10 @@ export class Store {
         text TEXT NOT NULL, position INTEGER NOT NULL, done TEXT);
       CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS interactions (id INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, detail TEXT);
-      CREATE TABLE IF NOT EXISTS phones (token TEXT PRIMARY KEY, name TEXT NOT NULL, paired TEXT NOT NULL, seen TEXT);`);
+      CREATE TABLE IF NOT EXISTS phones (token TEXT PRIMARY KEY, name TEXT NOT NULL, paired TEXT NOT NULL, seen TEXT);
+      -- the daemon's log is read by when (its life, its feelings, its spirits): by when it is found, not by every row
+      CREATE INDEX IF NOT EXISTS interactions_at ON interactions (at);
+      CREATE INDEX IF NOT EXISTS interactions_kind_at ON interactions (kind, at);`);
   }
 
   // C-22: the save the app is married to -- the game it carries daemons for. Unset until the first SYNC.
@@ -45,11 +48,21 @@ export class Store {
   // Each use is kept; the daemon's life (C-13, still to build) reads from here.
   logInteraction(kind: string, detail: string | null, at = new Date()) {
     this.db.prepare("INSERT INTO interactions (at, kind, detail) VALUES (?, ?, ?)").run(at.toISOString(), kind, detail);
+    this.recent = null;
   }
 
   // C-13: everything since a moment, oldest first -- the daemon's life reads two weeks of it
+  // One answer (THE MIND's portal, a talk's self) reads its life, feelings and spirits from the log a dozen times over,
+  // each a window back from now: on the hub's one slow core that was 13 s (2026-11-14). So the last five weeks are read
+  // once and kept for two seconds, or until the log is written, and every window inside them is cut from that.
+  private recent: { from: string; made: number; rows: { at: string; kind: string; detail: string | null }[] } | null = null;
   interactionsSince(since: Date): { at: string; kind: string; detail: string | null }[] {
-    return this.db.prepare("SELECT at, kind, detail FROM interactions WHERE at >= ? ORDER BY id").all(since.toISOString()) as any;
+    const s = since.toISOString(), now = Date.now();
+    if (this.recent && now - this.recent.made < 2000 && this.recent.from <= s) return this.recent.rows.filter((r) => r.at >= s);
+    const wide = new Date(Math.min(since.getTime(), now - 35 * 86400000)).toISOString();
+    const rows = this.db.prepare("SELECT at, kind, detail FROM interactions WHERE at >= ? ORDER BY id").all(wide) as { at: string; kind: string; detail: string | null }[];
+    this.recent = { from: wide, made: now, rows };
+    return rows.filter((r) => r.at >= s);
   }
 
   // C-45: the experience a daemon gained on the device and not yet written into the save (by its personality)
@@ -173,6 +186,7 @@ export class Store {
     // and what it gave the daemon goes back with it: its meal (C-44) and its experience (C-47), if not yet written home
     this.db.prepare("DELETE FROM interactions WHERE (kind = 'step' AND detail IN (?, ?)) OR (kind = 'exp' AND detail LIKE ?)")
       .run(`site ${id}`, `device ${id}`, `% step ${id}`);
+    this.recent = null;
     return true;
   }
 

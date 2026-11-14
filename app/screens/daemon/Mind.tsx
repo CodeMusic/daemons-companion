@@ -35,7 +35,7 @@ export function MindScreen() {
   const fresh = useFresh();   // C-344: a fresher answer read again in place
   useEffect(() => { api<Mind>("/api/mind/portal").then(setM).catch((e) => setError(e.message)); }, [fresh]);
   if (error) return <Small color="$color8">{/404|not found/i.test(error) ? "THE MIND opens when the app is paired with a companion.  DRAFT" : error}</Small>;
-  if (!m) return null;
+  if (!m) return <Small color="$color8">{"Opening its mind…  DRAFT"}</Small>;   // never a blank screen while the hub thinks
   if (!m.daemon) return <Card><Small>{"No daemon is carried. Send one from the game, and its mind opens here.  DRAFT"}</Small></Card>;
   return (
     <YStack gap={12}>

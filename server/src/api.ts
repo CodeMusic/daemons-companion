@@ -34,7 +34,7 @@
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
@@ -77,7 +77,8 @@ import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type S
 import { readProfile } from "./save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
-import { carrierOf, DRIFT, exportImedx, exportMp3, exportsMade, makeExports, type ExportName } from "./sleepexport.js";   // C-358
+import { carrierOf, DRIFT, exportImedx, exportMp3, exportsMade, makeExports, useMesh, type ExportName } from "./sleepexport.js";   // C-358
+import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
 import { beatsSaid, paintingCreation, sleepCreation, type Creation } from "./creations.js";   // C-358
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
@@ -800,6 +801,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll);
   // C-319: THE MIND's ledger of work (ai/tasks.ts), and which mind a write-up goes to first -- as house.write tries them
   const TASKS = new Tasks((k) => store.getSetting(k), (k, v) => store.setSetting(k, v));
+  // C-360: THE MESH for processing -- the hub and every node that dials in (procmesh.ts); each job a task in the ledger,
+  // its node the mind it ran on. Made where a test makes a server too, but its speed measured only once (it takes ~0.3 s)
+  const MESH = new ProcMesh({
+    open: (title, mind) => TASKS.open({ kind: "processing", title, state: "thinking", mind: mind || undefined }).id,
+    hop: (task, mind) => { TASKS.hop(task, mind); },
+    end: (task, ok, error) => { TASKS.update(task, ok ? { state: "done" } : { state: "failed", error }); },
+  }, { speed: process.env.VITEST ? 1 : undefined });
+  useMesh((args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o));
   const writerNow = (): string | null => tiinyNow() ? "the Tiiny" : endpointsNowAll(false)[0]?.e.name || (house.any ? "the house's module" : null);
   // C-319 next: every write-up the hub does is a task -- stoppable for real (its AbortController, held here while it
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
@@ -1842,6 +1851,40 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-358: COMMUNITY -- what homes shared on THE COMMONS, through this hub's link to it (a home linked and approved is
       // the "account" for now). GET ?kind=: theirs, each file fetched through here. POST share {uid}: one of this home's
       // creations, its files with it; POST unshare {uid}. GET /api/community/file/<n>/<name>: a shared file.
+      // C-360: THE MESH -- a node (a paired key: hub/mesh.sh install) asks for work, fetches its inputs, sends its outputs
+      // back and says how it went; GET /api/mesh: every node, its potential and score now, and the jobs going
+      if (path === "/api/mesh" || path.startsWith("/api/mesh/")) {
+        if (req.method === "GET" && path === "/api/mesh")
+          return send(res, 200, { nodes: MESH.view(), jobs: [...MESH.jobs.values()].map((j) => ({ id: j.id, title: j.title, state: j.state,
+                                   given: j.given.map((g) => g.node), winner: j.winner ?? null, asked: new Date(j.asked).toISOString() })) });
+        if (!phone) return send(res, 403, { error: "a node of the mesh needs a paired key (hub/mesh.sh install)" });   // DRAFT
+        if (req.method === "POST" && path === "/api/mesh/take") {
+          const b = await body(req), n = MESH.heard(b as { id: string });
+          const j = MESH.take(n.id);
+          return send(res, 200, { job: j ? { id: j.id, kind: j.kind, title: j.title, args: j.args,
+                                             inputs: Object.fromEntries(Object.keys(j.inputs).map((k) => [k, true])),
+                                             outputs: Object.fromEntries(Object.keys(j.outputs).map((k) => [k, true])) } : null });
+        }
+        if (req.method === "POST" && path === "/api/mesh/done") {
+          const b = await body(req);
+          return send(res, MESH.done(String(b.id ?? ""), String(b.node ?? ""), b.ok === true, typeof b.error === "string" ? b.error : undefined) ? 200 : 404, { ok: true });
+        }
+        const io = path.match(/^\/api\/mesh\/(in|out)\/([0-9a-f]{24})\/([A-Za-z0-9._-]{1,40})$/);
+        if (io && io[1] === "in" && req.method === "GET") {
+          const f = MESH.inputFile(io[2], io[3]);
+          if (!f) return send(res, 404, { error: "no such input" });
+          res.writeHead(200, { "content-type": "application/octet-stream", "content-length": statSync(f).size });
+          return createReadStream(f).pipe(res);
+        }
+        if (io && io[1] === "out" && req.method === "PUT") {
+          const part = MESH.outputPart(io[2], String(url.searchParams.get("node") ?? ""), io[3]);
+          if (!part) return send(res, 404, { error: "no such output" });
+          const { pipeline } = await import("node:stream/promises");
+          await pipeline(req, createWriteStream(part));
+          return send(res, 200, { ok: true });
+        }
+        return send(res, 404, { error: "not found" });
+      }
       if (path === "/api/community" || path.startsWith("/api/community/")) {
         const link = commonsOf(store);
         if (!link) return req.method === "GET" && path === "/api/community"

@@ -12,10 +12,9 @@
 //                                   file brought back is known as the same one.
 //
 // Every word DRAFT.
-import { execFile } from "node:child_process";
 import { existsSync, readFileSync, renameSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { FOUND_FFMPEG } from "./ai/voice.js";
+import { argvFor, runFfmpeg } from "./procmesh.js";
 
 export const SESSION_S = 30 * 60, FADE_S = 10 * 60;
 export const DRIFT = [{ at: 0, beat: 10, word: "ALPHA" }, { at: 600, beat: 6, word: "THETA" }, { at: 1200, beat: 2, word: "DELTA" }] as const;
@@ -64,10 +63,14 @@ export function driftScenes(carrierHz: number) {
   return scenes;
 }
 
-// low priority (the hub is a small board, and it is answering everyone meanwhile); a long piece may take minutes there
-const run = (args: string[]) => new Promise<void>((done, fail) =>
-  execFile("nice", ["-n", "15", FOUND_FFMPEG ?? "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", ...args], { timeout: 40 * 60000 },
-           (e) => (e ? fail(e) : done())));
+// C-360: each ffmpeg run goes to THE MESH (procmesh.ts) -- the node with the most potential free now, roverbyteseer before
+// the hub's one small core -- with its files named @in:<name> / @out:<name>; without a mesh (tests), here, gently
+export type FF = (args: string[], inputs: Record<string, string>, outputs: Record<string, string>, o: { title: string; expectMs?: number }) => Promise<void>;
+let ff: FF = (args, inputs, outputs) => runFfmpeg(argvFor(args, {
+  ...Object.fromEntries(Object.entries(inputs).map(([k, v]) => [`in:${k}`, v])),
+  ...Object.fromEntries(Object.entries(outputs).map(([k, v]) => [`out:${k}`, v])) }));
+export const useMesh = (f: FF) => { ff = f; };
+export const ffmpeg: FF = (...a) => ff(...a);
 // made once into `name` beside the piece, written aside and renamed; one at a time a file
 const making = new Map<string, Promise<string>>();
 function once(folder: string, name: string, make: (part: string) => Promise<void>): Promise<string> {
@@ -91,8 +94,9 @@ export function exportMp3(folder: string, keyscale: string, drift: boolean): Pro
   return once(folder, drift ? "export-drift.mp3" : "export.mp3", async (part) => {
     const fade = `afade=t=out:st=${SESSION_S - FADE_S}:d=${FADE_S}`;
     if (!drift) {
-      await run(["-stream_loop", "-1", "-i", src, "-t", String(SESSION_S), "-af", fade, "-ac", "2", "-ar", "44100",
-                 "-c:a", "libmp3lame", "-b:a", "128k", "-compression_level", "7", "-f", "mp3", part]);
+      await ffmpeg(["-stream_loop", "-1", "-i", "@in:piece", "-t", String(SESSION_S), "-af", fade, "-ac", "2", "-ar", "44100",
+                    "-c:a", "libmp3lame", "-b:a", "128k", "-compression_level", "7", "-f", "mp3", "@out:mp3"],
+                   { piece: src }, { mp3: part }, { title: "the night as an MP3", expectMs: 150_000 });
       return;
     }
     // the left ear the carrier for the whole night; the right, carrier + beat, a stage at a time (plain sine sources:
@@ -101,25 +105,28 @@ export function exportMp3(folder: string, keyscale: string, drift: boolean): Pro
     const sine = (f: number, d: number) => ["-f", "lavfi", "-i", `sine=frequency=${f}:duration=${d}:sample_rate=44100`];
     const stages = DRIFT.map((d, i) => ({ beat: d.beat, d: (i + 1 < DRIFT.length ? DRIFT[i + 1].at : SESSION_S) - d.at }));
     const right = stages.map((_, i) => `[${i + 2}:a]`).join("");
-    await run(["-stream_loop", "-1", "-i", src, ...sine(c, SESSION_S), ...stages.flatMap((st) => sine(c + st.beat, st.d)),
+    await ffmpeg(["-stream_loop", "-1", "-i", "@in:piece", ...sine(c, SESSION_S), ...stages.flatMap((st) => sine(c + st.beat, st.d)),
                "-filter_complex",
                `[0:a]atrim=0:${SESSION_S},aformat=sample_rates=44100:channel_layouts=stereo[m];` +
                `${right}concat=n=${stages.length}:v=0:a=1[r];` +
                `[1:a][r]join=inputs=2:channel_layout=stereo,volume=${vol}[b];` +
                `[m][b]amix=inputs=2:duration=first:normalize=0,${fade}[o]`,
-               "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "128k", "-compression_level", "7", "-f", "mp3", part]);
+               "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "128k", "-compression_level", "7", "-f", "mp3", "@out:mp3"],
+                 { piece: src }, { mp3: part }, { title: "the night as an MP3, with DRIFT DOWN", expectMs: 180_000 });
   });
 }
 
 // The piece for PulseEntrain's music: looped as long as fits its size, ending with a soft fade
 function peMusic(folder: string): Promise<string> {
   const seconds = Math.floor((PE_MUSIC_BYTES * 8) / (PE_MUSIC_KBPS * 1000));
-  return once(folder, "pe-music.mp3", (part) => run(["-stream_loop", "-1", "-i", join(folder, "phone.m4a"), "-t", String(seconds),
-    "-af", `afade=t=out:st=${seconds - 15}:d=15`, "-ac", "2", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", `${PE_MUSIC_KBPS}k`, "-f", "mp3", part]));
+  return once(folder, "pe-music.mp3", (part) => ffmpeg(["-stream_loop", "-1", "-i", "@in:piece", "-t", String(seconds),
+    "-af", `afade=t=out:st=${seconds - 15}:d=15`, "-ac", "2", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", `${PE_MUSIC_KBPS}k`, "-f", "mp3", "@out:mp3"],
+    { piece: join(folder, "phone.m4a") }, { mp3: part }, { title: "the piece for PulseEntrain", expectMs: 40_000 }));
 }
 function peCover(folder: string): Promise<string | null> {
   if (!existsSync(join(folder, "cover.png"))) return Promise.resolve(null);
-  return once(folder, "pe-cover.jpg", (part) => run(["-i", join(folder, "cover.png"), "-vf", "scale=512:-2", "-q:v", "4", "-f", "mjpeg", part]));
+  return once(folder, "pe-cover.jpg", (part) => ffmpeg(["-i", "@in:cover", "-vf", "scale=512:-2", "-q:v", "4", "-f", "mjpeg", "@out:jpg"],
+    { cover: join(folder, "cover.png") }, { jpg: part }, { title: "the cover for PulseEntrain", expectMs: 3_000 }));
 }
 
 // whether each export is made yet -- and, asked, start the ones that are not (one piece's at a time, behind any other)

@@ -10,11 +10,10 @@
 // A piece is named by its recipe's KEY: the same context finds the piece already made; a changed one makes a new piece.
 // At most KEEP pieces a daemon are kept, the oldest let go. One piece is made at a time (ACE-Step has one queue).
 // Ids are random (a file is fetched by an id nobody can guess, as a voice is: api.ts DEVICE_DOOR).
-import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { FOUND_FFMPEG } from "./ai/voice.js";
+import { ffmpeg } from "./sleepexport.js";   // C-360: through THE MESH
 import type { SleepRecipe } from "./sleepsound.js";
 
 export type SleepTrack = {
@@ -35,9 +34,6 @@ export type SleepDoor = { base: string; key: string };   // roverbyteseer's slee
 const KEEP = 40;   // C-358: the hub keeps every piece (the user: "stored and served from the hub"); forty a daemon at most
 const WAIT_MS = 30 * 60000;
 
-const run = (args: string[]) => new Promise<void>((done, fail) =>
-  execFile(FOUND_FFMPEG ?? "ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", ...args], { timeout: 10 * 60000 },
-           (e) => (e ? fail(e) : done())));
 
 export class SleepTracks {
   private tracks: SleepTrack[] = [];
@@ -157,9 +153,12 @@ export class SleepTracks {
       renameSync(`${src}.part`, src);
       this.save();
     }
-    await run(["-i", src, "-c:a", "aac", "-b:a", "96k", "-ar", "44100", "-movflags", "+faststart", join(out, "phone.m4a")]);
-    await run(["-i", src, "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", join(out, "watch.wav")]);
-    await run(["-i", src, "-ac", "1", "-ar", "16000", "-c:a", "adpcm_ima_wav", join(out, "watch-adpcm.wav")]);
+    // C-360: the three made on THE MESH (one job, so the piece travels once), wherever has the most potential free now
+    await ffmpeg(["-i", "@in:source", "-c:a", "aac", "-b:a", "96k", "-ar", "44100", "-movflags", "+faststart", "-f", "mp4", "@out:phone",
+                  "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", "-f", "wav", "@out:watch",
+                  "-ac", "1", "-ar", "16000", "-c:a", "adpcm_ima_wav", "-f", "wav", "@out:adpcm"],
+                 { source: src }, { phone: join(out, "phone.m4a"), watch: join(out, "watch.wav"), adpcm: join(out, "watch-adpcm.wav") },
+                 { title: `${t.nickname || "a daemon"}'s sleep sounds, for the phone and the watch`, expectMs: 60_000 });
     await fetch(`${door.base}/v1/sleep/file/${job}`, { method: "DELETE", headers: h }).catch(() => {});   // nothing kept there
     rmSync(src, { force: true });
     const size = (f: string) => statSync(join(out, f)).size;

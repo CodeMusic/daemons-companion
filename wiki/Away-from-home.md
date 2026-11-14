@@ -55,6 +55,10 @@ everything, and pairing is refused.
   answer is fetched once and never kept on the phone.
 - **Trading is not reached through the relay.** THE EXCHANGE answers only the home network and the tailnet
   ([Trading](Trading)).
+- **THE ENGINE ROOM away opens over the tailnet** (C-366). It is never reached through the relay either, so the app
+  opens it inside itself at the hub's home address when that answers, and otherwise at the hub's name on your tailnet
+  (the hub says it, and the phone keeps it). Turn on Tailscale on the phone first. It needs no pairing: the app hands
+  the page the phone's own key.
 - **A board away** goes out through the paired phone, or on a Wi-Fi it knows asks the relay itself with its own key
   (given only down its cable at home -- so link each board by cable once after the relay is set). Talking and read
   aloud on a board need home or the phone: the relay carries words, not a recording or a voice.

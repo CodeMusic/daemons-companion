@@ -83,10 +83,11 @@ function Spectrum({ size, beat, colour }: { size: number; beat: number; colour: 
     }, 90);
     return () => clearInterval(t);
   }, [beat]);
-  const w = (size * 0.7) / BANDS;
+  // mirrored about the record's hole: the lowest sounds in the middle, the highest at both edges
+  const shown = [...bands.slice().reverse(), ...bands], w = (size * 0.74) / shown.length;
   return (
     <XStack width={size} height={size} alignItems="center" justifyContent="center" gap={1}>
-      {bands.map((v, i) => <View key={i} style={{ width: w - 1, height: Math.max(3, v * size * 0.62), borderRadius: 2, backgroundColor: colour, opacity: 0.55 + v * 0.45 }} />)}
+      {shown.map((v, i) => <View key={i} style={{ width: w - 1, height: Math.max(3, v * size * 0.62), borderRadius: 2, backgroundColor: colour, opacity: 0.55 + v * 0.45 }} />)}
     </XStack>
   );
 }

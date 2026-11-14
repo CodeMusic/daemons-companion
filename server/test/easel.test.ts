@@ -50,9 +50,13 @@ describe("how a daemon paints", () => {
       if (u.endsWith("/prompt")) return new Response(JSON.stringify({ prompt_id: "p1" }));
       if (u.includes("/history/")) return new Response(JSON.stringify(++looks < 2 ? {} : { p1: { outputs: { "15": { images: [{ filename: "a.png", subfolder: "", type: "output" }] } } } }));
       if (u.includes("/view?")) return new Response(new Uint8Array([137, 80, 78, 71]));
+      if (u.endsWith("/queue")) return new Response(JSON.stringify({ queue_running: [], queue_pending: [] }));
+      if (u.endsWith("/free")) { freed++; return new Response("{}"); }
       return new Response("", { status: 404 });
     }) as typeof fetch;
+    let freed = 0;
     expect([...await comfyPaint("http://easel", "a field", 1, f, undefined, 1)]).toEqual([137, 80, 78, 71]);
+    expect(freed).toBe(1);                                             // C-360: FLUX let go once it has painted
     const broken = (async (u: string) => u.endsWith("/prompt") ? new Response(JSON.stringify({ prompt_id: "p" }))
       : new Response(JSON.stringify({ p: { status: { status_str: "error" } } }))) as typeof fetch;
     await expect(comfyPaint("http://easel", "x", 1, broken, undefined, 1)).rejects.toThrow("could not paint");

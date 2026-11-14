@@ -161,7 +161,15 @@ export async function comfyPaint(host: string, prompt: string, seed: number, f: 
       const q = new URLSearchParams({ filename: img.filename, subfolder: img.subfolder ?? "", type: img.type ?? "output" });
       const png = await f(`${base}/view?${q}`, { signal });
       if (!png.ok) throw new Error("the painting could not be fetched");
-      return new Uint8Array(await png.arrayBuffer());
+      const bytes = new Uint8Array(await png.arrayBuffer());
+      // C-360: the model let go once it has painted -- ComfyUI otherwise keeps FLUX (~20 GB) in memory beside ACE-Step,
+      // and roverbyteseer's 32 GB and its swap filled until it restarted (2026-11-14). Only when nothing else waits.
+      try {
+        const q2 = (await (await f(`${base}/queue`)).json()) as { queue_running?: unknown[]; queue_pending?: unknown[] };
+        if (!q2.queue_running?.length && !q2.queue_pending?.length)
+          await f(`${base}/free`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ unload_models: true, free_memory: true }) });
+      } catch { /* it lets go when it needs to */ }
+      return bytes;
     }
     await new Promise((r) => setTimeout(r, wait));
   }

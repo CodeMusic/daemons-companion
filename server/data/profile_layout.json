@@ -214,7 +214,8 @@
    "something to the north.",
    "something to the south.",
    "something to the east.",
-   "something to the west."
+   "something to the west.",
+   "the room is thinking one thought."
   ],
   "day_shift": 12,
   "day_mask": 7,

@@ -89,6 +89,9 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     if (t) minds.push({ name: "the Tiiny", power: MIND_POWER.tiiny, ask: () => job?.quick
       ? tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 90_000, maxTokens, false, false, job)
       : tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job) });
+    // C-360: a write-up's big thinker may be away (the Tiiny answered 404 for it, 2026-11-14) -- its quick one is a mind too
+    if (t && !job?.quick && t.quick && t.quick !== t.model)
+      minds.push({ name: "the Tiiny (quick)", power: MIND_POWER.tiiny - 5, ask: () => tiinyChat(t.at, t.quick!, system, [], user, fetch, 120_000, maxTokens, false, false, job) });
     for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
       minds.push({ name: n.e.name, power: MIND_POWER.endpoint, ask: () => chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job) });
     if (system.length + user.length <= PHONE_WRITE_MOST)     // a phone's on-device model holds about this much

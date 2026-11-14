@@ -1,6 +1,7 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl } from "../src/ai/tiiny.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST } from "../src/ai/tiiny.js";
+import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/ai/voice.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;
@@ -130,5 +131,19 @@ describe("the self", () => {
     expect(short).not.toContain("TRAINER");
     expect(selfOf(f, "full")).toContain("Over the last month: A quiet month.");
     expect(selfOf(f, "full")).toContain("Moments you keep: the first walk");
+  });
+});
+
+describe("C-323's longer pieces", () => {
+  it("the Tiiny says a long piece whole, and a whole piece is cut for it in longer parts", async () => {
+    let sent = "";
+    const f = (async (_u: string, o: { body: string }) => { sent = JSON.parse(o.body).input; return new Response(new Uint8Array([1, 2, 3])); }) as unknown as typeof fetch;
+    const long = "The sea was dark and the moon lay on it. ".repeat(25);           // about a thousand characters
+    await tiinySpeak(at, long, "", f);
+    expect(sent.length).toBeGreaterThan(600);
+    expect(sent.length).toBeLessThanOrEqual(TIINY_SAY_MOST);
+    expect(TIINY_PIECE_MOST).toBeLessThanOrEqual(TIINY_SAY_MOST);
+    expect(voicePieces(long, TIINY_PIECE_MOST)).toHaveLength(1);
+    expect(voicePieces(long, PIECE_MOST).length).toBeGreaterThan(1);
   });
 });

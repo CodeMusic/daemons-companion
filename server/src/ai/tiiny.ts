@@ -104,13 +104,18 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
 }
 
 // A line in a daemon's voice: the TTS model, its speaker and an instruction (C-251's recipe). null without a TTS model.
+// C-323's longer pieces (2026-11-14): the Tiiny says up to TIINY_SAY_MOST characters in one breath (873 measured whole in
+// 45-66 s, 2026-11-10), so a long piece is one voice, not several that each sound a little different; the time allowed
+// grows with the words, a tenth of a second a character, never under `ms`
+export const TIINY_SAY_MOST = 1200;
 export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f: typeof fetch = fetch, ms = 30_000):
     Promise<{ audio: Uint8Array; mime: string } | null> {
   if (!at.tts) return null;
+  const input = sayable(text).slice(0, TIINY_SAY_MOST);
   try {
-    return await timed(ms, async (signal) => {
+    return await timed(Math.max(ms, input.length * 100), async (signal) => {
       const r = await f(`${at.url}/audio/speech`, { method: "POST", headers: headers(at), signal,
-        body: JSON.stringify({ model: at.tts, input: sayable(text).slice(0, 600), voice: at.voice || "default", response_format: "wav",
+        body: JSON.stringify({ model: at.tts, input, voice: at.voice || "default", response_format: "wav",
                                ...(instructions ? { instructions } : {}) }) });
       if (!r.ok) return null;
       const audio = new Uint8Array(await r.arrayBuffer());

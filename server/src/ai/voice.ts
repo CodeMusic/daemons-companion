@@ -208,6 +208,7 @@ export async function streamParts(shelf: VoiceStreams, id: string, enc: Mp3In, f
 // 2026-11-07 (the user: a dream or a journal's chapter, its voice made once and kept, and exported): a long piece read
 // in parts the voice takes at once, cut at its sentences, and the parts' voices joined into one, a breath between.
 export const PIECE_MOST = 560;
+export const TIINY_PIECE_MOST = 1100;   // C-323: a piece the Tiiny says whole (ai/tiiny.ts TIINY_SAY_MOST)
 export function voicePieces(text: string, most = PIECE_MOST): string[] {
   const out: string[] = [];
   for (const p of text.split(/\n\s*\n/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean)) {

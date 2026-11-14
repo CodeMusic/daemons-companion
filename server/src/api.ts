@@ -42,7 +42,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
 import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, PIECE_MOST, TIINY_PIECE_MOST, wavOf } from "./ai/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
@@ -2540,13 +2540,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const named = namedRecipe(ecfg, store, deviceId, b.voice, b.recipe) ?? undefined;   // C-329: {voice: "daemon:<n>", recipe?}
         // 2026-11-07: {text, whole: true} -- all of it (a dream, a journal's chapter), read in parts and joined into one voice
         if (b.whole === true && typeof b.text === "string" && b.text.trim()) {
-          const parts = voicePieces(b.text.slice(0, WHOLE_MOST));
+          // C-323: in the Tiiny's longer pieces when it speaks; a long piece another voice answered (it says 600 at most) is
+          // asked again in the short ones
+          const parts = voicePieces(b.text.slice(0, WHOLE_MOST), tiinyNow()?.at.tts ? TIINY_PIECE_MOST : PIECE_MOST);
           return answer(PRIORITY.reading, async () => {
             const got: Buffer[] = []; let provider = "";
             for (const p of parts) {
-              const r = await readAloud(p, named);
-              if (typeof r.audioBase64 !== "string" || !r.audioBase64) return { error: String(r.error ?? "a part of it could not be voiced") };   // DRAFT
-              got.push(Buffer.from(r.audioBase64, "base64")); provider ||= String(r.provider ?? "");
+              let rs = [await readAloud(p, named)];
+              if (p.length > PIECE_MOST && !String(rs[0].provider ?? "").startsWith("tiiny:"))
+                { rs = []; for (const q of voicePieces(p, PIECE_MOST)) rs.push(await readAloud(q, named)); }
+              for (const r of rs) {
+                if (typeof r.audioBase64 !== "string" || !r.audioBase64) return { error: String(r.error ?? "a part of it could not be voiced") };   // DRAFT
+                got.push(Buffer.from(r.audioBase64, "base64")); provider ||= String(r.provider ?? "");
+              }
             }
             const one = await joinVoices(got);
             return one ? { audioBase64: one.toString("base64"), audioMime: one.toString("latin1", 0, 4) === "RIFF" ? "audio/wav" : "audio/mpeg", provider, parts: parts.length }

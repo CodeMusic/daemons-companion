@@ -25,8 +25,9 @@ const auth = { authorization: `Bearer ${KEY}` };
 let holds = 0;
 
 // C-360: a node takes no work while its own memory is under pressure -- roverbyteseer restarted (2026-11-14) with its
-// swap all but full; macOS says how much memory is free (memory_pressure) and how much swap is used (vm.swapusage).
-// Asked every quarter minute; elsewhere (no such commands) it is never under pressure.
+// swap all but full. macOS says how much memory is free (memory_pressure); its swap is no measure on its own -- the
+// file grows and shrinks to fit, so it always looks nearly full -- only swap with almost no room left beside little free
+// memory counts. Asked every quarter minute; elsewhere (no such commands) it is never under pressure.
 let strained = { at: 0, yes: false, said: "" };
 function underPressure(): { yes: boolean; said: string } {
   if (Date.now() - strained.at < 15_000) return strained;
@@ -36,7 +37,7 @@ function underPressure(): { yes: boolean; said: string } {
     const sw = execFileSync("sysctl", ["-n", "vm.swapusage"], { encoding: "utf8", timeout: 5000 });
     const total = Number(/total = ([\d.]+)M/.exec(sw)?.[1] ?? 0), used = Number(/used = ([\d.]+)M/.exec(sw)?.[1] ?? 0);
     if (free < 20) { yes = true; said = `${free}% of memory free`; }
-    else if (total > 0 && used / total > 0.85) { yes = true; said = `swap ${Math.round((100 * used) / total)}% used`; }
+    else if (free < 35 && total - used < 1024) { yes = true; said = `${free}% of memory free and swap nearly out of room`; }
   } catch { /* not a Mac */ }
   strained = { at: Date.now(), yes, said };
   return strained;

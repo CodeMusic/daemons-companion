@@ -105,6 +105,11 @@ export async function adoptOld(household: Creation[]) {
 
 // a file a creation offers (an export), fetched to the cache and handed to the share sheet; on the site, a download
 export async function exportFile(path: string, name: string): Promise<void> {
+  // the hub makes an export once, slowly: until it has, it says so (202) and the press says so too
+  const ready = path.replace(/\/[^/]+$/, "/exports");
+  const made = await fetch(hubUrl(ready), { headers: headers() }).then((r) => r.json()).catch(() => null) as { made?: Record<string, boolean> } | null;
+  const file = path.split("/").pop() ?? "";
+  if (made?.made && made.made[file] === false) throw new Error("Being made on the hub: it takes a few minutes. Try again soon.");   // DRAFT
   if (!ON_PHONE) { globalThis.open?.(hubUrl(path), "_blank"); return; }
   const { File, Paths } = fs();
   const f = new File(Paths.cache, safe(name));

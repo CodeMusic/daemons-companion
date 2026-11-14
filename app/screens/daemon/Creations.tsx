@@ -40,17 +40,16 @@ export function RecordCover({ c, size, progress = 0, onPress, children }:
         <View style={{ width: inner, height: inner, borderRadius: inner / 2, overflow: "hidden", backgroundColor: "#1d1b2e",
                        alignItems: "center", justifyContent: "center" }}>
           {children ?? (uri ? <Image source={source(uri)!} style={{ width: inner, height: inner }} /> :
-            <Text fontFamily="$mono" fontSize={11} color="#c9c3e6">{c.state === "making" ? "being made…" : c.meta.painting ? "being painted…" : ""}</Text>)}
-          {/* the title across the record, as THE EASEL hangs a title under its paintings */}
+            <Text fontFamily="$mono" fontSize={11} color="#c9c3e6" marginBottom={inner * 0.3}>{c.state === "making" ? "being made…" : c.meta.painting ? "being painted…" : ""}</Text>)}
+          {/* the hole in the middle, then the title on its label below it, as THE EASEL hangs a title under its paintings */}
+          {!children ? <View style={{ position: "absolute", width: inner * 0.07, height: inner * 0.07, borderRadius: inner, backgroundColor: "#0e0d18", opacity: 0.8 }} /> : null}
           {!children ? (
-            <View style={{ position: "absolute", bottom: inner * 0.16, left: inner * 0.12, right: inner * 0.12, paddingVertical: 4,
-                           paddingHorizontal: 6, backgroundColor: "rgba(20,18,36,0.62)", borderRadius: 3 }}>
-              <Text fontFamily="$mono" fontSize={Math.max(9, Math.round(inner / 17))} fontWeight="700" letterSpacing={1}
-                    color="#f4efe2" textAlign="center" numberOfLines={2}>{c.title}</Text>
+            <View style={{ position: "absolute", bottom: inner * 0.1, left: inner * 0.16, right: inner * 0.16, paddingVertical: 3,
+                           paddingHorizontal: 5, backgroundColor: "rgba(20,18,36,0.66)", borderRadius: 3 }}>
+              <Text fontFamily="$mono" fontSize={Math.max(8, Math.round(inner / 21))} lineHeight={Math.max(10, Math.round(inner / 16))} fontWeight="700"
+                    letterSpacing={0.5} color="#f4efe2" textAlign="center" numberOfLines={2}>{c.title}</Text>
             </View>
           ) : null}
-          {/* the hole in the middle */}
-          {!children ? <View style={{ position: "absolute", width: inner * 0.07, height: inner * 0.07, borderRadius: inner, backgroundColor: "#0e0d18", opacity: 0.8 }} /> : null}
         </View>
       </View>
     </Pressable>
@@ -66,10 +65,13 @@ function bandsOf(frames: number[]): number[] {
     const k = Math.max(1, Math.round(2 ** ((b / BANDS) * Math.log2(n / 4))));   // log-spaced bins up to a quarter of the rate
     let re = 0, im = 0;
     for (let i = 0; i < n; i++) { const a = (2 * Math.PI * k * i) / n, w = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / n); re += x[i] * w * Math.cos(a); im -= x[i] * w * Math.sin(a); }
-    out.push(Math.min(1, Math.sqrt(re * re + im * im) / (n / 8)));
+    out.push(Math.sqrt(re * re + im * im));
   }
-  return out;
+  // quiet music is still music: the bars are scaled to the loudest band lately (a peak that falls slowly), then eased
+  peak = Math.max(peak * 0.97, ...out, 1e-4);
+  return out.map((v) => Math.sqrt(v / peak));
 }
+let peak = 1e-4;
 function Spectrum({ size, beat, colour }: { size: number; beat: number; colour: string }) {
   const [bands, setBands] = useState<number[]>(() => Array(BANDS).fill(0.1));
   const last = useRef(0);
@@ -114,7 +116,7 @@ export function SleepPlayer({ k, ink, onBack }: { k: Kept; ink: string; onBack: 
   const size = 260;
   return (
     <YStack gap={12}>
-      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link" onPress={onBack}>{"‹ CREATIONS"}</Text>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onBack}>{"‹ CREATIONS"}</Text>
       <YStack alignItems="center" gap={8}>
         <RecordCover c={k} size={size} progress={mineNow ? s / SESSION_S : 0} onPress={() => setSpectrum((v) => !v)}>
           {spectrum ? <Spectrum size={size - 22} beat={drift ? stage.beat : 1} colour={STAGE_COLOUR[stage.word]} /> : undefined}
@@ -169,7 +171,7 @@ function Details({ c, where, have, ink, onBack, onKept }: { c: Creation & { shar
   };
   return (
     <YStack gap={12}>
-      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link" onPress={onBack}>{"‹ CREATIONS"}</Text>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onBack}>{"‹ CREATIONS"}</Text>
       <YStack alignItems="center" gap={8}>
         {c.kind === "sleep" ? <RecordCover c={c} size={240} /> : <Image source={source(coverUri(c))!} style={{ width: 240, height: 240, borderRadius: 4 }} />}
         <Text fontFamily="$mono" fontSize={16} fontWeight="700" letterSpacing={1} color="$color12" textAlign="center">{c.title}</Text>
@@ -228,7 +230,7 @@ export function CreationsScreen({ ink, start, onClose }: { ink: string; start?: 
     if (k && k.kind === "sleep") return <SleepPlayer k={k} ink={ink} onBack={() => setOpen(null)} />;
     if (k && open.where === "mine") return (
       <YStack gap={12}>
-        <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link" onPress={() => setOpen(null)}>{"‹ CREATIONS"}</Text>
+        <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={() => setOpen(null)}>{"‹ CREATIONS"}</Text>
         <Image source={source(k.local["painting.png"] ?? coverUri(k))!} style={{ width: "100%", aspectRatio: 1, borderRadius: 4 }} />
         <Text fontFamily="$mono" fontSize={16} fontWeight="700" color="$color12">{k.title}</Text>
         {k.about ? <Small>{k.about}</Small> : null}
@@ -243,7 +245,7 @@ export function CreationsScreen({ ink, start, onClose }: { ink: string; start?: 
     .filter((c) => c.kind === kind).filter((c) => !(missingOnly && where !== "mine" && have.has(c.uid)));
   return (
     <YStack gap={12}>
-      {onClose ? <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link" onPress={onClose}>{"‹ BACK"}</Text> : null}
+      {onClose ? <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onClose}>{"‹ BACK"}</Text> : null}
       <Card>
         <Eyebrow>{"CREATIONS · DRAFT"}</Eyebrow>
         <Small>{"What the daemons made. MINE is on this phone; HOUSEHOLD is everything the hub keeps, from every device at home; COMMUNITY is what homes shared on THE COMMONS."}</Small>

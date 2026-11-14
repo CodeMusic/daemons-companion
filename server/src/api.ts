@@ -77,7 +77,7 @@ import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type S
 import { readProfile } from "./save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
-import { carrierOf, DRIFT, exportImedx, exportMp3 } from "./sleepexport.js";   // C-358
+import { carrierOf, DRIFT, exportImedx, exportMp3, exportsMade, makeExports, type ExportName } from "./sleepexport.js";   // C-358
 import { beatsSaid, paintingCreation, sleepCreation, type Creation } from "./creations.js";   // C-358
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
@@ -1098,6 +1098,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style), seed, fetch, w.signal);
         sleepTracks().setCover(t.id, png);
         w.end("done");
+        const folder = sleepTracks().folder(t.id);
+        if (folder) makeExports(folder, t.keyscale);   // the exports made now, in the background, so they wait ready
       } catch (e) {
         sleepTracks().patch(t.id, { cover: "failed" });
         w.end("failed", { error: (e as Error)?.message?.slice(0, 120) || "no cover" });   // DRAFT
@@ -1109,7 +1111,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const creationsNow = (): Creation[] => {
     const home = homeName(), beats = beatsSaid(DRIFT.map((d) => d.beat));
     const sleep = sleepTracks().list(null);
-    for (const t of sleep) if (t.state === "ready" && !t.cover) paintCover(t);
+    for (const t of sleep) {
+      if (t.state === "ready" && !t.cover) paintCover(t);
+      else if (t.state === "ready" && t.cover !== "painting") { const f = sleepTracks().folder(t.id); if (f) makeExports(f, t.keyscale); }
+    }
     return [...sleep.map((t) => sleepCreation(t, home, beats, carrierOf(t.keyscale))),
             ...paintings().map((p) => paintingCreation(p, home))];
   };
@@ -1881,7 +1886,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-358: a sleep piece's cover, and its exports -- the night as an MP3 (with DRIFT DOWN or without) and as
       // PulseEntrain's .imedx; each made on the hub the first time it is asked for, then kept
-      const sleepExtra = req.method === "GET" && path.match(/^\/api\/sleep\/track\/([0-9a-f]{32})\/(cover\.png|export\.mp3|export-drift\.mp3|export\.imedx)$/);
+      const sleepExtra = req.method === "GET" && path.match(/^\/api\/sleep\/track\/([0-9a-f]{32})\/(cover\.png|exports|export\.mp3|export-drift\.mp3|export\.imedx)$/);
       if (sleepExtra) {
         const [, id, name] = sleepExtra, t = sleepTracks().byId(id), folder = sleepTracks().folder(id);
         if (!t || !folder || (name !== "cover.png" && t.state !== "ready")) return send(res, 404, { error: "no such piece" });
@@ -1892,6 +1897,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             if (!f) return send(res, 404, { error: "no cover yet" });
             res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=31536000, immutable" });
             return res.end(readFileSync(f));
+          }
+          // which exports are made yet; the rest are started (the hub makes them slowly, a few minutes each)
+          if (name === "exports") { makeExports(folder, t.keyscale); return send(res, 200, { made: exportsMade(folder) }); }
+          if (!exportsMade(folder)[name as ExportName]) {
+            makeExports(folder, t.keyscale);
+            return send(res, 202, { making: true, error: "Being made on the hub: it takes a few minutes. Try again soon." });   // DRAFT
           }
           if (name === "export.imedx") {
             const j = await exportImedx(folder, t, homeName());

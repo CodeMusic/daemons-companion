@@ -64,8 +64,9 @@ export function driftScenes(carrierHz: number) {
   return scenes;
 }
 
+// low priority (the hub is a small board, and it is answering everyone meanwhile); a long piece may take minutes there
 const run = (args: string[]) => new Promise<void>((done, fail) =>
-  execFile(FOUND_FFMPEG ?? "ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", ...args], { timeout: 15 * 60000 },
+  execFile("nice", ["-n", "15", FOUND_FFMPEG ?? "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", ...args], { timeout: 40 * 60000 },
            (e) => (e ? fail(e) : done())));
 // made once into `name` beside the piece, written aside and renamed; one at a time a file
 const making = new Map<string, Promise<string>>();
@@ -91,15 +92,22 @@ export function exportMp3(folder: string, keyscale: string, drift: boolean): Pro
     const fade = `afade=t=out:st=${SESSION_S - FADE_S}:d=${FADE_S}`;
     if (!drift) {
       await run(["-stream_loop", "-1", "-i", src, "-t", String(SESSION_S), "-af", fade, "-ac", "2", "-ar", "44100",
-                 "-c:a", "libmp3lame", "-b:a", "128k", "-f", "mp3", part]);
+                 "-c:a", "libmp3lame", "-b:a", "128k", "-compression_level", "7", "-f", "mp3", part]);
       return;
     }
-    const c = carrierOf(keyscale), a = DRIFT_LEVEL;
-    const tone = `aevalsrc=exprs='${a}*sin(2*PI*${c}*t)|${a}*sin(2*PI*(${c}*t+${beatsExpr()}))':s=44100:d=${SESSION_S}:c=stereo`;
-    await run(["-stream_loop", "-1", "-i", src, "-f", "lavfi", "-i", tone,
-               "-filter_complex", `[0:a]atrim=0:${SESSION_S},aformat=sample_rates=44100:channel_layouts=stereo[m];` +
-                                  `[m][1:a]amix=inputs=2:duration=first:normalize=0,${fade}[o]`,
-               "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "128k", "-f", "mp3", part]);
+    // the left ear the carrier for the whole night; the right, carrier + beat, a stage at a time (plain sine sources:
+    // an evaluated expression a sample was far too slow on the hub). A stage changes as the app's does, at once.
+    const c = carrierOf(keyscale), vol = (DRIFT_LEVEL * 8).toFixed(3);   // ffmpeg's sine is an eighth of full scale
+    const sine = (f: number, d: number) => ["-f", "lavfi", "-i", `sine=frequency=${f}:duration=${d}:sample_rate=44100`];
+    const stages = DRIFT.map((d, i) => ({ beat: d.beat, d: (i + 1 < DRIFT.length ? DRIFT[i + 1].at : SESSION_S) - d.at }));
+    const right = stages.map((_, i) => `[${i + 2}:a]`).join("");
+    await run(["-stream_loop", "-1", "-i", src, ...sine(c, SESSION_S), ...stages.flatMap((st) => sine(c + st.beat, st.d)),
+               "-filter_complex",
+               `[0:a]atrim=0:${SESSION_S},aformat=sample_rates=44100:channel_layouts=stereo[m];` +
+               `${right}concat=n=${stages.length}:v=0:a=1[r];` +
+               `[1:a][r]join=inputs=2:channel_layout=stereo,volume=${vol}[b];` +
+               `[m][b]amix=inputs=2:duration=first:normalize=0,${fade}[o]`,
+               "-map", "[o]", "-c:a", "libmp3lame", "-b:a", "128k", "-compression_level", "7", "-f", "mp3", part]);
   });
 }
 
@@ -112,6 +120,25 @@ function peMusic(folder: string): Promise<string> {
 function peCover(folder: string): Promise<string | null> {
   if (!existsSync(join(folder, "cover.png"))) return Promise.resolve(null);
   return once(folder, "pe-cover.jpg", (part) => run(["-i", join(folder, "cover.png"), "-vf", "scale=512:-2", "-q:v", "4", "-f", "mjpeg", part]));
+}
+
+// whether each export is made yet -- and, asked, start the ones that are not (one piece's at a time, behind any other)
+export const EXPORTS = ["export.mp3", "export-drift.mp3", "export.imedx"] as const;
+export type ExportName = (typeof EXPORTS)[number];
+export function exportsMade(folder: string): Record<ExportName, boolean> {
+  return { "export.mp3": existsSync(join(folder, "export.mp3")), "export-drift.mp3": existsSync(join(folder, "export-drift.mp3")),
+           "export.imedx": existsSync(join(folder, "pe-music.mp3")) };
+}
+let queue: Promise<unknown> = Promise.resolve();
+export function makeExports(folder: string, keyscale: string): void {
+  const made = exportsMade(folder);
+  if (made["export.mp3"] && made["export-drift.mp3"] && made["export.imedx"]) return;
+  queue = queue.then(async () => {
+    if (!existsSync(join(folder, "phone.m4a"))) return;
+    await peMusic(folder).catch(() => {}); await peCover(folder).catch(() => {});
+    await exportMp3(folder, keyscale, false).catch(() => {});
+    await exportMp3(folder, keyscale, true).catch(() => {});
+  });
 }
 
 export const imedxId = (id: string) => `daemons_sleep_${id}`;

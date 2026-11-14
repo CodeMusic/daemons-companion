@@ -105,7 +105,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
       <Small>{`With headphones: a slow beat between your ears under the music, easing from ${DRIFT.map((d) => `${d.word.toLowerCase()} ${d.beat} Hz`).join(" to ")} as you fall asleep. Headphones only; on a speaker it waits.`}</Small>
 
       {/* C-358: every piece made -- this phone's, the household's and the community's -- in CREATIONS */}
-      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink ?? "$color12"} cursor="pointer" role="link" marginTop={8}
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" marginTop={8}
             onPress={() => setGallery(true)}>{older.length ? `CREATIONS › (${older.length + (cur?.state === "ready" ? 1 : 0)} made)` : "CREATIONS ›"}</Text>
     </Card>
   );

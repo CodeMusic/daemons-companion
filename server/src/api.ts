@@ -709,6 +709,8 @@ export const DEVICE_DOOR = [
                                                                    "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate"].includes(p)),   // C-329: the watch's dialogue
   // C-334: sleep sounds -- the watch lists them, asks for one, and copies a piece to its card by an id nobody can guess
   (m: string, p: string) => (m === "GET" && (p === "/api/sleep" || p === "/api/sleep/tracks" || p.startsWith("/api/sleep/track/"))) || (m === "POST" && p === "/api/sleep/make"),
+  // C-358: a file the community already shares (a cover, a piece), as a picture is fetched -- with no key to send
+  (m: string, p: string) => m === "GET" && /^\/api\/community\/file\/\d{1,6}\/[a-z.]{5,16}$/.test(p),
   (m: string) => m === "OPTIONS",
 ];
 

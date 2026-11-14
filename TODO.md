@@ -4,6 +4,24 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-14, the mind and the Tiiny, again
+
+*The user, 2026-11-14: "keep working on your goal loop pls".* The 2026-11-12 mind loop's seventh goal is done by others'
+builds (977 and 978 carry all of it). What the hub's MIND AT WORK showed since: memory written every morning on the quick
+thinker, the dream journal's pages and signs read by the Tiiny, no dream since the 11th's (the daemon was not put to bed
+on the 12th; it sleeps now and wakes at 17:00 UTC). Worked top down: build, test, deploy the hub, commit by path, push,
+strike it here.
+
+1. **C-308 on a real night** -- today's wake: the left telling, then the right, then the two made whole, on the Tiiny;
+   `/api/dreams` with `left` and `right` filled. If it fails, why, and fixed.
+2. **C-253's rest** -- the save's changes in the day's words (a badge won, a place first reached, a level), and the
+   night's dream told with YESTERDAY as well as the day's hours.
+3. **C-356 next: THE SIGNS THAT RETURN** -- across a journal's readings, the signs that come back (three times or more,
+   or in three entries), with when each came; on the journal's page in the app and the site. Words DRAFT.
+4. **C-323's longer pieces** -- the Tiiny reads 873 characters whole (45-66 s): lift tiiny.ts's 600 cap so a voice is read
+   in fewer, longer parts, measured on the hub.
+5. **Rows brought up to date** -- C-319 (STOP reaches the Tiiny), C-329 (heard from the real Tiiny), C-254, C-283.
+
 ## Today's goals -- 2026-11-12, the mind and the Tiiny
 
 *The user, 2026-11-12: "plan and run your goal loop for anything ai mind/tiiny related please", with a new piece: the DREAM

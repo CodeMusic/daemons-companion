@@ -5,11 +5,17 @@
 //
 // It lives in memory: a link is a now, not a record. What a routine did is kept as tending the daemon elsewhere (C-13).
 
+import { validDeviceId } from "./deviceid.js";
+
 export type Via = "usb" | "wifi" | "phone" | "relay";   // C-55: the app over Bluetooth; C-82: a board through the relay
 // C-335: a command may name the one board it is for (\`to\`, its device id) -- an update is never taken by another board
 export type Command = { id: number; type: "run" | "wifi" | "ir" | "remote" | "network" | "update"; to?: string; [k: string]: unknown };
 export type Result = { id: number; ok: boolean; text: string; at: string };
 export type RoutineType = { name: string; radio: string; routines: string[] };
+
+// C-168 Phase 3: with several boards on the hub's cables (and more on Wi-Fi), the site's command may name its board --
+// a request body's `device`, when it is a board's id, becomes the command's `to` (C-335); anything else aims at none
+export const aim = (b: { device?: unknown }): { to?: string } => (validDeviceId(b?.device) ? { to: b.device } : {});
 
 const FRESH_MS = 15000;          // as the device's own USB_FRESH_MS: unseen for longer, it is not linked
 const KEEP_RESULTS = 12;

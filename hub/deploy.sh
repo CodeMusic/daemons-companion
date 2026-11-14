@@ -65,6 +65,9 @@ if answers; then
     echo "deploy: a newer deploy.sh came with the code; install it (your password): sudo bash $CODE/hub/deploy-setup.sh"
   systemctl is-enabled -q daemons-companion-screen.service 2>/dev/null && systemctl restart daemons-companion-screen.service \
     && echo "deploy: the screen restarted on the new code"
+  # C-168 Phase 3: the cable bridges, on the new usb_bridge.py (each lets its board go cleanly, then takes it again)
+  systemctl is-enabled -q daemons-companion-bridges.service 2>/dev/null && systemctl restart daemons-companion-bridges.service \
+    && echo "deploy: the cable bridges restarted on the new code" || true
 else
   echo "deploy: the new code did not answer in 60 s -- going back to $(git_ log -1 --format=%h "$was")" >&2
   journalctl -u daemons-companion --no-pager -n 20 >&2 || true

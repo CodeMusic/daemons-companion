@@ -1,0 +1,29 @@
+# C-168 Phase 3: the boards on the hub's own USB, each on its own cable bridge (hub/bridges.py), the allowed ones only
+# (/var/lib/daemons-companion/boards.allow). hub/phase3.sh installs it.
+[Unit]
+Description=The DAEMONS companion's cable bridges on the hub
+After=daemons-companion.service
+Wants=daemons-companion.service
+
+[Service]
+Type=simple
+User=daemons
+Group=daemons
+UMask=0002
+# the boards' serial ports (/dev/ttyACM*, /dev/ttyUSB*)
+SupplementaryGroups=dialout
+Environment=DAEMONS_STATE=/var/lib/daemons-companion
+ExecStart=/usr/bin/python3 /opt/daemons-companion/hub/bridges.py
+# SIGTERM to bridges.py, which stops each bridge with SIGTERM so it lets its board go cleanly; then the rest
+KillMode=mixed
+TimeoutStopSec=15
+Restart=always
+RestartSec=5
+MemoryMax=120M
+Nice=5
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

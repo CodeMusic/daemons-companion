@@ -91,6 +91,23 @@ and `./bindCompanion.sh never` on the Mac.
 **Phase 3 -- cable bridges.** One bridge per board by its USB serial, per-device queues in the server so boards do not
 wait on each other.
 
+*Built 2026-11-11* (`hub/bridges.py`, `hub/systemd/daemons-companion-bridges.service`, `hub/phase3.sh`). A supervisor
+scans the hub's serial ports every 3 s and gives each board **on the allow-list** one `usb_bridge.py`, which already
+follows that board by its serial if it is unplugged and comes back on another port. The allow-list is
+`/var/lib/daemons-companion/boards.allow`, one USB serial per line (an ESP32-S3's is its MAC); it is read again each
+scan, so adding a line links the board within seconds and removing one lets it go. A board not on the list is never
+opened -- it is noted once in `boards.seen` and in the journal, with the line that would add it. Stopping sends each
+bridge SIGTERM, so each lets its board go cleanly (a killed bridge left the Ultra waiting for a download). Each deploy
+restarts the bridges on the new code. Installed once with the user's password:
+`ssh -t debian@daemons-hearth 'sudo bash /opt/daemons-companion/hub/phase3.sh'`; then `python3 hub/bridges.py --once` lists
+what is plugged in and whether each is linked, and `journalctl -u daemons-companion-bridges` says what each board said,
+its serial in front.
+
+The server's command queue is one for every board (C-32 was written for one device); a command naming its board
+(`to`, C-335) is taken by that board only. The site's commands (run, Wi-Fi, IR, remotes, networks) now take an optional
+`device` in their body, which becomes `to` -- an unaimed command still goes to whoever asks first, and a Wi-Fi password
+still only down a cable. The site and app do not aim yet: that waits on a board picker beside DEVICE.
+
 **Phase 4 -- the screen.** Status, the boards on the hub, and pairing. **C-170** (decided 2026-10-20): the hub's
 screen shows PAIR A PHONE -- a code and the address, after a hold and a confirm, so a visitor cannot pair themselves --
 and the hub serves the site itself, so a browser anywhere at home opens the hub's address and pairs once with a code

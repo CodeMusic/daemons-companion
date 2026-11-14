@@ -52,7 +52,7 @@ import { sha1 } from "./game/hash.js";
 import { deviceArt, headOf, repaint, streakColours } from "./art.js";
 import { prunable } from "./backups.js";
 import { createConnection } from "node:net";
-import { DeviceHub, type Via } from "./device.js";
+import { aim, DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
 import { assign, carryView, setYours, yoursOf } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
@@ -2043,7 +2043,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         if (typeof b.routine !== "string" || !hub.hasRoutine(b.routine))
           return send(res, 400, { error: "the device has no such routine" });
-        return send(res, 200, { id: hub.send({ type: "run", routine: b.routine }) });
+        return send(res, 200, { id: hub.send({ ...aim(b), type: "run", routine: b.routine }) });
       }
       if (req.method === "POST" && path === "/api/device/wifi") {   // C-33: handed down the cable only
         const b = await body(req);
@@ -2051,7 +2051,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return send(res, 400, { error: "Wi-Fi needs a network name and its password" });
         const addr = lanAddress();
         nets.learn(b.ssid, b.password);                           // C-93: and every other device, when next in touch
-        return send(res, 200, { id: hub.send({ type: "wifi", ssid: b.ssid, password: b.password,
+        return send(res, 200, { id: hub.send({ ...aim(b), type: "wifi", ssid: b.ssid, password: b.password,
                                                server: addr ? `http://${addr}:${cfg.port}` : "" }) });
       }
       // C-66: who answers when you talk -- "auto" (this computer's model, OpenRouter when it is busy), "local" only (the
@@ -2652,10 +2652,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         if (b.op === "forget" && typeof b.ssid === "string" && b.ssid) {   // C-93: forgotten everywhere
           nets.forget(b.ssid);
-          return send(res, 200, { id: hub.send({ type: "network", op: "forget", ssid: b.ssid }) });
+          return send(res, 200, { id: hub.send({ ...aim(b), type: "network", op: "forget", ssid: b.ssid }) });
         }
         if (b.op !== "forget" || !Number.isInteger(b.index)) return send(res, 400, { error: "forget a network: {op: forget, ssid}" });
-        return send(res, 200, { id: hub.send({ type: "network", op: "forget", index: b.index }) });
+        return send(res, 200, { id: hub.send({ ...aim(b), type: "network", op: "forget", index: b.index }) });
       }
       // C-93: the shared list, for the site and the app -- names only -- and a network added to it for every device
       if (req.method === "GET" && path === "/api/networks") return send(res, 200, { ...nets.names(), current: hub.currentNetwork });
@@ -2672,13 +2672,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.op === "activate" || b.op === "remove") {
           if (!Number.isInteger(b.index)) return send(res, 400, { error: "which remote: {index}" });
           if (b.op === "remove") remotesShared.forget(hub.remotes.remotes[b.index]?.name);   // C-165: removed everywhere
-          return send(res, 200, { id: hub.send({ type: "remote", op: b.op, index: b.index }) });
+          return send(res, 200, { id: hub.send({ ...aim(b), type: "remote", op: b.op, index: b.index }) });
         }
         if (b.op === "rename") {                   // C-59: the user's own name for it, as the board's font can draw it
           const name = typeof b.name === "string" ? b.name.replace(/[^\x20-\x7e]/g, "").trim().slice(0, 16).trim() : "";
           if (!Number.isInteger(b.index) || !name) return send(res, 400, { error: "rename {index, name}: a name of 1-16 plain letters" });
           remotesShared.rename(hub.remotes.remotes[b.index]?.name, name);   // C-165: and on every device
-          return send(res, 200, { id: hub.send({ type: "remote", op: "rename", index: b.index, name }) });
+          return send(res, 200, { id: hub.send({ ...aim(b), type: "remote", op: "rename", index: b.index, name }) });
         }
         if (b.op === "add") {                      // a brand's whole remote, from the code table
           const set = irCodesJson.brands.find((x) => x.brand === b.brand)?.sets.find((x) => x.label === b.label);
@@ -2686,7 +2686,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const button = (code: string) => ({ protocol: set.protocol, code, bits: set.bits, repeat: set.repeat });
           remotesShared.learn({ name: set.label, buttons: [set.power, set.volumeUp, set.volumeDown].map((v) =>   // C-165: every device
             ({ p: set.protocol, v: String(v).replace(/^0x/i, ""), b: set.bits, r: set.repeat ?? 0 })) });
-          return send(res, 200, { id: hub.send({ type: "remote", op: "add", name: set.label,
+          return send(res, 200, { id: hub.send({ ...aim(b), type: "remote", op: "add", name: set.label,
                                                  buttons: [button(set.power), button(set.volumeUp), button(set.volumeDown)] }) });
         }
         return send(res, 400, { error: "op is activate, remove, rename or add" });
@@ -2695,7 +2695,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const b = await body(req);
         if (typeof b.protocol !== "string" || typeof b.code !== "string" || !Number.isInteger(b.bits))
           return send(res, 400, { error: "an IR code needs {protocol, code, bits}" });
-        return send(res, 200, { id: hub.send({ type: "ir", protocol: b.protocol, code: b.code, bits: b.bits,
+        return send(res, 200, { id: hub.send({ ...aim(b), type: "ir", protocol: b.protocol, code: b.code, bits: b.bits,
                                                repeat: Number(b.repeat ?? 0), keep: !!b.keep, label: String(b.label ?? "") }) });
       }
       if (req.method === "POST" && path === "/api/device/untick") {   // C-49: a step ticked on the board by accident

@@ -35,7 +35,7 @@ case "${1:-}" in
       name="$(scutil --get ComputerName 2>/dev/null | tr -cd '[:alnum:] -' | cut -c1-24)"
       key=$(curl -s -X POST "$MESH_HUB/api/pair" -H 'content-type: application/json' -d "{\"code\":\"$code\",\"name\":\"THE MESH ($name)\"}" \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')
-      umask 077; printf 'MESH_HUB=%s\nMESH_KEY=%s\nMESH_NAME=%s\n' "$MESH_HUB" "$key" "$name" > "$ENV"
+      umask 077; printf 'MESH_HUB=%s\nMESH_KEY=%s\nMESH_NAME="%s"\n' "$MESH_HUB" "$key" "$name" > "$ENV"
       echo "mesh: paired with $MESH_HUB as $name"
     fi
     cat > "$PLIST" <<PL

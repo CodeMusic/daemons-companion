@@ -70,6 +70,13 @@ describe("C-221: through the hub", () => {
   it("is never reached through the relay", async () => {
     expect((await here("/link/", { headers: { "x-companion-relay": "anything" } })).status).toBe(403);
   });
+  it("keeps where linkhost is, set from this machine, and only an http address", async () => {
+    const set = (host: string) => here("/api/link/host", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ host }) });
+    expect((await set("file:///etc")).status).toBe(400);
+    expect(await (await set("http://roverbyteseer:4795/")).json()).toEqual({ host: "http://roverbyteseer:4795" });
+    expect(await (await here("/api/link/host")).json()).toEqual({ host: "http://roverbyteseer:4795" });
+    await set(process.env.DAEMONS_LINKHOST!);                             // back to the fake, for the rest
+  });
   it("serves the page a phone shows, its requests the hub's own", async () => {
     const r = await here("/link/");
     expect(r.status).toBe(200);

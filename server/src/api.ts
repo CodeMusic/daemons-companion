@@ -1343,6 +1343,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // ---- C-221: THE LINK CABLE -- a player's screen and buttons, passed to the two linked games (linkcable.ts) ----
       if (path.startsWith("/api/link/")) {
         if (relayed) return send(res, 403, { error: "the link cable is on the home network and the tailnet only" });   // DRAFT
+        if (path === "/api/link/host") {                                  // where linkhost is: a paired phone or this machine sets it
+          if (req.method === "POST") {
+            const b = await body(req), v = typeof b.host === "string" ? b.host.trim() : "";
+            if (v && !linkHost(v, "")) return send(res, 400, { error: "an http address, e.g. http://roverbyteseer:4795" });   // DRAFT
+            store.setSetting("link.host", v ? linkHost(v, "") : null);
+          }
+          return send(res, 200, { host: linkHost(store.getSetting("link.host")) });
+        }
         return await linkRoute(res, linkHost(store.getSetting("link.host")), path, String(req.headers["accept-encoding"] ?? ""));
       }
       // ---- C-342: THE ENGINE ROOM's JOBS -- asked for here, taken and run by THE HANDS on the computer (jobs.ts) ----

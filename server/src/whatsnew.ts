@@ -34,14 +34,15 @@ export function spanOf(notes: Notes, a: number, b: number): BuildNotes[] {
 }
 
 // The span as a mind is given it: each build's date, headers and lines, trimmed to fit a small model's window
+// -- the window shared between the builds, so the newest is never the one cut off (each keeps its header and first lines)
 export function spanText(builds: BuildNotes[], most = 9000): string {
-  const out: string[] = [];
-  for (const b of [...builds].reverse()) {                        // oldest first: a story is told forward
-    out.push(`BUILD ${b.build} (${b.date})`);
+  const each = Math.floor(most / Math.max(1, builds.length));
+  return [...builds].reverse().map((b) => {                       // oldest first: a story is told forward
+    const out = [`BUILD ${b.build} (${b.date})`];
     for (const s of b.sections) { out.push(`  ${s.title}`); for (const l of s.lines) out.push(`    - ${l}`); }
-  }
-  const t = out.join("\n");
-  return t.length > most ? `${t.slice(0, most)}\n  ...(and more)` : t;
+    const t = out.join("\n");
+    return t.length > each ? `${t.slice(0, each)}\n  ...(and more)` : t;
+  }).join("\n");
 }
 
 export const DIGEST_SYSTEM =                                   // DRAFT

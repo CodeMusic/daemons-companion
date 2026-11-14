@@ -35,5 +35,10 @@ them, and flushed when it is stopped (SIGINT or SIGTERM).
 `/link/`; the GAME tab's title has **LINK CABLE** for a paired phone, a seat for each player. The hub finds linkhost by
 the setting `link.host` or `DAEMONS_LINKHOST` (e.g. `http://roverbyteseer:4795`, linkhost started with that address).
 
-**Next**: the saves carried there and back by C-188's mirror (each player's own, not copies), linkhost kept running on
-roverbyteseer, and the screen sent as video rather than polled frames.
+**Kept running on roverbyteseer (2026-11-14)**: `ca.codemusic.daemons.linkhost.plist` (copied to
+`~/Library/LaunchAgents/`, `launchctl bootstrap` then `kickstart`) runs it from `~/daemons-linkhost/` on the tailnet
+address only, the test pair of DEBUG saves in `run/`; the hub is told where it is with `POST /api/link/host
+{"host": "http://roverbyteseer:4795"}` (a paired phone, or the hub itself). Its log: `~/Library/Logs/daemons-linkhost.log`.
+
+**Next**: each player's own save carried in and out by C-188's mirror, in place of the test pair; the screen sent as
+video rather than polled frames.

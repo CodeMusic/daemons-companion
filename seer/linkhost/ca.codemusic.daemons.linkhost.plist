@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- C-221: THE LINK CABLE on roverbyteseer, kept running for the hub (link.host = http://roverbyteseer:4795). Copied to
+     ~/Library/LaunchAgents/; linkhost, link.html and run/ (the two ROMs and their saves, never in git) in ~/daemons-linkhost/.
+     It answers the tailnet address only; linkhost's /p/ stays off (no LINKHOST_POKE). -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>ca.codemusic.daemons.linkhost</string>
+  <key>ProgramArguments</key><array>
+    <string>/Users/roverbyte/daemons-linkhost/linkhost</string>
+    <string>/Users/roverbyte/daemons-linkhost/run/daemonsContent_debug.gba</string><string>/Users/roverbyte/daemons-linkhost/run/p1.sav</string>
+    <string>/Users/roverbyte/daemons-linkhost/run/daemonsContext_debug.gba</string><string>/Users/roverbyte/daemons-linkhost/run/p2.sav</string>
+    <string>4795</string><string>/Users/roverbyte/daemons-linkhost/link.html</string><string>100.67.234.4</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/roverbyte/daemons-linkhost</string>
+  <key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/roverbyte/Library/Logs/daemons-linkhost.log</string>
+  <key>StandardErrorPath</key><string>/Users/roverbyte/Library/Logs/daemons-linkhost.log</string>
+</dict></plist>

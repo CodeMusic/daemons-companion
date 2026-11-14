@@ -95,6 +95,11 @@ on the cable this morning, so the boards' goal waits on the user and the rest ne
    (`app/screens/game/Link.tsx`). Seen in the browser at phone width against a scratch hub: both seats' screens, a tap on A
    continuing CONTENT's save (copies). 6 tests. Not yet: the hub deployed (a WHAT'S NEW test fails on another lane's
    build-975 notes), linkhost kept running on roverbyteseer for the hub, the players' own saves carried in and out.*
+9. ~~**C-221's third step: the cable kept running beside the hub**~~ -- linkhost under launchd on roverbyteseer, the hub
+   told where it is, and the hub deployed. ***Done 2026-11-14 (DRAFT)***: *`seer/linkhost/ca.codemusic.daemons.linkhost.plist`
+   (the tailnet address only, /p/ off, the test pair of DEBUG saves); `GET/POST /api/link/host` keeps `link.host`; the hub
+   reaches a screen in ~50 ms. The WHAT'S NEW failure was a real bug: `spanText` cut the newest build off once four builds'
+   notes passed its 9,000 characters -- the window is now shared between the builds. Next: each player's own save.*
 
 ## Today's goals -- 2026-11-12, the watches
 

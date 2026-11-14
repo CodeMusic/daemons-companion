@@ -4,7 +4,10 @@
   "C-330": {
    "title": "THE ENGINE ROOM",
    "where": "a web app on the hub, at /admin/",
-   "needs": ["the hub", "the home network or the tailnet"],
+   "needs": [
+    "the hub",
+    "the home network or the tailnet"
+   ],
    "steps": [
     "On the home network or the tailnet, open {hub}/admin/ in a browser, or tap any ENGINE ROOM link in the app.",
     "Pair it once: hold the hub's screen for two seconds and type the code it shows.",
@@ -16,7 +19,11 @@
   "C-334": {
    "title": "SLEEP SOUNDS",
    "where": "DAEMON › DREAMS › SLEEP SOUNDS",
-   "needs": ["the hub", "the local cloud's music maker (seer/bindSeer.sh, port 4002)", "headphones, for DRIFT DOWN"],
+   "needs": [
+    "the hub",
+    "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
+    "headphones, for DRIFT DOWN"
+   ],
    "steps": [
     "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
     "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
@@ -30,7 +37,11 @@
   "C-329": {
    "title": "DAEMONS IN DIALOGUE",
    "where": "YOU › TRADE › OUT TOGETHER, and YOUR HOUSEHOLD",
-   "needs": ["the hub", "THE TIINY, or another mind the hub can ask", "another player on the exchange, or two of the home's devices"],
+   "needs": [
+    "the hub",
+    "THE TIINY, or another mind the hub can ask",
+    "another player on the exchange, or two of the home's devices"
+   ],
    "steps": [
     "With another player: join the exchange (YOU › TRADE › JOIN THE EXCHANGE, with a code made in THE ENGINE ROOM › EXCHANGE), send your daemon OUT TOGETHER with theirs, and IN DIALOGUE is under it.",
     "In your home: put two of the household's devices TOGETHER under YOUR HOUSEHOLD on the same page, and IN DIALOGUE appears there.",
@@ -42,7 +53,10 @@
   "C-331": {
    "title": "BOOKS AND DREAMS ON THE WATCH",
    "where": "the T-Watch Ultra: BOOKS › a chapter › LISTEN",
-   "needs": ["a T-Watch Ultra linked in PLACES, with its card in", "the hub"],
+   "needs": [
+    "a T-Watch Ultra linked in PLACES, with its card in",
+    "the hub"
+   ],
    "steps": [
     "Link the watch to the hub in PLACES, and leave its card in.",
     "On the watch, open BOOKS, pick a chapter and press LISTEN. The first time, the hub cuts that chapter from the book's own recording, in seconds; after that the watch plays it from its card.",
@@ -55,7 +69,10 @@
   "C-328": {
    "title": "BATTLES",
    "where": "YOU › BATTLE",
-   "needs": ["the hub", "a device online, or another player on the exchange"],
+   "needs": [
+    "the hub",
+    "a device online, or another player on the exchange"
+   ],
    "steps": [
     "YOU › BATTLE lists the household's devices that are online (each linked in PLACES) and the players on the exchange.",
     "Pick one and send the request; the battle is drawn over every screen when it is accepted.",
@@ -66,7 +83,11 @@
   "C-338": {
    "title": "THE EASEL",
    "where": "DAEMON › Yours › THE EASEL ›",
-   "needs": ["the hub (not a phone on its own)", "an image maker: ComfyUI, on port 8008 of the house's machine", "a daemon carried"],
+   "needs": [
+    "the hub (not a phone on its own)",
+    "an image maker: ComfyUI, on port 8008 of the house's machine",
+    "a daemon carried"
+   ],
    "steps": [
     "The hub paints on ComfyUI at http://roverbyteseer:8008, unless its easel.host setting names another. That machine needs ComfyUI running, with its image model loaded.",
     "Carry a daemon: THE EASEL › appears under its card on DAEMON › Yours.",
@@ -78,7 +99,10 @@
   "C-327": {
    "title": "YOUR HOUSEHOLD",
    "where": "YOU › TRADE › YOUR HOUSEHOLD",
-   "needs": ["the hub", "a second device of the household, linked in PLACES"],
+   "needs": [
+    "the hub",
+    "a second device of the household, linked in PLACES"
+   ],
    "steps": [
     "Link a second device to the hub (PLACES): another phone, a board or a watch.",
     "YOU › TRADE › YOUR HOUSEHOLD shows each device and the daemon it carries.",
@@ -90,7 +114,9 @@
   "C-337": {
    "title": "THIS PHONE'S NAMES",
    "where": "SETTINGS › THIS PHONE",
-   "needs": ["a phone paired to the hub"],
+   "needs": [
+    "a phone paired to the hub"
+   ],
    "steps": [
     "Open SETTINGS (the gear) › THIS PHONE.",
     "Type the phone's name on the companion, and what your daemon calls you, and save."
@@ -117,7 +143,9 @@
   "C-349": {
    "title": "THEME ACCENTS",
    "where": "SETTINGS › THEME › ACCENTS",
-   "needs": ["a save the hub can read"],
+   "needs": [
+    "a save the hub can read"
+   ],
    "steps": [
     "Accents come from the game: every place you have saved in, or reached, gives its colours. The hub reads them from your save, so keep the save it watches current.",
     "SETTINGS › THEME › ACCENTS: IN STEP WITH YOUR SAVE wears the place you saved in last. Pick any place you have unlocked to wear it instead, or OFF.",
@@ -130,7 +158,9 @@
   "C-354": {
    "title": "THE CALENDAR",
    "where": "TODAY › the calendar beside the date",
-   "needs": ["calendar access on the phone (asked once)"],
+   "needs": [
+    "calendar access on the phone (asked once)"
+   ],
    "steps": [
     "On TODAY, tap the calendar beside the date. The first time, the phone asks to share its calendar with DAEMONS: allow full access to see and change your events.",
     "MONTH, WEEK and DAY show the phone's events. Tap one to change or remove it, or + to add one; a repeating event changes only at the time you tapped.",
@@ -138,6 +168,49 @@
    ],
    "wiki": "Settings",
    "book": "companion",
+   "draft": true
+  },
+  "C-360": {
+   "title": "THE MESH",
+   "where": "SETTINGS › THE MIND › THIS PHONE IN THE MESH; the machines in GET {hub}/api/mesh",
+   "needs": [
+    "the hub",
+    "a Mac on the home network or the tailnet, for a node"
+   ],
+   "steps": [
+    "A Mac joins THE MESH as a node: from a checkout of the companion on it, run hub/mesh.sh install (it pairs with the hub and starts at login). roverbyteseer and THE HANDS' Mac are nodes already.",
+    "On this phone: SETTINGS, THE MIND, THIS PHONE IN THE MESH -- CHARGING AT HOME (the default), WHENEVER OPEN, ONLY ITS OWN WORK or NEVER.",
+    "A phone lends its thinking only where Apple Intelligence runs; the card says whether it is lending now, and why not."
+   ],
+   "wiki": "The-hub-and-its-AI",
+   "draft": true
+  },
+  "C-362": {
+   "title": "IT SINGS",
+   "where": "DAEMON › IT SINGS ›",
+   "needs": [
+    "the hub",
+    "the local cloud's music maker with its song mode (seer/sleep-sounds, updated 2026-11-14)"
+   ],
+   "steps": [
+    "Host a daemon, then DAEMON, IT SINGS.",
+    "Choose PROMPT (it writes the words), MY WORDS (your lyrics, with a style) or ITS OWN, and SING.",
+    "It writes, sings and paints the cover in about five to eight minutes; the song is kept in CREATIONS, SONGS."
+   ],
+   "draft": true
+  },
+  "C-358": {
+   "title": "CREATIONS",
+   "where": "DAEMON › CREATIONS ›, and DREAMS › SLEEP SOUNDS",
+   "needs": [
+    "the hub",
+    "THE COMMONS linked, for COMMUNITY (SETTINGS, THE COMMONS)"
+   ],
+   "steps": [
+    "DAEMON, CREATIONS: MINE is this phone's, HOUSEHOLD the hub's, COMMUNITY what homes shared.",
+    "Tap a piece in HOUSEHOLD to bring it to this phone, or to share it with the community.",
+    "A sleep piece's EXPORT gives the night as an MP3 (with DRIFT DOWN or without) or a PulseEntrain session."
+   ],
    "draft": true
   }
  }

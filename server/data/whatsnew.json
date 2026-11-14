@@ -1,16 +1,18 @@
 {
- "latest": 978,
+ "latest": 979,
  "builds": [
   {
-   "build": 978,
-   "commit": "6d77a91",
-   "date": "2026-11-12",
+   "build": 979,
+   "commit": "0a6c795",
+   "date": "2026-11-14",
    "sections": [
     {
      "ticket": "C-221",
      "title": "The link cable through the hub",
      "lines": [
-      "'s second step: THE LINK CABLE in the GAME tab — the hub passes a seat's screen, buttons and state to linkhost (/api/link/, never its memory write, never the relay), a phone-sized page at /link/, LINK CABLE on the title (DRAFT); today's goal 8"
+      "'s second step: THE LINK CABLE in the GAME tab — the hub passes a seat's screen, buttons and state to linkhost (/api/link/, never its memory write, never the relay), a phone-sized page at /link/, LINK CABLE on the title (DRAFT); today's goal 8",
+      "'s third step: the link cable kept running beside the hub — linkhost under launchd on roverbyteseer (tailnet only, /p/ off), GET/POST /api/link/host keeps link.host; WHAT'S NEW's spanText shares its window between builds so the newest is never cut off; today's goal 9",
+      "Each player's own save carried in and out of the link cable (DRAFT)"
      ]
     },
     {
@@ -37,11 +39,180 @@
      }
     },
     {
+     "ticket": "C-283",
+     "title": "A night from SLEEP to WAKE, and its dream from the whole day by the talk AI",
+     "lines": [
+      "/C-308: a night ends when it woke by itself (noon) and is at most sixteen hours, and the hub closes it itself"
+     ]
+    },
+    {
+     "ticket": "C-253",
+     "title": "Memory made at night",
+     "lines": [
+      "'s rest: THE GAME'S DAY in yesterday's material — what moved in the save since the last memory (MARKS, places first reached, daemons bound or seen, time played)"
+     ]
+    },
+    {
+     "ticket": "C-356",
+     "title": "The DREAM JOURNAL, and the signs in any journal",
+     "lines": [
+      "Next: THE SIGNS THAT RETURN — across a journal's readings, the signs read in two or more entries that do not overlap, with when each came"
+     ]
+    },
+    {
+     "ticket": "C-323",
+     "title": "Every voice from its speaker and context",
+     "lines": [
+      "The Tiiny says a long piece whole — up to 1200 characters a breath, its time growing with the words; a whole piece cut for it in 1100-character parts",
+      "Once the Tiiny has not said a long part, the rest of the piece goes in short parts from the start",
+      "Always describe the voice — the Tiiny's VoiceDesign answers 500 to a line with no instructions"
+     ]
+    },
+    {
+     "ticket": "C-334",
+     "title": "Sounds for sleep, made for you both",
+     "lines": [
+      "'fading as you both drift to sleep' (the user's words, 2026-11-14) — the daemon is not gendered, and the app's comment no longer quotes words the user did not write",
+      "'Sounds for sleep, made for you both' — the row and WHAT'S NEW no longer gender the daemon (the user, 2026-11-14, by multiple choice)"
+     ],
+     "setup": {
+      "title": "SLEEP SOUNDS",
+      "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+      "needs": [
+       "the hub",
+       "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
+       "headphones, for DRIFT DOWN"
+      ],
+      "steps": [
+       "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
+       "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
+       "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+       "It plays for thirty minutes and fades over the last ten.",
+       "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+      ],
+      "wiki": "Nights-and-dreams",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-358",
+     "title": "CREATIONS: sleep sounds with covers, a gallery kept on the hub and the phone, HOUSEHOLD and COMMUNITY, PulseEntrain's format",
+     "lines": [
+      "DRAFT: CREATIONS — sleep sounds get a title and a cover the daemon paints (THE EASEL's pipeline), the hub keeps every piece and lists every made thing in one shape (/api/creations: sleep sounds and paintings, who asked); the phone keeps what it downloads (MINE), HOUSEHOLD with ✓ and ONLY WHAT I DON'T HAVE, COMMUNITY on THE COMMONS (share, browse, download through the hub's link); a player like PulseEntrain's — the cover as a record, the night drawn clockwise, a tap for the spectrum, DRIFT DOWN's beats; EXPORT as MP3 (with or without DRIFT DOWN, made on the hub) or PulseEntrain's .imedx v2 (cover and music in base64, the beat stages as scenes, its id and generation.daemons naming the creation); the cut-off PLAY buttons gone with KEPT FROM OTHER NIGHTS",
+      "The exports made ahead, in the background at low priority (the hub has one core: a night's MP3 takes minutes there) and DRIFT DOWN from sine sources; GET .../exports says which are made, and an export not made yet says so; the record's title below its hole, the spectrum scaled to the music's own loudness, back links readable",
+      "A file the community shares opens as a picture does, with no key (the site's covers from THE COMMONS were refused)",
+      "The spectrum mirrored about the record's hole"
+     ],
+     "setup": {
+      "title": "CREATIONS",
+      "where": "DAEMON › CREATIONS ›, and DREAMS › SLEEP SOUNDS",
+      "needs": [
+       "the hub",
+       "THE COMMONS linked, for COMMUNITY (SETTINGS, THE COMMONS)"
+      ],
+      "steps": [
+       "DAEMON, CREATIONS: MINE is this phone's, HOUSEHOLD the hub's, COMMUNITY what homes shared.",
+       "Tap a piece in HOUSEHOLD to bring it to this phone, or to share it with the community.",
+       "A sleep piece's EXPORT gives the night as an MP3 (with DRIFT DOWN or without) or a PulseEntrain session."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-360",
+     "title": "THE MESH for all work, not only thought: each job to the most reliable node with the most potential free now",
+     "lines": [
+      "DRAFT: THE MESH for processing — every ffmpeg job (C-334's conversions, C-358's exports) to the node with the most potential free now: score = power (cores x measured speed) x reliability (its last twenty) x free (load, jobs held), hedged (not taken in 8 s, or past twice its time there: the next best too, the first to finish wins), the hub always the last resort; nodes dial in (server/src/mesh_worker_main.ts, hub/mesh.sh install as a LaunchAgent), run only ffmpeg on the job's own files, send outputs back; each job a task in THE MIND AT WORK, its node the mind; GET /api/mesh",
+      "DRAFT, phones and thought: the house's minds are put in order at each write (ai/thoughtroute.ts: power — the Tiiny 40, an endpoint 30, a phone's on-device model 8, the hub's module 2 — x reliability x free, from THE MIND AT WORK's ledger; the next on failure, hedged after 25 s when someone waits), and a phone that lends is one of them: THE MESH gives it a thought (procmesh thinkOn; not taken in 8 s or not answered in 2 min, the next mind); the phone (app/platform/lend.ts) takes it while its setting allows and answers on Apple's model. THE MIND's THIS PHONE IN THE MESH: CHARGING AT HOME (the default), WHENEVER OPEN, ONLY ITS OWN WORK, NEVER (its processing out of THE MIND, its own hedge too). A phone node is named by its own key and name (C-337)",
+      "The Tiiny's quick thinker is a mind of its own for a write-up, so a big thinker that is away (404) does not end it"
+     ],
+     "setup": {
+      "title": "THE MESH",
+      "where": "SETTINGS › THE MIND › THIS PHONE IN THE MESH; the machines in GET {hub}/api/mesh",
+      "needs": [
+       "the hub",
+       "a Mac on the home network or the tailnet, for a node"
+      ],
+      "steps": [
+       "A Mac joins THE MESH as a node: from a checkout of the companion on it, run hub/mesh.sh install (it pairs with the hub and starts at login). roverbyteseer and THE HANDS' Mac are nodes already.",
+       "On this phone: SETTINGS, THE MIND, THIS PHONE IN THE MESH -- CHARGING AT HOME (the default), WHENEVER OPEN, ONLY ITS OWN WORK or NEVER.",
+       "A phone lends its thinking only where Apple Intelligence runs; the card says whether it is lending now, and why not."
+      ],
+      "wiki": "The-hub-and-its-AI",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-361",
+     "title": "THE ENGINE ROOM keeps the household's creations",
+     "lines": [
+      "DRAFT: THE ENGINE ROOM's CREATIONS — every creation the hub keeps, by kind and daemon, with its cover, size and who asked; tick one or many and let them go (files, exports, cover; and from THE COMMONS if this home shared it); POST /api/creations/forget, home and tailnet only"
+     ]
+    },
+    {
+     "ticket": "C-359",
+     "title": "A daemon is spoken of as its own gender",
+     "lines": [
+      "A daemon is spoken of as its own gender — he, she, or they, never it (the user, 2026-11-14, by multiple choice)"
+     ]
+    },
+    {
+     "ticket": "C-362",
+     "title": "THE DAEMON SINGS: a song from a prompt, from your lyrics and a style, or of its own",
+     "lines": [
+      "DRAFT: THE DAEMON SINGS — a song from A PROMPT (it writes the words), YOUR WORDS with a style (sung as they are), or ITS OWN (its persona of the day); written on the house's mind (SING_SYSTEM: title, style, lyrics with [verse]/[chorus], about), sung on roverbyteseer's music door in a new song mode (ACE-Step with lyrics and vocals steered toward the daemon's voice recipe, not looped, -16 LUFS), made for the phone on THE MESH, its cover painted as a sleep piece's; a creation of kind song (SONGS in CREATIONS, the record player with its words, MP3 out, COMMUNITY and THE ENGINE ROOM take it too); IT SINGS › in the DAEMON tab; POST /api/sing, GET /api/songs, /api/song/<id>/...",
+      "A song's words keep their apostrophes (curly quotes made plain); TODO: C-360's processing, C-361 and C-362 built (DRAFT)",
+      "The three ways in fit a phone's width (PROMPT, MY WORDS, ITS OWN — 'A PROMPT' and 'YOUR WORDS' were cut off)"
+     ],
+     "setup": {
+      "title": "IT SINGS",
+      "where": "DAEMON › IT SINGS ›",
+      "needs": [
+       "the hub",
+       "the local cloud's music maker with its song mode (seer/sleep-sounds, updated 2026-11-14)"
+      ],
+      "steps": [
+       "Host a daemon, then DAEMON, IT SINGS.",
+       "Choose PROMPT (it writes the words), MY WORDS (your lyrics, with a style) or ITS OWN, and SING.",
+       "It writes, sings and paints the cover in about five to eight minutes; the song is kept in CREATIONS, SONGS."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-363",
+     "title": "THE ENGINE ROOM's MIND as THE MESH you can walk into, its pipelines coloured by step",
+     "lines": [
+      "DRAFT: the phone's THE MIND AT WORK coloured by step too — a pipeline's Nth step the week's Nth chakra (data/week.json), every kind off that spectrum, ✕ for a failure; tap the hub, a mind or a device for its work; a picked task shows its pipeline, each step opens"
+     ]
+    },
+    {
+     "ticket": "C-364",
+     "title": "One save, and its trail in THE ENGINE ROOM",
+     "lines": [
+      "Every save that moves kept in a trail, THE ENGINE ROOM's SAVES, and the companion's copy as the truth (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.363.1",
+      "and 4 earlier game releases known"
+     ]
+    },
+    {
      "ticket": null,
      "title": "ALSO",
      "lines": [
       "THE COMPANION's shelf cover, redrawn with its manual (C-356 in it)",
-      "WHAT'S NEW for build 977 (C-354's SET UP, C-221's link cable)"
+      "WHAT'S NEW for build 977 (C-354's SET UP, C-221's link cable)",
+      "WHAT'S NEW for build 978 (977's work, with the Reminders purpose strings)",
+      "THE COMPANION's shelf cover, reprinted with THE DAY'S TENDING and the LINK CABLE (DAEMONS releasedocs STALE)",
+      "Companion data: THE WALLED GARDEN (DAEMONS T-540, engine ce345c195) — companion_export —write: the place's name in maps, the planner and the profile layout",
+      "Companion data: the GATEKEEPER's TOKEN and the attendant's dream BEHIND THE WALL (DAEMONS T-551, engine dc780f8c5)",
+      "THE COMPANION's shelf cover, reprinted with CREATIONS (DAEMONS bfe09406)",
+      "Companion data: T-550 CHORUS — the crowd read \"the room is thinking one thought.\" in profile_layout (DAEMONS T-550, engine e9a023b4b)"
      ]
     }
    ]
@@ -1326,7 +1497,7 @@
      "ticket": "C-293",
      "title": "Asleep until woken, and the dream told in the first person",
      "lines": [
-      "Asleep until woken (noon at the latest, not 6am), every watch wake told, a night tucked on one device and woken on another dreamt too; the dream told in the first person — \"I dreamt ...\", a metaphor from the daemon's INDEX self, feelings, care, bond and the day, by every talker (DRAFT)"
+      "He sleeps until he is woken (noon at the latest, not 6am), every watch wake told, a night tucked on one device and woken on another dreamt too; the dream told as himself — \"I dreamt ...\", a metaphor from his INDEX self, feelings, care, bond and the day, by every talker (DRAFT)"
      ]
     },
     {

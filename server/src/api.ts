@@ -58,7 +58,7 @@ import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
-import { LINK_PAGE, linkHost, linkRoute } from "./linkcable.js";   // C-221: THE LINK CABLE
+import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./linkcable.js";   // C-221: THE LINK CABLE
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
 import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
 import { siteNow, siteUpdate, siteView } from "./sitefetch.js";           // C-342: the site, built on every push
@@ -1464,6 +1464,27 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             store.setSetting("link.host", v ? linkHost(v, "") : null);
           }
           return send(res, 200, { host: linkHost(store.getSetting("link.host")) });
+        }
+        // a player's own save into their seat (one the companion knows: the mirror, or one kept here), and home again as
+        // a kept copy -- filed by who the game is, so a kept game comes back over its own copy and nothing else's
+        if (req.method === "POST" && (path === "/api/link/seat" || path === "/api/link/home")) {
+          if (!phone && !isLoopback(req.socket.remoteAddress)) return send(res, 403, { error: "pair this phone first" });   // DRAFT
+          const b = await body(req), host = linkHost(store.getSetting("link.host"));
+          if (!seatOk(b.seat)) return send(res, 400, { error: "seat 0 or 1" });
+          if (!host) return send(res, 503, { error: "the link cable is not running on the hub" });   // DRAFT
+          const known = listSaves(cfg, store, savePathOf(cfg, store), mirrorPath(cfg));
+          try {
+            if (path === "/api/link/seat") {
+              const e = known.saves.find((x) => x.id === b.id);
+              if (!e) return send(res, 404, { error: "no such save" });
+              await seatSave(host, b.seat, new Uint8Array(readFileSync(known.paths.get(e.id)!)));
+              store.setSetting(`link.seat.${b.seat}`, e.id);
+              return send(res, 200, { seat: b.seat, save: e });
+            }
+            const id = keepSave(cfg, store, await takeSave(host, b.seat), `LINK CABLE · PLAYER ${b.seat + 1}`);   // DRAFT
+            store.setSetting(`link.seat.${b.seat}`, null);
+            return send(res, 200, { seat: b.seat, id, saves: listSaves(cfg, store, savePathOf(cfg, store), mirrorPath(cfg)).saves });
+          } catch (e) { return send(res, 502, { error: (e as Error).message }); }
         }
         return await linkRoute(res, linkHost(store.getSetting("link.host")), path, String(req.headers["accept-encoding"] ?? ""));
       }

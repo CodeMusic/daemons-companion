@@ -185,6 +185,16 @@ static void replyAs(int fd, const char* type, const char* encoding, const void* 
 	sendAll(fd, body, n);
 }
 static void reply(int fd, const char* type, const void* body, size_t n) { replyAs(fd, type, NULL, body, n); }
+static void refuse(int fd, int status) {
+	char h[128];
+	int l = snprintf(h, sizeof(h), "HTTP/1.1 %d No\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", status);
+	sendAll(fd, h, (size_t) l);
+}
+static size_t contentLength(const char* req) {
+	const char* h = strcasestr(req, "\r\ncontent-length:");
+	return h ? strtoul(h + 17, NULL, 10) : 0;
+}
+#define SAVE_MAX 0x20000                  // a FireRed / LeafGreen save: 128 KiB of flash
 
 static void* serve(void* arg) {
 	int port = *(int*) arg;
@@ -223,6 +233,36 @@ static void* serve(void* arg) {
 			if (width == 16) P[who].core->busWrite16(P[who].core, addr, (uint16_t) val);
 			else P[who].core->busWrite8(P[who].core, addr, (uint8_t) val);
 			reply(c, "text/plain", "ok", 2);
+		} else if (sscanf(req, "GET /s/%d", &who) == 1 && who >= 0 && who < N) {
+			// C-221: a player's save as their game holds it now -- the hub brings it home as a kept copy
+			void* sram = NULL;
+			mCoreThreadInterrupt(&P[who].thread);
+			size_t n = P[who].core->savedataClone(P[who].core, &sram);
+			mCoreThreadContinue(&P[who].thread);
+			if (sram && n) reply(c, "application/octet-stream", sram, n);
+			else refuse(c, 404);
+			free(sram);
+		} else if (sscanf(req, "PUT /s/%d", &who) == 1 && who >= 0 && who < N) {
+			// C-221: a player's own save into their seat, whole; their game then starts again from it (written to the
+			// seat's file too, so a restart of linkhost keeps it)
+			static uint8_t sav[SAVE_MAX];
+			size_t want = contentLength(req), have = 0;
+			char* body = strstr(req, "\r\n\r\n");
+			if (body && want >= 0x10000 && want <= SAVE_MAX) {
+				body += 4;
+				have = (size_t) (r - (body - req));
+				if (have > want) have = want;
+				memcpy(sav, body, have);
+				while (have < want) { ssize_t g = read(c, sav + have, want - have); if (g <= 0) break; have += (size_t) g; }
+			}
+			if (!want || have != want) refuse(c, 400);
+			else {
+				mCoreThreadInterrupt(&P[who].thread);
+				bool ok = P[who].core->savedataRestore(P[who].core, sav, want, true);
+				mCoreThreadContinue(&P[who].thread);
+				if (ok) { mCoreThreadReset(&P[who].thread); reply(c, "text/plain", "ok", 2); }
+				else refuse(c, 400);
+			}
 		} else if (!strncmp(req, "GET /state", 10)) {
 			char j[160];
 			int l = snprintf(j, sizeof(j), "{\"frames\":[%lu,%lu],\"attached\":%d}", P[0].frames, P[1].frames, lock.d.attached);

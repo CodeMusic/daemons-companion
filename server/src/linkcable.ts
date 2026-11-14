@@ -50,6 +50,34 @@ export function linkRoute(res: ServerResponse, host: string | null, path: string
   });
 }
 
+// C-221: a player's own save carried in and out of their seat -- in, the whole save and that game starts again from it;
+// out, the save as the game holds it now (the hub keeps it as a copy by name, saves.ts, never over anyone's own file)
+const SAVE_MIN = 0x10000, SAVE_MAX = 0x20000;
+export function seatOk(seat: unknown): seat is number { return Number.isInteger(seat) && (seat as number) >= 0 && (seat as number) < PLAYERS; }
+function carry(host: string, seat: number, method: "GET" | "PUT", bytes?: Uint8Array): Promise<Uint8Array> {
+  return new Promise((done, fail) => {
+    const ask = request(`${host}/s/${seat}`, { method, timeout: 5000,
+      headers: bytes ? { "Content-Type": "application/octet-stream", "Content-Length": String(bytes.length) } : {} }, (up) => {
+      const parts: Buffer[] = [];
+      up.on("data", (b: Buffer) => parts.push(b));
+      up.on("end", () => up.statusCode === 200 ? done(new Uint8Array(Buffer.concat(parts))) : fail(new Error(`linkhost answered ${up.statusCode}`)));
+      up.on("error", fail);
+    });
+    ask.on("timeout", () => ask.destroy(new Error("the link cable did not answer")));
+    ask.on("error", fail);
+    ask.end(bytes ? Buffer.from(bytes) : undefined);
+  });
+}
+export async function seatSave(host: string, seat: number, bytes: Uint8Array): Promise<void> {
+  if (bytes.length < SAVE_MIN || bytes.length > SAVE_MAX) throw new Error("a whole save, 64 to 128 KiB");
+  await carry(host, seat, "PUT", bytes);
+}
+export async function takeSave(host: string, seat: number): Promise<Uint8Array> {
+  const b = await carry(host, seat, "GET");
+  if (b.length < SAVE_MIN || b.length > SAVE_MAX) throw new Error("the link cable gave back no whole save");
+  return b;
+}
+
 // The page a phone's GAME tab shows (the hub serves it at /link/, so its requests are the hub's own): one player's
 // screen and the buttons under it. The app hands it the seat and its key before it loads (window.LINK); on this machine
 // ?p=0 or ?p=1 does. Every word DRAFT.
@@ -71,6 +99,8 @@ canvas{width:100%;max-width:480px;aspect-ratio:3/2;image-rendering:pixelated;bor
 .ab{display:flex;gap:14px}.ab .k{width:64px;height:64px;border-radius:32px;font-size:16px}
 .row{width:100%;max-width:480px;display:flex;justify-content:space-between;margin-top:14px}
 .row .k{width:88px;height:34px;border-radius:17px}
+#saves{gap:8px;align-items:center}#saves select{flex:1;min-width:0;height:34px;background:var(--key);color:var(--ink);border:1px solid var(--edge);border-radius:6px;font:inherit}
+.act{padding:0 12px;height:34px;display:flex;align-items:center;border:1px solid var(--edge);border-radius:17px;background:var(--key)}
 </style></head><body>
 <div id="who">THE LINK CABLE · DRAFT</div>
 <canvas id="c" width="240" height="160"></canvas>
@@ -83,6 +113,7 @@ canvas{width:100%;max-width:480px;aspect-ratio:3/2;image-rendering:pixelated;bor
   <div class="ab"><div class="k" data-b="2">B</div><div class="k" data-b="1">A</div></div>
 </div>
 <div class="row"><div class="k" data-b="4">SELECT</div><div class="k" data-b="8">START</div></div>
+<div class="row" id="saves"><select id="pick" aria-label="a save the companion keeps"></select><div class="act" id="sit" role="button">SIT IT HERE</div><div class="act" id="home" role="button">TAKE IT HOME</div></div>
 <script>
 const L = window.LINK || {}, q = new URLSearchParams(location.search);
 const seat = Number(L.seat ?? q.get("p") ?? 0), auth = L.token ? { Authorization: "Bearer " + L.token } : {};
@@ -119,6 +150,22 @@ document.querySelectorAll(".k").forEach((el) => {
   const up = (e) => { if (held.get(e.pointerId) === el) { held.delete(e.pointerId); press(el, false); } };
   el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
 });
+// a player's own save: one the companion keeps, sat in this seat (the game starts again from it), and home again as a
+// kept copy when they are done
+const pick = document.getElementById("pick");
+fetch("/api/saves", { headers: auth, cache: "no-store" }).then((r) => r.json()).then((j) => {
+  for (const s of j.saves || []) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " · " + s.playTime + " · " + s.label; pick.appendChild(o); }
+}).catch(() => {});
+async function carry(what, b) {
+  said("…");
+  try {
+    const r = await fetch("/api/link/" + what, { method: "POST", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify({ seat, ...b }) });
+    const j = await r.json().catch(() => ({}));
+    said(!r.ok ? (j.error || "the link cable did not answer") : what === "seat" ? j.save.name + "'s game is in this seat" : "kept on the companion as LINK CABLE · PLAYER " + (seat + 1));
+  } catch (e) { said("the hub did not answer"); }
+}
+document.getElementById("sit").onclick = () => pick.value && confirm("This seat's game starts again from that save. Anything not saved in it is lost.") && carry("seat", { id: pick.value });
+document.getElementById("home").onclick = () => carry("home", {});
 const BIT = { x: 1, z: 2, Shift: 4, Enter: 8, ArrowRight: 16, ArrowLeft: 32, ArrowUp: 64, ArrowDown: 128, s: 256, a: 512 };
 const bitOf = (e) => BIT[e.key.length === 1 ? e.key.toLowerCase() : e.key];
 onkeydown = (e) => { const b = bitOf(e); if (b && !(keys & b)) { keys |= b; send(); } if (b) e.preventDefault(); };

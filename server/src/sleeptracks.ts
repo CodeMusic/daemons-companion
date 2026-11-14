@@ -24,11 +24,15 @@ export type SleepTrack = {
   job?: string;                                     // roverbyteseer's job, while it is being made (a restart waits on it again)
   asked: string; made?: string; seconds?: number;
   bytes?: { phone: number; watch: number; watchAdpcm: number };
+  // C-358: who asked for it (a phone's own name, or the device's id), and its cover -- a title and a painting the daemon
+  // made of it (THE EASEL's pipeline), kept as cover.png beside the piece
+  by?: string; device?: string; title?: string; about?: string; cover?: "painting" | "ready" | "failed";
+  types?: string[]; category?: string;
 };
 export const SLEEP_FILES = { "phone.m4a": "audio/mp4", "watch.wav": "audio/wav", "watch-adpcm.wav": "audio/wav" } as const;
 export type SleepFile = keyof typeof SLEEP_FILES;
 export type SleepDoor = { base: string; key: string };   // roverbyteseer's sleep door and a key LiteLLM takes
-const KEEP = 4;
+const KEEP = 40;   // C-358: the hub keeps every piece (the user: "stored and served from the hub"); forty a daemon at most
 const WAIT_MS = 30 * 60000;
 
 const run = (args: string[]) => new Promise<void>((done, fail) =>
@@ -44,6 +48,7 @@ export class SleepTracks {
     try { this.tracks = JSON.parse(readFileSync(join(dir, "tracks.json"), "utf8")); } catch { this.tracks = []; }
     // a piece left making when the server stopped: wait on its job again (a deploy restarts the hub often); one never
     // sent to roverbyteseer is not coming, so it may be asked again
+    for (const t of this.tracks.filter((t) => t.cover === "painting")) delete t.cover;   // C-358: painted again when next listed
     for (const t of this.tracks.filter((t) => t.state === "making")) {
       if (!t.job) { Object.assign(t, { state: "failed", error: "the server restarted" }); continue; }
       this.queue(t, () => this.finish(t, t.job!, null));
@@ -65,19 +70,44 @@ export class SleepTracks {
     return existsSync(f) ? f : null;
   }
   // the piece for this recipe: kept, being made, or asked for now. `again` makes a new one for the same context.
-  ask(r: SleepRecipe, who: { species: number; nickname: string; said: string }, again = false): SleepTrack {
+  ask(r: SleepRecipe, who: { species: number; nickname: string; said: string; by?: string; device?: string; types?: string[]; category?: string },
+      again = false): SleepTrack {
     const have = this.tracks.find((t) => t.key === r.key && t.state !== "failed");
     if (have && !(again && have.state === "ready")) return have;
     if (!this.door()) throw new Error("No music maker is set up (roverbyteseer's sleep door).");   // DRAFT
     for (const t of this.tracks.filter((t) => t.key === r.key && t.state === "failed")) this.drop(t);
     const t: SleepTrack = { id: randomBytes(16).toString("hex"), key: r.key, species: who.species, nickname: who.nickname,
-                            caption: r.caption, bpm: r.bpm, keyscale: r.keyscale, said: who.said, state: "making", asked: new Date().toISOString() };
+                            caption: r.caption, bpm: r.bpm, keyscale: r.keyscale, said: who.said, state: "making", asked: new Date().toISOString(),
+                            ...(who.by ? { by: who.by } : {}), ...(who.device ? { device: who.device } : {}),
+                            ...(who.types ? { types: who.types } : {}), ...(who.category ? { category: who.category } : {}) };
     this.tracks.push(t);
     this.save();
     const seed = again ? undefined : r.seed;
     this.queue(t, () => this.make(t, r, seed));
     return t;
   }
+  // C-358: a piece's cover and words, once painted
+  patch(id: string, fields: Partial<Pick<SleepTrack, "title" | "about" | "cover">>): SleepTrack | undefined {
+    const t = this.byId(id);
+    if (!t) return undefined;
+    Object.assign(t, fields);
+    this.save();
+    return t;
+  }
+  setCover(id: string, png: Uint8Array) {
+    const t = this.byId(id);
+    if (!t) return;
+    mkdirSync(join(this.dir, t.id), { recursive: true });
+    writeFileSync(join(this.dir, t.id, "cover.png.part"), png);
+    renameSync(join(this.dir, t.id, "cover.png.part"), join(this.dir, t.id, "cover.png"));
+    t.cover = "ready";
+    this.save();
+  }
+  coverFile(id: string): string | null {
+    const t = this.byId(id), f = t ? join(this.dir, t.id, "cover.png") : "";
+    return f && existsSync(f) ? f : null;
+  }
+  folder(id: string): string | null { const t = this.byId(id); return t ? join(this.dir, t.id) : null; }
   private queue(t: SleepTrack, work: () => Promise<void>) {
     this.busy = this.busy.then(work).catch((e) => {
       Object.assign(t, { state: "failed", error: String((e as Error)?.message ?? e).slice(0, 160) });

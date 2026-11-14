@@ -77,6 +77,8 @@ import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type S
 import { readProfile } from "./save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
+import { carrierOf, DRIFT, exportImedx, exportMp3 } from "./sleepexport.js";   // C-358
+import { beatsSaid, paintingCreation, sleepCreation, type Creation } from "./creations.js";   // C-358
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
@@ -88,7 +90,7 @@ import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
 import { KEYS } from "./keys.js";
-import { commonsFriend, commonsHome, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
+import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
 import { accountsRelay } from "./accountslink.js";   // C-226
@@ -1031,7 +1033,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const PAINTINGS_MOST = 400;
   type PaintingRow = { id: string; at: string; personality: number; species: number; nickname: string; name: string; types: string[];
                        request: string; title: string; scene: string; about: string; style: string; seed: number;
-                       state: "painting" | "done" | "failed"; error?: string; task?: string; ms?: number };
+                       state: "painting" | "done" | "failed"; error?: string; task?: string; ms?: number; by?: string };
   const paintings = (): PaintingRow[] => { try { const l = JSON.parse(store.getSetting("easel.paintings") ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; } };
   const keepPainting = (row: PaintingRow) => {
     const rest = paintings().filter((p) => p.id !== row.id);
@@ -1046,7 +1048,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const paintingFile = (id: string) => join(PAINTINGS_DIR, `${/^[0-9a-f]{16}$/.test(id) ? id : "-"}.png`);
   // a painting cut off by a restart is not left painting forever: it says so, and can be asked for again
   for (const p of paintings()) if (p.state === "painting") updatePainting(p.id, { state: "failed", error: "the hub restarted while it painted" });   // DRAFT
-  const paint = (personality: number, request: string): PaintingRow | { error: string } => {
+  const paint = (personality: number, request: string, by?: string): PaintingRow | { error: string } => {
     const now = new Date(), got = personaNow(personality, now);
     if (!got) return { error: "That daemon is not here to paint." };   // DRAFT
     if (!writerNow()) return { error: "No mind in the house to think it through." };   // DRAFT
@@ -1057,7 +1059,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const w = ledgered({ kind: "painting", title: `${f.nickname} paints: ${request.slice(0, 40)}`, quick: true });   // DRAFT: the trainer watches the easel
     const row: PaintingRow = { id, at: now.toISOString(), personality: personality >>> 0, species: f.species, nickname: f.nickname,
                                name: sp?.name ?? f.name ?? "", types: f.types ?? [], request, title: "", scene: "", about: "", style, seed,
-                               state: "painting", task: w.task.id };
+                               state: "painting", task: w.task.id, ...(by ? { by } : {}) };
     keepPainting(row);
     (async () => {
       const said = await w.write(PAINT_SYSTEM, paintAsk(got.persona.text, request, style), 400);
@@ -1074,6 +1076,42 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       w.end("failed", { error });
     });
     return row;
+  };
+  // C-358: a sleep piece's cover -- the daemon names its music and paints it, as at THE EASEL (its own style), one at a
+  // time behind the easel's own paintings; the title is drawn over it by the app. Every word DRAFT.
+  let coversBusy: Promise<unknown> = Promise.resolve();
+  const paintCover = (t: SleepTrack) => {
+    if (t.cover === "painting" || t.cover === "ready" || t.state === "failed") return;
+    sleepTracks().patch(t.id, { cover: "painting" });
+    coversBusy = coversBusy.then(async () => {
+      const w = ledgered({ kind: "painting", title: `${t.nickname || "A daemon"} paints a cover for its sleep sounds` });   // DRAFT
+      try {
+        const style = paintStyle({ types: t.types, species: t.species, category: t.category }, core.daemonFeelings(store, new Date()),
+                                 store.getSetting(`paint.style.${t.species}`));
+        const persona = `You are ${t.nickname || "a small daemon"}, and tonight you made music to fall asleep to beside the one who ` +
+                        `cares for you. ${t.said}`;
+        const request = `the cover for that music -- ${t.caption} -- and give the music its title`;
+        const said = writerNow() ? await w.write(PAINT_SYSTEM, paintAsk(persona, request, style), 400) : null;
+        const p = readPainting(said, `${t.nickname || ""} night`.trim());
+        sleepTracks().patch(t.id, { title: p.title, about: p.about });
+        const seed = randomBytes(4).readUInt32BE(0);
+        const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style), seed, fetch, w.signal);
+        sleepTracks().setCover(t.id, png);
+        w.end("done");
+      } catch (e) {
+        sleepTracks().patch(t.id, { cover: "failed" });
+        w.end("failed", { error: (e as Error)?.message?.slice(0, 120) || "no cover" });   // DRAFT
+      }
+    });
+  };
+  // C-358: every made thing this hub keeps, in one shape (creations.ts); a ready sleep piece with no cover yet gets one
+  const homeName = () => (store.getSetting("commons.name") ?? "").trim() || "HOME";
+  const creationsNow = (): Creation[] => {
+    const home = homeName(), beats = beatsSaid(DRIFT.map((d) => d.beat));
+    const sleep = sleepTracks().list(null);
+    for (const t of sleep) if (t.state === "ready" && !t.cover) paintCover(t);
+    return [...sleep.map((t) => sleepCreation(t, home, beats, carrierOf(t.keyscale))),
+            ...paintings().map((p) => paintingCreation(p, home))];
   };
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
@@ -1770,7 +1808,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           ? cleanImage(await Promise.race([imageOf().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), 25000))]))
           : null;
         const r = sleepRecipe(c, image);
-        try { return send(res, 202, { track: trackOut(sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: sleepSaid(r, c.nickname || "your daemon") }, !!b.again)) }); }
+        try {
+          const t = sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: sleepSaid(r, c.nickname || "your daemon"),
+                                           by: phone?.name ?? (deviceId || "the site"), device: deviceId || undefined,   // C-358
+                                           types: Array.isArray(c.types) ? c.types : typeof c.types === "string" ? c.types.split("/") : undefined,
+                                           category: typeof c.category === "string" ? c.category : undefined }, !!b.again);
+          paintCover(t);                                                                                                 // C-358
+          return send(res, 202, { track: trackOut(t) });
+        }
         catch (e) { return send(res, 503, { error: (e as Error).message }); }
       }
       // C-331 (1): a book's own recording, one chapter, as a board plays a voice (raw 16 kHz PCM) -- the Ultra keeps it on
@@ -1781,6 +1826,85 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!f) return send(res, 404, { error: "no recording of that chapter" });
         res.writeHead(200, { "content-type": "application/octet-stream", "content-length": statSync(f).size, "cache-control": "max-age=86400" });
         return createReadStream(f).pipe(res);
+      }
+      // C-358: CREATIONS -- every made thing this hub keeps (?kind=sleep|painting), for MINE, HOUSEHOLD and COMMUNITY
+      if (req.method === "GET" && path === "/api/creations") {
+        const kind = url.searchParams.get("kind");
+        return send(res, 200, { home: homeName(), creations: creationsNow().filter((c) => !kind || c.kind === kind) });
+      }
+      // C-358: COMMUNITY -- what homes shared on THE COMMONS, through this hub's link to it (a home linked and approved is
+      // the "account" for now). GET ?kind=: theirs, each file fetched through here. POST share {uid}: one of this home's
+      // creations, its files with it; POST unshare {uid}. GET /api/community/file/<n>/<name>: a shared file.
+      if (path === "/api/community" || path.startsWith("/api/community/")) {
+        const link = commonsOf(store);
+        if (!link) return req.method === "GET" && path === "/api/community"
+          ? send(res, 200, { linked: false, creations: [] })
+          : send(res, 409, { error: "Link this home to THE COMMONS first (SETTINGS)." });   // DRAFT
+        const h = { "x-daemons-home": link.key };
+        try {
+          if (req.method === "GET" && path === "/api/community") {
+            const kind = url.searchParams.get("kind");
+            const r = await fetch(`${link.url}/commons/creations${kind ? `?kind=${encodeURIComponent(kind)}` : ""}`, { headers: h, signal: AbortSignal.timeout(10000) });
+            const j = await r.json() as { creations?: (Creation & Record<string, unknown>)[]; error?: string };
+            if (!r.ok) return send(res, 502, { error: j.error ?? `THE COMMONS answered ${r.status}` });   // DRAFT
+            const via = (u: string | null) => u ? u.replace(/^\/commons\/creations\//, "/api/community/file/") : null;
+            return send(res, 200, { linked: true, home: homeName(), creations: (j.creations ?? []).map((c) => ({ ...c, cover: via(c.cover),
+              files: Object.fromEntries(Object.entries(c.files).map(([k, v]) => [k, via(v)])) })) });
+          }
+          if (req.method === "POST" && path === "/api/community/share") {
+            const uid = String((await body(req)).uid ?? ""), c = creationsNow().find((x) => x.uid === uid);
+            if (!c || c.state !== "ready") return send(res, 404, { error: "no such creation here" });   // DRAFT
+            const files: Record<string, string> = {};
+            const add = (name: string, f: string | null) => { if (f && existsSync(f)) files[name] = readFileSync(f).toString("base64"); };
+            if (c.kind === "sleep") { add("phone.m4a", sleepTracks().file(c.id, "phone.m4a")); add("cover.png", sleepTracks().coverFile(c.id)); }
+            if (c.kind === "painting") add("painting.png", paintingFile(c.id));
+            const r = await fetch(`${link.url}/commons/creations/share`, { method: "POST", headers: { ...h, "content-type": "application/json" },
+              body: JSON.stringify({ creation: c, files }), signal: AbortSignal.timeout(120000) });
+            return send(res, r.status, await r.json());
+          }
+          if (req.method === "POST" && path === "/api/community/unshare") {
+            const r = await fetch(`${link.url}/commons/creations/unshare`, { method: "POST", headers: { ...h, "content-type": "application/json" },
+              body: JSON.stringify({ uid: String((await body(req)).uid ?? "") }), signal: AbortSignal.timeout(10000) });
+            return send(res, r.status, await r.json());
+          }
+          const fm = req.method === "GET" && path.match(/^\/api\/community\/file\/(\d{1,6})\/([a-z.]{5,16})$/);
+          if (fm) {
+            const r = await fetch(`${link.url}/commons/creations/${fm[1]}/${fm[2]}`, { headers: h, signal: AbortSignal.timeout(120000) });
+            if (!r.ok || !r.body) return send(res, r.status === 200 ? 502 : r.status, { error: "not found" });
+            const buf = Buffer.from(await r.arrayBuffer());
+            res.writeHead(200, { "content-type": r.headers.get("content-type") ?? "application/octet-stream", "content-length": buf.length,
+                                 "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+            return res.end(buf);
+          }
+          return send(res, 404, { error: "not found" });
+        } catch (e) { return send(res, 502, { error: `THE COMMONS did not answer: ${(e as Error).message.slice(0, 80)}` }); }   // DRAFT
+      }
+      // C-358: a sleep piece's cover, and its exports -- the night as an MP3 (with DRIFT DOWN or without) and as
+      // PulseEntrain's .imedx; each made on the hub the first time it is asked for, then kept
+      const sleepExtra = req.method === "GET" && path.match(/^\/api\/sleep\/track\/([0-9a-f]{32})\/(cover\.png|export\.mp3|export-drift\.mp3|export\.imedx)$/);
+      if (sleepExtra) {
+        const [, id, name] = sleepExtra, t = sleepTracks().byId(id), folder = sleepTracks().folder(id);
+        if (!t || !folder || (name !== "cover.png" && t.state !== "ready")) return send(res, 404, { error: "no such piece" });
+        const fileName = (ext: string) => `${(t.title || `${t.nickname} sleep sounds`).replace(/[^A-Za-z0-9 '-]/g, "").trim().slice(0, 60) || "sleep sounds"}${ext}`;
+        try {
+          if (name === "cover.png") {
+            const f = sleepTracks().coverFile(id);
+            if (!f) return send(res, 404, { error: "no cover yet" });
+            res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=31536000, immutable" });
+            return res.end(readFileSync(f));
+          }
+          if (name === "export.imedx") {
+            const j = await exportImedx(folder, t, homeName());
+            const out = Buffer.from(JSON.stringify(j));
+            res.writeHead(200, { "content-type": "application/json", "content-length": out.length,
+                                 "content-disposition": `attachment; filename="${fileName(".imedx")}"` });
+            return res.end(out);
+          }
+          const f = await exportMp3(folder, t.keyscale, name === "export-drift.mp3");
+          res.writeHead(200, { "content-type": "audio/mpeg", "content-length": statSync(f).size, "accept-ranges": "bytes",
+                               "content-disposition": `attachment; filename="${fileName(name === "export-drift.mp3" ? " (DRIFT DOWN).mp3" : ".mp3")}"` });
+          return createReadStream(f).pipe(res);
+        } catch (e) { return send(res, 500, { error: `it could not be made: ${(e as Error).message.slice(0, 120)}` }); }   // DRAFT
       }
       if (req.method === "GET" && path.startsWith("/api/sleep/track/")) {
         const [, , , , id, name] = path.split("/");
@@ -2869,7 +2993,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
         const who = b.personality !== undefined ? Number(b.personality) : carriedDaemon(ecfg, store, deviceId)?.personality;
         if (who === undefined || !Number.isFinite(who)) return send(res, 400, { error: "Host a daemon for it to paint." });   // DRAFT
-        const r = paint(who, request);
+        const r = paint(who, request, phone?.name ?? (deviceId || undefined));   // C-358: who asked
         return "error" in r ? send(res, 409, r) : send(res, 200, { painting: r });
       }
       if (req.method === "GET" && path === "/api/paintings") return send(res, 200, { paintings: paintings() });

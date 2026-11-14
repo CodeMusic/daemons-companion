@@ -19,6 +19,7 @@ import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
 import { MindScreen } from "./Mind";       // C-254
 import { EaselScreen } from "./Easel";     // C-338
+import { CreationsScreen } from "./Creations";   // C-358
 import { followVoice, useMouth } from "../../sound/speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
 import { ReadsCard, Under } from "../shared/Reads";   // C-203, C-204
@@ -309,7 +310,7 @@ export function TalkCard({ ink, name }: { ink: string; name: string }) {
 }
 
 export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
-  const [seg, setSeg] = useState<"yours" | "party" | "index" | "routines" | "soundings" | "dreams" | "mind" | "meetings" | "easel">("yours");   // C-156; C-200 dreams; C-254 mind
+  const [seg, setSeg] = useState<"yours" | "party" | "index" | "routines" | "soundings" | "dreams" | "mind" | "meetings" | "easel" | "creations">("yours");   // C-156; C-200 dreams; C-254 mind
   const [party, setParty] = useState<Daemon[] | null>(null);
   const [error, setError] = useState("");
   const [open, setOpen] = useState<{ species: number; name: string; category: string; entry: string; said?: string;
@@ -400,6 +401,7 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
       {seg === "dreams" ? <DreamsScreen ink={ink} /> : null}
       {seg === "mind" ? <MindScreen /> : null}
       {seg === "meetings" ? <MeetingsScreen ink={ink} /> : null}
+      {seg === "creations" ? <CreationsScreen ink={ink} onClose={() => setSeg("yours")} /> : null}{/* C-358 */}
       {seg === "easel" && away ? <EaselScreen ink={ink} name={away.nickname} slot={away.slot ?? null} /> : null}
       {seg === "routines" ? <RoutinesCard ink={ink} /> : null}
       {seg === "yours" ? (<>
@@ -408,6 +410,8 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
                     onPress={() => setSeg("mind")}>{"THE MIND ›"}</Text> : null}{/* C-254: a look around its mind, DRAFT */}
       {away && !ALONE ? <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link"
                     onPress={() => setSeg("easel")}>{"THE EASEL ›"}</Text> : null}{/* C-338: it paints what you ask, DRAFT */}
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link"
+            onPress={() => setSeg("creations")}>{"CREATIONS ›"}</Text>{/* C-358: what the daemons made, DRAFT */}
       {away && ON_PHONE && !ALONE ? <TalkCard ink={ink} name={away.nickname} /> : null}
       {needPath ? (
         <Card borderColor="$color9" borderLeftWidth={6} borderLeftColor="$color9">

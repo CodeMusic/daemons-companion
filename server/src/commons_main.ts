@@ -4,6 +4,7 @@
 // own network reaches it.
 //   approve a home, on that machine:  hub/commons.sh homes   then   hub/commons.sh approve h1
 import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { makeCommons } from "./commons_api.js";
 import { accountsConfigFromEnv, eraseIdle } from "./accounts_api.js";
 import { Store } from "./db.js";
@@ -26,9 +27,11 @@ const accounts = accountsConfigFromEnv(process.env);
 // C-226 piece 5: an account nobody has used for two years is erased -- looked for at start and once a day
 const sweep = () => { const n = eraseIdle(store); if (n) console.log(`THE COMMONS erased ${n} account(s) unused for two years`); };
 sweep(); setInterval(sweep, 24 * 60 * 60 * 1000).unref();
-makeCommons(store, accounts).listen(port, host, () =>
+// C-358: COMMUNITY's creations, kept beside the database
+const creationsDir = join(dirname(db), "commons-creations");
+makeCommons(store, accounts, { creationsDir }).listen(port, host, () =>
   console.log(`THE COMMONS on http://${host}:${port}  (database ${db}; meetings' lines ${llm && model ? `from ${model}` : "written"})`));
 // C-226 piece 5: COMMONS_PUBLIC_PORT, the one the Cloudflare Tunnel points at (docs/OPENING.md) -- on this machine's
 // loopback only, where nothing is the keeper's and every address has a budget. Unset, nothing public listens.
 const pub = Number(process.env.COMMONS_PUBLIC_PORT || 0);
-if (pub) makeCommons(store, accounts, { public: true }).listen(pub, "127.0.0.1", () => console.log(`THE COMMONS, public, on http://127.0.0.1:${pub} (for cloudflared only)`));
+if (pub) makeCommons(store, accounts, { public: true, creationsDir }).listen(pub, "127.0.0.1", () => console.log(`THE COMMONS, public, on http://127.0.0.1:${pub} (for cloudflared only)`));

@@ -30,6 +30,8 @@ import * as A from "./accounts.js";
 import * as P from "./profiletrade.js";   // C-226 piece 4
 import { ACCOUNT_KEYS } from "./keys.js";
 import { accountsRoute, type AccountsConfig } from "./accounts_api.js";   // C-226
+import { CommonsCreations } from "./commonscreations.js";   // C-358
+import { createReadStream, statSync } from "node:fs";
 
 const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
 const send = (res: ServerResponse, status: number, body: unknown) => {
@@ -47,11 +49,14 @@ export const PUBLIC_MOST = 600;
 const SEEN = new Map<string, number[]>();
 const FORWARDED = ["cf-connecting-ip", "x-forwarded-for", "forwarded", "x-real-ip", "cf-ray"];
 
-export function makeCommons(store: Store, accounts: AccountsConfig | null = null, opts: { public?: boolean } = {}): Server {
+export function makeCommons(store: Store, accounts: AccountsConfig | null = null,
+                            opts: { public?: boolean; creationsDir?: string } = {}): Server {
+  // C-358: COMMUNITY, the creations homes shared (commonscreations.ts) -- kept only when given a folder
+  const shared = opts.creationsDir ? new CommonsCreations(opts.creationsDir) : null;
   return createServer(async (req, res) => {
     try {
       const path = new URL(req.url ?? "/", "http://localhost").pathname, method = req.method ?? "GET";
-      const b = method === "POST" ? await body(req) : {};
+      const b = method === "POST" ? await body(req, path === "/commons/creations/share" && !opts.public ? 17 * 1024 * 1024 : undefined) : {};
       // the keeper's machine: loopback, or the machine's own address when the commons listens only on the tailnet's --
       // never the public listener, and never a request something passed on (piece 5)
       const forwarded = FORWARDED.some((h) => req.headers[h] !== undefined);
@@ -93,6 +98,26 @@ export function makeCommons(store: Store, accounts: AccountsConfig | null = null
       }
       if (method === "POST" && path === "/commons/friend/accept") { const r = C.acceptFriend(store, home, String(b.id ?? "")); return send(res, X.failed(r) ? 400 : 200, r); }
       if (method === "POST" && path === "/commons/friend/forget") return send(res, 200, C.forgetFriend(store, home, String(b.id ?? "")));
+      // C-358: COMMUNITY -- what approved homes shared, a home's own share and unshare, and each one's files
+      if (path === "/commons/creations" || path.startsWith("/commons/creations/")) {
+        if (!shared) return send(res, 404, { error: "this commons keeps no creations" });   // DRAFT
+        if (method === "GET" && path === "/commons/creations") {
+          const kind = new URL(req.url ?? "/", "http://localhost").searchParams.get("kind");
+          return send(res, 200, { creations: shared.list(kind) });
+        }
+        if (method === "POST" && path === "/commons/creations/share") {
+          if (opts.public) return send(res, 403, { error: "shared from a home's hub only" });   // DRAFT
+          const r = shared.share(home, b.creation, b.files);
+          return send(res, "error" in r ? 400 : 200, r);
+        }
+        if (method === "POST" && path === "/commons/creations/unshare")
+          return shared.unshare(home, String(b.uid ?? "")) ? send(res, 200, { ok: true }) : send(res, 404, { error: "not shared by this home" });
+        const m = method === "GET" && path.match(/^\/commons\/creations\/(\d{1,6})\/([a-z.]{5,16})$/);
+        const f = m ? shared.file(m[1], m[2]) : null;
+        if (!f) return send(res, 404, { error: "not found" });
+        res.writeHead(200, { "content-type": f.type, "content-length": statSync(f.path).size, "cache-control": "max-age=86400" });
+        return createReadStream(f.path).pipe(res);
+      }
       if (method === "POST" && path === "/commons/player") { const r = C.vouch(store, KEYS, home, b.name); return send(res, X.failed(r) ? 400 : 200, r); }
       if (path.startsWith("/commons/x/")) {
         const p = X.playerFor(store, KEYS, String(req.headers["x-daemons-player"] ?? ""));

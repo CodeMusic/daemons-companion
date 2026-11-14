@@ -4,9 +4,10 @@
 // steers it), played for thirty minutes and faded out over the last ten; DRIFT DOWN, the binaural layer, for headphones.
 // A piece made once is kept and played again until the daemon's context moves. Every word here is DRAFT.
 import { useEffect, useState } from "react";
-import { XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { sleepFile } from "../../platform/sleepFile";
+import { keep, mine, type Creation } from "../../platform/creations";   // C-358: what is played is kept in MINE
+import { CreationsScreen, RecordCover } from "./Creations";   // C-358
 import { DRIFT } from "../../sound/binaural";
 import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../../sound/sleepSession";
 import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../../ui/ui";
@@ -27,8 +28,15 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
   const [now, setNow] = useState(sleepState());
   const [drift, setDriftOn] = useState(sleepState().drift);
   const [, tickle] = useState(0);
+  const [gallery, setGallery] = useState(false);                                 // C-358: CREATIONS, in place of this card
+  const [tonight, setTonight] = useState<Creation | null>(null);                 // C-358: tonight's piece as a creation (its cover)
   const load = () => api<Sleep>("/api/sleep").then(setSleep).catch((e) => setError(e.message));
   useEffect(() => { load(); return onSleep(setNow); }, []);
+  useEffect(() => {   // C-358: tonight's cover, once painted
+    const id = sleep?.current?.id;
+    if (!id) { setTonight(null); return; }
+    api<{ creations: Creation[] }>("/api/creations?kind=sleep").then((r) => setTonight(r.creations.find((c) => c.id === id) ?? null)).catch(() => {});
+  }, [sleep?.current?.id, sleep?.current?.state]);
   const making = !!sleep?.tracks.some((t) => t.state === "making");
   useEffect(() => {   // while a piece is being made, look again; while one plays, keep the minutes true
     if (!making && !now.playing) return;
@@ -45,12 +53,19 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
     setError(""); setBusy("Fetching it to the phone, once…");
     try {
       if (drift && headphones() === false) setError("DRIFT DOWN waits for headphones: the music plays alone until then.");
-      await playSleep({ id: t.id, uri: await sleepFile(t.id, t.files["phone.m4a"]), title: `${t.nickname || "Your daemon"}'s sleep sounds`,
-                        keyscale: t.keyscale, drift });
+      // C-358: kept in MINE first (fetched once), then played from the phone
+      let k = mine("sleep").find((x) => x.id === t.id);
+      if (!k) {
+        const c = (await api<{ creations: Creation[] }>("/api/creations?kind=sleep")).creations.find((x) => x.id === t.id);
+        if (!c) throw new Error("The hub does not have it any more.");   // DRAFT
+        k = await keep(c, "household");
+      }
+      await playSleep({ id: t.id, uri: k.local["phone.m4a"], title: k.title || `${t.nickname || "Your daemon"}'s sleep sounds`, keyscale: t.keyscale, drift });
     } catch (e) { setError((e as Error).message); } finally { setBusy(""); }
   };
   const toggleDrift = () => { const on = !drift; setDriftOn(on); if (now.playing) setDrift(on); };
 
+  if (gallery) return <CreationsScreen ink={ink ?? "#fbfaf6"} start="sleep" onClose={() => setGallery(false)} />;
   if (!sleep) return error ? <Card><Eyebrow>{"SLEEP SOUNDS"}</Eyebrow><Small color="$color8">{error}</Small></Card> : null;
   const cur = sleep.current, older = sleep.tracks.filter((t) => t.state === "ready" && t.id !== cur?.id);
   return (
@@ -58,6 +73,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
       <Eyebrow>{"SLEEP SOUNDS · DRAFT"}</Eyebrow>
       <Small>{"Music made for your daemon as it is tonight, to fall asleep to together. It plays for thirty minutes and fades away over the last ten."}</Small>
       {sleep.tonight ? <Small color="$color10">{sleep.tonight.said}</Small> : <Small>{"Carry a daemon to have sleep sounds made for it."}</Small>}
+      {tonight ? <XStack alignSelf="center" marginVertical={4}><RecordCover c={tonight} size={180} /></XStack> : null}
       {!sleep.maker ? <Small color="$color8">{"Sleep sounds are made on the hub's music maker, and this hub has none set up."}</Small> : null}
 
       {now.playing ? (
@@ -88,17 +104,9 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
       </XStack>
       <Small>{`With headphones: a slow beat between your ears under the music, easing from ${DRIFT.map((d) => `${d.word.toLowerCase()} ${d.beat} Hz`).join(" to ")} as you fall asleep. Headphones only; on a speaker it waits.`}</Small>
 
-      {older.length ? (
-        <YStack gap={2} marginTop={8}>
-          <Eyebrow>{"KEPT FROM OTHER NIGHTS"}</Eyebrow>
-          {older.map((t) => (
-            <XStack key={t.id} gap={8} alignItems="center" justifyContent="space-between">
-              <Small>{`${t.said.replace(/^Made for [^ ]+ as tonight finds them: /, "")} (${whenSaid(t.made ?? t.asked)})`}</Small>
-              {!now.playing ? <Action label="PLAY" ink={ink} onPress={() => play(t)} /> : null}
-            </XStack>
-          ))}
-        </YStack>
-      ) : null}
+      {/* C-358: every piece made -- this phone's, the household's and the community's -- in CREATIONS */}
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink ?? "$color12"} cursor="pointer" role="link" marginTop={8}
+            onPress={() => setGallery(true)}>{older.length ? `CREATIONS › (${older.length + (cur?.state === "ready" ? 1 : 0)} made)` : "CREATIONS ›"}</Text>
     </Card>
   );
 }

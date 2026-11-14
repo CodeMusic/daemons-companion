@@ -64,6 +64,25 @@ export async function playSleep(o: { id: string; uri: string; title: string; key
   step();
 }
 
+// C-358: the spectrum the player draws when its cover is tapped -- the music's own samples, while anyone listens; where a
+// build cannot sample (the site), null, and the player draws the beat instead
+const sampled = new Set<(frames: number[]) => void>();
+let sampleSub: { remove: () => void } | null = null;
+export function onSpectrum(f: (frames: number[]) => void): () => void {
+  sampled.add(f);
+  if (music && !sampleSub) {
+    try {
+      music.setAudioSamplingEnabled(true);
+      sampleSub = music.addListener("audioSampleUpdate", (d) => { const fr = d.channels[0]?.frames; if (fr) sampled.forEach((g) => g(fr)); });
+    } catch { sampleSub = null; }
+  }
+  return () => {
+    sampled.delete(f);
+    if (!sampled.size && sampleSub) { sampleSub.remove(); sampleSub = null; try { music?.setAudioSamplingEnabled(false); } catch { /* none */ } }
+  };
+}
+export const canSample = () => !!music && typeof (music as { setAudioSamplingEnabled?: unknown }).setAudioSamplingEnabled === "function";
+
 export function setDrift(on: boolean) {
   tell({ drift: on, driftHeld: null, stage: on ? state.stage : null });
   if (!on && drift) { drift.pause(); stageUri = ""; }

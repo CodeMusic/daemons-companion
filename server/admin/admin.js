@@ -1,6 +1,6 @@
 // C-330: THE ENGINE ROOM (DRAFT) -- the hub's admin in one web app, one navigation for all of it:
 //   THE HUB      what the hub is running, and what is done on its own machine only
-//   THE MIND     THE MIND AT WORK for everyone, and LATER (C-319) -- the app keeps only its player's own
+//   THE MIND     THE MIND AT WORK for everyone, and LATER (C-319) -- the app keeps only its player's own; THE MESH to walk into (C-363)
 //   THE HOUSE    the casino's odds and why, everyone at the reels, what the house keeps, the weather's city (C-158, C-167)
 //   VOICES       MAKE THE VOICES AGAIN (C-303)
 //   DEVICES      every device heard, what it carries, forgetting one (C-80)
@@ -150,44 +150,185 @@ const BLURB = {
   jobs: "The site (built at every push), THE HANDS on the computer, and every job the command line did.",
 };
 
-// ---- THE MIND (C-319): everyone's tasks, LATER ----
-const KIND = { talk: ["#5a7fa6", "TALK"], guide: ["#00a8d6", "THE GUIDE"], dream: ["#8E3F80", "DREAMS"], whatsnew: ["#d9a74a", "WHAT'S NEW"],
-               journal: ["#6fae6a", "JOURNAL"], meeting: ["#c9784a", "MEETINGS"], voice: ["#b48ce0", "VOICES"], chatter: ["#4f6b8a", "CHATTER"] };
+// ---- THE MIND (C-319): everyone's tasks, LATER; C-363: THE MESH you walk into, its pipelines coloured by step ----
+// C-363 (the user, 2026-11-14: "red = first processing step... orange = 2nd.... purple = 7th... and colours outside of
+// those 7 are general non-temporal colours -- unless we already have colour mappings"): we had one -- the week's seven
+// chakras, Root to Crown (server/data/week.json; admin.test.ts holds these to it). A pipeline's Nth step takes the Nth.
+const STEPS = [["#833131", "ROOT"], ["#734120", "SACRAL"], ["#B4B439", "SOLAR PLEXUS"], ["#41AC41", "HEART"],
+               ["#315A62", "THROAT"], ["#393194", "THIRD EYE"], ["#7B3194", "CROWN"]];
+const BEYOND = "#e6ebf5";                                   // an eighth step and on: white, its number on it
+const stepColour = (n) => (n >= 1 && n <= STEPS.length ? STEPS[n - 1][0] : BEYOND);
+// the chakras' colours are deep; a line or a ring on the night page is drawn lighter, toward white
+const lift = (hex, f) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - f) + 255 * f).toString(16).padStart(2, "0")).join("");
+// every other colour on the page is off that spectrum, so a colour that is a step always means a step (C-363) -- DRAFT
+const KIND = { talk: ["#c9d1e0", "TALK"], guide: ["#3fc7d6", "THE GUIDE"], dream: ["#e07aa8", "DREAMS"], whatsnew: ["#d9a74a", "WHAT'S NEW"],
+               journal: ["#b08d64", "JOURNAL"], meeting: ["#e8dcb5", "MEETINGS"], voice: ["#d64fbf", "VOICES"], chatter: ["#7d8aa6", "CHATTER"],
+               persona: ["#2fa39a", "PERSONA"], painting: ["#f2a7a0", "THE EASEL"], signs: ["#a1887f", "SIGNS"], memory: ["#b9a99a", "MEMORY"],
+               processing: ["#8fa3bf", "PROCESSING"] };
 const kindOf = (k) => KIND[k] ?? ["#7a7f8a", String(k).toUpperCase()];
 const LIVE = (t) => t.state === "waiting" || t.state === "thinking";
 const STATE = { waiting: "waiting", thinking: "thinking", done: "done", failed: "failed", stopped: "stopped", scheduled: "planned" };
+const startOf = (t) => Date.parse(t.started ?? t.at);
+// a task's parts in the order they ran, as steps: parts started within two seconds of each other run side by side, one step
+const stepsOf = (id, ts) => {
+  const waves = [];
+  for (const c of ts.filter((x) => x.parent === id).sort((a, b) => startOf(a) - startOf(b))) {
+    const w = waves.at(-1);
+    if (w && startOf(c) - startOf(w[0]) < 2000) w.push(c); else waves.push([c]);
+  }
+  return waves;
+};
+const stepOf = (t, ts) => (t.parent ? stepsOf(t.parent, ts).findIndex((w) => w.includes(t)) + 1 : 0);
+// a task's colour: its step's when it is one, else its kind's (a failure is marked ✕, never by a colour: red is a step)
+const colourOf = (t, ts) => { const n = stepOf(t, ts); return n ? stepColour(n) : kindOf(t.kind)[0]; };
+const stepDot = (t, ts) => {
+  const n = stepOf(t, ts), c = colourOf(t, ts);
+  return `<span class="sdot${t.state === "failed" ? " failed" : ""}" style="background:${c};border-color:${lift(c, 0.45)}${n > STEPS.length ? ";color:#0f1420" : ""}"` +
+    ` title="${n ? `step ${n}${n <= 7 ? ` (${STEPS[n - 1][1]})` : ""}` : esc(kindOf(t.kind)[1])}">${t.state === "failed" ? "✕" : n || ""}</span>`;
+};
 const treed = (ts) => {
   const ids = new Set(ts.map((t) => t.id)), out = [];
-  const walk = (t, d) => { out.push([t, d]); ts.filter((c) => c.parent === t.id).forEach((c) => walk(c, d + 1)); };
+  const walk = (t, d) => { out.push([t, d]); ts.filter((c) => c.parent === t.id).sort((a, b) => startOf(a) - startOf(b)).forEach((c) => walk(c, d + 1)); };
   ts.filter((t) => !t.parent || !ids.has(t.parent)).forEach((t) => walk(t, 0));
   return out;
 };
+
+// THE MESH (C-319's WEB, C-363): the hub at the middle, every mind on a ring round it, every device that asked outside
+// that; a task thinking now is a spark running from its device to its mind, what finished lately a faint thread, a
+// hand-off a warm line between minds. Every node and spark opens. An SVG, redrawn every few seconds: each spark's place
+// in its run is set from the clock, so a redraw does not jump it back to the start.
+const W = 720, H = 400, CX = W / 2, CY = H / 2;
+function meshSvg(v, ts, minds, devices, focus) {
+  const at = (i, n, rx, ry, turn = 0) => { const a = -Math.PI / 2 + turn + (2 * Math.PI * i) / Math.max(1, n); return [CX + rx * Math.cos(a), CY + ry * Math.sin(a)]; };
+  const mindAt = new Map(minds.map((m, i) => [m.name, at(i, minds.length, 170, 105)]));
+  const devAt = new Map(devices.map((d, i) => [d, at(i, devices.length, 296, 172, Math.PI / Math.max(2, devices.length))]));
+  // work the hub asked for itself starts at the hub, not out among the devices
+  const ends = (t) => [(t.device !== "the hub" && devAt.get(t.device)) || [CX, CY], (t.mind && mindAt.get(t.mind)) || [CX, CY]];
+  const ft = focus?.type === "task" ? ts.find((t) => t.id === focus.id) : null;
+  // what the focus touches stays bright; the rest dims
+  const lit = (t) => !focus || (ft ? t.id === ft.id || t.parent === ft.id || (ft.parent && (t.id === ft.parent || t.parent === ft.parent))
+                                   : focus.type === "mind" ? t.mind === focus.id : focus.type === "device" ? t.device === focus.id : true);
+  const live = ts.filter(LIVE), recent = ts.filter((t) => !LIVE(t)).slice(0, 24);
+  const secs = Date.now() / 1000, DUR = 1.6;
+  const line = ([x1, y1], [x2, y2], c, o, w, extra = "") => `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${c}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"${extra}/>`;
+  const isOn = (type, id) => focus && focus.type === type && focus.id === id;
+  let s = `<svg class="mesh" viewBox="0 0 ${W} ${H}" role="img" aria-label="THE MESH: the hub, its minds and the devices that asked">`;
+  for (const p of mindAt.values()) s += line([CX, CY], p, "#3a4466", 0.9, 1.2);
+  for (const t of recent) s += line(...ends(t), lift(colourOf(t, ts), 0.25), lit(t) ? 0.38 : 0.08, lit(t) ? 1.6 : 1);
+  for (const t of ts.filter((x) => (x.hops?.length ?? 0) > 1).slice(0, 12))
+    t.hops.slice(1).forEach((h, i) => { const a = mindAt.get(t.hops[i].mind), b = mindAt.get(h.mind);
+      if (a && b) s += line(a, b, "#e08a3c", LIVE(t) ? 0.9 : lit(t) && focus ? 0.7 : 0.35, 2, ' stroke-dasharray="5 4"'); });
+  for (const t of live) s += line(...ends(t), lift(colourOf(t, ts), 0.3), lit(t) ? 0.85 : 0.2, 2.4);
+  // the hub
+  s += `<g class="node" data-act="focus" data-f="hub:" tabindex="0" role="button" aria-label="the hub">
+    <circle cx="${CX}" cy="${CY}" r="26" fill="#1d2436" stroke="#d9a74a" stroke-width="${isOn("hub", "") ? 4 : 2}"/>
+    <text x="${CX}" y="${CY + 4}" class="lbl gold" text-anchor="middle">HUB</text>
+    ${v.load?.waiting ? `<circle cx="${CX + 22}" cy="${CY - 22}" r="10" fill="#d9a74a"/><text x="${CX + 22}" y="${CY - 18}" class="cnt" text-anchor="middle">${v.load.waiting}</text>` : ""}</g>`;
+  for (const m of minds) {
+    const [x, y] = mindAt.get(m.name), depth = live.filter((t) => t.mind === m.name).length;
+    const ring = m.ok === false ? "#6c7696" : "#d9a74a";
+    s += `<g class="node" data-act="focus" data-f="mind:${esc(m.name)}" tabindex="0" role="button" aria-label="mind ${esc(m.name)}">
+      <circle cx="${x}" cy="${y}" r="${depth ? 15 : 12}" fill="${depth ? "#24402c" : "#0f1420"}" stroke="${ring}" stroke-width="${isOn("mind", m.name) ? 4 : 2}"${m.ok === false ? ' stroke-dasharray="3 3"' : ""}>
+        ${depth ? `<animate attributeName="r" values="13;17;13" dur="1.4s" begin="-${(secs % 1.4).toFixed(2)}s" repeatCount="indefinite"/>` : ""}</circle>
+      ${m.ok === false ? `<text x="${x}" y="${y + 4}" class="lbl faint" text-anchor="middle">✕</text>` : ""}
+      ${depth > 1 ? `<circle cx="${x + 15}" cy="${y - 14}" r="9" fill="#d9a74a"/><text x="${x + 15}" y="${y - 10.5}" class="cnt" text-anchor="middle">${depth}</text>` : ""}
+      <text x="${x}" y="${y + 30}" class="lbl" text-anchor="middle">${esc(m.name)}</text></g>`;
+  }
+  for (const d of devices) {
+    const [x, y] = devAt.get(d);
+    s += `<g class="node" data-act="focus" data-f="device:${esc(d)}" tabindex="0" role="button" aria-label="device ${esc(d)}">
+      <rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="2" fill="#0f1420" stroke="#9aa6c4" stroke-width="${isOn("device", d) ? 4 : 1.6}"/>
+      <text x="${x}" y="${y + 22}" class="lbl dim" text-anchor="middle">${esc(d.length > 18 ? d.slice(0, 17) + "…" : d)}</text></g>`;
+  }
+  // a spark for each task thinking now, from its device to its mind (waiting: held at the device), in its step's colour
+  live.forEach((t, i) => {
+    const [[x1, y1], [x2, y2]] = ends(t), c = colourOf(t, ts), n = stepOf(t, ts);
+    const run = t.state === "waiting" ? "" : `<animateMotion dur="${DUR}s" repeatCount="indefinite" begin="-${((secs + i * 0.37) % DUR).toFixed(2)}s" path="M0,0 L${(x2 - x1).toFixed(1)},${(y2 - y1).toFixed(1)}"/>`;
+    const [ox, oy] = t.state === "waiting" ? [(x2 - x1) * 0.08, (y2 - y1) * 0.08] : [0, 0];
+    s += `<g class="node" data-act="focus" data-f="task:${esc(t.id)}" role="button" aria-label="${esc(t.title)}" transform="translate(${(x1 + ox).toFixed(1)},${(y1 + oy).toFixed(1)})">
+      <g>${run}<circle r="${isOn("task", t.id) ? 11 : 8}" fill="${c}" stroke="${isOn("task", t.id) ? "#ffffff" : lift(c, 0.6)}" stroke-width="2.5"/>
+      ${n ? `<text y="3.5" class="cnt light" text-anchor="middle">${n}</text>` : ""}</g></g>`;
+  });
+  if (!live.length) s += `<text x="${CX}" y="${H - 10}" class="lbl faint" text-anchor="middle">nothing thinking right now</text>`;
+  return s + "</svg>";
+}
+
+// a pipeline: its steps left to right, the parts of one step stacked, each a chip in its step's colour that opens
+function pipeline(id, ts, here, now) {
+  const waves = stepsOf(id, ts);
+  if (!waves.length) return "";
+  return `<div class="pipe">${waves.map((w, i) => `${i ? `<span class="arrow" aria-hidden="true">→</span>` : ""}<div class="wave">${w.map((p) => {
+    const c = stepColour(i + 1);
+    return `<button class="chip${p.id === here ? " here" : ""}${LIVE(p) ? " live" : ""}" data-act="into" data-f="task:${esc(p.id)}"
+        style="--c:${c};--l:${lift(c, 0.5)}"><b${i >= STEPS.length ? ' style="color:#0f1420"' : ""}>${i + 1}</b><span class="ct">${esc(p.title)}</span>
+        <span class="cs">${p.state === "failed" ? "✕ failed" : LIVE(p) ? STATE[p.state] : took(p.ms)}${p.mind ? ` · ${esc(p.mind)}` : ""}</span></button>`;
+  }).join("")}</div>`).join("")}</div>`;
+}
+
+// what a node or a task shows when it is opened (C-363)
+function opened(f, v, ts, now) {
+  const row = ([t, d]) => `<div class="item" data-act="into" data-f="task:${esc(t.id)}" style="padding-left:${d * 16}px">
+      ${stepDot(t, ts)}<span class="t">${d ? "└ " : ""}${esc(t.title)}${(t.hops?.length ?? 0) > 1 ? " ⇢" : ""}</span>
+      <span class="small">${esc(t.user)} · ${LIVE(t) ? STATE[t.state] : `${took(t.ms)} ${ago(t.ended ?? t.at, now)}`}</span></div>`;
+  if (f.type !== "task") {
+    const mine = f.type === "hub" ? ts.filter((t) => !t.mind || t.device === "the hub") : ts.filter((t) => (f.type === "mind" ? t.mind : t.device) === f.id);
+    const settled = mine.filter((t) => !LIVE(t)), fails = settled.filter((t) => t.state === "failed").length;
+    const avg = settled.filter((t) => t.ms).reduce((a, t, _, all) => a + t.ms / all.length, 0);
+    const m = f.type === "mind" ? (v.minds ?? []).find((x) => x.name === f.id) : null;
+    const what = f.type === "hub" ? "THE HUB -- its queue, and work no mind took" : f.type === "mind" ? `MIND · ${f.id}` : `DEVICE · ${f.id}`;
+    return `<div class="card"><p class="eyebrow">${esc(what)}</p>
+      <p class="small">${m ? (m.ok ? "answering · " : "not answering · ") : ""}${mine.filter(LIVE).length} thinking now · ${settled.length} finished lately${avg ? ` · ${took(Math.round(avg))} on average` : ""}${fails ? ` · <span class="warm">${fails} failed</span>` : ""}${f.type === "hub" && v.load ? ` · ${v.load.running} running, ${v.load.waiting} waiting in its talk queue` : ""}</p>
+      <div class="list">${treed(mine.slice(0, 40)).map(row).join("") || `<p class="small">Nothing here lately.</p>`}</div></div>`;
+  }
+  const t = ts.find((x) => x.id === f.id);
+  if (!t) return `<div class="card"><p class="small">That task is no longer in the ledger.</p></div>`;
+  const n = stepOf(t, ts), parent = t.parent ? ts.find((x) => x.id === t.parent) : null, steps = stepsOf(t.id, ts);
+  const c = colourOf(t, ts);
+  return `<div class="card" style="border-color:${lift(c, 0.3)}">
+    <div class="row">${stepDot(t, ts)}<div class="big grow" style="font-size:16px">${esc(t.title)}</div></div>
+    <div class="small">${kindOf(t.kind)[1]}${n ? ` · step ${n}${n <= 7 ? ` (${STEPS[n - 1][1]})` : ""}${parent ? ` of ${stepsOf(parent.id, ts).length}` : ""}` : ""} · ${STATE[t.state]}${t.ms !== undefined ? ` in ${took(t.ms)}` : ""} · ${ago(t.at, now)}</div>
+    <div class="small">for ${esc(t.user)}, from <a role="button" tabindex="0" class="link" data-act="into" data-f="device:${esc(t.device)}">${esc(t.device)}</a>${t.mind ? `, on <a role="button" tabindex="0" class="link" data-act="into" data-f="mind:${esc(t.mind)}">${esc(t.mind)}</a>` : ""}${t.source === "trace" ? " (reported by the phone)" : t.source === "queue" ? " (the hub's talk queue)" : ""}</div>
+    ${t.size || t.tokens ? `<div class="small">${t.size ? `${t.size.in ?? "?"} chars in, ${t.size.out ?? "nothing yet"} out` : ""}${t.tokens ? ` · ${t.tokens.in ?? "?"} → ${t.tokens.out ?? "?"} tokens` : ""}</div>` : ""}
+    ${(t.hops?.length ?? 0) > 1 ? `<div class="small warm">handed on: ${t.hops.map((h) => esc(h.mind + (h.error ? ` ✕ (${h.error})` : ""))).join(" → ")}</div>` : ""}
+    ${t.error ? `<div class="small warm">✕ ${esc(t.error)}</div>` : ""}
+    ${steps.length ? `<p class="eyebrow" style="margin-top:12px">ITS PIPELINE · ${steps.length} STEP${steps.length > 1 ? "S" : ""}</p>${pipeline(t.id, ts, null, now)}` : ""}
+    ${parent ? `<p class="eyebrow" style="margin-top:12px">A PART OF <a role="button" tabindex="0" class="link" data-act="into" data-f="task:${esc(parent.id)}">${esc(parent.title)}</a></p>${pipeline(parent.id, ts, t.id, now)}` : ""}
+    <div class="row" style="margin-top:10px">
+      ${t.can?.stop && LIVE(t) ? `<button class="btn danger" data-act="task" data-id="${esc(t.id)}" data-a="stop">STOP</button>` : ""}
+      ${t.can?.retry && (t.state === "failed" || t.state === "stopped") ? `<button class="btn" data-act="task" data-id="${esc(t.id)}" data-a="retry">TRY AGAIN</button>` : ""}
+      ${t.source === "ledger" && !LIVE(t) ? `<button class="btn quiet" data-act="task" data-id="${esc(t.id)}" data-a="forget">FORGET</button>` : ""}</div></div>`;
+}
+
+const parseF = (s) => { const i = s.indexOf(":"); return { type: s.slice(0, i), id: s.slice(i + 1) }; };
+const fSaid = (f, ts) => f.type === "hub" ? "THE HUB" : f.type === "task" ? (ts.find((t) => t.id === f.id)?.title ?? "a task gone") : f.id;
+
 async function drawMind() {
   const v = await api("/api/mind/tasks"), who = ui.who ?? "all", now = Date.now();
   const shown = v.tasks.filter((t) => t.state !== "scheduled" && (who === "all" || t.user === who));
   const live = shown.filter(LIVE), done = shown.filter((t) => !LIVE(t)).slice(0, 30);
-  const sel = v.tasks.find((t) => t.id === ui.picked);
+  const known = new Map((v.minds ?? []).map((m) => [m.name, m.ok]));
+  for (const t of shown) if (t.mind && !known.has(t.mind)) known.set(t.mind, null);
+  const minds = [...known].map(([name, ok]) => ({ name, ok }));
+  const devices = [...new Set(shown.slice(0, 60).map((t) => t.device))].filter((d) => d !== "the hub").slice(0, 12);
+  const trail = ui.trail ?? [], focus = trail.at(-1) ?? null;
   const row = ([t, d]) => `<div class="item" data-act="pick" data-id="${esc(t.id)}" style="padding-left:${d * 16}px">
-      <span class="dot" style="background:${t.state === "failed" ? "var(--bad)" : kindOf(t.kind)[0]}"></span>
-      <span class="t">${d ? "└ " : ""}${esc(t.title)}${(t.hops?.length ?? 0) > 1 ? " ⇢" : ""}</span>
+      ${stepDot(t, v.tasks)}<span class="t">${d ? "└ " : ""}${esc(t.title)}${(t.hops?.length ?? 0) > 1 ? " ⇢" : ""}</span>
       <span class="small">${esc(t.user)} · ${LIVE(t) ? STATE[t.state] : `${took(t.ms)} ${ago(t.ended ?? t.at, now)}`}</span></div>`;
   if (stale()) return;
   $page.innerHTML = `<h1>THE MIND AT WORK</h1>
     <p class="lede">${live.length ? `${live.length} thinking now` : "Quiet"}${v.load?.waiting ? ` · ${v.load.waiting} in the hub's queue` : ""} ·
-      minds: ${(v.minds ?? []).map((m) => `<span class="${m.ok ? "good" : "bad"}">●</span> ${esc(m.name)}`).join(" ") || "none"}</p>
+      minds: ${minds.map((m) => `<span class="${m.ok === false ? "faint" : "gold"}">${m.ok === false ? "✕" : "●"}</span> ${esc(m.name)}`).join(" ") || "none"}</p>
     <div class="row" style="margin-bottom:12px">${["all", ...v.users].map((u) =>
       `<button class="pill ${who === u ? "on" : ""}" data-act="who" data-who="${esc(u)}">${u === "all" ? "EVERYONE" : esc(u.toUpperCase())}</button>`).join("")}</div>
-    ${sel ? `<div class="card" style="border-color:${kindOf(sel.kind)[0]}">
-      <div class="big" style="font-size:16px">${esc(sel.title)}</div>
-      <div class="small">${kindOf(sel.kind)[1]} · ${STATE[sel.state]}${sel.ms !== undefined ? ` in ${took(sel.ms)}` : ""} · ${ago(sel.at, now)}</div>
-      <div class="small">for ${esc(sel.user)}, from ${esc(sel.device)}${sel.mind ? `, on ${esc(sel.mind)}` : ""}${sel.source === "trace" ? " (reported by the phone)" : sel.source === "queue" ? " (the hub's talk queue)" : ""}</div>
-      ${(sel.hops?.length ?? 0) > 1 ? `<div class="small warm">handed on: ${sel.hops.map((h) => esc(h.mind + (h.error ? ` ✕ (${h.error})` : ""))).join(" → ")}</div>` : ""}
-      ${sel.error ? `<div class="small bad">${esc(sel.error)}</div>` : ""}
-      <div class="row" style="margin-top:8px">
-        ${sel.can?.stop && LIVE(sel) ? `<button class="btn danger" data-act="task" data-id="${esc(sel.id)}" data-a="stop">STOP</button>` : ""}
-        ${sel.can?.retry && (sel.state === "failed" || sel.state === "stopped") ? `<button class="btn" data-act="task" data-id="${esc(sel.id)}" data-a="retry">TRY AGAIN</button>` : ""}
-        ${sel.source === "ledger" && !LIVE(sel) ? `<button class="btn quiet" data-act="task" data-id="${esc(sel.id)}" data-a="forget">FORGET</button>` : ""}
-        <button class="btn quiet" data-act="pick" data-id="">CLOSE</button></div></div>` : ""}
+    <div class="card meshcard">${meshSvg(v, shown, minds, devices, focus)}
+      <nav class="crumbs" aria-label="where in THE MESH"><button data-act="crumb" data-i="-1" class="${trail.length ? "" : "on"}">THE MESH</button>${trail.map((f, i) =>
+        `<span aria-hidden="true">›</span><button data-act="crumb" data-i="${i}" class="${i === trail.length - 1 ? "on" : ""}">${esc(fSaid(f, v.tasks))}</button>`).join("")}</nav>
+      ${trail.length ? "" : `<p class="small faint" style="margin:4px 0 0">Tap the hub, a mind, a device or a spark to walk in.</p>`}</div>
+    ${focus ? opened(focus, v, v.tasks.filter((t) => focus.type === "task" || who === "all" || t.user === who), now) : ""}
+    <div class="card"><p class="eyebrow">A PIPELINE'S STEPS, IN ORDER</p><div class="legend">${STEPS.map(([c, name], i) =>
+      `<span><i style="background:${c};border-color:${lift(c, 0.45)}">${i + 1}</i>${name}</span>`).join("")}<span><i style="background:${BEYOND};color:#0f1420">8</i>AND ON</span></div>
+      <p class="eyebrow" style="margin-top:10px">EVERYTHING ELSE, BY KIND</p><div class="legend">${Object.values(KIND).map(([c, said]) =>
+      `<span><i style="background:${c}"></i>${said}</span>`).join("")}<span><i class="x">✕</i>FAILED</span></div></div>
     <div class="card"><p class="eyebrow">NOW</p><div class="list">${treed(live).map(row).join("") || `<p class="small">Nothing thinking.</p>`}</div></div>
     <div class="card"><p class="eyebrow">BEFORE</p><div class="list">${treed(done).map(row).join("") || `<p class="small">Nothing finished lately.</p>`}</div>
       <div class="row" style="margin-top:8px"><button class="btn quiet" data-act="clear">CLEAR FINISHED${who === "all" ? "" : ` (${esc(who.toUpperCase())})`}</button></div></div>
@@ -198,9 +339,19 @@ async function drawMind() {
       <div class="small">${esc(p.said)} ${p.on ? `Next: ${esc(new Date(p.next).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" }))}.` : "Off."}${p.last ? ` Last: ${ago(p.last, now)}.` : ""}</div></div>`).join("") || `<p class="small">No plans.</p>`}</div></div>
     ${note()}`;
 }
-ACTS.who = (d) => { ui.who = d.who; ui.picked = null; };
-ACTS.pick = (d) => { ui.picked = d.id || null; };
-ACTS.task = async (d) => { await api("/api/mind/tasks", { id: d.id, act: d.a }); said(""); if (d.a === "forget") ui.picked = null; };
+ACTS.who = (d) => { ui.who = d.who; };
+// from THE MESH or a list a walk starts again; from inside what is open it goes one deeper; the crumbs walk back out
+const goTo = (f, deeper) => {
+  const t = ui.trail ?? [], i = t.findIndex((x) => x.type === f.type && x.id === f.id);
+  ui.trail = i >= 0 ? t.slice(0, i + 1) : deeper ? [...t, f] : [f];
+  if (ui.trail.length > 8) ui.trail = ui.trail.slice(-8);
+  document.querySelector(".meshcard")?.scrollIntoView({ block: "start", behavior: "smooth" });
+};
+ACTS.focus = (d) => goTo(parseF(d.f), false);
+ACTS.into = (d) => goTo(parseF(d.f), true);
+ACTS.pick = (d) => { if (d.id) goTo({ type: "task", id: d.id }, false); else ui.trail = []; };
+ACTS.crumb = (d) => { ui.trail = (ui.trail ?? []).slice(0, Number(d.i) + 1); };
+ACTS.task = async (d) => { await api("/api/mind/tasks", { id: d.id, act: d.a }); said(""); if (d.a === "forget") ui.trail = (ui.trail ?? []).slice(0, -1); };
 ACTS.clear = async () => { await api("/api/mind/tasks", { act: "clear", ...(ui.who && ui.who !== "all" ? { user: ui.who } : {}) }); said("Cleared."); };
 ACTS.plan = async (d) => { await api("/api/mind/tasks", { act: "plan", plan: d.plan, ...(d.now ? { now: true } : { on: !!d.on }) }); said(d.now ? "Started." : ""); };
 

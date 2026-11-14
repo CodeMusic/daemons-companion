@@ -41,6 +41,18 @@ describe("THE ENGINE ROOM's files (C-330)", () => {
       expect(js).toContain(api);
   });
 
+  // C-363: a pipeline's steps take the colour mapping we already had -- the week's seven chakras, Root (1st) to Crown
+  // (7th) -- and no kind's colour is one of them, so a step's colour only ever means a step
+  it("colours a pipeline's steps by the week's chakras, in order, and every kind off them", () => {
+    const js = readFileSync(join(ADMIN_DIR, "admin.js"), "utf8");
+    const week = JSON.parse(readFileSync(join(ADMIN_DIR, "../data/week.json"), "utf8")).days as { chakra: string; colour: string }[];
+    const steps = [...js.slice(js.indexOf("const STEPS = ")).split(";")[0].matchAll(/\["(#[0-9A-Fa-f]{6})", "([A-Z ]+)"\]/g)].map((m) => [m[1], m[2]]);
+    expect(steps).toEqual(week.map((d) => [d.colour, d.chakra.toUpperCase()]));
+    const kinds = [...js.slice(js.indexOf("const KIND = ")).split(";")[0].matchAll(/\["(#[0-9a-fA-F]{6})"/g)].map((m) => m[1].toLowerCase());
+    expect(kinds.length).toBeGreaterThan(8);
+    for (const k of kinds) expect(week.map((d) => d.colour.toLowerCase())).not.toContain(k);
+  });
+
   it("is served at /admin/, always asked again, and /admin is /admin/", async () => {
     const r = await here("/admin", { redirect: "manual" });
     expect(r.status).toBe(308);

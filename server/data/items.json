@@ -1874,7 +1874,7 @@
  },
  "353": {
   "name": "TOKEN",
-  "description": "The WARDEN's key. Without it, nothing he says can be read.",
+  "description": "The GATEKEEPER's key. Without it, nothing he says can be read.",
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },

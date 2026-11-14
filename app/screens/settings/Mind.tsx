@@ -9,6 +9,7 @@ import { api, ON_PHONE } from "../../platform/net";
 import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../../ui/ui";
 import { useVoice } from "../daemon/Daemon";
 import { HubEndpoints } from "./HubEndpoints";   // C-280 (1)
+import { LEND_ABOUT, LEND_SAID, lendOf, onLending, setLend, type Lend, type Lending } from "../../platform/lend";   // C-360
 
 const RING_SAID: Record<Ring, string> = { anywhere: "ANYWHERE", home: "AT HOME", phone: "THIS PHONE" };
 const KIND_SAID: Record<Kind, string> = { talk: "TALK", guide: "THE GUIDE" };
@@ -33,6 +34,24 @@ function Arm({ name, ok, note }: { name: string; ok: boolean | null; note: strin
       <Text fontFamily="$mono" fontSize={12} letterSpacing={1} color="$color12" width={110}>{name}</Text>
       <Small color="$color10">{note}</Small>
     </XStack>
+  );
+}
+
+// C-360: THIS PHONE IN THE MESH -- when this phone thinks for the household (platform/lend.ts), and what it is doing now
+function LendCard({ ink }: { ink: string }) {
+  const [l, setL] = useState<Lend | null>(null), [now, setNow] = useState<Lending | null>(null);
+  useEffect(() => { lendOf().then(setL); return onLending(setNow); }, []);
+  if (!l) return null;
+  return (
+    <YStack gap={4}>
+      <Eyebrow>THIS PHONE IN THE MESH</Eyebrow>
+      <Small>{"The household's minds share their work: each thought goes to whichever has the most to give right now. This phone can take some, on its own model."}</Small>
+      <Choice value={l} ink={ink} options={(Object.keys(LEND_SAID) as Lend[]).map((k) => [k, LEND_SAID[k]] as [Lend, string])}
+              onPick={(k) => { setL(k); setLend(k).catch(() => {}); }} />
+      <Small color="$color10">{LEND_ABOUT[l]}</Small>
+      {now ? <Small color="$color10">{now.on ? `Lending now${now.done ? ` -- ${now.done} thought${now.done === 1 ? "" : "s"} for the household so far` : ""}.`
+                                             : `Not lending now${now.why ? `: ${now.why}` : ""}.`}</Small> : null}
+    </YStack>
   );
 }
 
@@ -121,6 +140,7 @@ export function MindCard({ ink }: { ink: string }) {
         ? <YStack gap={3}>{traces.slice(0, 8).map((t, i) => <Small key={`${t.at}${i}`} color={t.covered || t.failed?.length ? "$color9" : "$color10"}>{traceSaid(t)}</Small>)}</YStack>
         : <Small color="$color10">None yet: each talk, held or typed, on any phone or here, is kept here -- where it was heard, thought and said, and how long each took. Never what was said.</Small>}
 
+      {ON_PHONE ? <LendCard ink={ink} /> : null}
       {ON_PHONE ? <>
       <Eyebrow>HOW FAR EACH MAY GO</Eyebrow>
       <Small>ANYWHERE: every mind. AT HOME: nothing leaves your house -- this phone, the hub, the Tiiny, an endpoint at home. THIS PHONE: nothing leaves the phone.</Small>

@@ -15,6 +15,7 @@ import { canHear, canThink, hearHere, mindHere, sayHere, selfText, thinkHere } f
 import { atHome, endpoint, endpointThink } from "./endpoint";
 import type { Spoken } from "../state/types";
 import { deviceName, whoAmI } from "../state/me";   // C-319
+import { lendOf } from "./lend";   // C-360
 
 export type Ring = "anywhere" | "home" | "phone";
 export type Kind = "talk" | "guide";
@@ -57,8 +58,10 @@ export async function senseHub(fresh = false): Promise<HubSense> {
   return s;
 }
 export async function sense(fresh = false): Promise<Sense> {
-  const [can, hub, e] = await Promise.all([canThink(), senseHub(fresh), endpoint()]);
-  return { phone: { mind: mindHere() && can.mind, hear: canHear(), why: can.why }, hub,
+  const [can, hub, e, lent] = await Promise.all([canThink(), senseHub(fresh), endpoint(), lendOf()]);
+  // C-360: NEVER -- this phone's processing is not part of the mind at all, not even its own talks' hedge
+  const never = lent === "never";
+  return { phone: { mind: mindHere() && can.mind && !never, hear: canHear() && !never, why: never ? "THIS PHONE IN THE MESH: NEVER" : can.why }, hub,
            endpoint: e ? { set: true, name: e.name || "your endpoint", home: atHome(e.url), model: e.model } : { set: false } };   // DRAFT
 }
 

@@ -823,7 +823,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   };
   // C-280 (1): then the player's endpoints, in order, each answering (checkTalk) -- only those at home for the home ring
   const endpointsNowAll = (homeOnly: boolean) => endpointsNow(endpointsIn((k) => store.getSetting(k)), TALK_HEALTH.endpoints, homeOnly);
-  preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll);
+  // C-360: the household's phones that lend their thinking (THE MESH), and how many thoughts each mind holds now --
+  // the house's minds put in order at each write (ai/thoughtroute.ts). MESH and TASKS are made below; asked only later.
+  preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll,
+              () => MESH.thinkers().map((p) => ({ name: p.name, ask: (system, user, most, signal) => MESH.thinkOn(p.id, system, user, most, "a thought", signal) })),
+              (mind) => TASKS.all().filter((t) => t.state === "thinking" && t.mind === mind).length);
   // C-319: THE MIND's ledger of work (ai/tasks.ts), and which mind a write-up goes to first -- as house.write tries them
   const TASKS = new Tasks((k) => store.getSetting(k), (k, v) => store.setSetting(k, v));
   // C-360: THE MESH for processing -- the hub and every node that dials in (procmesh.ts); each job a task in the ledger,
@@ -2005,15 +2009,22 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                    given: j.given.map((g) => g.node), winner: j.winner ?? null, asked: new Date(j.asked).toISOString() })) });
         if (!phone) return send(res, 403, { error: "a node of the mesh needs a paired key (hub/mesh.sh install)" });   // DRAFT
         if (req.method === "POST" && path === "/api/mesh/take") {
-          const b = await body(req), n = MESH.heard(b as { id: string });
+          const b = await body(req);
+          // C-360: a phone is known by its own key and named by its own name (C-337), whatever it says
+          if (b.phone === true && bearer) Object.assign(b, { id: `phone-${createHash("sha256").update(bearer).digest("hex").slice(0, 10)}`, name: phone.name });
+          const n = MESH.heard(b as { id: string });
+          const th = MESH.takeThought(n.id);                     // C-360: a phone's thought, before any processing
+          if (th) return send(res, 200, { job: { id: th.id, kind: "think", title: th.title, system: th.system, user: th.user, most: th.most } });
           const j = MESH.take(n.id);
           return send(res, 200, { job: j ? { id: j.id, kind: j.kind, title: j.title, args: j.args,
                                              inputs: Object.fromEntries(Object.keys(j.inputs).map((k) => [k, true])),
                                              outputs: Object.fromEntries(Object.keys(j.outputs).map((k) => [k, true])) } : null });
         }
         if (req.method === "POST" && path === "/api/mesh/done") {
-          const b = await body(req);
-          return send(res, MESH.done(String(b.id ?? ""), String(b.node ?? ""), b.ok === true, typeof b.error === "string" ? b.error : undefined) ? 200 : 404, { ok: true });
+          const b = await body(req), id = String(b.id ?? ""), err = typeof b.error === "string" ? b.error.slice(0, 200) : undefined;
+          const node = b.node === "phone" && bearer ? `phone-${createHash("sha256").update(bearer).digest("hex").slice(0, 10)}` : String(b.node ?? "");
+          if (MESH.thoughts.has(id)) return send(res, MESH.thought(id, node, b.ok === true, typeof b.text === "string" ? b.text.slice(0, 20000) : undefined, err) ? 200 : 404, { ok: true });
+          return send(res, MESH.done(id, node, b.ok === true, err) ? 200 : 404, { ok: true });
         }
         const io = path.match(/^\/api\/mesh\/(in|out)\/([0-9a-f]{24})\/([A-Za-z0-9._-]{1,40})$/);
         if (io && io[1] === "in" && req.method === "GET") {

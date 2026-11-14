@@ -67,9 +67,16 @@ export const runFfmpeg = (argv: string[]) => new Promise<void>((done, fail) =>
   execFile("nice", ["-n", "15", FOUND_FFMPEG ?? "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", ...argv], { timeout: 60 * 60000 },
            (e, _o, err) => (e ? fail(new Error(String(err || e.message).slice(-200))) : done())));
 
+// C-360, thought: a write asked of one phone that lends its on-device model (its node's caps include "think") -- given to
+// that node alone; not taken in TAKE_MS, or not answered in THINK_MOST_MS, it fails and the house asks its next mind
+export type ThinkJob = { id: string; node: string; title: string; system: string; user: string; most: number; at: number; taken?: number;
+                         ok: (text: string) => void; no: (e: Error) => void };
+export const THINK_MOST_MS = 120_000;
+
 export class ProcMesh {
   nodes = new Map<string, MeshNode>();
   jobs = new Map<string, ProcJob>();
+  thoughts = new Map<string, ThinkJob>();
   private waiters = new Map<string, { done: () => void; fail: (e: Error) => void; task?: string }>();
   private self: MeshNode;
   private localRunning = 0;
@@ -148,6 +155,38 @@ export class ProcMesh {
     try { await runFfmpeg(argvFor(job.args, { ...ins, ...outs })); this.finish(job, "hub", true); }
     catch (e) { this.finish(job, "hub", false, (e as Error).message); }
     finally { this.localRunning--; for (const p of Object.values(outs)) rmSync(p, { force: true }); }
+  }
+
+  // ---- thought: the phones that lend, each one a mind the house can ask ----
+  thinkers(): { id: string; name: string }[] {
+    return [...this.nodes.values()].filter((n) => !n.here && this.now() - n.seen < FRESH_MS && n.caps.includes("think"))
+      .map((n) => ({ id: n.id, name: n.name }));
+  }
+  thinkOn(nodeId: string, system: string, user: string, most: number, title: string, signal?: AbortSignal): Promise<string> {
+    return new Promise<string>((ok, no) => {
+      const id = randomBytes(12).toString("hex");
+      const n = this.nodes.get(nodeId);
+      const end = (f: () => void) => { if (!this.thoughts.has(id)) return; this.thoughts.delete(id); if (n) n.holds = Math.max(0, n.holds - 1); f(); };
+      const job: ThinkJob = { id, node: nodeId, title, system, user, most, at: this.now(),
+                              ok: (t) => end(() => { if (n) n.history = [...n.history, true].slice(-HISTORY); ok(t); }),
+                              no: (e) => end(() => { if (n) n.history = [...n.history, false].slice(-HISTORY); no(e); }) };
+      this.thoughts.set(id, job);
+      if (n) n.holds++;
+      setTimeout(() => { const j = this.thoughts.get(id); if (j && !j.taken) j.no(new Error(`${n?.name ?? "the phone"} did not take it`)); }, TAKE_MS).unref?.();   // DRAFT
+      setTimeout(() => this.thoughts.get(id)?.no(new Error(`${n?.name ?? "the phone"} took too long`)), THINK_MOST_MS).unref?.();   // DRAFT
+      signal?.addEventListener("abort", () => this.thoughts.get(id)?.no(new Error("stopped")), { once: true });
+    });
+  }
+  takeThought(nodeId: string): ThinkJob | null {
+    const j = [...this.thoughts.values()].find((x) => x.node === nodeId && !x.taken);
+    if (j) j.taken = this.now();
+    return j ?? null;
+  }
+  thought(id: string, nodeId: string, ok: boolean, text?: string, error?: string): boolean {
+    const j = this.thoughts.get(id);
+    if (!j || j.node !== nodeId) return false;
+    if (ok && text?.trim()) j.ok(text); else j.no(new Error(error || "no words came"));   // DRAFT
+    return true;
   }
 
   // ---- a worker's side ----

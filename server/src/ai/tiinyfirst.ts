@@ -10,6 +10,7 @@ import { persona } from "./house.js";
 import { STOPPED, tiinyChat, tiinyHear, tiinySpeak, type TiinyAt, type WriteJob } from "./tiiny.js";
 import { voiceRecipe } from "./voices.js";
 import { chatOn, type EndpointNow } from "./endpoints.js";   // C-280 (1)
+import { MIND_POWER, order, think, type Mind, HEDGE_QUICK_MS } from "./thoughtroute.js";   // C-360
 
 export type TiinyNow = () => { at: TiinyAt; model: string; quick?: string } | null;   // null: not set up, or not answering now
 // model: the background thinker; quick: the foreground one (tiiny.ts), the background one when not given
@@ -27,8 +28,11 @@ export const ENTRY_VOICE = "a synthetic, robotic device voice: flat, precise and
 // chain. homeOnly: THE MIND's "only at home" ring (C-307), which skips any endpoint off the house's networks.
 export type EndpointsNow = (homeOnly: boolean) => EndpointNow[];
 
+// C-360: the household's phones that lend their thinking (THE MESH), each asked through the hub; and how many thoughts a
+// mind holds now (THE MIND AT WORK's ledger), so a busy mind is passed for a freer one
+export type PhonesNow = () => { name: string; ask: (system: string, user: string, most: number, signal?: AbortSignal) => Promise<string> }[];
 export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => string = () => INDEX_VOICE,
-                            others: EndpointsNow = () => []): House {
+                            others: EndpointsNow = () => [], phones: PhonesNow = () => [], holds: (mind: string) => number = () => 0): House {
   const was = { talk: house.talk.bind(house), voice: house.voice.bind(house), transcribe: house.transcribe.bind(house),
                 write: house.write.bind(house) };
   const anyWas = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(house), "any")!.get!.bind(house);
@@ -73,25 +77,40 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     if (t?.at.asr) { const heard = await tiinyHear(t.at, wav, fetch, 120_000); if (heard) return heard; }
     return was.transcribe(wav);
   };
-  const MODULE_WRITE_MOST = 1800;   // characters, system and user together
+  const MODULE_WRITE_MOST = 1800, PHONE_WRITE_MOST = 9000;   // characters, system and user together
+  // C-360: every mind that can write it, in order of its score now (ai/thoughtroute.ts) -- the Tiiny, the player's
+  // endpoints, the household's phones that lend, the house's module -- the next asked if one fails; hedged when someone
+  // is waiting. C-319: job.by names each mind as it is tried, job.fell each failure; stopped from THE MIND AT WORK, no
+  // other mind is asked.
   house.write = async (system: string, user: string, maxTokens = 400, job?: WriteJob) => {
-    const t = now();
-    // C-319 next: stopped from THE MIND AT WORK -- no other mind is asked; job.by names each mind as it is tried
-    const halt = () => { if (job?.signal?.aborted) throw new Error(STOPPED); };
-    // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed
-    const fell = (e: unknown) => { halt(); job?.fell?.((e as Error)?.message?.slice(0, 80) || "failed"); };
+    const t = now(), minds: Mind[] = [];
+    // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed;
     // C-338: job.quick -- someone stands waiting (a daemon at its easel): the quick thinker, thinking off, as a talk is
-    if (t) try { job?.by?.("the Tiiny");
-                 return job?.quick ? await tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 90_000, maxTokens, false, false, job)
-                                   : await tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job); } catch (e) { fell(e); }
+    if (t) minds.push({ name: "the Tiiny", power: MIND_POWER.tiiny, ask: () => job?.quick
+      ? tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 90_000, maxTokens, false, false, job)
+      : tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job) });
     for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
-      try { job?.by?.(n.e.name); return await chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job); } catch (e) { fell(e); }
-    halt();
-    // the module's window is small: a write longer than it holds is refused here, not sent to fail there ("The input
-    // content exceeds the maximum length supported by the model", a dream's telling, 2026-11-12)
-    if (system.length + user.length > MODULE_WRITE_MOST) throw new Error("too long for the house's module, and no other mind answered");   // DRAFT
-    job?.by?.("the house's module");
-    return was.write(system, user, maxTokens, job);
+      minds.push({ name: n.e.name, power: MIND_POWER.endpoint, ask: () => chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job) });
+    if (system.length + user.length <= PHONE_WRITE_MOST)     // a phone's on-device model holds about this much
+      for (const p of phones()) minds.push({ name: p.name, power: MIND_POWER.phone, ask: () => p.ask(system, user, maxTokens, job?.signal) });
+    // the module's window is small: a write longer than it holds is never sent to fail there ("The input content exceeds
+    // the maximum length supported by the model", a dream's telling, 2026-11-12)
+    const fits = system.length + user.length <= MODULE_WRITE_MOST;
+    if (fits) minds.push({ name: "the house's module", power: MIND_POWER.module, ask: async () => (await was.write(system, user, maxTokens, job)) ?? "" });
+    if (!minds.length) throw new Error("too long for the house's module, and no other mind answered");   // DRAFT
+    try {
+      return (await think(order(minds, holds), {
+        hedgeMs: job?.quick ? HEDGE_QUICK_MS : undefined,
+        tried: (name) => job?.by?.(name),
+        fell: (_n, e) => { if (!job?.signal?.aborted) job?.fell?.((e as Error)?.message?.slice(0, 80) || "failed"); },
+        stopped: () => !!job?.signal?.aborted,
+      })).text;
+    } catch (e) {
+      if (job?.signal?.aborted) throw new Error(STOPPED);
+      if (!fits) throw new Error("too long for the house's module, and no other mind answered");   // DRAFT
+      void e;
+      return null;                                             // as before: the module, last, may have nothing to say
+    }
   };
   return house;
 }

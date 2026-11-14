@@ -43,6 +43,7 @@ import { TabStrip } from "./shell/TabStrip";
 import { Divider, Edge, LogsDivider, LogsEdge } from "./shell/panes";
 import { isBeside, useLogsPane, useSplitPane } from "./shell/split";
 import { useBackgroundSync, useDeepLinks, useSiteHeard } from "./shell/sync";
+import { startLending } from "./platform/lend";   // C-360
 let menuHowTo: (() => void) | null = null;                    // C-264: Shell's HOW TO PLAY, which brings the game panel into view
 
 type Tab = (typeof TABS)[number];
@@ -100,6 +101,7 @@ function Shell() {
   const redraw = useCallback((_f: (n: number) => number) => bumpFresh(), []);
   useBackgroundSync(reload, redraw);                        // C-62, C-55, C-56, C-27, C-48, C-100, C-87
   useSiteHeard(reload, redraw);                             // C-261
+  useEffect(() => { startLending(); }, []);                  // C-360: THIS PHONE IN THE MESH, as its setting allows
   // C-92: away from the companion, a toast once -- dismissed, a small AWAY in the title bar, which brings it back
   const [toastGone, setToastGone] = useState<string | null>(null);
   // Today's theme, by name; before the server answers, the paper alone. On the site, ?day=tuesday shows another day's

@@ -92,7 +92,7 @@ function StepDot({ t, ts, size = 14 }: { t: Task; ts: Task[]; size?: number }) {
   const n = stepOf(t, ts), c = colourOf(t, ts), failed = t.state === "failed";
   return (
     <YStack width={size} height={size} borderRadius={size / 2} backgroundColor={c} alignItems="center" justifyContent="center"
-            borderWidth={1.5} borderStyle={failed ? "dashed" : "solid"} borderColor={failed ? "#e6ebf5" : lift(c, 0.45)}>
+            borderWidth={1.5} borderStyle={failed ? "dashed" : "solid"} borderColor={failed ? "$color12" : n > STEPS.length ? "$color8" : lift(c, 0.45)}>
       {failed || n ? <Text fontFamily="$mono" fontSize={Math.round(size * 0.6)} fontWeight="700" color={n > STEPS.length && !failed ? "#0f1420" : "#ffffff"}>{failed ? "✕" : n}</Text> : null}
     </YStack>
   );
@@ -323,7 +323,8 @@ export function MindAtWork({ ink }: { ink: string }) {
         <Text fontFamily="$mono" fontSize={9} letterSpacing={1} color="$color9">STEPS</Text>
         {[...STEPS, { colour: BEYOND, said: "AND ON" }].map((x, i) => (
           <XStack key={x.said} gap={4} alignItems="center">
-            <YStack width={14} height={14} borderRadius={7} backgroundColor={x.colour} alignItems="center" justifyContent="center">
+            <YStack width={14} height={14} borderRadius={7} backgroundColor={x.colour} alignItems="center" justifyContent="center"
+                    borderWidth={i >= STEPS.length ? 1 : 0} borderColor="$color8">
               <Text fontFamily="$mono" fontSize={8} fontWeight="700" color={i >= STEPS.length ? "#0f1420" : "#ffffff"}>{i + 1}</Text></YStack>
             <Text fontSize={10} color="$color10">{x.said}</Text></XStack>
         ))}

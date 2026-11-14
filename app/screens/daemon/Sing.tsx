@@ -57,8 +57,8 @@ export function SingScreen({ ink, name, onClose }: { ink: string; name: string; 
         <Eyebrow>{"THE DAEMON SINGS · DRAFT"}</Eyebrow>
         <Small>{`${name} sings you a song. ${SAID[mode]}`}</Small>
         <XStack gap={8} marginTop={6}>
-          <CareKey label="A PROMPT" ink={ink} lit={mode === "prompt"} onPress={() => setMode("prompt")} />
-          <CareKey label="YOUR WORDS" ink={ink} lit={mode === "lyrics"} onPress={() => setMode("lyrics")} />
+          <CareKey label="PROMPT" ink={ink} lit={mode === "prompt"} onPress={() => setMode("prompt")} />
+          <CareKey label="MY WORDS" ink={ink} lit={mode === "lyrics"} onPress={() => setMode("lyrics")} />
           <CareKey label="ITS OWN" ink={ink} lit={mode === "own"} onPress={() => setMode("own")} />
         </XStack>
         {mode === "prompt" ? <Entry value={request} onChange={setRequest} onSubmit={() => {}} placeholder="a song about…" limit={300} /> : null}

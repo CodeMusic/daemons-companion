@@ -73,11 +73,14 @@ export async function sendSaveNow(): Promise<string> {
 async function mirrorIn() {
   if (!paired()) return;
   try {
-    const m = await api<{ sha1: string; b64: string }>("/api/save/mirror");
+    const m = await api<{ sha1: string; b64: string; truth?: "companion" | "device" }>("/api/save/mirror");
     const f = saveFile(), mine = f.exists ? sha1(f.bytesSync()) : "", last = agreed();
-    const choice = mirrorChoice(m.sha1, mine, last);
+    const choice = mirrorChoice(m.sha1, mine, last, m.truth ?? "device");   // an older companion: the device's, as it was
     if (choice === "same") agree(m.sha1);
-    else if (choice === "take") { if (!f.exists) f.create(); f.write(bytesOf(m.b64)); agree(m.sha1); }
+    // C-365: both moved and the companion's is the truth -- this device's own goes into the companion's trail first
+    // (C-364, THE ENGINE ROOM's SAVES), and only once it is safely there is it replaced
+    if (choice === "replace") await api("/api/saves/history", { b64: b64Of(f.bytesSync()), note: "this device's own, replaced by the companion's" });
+    if (choice === "take" || choice === "replace") { if (!f.exists) f.create(); f.write(bytesOf(m.b64)); agree(m.sha1); }
   } catch { /* no mirror yet, or the companion away: the device's save as it is */ }
 }
 

@@ -64,6 +64,7 @@ import * as JOBS from "./jobs.js";                                       // C-34
 import { siteNow, siteUpdate, siteView } from "./sitefetch.js";           // C-342: the site, built on every push
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
+import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
 import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
@@ -141,7 +142,7 @@ export type { DeviceSettings };
 
 // C-111: the companion's rules live in core.ts; here they read the save on disk. Written only after a copy of the save
 // as it was goes beside it, in companion-backups/ (C-10, C-21).
-function fileSave(path: string | null | undefined): SaveFile {
+function fileSave(path: string | null | undefined, cfg?: Config): SaveFile {
   return {
     read: () => (path && existsSync(path) ? new Uint8Array(readFileSync(path)) : null),
     write: (bytes, now) => {
@@ -154,6 +155,7 @@ function fileSave(path: string | null | undefined): SaveFile {
       const tmp = `${path}.companion-writing`;
       writeFileSync(tmp, bytes);
       renameSync(tmp, path);
+      if (cfg) recordSave(cfg, bytes, "sync", "the companion");   // C-364
       // C-157: the backups pruned -- the newest sixty, and every one from the last fortnight, are kept (backups.ts)
       try { for (const n of prunable(readdirSync(dir), basename(path), now)) unlinkSync(join(dir, n)); } catch { /* kept, then */ }
       return backup;
@@ -192,12 +194,31 @@ export function putMirror(cfg: Config, store: Store, bytes: Uint8Array, base?: s
   // in the app never replaces it (the review); keep that one by name (C-215) and choose it, if it is wanted
   const wed = store.married();
   if (wed && gameOf(bytes) !== `${wed.name}/${wed.trainerId}/${wed.secretId}`) throw new OtherGame("the companion is another game's companion");
+  return writeMirror(cfg, store, bytes);
+}
+function writeMirror(cfg: Config, store: Store, bytes: Uint8Array): string {
   const path = mirrorPath(cfg), tmp = `${path}.companion-writing`;
   if (existsSync(path)) copyFileSync(path, `${path}.before`);   // the one before it, kept beside it (as SYNC's backups are)
   writeFileSync(tmp, bytes); renameSync(tmp, path);
   store.setSetting("save.mirror", "on");
   return sha1(bytes);
 }
+// C-365 (the user, 2026-11-14: "we want trading to be true, so if some event happens it would change the phones mirror"):
+// a save that moved here -- the link cable, or going back (C-364) -- written into the save the companion reads when it is
+// the same game, so it reaches the device at its next look; otherwise not written. The computer's save file is left alone
+// while a program holds it open (an emulator would save over it). Says what it wrote: the mirror, the save, or nothing.
+async function writeCurrent(cfg: Config, store: Store, bytes: Uint8Array): Promise<"mirror" | "save" | null> {
+  const path = savePathOf(cfg, store);
+  if (!path || !existsSync(path)) return null;
+  try { if (gameOf(new Uint8Array(readFileSync(path))) !== gameOf(bytes)) return null; } catch { return null; }
+  if (store.getSetting("save.mirror") === "on") { writeMirror(cfg, store, bytes); return "mirror"; }
+  if (await heldOpen(path) !== false) return null;
+  fileSave(path).write(bytes, new Date());
+  return "save";
+}
+// C-365: which copy is the truth when the device's and the companion's both moved -- the companion's (the default), or
+// the device's (C-188 as it was)
+export const truthOf = (store: Store): "companion" | "device" => store.getSetting("save.truth") === "device" ? "device" : "companion";
 // The mirror -- or, before there is one, the save the companion was given, so a device's game starts from it
 export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uint8Array } | null {
   const path = store.getSetting("save.mirror") === "on" ? mirrorPath(cfg) : givenSave(cfg, store);
@@ -206,7 +227,7 @@ export function getMirror(cfg: Config, store: Store): { sha1: string; bytes: Uin
   try { readSave(bytes); } catch { return null; }
   return { sha1: sha1(bytes), bytes };
 }
-const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath) });
+const hostOf = (cfg: Config): Host => ({ edition: cfg.edition, save: fileSave(cfg.savePath, cfg) });
 // C-261: what each SYNC brought, numbered -- so a page that did not ask for the SYNC (the site, while the watcher or the
 // playground SYNCed) shows RECEIVED for it too -- and when the save this companion reads last changed
 type Heard = { n: number; at: string | null; player: string; arrivals: core.Arrival[]; saved: string | null };
@@ -250,6 +271,7 @@ export function watchSave(cfg: Config, store: Store, every = 2000) {
     if (!changedAt || Date.now() - changedAt < 2 * every) return;     // held still
     let bytes: Uint8Array, asks: boolean;
     try { bytes = new Uint8Array(readFileSync(path)); asks = readSave(bytes).party.some((d) => d.asked); } catch { changedAt = 0; return; }
+    recordSave(cfg, bytes, "game", "this computer");                  // C-364: a SYNC's own write is already there
     const id = sha1(bytes), wed = store.married(), p = (() => { try { return readProfile(bytes); } catch { return null; } })();
     const ours = !!wed && !!p && wed.name === p.name && wed.trainerId === p.trainerId && wed.secretId === p.secretId;
     if (!asks || !ours || id === done) { changedAt = 0; return; }    // nothing asked, or not its game: read as it is
@@ -1481,9 +1503,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
               store.setSetting(`link.seat.${b.seat}`, e.id);
               return send(res, 200, { seat: b.seat, save: e });
             }
-            const id = keepSave(cfg, store, await takeSave(host, b.seat), `LINK CABLE · PLAYER ${b.seat + 1}`);   // DRAFT
+            const bytes = await takeSave(host, b.seat), label = `LINK CABLE · PLAYER ${b.seat + 1}`;   // DRAFT
+            recordSave(cfg, bytes, "link", label);                                 // C-364
+            const wrote = await writeCurrent(cfg, store, bytes);                   // C-365: a trade is true
+            const id = wrote ? null : keepSave(cfg, store, bytes, label);
             store.setSetting(`link.seat.${b.seat}`, null);
-            return send(res, 200, { seat: b.seat, id, saves: listSaves(cfg, store, savePathOf(cfg, store), mirrorPath(cfg)).saves });
+            return send(res, 200, { seat: b.seat, wrote, id, saves: listSaves(cfg, store, savePathOf(cfg, store), mirrorPath(cfg)).saves });
           } catch (e) { return send(res, 502, { error: (e as Error).message }); }
         }
         return await linkRoute(res, linkHost(store.getSetting("link.host")), path, String(req.headers["accept-encoding"] ?? ""));
@@ -2978,25 +3003,59 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           else { store.setSetting("savePath", paths.get(e.id)!); store.setSetting("save.mirror", null); }
           return send(res, 200, { saves: known().saves });
         }
+        // C-364: the trail of every save that moved, and going back to one; C-365: which copy is the truth
+        if (req.method === "GET" && path === "/api/saves/history") return send(res, 200, { trail: trail(cfg), truth: truthOf(store) });
+        if (req.method === "POST" && path === "/api/saves/history") {             // a device's own save, set aside (C-365)
+          const b = await body(req);
+          const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
+          if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "{b64, note?}, a whole save" });
+          const e = recordSave(cfg, bytes, "set-aside", phone?.name ?? "this machine", typeof b.note === "string" ? b.note : "");
+          return send(res, 200, { kept: !!e });
+        }
+        if (req.method === "POST" && path === "/api/saves/history/back") {
+          const b = await body(req), bytes = typeof b.id === "number" ? savedBytes(cfg, b.id) : null;
+          if (!bytes) return send(res, 404, { error: "no such save in the trail" });
+          const e = recordSave(cfg, bytes, "back", phone?.name ?? "this machine", `went back to #${b.id}`);
+          const wrote = await writeCurrent(cfg, store, bytes);
+          if (!wrote) return send(res, 409, { error: "not the game the companion reads, or the computer's game has it open -- close it and try again", event: e });   // DRAFT
+          return send(res, 200, { wrote, event: e });
+        }
+        if (req.method === "POST" && path === "/api/saves/truth") {
+          const b = await body(req);
+          if (b.truth !== "companion" && b.truth !== "device") return send(res, 400, { error: "companion or device" });
+          store.setSetting("save.truth", b.truth === "device" ? "device" : null);
+          return send(res, 200, { truth: truthOf(store) });
+        }
         if (req.method === "POST" && path === "/api/saves/keep") {
           const b = await body(req);
           const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
           if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "keep {b64, label?}, a whole save" });
-          try { return send(res, 200, { id: keepSave(cfg, store, bytes, typeof b.label === "string" ? b.label : ""), saves: known().saves }); }
+          try {
+            const id = keepSave(cfg, store, bytes, typeof b.label === "string" ? b.label : "");
+            recordSave(cfg, bytes, "kept", phone?.name ?? "this machine", typeof b.label === "string" ? b.label : "");   // C-364
+            return send(res, 200, { id, saves: known().saves });
+          }
           catch (e) { return send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
         }
       }
       if (path === "/api/save/mirror" && (phone || isLoopback(req.socket.remoteAddress)) && !board) {
         if (req.method === "GET") {
           const m = getMirror(cfg, store);
-          return m ? send(res, 200, { sha1: m.sha1, b64: Buffer.from(m.bytes).toString("base64") }) : send(res, 404, { error: "no mirror here" });
+          return m ? send(res, 200, { sha1: m.sha1, b64: Buffer.from(m.bytes).toString("base64"), truth: truthOf(store) }) : send(res, 404, { error: "no mirror here" });
         }
         if (req.method === "POST") {
           const b = await body(req);
           const bytes = typeof b.b64 === "string" ? new Uint8Array(Buffer.from(b.b64, "base64")) : null;
           if (!bytes || bytes.length < 0x10000) return send(res, 400, { error: "a mirror is {b64}, a whole save" });
-          try { return send(res, 200, { sha1: putMirror(cfg, store, bytes, typeof b.base === "string" ? b.base : undefined) }); }
-          catch (e) { return e instanceof OtherGame ? send(res, 409, { error: e.message }) : send(res, 400, { error: `not a save: ${(e as Error).message}` }); }
+          const from = phone?.name ?? "this machine";
+          try {
+            const id = putMirror(cfg, store, bytes, typeof b.base === "string" ? b.base : undefined);
+            recordSave(cfg, bytes, "game", from);                                  // C-364
+            return send(res, 200, { sha1: id });
+          } catch (e) {
+            if (e instanceof OtherGame) { recordSave(cfg, bytes, "set-aside", from, e.message); return send(res, 409, { error: e.message }); }
+            return send(res, 400, { error: `not a save: ${(e as Error).message}` });
+          }
         }
       }
       if (req.method === "POST" && path === "/api/device/interact") {

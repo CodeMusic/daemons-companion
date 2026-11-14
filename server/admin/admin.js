@@ -9,6 +9,7 @@
 //   KEYS         pairing codes, the paired phones, the relay, Home Assistant (C-342: once the hub's own machine's alone)
 //   JOBS         the site built at every push, THE HANDS on the computer, the command line's jobs (C-342)
 //   CREATIONS    what the daemons made that the hub keeps -- sleep sounds, paintings -- each let go, or many (C-361)
+//   SAVES        the trail of every save that moved, going back to one, and whose copy goes on (C-364, C-365)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
 const KEY = "engine-room.key";
@@ -47,6 +48,7 @@ const PAGES = [
   { id: "keys", glyph: "◈", label: "KEYS", short: "KEYS", draw: drawKeys },                    // C-342
   { id: "jobs", glyph: "▶", label: "JOBS", short: "JOBS", draw: drawJobs, every: 3000 },       // C-342
   { id: "creations", glyph: "❖", label: "CREATIONS", short: "MADE", draw: drawCreations },     // C-361
+  { id: "saves", glyph: "⟲", label: "SAVES", short: "SAVES", draw: drawSaves },               // C-364
 ];
 let timer = null, ui = {}, drawing = null;          // ui: what a page keeps between its redraws (a filter, a task picked, a note)
 // a page asked for before another was opened, answering after it: it writes nothing
@@ -575,6 +577,32 @@ async function drawKeys() {
     show(true);
   });
 }
+// ---- SAVES (C-364, C-365): the trail of every save that moved, newest first, and going back to one -- rarely: it undoes
+// the game since, and is for two saves made at once; and whose copy is kept when a device's and the companion's both moved
+const SAVE_KIND = { game: "SAVED IN THE GAME", sync: "SYNC", link: "LINK CABLE", kept: "KEPT BY NAME", "set-aside": "SET ASIDE", back: "WENT BACK" };
+async function drawSaves() {
+  const h = await api("/api/saves/history"), now = Date.now();
+  $page.innerHTML = `<h1>SAVES</h1>
+    <p class="lede">One save, wherever the game is played. Each time it moves, a copy is kept here. Going back undoes the game
+      since, so it is for when two saves were made at once.</p>
+    <div class="card"><p class="eyebrow">WHEN BOTH MOVED</p>
+      <p class="small">A device and the companion both saved since they last agreed: whose save goes on?</p>
+      <div class="row">${["companion", "device"].map((t) => `<button class="pill ${h.truth === t ? "on" : ""}" data-act="truth" data-t="${t}">${t === "companion" ? "THE COMPANION'S" : "THE DEVICE'S"}</button>`).join("")}</div>
+      <p class="small faint">The other is set aside here, never lost.</p></div>
+    <div class="card"><p class="eyebrow">THE TRAIL · ${h.trail.length}</p><div class="list">${h.trail.map((e) => `<div class="item" style="cursor:default">
+      <span class="t">${esc(e.name)} · ${esc(e.playTime)}</span>
+      <span class="small">${esc(SAVE_KIND[e.kind] ?? e.kind)} · ${esc(e.from)} · ${esc(ago(e.at, now))}${e.note ? ` · ${esc(e.note)}` : ""}</span>
+      ${ui.back === String(e.id) ? `<button class="btn danger" data-act="back" data-id="${e.id}">YES, GO BACK</button><button class="btn quiet" data-act="backask" data-id="">NO</button>`
+        : `<button class="btn quiet" data-act="backask" data-id="${e.id}">GO BACK TO THIS</button>`}</div>`).join("")
+      || `<p class="small">Nothing yet: a save is kept here the first time it moves.</p>`}</div></div>
+    ${note()}`;
+}
+ACTS.truth = async (d) => { await api("/api/saves/truth", { truth: d.t }); said(""); };
+ACTS.backask = (d) => { ui.back = d.id; };
+ACTS.back = async (d) => {
+  const r = await api("/api/saves/history/back", { id: Number(d.id) });
+  ui.back = ""; said(r.wrote === "mirror" ? "Gone back. The device takes it the next time its game opens." : "Gone back.");
+};
 ACTS.paircode = async () => { ui.code = await api("/api/pair/code", {}); said(""); };
 ACTS.forgetphone = async (d) => { await api("/api/pair/forget", { name: d.name }); ui.forget = null; said(`${d.name} forgotten.`); };
 ACTS.secret = () => { ui.secret = !ui.secret; };

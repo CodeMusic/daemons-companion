@@ -9,7 +9,7 @@
 // Tone, never hue (vision 4.40, invariant 5): in good spirits a daemon's body lightens, in low spirits it darkens, and
 // it keeps its type's colour. The stronger the lean towards the edge, the stronger the tone; as it is, no tone at all.
 // This file runs on the phone too (C-111): no node:*. Every word DRAFT.
-import { derived } from "./feelings.js";
+import { clockDerived, wokenOf } from "./feelings.js";
 import type { Interaction } from "./life.js";
 import type { Shade } from "./expressions.js";
 import type { Spirits, SpiritsClass } from "./save/reader.js";
@@ -43,15 +43,18 @@ export function spiritTotals(events: Interaction[], now = new Date()): SpiritTot
   return out;
 }
 
-// derived() looks back a day; the four look back four weeks, so ask it once a day across them
+// derived() looks back a day; the four look back four weeks, so ask the clock's part once a day across them. Being
+// woken is decided by what came before each care alone, so it is asked once, of everything up to now.
 function derivedOverDays(events: Interaction[], now: Date): Interaction[] {
-  const seen = new Set<string>(), out: Interaction[] = [];
+  const seen = new Set<string>(), out: Interaction[] = [], when = events.map((x) => Date.parse(x.at));
+  const add = (e: Interaction, limit: number) => {
+    const k = `${e.kind} ${e.at}`;
+    if (!seen.has(k) && Date.parse(e.at) <= limit) { seen.add(k); out.push(e); }
+  };
+  for (const e of wokenOf(events.filter((_, i) => when[i] <= now.getTime()))) add(e, now.getTime());
   for (let back = 0; back < SPIRIT_DAYS; back += 1) {
     const at = new Date(now.getTime() - back * 86400000);
-    for (const e of derived(events.filter((x) => Date.parse(x.at) <= at.getTime()), at)) {
-      const k = `${e.kind} ${e.at}`;
-      if (!seen.has(k) && Date.parse(e.at) <= at.getTime()) { seen.add(k); out.push(e); }
-    }
+    for (const e of clockDerived(events.filter((_, i) => when[i] <= at.getTime()), at)) add(e, at.getTime());
   }
   return out;
 }

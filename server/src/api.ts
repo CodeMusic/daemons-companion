@@ -304,12 +304,10 @@ function talkWho(ecfg: Config, store: Store, deviceId: string) {
     goal: st.step ? { goal: st.step.goal, step: st.step.text, milestone: st.step.milestone?.title ?? "" } : null,
   };
 }
-// TEMPORARY (2026-11-14, THE MIND slow on the hub): a piece over 300 ms logged by name and time only
-const lap = <T,>(label: string, f: () => T): T => { const t = Date.now(); const r = f(); const ms = Date.now() - t; if (ms > 300) console.log(`slow: ${label} ${ms}ms`); return r; };
 // C-252: who the daemon carried is, as self.ts says it -- the save's friendship and its week's trend (one snapshot a day,
 // kept in the store), its life and feelings, last night's dream, and the trainer and the box from this machine's settings
 function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date()): SelfFacts {
-  const st = lap("self.deviceState", () => deviceState(ecfg, store, now, deviceId)), d = st.daemon as Record<string, any> | null, w = lap("self.talkWho", () => talkWho(ecfg, store, deviceId));
+  const st = deviceState(ecfg, store, now, deviceId), d = st.daemon as Record<string, any> | null, w = talkWho(ecfg, store, deviceId);
   let trend: SelfFacts["bondTrend"] = null;
   if (d && typeof d.friendship === "number") {
     const today = now.toLocaleDateString("en-CA");
@@ -320,25 +318,23 @@ function selfFacts(ecfg: Config, store: Store, deviceId: string, now = new Date(
   }
   const kind = validDeviceId(deviceId) ? kindOf(deviceId) : "";
   // C-338: the persona of the day, as it stands -- what it wrote at wake of meeting today, and the forecast (read, never built here)
-  const carried = d ? lap("self.carried", () => carriedDaemon(ecfg, store, deviceId)) : null;
+  const carried = d ? carriedDaemon(ecfg, store, deviceId) : null;
   const today = carried ? todayOf(readPersona(store.getSetting(`persona.${carried.personality >>> 0}`)), now) : null;
   return { ...w.daemon, nickname: w.daemon.nickname, box: store.getSetting("self.box") || undefined,
            device: kind ? (store.getSetting(`self.device.${kind}`) || kind.toUpperCase()) : undefined,
            trainer: store.getSetting("self.trainer") || undefined,
            friendship: d && typeof d.friendship === "number" ? d.friendship : null, bondTrend: trend,
-           life: d?.life ?? null, feelings: d ? lap("self.feelings", () => core.daemonFeelings(store, now)) : null,
+           life: d?.life ?? null, feelings: d ? core.daemonFeelings(store, now) : null,
            dream: (w.daemon as { dream?: string }).dream ?? null,
            yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"), kept: readKept(store.getSetting("self.kept")),
-           day: w.day, season: w.season, goal: w.goal, sky: lap("self.sky", () => skyLine(weatherToday(store, now))) || null, today,
-           spirits: d ? lap("self.spirits", () => spiritsSaid(carried?.spirits?.class ?? null, spiritTotalsNow(store, now))) : null };
+           day: w.day, season: w.season, goal: w.goal, sky: skyLine(weatherToday(store, now)) || null, today,
+           spirits: d ? spiritsSaid(carried?.spirits?.class ?? null, spiritTotalsNow(store, now)) : null };
 }
 // C-296: the four running totals, from four weeks of the companion's own log
 const spiritTotalsNow = (store: Store, now = new Date()) => spiritTotals(store.interactionsSince(new Date(now.getTime() - (SPIRIT_DAYS + 1) * 86400000)), now);
 const TALK_TOKENS = 90;   // C-249: a talk's answer through the Tiiny -- two or three sentences
-const selfText = (ecfg: Config, store: Store, deviceId: string, length: SelfLength) => {
-  const f = lap("self.facts", () => selfFacts(ecfg, store, deviceId));
-  return lap("self.of", () => selfOf(f, length, store.getSetting("self.instructions") || SELF_INSTRUCTIONS));
-};
+const selfText = (ecfg: Config, store: Store, deviceId: string, length: SelfLength) =>
+  selfOf(selfFacts(ecfg, store, deviceId), length, store.getSetting("self.instructions") || SELF_INSTRUCTIONS);
 // C-251: the voice the carried daemon speaks in -- its trainer's own recipe for it (voice.recipe.<species>), else its
 // type's, shaded by how it feels now; said to a voice-design model with every line
 function voiceFor(ecfg: Config, store: Store, deviceId: string, now = new Date()) {
@@ -1865,18 +1861,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-254: the mind portal (GET /api/mind/portal; /api/mind is C-307's traces) -- NOW (each feeling, the room's weather, the event behind the strongest), the companion's
       // last dream beside the one the save carries, the voice it speaks in, and the words a model is given about it
       if (req.method === "GET" && path === "/api/mind/portal") {
-        const now = new Date(), d = lap("portal.deviceState", () => deviceState(ecfg, store, now, deviceId)).daemon as Record<string, any> | null;
+        const now = new Date(), d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
         if (!d) return send(res, 200, { daemon: null });
         const last = [...dreamsOf(store)].sort((a, b) => Date.parse(b.to) - Date.parse(a.to))[0] ?? null;
         let game = null;
-        try { const file = hostOf(ecfg).save.read(); game = file ? lap("portal.gameDream", () => gameDream(file)) : null; } catch { /* no dream read */ }
+        try { const file = hostOf(ecfg).save.read(); game = file ? gameDream(file) : null; } catch { /* no dream read */ }
         return send(res, 200, {
-          daemon: { nickname: d.nickname, slot: d.slot, species: d.species, expression: lap("portal.expression", () => core.daemonExpression(store, now, undefined, d.species))?.name ?? null },
-          now: lap("portal.now", () => mindNow(core.daemonFeelings(store, now))),
+          daemon: { nickname: d.nickname, slot: d.slot, species: d.species, expression: core.daemonExpression(store, now, undefined, d.species)?.name ?? null },
+          now: mindNow(core.daemonFeelings(store, now)),
           dream: last ? { title: titleOf(last), text: last.text, at: last.to, quality: last.quality } : null, game,
           remembered: { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
                         kept: readKept(store.getSetting("self.kept")), day: store.getSetting("self.memoryFor") },   // C-253, C-254 KEPT
-          voice: lap("portal.voice", () => voiceFor(ecfg, store, deviceId, now)), self: selfText(ecfg, store, deviceId, "full"),
+          voice: voiceFor(ecfg, store, deviceId, now), self: selfText(ecfg, store, deviceId, "full"),
           spirits: spiritsPortal(carriedDaemon(ecfg, store, deviceId)?.spirits ?? null, spiritTotalsNow(store, now)) });
       }
       // C-254: FORGET -- a kept moment ({kept: its line}), or yesterday or the month ({what}); what the daemon is told forgets it too

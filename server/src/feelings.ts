@@ -56,34 +56,58 @@ const RESTLESS_AFTER_H = 2, RESTLESS_PER_H = 12;
 const day = (d: Date, h: number) => { const x = new Date(d); x.setHours(h, 0, 0, 0); return x; };
 
 // The events the clock adds to the log: missed meals, being woken, a night alone
+// Each event's moment, read once: the four weeks of spirits ask the same rows again for each of their days (spirits.ts)
+const MOMENT = new WeakMap<Interaction, number>();
+const momentOf = (e: Interaction) => { let t = MOMENT.get(e); if (t === undefined) { t = Date.parse(e.at); MOMENT.set(e, t); } return t; };
+
 export function derived(events: Interaction[], now = new Date()): Interaction[] {
-  const at = (e: Interaction) => Date.parse(e.at);
+  return [...clockDerived(events, now), ...wokenOf(events)];
+}
+
+// the clock's own: a meal time passed with nothing eaten, and eleven at night never put to bed -- the last day's
+export function clockDerived(events: Interaction[], now = new Date()): Interaction[] {
+  const at = momentOf;
   const out: Interaction[] = [];
   const since = now.getTime() - LOOK_BACK_MS;
+  const first = events.reduce((m, e) => Math.min(m, at(e)), Infinity);       // "anything before": only the earliest matters
   for (let back = 1; back >= 0; back--) {
     const d = new Date(now); d.setDate(d.getDate() - back);
     for (const [from, to] of MEALS) {
       const end = day(d, to);
       if (end.getTime() > now.getTime() || end.getTime() < since) continue;
       const ate = events.some((e) => (e.kind === "feed" || e.kind === "step") && at(e) >= day(d, from).getTime() && at(e) < end.getTime());
-      if (!ate && events.some((e) => at(e) < end.getTime())) out.push({ at: end.toISOString(), kind: "missed-meal" });
+      if (!ate && first < end.getTime()) out.push({ at: end.toISOString(), kind: "missed-meal" });
     }
     const eleven = day(d, 23);
     if (eleven.getTime() <= now.getTime() && eleven.getTime() >= since) {
       const bedded = events.some((e) => e.kind === "sleep" && at(e) >= day(d, 20).getTime() && at(e) <= eleven.getTime());
-      if (!bedded && events.some((e) => at(e) < eleven.getTime())) out.push({ at: eleven.toISOString(), kind: "alone-at-night" });
+      if (!bedded && first < eleven.getTime()) out.push({ at: eleven.toISOString(), kind: "alone-at-night" });
     }
   }
-  // tended while asleep: a care after a sleep, before the morning (or within a nap)
+  return out;
+}
+
+// tended while asleep: a care after a sleep, before the morning (or within a nap), with no care between them. Every care
+// in the log is asked, so each sleep and each care is found by halving (it was every care against every other: 6 s on
+// the hub's one core for four weeks, 2026-11-14)
+const CARE = ["feed", "water", "train"];
+export function wokenOf(events: Interaction[]): Interaction[] {
+  const at = momentOf, out: Interaction[] = [];
   const sleeps = events.filter((e) => e.kind === "sleep").map(at).sort((a, b) => a - b);
+  const cares = events.filter((e) => CARE.includes(e.kind)).map(at).sort((a, b) => a - b);
+  const lastBelow = (xs: number[], t: number) => {                         // the greatest x < t, or undefined
+    let lo = 0, hi = xs.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (xs[m] < t) lo = m + 1; else hi = m; }
+    return lo ? xs[lo - 1] : undefined;
+  };
   for (const e of events) {
-    if (!["feed", "water", "train"].includes(e.kind)) continue;
-    const t = at(e), last = sleeps.filter((s) => s < t).pop();
+    if (!CARE.includes(e.kind)) continue;
+    const t = at(e), last = lastBelow(sleeps, t);
     if (last === undefined) continue;
     const slept = new Date(last), h = slept.getHours();
     const until = h >= 20 || h < 6 ? (() => { const u = new Date(slept); if (h >= 6) u.setDate(u.getDate() + 1); u.setHours(6, 0, 0, 0); return u.getTime(); })()
                                    : last + 90 * 60000;
-    const wokenBefore = events.some((x) => ["feed", "water", "train"].includes(x.kind) && at(x) > last && at(x) < t);
+    const before = lastBelow(cares, t), wokenBefore = before !== undefined && before > last;
     if (t < until && !wokenBefore) out.push({ at: e.at, kind: "woken" });
   }
   return out;

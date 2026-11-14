@@ -1,9 +1,54 @@
 {
- "latest": 979,
+ "latest": 980,
  "builds": [
   {
+   "build": 980,
+   "commit": "5a3b95d",
+   "date": "2026-11-14",
+   "sections": [
+    {
+     "ticket": "C-363",
+     "title": "THE ENGINE ROOM's MIND as THE MESH you can walk into, its pipelines coloured by step",
+     "lines": [
+      "The eighth-and-on step and a failure's ring readable on the light theme too"
+     ]
+    },
+    {
+     "ticket": "C-366",
+     "title": "THE ENGINE ROOM away from home, over the tailnet",
+     "lines": [
+      "SET UP for THE ENGINE ROOM away from home (turn on Tailscale; no pairing); C-366..C-368 recorded as closed"
+     ],
+     "setup": {
+      "title": "THE ENGINE ROOM, away from home",
+      "where": "any ENGINE ROOM link in the app (DAEMON › THE MIND, PLACES, SETTINGS › VOICES …)",
+      "needs": [
+       "the hub",
+       "Tailscale on this phone, and the hub on the same tailnet"
+      ],
+      "steps": [
+       "At home it opens as it always has, inside the app now.",
+       "Away from home, turn on Tailscale on this phone, then tap an ENGINE ROOM link: it opens the hub at its tailnet name.",
+       "No pairing needed: the app hands the page this phone's own key. If it says the hub did not answer, Tailscale is off or the hub is."
+      ],
+      "wiki": "Away-from-home",
+      "draft": true
+     }
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "THE MIND blank on the hub: its log indexed by when, and read once for one answer (DRAFT)",
+      "THE MIND slow on the hub: the spirits' four weeks no longer ask every care of every other, once a day (DRAFT)",
+      "THE ENGINE ROOM over the tailnet away from home; IT SINGS, THE EASEL and SLEEP SOUNDS are ROUTINES (DRAFT)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 979,
-   "commit": "0a6c795",
+   "commit": "29d69c0",
    "date": "2026-11-14",
    "sections": [
     {
@@ -191,6 +236,13 @@
      "title": "One save, and its trail in THE ENGINE ROOM",
      "lines": [
       "Every save that moves kept in a trail, THE ENGINE ROOM's SAVES, and the companion's copy as the truth (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-318",
+     "title": "WHAT'S NEW, drawn from history, with spans told by the house's mind",
+     "lines": [
+      "Whatsnew.json with build 979's notes; SET UP for C-358 CREATIONS, C-360 THE MESH and C-362 IT SINGS (DRAFT)"
      ]
     },
     {

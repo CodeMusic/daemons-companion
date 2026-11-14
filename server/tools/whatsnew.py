@@ -29,7 +29,7 @@ PATHS = ["app", "server/src", "server/data"]          # what reaches a build: th
 FIRST = 930                                           # the first TestFlight build
 # C-210 names most builds' commits in its own words; these it names another way
 KNOWN = {932: "a449dbc", 951: "0b6a659"}
-SKIP = re.compile(r"^(C-210|TODO|TestFlight|README|wiki|LAYOUT)\b|\buploaded\b|\barchived\b", re.I)
+SKIP = re.compile(r"^(C-210|TODO|TestFlight|README|wiki|LAYOUT|TEMPORARY)\b|\buploaded\b|\barchived\b", re.I)
 
 
 def git(*a: str) -> str:

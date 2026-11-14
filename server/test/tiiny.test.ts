@@ -1,6 +1,6 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST } from "../src/ai/tiiny.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN } from "../src/ai/tiiny.js";
 import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/ai/voice.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
@@ -82,6 +82,14 @@ describe("talking to it", () => {
       return new Response(new Uint8Array([1]), { headers: { "content-type": "audio/wav" } }); }) as typeof fetch;
     await tiinySpeak(at, "My DAEMON says hello.", "", f);
     expect(input).toBe("My Daymon says hello.");
+  });
+  it("always describes the voice: VoiceDesign answers 500 without one (2026-11-14)", async () => {
+    const sent: string[] = [];
+    const f = (async (_u: string, o: RequestInit) => { sent.push(JSON.parse(String(o.body)).instructions);
+      return new Response(new Uint8Array([1]), { headers: { "content-type": "audio/wav" } }); }) as typeof fetch;
+    await tiinySpeak(at, "hi", "", f);
+    await tiinySpeak(at, "hi", "A small bright voice.", f);
+    expect(sent).toEqual([TIINY_VOICE_PLAIN, "A small bright voice."]);
   });
 });
 

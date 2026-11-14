@@ -108,6 +108,8 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
 // 45-66 s, 2026-11-10), so a long piece is one voice, not several that each sound a little different; the time allowed
 // grows with the words, a tenth of a second a character, never under `ms`
 export const TIINY_SAY_MOST = 1200;
+// 2026-11-14: the Tiiny's VoiceDesign answers 500 to a line with no instructions, so one always goes: a plain voice
+export const TIINY_VOICE_PLAIN = "A warm, clear, gentle voice, speaking at an easy pace.";
 export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f: typeof fetch = fetch, ms = 30_000):
     Promise<{ audio: Uint8Array; mime: string } | null> {
   if (!at.tts) return null;
@@ -116,7 +118,7 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
     return await timed(Math.max(ms, input.length * 100), async (signal) => {
       const r = await f(`${at.url}/audio/speech`, { method: "POST", headers: headers(at), signal,
         body: JSON.stringify({ model: at.tts, input, voice: at.voice || "default", response_format: "wav",
-                               ...(instructions ? { instructions } : {}) }) });
+                               instructions: instructions.trim() || TIINY_VOICE_PLAIN }) });
       if (!r.ok) return null;
       const audio = new Uint8Array(await r.arrayBuffer());
       // the bytes say what it is: the Tiiny sends a WAV labelled audio/mpeg (seen 2026-11-03, through LiteLLM)
@@ -137,7 +139,7 @@ export async function tiinySpeakStream(at: TiinyAt, text: string, instructions =
   try {
     const r = await f(`${at.url}/audio/speech`, { method: "POST", headers: headers(at), signal: ctl.signal,
       body: JSON.stringify({ model: at.tts, input: sayable(text).slice(0, 600), voice: at.voice || "default", response_format: "pcm",
-                             stream: true, ...(instructions ? { instructions } : {}) }) });
+                             stream: true, instructions: instructions.trim() || TIINY_VOICE_PLAIN }) });
     if (!r.ok || !r.body) return null;
     const rest = r.body.getReader();
     let first = new Uint8Array(0);

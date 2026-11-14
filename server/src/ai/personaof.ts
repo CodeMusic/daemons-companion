@@ -13,7 +13,8 @@
 // Every word here is DRAFT, the user's to rewrite: words to a model, never shown. No node: imports.
 import speciesJson from "../../data/species.json" with { type: "json" };
 import week from "../../data/week.json" with { type: "json" };
-import { voiceKey, voiceRecipe } from "./voices.js";   // not voiceof.ts: its imports reach the hub's thinkers, and the phone imports this
+import { voiceKey, voiceRecipe } from "./voices.js";
+import { genderOf, pronounLine, type Gender } from "./gender.js";   // C-359   // not voiceof.ts: its imports reach the hub's thinkers, and the phone imports this
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; types?: string[]; category?: string; said?: string; entry?: Record<string, string> }>;
 
@@ -22,6 +23,7 @@ export type DayFacts = { day: string; virtue: string; shadow: string; chakra: st
 export type PersonaFacts = {
   species: number;
   nickname: string;
+  gender?: Gender;            // C-359: as the game has it -- he, she, or they
   name?: string;              // the species' name
   types?: string[];
   category?: string;
@@ -46,9 +48,9 @@ export function dayFacts(at = new Date()): DayFacts {
 }
 
 // The facts a species gives by itself: its name, types, category, telling and record
-export function speciesFacts(species: number, nickname: string, edition = "CONTENT"): PersonaFacts {
+export function speciesFacts(species: number, nickname: string, edition = "CONTENT", personality?: number | null): PersonaFacts {
   const row = SPECIES[String(species)];
-  return { species, nickname: clip(nickname, 12).toUpperCase() || (row?.name ?? "").toUpperCase(), name: row?.name ?? "",
+  return { species, gender: genderOf(species, personality), nickname: clip(nickname, 12).toUpperCase() || (row?.name ?? "").toUpperCase(), name: row?.name ?? "",
            types: row?.types ?? [], category: row?.category ?? "", said: clip(row?.said, 400) || undefined,
            entry: clip(row?.entry?.[edition] ?? row?.entry?.CONTENT, 400) || undefined };
 }
@@ -72,7 +74,8 @@ export function factsFrom(raw: unknown, edition = "CONTENT"): PersonaFacts | nul
   const goals = Array.isArray(c.goals) ? c.goals.slice(0, 4).map((g: any) => ({ goal: clip(g?.goal, 60), ...(g?.step ? { step: clip(g.step, 80) } : {}) }))
                                                   .filter((g: { goal: string }) => g.goal) : [];
   const level = Number(c.level);
-  return { ...base, level: Number.isFinite(level) ? Math.max(1, Math.min(100, Math.round(level))) : null,
+  const gender = c.gender === "male" || c.gender === "female" || c.gender === "none" ? c.gender as Gender : base.gender;   // C-359: its own companion knows
+  return { ...base, gender, level: Number.isFinite(level) ? Math.max(1, Math.min(100, Math.round(level))) : null,
            mood: clip(c.mood, 30) || undefined, care, goals, dream: clip(c.dream, 240) || undefined, day,
            voice: clip(c.voice, 600) || undefined };
 }
@@ -84,7 +87,7 @@ export function careWords(c: CareFacts | null | undefined): string {
   if (c.rest !== undefined) out.push(c.rest < 40 ? "worn out from short nights" : c.rest < 70 ? "a little tired" : "well rested");
   if ((c.hunger ?? 0) >= 50) out.push("hungry"); else if ((c.hunger ?? 0) >= 25) out.push("a little peckish");
   if ((c.thirst ?? 0) >= 50) out.push("thirsty");
-  if (c.companionship !== undefined) out.push(c.companionship < 40 ? "lonely, missing its person" : c.companionship >= 80 ? "close to its person" : "");
+  if (c.companionship !== undefined) out.push(c.companionship < 40 ? "lonely, missing your person" : c.companionship >= 80 ? "close to your person" : "");
   return out.filter(Boolean).join(", ");
 }
 
@@ -100,6 +103,7 @@ export function personaOf(f: PersonaFacts, o: { roomy?: boolean; person?: string
   const person = o.person || "the person who carries you";
   return [
     `${who}: a small living creature with a body of your own, from the INDEX of the game DAEMONS, who travels with ${person}.`,
+    pronounLine(f.gender),
     f.said ? `You say of yourself, in your own words: "${f.said}"` : "",
     f.entry && (o.roomy || !f.said) ? `Your INDEX entry says of you: ${f.entry}` : "",
     f.mood || care ? `Today you feel ${[f.mood, care].filter(Boolean).join("; ")}.` : "",

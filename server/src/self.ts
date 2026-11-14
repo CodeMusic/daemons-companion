@@ -8,10 +8,12 @@
 // The trainer's name and the box come from this machine's settings, never from code -- this repository is public.
 // Every word here is the companion's own to the model, never shown in the game: DRAFT.
 import type { Feelings } from "./feelings.js";
+import { pronounLine, type Gender } from "./ai/gender.js";   // C-359
 
 export type SelfLength = "short" | "day" | "full";
 export type SelfFacts = {
   nickname: string; name?: string; types?: string; category?: string; entry?: string; level?: number | null;
+  gender?: Gender;                   // C-359: he, she, or they, as the game has it
   said?: string;                     // C-303: what it says of itself (species.json `said`), beside the record
   box?: string;                     // what it runs on: "a BOX" -- the hub, by default
   device?: string;                   // where it is hosted right now: "WATCH", "phone"
@@ -82,13 +84,14 @@ export const SELF_INSTRUCTIONS =
 // that asks for "short". Its words are the ones the module was tuned on (the hardware lane, 2026-10-28): a body of its own
 // said positively, never the word a "never" would keep; the name said again at the end; a telling of its own (C-303) in
 // place of its record, both for a roomy mind. Kept under ~600 characters for qwen2.5-0.5B's window.
-export type ShortFacts = { nickname: string; name?: string; types?: string; level?: number | null; entry?: string; said?: string;
+export type ShortFacts = { nickname: string; gender?: Gender; name?: string; types?: string; level?: number | null; entry?: string; said?: string;
                            mood?: string; fed?: string; dream?: string | null; day?: { day: string; theme?: string } | null; season?: string;
                            goal?: { goal: string; step: string } | null };
 export function shortSelf(d: ShortFacts, roomy = false): string {
   const who = [`You are ${d.nickname}`, d.name && d.name !== d.nickname ? `a ${d.name}` : "", d.types ? `a ${d.types} daemon` : "a daemon",
                d.level ? `level ${d.level}` : ""].filter(Boolean).join(", ");
   return [`${who}: a small living creature with a body of your own, from the INDEX of the game DAEMONS, who travels with the person who carries you.`,
+          pronounLine(d.gender),
           d.entry && (roomy || !d.said) ? `Your INDEX entry: ${d.entry.replace(/\s+/g, " ").slice(0, 120)}` : "",
           d.said ? `You say of yourself: "${d.said.replace(/\s+/g, " ").slice(0, 160)}"` : "",
           d.mood ? `You feel ${d.mood}${d.fed ? `; ${d.fed}` : ""}.` : "",
@@ -111,6 +114,7 @@ export function selfOf(f: SelfFacts, length: SelfLength = "day", instructions = 
   lines.push(`You are ${f.nickname}, a DAEMON process running on ${f.box || "a BOX"}${who ? ` (${who})` : ""}.`);
   const hosted = f.device ? `You are hosted on their ${f.device} right now.` : "";
   if (f.trainer || hosted) lines.push([f.trainer ? `Your trainer is ${trainer}.` : "", hosted].filter(Boolean).join(" "));
+  if (f.gender) lines.push(pronounLine(f.gender));
   if (f.entry) lines.push(`Your INDEX entry${f.category ? ` (the ${f.category} DAEMON)` : ""}: ${clip(f.entry, length === "full" ? 400 : 200)}`);
   // C-303 (DAEMONS T-522): the record is what is written about it; this is how it speaks of itself, so its talk keeps to it
   if (f.said) lines.push(`You say of yourself, in your own words: "${clip(f.said, 200)}" That is how you sound.`);

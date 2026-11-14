@@ -43,6 +43,7 @@ import { careworn, withCare } from "./care.js";   // C-266: the care group -- it
 import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
 import { toneOf } from "./spirits.js";   // C-296: the tone is part of what a picture is
 import type { Spirits } from "./save/reader.js";
+import { genderOf } from "./ai/gender.js";   // C-359
 
 // the key a device files a daemon's picture under: changes when the picture would -- its species, its moves (the
 // streaks), and (C-296) its spirits' tone, left off when there is none so every key before it is unchanged
@@ -462,6 +463,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
     // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
     // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
     if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
+                      gender: genderOf(d.species, d.personality),                        // C-359: he, she, or they
                       holding: d.holding, art: ev ? `/art/${artName(d.species)}.png` : `/art/party/${d.slot}.png`, mood: null,   // C-184: its new face
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
                       artKey: artKeyOf(d), life: daemonLife(store, now),

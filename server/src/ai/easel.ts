@@ -80,8 +80,15 @@ export const PAINT_SYSTEM =
   "exactly what is in the painting for a painter to follow, under 70 words, \"about\": one sentence in your own voice about " +
   "why you painted it this way, under 30 words}.";
 
-export const paintAsk = (persona: string, request: string, style: string) =>
-  `Who you are today:\n${persona}\n\nYou paint in this style: ${style}.\n\nYou were asked to paint: ${request.trim()}`;
+// A thinker without room keeps the first 1000 characters of what it is asked (tiiny.ts), so the persona gives way, never
+// the request or the style (C-359: a pronoun line pushed "the shed in the rain" past it)
+export const PAINT_ASK_MOST = 1000;
+export function paintAsk(persona: string, request: string, style: string): string {
+  const tail = `\n\nYou paint in this style: ${style}.\n\nYou were asked to paint: ${request.trim()}`, head = "Who you are today:\n";
+  const room = Math.max(0, PAINT_ASK_MOST - head.length - tail.length);
+  const who = persona.length > room ? persona.slice(0, Math.max(0, room - 1)).trimEnd() + "\u2026" : persona;
+  return `${head}${who}${tail}`;
+}
 
 export type Painted = { title: string; scene: string; about: string };
 

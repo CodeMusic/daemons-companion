@@ -239,7 +239,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const away = awayNow(h), mine = carriedFor(store, away, device), theirs = carriedFor(store, away, partnerIn(space, device));
       if (!mine || !theirs) return no(400, "both devices must carry a daemon");                     // DRAFT
       const goals = store.goals().filter((g) => !g.done).slice(0, 4).map((g) => ({ goal: g.title }));
-      const facts = (d: typeof mine) => ({ ...speciesFacts(d.species, d.nickname, h.edition), level: d.level, goals, day: dayFacts(now) });
+      const facts = (d: typeof mine) => ({ ...speciesFacts(d.species, d.nickname, h.edition, d.personality), level: d.level, goals, day: dayFacts(now) });
       const r = Dialogue.begin(store, "home", { player: "home", facts: facts(mine), edition: h.edition }, { player: "home", facts: facts(theirs), edition: h.edition },
                                b ?? {}, { filtered: false, space: "household", now });
       return "id" in r ? ok(Dialogue.shown(r)) : no(400, r.error);

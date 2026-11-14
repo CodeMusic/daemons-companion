@@ -271,7 +271,7 @@ function heldOpen(path: string): Promise<boolean | null> {
 function talkWho(ecfg: Config, store: Store, deviceId: string) {
   const st = deviceState(ecfg, store, new Date(), deviceId), d = st.daemon;
   return {
-    daemon: d ? { nickname: d.nickname, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry,
+    daemon: d ? { nickname: d.nickname, gender: d.gender, name: d.name, types: (d.types as string[]).join("/"), category: d.category, entry: d.entry,
                   said: (SPECIES[String(d.species)]?.said as string | undefined) || undefined,   // C-303: what it says of itself
                   level: d.level ?? null, mood: d.life?.word,                                  // the user: its game, to ask about
                   fed: d.life ? `fed ${d.life.fed.today}, watered ${d.life.watered.today} today` : undefined,
@@ -359,7 +359,7 @@ function personaCard(ecfg: Config, store: Store, personality: number, now = new 
   if (!d) return null;
   const w = talkWho(ecfg, store, ""), carried = carriedDaemon(ecfg, store);
   const goals = store.goals().filter((g) => !g.done).slice(0, 4).map((g) => ({ goal: g.title, ...(w.goal?.goal === g.title ? { step: w.goal.step } : {}) }));
-  const f = speciesFacts(d.species, d.nickname, ecfg.edition);
+  const f = speciesFacts(d.species, d.nickname, ecfg.edition, d.personality);
   const life = carried && carried.personality >>> 0 === personality ? core.daemonLife(store, now) : null;
   return cardOf({ ...f, level: d.level, goals, day: dayFacts(now),
                   ...(life ? { mood: life.word, care: life.care, dream: (w.daemon as { dream?: string }).dream } : {}),

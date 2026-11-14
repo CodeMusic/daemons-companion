@@ -41,8 +41,10 @@ export function singAsk(mode: SingMode, persona: string, voice: string, request:
 }
 export type Sung = { title: string; style: string; lyrics: string; about: string };
 const clean = (s: unknown, most: number) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, most);
-export const musicWords = (s: string) => s.replace(/[^\w ,.'()/&+:-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 400);
-export const lyricWords = (s: string) => s.replace(/\r/g, "").replace(/[^\w \n,.'!?()[\]:;-]/gu, "").replace(/\n{3,}/g, "\n\n").trim().slice(0, 3000);
+export const musicWords = (s: string) => plain(s).replace(/[^\w ,.'()/&+:-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 400);
+// curly quotes made plain first, so "I’ll" keeps its apostrophe
+const plain = (s: string) => s.replace(/[\u2018\u2019\u02bc]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/[\u2013\u2014]/g, "-");
+export const lyricWords = (s: string) => plain(s).replace(/\r/g, "").replace(/[^\w \n,.'!?()[\]:;-]/gu, "").replace(/\n{3,}/g, "\n\n").trim().slice(0, 3000);
 export function readSong(text: string | null | undefined, mode: SingMode, request: string, styleGuide: string): Sung {
   const raw = String(text ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
   let j: Record<string, unknown> = {};

@@ -19,6 +19,7 @@ describe("the song's words", () => {
     expect(musicWords("folk <script> & {x}")).toBe("folk script & x");
     expect(lyricWords("[verse]\nhi <b>there</b>\n\n\n\nyes")).toBe("[verse]\nhi bthere/b\n\nyes".replace("/", ""));
     expect(captionOf("folk", "a soft voice")).toMatch(/vocals: a soft voice/);
+    expect(lyricWords("I\u2019ll hum")).toBe("I'll hum");
   });
   it("shows as a creation, its files once sung", () => {
     const c = songCreation({ id: "d".repeat(32), mode: "own", title: "Moss", style: "folk", lyrics: "[verse]\nhi", about: "", request: "",

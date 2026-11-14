@@ -65,6 +65,8 @@ export const captionOf = (style: string, voice: string) => musicWords(`${style},
 export class Songs {
   private songs: Song[] = [];
   private busy: Promise<unknown> = Promise.resolve();
+  ready: ((s: Song) => void) | null = null;                  // C-360: told when a song is sung (its cover is painted then)
+  idle(): Promise<unknown> { return this.busy.catch(() => {}); }
   constructor(readonly dir: string, private door: () => SleepDoor | null,
               private wait = (ms: number) => new Promise((r) => setTimeout(r, ms)), private pollMs = 5000) {
     mkdirSync(dir, { recursive: true });
@@ -165,5 +167,6 @@ export class Songs {
     Object.assign(s, { state: "ready", made: new Date().toISOString(), bytes: statSync(join(out, "phone.m4a")).size });
     delete s.job; delete s.error;
     this.save();
+    try { this.ready?.(s); } catch { /* no cover then */ }
   }
 }

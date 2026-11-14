@@ -4,6 +4,7 @@
 // of its own -- and sends the outputs back. Settings, from the environment:
 //   MESH_HUB   the hub, http://<hub>:4730       MESH_KEY   a paired key (hub/mesh.sh install pairs one)
 //   MESH_NAME  how THE MIND AT WORK names it    MESH_MOST  jobs at once (default: a quarter of its cores, at least 1)
+import { execFileSync } from "node:child_process";
 import { createReadStream, createWriteStream, mkdtempSync, rmSync, statSync } from "node:fs";
 import { cpus, hostname, loadavg, tmpdir } from "node:os";
 import { join } from "node:path";
@@ -22,6 +23,24 @@ const CAPS = FOUND_FFMPEG ? ["ffmpeg"] : [];
 const say = (...a: unknown[]) => console.log(new Date().toISOString(), ...a);
 const auth = { authorization: `Bearer ${KEY}` };
 let holds = 0;
+
+// C-360: a node takes no work while its own memory is under pressure -- roverbyteseer restarted (2026-11-14) with its
+// swap all but full; macOS says how much memory is free (memory_pressure) and how much swap is used (vm.swapusage).
+// Asked every quarter minute; elsewhere (no such commands) it is never under pressure.
+let strained = { at: 0, yes: false, said: "" };
+function underPressure(): { yes: boolean; said: string } {
+  if (Date.now() - strained.at < 15_000) return strained;
+  let yes = false, said = "";
+  try {
+    const free = Number(/(\d+)%/.exec(execFileSync("memory_pressure", ["-Q"], { encoding: "utf8", timeout: 5000 }))?.[1] ?? 100);
+    const sw = execFileSync("sysctl", ["-n", "vm.swapusage"], { encoding: "utf8", timeout: 5000 });
+    const total = Number(/total = ([\d.]+)M/.exec(sw)?.[1] ?? 0), used = Number(/used = ([\d.]+)M/.exec(sw)?.[1] ?? 0);
+    if (free < 20) { yes = true; said = `${free}% of memory free`; }
+    else if (total > 0 && used / total > 0.85) { yes = true; said = `swap ${Math.round((100 * used) / total)}% used`; }
+  } catch { /* not a Mac */ }
+  strained = { at: Date.now(), yes, said };
+  return strained;
+}
 
 async function post(path: string, body: unknown): Promise<any> {
   const r = await fetch(HUB + path, { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify(body),
@@ -62,6 +81,8 @@ async function work(job: ProcJob) {
 say(`mesh: ${NAME} (${ID}) -- ${CORES} cores, speed ${SPEED}, ${MOST} at once, caps ${CAPS.join(", ") || "none"}; the hub ${HUB}`);
 for (;;) {
   try {
+    const p = underPressure();
+    if (p.yes) { if (!strained.said.startsWith("!")) { say(`resting: ${p.said}`); strained.said = `!${p.said}`; } await new Promise((r) => setTimeout(r, 15000)); continue; }
     if (holds < MOST) {
       const r = await post("/api/mesh/take", { id: ID, name: NAME, caps: CAPS, cores: CORES, speed: SPEED,
                                                 load: Math.round((loadavg()[0] / CORES) * 100) / 100, holds });

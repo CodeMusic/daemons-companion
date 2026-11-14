@@ -38,6 +38,10 @@ const WAIT_MS = 30 * 60000;
 export class SleepTracks {
   private tracks: SleepTrack[] = [];
   private busy: Promise<unknown> = Promise.resolve();
+  // C-360: told when a piece is made (its cover is painted then, never while the music maker works); and the queue's
+  // end, so other heavy work on the same machine can wait for it
+  ready: ((t: SleepTrack) => void) | null = null;
+  idle(): Promise<unknown> { return this.busy.catch(() => {}); }
   constructor(readonly dir: string, private door: () => SleepDoor | null,
               private wait = (ms: number) => new Promise((r) => setTimeout(r, ms)), private pollMs = 5000) {
     mkdirSync(dir, { recursive: true });
@@ -176,6 +180,7 @@ export class SleepTracks {
     // keep the newest KEEP of this daemon's
     for (const old of this.list(t.species).filter((x) => x.state === "ready").slice(KEEP)) this.drop(old);
     this.save();
+    try { this.ready?.(t); } catch { /* its cover is painted when next listed */ }
   }
 }
 

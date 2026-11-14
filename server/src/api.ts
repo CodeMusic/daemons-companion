@@ -1123,7 +1123,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const paintCover = (t: SleepTrack) => {
     if (t.cover === "painting" || t.cover === "ready" || t.state === "failed") return;
     sleepTracks().patch(t.id, { cover: "painting" });
-    coversBusy = coversBusy.then(async () => {
+    coversBusy = coversBusy.then(() => Promise.all([sleepTracks().idle(), songs().idle()])).then(async () => {   // C-360: after the music, never with it
       const w = ledgered({ kind: "painting", title: `${t.nickname || "A daemon"} paints a cover for its sleep sounds` });   // DRAFT
       try {
         const style = paintStyle({ types: t.types, species: t.species, category: t.category }, core.daemonFeelings(store, new Date()),
@@ -1149,7 +1149,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-362: THE DAEMON SINGS (songs.ts) -- its words and style from its persona of the day, sung on the music door, a
   // cover painted as a sleep piece's is; kept beside the database
   let songsKept: Songs | null = null;
-  const songs = () => (songsKept ??= new Songs(join(dirname(cfg.database), "songs"), () => sleepDoor((k) => store.getSetting(k))));
+  const songCovers = new Map<string, () => void>();
+  const songs = () => {
+    if (!songsKept) {
+      songsKept = new Songs(join(dirname(cfg.database), "songs"), () => sleepDoor((k) => store.getSetting(k)));
+      songsKept.ready = (s) => { const f = songCovers.get(s.id); songCovers.delete(s.id); f?.(); };
+    }
+    return songsKept;
+  };
   const sing = (personality: number, mode: SingMode, request: string, styleGuide: string, voice: string, by?: string): Song | { error: string } => {
     const now = new Date(), got = personaNow(personality, now);
     if (!got) return { error: "That daemon is not here to sing." };   // DRAFT
@@ -1165,12 +1172,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (!song.lyrics) throw new Error("no words came");   // DRAFT
       songs().update(row.id, song);
       w.end("done");
+      // C-360: its cover is painted once it is sung (songCovers, run by songs().ready), never while ACE-Step sings
+      songCovers.set(row.id, () => paintSongCover());
       songs().sing(row.id, captionOf(song.style, voice));
-      // its cover, painted while it is sung
+      const paintSongCover = () => {
       const style = paintStyle({ types: f.types, species: f.species, category: f.category }, core.daemonFeelings(store, now),
                                store.getSetting(`paint.style.${f.species}`));
       songs().update(row.id, { cover: "painting" });
-      coversBusy = coversBusy.then(async () => {
+      coversBusy = coversBusy.then(() => Promise.all([sleepTracks().idle(), songs().idle()])).then(async () => {
         const c = ledgered({ kind: "painting", title: `${f.nickname} paints the cover of '${song.title}'` });   // DRAFT
         try {
           const p = readPainting(writerNow() ? await c.write(PAINT_SYSTEM, paintAsk(got.persona.text,
@@ -1180,6 +1189,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           c.end("done");
         } catch (e) { songs().update(row.id, { cover: "failed" }); c.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); }
       });
+      };
     })().catch((e) => {
       const error = (e as Error)?.message?.slice(0, 120) || "it could not be written";   // DRAFT
       songs().update(row.id, { state: "failed", error });
@@ -1213,7 +1223,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-334: sleep sounds, kept beside the database (made on first use, so a test's in-memory store makes no folder)
   let sleepKept: SleepTracks | null = null;
   const bookRecordings = new BookRecordings(join(dirname(cfg.database), "recordings"));   // C-331 (1)
-  const sleepTracks = () => (sleepKept ??= new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))));
+  // C-360: a piece's cover is painted once it is made (paintCover, given below), never while the music maker sings --
+  // ACE-Step and FLUX together filled roverbyteseer's 32 GB and its swap, and it restarted (2026-11-14)
+  const sleepTracks = () => {
+    if (!sleepKept) { sleepKept = new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))); sleepKept.ready = (t) => paintCover(t); }
+    return sleepKept;
+  };
   const meetEnded = new Map<number, Date>();                     // C-316: a memo's end, until its length is known
   // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
   // nobody waiting; with no thinker at all, laid out plainly. One at a time per chapter.
@@ -1926,7 +1941,6 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                            by: phone?.name ?? (deviceId || "the site"), device: deviceId || undefined,   // C-358
                                            types: Array.isArray(c.types) ? c.types : typeof c.types === "string" ? c.types.split("/") : undefined,
                                            category: typeof c.category === "string" ? c.category : undefined }, !!b.again);
-          paintCover(t);                                                                                                 // C-358
           return send(res, 202, { track: trackOut(t) });
         }
         catch (e) { return send(res, 503, { error: (e as Error).message }); }

@@ -11,6 +11,7 @@ import { api, TOKEN } from "../../platform/net";
 import { adoptOld, coverUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../../platform/creations";
 import { DRIFT } from "../../sound/binaural";
 import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../../sound/sleepSession";
+import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../../sound/song";   // C-362
 import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
 
 type Where = "mine" | "household" | "community";
@@ -28,12 +29,12 @@ export function RecordCover({ c, size, progress = 0, onPress, children }:
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={c.title}>
       <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
         {Array.from({ length: ticks }, (_, i) => {
-          const s = (i / ticks) * SESSION_S, lit = i / ticks < progress;
+          const s = (i / ticks) * SESSION_S, lit = i / ticks < progress, song = c.kind === "song";
           return (
             <View key={i} pointerEvents="none" style={{ position: "absolute", width: size, height: size, alignItems: "center",
                                                          transform: [{ rotate: `${(360 * i) / ticks}deg` }] }}>
-              <View style={{ width: 3, height: 8, borderRadius: 1.5, backgroundColor: STAGE_COLOUR[stageAtS(s).word],
-                             opacity: lit ? 1 : s >= SESSION_S - FADE_S ? 0.18 : 0.35 }} />
+              <View style={{ width: 3, height: 8, borderRadius: 1.5, backgroundColor: song ? "#e0b45c" : STAGE_COLOUR[stageAtS(s).word],
+                             opacity: lit ? 1 : !song && s >= SESSION_S - FADE_S ? 0.18 : 0.35 }} />
             </View>
           );
         })}
@@ -72,17 +73,17 @@ function bandsOf(frames: number[]): number[] {
   return out.map((v) => Math.sqrt(v / peak));
 }
 let peak = 1e-4;
-function Spectrum({ size, beat, colour }: { size: number; beat: number; colour: string }) {
+function Spectrum({ size, beat, colour, song }: { size: number; beat: number; colour: string; song?: boolean }) {
   const [bands, setBands] = useState<number[]>(() => Array(BANDS).fill(0.1));
   const last = useRef(0);
   useEffect(() => {
-    if (canSample()) return onSpectrum((fr) => { const now = Date.now(); if (now - last.current < 80) return; last.current = now; setBands(bandsOf(fr)); });
+    if (song ? canSampleSong() : canSample()) return (song ? onSongSpectrum : onSpectrum)((fr) => { const now = Date.now(); if (now - last.current < 80) return; last.current = now; setBands(bandsOf(fr)); });
     const t = setInterval(() => {   // no samples here: the beat, breathing
       const ph = (Date.now() / 1000) * beat * 2 * Math.PI;
       setBands(Array.from({ length: BANDS }, (_, i) => 0.25 + 0.55 * Math.abs(Math.sin(ph + i * 0.35)) * (1 - i / (BANDS * 1.4))));
     }, 90);
     return () => clearInterval(t);
-  }, [beat]);
+  }, [beat, song]);
   // mirrored about the record's hole: the lowest sounds in the middle, the highest at both edges
   const shown = [...bands.slice().reverse(), ...bands], w = (size * 0.74) / shown.length;
   return (
@@ -158,6 +159,49 @@ export function SleepPlayer({ k, ink, onBack }: { k: Kept; ink: string; onBack: 
   );
 }
 
+// C-362: the player for a song this phone keeps -- the record lit round as it plays, its spectrum, its words
+export function SongPlayer({ k, ink, onBack }: { k: Kept; ink: string; onBack: () => void }) {
+  const [now, setNow] = useState(songState());
+  const [spectrum, setSpectrum] = useState(false), [error, setError] = useState(""), [busy, setBusy] = useState("");
+  useEffect(() => onSong(setNow), []);
+  const mineNow = now.playing && now.id === k.id;
+  const out = async () => {
+    setError(""); setBusy("Fetching the MP3 from the hub…");   // DRAFT
+    try { await exportFile(k.files["export.mp3"], `${k.title}.mp3`); } catch (e) { setError((e as Error).message); } finally { setBusy(""); }
+  };
+  const size = 260;
+  return (
+    <YStack gap={12}>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onBack}>{"‹ CREATIONS"}</Text>
+      <YStack alignItems="center" gap={8}>
+        <RecordCover c={k} size={size} progress={mineNow && now.length ? now.at / now.length : 0} onPress={() => setSpectrum((v) => !v)}>
+          {spectrum ? <Spectrum size={size - 22} beat={2} colour="#e0b45c" song /> : undefined}
+        </RecordCover>
+        <Small color="$color8">{spectrum ? "Tap the record for its cover." : "Tap the record for its spectrum."}</Small>
+        <Text fontFamily="$mono" fontSize={17} fontWeight="700" letterSpacing={1} color="$color12" textAlign="center">{k.title}</Text>
+        {k.about ? <Small>{k.about}</Small> : null}
+      </YStack>
+      <Card>
+        <XStack gap={8} flexWrap="wrap">
+          {mineNow ? <Action label="STOP" ink={ink} onPress={stopSong} />
+                   : <Action label="PLAY" ink={ink} onPress={() => playSong({ id: k.id, uri: k.local["phone.m4a"], title: k.title })} />}
+          <Action label="MP3" ink={ink} onPress={out} />
+        </XStack>
+        {mineNow && now.length ? <Small>{`${Math.floor(now.at / 60)}:${String(Math.floor(now.at % 60)).padStart(2, "0")} of ${Math.floor(now.length / 60)}:${String(Math.floor(now.length % 60)).padStart(2, "0")}`}</Small> : null}
+        {busy ? <Small>{busy}</Small> : null}
+        {error ? <Small color="$color8">{error}</Small> : null}
+      </Card>
+      <Card>
+        <Eyebrow>{"THE WORDS"}</Eyebrow>
+        <Text fontSize={15} lineHeight={22} color="$color12">{String(k.meta.lyrics ?? "").replace(/^\[(verse|chorus|bridge|outro|intro)[^\]]*\]$/gim, "").replace(/\n{3,}/g, "\n\n").trim()}</Text>
+        <Small>{`Sung as: ${k.meta.style}`}</Small>
+        <Small>{`By ${k.daemon.nickname || "a daemon"}${k.by ? `, asked for on ${k.by}` : ""}, ${whenSaid(k.made)}.${k.where === "community" ? " From the community." : ""}`}</Small>
+      </Card>
+      <Action label="LET IT GO FROM THIS PHONE" ink={ink} onPress={() => { if (mineNow) stopSong(); letGo(k.uid); onBack(); }} />
+    </YStack>
+  );
+}
+
 // A creation from the hub or the community, before it is on this phone: what it is, and DOWNLOAD
 function Details({ c, where, have, ink, onBack, onKept }: { c: Creation & { sharedByName?: string }; where: Where; have: boolean; ink: string;
                                                            onBack: () => void; onKept: (k: Kept) => void }) {
@@ -174,7 +218,7 @@ function Details({ c, where, have, ink, onBack, onKept }: { c: Creation & { shar
     <YStack gap={12}>
       <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onBack}>{"‹ CREATIONS"}</Text>
       <YStack alignItems="center" gap={8}>
-        {c.kind === "sleep" ? <RecordCover c={c} size={240} /> : <Image source={source(coverUri(c))!} style={{ width: 240, height: 240, borderRadius: 4 }} />}
+        {c.kind !== "painting" ? <RecordCover c={c} size={240} /> : <Image source={source(coverUri(c))!} style={{ width: 240, height: 240, borderRadius: 4 }} />}
         <Text fontFamily="$mono" fontSize={16} fontWeight="700" letterSpacing={1} color="$color12" textAlign="center">{c.title}</Text>
         {c.about ? <Small>{c.about}</Small> : null}
       </YStack>
@@ -183,6 +227,8 @@ function Details({ c, where, have, ink, onBack, onKept }: { c: Creation & { shar
         {c.sharedByName ? <Small>{`Shared by ${c.sharedByName}.`}</Small> : null}
         {c.kind === "sleep" ? <Small>{`${c.meta.keyscale}, ${c.meta.bpm} beats a minute; DRIFT DOWN beats ${c.meta.beats ?? "10 → 6 → 2 Hz"}.`}</Small> : null}
         {c.kind === "painting" && c.meta.request ? <Small>{`Asked: ${c.meta.request}`}</Small> : null}
+        {c.kind === "song" ? <Small>{c.state === "making" ? `Being ${c.meta.stage === "writing" ? "written" : "sung"}…` : `Sung as: ${c.meta.style}`}</Small> : null}
+        {c.kind === "song" && c.meta.error ? <Small color="$color8">{String(c.meta.error)}</Small> : null}
         {have ? <Small color="$color12">{"✓ On this phone."}</Small> : c.state === "ready" ? <Action label="DOWNLOAD TO THIS PHONE" ink={ink} onPress={get} /> : <Small>{"Still being made."}</Small>}
         {where === "household" && c.state === "ready" ? <Action label="SHARE WITH THE COMMUNITY" ink={ink} onPress={share} /> : null}
         {busy ? <Small>{busy}</Small> : null}
@@ -198,7 +244,7 @@ function Tile({ c, have, onPress }: { c: Creation; have: boolean; onPress: () =>
   return (
     <YStack width={150} alignItems="center" gap={4} cursor="pointer" onPress={onPress} opacity={c.state === "failed" ? 0.4 : 1}>
       <View>
-        {c.kind === "sleep" ? <RecordCover c={c} size={140} onPress={onPress} />
+        {c.kind !== "painting" ? <RecordCover c={c} size={140} onPress={onPress} />
           : <Pressable onPress={onPress}><Image source={source(coverUri(c)) ?? undefined} style={{ width: 140, height: 140, borderRadius: 3, backgroundColor: "#2b2620" }} /></Pressable>}
         {have ? <View style={{ position: "absolute", top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: "#2f7d4f",
                                alignItems: "center", justifyContent: "center" }}><Text color="#fff" fontWeight="800">{"✓"}</Text></View> : null}
@@ -222,13 +268,14 @@ export function CreationsScreen({ ink, start, onClose }: { ink: string; start?: 
                                 .catch((e) => setError(e.message));
   useEffect(() => { loadHousehold(); }, []);
   useEffect(() => { if (where === "community" && !community) api<{ linked: boolean; creations: Creation[] }>("/api/community").then(setCommunity).catch((e) => setError(e.message)); }, [where]);
-  const painting = !!household?.some((c) => c.meta.painting);
+  const painting = !!household?.some((c) => c.meta.painting || c.state === "making");   // C-362: and a song being made
   useEffect(() => { if (!painting) return; const t = setInterval(loadHousehold, 15000); return () => clearInterval(t); }, [painting]);
   const have = useMemo(() => new Set(mineList.map((c) => c.uid)), [mineList]);
 
   if (open) {
     const k = mineList.find((x) => x.uid === open.c.uid);
     if (k && k.kind === "sleep") return <SleepPlayer k={k} ink={ink} onBack={() => setOpen(null)} />;
+    if (k && k.kind === "song") return <SongPlayer k={k} ink={ink} onBack={() => setOpen(null)} />;   // C-362
     if (k && open.where === "mine") return (
       <YStack gap={12}>
         <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={() => setOpen(null)}>{"‹ CREATIONS"}</Text>
@@ -254,6 +301,7 @@ export function CreationsScreen({ ink, start, onClose }: { ink: string; start?: 
       <Segments value={where} onChange={setWhere} options={[["mine", "MINE"], ["household", "HOUSEHOLD"], ["community", "COMMUNITY"]]} />
       <XStack gap={8}>
         <CareKey label="SLEEP SOUNDS" ink={ink} lit={kind === "sleep"} onPress={() => setKind("sleep")} />
+        <CareKey label="SONGS" ink={ink} lit={kind === "song"} onPress={() => setKind("song")} />
         <CareKey label="PAINTINGS" ink={ink} lit={kind === "painting"} onPress={() => setKind("painting")} />
       </XStack>
       {where !== "mine" ? (

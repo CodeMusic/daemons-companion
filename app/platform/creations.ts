@@ -11,7 +11,7 @@ export type { Creation };
 export type Kept = Creation & { where: "household" | "community"; keptAt: string; local: Record<string, string> };
 
 // which of a creation's files a device keeps: what it plays and shows
-const WANTED: Record<Creation["kind"], string[]> = { sleep: ["phone.m4a"], painting: ["painting.png"] };
+const WANTED: Record<Creation["kind"], string[]> = { sleep: ["phone.m4a"], painting: ["painting.png"], song: ["phone.m4a"] };
 const safe = (s: string) => s.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 60);
 const hubUrl = (path: string) => /^https?:/.test(path) ? path : `${SERVER.replace(/\/+$/, "")}${path}`;
 const headers = (): Record<string, string> => (TOKEN ? { authorization: `Bearer ${TOKEN}` } : {});

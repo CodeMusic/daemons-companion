@@ -79,7 +79,8 @@ import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepC
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
 import { carrierOf, DRIFT, exportImedx, exportMp3, exportsMade, makeExports, useMesh, type ExportName } from "./sleepexport.js";   // C-358
 import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
-import { beatsSaid, paintingCreation, sleepCreation, type Creation } from "./creations.js";   // C-358
+import { captionOf, readSong, singAsk, SING_SYSTEM, Songs, type SingMode, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
+import { beatsSaid, paintingCreation, sleepCreation, songCreation, type Creation } from "./creations.js";   // C-358; C-362
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
@@ -710,6 +711,8 @@ export const DEVICE_DOOR = [
                                                                    "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate"].includes(p)),   // C-329: the watch's dialogue
   // C-334: sleep sounds -- the watch lists them, asks for one, and copies a piece to its card by an id nobody can guess
   (m: string, p: string) => (m === "GET" && (p === "/api/sleep" || p === "/api/sleep/tracks" || p.startsWith("/api/sleep/track/"))) || (m === "POST" && p === "/api/sleep/make"),
+  // C-362: a song's files, by an id nobody can guess, as a sleep piece's
+  (m: string, p: string) => m === "GET" && /^\/api\/song\/[0-9a-f]{32}\/[a-z.0-9]{5,12}$/.test(p),
   // C-358: a file the community already shares (a cover, a piece), as a picture is fetched -- with no key to send
   (m: string, p: string) => m === "GET" && /^\/api\/community\/file\/\d{1,6}\/[a-z.]{5,16}$/.test(p),
   (m: string) => m === "OPTIONS",
@@ -1117,6 +1120,47 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
     });
   };
+  // C-362: THE DAEMON SINGS (songs.ts) -- its words and style from its persona of the day, sung on the music door, a
+  // cover painted as a sleep piece's is; kept beside the database
+  let songsKept: Songs | null = null;
+  const songs = () => (songsKept ??= new Songs(join(dirname(cfg.database), "songs"), () => sleepDoor((k) => store.getSetting(k))));
+  const sing = (personality: number, mode: SingMode, request: string, styleGuide: string, voice: string, by?: string): Song | { error: string } => {
+    const now = new Date(), got = personaNow(personality, now);
+    if (!got) return { error: "That daemon is not here to sing." };   // DRAFT
+    if (!writerNow()) return { error: "No mind in the house to write it." };   // DRAFT
+    if (!sleepDoor((k) => store.getSetting(k))) return { error: "Songs are sung on the hub's music maker, and this hub has none set up." };   // DRAFT
+    const f = got.facts;
+    const row = songs().open({ mode, request, species: f.species, nickname: f.nickname, types: f.types ?? [], category: f.category,
+                               ...(by ? { by } : {}) });
+    const w = ledgered({ kind: "song", title: `${f.nickname} writes a song${mode === "prompt" ? `: ${request.slice(0, 40)}` : mode === "lyrics" ? " to your words" : " of its own"}` });   // DRAFT
+    (async () => {
+      const said = await w.write(SING_SYSTEM, singAsk(mode, got.persona.text, voice, request, styleGuide), 900);
+      const song = readSong(said, mode, request, styleGuide);
+      if (!song.lyrics) throw new Error("no words came");   // DRAFT
+      songs().update(row.id, song);
+      w.end("done");
+      songs().sing(row.id, captionOf(song.style, voice));
+      // its cover, painted while it is sung
+      const style = paintStyle({ types: f.types, species: f.species, category: f.category }, core.daemonFeelings(store, now),
+                               store.getSetting(`paint.style.${f.species}`));
+      songs().update(row.id, { cover: "painting" });
+      coversBusy = coversBusy.then(async () => {
+        const c = ledgered({ kind: "painting", title: `${f.nickname} paints the cover of '${song.title}'` });   // DRAFT
+        try {
+          const p = readPainting(writerNow() ? await c.write(PAINT_SYSTEM, paintAsk(got.persona.text,
+                      `the cover of your song '${song.title}' -- ${song.about || song.lyrics.split("\n").slice(0, 4).join(" ")}`, style), 400) : null, song.title);
+          songs().setCover(row.id, await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style),
+                                                    randomBytes(4).readUInt32BE(0), fetch, c.signal));
+          c.end("done");
+        } catch (e) { songs().update(row.id, { cover: "failed" }); c.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); }
+      });
+    })().catch((e) => {
+      const error = (e as Error)?.message?.slice(0, 120) || "it could not be written";   // DRAFT
+      songs().update(row.id, { state: "failed", error });
+      w.end("failed", { error });
+    });
+    return row;
+  };
   // C-358: every made thing this hub keeps, in one shape (creations.ts); a ready sleep piece with no cover yet gets one
   const homeName = () => (store.getSetting("commons.name") ?? "").trim() || "HOME";
   const creationsNow = (): Creation[] => {
@@ -1127,7 +1171,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       else if (t.state === "ready" && t.cover !== "painting") { const f = sleepTracks().folder(t.id); if (f) makeExports(f, t.keyscale); }
     }
     return [...sleep.map((t) => sleepCreation(t, home, beats, carrierOf(t.keyscale))),
-            ...paintings().map((p) => paintingCreation(p, home))];
+            ...paintings().map((p) => paintingCreation(p, home)),
+            ...songs().list().map((x) => songCreation(x, home))];
   };
   // Who answers a daemon's talk: "module" (the house first, n8n after the deadline) once a module is known, else as set
   const talkProvider = () => store.getSetting("talk.provider") ?? (house.any ? "module" : "auto");
@@ -1853,6 +1898,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const c = all.find((x) => x.uid === uid);
           let ok = false;
           if (c?.kind === "sleep") ok = sleepTracks().forget(c.id);
+          if (c?.kind === "song") ok = songs().forget(c.id);   // C-362
           if (c?.kind === "painting" && c.state !== "making") {
             store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== c.id)));
             if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id));
@@ -1871,6 +1917,40 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-358: COMMUNITY -- what homes shared on THE COMMONS, through this hub's link to it (a home linked and approved is
       // the "account" for now). GET ?kind=: theirs, each file fetched through here. POST share {uid}: one of this home's
       // creations, its files with it; POST unshare {uid}. GET /api/community/file/<n>/<name>: a shared file.
+      // C-362: THE DAEMON SINGS -- POST /api/sing {mode: prompt|lyrics|own, request?, style?, personality?}: the carried
+      // daemon (or the one named) writes and sings it; the row at once, the song when sung (about two minutes). GET
+      // /api/songs: every song, newest first. GET /api/song/<id>/(phone.m4a|cover.png|export.mp3): its files.
+      if (req.method === "POST" && path === "/api/sing") {
+        const b = await body(req);
+        const mode: SingMode = b.mode === "lyrics" || b.mode === "own" ? b.mode : "prompt";
+        const request = typeof b.request === "string" ? (mode === "lyrics" ? b.request.slice(0, 3000) : b.request.replace(/\s+/g, " ").trim().slice(0, 300)) : "";
+        const styleGuide = typeof b.style === "string" ? b.style.replace(/\s+/g, " ").trim().slice(0, 200) : "";
+        if (mode !== "own" && !request.trim()) return send(res, 400, { error: mode === "lyrics" ? "Your lyrics, to sing." : "What to sing about." });   // DRAFT
+        const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
+        const who = b.personality !== undefined ? Number(b.personality) : carriedDaemon(ecfg, store, deviceId)?.personality;
+        if (who === undefined || !Number.isFinite(who)) return send(res, 400, { error: "Host a daemon for it to sing." });   // DRAFT
+        const voice = (namedRecipe(ecfg, store, deviceId, "daemon") ?? "a small bright voice").replace(/\s+/g, " ").slice(0, 160);
+        const r = sing(who, mode, request, styleGuide, voice, phone?.name ?? (deviceId || undefined));
+        return "error" in r ? send(res, 409, r) : send(res, 200, { song: r });
+      }
+      if (req.method === "GET" && path === "/api/songs") return send(res, 200, { songs: songs().list() });
+      const songFile = req.method === "GET" && path.match(/^\/api\/song\/([0-9a-f]{32})\/(phone\.m4a|cover\.png|export\.mp3)$/);
+      if (songFile) {
+        const f = songs().file(songFile[1], songFile[2] as "phone.m4a");
+        if (!f) return send(res, 404, { error: "no such song" });
+        const type = songFile[2] === "cover.png" ? "image/png" : songFile[2] === "export.mp3" ? "audio/mpeg" : "audio/mp4";
+        const size = statSync(f).size, range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ""));
+        if (range && (range[1] || range[2])) {
+          const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+          const end = range[1] && range[2] ? Math.min(size - 1, Number(range[2])) : size - 1;
+          if (start >= size || start > end) { res.writeHead(416, { "content-range": `bytes */${size}` }); return res.end(); }
+          res.writeHead(206, { "content-type": type, "content-length": end - start + 1, "content-range": `bytes ${start}-${end}/${size}`, "accept-ranges": "bytes" });
+          return createReadStream(f, { start, end }).pipe(res);
+        }
+        res.writeHead(200, { "content-type": type, "content-length": size, "accept-ranges": "bytes", "access-control-allow-origin": "*",
+                             ...(songFile[2] === "export.mp3" ? { "content-disposition": `attachment; filename="song.mp3"` } : {}) });
+        return createReadStream(f).pipe(res);
+      }
       // C-360: THE MESH -- a node (a paired key: hub/mesh.sh install) asks for work, fetches its inputs, sends its outputs
       // back and says how it went; GET /api/mesh: every node, its potential and score now, and the jobs going
       if (path === "/api/mesh" || path.startsWith("/api/mesh/")) {
@@ -1927,6 +2007,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             const files: Record<string, string> = {};
             const add = (name: string, f: string | null) => { if (f && existsSync(f)) files[name] = readFileSync(f).toString("base64"); };
             if (c.kind === "sleep") { add("phone.m4a", sleepTracks().file(c.id, "phone.m4a")); add("cover.png", sleepTracks().coverFile(c.id)); }
+            if (c.kind === "song") { add("phone.m4a", songs().file(c.id, "phone.m4a")); add("cover.png", songs().file(c.id, "cover.png")); }   // C-362
             if (c.kind === "painting") add("painting.png", paintingFile(c.id));
             const r = await fetch(`${link.url}/commons/creations/share`, { method: "POST", headers: { ...h, "content-type": "application/json" },
               body: JSON.stringify({ creation: c, files }), signal: AbortSignal.timeout(120000) });

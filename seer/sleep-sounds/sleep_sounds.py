@@ -10,6 +10,8 @@ caption from the daemon's context (companion server/src/sleepsound.ts), asks for
 file. Nothing is kept here past that:
 
     POST /v1/sleep/make   {caption, seconds 60-600, bpm, keyscale, seed?}   -> {job}
+                          C-362: {song: true, lyrics, caption, seconds 30-300, bpm?, keyscale?} -> a SONG: sung, with
+                          vocals, not made to loop (only its loudness set, -16 LUFS), its file the same way
     GET  /v1/sleep/job/<job>                                                -> {state: queued|making|done|failed, ...}
     GET  /v1/sleep/file/<job>.flac                                          -> the piece, made to loop without a seam
     DELETE /v1/sleep/file/<job>                                             -> gone (the hub keeps its own copy)
@@ -36,6 +38,7 @@ KEEP_UNFETCHED_S = 6 * 3600
 KEEP_KEY_S = 600
 MOST_BODY = 16 * 1024
 BAD_WORDS = re.compile(r"[^\w ,.'()/&+:-]", re.U)   # a caption is music words, nothing else
+LYRIC_BAD = re.compile(r"[^\w \n,.'!?()\[\]:;-]", re.U)   # C-362: lyrics are words, lines and [verse]/[chorus] tags
 
 seen = {}             # sha256 of a key LiteLLM took -> when
 jobs = {}             # our job -> {task, state, at, error?, seconds?}
@@ -94,6 +97,15 @@ def loopable(src, dst):
     return d - x
 
 
+def evened(src, dst):
+    """C-362: a song as it is -- not looped -- at an even, ordinary loudness."""
+    subprocess.run([FFMPEG, "-loglevel", "error", "-y", "-i", src, "-af", "loudnorm=I=-16:TP=-1.5:LRA=11,aresample=44100",
+                    "-ac", "2", "-c:a", "flac", dst], check=True, timeout=300)
+    probe = subprocess.run([FFMPEG, "-i", dst], capture_output=True, text=True).stderr
+    m = re.search(r"Duration: (\d+):(\d+):([\d.]+)", probe)
+    return int(m[1]) * 3600 + int(m[2]) * 60 + float(m[3]) if m else 0
+
+
 def follow(job):
     """Waits on ACE-Step for one job, then makes its file loopable."""
     j = jobs[job]
@@ -116,7 +128,7 @@ def follow(job):
             res = json.loads(row["result"], strict=False)[0]
             path = urllib.parse.parse_qs(urllib.parse.urlsplit(res["file"]).query)["path"][0]
             dst = os.path.join(OUT, job + ".flac")
-            j["seconds"] = round(loopable(path, dst), 1)
+            j["seconds"] = round(evened(path, dst) if j.get("song") else loopable(path, dst), 1)
             j["metas"] = {k: res.get("metas", {}).get(k) for k in ("bpm", "keyscale", "timesignature")}
             j["seed"] = res.get("seed_value")
             j["state"] = "done"
@@ -226,17 +238,21 @@ class Sleep(BaseHTTPRequestHandler):
         try:
             b = json.loads(self.rfile.read(n))
             caption = BAD_WORDS.sub("", str(b["caption"]))[:600].strip()
-            seconds = max(60, min(600, float(b.get("seconds", 300))))
-            bpm = max(30, min(120, int(b.get("bpm", 60))))
+            song = b.get("song") is True                                   # C-362: sung
+            lyrics = LYRIC_BAD.sub("", str(b.get("lyrics", "")))[:3000].strip() if song else ""
+            seconds = max(30, min(300, float(b.get("seconds", 150)))) if song else max(60, min(600, float(b.get("seconds", 300))))
+            bpm = max(40, min(180, int(b.get("bpm", 90)))) if song else max(30, min(120, int(b.get("bpm", 60))))
             keyscale = str(b.get("keyscale", "")).strip()
             keyscale = keyscale if re.fullmatch(r"[A-G][#b]? (major|minor)", keyscale, re.I) else ""
         except (ValueError, KeyError, TypeError):
             return self.json(400, {"error": "a JSON body with a caption"})
         if not caption:
             return self.json(400, {"error": "a caption"})
-        ask = {"prompt": caption, "lyrics": "[Instrumental]", "audio_duration": seconds, "bpm": bpm,
+        if song and not lyrics:
+            return self.json(400, {"error": "a song needs its lyrics"})
+        ask = {"prompt": caption, "lyrics": lyrics if song else "[Instrumental]", "audio_duration": seconds, "bpm": bpm,
                "audio_format": "wav", "inference_steps": 8, "batch_size": 1, "thinking": False, "use_cot_caption": False,
-               "time_signature": "3"}
+               "time_signature": "4" if song else "3"}
         if keyscale:
             ask["key_scale"] = keyscale
         if isinstance(b.get("seed"), int):
@@ -248,7 +264,7 @@ class Sleep(BaseHTTPRequestHandler):
             return self.json(502, {"error": "ACE-Step did not take it"})
         job = uuid.uuid4().hex
         with lock:
-            jobs[job] = {"task": task, "state": "queued", "at": time.time()}
+            jobs[job] = {"task": task, "state": "queued", "at": time.time(), "song": song}
         threading.Thread(target=follow, args=(job,), daemon=True).start()
         return self.json(202, {"job": job})
 

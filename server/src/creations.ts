@@ -11,7 +11,7 @@
 // phone, the hub, the commons or inside an exported file (PulseEntrain's generation.daemons) is known as one.
 // Every word DRAFT.
 
-export type CreationKind = "sleep" | "painting";
+export type CreationKind = "sleep" | "painting" | "song";
 export type Creation = {
   uid: string; kind: CreationKind; id: string; home: string;
   title: string; about: string;
@@ -26,7 +26,7 @@ export type Creation = {
 };
 
 export const uidOf = (kind: CreationKind, id: string, home: string) => `${kind}:${id}@${home}`;
-export const KIND_SAID: Record<CreationKind, string> = { sleep: "SLEEP SOUNDS", painting: "PAINTINGS" };   // DRAFT
+export const KIND_SAID: Record<CreationKind, string> = { sleep: "SLEEP SOUNDS", painting: "PAINTINGS", song: "SONGS" };   // DRAFT
 
 // a sleep piece (sleeptracks.ts SleepTrack) as a creation
 export type SleepRow = {
@@ -66,6 +66,26 @@ export function paintingCreation(p: PaintingRow, home: string): Creation {
     cover: p.state === "done" ? png : null,
     files: p.state === "done" ? { "painting.png": png } : {},
     meta: { request: p.request },
+  };
+}
+
+// C-362: a song (songs.ts Song) as a creation -- its lyrics and style in meta, for the player
+export type SongRow = { id: string; mode: string; title: string; style: string; lyrics: string; about: string; request: string;
+                        species: number; nickname: string; types?: string[]; by?: string; state: "writing" | "singing" | "ready" | "failed";
+                        asked: string; made?: string; seconds?: number; bytes?: number; cover?: string; error?: string };
+export function songCreation(x: SongRow, home: string): Creation {
+  const base = `/api/song/${x.id}`;
+  return {
+    uid: uidOf("song", x.id, home), kind: "song", id: x.id, home,
+    title: x.title || (x.state === "writing" ? "being written…" : "UNTITLED"), about: x.about,
+    made: x.made ?? x.asked, state: x.state === "ready" ? "ready" : x.state === "failed" ? "failed" : "making",
+    daemon: { nickname: x.nickname, species: x.species, ...(x.types ? { types: x.types } : {}) },
+    by: x.by ?? null,
+    cover: x.cover === "ready" ? `${base}/cover.png` : null,
+    files: x.state === "ready" ? { "phone.m4a": `${base}/phone.m4a`, "export.mp3": `${base}/export.mp3` } : {},
+    meta: { lyrics: x.lyrics, style: x.style, mode: x.mode, request: x.request, seconds: x.seconds ?? null,
+            stage: x.state, painting: x.cover === "painting", error: x.error ?? null },
+    ...(x.bytes ? { bytes: x.bytes } : {}),
   };
 }
 

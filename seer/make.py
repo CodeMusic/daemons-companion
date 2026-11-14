@@ -101,6 +101,9 @@ def litellm(c):
             out += [entry("seer-talk-here", "openai/" + c["LOCAL_TALK_MODEL"], lb, lk, bridge=True),
                     entry("seer-hear-here", "openai/whisper-1", c["STT_URL"], lk, mode="audio_transcription")]
             fallbacks += [{"seer-talk": ["seer-talk-here"]}, {"seer-quick": ["seer-talk-here"]}, {"seer-hear": ["seer-hear-here"]}]
+            # the Tiiny's own names too: it keeps one large model in memory at a time, and a hub asking for one it has
+            # just set aside heard "is not loaded" (404) with nothing behind it (companion C-360, 2026-11-14)
+            fallbacks += [{"tiiny-35b": ["seer-talk-here"]}, {"tiiny-9b": ["seer-talk-here"]}]
     elif c["local"]:
         out += [entry("seer-talk", "openai/" + c["LOCAL_TALK_MODEL"], lb, lk, bridge=True),
                 entry("seer-quick", "openai/" + quick_local, lb, lk, bridge=True),

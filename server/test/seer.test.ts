@@ -20,6 +20,15 @@ describe("seer/make.py", () => {
     expect(n.slice(0, 4)).toEqual(["tiiny-35b", "tiiny-9b", "tiiny-hear", "tiiny-voice"]);
     for (const x of ["seer-talk", "seer-quick", "seer-hear", "seer-voice", "seer-talk-here", "seer-talk-away"]) expect(n).toContain(x);
   });
+  it("gives the Tiiny's own names this machine's model behind them (a model it has set aside answers 404)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "seer-")), f = join(dir, "seer.env");
+    writeFileSync(f, "SEER_TIINY=yes\nSEER_PARTS=local\nSEER_HOST=seer\n");
+    const yaml = execFileSync("python3", ["-c", "import importlib.util,sys; s=importlib.util.spec_from_file_location('m',sys.argv[1]); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(m.litellm(m.conf()))",
+                                          join(ROOT, "seer", "make.py")], { env: { ...process.env, SEER_CONFIG: f }, encoding: "utf8" });
+    rmSync(dir, { recursive: true, force: true });
+    expect(yaml).toMatch(/"tiiny-35b": \["seer-talk-here"\]/);
+    expect(yaml).toMatch(/"tiiny-9b": \["seer-talk-here"\]/);
+  });
   it("without one: local models first, then OpenRouter; no voice", () => {
     const n = names(make("SEER_TIINY=no\nSEER_PARTS=local\nOPENROUTER_API_KEY=k\nSEER_HOST=seer\n", "--print"));
     expect(n).toEqual(["seer-talk", "seer-quick", "seer-hear", "seer-talk-away"]);

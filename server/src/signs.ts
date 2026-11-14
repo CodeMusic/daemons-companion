@@ -114,3 +114,38 @@ export function plainSigns(found: ReturnType<typeof symbolsIn>, lex: Lexicon = L
     thread: "",
   };
 }
+
+// 2026-11-14 (C-356 next): THE SIGNS THAT RETURN -- a sign is known by the lexicon's name when its words call a symbol up
+// (THE MOON, MOON and MOONLIGHT are one), else by its own name without an article or a plural
+export function signName(sign: string, lex: Lexicon = LEXICON): string {
+  const hit = symbolsIn(sign, lex, 1)[0];
+  if (hit) return hit.symbol.sign.toUpperCase();
+  return sign.toUpperCase().replace(/^(THE|A|AN) /, "").replace(/([^S])S$/, "$1").trim();
+}
+export type Source = { from: number; to: number; when: string };   // the entries a reading covered, and when they were written
+export type Returning = { sign: string; times: number; when: string[]; seen: string[]; books: string[] };
+// The signs read in two or more readings whose entries do not overlap (an entry and the chapter that holds it are one
+// sighting), the most returned first
+export function returningSigns(readings: { reading: Reading | null; source: Source | null }[], lex: Lexicon = LEXICON, least = 2): Returning[] {
+  const by = new Map<string, { source: Source; seen: string; books: string[] }[]>();
+  for (const { reading, source } of readings) {
+    if (!reading || !source) continue;
+    const here = new Set<string>();
+    for (const s of reading.signs) {
+      const k = signName(s.sign, lex);
+      if (!k || here.has(k)) continue;
+      here.add(k);
+      by.set(k, [...(by.get(k) ?? []), { source, seen: s.seen, books: s.books }]);
+    }
+  }
+  const out: Returning[] = [];
+  for (const [sign, hits] of by) {
+    const apart: typeof hits = [];                       // the most sightings with no entry in common (by where each ends)
+    for (const h of [...hits].sort((a, b) => a.source.to - b.source.to))
+      if (!apart.length || h.source.from > apart[apart.length - 1].source.to) apart.push(h);
+    if (apart.length < least) continue;
+    out.push({ sign, times: apart.length, when: apart.map((h) => h.source.when), seen: [...new Set(apart.map((h) => h.seen).filter(Boolean))].slice(0, 4),
+               books: [...new Set(apart.flatMap((h) => h.books))] });
+  }
+  return out.sort((a, b) => b.times - a.times || a.sign.localeCompare(b.sign)).slice(0, 8);
+}

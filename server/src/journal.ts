@@ -13,7 +13,7 @@
 // C-356: a journal has a KIND -- STANDARD, or DREAM, whose chapters are the dreams told; and any entry or chapter can READ
 // THE SIGNS (signs.ts): the symbols in it read through the four books, by the house's quick thinker, or from the lexicon.
 import type { Store } from "./store.js";
-import { plainSigns, readSigns, signsAsk, SIGNS_ASK, symbolsIn, type Kind, type Reading } from "./signs.js";
+import { plainSigns, readSigns, returningSigns, signsAsk, SIGNS_ASK, symbolsIn, type Kind, type Reading, type Returning, type Source } from "./signs.js";
 
 export const LIMITS = { journal: 40, title: 60, body: 8000 };
 export const STALE_MIN = 30;
@@ -26,6 +26,7 @@ export type Chapter = { id: number; n: number; from: number; to: number; count: 
 export type SignsView = { id: number; entry: number | null; chapter: number | null; at: string; state: "writing" | "done" | "failed";
                           reading: Reading | null; by: string; error: string | null };
 export type JournalView = { id: number; title: string; kind: Kind; created: string; entries: Entry[]; chapters: Chapter[]; signs: SignsView[];
+                            returning: Returning[];
                             waiting: number; limits: typeof LIMITS };
 export const KINDS: Kind[] = ["standard", "dream"];
 const kindOf = (k: unknown): Kind => (k === "dream" ? "dream" : "standard");
@@ -100,7 +101,14 @@ export function journalOf(store: Store, id: number, now = new Date()): JournalVi
   const rows = store.db.prepare("SELECT * FROM journal_chapters WHERE journal = ? ORDER BY id").all(id) as any[];
   const chapters = rows.map((c, i) => chapterView(store, c, i + 1, now)).reverse();
   const signs = (store.db.prepare("SELECT * FROM journal_signs WHERE journal = ? ORDER BY id DESC").all(id) as any[]).map((s) => signsView(s, now));
-  return { id: j.id, title: j.title, kind: kindOf(j.kind), created: j.created, entries, chapters, signs, waiting: waitingOf(store, id), limits: LIMITS };
+  const day = (at: string) => at.slice(0, 10);
+  const sourceOf = (v: SignsView): Source | null => {     // the entries each reading covered
+    if (v.entry != null) { const e = entries.find((x) => x.id === v.entry); return e ? { from: e.id, to: e.id, when: day(e.at) } : null; }
+    const c = chapters.find((x) => x.id === v.chapter);
+    return c ? { from: c.from, to: c.to, when: day(c.last) } : null;
+  };
+  const returning = returningSigns(signs.filter((v) => v.state === "done").map((v) => ({ reading: v.reading, source: sourceOf(v) })));
+  return { id: j.id, title: j.title, kind: kindOf(j.kind), created: j.created, entries, chapters, signs, returning, waiting: waitingOf(store, id), limits: LIMITS };
 }
 
 function chapterView(store: Store, c: any, n: number, now: Date): Chapter {

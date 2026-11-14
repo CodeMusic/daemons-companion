@@ -22,7 +22,8 @@ type Row = { id: number; title: string; kind?: Kind; created: string; entries: n
 type JEntry = { id: number; title: string; body: string; at: string; edited: string | null };
 type Chapter = { id: number; n: number; count: number; at: string; first: string; last: string; state: "writing" | "done" | "failed";
                  title: string; body: string; by: string; error: string | null };
-type Journal = { id: number; title: string; kind?: Kind; created: string; entries: JEntry[]; chapters: Chapter[]; signs?: Signs[]; waiting: number;
+type Returning = { sign: string; times: number; when: string[]; seen: string[]; books: string[] };
+type Journal = { id: number; title: string; kind?: Kind; created: string; entries: JEntry[]; chapters: Chapter[]; signs?: Signs[]; returning?: Returning[]; waiting: number;
                  limits: { journal: number; title: number; body: number } };
 
 export const JOURNAL_WORDS = {   // DRAFT, every one
@@ -56,6 +57,10 @@ export const JOURNAL_WORDS = {   // DRAFT, every one
   signsWriting: "Your daemon is reading the signs through the four books. It takes a minute -- it will be here.",
   signsFailed: "The signs could not be read this time.", signsAgain: "Read them again",
   byLexicon: "from the books' own words (no mind was free to read them)", thread: "TOGETHER",
+  // 2026-11-14: the signs that come back across the journal's readings
+  returning: { dream: "THE SIGNS THAT RETURN", standard: "THE PATTERNS THAT RETURN" } as Record<Kind, string>,
+  returningHint: "Read in more than one of your entries. What keeps coming back is often what is asking to be seen.",
+  times: (n: number) => `${n} times`,
 };
 const W = JOURNAL_WORDS;
 const paper = { color: "#1b1d22", fontSize: 16, paddingHorizontal: 12 } as const;
@@ -157,6 +162,7 @@ function JournalPage({ id, ink, onBack }: { id: number; ink: string; onBack: () 
         {!j.waiting && j.entries.length ? <Small>{W.nothingNew}</Small> : null}
         {said ? <Small color="$color9">{said}</Small> : null}
       </Card>
+      {j.returning?.length ? <ReturningCard r={j.returning} kind={kind} /> : null}
       {j.chapters.length ? (
         <Card>
           <Eyebrow>{W.chapters}</Eyebrow>
@@ -329,6 +335,27 @@ function SignsPanel({ s, kind, ink, onAgain }: { s: Signs | null; kind: Kind; in
       ) : null}
       {s.by === "lexicon" ? <Text fontSize={11} color="#8f84b8">{W.byLexicon}</Text> : null}
       <XStack><Text fontFamily="$mono" fontSize={11} color="#a99fc9" cursor="pointer" onPress={onAgain} role="button">{W.signsAgain}</Text></XStack>
+    </YStack>
+  );
+}
+
+// The signs that come back: each with how often and when, and where it was seen
+const dayOn = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+function ReturningCard({ r, kind }: { r: Returning[]; kind: Kind }) {
+  return (
+    <YStack backgroundColor="#1c1830" borderRadius={8} borderWidth={1} borderColor={NIGHT} padding={16} gap={12}>
+      <Text fontFamily="$mono" fontSize={11} fontWeight="700" color="#c9b8ff">{`✦ ${W.returning[kind]}`}</Text>
+      <Text fontSize={12} color="#a99fc9">{W.returningHint}</Text>
+      {r.map((g) => (
+        <YStack key={g.sign} gap={3}>
+          <XStack alignItems="baseline" gap={8}>
+            <Text fontSize={15} fontWeight="700" color="#f1ecff">{g.sign}</Text>
+            <Text fontFamily="$mono" fontSize={10} color="#c9b8ff">{`${W.times(g.times)} · ${[...new Set(g.when.map(dayOn))].join(", ")}`}</Text>
+          </XStack>
+          {g.seen.length ? <Text fontSize={12} fontStyle="italic" color="#a99fc9">{g.seen.join(" · ")}</Text> : null}
+          {g.books.length ? <Text fontFamily="$mono" fontSize={10} color="#8f84b8">{g.books.join(" · ")}</Text> : null}
+        </YStack>
+      ))}
     </YStack>
   );
 }

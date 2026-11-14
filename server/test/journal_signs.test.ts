@@ -4,7 +4,7 @@ import { Store } from "../src/db.js";
 import { route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
 import { chapterWords, DREAM_PAGE_ASK, PAGE_ASK, journalOf, signsWords, writeChapter, writeSigns } from "../src/journal.js";
-import { LEXICON, lensesOf, plainSigns, readSigns, signsAsk, SIGNS_ASK, symbolsIn, type Lexicon } from "../src/signs.js";
+import { LEXICON, lensesOf, plainSigns, readSigns, returningSigns, signName, signsAsk, SIGNS_ASK, symbolsIn, type Lexicon } from "../src/signs.js";
 
 const h: Host = { edition: "CONTENT", save: { read: () => null, write: () => null } };
 const post = (store: Store, path: string, body: object, now = new Date("2026-11-12T12:00:00Z")) =>
@@ -138,5 +138,37 @@ describe("C-356: a sign must be in the words", () => {
     expect(readSigns(answer, undefined, DREAM)!.signs.map((s) => s.sign)).toEqual(["WHITE BIRD"]);
     expect(readSigns(answer)!.signs).toHaveLength(2);
     expect(signsAsk("dream", DREAM, symbolsIn(DREAM)).indexOf("THE DREAM")).toBe(0);
+  });
+});
+
+describe("C-356 next: THE SIGNS THAT RETURN", () => {
+  const r = (...signs: string[]) => ({ signs: signs.map((sign) => ({ sign, seen: `the ${sign.toLowerCase()}`, reading: "x", books: ["THE UNITY BOOK"] })), thread: "" });
+  it("knows one sign by its names", () => {
+    expect(signName("THE MOON")).toBe(signName("moon"));
+    expect(signName("THE ZEPPELINS")).toBe("ZEPPELIN");                      // none of the lexicon's: its own name
+    expect(signName("WHITE BIRD")).toBe(signName("bird"));
+  });
+  it("counts a sign once per sighting -- an entry and the chapter that holds it are one", () => {
+    const out = returningSigns([
+      { reading: r("THE MOON", "DOOR"), source: { from: 1, to: 1, when: "2026-11-10" } },
+      { reading: r("MOON"), source: { from: 1, to: 3, when: "2026-11-12" } },       // holds entry 1: the same sighting
+      { reading: r("the moon", "DOOR"), source: { from: 4, to: 4, when: "2026-11-13" } },
+      { reading: r("MOON"), source: { from: 5, to: 5, when: "2026-11-14" } },
+      { reading: r("SNAKE"), source: { from: 6, to: 6, when: "2026-11-14" } },
+    ]);
+    expect(out[0]).toMatchObject({ sign: signName("MOON"), times: 3, when: ["2026-11-10", "2026-11-13", "2026-11-14"] });
+    expect(out.map((x) => x.sign)).toContain(signName("DOOR"));
+    expect(out.map((x) => x.sign)).not.toContain(signName("SNAKE"));
+  });
+  it("is on the journal: two dreams with the sea", async () => {
+    const s = new Store(":memory:");
+    const id = (post(s, "/api/journal", { title: "Nights", kind: "dream" }).body as any).id;
+    for (const body of ["I swam in a dark sea.", "The sea again, grey and still, and a gull."]) {
+      const e = (post(s, "/api/journal/entry", { journal: id, title: "", body }).body as any).entries[0].id;
+      await writeSigns(s, (post(s, "/api/journal/signs", { journal: id, entry: e }).body as any).signing, null);
+    }
+    const v = journalOf(s, id)!;
+    expect(v.returning.length).toBeGreaterThan(0);
+    expect(v.returning[0].times).toBe(2);
   });
 });

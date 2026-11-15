@@ -48,13 +48,15 @@ export class Store {
   // Each use is kept; the daemon's life (C-13, still to build) reads from here.
   logInteraction(kind: string, detail: string | null, at = new Date()) {
     this.db.prepare("INSERT INTO interactions (at, kind, detail) VALUES (?, ?, ?)").run(at.toISOString(), kind, detail);
-    this.recent = null;
+    this.recent = null; this.interactionsRev++;
   }
 
   // C-13: everything since a moment, oldest first -- the daemon's life reads two weeks of it
   // One answer (THE MIND's portal, a talk's self) reads its life, feelings and spirits from the log a dozen times over,
   // each a window back from now: on the hub's one slow core that was 13 s (2026-11-14). So the last five weeks are read
   // once and kept for two seconds, or until the log is written, and every window inside them is cut from that.
+  // counts every write to the log, so a reading of it can be kept until the log moves (core.ts lifeOf)
+  interactionsRev = 0;
   private recent: { from: string; made: number; rows: { at: string; kind: string; detail: string | null }[] } | null = null;
   interactionsSince(since: Date): { at: string; kind: string; detail: string | null }[] {
     const s = since.toISOString(), now = Date.now();
@@ -186,7 +188,7 @@ export class Store {
     // and what it gave the daemon goes back with it: its meal (C-44) and its experience (C-47), if not yet written home
     this.db.prepare("DELETE FROM interactions WHERE (kind = 'step' AND detail IN (?, ?)) OR (kind = 'exp' AND detail LIKE ?)")
       .run(`site ${id}`, `device ${id}`, `% step ${id}`);
-    this.recent = null;
+    this.recent = null; this.interactionsRev++;
     return true;
   }
 

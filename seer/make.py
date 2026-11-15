@@ -41,6 +41,9 @@ def conf():
         "SEER_TIINY": "no", "TIINY_URL": "http://openai.api.tiiny/v1",
         "TIINY_TALK_MODEL": "Qwen/Qwen3.6-35B-A3B", "TIINY_QUICK_MODEL": "Qwen/Qwen3.5-9B",
         "TIINY_HEAR_MODEL": "Qwen/Qwen3-ASR-1.7B", "TIINY_VOICE_MODEL": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+        # the Tiiny's update of 2026-11-11 (companion C-369..C-372): a hotword ear, a speaker-telling ear, a prompt enhancer
+        "TIINY_NANO_MODEL": "FunAudioLLM/Fun-ASR-Nano", "TIINY_DIARIZE_MODEL": "OpenMOSS-Team/MOSS-Transcribe-Diarize",
+        "TIINY_PROMPT_MODEL": "Qwen/Qwen-Image-2.1-PE-T2I",
         "SEER_PARTS": "", "LOCAL_URL": "http://127.0.0.1:1234/v1",
         "LOCAL_TALK_MODEL": "google/gemma-3-4b", "LOCAL_QUICK_MODEL": "", "STT_URL": "http://127.0.0.1:8770/v1",
         "OPENROUTER_MODEL": "meta-llama/llama-3.1-8b-instruct", "SEER_HOST": "", "LITELLM_PORT": "4000",
@@ -89,7 +92,11 @@ def litellm(c):
         out.append("\n  # ---- the Tiiny, by its own names (a hub set up before seer/ asks for these) ----\n")
         out += [entry("tiiny-35b", "openai/" + c["TIINY_TALK_MODEL"], tb, tk), entry("tiiny-9b", "openai/" + c["TIINY_QUICK_MODEL"], tb, tk),
                 entry("tiiny-hear", asr(c["TIINY_HEAR_MODEL"]), tb, tk, mode="audio_transcription"),
-                entry("tiiny-voice", "openai/" + c["TIINY_VOICE_MODEL"], tb, tk, mode="audio_speech")]
+                entry("tiiny-voice", "openai/" + c["TIINY_VOICE_MODEL"], tb, tk, mode="audio_speech"),
+                # loaded only when wanted (TiinyOS Model Management); "is not loaded" until then, which the hub names (C-374)
+                entry("tiiny-hear-nano", asr(c["TIINY_NANO_MODEL"]), tb, tk, mode="audio_transcription"),
+                entry("tiiny-diarize", asr(c["TIINY_DIARIZE_MODEL"]), tb, tk, mode="audio_transcription"),
+                entry("tiiny-prompt", "openai/" + c["TIINY_PROMPT_MODEL"], tb, tk)]
     out.append("\n  # ---- the four names everything else asks for (seer/make.py) ----\n")
     lb, lk = c["LOCAL_URL"], "none"
     quick_local = c["LOCAL_QUICK_MODEL"] or c["LOCAL_TALK_MODEL"]

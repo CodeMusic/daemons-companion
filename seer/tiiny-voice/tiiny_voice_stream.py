@@ -16,6 +16,18 @@ there is one place to change them. Never printed.
 
     python3 tiiny_voice_stream.py            # port 4001, LiteLLM at 127.0.0.1:4000, ~/daemons-litellm-config.yaml
 
+THE GATE (companion C-370, C-371, C-374; 2026-11-15, the Tiiny's update): a few more of the Tiiny's own routes, the same
+key, and nothing else -- the Tiiny's HTTP API (dev.tiiny.ai) can also delete and download models, and none of that is let
+through. Allowed:
+
+    GET  /tiiny/loaded                      the models loaded now        (api/v1/models/online_models)
+    GET  /tiiny/npu                         the NPU's use                (api/v1/npu/status)
+    POST /tiiny/models/<model id>/start     load one                     (api/v1/models/<id>/start)
+    POST /tiiny/models/<model id>/stop      unload one                   (api/v1/models/<id>/stop)
+    GET  /v1/music/info?model=...           a music model's defaults
+    POST /v1/music/generate[/wav]           a song: lyrics and a caption (LiteLLM has no music route)
+    POST /v1/audio/transcriptions           heard, with the Tiiny's whole answer (LiteLLM keeps only its text)
+
 Part of the local cloud: seer/bindSeer.sh installs it with a Tiiny (seer/tiiny-voice/install.sh), its config
 seer/out/litellm.yaml (TIINY_VOICE_CONFIG), whose tiiny-voice key is named by TIINY_API_KEY.
 """
@@ -27,6 +39,10 @@ LITELLM = os.environ.get("TIINY_VOICE_LITELLM", "http://127.0.0.1:4000")
 CONFIG = os.path.expanduser(os.environ.get("TIINY_VOICE_CONFIG", "~/daemons-litellm-config.yaml"))
 ALIAS = os.environ.get("TIINY_VOICE_ALIAS", "tiiny-voice")
 MOST_BODY = 64 * 1024
+MOST_UPLOAD = 48 * 1024 * 1024  # a meeting's audio, a song's style reference
+# the Tiiny's own API beside its OpenAI one: the same box, by its other name (both reach the TiinyOS proxy)
+NATIVE = os.environ.get("TIINY_NATIVE", "")
+MODEL_ID = re.compile(r"^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)?$")
 KEEP_S = 600
 
 
@@ -45,6 +61,9 @@ def tiiny_route():
 
 
 BASE, MODEL, KEY = tiiny_route()
+if not NATIVE:
+    _u = urllib.parse.urlsplit(BASE)
+    NATIVE = "%s://%s%s" % (_u.scheme, (_u.hostname or "").replace("openai.api.", "api.", 1), (":%d" % _u.port) if _u.port else "")
 seen = {}  # sha256 of a key LiteLLM took -> when
 
 
@@ -84,17 +103,88 @@ class Voice(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b)
 
+    def keyed(self):
+        auth = self.headers.get("authorization", "")
+        if key_ok(auth[7:].strip() if auth.lower().startswith("bearer ") else ""):
+            return True
+        self.say(401, "a key LiteLLM takes")
+        return False
+
+    def forward(self, method, base, path, body=None, ctype=None, timeout=60):
+        """One allowed call sent on to the Tiiny with its key, and its answer streamed back as it comes."""
+        u = urllib.parse.urlsplit(base)
+        try:
+            c = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=timeout)
+            h = {"Authorization": "Bearer " + KEY} if KEY else {}
+            if ctype:
+                h["content-type"] = ctype
+            c.request(method, u.path.rstrip("/") + path, body=body, headers=h)
+            r = c.getresponse()
+        except OSError as e:
+            return self.say(502, "the Tiiny: %s" % e.__class__.__name__)
+        self.send_response(r.status)
+        for k in ("content-type", "x-session-id"):
+            if r.getheader(k):
+                self.send_header(k, r.getheader(k))
+        self.send_header("transfer-encoding", "chunked")
+        self.send_header("cache-control", "no-store")
+        self.end_headers()
+        try:
+            while True:
+                piece = r.read1(16384) if hasattr(r, "read1") else r.read(16384)
+                if not piece:
+                    break
+                self.wfile.write(b"%x\r\n%s\r\n" % (len(piece), piece))
+                self.wfile.flush()
+            self.wfile.write(b"0\r\n\r\n")
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            c.close()
+
+    def body(self, most):
+        n = int(self.headers.get("content-length") or 0)
+        if n <= 0 or n > most:
+            self.say(413, "a body up to %d MB" % (most // (1024 * 1024)) if most >= 1024 * 1024 else "a body up to 64 KB")
+            return None
+        return self.rfile.read(n)
+
     def do_GET(self):
-        if self.path.rstrip("/") == "/health":
+        path, _, query = self.path.partition("?")
+        path = path.rstrip("/")
+        if path == "/health":
             return self.say(200, "")  # {"error": ""}: up
-        return self.say(404, "only POST /v1/audio/speech")
+        if path in ("/tiiny/loaded", "/tiiny/npu", "/v1/music/info"):
+            if not self.keyed():
+                return
+            to = {"/tiiny/loaded": "/api/v1/models/online_models", "/tiiny/npu": "/api/v1/npu/status",
+                  "/v1/music/info": "/v1/music/info" + ("?" + query if query else "")}[path]
+            return self.forward("GET", NATIVE, to, timeout=20)
+        return self.say(404, "not a route here")
 
     def do_POST(self):
-        if self.path.split("?")[0].rstrip("/") != "/v1/audio/speech":
-            return self.say(404, "only POST /v1/audio/speech")
-        auth = self.headers.get("authorization", "")
-        if not key_ok(auth[7:].strip() if auth.lower().startswith("bearer ") else ""):
-            return self.say(401, "a key LiteLLM takes")
+        path = self.path.split("?")[0].rstrip("/")
+        if path.startswith("/tiiny/models/") and (path.endswith("/start") or path.endswith("/stop")):
+            model, act = path[len("/tiiny/models/"):].rsplit("/", 1)
+            if not MODEL_ID.match(model):
+                return self.say(400, "a model id")
+            if not self.keyed():
+                return
+            return self.forward("POST", NATIVE, "/api/v1/models/%s/%s" % (model, act), timeout=300)
+        if path in ("/v1/music/generate", "/v1/music/generate/wav"):
+            if not self.keyed():
+                return
+            b = self.body(MOST_UPLOAD)
+            return None if b is None else self.forward("POST", NATIVE, path, b, "application/json", timeout=900)
+        if path == "/v1/audio/transcriptions":
+            if not self.keyed():
+                return
+            b = self.body(MOST_UPLOAD)
+            return None if b is None else self.forward("POST", BASE, "/audio/transcriptions", b, self.headers.get("content-type"), timeout=600)
+        if path != "/v1/audio/speech":
+            return self.say(404, "not a route here")
+        if not self.keyed():
+            return
         n = int(self.headers.get("content-length") or 0)
         if n <= 0 or n > MOST_BODY:
             return self.say(413, "a body up to 64 KB")

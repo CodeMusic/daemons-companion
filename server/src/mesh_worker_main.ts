@@ -10,7 +10,7 @@ import { cpus, hostname, loadavg, tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { argvFor, measureSpeed, runFfmpeg, safeArgs, type ProcJob } from "./procmesh.js";
+import { argvFor, keepSpeed, measureSpeed, runFfmpeg, safeArgs, SPEED_EVERY_MS, type ProcJob } from "./procmesh.js";
 import { FOUND_FFMPEG } from "./ai/voice.js";
 
 const HUB = (process.env.MESH_HUB ?? "").replace(/\/+$/, ""), KEY = process.env.MESH_KEY ?? "";
@@ -18,7 +18,8 @@ const NAME = process.env.MESH_NAME || hostname().replace(/\.local$/, "");
 if (!HUB || !KEY) { console.error("mesh: MESH_HUB and MESH_KEY are needed (hub/mesh.sh install)"); process.exit(2); }
 const ID = NAME.toLowerCase().replace(/[^a-z0-9._-]/g, "-").slice(0, 40);
 const CORES = cpus().length, MOST = Math.max(1, Number(process.env.MESH_MOST) || Math.floor(CORES / 4));
-const SPEED = measureSpeed();
+let { readings: SPEEDS, speed: SPEED } = keepSpeed([], measureSpeed());   // measured again while idle, the best kept
+let measured = Date.now();
 const CAPS = FOUND_FFMPEG ? ["ffmpeg"] : [];
 const say = (...a: unknown[]) => console.log(new Date().toISOString(), ...a);
 const auth = { authorization: `Bearer ${KEY}` };
@@ -84,6 +85,12 @@ for (;;) {
   try {
     const p = underPressure();
     if (p.yes) { if (!strained.said.startsWith("!")) { say(`resting: ${p.said}`); strained.said = `!${p.said}`; } await new Promise((r) => setTimeout(r, 15000)); continue; }
+    if (!holds && Date.now() - measured > SPEED_EVERY_MS) {
+      const was = SPEED;
+      ({ readings: SPEEDS, speed: SPEED } = keepSpeed(SPEEDS, measureSpeed()));
+      measured = Date.now();
+      if (SPEED !== was) say(`speed ${SPEED} (readings ${SPEEDS.join(", ")})`);
+    }
     if (holds < MOST) {
       const r = await post("/api/mesh/take", { id: ID, name: NAME, caps: CAPS, cores: CORES, speed: SPEED,
                                                 load: Math.round((loadavg()[0] / CORES) * 100) / 100, holds });

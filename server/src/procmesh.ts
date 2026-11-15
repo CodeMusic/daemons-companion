@@ -58,6 +58,14 @@ export function measureSpeed(): number {
   const ms = performance.now() - t;
   return Math.round((250 / Math.max(1, ms)) * 100) / 100;            // the hub (a CoreMP135) measures about 1
 }
+// a node's speed is what it can do at best -- how busy it is now is its load, counted apart -- so one reading taken
+// while the machine was busy must not stand for the day (THE HANDS' Mac measured 7.4, 2.2 and 0.49 on three starts,
+// 2026-11-14): measured again from time to time, and the best of the last few kept
+export const SPEED_READINGS = 6, SPEED_EVERY_MS = 10 * 60_000;
+export function keepSpeed(readings: number[], fresh: number): { readings: number[]; speed: number } {
+  const r = [...readings, fresh].filter((x) => Number.isFinite(x) && x > 0).slice(-SPEED_READINGS);
+  return { readings: r, speed: r.length ? Math.max(...r) : 0.1 };
+}
 
 // put a job's files where they are on this machine, and run ffmpeg there, gently
 export function argvFor(args: string[], files: Record<string, string>): string[] {

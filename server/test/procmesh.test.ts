@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { argvFor, free, ProcMesh, reliability, safeArgs, score, type MeshNode } from "../src/procmesh.js";
+import { argvFor, free, keepSpeed, ProcMesh, reliability, safeArgs, score, SPEED_READINGS, type MeshNode } from "../src/procmesh.js";
 
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
@@ -75,5 +75,20 @@ describe("routing", () => {
   it("refuses a job that reaches outside its files", async () => {
     const mesh = new ProcMesh(null, { speed: 1 });
     await expect(mesh.ffmpeg(["-i", "/etc/hosts", "@out:x"], {}, { x: "/tmp/never" }, { title: "bad" })).rejects.toThrow();
+  });
+});
+
+describe("a node's speed", () => {
+  it("is the best of its last few readings, so a reading taken while busy does not stand", () => {
+    let k = keepSpeed([], 0.49);
+    expect(k.speed).toBe(0.49);
+    k = keepSpeed(k.readings, 7.4);
+    expect(k.speed).toBe(7.4);
+    k = keepSpeed(k.readings, 2.17);
+    expect(k.speed).toBe(7.4);
+    for (let i = 0; i < SPEED_READINGS; i++) k = keepSpeed(k.readings, 3);   // the old best ages out
+    expect(k.speed).toBe(3);
+    expect(k.readings).toHaveLength(SPEED_READINGS);
+    expect(keepSpeed([], Number.NaN).speed).toBe(0.1);
   });
 });

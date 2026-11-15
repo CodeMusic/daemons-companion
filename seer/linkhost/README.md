@@ -21,6 +21,7 @@ It answers `127.0.0.1` unless it is given an address. **No ROM and no save is ev
 |---|---|
 | `/` | the page: both screens, or `?p=0` / `?p=1` for one player's; arrows, X = A, Z = B, Enter, Shift, A/S = L/R |
 | `/f/N` | player N's screen, 240x160 RGBX bytes, deflated when the request accepts it (every browser's `fetch` does) |
+| `/v/N` | player N's screen as video: one connection held open, each changed frame deflated and led by its length (4 bytes, big-endian), a length of 0 each second the screen is still; at most 8 viewers. The link page uses it, and asks `/f/N` a frame at a time only where it cannot |
 | `/k/N/KEYS` | player N's buttons held, the GBA's key bits (A 1, B 2, SELECT 4, START 8, RIGHT 16, LEFT 32, UP 64, DOWN 128, R 256, L 512) |
 | `/p/N/ADDR/8or16/VALUE` | a byte or halfword into player N's memory (the DEBUG build's theatre warp, `gDaemonsDebugWarp`) -- **only when started with `LINKHOST_POKE=1`**, for testing; the hub never passes it on |
 | `GET /s/N` | player N's save as the game holds it now (128 KiB) |

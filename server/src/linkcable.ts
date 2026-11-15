@@ -1,7 +1,8 @@
 // C-221: THE LINK CABLE (DRAFT) -- the hub's way to the two linked games `seer/linkhost/` runs (mGBA's lockstep cable,
 // headless, on the always-on machine). Node only: api.ts imports it, never the phone.
 //
-// The hub passes on three things and nothing else: a player's screen (`/f/N`, deflated as it came), the buttons a player
+// The hub passes on three things and nothing else: a player's screen (`/f/N`, deflated as it came, or `/v/N`, as video:
+// each changed frame deflated, led by its length), the buttons a player
 // holds (`/k/N/KEYS`), and the cable's state. linkhost's own `/p/` (a byte into a game's memory, the DEBUG build's warp)
 // is never reachable from here. Where linkhost is: the setting `link.host`, or DAEMONS_LINKHOST, e.g.
 // http://roverbyteseer:4795 -- unset, the cable is not running and the page says so.
@@ -19,6 +20,8 @@ export function linkHost(setting: string | null | undefined, env = process.env.D
 export function linkTarget(path: string): string | null {
   const f = /^\/api\/link\/f\/(\d)$/.exec(path);
   if (f && Number(f[1]) < PLAYERS) return `/f/${f[1]}`;
+  const v = /^\/api\/link\/v\/(\d)$/.exec(path);                 // the screen as video: changed frames, one line held open
+  if (v && Number(v[1]) < PLAYERS) return `/v/${v[1]}`;
   const k = /^\/api\/link\/k\/(\d)\/(\d{1,4})$/.exec(path);
   if (k && Number(k[1]) < PLAYERS) return `/k/${k[1]}/${Number(k[2]) & 0x3ff}`;
   if (path === "/api/link/state") return "/state";
@@ -44,8 +47,9 @@ export function linkRoute(res: ServerResponse, host: string | null, path: string
       up.on("end", () => done());
       up.on("error", () => { res.end(); done(); });
     });
-    ask.on("timeout", () => ask.destroy(new Error("timeout")));
+    ask.on("timeout", () => ask.destroy(new Error("timeout")));   // video sends a word every second, so 3 s quiet is gone
     ask.on("error", () => { fail(502, "the link cable did not answer"); done(); });   // DRAFT
+    res.on("close", () => { if (!res.writableFinished) ask.destroy(); });   // the viewer gone: linkhost's line closed too
     ask.end();
   });
 }
@@ -121,19 +125,58 @@ document.getElementById("who").textContent = "THE LINK CABLE · PLAYER " + (seat
 const said = (t) => { document.getElementById("said").textContent = t; };
 const cx = document.getElementById("c").getContext("2d"), img = new ImageData(240, 160);
 let quiet = 0;
+const paint = (b) => {
+  for (let p = 0; p < b.length; p += 4) { img.data[p] = b[p]; img.data[p + 1] = b[p + 1]; img.data[p + 2] = b[p + 2]; img.data[p + 3] = 255; }
+  cx.putImageData(img, 0, 0);
+};
+// the screen asked for a frame at a time: where the video below cannot be had
 async function draw() {
   try {
     const r = await fetch("/api/link/f/" + seat, { headers: auth, cache: "no-store" });
     if (!r.ok) { said((await r.json().catch(() => ({}))).error || "the link cable did not answer"); quiet++; }
     else {
-      const b = new Uint8Array(await r.arrayBuffer());
-      for (let p = 0; p < b.length; p += 4) { img.data[p] = b[p]; img.data[p + 1] = b[p + 1]; img.data[p + 2] = b[p + 2]; img.data[p + 3] = 255; }
-      cx.putImageData(img, 0, 0); if (quiet) said(""); quiet = 0;
+      paint(new Uint8Array(await r.arrayBuffer())); if (quiet) said(""); quiet = 0;
+      if (lost && !still) { lost = 0; return watch(); }   // the cable answers again: back to the video
     }
   } catch (e) { said("the hub did not answer"); quiet++; }
   setTimeout(draw, quiet ? Math.min(3000, 250 * quiet) : document.hidden ? 1000 : 33);
 }
-draw();
+// the screen as video: one line held open, each changed frame deflated and led by its length (0: the screen is still)
+const inflate = async (z) => new Uint8Array(await new Response(new Blob([z]).stream().pipeThrough(new DecompressionStream("deflate"))).arrayBuffer());
+let lost = 0, still = !window.DecompressionStream;   // still: a frame at a time for good (no video here or there)
+async function watch() {
+  if (still || lost >= 3) return draw();
+  let shown = false;
+  try {
+    const r = await fetch("/api/link/v/" + seat, { headers: auth, cache: "no-store" });
+    if (!r.ok) throw new Error(String(r.status));
+    if (!r.body || !/x-daemons-frames/.test(r.headers.get("content-type") || "")) { still = true; return draw(); }   // a linkhost without video
+    const rd = r.body.getReader();
+    let buf = new Uint8Array(0);
+    const need = async (n) => {
+      while (buf.length < n) {
+        const { value, done } = await rd.read();
+        if (done) throw new Error("ended");
+        const m = new Uint8Array(buf.length + value.length); m.set(buf); m.set(value, buf.length); buf = m;
+      }
+    };
+    for (;;) {
+      await need(4);
+      const n = ((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]) >>> 0;
+      buf = buf.subarray(4);
+      if (!n) continue;
+      await need(n);
+      const z = buf.slice(0, n);
+      buf = buf.subarray(n);
+      if (!document.hidden) paint(await inflate(z));
+      if (!shown) { said(""); shown = true; lost = 0; }
+    }
+  } catch (e) {
+    lost++; said("the picture stopped -- joining again");   // DRAFT
+    setTimeout(watch, 1000);
+  }
+}
+watch();
 // the buttons sent one after another, in order; a tap is held at least 80 ms, so the game (reading them once a frame)
 // sees even the quickest one
 let keys = 0, line = Promise.resolve();

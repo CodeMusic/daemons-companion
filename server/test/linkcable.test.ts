@@ -3,7 +3,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type IncomingMessage } from "node:http";
 import type { AddressInfo } from "node:net";
-import { deflateSync } from "node:zlib";
+import { deflateSync, inflateSync } from "node:zlib";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -26,6 +26,13 @@ const fake = createServer((req: IncomingMessage, res) => {   // linkhost, as far
     return;
   }
   if (s) { res.writeHead(200, { "Content-Type": "application/octet-stream" }); return res.end(seated[Number(s[1])]); }
+  if (/^\/v\/\d$/.test(req.url ?? "")) {                  // video: a frame, a still second, another frame
+    res.writeHead(200, { "Content-Type": "application/x-daemons-frames" });
+    const z = deflateSync(screen, { level: 1 }), n = Buffer.alloc(4);
+    n.writeUInt32BE(z.length);
+    res.write(Buffer.concat([n, z, Buffer.alloc(4), n, z]));
+    return res.end();
+  }
   if (req.url?.startsWith("/f/")) {
     const z = /deflate/.test(String(req.headers["accept-encoding"] ?? ""));
     res.writeHead(200, { "Content-Type": "application/octet-stream", ...(z ? { "Content-Encoding": "deflate" } : {}) });
@@ -52,6 +59,8 @@ describe("C-221: what the hub passes on", () => {
     expect(linkTarget("/api/link/f/0")).toBe("/f/0");
     expect(linkTarget("/api/link/f/1")).toBe("/f/1");
     expect(linkTarget("/api/link/f/2")).toBeNull();
+    expect(linkTarget("/api/link/v/1")).toBe("/v/1");
+    expect(linkTarget("/api/link/v/2")).toBeNull();
     expect(linkTarget("/api/link/k/1/9")).toBe("/k/1/9");
     expect(linkTarget("/api/link/k/0/4095")).toBe("/k/0/1023");        // only the GBA's ten buttons
     expect(linkTarget("/api/link/state")).toBe("/state");
@@ -74,6 +83,19 @@ describe("C-221: through the hub", () => {
     expect(r.headers.get("cache-control")).toBe("no-store");
     expect(new Uint8Array(await r.arrayBuffer())).toEqual(screen);
     expect(asked.at(-1)).toBe("/f/1");
+  });
+  it("passes the screen on as video, each changed frame deflated and led by its length", async () => {
+    const r = await here("/api/link/v/0");
+    expect(r.status).toBe(200);
+    expect(r.headers.get("content-type")).toBe("application/x-daemons-frames");
+    const b = Buffer.from(await r.arrayBuffer()), frames: Buffer[] = [];
+    for (let at = 0; at < b.length;) {
+      const n = b.readUInt32BE(at); at += 4;
+      if (n) { frames.push(inflateSync(b.subarray(at, at + n))); at += n; }
+    }
+    expect(frames).toHaveLength(2);
+    expect(new Uint8Array(frames[1])).toEqual(screen);
+    expect(asked.at(-1)).toBe("/v/0");
   });
   it("passes the buttons and the state on, and refuses the memory", async () => {
     expect((await here("/api/link/k/0/129")).status).toBe(200);

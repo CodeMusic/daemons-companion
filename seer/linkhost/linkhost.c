@@ -173,9 +173,10 @@ static void attach(int i) {
 	GBASIOSetDriver(&gba->sio, &p->node.d, SIO_NORMAL_32);
 }
 
-static void sendAll(int fd, const void* b, size_t n) {
+static int sendAll(int fd, const void* b, size_t n) {
 	const char* c = b;
-	while (n) { ssize_t w = write(fd, c, n); if (w <= 0) return; c += w; n -= (size_t) w; }
+	while (n) { ssize_t w = write(fd, c, n); if (w <= 0) return 0; c += w; n -= (size_t) w; }
+	return 1;
 }
 static void replyAs(int fd, const char* type, const char* encoding, const void* body, size_t n) {
 	char h[320];
@@ -196,6 +197,45 @@ static size_t contentLength(const char* req) {
 }
 #define SAVE_MAX 0x20000                  // a FireRed / LeafGreen save: 128 KiB of flash
 
+// C-221: the screen as video -- one connection a viewer, held open, and only the frames that changed sent down it, each
+// deflated and led by its length (four bytes, big-endian); a length of 0 every second the screen stands still, so
+// nothing between here and the phone thinks the line is dead. At most VIEWERS at once; ~30 a second at most.
+#define VIEWERS 8
+static int viewers = 0;
+static pthread_mutex_t viewersMutex = PTHREAD_MUTEX_INITIALIZER;
+struct viewer { int fd, who; };
+static void* video(void* arg) {
+	struct viewer v = *(struct viewer*) arg;
+	free(arg);
+	uint8_t* cur = malloc(W * H * 4); uint8_t* last = malloc(W * H * 4); uint8_t* z = malloc(W * H * 4 + 1024);
+	static const char head[] = "HTTP/1.1 200 OK\r\nContent-Type: application/x-daemons-frames\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n";
+	int ok = cur && last && z && sendAll(v.fd, head, sizeof(head) - 1), first = 1, still = 0;
+	unsigned long seen = 0;
+	while (ok && !quit) {
+		usleep(33000);
+		pthread_mutex_lock(&P[v.who].fl);
+		int fresh = P[v.who].frames != seen;
+		if (fresh) { seen = P[v.who].frames; memcpy(cur, P[v.who].frame, W * H * 4); }
+		pthread_mutex_unlock(&P[v.who].fl);
+		if (fresh && (first || memcmp(cur, last, W * H * 4))) {
+			uLongf zn = W * H * 4 + 1024;
+			if (compress2(z, &zn, cur, W * H * 4, 1) != Z_OK) break;
+			uint8_t n[4] = { (uint8_t) (zn >> 24), (uint8_t) (zn >> 16), (uint8_t) (zn >> 8), (uint8_t) zn };
+			ok = sendAll(v.fd, n, 4) && sendAll(v.fd, z, zn);
+			uint8_t* t = last; last = cur; cur = t;
+			first = 0; still = 0;
+		} else if (++still >= 30) {
+			static const uint8_t zero[4] = { 0 };
+			ok = sendAll(v.fd, zero, 4);
+			still = 0;
+		}
+	}
+	close(v.fd);
+	free(cur); free(last); free(z);
+	pthread_mutex_lock(&viewersMutex); viewers--; pthread_mutex_unlock(&viewersMutex);
+	return NULL;
+}
+
 static void* serve(void* arg) {
 	int port = *(int*) arg;
 	int s = socket(AF_INET, SOCK_STREAM, 0), one = 1;
@@ -213,7 +253,18 @@ static void* serve(void* arg) {
 		int who = 0;
 		unsigned keys = 0, addr = 0, width = 0, val = 0;
 		if (r <= 0) { close(c); continue; }
-		if (sscanf(req, "GET /f/%d", &who) == 1 && who >= 0 && who < N) {
+		if (sscanf(req, "GET /v/%d", &who) == 1 && who >= 0 && who < N) {
+			pthread_mutex_lock(&viewersMutex);
+			int room = viewers < VIEWERS;
+			if (room) viewers++;
+			pthread_mutex_unlock(&viewersMutex);
+			struct viewer* v = room ? malloc(sizeof(*v)) : NULL;
+			pthread_t t;
+			if (v) { v->fd = c; v->who = who; }
+			if (v && !pthread_create(&t, NULL, video, v)) { pthread_detach(t); continue; }   // the viewer's thread closes it
+			if (room) { free(v); pthread_mutex_lock(&viewersMutex); viewers--; pthread_mutex_unlock(&viewersMutex); }
+			refuse(c, 503);
+		} else if (sscanf(req, "GET /f/%d", &who) == 1 && who >= 0 && who < N) {
 			pthread_mutex_lock(&P[who].fl);
 			memcpy(buf, P[who].frame, sizeof(buf));
 			pthread_mutex_unlock(&P[who].fl);
@@ -301,6 +352,7 @@ int main(int argc, char** argv) {
 	}
 	for (int i = 0; i < N; ++i) { mCoreThreadInterrupt(&P[i].thread); attach(i); mCoreThreadContinue(&P[i].thread); }
 	signal(SIGINT, stop); signal(SIGTERM, stop);
+	signal(SIGPIPE, SIG_IGN);             // a viewer gone mid-frame is a failed write, never the end of both games
 	pthread_t srv;
 	pthread_create(&srv, NULL, serve, &port);
 	while (!quit) sleep(1);

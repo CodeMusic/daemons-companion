@@ -21,6 +21,14 @@ has no seam (the body runs from LOOP_S to the end, and the end is mixed back ont
 set gently low (-23 LUFS). ACE-Step's own file is deleted once converted; a piece nobody fetched is deleted after six
 hours. Out files: ~/daemons-sleep-sounds/out (a few tens of MB at most, briefly).
 
+ON THE TIINY (companion C-376; the user, 2026-11-15: "move ace step to tiiny"): the Tiiny's store has ACE-Step-XL-Turbo,
+so a piece is made there when it is on the device, through seer's gate (seer/tiiny-voice: /tiiny/models, /tiiny/models/
+<id>/start|stop, /v1/music/generate), with the key the hub gave here. It takes 40% of the Tiiny's NPU, more than is free
+beside the models the hub lives on, so for each piece the models in SLEEP_SOUNDS_SPARE (the painter's prompt enhancer)
+are set aside, ACE-Step loaded (about 70 s), the piece made, ACE-Step unloaded and what was set aside loaded again; one
+piece at a time. If anything fails before the piece is made, it is made here on this machine's ACE-Step as before. The
+hub sees nothing different: the same job, the same loopable file. Its job says where it was made.
+
 Keys: whatever key LiteLLM itself takes, checked by asking LiteLLM (as tiiny_voice_stream.py does). Never printed.
 
     python3 sleep_sounds.py          # port 4002, ACE-Step at 127.0.0.1:8001, LiteLLM at 127.0.0.1:4000
@@ -31,6 +39,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PORT = int(os.environ.get("SLEEP_SOUNDS_PORT", "4002"))
 LITELLM = os.environ.get("SLEEP_SOUNDS_LITELLM", "http://127.0.0.1:4000")
 ACE = os.environ.get("SLEEP_SOUNDS_ACE", "http://127.0.0.1:8001")
+GATE = os.environ.get("SLEEP_SOUNDS_GATE", "http://127.0.0.1:4001")               # C-376: the Tiiny, keyed
+TIINY_ACE = os.environ.get("SLEEP_SOUNDS_TIINY_MODEL", "ACE-Step/AceStep-XL-Turbo")
+SPARE = [m for m in os.environ.get("SLEEP_SOUNDS_SPARE", "Qwen/Qwen-Image-2.1-PE-T2I").split(",") if m.strip()]
+LOAD_WAIT_S = 240
 OUT = os.path.expanduser(os.environ.get("SLEEP_SOUNDS_OUT", "~/daemons-sleep-sounds/out"))
 FFMPEG = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
 LOOP_S = 8.0          # the seam, faded across
@@ -43,6 +55,7 @@ LYRIC_BAD = re.compile(r"[^\w \n,.'!?()\[\]:;-]", re.U)   # C-362: lyrics are wo
 seen = {}             # sha256 of a key LiteLLM took -> when
 jobs = {}             # our job -> {task, state, at, error?, seconds?}
 lock = threading.Lock()
+on_tiiny = threading.Lock()   # C-376: one piece on the Tiiny at a time
 
 
 def key_ok(bearer):
@@ -76,6 +89,83 @@ def ace(method, path, body=None, timeout=30):
     data = r.read()
     c.close()
     return r.status, data
+
+
+def gate(method, path, bearer, body=None, timeout=60):
+    """C-376: one call through seer's gate to the Tiiny, with the key the hub gave here."""
+    u = urllib.parse.urlsplit(GATE)
+    c = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=timeout)
+    c.request(method, path, body=json.dumps(body).encode() if body is not None else None,
+              headers={"content-type": "application/json", "Authorization": "Bearer " + bearer})
+    r = c.getresponse()
+    data = r.read()
+    c.close()
+    return r.status, data
+
+
+def device(bearer):
+    """The Tiiny's models: id -> running | downloaded | ..."""
+    st, data = gate("GET", "/tiiny/models", bearer, timeout=20)
+    if st != 200:
+        raise RuntimeError("the gate answered %d" % st)
+    return {m.get("id"): m.get("status") for m in json.loads(data.decode()).get("data", [])}
+
+
+def make_on_tiiny(job, bearer, cfg):
+    """Sets aside SPARE, loads ACE-Step, makes the piece, puts everything back. The raw wav's path, or None if the
+    Tiiny could not make it before it started (then it is made here)."""
+    j = jobs[job]
+    with on_tiiny:
+        models = device(bearer)
+        if models.get(TIINY_ACE) not in ("downloaded", "running"):
+            return None                                       # not on the device: made here
+        set_aside, loaded_here = [], False
+        try:
+            if models.get(TIINY_ACE) != "running":
+                for m in SPARE:
+                    if models.get(m) == "running" and gate("POST", "/tiiny/models/%s/stop" % m, bearer, timeout=120)[0] == 200:
+                        set_aside.append(m)
+                if gate("POST", "/tiiny/models/%s/start" % TIINY_ACE, bearer, timeout=300)[0] != 200:
+                    return None
+                loaded_here = True
+                deadline = time.time() + LOAD_WAIT_S
+                while device(bearer).get(TIINY_ACE) != "running":
+                    if time.time() > deadline:
+                        return None
+                    time.sleep(5)
+            j["state"] = "making"
+            st, data = gate("POST", "/v1/music/generate", bearer, {"model": TIINY_ACE, "config": cfg}, timeout=1800)
+            if st != 200:
+                raise RuntimeError("the Tiiny answered %d" % st)
+            audio = json.loads(data.decode()).get("audio_data") or ""
+            raw = os.path.join(OUT, job + ".tiiny.wav")
+            with open(raw, "wb") as fh:
+                fh.write(__import__("base64").b64decode(audio))
+            j["where"] = "the Tiiny"
+            return raw
+        finally:
+            if loaded_here:
+                try:
+                    gate("POST", "/tiiny/models/%s/stop" % TIINY_ACE, bearer, timeout=120)
+                except OSError:
+                    pass
+            for m in set_aside:
+                try:
+                    gate("POST", "/tiiny/models/%s/start" % m, bearer, timeout=300)
+                except OSError:
+                    pass
+
+
+def finish(job, raw, res=None):
+    """A made piece (raw wav) -> its loopable or evened FLAC; the raw file removed."""
+    j = jobs[job]
+    dst = os.path.join(OUT, job + ".flac")
+    j["seconds"] = round(evened(raw, dst) if j.get("song") else loopable(raw, dst), 1)
+    if res is not None:
+        j["metas"] = {k: res.get("metas", {}).get(k) for k in ("bpm", "keyscale", "timesignature")}
+        j["seed"] = res.get("seed_value")
+    j["state"] = "done"
+    j["at"] = time.time()
 
 
 def loopable(src, dst):
@@ -127,18 +217,42 @@ def follow(job):
         try:
             res = json.loads(row["result"], strict=False)[0]
             path = urllib.parse.parse_qs(urllib.parse.urlsplit(res["file"]).query)["path"][0]
-            dst = os.path.join(OUT, job + ".flac")
-            j["seconds"] = round(evened(path, dst) if j.get("song") else loopable(path, dst), 1)
-            j["metas"] = {k: res.get("metas", {}).get(k) for k in ("bpm", "keyscale", "timesignature")}
-            j["seed"] = res.get("seed_value")
-            j["state"] = "done"
-            j["at"] = time.time()
+            j["where"] = "roverbyteseer"
+            finish(job, path, res)
             for f in glob.glob(os.path.join(os.path.dirname(path), os.path.basename(path).rsplit(".", 1)[0] + ".*")):
                 os.remove(f)   # ACE-Step's own copy: kept nowhere
         except Exception as e:  # noqa: BLE001 -- any failure is this job's, reported, never the server's
             j.update(state="failed", error="converting: %s" % e.__class__.__name__)
         return
     j.update(state="failed", error="took too long")
+
+
+def make(job, bearer, cfg, ask):
+    """C-376: on the Tiiny when it can, else here; a failure on the Tiiny after it started is the job's."""
+    j = jobs[job]
+    try:
+        raw = make_on_tiiny(job, bearer, cfg)
+    except Exception as e:  # noqa: BLE001 -- before the piece was made: made here instead
+        sys.stderr.write("%s the Tiiny could not make %s: %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), job[:8], e.__class__.__name__))
+        raw = None
+    if raw:
+        try:
+            finish(job, raw)
+        except Exception as e:  # noqa: BLE001
+            j.update(state="failed", error="converting: %s" % e.__class__.__name__)
+        finally:
+            try:
+                os.remove(raw)
+            except OSError:
+                pass
+        return
+    try:
+        st, data = ace("POST", "/release_task", ask)
+        j["task"] = json.loads(data.decode(), strict=False)["data"]["task_id"]
+    except (OSError, ValueError, KeyError, TypeError):
+        j.update(state="failed", error="ACE-Step did not take it")
+        return
+    follow(job)
 
 
 def sweep():
@@ -198,7 +312,7 @@ class Sleep(BaseHTTPRequestHandler):
             if not job:
                 return self.json(404, {"error": "no such job"})
             j = jobs[job]
-            return self.json(200, {k: j.get(k) for k in ("state", "error", "seconds", "metas", "seed")} | {"job": job})
+            return self.json(200, {k: j.get(k) for k in ("state", "error", "seconds", "metas", "seed", "where")} | {"job": job})
         if p.startswith("/v1/sleep/file/"):
             job = self.job_of("/v1/sleep/file/", ".flac")
             f = job and os.path.join(OUT, job + ".flac")
@@ -257,15 +371,19 @@ class Sleep(BaseHTTPRequestHandler):
             ask["key_scale"] = keyscale
         if isinstance(b.get("seed"), int):
             ask.update(use_random_seed=False, seed=b["seed"])
-        try:
-            st, data = ace("POST", "/release_task", ask)
-            task = json.loads(data.decode(), strict=False)["data"]["task_id"]
-        except (OSError, ValueError, KeyError, TypeError):
-            return self.json(502, {"error": "ACE-Step did not take it"})
+        # C-376: the Tiiny's ACE-Step first, with the same words; this machine's if the Tiiny cannot
+        cfg = {"caption": caption, "lyrics": lyrics if song else "[Instrumental]", "generation_type": "mixed" if song else "bgm",
+               "seconds_total": seconds, "bpm": bpm, "time_signature": ask["time_signature"]}
+        if keyscale:
+            cfg["key_scale"] = keyscale
+        if isinstance(b.get("seed"), int):
+            cfg["seed"] = b["seed"]
+        auth = self.headers.get("authorization", "")
+        bearer = auth[7:].strip()
         job = uuid.uuid4().hex
         with lock:
-            jobs[job] = {"task": task, "state": "queued", "at": time.time(), "song": song}
-        threading.Thread(target=follow, args=(job,), daemon=True).start()
+            jobs[job] = {"task": None, "state": "queued", "at": time.time(), "song": song}
+        threading.Thread(target=make, args=(job, bearer, cfg, ask), daemon=True).start()
         return self.json(202, {"job": job})
 
 

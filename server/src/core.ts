@@ -447,30 +447,31 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   ; lap("L20");
     } catch { play = null; }
     // C-149: the CASINO's coins -- the save's money and what waits for SYNC -- and the party's other daemons, its reels
+    ; lap("pre-coins"); const TB = tableFor(store, deviceId, readAway(bytes), now); lap("tableFor");
     casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot),
-                      tableFor(store, deviceId, readAway(bytes), now));   // C-151: our other boards at the reels
+                      TB);   // C-151: our other boards at the reels
     // C-158: the reels' other daemons -- seen in the game, at home in this season or hour first -- and the day's luck
-    const seen = readIndex(bytes, h.edition).entries.map((e) => e.species);
+    ; lap("coinsFor"); const seen = readIndex(bytes, h.edition).entries.map((e) => e.species); lap("readIndex1");
   ; lap("L26");
     casino.reel = reelSpecies(seen, d?.species ?? null, save.party.map((p) => p.species), t.season, context.watch, now)
       .map((sp) => ({ species: sp, name: SPECIES[String(sp)]?.name ?? "" }));
   ; lap("L28");
     casino.context = { luck: context.luck, rtp: context.rtp, reasons: context.reasons };
   ; lap("L29");
-    casino.dress = casinoDress(t.season, today_, weather, context.watch);   // C-158: one rule, read by every screen
+    casino.dress = casinoDress(t.season, today_, weather, context.watch); lap("dress");   // C-158: one rule, read by every screen
     // C-149: OPUS's margin beside its INDEX entry, where the save holds OPUS and the margin has something to say
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
   ; lap("L32");
     // C-68: the party and their routines, for GAME ROUTINES
-    party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
+    ; lap("margin"); party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
                                      slot: p.slot, artKey: artKeyOf(p),   // a device fetches their pictures ahead
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
   ; lap("L36");
     // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
-    const g = d ? grown(d, store) : null;
+    ; lap("party"); const g = d ? grown(d, store) : null; lap("grown");
   ; lap("L38");
-    const bond = d ? bondScore(bondSeen(store, d.personality, walk(h, store, now).date, walk(h, store, now).steps)) : 0;   // C-185
-    const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality, bond }, now) : null;
+    if (d) walk(h, store, now); lap("walk"); const bond = d ? bondScore(bondSeen(store, d.personality, walk(h, store, now).date, walk(h, store, now).steps)) : 0;   // C-185
+    ; lap("bond"); const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality, bond }, now) : null;
   ; lap("L40");
     const was = d && ev ? SPECIES[String(ev.from)]?.name ?? d.name : "";
   ; lap("L41");
@@ -499,6 +500,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
+  ; lap("dd"); for (const [n, f] of [["sky", () => skyOf(h)], ["companion", () => companionId(store)], ["note", () => noteFor(store)], ["settings", () => deviceSettings(store, deviceId)], ["gift", () => giftNews(store)], ["dream", () => freshDream(store, now)], ["find", () => findAsked(store, deviceId, now)], ["beacons", () => ownBeacons(store)], ["nets", () => new SharedNetworks(store).rev()], ["casts", () => castsForDevice(store, now)], ["together", () => togetherNow(h, store, deviceId, now)]] as [string, () => unknown][]) { f(); lap(n); }
   const RET = { date: t.date, edition: t.edition, season: t.season, server, sky: skyOf(h),   // C-312: the aurora's, for every screen
            companion: companionId(store), cardNote: noteFor(store),   // C-124: whose cards are ours; a note to write
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes

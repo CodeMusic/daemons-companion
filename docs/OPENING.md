@@ -10,7 +10,7 @@ decisions still open. Not legal advice: a review by someone qualified is the las
 |---|---|---|---|
 | 1 | The public listener: the tunnel reaches only it; nothing there is the keeper's machine; a budget per address | server | **built** |
 | 2 | Passkeys answer only from https pages (or the Android app's signing key) | server | **built** |
-| 3 | A guardian can export everything held (`GET /accounts/export`) and delete it all (`/accounts/delete`) | server | **built** (export in the app: not yet) |
+| 3 | A guardian can export everything held (`GET /accounts/export`) and delete it all (`/accounts/delete`) | server, app | **built** (GUARDIAN's SAVE EVERYTHING: the share sheet on the phone, a download on the site) |
 | 3a | A profile's daemons by species to non-friends, and both names rewritten in a daemon sent to one (C-346) | server | **built** |
 | 3b | The age check at guardian sign-in | app; C-345 the module | **built** in the app; the module open |
 | 3c | An account unused for two years erased (daily) | server | **built** |

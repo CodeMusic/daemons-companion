@@ -22,6 +22,27 @@ export async function accounts<T>(path: string, body: object | null = null): Pro
   return api<T>(`/api/accounts/${path}`, { guardian, profile, get: body === null, body: body ?? {} });
 }
 
+// C-226 piece 5: everything THE COMMONS holds for this guardian (GET /accounts/export), saved where the guardian can keep
+// it -- the share sheet on the phone, a download on the site. The file holds no token and no provider id.
+export async function saveExport(): Promise<void> {
+  const all = await accounts<object>("export");
+  const text = JSON.stringify(all, null, 2), name = `daemons-account-${new Date().toISOString().slice(0, 10)}.json`;
+  if (!ON_PHONE) {
+    const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    const a = globalThis.document?.createElement("a");
+    if (!a) throw new Error("This page cannot save a file.");   // DRAFT
+    a.href = url; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    return;
+  }
+  const { File, Paths } = require("expo-file-system") as typeof import("expo-file-system");
+  const f = new File(Paths.cache, name);
+  if (f.exists) f.delete();
+  f.create(); f.write(text);
+  const Sharing = require("expo-sharing") as typeof import("expo-sharing");
+  await Sharing.shareAsync(f.uri, { dialogTitle: name, mimeType: "application/json" });
+}
+
 // C-226 piece 5 (the user, 2026-11-11, by multiple choice): the age check at guardian sign-in -- the device's own age
 // signal (iOS 26's Declared Age Range, through the build's DaemonsAgeRange module, C-345; Google Play's age signals on
 // Android when there is an Android build). false: the device says its person is under 18, and they cannot become a

@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { accounts, appleHere, appleToken, grownUpHere, keepToken, readToken } from "../../platform/accounts";
+import { accounts, appleHere, appleToken, grownUpHere, keepToken, readToken, saveExport } from "../../platform/accounts";
 import { api } from "../../platform/net";
 import { Action, Card, Entry, Eyebrow, Pending, Segments, Small, useInk } from "../../ui/ui";
 
@@ -71,6 +71,7 @@ export function GuardianCard({ ink: given }: { ink?: string }) {
       {me.profiles.map((p) => <ProfileRow key={p.id} p={p} ink={ink} act={act} />)}
       <NewProfile names={names} ink={ink} add={(first, second) => act(() => accounts("profile", { first, second }), "Profile added.")} />
       <XStack gap={8} flexWrap="wrap">
+        <Action label="SAVE EVERYTHING" ink={ink} onPress={() => act(saveExport, "Everything held is saved as a file.")} />
         <Action label="SIGN OUT" ink={ink} onPress={() => act(async () => { await accounts("signout", {}).catch(() => {}); await keepToken("guardian", null); }, "Signed out.")} />
       </XStack>
       <DeleteAll ink={ink} onDelete={() => act(async () => { await accounts("delete", { confirm: "DELETE" }); await keepToken("guardian", null); }, "Everything is deleted.")} />

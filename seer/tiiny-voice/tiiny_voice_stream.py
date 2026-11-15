@@ -20,7 +20,8 @@ THE GATE (companion C-370, C-371, C-374; 2026-11-15, the Tiiny's update): a few 
 key, and nothing else -- the Tiiny's HTTP API (dev.tiiny.ai) can also delete and download models, and none of that is let
 through. Allowed:
 
-    GET  /tiiny/loaded                      the models loaded now        (api/v1/models/online_models)
+    GET  /tiiny/models                      the models on the device     (api/v1/models/)
+    GET  /tiiny/store                       the Tiiny's model store      (api/v1/models/online_models)
     GET  /tiiny/npu                         the NPU's use                (api/v1/npu/status)
     POST /tiiny/models/<model id>/start     load one                     (api/v1/models/<id>/start)
     POST /tiiny/models/<model id>/stop      unload one                   (api/v1/models/<id>/stop)
@@ -154,10 +155,10 @@ class Voice(BaseHTTPRequestHandler):
         path = path.rstrip("/")
         if path == "/health":
             return self.say(200, "")  # {"error": ""}: up
-        if path in ("/tiiny/loaded", "/tiiny/npu", "/v1/music/info"):
+        if path in ("/tiiny/models", "/tiiny/store", "/tiiny/npu", "/v1/music/info"):
             if not self.keyed():
                 return
-            to = {"/tiiny/loaded": "/api/v1/models/online_models", "/tiiny/npu": "/api/v1/npu/status",
+            to = {"/tiiny/models": "/api/v1/models/", "/tiiny/store": "/api/v1/models/online_models", "/tiiny/npu": "/api/v1/npu/status",
                   "/v1/music/info": "/v1/music/info" + ("?" + query if query else "")}[path]
             return self.forward("GET", NATIVE, to, timeout=20)
         return self.say(404, "not a route here")

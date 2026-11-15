@@ -124,6 +124,9 @@ describe("C-374: what a restart left behind", () => {
     const heard = (async () => new Response(JSON.stringify({ text: "hello" }), { headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
     await tiinyHear(at, new Uint8Array([1, 2]), heard);
     expect(unloaded()).toEqual([]);
+    const bare = (async () => new Response("Internal Server Error", { status: 500 })) as unknown as typeof fetch;
+    expect(await tiinySpeak(at, "hi", "", bare)).toBeNull();
+    expect(unloaded()).toEqual(["qwen3-tts"]);   // the voice's bare 500 counts too (C-375)
   });
 });
 

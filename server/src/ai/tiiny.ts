@@ -95,7 +95,9 @@ export const STAND_IN_MS = 15 * 60_000;
 // with "... is not loaded". Each such model is noted, and cleared when it answers again
 const UNLOADED = new Map<string, number>();
 export async function noteRefusal(model: string, r: Response): Promise<void> {
-  try { if (/not loaded/i.test(await r.text())) UNLOADED.set(model, Date.now()); } catch {}
+  // LiteLLM says "is not loaded" for the ear but a bare 500 for the voice (2026-11-15): a 5xx counts too -- at worst the hub
+  // looks at the device and finds everything running (C-375)
+  try { if (r.status >= 500 || /not loaded/i.test(await r.text())) UNLOADED.set(model, Date.now()); } catch {}
 }
 export const noteHeld = (model: string) => { UNLOADED.delete(model); };
 export const unloaded = (now = Date.now()) => [...UNLOADED].filter(([, at]) => now - at < STAND_IN_MS).map(([m]) => m);

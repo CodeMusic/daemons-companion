@@ -136,7 +136,11 @@ def make_on_tiiny(job, bearer, cfg):
             j["state"] = "making"
             st, data = gate("POST", "/v1/music/generate", bearer, {"model": TIINY_ACE, "config": cfg}, timeout=1800)
             if st != 200:
-                raise RuntimeError("the Tiiny answered %d" % st)
+                try:
+                    why = json.loads(data.decode()).get("error") or ""
+                except ValueError:
+                    why = ""
+                raise RuntimeError("the Tiiny answered %d %s" % (st, str(why)[:160]))
             audio = json.loads(data.decode()).get("audio_data") or ""
             raw = os.path.join(OUT, job + ".tiiny.wav")
             with open(raw, "wb") as fh:
@@ -144,16 +148,32 @@ def make_on_tiiny(job, bearer, cfg):
             j["where"] = "the Tiiny"
             return raw
         finally:
-            if loaded_here:
-                try:
-                    gate("POST", "/tiiny/models/%s/stop" % TIINY_ACE, bearer, timeout=120)
-                except OSError:
-                    pass
-            for m in set_aside:
-                try:
-                    gate("POST", "/tiiny/models/%s/start" % m, bearer, timeout=300)
-                except OSError:
-                    pass
+            put_back(bearer, loaded_here, set_aside)
+
+
+def put_back(bearer, unload_ace, set_aside):
+    """ACE-Step unloaded, and once it is gone, what was set aside loaded again -- three tries each, ten seconds apart
+    (2026-11-15: loaded at once, the enhancer did not come back)."""
+    def log(msg):
+        sys.stderr.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg))
+    if unload_ace:
+        try:
+            gate("POST", "/tiiny/models/%s/stop" % TIINY_ACE, bearer, timeout=120)
+            deadline = time.time() + 120
+            while device(bearer).get(TIINY_ACE) == "running" and time.time() < deadline:
+                time.sleep(5)
+        except (OSError, RuntimeError, ValueError) as e:
+            log("unloading ACE-Step: %s" % e)
+    for m in set_aside:
+        for _ in range(3):
+            try:
+                if device(bearer).get(m) == "running" or gate("POST", "/tiiny/models/%s/start" % m, bearer, timeout=300)[0] == 200:
+                    break
+            except (OSError, RuntimeError, ValueError) as e:
+                log("loading %s again: %s" % (m, e))
+            time.sleep(10)
+        else:
+            log("%s was not loaded again" % m)
 
 
 def finish(job, raw, res=None):
@@ -233,7 +253,7 @@ def make(job, bearer, cfg, ask):
     try:
         raw = make_on_tiiny(job, bearer, cfg)
     except Exception as e:  # noqa: BLE001 -- before the piece was made: made here instead
-        sys.stderr.write("%s the Tiiny could not make %s: %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), job[:8], e.__class__.__name__))
+        sys.stderr.write("%s the Tiiny could not make %s: %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), job[:8], e))
         raw = None
     if raw:
         try:
@@ -372,10 +392,12 @@ class Sleep(BaseHTTPRequestHandler):
         if isinstance(b.get("seed"), int):
             ask.update(use_random_seed=False, seed=b["seed"])
         # C-376: the Tiiny's ACE-Step first, with the same words; this machine's if the Tiiny cannot
-        cfg = {"caption": caption, "lyrics": lyrics if song else "[Instrumental]", "generation_type": "mixed" if song else "bgm",
-               "seconds_total": seconds, "bpm": bpm, "time_signature": ask["time_signature"]}
+        # the Tiiny's music API: ACE-Step's own settings nested under ace_step; ACE-Step makes one stereo mix, so always
+        # "mixed" -- an instrumental is asked for by its lyric, as on this machine (2026-11-15: bgm and a flat bpm refused)
+        cfg = {"caption": caption, "lyrics": lyrics if song else "[Instrumental]", "generation_type": "mixed",
+               "seconds_total": seconds, "ace_step": {"bpm": bpm, "time_signature": ask["time_signature"]}}
         if keyscale:
-            cfg["key_scale"] = keyscale
+            cfg["ace_step"]["key_scale"] = keyscale
         if isinstance(b.get("seed"), int):
             cfg["seed"] = b["seed"]
         auth = self.headers.get("authorization", "")

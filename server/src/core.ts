@@ -484,6 +484,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   ; lap("L45");
     // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
     // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
+    ; if (d) { daemonLife(store, now); lap("life"); daemonExpression(store, now, undefined, d.species); lap("expr"); thriveOf(store, now); lap("thrive"); den(row?.types ?? []); grown(d, store); lap("grown2"); artKeyOf(d); lap("artKey"); }
     if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
                       gender: genderOf(d.species, d.personality),                        // C-359: he, she, or they
                       holding: d.holding, art: ev ? `/art/${artName(d.species)}.png` : `/art/party/${d.slot}.png`, mood: null,   // C-184: its new face
@@ -494,9 +495,9 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
-    if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now, virtueHeldToday(profile.wisdom, now));   // T-510
-    if (d) { const msg = firstSight(store, bytes, now); hermetic = { held: readHermetic(bytes, store).held ? 1 : 0, first: msg ? 1 : 0 }; }   // C-238
-    if (d) halloween = halloweenView(store, d.species, readHermetic(bytes, store).held, now);   // C-240
+    ; lap("daemonObj"); if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now, virtueHeldToday(profile.wisdom, now));   // T-510
+    ; lap("subtle"); if (d) { const msg = firstSight(store, bytes, now); hermetic = { held: readHermetic(bytes, store).held ? 1 : 0, first: msg ? 1 : 0 }; }   // C-238
+    ; lap("hermetic"); if (d) halloween = halloweenView(store, d.species, readHermetic(bytes, store).held, now);   // C-240
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all

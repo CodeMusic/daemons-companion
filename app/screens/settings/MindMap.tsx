@@ -78,6 +78,44 @@ const stepsOf = (id: string, ts: Task[]) => {
 const stepOf = (t: Task, ts: Task[]) => (t.parent ? stepsOf(t.parent, ts).findIndex((w) => w.includes(t)) + 1 : 0);
 const colourOf = (t: Task, ts: Task[]) => { const n = stepOf(t, ts); return n ? stepColour(n) : kindOf(t.kind).colour; };
 const stepSaid = (n: number) => `step ${n}${n <= STEPS.length ? ` (${STEPS[n - 1].said})` : ""}`;
+// C-360 (the user, 2026-11-14: "a mind/processor mesh network where we draw from where there is more available
+// potential"): THE MESH's machines -- the hub, roverbyteseer, THE HANDS' Mac, a phone that lends -- each with its score
+// now (power x reliability x how free it is), the one the next job would go to marked. GET /api/mesh. Every word DRAFT.
+type MeshNode = { id: string; name: string; caps: string[]; cores: number; load: number; holds: number; fresh: boolean;
+                  power: number; reliability: number; score: number };
+type MeshView = { nodes: MeshNode[]; jobs: { id: string; title: string; state: string; given: string[]; winner: string | null }[] };
+const CAP_SAID: Record<string, string> = { ffmpeg: "PROCESSING", think: "THOUGHT", picture: "PICTURES", music: "MUSIC" };
+function Mesh({ m }: { m: MeshView }) {
+  const nodes = [...m.nodes].sort((a, b) => b.score - a.score), top = Math.max(0.01, ...nodes.map((n) => n.score));
+  const next = nodes.find((n) => n.fresh && n.caps.includes("ffmpeg"));
+  const going = m.jobs.filter((j) => j.state !== "done" && j.state !== "failed");
+  return (
+    <YStack marginTop={10} gap={5}>
+      <XStack gap={6} alignItems="center">
+        <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color10" flex={1}>THE MESH</Text>
+        <Text fontSize={10} color="$color10">{going.length ? `${going.length} job${going.length > 1 ? "s" : ""} going` : "no jobs going"}</Text>
+      </XStack>
+      {nodes.map((n) => (
+        <YStack key={n.id} gap={2} opacity={n.fresh ? 1 : 0.45} aria-label={`mesh node ${n.name}`}>
+          <XStack gap={6} alignItems="center">
+            <YStack width={8} height={8} borderRadius={4} backgroundColor={n.fresh ? "#7fc77a" : "transparent"} borderWidth={1.5} borderColor={n.fresh ? "#7fc77a" : "#6c7696"} />
+            <Text fontSize={12} color="$color12" flex={1} numberOfLines={1}>{`${n.name}${next?.id === n.id ? "  ← the next job" : ""}`}</Text>
+            <Text fontFamily="$mono" fontSize={10} color="$color10">{n.score.toFixed(n.score < 10 ? 2 : 1)}</Text>
+          </XStack>
+          <YStack height={5} borderRadius={3} backgroundColor="$color4" overflow="hidden">
+            <YStack height={5} width={`${Math.max(2, (n.score / top) * 100)}%`} backgroundColor={next?.id === n.id ? "#d9a74a" : "#8fa3bf"} />
+          </YStack>
+          <Text fontSize={10} color="$color10" numberOfLines={2}>{[
+            `power ${n.power}`, `${n.cores} core${n.cores > 1 ? "s" : ""}`, `${Math.round(Math.min(1, n.load) * 100)}% busy`,
+            n.holds ? `holding ${n.holds}` : "", `${Math.round(n.reliability * 100)}% reliable`,
+            n.caps.map((c) => CAP_SAID[c] ?? c.toUpperCase()).join(" · "), n.fresh ? "" : "not heard from lately",
+          ].filter(Boolean).join(" · ")}</Text>
+        </YStack>
+      ))}
+      <Small color="$color9">Each job goes to the most reliable machine with the most free now; a slow one is started on the next as well, and the first to finish wins.</Small>
+    </YStack>
+  );
+}
 // C-363: what is opened on THE WEB -- the hub, a mind or a device
 type Focus = { type: "hub" | "mind" | "device"; id: string };
 const inFocus = (t: Task, f: Focus | null) => !f || (f.type === "hub" ? !t.mind || t.device === "the hub" : f.type === "mind" ? t.mind === f.id : t.device === f.id);
@@ -259,7 +297,11 @@ export function MindAtWork({ ink }: { ink: string }) {
   const [focus, setFocus] = useState<Focus | null>(null);   // C-363
   const [note, setNote] = useState("");
   const [mine, setMine] = useState(me());
-  const read = () => api<View>("/api/mind/tasks").then(setV).catch((e) => setNote((e as Error).message));
+  const [mesh, setMesh] = useState<MeshView | null>(null);   // C-360: null where the hub has no mesh to show
+  const read = () => {
+    api<View>("/api/mind/tasks").then(setV).catch((e) => setNote((e as Error).message));
+    api<MeshView>("/api/mesh").then((m) => setMesh(m?.nodes?.length ? m : null)).catch(() => setMesh(null));
+  };
   useEffect(() => { whoAmI().then(setMine); read(); }, []);
   const anyLive = !!v?.tasks.some(LIVE);
   useEffect(() => { const id = setInterval(read, anyLive ? 2000 : 5000); return () => clearInterval(id); }, [anyLive]);
@@ -302,6 +344,7 @@ export function MindAtWork({ ink }: { ink: string }) {
         <Web tasks={inWindow} minds={minds} devices={devices} w={w} tick={tick} pick={(t) => setPicked(t.id)} queued={v.load.waiting}
              open={(f) => { setFocus(focus && focus.type === f.type && focus.id === f.id ? null : f); setPicked(null); }} focus={focus} />
       </YStack>
+      {mesh ? <Mesh m={mesh} /> : null}
       {focus ? (
         <YStack marginTop={8} gap={2}>
           <XStack gap={6} alignItems="center">

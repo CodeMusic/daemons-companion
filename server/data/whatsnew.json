@@ -1,9 +1,110 @@
 {
- "latest": 980,
+ "latest": 982,
  "builds": [
   {
+   "build": 982,
+   "commit": "9e0a069",
+   "date": "2026-11-15",
+   "sections": [
+    {
+     "ticket": "C-360",
+     "title": "THE MESH for all work, not only thought: each job to the most reliable node with the most potential free now",
+     "lines": [
+      "Lighter on roverbyteseer — a cover is painted only once its music is made and both music queues are idle (never FLUX beside ACE-Step), and a mesh node rests while its memory is under pressure (under 20% free, or swap over 85%); roverbyteseer had restarted with its swap all but full (2026-11-14)",
+      "A Mac's swap is no measure alone (its file grows to fit and always looks full) — a node rests when under 20% of memory is free, or under 35% with swap nearly out of room",
+      "ComfyUI lets FLUX go once the hub's painting is done (POST /free, when nothing else waits) — it kept ~20 GB beside ACE-Step's 23 GB on roverbyteseer",
+      "THE MIND AT WORK shows THE MESH — each machine with its score now (power x reliability x how free), how busy it is, what it can do, and the one the next job would go to (DRAFT)",
+      "A mesh node's speed measured again every ten minutes while idle, the best of its last six kept — one reading taken while the machine was busy (THE HANDS' Mac: 0.49 where it measures 7.4) had stood for the day and sent it almost no work"
+     ],
+     "setup": {
+      "title": "THE MESH",
+      "where": "SETTINGS › THE MIND › THIS PHONE IN THE MESH; the machines in GET {hub}/api/mesh",
+      "needs": [
+       "the hub",
+       "a Mac on the home network or the tailnet, for a node"
+      ],
+      "steps": [
+       "A Mac joins THE MESH as a node: from a checkout of the companion on it, run hub/mesh.sh install (it pairs with the hub and starts at login). roverbyteseer and THE HANDS' Mac are nodes already.",
+       "On this phone: SETTINGS, THE MIND, THIS PHONE IN THE MESH -- CHARGING AT HOME (the default), WHENEVER OPEN, ONLY ITS OWN WORK or NEVER.",
+       "A phone lends its thinking only where Apple Intelligence runs; the card says whether it is lending now, and why not."
+      ],
+      "wiki": "The-hub-and-its-AI",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-226",
+     "title": "Personal accounts for players",
+     "lines": [
+      "GUARDIAN's SAVE EVERYTHING — the export as a file (the share sheet on the phone, a download on the site)"
+     ]
+    },
+    {
+     "ticket": "C-221",
+     "title": "The link cable through the hub",
+     "lines": [
+      "The link cable's screen as video (DRAFT) — linkhost's /v/N sends only the frames that changed down one held line, the hub pipes it, the page draws as they come and falls back to a frame at a time"
+     ]
+    },
+    {
+     "ticket": "C-373",
+     "title": "Never a silent stand-in",
+     "lines": [
+      "Never a silent stand-in — the hub reads which model answered; a stand-in marks the Tiiny down, by name, until it answers itself"
+     ]
+    },
+    {
+     "ticket": "C-374",
+     "title": "After a restart, the Tiiny's models and seer's Tailscale",
+     "lines": [
+      "The hub says what a restart left behind — the Tiiny's host unreachable, a stand-in, or models not loaded; seer's README for after a restart"
+     ]
+    },
+    {
+     "ticket": "C-369",
+     "title": "The ear hears the lexicon: hotwords",
+     "lines": [
+      "The ear hears the lexicon — what any ear heard is put right against the daemons' and places' names (server/tools/hotwords.py -> data/hotwords.json); 'Damon' and the frightening word become daemon; LiteLLM's tiiny-hear-nano waits on Fun-ASR-Nano being loaded"
+     ]
+    },
+    {
+     "ticket": "C-372",
+     "title": "The covers' prompts enhanced",
+     "lines": [
+      "The covers' prompts enhanced — a painting's scene goes through the Tiiny's Qwen-Image-2.1-PE-T2I before ComfyUI when it is loaded (the old-paper sky and the night the scene asked for); the scene as written otherwise"
+     ]
+    },
+    {
+     "ticket": "C-375",
+     "title": "The hub keeps the Tiiny's models loaded",
+     "lines": [
+      "The hub keeps the Tiiny's models loaded — when a call finds the Tiiny without them (a stand-in, or not loaded), it loads the thinker, the ear and the voice through seer's gate, one at a time, each a task; never on a timer, never unloading",
+      "A bare 500 from the voice counts as maybe not loaded (LiteLLM gives no 'not loaded' for speech) — the hub then looks at the device"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.372.1 (T-568 the new game and the name)",
+      "and 7 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Art: the ROVER line and the MUSAI branch redrawn (DAEMONS T-552, T-553; engine c449f7717)",
+      "LIBRARY shelf: THE SOCIAL, THE COMPANION and THE WATCH covers re-rendered — each now names the release its PDF was printed for",
+      "The hub answers a device's look in a fraction of the time: the daemon's life and feelings kept while the log is unwritten and the minute unturned, the INDEX while the save is the same bytes — and the temporary timings gone",
+      "A device's look costs the hub less again: the CASINO's results kept while the log is unwritten (every poll read every result ever, twice), the bond written only when a look moved it, the day's walk read once, the reels' daemons each scored once"
+     ]
+    }
+   ]
+  },
+  {
    "build": 980,
-   "commit": "5a3b95d",
+   "commit": "c3daadf",
    "date": "2026-11-14",
    "sections": [
     {

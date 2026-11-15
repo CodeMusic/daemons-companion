@@ -4856,7 +4856,7 @@
   "PkmnEnduredHit": "{def} SURVIVED the hit!",
   "PkmnCutHPMaxedAttack": "{atk} cut its own HP and maximized ATTACK!",
   "PkmnStatusNormal": "{atk}'s status returned to normal!",
-  "PkmnHasNoMovesLeft": "{atk} has no moves left!",
+  "PkmnHasNoMovesLeft": "{atk} has no ROUTINES left!",
   "StatSharply": "sharply",
   "StatHarshly": "harshly",
   "StatFell": "fell!",

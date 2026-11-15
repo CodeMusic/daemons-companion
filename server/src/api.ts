@@ -66,7 +66,7 @@ import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
-import { pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
+import { pickQuick, pickThinker, standIn, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
@@ -420,7 +420,7 @@ export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId
 // on a minute's timer by the server (makeServer), never per request; every board's state carries it, so a watch draws
 // its dots without asking. Unset, the module is first once one is known (as talkProvider).
 export type TalkHealth = { n8n: { ok: boolean; at: string } | null; modules: { name: string; ok: boolean; at: string }[];
-                           tiiny?: { ok: boolean; at: string; models: string[] } | null;   // C-249
+                           tiiny?: { ok: boolean; at: string; models: string[]; standIn?: string | null } | null;   // C-249; C-373
                            endpoints?: EndpointHealth[] };                                  // C-280 (1)
 let TALK_HEALTH: TalkHealth = { n8n: null, modules: [] };
 export const talkFirst = (store: Store): "module" | "n8n" => {
@@ -961,8 +961,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     const n8nOk = cfg.talk.url ? { ok: await reachable(cfg.talk.url), at } : null;
     const modules = (await house.view()).map((m) => ({ name: m.name, ok: !m.error && !!m.llm, at }));
     const t = tiinyIn((k) => store.getSetting(k)), held = t ? await tiinyModels(t) : null;   // C-249
+    // C-373: a stand-in seen lately -- ask the thinker once more (five words) to learn whether the Tiiny is back
+    if (t && held && standIn()) await tiinyChat(t, pickThinker(t, held) ?? t.model, "Answer with one word.", [], "OK?", fetch, 60_000, 5).catch(() => {});
+    const sub = t ? standIn() : null;
     const endpoints = await checkEndpoints(endpointsIn((k) => store.getSetting(k)));   // C-280 (1)
-    TALK_HEALTH = { n8n: n8nOk, modules, tiiny: t ? { ok: !!held && !!pickThinker(t, held), at, models: held ?? [] } : null, endpoints };
+    TALK_HEALTH = { n8n: n8nOk, modules, tiiny: t ? { ok: !!held && !!pickThinker(t, held) && !sub, at, models: held ?? [], standIn: sub } : null, endpoints };
   };
   checkTalk().catch(() => {});
   setInterval(() => { checkTalk().catch(() => {}); }, 60_000).unref();
@@ -1821,7 +1824,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const all = tasksView(TASKS.all(), traces((k) => store.getSetting(k)), talkJobs.list(),
                               { since: url.searchParams.get("since") ?? undefined });
         const user = url.searchParams.get("user");
-        const minds = [...(tiinyIn((k) => store.getSetting(k)) ? [{ name: "the Tiiny", ok: !!TALK_HEALTH.tiiny?.ok }] : []),
+        const minds = [...(tiinyIn((k) => store.getSetting(k)) ? [{ name: TALK_HEALTH.tiiny?.standIn ? `the Tiiny (${TALK_HEALTH.tiiny.standIn} standing in)` : "the Tiiny", ok: !!TALK_HEALTH.tiiny?.ok }] : []),
                        ...(TALK_HEALTH.modules ?? []).map((m) => ({ name: m.name, ok: m.ok })),
                        ...(TALK_HEALTH.endpoints ?? []).map((h) => ({ name: endpointsIn((k) => store.getSetting(k)).find((e) => e.id === h.id)?.name ?? h.id, ok: h.ok })),
                        ...(TALK_HEALTH.n8n ? [{ name: "n8n", ok: TALK_HEALTH.n8n.ok }] : [])];

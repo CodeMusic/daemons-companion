@@ -75,6 +75,25 @@ export type Turn = { said: string; answer: string };
 // One answer: the self as the system message, the turns before, then what was said. Throws on any failure, so the
 // caller takes the talk elsewhere (the module, then n8n). think: the background path -- it reasons first, with
 // THINK_BUDGET more tokens and the caller's longer wait; if all of it went on reasoning, it is asked again without.
+// C-373 (2026-11-15): NEVER A SILENT STAND-IN. After a TiinyOS update unloaded everything, LiteLLM answered tiiny-35b from
+// google/gemma-3-4b on roverbyteseer and the hub believed it had the Tiiny. Every answer says which model gave it; the last
+// one is kept, and a stand-in seen in the last quarter hour marks the Tiiny down, by name, until a real answer comes.
+export type Answered = { asked: string; by: string; at: number };
+let LAST_ANSWER: Answered | null = null;
+export const lastAnswer = () => LAST_ANSWER;
+export const noteAnswer = (a: Answered | null) => { LAST_ANSWER = a; };
+// The same model, as LiteLLM echoes its own name and the Tiiny the full one ("Qwen/Qwen3.6-35B-A3B" for "Qwen3.6-35B-A3B")
+export function sameModel(asked: string, by: string): boolean {
+  const a = asked.trim().toLowerCase(), b = by.trim().toLowerCase();
+  if (!a || !b || a === b) return true;
+  const tail = (s: string) => s.slice(s.lastIndexOf("/") + 1);
+  return tail(a) === tail(b);
+}
+export const STAND_IN_MS = 15 * 60_000;
+export function standIn(now = Date.now(), last = LAST_ANSWER): string | null {
+  return last && now - last.at < STAND_IN_MS && !sameModel(last.asked, last.by) ? last.by : null;
+}
+
 export async function tiinyChat(at: TiinyAt, model: string, system: string, history: Turn[], said: string,
                                 f: typeof fetch = fetch, ms = 30_000, maxTokens = 220, think = false, plain = false,
                                 job?: WriteJob): Promise<string> {
@@ -91,6 +110,7 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
                              ...(plain ? {} : { chat_template_kwargs: { enable_thinking: think } }) }) });
     if (!r.ok) throw new Error(`the Tiiny answered ${r.status}`);
     const j = await r.json();
+    if (j?.model) noteAnswer({ asked: model, by: String(j.model), at: Date.now() });   // C-373
     if (j?.usage) job?.spent?.({ in: Number(j.usage.prompt_tokens) || undefined, out: Number(j.usage.completion_tokens) || undefined });
     // a thinking model's reasoning is left out: only what it says
     let text = String(j?.choices?.[0]?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();

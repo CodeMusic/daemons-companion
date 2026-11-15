@@ -1,6 +1,6 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN } from "../src/ai/tiiny.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS } from "../src/ai/tiiny.js";
 import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/ai/voice.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
@@ -90,6 +90,25 @@ describe("talking to it", () => {
     await tiinySpeak(at, "hi", "", f);
     await tiinySpeak(at, "hi", "A small bright voice.", f);
     expect(sent).toEqual([TIINY_VOICE_PLAIN, "A small bright voice."]);
+  });
+});
+
+describe("C-373: never a silent stand-in", () => {
+  it("knows a model by its own name or its full one", () => {
+    expect(sameModel("tiiny-35b", "tiiny-35b")).toBe(true);
+    expect(sameModel("Qwen3.6-35B-A3B", "Qwen/Qwen3.6-35B-A3B")).toBe(true);
+    expect(sameModel("tiiny-35b", "google/gemma-3-4b")).toBe(false);
+  });
+  it("keeps who answered, and names a stand-in for a quarter hour", async () => {
+    const f = (async () => new Response(JSON.stringify({ model: "google/gemma-3-4b", choices: [{ message: { content: "OK" } }] }),
+      { headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    noteAnswer(null);
+    expect(await tiinyChat(at, "tiiny-35b", "s", [], "hi", f)).toBe("OK");
+    expect(lastAnswer()).toMatchObject({ asked: "tiiny-35b", by: "google/gemma-3-4b" });
+    expect(standIn()).toBe("google/gemma-3-4b");
+    expect(standIn(Date.now() + STAND_IN_MS + 1)).toBeNull();
+    noteAnswer({ asked: "tiiny-35b", by: "tiiny-35b", at: Date.now() });
+    expect(standIn()).toBeNull();
   });
 });
 

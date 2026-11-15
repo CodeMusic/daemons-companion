@@ -66,7 +66,7 @@ import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
-import { pickQuick, pickThinker, standIn, tiinyChat, tiinyWhy, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
+import { pickQuick, pickThinker, standIn, tiinyChat, tiinyEnhance, tiinyWhy, TIINY_PROMPT, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
@@ -838,6 +838,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     end: (task, ok, error) => { TASKS.update(task, ok ? { state: "done" } : { state: "failed", error }); },
   }, { speed: process.env.VITEST ? 1 : undefined });
   useMesh((args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o));
+  // C-372: a painting's scene through the Tiiny's prompt enhancer when it has one; as written otherwise
+  const enhanced = async (scene: string) => { const t = tiinyNow(); return t && TALK_HEALTH.tiiny?.models.includes(TIINY_PROMPT) ? tiinyEnhance(t.at, scene) : scene; };
   const writerNow = (): string | null => tiinyNow() ? "the Tiiny" : endpointsNowAll(false)[0]?.e.name || (house.any ? "the house's module" : null);
   // C-319 next: every write-up the hub does is a task -- stoppable for real (its AbortController, held here while it
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
@@ -1108,7 +1110,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const said = await w.write(PAINT_SYSTEM, paintAsk(got.persona.text, request, style), 400);
       const p = readPainting(said, request);
       updatePainting(id, { title: p.title, scene: p.scene, about: p.about });
-      const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style), seed, fetch, w.signal);
+      const scene = await enhanced(p.scene);   // C-372
+      const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(scene, style), seed, fetch, w.signal);
       mkdirSync(PAINTINGS_DIR, { recursive: true });
       writeFileSync(paintingFile(id), png);
       updatePainting(id, { state: "done", ms: Date.now() - now.getTime() });
@@ -1138,7 +1141,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const p = readPainting(said, `${t.nickname || ""} night`.trim());
         sleepTracks().patch(t.id, { title: p.title, about: p.about });
         const seed = randomBytes(4).readUInt32BE(0);
-        const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style), seed, fetch, w.signal);
+        const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(await enhanced(p.scene), style), seed, fetch, w.signal);   // C-372
         sleepTracks().setCover(t.id, png);
         w.end("done");
         const folder = sleepTracks().folder(t.id);

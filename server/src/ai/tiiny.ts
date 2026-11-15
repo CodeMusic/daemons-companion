@@ -140,6 +140,21 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
   }, job?.signal);
 }
 
+// C-372 (2026-11-15): THE COVERS' PROMPTS ENHANCED. The Tiiny's Qwen-Image-2.1-PE-T2I (LiteLLM's tiiny-prompt) turns a
+// painting's short scene into a full description an image model follows -- the same cover, same seed: the old-paper sky
+// and the night the scene asked for, where the plain scene came out a blue day (qa 15Nov2026 C372). It answers JSON
+// {description, tags}; thinking off (on, it spent every token reasoning). The scene as it was when it is not loaded.
+export const TIINY_PROMPT = "tiiny-prompt";
+export const ENHANCED_MOST = 2400;
+export async function tiinyEnhance(at: TiinyAt, scene: string, f: typeof fetch = fetch, ms = 60_000): Promise<string> {
+  try {
+    const said = await tiinyChat(at, TIINY_PROMPT, "", [], scene, f, ms, 700);
+    const m = said.match(/\{[\s\S]*\}/);
+    const d = m ? String(JSON.parse(m[0])?.description ?? "") : said;
+    return d.replace(/\s+/g, " ").trim().slice(0, ENHANCED_MOST) || scene;
+  } catch { return scene; }
+}
+
 // A line in a daemon's voice: the TTS model, its speaker and an instruction (C-251's recipe). null without a TTS model.
 // C-323's longer pieces (2026-11-14): the Tiiny says up to TIINY_SAY_MOST characters in one breath (873 measured whole in
 // 45-66 s, 2026-11-10), so a long piece is one voice, not several that each sound a little different; the time allowed

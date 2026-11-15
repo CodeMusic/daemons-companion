@@ -1,6 +1,6 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS, tiinyHear, tiinyWhy, unloaded } from "../src/ai/tiiny.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS, tiinyHear, tiinyWhy, unloaded, tiinyEnhance } from "../src/ai/tiiny.js";
 import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/ai/voice.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
@@ -124,6 +124,18 @@ describe("C-374: what a restart left behind", () => {
     const heard = (async () => new Response(JSON.stringify({ text: "hello" }), { headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
     await tiinyHear(at, new Uint8Array([1, 2]), heard);
     expect(unloaded()).toEqual([]);
+  });
+});
+
+describe("C-372: the covers' prompts enhanced", () => {
+  const answer = (content: string, status = 200) => (async () => new Response(
+    JSON.stringify({ model: "tiiny-prompt", choices: [{ message: { content } }] }), { status, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+  it("takes the description from the enhancer's JSON", async () => {
+    const said = 'Here it is.\n```json\n{"description": "A dark room, a parchment sky, a small watcher.", "tags": ["a"]}\n```';
+    expect(await tiinyEnhance(at, "rain upward", answer(said))).toBe("A dark room, a parchment sky, a small watcher.");
+  });
+  it("keeps the scene when the enhancer is not loaded", async () => {
+    expect(await tiinyEnhance(at, "rain upward", answer("", 404))).toBe("rain upward");
   });
 });
 

@@ -36,8 +36,9 @@ strike it here.
    came; on the journal's page in the app and the site. Words DRAFT. ***Done*** *(95c1f2a: two sightings that share no
    entry are enough -- a sign in two dreams is already a pattern; seen on a scratch site).*
 4. ~~**C-323's longer pieces**~~ -- the Tiiny reads 873 characters whole (45-66 s): lift tiiny.ts's 600 cap so a voice is read
-   in fewer, longer parts, measured on the hub. ***Built*** *(006acb5, 0798d0c), **not measured**: the Tiiny's voice answers
-   500 through LiteLLM today while its chat answers -- waits on the user (is the voice model loaded on the Tiiny?).*
+   in fewer, longer parts, measured on the hub. ***Built*** *(006acb5, 0798d0c)* ***and measured*** *(2026-11-14: 1019
+   characters whole in 61.6 s, C-323's row; again 2026-11-15 through the hub's /api/device/speak: 827 characters, one
+   piece, 81 s of speech in 51 s, twice, after roverbyteseer came back from an hour offline).*
 5. ~~**Rows brought up to date**~~ -- C-319 (STOP reaches the Tiiny), C-329 (heard from the real Tiiny), C-254, C-283.
    ***Done*** *(C-253, C-283, C-319, C-323, C-329, C-356).*
 

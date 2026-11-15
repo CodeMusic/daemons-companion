@@ -91,7 +91,9 @@ export function reelSpecies(seen: number[], carried: number | null, party: numbe
     if (party.includes(sp)) s += 2;
     return s + (((sp * 2654435761 + hour * 40503) >>> 0) % 1000) / 1000;   // the hour's turn among equals
   };
-  return seen.filter((sp) => sp !== carried && SPECIES[String(sp)]).sort((a, b) => score(b) - score(a)).slice(0, n);
+  // each scored once, not again at every comparison of the sort
+  return seen.filter((sp) => sp !== carried && SPECIES[String(sp)]).map((sp) => [sp, score(sp)] as const)
+    .sort((a, b) => b[1] - a[1]).slice(0, n).map(([sp]) => sp);
 }
 
 // What THE CASINO is dressed for, decided once for every screen (the phone session, 2026-10-18: the boards' casino.cpp

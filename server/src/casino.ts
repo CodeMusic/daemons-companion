@@ -28,8 +28,13 @@ export function parseResult(id: number, detail: string | null): CasinoResult | n
   return { id, delta, boot: m[2], seq: Number(m[3]), device: m[4], spins };
 }
 
+// read once while the log is unwritten (store.interactionsRev): every poll of every board asks for them, twice, and
+// they are every result ever kept -- on the hub's one slow core that grew to a real share of a poll's time
+const RESULTS = new WeakMap<Store, { rev: number; rows: readonly CasinoResult[] }>();
 // Every result once, oldest first -- a second copy of a report (the same device, boot and seq) left out
-export function casinoResults(store: Store): CasinoResult[] {
+export function casinoResults(store: Store): readonly CasinoResult[] {
+  const kept = RESULTS.get(store);
+  if (kept && kept.rev === store.interactionsRev) return kept.rows;
   const once = new Set<string>(), out: CasinoResult[] = [];
   for (const r of store.kindAll("casino")) {
     const c = parseResult(r.id, r.detail);
@@ -39,6 +44,7 @@ export function casinoResults(store: Store): CasinoResult[] {
     once.add(key);
     out.push(c);
   }
+  RESULTS.set(store, { rev: store.interactionsRev, rows: out });
   return out;
 }
 

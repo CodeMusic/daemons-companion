@@ -481,7 +481,8 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
     // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
     const g = d ? grown(d, store) : null;
-    const bond = d ? bondScore(bondSeen(store, d.personality, walk(h, store, now).date, walk(h, store, now).steps)) : 0;   // C-185
+    const w = d ? walk(h, store, now) : null;
+    const bond = d && w ? bondScore(bondSeen(store, d.personality, w.date, w.steps)) : 0;   // C-185
     const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality, bond }, now) : null;
     const was = d && ev ? SPECIES[String(ev.from)]?.name ?? d.name : "";
     const now_ = d && ev ? { species: ev.to, name: SPECIES[String(ev.to)]?.name ?? d.name,
@@ -501,8 +502,11 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
     if (d && readSubtle(bytes).held) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now, virtueHeldToday(profile.wisdom, now));   // T-510
-    if (d) { const msg = firstSight(store, bytes, now); hermetic = { held: readHermetic(bytes, store).held ? 1 : 0, first: msg ? 1 : 0 }; }   // C-238
-    if (d) halloween = halloweenView(store, d.species, readHermetic(bytes, store).held, now);   // C-240
+    if (d) {
+      const msg = firstSight(store, bytes, now), held = readHermetic(bytes, store).held;
+      hermetic = { held: held ? 1 : 0, first: msg ? 1 : 0 };   // C-238
+      halloween = halloweenView(store, d.species, held, now);   // C-240
+    }
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all

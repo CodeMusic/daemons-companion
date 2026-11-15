@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { daemonFeelings, daemonLife, indexOf } from "../src/core.js";
 import { readIndex } from "../src/save/index.js";
+import { casinoPending, casinoResults } from "../src/casino.js";
+import { bondOf, bondSeen } from "../src/evolve.js";
 import { buildSave } from "./build_save.js";
 
 describe("kept readings", () => {
@@ -31,5 +33,26 @@ describe("kept readings", () => {
     const b = indexOf(two, "CONTENT", now);
     expect(b).toEqual(readIndex(two, "CONTENT", undefined, now));
     expect(indexOf(one, "CONTEXT", now)).toEqual(readIndex(one, "CONTEXT", undefined, now));
+  });
+  it("keeps the CASINO's results until the log is written", () => {
+    const store = new Store(":memory:");
+    store.logInteraction("casino", "-20 1a.1 board-1 2");
+    const a = casinoResults(store);
+    expect(casinoResults(store)).toBe(a);
+    store.logInteraction("casino", "10 1a.2 board-1 1");
+    expect(casinoResults(store)).not.toBe(a);
+    expect(casinoPending(store).delta).toBe(-10);
+  });
+  it("writes the bond only when a look has moved it", () => {
+    const store = new Store(":memory:");
+    let writes = 0;
+    const set = store.setSetting.bind(store);
+    store.setSetting = (k: string, v: string) => { writes++; return set(k, v); };
+    bondSeen(store, 9, "2026-11-14", 100);
+    bondSeen(store, 9, "2026-11-14", 100);
+    expect(writes).toBe(1);
+    bondSeen(store, 9, "2026-11-14", 300);
+    expect(writes).toBe(2);
+    expect(bondOf(store, 9)).toMatchObject({ days: 1, stepsToday: 300 });
   });
 });

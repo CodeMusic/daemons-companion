@@ -67,10 +67,11 @@ export function bondScore(b: Bond) {
 // seen carried today, with the day's steps so far: a new day counts once, and its steps (capped) replace the day's
 // before -- the walking count only ever rises through a day
 export function bondSeen(store: Store, personality: number, date: string, steps: number): Bond {
-  const b = bondOf(store, personality);
+  const b = bondOf(store, personality), was = JSON.stringify(b);
   if (b.lastDay !== date) { b.stepsBanked += b.stepsToday; b.stepsToday = 0; b.days += 1; b.lastDay = date; }
   b.stepsToday = Math.max(b.stepsToday, Math.min(Math.max(0, steps), BOND.dayStepsCap));
-  store.setSetting(bondKey(personality), JSON.stringify(b));
+  const now = JSON.stringify(b);
+  if (now !== was) store.setSetting(bondKey(personality), now);   // every poll sees it; a write only when it moved
   return b;
 }
 export function bondAdd(store: Store, personality: number, what: "cares" | "goals" | "nights") {

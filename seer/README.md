@@ -34,6 +34,15 @@ second copy.
 | `seer/bindSeer.sh --yes` | asks no questions and uses `seer/.seer` as it is (edit it, then run this) |
 | `seer/bindSeer.sh n8n` | (re)installs one part: `litellm`, `tiiny-voice`, `local`, `acestep`, `sleep-sounds`, `comfyui`, `commons` or `n8n` |
 
+## After a restart or a TiinyOS update (C-374)
+
+- **Tailscale must come back by itself.** In Tailscale's settings on this Mac, turn on **Launch at login** (and
+  **Connect on launch** if offered). Twice on 2026-11-15 it came back stopped, and the hub lost the Tiiny.
+- **The Tiiny's models come back unloaded.** In TiinyOS's Model Management, tick the 35B (the thinker), Qwen3-ASR (the
+  ear), VoiceDesign (the voice) and the 9B (the quick thinker). An update may also remove a model: download it again.
+- **The hub says which.** Its minds list (MIND AT WORK) names the Tiiny as `roverbyteseer can't be reached`,
+  `<model> standing in` (LiteLLM's fallback answering under the Tiiny's name, C-373) or `not loaded: <models>`.
+
 ## How the parts stay in step
 
 Everything is written from **one file**, `seer/.seer`: your answers and keys, mode 600, never committed.

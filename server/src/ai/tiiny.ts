@@ -90,6 +90,22 @@ export function sameModel(asked: string, by: string): boolean {
   return tail(a) === tail(b);
 }
 export const STAND_IN_MS = 15 * 60_000;
+// C-374 (2026-11-15): after a TiinyOS update or restart every model is unloaded; LiteLLM then answers the ear and the voice
+// with "... is not loaded". Each such model is noted, and cleared when it answers again
+const UNLOADED = new Map<string, number>();
+export async function noteRefusal(model: string, r: Response): Promise<void> {
+  try { if (/not loaded/i.test(await r.text())) UNLOADED.set(model, Date.now()); } catch {}
+}
+export const noteHeld = (model: string) => { UNLOADED.delete(model); };
+export const unloaded = (now = Date.now()) => [...UNLOADED].filter(([, at]) => now - at < STAND_IN_MS).map(([m]) => m);
+// Why the Tiiny is not all there, in a few words (DRAFT): unreachable, a stand-in, models not loaded; null when it is
+export function tiinyWhy(url: string, held: string[] | null, now = Date.now()): string | null {
+  if (!held) { let host = url; try { host = new URL(url).hostname; } catch {} return `${host} can't be reached`; }
+  const s = standIn(now);
+  if (s) return `${s} standing in`;
+  const u = unloaded(now);
+  return u.length ? `not loaded: ${u.join(", ")}` : null;
+}
 export function standIn(now = Date.now(), last = LAST_ANSWER): string | null {
   return last && now - last.at < STAND_IN_MS && !sameModel(last.asked, last.by) ? last.by : null;
 }
@@ -139,7 +155,8 @@ export async function tiinySpeak(at: TiinyAt, text: string, instructions = "", f
       const r = await f(`${at.url}/audio/speech`, { method: "POST", headers: headers(at), signal,
         body: JSON.stringify({ model: at.tts, input, voice: at.voice || "default", response_format: "wav",
                                instructions: instructions.trim() || TIINY_VOICE_PLAIN }) });
-      if (!r.ok) return null;
+      if (!r.ok) { await noteRefusal(at.tts, r); return null; }
+      noteHeld(at.tts);
       const audio = new Uint8Array(await r.arrayBuffer());
       // the bytes say what it is: the Tiiny sends a WAV labelled audio/mpeg (seen 2026-11-03, through LiteLLM)
       const riff = audio.length > 12 && String.fromCharCode(...audio.subarray(0, 4)) === "RIFF";
@@ -205,7 +222,8 @@ export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = 
       form.append("response_format", "json");      // the Tiiny takes json or text only (2026-11-05)
       form.append("file", new Blob([new Uint8Array(wav)], { type: "audio/wav" }), "said.wav");
       const r = await f(`${at.url}/audio/transcriptions`, { method: "POST", headers: headers(at, false), body: form, signal });
-      if (!r.ok) return null;
+      if (!r.ok) { await noteRefusal(at.asr, r); return null; }
+      noteHeld(at.asr);
       const text = lastHearing(String((await r.json())?.text ?? ""));
       return text || null;
     });

@@ -1,6 +1,6 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS } from "../src/ai/tiiny.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS, tiinyHear, tiinyWhy, unloaded } from "../src/ai/tiiny.js";
 import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/ai/voice.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
@@ -109,6 +109,21 @@ describe("C-373: never a silent stand-in", () => {
     expect(standIn(Date.now() + STAND_IN_MS + 1)).toBeNull();
     noteAnswer({ asked: "tiiny-35b", by: "tiiny-35b", at: Date.now() });
     expect(standIn()).toBeNull();
+  });
+});
+
+describe("C-374: what a restart left behind", () => {
+  it("says the Tiiny's host can't be reached, or which models are not loaded", async () => {
+    noteAnswer(null);
+    expect(tiinyWhy("http://roverbyteseer:4000/v1", null)).toBe("roverbyteseer can't be reached");
+    expect(tiinyWhy("http://roverbyteseer:4000/v1", ["tiiny-35b"])).toBeNull();
+    const refused = (async () => new Response('{"error":{"message":"\\"Qwen/Qwen3-ASR-1.7B\\" is not loaded."}}', { status: 404 })) as unknown as typeof fetch;
+    expect(await tiinyHear(at, new Uint8Array([1, 2]), refused)).toBeNull();
+    expect(unloaded()).toEqual(["qwen3-asr"]);
+    expect(tiinyWhy("http://roverbyteseer:4000/v1", ["tiiny-35b"])).toBe("not loaded: qwen3-asr");
+    const heard = (async () => new Response(JSON.stringify({ text: "hello" }), { headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    await tiinyHear(at, new Uint8Array([1, 2]), heard);
+    expect(unloaded()).toEqual([]);
   });
 });
 

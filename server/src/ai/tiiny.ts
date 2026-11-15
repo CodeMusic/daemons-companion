@@ -6,6 +6,7 @@
 //
 // Its window is large, so unlike the module (house.ts) the daemon's whole self rides as the system message (self.ts).
 // No node: imports -- this runs on the phone too.
+import { hearAs } from "./hotwords.js";
 import { sayable } from "./say.js";   // C-270
 
 // Two thinkers (the user, 2026-11-05: "the larger one for async tasks but if we have a user talking to a daemon it needs to
@@ -224,7 +225,7 @@ export async function tiinyHear(at: TiinyAt, wav: Uint8Array, f: typeof fetch = 
       const r = await f(`${at.url}/audio/transcriptions`, { method: "POST", headers: headers(at, false), body: form, signal });
       if (!r.ok) { await noteRefusal(at.asr, r); return null; }
       noteHeld(at.asr);
-      const text = lastHearing(String((await r.json())?.text ?? ""));
+      const text = hearAs(lastHearing(String((await r.json())?.text ?? "")));   // C-369: the game's words put right
       return text || null;
     });
   } catch { return null; }

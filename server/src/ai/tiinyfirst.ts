@@ -4,6 +4,7 @@
 // -- and to the house's own boards, as before, when it is away, silent or fails. One place, so no caller is missed.
 //
 // The House is wrapped, not rewritten: its methods are kept and called on any failure. No node: imports.
+import { hearAs } from "./hotwords.js";
 import { GUIDE_SETUP, guideQuestion } from "../guideask.js";
 import type { House, TalkAnswer, TalkAsk } from "./house.js";
 import { persona } from "./house.js";
@@ -41,7 +42,7 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
   house.talk = async (a: TalkAsk, deadlineMs?: number | null): Promise<TalkAnswer> => {
     const t = now(), eps = others(!!a.home);
     if (t || eps.length) try {
-      const heard = !a.text?.trim() && a.wav ? (t?.at.asr ? await tiinyHear(t.at, a.wav) : null) ?? await was.transcribe(a.wav) : null;
+      const heard = !a.text?.trim() && a.wav ? (t?.at.asr ? await tiinyHear(t.at, a.wav) : null) ?? hearAs(await was.transcribe(a.wav)) : null;   // C-369
       const text = (a.text?.trim() || heard || "").trim();
       if (text) {
         const system = a.fixed ? a.fixed.setup : a.guide ? GUIDE_SETUP : persona(a, text, true);   // C-303: the record and its own telling, both
@@ -75,7 +76,8 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
   house.transcribe = async (wav: Uint8Array) => {
     const t = now();
     if (t?.at.asr) { const heard = await tiinyHear(t.at, wav, fetch, 120_000); if (heard) return heard; }
-    return was.transcribe(wav);
+    const heard = await was.transcribe(wav);
+    return heard ? hearAs(heard) : heard;   // C-369: whichever ear heard it
   };
   const MODULE_WRITE_MOST = 1800, PHONE_WRITE_MOST = 9000;   // characters, system and user together
   // C-360: every mind that can write it, in order of its score now (ai/thoughtroute.ts) -- the Tiiny, the player's

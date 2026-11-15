@@ -66,7 +66,8 @@ import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
-import { pickQuick, pickThinker, standIn, tiinyChat, tiinyEnhance, tiinyWhy, TIINY_PROMPT, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
+import { keepLoaded, keepOf } from "./ai/tiinykeep.js";   // C-375
+import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, TIINY_PROMPT, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
@@ -966,6 +967,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     // C-373: a stand-in seen lately -- ask the thinker once more (five words) to learn whether the Tiiny is back
     if (t && held && standIn()) await tiinyChat(t, pickThinker(t, held) ?? t.model, "Answer with one word.", [], "OK?", fetch, 60_000, 5).catch(() => {});
     const sub = t ? standIn() : null;
+    // C-375: a real call just found the Tiiny without its models -- load the ones the hub lives on, through seer's gate
+    if (t && held && (sub || unloaded().length))
+      keepLoaded(t, keepOf(store.getSetting("tiiny.keep")), {
+        start: (id) => TASKS.open({ kind: "processing", title: `the Tiiny loads ${id.split("/").pop()}`, state: "thinking", mind: "the Tiiny" }).id,   // DRAFT
+        end: (task, ok) => { TASKS.update(task, ok ? { state: "done" } : { state: "failed", error: "it would not load" }); },   // DRAFT
+      }).catch(() => {});
     const endpoints = await checkEndpoints(endpointsIn((k) => store.getSetting(k)));   // C-280 (1)
     TALK_HEALTH = { n8n: n8nOk, modules, tiiny: t ? { ok: !!held && !!pickThinker(t, held) && !sub, at, models: held ?? [], standIn: sub, why: tiinyWhy(t.url, held) } : null, endpoints };
   };

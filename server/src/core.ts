@@ -415,51 +415,72 @@ export function skyOf(h: Host): { edition: string; mended: boolean; both: boolea
 }
 
 export function deviceState(h: Host, store: Store, now = new Date(), deviceId = "", server: string | null = null, as: string | null = null) {
+  const T0 = performance.now(), LAPS: string[] = []; let TL = T0; const lap = (n: string) => { const t = performance.now(); LAPS.push(`${n}=${(t - TL).toFixed(0)}`); TL = t; };   // TEMPORARY
   const t = today(h, store, now);
+  ; lap("L1");
   let daemon = null, party: unknown[] = [], casino: any = null;
+  ; lap("L2");
   // T-426: what the save holds of the instrument -- which, unlocked or not, the songs learned and heard (the songs
   // themselves are built into the boards, firmware/common/play.h)
   let play: { i: string; u: boolean; l: string[]; h: string[] } | null = null;
+  ; lap("L5");
   let subtle: Sense | null = null;                         // C-203: only once the save holds the book, and a daemon is carried
   let hermetic: { held: number; first: number } | undefined;   // C-238
   let halloween: ReturnType<typeof halloweenView> = null;   // C-240
   // C-158: the world the devices live in -- the real one: the hour (the game's watches), the weather of the city set
   // on the site -- and the CASINO's luck in it, with its reasons
   const weather = weatherNow(store, now), today_ = holiday(t.edition, now);
+  ; lap("L11");
   const context = casinoContext(t.edition, now, t.season, today_, weather);
+  ; lap("L12");
   const bytes = h.save.read();
+  ; lap("L13");
   if (bytes) {
     const save = readSave(bytes);
+  ; lap("L15");
     const d = carriedFor(store, readAway(bytes), deviceId);   // C-80: this device's own; C-103: a box's too
     const profile = readProfile(bytes);
+  ; lap("L17");
     try {
       const p = readPlay(bytes, t.edition);
       play = { i: p.instrument, u: p.unlocked, l: p.songs.filter((s) => s.learned).map((s) => s.id), h: p.songs.filter((s) => s.heard).map((s) => s.id) };
+  ; lap("L20");
     } catch { play = null; }
     // C-149: the CASINO's coins -- the save's money and what waits for SYNC -- and the party's other daemons, its reels
     casino = coinsFor(store, profile.money, deviceId, save.party.filter((p) => p.personality !== d?.personality).map((p) => p.slot),
                       tableFor(store, deviceId, readAway(bytes), now));   // C-151: our other boards at the reels
     // C-158: the reels' other daemons -- seen in the game, at home in this season or hour first -- and the day's luck
     const seen = readIndex(bytes, h.edition).entries.map((e) => e.species);
+  ; lap("L26");
     casino.reel = reelSpecies(seen, d?.species ?? null, save.party.map((p) => p.species), t.season, context.watch, now)
       .map((sp) => ({ species: sp, name: SPECIES[String(sp)]?.name ?? "" }));
+  ; lap("L28");
     casino.context = { luck: context.luck, rtp: context.rtp, reasons: context.reasons };
+  ; lap("L29");
     casino.dress = casinoDress(t.season, today_, weather, context.watch);   // C-158: one rule, read by every screen
     // C-149: OPUS's margin beside its INDEX entry, where the save holds OPUS and the margin has something to say
     const margin = profile.opus && d ? readIndex(bytes, h.edition).entries.find((e) => e.species === d.species)?.margin?.text ?? "" : "";
+  ; lap("L32");
     // C-68: the party and their routines, for GAME ROUTINES
     party = save.party.map((p) => ({ name: p.nickname || p.name, level: p.level, types: SPECIES[String(p.species)]?.types ?? [],
                                      slot: p.slot, artKey: artKeyOf(p),   // a device fetches their pictures ahead
                                      routines: gameRoutines(SPECIES[String(p.species)]?.bodyType ?? null, p.moves) }));
+  ; lap("L36");
     // C-184: judged as it is looked at -- a rule met here, it has evolved: shown as what it became until SYNC writes it
     const g = d ? grown(d, store) : null;
+  ; lap("L38");
     const bond = d ? bondScore(bondSeen(store, d.personality, walk(h, store, now).date, walk(h, store, now).steps)) : 0;   // C-185
     const ev = d && g ? judgeEvolution(store, { species: d.species, level: g.level, friendship: d.friendship, personality: d.personality, bond }, now) : null;
+  ; lap("L40");
     const was = d && ev ? SPECIES[String(ev.from)]?.name ?? d.name : "";
+  ; lap("L41");
     const now_ = d && ev ? { species: ev.to, name: SPECIES[String(ev.to)]?.name ?? d.name,
                              nickname: d.nickname === d.name ? SPECIES[String(ev.to)]?.name ?? d.nickname : d.nickname } : null;
+  ; lap("L43");
     if (d && now_) Object.assign(d, now_);
+  ; lap("L44");
     const row = d && SPECIES[String(d.species)];
+  ; lap("L45");
     // C-36: its INDEX entry in the save's edition's voice, and `artKey`, which changes when its art would (another
     // daemon, or new routines painting its streaks), so a device fetches GET /api/device/art only then.
     if (d) daemon = { slot: d.slot, species: d.species, name: d.name, nickname: d.nickname, level: d.level, friendship: d.friendship,
@@ -478,7 +499,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
   }
   const dd = deviceDay(t.day.day, deviceSettings(store).palette);   // C-90: the palette the user chose
   // C-33: where a device on the Wi-Fi finds this server -- only when it listens on the network at all
-  return { date: t.date, edition: t.edition, season: t.season, server, sky: skyOf(h),   // C-312: the aurora's, for every screen
+  const RET = { date: t.date, edition: t.edition, season: t.season, server, sky: skyOf(h),   // C-312: the aurora's, for every screen
            companion: companionId(store), cardNote: noteFor(store),   // C-124: whose cards are ours; a note to write
            // C-71: the time, for a device with a clock to set (the watch): seconds since 1970, and the local offset in minutes
            clock: { epoch: Math.floor(now.getTime() / 1000), offset: -now.getTimezoneOffset() },
@@ -501,6 +522,8 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            day: { name: t.day.day, colour: t.day.colour, note: t.day.note, virtue: t.day.cue, chakra: t.day.chakra,
                   theme: t.day.theme, menu: dd.menu, led: dd.led },
            step: t.next ? { id: t.next.step.id, text: t.next.step.text, goal: t.next.goal, milestone: t.next.milestone } : null, daemon, party };
+  lap("ret"); if (performance.now() - T0 > 100) console.log("TEMPORARY deviceState", (performance.now() - T0).toFixed(0), LAPS.join(" "));
+  return RET;
 }
 
 

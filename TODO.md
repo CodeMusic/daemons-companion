@@ -4,6 +4,19 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-15, the Tiiny's update
+
+*The user, 2026-11-15: "yes please, goal loop the set".* The Tiiny's update of 2026-11-11 (C-369..C-374): after it every
+model was unloaded, the 35B and the ear were gone (downloaded again), and the hub took a small stand-in for the Tiiny
+without knowing. Worked top down: build, test, deploy the hub, commit by path, push, strike it here.
+
+1. **C-373 no silent stand-in** -- the hub reads which model answered; a stand-in marks the mind down and is named.
+2. **C-374 after a restart** -- the hub's health says the Tiiny has nothing loaded, or roverbyteseer is off the tailnet.
+3. **C-369 hotwords** -- the ear hears daymon and the names; Fun-ASR-Nano against Qwen3-ASR-1.7B on the same recordings.
+4. **C-370 speakers apart** -- a meeting's transcript says who said what (MOSS-Transcribe-Diarize).
+5. **C-372 the covers' prompts** -- a cover's prompt through Qwen-Image-2.1-PE-T2I before ComfyUI, compared.
+6. **C-371 SongGeneration** -- the same pieces on SongGeneration-v2 and ACE-Step, for the user to hear.
+
 ## Today's goals -- 2026-11-14, the mind and the Tiiny, again
 
 *The user, 2026-11-14: "keep working on your goal loop pls".* The 2026-11-12 mind loop's seventh goal is done by others'

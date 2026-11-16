@@ -227,6 +227,40 @@
    ],
    "wiki": "Away-from-home",
    "draft": true
+  },
+  "C-364": {
+   "title": "ONE SAVE, AND ITS TRAIL",
+   "where": "THE ENGINE ROOM › SAVES, on the hub at /admin/",
+   "needs": [
+    "the hub, paired (SETTINGS)",
+    "THE ENGINE ROOM, paired once (its own SET UP)"
+   ],
+   "steps": [
+    "Nothing to do to play: with a hub paired, the game's save is one save wherever it is played, and the hub keeps a copy each time it moves.",
+    "To see the trail, open {hub}/admin/ and choose SAVES: every save that moved, newest first, with where it came from.",
+    "WHEN BOTH MOVED chooses whose save goes on when a device and the hub both saved since they last agreed: THE COMPANION'S (the default) or THE DEVICE'S. The other is set aside in the trail, never lost.",
+    "GO BACK TO THIS is rarely wanted: it undoes the game since, and is for two saves made at once. The device takes it the next time its game opens."
+   ],
+   "wiki": "The-hub-and-its-AI",
+   "book": "companion",
+   "draft": true
+  },
+  "C-384": {
+   "title": "ONE SAVE, AND ITS TRAIL",
+   "where": "THE ENGINE ROOM › SAVES, on the hub at /admin/",
+   "needs": [
+    "the hub, paired (SETTINGS)",
+    "THE ENGINE ROOM, paired once (its own SET UP)"
+   ],
+   "steps": [
+    "Nothing to do to play: with a hub paired, the game's save is one save wherever it is played, and the hub keeps a copy each time it moves.",
+    "To see the trail, open {hub}/admin/ and choose SAVES: every save that moved, newest first, with where it came from.",
+    "WHEN BOTH MOVED chooses whose save goes on when a device and the hub both saved since they last agreed: THE COMPANION'S (the default) or THE DEVICE'S. The other is set aside in the trail, never lost.",
+    "GO BACK TO THIS is rarely wanted: it undoes the game since, and is for two saves made at once. The device takes it the next time its game opens."
+   ],
+   "wiki": "The-hub-and-its-AI",
+   "book": "companion",
+   "draft": true
   }
  }
 }

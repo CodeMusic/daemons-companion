@@ -69,7 +69,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `tab5/` | the M5Stack Tab5's own firmware |
 | `box3/` | the ESP32-S3-BOX-3, through ESPHome and Home Assistant |
 | `common/` | headers both firmwares share, each written by the `.py` beside it |
-| `pizero/` | the Pi Zero, planned |
+| `pizero/` | the Linux boards: the **Cardputer Zero** (a Raspberry Pi CM0; C-377) first, then the Pi Zero 2 W (C-08) -- one C++ program, an SDL window on a computer and `/dev/fb0` and evdev on the device, the game on mGBA's core (its `README.md`; docs/CARDPUTERZERO.md) |
 
 ## The rest
 
@@ -78,5 +78,5 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `seer/` | the local cloud: the always-on machine beside the hub (LiteLLM, n8n and its workflows, the Tiiny's voice, sleep sounds, ACE-Step, local models, ComfyUI, the link cable's two games in `seer/linkhost/`, C-221), set up by `seer/bindSeer.sh` from one settings file (`seer/README.md`); a folder for each part |
 | `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), its name (`rename.sh`), THE COMMONS (`commons.sh`), THE HANDS on the computer (`hands.sh`, C-342), a node of THE MESH on a Mac (`mesh.sh`, C-360), backups |
 | `n8n/` | the n8n relay workflow (C-56) a phone away from home reaches the companion through |
-| `docs/` | the design: `PLAN.md`, `vision.md`, one file per subject (devices, hardware, the hub, trading, ...) |
+| `docs/` | the design: `PLAN.md`, `vision.md`, one file per subject (devices, hardware, the hub, trading, the Cardputer Zero, ...) |
 | `wiki/` | the public wiki, published by `wiki/publish.sh` |

@@ -1,0 +1,9 @@
+# C-377: what a build makes, and anything of Nintendo's or the player's -- never in this repository
+build/
+build-*/
+*.gba
+*.bps
+*.sav
+*.deb
+shots/
+patches.json

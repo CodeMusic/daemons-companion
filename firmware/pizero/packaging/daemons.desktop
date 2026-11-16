@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=DAEMONS
+Exec=/usr/share/APPLaunch/bin/daemons-zero
+Icon=share/images/daemons_100.png
+Terminal=false
+Type=Application

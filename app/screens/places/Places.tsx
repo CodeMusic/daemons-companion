@@ -207,6 +207,33 @@ function Trail({ fixes, ink }: { fixes: Fix[]; ink: string }) {
     </YStack>
   );
 }
+// C-335 (the T-Watch Ultra lane, 2026-11-16): the watch updated from its card -- what firmware the hub holds for it, and
+// UPDATE, behind a second tap, sending the watch the command to install the build its card holds and restart. The watch
+// copies a newer build onto its card on its own (on the charger, or awake above 40%, never in the night). Every word DRAFT.
+type HeldImage = { board: string; build: string; size: number; sha256: string; at: string };
+function UpdateRow({ id, firmware, ink }: { id: string; firmware: string | null; ink: string }) {
+  const [held, setHeld] = useState<HeldImage | null | undefined>(undefined);
+  const [sure, setSure] = useState(false), [sent, setSent] = useState(false);
+  useEffect(() => { api<HeldImage>("/api/firmware?board=t-watch-ultra").then(setHeld).catch(() => setHeld(null)); }, [id]);
+  const same = !!held && !!firmware && firmware.includes(held.build);
+  return (
+    <YStack gap={4} paddingVertical={6}>
+      <Text fontFamily="$mono" fontSize={12} letterSpacing={2} color="$color11">FIRMWARE</Text>
+      {held ? <Small>{`The hub holds build ${held.build} (${new Date(held.at).toLocaleDateString()}, ${Math.round(held.size / 1024)} KB).` +
+                      (same ? " The watch already runs it." : " The watch copies it onto its card by itself, on the charger or awake.")}</Small>
+        : held === null ? <Small color="$color10">{"The hub holds no firmware for the watch yet."}</Small> : null}
+      {sent ? <Small color="$color10">{"Sent: the watch installs what its card holds when it next checks in, then restarts."}</Small>
+        : held && !same ? (
+        <XStack gap={8}>
+          <Action label={sure ? "YES, UPDATE NOW" : "UPDATE"} ink={ink}
+                  onPress={async () => { if (!sure) { setSure(true); return; } await api("/api/device/update", { device: id }); setSent(true); }} />
+          {sure ? <Action label="NOT NOW" ink={ink} onPress={() => setSure(false)} /> : null}
+        </XStack>
+      ) : null}
+      <Small color="$color9">DRAFT</Small>
+    </YStack>
+  );
+}
 function WhereRow({ id, ink }: { id: string; ink: string }) {
   const [where, setWhere] = useState<{ fixes: Fix[]; walked: number | null; last?: Fix } | null | undefined>(undefined);
   const [asked, setAsked] = useState(false);
@@ -237,7 +264,7 @@ function WhereRow({ id, ink }: { id: string; ink: string }) {
     </YStack>
   );
 }
-function OwnSettingsCard({ id, ink, daemon }: { id: string; ink: string; daemon?: Carried | null }) {
+function OwnSettingsCard({ id, ink, daemon, firmware = null }: { id: string; ink: string; daemon?: Carried | null; firmware?: string | null }) {
   const [s, setS] = useState<OwnSettings | null>(null);
   const [said, setSaid] = useState("");
   const path = `/api/devices/${encodeURIComponent(id)}/settings`;
@@ -307,6 +334,7 @@ function OwnSettingsCard({ id, ink, daemon }: { id: string; ink: string; daemon?
       {/* C-211: on the watch's own settings too */}
       {/^t-watch-/.test(id) && !ALONE ? <TalkFirstRow ink={ink} /> : null}
       {GNSS.test(id) ? <WhereRow id={id} ink={ink} /> : null}
+      {GNSS.test(id) && !ALONE ? <UpdateRow id={id} firmware={firmware} ink={ink} /> : null}   {/* C-335 */}
       {/* the user, 2026-10-28: "a debug preview mode should be in settings to switch instruments for testing" */}
       {PLAYS.test(id) && s.keys?.includes("instrument") ? (
         <OwnRow own={s.own} set={set} k="instrument" label="INSTRUMENT (TESTING)">
@@ -482,7 +510,7 @@ export function DeviceScreen({ ink }: { ink: string }) {
                     redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
-              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} /> : null}
+              {mine === d.id ? <OwnSettingsCard id={d.id} ink={ink} daemon={d.daemon} firmware={d.firmware} /> : null}
             </YStack>
             </XStack>
           ))}

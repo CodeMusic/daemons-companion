@@ -12,7 +12,7 @@ bool indexArtFor(int species); void indexArtDraw(int x, int y, int sc);   // ind
 struct Arc { String roman, side, keyword, phrase, name, at; int n = 0, species = 0; bool shiny = false; };
 static Arc arcs[3];
 static int arcN = 0, arcAt = 0;
-static bool arcSpell = false;                             // C-239: THE HERMETIC LAYER's deck
+static bool arcSpell = false;                             // C-239: THE HERMETIC LAYER's decks -- since C-331 (4) ABOVE and BELOW (C-272)
 static bool arcArt = false;                               // the picture of the card shown is loaded
 static String arcWhy;
 
@@ -25,7 +25,11 @@ static int roll(int lo, int hi) { seed = seed * 1103515245u + 12345u; return lo 
 
 // the face, then the daemon, then the words
 static void face(const Arc &c, int x, int y, int w, int h) {
-  const bool inv = c.shiny, reason = c.side == "reason", spell = c.side == "spellcraft";
+  // C-331 (4): THE HERMETIC LAYER's two decks (C-272, C-273), drawn as the app's faces are (arcana_backs.py above, below):
+  // ABOVE top-down, one star high and its rays coming down onto the daemon; BELOW bottom-up, courses of stone laid from the
+  // base, the top one unfinished, and roots under them. Both emerald, as SPELLCRAFT was (kept for an older companion).
+  const bool inv = c.shiny, reason = c.side == "reason", above = c.side == "above", below = c.side == "below";
+  const bool spell = c.side == "spellcraft" || above || below;
   const int sr = spell ? 31 : reason ? 22 : 224, sg = spell ? 143 : 150, sb = spell ? 95 : reason ? 92 : 40;   // green, gold, or emerald (C-239)
   for (int j = 0; j < h; j++) {
     float t = j / (float)(h - 1), up = min(1.0f, t * 1.4f), k = t < 0.35f ? 0 : powf((t - 0.35f) / 0.65f, 1.4f) * 0.7f;
@@ -33,7 +37,37 @@ static void face(const Arc &c, int x, int y, int w, int h) {
     canvas.drawFastHLine(x, y + j, w, rgb(r + (int)((sr - r) * k), g + (int)((sg - g) * k), b + (int)((sb - b) * k), inv));
   }
   seed = (uint32_t)c.n * 977u + (reason ? 1 : 2);
-  if (spell) {                                            // C-239: a magic circle where the daemon stands, the old work's signs about it
+  if (above) {                                            // the one star and its rays, spreading as they fall
+    uint16_t col = rgb(80, 200, 120, inv);
+    const int sx = x + w / 2, sy = y + h * 78 / 400;
+    for (int k = 0; k < 13; k++) { float t = (k - 6) / 6.0f; canvas.drawLine(sx, sy, sx + (int)(t * w * 118 / 240), y + h - h * 70 / 400, col); }
+    canvas.drawCircle(sx, sy, w * 22 / 240, col); canvas.drawCircle(sx, sy, w * 13 / 240, col);
+    for (int k = 0; k < 8; k++) {
+      float a0 = PI * k / 4, a1 = PI * (k + 1) / 4; int r0 = k % 2 ? 2 : 6, r1 = k % 2 ? 6 : 2;
+      canvas.fillTriangle(sx, sy, sx + (int)(r0 * sinf(a0)), sy - (int)(r0 * cosf(a0)), sx + (int)(r1 * sinf(a1)), sy - (int)(r1 * cosf(a1)), col);
+    }
+    for (int i = 0; i < 24; i++) {                        // a pattern arriving: points on the rays' way down
+      int py = roll(sy + 20, y + h * 256 / 400), px = sx + (int)(roll(-100, 100) / 100.0f * (w * 118 / 240) * (py - sy) / (float)(h - h * 70 / 400 - (sy - y)));
+      canvas.fillRect(px - 1, py - 1, 2, 2, col);
+    }
+  } else if (below) {                                     // courses of stone from the base up, the top one unfinished; roots
+    uint16_t col = rgb(80, 200, 120, inv);
+    const int ch = max(6, h * 14 / 400), bw = max(10, w * 28 / 240), top = y + h * 104 / 400, base = y + h - h * 70 / 400;
+    for (int r = 0; r < 11; r++) {
+      int yy = base - (r + 1) * ch;
+      if (yy < top) break;
+      bool last = r == 10 || yy - ch < top;
+      for (int xx = x - bw + (r % 2 ? bw / 2 : 0); xx < x + w; xx += bw) {
+        if (last && xx > x + w * 55 / 100) break;
+        int x0 = max(x + 2, xx + 1), x1 = min(x + w - 3, xx + bw - 2);
+        if (x1 > x0) canvas.drawRect(x0, yy + 1, x1 - x0, ch - 2, col);
+      }
+    }
+    for (int i = 0; i < 5; i++) {
+      int px = x + roll(20, w - 20), py = base + 4;
+      for (int s = 0; s < 4; s++) { int nx = px + roll(-5, 5), ny = py + roll(3, 6); if (ny > y + h - 6) break; canvas.drawLine(px, py, nx, ny, col); px = nx; py = ny; }
+    }
+  } else if (spell) {                                     // C-239: a magic circle where the daemon stands, the old work's signs about it
     uint16_t col = rgb(80, 200, 120, inv);
     const int mx = x + w / 2, my = y + h * 186 / 400, r = w * 36 / 100;
     canvas.drawCircle(mx, my, r, col); canvas.drawCircle(mx, my, r - 4, col);
@@ -125,7 +159,7 @@ static bool fetchCards(const String &path) {
 // 0 the day's card, 1 a card (a tap draws again), 2 a spread of three
 String runArcana(int mode, bool spell) {
   runPanel = drawArcana; arcSpell = spell;
-  const String q = spell ? "deck=spellcraft" : "";
+  const String q = spell ? "deck=hermetic" : "";   // C-331 (4): ABOVE or BELOW, as the day falls (was deck=spellcraft)
   fetchCards(mode == 0 ? "/api/arcana/today" + (spell ? "?" + q : String("")) : (mode == 1 ? "/api/arcana/draw?count=1" : "/api/arcana/draw?count=3") + (spell ? "&" + q : String("")));
   progress("");
   while (true) {

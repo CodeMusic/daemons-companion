@@ -193,6 +193,7 @@ bool takeState(const char *json) {
     if (!gf.isNull()) activityGift(gf["name"] | "", gf["at"] | "", gf["home"] | false); }
   st.watch = doc["world"]["watch"] | ""; st.sky = doc["world"]["weather"]["kind"] | "";   // C-158: the real world
   st.mended = doc["sky"]["mended"] | false; st.both = doc["sky"]["both"] | false;   // C-312: the aurora's
+  battleFromState(doc["battle"]);                           // C-328: a battle asked of this device
   { JsonVariant tg = doc["together"];                          // C-327: the household's shared space
     Together &t = st.together;
     if (tg.isNull()) t = Together();

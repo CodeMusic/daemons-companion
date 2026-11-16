@@ -26,6 +26,7 @@ String gpsStatus() { return "GPS none"; }
 
 #include <TinyGPSPlus.h>
 #include <Preferences.h>
+#include "card.h"
 void watchGnssPower(bool on);                             // watch.cpp: BLDO1
 
 enum Why : uint8_t { OFF, WALK, POLL, FIND };
@@ -68,6 +69,18 @@ static void walked() {
   }
   lastLat = la; lastLon = lo; lastAt = now;
 }
+// C-333: the walk kept on the card, a fix a line ("<lat> <lon>"), a day a file (walks/<yyyy-mm-dd>.txt), "-" where a
+// walk begins -- WALKS (walksmap.cpp) draws them with no network. Never sent anywhere from here (C-174: the companion
+// keeps its own, and never publishes it).
+static bool walkBegun = false;
+static void keepFix() {
+  struct tm t;
+  if (!watchLocalTime(t) || !cardReady()) return;
+  char day[32]; snprintf(day, sizeof day, "walks/%04d-%02d-%02d.txt", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+  if (!walkBegun) { cardAppendLine(day, "-"); walkBegun = true; }
+  char line[40]; snprintf(line, sizeof line, "%.6f %.6f", gps.location.lat(), gps.location.lng());
+  cardAppendLine(day, line);
+}
 static void tell() {
   char d[48];
   struct tm lt; long taken = watchLocalTime(lt) ? (long)time(nullptr) : 0;   // C-199: when, so a fix told late is filed then
@@ -91,9 +104,9 @@ void gpsLoop(uint32_t now) {
   }
   // C-242: BATTERY's GPS -- Off (or low power) keeps it off but for FIND; "When it moves" only walks; "Always" polls too
   if (!powerGps()) { if (why != OFF) power(OFF); return; }
-  if (moving && why != WALK) power(WALK);
+  if (moving && why != WALK) { power(WALK); walkBegun = false; }
   if (why == WALK) {
-    if (goodFix() && now - toldAt > 30000) { walked(); tell(); }
+    if (goodFix() && now - toldAt > 30000) { walked(); tell(); keepFix(); }
     if (stillSince && now - stillSince > powerStillMs()) power(OFF);
     return;
   }

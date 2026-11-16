@@ -129,6 +129,12 @@ export function award(store: Store, key: string, id: string, side: 0 | 1): numbe
 export function fights(store: Store, key: string, now = new Date()): Fight[] {
   return change(store, key, (a) => { tick(a, now); return a.fights; });
 }
+// a request waiting for this seat, read without the clock's write: device state asks it at every poll (C-328's boards)
+export function askedOf(store: Store, key: string, seat: string, now = new Date()) {
+  if (!seat) return null;
+  const f = load(store, key).fights.find((x) => x.phase === "asked" && x.to.seat === seat && now.getTime() - Date.parse(x.at) <= ASK_MS);
+  return f ? { id: f.id, phase: f.phase, from: f.from.label } : null;
+}
 export const fightsOf = (all: Fight[], seat: string) => all.filter((f) => sideOf(f, seat) !== null);
 
 // ---- what a seat is shown: both daemons as the screen draws them, its own routines, the lines so far ----

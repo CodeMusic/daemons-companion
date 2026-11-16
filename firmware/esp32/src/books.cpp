@@ -29,15 +29,15 @@ static int keeps() { return !fromCard && cardReady() ? 1 : 0; }
 // and TODAY'S QUESTION (asked, then answered by voice, and kept in its journal)
 static bool held(const char *id) { for (JsonVariant b : shelf["books"].as<JsonArray>()) if (String((const char *)(b["id"] | "")) == id) return true; return false; }
 // C-232: and its cards -- THE DAY'S CARD, DRAW A CARD, PAST PRESENT FUTURE (arcana.cpp), which need no voice
-// C-238, C-239: once THE HERMETIC LAYER is held, its own: AS ABOVE SO BELOW and the SPELLCRAFT deck's three
+// C-238, C-239: once THE HERMETIC LAYER is held, its own: AS ABOVE SO BELOW and its two decks' three (C-331 (4): ABOVE and BELOW, once SPELLCRAFT)
 enum AskKind { ASK_GUIDE, ASK_SUBTLE, ASK_VOICES, ASK_TODAY, ASK_CARD, ASK_DRAW, ASK_SPREAD, ASK_SCARD, ASK_SDRAW, ASK_SSPREAD, ASK_ABOVE };
 static const char *const ASK_NAMES[] = { "ASK THE GUIDE", "ASK THE SUBTLE LAYER", "TWO VOICES", "TODAY'S QUESTION",
                                          "THE DAY'S CARD", "DRAW A CARD", "PAST PRESENT FUTURE",
-                                         "SPELLCRAFT: TODAY", "SPELLCRAFT: DRAW", "SPELLCRAFT: SPREAD", "AS ABOVE SO BELOW" };   // DRAFT
+                                         "ABOVE/BELOW: TODAY", "ABOVE/BELOW: DRAW", "ABOVE/BELOW: SPREAD", "AS ABOVE SO BELOW" };   // DRAFT
 static const char *const ASK_HINTS[] = { "tap, then ask your question", "tap, then ask: a line, and a question back",
                                          "tap, then say a thing", "tap: its question, then tap to answer",
                                          "tap: the card for today", "tap: a card -- tap again for another", "tap: three cards, swipe between",
-                                         "tap: the spell card for today", "tap: a spell card", "tap: three spell cards", "tap: the first saying" };   // DRAFT
+                                         "tap: today's card, from above or below", "tap: a card, above or below", "tap: three cards, above or below", "tap: the first saying" };   // DRAFT
 static int askKinds(AskKind *k) {
   int n = 0;
   if (fromCard) return 0;
@@ -57,7 +57,14 @@ String runArcana(int mode, bool spell = false);            // arcana.cpp; C-239:
 String runIndex(); int indexKeepAll();
 // C-331 (2): DREAMS after it (dreamshelf.cpp) -- the journal, kept on the card
 String runDreams(); bool dreamsKeep();
-static int heads() { return asks() + 2; }
+String runMusic();                                        // C-332 (musicshelf.cpp)
+String runWalks();                                        // C-333 (walksmap.cpp): the Ultra's only, its card
+#if defined(BOARD_TWATCH_ULTRA)
+static const int WALKS_HERE = 1;
+#else
+static const int WALKS_HERE = 0;
+#endif
+static int heads() { return asks() + 3 + WALKS_HERE; }     // THE INDEX, DREAMS, MUSIC (C-332), WALKS (C-333)
 static int listN() {
   if (bMode == B_BOOKS) return heads() + shelf["books"].size() + keeps();
   return shelf["books"][bBook]["chapters"].size();
@@ -65,7 +72,7 @@ static int listN() {
 static String listName(int i) {
   if (bMode == B_BOOKS && i >= heads() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                        // DRAFT
   if (bMode == B_BOOKS && i < asks()) return ASK_NAMES[askAt(i)];
-  if (bMode == B_BOOKS && i < heads()) return i == asks() ? "THE INDEX" : "DREAMS";                                 // DRAFT
+  if (bMode == B_BOOKS && i < heads()) return i == asks() ? "THE INDEX" : i == asks() + 1 ? "DREAMS" : i == asks() + 2 ? "MUSIC" : "WALKS";                                 // DRAFT
   if (bMode == B_BOOKS) return String((const char *)(shelf["books"][i - heads()]["title"] | ""));
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
 }
@@ -97,6 +104,15 @@ static String drawBooks(uint16_t day, uint16_t ink) {
       if (bMode != B_BOOKS) { bookIcon(5, i + 1, cx, cy); return; }
       if (i < asks()) { AskKind k = askAt(i); bookIcon(k >= ASK_CARD && k != ASK_ABOVE ? 2 : 1, 0, cx, cy); return; }
       if (i == asks()) { bookIcon(3, 0, cx, cy); return; }
+      if (i == asks() + 2) {                                   // C-332: a note
+        canvas.fillCircle(cx - 4, cy + 8, 6, PAPER); canvas.drawFastVLine(cx + 2, cy - 12, 20, PAPER); canvas.drawLine(cx + 2, cy - 12, cx + 10, cy - 6, PAPER);
+        return;
+      }
+      if (i == asks() + 3) {                                   // C-333: a path, winding
+        canvas.drawLine(cx - 14, cy + 10, cx - 4, cy - 2, PAPER); canvas.drawLine(cx - 4, cy - 2, cx + 6, cy + 4, PAPER);
+        canvas.drawLine(cx + 6, cy + 4, cx + 14, cy - 10, PAPER); canvas.fillCircle(cx + 14, cy - 10, 3, PAPER);
+        return;
+      }
       if (i < heads()) { canvas.fillCircle(cx, cy, 11, QUIET); canvas.fillCircle(cx + 5, cy - 4, 10, TFT_BLACK); return; }   // C-331 (2): a moon
       bookIcon(i >= heads() + (int)shelf["books"].size() ? 4 : 0, 0, cx, cy);
     }, day, ink);
@@ -231,7 +247,7 @@ String runBooks() {
             while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }
           screen = RUN;
         }
-        else if (bMode == B_BOOKS && bAt < heads()) { String r = bAt == asks() ? runIndex() : runDreams(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3); C-331 (2)
+        else if (bMode == B_BOOKS && bAt < heads()) { String r = bAt == asks() ? runIndex() : bAt == asks() + 1 ? runDreams() : bAt == asks() + 2 ? runMusic() : runWalks(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3); C-331 (2)
         else if (bMode == B_BOOKS && bAt >= heads() + (int)shelf["books"].size()) keepAll();                 // C-199
         else if (bMode == B_BOOKS) { bBook = bAt - heads(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
         else { bChapter = bAt; if (fetchChapter()) bMode = B_PAGE; else say("Not found"); }          // DRAFT

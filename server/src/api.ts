@@ -2410,7 +2410,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.op === "forget") return send(res, nets.forget(String(b.ssid ?? "")) ? 200 : 404, nets.names());
         if (typeof b.ssid !== "string" || !b.ssid.trim() || typeof b.password !== "string")
           return send(res, 400, { error: "a network needs its name and its password" });
-        nets.learn(b.ssid.trim(), b.password);
+        nets.learn(b.ssid, b.password);   // as typed: a network's name may end in a space, and one trimmed is another network
         return send(res, 200, nets.names());
       }
       if (req.method === "POST" && path === "/api/device/remote") {

@@ -90,6 +90,13 @@ describe("the shared networks through the API (C-93)", () => {
     expect(r.json).toMatchObject({ shared: [{ ssid: "HOME", password: "secret" }], forget: ["CAFE"] });
   });
 
+  it("keeps a name as typed: a network may end in a space", async () => {
+    await post("/api/networks", { ssid: "PORCH ", password: "swing" });
+    expect((await get("/api/networks")).networks).toContain("PORCH ");
+    expect((await get("/api/networks")).networks).not.toContain("PORCH");
+    expect((await post("/api/networks", { ssid: "   ", password: "x" })).status).toBe(400);
+  });
+
   it("never hands a password over the phone's Bluetooth", async () => {
     const { code } = (await post("/api/pair/code", {})).json;
     const { token } = (await post("/api/pair", { code, name: "test phone" })).json;

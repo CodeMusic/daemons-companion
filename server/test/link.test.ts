@@ -65,6 +65,21 @@ describe("a Wi-Fi password only goes down the cable (C-33)", () => {
   });
 });
 
+describe("an update goes only to the board named (C-335)", () => {
+  it("is not taken by another board, nor by a take that names none", () => {
+    const h = new DeviceHub();
+    h.send({ type: "update", to: "t-watch-ultra-f351d4" });
+    h.send({ type: "run", routine: "UPLINK/NETWORKS IN RANGE" });
+    expect(h.take("wifi", "m5-cardputer-0a0b0c").map((c) => c.type)).toEqual(["run"]);
+    expect(h.take("wifi")).toEqual([]);
+    expect(h.take("wifi", "t-watch-ultra-f351d4").map((c) => c.type)).toEqual(["update"]);
+  });
+
+  it("refuses an update that names no device", async () => {
+    expect((await post("/api/device/update", {})).status).toBe(400);
+  });
+});
+
 describe("FLARE without the remote (C-34, C-51)", () => {
   it("offers whole remotes by brand, Sony first, each with its three buttons", async () => {
     const brands = await get("/api/ir/brands");

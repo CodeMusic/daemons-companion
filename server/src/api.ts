@@ -1802,7 +1802,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return res.end(png);
       }
       // ---- C-32: the link. The device's side: its commands, its results, its routines. ----
-      if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via) }); }
+      if (req.method === "GET" && path === "/api/device/commands") { hub.seen(via); return send(res, 200, { commands: hub.take(via, deviceId) }); }
       if (req.method === "POST" && path === "/api/device/results") {
         const b = await body(req);
         for (const r of Array.isArray(b.results) ? b.results : [b]) if (r && r.id != null) hub.answer(r);
@@ -2054,7 +2054,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const r = firmwareImages.keep(String(url.searchParams.get("board") ?? ""), String(url.searchParams.get("build") ?? ""), bin);
         return send(res, "error" in r ? 400 : 200, r);
       }
-      if (req.method === "POST" && path === "/api/device/update") return send(res, 200, { id: hub.send({ type: "update" }) });
+      // C-335: to the one board named, never whichever checks in first (the app sends {device})
+      if (req.method === "POST" && path === "/api/device/update") {
+        if (board) return send(res, 403, { error: "a board does not update another" });   // DRAFT
+        const b = await body(req);
+        const to = String(b.device ?? "");
+        if (!validDeviceId(to)) return send(res, 400, { error: "which device? send {device}" });   // DRAFT
+        return send(res, 200, { id: hub.send({ type: "update", to }) });
+      }
       // C-332: the game's music, as the books' recordings: the tracks published, and one as a board plays a voice
       if (req.method === "GET" && path === "/api/music") return send(res, 200, { tracks: await gameMusic.tracks() });
       if (req.method === "GET" && path === "/api/music/track") {

@@ -6,7 +6,8 @@
 // It lives in memory: a link is a now, not a record. What a routine did is kept as tending the daemon elsewhere (C-13).
 
 export type Via = "usb" | "wifi" | "phone" | "relay";   // C-55: the app over Bluetooth; C-82: a board through the relay
-export type Command = { id: number; type: "run" | "wifi" | "ir" | "remote" | "network"; [k: string]: unknown };
+// C-335: a command may name the one board it is for (\`to\`, its device id) -- an update is never taken by another board
+export type Command = { id: number; type: "run" | "wifi" | "ir" | "remote" | "network" | "update"; to?: string; [k: string]: unknown };
 export type Result = { id: number; ok: boolean; text: string; at: string };
 export type RoutineType = { name: string; radio: string; routines: string[] };
 
@@ -43,8 +44,8 @@ export class DeviceHub {
 
   // The device takes everything waiting for it, once. A Wi-Fi password is only ever handed down the cable: it never
   // crosses the network, even the local one (C-33).
-  take(via: Via): Command[] {
-    const mine = this.queue.filter((c) => via === "usb" || c.type !== "wifi");
+  take(via: Via, device = ""): Command[] {
+    const mine = this.queue.filter((c) => (via === "usb" || c.type !== "wifi") && (!c.to || c.to === device));
     this.queue = this.queue.filter((c) => !mine.includes(c));
     return mine;
   }

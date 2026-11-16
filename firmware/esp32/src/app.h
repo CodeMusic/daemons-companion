@@ -118,7 +118,8 @@ void auroraSky(int top, int w, int h);   // C-312: a night of light, the book me
 bool bedKeys();
 bool drawKeptArt(const String &key, int x, int y, int sc, bool mirrored);   // C-327: a picture kept by its key (the other daemon), plain
 void fetchTogetherArt();
-void battleFromState(JsonVariantConst b); void battleLoop(uint32_t now); String runBattle();   // C-328 (battle.cpp)                  // C-327: the other daemon's picture, fetched once
+void battleFromState(JsonVariantConst b); void battleLoop(uint32_t now); String runBattle();   // C-328 (battle.cpp)
+void firmwareLoop(uint32_t now); String firmwareInstall(); String firmwareStatus();   // C-335 (firmwarecard.cpp)                  // C-327: the other daemon's picture, fetched once
 String runHousehold(int mode);            // C-327: 0 TOGETHER, 1 SWAP -- choose a device of the household
 void servedDraw(int cx, int floorY, int px);   // C-327: a care's PROVISION between the two, eaten in four stages                           // C-301: SLEEP in place of TRAIN, dusk to dawn (the widget's day key)
 bool auroraNow(uint8_t weight[6], uint32_t line[6]);   // C-312: tonight's bands, or false

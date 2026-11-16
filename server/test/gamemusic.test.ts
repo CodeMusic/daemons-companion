@@ -19,3 +19,24 @@ describe("the game's music on the watch (C-332)", () => {
     expect(open("POST", "/api/battle/nothing")).toBe(false);
   });
 });
+
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { FirmwareImages, imageOk } from "../src/firmwareimages.js";
+describe("the watch updated from its card (C-335)", () => {
+  it("keeps one image a board, checked as an ESP32 image, and opens only the asking to a board", () => {
+    const f = new FirmwareImages(mkdtempSync(join(tmpdir(), "fw-")));
+    const bin = new Uint8Array(4096); bin[0] = 0xe9;
+    expect(imageOk(new Uint8Array(4096))).toMatch(/not an ESP32/);
+    expect(f.keep("../x", "b", bin)).toMatchObject({ error: expect.any(String) });
+    const img = f.keep("t-watch-ultra", "abc123 11-16 10:00", bin) as any;
+    expect(img).toMatchObject({ board: "t-watch-ultra", size: 4096, sha256: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    expect(f.latest("t-watch-ultra")?.build).toBe("abc123 11-16 10:00");
+    expect(f.file("t-watch-s3")).toBeNull();
+    const open = (m: string, p: string) => DEVICE_DOOR.some((d) => d(m, p));
+    expect(open("GET", "/api/firmware")).toBe(true);
+    expect(open("GET", "/api/firmware/image")).toBe(true);
+    expect(open("POST", "/api/firmware")).toBe(false);
+  });
+});

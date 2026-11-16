@@ -361,6 +361,10 @@ void handleCommand(JsonVariant c) {
     report("routine", "FLARE/" + String((const char *)(c["label"] | "A CODE FROM THE SITE")));
     return sendResult(id, !out.startsWith("Could not"), out);
   }
+  if (type == "update") {                     // C-335: the site's or app's UPDATE -- the card's firmware installed, then a restart
+    String why = firmwareInstall();
+    return sendResult(id, false, why);
+  }
   if (type == "network") {                    // C-52: the site forgets a network (C-93: by name, everywhere)
     int index = c["ssid"].is<const char *>() ? networkIndex(c["ssid"] | "") : (c["index"] | -1);
     String gone = index >= 0 && index < knownCount ? knownSsid[index] : "";
@@ -585,6 +589,8 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "SUBTLE?" && !fromPhone) reply(intuitionStatus());   // C-203
   else if (line == "ALARM?" && !fromPhone) reply(clockStatus());     // C-205
   else if (line == "SD?" && !fromPhone) reply(cardStatus());         // C-199
+  else if (line == "FIRMWARE?" && !fromPhone) reply(firmwareStatus());   // C-335
+  else if (line == "UPDATE FROM CARD" && !fromPhone) reply("UPDATE " + firmwareInstall());   // C-335: only returns when it could not
   else if (line == "GPS?" && !fromPhone) reply(gpsStatus());         // C-174   // C-201: the Ultra's motion sensor, for a check
   else if (line == "PLAY?" && !fromPhone) reply(playStatus());      // T-426: the instrument, its lock, the songs
   else if (line == "PLAY UNLOCK" && !fromPhone) { playBenchUnlock(); reply(playStatus()); }   // T-426: a bench check

@@ -83,6 +83,7 @@ void loop() {
   intuitionLoop(now);                       // C-203
   clockLoop(now);                           // C-205
   battleLoop(now);                          // C-328: a battle asked for, over any screen
+  firmwareLoop(now);                        // C-335: a newer firmware onto the card
   if (isGlass()) glassLoop(now);            // C-262: its touch button, its moment's end
   if (!lastHello || now - lastHello > HELLO_MS) { lastHello = now;   // C-178: the first at once, so the bridge may begin
     Serial.println(String("HELLO daemons-companion ") + board.id + " 4 " + deviceId()); dirty = true; }   // 4: it keeps its entry (C-179)   // C-80: its own name

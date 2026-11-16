@@ -165,13 +165,14 @@ void netsRevSeen(long rev) { if (rev >= 0 && rev != netsRevHave) netsDue = true;
 
 // Join the strongest known network in range: a scan in the background, then WiFi.begin.
 uint32_t wifiTriedAt = 0; bool wifiScanning = false;
-static int wifiLastScan = -9, wifiLastBest = -1, wifiDropReason = 0, wifiSkip = -1;   // WIFI? down the cable: what the radio last did
+static int wifiLastScan = -9, wifiLastBest = -1, wifiDropReason = 0, wifiSkip = -1;
+static String wifiSeen;   // what the scan heard of each known network: its signal, channel and security   // WIFI? down the cable: what the radio last did
 static bool wifiEventsOn = false;
 String wifiStatus() {
   return String("WIFI mode ") + WiFi.getMode() + " status " + WiFi.status() + " scanning " + wifiScanning +
          " lastScan " + wifiLastScan + " tried " + (wifiLastBest >= 0 && wifiLastBest < knownCount ? knownSsid[wifiLastBest] : String("-")) +
          " dropped " + wifiDropReason + " known " + knownCount + " server " + (serverUrl.length() ? serverUrl : String("-")) +
-         " night " + nightQuiet();
+         " night " + nightQuiet() + " heard" + (wifiSeen.length() ? wifiSeen : String(" -"));
 }
 void uplinkLoop(uint32_t now) {
   if (!wifiEventsOn) {
@@ -211,6 +212,11 @@ void uplinkLoop(uint32_t now) {
     if (other >= 0) best = other;
   }
   wifiSkip = -1;
+  wifiSeen = "";
+  for (int i = 0; i < max(n, 0); i++)
+    for (int k = 0; k < knownCount; k++)
+      if (WiFi.SSID(i) == knownSsid[k])
+        wifiSeen += " [" + knownSsid[k] + "|" + String(WiFi.RSSI(i)) + "dBm|ch" + String(WiFi.channel(i)) + "|auth" + String((int)WiFi.encryptionType(i)) + "]";
   WiFi.scanDelete();
   wifiLastBest = best;
   if (best >= 0) WiFi.begin(knownSsid[best].c_str(), knownPass[best].c_str());

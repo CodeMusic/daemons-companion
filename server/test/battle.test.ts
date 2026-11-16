@@ -85,6 +85,10 @@ describe("the arena (battles.ts): asked, answered, turns, the clock", () => {
     const f = A.request(s, "k", { seat: "app-aaa111", label: "IPHONE", card: c1 }, { seat: "watch-bbb222", label: "WATCH" }, t0);
     expect(A.failed(f)).toBe(false);
     expect(A.request(s, "k", { seat: "app-aaa111", label: "IPHONE", card: c1 }, { seat: "x-ccc333", label: "X" }, t0)).toMatchObject({ error: expect.stringMatching(/already/) });
+    // C-328's boards: device state names the request waiting for that seat, and only for a minute
+    expect(A.askedOf(s, "k", "watch-bbb222", t0)).toMatchObject({ phase: "asked", from: "IPHONE" });
+    expect(A.askedOf(s, "k", "app-aaa111", t0)).toBeNull();
+    expect(A.askedOf(s, "k", "watch-bbb222", new Date(t0.getTime() + 61_000))).toBeNull();
     expect(A.fights(s, "k", new Date(t0.getTime() + 61_000))[0].phase).toBe("lapsed");
   });
   it("chooses for a side that does not, after the turn's 30 seconds, and three missed turns is a forfeit", () => {

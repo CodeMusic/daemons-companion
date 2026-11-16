@@ -29,7 +29,8 @@ import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.j
 import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
 import { carriedFor } from "./carry.js";
 import { validDeviceId } from "./deviceid.js";
-import { shareCare, togetherView } from "./household.js";   // C-327
+import { shareCare, togetherView } from "./household.js";
+import { askedOf } from "./battles.js";   // C-328   // C-327
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./casino.js";   // C-149, C-151, C-167
 import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.js";   // C-158
@@ -527,6 +528,7 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
            ...(subtle ? { subtle } : {}),                // C-203: what there is to read, and how often a lean is right
            hermetic,                                     // C-238: THE HERMETIC LAYER held; the hour's first sight still to be said
            ...(isGlass(deviceId) ? { glass: glassForDevice(store, now.getTime()) } : {}),   // C-262: a T-Glass's one screen
+           ...(askedOf(store, "battles", deviceId, now) ? { battle: askedOf(store, "battles", deviceId, now) } : {}),   // C-328: a battle asked of this device
            ...(togetherNow(h, store, deviceId, now) ?? {}),   // C-327: in a household space with another device's daemon
            ...(halloween ? { halloween } : {}),          // C-240: the costume, a treat just left
            // C-73: the Xenith day -- the virtue over its shadow, the chakra and the day's theme

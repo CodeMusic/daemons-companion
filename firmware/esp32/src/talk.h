@@ -25,3 +25,4 @@ void talkLoop(uint32_t now);    // C-181: the answer to the talk asked, fetched 
 bool talkWaiting();             // C-181: a talk is out, its answer not yet back
 extern int talkPeak, talkRms;                       // the last recording's loudness, for the check from the computer
 extern bool talkByCable;                            // the check from the computer: TALK <ms> cable
+bool talkPlayFrom(const String &path, const String &keepName);   // C-332: the hub's PCM at that path, kept on the card as keepName

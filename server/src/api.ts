@@ -89,6 +89,7 @@ import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
 import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, type Creation } from "./creations.js";   // C-358; C-362
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
+import { GameMusic } from "./gamemusic.js";   // C-332
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
@@ -736,6 +737,10 @@ export const DEVICE_DOOR = [
      "/api/device/broadcast", "/api/device/tv", "/api/device/meeting/start", "/api/device/meeting/part", "/api/device/meeting/end", "/api/device/voicenote", "/api/device/hear"].includes(p),   // C-212: a meeting's recording   // C-134: a board's own broadcast, over Wi-Fi or the relay (only the cable's loopback reached it)
   (m: string, p: string) => m === "GET" && (p.startsWith("/art/") || p.startsWith("/api/device/voice/") || p.startsWith("/api/device/talk/") || p.startsWith("/api/ai/voice/")),   // C-317: a voice streamed, by an id nobody can guess   // C-180: an answer fetched
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/book/recording" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
+  // C-328: BATTLE -- a board or watch asks, answers and fights as itself (battleroute.ts seats it by x-device)
+  (m: string, p: string) => (m === "GET" || m === "POST") && BATTLE_PATHS.includes(p),
+  // C-332: the game's music, a track at a time onto the Ultra's card
+  (m: string, p: string) => m === "GET" && (p === "/api/music" || p === "/api/music/track"),
   // C-327: the household -- a watch swaps with, or shares a space with, another of the home's own devices
   (m: string, p: string) => (m === "GET" && p === "/api/household") || (m === "POST" && ["/api/household/swap", "/api/household/together", "/api/household/apart",
                                                                    "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate"].includes(p)),   // C-329: the watch's dialogue
@@ -1296,6 +1301,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-334: sleep sounds, kept beside the database (made on first use, so a test's in-memory store makes no folder)
   let sleepKept: SleepTracks | null = null;
   const bookRecordings = new BookRecordings(join(dirname(cfg.database), "recordings"));   // C-331 (1)
+  const gameMusic = new GameMusic(join(dirname(cfg.database), "music"));   // C-332
   // C-360: a piece's cover is painted once it is made (paintCover, given below), never while the music maker sings --
   // ACE-Step and FLUX together filled roverbyteseer's 32 GB and its swap, and it restarted (2026-11-14)
   const sleepTracks = () => {
@@ -2025,6 +2031,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-331 (1): a book's own recording, one chapter, as a board plays a voice (raw 16 kHz PCM) -- the Ultra keeps it on
       // its card. ?book=<shelf id>&title=<the chapter's title>. 404 when that chapter has no recording (the board reads it
       // in the INDEX voice instead).
+      // C-332: the game's music, as the books' recordings: the tracks published, and one as a board plays a voice
+      if (req.method === "GET" && path === "/api/music") return send(res, 200, { tracks: await gameMusic.tracks() });
+      if (req.method === "GET" && path === "/api/music/track") {
+        const f = await gameMusic.pcm(String(url.searchParams.get("id") ?? ""));
+        if (!f) return send(res, 404, { error: "that track is not published" });
+        res.writeHead(200, { "content-type": "application/octet-stream", "content-length": statSync(f).size, "cache-control": "max-age=86400" });
+        return createReadStream(f).pipe(res);
+      }
       if (req.method === "GET" && path === "/api/book/recording") {
         const f = await bookRecordings.chapter(String(url.searchParams.get("book") ?? ""), String(url.searchParams.get("title") ?? ""));
         if (!f) return send(res, 404, { error: "no recording of that chapter" });

@@ -189,11 +189,16 @@ static String urlPart(const String &s) {
   return o;
 }
 bool talkPlayRecording(const String &book, const String &title, const String &keepName) {
+  return talkPlayFrom("/api/book/recording?book=" + urlPart(book) + "&title=" + urlPart(title), keepName);
+}
+// C-332: any of the hub's raw 16 kHz PCM (a chapter, a track), played as it comes and kept on the card whole; the kept
+// copy first, with no network
+bool talkPlayFrom(const String &path, const String &keepName) {
   if (playKept(keepName)) return true;
   if (!online()) return false;
   HTTPClient h;
-  h.setTimeout(120000);                                   // the first time, the hub fetches the book's reading and cuts it
-  h.begin(serverUrl + "/api/book/recording?book=" + urlPart(book) + "&title=" + urlPart(title));
+  h.setTimeout(120000);                                   // the first time, the hub fetches the reading (or track) and cuts it
+  h.begin(serverUrl + path);
   h.addHeader("x-device", deviceId());
   if (h.GET() != 200) { h.end(); return false; }
   WiFiClient *in = h.getStreamPtr();

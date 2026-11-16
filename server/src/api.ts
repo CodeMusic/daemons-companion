@@ -81,6 +81,8 @@ import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepC
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
 import { carrierOf, DRIFT, exportImedx, exportMp3, exportsMade, makeExports, useMesh, type ExportName } from "./sleepexport.js";   // C-358
 import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
+import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
+import { readIndex } from "./save/index.js";
 import { captionOf, readSong, singAsk, SING_SYSTEM, Songs, type SingMode, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, type Creation } from "./creations.js";   // C-358; C-362
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
@@ -1170,6 +1172,33 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     }
     return songsKept;
   };
+  // C-251: the Tiiny's readings of fixed lines, kept (voicebank.ts); and, ahead of being asked, the INDEX entries the
+  // player has bound read in the boards' entry voice -- the carried daemon's first -- one at a time, after any music
+  // (none in the tests: the readings they make are asked again, and must be made again)
+  const voiceBank = process.env.VITEST ? null : new VoiceBank(join(dirname(cfg.database), "voicebank"));
+  const bankRecipe = (recipe?: string) => recipe || store.getSetting("voice.recipe.index") || INDEX_VOICE;
+  const entryLine = (text: string) => String(text).replace(/\n/g, " ").slice(0, 600);
+  const aheadLines = () => {
+    const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, save = hostOf(ecfg).save.read();
+    if (!save) return [];
+    const recipe = store.getSetting("voice.recipe.entry") || ENTRY_VOICE, carried = carriedDaemon(ecfg, store)?.species;
+    let bound: number[] = [];
+    try { bound = readIndex(save, ecfg.edition).entries.filter((e) => e.bound).map((e) => e.species); } catch { return []; }
+    if (carried !== undefined) bound = [carried, ...bound.filter((s) => s !== carried)];
+    return bound.map((s) => SPECIES[String(s)]?.entry?.[ecfg.edition]).filter((x): x is string => !!x).map((x) => ({ text: entryLine(x), recipe }));
+  };
+  let aheadBusy = false;
+  const speakAhead = () => {
+    if (aheadBusy || !voiceBank || !tiinyNow()?.at.tts) return;
+    aheadBusy = true;
+    const bank = voiceBank;
+    renderAhead({ bank, generation: () => voiceGeneration((k) => store.getSetting(k)), lines: aheadLines,
+                  ready: () => !!tiinyNow()?.at.tts && TALK_HEALTH.tiiny?.ok !== false,
+                  speak: async (text, recipe) => { await musicIdle(); return house.voice(text, recipe); } })
+      .catch(() => 0).finally(() => { aheadBusy = false; });
+  };
+  setTimeout(speakAhead, 5 * 60_000).unref();
+  setInterval(speakAhead, 3 * 3600_000).unref();
   const SING_AGAIN_MS = 30_000, SING_TRIES = 4;   // C-383: after the music, a moment for the Tiiny's thinker before a try again
   const musicIdle = () => Promise.all([sleepTracks().idle(), songs().idle()]);
   let songWrites: Promise<unknown> = Promise.resolve();
@@ -2497,8 +2526,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const tiiny = !!tiinyNow()?.at.tts, line = { text: sayable(text), voice: "index" };
         const isFinal = (r: Record<string, unknown>, first: boolean) =>
           String(r.provider ?? "").startsWith("tiiny:") || (!recipe && first && !tiiny);
+        // C-251: a line the Tiiny has read before is said again from the bank, at once and in the same voice
+        const bankKey = VoiceBank.key(text, bankRecipe(recipe), generation), kept = tiiny ? voiceBank?.get(bankKey) : null;
+        if (kept) return { audioBase64: Buffer.from(kept.audio).toString("base64"), audioMime: "audio/wav", provider: kept.provider, final: true, generation };
         if (indexVoice() === "module" || tiiny) {              // C-249: the Tiiny's voice first
           const m = await fromModule(text, recipe);
+          if (m && String(m.provider ?? "").startsWith("tiiny:") && typeof m.audioBase64 === "string")
+            try { voiceBank?.put(bankKey, Buffer.from(m.audioBase64, "base64"), String(m.provider)); } catch { /* not kept */ }
           if (m) return { ...m, final: isFinal(m, true), generation };
           const r = await n8n(ecfg, "daemon/voice", line);
           return { ...r, final: false, generation };
@@ -2860,7 +2894,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const his = b.as === "daemon" ? voiceFor(ecfg, store, deviceId)?.recipe : undefined;
         const how = his ?? (typeof b.text === "string" && b.text.trim() ? undefined : store.getSetting("voice.recipe.entry") || ENTRY_VOICE);
         return answer(PRIORITY.reading, async () =>          // C-180: a reading -- the hub's Module LLM's first work
-          forDevice({ ...await readAloud(String(text).replace(/\n/g, " ").slice(0, 600), how), answer: text }));
+          forDevice({ ...await readAloud(entryLine(String(text)), how), answer: text }));
       }
       if (req.method === "GET" && path.startsWith("/api/device/voice/")) {
         const pcm = voices.get(path.slice("/api/device/voice/".length));

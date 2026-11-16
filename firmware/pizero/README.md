@@ -26,6 +26,22 @@ Needs CMake, a C++17 compiler, SDL2 and libcurl (macOS: `brew install sdl2`; cur
 - **The hub**: `--hub http://<hub>:4730`, or one line in `~/.config/daemons/hub`. `none` asks nothing.
 - **Never on your own save**: `DAEMONS_HOME=/some/scratch` moves everything it keeps (the game, the save, settings).
 
+**Linked to the hub (C-380).** Choose LINK on HOME and type the code the hub shows, or run
+`build/window/daemons-zero --hub http://<hub>:4730 --pair CODE`. Over SSH to the hub, the code comes from
+`curl -s -X POST http://127.0.0.1:4730/api/pair/code`. Pairing keeps a key in `~/.config/daemons/token`, readable only by
+you, and the hub lists the device among its phones. From then on the save is kept in step, as the app keeps it:
+
+- **Before the game starts**, and each time it comes back from HOME, the hub's copy is asked for:
+  - while this device's save hasn't moved since the two last agreed, the hub's copy is taken;
+  - if only this device moved, its save goes out;
+  - if both moved, the hub's truth decides (by default the hub's copy, with this device's set aside in the hub's trail
+    first).
+- **After every save the game writes**, the save goes out once it has held still for a second. The strip shows SAVED,
+  then SENT, or HERE when it stayed on the device.
+- **On a computer the mirror is read only**: the window takes the hub's copy to play on, and never writes the hub's
+  save. `--mirror send` changes that, `--mirror off` asks nothing, and the device's own default is `send`.
+- `--mirror-in` and `--send-save` do one step and stop, for checking a hub.
+
 **Pictures without a window**, for review sheets:
 
 ```sh
@@ -61,8 +77,8 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | `src/keys.*` | the device's keys by name, and the game's map (`~/.config/daemons/keys.conf`, `A = L`) |
 | `src/sound.*` | miniaudio, and a ring between the game and the speaker |
 | `src/game/` | SHA-1 and CRC32, BPS (a port of `server/src/game/bps.ts`), the ROM made (C-187's rules), mGBA's core |
-| `src/hub/` | libcurl, and the device state asked every thirty seconds as every board asks it |
-| `src/pages/` | HOME, PLAY, MAKE THE GAME |
+| `src/hub/` | libcurl; the device state asked every thirty seconds as every board asks it, and pairing (`hub.cpp`); the save's mirror (`mirror.cpp`) |
+| `src/pages/` | HOME, PLAY, MAKE THE GAME, LINK |
 | `test/` | the checks `./build.sh` runs |
 | `tools/` | `install.sh`, `probe.sh`, `make_deb.sh` |
 | `packaging/` | the launcher's entry and icon |

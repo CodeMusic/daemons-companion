@@ -5,7 +5,7 @@
 #include "game/emu.h"
 #include "keys.h"
 
-enum class PageId { Home, Play, Make };
+enum class PageId { Home, Play, Make, Pair };
 
 struct Page {
   virtual ~Page() = default;

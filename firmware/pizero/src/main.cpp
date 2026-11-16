@@ -11,6 +11,12 @@
 //                                      run N frames unseen, keys pressed at those frames, a picture at the end
 //                                      (and every 100 frames: out_<frame>.bmp)
 //   daemons-zero --bench N             run N frames of the game as fast as it goes and say the frames a second
+//   daemons-zero --pair CODE           pair with the hub (--hub, or the one kept) by the code it shows (C-380)
+//   daemons-zero --mirror send|read|off  the mirror: send (the device's default), read (a computer's: the hub's copy
+//                                      taken, nothing ever written to the hub), off
+//   daemons-zero --mirror-in           ask the hub for its copy once, as PLAY does, say what it chose, and stop
+//   daemons-zero --send-save           send the save kept here to the hub once (as SEND THE SAVE NOW), and stop
+#include <algorithm>
 #include <chrono>
 #include <csignal>
 #include <cstdio>
@@ -26,12 +32,14 @@
 #include "game/rom.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
+#include "hub/mirror.h"
 #include "paths.h"
 #include "sound.h"
 
 Page *homePage();
 Page *playPage();
 Page *makePage();
+Page *pairPage();
 
 Emu emu;
 bool held[(size_t)Key::Count];
@@ -44,6 +52,7 @@ Page *pageFor(PageId id) {
   switch (id) {
     case PageId::Play: return playPage();
     case PageId::Make: return makePage();
+    case PageId::Pair: return pairPage();
     default: return homePage();
   }
 }
@@ -116,7 +125,8 @@ static int bench(int frames) {
 
 int main(int argc, char **argv) {
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
-  std::string start = "home", shot, makeFrom, romFrom, hubArg;
+  std::string start = "home", shot, makeFrom, romFrom, hubArg, pairCode;
+  bool mirrorIn = false, sendSave = false;
   std::map<uint64_t, std::vector<Key>> presses;
   for (int i = 1; i < argc; i++) {
     std::string a = argv[i];
@@ -131,6 +141,15 @@ int main(int argc, char **argv) {
     else if (a == "--rom") romFrom = val();
     else if (a == "--hub") hubArg = val();
     else if (a == "--bench") benchFrames = atoi(val().c_str());
+    else if (a == "--pair") pairCode = val();
+    else if (a == "--mirror") {
+      std::string m = val();
+      mirror::Mode md = mirror::modeByName(m, (mirror::Mode)-1);
+      if ((int)md == -1) { fprintf(stderr, "--mirror is send, read or off\n"); return 2; }
+      mirror::setMode(md);
+    }
+    else if (a == "--mirror-in") mirrorIn = true;
+    else if (a == "--send-save") sendSave = true;
     else if (a == "--press") {
       std::string list = val();
       size_t at = 0;
@@ -165,6 +184,40 @@ int main(int argc, char **argv) {
     if (start == "home") start = "play";
   }
   if (benchFrames > 0) return bench(benchFrames);
+  if (const char *m = getenv("DAEMONS_MIRROR")) mirror::setMode(mirror::modeByName(m, mirror::mode()));
+
+  // C-380: pairing and the mirror, one at a time from the command line
+  if (!pairCode.empty() || mirrorIn || sendSave) {
+    hub::begin(hal::deviceId());
+    int rc = 0;
+    if (!pairCode.empty()) {
+      std::string address = hub::address().empty() ? "http://daemons-hearth:4730" : hub::address();
+      std::string why = hub::pair(address, pairCode, hub::deviceName());
+      if (why.empty()) printf("paired with %s as \"%s\"\n", hub::address().c_str(), hub::deviceName().c_str());
+      else { fprintf(stderr, "not paired: %s\n", why.c_str()); rc = 1; }
+    }
+    if (mirrorIn && rc == 0) {
+      Bytes mine;
+      readFile(inData("daemons.sav"), mine);
+      if (std::all_of(mine.begin(), mine.end(), [](uint8_t b) { return b == 0xFF; })) mine.clear();
+      mirror::In in = mirror::pull(mine);
+      if (in.took && !writeFileAtomic(inData("daemons.sav"), in.save)) { fprintf(stderr, "the hub's copy could not be kept\n"); rc = 1; }
+      printf("mirror in (%s): %s%s%s\n", mirror::modeName(mirror::mode()), in.choice.empty() ? "nothing" : in.choice.c_str(),
+             in.why.empty() ? "" : " -- ", in.why.c_str());
+      if (in.took) printf("this device's save is now %s\n", sha1Hex(in.save).c_str());
+    }
+    if (sendSave && rc == 0) {
+      Bytes mine;
+      if (!readFile(inData("daemons.sav"), mine) || mine.empty()) { fprintf(stderr, "no save kept here\n"); rc = 1; }
+      else {
+        mirror::Out o = mirror::push(mine);
+        printf("send (%s): %s -- %s\n", mirror::modeName(mirror::mode()), o.sent ? "sent" : o.otherGame ? "refused, another game" : "not sent", o.why.c_str());
+        if (!o.sent) rc = 1;
+      }
+    }
+    hub::end();
+    return rc;
+  }
 
   canvasBegin();
   if (!hal::begin(scale, headless)) { fprintf(stderr, "no screen\n"); return 1; }
@@ -218,6 +271,7 @@ int main(int argc, char **argv) {
   }
   if (!shot.empty()) { pageFor(now)->draw(); if (canvasShot(shot)) printf("picture: %s\n", shot.c_str()); }
   keepSave();   // a save the game had not finished settling is kept as it stands
+  mirror::finish(2000);   // the save on its way to the hub gets two seconds (APPLaunch kills three after SIGINT)
   sound::end();
   hub::end();
   hal::end();

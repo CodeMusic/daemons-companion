@@ -93,9 +93,11 @@ set(SRC
   src/game/emu.cpp
   src/hub/http.cpp
   src/hub/hub.cpp
+  src/hub/mirror.cpp
   src/pages/home.cpp
   src/pages/play.cpp
-  src/pages/make.cpp)
+  src/pages/make.cpp
+  src/pages/pair.cpp)
 
 if(ZERO_DEVICE)
   list(APPEND SRC src/hal/device.cpp)
@@ -126,7 +128,8 @@ add_executable(daemons-zero ${SRC})
 target_include_directories(daemons-zero PRIVATE src ${CMAKE_BINARY_DIR}/_deps/arduinojson ${miniaudio_SOURCE_DIR})
 target_compile_options(daemons-zero PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
 target_compile_definitions(daemons-zero PRIVATE ZERO_DEVICE=$<BOOL:${ZERO_DEVICE}> M_CORE_GBA BUILD_STATIC
-  ZERO_PATCHES_JSON="${ZERO_PATCHES_JSON}")
+  ZERO_PATCHES_JSON="${ZERO_PATCHES_JSON}"
+  ARDUINOJSON_STRING_LENGTH_SIZE=4)   # C-380: a save travels as one base64 string of 175 KB; ArduinoJson stops at 64 KB
 target_link_libraries(daemons-zero PRIVATE mgba lgfx CURL::libcurl Threads::Threads ${CMAKE_DL_LIBS})
 if(APPLE)
   target_link_libraries(daemons-zero PRIVATE "-framework CoreFoundation" "-framework CoreAudio" "-framework AudioToolbox"

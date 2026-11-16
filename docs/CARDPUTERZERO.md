@@ -35,13 +35,34 @@ version", and the same RP3A0 chip the planned Pi Zero 2 W device would use (C-08
   machine (never the user's hub). It falls back to "asking", "not answering" or "not linked".
 - **MAKE THE GAME** lists the `.gba` files where a player would put one, makes the game on a thread, and says each step.
 - **The save** is written when the game's save has held still for a second, on ESC, and on SIGINT (APPLaunch's long
-  press). It stays on the device for now: C-380 sends it to the hub.
+  press).
+- **One save with the hub (C-380, 2026-11-16).** It pairs (LINK, or `--pair CODE`) and keeps the mirror as the app
+  does. Every case was run against scratch companions on the Mac, with synthetic saves from the server's own test
+  builder:
+  - no mirror yet; the first send; in step;
+  - a SYNC taken back;
+  - a save made while the hub was away sent on;
+  - both moved: the hub's taken, this device's in the trail first with its note;
+  - another game's save refused (409);
+  - a late save after a SYNC refused, then settled at the next look;
+  - read only, writing nothing.
+
+  End to end, the game's own SAVE (START, SAVE, YES) went out by itself: the strip said SENT, and the hub's
+  `mirror.sav` matched the device's byte for byte. **The Mac build is paired with the user's hub** as "Cardputer Zero
+  (a computer)", in read-only mode. It read the device state and took a copy of the hub's mirror, into scratch, since
+  deleted. Nothing was written to the hub.
+- **One case more than the app's rule.** `mirrorChoice` (server/src/game/mirror.ts) treats "only this device moved" (a
+  game saved while the hub was away, the hub's copy still the agreed one) as both moved. With the companion as the
+  truth, it then sets the newer save aside for the older. Here that case is "keep": this device's goes out. The app's
+  rule is unchanged (its lane's).
 
 **Written, not yet compiled**: `src/hal/device.cpp` (the framebuffer, evdev, power_supply), LovyanGFX's framebuffer
 platform, `tools/make_deb.sh`. No Linux machine was at hand (Docker was not running, and roverbyteseer is a Mac). The
 first build on the device is their first compile.
 
-**Not yet**: pairing and the mirror (C-380), the boards' screens and the library (C-381), the daemon's sprite in the
+**Not yet**: a SYNC, SEND or RETURN asked on the device itself (it waits for the save to cross first), the trail's
+offer for another game's save ("keep it on the companion as a save of its own", C-215), the boards' screens and the
+library (C-381), the daemon's sprite in the
 strip, the sound (wired through miniaudio, not yet heard), and anything of C-382.
 
 ## The hardware, as M5Stack publishes it

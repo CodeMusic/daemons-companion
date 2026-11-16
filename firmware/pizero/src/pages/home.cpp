@@ -18,6 +18,7 @@ struct Home : Page {
     std::vector<std::pair<std::string, PageId>> v;
     if (hasGame) v.push_back({ "PLAY", PageId::Play });   // DRAFT
     v.push_back({ hasGame ? "NEW RELEASE" : "MAKE THE GAME", PageId::Make });   // DRAFT
+    if (!hub::paired()) v.push_back({ "LINK", PageId::Pair });   // DRAFT: C-380
     v.push_back({ "LEAVE", PageId::Home });   // DRAFT
     return v;
   }

@@ -31,7 +31,7 @@ const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's 
 const saveFile = () => new File(Paths.document, "daemons.sav");
 // C-188: paired with a companion (the Mac, the hub), the device's save is the real one and the companion keeps a mirror
 // of it. `agreed` is the save both last held, so a SYNC the companion wrote since is taken back only while the device's
-// save has not moved; when both moved, the device's wins and goes out at the next save.
+// save has not moved; when only the device's moved, it goes out (C-384); when both moved, the truth decides (C-365).
 const paired = () => !ALONE && !!TOKEN;
 const agreedFile = () => new File(new Directory(Paths.document, "game"), "mirror.json");
 function agreed(): string { try { const f = agreedFile(); return f.exists ? String(JSON.parse(f.textSync()).sha1 ?? "") : ""; } catch { return ""; } }

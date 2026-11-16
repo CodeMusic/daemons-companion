@@ -51,10 +51,10 @@ version", and the same RP3A0 chip the planned Pi Zero 2 W device would use (C-08
   `mirror.sav` matched the device's byte for byte. **The Mac build is paired with the user's hub** as "Cardputer Zero
   (a computer)", in read-only mode. It read the device state and took a copy of the hub's mirror, into scratch, since
   deleted. Nothing was written to the hub.
-- **One case more than the app's rule.** `mirrorChoice` (server/src/game/mirror.ts) treats "only this device moved" (a
-  game saved while the hub was away, the hub's copy still the agreed one) as both moved. With the companion as the
-  truth, it then sets the newer save aside for the older. Here that case is "keep": this device's goes out. The app's
-  rule is unchanged (its lane's).
+- **Only this device moved is "keep".** A game saved while the hub was away, the hub's copy still the agreed one:
+  this device's goes out. Found here first; the app's `mirrorChoice` (server/src/game/mirror.ts) read it as both
+  moved and, with the companion as the truth, set the newer save aside for the older. It has the same case since
+  C-384, and the two rules are worded alike.
 
 **Written, not yet compiled**: `src/hal/device.cpp` (the framebuffer, evdev, power_supply), LovyanGFX's framebuffer
 platform, `tools/make_deb.sh`. No Linux machine was at hand (Docker was not running, and roverbyteseer is a Mac). The

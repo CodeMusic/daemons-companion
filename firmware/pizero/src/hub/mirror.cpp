@@ -32,10 +32,10 @@ std::string agreed() {
 }
 static void agree(const std::string &sha1) { writeTextAtomic(agreedPath(), "{\"sha1\":\"" + sha1 + "\"}\n"); }
 
-// mirrorChoice: the same copy; the hub's taken while this device's has not moved since they agreed; both moved -- the
-// truth's. One case more than server/src/game/mirror.ts has (2026-11-16): ONLY this device moved (a game saved while the
-// hub was away, the hub's copy still the one they agreed) is "keep" -- this device's goes out -- where mirrorChoice
-// would call it both moved and, the companion being the truth, set the newer save aside for the older.
+// mirrorChoice (server/src/game/mirror.ts), worded alike: the same copy; the hub's taken while this device's has not
+// moved since they agreed; C-384: ONLY this device moved (a game saved while the hub was away, the hub's copy still the
+// one they agreed) is "keep" -- this device's goes out -- never read as both moved, which set the newer save aside for
+// the older; both moved -- the truth's.
 static std::string choose(const std::string &theirs, const std::string &mine, const std::string &last, const std::string &truth) {
   if (theirs == mine) return "same";
   if (mine.empty() || mine == last) return "take";

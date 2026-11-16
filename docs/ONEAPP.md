@@ -28,8 +28,9 @@ save (`POST /api/save/mirror`); the companion keeps it beside its database as `m
 user set -- and while the mirror is on, everything there reads it and SYNC writes it. A SYNC from the app pauses the game
 and waits for its save to cross first; the app takes the mirror back (`GET /api/save/mirror`) before the game goes on,
 and when the app opens. The two are known by SHA-1 with the one both last held: the mirror comes back only while the
-device's save has not moved since; when both moved, the device's wins (`server/src/game/mirror.ts`). Choosing a save
-path in SETTINGS ends the mirror.
+device's save has not moved since; when only the device's moved, it goes out (C-384); when both moved, the truth
+decides -- the companion's by default, the device's set aside in its trail first (C-365, `server/src/game/mirror.ts`).
+Choosing a save path in SETTINGS ends the mirror.
 
 ## The steps, in order
 

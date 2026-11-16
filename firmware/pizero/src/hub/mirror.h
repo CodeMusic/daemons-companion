@@ -3,8 +3,9 @@
 // the device's save is the real one and the hub keeps a mirror of it:
 //   pull  -- before the game starts, or comes back from HOME: the hub's copy, and C-365's rule (server/src/game/
 //            mirror.ts mirrorChoice) says whether it is taken. "take" while this device's save has not moved since the
-//            two agreed; both moved, the truth decides -- "replace" (the companion's, the default: this device's own is
-//            set aside in the hub's trail first, C-364) or "keep" (this device's goes out at its next save)
+//            two agreed; "keep" when only this device moved (C-384: it goes out); both moved, the truth decides --
+//            "replace" (the companion's, the default: this device's own is set aside in the hub's trail first, C-364)
+//            or "keep" (this device's goes out at its next save)
 //   push  -- after every save the game writes: sent with `base`, the copy both last held, so a late write never undoes
 //            a SYNC; the hub refuses another game's save, or a copy it has moved on from (409)
 // `agreed` is kept in <data>/mirror.json. On a computer the mirror is read only by default: the window takes the hub's

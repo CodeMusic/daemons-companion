@@ -165,14 +165,31 @@ void netsRevSeen(long rev) { if (rev >= 0 && rev != netsRevHave) netsDue = true;
 
 // Join the strongest known network in range: a scan in the background, then WiFi.begin.
 uint32_t wifiTriedAt = 0; bool wifiScanning = false;
+static int wifiLastScan = -9, wifiLastBest = -1, wifiDropReason = 0, wifiSkip = -1;   // WIFI? down the cable: what the radio last did
+static bool wifiEventsOn = false;
+String wifiStatus() {
+  return String("WIFI mode ") + WiFi.getMode() + " status " + WiFi.status() + " scanning " + wifiScanning +
+         " lastScan " + wifiLastScan + " tried " + (wifiLastBest >= 0 && wifiLastBest < knownCount ? knownSsid[wifiLastBest] : String("-")) +
+         " dropped " + wifiDropReason + " known " + knownCount + " server " + (serverUrl.length() ? serverUrl : String("-")) +
+         " night " + nightQuiet();
+}
 void uplinkLoop(uint32_t now) {
+  if (!wifiEventsOn) {
+    wifiEventsOn = true;
+    WiFi.onEvent([](WiFiEvent_t, WiFiEventInfo_t info) { wifiDropReason = info.wifi_sta_disconnected.reason; },
+                 ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+  }
   if (nightQuiet()) {                                        // C-285: Wi-Fi off while its daemon sleeps; what it tells waits (the outbox)
     if (WiFi.getMode() != WIFI_OFF) { WiFi.disconnect(true); WiFi.mode(WIFI_OFF); wifiScanning = false; wifiTriedAt = 0; }
     return;
   }
-  if (!wifiSet() || WiFi.status() == WL_CONNECTED) return;
+  if (!wifiSet()) return;
+  if (WiFi.status() == WL_CONNECTED) { wifiLastBest = -1; return; }   // it took: a later loss starts afresh, not skipping it
   if (!wifiScanning) {
     if (wifiTriedAt && now - wifiTriedAt < 20000) return;   // give a join time before looking again
+    // A join that did not take: stop it (the driver's own retrying keeps every later scan from starting), and look
+    // past that network next time -- one known network refusing (seen: AUTH_EXPIRE) must not hide the others
+    if (wifiLastBest >= 0) { wifiSkip = wifiLastBest; WiFi.disconnect(); wifiLastBest = -1; }
     WiFi.mode(WIFI_STA);
     WiFi.scanNetworks(true);
     wifiScanning = true; wifiTriedAt = now;
@@ -181,11 +198,21 @@ void uplinkLoop(uint32_t now) {
   int n = WiFi.scanComplete();
   if (n == WIFI_SCAN_RUNNING) return;
   wifiScanning = false;
+  wifiLastScan = n;
   int best = -1, bestRssi = -1000;
   for (int i = 0; i < max(n, 0); i++)
     for (int k = 0; k < knownCount; k++)
       if (WiFi.SSID(i) == knownSsid[k] && WiFi.RSSI(i) > bestRssi) { best = k; bestRssi = WiFi.RSSI(i); }
+  if (best >= 0 && best == wifiSkip) {                       // the one that just refused: the next strongest known, if any
+    int other = -1, otherRssi = -1000;
+    for (int i = 0; i < max(n, 0); i++)
+      for (int k = 0; k < knownCount; k++)
+        if (k != wifiSkip && WiFi.SSID(i) == knownSsid[k] && WiFi.RSSI(i) > otherRssi) { other = k; otherRssi = WiFi.RSSI(i); }
+    if (other >= 0) best = other;
+  }
+  wifiSkip = -1;
   WiFi.scanDelete();
+  wifiLastBest = best;
   if (best >= 0) WiFi.begin(knownSsid[best].c_str(), knownPass[best].c_str());
   wifiTriedAt = now;
 }
@@ -590,6 +617,7 @@ void handleLine(String line, bool fromPhone) {
   else if (line == "ALARM?" && !fromPhone) reply(clockStatus());     // C-205
   else if (line == "SD?" && !fromPhone) reply(cardStatus());         // C-199
   else if (line == "FIRMWARE?" && !fromPhone) reply(firmwareStatus());   // C-335
+  else if (line == "WIFI?" && !fromPhone) reply(wifiStatus());             // what the radio last did: its scan, its join, why it dropped
   else if (line == "UPDATE FROM CARD" && !fromPhone) reply("UPDATE " + firmwareInstall());   // C-335: only returns when it could not
   else if (line == "GPS?" && !fromPhone) reply(gpsStatus());         // C-174   // C-201: the Ultra's motion sensor, for a check
   else if (line == "PLAY?" && !fromPhone) reply(playStatus());      // T-426: the instrument, its lock, the songs

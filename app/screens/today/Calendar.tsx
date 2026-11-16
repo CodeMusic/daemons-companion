@@ -57,7 +57,7 @@ export function CalendarScreen({ today, onClose, ink }: { today: Today; onClose:
   const on = (d: Date) => events.filter((e) => e.start < addDays(d, 1) && e.end > startOfDay(d) || (e.allDay && sameDay(e.start, d)));
   const monthBowl = (): BowlOf => ({                            // C-354: the month's bowl, ringing its chord
     colours: month.colours, lit: month.leans.map((l) => l.chakra), notes: month.chord,
-    title: `${month.name.toUpperCase()} · ${month.chord.join(" + ")}`,
+    title: `${month.name.toUpperCase()} · ${month.shown}`,
     lines: [`${month.tone} · ${month.movement}`, month.practice],
   });
   const heading = view === "month" ? `${month.name.toUpperCase()} ${at.getFullYear()}`
@@ -79,7 +79,7 @@ export function CalendarScreen({ today, onClose, ink }: { today: Today; onClose:
         <XStack gap={12} alignItems="flex-start">
           <YStack flex={1} gap={3}>
             <XStack alignItems="center" gap={2}>
-              <Eyebrow>{`${month.name.toUpperCase()} · ${month.chord.join(" + ")}`}</Eyebrow>
+              <Eyebrow>{`${month.name.toUpperCase()} · ${month.shown}`}</Eyebrow>
               <ForkKey colour={month.colours[0]} onPress={() => setBowl(monthBowl())} label={`ring ${month.chord.join(" and ")}, the month's chord`} />
             </XStack>
             <Text fontSize={22} fontWeight="600" color="$color12">{month.tone}</Text>

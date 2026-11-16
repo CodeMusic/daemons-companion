@@ -45,7 +45,7 @@ describe("THE MONTHS", () => {
   it("lean on the week's hues around the year, blending every other month", () => {
     expect(monthOf(1).hues).toEqual(["red"]);
     expect(monthOf(2).hues).toEqual(["red", "orange"]);
-    expect(monthOf(11).hues).toEqual(["indigo"]);
+    expect(monthOf(11).hues).toEqual(["indigo", "violet"]);   // C-385: A#/Bb, the blend
     expect(monthOf(12).hues).toEqual(["violet"]);
     expect(monthOf(2).chord).toEqual(["C", "D"]);
     expect(monthOf(2).tone).toBe("Love");

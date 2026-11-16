@@ -1,9 +1,42 @@
 {
- "latest": 982,
+ "latest": 983,
  "builds": [
   {
+   "build": 983,
+   "commit": "4c11f58",
+   "date": "2026-11-16",
+   "sections": [
+    {
+     "ticket": "C-383",
+     "title": "A song waits for the Tiiny's music",
+     "lines": [
+      "A song's words wait for the Tiiny's music, and try once more after it",
+      "A song's words are tried again after each piece of music, four tries in all",
+      "One song's words written at a time"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "LIBRARY shelf: THE PLAYER'S MANUAL, PLAYING TOGETHER and THE COMPANION covers — reprinted for v11.375.1 (T-571's words)",
+      "and 3 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Battle.json: a ROUTINE, not a move (T-567)",
+      "Species.json, index_cards.json: CELEBI is bound, not caught (T-571)",
+      "The four books' pages: USER, not trainer (T-571, from their sources)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 982,
-   "commit": "9e0a069",
+   "commit": "75cfbf2",
    "date": "2026-11-15",
    "sections": [
     {
@@ -97,7 +130,8 @@
       "Art: the ROVER line and the MUSAI branch redrawn (DAEMONS T-552, T-553; engine c449f7717)",
       "LIBRARY shelf: THE SOCIAL, THE COMPANION and THE WATCH covers re-rendered — each now names the release its PDF was printed for",
       "The hub answers a device's look in a fraction of the time: the daemon's life and feelings kept while the log is unwritten and the minute unturned, the INDEX while the save is the same bytes — and the temporary timings gone",
-      "A device's look costs the hub less again: the CASINO's results kept while the log is unwritten (every poll read every result ever, twice), the bond written only when a look moved it, the day's walk read once, the reels' daemons each scored once"
+      "A device's look costs the hub less again: the CASINO's results kept while the log is unwritten (every poll read every result ever, twice), the bond written only when a look moved it, the day's walk read once, the reels' daemons each scored once",
+      "WHAT'S NEW for 982 (whatsnew.py —write —build 982)"
      ]
     }
    ]

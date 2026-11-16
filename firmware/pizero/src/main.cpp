@@ -16,6 +16,8 @@
 //                                      taken, nothing ever written to the hub), off
 //   daemons-zero --mirror-in           ask the hub for its copy once, as PLAY does, say what it chose, and stop
 //   daemons-zero --send-save           send the save kept here to the hub once (as SEND THE SAVE NOW), and stop
+//   daemons-zero --sync                a SYNC, as HOME's: this device's save out, the hub's SYNC, its copy back; and stop
+//   daemons-zero --keep-there          C-215's yes: this other game kept on the hub as a save of its own; and stop
 #include <algorithm>
 #include <chrono>
 #include <csignal>
@@ -134,7 +136,7 @@ static int bench(int frames) {
 int main(int argc, char **argv) {
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
   std::string start = "home", shot, makeFrom, romFrom, hubArg, pairCode;
-  bool mirrorIn = false, sendSave = false;
+  bool mirrorIn = false, sendSave = false, syncOnce = false, keepThere = false;
   std::map<uint64_t, std::vector<Key>> presses;
   for (int i = 1; i < argc; i++) {
     std::string a = argv[i];
@@ -158,6 +160,8 @@ int main(int argc, char **argv) {
     }
     else if (a == "--mirror-in") mirrorIn = true;
     else if (a == "--send-save") sendSave = true;
+    else if (a == "--sync") syncOnce = true;
+    else if (a == "--keep-there") keepThere = true;
     else if (a == "--press") {
       std::string list = val();
       size_t at = 0;
@@ -195,7 +199,7 @@ int main(int argc, char **argv) {
   if (const char *m = getenv("DAEMONS_MIRROR")) mirror::setMode(mirror::modeByName(m, mirror::mode()));
 
   // C-380: pairing and the mirror, one at a time from the command line
-  if (!pairCode.empty() || mirrorIn || sendSave) {
+  if (!pairCode.empty() || mirrorIn || sendSave || syncOnce || keepThere) {
     hub::begin(hal::deviceId());
     int rc = 0;
     if (!pairCode.empty()) {
@@ -219,9 +223,27 @@ int main(int argc, char **argv) {
       if (!readFile(inData("daemons.sav"), mine) || mine.empty()) { fprintf(stderr, "no save kept here\n"); rc = 1; }
       else {
         mirror::Out o = mirror::push(mine);
-        printf("send (%s): %s -- %s\n", mirror::modeName(mirror::mode()), o.sent ? "sent" : o.otherGame ? "refused, another game" : "not sent", o.why.c_str());
-        if (!o.sent) rc = 1;
+        printf("send (%s): %s -- %s\n", mirror::modeName(mirror::mode()),
+               o.sent ? "sent" : o.kept ? "kept as a save of its own (another game)" : o.otherGame ? "refused, another game" : "not sent", o.why.c_str());
+        if (!o.sent && !o.kept) rc = 1;
       }
+    }
+    if (keepThere && rc == 0) {   // C-215's yes: this game kept on the hub as a save of its own, now and at each save
+      Bytes mine;
+      readFile(inData("daemons.sav"), mine);
+      mirror::keepHere(true);
+      mirror::Out o = mirror::keepThere(mine);
+      printf("keep there: %s -- %s\n", o.kept ? "kept" : "not kept", o.why.c_str());
+      if (!o.kept) rc = 1;
+    }
+    if (syncOnce && rc == 0) {   // C-380: as HOME's SYNC does it
+      Bytes mine;
+      readFile(inData("daemons.sav"), mine);
+      mirror::Synced s = mirror::syncNow(mine);
+      if (s.took) writeFileAtomic(inData("daemons.sav"), s.save);
+      printf("sync: %s -- %s (arrived %zu, received %zu, returned %zu)\n", s.ok ? "ran" : "did not run", s.why.c_str(), s.arrived, s.received, s.returned);
+      if (s.took) printf("this device's save is now %s\n", sha1Hex(s.save).c_str());
+      if (!s.ok) rc = 1;
     }
     hub::end();
     return rc;
@@ -247,7 +269,7 @@ int main(int argc, char **argv) {
       p = pageFor(now);
     }
     if (headless) {   // scripted keys, held for six frames each, counted by the game's frames (or by loops on a page)
-      uint64_t at = emu.loaded() ? emu.frames() : loops;
+      uint64_t at = emu.loaded() && now == PageId::Play ? emu.frames() : loops;
       bool want[(size_t)Key::Count] = {};
       for (auto &[f, ks] : presses)
         for (Key k : ks) if (at >= f && at < f + 6) want[(size_t)k] = true;   // a key listed twice presses twice
@@ -275,7 +297,7 @@ int main(int argc, char **argv) {
       lastDraw = t;
     }
     loops++;
-    if (headless && frames >= 0 && (emu.loaded() ? emu.frames() : loops) >= (uint64_t)frames) break;
+    if (headless && frames >= 0 && loops >= (uint64_t)frames) break;   // a pass is a frame while the game plays, unseen
     if (!headless) std::this_thread::sleep_for(std::chrono::milliseconds(now == PageId::Play ? 1 : 8));
     else if (now != PageId::Play) std::this_thread::sleep_for(std::chrono::milliseconds(5));   // the hub has time to answer
   }

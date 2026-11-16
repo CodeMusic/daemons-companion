@@ -30,8 +30,21 @@ struct In {
 };
 In pull(const Bytes &mine);
 
-struct Out { bool sent = false, otherGame = false; std::string why; };
+struct Out { bool sent = false, otherGame = false, kept = false; std::string why; };   // kept: C-215, as a save of its own
 Out push(const Bytes &save);
+
+// C-215: a save of another game than the one the hub follows (a new game begun here, a testing build's) is refused as
+// the mirror; told once, the device keeps it on the hub as a save of its own instead, each time it saves
+bool keeping();
+void keepHere(bool on);                 // <data>/kept.json
+bool offered();                         // refused as another game, and not yet answered: HOME asks (<data>/offer.json)
+void notNow();                          // the question put away until the next refusal
+Out keepThere(const Bytes &save);       // POST /api/saves/keep {b64, label}
+
+// C-380: a SYNC asked on the device, the game paused: this device's save to the hub first, the hub's SYNC, and what it
+// wrote taken back (the game then starts again from it)
+struct Synced { bool ok = false, took = false; Bytes save; std::string why; size_t arrived = 0, received = 0, returned = 0; };
+Synced syncNow(const Bytes &mine);
 
 // push on a thread of its own: the newest save waiting is sent, one at a time; `lastOut` says how the last one went
 void pushLater(const Bytes &save);

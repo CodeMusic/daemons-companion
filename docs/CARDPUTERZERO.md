@@ -55,15 +55,37 @@ version", and the same RP3A0 chip the planned Pi Zero 2 W device would use (C-08
   this device's goes out. Found here first; the app's `mirrorChoice` (server/src/game/mirror.ts) read it as both
   moved and, with the companion as the truth, set the newer save aside for the older. It has the same case since
   C-384, and the two rules are worded alike.
+- **A SYNC asked on the device, and C-215's question (C-380, 2026-11-16).** SYNC is a choice on HOME, with the game
+  paused there. This device's save goes out first, the hub must follow this game (`/api/profile`), the hub SYNCs, and
+  what it wrote is taken back into the game, which starts again from it. On a computer, read only, it is refused.
+  When the hub refuses this game's save as another game's, HOME asks, in the app's words, whether to keep it on the
+  companion as a save of its own. The question survives a restart until answered (`offer.json`). Yes keeps it there
+  now and at each save after (`kept.json`, `/api/saves/keep`); ESC puts it away until the next refusal. Run against a
+  scratch companion that holds RELAY:
+  - the first SYNC wrote the save and took it back, device and hub byte for byte; a second had nothing to change;
+  - read only refused;
+  - another game's save was refused, then kept as "This device's other game", while the hub's own game stayed its
+    mirror.
+- **The companion's screens (C-381, 2026-11-16).** All drawn from `/api/device/state` with the boards' own calls,
+  against a scratch companion with a synthetic save (DAEMONS qa 16Nov2026 C381):
+  - **HOME:** the daemon in its den (its picture from `/api/device/art`), its mood word, care pips, the next step, and
+    a row of everything.
+  - **CARE:** feed, water, train, sleep or wake, and what it says back.
+  - **STEP:** tick the next step, and take it back within fifteen seconds.
+  - **PARTY:** each daemon's picture and its four routines in their streak colours.
+  - **SAY:** CHORUS typed on the keys, as the carried daemon, and what was heard.
 
 **Written, not yet compiled**: `src/hal/device.cpp` (the framebuffer, evdev, power_supply), LovyanGFX's framebuffer
 platform, `tools/make_deb.sh`. No Linux machine was at hand (Docker was not running, and roverbyteseer is a Mac). The
 first build on the device is their first compile.
 
-**Not yet**: a SYNC, SEND or RETURN asked on the device itself (it waits for the save to cross first), the trail's
-offer for another game's save ("keep it on the companion as a save of its own", C-215), the boards' screens and the
-library (C-381), the daemon's sprite in the
-strip, the sound (wired through miniaudio, not yet heard), and anything of C-382.
+**Not yet**:
+- SEND and RETURN asked on the device (the game's PORT does them now, then SYNC);
+- the rest of C-381: the CASINO, the routines run as the boards run them, and from the app the library (the NOTEBOOK,
+  the GUIDE, the INDEX cards, the books);
+- the daemon's picture in PLAY's strip;
+- the sound (wired through miniaudio, not yet heard);
+- anything of C-382.
 
 ## The hardware, as M5Stack publishes it
 

@@ -145,6 +145,7 @@ struct Play : Page {
       uint16_t ink = TFT_WHITE;
       if (mirror::pushing()) { mark = "SEND.."; ink = dim; }   // DRAFT
       else if (serial && o.sent) { mark = "SENT"; ink = day; }   // DRAFT
+      else if (serial && o.kept) { mark = "KEPT"; ink = day; }   // DRAFT: C-215, on the hub as a save of its own
       else if (serial && mirror::mode() == mirror::Mode::Send) { mark = "HERE"; ink = dim; }   // DRAFT: kept on the device
       canvas.setTextColor(ink);
       canvas.setCursor(rx + 4, 150);

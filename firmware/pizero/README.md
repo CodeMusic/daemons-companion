@@ -40,7 +40,20 @@ you, and the hub lists the device among its phones. From then on the save is kep
   then SENT, or HERE when it stayed on the device.
 - **On a computer the mirror is read only**: the window takes the hub's copy to play on, and never writes the hub's
   save. `--mirror send` changes that, `--mirror off` asks nothing, and the device's own default is `send`.
-- `--mirror-in` and `--send-save` do one step and stop, for checking a hub.
+- **SYNC** is on HOME while saves are sent. With the game paused, this device's save goes out, the hub SYNCs (only the
+  game it follows), and what it wrote comes back into the game.
+- **Another game's save** (a new game begun here) is refused as the hub's mirror. HOME then asks, as the app does,
+  whether to keep it on the hub as a save of its own (C-215). Yes keeps it there at each save after.
+- `--mirror-in`, `--send-save`, `--sync` and `--keep-there` each do one step and stop, for checking a hub.
+
+**The companion's screens (C-381)**, along HOME's row and drawn from the hub's device state:
+
+- **CARE:** feed, water, train, sleep or wake.
+- **STEP:** tick the next step; BACKSPACE takes it back.
+- **PARTY:** the party's routines.
+- **SAY:** a word to every daemon nearby, as the one carried.
+
+`--page care` (or `step`, `party`, `say`, `make`, `link`, `play`) starts on one.
 
 **Pictures without a window**, for review sheets:
 
@@ -78,7 +91,7 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | `src/sound.*` | miniaudio, and a ring between the game and the speaker |
 | `src/game/` | SHA-1 and CRC32, BPS (a port of `server/src/game/bps.ts`), the ROM made (C-187's rules), mGBA's core |
 | `src/hub/` | libcurl; the device state asked every thirty seconds as every board asks it, and pairing (`hub.cpp`); the save's mirror (`mirror.cpp`) |
-| `src/pages/` | HOME, PLAY, MAKE THE GAME, LINK |
+| `src/pages/` | HOME, PLAY, MAKE THE GAME, LINK, CARE, STEP, PARTY, SAY, and what they share (`parts.*`) |
 | `test/` | the checks `./build.sh` runs |
 | `tools/` | `install.sh`, `probe.sh`, `make_deb.sh` |
 | `packaging/` | the launcher's entry and icon |

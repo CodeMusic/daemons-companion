@@ -115,7 +115,76 @@ Out push(const Bytes &save) {
   // "another game": a new game begun here never takes the hub's place (C-215); "moved on": a SYNC wrote the hub's copy
   // while this one was on its way -- the next pull settles it
   out.otherGame = r.status == 409 && out.why.find("another game") != std::string::npos;
+  // C-215: told once to keep this other game on the hub as a save of its own, each save of it goes there
+  if (out.otherGame && keeping()) {
+    Out k = keepThere(save);
+    if (k.kept) { k.otherGame = true; return k; }
+  }
+  if (out.otherGame && !keeping()) writeTextAtomic(inData("offer.json"), "{\"offer\":true}\n");   // asked at HOME, even after a restart
   return out;
+}
+
+// ---- C-215: another game's save, kept on the hub as a save of its own -------------------------------------------------
+static std::string keptPath() { return inData("kept.json"); }
+bool keeping() {
+  std::string t;
+  if (!readText(keptPath(), t)) return false;
+  JsonDocument d;
+  return !deserializeJson(d, t) && (d["keep"] | false);
+}
+void keepHere(bool on) {
+  writeTextAtomic(keptPath(), std::string("{\"keep\":") + (on ? "true" : "false") + "}\n");
+  remove(inData("offer.json").c_str());
+}
+bool offered() { return exists(inData("offer.json")) && !keeping(); }
+void notNow() { remove(inData("offer.json").c_str()); }   // asked again at the next refusal
+Out keepThere(const Bytes &save) {
+  Out out;
+  if (current != Mode::Send) { out.why = "read only here: kept on this device"; return out; }   // DRAFT
+  if (!hub::paired()) { out.why = "not paired: kept on this device"; return out; }   // DRAFT
+  Reply r = httpPost(hub::address() + "/api/saves/keep",
+                     "{\"b64\":\"" + base64(save) + "\",\"label\":\"This device's other game\"}", hub::headers(), 15000);   // DRAFT, the app's words
+  if (!r.ok()) { out.why = errorOf(r); return out; }
+  out.kept = true;
+  out.why = "kept on the hub as a save of its own";   // DRAFT
+  return out;
+}
+
+// ---- C-380: a SYNC asked on the device ---------------------------------------------------------------------------------
+Synced syncNow(const Bytes &mine) {
+  Synced s;
+  if (current != Mode::Send) { s.why = current == Mode::Read ? "read only here: a SYNC writes the hub's save" : "the mirror is off here"; return s; }   // DRAFT
+  if (!hub::paired()) { s.why = "not paired with a hub"; return s; }   // DRAFT
+  // the save the game has made goes first, so the SYNC is written over it and nothing of it is lost
+  for (int i = 0; i < 50 && pushing(); i++) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  if (!mine.empty() && sha1Hex(mine) != agreed()) {
+    Out o = push(mine);
+    if (!o.sent) { s.why = o.otherGame ? "this game is not the one the hub follows" : "this device's save did not reach the hub: " + o.why; return s; }   // DRAFT
+  }
+  // only the game the hub follows (the app asks the same before it SYNCs)
+  Reply p = httpGet(hub::address() + "/api/profile", hub::headers(), 8000);
+  if (p.ok()) {
+    JsonDocument d;
+    if (!deserializeJson(d, (const char *)p.body.data(), p.body.size()) && d["thisGame"].is<bool>() && !d["thisGame"].as<bool>()) {
+      s.why = "the hub follows another game";   // DRAFT
+      return s;
+    }
+  }
+  Reply r = httpPost(hub::address() + "/api/sync", "{}", hub::headers(), 60000);
+  if (!r.ok()) { s.why = "the SYNC did not run: " + errorOf(r); return s; }   // DRAFT
+  JsonDocument d;
+  if (!deserializeJson(d, (const char *)r.body.data(), r.body.size())) {
+    s.arrived = d["arrivals"].size(); s.received = d["received"].size(); s.returned = d["returned"].size();
+  }
+  // and what it wrote, taken back into the game
+  Bytes now = mine;
+  if (now.empty()) readFile(inData("daemons.sav"), now);
+  In in = pull(now);
+  s.ok = true;
+  s.took = in.took;
+  s.save = std::move(in.save);
+  s.why = in.took ? "synced: the hub's save is in the game" : in.choice == "same" ? "synced: nothing to change" : "synced; " + in.why;   // DRAFT
+  return s;
 }
 
 // ---- the save on its way, on a thread of its own ----------------------------------------------------------------------

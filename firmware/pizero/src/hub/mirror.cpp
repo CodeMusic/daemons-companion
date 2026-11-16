@@ -54,7 +54,7 @@ In pull(const Bytes &mine) {
   In in;
   if (current == Mode::Off) { in.why = "the mirror is off here"; return in; }   // DRAFT
   if (!hub::paired()) { in.why = "not paired with a hub"; return in; }   // DRAFT
-  Reply r = httpGet(hub::address() + "/api/save/mirror", hub::headers(), 8000);
+  Reply r = hub::get("/api/save/mirror", 8000);
   if (r.status == 404) { in.why = "the hub keeps no mirror yet"; return in; }   // DRAFT
   if (!r.ok()) { in.why = "the hub is away: " + errorOf(r); return in; }   // DRAFT
   JsonDocument d;
@@ -78,9 +78,8 @@ In pull(const Bytes &mine) {
     // C-365: both moved and the hub's is the truth -- this device's own goes into the hub's trail first (C-364), and only
     // once it is safely there is it replaced. Read only, nothing is written there: the copy here is a preview's
     if (current == Mode::Send) {
-      Reply h = httpPost(hub::address() + "/api/saves/history",
-                         "{\"b64\":\"" + base64(mine) + "\",\"note\":\"this device's own, replaced by the companion's\"}",
-                         hub::headers(), 15000);
+      const std::string aside = "{\"b64\":\"" + base64(mine) + "\",\"note\":\"this device's own, replaced by the companion's\"}";
+      Reply h = hub::call("POST", "/api/saves/history", &aside, 15000);
       if (!h.ok()) { in.choice = ""; in.why = "this device's save could not be set aside first, so it stays: " + errorOf(h); return in; }   // DRAFT
     }
     in.why = "both moved: the hub's is the truth, and this device's own is kept in its trail";   // DRAFT
@@ -102,7 +101,7 @@ Out push(const Bytes &save) {
   std::string body = "{\"b64\":\"" + base64(save) + "\"";
   if (!last.empty()) body += ",\"base\":\"" + last + "\"";
   body += "}";
-  Reply r = httpPost(hub::address() + "/api/save/mirror", body, hub::headers(), 15000);
+  Reply r = hub::call("POST", "/api/save/mirror", &body, 15000);
   if (r.ok()) {
     JsonDocument d;
     std::string s = !deserializeJson(d, (const char *)r.body.data(), r.body.size()) ? std::string(d["sha1"] | "") : "";
@@ -142,8 +141,8 @@ Out keepThere(const Bytes &save) {
   Out out;
   if (current != Mode::Send) { out.why = "read only here: kept on this device"; return out; }   // DRAFT
   if (!hub::paired()) { out.why = "not paired: kept on this device"; return out; }   // DRAFT
-  Reply r = httpPost(hub::address() + "/api/saves/keep",
-                     "{\"b64\":\"" + base64(save) + "\",\"label\":\"This device's other game\"}", hub::headers(), 15000);   // DRAFT, the app's words
+  const std::string keep = "{\"b64\":\"" + base64(save) + "\",\"label\":\"This device's other game\"}";   // DRAFT, the app's words
+  Reply r = hub::call("POST", "/api/saves/keep", &keep, 15000);
   if (!r.ok()) { out.why = errorOf(r); return out; }
   out.kept = true;
   out.why = "kept on the hub as a save of its own";   // DRAFT
@@ -162,7 +161,7 @@ Synced syncNow(const Bytes &mine) {
     if (!o.sent) { s.why = o.otherGame ? "this game is not the one the hub follows" : "this device's save did not reach the hub: " + o.why; return s; }   // DRAFT
   }
   // only the game the hub follows (the app asks the same before it SYNCs)
-  Reply p = httpGet(hub::address() + "/api/profile", hub::headers(), 8000);
+  Reply p = hub::get("/api/profile", 8000);
   if (p.ok()) {
     JsonDocument d;
     if (!deserializeJson(d, (const char *)p.body.data(), p.body.size()) && d["thisGame"].is<bool>() && !d["thisGame"].as<bool>()) {
@@ -170,7 +169,8 @@ Synced syncNow(const Bytes &mine) {
       return s;
     }
   }
-  Reply r = httpPost(hub::address() + "/api/sync", "{}", hub::headers(), 60000);
+  const std::string none = "{}";
+  Reply r = hub::call("POST", "/api/sync", &none, 60000);
   if (!r.ok()) { s.why = "the SYNC did not run: " + errorOf(r); return s; }   // DRAFT
   JsonDocument d;
   if (!deserializeJson(d, (const char *)r.body.data(), r.body.size())) {

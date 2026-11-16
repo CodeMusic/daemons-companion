@@ -51,6 +51,12 @@ void end();
 Reply post(const std::string &path, const std::string &json, long timeoutMs = 8000);
 std::string deviceId();
 
+// C-56: every request to the hub goes this way -- home first, the relay (the user's n8n) when home does not answer
+Reply call(const std::string &method, const std::string &path, const std::string *json, long timeoutMs);
+Reply get(const std::string &path, long timeoutMs);
+bool away();                               // the last answer came through the relay (the band says AWAY)
+std::string awayAddress();                 // the relay's address, learned at pairing and from home; "" when none
+
 // C-380: paired as a phone -- the hub's code typed on the keys (POST /api/pair) gives a key with the whole API, the
 // mirror included; kept in ~/.config/daemons/token (only this user may read it), the hub's address beside it
 bool paired();

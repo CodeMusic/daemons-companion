@@ -66,6 +66,18 @@ version", and the same RP3A0 chip the planned Pi Zero 2 W device would use (C-08
   - read only refused;
   - another game's save was refused, then kept as "This device's other game", while the hub's own game stayed its
     mirror.
+- **Away from home (C-380 with C-56, 2026-11-16).** The relay's address comes with pairing and is refreshed from home.
+  Every request goes as the app's do:
+  - home first, waiting briefly for it to connect;
+  - then the relay's envelope with this device's key, the device naming itself in the path;
+  - the route kept a minute;
+  - one request at a time until the relay answers;
+  - a 502 rests it 30 s, and then home is asked once more in full.
+
+  The band says AWAY. Run against a scratch companion behind a stand-in for the n8n workflow (its envelope, its secret,
+  its 502), with home unreachable: the save sent, a SYNC, the copy taken, the state, the pictures and a FEED all went
+  through it. The relay down was said plainly; home again went home. Pictures are kept by artKey, so the relay is
+  asked only for new ones.
 - **The companion's screens (C-381, 2026-11-16).** All drawn from `/api/device/state` with the boards' own calls,
   against a scratch companion with a synthetic save (DAEMONS qa 16Nov2026 C381):
   - **HOME:** the daemon in its den (its picture from `/api/device/art`), its mood word, care pips, the next step, and

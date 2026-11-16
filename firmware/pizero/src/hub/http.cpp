@@ -9,7 +9,7 @@ static size_t take(char *p, size_t size, size_t n, void *to) {
   return size * n;
 }
 
-static Reply call(const std::string &url, const std::string *post, const std::vector<std::string> &headers, long timeoutMs) {
+static Reply call(const std::string &url, const std::string *post, const std::vector<std::string> &headers, long timeoutMs, long connectMs) {
   static std::once_flag once;
   std::call_once(once, [] { curl_global_init(CURL_GLOBAL_DEFAULT); });
   Reply r;
@@ -22,7 +22,7 @@ static Reply call(const std::string &url, const std::string *post, const std::ve
   curl_easy_setopt(c, CURLOPT_HTTPHEADER, h);
   curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(c, CURLOPT_TIMEOUT_MS, timeoutMs);
-  curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, timeoutMs < 5000 ? timeoutMs : 5000L);
+  curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT_MS, connectMs > 0 ? connectMs : timeoutMs < 5000 ? timeoutMs : 5000L);
   curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
   curl_easy_setopt(c, CURLOPT_USERAGENT, "daemons-zero");
   curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, take);
@@ -39,9 +39,9 @@ static Reply call(const std::string &url, const std::string *post, const std::ve
   return r;
 }
 
-Reply httpGet(const std::string &url, const std::vector<std::string> &headers, long timeoutMs) {
-  return call(url, nullptr, headers, timeoutMs);
+Reply httpGet(const std::string &url, const std::vector<std::string> &headers, long timeoutMs, long connectMs) {
+  return call(url, nullptr, headers, timeoutMs, connectMs);
 }
-Reply httpPost(const std::string &url, const std::string &json, const std::vector<std::string> &headers, long timeoutMs) {
-  return call(url, &json, headers, timeoutMs);
+Reply httpPost(const std::string &url, const std::string &json, const std::vector<std::string> &headers, long timeoutMs, long connectMs) {
+  return call(url, &json, headers, timeoutMs, connectMs);
 }

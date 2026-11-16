@@ -95,6 +95,7 @@ void drawBand(const char *title, uint16_t colour) {
   hal::Power p = hal::power();
   std::string right = clockNow();
   if (p.percent >= 0) right = std::to_string(p.percent) + (p.charging ? "%+ " : "% ") + right;
+  if (hub::away()) right = "AWAY " + right;   // C-56: the hub reached through the relay   // DRAFT
   canvas.setCursor(hal::W - 6 - 6 * (int)right.size(), 3);
   canvas.print(right.c_str());
 }

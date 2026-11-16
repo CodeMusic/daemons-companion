@@ -45,6 +45,15 @@ you, and the hub lists the device among its phones. From then on the save is kep
 - **Another game's save** (a new game begun here) is refused as the hub's mirror. HOME then asks, as the app does,
   whether to keep it on the hub as a save of its own (C-215). Yes keeps it there at each save after.
 - `--mirror-in`, `--send-save`, `--sync` and `--keep-there` each do one step and stop, for checking a hub.
+- **Away from home (C-56)**: pairing keeps the relay's address (the user's n8n webhook; `~/.config/daemons/away`,
+  refreshed from home once a run). Every request goes like this:
+  - home first, waiting briefly for it to connect;
+  - then the relay, as an envelope with this device's key, the device naming itself with `?device=`;
+  - the route that worked is kept a minute;
+  - a 502 from the relay rests it 30 s, and home is then asked once more in full;
+  - the band says AWAY while the relay is the way.
+
+  Daemon pictures are kept by artKey in `~/.local/share/daemons/art/`, so the relay is asked only for new ones.
 
 **The companion's screens (C-381)**, along HOME's row and drawn from the hub's device state:
 

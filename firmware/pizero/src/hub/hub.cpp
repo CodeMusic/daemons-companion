@@ -39,6 +39,84 @@ std::string deviceName() { return id == "cardputer-zero-window" ? "Cardputer Zer
 
 std::string deviceId() { return id; }
 
+// ---- C-56: the way from away -- home first, then the relay (docs/REMOTE.md, app/platform/net.ts) ----------------------
+// The relay is the user's n8n: one webhook that carries any request as an envelope {method, path, body} with this
+// device's key, and answers with the hub's own status, or 502 when the hub is out of its reach. Only the key goes through
+// it, so this device names itself in the path (?device=) as the phone does. Home is asked first with a short wait to
+// connect (a home that answers then gets the whole wait, so a save at home is never cut short); the route that worked
+// is kept a minute; one request at a time goes through the relay until it has answered (C-107); a 502 rests it 30 s,
+// and then home is asked once more in full (C-109).
+static std::string awayUrl;
+static std::mutex relayOne;
+static std::atomic<long long> routeAwayUntil{0}, relayOkUntil{0}, relayDownUntil{0};
+static std::atomic<bool> lastAway{false};
+static long long nowMs() {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+bool away() { return lastAway; }
+std::string awayAddress() { std::lock_guard<std::mutex> g(lock); return awayUrl; }
+static void keepAway(const std::string &url) {
+  {
+    std::lock_guard<std::mutex> g(lock);
+    if (url == awayUrl) return;
+    awayUrl = url;
+  }
+  if (url.empty()) remove(inConfig("away").c_str());
+  else { writeTextAtomic(inConfig("away"), url + "\n"); chmod(inConfig("away").c_str(), 0600); }
+}
+
+static std::string named(const std::string &path) {
+  return path + (path.find('?') == std::string::npos ? "?" : "&") + "device=" + id;
+}
+static Reply viaHome(const std::string &method, const std::string &path, const std::string *json, long timeoutMs, long connectMs) {
+  const std::string url = address() + named(path);
+  return method == "POST" ? httpPost(url, json ? *json : "{}", headers(), timeoutMs, connectMs) : httpGet(url, headers(), timeoutMs, connectMs);
+}
+static bool gatewayDown(const Reply &r) { return r.status == 502 || r.status == 503 || r.status == 504; }
+static Reply viaRelay(const std::string &method, const std::string &path, const std::string *json, long timeoutMs) {
+  Reply r;
+  if (nowMs() < relayDownUntil) { r.error = "the hub did not answer the relay a moment ago"; return r; }   // DRAFT
+  std::unique_lock<std::mutex> one(relayOne, std::defer_lock);
+  if (nowMs() >= relayOkUntil) one.lock();   // until the relay has answered for the hub, one request at a time
+  if (nowMs() < relayDownUntil) { r.error = "the hub did not answer the relay a moment ago"; return r; }   // DRAFT
+  std::string k;
+  { std::lock_guard<std::mutex> g(lock); k = key; }
+  std::string envelope = "{\"method\":\"" + method + "\",\"path\":\"" + named(path) + "\"";
+  if (method == "POST") envelope += ",\"body\":" + (json && !json->empty() ? *json : std::string("{}"));
+  envelope += "}";
+  r = httpPost(awayAddress(), envelope, { "authorization: Bearer " + k }, timeoutMs < 60000 ? 60000 : timeoutMs, 8000);
+  if (!r.error.empty() || gatewayDown(r)) { relayDownUntil = nowMs() + 30000; relayOkUntil = 0; routeAwayUntil = 0; }
+  else relayOkUntil = nowMs() + 60000;
+  return r;
+}
+
+Reply call(const std::string &method, const std::string &path, const std::string *json, long timeoutMs) {
+  if (awayAddress().empty() || !paired()) { Reply r = viaHome(method, path, json, timeoutMs, 0); lastAway = false; return r; }
+  const bool awayFirst = nowMs() < routeAwayUntil;
+  Reply r, failed;
+  for (int i = 0; i < 2; i++) {
+    const bool relay = (i == 0) == awayFirst;
+    r = relay ? viaRelay(method, path, json, timeoutMs) : viaHome(method, path, json, timeoutMs, 2500);
+    if (r.status > 0 && !(relay && gatewayDown(r))) {
+      routeAwayUntil = relay ? nowMs() + 60000 : 0;
+      lastAway = relay;
+      return r;
+    }
+    failed = r;
+  }
+  // C-109: the relay could not reach the hub either -- home once more, in full
+  r = viaHome(method, path, json, timeoutMs, 8000);
+  if (r.status > 0) { routeAwayUntil = 0; lastAway = false; return r; }
+  r.error = "neither home nor the way from away answered";   // DRAFT
+  if (failed.error.empty() && failed.status) {   // the relay answered for itself: the hub is out of its reach
+    JsonDocument d;
+    if (!deserializeJson(d, (const char *)failed.body.data(), failed.body.size()) && d["error"].is<const char *>())
+      r.error = std::string("the relay says ") + d["error"].as<const char *>();   // DRAFT
+  }
+  return r;
+}
+Reply get(const std::string &path, long timeoutMs) { return call("GET", path, nullptr, timeoutMs); }
+
 // ---- the pictures: fetched once per artKey, kept while the program runs ----------------------------------------------
 static std::mutex artLock;
 static std::map<std::string, std::shared_ptr<const Sprite>> pictures;
@@ -48,10 +126,23 @@ std::shared_ptr<const Sprite> art(const std::string &artKey) {
   auto it = pictures.find(artKey);
   return it == pictures.end() ? nullptr : it->second;
 }
+// Each picture is also kept on the device by its artKey (<data>/art/), so a new start asks the hub -- and, away, the
+// relay, which runs once per request -- only for a picture it has never had
+static std::string artFile(const std::string &artKey) {
+  std::string safe;
+  for (char c : artKey) safe += isalnum((unsigned char)c) || c == '-' || c == '.' ? c : '_';
+  return inData("art") + "/" + safe + ".json";
+}
 static void fetchArt(const std::string &artKey, const std::string &query) {
   if (artKey.empty() || art(artKey)) return;
-  Reply r = httpGet(address() + "/api/device/art" + query, headers(), 6000);
-  if (!r.ok()) return;
+  Reply r;
+  if (readFile(artFile(artKey), r.body) && !r.body.empty()) r.status = 200;
+  else {
+    r = get("/api/device/art" + query, 6000);
+    if (!r.ok()) return;
+    mkdir(inData("art").c_str(), 0755);
+    writeFileAtomic(artFile(artKey), r.body);
+  }
   JsonDocument d;
   if (deserializeJson(d, (const char *)r.body.data(), r.body.size())) return;
   auto s = std::make_shared<Sprite>();
@@ -76,7 +167,7 @@ static std::string joined(JsonVariantConst list) {   // ["CONTENT","VECTOR"] -> 
 static void ask() {
   HubView v;
   v.asked = true;
-  Reply r = httpGet(address() + "/api/device/state", headers(), 6000);
+  Reply r = get("/api/device/state", 6000);
   if (!r.ok()) {
     v.error = !r.error.empty() ? r.error : "the hub said " + std::to_string(r.status);   // DRAFT
   } else {
@@ -131,6 +222,13 @@ static void ask() {
     last = v;
   }
   // the pictures after the words, so the screen has something at once: the carried daemon's, then the party's by slot
+  // C-56: where to go when home does not answer -- learned at home, once a run, and kept for when it is needed
+  static bool learned = false;
+  if (v.reached && !away() && paired() && !learned) {
+    Reply a = get("/api/settings/away", 6000);
+    JsonDocument d;
+    if (a.ok() && !deserializeJson(d, (const char *)a.body.data(), a.body.size())) { keepAway(d["url"] | ""); learned = true; }
+  }
   if (v.carrying) fetchArt(v.artKey, "");
   for (auto &m : v.party) fetchArt(m.artKey, "?slot=" + std::to_string(m.slot));
 }
@@ -138,7 +236,7 @@ static void ask() {
 void refresh() { askNow = true; wake.notify_all(); }
 
 Reply post(const std::string &path, const std::string &json, long timeoutMs) {
-  Reply r = httpPost(address() + path, json, headers(), timeoutMs);
+  Reply r = call("POST", path, &json, timeoutMs);
   refresh();
   return r;
 }
@@ -163,10 +261,13 @@ void begin(const std::string &deviceId) {
   a = trimmed(a);
   if (a == "none") a = "";
   if (readText(inConfig("token"), k)) k = trimmed(k);
+  std::string w;
+  if (readText(inConfig("away"), w)) w = trimmed(w);
   {
     std::lock_guard<std::mutex> g(lock);
     base = a;
     key = k;
+    awayUrl = w;
     if (a.empty()) last.error = "no hub set";   // DRAFT
   }
   start();
@@ -191,6 +292,7 @@ std::string pair(const std::string &address, const std::string &code, const std:
   if (!writeTextAtomic(tokenPath, k + "\n")) return "the key could not be kept on this device";   // DRAFT
   chmod(tokenPath.c_str(), 0600);
   writeTextAtomic(inConfig("hub"), a + "\n");
+  keepAway(d["away"].is<const char *>() ? d["away"].as<const char *>() : "");   // C-56: the way back from anywhere
   {
     std::lock_guard<std::mutex> g(lock);
     base = a;

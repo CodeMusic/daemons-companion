@@ -4,7 +4,7 @@ import { BOOK_VOICE, keptMost, playerVoice, speakerNamed, voiceKey, voiceOf } fr
 import { playerContextOf } from "../src/playervoice.js";
 import { buildSave } from "./build_save.js";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { ENTRY_VOICE, INDEX_VOICE } from "../src/ai/tiinyfirst.js";
+import { ENTRY_VOICE, INDEX_VOICE } from "../src/ai/voices.js";
 import { voiceRecipe } from "../src/ai/voices.js";
 
 describe("a voice from any speaker", () => {

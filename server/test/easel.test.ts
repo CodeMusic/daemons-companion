@@ -6,7 +6,8 @@ import { createServer, type Server } from "node:http";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { comfyPaint, imagePromptOf, kleinGraph, moodOfPaint, ownTouch, paintStyle, readPainting, TOUCHES, TYPE_STYLE } from "../src/ai/easel.js";
+import { imagePromptOf, moodOfPaint, ownTouch, paintStyle, readPainting, TOUCHES, TYPE_STYLE } from "../src/ai/easel.js";
+import { comfyPaint, kleinGraph } from "../src/ai/comfy.js";   // C-387
 import { buildPersona, lastWake, nextWake, personaFresh, personaText, signatureOf, todayOf, withToday, type DayPersonaFacts } from "../src/persona.js";
 import { selfOf } from "../src/self.js";
 import { dayFacts, speciesFacts } from "../src/ai/personaof.js";

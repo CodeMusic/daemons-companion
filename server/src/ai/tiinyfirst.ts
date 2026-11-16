@@ -9,21 +9,12 @@ import { GUIDE_SETUP, guideQuestion } from "../guideask.js";
 import type { House, TalkAnswer, TalkAsk } from "./house.js";
 import { persona } from "./house.js";
 import { STOPPED, tiinyChat, tiinyHear, tiinySpeak, type TiinyAt, type WriteJob } from "./tiiny.js";
-import { voiceRecipe } from "./voices.js";
+import { INDEX_VOICE, voiceRecipe } from "./voices.js";   // C-387: the INDEX's voice is a character, kept with the others
 import { chatOn, type EndpointNow } from "./endpoints.js";   // C-280 (1)
 import { MIND_POWER, order, think, type Mind, HEDGE_QUICK_MS } from "./thoughtroute.js";   // C-360
 
 export type TiinyNow = () => { at: TiinyAt; model: string; quick?: string } | null;   // null: not set up, or not answering now
 // model: the background thinker; quick: the foreground one (tiiny.ts), the background one when not given
-
-// The INDEX's own voice, said to a voice-design model -- DRAFT, a trainer's own (voice.recipe.index) used whole
-export const INDEX_VOICE = "a calm, clear, measured narrator's voice, warm and precise, like a gentle museum guide reading " +
-  "an entry aloud; unhurried, every word distinct";
-// C-303 (the user, 2026-11-06: "a voice described to it like our index voice (robotic glitchy etc)"): an INDEX ENTRY is
-// read by the device -- the record is an instrument's, and it sounds like one. Books, pages and dreams keep the reader
-// above; only an entry is read in this. DRAFT, a trainer's own (voice.recipe.entry) used whole
-export const ENTRY_VOICE = "a synthetic, robotic device voice: flat, precise and even, with a clipped electronic tone and " +
-  "small digital glitches and stutters now and then, like a handheld scanner reading a record aloud; no warmth, every word distinct";
 
 // C-280 (1): the player's ENDPOINTS follow the Tiiny, in the order given, before the boards -- each one more mind in the
 // chain. homeOnly: THE MIND's "only at home" ring (C-307), which skips any endpoint off the house's networks.

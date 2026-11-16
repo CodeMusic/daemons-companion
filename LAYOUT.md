@@ -1,7 +1,7 @@
 # Layout -- where everything in daemons-companion lives
 
 **The one map of this repository** (C-292). It says where each kind of code goes, so new code lands beside its own
-kind instead of at the top of a folder. **Keep it true:** a commit that adds, moves, renames or removes a folder, or a
+kind instead of at the top of a folder, and on its own side of **mind and machine** (below). **Keep it true:** a commit that adds, moves, renames or removes a folder, or a
 file at the repository's root, updates this file in the same commit. `server/test/layout.test.ts` fails when a folder
 exists that is not named here, or a path named here no longer exists.
 
@@ -50,7 +50,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 |---|---|
 | `src/main.ts`, `src/api.ts` | the server on a computer or the hub (Node): its HTTP API |
 | `src/core.ts`, `src/routes.ts`, `src/store.ts` | the rules themselves, and the requests a phone hosting alone answers -- **they run on the phone too** (C-111; every such file says so in its first line, C-290) |
-| `src/ai/` | talk, voices and the thinkers: the house's module, the Tiiny, the player's endpoints after it (`endpoints.ts`, C-280: also `atHome`, which the phone imports), `say.ts` (`sayable()`, DAY-mons), THE MIND's ledger of work (`tasks.ts`, C-319) and its plans for LATER (`schedule.ts`, C-319), every voice from its speaker and context (`voiceof.ts`, C-323: a daemon, the INDEX, the player, a book; `../playervoice.ts` reads the player's from the save), and every persona, its sibling (`personaof.ts`, C-329: a daemon's telling, care, goals, dream, the day's virtue over its shadow and chakra, and the card they travel as; `../persona.ts` is the persona of the day over it, built at wake, C-338); the self's memory, made each night (`../memory.ts`, C-253: YESTERDAY, THE MONTH and KEPT, written by the quick thinker after the wake); READ THE SIGNS in a journal (`../signs.ts`, C-356: the four books distilled into `data/symbols.json`, principles and a lexicon read by word, for the quick thinker or alone), THE EASEL's painter (`easel.ts`, C-338: each daemon's style, the image model on roverbyteseer), and THE MUSE every creation is made from (`muse.ts`, C-386: the persona of the day, a thread of the journal, the synesthesia of now) |
+| `src/ai/` | talk, voices and the thinkers: the house's module, the Tiiny, the player's endpoints after it (`endpoints.ts`, C-280: also `atHome`, which the phone imports), `say.ts` (`sayable()`, DAY-mons), THE MIND's ledger of work (`tasks.ts`, C-319) and its plans for LATER (`schedule.ts`, C-319), every voice from its speaker and context (`voiceof.ts`, C-323: a daemon, the INDEX, the player, a book; `../playervoice.ts` reads the player's from the save), and every persona, its sibling (`personaof.ts`, C-329: a daemon's telling, care, goals, dream, the day's virtue over its shadow and chakra, and the card they travel as; `../persona.ts` is the persona of the day over it, built at wake, C-338); the self's memory, made each night (`../memory.ts`, C-253: YESTERDAY, THE MONTH and KEPT, written by the quick thinker after the wake); READ THE SIGNS in a journal (`../signs.ts`, C-356: the four books distilled into `data/symbols.json`, principles and a lexicon read by word, for the quick thinker or alone), THE EASEL's painter (`easel.ts`, C-338: each daemon's style) and the image door it paints through (`comfy.ts`, C-387: ComfyUI on roverbyteseer), and THE MUSE every creation is made from (`muse.ts`, C-386: the persona of the day, a thread of the journal, the synesthesia of now) |
 | `src/save/` | reading a DAEMONS save, and writing to it (`writer.ts`) |
 | `src/game/` | the player's ROM: patches, hashes, the live save and its mirror |
 | `src/commons*.ts` | THE COMMONS, which runs on its own machine |
@@ -61,6 +61,31 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `data/` | what the game is built from, exported by DAEMONS (species, art, sounds, maps, ...) |
 | `test/` | vitest, one file per feature (`npm test`, Node 22+) |
 | `tools/` | the server's generators and benches |
+
+## Mind and machine -- the code's two vocabularies (C-387)
+
+The companion is two things at once, and its code keeps them apart (the user, 2026-11-16): **the psychology of mind**
+-- the game's logic of who a daemon is: its feelings, persona, dreams, memory, care, the week and the months and their
+colours, the signs it reads, the words a creation is asked for -- and **the computer science of machine-learning
+illusions** -- the thinkers, endpoints, THE MIND's routing, the hearing, voice, image and music doors, and the files they
+render into. Everything else (the game and its save, devices and radios, storage, the exchange, the site) is neither.
+
+**The rule: a MIND module never imports a MACHINE one, and never calls a model itself.** When the mind needs a model it
+is *handed* one -- a `Writer`, a `Thinker`, a `Chat` (`journal.ts`, `memory.ts`, `dialogue.ts`, `ai/breakdown.ts`) -- or
+it writes a RECIPE the machine renders (`sleepsound.ts` for `sleeptracks.ts`, `sing.ts` for `songs.ts`, `ai/easel.ts`
+for `ai/comfy.ts`, `ai/voices.ts` for the voice doors). A MACHINE module may read MIND words to render them. The wiring
+that joins the two is `api.ts`, `routes.ts`, `core.ts` and the `*_main.ts` files. **THE MIND** (C-307), despite its name,
+is machine vocabulary: the minds it routes across are machines. `server/src/mind.ts` is the daemon's own mind.
+
+Paths are under `server/src/` unless they begin `app/`. `server/test/layout.test.ts` checks that every file named here
+exists, that no MIND file imports a MACHINE one or calls `fetch` or `node:*`, and that **every file in `server/src/ai/`
+is named on one side** -- `ai/` holds both, so a new file there says which it is. A new MIND or MACHINE file elsewhere
+is added here in the same commit; when one file starts to hold both, split it (the words to MIND, the call to MACHINE).
+
+| Side | Modules |
+|---|---|
+| **MIND** | `app/state/month.ts`, `ai/breakdown.ts`, `ai/easel.ts`, `ai/gender.ts`, `ai/muse.ts`, `ai/personaof.ts`, `ai/voiceof.ts`, `ai/voices.ts`, `arcana.ts`, `aurora.ts`, `care.ts`, `context.ts`, `dawns.ts`, `days.ts`, `dialogue.ts`, `dreams.ts`, `drift.ts`, `eudaimon.ts`, `evolve.ts`, `expressions.ts`, `feelings.ts`, `gift.ts`, `guideask.ts`, `halloween.ts`, `hermetic.ts`, `holidays.ts`, `intuition.ts`, `journal.ts`, `life.ts`, `lines.ts`, `memory.ts`, `mind.ts`, `months.ts`, `originbook.ts`, `persona.ts`, `playervoice.ts`, `seasons.ts`, `self.ts`, `signs.ts`, `sing.ts`, `sleepsound.ts`, `spirits.ts`, `subtleask.ts`, `synesthesia.ts`, `tending.ts`, `thrive.ts`, `unity.ts`, `vessel.ts`, `weathering.ts`, `witching.ts` |
+| **MACHINE** | `app/platform/endpoint.ts`, `app/platform/lend.ts`, `app/platform/mesh.ts`, `app/platform/mind.ts`, `app/platform/rendering.ts`, `app/state/me.ts`, `ai/comfy.ts`, `ai/discover.ts`, `ai/endpoints.ts`, `ai/hotwords.ts`, `ai/house.ts`, `ai/mindlog.ts`, `ai/module.ts`, `ai/say.ts`, `ai/schedule.ts`, `ai/stackflow.ts`, `ai/talkjobs.ts`, `ai/tasks.ts`, `ai/thoughtroute.ts`, `ai/tiiny.ts`, `ai/tiinyfirst.ts`, `ai/tiinykeep.ts`, `ai/voice.ts`, `ai/wav.ts`, `bookrecordings.ts`, `llmtalker.ts`, `mesh_worker_main.ts`, `ollama.ts`, `procmesh.ts`, `sleepexport.ts`, `sleeptracks.ts`, `songs.ts`, `voicebank.ts` |
 
 ## `firmware/` -- the devices
 

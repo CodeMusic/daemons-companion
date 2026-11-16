@@ -2,7 +2,7 @@
 // reads both and writes the plan that holds them. Off by default: with the AI switched off (the default), the answer
 // is a built-in example, marked as one, and NO MODEL IS CALLED. A model is reached through an OpenAI-compatible
 // endpoint (DAEMONS' LiteLLM, ai/), only when config.ai.enabled is true.
-import type { Config } from "../config.js";
+// C-387: MIND -- Musai's shape, the three asks and how they are joined. The model it asks is handed in, never imported.
 import type { Plan } from "../db.js";
 
 export interface Breakdown { example: boolean; logical: string; associative: string; plan: Plan }
@@ -30,22 +30,12 @@ export function exampleBreakdown(goal: string): Breakdown {
   };
 }
 
-async function chat(cfg: Config, system: string, user: string): Promise<string> {
-  const key = cfg.ai.apiKeyEnv ? process.env[cfg.ai.apiKeyEnv] : undefined;
-  const r = await fetch(`${cfg.ai.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: { "content-type": "application/json", ...(key ? { authorization: `Bearer ${key}` } : {}) },
-    body: JSON.stringify({ model: cfg.ai.model, messages: [{ role: "system", content: system }, { role: "user", content: user }] }),
-  });
-  if (!r.ok) throw new Error(`the model answered ${r.status}`);
-  const j = (await r.json()) as any;
-  return j.choices?.[0]?.message?.content ?? "";
-}
-
-export async function breakdown(goal: string, cfg: Config): Promise<Breakdown> {
-  if (!cfg.ai.enabled || !cfg.ai.model) return exampleBreakdown(goal);
-  const [logical, associative] = await Promise.all([chat(cfg, PROMPTS.logical, goal), chat(cfg, PROMPTS.associative, goal)]);
-  const merged = await chat(cfg, PROMPTS.integrate,
+// C-387: the thinker is handed in (api.ts makes it from config.ai, through ai/endpoints.ts plainChat); null is the AI off
+export type Chat = (system: string, user: string) => Promise<string>;
+export async function breakdown(goal: string, chat: Chat | null): Promise<Breakdown> {
+  if (!chat) return exampleBreakdown(goal);
+  const [logical, associative] = await Promise.all([chat(PROMPTS.logical, goal), chat(PROMPTS.associative, goal)]);
+  const merged = await chat(PROMPTS.integrate,
     `The goal: ${goal}\n\nThe logical answer:\n${logical}\n\nThe associative answer:\n${associative}`);
   const json = merged.slice(merged.indexOf("{"), merged.lastIndexOf("}") + 1);
   return { example: false, logical, associative, plan: JSON.parse(json) as Plan };

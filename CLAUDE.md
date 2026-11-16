@@ -6,6 +6,11 @@ Read `CONTEXT.md` (what this is), then **`LAYOUT.md` (where everything lives)**,
   that already sorts its files. If no folder fits, add one and say what it is for.
 - **Keep `LAYOUT.md` true** (C-292): a commit that adds, moves, renames or removes a folder, or a file at the root,
   updates `LAYOUT.md` in the same commit. `server/test/layout.test.ts` (in `npm test`) fails when they disagree.
+- **Keep mind and machine apart** (C-387; `LAYOUT.md` "Mind and machine"): the psychology of mind (feelings, persona,
+  dreams, memory, the muse, synesthesia, the words a creation is asked for) never imports the machinery of models
+  (thinkers, endpoints, THE MIND's routing, the voice, image and music doors) and never calls a model itself -- it is
+  handed a thinker, or writes a recipe the machine renders. A new file in `server/src/ai/`, or any new MIND or MACHINE
+  file, is named on its side in `LAYOUT.md`; `server/test/layout.test.ts` fails otherwise.
 - Move a file with `git mv`, in a commit that only moves it and fixes its imports, so `git log --follow` keeps its history.
 - Tickets are `C-` ids in `TODO.md`, permanent; commit messages and code comments cite them (`// C-264: ...`). Keep those
   comments when code moves.

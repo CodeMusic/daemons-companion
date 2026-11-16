@@ -101,3 +101,18 @@ export function endpointsNow(list: Endpoint[], health: EndpointHealth[] | undefi
     return model ? [{ e, model, home }] : [];
   });
 }
+
+// C-06, C-387: one plain OpenAI-compatible chat (config.ai's base and model, the key given), as ai/breakdown.ts is handed
+// it -- the call moved here from there, so the goal's breakdown keeps only its own shape. Throws on a refusal.
+export function plainChat(baseUrl: string, model: string, key?: string, f: typeof fetch = fetch) {
+  return async (system: string, user: string): Promise<string> => {
+    const r = await f(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(key ? { authorization: `Bearer ${key}` } : {}) },
+      body: JSON.stringify({ model, messages: [{ role: "system", content: system }, { role: "user", content: user }] }),
+    });
+    if (!r.ok) throw new Error(`the model answered ${r.status}`);
+    const j = (await r.json()) as any;
+    return j.choices?.[0]?.message?.content ?? "";
+  };
+}

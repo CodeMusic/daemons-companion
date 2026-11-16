@@ -5,15 +5,14 @@
 // is a new key, heard as a new voice.
 //
 //   a daemon          its type, its species' own traits, its category, how it feels (ai/voices.ts) -- or its trainer's own
-//   the INDEX entry   the device reading its record: robotic (tiinyfirst.ts ENTRY_VOICE) -- the gears play button
+//   the INDEX entry   the device reading its record: robotic (voices.ts ENTRY_VOICE) -- the gears play button
 //   the INDEX         the reader: the GUIDE's answers, a page, a book with no voice of its own
 //   the player        everything they have done in the game (below): it moves a little as they play
 //   a book            each its own; THE NOTEBOOK is the player's, so it is read in the player's voice
 //
 // Every word here is DRAFT, the user's to rewrite. No node: imports (core.ts reaches this on the phone).
 import type { Feelings } from "../feelings.js";
-import { ENTRY_VOICE, INDEX_VOICE } from "./tiinyfirst.js";
-import { TYPE_VOICE, voiceKey, voiceRecipe } from "./voices.js";
+import { ENTRY_VOICE, INDEX_VOICE, TYPE_VOICE, voiceKey, voiceRecipe } from "./voices.js";
 
 export type Speaker =
   | { kind: "daemon"; species?: number | null; types?: string[] | string; category?: string; feelings?: Feelings | null; own?: string | null }

@@ -46,3 +46,40 @@ describe("LAYOUT.md", () => {
     expect(gone, `LAYOUT.md names folders that no longer exist: ${gone.join(", ")}`).toEqual([]);
   });
 });
+
+// C-387: mind and machine -- LAYOUT.md's "Mind and machine" table names which side each module is on. A MIND module never
+// imports a MACHINE one and never calls a model itself (no fetch, no node:*): it is handed a thinker, or writes a recipe.
+describe("mind and machine", () => {
+  const row = (side: string) => {
+    const line = MAP.split("\n").find((l) => l.startsWith(`| **${side}** |`));
+    if (!line) throw new Error(`LAYOUT.md has no ${side} row under "Mind and machine"`);
+    return [...line.matchAll(/`([\w./-]+\.tsx?)`/g)].map((m) => m[1].startsWith("app/") ? m[1] : `server/src/${m[1]}`);
+  };
+  const MIND = row("MIND"), MACHINE = row("MACHINE");
+  const machine = new Set(MACHINE.map((f) => f.replace(/\.tsx?$/, "")));
+  const code = (f: string) => readFileSync(join(ROOT, f), "utf8").split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  // every relative import, as a repository path without its extension
+  const importsOf = (f: string) => [...code(f).matchAll(/(?:from|import\(|require\()\s*["'](\.{1,2}\/[^"']+)["']/g)]
+    .map((m) => join(f, "..", m[1]).replace(/\.(js|tsx?)$/, ""));
+
+  it("names files that exist, each on one side", () => {
+    const gone = [...MIND, ...MACHINE].filter((f) => !existsSync(join(ROOT, f)));
+    expect(gone, `LAYOUT.md names modules that no longer exist: ${gone.join(", ")}`).toEqual([]);
+    const both = MIND.filter((f) => MACHINE.includes(f));
+    expect(both, `on both sides: ${both.join(", ")}`).toEqual([]);
+  });
+
+  it("names every file in server/src/ai/ on one side", () => {
+    const named = new Set([...MIND, ...MACHINE]);
+    const loose = readdirSync(join(ROOT, "server/src/ai")).filter((f) => /\.tsx?$/.test(f))
+      .map((f) => `server/src/ai/${f}`).filter((f) => !named.has(f));
+    expect(loose, `say which side these are on in LAYOUT.md's "Mind and machine": ${loose.join(", ")}`).toEqual([]);
+  });
+
+  it("keeps every MIND module off the machine", () => {
+    const crossings = MIND.flatMap((f) => importsOf(f).filter((d) => machine.has(d)).map((d) => `${f} -> ${d}`));
+    expect(crossings, "a MIND module imports a MACHINE one: hand it a thinker, or move the words to MIND").toEqual([]);
+    const calls = MIND.filter((f) => /\bfetch\s*\(|from\s+["']node:/.test(code(f)));
+    expect(calls, "a MIND module calls a model or the machine itself: hand it the call instead").toEqual([]);
+  });
+});

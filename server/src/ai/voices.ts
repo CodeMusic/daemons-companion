@@ -8,6 +8,17 @@
 // themselves (the store's voice.recipe.<species>), and that is used whole. Every word here is DRAFT. No node: imports.
 import type { Feelings } from "../feelings.js";
 
+// C-387: the two voices that are not a daemon's -- the INDEX reading, and the device reading an entry -- live here with the
+// daemons' (they were in ai/tiinyfirst.ts, which only routes them to a model).
+// The INDEX's own voice, said to a voice-design model -- DRAFT, a trainer's own (voice.recipe.index) used whole
+export const INDEX_VOICE = "a calm, clear, measured narrator's voice, warm and precise, like a gentle museum guide reading " +
+  "an entry aloud; unhurried, every word distinct";
+// C-303 (the user, 2026-11-06: "a voice described to it like our index voice (robotic glitchy etc)"): an INDEX ENTRY is
+// read by the device -- the record is an instrument's, and it sounds like one. Books, pages and dreams keep the reader
+// above; only an entry is read in this. DRAFT, a trainer's own (voice.recipe.entry) used whole
+export const ENTRY_VOICE = "a synthetic, robotic device voice: flat, precise and even, with a clipped electronic tone and " +
+  "small digital glitches and stutters now and then, like a handheld scanner reading a record aloud; no warmth, every word distinct";
+
 // One per type: how a daemon of it sounds -- DRAFT, the user's to rewrite
 export const TYPE_VOICE: Record<string, string> = {
   CONTENT: "a warm, full, unhurried voice, rounded and generous, like someone telling you a story they love",

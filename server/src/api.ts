@@ -68,13 +68,13 @@ import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
 import { keepLoaded, keepOf } from "./ai/tiinykeep.js";   // C-375
 import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, TIINY_PROMPT, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
-import { voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation
+import { ENTRY_VOICE, INDEX_VOICE, voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation; C-387: the INDEX's and the entry's too
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
 import { setDialogueThinker } from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import { playerContextOf } from "./playervoice.js";        // C-323: the player's, from their save
-import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
-import { chatOn, checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
+import { preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
+import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
@@ -85,7 +85,8 @@ import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, 
 import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
 import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
 import { readIndex } from "./save/index.js";
-import { captionOf, readSong, singAsk, SING_SYSTEM, Songs, type SingMode, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
+import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
+import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, type Creation } from "./creations.js";   // C-358; C-362
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
@@ -124,7 +125,8 @@ import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          /
 import { weatherNow, weatherToday } from "./context.js";
 import { consolidate, dayMaterial, gameDay, gameNow, memoryDue, readGame, readKept, RETRY_MIN, type GameNow } from "./memory.js";   // C-253
 import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
-import { comfyPaint, EASEL_HOST, imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
+import { imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
+import { comfyPaint, EASEL_HOST } from "./ai/comfy.js";   // C-387: the image door the painter is rendered through
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages, keptToPage } from "./guideask.js";   // C-209
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
@@ -3431,7 +3433,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/goals") {
         const b = await body(req);
         if (!b.title || typeof b.title !== "string") return send(res, 400, { error: "a goal needs a title" });
-        const bd = b.breakdown ? await breakdown(b.title, cfg) : null;
+        const think = cfg.ai.enabled && cfg.ai.model   // C-387: the thinker made here, handed to the goal's breakdown
+          ? plainChat(cfg.ai.baseUrl, cfg.ai.model, cfg.ai.apiKeyEnv ? process.env[cfg.ai.apiKeyEnv] : undefined) : null;
+        const bd = b.breakdown ? await breakdown(b.title, think) : null;
         const goal = store.addGoal(b.title, bd?.plan);
         return send(res, 201, { goal, breakdown: bd });
       }

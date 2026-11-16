@@ -3,6 +3,7 @@
 // words behind a tap; the portal opens on NOW"): what the portal shows, worked out from what the companion already
 // knows -- the feelings and the event behind the strongest (feelings.ts), the dream the save carries (VAR_0x40D4, T-462),
 // and the words a model is given (self.ts). This file runs on the phone too (C-111): no node:*.
+// C-387: the daemon's own mind (MIND) -- not THE MIND (C-307), which is the machines it thinks on (app/platform/mesh.ts).
 // Every word DRAFT.
 import eventsJson from "../data/events.json" with { type: "json" };
 import { DREAM_TITLES, DREAM_VARS, type Quality } from "./dreams.js";

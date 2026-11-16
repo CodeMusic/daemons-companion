@@ -875,10 +875,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     let sizeIn = 0, sizeOut = 0;
     const job: WriteJob = { signal: ctl.signal, spent: (t) => { TASKS.update(task.id, { tokens: t }); },
                             by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e), quick: o.quick };   // C-319 later: its hand-offs
-    const write = async (system: string, user: string, most?: number) => {
+    // quick (C-383): this one write by the quick thinker, thinking off, whatever the task's own
+    const write = async (system: string, user: string, most?: number, quick?: boolean) => {
       if (ctl.signal.aborted) throw new Error(STOPPED);
       sizeIn += system.length + user.length; TASKS.update(task.id, { size: { in: sizeIn } });
-      const t = await house.write(system, user, most, job);
+      const t = await house.write(system, user, most, quick === undefined ? job : { ...job, quick });
       if (t) { sizeOut += t.length; TASKS.update(task.id, { size: { out: sizeOut } }); }
       return t;
     };
@@ -1245,16 +1246,20 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const ask = singAsk(mode, museFor(got.persona.text, now), voice, request, styleGuide);   // C-386: its muse
       // -- and one song's words at a time: songs asked together were written together, the Tiiny's thinker shared between
       // them, and each outran its five minutes (three asked at once, 2026-11-14 and -15: all but one failed together)
-      let said: string | null = null;
-      for (let i = 1; i <= SING_TRIES && !said; i++) {
+      // -- and (2026-11-16) an answer with no song in it is a failed write too: the thinker had spent all 4996 of its
+      // tokens reasoning and said 60 characters. A try after the first is asked of the quick thinker, thinking off.
+      let said: string | null = null, song = readSong(null, mode, request, styleGuide);
+      for (let i = 1; i <= SING_TRIES; i++) {
         const last = i === SING_TRIES;
         said = await oneSongWrite(async () => {
           await musicIdle();
           if (i > 1) await new Promise((r) => setTimeout(r, SING_AGAIN_MS));
-          return last ? w.write(SING_SYSTEM, ask, 900) : w.write(SING_SYSTEM, ask, 900).catch(() => null);
+          const quick = i > 1 ? true : undefined;
+          return last ? w.write(SING_SYSTEM, ask, 900, quick) : w.write(SING_SYSTEM, ask, 900, quick).catch(() => null);
         });
+        song = readSong(said, mode, request, styleGuide);
+        if (said && (mode === "lyrics" || /\{[\s\S]*"lyrics"/.test(said)) && song.lyrics) break;
       }
-      const song = readSong(said, mode, request, styleGuide);
       if (!song.lyrics) throw new Error("no words came");   // DRAFT
       songs().update(row.id, song);
       w.end("done");

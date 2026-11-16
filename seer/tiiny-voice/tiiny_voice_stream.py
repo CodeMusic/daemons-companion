@@ -27,7 +27,8 @@ through. Allowed:
     POST /tiiny/models/<model id>/stop      unload one                   (api/v1/models/<id>/stop)
     GET  /v1/music/info?model=...           a music model's defaults
     POST /v1/music/generate[/wav]           a song: lyrics and a caption (LiteLLM has no music route)
-    POST /v1/audio/transcriptions           heard, with the Tiiny's whole answer (LiteLLM keeps only its text)
+    POST /v1/audio/transcriptions           heard, with the Tiiny's whole answer (LiteLLM keeps only its text);
+                                            ?native=1 asks the Tiiny's own API (v1/audio/transcriptions), not its OpenAI one
 
 Part of the local cloud: seer/bindSeer.sh installs it with a Tiiny (seer/tiiny-voice/install.sh), its config
 seer/out/litellm.yaml (TIINY_VOICE_CONFIG), whose tiiny-voice key is named by TIINY_API_KEY.
@@ -181,7 +182,12 @@ class Voice(BaseHTTPRequestHandler):
             if not self.keyed():
                 return
             b = self.body(MOST_UPLOAD)
-            return None if b is None else self.forward("POST", BASE, "/audio/transcriptions", b, self.headers.get("content-type"), timeout=600)
+            if b is None:
+                return None
+            # C-370: the Tiiny's own API, as dev.tiiny.ai documents it (does it say who spoke?), or its OpenAI one
+            if "native=1" in self.path.partition("?")[2].split("&"):
+                return self.forward("POST", NATIVE, "/v1/audio/transcriptions", b, self.headers.get("content-type"), timeout=600)
+            return self.forward("POST", BASE, "/audio/transcriptions", b, self.headers.get("content-type"), timeout=600)
         if path != "/v1/audio/speech":
             return self.say(404, "not a route here")
         if not self.keyed():

@@ -360,6 +360,20 @@ reach it by Bluetooth and the companion instead.
 board autodetect); m5stack/M5Unified (sound, battery, LED); m5stack/M5Cardputer (the key map, the matrix and the
 TCA8418); meshtastic/firmware variants/esp32s3/m5stack_cardputer_adv (the cap's pins, TCXO and antenna switch).*
 
+## The Cardputer Zero (C-377)
+
+**A Linux board, not an ESP32**: a **Raspberry Pi CM0** (RP3A0, four A53 at 1 GHz, 512 MB, microSD) with an **ST7789V3
+320x170** on SPI (`/dev/fb0`), **46 keys on a TCA8418 (0x34)** read through evdev (no arrow keys: **F Z X C** are the
+arrows), an **ES8389** codec (0x10) and **AW8737A** amplifier into a 1 W speaker, a MEMS microphone and a 3.5 mm jack,
+a **1750 mAh** cell on a **BQ27220** gauge, an RX8130CE clock (0x32), the M5IOE1 expander (0x4F; backlight, LCD reset,
+the key lights), IR in (13) and out (12), USB-A, two USB-C, Ethernet, an HD output, Grove and the EXT 14-pin cap header
+(the Cap LoRa-1262 fits it). The full model adds a BMI270 + BMM150 and an IMX219 camera; the Lite has neither. Its own
+program, `firmware/pizero/`; the plan, its software and its first day are **docs/CARDPUTERZERO.md**. *Published
+figures, not yet seen on the device: `firmware/pizero/tools/probe.sh` checks them.*
+
+*Sources: docs.m5stack.com/en/CardputerZero (the pin map and I2C addresses), /compute/cardputerzero/usage and /image;
+github.com/CardputerZero (AppBuilder, Template, launcher).*
+
 ## The M5Stack Tab5 (C-77)
 
 **ESP32-P4** (RISC-V, 360 MHz, 32 MB PSRAM, 16 MB flash) with an **ESP32-C6** beside it for Wi-Fi 6 and Bluetooth 5,

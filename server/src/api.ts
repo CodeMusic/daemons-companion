@@ -1170,7 +1170,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     }
     return songsKept;
   };
-  const SING_AGAIN_MS = 30_000;   // C-383: after the music, a moment for the Tiiny's thinker before the second try
+  const SING_AGAIN_MS = 30_000, SING_TRIES = 4;   // C-383: after the music, a moment for the Tiiny's thinker before a try again
   const musicIdle = () => Promise.all([sleepTracks().idle(), songs().idle()]);
   const sing = (personality: number, mode: SingMode, request: string, styleGuide: string, voice: string, by?: string): Song | { error: string } => {
     const now = new Date(), got = personaNow(personality, now);
@@ -1184,14 +1184,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     (async () => {
       // C-383 (the user, 2026-11-15: "Yes, make it wait"): while the Tiiny makes music (a sleep piece, another song) its
       // thinker answers nobody, and the song failed "too long for the house's module" -- so the words wait for the music
-      // to finish, and a write that failed anyway is tried once more after it
+      // to finish, and a write that failed anyway is tried again after the music, up to SING_TRIES in all (proved
+      // 2026-11-15: two songs asked together, the second's one retry met a third song singing and failed)
       const ask = singAsk(mode, got.persona.text, voice, request, styleGuide);
-      await musicIdle();
-      let song = readSong(await w.write(SING_SYSTEM, ask, 900).catch(() => null), mode, request, styleGuide);
-      if (!song.lyrics) {
-        await musicIdle(); await new Promise((r) => setTimeout(r, SING_AGAIN_MS));
-        song = readSong(await w.write(SING_SYSTEM, ask, 900), mode, request, styleGuide);
+      let said: string | null = null;
+      for (let i = 1; i <= SING_TRIES && !said; i++) {
+        await musicIdle();
+        if (i > 1) await new Promise((r) => setTimeout(r, SING_AGAIN_MS));
+        said = i < SING_TRIES ? await w.write(SING_SYSTEM, ask, 900).catch(() => null) : await w.write(SING_SYSTEM, ask, 900);
       }
+      const song = readSong(said, mode, request, styleGuide);
       if (!song.lyrics) throw new Error("no words came");   // DRAFT
       songs().update(row.id, song);
       w.end("done");

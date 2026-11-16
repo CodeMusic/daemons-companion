@@ -112,8 +112,9 @@ export const titleOf = (request: string) => {
 };
 
 // What the image model is told: the scene, in the daemon's style, as a painting on canvas
-export const imagePromptOf = (scene: string, style: string) =>
-  `A painting on canvas, ${style}. ${scene} Hand-painted, visible texture of the paint, no text, no letters, no signature.`;
+// C-386: and its colours, when given (ai/muse.ts paintPalette): the month's behind, the day's in the main form
+export const imagePromptOf = (scene: string, style: string, palette?: string | null) =>
+  `A painting on canvas, ${style}. ${scene}${palette ? ` Its colours: ${palette}.` : ""} Hand-painted, visible texture of the paint, no text, no letters, no signature.`;
 
 // --- the image model: FLUX.2 klein 4B through ComfyUI (tools/spriteforge.py graph_klein, node for node) ---
 export const KLEIN = { unet: "flux-2-klein-4b.safetensors", clip: "qwen_3_4b.safetensors", vae: "flux2-vae.safetensors", steps: 4, cfg: 1.0 };

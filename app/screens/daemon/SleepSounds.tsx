@@ -8,7 +8,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { keep, mine, type Creation } from "../../platform/creations";   // C-358: what is played is kept in MINE
 import { CreationsScreen, RecordCover } from "./Creations";   // C-358
-import { DRIFT } from "../../sound/binaural";
+import { driftOf } from "../../sound/binaural";
 import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../../sound/sleepSession";
 import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../../ui/ui";
 
@@ -102,7 +102,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
       <XStack marginTop={8}>
         <CareKey label={drift ? "DRIFT DOWN · ON" : "DRIFT DOWN"} ink={ink ?? "#fbfaf6"} lit={drift} onPress={toggleDrift} />
       </XStack>
-      <Small>{`With headphones: a slow beat between your ears under the music, easing from ${DRIFT.map((d) => `${d.word.toLowerCase()} ${d.beat} Hz`).join(" to ")} as you fall asleep. Headphones only; on a speaker it waits.`}</Small>
+      <Small>{`With headphones: a slow beat between your ears under the music, easing from ${driftOf().map((d) => `${d.word.toLowerCase()} ${d.beat} Hz`).join(" to ")} as you fall asleep. Headphones only; on a speaker it waits.`}</Small>
 
       {/* C-358: every piece made -- this phone's, the household's and the community's -- in CREATIONS */}
       <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" marginTop={8}

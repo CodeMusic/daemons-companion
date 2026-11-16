@@ -4,8 +4,10 @@
 //
 //   export.mp3 / export-drift.mp3   the night as the phone plays it: the piece looped for thirty minutes, whole for
 //                                   twenty, faded over the last ten; with DRIFT DOWN, the binaural layer under it --
-//                                   left at the carrier, right at carrier + beat, the beat stepping alpha 10 Hz, theta
-//                                   6 Hz, delta 2 Hz as the app's does (app/sound/binaural.ts). Made once, then kept.
+//                                   left at the carrier, right at carrier + beat, the beat stepping through alpha,
+//                                   theta and delta as the app's does (app/sound/binaural.ts). Made once, then kept.
+//                                   C-386: the carrier the piece's key (the month's), the beats placed by the day the
+//                                   piece was made (drift.ts) -- so an export made twice is the same file.
 //   export.imedx                    PulseEntrain's self-contained session (its docs/SESSION_FORMAT.md, v2): the beat
 //                                   stages as scenes, the cover as meta.image and the piece as audio.music, both base64.
 //                                   Its `id` (daemons_sleep_<id>) and generation.daemons say which creation it is, so a
@@ -15,22 +17,20 @@
 import { existsSync, readFileSync, renameSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { argvFor, runFfmpeg } from "./procmesh.js";
+import { carrierOf, driftOf, type Stage } from "./drift.js";
+
+export { carrierOf, driftOf };
 
 export const SESSION_S = 30 * 60, FADE_S = 10 * 60;
-export const DRIFT = [{ at: 0, beat: 10, word: "ALPHA" }, { at: 600, beat: 6, word: "THETA" }, { at: 1200, beat: 2, word: "DELTA" }] as const;
 const DRIFT_LEVEL = 0.22;                       // as the app's: under the music, never over it
 const PE_MUSIC_BYTES = 3_500_000;               // the whole .imedx stays under ~5 MB once base64
 const PE_MUSIC_KBPS = 64;
 
-const NOTES: Record<string, number> = { C: 0, Db: 1, "C#": 1, D: 2, Eb: 3, "D#": 3, E: 4, F: 5, Gb: 6, "F#": 6, G: 7, Ab: 8, "G#": 8, A: 9, Bb: 10, "A#": 10, B: 11 };
-// the carrier for a key, in the octave from C3, a whole number of hertz -- the app's carrierOf, said again
-export function carrierOf(keyscale: string | null | undefined): number {
-  const n = NOTES[(keyscale ?? "").split(" ")[0]] ?? 0;
-  return Math.round(440 * 2 ** ((48 + n - 69) / 12));
-}
+// the night's stages for a piece: the day it was asked for places the beats (C-386)
+export const stagesOf = (asked?: string | null): Stage[] => driftOf(asked && !Number.isNaN(Date.parse(asked)) ? new Date(asked) : new Date());
 
 // how many beats have passed by t seconds (the beat steps at each stage): the right ear's extra phase, in cycles
-export function beatsBy(t: number): number {
+export function beatsBy(t: number, DRIFT: readonly Stage[]): number {
   let cycles = 0;
   for (let i = 0; i < DRIFT.length; i++) {
     const from = DRIFT[i].at, to = i + 1 < DRIFT.length ? DRIFT[i + 1].at : Infinity;
@@ -40,7 +40,7 @@ export function beatsBy(t: number): number {
   return cycles;
 }
 // the same, as an ffmpeg expression in t
-export function beatsExpr(): string {
+export function beatsExpr(DRIFT: readonly Stage[]): string {
   let expr = "", acc = 0;
   const parts: string[] = [];
   for (let i = 0; i < DRIFT.length; i++) {
@@ -54,7 +54,7 @@ export function beatsExpr(): string {
 
 // the stages as PulseEntrain scenes: each beat held until the next begins (its engine ramps between scenes, so a
 // stage ends with a scene a second before the next)
-export function driftScenes(carrierHz: number) {
+export function driftScenes(carrierHz: number, DRIFT: readonly Stage[]) {
   const scenes: { atSec: number; beatHz: number; carrierHz: number }[] = [];
   DRIFT.forEach((d, i) => {
     const end = i + 1 < DRIFT.length ? DRIFT[i + 1].at - 1 : SESSION_S;
@@ -89,7 +89,7 @@ function once(folder: string, name: string, make: (part: string) => Promise<void
 }
 
 // The night as one MP3: thirty minutes, the last ten fading; with DRIFT DOWN under it when `drift`
-export function exportMp3(folder: string, keyscale: string, drift: boolean): Promise<string> {
+export function exportMp3(folder: string, keyscale: string, drift: boolean, DRIFT: readonly Stage[] = driftOf()): Promise<string> {
   const src = join(folder, "phone.m4a");
   return once(folder, drift ? "export-drift.mp3" : "export.mp3", async (part) => {
     const fade = `afade=t=out:st=${SESSION_S - FADE_S}:d=${FADE_S}`;
@@ -137,14 +137,14 @@ export function exportsMade(folder: string): Record<ExportName, boolean> {
            "export.imedx": existsSync(join(folder, "pe-music.mp3")) };
 }
 let queue: Promise<unknown> = Promise.resolve();
-export function makeExports(folder: string, keyscale: string): void {
+export function makeExports(folder: string, keyscale: string, asked?: string | null): void {
   const made = exportsMade(folder);
   if (made["export.mp3"] && made["export-drift.mp3"] && made["export.imedx"]) return;
   queue = queue.then(async () => {
     if (!existsSync(join(folder, "phone.m4a"))) return;
     await peMusic(folder).catch(() => {}); await peCover(folder).catch(() => {});
     await exportMp3(folder, keyscale, false).catch(() => {});
-    await exportMp3(folder, keyscale, true).catch(() => {});
+    await exportMp3(folder, keyscale, true, stagesOf(asked)).catch(() => {});
   });
 }
 
@@ -176,7 +176,7 @@ export async function exportImedx(folder: string, t: ImedxTrack, hub: string): P
       daemons: { kind: "sleep", id: t.id, hub, daemon: t.nickname, by: t.by ?? null, keyscale: t.keyscale, bpm: t.bpm,
                  musicBytes: statSync(music).size },
     },
-    entrainment: { ramp: "linear", scenes: driftScenes(carrierHz) },
+    entrainment: { ramp: "linear", scenes: driftScenes(carrierHz, stagesOf(t.asked)) },
     audio: {
       binaural: { carrierHz, follow: "beat" },
       beds: [],

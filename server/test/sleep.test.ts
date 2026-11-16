@@ -18,17 +18,19 @@ describe("sleepRecipe", () => {
     expect(Object.keys(TYPE_SOUND).sort()).toEqual(Object.keys(TYPE_VOICE).sort());
   });
   it("is the same piece for the same context, and a new one when a band moves", () => {
-    const a = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { glad: 10 }, care });
-    const b = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { glad: 12 }, care: { ...care, rest: 65 } });
+    const a = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { glad: 10 }, care, month: 8 });
+    const b = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { glad: 12 }, care: { ...care, rest: 65 }, month: 8 });
     expect(b.key).toBe(a.key);                         // a tick of a feeling is not a new piece
-    const sad = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { sad: 70 }, care });
+    const sad = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { sad: 70 }, care, month: 8 });
     expect(sad.key).not.toBe(a.key);
-    expect(sad.keyscale).toBe("G minor");
+    expect(sad.keyscale).toBe("G minor");                // C-386: August's note
     expect(a.keyscale).toBe("G major");
-    const far = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { glad: 10 }, care: { ...care, companionship: 10 } });
+    expect(sleepRecipe({ species: 7, types: ["FLOW"], care, month: 11 }).keyscale).toBe("Bb major");   // November's
+    expect(sleepRecipe({ species: 7, types: ["FLOW"], care, month: 11 }).key).not.toBe(sleepRecipe({ species: 7, types: ["FLOW"], care, month: 12 }).key);
+    const far = sleepRecipe({ species: 7, types: ["FLOW"], feelings: { glad: 10 }, care: { ...care, companionship: 10 }, month: 8 });
     expect(far.key).not.toBe(a.key);
     expect(far.caption).toMatch(/faraway/);
-    expect(sleepRecipe({ species: 8, types: ["FLOW"], care }).key).not.toBe(a.key);   // each kind its own
+    expect(sleepRecipe({ species: 8, types: ["FLOW"], care, month: 8 }).key).not.toBe(a.key);   // each kind its own
   });
   it("steers the music words from the type, the mood and the care", () => {
     const r = sleepRecipe({ species: 3, types: "STRATUM/FROZEN", feelings: { calm: -60 }, care: { rest: 10, hunger: 80, thirst: 90, companionship: 90 } });

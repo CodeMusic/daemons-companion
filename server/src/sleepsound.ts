@@ -10,9 +10,15 @@
 //   its care          what it carries: worn out the sparest, thirsty soft rain, hungry a warm hearth
 //   closeness         how near the melody is: close a lullaby sung near, far a melody calling from a distance
 //   its INDEX entry   one image from it, chosen by a talker when one is in the house (sleepAsk), or none
-//   the species       which key it sleeps in (each kind its own), and a seed, so its pieces are its own
+//   the month         which key it sleeps in (C-386, the user, 2026-11-16, by multiple choice: the month's note, on
+//                     the twelve-tone wheel, synesthesia.ts) -- the key holds all month, so a piece is not remade nightly
+//   the species       a seed, so its pieces are its own
+//   THE MUSE          when a piece is made, the image is chosen from everything the daemon is now (ai/muse.ts): its own
+//                     telling, last night's dream, its person's goals, a thread of the journal -- so a piece made again
+//                     for the same month feels new while it stays in the month's key
 //
 // The music model is asked only in music words -- nothing of the trainer, nothing personal. Every word here is DRAFT.
+import { Synesthesia } from "./synesthesia.js";
 
 export type SleepContext = {
   species?: number | null;
@@ -22,6 +28,7 @@ export type SleepContext = {
   entry?: string | null;
   feelings?: { glad?: number; mad?: number; sad?: number; calm?: number; restless?: number } | null;
   care?: { rest: number; hunger: number; thirst: number; companionship: number } | null;
+  month?: number | null;   // 1..12, C-386: the key's month (now's, when unsaid)
 };
 
 export type SleepRecipe = {
@@ -57,7 +64,6 @@ export const TYPE_SOUND: Record<string, string> = {
 };
 const DEFAULT_SOUND = "soft warm pads, a quiet music box";
 const ALWAYS = "instrumental, ambient sleep music, slow, soft, gentle, no drums, no vocals";
-const NOTES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 export const SLEEP_SECONDS = 300;
 
 const typesOf = (t: SleepContext["types"]) =>
@@ -99,12 +105,13 @@ export function sleepRecipe(c: SleepContext, image?: string | null): SleepRecipe
                  thirsty ? "soft distant rain" : "", hungry ? "a warm crackling hearth far off" : ""].filter(Boolean);
   const closeness = near === 2 ? "a close, intimate lullaby melody" : near === 0 ? "a faraway melody calling softly across a wide space" : "a simple lullaby melody";
   const sp = c.species ?? 0;
-  const keyscale = `${NOTES[sp % 12]} ${m.minor ? "minor" : "major"}`;
+  const month = c.month && c.month >= 1 && c.month <= 12 ? Math.floor(c.month) : new Date().getMonth() + 1;
+  const keyscale = Synesthesia.keyscale(Synesthesia.month(month), m.minor);
   const picture = (image ?? "").replace(/[^\w ,'-]/g, "").trim().slice(0, 80);
   const caption = [room, m.words, ...carry, closeness, picture, ALWAYS].filter(Boolean).join(", ");
   const bands = { types: types.join("/") || "none", mood, rest: ["worn", "rested", "fresh"][rest], near: ["far", "near", "close"][near],
                   thirsty: thirsty ? "yes" : "no", hungry: hungry ? "yes" : "no" };
-  const key = `s${sp}-${fnv(JSON.stringify(bands)).toString(36)}`;
+  const key = `s${sp}-m${month}-${fnv(JSON.stringify(bands)).toString(36)}`;
   return { key, caption, bpm: m.bpm, keyscale, seconds: SLEEP_SECONDS, seed: fnv(`daemon-${sp}`) % 2147483647, bands };
 }
 
@@ -120,10 +127,15 @@ export function sleepSaid(r: SleepRecipe, nickname = "your daemon"): string {
 export const SLEEP_SYSTEM = "You turn a creature's description into a sound for a lullaby. Answer with at most eight words: " +
   "one place or texture of sound that fits it (for example: \"wind through a pine forest\", \"waves on a shingle shore\"). " +
   "No names, no people, no punctuation but commas.";
-export function sleepAsk(c: SleepContext): string {
+// C-386: with its MUSE (ai/muse.ts) -- everything it is now, not its INDEX entry alone -- so a piece made again is new
+export function sleepAsk(c: SleepContext, muse?: string | null): string {
+  const kind = `${c.category ? ` (the ${c.category} kind)` : ""}. Its types: ${typesOf(c.types).join(", ") || "unknown"}.`;
+  if (muse) return `The creature, as it is tonight${kind}\n\n${muse.slice(0, 2400)}\n\nThe sound of the place it would sleep in tonight:`;
   return `The creature: ${(c.entry ?? "").replace(/\s+/g, " ").slice(0, 300)}${c.category ? ` (the ${c.category} kind)` : ""}. ` +
          `Its types: ${typesOf(c.types).join(", ") || "unknown"}. The sound of the place it would sleep in:`;
 }
+// C-386: whether its feelings ask a minor key (a song keys by the month as a sleep piece does)
+export const moodMinor = (f: SleepContext["feelings"]) => MOOD[moodBand(f)].minor;
 export function cleanImage(t: string | null | undefined): string | null {
   const s = (t ?? "").split("\n")[0].replace(/["“”.]/g, "").replace(/[^\w ,'-]/g, "").trim().split(/\s+/).slice(0, 8).join(" ");
   return s.length >= 3 ? s.toLowerCase() : null;

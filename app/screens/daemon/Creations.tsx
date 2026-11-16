@@ -9,15 +9,17 @@ import { Image, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api, TOKEN } from "../../platform/net";
 import { adoptOld, coverUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../../platform/creations";
-import { DRIFT } from "../../sound/binaural";
+import { driftOf, stageAt } from "../../sound/binaural";
 import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../../sound/sleepSession";
 import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../../sound/song";   // C-362
 import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
+import { Synesthesia } from "../../../server/src/synesthesia";
+import { PALETTE } from "../../state/look";
 
 type Where = "mine" | "household" | "community";
 type Kind = Creation["kind"];
 const STAGE_COLOUR: Record<string, string> = { ALPHA: "#7fb3e6", THETA: "#9b7fe6", DELTA: "#3c3f8c" };
-const stageAtS = (s: number) => [...DRIFT].reverse().find((d) => s >= d.at) ?? DRIFT[0];
+const stageAtS = (s: number) => stageAt(s, driftOf());   // C-386: tonight's beats, placed by the day
 const source = (uri: string | null) => (uri ? { uri, ...(uri.startsWith("http") && TOKEN ? { headers: { authorization: `Bearer ${TOKEN}` } } : {}) } : null);
 
 // The cover as a record: round, its title across it, and the night around its edge -- a tick a minute, coloured by the
@@ -137,7 +139,7 @@ export function SleepPlayer({ k, ink, onBack }: { k: Kept; ink: string; onBack: 
         </XStack>
         <XStack marginTop={8}><CareKey label={drift ? "DRIFT DOWN · ON" : "DRIFT DOWN"} ink={ink} lit={drift} onPress={toggleDrift} /></XStack>
         {mineNow && now.drift ? <Small>{now.driftHeld ?? `DRIFT DOWN: ${stage.word}, ${stage.beat} Hz`}</Small> : null}
-        <Small>{`Beats ${String(k.meta.beats ?? "")} between the ears (headphones), on a ${k.meta.carrierHz} Hz carrier in ${k.meta.keyscale}, ${k.meta.bpm} beats a minute.`}</Small>
+        <Small>{`Beats ${driftOf().map((d) => d.beat).join(" → ")} Hz tonight between the ears (headphones), on a ${k.meta.carrierHz} Hz carrier in ${k.meta.keyscale}, ${k.meta.bpm} beats a minute.`}</Small>
       </Card>
       <Card>
         <Eyebrow>{"MADE"}</Eyebrow>
@@ -239,6 +241,26 @@ function Details({ c, where, have, ink, onBack, onKept }: { c: Creation & { shar
   );
 }
 
+// C-386 (the user, 2026-11-16: "we could even group the generated entries per month (where the month is in the months
+// color key)"): a month's heading -- its name and note over a band in its colour, a black key's two colours blended
+const mix = (a: string, b: string, t: number) => {
+  const c = (h: string, i: number) => parseInt(h.slice(1 + 2 * i, 3 + 2 * i), 16);
+  return `#${[0, 1, 2].map((i) => Math.round(c(a, i) + (c(b, i) - c(a, i)) * t).toString(16).padStart(2, "0")).join("")}`;
+};
+function MonthBand({ ym }: { ym: string }) {
+  const [y, m] = ym.split("-").map(Number), q = Synesthesia.month(m, PALETTE);
+  const steps = q.colours.length > 1 ? Array.from({ length: 16 }, (_, i) => mix(q.colours[0], q.colours[1], i / 15)) : [q.colours[0]];
+  return (
+    <YStack width="100%" gap={4} marginTop={6}>
+      <Text fontFamily="$mono" fontSize={12} letterSpacing={2} fontWeight="700" color="$color12">{`${q.name.toUpperCase()} ${y} · ${q.shown}`}</Text>
+      <XStack height={6} borderRadius={3} overflow="hidden">
+        {steps.map((c, i) => <View key={i} style={{ flex: 1, backgroundColor: c }} />)}
+      </XStack>
+    </YStack>
+  );
+}
+const monthOfMade = (c: Creation) => { const d = new Date(c.made); return Number.isNaN(d.getTime()) ? "" : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };
+
 // a tile in the gallery
 function Tile({ c, have, onPress }: { c: Creation; have: boolean; onPress: () => void }) {
   return (
@@ -318,9 +340,14 @@ export function CreationsScreen({ ink, start, onClose }: { ink: string; start?: 
       {!shown.length && (where === "mine" || household) ? (
         <Small>{where === "mine" ? "Nothing on this phone yet: bring something from HOUSEHOLD, or make tonight's sleep sounds." : "Nothing here yet."}</Small>
       ) : null}
-      <XStack flexWrap="wrap" gap={12} justifyContent="center">
-        {shown.map((c) => <Tile key={c.uid} c={c} have={where !== "mine" && have.has(c.uid)} onPress={() => setOpen({ c, where })} />)}
-      </XStack>
+      {[...new Set(shown.map(monthOfMade))].map((ym) => (
+        <YStack key={ym || "undated"} gap={10}>
+          {ym ? <MonthBand ym={ym} /> : null}
+          <XStack flexWrap="wrap" gap={12} justifyContent="center">
+            {shown.filter((c) => monthOfMade(c) === ym).map((c) => <Tile key={c.uid} c={c} have={where !== "mine" && have.has(c.uid)} onPress={() => setOpen({ c, where })} />)}
+          </XStack>
+        </YStack>
+      ))}
     </YStack>
   );
 }

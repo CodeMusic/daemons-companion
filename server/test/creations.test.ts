@@ -1,7 +1,9 @@
 // C-358: creations in one shape, and the sleep piece's exports' arithmetic
 import { describe, expect, it } from "vitest";
 import { beatsSaid, gallery, paintingCreation, sleepCreation, uidOf } from "../src/creations.js";
-import { beatsBy, beatsExpr, carrierOf, driftScenes, imedxId, SESSION_S } from "../src/sleepexport.js";
+import { beatsBy, beatsExpr, carrierOf, driftScenes, imedxId, SESSION_S, stagesOf } from "../src/sleepexport.js";
+// the stages as they were before C-386 placed them by the day -- the arithmetic is the same for any beats
+const OLD = [{ at: 0, beat: 10, word: "ALPHA" }, { at: 600, beat: 6, word: "THETA" }, { at: 1200, beat: 2, word: "DELTA" }];
 
 const track = { id: "a".repeat(32), species: 7, nickname: "SEEKMUSAI", caption: "soft rain", bpm: 60, keyscale: "F major",
                 said: "Made for SEEKMUSAI as tonight finds them: at peace.", state: "ready" as const, asked: "2026-11-11T23:00:00Z",
@@ -37,22 +39,27 @@ describe("the exports' arithmetic", () => {
     expect(carrierOf("C minor")).toBe(131);
   });
   it("counts the beats through the stages, and says it the same way to ffmpeg", () => {
-    expect(beatsBy(0)).toBe(0);
-    expect(beatsBy(600)).toBe(6000);
-    expect(beatsBy(1200)).toBe(9600);
-    expect(beatsBy(1800)).toBe(10800);
-    const expr = beatsExpr();
+    expect(beatsBy(0, OLD)).toBe(0);
+    expect(beatsBy(600, OLD)).toBe(6000);
+    expect(beatsBy(1200, OLD)).toBe(9600);
+    expect(beatsBy(1800, OLD)).toBe(10800);
+    const expr = beatsExpr(OLD);
     for (const t of [0, 1, 599.5, 600, 900, 1200, 1500, 1800]) {
       // eslint-disable-next-line no-new-func
       const f = new Function("t", "lt", "ifz", `return ${expr.replace(/if\(/g, "ifz(")};`);
-      expect(f(t, (a: number, b: number) => (a < b ? 1 : 0), (c: number, a: number, b: number) => (c ? a : b))).toBeCloseTo(beatsBy(t), 6);
+      expect(f(t, (a: number, b: number) => (a < b ? 1 : 0), (c: number, a: number, b: number) => (c ? a : b))).toBeCloseTo(beatsBy(t, OLD), 6);
     }
   });
   it("gives PulseEntrain each stage held, a scene a second before the next", () => {
-    const s = driftScenes(175);
+    const s = driftScenes(175, OLD);
     expect(s[0]).toEqual({ atSec: 0, beatHz: 10, carrierHz: 175 });
     expect(s.map((x) => x.atSec)).toEqual([0, 599, 600, 1199, 1200, SESSION_S]);
     expect(s.map((x) => x.beatHz)).toEqual([10, 10, 6, 6, 2, 2]);
     expect(imedxId("ab12")).toMatch(/^[a-z0-9_]+$/);
+  });
+  it("places the beats by the day the piece was asked for (C-386)", () => {
+    expect(stagesOf("2026-11-15T12:00:00").map((d) => d.beat)).toEqual([8, 4, 1]);    // a Sunday: the slow edge
+    expect(stagesOf("2026-11-21T12:00:00").map((d) => d.beat)).toEqual([12, 8, 4]);   // a Saturday: the quick one
+    expect(carrierOf("Bb major")).toBe(233);
   });
 });

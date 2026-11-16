@@ -77,9 +77,11 @@ import { ENTRY_VOICE, INDEX_VOICE, preferTiiny } from "./ai/tiinyfirst.js";   //
 import { chatOn, checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./save/profile.js";
-import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
+import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
+import { journalThreads, museKey, museOf, paintPalette } from "./ai/muse.js";   // C-386
+import { hemisphereOf } from "./months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
-import { carrierOf, DRIFT, exportImedx, exportMp3, exportsMade, makeExports, useMesh, type ExportName } from "./sleepexport.js";   // C-358
+import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./sleepexport.js";   // C-358
 import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
 import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
 import { readIndex } from "./save/index.js";
@@ -353,7 +355,8 @@ function sleepContextFor(ecfg: Config, store: Store, deviceId: string, now = new
   const d = deviceState(ecfg, store, now, deviceId).daemon as Record<string, any> | null;
   if (!d) return null;
   return { species: d.species as number, nickname: d.nickname, types: d.types, category: d.category, entry: d.entry ?? null,
-           feelings: core.daemonFeelings(store, now) ?? null, care: (d.life as { care?: SleepContext["care"] } | null)?.care ?? null };
+           feelings: core.daemonFeelings(store, now) ?? null, care: (d.life as { care?: SleepContext["care"] } | null)?.care ?? null,
+           month: now.getMonth() + 1 };   // C-386: the key is the month's
 }
 // C-334: a piece as a device sees it -- where each of its files is fetched (by its id), and how big
 const trackOut = (t: SleepTrack) => ({ ...t, files: t.state === "ready"
@@ -1102,6 +1105,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const paintingFile = (id: string) => join(PAINTINGS_DIR, `${/^[0-9a-f]{16}$/.test(id) ? id : "-"}.png`);
   // a painting cut off by a restart is not left painting forever: it says so, and can be asked for again
   for (const p of paintings()) if (p.state === "painting") updatePainting(p.id, { state: "failed", error: "the hub restarted while it painted" });   // DRAFT
+  // C-386: THE MUSE (ai/muse.ts) -- the persona of the day, a thread of the journal and the synesthesia of now, for every creation
+  const museFor = (persona: string, at = new Date()) =>
+    museOf({ persona, journal: journalThreads(store, at), at, hemisphere: hemisphereOf(cfg.edition) });
   const paint = (personality: number, request: string, by?: string): PaintingRow | { error: string } => {
     const now = new Date(), got = personaNow(personality, now);
     if (!got) return { error: "That daemon is not here to paint." };   // DRAFT
@@ -1116,11 +1122,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                state: "painting", task: w.task.id, ...(by ? { by } : {}) };
     keepPainting(row);
     (async () => {
-      const said = await w.write(PAINT_SYSTEM, paintAsk(got.persona.text, request, style), 400);
+      const said = await w.write(PAINT_SYSTEM, paintAsk(museFor(got.persona.text, now), request, style), 400);   // C-386: its muse
       const p = readPainting(said, request);
       updatePainting(id, { title: p.title, scene: p.scene, about: p.about });
       const scene = await enhanced(p.scene);   // C-372
-      const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(scene, style), seed, fetch, w.signal);
+      const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(scene, style, paintPalette(now)), seed, fetch, w.signal);
       mkdirSync(PAINTINGS_DIR, { recursive: true });
       writeFileSync(paintingFile(id), png);
       updatePainting(id, { state: "done", ms: Date.now() - now.getTime() });
@@ -1150,11 +1156,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const p = readPainting(said, `${t.nickname || ""} night`.trim());
         sleepTracks().patch(t.id, { title: p.title, about: p.about });
         const seed = randomBytes(4).readUInt32BE(0);
-        const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(await enhanced(p.scene), style), seed, fetch, w.signal);   // C-372
+        const png = await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(await enhanced(p.scene), style, paintPalette(new Date(t.asked))), seed, fetch, w.signal);   // C-372; C-386
         sleepTracks().setCover(t.id, png);
         w.end("done");
         const folder = sleepTracks().folder(t.id);
-        if (folder) makeExports(folder, t.keyscale);   // the exports made now, in the background, so they wait ready
+        if (folder) makeExports(folder, t.keyscale, t.asked);   // the exports made now, in the background, so they wait ready
       } catch (e) {
         sleepTracks().patch(t.id, { cover: "failed" });
         w.end("failed", { error: (e as Error)?.message?.slice(0, 120) || "no cover" });   // DRAFT
@@ -1221,7 +1227,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // thinker answers nobody, and the song failed "too long for the house's module" -- so the words wait for the music
       // to finish, and a write that failed anyway is tried again after the music, up to SING_TRIES in all (proved
       // 2026-11-15: two songs asked together, the second's one retry met a third song singing and failed)
-      const ask = singAsk(mode, got.persona.text, voice, request, styleGuide);
+      const ask = singAsk(mode, museFor(got.persona.text, now), voice, request, styleGuide);   // C-386: its muse
       // -- and one song's words at a time: songs asked together were written together, the Tiiny's thinker shared between
       // them, and each outran its five minutes (three asked at once, 2026-11-14 and -15: all but one failed together)
       let said: string | null = null;
@@ -1239,7 +1245,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       w.end("done");
       // C-360: its cover is painted once it is sung (songCovers, run by songs().ready), never while ACE-Step sings
       songCovers.set(row.id, () => paintSongCover());
-      songs().sing(row.id, captionOf(song.style, voice));
+      songs().sing(row.id, captionOf(song.style, voice), museKey(now, moodMinor(core.daemonFeelings(store, now))));   // C-386: the month's key
       const paintSongCover = () => {
       const style = paintStyle({ types: f.types, species: f.species, category: f.category }, core.daemonFeelings(store, now),
                                store.getSetting(`paint.style.${f.species}`));
@@ -1247,9 +1253,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       coversBusy = coversBusy.then(() => Promise.all([sleepTracks().idle(), songs().idle()])).then(async () => {
         const c = ledgered({ kind: "painting", title: `${f.nickname} paints the cover of '${song.title}'` });   // DRAFT
         try {
-          const p = readPainting(writerNow() ? await c.write(PAINT_SYSTEM, paintAsk(got.persona.text,
+          const p = readPainting(writerNow() ? await c.write(PAINT_SYSTEM, paintAsk(museFor(got.persona.text, now),
                       `the cover of your song '${song.title}' -- ${song.about || song.lyrics.split("\n").slice(0, 4).join(" ")}`, style), 400) : null, song.title);
-          songs().setCover(row.id, await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style),
+          songs().setCover(row.id, await comfyPaint(store.getSetting("easel.host") || EASEL_HOST, imagePromptOf(p.scene, style, paintPalette(now)),
                                                     randomBytes(4).readUInt32BE(0), fetch, c.signal));
           c.end("done");
         } catch (e) { songs().update(row.id, { cover: "failed" }); c.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); }
@@ -1265,13 +1271,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-358: every made thing this hub keeps, in one shape (creations.ts); a ready sleep piece with no cover yet gets one
   const homeName = () => (store.getSetting("commons.name") ?? "").trim() || "HOME";
   const creationsNow = (): Creation[] => {
-    const home = homeName(), beats = beatsSaid(DRIFT.map((d) => d.beat));
+    const home = homeName();
     const sleep = sleepTracks().list(null);
     for (const t of sleep) {
       if (t.state === "ready" && !t.cover) paintCover(t);
-      else if (t.state === "ready" && t.cover !== "painting") { const f = sleepTracks().folder(t.id); if (f) makeExports(f, t.keyscale); }
+      else if (t.state === "ready" && t.cover !== "painting") { const f = sleepTracks().folder(t.id); if (f) makeExports(f, t.keyscale, t.asked); }
     }
-    return [...sleep.map((t) => sleepCreation(t, home, beats, carrierOf(t.keyscale))),
+    return [...sleep.map((t) => sleepCreation(t, home, beatsSaid(stagesOf(t.asked).map((d) => d.beat)), carrierOf(t.keyscale))),   // C-386: its day's beats
             ...paintings().map((p) => paintingCreation(p, home)),
             ...songs().list().map((x) => songCreation(x, home))];
   };
@@ -1991,13 +1997,17 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // a talker in the house picks one image from the INDEX entry to colour it (a few music words; never shown)
         // -- the Tiiny's quick thinker first (it answers in a few seconds), then the player's endpoints, then the house's
         // module, as DAEMONS IN DIALOGUE asks; none in 25 s, and the piece is made without it
+        // C-386: from its MUSE -- everything it is tonight, not its entry alone -- so a piece made again feels new
+        const carried = carriedDaemon({ ...cfg, savePath: savePathOf(cfg, store) }, store, deviceId);
+        const got = carried ? personaNow(carried.personality >>> 0) : null;
+        const muse = got ? museFor(got.persona.text) : null, asking = sleepAsk(c, muse);
         const imageOf = async (): Promise<string | null> => {
           const t = tiinyNow();
-          if (t) try { return await tiinyChat(t.at, t.quick || t.model, SLEEP_SYSTEM, [], sleepAsk(c), fetch, 25_000, 40); } catch { /* the next mind */ }
-          for (const n of endpointsNowAll(false)) try { return await chatOn(n.e, n.model, SLEEP_SYSTEM, [], sleepAsk(c), fetch, 25_000, 40); } catch { /* the next */ }
-          return house.any ? await house.write(SLEEP_SYSTEM, sleepAsk(c), 40).catch(() => null) : null;
+          if (t) try { return await tiinyChat(t.at, t.quick || t.model, SLEEP_SYSTEM, [], asking, fetch, 25_000, 40); } catch { /* the next mind */ }
+          for (const n of endpointsNowAll(false)) try { return await chatOn(n.e, n.model, SLEEP_SYSTEM, [], asking, fetch, 25_000, 40); } catch { /* the next */ }
+          return house.any ? await house.write(SLEEP_SYSTEM, asking, 40).catch(() => null) : null;
         };
-        const image = c.entry
+        const image = c.entry || muse
           ? cleanImage(await Promise.race([imageOf().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), 25000))]))
           : null;
         const r = sleepRecipe(c, image);
@@ -2183,9 +2193,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             return res.end(readFileSync(f));
           }
           // which exports are made yet; the rest are started (the hub makes them slowly, a few minutes each)
-          if (name === "exports") { makeExports(folder, t.keyscale); return send(res, 200, { made: exportsMade(folder) }); }
+          if (name === "exports") { makeExports(folder, t.keyscale, t.asked); return send(res, 200, { made: exportsMade(folder) }); }
           if (!exportsMade(folder)[name as ExportName]) {
-            makeExports(folder, t.keyscale);
+            makeExports(folder, t.keyscale, t.asked);
             return send(res, 202, { making: true, error: "Being made on the hub: it takes a few minutes. Try again soon." });   // DRAFT
           }
           if (name === "export.imedx") {

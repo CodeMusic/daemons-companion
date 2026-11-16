@@ -8,17 +8,12 @@
 // Each stage is a short loop, the carrier and the beat whole numbers of hertz, so every loop holds whole cycles of both
 // and repeats without a seam. The carrier sits in the sleep piece's own key (its root, in the octave from C3), so the tone
 // belongs to the music. Quiet by design: it lies under the music, never over it. DRAFT.
+// C-386: the key is the month's and the day places each beat inside its band -- the numbers are server/src/drift.ts's,
+// shared with the hub's exports.
 import { Platform } from "react-native";
 
 const RATE = 22050, SECONDS = 4, N = RATE * SECONDS;
-export const DRIFT = [{ at: 0, beat: 10, word: "ALPHA" }, { at: 600, beat: 6, word: "THETA" }, { at: 1200, beat: 2, word: "DELTA" }] as const;   // seconds in
-const NOTES: Record<string, number> = { C: 0, Db: 1, "C#": 1, D: 2, Eb: 3, "D#": 3, E: 4, F: 5, Gb: 6, "F#": 6, G: 7, Ab: 8, "G#": 8, A: 9, Bb: 10, "A#": 10, B: 11 };
-
-// the carrier for a key ("F major" -> F3, 175 Hz), a whole number of hertz
-export function carrierOf(keyscale: string | null | undefined): number {
-  const n = NOTES[(keyscale ?? "").split(" ")[0]] ?? 0;
-  return Math.round(440 * 2 ** ((48 + n - 69) / 12));
-}
+export { carrierOf, driftOf, stageAt, type Stage } from "../../server/src/drift";
 
 // one stage, as a stereo 16-bit WAV's bytes: left at the carrier, right at carrier + beat, a soft edge-free loop
 export function binauralWav(carrier: number, beat: number, level = 0.5): Uint8Array {
@@ -50,5 +45,3 @@ export function binauralStage(carrier: number, beat: number): string {
   return f.uri;
 }
 
-// which stage a moment in the session is in
-export const stageAt = (s: number) => [...DRIFT].reverse().find((d) => s >= d.at) ?? DRIFT[0];

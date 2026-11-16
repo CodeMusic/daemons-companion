@@ -114,7 +114,7 @@ export class Songs {
     return true;
   }
   // sung: its words and style to the music door; a piece is made one at a time (ACE-Step has one queue)
-  sing(id: string, caption: string, seconds = 150) {
+  sing(id: string, caption: string, keyscale?: string, seconds = 150) {   // C-386: in the month's key
     const s = this.byId(id);
     if (!s) return;
     if (!this.door()) { this.update(id, { state: "failed", error: "No music maker is set up (roverbyteseer's music door)." }); return; }   // DRAFT
@@ -122,7 +122,7 @@ export class Songs {
     this.queue(s, async () => {
       const door = this.door()!;
       const r = await fetch(`${door.base}/v1/sleep/make`, { method: "POST", headers: { authorization: `Bearer ${door.key}`, "content-type": "application/json" },
-        body: JSON.stringify({ song: true, caption, lyrics: s.lyrics, seconds }) });
+        body: JSON.stringify({ song: true, caption, lyrics: s.lyrics, seconds, ...(keyscale ? { keyscale } : {}) }) });
       if (!r.ok) throw new Error(`the music door said ${r.status}`);
       s.job = ((await r.json()) as { job: string }).job;
       this.save();

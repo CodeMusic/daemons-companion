@@ -6,7 +6,7 @@
 import { AppState } from "react-native";
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
 import Night from "../modules/daemons-night";
-import { binauralStage, carrierOf, stageAt } from "./binaural";
+import { binauralStage, carrierOf, driftOf, stageAt, type Stage } from "./binaural";
 
 export const SESSION_S = 30 * 60, FADE_S = 10 * 60;
 const DRIFT_LEVEL = 0.22;                    // under the music, never over it
@@ -21,7 +21,7 @@ export const sleepState = () => state;
 export const onSleep = (f: (s: SleepState) => void) => { heard.add(f); return () => { heard.delete(f); }; };
 
 let music: AudioPlayer | null = null, drift: AudioPlayer | null = null, tick: ReturnType<typeof setInterval> | null = null;
-let carrier = 0, stageUri = "";
+let carrier = 0, stageUri = "", stages: Stage[] = driftOf();   // C-386: the night's beats, placed by the day it began
 
 // headphones now: true, false, or null where this build cannot tell (then the listener's word is taken)
 export const headphones = (): boolean | null => { try { return Night?.headphones ? Night.headphones() : null; } catch { return null; } };
@@ -39,7 +39,7 @@ function step() {
     const ears = headphones();
     if (ears === false) { if (drift?.playing) drift.pause(); if (!state.driftHeld) tell({ driftHeld: "Quiet until headphones are in." }); }   // DRAFT
     else {
-      const st = stageAt(s), uri = binauralStage(carrier, st.beat);
+      const st = stageAt(s, stages), uri = binauralStage(carrier, st.beat);
       drift ??= createAudioPlayer(null);
       if (uri !== stageUri) { drift.replace({ uri }); drift.loop = true; stageUri = uri; }
       drift.volume = DRIFT_LEVEL * v;
@@ -57,7 +57,7 @@ export async function playSleep(o: { id: string; uri: string; title: string; key
   music.volume = 1;
   music.setActiveForLockScreen(true, { title: o.title, artist: "DAEMONS", albumTitle: "Sleep sounds, DRAFT" });   // DRAFT
   music.play();
-  carrier = carrierOf(o.keyscale); stageUri = "";
+  carrier = carrierOf(o.keyscale); stageUri = ""; stages = driftOf(new Date());
   tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null });
   if (tick) clearInterval(tick);
   tick = setInterval(step, 5000);

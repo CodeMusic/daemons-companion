@@ -58,7 +58,13 @@ String runIndex(); int indexKeepAll();
 // C-331 (2): DREAMS after it (dreamshelf.cpp) -- the journal, kept on the card
 String runDreams(); bool dreamsKeep();
 String runMusic();                                        // C-332 (musicshelf.cpp)
-static int heads() { return asks() + 3; }                  // THE INDEX, DREAMS, MUSIC (C-332)
+String runWalks();                                        // C-333 (walksmap.cpp): the Ultra's only, its card
+#if defined(BOARD_TWATCH_ULTRA)
+static const int WALKS_HERE = 1;
+#else
+static const int WALKS_HERE = 0;
+#endif
+static int heads() { return asks() + 3 + WALKS_HERE; }     // THE INDEX, DREAMS, MUSIC (C-332), WALKS (C-333)
 static int listN() {
   if (bMode == B_BOOKS) return heads() + shelf["books"].size() + keeps();
   return shelf["books"][bBook]["chapters"].size();
@@ -66,7 +72,7 @@ static int listN() {
 static String listName(int i) {
   if (bMode == B_BOOKS && i >= heads() + (int)shelf["books"].size()) return "KEEP ON THE CARD";                        // DRAFT
   if (bMode == B_BOOKS && i < asks()) return ASK_NAMES[askAt(i)];
-  if (bMode == B_BOOKS && i < heads()) return i == asks() ? "THE INDEX" : i == asks() + 1 ? "DREAMS" : "MUSIC";                                 // DRAFT
+  if (bMode == B_BOOKS && i < heads()) return i == asks() ? "THE INDEX" : i == asks() + 1 ? "DREAMS" : i == asks() + 2 ? "MUSIC" : "WALKS";                                 // DRAFT
   if (bMode == B_BOOKS) return String((const char *)(shelf["books"][i - heads()]["title"] | ""));
   return String((const char *)(shelf["books"][bBook]["chapters"][i] | ""));
 }
@@ -100,6 +106,11 @@ static String drawBooks(uint16_t day, uint16_t ink) {
       if (i == asks()) { bookIcon(3, 0, cx, cy); return; }
       if (i == asks() + 2) {                                   // C-332: a note
         canvas.fillCircle(cx - 4, cy + 8, 6, PAPER); canvas.drawFastVLine(cx + 2, cy - 12, 20, PAPER); canvas.drawLine(cx + 2, cy - 12, cx + 10, cy - 6, PAPER);
+        return;
+      }
+      if (i == asks() + 3) {                                   // C-333: a path, winding
+        canvas.drawLine(cx - 14, cy + 10, cx - 4, cy - 2, PAPER); canvas.drawLine(cx - 4, cy - 2, cx + 6, cy + 4, PAPER);
+        canvas.drawLine(cx + 6, cy + 4, cx + 14, cy - 10, PAPER); canvas.fillCircle(cx + 14, cy - 10, 3, PAPER);
         return;
       }
       if (i < heads()) { canvas.fillCircle(cx, cy, 11, QUIET); canvas.fillCircle(cx + 5, cy - 4, 10, TFT_BLACK); return; }   // C-331 (2): a moon
@@ -236,7 +247,7 @@ String runBooks() {
             while (true) { int s2, e2; routineInput(s2, e2); if (s2 || e2 || routineQuit()) break; delay(10); }
           screen = RUN;
         }
-        else if (bMode == B_BOOKS && bAt < heads()) { String r = bAt == asks() ? runIndex() : bAt == asks() + 1 ? runDreams() : runMusic(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3); C-331 (2)
+        else if (bMode == B_BOOKS && bAt < heads()) { String r = bAt == asks() ? runIndex() : bAt == asks() + 1 ? runDreams() : bAt == asks() + 2 ? runMusic() : runWalks(); runPanel = drawBooks; if (r.length()) say(r); }   // C-199 (3); C-331 (2)
         else if (bMode == B_BOOKS && bAt >= heads() + (int)shelf["books"].size()) keepAll();                 // C-199
         else if (bMode == B_BOOKS) { bBook = bAt - heads(); bMode = B_CHAPTERS; bAt = 0; bTop = 0; }
         else { bChapter = bAt; if (fetchChapter()) bMode = B_PAGE; else say("Not found"); }          // DRAFT

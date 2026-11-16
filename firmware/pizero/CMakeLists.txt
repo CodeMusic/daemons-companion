@@ -97,7 +97,12 @@ set(SRC
   src/pages/home.cpp
   src/pages/play.cpp
   src/pages/make.cpp
-  src/pages/pair.cpp)
+  src/pages/pair.cpp
+  src/pages/parts.cpp
+  src/pages/care.cpp
+  src/pages/step.cpp
+  src/pages/party.cpp
+  src/pages/say.cpp)
 
 if(ZERO_DEVICE)
   list(APPEND SRC src/hal/device.cpp)

@@ -1,0 +1,89 @@
+// C-381: the shared drawing.
+#include "pages/parts.h"
+
+#include <ArduinoJson.h>
+
+#include "app.h"
+#include "canvas.h"
+#include "hal/hal.h"
+
+void drawSprite(const Sprite &s, int x, int y, int scale) {
+  for (int j = 0; j < s.h; j++)
+    for (int i = 0; i < s.w; i++) {
+      uint8_t c = s.px[(size_t)j * s.w + i];
+      if (!c) continue;
+      if (scale == 1) canvas.drawPixel(x + i, y + j, s.palette[c]);
+      else canvas.fillRect(x + i * scale, y + j * scale, scale, scale, s.palette[c]);
+    }
+}
+
+void drawDen(const HubView &v, int x, int y, int w, int h) {
+  const int floorH = h / 4;
+  canvas.fillRect(x, y, w, h - floorH, hex(v.denWall, rgb(0x67, 0x62, 0x5a)));
+  canvas.fillRect(x, y + h - floorH, w, floorH, hex(v.denFloor, rgb(0x2b, 0x29, 0x24)));
+  canvas.drawFastHLine(x, y + h - floorH, w, hex(v.denDeep, rgb(0x3b, 0x38, 0x32)));
+  if (!v.carrying) return;
+  auto s = hub::art(v.artKey);
+  if (!s) return;
+  const int scale = (s->w * 2 <= w && s->h * 2 <= h) ? 2 : 1;
+  const int sx = x + (w - s->w * scale) / 2, sy = y + h - floorH / 2 - s->h * scale;   // standing on the floor
+  canvas.fillEllipse(x + w / 2, y + h - floorH / 2, s->w * scale / 3, 3, hex(v.denDeep, rgb(0x3b, 0x38, 0x32)));   // its shadow
+  drawSprite(*s, sx, sy < y ? y : sy, scale);
+  if (v.tired == "asleep") {   // asleep: dimmed, with its Zs (as the boards draw it)
+    canvas.setTextColor(hex(v.denGlow, TFT_WHITE));
+    canvas.setCursor(x + w - 18, y + 6);
+    canvas.print("z Z");
+  }
+}
+
+void drawPartyMember(const PartyMember &m, const HubView &v, int x, int y, int w, int h) {
+  canvas.fillRect(x, y, w, h, rgb(0x22, 0x26, 0x30));
+  auto s = hub::art(m.artKey);
+  if (s) drawSprite(*s, x + (w - s->w) / 2, y + (h - s->h) / 2, 1);
+}
+
+void drawPips(int x, int y, int have, int due, uint16_t on, uint16_t off) {
+  const int n = have + due > 6 ? 6 : have + due;
+  for (int i = 0; i < n; i++) {
+    if (i < have) canvas.fillCircle(x + i * 9 + 3, y + 3, 3, on);
+    else canvas.drawCircle(x + i * 9 + 3, y + 3, 3, off);
+  }
+}
+
+bool Choices::key(Key k) {
+  Dir d = dirOf(k);
+  const int n = (int)items.size();
+  if (!n) return false;
+  if (d == Dir::Left) { sel = (sel + n - 1) % n; return true; }
+  if (d == Dir::Right || k == Key::Tab) { sel = (sel + 1) % n; return true; }
+  return false;
+}
+
+void Choices::draw(int y, uint16_t accent) {
+  // the widths, then the first shown chosen so the chosen one fits on the line
+  std::vector<int> w;
+  for (auto &s : items) w.push_back((int)s.size() * 6 + 12);
+  int first = 0;
+  auto span = [&](int a, int b) { int t = 0; for (int i = a; i <= b; i++) t += w[i] + 6; return t; };
+  while (first < sel && span(first, sel) > hal::W - 12) first++;
+  int x = 6;
+  canvas.setFont(&fonts::Font0);
+  canvas.setTextSize(1);
+  if (first > 0) { canvas.setTextColor(rgb(0x80, 0x84, 0x90)); canvas.setCursor(0, y + 4); canvas.print("<"); }
+  for (int i = first; i < (int)items.size(); i++) {
+    if (x + w[i] > hal::W - 6) { canvas.setTextColor(rgb(0x80, 0x84, 0x90)); canvas.setCursor(hal::W - 6, y + 4); canvas.print(">"); break; }
+    if (i == sel) { canvas.fillRoundRect(x, y, w[i], 16, 3, accent); canvas.setTextColor(TFT_WHITE); }
+    else { canvas.drawRoundRect(x, y, w[i], 16, 3, rgb(0x50, 0x54, 0x60)); canvas.setTextColor(rgb(0xc8, 0xc8, 0xd0)); }
+    canvas.setCursor(x + 6, y + 4);
+    canvas.print(items[i].c_str());
+    x += w[i] + 6;
+  }
+}
+
+std::string replyWords(const Reply &r, const char *field) {
+  JsonDocument d;
+  bool read = !r.body.empty() && !deserializeJson(d, (const char *)r.body.data(), r.body.size());
+  if (r.ok()) return read && d[field].is<const char *>() ? d[field].as<const char *>() : "";
+  if (read && d["error"].is<const char *>()) return d["error"].as<const char *>();
+  return !r.error.empty() ? r.error : "the hub said " + std::to_string(r.status);   // DRAFT
+}

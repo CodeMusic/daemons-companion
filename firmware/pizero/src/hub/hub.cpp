@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 
 #include <atomic>
+#include <map>
 #include <chrono>
 #include <condition_variable>
 #include <cstdlib>
@@ -36,6 +37,42 @@ std::vector<std::string> headers() {
 }
 std::string deviceName() { return id == "cardputer-zero-window" ? "Cardputer Zero (a computer)" : "Cardputer Zero"; }   // DRAFT
 
+std::string deviceId() { return id; }
+
+// ---- the pictures: fetched once per artKey, kept while the program runs ----------------------------------------------
+static std::mutex artLock;
+static std::map<std::string, std::shared_ptr<const Sprite>> pictures;
+
+std::shared_ptr<const Sprite> art(const std::string &artKey) {
+  std::lock_guard<std::mutex> g(artLock);
+  auto it = pictures.find(artKey);
+  return it == pictures.end() ? nullptr : it->second;
+}
+static void fetchArt(const std::string &artKey, const std::string &query) {
+  if (artKey.empty() || art(artKey)) return;
+  Reply r = httpGet(address() + "/api/device/art" + query, headers(), 6000);
+  if (!r.ok()) return;
+  JsonDocument d;
+  if (deserializeJson(d, (const char *)r.body.data(), r.body.size())) return;
+  auto s = std::make_shared<Sprite>();
+  s->w = d["w"] | 0;
+  s->h = d["h"] | 0;
+  for (int i = 0; i < 16; i++) s->palette[i] = d["palette"][i] | 0;
+  Bytes packed;
+  if (s->w <= 0 || s->h <= 0 || s->w > 128 || s->h > 128 || !unbase64(d["pixels"] | "", packed)) return;
+  s->px.resize((size_t)s->w * s->h);
+  for (size_t i = 0; i < s->px.size(); i++) s->px[i] = i / 2 < packed.size() ? (i & 1 ? packed[i / 2] & 15 : packed[i / 2] >> 4) : 0;
+  std::lock_guard<std::mutex> g(artLock);
+  pictures[artKey] = s;
+}
+
+static std::string joined(JsonVariantConst list) {   // ["CONTENT","VECTOR"] -> "CONTENT / VECTOR" (or a string as it is)
+  if (list.is<const char *>()) return list.as<const char *>();
+  std::string s;
+  for (JsonVariantConst t : list.as<JsonArrayConst>()) { if (!s.empty()) s += " / "; s += t | ""; }
+  return s;
+}
+
 static void ask() {
   HubView v;
   v.asked = true;
@@ -48,19 +85,62 @@ static void ask() {
     else {
       v.reached = true;
       v.date = doc["date"] | ""; v.edition = doc["edition"] | ""; v.season = doc["season"] | "";
-      v.day = doc["day"]["name"] | ""; v.colour = doc["day"]["colour"] | "#5b6b8c";
+      JsonVariantConst day = doc["day"];
+      v.day = day["name"] | ""; v.colour = day["colour"] | "#5b6b8c"; v.menu = day["menu"] | v.colour.c_str();
+      v.virtue = day["virtue"] | ""; v.note = day["note"] | "";
       v.watch = doc["world"]["watch"] | "";
-      if (!doc["step"].isNull()) { v.stepText = doc["step"]["text"] | ""; v.goal = doc["step"]["goal"] | ""; }
-      v.carrying = !doc["daemon"].isNull();
+      JsonVariantConst step = doc["step"];
+      if (!step.isNull()) {
+        v.stepId = step["id"] | -1L; v.stepText = step["text"] | ""; v.goal = step["goal"] | "";
+        v.milestone = step["milestone"]["title"] | ""; v.msAt = step["milestone"]["at"] | 0; v.msOf = step["milestone"]["of"] | 0;
+      }
+      JsonVariantConst dm = doc["daemon"];
+      v.carrying = !dm.isNull();
       if (v.carrying) {
-        v.name = doc["daemon"]["name"] | ""; v.nickname = doc["daemon"]["nickname"] | "";
-        v.types = doc["daemon"]["types"] | ""; v.level = doc["daemon"]["level"] | 0;
-        v.friendship = doc["daemon"]["friendship"] | 0;
+        v.name = dm["name"] | ""; v.nickname = dm["nickname"] | ""; v.types = joined(dm["types"]);
+        v.category = dm["category"] | ""; v.entry = dm["entry"] | ""; v.artKey = dm["artKey"] | "";
+        v.level = dm["level"] | 0; v.friendship = dm["friendship"] | 0; v.species = dm["species"] | 0; v.slot = dm["slot"] | -1;
+        JsonVariantConst life = dm["life"];
+        v.mood = life["mood"] | 0; v.word = life["word"] | ""; v.tired = life["tired"] | "awake"; v.cue = life["cue"] | "";
+        v.fedToday = life["fed"]["today"] | 0; v.fedDue = life["fed"]["due"] | 0;
+        v.wateredToday = life["watered"]["today"] | 0; v.wateredDue = life["watered"]["due"] | 0;
+        v.trained = life["trained"] | false;
+        JsonVariantConst den = dm["den"];
+        v.denWall = den["wall"] | v.denWall.c_str(); v.denDeep = den["deep"] | v.denDeep.c_str();
+        v.denFloor = den["floor"] | v.denFloor.c_str(); v.denGlow = den["glow"] | v.denGlow.c_str();
+      }
+      for (JsonVariantConst p : doc["party"].as<JsonArrayConst>()) {
+        PartyMember m;
+        m.name = p["name"] | ""; m.types = joined(p["types"]); m.artKey = p["artKey"] | "";
+        m.level = p["level"] | 0; m.slot = p["slot"] | -1;
+        for (JsonVariantConst rt : p["routines"].as<JsonArrayConst>()) {
+          m.routines.push_back(rt["name"] | ""); m.routineTypes.push_back(rt["type"] | ""); m.routineColours.push_back(rt["colour"] | "");
+        }
+        v.party.push_back(m);
+      }
+      for (JsonVariantConst c : doc["casts"].as<JsonArrayConst>()) {
+        Heard h;
+        h.id = c["id"] | ""; h.kind = c["k"] | ""; h.name = c["n"] | ""; h.species = c["s"] | 0;
+        h.text = c["t"].is<const char *>() ? c["t"] | "" : c["a"] | "";
+        v.heard.push_back(h);
       }
     }
   }
-  std::lock_guard<std::mutex> g(lock);
-  last = v;
+  {
+    std::lock_guard<std::mutex> g(lock);
+    last = v;
+  }
+  // the pictures after the words, so the screen has something at once: the carried daemon's, then the party's by slot
+  if (v.carrying) fetchArt(v.artKey, "");
+  for (auto &m : v.party) fetchArt(m.artKey, "?slot=" + std::to_string(m.slot));
+}
+
+void refresh() { askNow = true; wake.notify_all(); }
+
+Reply post(const std::string &path, const std::string &json, long timeoutMs) {
+  Reply r = httpPost(address() + path, json, headers(), timeoutMs);
+  refresh();
+  return r;
 }
 
 static void start() {

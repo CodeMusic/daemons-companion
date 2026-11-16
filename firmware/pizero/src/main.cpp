@@ -6,7 +6,7 @@
 //   daemons-zero --hub http://h:4730   the hub to ask (else ~/.config/daemons/hub; "none" asks nothing)
 //   daemons-zero --make FILE.gba       make the game from the player's own ROM, say each step, and stop
 //   daemons-zero --rom FILE.gba        play any ROM as it is (a DEBUG build: testing)
-//   daemons-zero --page play           start on a page (home, play, make)
+//   daemons-zero --page care           start on a page (home, play, make, link, care, step, party, say)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
 //                                      run N frames unseen, keys pressed at those frames, a picture at the end
 //                                      (and every 100 frames: out_<frame>.bmp)
@@ -40,6 +40,10 @@ Page *homePage();
 Page *playPage();
 Page *makePage();
 Page *pairPage();
+Page *carePage();
+Page *stepPage();
+Page *partyPage();
+Page *sayPage();
 
 Emu emu;
 bool held[(size_t)Key::Count];
@@ -53,6 +57,10 @@ Page *pageFor(PageId id) {
     case PageId::Play: return playPage();
     case PageId::Make: return makePage();
     case PageId::Pair: return pairPage();
+    case PageId::Care: return carePage();
+    case PageId::Step: return stepPage();
+    case PageId::Party: return partyPage();
+    case PageId::Say: return sayPage();
     default: return homePage();
   }
 }
@@ -223,7 +231,9 @@ int main(int argc, char **argv) {
   if (!hal::begin(scale, headless)) { fprintf(stderr, "no screen\n"); return 1; }
   if (!headless && !sound::begin()) fprintf(stderr, "sound: none found; the game plays silent\n");
   hub::begin(hal::deviceId());
-  go(start == "play" ? PageId::Play : start == "make" ? PageId::Make : PageId::Home);
+  const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "link", PageId::Pair },
+                                           { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say } };
+  go(pages.count(start) ? pages.at(start) : PageId::Home);
 
   auto lastDraw = std::chrono::steady_clock::now();
   uint64_t loops = 0;
@@ -245,7 +255,7 @@ int main(int argc, char **argv) {
         for (Key k : ks)
           if (want[(size_t)k] != held[(size_t)k]) {
             held[(size_t)k] = want[(size_t)k];
-            KeyEvent s{ k, want[(size_t)k], 0 };
+            KeyEvent s{ k, want[(size_t)k], want[(size_t)k] ? keyChar(k, false) : (char)0 };   // what it types, as a key would
             p->key(s);
             switched = true;
             p = pageFor(now);

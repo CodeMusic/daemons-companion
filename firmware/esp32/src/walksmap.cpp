@@ -2,7 +2,7 @@
 // MUSIC. Every walk's fixes are kept on the card as they are told (gps.cpp keepFix: walks/<day>.txt), so the map is
 // drawn here with no network: a day's walks as lines, fitted to the screen with north up, where each began (a ring)
 // and ended (a dot), the distance and a scale bar. A swipe turns to the day before or after. Never sent anywhere from
-// here (C-174). The streets under them -- map tiles kept on the card -- wait on where they may come from. Every word DRAFT.
+// here (C-174). No streets under them (the user, 2026-11-16: the lines alone, nothing fetched from outside). Every word DRAFT.
 #include "app.h"
 #include "card.h"
 

@@ -1170,6 +1170,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     }
     return songsKept;
   };
+  const SING_AGAIN_MS = 30_000;   // C-383: after the music, a moment for the Tiiny's thinker before the second try
+  const musicIdle = () => Promise.all([sleepTracks().idle(), songs().idle()]);
   const sing = (personality: number, mode: SingMode, request: string, styleGuide: string, voice: string, by?: string): Song | { error: string } => {
     const now = new Date(), got = personaNow(personality, now);
     if (!got) return { error: "That daemon is not here to sing." };   // DRAFT
@@ -1180,8 +1182,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                ...(by ? { by } : {}) });
     const w = ledgered({ kind: "song", title: `${f.nickname} writes a song${mode === "prompt" ? `: ${request.slice(0, 40)}` : mode === "lyrics" ? " to your words" : " of its own"}` });   // DRAFT
     (async () => {
-      const said = await w.write(SING_SYSTEM, singAsk(mode, got.persona.text, voice, request, styleGuide), 900);
-      const song = readSong(said, mode, request, styleGuide);
+      // C-383 (the user, 2026-11-15: "Yes, make it wait"): while the Tiiny makes music (a sleep piece, another song) its
+      // thinker answers nobody, and the song failed "too long for the house's module" -- so the words wait for the music
+      // to finish, and a write that failed anyway is tried once more after it
+      const ask = singAsk(mode, got.persona.text, voice, request, styleGuide);
+      await musicIdle();
+      let song = readSong(await w.write(SING_SYSTEM, ask, 900).catch(() => null), mode, request, styleGuide);
+      if (!song.lyrics) {
+        await musicIdle(); await new Promise((r) => setTimeout(r, SING_AGAIN_MS));
+        song = readSong(await w.write(SING_SYSTEM, ask, 900), mode, request, styleGuide);
+      }
       if (!song.lyrics) throw new Error("no words came");   // DRAFT
       songs().update(row.id, song);
       w.end("done");

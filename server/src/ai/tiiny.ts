@@ -148,9 +148,19 @@ export async function tiinyChat(at: TiinyAt, model: string, system: string, hist
 // {description, tags}; thinking off (on, it spent every token reasoning). The scene as it was when it is not loaded.
 export const TIINY_PROMPT = "tiiny-prompt";
 export const ENHANCED_MOST = 2400;
-export async function tiinyEnhance(at: TiinyAt, scene: string, f: typeof fetch = fetch, ms = 60_000): Promise<string> {
+// C-388 (the user, 2026-11-16, by multiple choice: the Tiiny keeps its thinker, ear, voice and ACE-Step loaded, nothing
+// swapped): PE-T2I is not kept loaded, so the cover's prompt is enhanced by the thinker the Tiiny always holds, told to
+// do what PE-T2I does -- the same JSON back
+export const ENHANCE_SYSTEM =
+  "You turn a short scene into the full prompt a text-to-image model follows. Keep everything the scene asks for -- its " +
+  "subject, its place, its time of day, its light and weather, its mood -- and never contradict it. Add what a painter " +
+  "must decide: the composition and where the subject sits in the frame, the scale of things, the light's direction and " +
+  "colour, the palette, textures and small concrete details that belong there. Write one flowing paragraph of 80 to 160 " +
+  "words, plain description, no lists, no text or lettering in the picture. Answer with JSON only: {\"description\": " +
+  "the paragraph, \"tags\": five short tags}.";
+export async function tiinyEnhance(at: TiinyAt, scene: string, f: typeof fetch = fetch, ms = 60_000, model = TIINY_PROMPT): Promise<string> {
   try {
-    const said = await tiinyChat(at, TIINY_PROMPT, "", [], scene, f, ms, 700);
+    const said = await tiinyChat(at, model, model === TIINY_PROMPT ? "" : ENHANCE_SYSTEM, [], scene, f, ms, 700);
     const m = said.match(/\{[\s\S]*\}/);
     const d = m ? String(JSON.parse(m[0])?.description ?? "") : said;
     return d.replace(/\s+/g, " ").trim().slice(0, ENHANCED_MOST) || scene;

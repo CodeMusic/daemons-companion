@@ -67,7 +67,7 @@ import { keepSave, listSaves } from "./saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
 import { keepLoaded, keepOf } from "./ai/tiinykeep.js";   // C-375
-import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, TIINY_PROMPT, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
+import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
 import { ENTRY_VOICE, INDEX_VOICE, voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation; C-387: the INDEX's and the entry's too
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
@@ -855,7 +855,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   }, { speed: process.env.VITEST ? 1 : undefined });
   useMesh((args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o));
   // C-372: a painting's scene through the Tiiny's prompt enhancer when it has one; as written otherwise
-  const enhanced = async (scene: string) => { const t = tiinyNow(); return t && TALK_HEALTH.tiiny?.models.includes(TIINY_PROMPT) ? tiinyEnhance(t.at, scene) : scene; };
+  // C-388: by the Tiiny's thinker, always loaded (PE-T2I is not kept: the comparison of 2026-11-16 -- the same scenes,
+  // the same seeds -- held every scene as well or better, in 15-17 s against 33-55 s); tiiny.enhancer names another
+  const enhanced = async (scene: string) => {
+    const t = tiinyNow();
+    return t ? tiinyEnhance(t.at, scene, fetch, 60_000, store.getSetting("tiiny.enhancer") || t.at.model) : scene;
+  };
   const writerNow = (): string | null => tiinyNow() ? "the Tiiny" : endpointsNowAll(false)[0]?.e.name || (house.any ? "the house's module" : null);
   // C-319 next: every write-up the hub does is a task -- stoppable for real (its AbortController, held here while it
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.

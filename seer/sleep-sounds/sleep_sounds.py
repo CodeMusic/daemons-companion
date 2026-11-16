@@ -29,6 +29,13 @@ are set aside, ACE-Step loaded (about 70 s), the piece made, ACE-Step unloaded a
 piece at a time. If anything fails before the piece is made, it is made here on this machine's ACE-Step as before. The
 hub sees nothing different: the same job, the same loopable file. Its job says where it was made.
 
+ACE-STEP STAYS LOADED (companion C-388; the user, 2026-11-16, by multiple choice: "35B, ear, voice, ACE" -- 47 + 8 + 5 +
+40 = 100% of the Tiiny's NPU, nothing swapped): the painter's prompt enhancer is no longer kept on the Tiiny (the 35B
+writes the covers' prompts), so nothing is set aside (SLEEP_SOUNDS_SPARE empty) and ACE-Step is never unloaded after a
+piece (SLEEP_SOUNDS_KEEP_ACE=1); after a TiinyOS restart the first piece loads it, once. And a second piece asked while
+the Tiiny is making one is not queued behind it: it is made here, on this machine's ACE-Step, at the same time -- every
+model in the house answering somewhere, wherever it is free.
+
 Keys: whatever key LiteLLM itself takes, checked by asking LiteLLM (as tiiny_voice_stream.py does). Never printed.
 
     python3 sleep_sounds.py          # port 4002, ACE-Step at 127.0.0.1:8001, LiteLLM at 127.0.0.1:4000
@@ -41,7 +48,8 @@ LITELLM = os.environ.get("SLEEP_SOUNDS_LITELLM", "http://127.0.0.1:4000")
 ACE = os.environ.get("SLEEP_SOUNDS_ACE", "http://127.0.0.1:8001")
 GATE = os.environ.get("SLEEP_SOUNDS_GATE", "http://127.0.0.1:4001")               # C-376: the Tiiny, keyed
 TIINY_ACE = os.environ.get("SLEEP_SOUNDS_TIINY_MODEL", "ACE-Step/AceStep-XL-Turbo")
-SPARE = [m for m in os.environ.get("SLEEP_SOUNDS_SPARE", "Qwen/Qwen-Image-2.1-PE-T2I").split(",") if m.strip()]
+SPARE = [m for m in os.environ.get("SLEEP_SOUNDS_SPARE", "").split(",") if m.strip()]
+KEEP_ACE = os.environ.get("SLEEP_SOUNDS_KEEP_ACE", "1") == "1"                       # C-388: ACE-Step stays loaded
 LOAD_WAIT_S = 240
 OUT = os.path.expanduser(os.environ.get("SLEEP_SOUNDS_OUT", "~/daemons-sleep-sounds/out"))
 FFMPEG = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
@@ -115,40 +123,49 @@ def make_on_tiiny(job, bearer, cfg):
     """Sets aside SPARE, loads ACE-Step, makes the piece, puts everything back. The raw wav's path, or None if the
     Tiiny could not make it before it started (then it is made here)."""
     j = jobs[job]
-    with on_tiiny:
-        models = device(bearer)
-        if models.get(TIINY_ACE) not in ("downloaded", "running"):
-            return None                                       # not on the device: made here
-        set_aside, loaded_here = [], False
-        try:
-            if models.get(TIINY_ACE) != "running":
-                for m in SPARE:
-                    if models.get(m) == "running" and gate("POST", "/tiiny/models/%s/stop" % m, bearer, timeout=120)[0] == 200:
-                        set_aside.append(m)
-                if gate("POST", "/tiiny/models/%s/start" % TIINY_ACE, bearer, timeout=300)[0] != 200:
+    # C-388: the Tiiny busy with a piece -- this one is made here, at the same time, not queued behind it
+    if not on_tiiny.acquire(blocking=False):
+        return None
+    try:
+        return made_on_tiiny(job, j, bearer, cfg)
+    finally:
+        on_tiiny.release()
+
+
+def made_on_tiiny(job, j, bearer, cfg):
+    models = device(bearer)
+    if models.get(TIINY_ACE) not in ("downloaded", "running"):
+        return None                                       # not on the device: made here
+    set_aside, loaded_here = [], False
+    try:
+        if models.get(TIINY_ACE) != "running":
+            for m in SPARE:
+                if models.get(m) == "running" and gate("POST", "/tiiny/models/%s/stop" % m, bearer, timeout=120)[0] == 200:
+                    set_aside.append(m)
+            if gate("POST", "/tiiny/models/%s/start" % TIINY_ACE, bearer, timeout=300)[0] != 200:
+                return None
+            loaded_here = True
+            deadline = time.time() + LOAD_WAIT_S
+            while device(bearer).get(TIINY_ACE) != "running":
+                if time.time() > deadline:
                     return None
-                loaded_here = True
-                deadline = time.time() + LOAD_WAIT_S
-                while device(bearer).get(TIINY_ACE) != "running":
-                    if time.time() > deadline:
-                        return None
-                    time.sleep(5)
-            j["state"] = "making"
-            st, data = gate("POST", "/v1/music/generate", bearer, {"model": TIINY_ACE, "config": cfg}, timeout=1800)
-            if st != 200:
-                try:
-                    why = json.loads(data.decode()).get("error") or ""
-                except ValueError:
-                    why = ""
-                raise RuntimeError("the Tiiny answered %d %s" % (st, str(why)[:160]))
-            audio = json.loads(data.decode()).get("audio_data") or ""
-            raw = os.path.join(OUT, job + ".tiiny.wav")
-            with open(raw, "wb") as fh:
-                fh.write(__import__("base64").b64decode(audio))
-            j["where"] = "the Tiiny"
-            return raw
-        finally:
-            put_back(bearer, loaded_here, set_aside)
+                time.sleep(5)
+        j["state"] = "making"
+        st, data = gate("POST", "/v1/music/generate", bearer, {"model": TIINY_ACE, "config": cfg}, timeout=1800)
+        if st != 200:
+            try:
+                why = json.loads(data.decode()).get("error") or ""
+            except ValueError:
+                why = ""
+            raise RuntimeError("the Tiiny answered %d %s" % (st, str(why)[:160]))
+        audio = json.loads(data.decode()).get("audio_data") or ""
+        raw = os.path.join(OUT, job + ".tiiny.wav")
+        with open(raw, "wb") as fh:
+            fh.write(__import__("base64").b64decode(audio))
+        j["where"] = "the Tiiny"
+        return raw
+    finally:
+        put_back(bearer, loaded_here and not KEEP_ACE, set_aside)
 
 
 def put_back(bearer, unload_ace, set_aside):

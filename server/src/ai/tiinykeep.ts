@@ -7,8 +7,9 @@
 // model the user unloaded by hand stays unloaded until the hub actually needs it, and never unloading anything.
 import type { TiinyAt } from "./tiiny.js";
 
-// The models the hub lives on, by the Tiiny's own ids: the thinker, the ear, the voice (tiiny.keep changes them; "" none)
-export const KEEP = ["Qwen/Qwen3.6-35B-A3B", "Qwen/Qwen3-ASR-1.7B", "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"];
+// The models the hub lives on, by the Tiiny's own ids: the thinker, the ear, the voice -- and (C-388, the user, 2026-11-16)
+// the music, so nothing is ever swapped: 47 + 8 + 5 + 40 = 100% of its NPU (tiiny.keep changes them; "" none)
+export const KEEP = ["Qwen/Qwen3.6-35B-A3B", "Qwen/Qwen3-ASR-1.7B", "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign", "ACE-Step/AceStep-XL-Turbo"];
 export const KEEP_AGAIN_MS = 10 * 60_000;   // after a try, the next not before this
 
 export type DeviceModel = { id: string; status: string };

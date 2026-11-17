@@ -27,6 +27,7 @@ export type Settings = { savePath: string | null; dir: string | null; exists: bo
 
 // C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
 export type Life = { vesselUnder?: string | null;   // C-357 (5): CONTAINER, once the book is held
+                     mask?: boolean; maskUnder?: string | null; maskEyes?: [number, number, number, number][] | null;   // C-357, THE MASK: a week unanswered
                      mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
               trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null;
@@ -200,6 +201,7 @@ export const SHOWN_TABS = TABS.filter((t) => t !== "settings" && t !== "dev" && 
 // C-203: the companion's own log of reads and leans (server/src/intuition.ts readsView), once the save holds the book
 export type ReadHow = { day: string | null; centre: string | null; calm: boolean | null };   // TRUE OR NOT: none before 2026-11-12
 export type Reads = { held: boolean; reads: { given: number; landed: number }; leans: { told: number; landed: number };
-                      recent: ({ at: string; about: "near" | "rain" | "night" | "walk"; line: string; landed: string | null; open: boolean } & ReadHow)[];
-                      recentLeans?: ({ at: string; line: string; landed: boolean; misread: boolean } & ReadHow)[];   // THE MISREAD
-                      byHow?: { calm: { given: number; landed: number }; argument: { given: number; landed: number } } };
+                      recent: ({ at: string; about: "near" | "rain" | "night" | "walk"; line: string; landed: string | null; open: boolean; seen?: string | null } & ReadHow)[];
+                      recentLeans?: ({ at: string; line: string; landed: boolean; misread: boolean; seen?: string | null } & ReadHow)[];   // THE MISREAD; C-357: SEEN
+                      byHow?: { calm: { given: number; landed: number }; argument: { given: number; landed: number } };
+                      mask?: boolean };   // C-357, THE MASK

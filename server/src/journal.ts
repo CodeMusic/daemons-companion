@@ -14,12 +14,14 @@
 // THE SIGNS (signs.ts): the symbols in it read through the four books, by the house's quick thinker, or from the lexicon.
 import type { Store } from "./store.js";
 import { plainSigns, readSigns, returningSigns, signsAsk, SIGNS_ASK, symbolsIn, type Kind, type Reading, type Returning, type Source } from "./signs.js";
+import { cleanFeeling, feltOf } from "./processes.js";   // C-357, PROCESSES
 
 export const LIMITS = { journal: 40, title: 60, body: 8000 };
 export const STALE_MIN = 30;
 
 export type JournalRow = { id: number; title: string; kind: Kind; created: string; entries: number; last: string | null; waiting: number };
-export type Entry = { id: number; title: string; body: string; at: string; edited: string | null };
+export type Entry = { id: number; title: string; body: string; at: string; edited: string | null;
+                      feeling?: string | null; felt?: string | null };   // C-357, PROCESSES: the word kept, and how it is shown now
 export type Chapter = { id: number; n: number; from: number; to: number; count: number; at: string; first: string; last: string;
                         state: "writing" | "done" | "failed"; title: string; body: string; by: string; error: string | null };
 // C-356: a reading of the signs in one entry or one chapter
@@ -47,6 +49,8 @@ function tables(store: Store) {
       entry INTEGER, chapter INTEGER, at TEXT NOT NULL, state TEXT NOT NULL, reading TEXT, by TEXT NOT NULL DEFAULT '', error TEXT);`);
   const cols = (store.db.prepare("PRAGMA table_info(journals)").all() as { name: string }[]).map((c) => c.name);   // C-356
   if (!cols.includes("kind")) store.db.exec("ALTER TABLE journals ADD COLUMN kind TEXT NOT NULL DEFAULT 'standard'");
+  const ecols = (store.db.prepare("PRAGMA table_info(journal_entries)").all() as { name: string }[]).map((c) => c.name);   // C-357
+  if (!ecols.includes("feeling")) store.db.exec("ALTER TABLE journal_entries ADD COLUMN feeling TEXT");
   ready.add(store);
 }
 
@@ -96,8 +100,9 @@ export function journalOf(store: Store, id: number, now = new Date()): JournalVi
   tables(store);
   const j = store.db.prepare("SELECT id, title, kind, created FROM journals WHERE id = ?").get(id) as any;
   if (!j) return null;
-  const entries = (store.db.prepare("SELECT id, title, body, at, edited FROM journal_entries WHERE journal = ? ORDER BY id DESC").all(id) as any[])
-    .map((e) => ({ id: e.id, title: e.title, body: e.body, at: e.at, edited: e.edited ?? null }));
+  const entries = (store.db.prepare("SELECT id, title, body, at, edited, feeling FROM journal_entries WHERE journal = ? ORDER BY id DESC").all(id) as any[])
+    .map((e) => ({ id: e.id, title: e.title, body: e.body, at: e.at, edited: e.edited ?? null,
+                   feeling: e.feeling ?? null, felt: feltOf(e.feeling, e.at, now) }));   // C-357, PROCESSES
   const rows = store.db.prepare("SELECT * FROM journal_chapters WHERE journal = ? ORDER BY id").all(id) as any[];
   const chapters = rows.map((c, i) => chapterView(store, c, i + 1, now)).reverse();
   const signs = (store.db.prepare("SELECT * FROM journal_signs WHERE journal = ? ORDER BY id DESC").all(id) as any[]).map((s) => signsView(s, now));
@@ -127,12 +132,14 @@ export function keepEntry(store: Store, b: any, now = new Date()): JournalView |
   const journal = Number(b?.journal);
   if (!store.db.prepare("SELECT id FROM journals WHERE id = ?").get(journal)) return "no such journal";
   const title = clean(b?.title, LIMITS.title), body = clean(b?.body, LIMITS.body);
+  const feeling = cleanFeeling(b?.feeling);                   // C-357, PROCESSES: one word, or none (the app offers it with the book held)
   if (!body && !title) return "an entry needs some words";
   if (b?.id != null) {
-    const ch = store.db.prepare("UPDATE journal_entries SET title = ?, body = ?, edited = ? WHERE id = ? AND journal = ?")
-      .run(title, body, now.toISOString(), Number(b.id), journal).changes;
+    const keepsFeeling = !(b && typeof b === "object" && "feeling" in b);   // an edit that did not offer it leaves it as it was
+    const ch = store.db.prepare("UPDATE journal_entries SET title = ?, body = ?, edited = ?, feeling = CASE WHEN ? THEN feeling ELSE ? END WHERE id = ? AND journal = ?")
+      .run(title, body, now.toISOString(), keepsFeeling ? 1 : 0, feeling, Number(b.id), journal).changes;
     if (!Number(ch)) return "no such entry";
-  } else store.db.prepare("INSERT INTO journal_entries (journal, title, body, at) VALUES (?, ?, ?, ?)").run(journal, title, body, now.toISOString());
+  } else store.db.prepare("INSERT INTO journal_entries (journal, title, body, at, feeling) VALUES (?, ?, ?, ?, ?)").run(journal, title, body, now.toISOString(), feeling);
   return journalOf(store, journal, now)!;
 }
 

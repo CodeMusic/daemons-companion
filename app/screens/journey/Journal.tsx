@@ -12,14 +12,16 @@ import { useVoiceState, wholeVoice } from "../../platform/rendering";
 import { VoiceButton } from "../../ui/voiceButton";
 import { Action, Card, Entry, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { exportPage, exportVoice, printPage, spanOf, spokenOf, type Page } from "./page";
-import { useFresh } from "../../platform/useApi";   // C-344
+import { useApi, useFresh } from "../../platform/useApi";   // C-344; C-357: the book held
+import { FEELINGS, FEELING_MOST } from "../../../server/src/processes";   // C-357, PROCESSES: the few offered
 
 type Kind = "standard" | "dream";
 type Sign = { sign: string; seen: string; reading: string; books: string[] };
 type Signs = { id: number; entry: number | null; chapter: number | null; at: string; state: "writing" | "done" | "failed";
                reading: { signs: Sign[]; thread: string } | null; by: string; error: string | null };
 type Row = { id: number; title: string; kind?: Kind; created: string; entries: number; last: string | null; waiting: number };
-type JEntry = { id: number; title: string; body: string; at: string; edited: string | null };
+type JEntry = { id: number; title: string; body: string; at: string; edited: string | null;
+                feeling?: string | null; felt?: string | null };   // C-357, PROCESSES
 type Chapter = { id: number; n: number; count: number; at: string; first: string; last: string; state: "writing" | "done" | "failed";
                  title: string; body: string; by: string; error: string | null };
 type Returning = { sign: string; times: number; when: string[]; seen: string[]; books: string[] };
@@ -33,6 +35,7 @@ export const JOURNAL_WORDS = {   // DRAFT, every one
   open: (n: number) => `${n} entr${n === 1 ? "y" : "ies"}`,
   back: "‹ All journals", rename: "Rename", remove: "Remove", removeSure: "Remove it, and every entry?", keep: "Keep",
   write: "NEW ENTRY", entryTitle: "a title (if you like)", entryBody: "What happened, what you noticed…", save: "Save entry", cancel: "Cancel",
+  feelingAsk: "A FEELING (if you like)", feelingHint: "or one of your own", feelingNone: "none",   // C-357, PROCESSES
   edit: "Edit", gone: "Remove", goneSure: "Remove this entry?",
   summarize: (n: number) => `Summarize ${n} new entr${n === 1 ? "y" : "ies"}`,
   nothingNew: "Everything here is summarized. Write more, and a new chapter waits.",
@@ -253,6 +256,7 @@ function EntryRow({ e, onEdit, onRemove, children }: { e: JEntry; onEdit: () => 
               onPress={() => sure ? onRemove() : setSure(true)}>{sure ? W.goneSure : W.gone}</Text>
       </XStack>
       {e.title ? <Small>{`${whenSaid(e.at)}${e.edited ? ` · ${W.edited}` : ""}`}</Small> : null}
+      {e.felt ? <Text fontSize={14} lineHeight={20} fontStyle="italic" color="$color10">{e.felt}</Text> : null}{/* C-357, PROCESSES: never coloured */}
       <Text fontSize={14} lineHeight={21} color="$color11" cursor={long ? "pointer" : undefined} onPress={long ? () => setMore(!more) : undefined}>
         {long && !more ? `${e.body.slice(0, 220).trim()}…` : e.body}</Text>
       {children}
@@ -262,10 +266,13 @@ function EntryRow({ e, onEdit, onRemove, children }: { e: JEntry; onEdit: () => 
 
 function EntryForm({ j, entry, ink, dream, onDone }: { j: Journal; entry: JEntry | null; ink: string; dream?: boolean; onDone: (r: Journal | null) => void }) {
   const [title, setTitle] = useState(entry?.title ?? ""), [body, setBody] = useState(entry?.body ?? ""), [said, setSaid] = useState("");
+  const [feeling, setFeeling] = useState(entry?.feeling ?? "");   // C-357, PROCESSES: only with THE SUBTLE LAYER held
+  const [subtle] = useApi<{ held: boolean }>("/api/subtle");
   const bodyRef = useRef<TextInput>(null);
   const save = async () => {
     if (!title.trim() && !body.trim()) return onDone(null);
-    try { onDone(await api<Journal>("/api/journal/entry", { journal: j.id, id: entry?.id, title, body })); } catch (e) { setSaid((e as Error).message); }
+    const felt = subtle?.held ? { feeling } : {};                   // without the book, an edit leaves any feeling as it was
+    try { onDone(await api<Journal>("/api/journal/entry", { journal: j.id, id: entry?.id, title, body, ...felt })); } catch (e) { setSaid((e as Error).message); }
   };
   return (
     <YStack gap={8} marginTop={6}>
@@ -276,12 +283,37 @@ function EntryForm({ j, entry, ink, dream, onDone }: { j: Journal; entry: JEntry
         <TextInput ref={bodyRef} value={body} onChangeText={setBody} multiline maxLength={j.limits.body} placeholder={dream ? W.dreamBody : W.entryBody}
                    placeholderTextColor="#8a8577" style={{ ...paper, minHeight: 160, paddingVertical: 10, textAlignVertical: "top", lineHeight: 23 }} />
       </YStack>
+      {subtle?.held ? <FeelingPick value={feeling} onChange={setFeeling} /> : null}
       <XStack gap={8} flexWrap="wrap" alignItems="center">
         <Action label={W.save} onPress={save} ink={ink} />
         <Action label={W.cancel} onPress={() => onDone(null)} />
         <Text fontFamily="$mono" fontSize={11} color="$color8">{`${body.length}/${j.limits.body}`}</Text>
       </XStack>
       {said ? <Small color="$color9">{said}</Small> : null}
+    </YStack>
+  );
+}
+
+// C-357, PROCESSES (the user's picks, 2026-11-17): one feeling word on an entry, picked from a few or typed -- shown as
+// written for its hour, then as what was happening, with its time (server/src/processes.ts). No colour: a feeling has none
+// here. DRAFT.
+function FeelingPick({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const own = value && !(FEELINGS as readonly string[]).includes(value) ? value : "";
+  return (
+    <YStack gap={6}>
+      <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="$color10">{W.feelingAsk}</Text>
+      <XStack gap={6} flexWrap="wrap">
+        {["", ...FEELINGS].map((f) => (
+          <YStack key={f || "none"} paddingHorizontal={10} paddingVertical={4} borderRadius={12} borderWidth={1} cursor="pointer" role="button"
+                  borderColor={value === f ? "$color11" : "$color6"} backgroundColor={value === f ? "$color4" : "transparent"}
+                  aria-label={f || W.feelingNone} onPress={() => onChange(f)}>
+            <Text fontSize={13} color={value === f ? "$color12" : "$color10"}>{f || W.feelingNone}</Text>
+          </YStack>
+        ))}
+      </XStack>
+      <TextInput value={own} onChangeText={(t) => onChange(t.toLowerCase())} maxLength={FEELING_MOST} placeholder={W.feelingHint}
+                 placeholderTextColor="#8a8577" autoCapitalize="none"
+                 style={{ ...paper, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: "#d8d2c2", backgroundColor: "#fbfaf6" }} />
     </YStack>
   );
 }

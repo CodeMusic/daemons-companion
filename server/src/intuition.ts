@@ -129,7 +129,8 @@ export function noteClose(store: Store, peer: string, now = new Date()) {
 // ---- reads ------------------------------------------------------------------------------------------------------------------
 export const ABOUTS = ["near", "rain", "night", "walk"] as const;
 export type About = (typeof ABOUTS)[number];
-export type Read = { id: number; at: string; about: About; based: boolean; way: string; device: string; landed: string | null; closed: boolean } & Partial<How>;
+export type Read = { id: number; at: string; about: About; based: boolean; way: string; device: string; landed: string | null; closed: boolean;
+                     seen?: string | null } & Partial<How>;   // C-357: SEEN, when it was answered
 // TRUE OR NOT and AT REST (the book): "write it ... with the day and the centre, and whether it came calm or with argument".
 // Kept with every read and lean as it arrives (none before 2026-11-12): the day and its centre (week.json, Sunday the
 // root), and calm when the daemon's ATTUNEMENT is at least its VOLTAGE -- READ 0 or more, its volume down; with argument
@@ -197,7 +198,7 @@ export function landReads(store: Store, now = new Date()): Read[] {
 }
 
 // ---- leans ------------------------------------------------------------------------------------------------------------------
-export type Leans = { told: number; landed: number; recent: ({ at: string; claim: "pays" | "not"; landed: boolean } & Partial<How>)[] };
+export type Leans = { told: number; landed: number; recent: ({ at: string; claim: "pays" | "not"; landed: boolean; seen?: string | null } & Partial<How>)[] };
 export function leansOf(store: Store): Leans { return { told: 0, landed: 0, recent: [], ...json<Partial<Leans>>(store, "subtle.leans", {}) }; }
 export function takeLean(store: Store, detail: string, now = new Date(), how?: How): Leans | string {
   const [said, landed] = detail.split(" ");
@@ -216,18 +217,55 @@ const howView = (x: Partial<How>) => ({ day: x.day ?? null, centre: x.centre ?? 
 // THE MISREAD (the book, the user's pick 2026-11-12): a lean that did not land is a misread -- the information true, the
 // conclusion wrong -- kept and shown as one, never hidden. And TRUE OR NOT's log by its hint: of the reads and leans kept
 // with how they came, how many came calm and how many with argument, and how many of each landed.
+// C-357, RECOGNITION (the user's pick, 2026-11-17, "A: SEEN in the app"): mend by making visible, not by force. A misread is
+// never removed; it can be marked SEEN, and a seen misread counts with the calm in the tally by how they came.
 export function readsView(store: Store, now = new Date()) {
   const reads = landReads(store, now), leans = leansOf(store);
   const judged = [...reads.filter((r) => r.landed || r.closed).map((r) => ({ calm: r.calm, landed: !!r.landed })),
-                  ...leans.recent.map((l) => ({ calm: l.calm, landed: l.landed }))];
+                  ...leans.recent.map((l) => ({ calm: !l.landed && l.seen ? true : l.calm, landed: l.landed }))];
   const tally = (calm: boolean) => { const k = judged.filter((x) => x.calm === calm); return { given: k.length, landed: k.filter((x) => x.landed).length }; };
   return {
     reads: { given: reads.length, landed: reads.filter((r) => r.landed).length },
     leans: { told: leans.told, landed: leans.landed },
-    recent: reads.slice(0, 10).map((r) => ({ at: r.at, about: r.about, line: lineOf(r), landed: r.landed, open: !r.landed && !r.closed, ...howView(r) })),
-    recentLeans: leans.recent.slice(0, 10).map((l) => ({ at: l.at, line: LEAN_LINES[l.claim], landed: l.landed, misread: !l.landed, ...howView(l) })),
+    recent: reads.slice(0, 10).map((r) => ({ at: r.at, about: r.about, line: lineOf(r), landed: r.landed, open: !r.landed && !r.closed, seen: r.seen ?? null, ...howView(r) })),
+    recentLeans: leans.recent.slice(0, 10).map((l) => ({ at: l.at, line: LEAN_LINES[l.claim], landed: l.landed, misread: !l.landed, seen: l.seen ?? null, ...howView(l) })),
     byHow: { calm: tally(true), argument: tally(false) },
+    mask: maskOf(store, now).mask,
   };
+}
+
+// SEEN: a read (by its time) or a lean (by its time) answered, once. Kept as when; nothing is removed.
+export function seeRead(store: Store, kind: unknown, at: unknown, now = new Date()): true | string {
+  if (typeof at !== "string" || !at) return "which one: its time";
+  if (kind === "read") {
+    const list = readsOf(store), r = list.find((x) => x.at === at);
+    if (!r) return "no such read";
+    if (!r.seen) { r.seen = now.toISOString(); store.setSetting("subtle.reads", JSON.stringify(list)); }
+    return true;
+  }
+  if (kind === "lean") {
+    const l = leansOf(store), x = l.recent.find((y) => y.at === at);
+    if (!x) return "no such lean";
+    if (!x.seen) { x.seen = now.toISOString(); store.setSetting("subtle.leans", JSON.stringify(l)); }
+    return true;
+  }
+  return "a read or a lean";
+}
+
+// C-357, THE MASK (the user's pick, 2026-11-17, "A: in the app", answered by SEEN): a misread hides; it stops sending the
+// signals of belonging, and the strain runs underneath. When a read or lean has gone a week unanswered and nothing has been
+// answered in that week, the daemon stops sending them -- no board is told the book is held, so none gives a read, a lean
+// or a noticing (core.ts) -- and wears a small mask in the den. Answer one, any one, and it comes off; it comes back only
+// after another unanswered week. Counted only from the day it began, so no old read masks anyone at once. DRAFT.
+export const MASK = { days: 7, from: "2026-11-17" };
+export const MASK_UNDER = "Answer one, and it comes off.";          // DRAFT (the game's breaks it in two)
+export const MEND_LINE = "SEEN. That was the mend.";                // DRAFT, RECOGNITION
+export function maskOf(store: Store, now = new Date()): { mask: boolean } {
+  const from = Date.parse(`${MASK.from}T00:00:00`), week = MASK.days * 86400000, t = now.getTime();
+  const all = [...readsOf(store), ...leansOf(store).recent].filter((x) => Date.parse(x.at) >= from);
+  const answered = all.map((x) => (x.seen ? Date.parse(x.seen) : 0)).reduce((a, b) => Math.max(a, b), 0);
+  const waited = all.some((x) => !x.seen && t - Date.parse(x.at) >= week);
+  return { mask: waited && t - answered >= week };
 }
 
 // ---- the outlook: rain in the next hours, for the city set on the site ----------------------------------------------------

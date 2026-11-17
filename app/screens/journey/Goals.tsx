@@ -10,7 +10,9 @@ import { useSubtleInk } from "../../state/look";
 // C-357 (4), SLOW WRITES (the user's pick, 2026-11-12): once the save holds THE SUBTLE LAYER, the goal weathers a mark in
 // -- a layer for each day a step was ticked, however many that day, seven to a mark (server/src/weathering.ts). In the
 // book's one purple. Every word DRAFT.
-type Weathering = { held: boolean; goal?: number; days?: number; layers?: number; of?: number; today?: number };
+// C-357, SAME DRIVE (the user's pick, 2026-11-17): six days in a row weather in; the seventh and on wait for a day the goal is
+// let be, and the goal says so (`line`). DRAFT.
+type Weathering = { held: boolean; goal?: number; days?: number; layers?: number; of?: number; today?: number; waiting?: number; line?: string | null };
 function WeatherMark({ goal, tick }: { goal: number; tick: number }) {
   const [w, setW] = useState<Weathering | null>(null);
   const ink = useSubtleInk();
@@ -27,6 +29,7 @@ function WeatherMark({ goal, tick }: { goal: number; tick: number }) {
       </YStack>
       <YStack flex={1}>
         <Text fontSize={14} lineHeight={20} color={ink}>{said}</Text>
+        {w.line ? <Text fontSize={14} lineHeight={20} color={ink}>{w.line}</Text> : null}
         {(w.today ?? 0) > 1 ? <Small color="$color9">Today counts once, however many steps.</Small> : null}
       </YStack>
     </XStack>

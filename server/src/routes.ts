@@ -17,7 +17,7 @@ import { readNotebook } from "./save/notebook.js";
 import { readProgress } from "./save/progress.js";
 import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
-import { howOf, readsView, takeLean, takeRead } from "./intuition.js";   // C-203
+import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./tending.js";   // C-357 (3)
 import { weatheringOf } from "./weathering.js";   // C-357 (4)
@@ -31,7 +31,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { artName, awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -44,7 +44,7 @@ import { checkNight, dreamsOf, keepNight, rested, titleOf, type Dream } from "./
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./evolve.js";
 import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
-import { openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches
+import { faceOf, openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
 import { thriveOf } from "./thrive.js";   // C-207
 import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
@@ -62,7 +62,7 @@ import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   /
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
 const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
+const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -260,6 +260,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/dawn/kept") return ok(keepDawn(store, now));   // C-314: this morning, if it is the creator's hour here
     // C-229: ASK THE SUBTLE LAYER -- its own line and a question back, or TWO VOICES' asking voice (the hub's module may say
     // the line in its own words instead: api.ts); C-230: the day's question answered, kept in the journal
+    if (path === "/api/reads/seen") {                                   // C-357, RECOGNITION and THE MASK: a read or lean answered
+      const save = h.save.read();
+      if (!save || !readSubtle(save).held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
+      const r = seeRead(store, b?.kind, b?.at, now);
+      return typeof r === "string" ? no(400, r) : ok({ held: true, ...readsView(store, now) });
+    }
     if (path === "/api/subtle/tending") {                                // C-357 (3): tended, by a touch -- once a day
       const save = h.save.read();
       if (!save || !readSubtle(save).held) return no(403, "Find THE SUBTLE LAYER first.");   // DRAFT
@@ -393,8 +399,10 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const save = d ? h.save.read() : null, form = d ? (evolvedOf(store, d.personality)?.to ?? d.species) : null;
   const vessel = d && form !== null ? vesselOf(store, d.personality, form, now) : null;
   const vesselUnder = vessel && save && readSubtle(save).held ? VESSEL_UNDER : null;
+  const mask = !!(d && save && readSubtle(save).held && maskOf(store, now).mask);   // C-357, THE MASK
   return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null,
-            thrive: thriveOf(store, now), vesselUnder });   // C-119; C-207: the week, for the den's glow and marks
+            thrive: thriveOf(store, now), vesselUnder, mask, maskUnder: mask ? MASK_UNDER : null,
+            maskEyes: mask && form !== null ? faceOf(artName(form))?.eyes ?? null : null });   // C-119; C-207: the week, for the den's glow and marks; C-357: its eyes, checked (faces.json)
 }
 
 // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's

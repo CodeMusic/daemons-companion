@@ -85,10 +85,10 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null, both = false, together = null }:
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null, both = false, together = null, veiled = false }:
   { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
     witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; aurora?: string | null; both?: boolean;
-    together?: Together | null }) {   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
+    together?: Together | null; veiled?: boolean }) {   // C-357, THE MASK: a week unanswered, a small mask on its face   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
   const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
@@ -157,6 +157,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
               <View key={i} style={{ position: "absolute", left: (p.x * side) / 64, top: (p.y * side) / 64, width: (p.w * side) / 64 + 0.5,
                                      height: (p.h * side) / 64 + 0.5, backgroundColor: `rgb(${p.rgb.join(",")})` }} />
             ))}
+            {veiled ? <Veil patches={expression?.patch ?? []} side={side} /> : null}
           </View>
           {witching ? <WitchShimmer side={side} level={shimmer} /> : null}
           <DawnRim side={side} level={dawn} />
@@ -195,6 +196,29 @@ function Pixels({ rows, px, colour, style }: { rows: string[]; px: number; colou
     </View>
   );
 }
+// C-357, THE MASK (the user's pick, 2026-11-17): a daemon whose reads and leans have gone a week unanswered wears a small
+// mask -- a dark band across its eyes, drawn in the sprite's own 64 x 64 frame, the eyes showing through as holes. Where
+// the server gave no eyes (no expression), the band sits where a face's eyes usually are. Answer one in READS, and it
+// comes off. DRAFT.
+const VEIL = "#211a26";
+function Veil({ patches, side }: { patches: NonNullable<Drawn["patch"]>; side: number }) {
+  const u = side / 64;
+  const box = patches.length
+    ? { x: Math.min(...patches.map((p) => p.x)) - 3, y: Math.min(...patches.map((p) => p.y)) - 2,
+        r: Math.max(...patches.map((p) => p.x + p.w)) + 3, b: Math.max(...patches.map((p) => p.y + p.h)) + 2 }
+    : { x: 18, y: 20, r: 46, b: 27 };
+  return (
+    <>
+      <View style={{ position: "absolute", left: box.x * u, top: box.y * u, width: (box.r - box.x) * u, height: (box.b - box.y) * u,
+                     borderRadius: 2 * u, backgroundColor: VEIL, opacity: 0.94 }} />
+      {patches.map((p, i) => (                                  // the eyes, through the mask's holes
+        <View key={i} style={{ position: "absolute", left: p.x * u, top: p.y * u, width: p.w * u + 0.5, height: p.h * u + 0.5,
+                               backgroundColor: `rgb(${p.rgb.join(",")})` }} />
+      ))}
+    </>
+  );
+}
+
 function WeekMarks({ thrive, w, fy, ink }: { thrive: Thrive; w: number; fy: number; ink: string }) {
   if (!w) return null;
   const px = Math.max(1.5, Math.round(fy / 70));

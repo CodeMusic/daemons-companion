@@ -114,7 +114,7 @@ describe("C-203: reads, judged by what happens after", () => {
     const v = readsView(store, at(20));
     expect(v.reads).toEqual({ given: 2, landed: 1 });
     expect(v.recent[0]).toEqual({ at: at(10).toISOString(), about: "rain", line: "rain, before long.", landed: null, open: true,
-                                 day: null, centre: null, calm: null });   // a read kept before it noted how it came
+                                 seen: null, day: null, centre: null, calm: null });   // a read kept before it noted how it came; C-357: not yet SEEN
     expect(JSON.stringify(v)).not.toContain("based");
   });
 });

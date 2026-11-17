@@ -1,38 +1,77 @@
 {
- "latest": 987,
+ "latest": 988,
  "builds": [
   {
+   "build": 988,
+   "commit": "b9335d27",
+   "date": "2026-11-17",
+   "sections": [
+    {
+     "ticket": "C-357",
+     "title": "THE SUBTLE LAYER, lived: the book's pages that were only words, made play",
+     "lines": [
+      "SAME DRIVE — six days in a row weather in; the seventh and on wait, and settle on the first day the goal is let be (the user's picks, DRAFT)",
+      "RECOGNITION and (7) THE MASK — every read and lean answered SEEN once, a seen misread the mend and counted calm; a week unanswered, a mask in the den and no board told the book is held (the user's picks, DRAFT)",
+      "PROCESSES — one FEELING word on a journal entry, as written for its hour, then as what was happening with its time, never coloured (the user's picks, DRAFT)",
+      "THE MASK over the eyes — the band cut around the eye boxes a person checked (faces.json), sent with the mask; seen on a scratch site, where the first band sat on the head (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.385.1 (T-565 menu sounds)",
+      "Knows the game's ROM release v11.386.1 (DAEMONS release: T-565 batch 2, the battle music, and batch 4, the battle sounds)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "WHAT'S NEW for build 987 (C-343, C-345, C-396)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 987,
-   "commit": "bc0a5ad",
+   "commit": "548a3ae",
    "date": "2026-11-17",
    "sections": [
     {
      "ticket": "C-396",
      "title": "THE COMPANION's own MANUALS table names the whole shelf",
      "lines": [
-      "THE COMPANION's MANUALS chapter now names the whole shelf, THE WATCH, THE GLASSES and THE CARDPUTERS among it, and its cover is new. (DRAFT)"
+      "Struck through (DAEMONS 67f2dc7f); the shelf cover for THE COMPANION, rewritten"
      ]
     },
     {
      "ticket": "C-343",
-     "title": "Sign in with Apple, and the age check",
+     "title": "Sign in with Apple in the next iOS build",
      "lines": [
-      "YOU's GUARDIAN card signs a guardian in with Apple. (DRAFT)",
-      "On iOS 26 and later the phone's own age signal is asked first: a grown-up signs in as a guardian. Nothing about it is kept or sent. (DRAFT)"
+      "Sign in with Apple and C-345 the age check's native module (DaemonsAgeRange: iOS 26 Declared Age Range, an 18 gate) — the user's yes, 2026-11-17, for build 987"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "WHAT'S NEW for build 987 (C-343, C-345, C-396)"
      ]
     }
    ]
   },
   {
    "build": 986,
-   "commit": "e1c16fe",
+   "commit": "8a0d4eb",
    "date": "2026-11-16",
    "sections": [
     {
      "ticket": "C-393",
      "title": "THE CARDPUTERS: a manual for the Cardputer, the Cardputer ADV and the Cardputer Zero",
      "lines": [
-      "THE CARDPUTERS on the MANUALS shelf: the Cardputer, the ADV and the Zero, and their caps; LISTEN reads it in its own voice. (DRAFT)"
+      "THE CARDPUTERS on the LIBRARY's MANUALS shelf — DAEMONS' eleventh printed book (docs/DAEMONS-cardputer-manual.pdf, 23 pages, DAEMONS e05ec36a), kept and fetched as THE WATCH and THE GLASSES are; its cover; a HOW TO PLAY book for WHAT'S NEW's SET UP. The wiki's shelf lists name THE WATCH, THE GLASSES and THE CARDPUTERS, and Boards points the Cardputers at it. Its recording (voice: tinkerer, the user's pick) is not made yet; LISTEN joins it when it is (DRAFT)",
+      "LISTEN in THE CARDPUTERS — its recording in its own voice (tinkerer, the user's pick; DAEMONS aabfc6d3), fetched and kept as THE WATCH's is (DRAFT)"
      ]
     },
     {
@@ -47,14 +86,15 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "Each widget named for its phone in YOUR DEVICES (C-394)"
+      "Each widget named for its phone in YOUR DEVICES (C-394)",
+      "WHAT'S NEW for build 986 (C-393 THE CARDPUTERS)"
      ]
     }
    ]
   },
   {
    "build": 985,
-   "commit": "a1535d4",
+   "commit": "dbc9f7c",
    "date": "2026-11-16",
    "sections": [
     {
@@ -68,7 +108,8 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "The handheld's bridge names the board, never the phone (C-391)"
+      "The handheld's bridge names the board, never the phone (C-391)",
+      "WHAT'S NEW for build 985"
      ]
     }
    ]

@@ -34,6 +34,8 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
            says: "The DAEMONS companion on a watch: the T-Watch Ultra and the T-Watch S3" },                                // DRAFT (C-326)
   glass: { title: "THE GLASSES", about: "Your daemon before your eye: the T-Glass.",                                           // DRAFT (C-262)
            says: "The DAEMONS companion on glasses: the LilyGO T-Glass" },                                                    // DRAFT (C-262)
+  cardputer: { title: "THE CARDPUTERS", about: "Your daemon under your fingers: the Cardputer, the ADV and the Zero.",   // DRAFT (C-393)
+               says: "The DAEMONS companion and game on M5Stack's Cardputers, and their caps" },                         // DRAFT (C-393)
 };
 // the recording each book is heard in (DAEMONS docs/books/audio); the TEXTBOOK's is CALLOW SCHOOL's own (Library.tsx)
 const HEARD: Partial<Record<Which, Recorded>> = { player: "manual", quick: "quick", companion: "companion", social: "social",

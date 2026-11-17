@@ -17,7 +17,7 @@ the game's are.
 |---|---|
 | **TODAY** | **YOUR GAME** -- where you last saved, how many MARKS you hold, your MONEY and what the CASINO has waiting for the next SYNC -- and **IN THE LIBRARY**, what waits there; each opens its place |
 | **DAEMON** | the party as the game draws it, the **INDEX**, **SOUNDINGS**, **DREAMS** and, once the book is held, **READS** |
-| **LIBRARY** | a bookcase, a shelf per kind: FOUND IN THE GAME (THE GUIDE, THE SUBTLE LAYER), MANUALS (QUICK START, THE PLAYER'S MANUAL, THE COMPANION, PLAYING TOGETHER, A BIGGER MIND), HISTORY AND STUDY (THE OLD WORD, CALLOW SCHOOL) and YOUR OWN PAGES (the NOTEBOOK, the SONGBOOK and STREAM) |
+| **LIBRARY** | a bookcase, a shelf per kind: FOUND IN THE GAME (THE GUIDE, THE SUBTLE LAYER), MANUALS (QUICK START, THE PLAYER'S MANUAL, THE COMPANION, THE WATCH, THE GLASSES, THE CARDPUTERS, PLAYING TOGETHER, A BIGGER MIND), HISTORY AND STUDY (THE OLD WORD, CALLOW SCHOOL) and YOUR OWN PAGES (the NOTEBOOK, the SONGBOOK and STREAM) |
 | **YOU** | you as the game draws you, the save's facts, the MARKS and ROOTS, the region maps, GROVES, GAME EVENTS, **THE ROAD AHEAD** and **TRADE** ([Trading](Trading)) |
 
 ## When the game saves
@@ -79,7 +79,7 @@ out by its own cover; tap one and it opens as a page of its own, **‹ LIBRARY**
 | shelf | its books |
 |---|---|
 | **FOUND IN THE GAME** | the books your save has found -- THE GUIDE, THE SUBTLE LAYER -- each only once found; until then *The books you find in the game will stand here.* |
-| **MANUALS** | QUICK START, THE PLAYER'S MANUAL, **THE COMPANION**, PLAYING TOGETHER, A BIGGER MIND |
+| **MANUALS** | QUICK START, THE PLAYER'S MANUAL, **THE COMPANION**, THE WATCH, THE GLASSES, THE CARDPUTERS, PLAYING TOGETHER, A BIGGER MIND |
 | **HISTORY AND STUDY** | THE OLD WORD, CALLOW SCHOOL |
 | **YOUR OWN PAGES** | the NOTEBOOK, the SONGBOOK, STREAM |
 
@@ -98,7 +98,9 @@ back to the shelves.
   COMPANION** (C-321, [the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf), 71
   pages) -- this app's own manual, every tab and page, reprinted as the app changes -- **PLAYING TOGETHER** (trading,
   loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS) and **A BIGGER MIND** (setting up a Tiiny Pocket for
-  the companion). On HISTORY AND STUDY, **THE OLD WORD** (C-274): how the Greek *daimon* branched, and why it is said
+  the companion). For the devices: **THE WATCH**, **THE GLASSES** and **THE CARDPUTERS** (C-393,
+  [the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-cardputer-manual.pdf), 23 pages: the Cardputer, the ADV and the Zero, and their caps).
+  On HISTORY AND STUDY, **THE OLD WORD** (C-274): how the Greek *daimon* branched, and why it is said
   *DAY-mons*.
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;
   without one, how many times you have sat the paper and your best. The seven floors, each opening its syllabus and its

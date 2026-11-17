@@ -1,6 +1,28 @@
 {
- "latest": 986,
+ "latest": 987,
  "builds": [
+  {
+   "build": 987,
+   "commit": "bc0a5ad",
+   "date": "2026-11-17",
+   "sections": [
+    {
+     "ticket": "C-396",
+     "title": "THE COMPANION's own MANUALS table names the whole shelf",
+     "lines": [
+      "THE COMPANION's MANUALS chapter now names the whole shelf, THE WATCH, THE GLASSES and THE CARDPUTERS among it, and its cover is new. (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-343",
+     "title": "Sign in with Apple, and the age check",
+     "lines": [
+      "YOU's GUARDIAN card signs a guardian in with Apple. (DRAFT)",
+      "On iOS 26 and later the phone's own age signal is asked first: a grown-up signs in as a guardian. Nothing about it is kept or sent. (DRAFT)"
+     ]
+    }
+   ]
+  },
   {
    "build": 986,
    "commit": "e1c16fe",

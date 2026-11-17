@@ -295,10 +295,56 @@ struct NetHeld {
   ~NetHeld() { if (netLock) xSemaphoreGiveRecursive(netLock); }
 };
 
+// Away, the relay takes seconds -- TLS to n8n, then home and back -- and the loop that draws the screen and reads the
+// buttons waited through every one: seen on the Ultra 2026-11-16, away from home, black and deaf to its buttons for a
+// while after it was unplugged. So on a board with the outbox's task, away, the loop never waits on the air: it leaves
+// the request for the task and takes the answer when it asks again (every caller asks again: a poll, or the user), and
+// the screen keeps going. At home the loop asks itself, as before: the hub on the LAN answers in a moment.
+struct Deferred { char method[5]; String path, body, out; int code; uint32_t at; volatile uint8_t stage; };   // 0 free, 1 asked, 2 answered
+static Deferred deferred[4];
+static TaskHandle_t loopTask = nullptr;
+static volatile bool awayNow = false;                  // the relay answered last, home has not since
+static const uint32_t DEFER_KEEP_MS = 30000;           // an answer no one came back for is let go
+
+static String deferredHttp(const char *method, const String &path, const String &body, bool *ok) {
+  int free = -1;
+  for (int i = 0; i < 4; i++) {
+    Deferred &d = deferred[i];
+    if (d.stage == 2 && millis() - d.at > DEFER_KEEP_MS) { d.out = ""; d.path = ""; d.body = ""; __sync_synchronize(); d.stage = 0; }
+    if (d.stage == 0) { if (free < 0) free = i; continue; }
+    if (strcmp(d.method, method) || d.path != path || d.body != body) continue;
+    if (d.stage != 2) return "";                       // asked, not answered yet
+    String out = d.out; int code = d.code;
+    d.out = ""; d.path = ""; d.body = ""; __sync_synchronize(); d.stage = 0;
+    lastCode = code;
+    if (ok) *ok = code == 200;
+    return out;
+  }
+  if (free >= 0) {
+    Deferred &d = deferred[free];
+    strlcpy(d.method, method, sizeof d.method); d.path = path; d.body = body; d.out = ""; d.code = -1;
+    __sync_synchronize(); d.stage = 1;
+  }
+  return "";
+}
+// the outbox's task: what the loop left, asked as it would have asked it
+static void runDeferred() {
+  for (Deferred &d : deferred) {
+    if (d.stage != 1) continue;
+    String out; int code = -1;
+    { NetHeld held; bool ok; out = http(d.method, d.path, d.body, &ok); code = lastCode; }
+    d.out = out; d.code = code; d.at = millis();
+    __sync_synchronize(); d.stage = 2;
+    dirty = true;                                      // what waited on it may show it now
+  }
+}
+
 // One request to the server over Wi-Fi -- home, or away through the relay (C-82); the answer's body, or "" with *ok false.
 String http(const char *method, const String &path, const String &body, bool *ok) {
   if (ok) *ok = false;
   if (!online()) return "";
+  if (awayNow && outboxTask && loopTask && xTaskGetCurrentTaskHandle() == loopTask && relaySet() && !usbLive())
+    return deferredHttp(method, path, body, ok);
   NetHeld held;
   int code = -1;
   String out;
@@ -317,7 +363,8 @@ String http(const char *method, const String &path, const String &body, bool *ok
   if (code < 0 && relaySet() && !usbLive()) {         // home did not answer at all (a refusal is an answer): the relay -- never with the cable here (C-179)
     out = relayHttp(method, path, body, &code);
     awayAt = code > 0 ? millis() : 0;                  // the relay answered (even "home is asleep"): away, for a while
-  } else if (code > 0) awayAt = 0;
+    if (code > 0) awayNow = true;
+  } else if (code > 0) { awayAt = 0; awayNow = false; }
   lastCode = code;
   if (ok) *ok = code == 200;
   return out;
@@ -820,7 +867,8 @@ static bool sendOne() {
 static void outboxLoop(void *) {
   Told t;
   for (;;) {
-    if (xQueuePeek(outbox, &t, portMAX_DELAY) != pdTRUE) continue;
+    runDeferred();                                       // what the loop left for it, away
+    if (xQueuePeek(outbox, &t, pdMS_TO_TICKS(250)) != pdTRUE) continue;
     if (bridgeLive() || !online()) { vTaskDelay(pdMS_TO_TICKS(1000)); continue; }   // the cable carries it, or no network yet
     if (sendOne()) vTaskDelay(pdMS_TO_TICKS(5000));       // no one answered: again in a while
   }
@@ -831,6 +879,7 @@ static void outboxLoop(void *) {
 // read it. So a board without PSRAM keeps the outbox but not its task: the loop sends (reportLoop), once the care has
 // been drawn and its hop played -- a quarter of a second at home, and a try that is not answered waits ten seconds.
 void reportBegin() {
+  loopTask = xTaskGetCurrentTaskHandle();               // setup runs on the loop's task
   outbox = xQueueCreate(psramFound() ? 16 : 8, sizeof(Told));
   if (!outbox || !psramFound()) return;
   netLock = xSemaphoreCreateRecursiveMutex();

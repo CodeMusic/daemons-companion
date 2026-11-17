@@ -103,6 +103,7 @@ class Link {
     if (away) this.away = away;
     const saved = await SecureStore.getItemAsync("handheld");
     const waiting = await SecureStore.getItemAsync("handheld-waiting");
+    this.deviceId = await SecureStore.getItemAsync("handheld-id");      // the board's own name, kept from its last HELLO
     if (waiting) { this.queue = JSON.parse(waiting); this.set({ waiting: this.queue.length }); }
     if (saved && this.now.phase === "none") this.connect(saved, false);
   }
@@ -112,6 +113,7 @@ class Link {
   // its id's tail; after a few seconds with none, the first board showing the service, as before.
   async pair(target?: string) {
     await this.forget(false);
+    await this.unknown();                                 // another board may answer: nothing of the last one carried over
     let ble: BleManager;
     try { ble = await this.ready(); } catch (e) { return this.set({ phase: "none", note: (e as Error).message }); }
     this.set({ phase: "looking", note: target ? "Linking with the watch you tapped -- keep it close." : "Looking for the handheld. On it, open ROUTINES, WHISPER, PAIR MY PHONE." });   // DRAFT
@@ -133,7 +135,13 @@ class Link {
     this.drop();
     if (this.device) await this.device.cancelConnection().catch(() => {});
     this.device = null;
-    if (clear) { await SecureStore.deleteItemAsync("handheld"); this.set({ phase: "none", name: "", note: "Forgotten. On the handheld, WHISPER, FORGET MY PHONES finishes it." }); }
+    if (clear) { await this.unknown(); await SecureStore.deleteItemAsync("handheld"); this.set({ phase: "none", name: "", note: "Forgotten. On the handheld, WHISPER, FORGET MY PHONES finishes it." }); }
+  }
+
+  // the board not yet known: its name, and the state last fetched for it, are forgotten until it says HELLO
+  private async unknown() {
+    this.deviceId = null; this.lastState = null; this.stateAt = 0;
+    await SecureStore.deleteItemAsync("handheld-id").catch(() => {});
   }
 
   private drop() { this.subs.forEach((s) => s.remove()); this.subs = []; this.timers.forEach(clearInterval); this.timers = []; this.heard = ""; }
@@ -193,8 +201,12 @@ class Link {
   // C-80: the board's own name, from its HELLO, carried on every request as ?device= (the relay passes the query on)
   private deviceId: string | null = null;
   private talkParts: string[] | null = null;     // C-82: a recording arriving from the board, in base64 lines
+  // The T-Watch Ultra, 2026-11-16: re-paired, it showed STARR -- the phone's own widget's daemon. Asked before the board's
+  // HELLO, a path had no device=, and the app's api() named the phone's widget instead (asThisDevice). Never that: until the
+  // board has said who it is, nothing is asked for it -- what it sent is kept (an Unreachable keeps it) and asked after.
   private async ask<T>(path: string, body?: unknown): Promise<T> {
-    if (this.deviceId) path += (path.includes("?") ? "&" : "?") + "device=" + encodeURIComponent(this.deviceId);
+    path = this.tagged(path);
+    if (!/[?&]device=/.test(path)) { const e = new Error("the handheld has not said who it is yet"); e.name = "Unreachable"; throw e; }
     try { const r = await this.api!<T>(path, body); this.set({ companion: true }); return r; }
     catch (e) { this.set({ companion: false }); throw e; }
   }
@@ -243,8 +255,12 @@ class Link {
   // What the board did, kept on the phone until the companion answers.
   // C-87: what the board reports as its whole current state (its routines, remotes, networks, battery) is kept once --
   // the latest; what it did (ticks, meetings, results) is kept every time, in order.
+  private tagged(path: string) {
+    return this.deviceId && !/[?&]device=/.test(path) ? path + (path.includes("?") ? "&" : "?") + "device=" + encodeURIComponent(this.deviceId) : path;
+  }
   private async later(path: string, body: unknown) {
-    if (/\/api\/device\/(routines|remotes|networks|battery|listen)$/.test(path)) this.queue = this.queue.filter((q) => q.path !== path);
+    path = this.tagged(path);                             // kept under the board that sent it, whichever is linked later
+    if (/\/api\/device\/(routines|remotes|networks|battery|listen)(\?|$)/.test(path)) this.queue = this.queue.filter((q) => q.path !== path);
     this.queue.push({ path, body });
     await SecureStore.setItemAsync("handheld-waiting", JSON.stringify(this.queue), KEEP);
     this.set({ waiting: this.queue.length });
@@ -276,7 +292,13 @@ class Link {
     }
     if (word === "HELLO") {
       const id = rest.split(" ")[3];
-      if (id && /^[a-z0-9][a-z0-9-]{2,47}$/.test(id)) this.deviceId = id;
+      if (id && /^[a-z0-9][a-z0-9-]{2,47}$/.test(id) && id !== this.deviceId) {
+        this.deviceId = id;
+        await SecureStore.setItemAsync("handheld-id", id, KEEP).catch(() => {});
+        // newly known: its own state and picture at once, over whatever it was shown before
+        this.stateAt = 0; await this.sendState();
+        try { this.say("ART " + JSON.stringify(await this.ask("/api/device/art"))); } catch { /* it asks again */ }
+      }
     } else if (word === "TICK" || word === "UNTICK") {
       const step = Number(rest);
       const [path, body] = word === "TICK" ? ["/api/device/ticks", { steps: [step] }] : ["/api/device/untick", { step }];

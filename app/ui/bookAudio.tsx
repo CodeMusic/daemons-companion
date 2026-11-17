@@ -28,7 +28,7 @@ import { Action, Small, useInk } from "./ui";
 import { barHeight, darkPaper, PLAIN, useBookLook, wash } from "./bookLook";   // C-309
 
 export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook"
-  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word" | "origin" | "watch";
+  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word" | "origin" | "watch" | "cardputer";
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
 const BOOKS: Record<Recorded, { file: string; title: string; reads: string; sealed?: boolean }> = {
   guide:    { file: "guide", title: "The Programmer's Guide to the Human Mind", reads: "Read aloud in reason's voice, even and unhurried." },   // DRAFT
@@ -46,6 +46,8 @@ const BOOKS: Record<Recorded, { file: string; title: string; reads: string; seal
   word:      { file: "the-old-word", title: "The Old Word", reads: "Read aloud by an elder, slowly, as an old story is." },                // DRAFT
   // C-326: picked by the user from three samples, 2026-11-11 ("A: pocket")
   watch:     { file: "the-watch", title: "The Watch", reads: "Read aloud bright and close, like something you carry." },               // DRAFT
+  // C-393: picked by the user from three samples, 2026-11-16 ("A: tinkerer")
+  cardputer: { file: "the-cardputers", title: "The Cardputers", reads: "Read aloud bright and quick, like someone showing you a gadget they love." },   // DRAFT
   // DAEMONS T-533: the whole book, sealed; its key is on its last page
   origin:    { file: "the-origin-audio", title: "The Origin of a Daemon", reads: "Read aloud in its teller's own voice, the whole before it branched.", sealed: true },  // DRAFT
 };

@@ -20,8 +20,14 @@ args=(-DCMAKE_BUILD_TYPE=Release)
 [[ "$(uname -s)" == Darwin && -d /opt/homebrew ]] && args+=(-DCMAKE_PREFIX_PATH=/opt/homebrew)
 command -v ninja >/dev/null && args+=(-G Ninja)
 jobs=$( (nproc || sysctl -n hw.ncpu) 2>/dev/null || echo 2)
-# the device has 512 MB: two at a time keeps the compiler out of the swap
-[[ $side == device ]] && jobs=2
+# The device has 512 MB, and the GPU keeps 128 of it (gpu_mem=128 for the camera). Seen on the first day: 352 MB, 124 of
+# them free with the launcher and PipeWire running. So one compiler at a time below 300 MB free, else two; ZERO_JOBS
+# overrides either.
+if [[ $side == device ]]; then
+  avail=$(awk '/MemAvailable/ { print int($2 / 1024) }' /proc/meminfo 2>/dev/null || echo 0)
+  jobs=$(( avail < 300 ? 1 : 2 ))
+fi
+jobs=${ZERO_JOBS:-$jobs}
 
 cmake -S . -B "build/$side" "${args[@]}" >/dev/null
 cmake --build "build/$side" -j "$jobs"

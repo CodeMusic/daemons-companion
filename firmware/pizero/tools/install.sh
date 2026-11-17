@@ -19,9 +19,12 @@ if [[ ${2:-} == probe ]]; then
 fi
 
 echo "copying the source to $host:daemons-zero/src"
-tar -C "$here" --exclude ./build --exclude '*.gba' --exclude '*.sav' --exclude '*.bps' --exclude '*.deb' -czf - . |
-  ssh "$host" 'mkdir -p ~/daemons-zero/src && find ~/daemons-zero/src -mindepth 1 -maxdepth 1 ! -name build -exec rm -rf {} + &&
-               tar -xzf - -C ~/daemons-zero/src'   # the source replaced, its build kept: a second install builds only what changed
+# by content (-c), and without the Mac's times: a file that changed lands with the time it arrived, so the device's build
+# remakes exactly what changed (tar kept the Mac's times, older than the device's objects, and nothing was remade); the
+# device's own build/ is never touched, so a second install builds only what changed
+ssh "$host" 'mkdir -p ~/daemons-zero/src'
+rsync -rc --delete --exclude /build/ --exclude '/build-*/' --exclude /shots/ --exclude '*.gba' --exclude '*.sav' \
+  --exclude '*.bps' --exclude '*.deb' --exclude /patches.json --exclude .DS_Store "$here/" "$host:daemons-zero/src/"
 scp -q "$repo/server/data/patches.json" "$host:daemons-zero/src/patches.json"
 
 ssh "$host" 'bash -s' <<'EOF'

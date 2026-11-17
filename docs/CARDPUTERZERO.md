@@ -19,6 +19,33 @@ version", and the same RP3A0 chip the planned Pi Zero 2 W device would use (C-08
 | **C-381** | the companion: the boards' screens, and the library | next |
 | **C-382** | the radios (Bluetooth, IR, the LoRa cap), the IMU, the camera, HDMI | later |
 
+## The first day (2026-11-17): what the device is
+
+It arrived on 2026-11-16: the **full model** (the IMX219 camera and the BMI270 + BMM150 are on its bus), its 32 GB card
+in the slot. The probe (`tools/install.sh <user>@<device> probe`) found the plan right almost everywhere:
+
+| | seen |
+|---|---|
+| system | Debian 13 (trixie), kernel 6.18 `rpt-rpi-v8`, aarch64; "Raspberry Pi Compute Module 0 Rev 1.0"; four cores, 1 GHz, `ondemand` |
+| memory | **352 MB, not 512**: `gpu_mem=128` (for the camera) and `cma-64`. **124 MB free** with the launcher and PipeWire running; 351 MB of swap |
+| card | 29 GB, 22 GB free |
+| screen | `/dev/fb0` is `panel-mipi-dbi`, **320x170, 16 bpp, stride 640, rotate 0**: what `hal/device.cpp` writes. The backlight's sysfs reads 0 of 100 while lit (not ours to touch yet) |
+| keys | `/dev/input/by-path/platform-3f804000.i2c-event` is event3, `tca8418c` (`tca8418_keypad_m5stack` + `matrix_keymap`): the path the program opens first |
+| sound | the ES8389 is card 1, held by **PipeWire** (`pipewire-pulse` running): miniaudio plays through it |
+| cell | `power_supply/bq27220-0`, a Battery: what `hal::power()` reads |
+| caps | `/dev/spidev0.1` free on the cap header's bus. M5Stack ships apps for both caps, preinstalled: `cap-cc1101-nfc`, `cap-cc1101-subg-chat`, `cap-lora-1262` (+ `-gps`), with `ir-chat` and `ir-remote` (C-391, C-382) |
+| launcher | APPLaunch 0.6.105, `/usr/share/APPLaunch/applications/*.desktop` as planned |
+| to build | gcc, g++, ninja, git and pkg-config there; cmake and libcurl's headers installed once with `sudo` |
+| Wi-Fi | **2.4 GHz only**: it cannot join a 5 GHz network |
+
+**The first build on the device took 17 minutes**, one compiler at a time (`build.sh` now picks one below 300 MB free),
+and its checks passed: the device half (`hal/device.cpp`) compiled for the first time. **A copy by `tar` kept the Mac's
+file times**, older than the device's objects, so a second install remade nothing; `install.sh` now copies by content
+with `rsync -c`, so the device remakes exactly what changed, and keeps its own `build/`.
+
+**Both games (C-395)**: the player's FireRed and LeafGreen are kept on it, and GAMES makes CONTENT and CONTEXT, each as
+a release or a TESTING build, each with its own save (`firmware/pizero/README.md`).
+
 ## Where it stands (2026-11-16, before the device)
 
 **Built and seen on the Mac** (`firmware/pizero/`, its `README.md`):

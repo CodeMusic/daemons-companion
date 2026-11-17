@@ -26,8 +26,8 @@ describe("whatsnew setup", () => {
       if (s.ticket && SETUP[s.ticket]) expect(s.setup, `${b.build} ${s.ticket}`).toEqual(SETUP[s.ticket]);
       else expect(s.setup, `${b.build} ${s.ticket}`).toBeUndefined();
     }
-    const latest = NOTES.builds.find((b) => b.build === NOTES.latest)!;
-    expect(latest.sections.some((s) => s.setup)).toBe(true);
+    // the notes carry SET UP at all (a build with nothing to set up, as 985, need not: it is a patch of two fixes)
+    expect(NOTES.builds.some((b) => b.sections.some((s) => s.setup))).toBe(true);
   });
 
   it("puts the hub's address into a step, and links the wiki", () => {

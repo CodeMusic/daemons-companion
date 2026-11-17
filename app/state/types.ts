@@ -169,7 +169,8 @@ export type Carried = { personality: number; slot: number; species: number; nick
 
 export type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "relay" | null; firstSeen?: string; lastSeen: string; here: boolean;
                    firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null;
-                   daemon?: Carried | null };
+                   daemon?: Carried | null;
+                   owner?: string | null; mine?: boolean };   // a widget: the paired phone it is on, and whether it is the asker's
    // C-74, C-75, C-77, C-100
 export type RemoteSet = { label: string; protocol: string; bits: number; repeat: number; power: string; volumeUp: string; volumeDown: string };
 

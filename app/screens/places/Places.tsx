@@ -366,7 +366,10 @@ function saveOrder(o: Order) {
   try { if (ON_PHONE) SecureStore.setItemAsync(ORDER_KEY, o, KEEP).catch(() => {}); else globalThis.localStorage?.setItem(`daemons-${ORDER_KEY}`, o); }
   catch { /* remembered for this visit only */ }
 }
-const nameOf = (d: DeviceRow) => lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind;
+// the user, 2026-11-16: four rows read "This phone's widget" -- only the asker's own is; another is named for its phone
+const nameOf = (d: DeviceRow) => d.kind === "iphone-widget" && d.mine === false
+  ? (d.owner ? `${d.owner}'s widget` : "Another phone's widget")   // DRAFT
+  : lookFor(d.kind)?.name ?? KIND_NAMES[d.kind] ?? d.kind;
 // C-344: the devices here keep the order they were first seen in -- lastSeen moves with every heartbeat and re-sorted them
 // under the finger on each poll (C-115 found the same on the server); those away, the most recently seen first
 const firstSeen = (d: DeviceRow) => Date.parse(d.firstSeen ?? "") || 0;

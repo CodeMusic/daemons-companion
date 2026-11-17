@@ -13,7 +13,9 @@ vi.mock("../../app/node_modules/react-native-ble-plx", () => ({ BleManager: clas
 vi.mock("../../app/node_modules/expo-audio", () => ({ createAudioPlayer: () => ({}), setAudioModeAsync: async () => {} }));
 vi.mock("../../app/platform/voiceFile", () => ({ voiceFile: async () => null }));
 
-const { handheld } = await import("../../app/platform/handheld");
+// the app's file, by a path the server's typecheck does not follow (it is the app's, checked by the app's own tsc)
+const bridge = new URL("../../app/platform/handheld.ts", import.meta.url).pathname;
+const { handheld } = await import(/* @vite-ignore */ bridge);
 const link = handheld as any;
 const asked: string[] = [], said: string[] = [];
 const api = async (path: string) => { asked.push(path); return path.includes("/art") ? { artKey: "148" } : { daemon: { name: "EMERGENCE" } }; };

@@ -821,6 +821,7 @@ class Pairing {
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   useLanInterface(cfg.lanInterface);                           // C-180: never the Module LLM's link
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
+  const widgetOwners = new Map<string, string>();               // which paired phone each widget is on (by its name)
   weatherLoop(store);                                          // C-158: the real weather, while a city is set on the site
   outlookLoop(store);                                          // C-203: rain in the next hours, for a read
   const nets = new SharedNetworks(store);                      // C-93: one list of networks for every device
@@ -1516,7 +1517,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const away = awayNow(ecfg), { byDevice, unplaced } = carryView(store, away);
         const brief = (d: (typeof away)[number]) => ({ personality: d.personality, slot: d.slot, species: d.species,
           nickname: d.nickname, name: d.name, level: d.level, art: `/art/party/${d.slot}.png` });
-        return { devices: devices.list().map((r) => ({ ...r, daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
+        // a widget has no firmware or battery of its own: what a board's report filed under it before C-392 is not shown
+        const widget = (r: ReturnType<typeof devices.list>[number]) => r.kind === "iphone-widget"
+          ? { firmware: null, battery: null, owner: store.getSetting(`widget.owner.${r.id}`), mine: r.id === deviceId } : {};
+        return { devices: devices.list().map((r) => ({ ...r, ...widget(r), daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
                  away: away.map(brief), unplaced: unplaced.map(brief) };
       };
       // ---- C-142: Home Assistant's way in, by the key in its address (never through the relay) ----
@@ -1556,6 +1560,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // the same bridge passing something on, and must not turn a cable into Wi-Fi.
       if (validDeviceId(deviceId) && (path.startsWith("/api/device/") || path.startsWith("/api/ai/")) &&
           (asked || relayed || !isLoopback(req.socket.remoteAddress))) devices.seen(deviceId, via);
+      // the user, 2026-11-16: four rows read "This phone's widget". A widget's id is the paired phone's own (the app adds
+      // it to every request it makes for itself, never one it carries for a board): kept beside the phone's name.
+      if (phone && asked !== "phone" && validDeviceId(deviceId) && kindOf(deviceId) === "iphone-widget" && widgetOwners.get(deviceId) !== phone.name) {
+        widgetOwners.set(deviceId, phone.name); store.setSetting(`widget.owner.${deviceId}`, phone.name);
+      }
       // ---- C-218, C-219: THE EXCHANGE -- other companions on the home network and the tailnet trade here, each as the
       // player it joined as (x-daemons-player). Never through the relay: the exchange is not on the internet (C-222).
       if (path.startsWith("/api/exchange/")) {

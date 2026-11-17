@@ -37,11 +37,13 @@ in the slot. The probe (`tools/install.sh <user>@<device> probe`) found the plan
 | launcher | APPLaunch 0.6.105, `/usr/share/APPLaunch/applications/*.desktop` as planned |
 | to build | gcc, g++, ninja, git and pkg-config there; cmake and libcurl's headers installed once with `sudo` |
 | Wi-Fi | **2.4 GHz only**: it cannot join a 5 GHz network |
+| speed | **131.5 frames a second** (`--bench 1800`, 13.7 s on one core at 1 GHz): 2.2 times the GBA's 59.7. No frame skip, no gpSP |
 
 **The first build on the device took 17 minutes**, one compiler at a time (`build.sh` now picks one below 300 MB free),
 and its checks passed: the device half (`hal/device.cpp`) compiled for the first time. **A copy by `tar` kept the Mac's
 file times**, older than the device's objects, so a second install remade nothing; `install.sh` now copies by content
-with `rsync -c`, so the device remakes exactly what changed, and keeps its own `build/`.
+with `rsync -c`, so the device remakes exactly what changed, and keeps its own `build/` (the next install: 14 files,
+five minutes). All four games were made on it over SSH at 11.385.1, each checked against the release's SHA-1.
 
 **Both games (C-395)**: the player's FireRed and LeafGreen are kept on it, and GAMES makes CONTENT and CONTEXT, each as
 a release or a TESTING build (`firmware/pizero/README.md`). The testing builds come from the hub's DEBUG patches, which

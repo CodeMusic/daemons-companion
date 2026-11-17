@@ -85,7 +85,8 @@ build/window/daemons-zero --headless --page play --frames 3460 --press 1800:L,21
 
 This runs 3460 frames unseen, presses A at those frames, and writes a 320x170 BMP at the end (and every 300 frames).
 
-**Speed**: `--bench 3000` runs the game as fast as it goes. The Mac does about 1,300 frames a second, and the GBA needs 59.7.
+**Speed**: `--bench 3000` runs the game as fast as it goes. The Mac does about 1,300 frames a second, the Zero 131.5 (one core
+at 1 GHz), and the GBA needs 59.7.
 
 ## On the device
 

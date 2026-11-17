@@ -1,9 +1,91 @@
 {
- "latest": 983,
+ "latest": 984,
  "builds": [
   {
+   "build": 984,
+   "commit": "7ca175e",
+   "date": "2026-11-16",
+   "sections": [
+    {
+     "ticket": "C-387",
+     "title": "Mind and machine: the code's two vocabularies, kept",
+     "lines": [
+      "Mind and machine kept apart — the rule, its test, and the four crossings"
+     ]
+    },
+    {
+     "ticket": "C-328",
+     "title": "Battles: in the household and between accounts",
+     "lines": [
+      "Battles on the boards and watches (DRAFT) — a request over any screen (device state's battle, and GET /api/battle every 15 s awake), ACCEPT/DECLINE, both daemons' HP and the turn's lines, the four routines as C-325's tiles (a list without touch), held twice a forfeit, the result and the experience; BATTLE on the daemon's tiles asks a device or player online. battles.ts askedOf reads a waiting request without the clock's write"
+     ],
+     "setup": {
+      "title": "BATTLES",
+      "where": "YOU › BATTLE",
+      "needs": [
+       "the hub",
+       "a device online, or another player on the exchange"
+      ],
+      "steps": [
+       "YOU › BATTLE lists the household's devices that are online (each linked in PLACES) and the players on the exchange.",
+       "Pick one and send the request; the battle is drawn over every screen when it is accepted.",
+       "Boards and watches cannot answer a battle yet: their half waits on their firmware."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-332",
+     "title": "The game's music on the watch",
+     "lines": [
+      "The game's music on the watch (DRAFT) — MUSIC on BOOKS after DREAMS: the tracks the hub publishes (GET /api/music, gamemusic.ts: docs/music/audio/tracks.json beside the books' recordings, each cut once to 16 kHz PCM), played as they come and kept whole on the card (talkPlayFrom), played from there after; BOOKS' deck rows say ABOVE/BELOW (C-331 (4)). The device's door opens to /api/music and to BATTLE (C-328's routes were refused to a watch on the network)"
+     ]
+    },
+    {
+     "ticket": "C-335",
+     "title": "The watch updated from its card",
+     "lines": [
+      "The watch updated from its card (DRAFT) — the hub keeps each board's newest image (firmwareimages.ts: POST /api/firmware?board=&build= from this machine or a paired phone, checked as an ESP32 image; GET /api/firmware and /image through the device's door); the Ultra asks a quarter-day apart on the charger or awake, copies a different build onto its card (firmware/next.bin) checking its SHA-256 as it comes, says UPDATE READY, and installs from the card only when told (the command update: POST /api/device/update; the cable's UPDATE FROM CARD), hashed again on the way in, then restarts; FIRMWARE? down the cable",
+      "The Ultra's UPDATE in PLACES (DRAFT) — which build the hub holds, whether the watch runs it, and UPDATE behind a second tap; TODO: C-335, and C-217's Tab5 compiled on roverbyteseer",
+      "An update goes only to the board named — a command may carry `to` (its device id) and DeviceHub.take hands it to that board alone; POST /api/device/update needs {device} (the app sends it), refused to a board"
+     ]
+    },
+    {
+     "ticket": "C-388",
+     "title": "Every model answering somewhere, nothing swapped: the Tiiny's base set and the spill",
+     "lines": [
+      "Every model answering somewhere — the Tiiny keeps its thinker, ear, voice and ACE-Step, nothing swapped"
+     ]
+    },
+    {
+     "ticket": "C-383",
+     "title": "A song waits for the Tiiny's music",
+     "lines": [
+      "A song's write with no song in it is tried again, by the quick thinker"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "LIBRARY shelf: THE COMPANION and THE WATCH covers reprinted for v11.376.1",
+      "Knows the game's ROM release v11.379.1 (T-570 the last island and cave tiles)",
+      "LIBRARY shelf: THE PLAYER'S MANUAL cover reprinted for v11.379.1"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "A network's name is kept as typed: the hub trimmed 'RevivalNetwork ' into a network that does not exist (C-93)",
+      "Away on Tailscale, the phone reaches home on the tailnet before the relay (C-389)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 983,
-   "commit": "d728b5f",
+   "commit": "abe8e07",
    "date": "2026-11-16",
    "sections": [
     {
@@ -75,7 +157,8 @@
       "Battle.json: a ROUTINE, not a move (T-567)",
       "Species.json, index_cards.json: CELEBI is bound, not caught (T-571)",
       "The four books' pages: USER, not trainer (T-571, from their sources)",
-      "WHAT'S NEW for 983 (whatsnew.py —write —build 983); C-210's 982 record named as whatsnew.py reads it"
+      "WHAT'S NEW for 983 (whatsnew.py —write —build 983); C-210's 982 record named as whatsnew.py reads it",
+      "WHAT'S NEW for 983 again, at d728b5f (C-384, C-385, C-386, C-251); C-364's SET UP from the auto-SYNC lane, also under C-384"
      ]
     }
    ]

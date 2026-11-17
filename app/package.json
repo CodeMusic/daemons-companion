@@ -8,6 +8,7 @@
     "@kingstinct/react-native-healthkit": "^16.0.0",
     "@tamagui/config": "^2.7.7",
     "expo": "~57.0.26",
+    "expo-apple-authentication": "~57.0.2",
     "expo-asset": "~57.0.19",
     "expo-audio": "~57.0.5",
     "expo-battery": "~57.0.3",

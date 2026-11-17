@@ -12,6 +12,7 @@ Read `CONTEXT.md` (what this is), then **`LAYOUT.md` (where everything lives)**,
   handed a thinker, or writes a recipe the machine renders. A new file in `server/src/ai/`, or any new MIND or MACHINE
   file, is named on its side in `LAYOUT.md`; `server/test/layout.test.ts` fails otherwise.
 - Move a file with `git mv`, in a commit that only moves it and fixes its imports, so `git log --follow` keeps its history.
-- Tickets are `C-` ids in `TODO.md`, permanent; commit messages and code comments cite them (`// C-264: ...`). Keep those
-  comments when code moves.
+- Tickets are `C-` ids, permanent, **held in Redmine** (project `companion`; DAEMONS' `tools/tickets.py`, and its
+  CLAUDE.md for the commands). `TODO.md` here is Redmine's mirror, rebuilt nightly: never edit a ticket row by hand.
+  Commit messages and code comments cite the ids (`// C-264: ...`); keep those comments when code moves.
 - This repository is **public**: nothing personal goes in it. DAEMONS is said **DAY-mons** (`app/AGENTS.md`).

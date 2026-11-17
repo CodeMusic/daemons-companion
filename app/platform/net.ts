@@ -46,6 +46,22 @@ export let AWAY: string | null = null;
 
 export let route = { away: false, until: 0 };
 
+// The way home on the tailnet (the user, 2026-11-16, away on another Wi-Fi with Tailscale on: the phone held only the
+// home Wi-Fi's 10.0.0.69, which nothing on the tailnet routes, so every talk went through the relay and the daemon spoke
+// in the phone's own voice). The hub says its tailnet address when paired and in /api/version; home is asked at the
+// address paired with, then on the tailnet, and only then through the relay. Whichever answered is used for a minute --
+// for the API and for what is fetched by address (a voice's stream, art, the link cable): homeBase().
+export let TAILNET: string | null = null;
+let near: { base: string; until: number } | null = null;
+export const homeBase = () => (near && Date.now() < near.until ? near.base : SERVER);
+const homeBases = () => { const b = homeBase(); return [b, ...[SERVER, TAILNET].filter((x): x is string => !!x && x !== b)]; };
+let tailnetAsked = false;
+export async function keepTailnet(t: unknown) {
+  if (typeof t !== "string" || !/^https?:\/\/[^/?#\s]+$/.test(t) || t === TAILNET) return;
+  TAILNET = t;
+  if (ON_PHONE) await SecureStore.setItemAsync("tailnet", t, KEEP).catch(() => {});
+}
+
 export const isAway = () => route.away;
 
 // C-107 (the user, 2026-10-11: six relay runs at once, each a minute long): until the relay has been seen to reach the
@@ -182,6 +198,7 @@ export async function loadConnection(): Promise<boolean> {
   if (LOCAL && await SecureStore.getItemAsync("alone") === "1") { await hostAlone(); return true; }   // C-111
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
   AWAY = await SecureStore.getItemAsync("away");
+  TAILNET = await SecureStore.getItemAsync("tailnet");
   if (server && token) { SERVER = server; TOKEN = token; WIDGET?.shareWithWidget({ server, token, away: AWAY }); return true; }
   return false;
 }
@@ -225,21 +242,37 @@ export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
   // than 8 on LTE, and the watch's talk through the phone came back "the phone did not answer" (the user, 2026-10-28).
   // Never cut short and tried again by the relay either: that would ask the same talk twice.
   const slow = /^\/api\/ai\//.test(path) ? 45000 : 0;
-  const homeWithin = (ms: number) => async () => {
+  const homeAt = async (base: string, ms: number) => {
     const stop = new AbortController(), t = setTimeout(() => stop.abort(), ms);
-    try { return await fetch(SERVER + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
+    try { return await fetch(base + path, { ...init, signal: stop.signal }); } finally { clearTimeout(t); }
+  };
+  const homeWithin = (ms: number) => async () => {                      // at the paired address, then on the tailnet
+    let failed: unknown;
+    for (const b of homeBases()) {
+      try { const r = await homeAt(b, ms); near = { base: b, until: Date.now() + 60000 }; return r; } catch (e) { failed = e; }
+    }
+    throw failed;
   };
   // away with the relay set, home is first asked a quick question: only a home that answers it is given the long wait
   // (the review: every talk away waited 45 s on an unreachable home before the relay)
   const longHome = async () => {
-    const stop = new AbortController(), t = setTimeout(() => stop.abort(), 2500);
-    try { await fetch(`${SERVER}/api/version`, { headers: auth, signal: stop.signal }); } finally { clearTimeout(t); }
-    return homeWithin(slow)();
+    for (const b of homeBases()) {
+      const stop = new AbortController(), t = setTimeout(() => stop.abort(), 2500);
+      try { await fetch(`${b}/api/version`, { headers: auth, signal: stop.signal }); } catch { continue; } finally { clearTimeout(t); }
+      near = { base: b, until: Date.now() + 60000 };
+      return homeAt(b, slow);
+    }
+    throw new Error("home did not answer");
   };
+  // a phone paired before the hub said its tailnet address learns it once a run, by whichever way answers
+  if (ON_PHONE && !TAILNET && !tailnetAsked && path !== "/api/version") {
+    tailnetAsked = true;
+    apiLive<{ tailnet?: string | null }>("/api/version").then((v) => keepTailnet(v.tailnet)).catch(() => { tailnetAsked = false; });
+  }
   if (!ON_PHONE) r = await fetch(SERVER + path, init);
   else if (!AWAY) {
     try { r = await homeWithin(slow || 8000)(); }
-    catch { throw new Unreachable(`The companion at ${SERVER} did not answer. Is this phone on the home Wi-Fi, and the companion running?`); }
+    catch { throw new Unreachable(`The companion at ${SERVER}${TAILNET ? ` (or ${TAILNET} on the tailnet)` : ""} did not answer. Is this phone on the home Wi-Fi or the tailnet, and the companion running?`); }
   }
   else {
     const home = slow ? longHome : homeWithin(2500);
@@ -267,7 +300,7 @@ export async function apiLive<T>(path: string, body?: unknown): Promise<T> {
     if (!r || (viaAway && [502, 503, 504].includes(r.status))) {
       try { r = await (slow ? longHome : homeWithin(8000))(); viaAway = false; route = { away: false, until: Date.now() + 60000 }; } catch {}
     }
-    if (!r) throw new Unreachable(`Neither the companion at ${SERVER} nor the way from away answered.`);
+    if (!r) throw new Unreachable(`Neither the companion at ${SERVER}${TAILNET ? `, on the tailnet,` : ""} nor the way from away answered.`);
     // C-86: the relay answered, but for the companion -- "not answering", a gateway timeout -- so the companion is
     // out of reach (asleep, or still making a voice): that is being away, and the phone shows what it kept.
     if (viaAway && [502, 503, 504].includes(r.status)) {

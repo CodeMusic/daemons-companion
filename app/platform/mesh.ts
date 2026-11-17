@@ -10,7 +10,7 @@
 // to its house and n8n's local model), ONLY THIS PHONE. The one talk is kept here, so changing mind keeps the thread.
 // Every word DRAFT.
 import * as SecureStore from "expo-secure-store";
-import { ALONE, api, apiLater, apiLive, OFFLINE, ON_PHONE, SERVER } from "./net";
+import { ALONE, api, apiLater, apiLive, OFFLINE, ON_PHONE, homeBase } from "./net";
 import { canHear, canThink, hearHere, mindHere, sayHere, selfText, thinkHere } from "./mind";
 import { atHome, endpoint, endpointThink } from "./endpoint";
 import type { Spoken } from "../state/types";
@@ -183,7 +183,7 @@ export async function meshTalk(o: { kind: Kind; name: string; recording?: string
       try {
         // C-317: streamed where the hub can (the Tiiny's voice, not through the relay) -- its first words in seconds
         const r = await apiLater<Spoken & { stream?: string }>("/api/ai/speak", { text: t.answer, ring, stream: true, ...(o.kind === "guide" ? { reader: true } : { daemon: true }) });
-        if (r.stream) { trail.said = "by the hub"; v = { stream: SERVER + r.stream }; }   // DRAFT
+        if (r.stream) { trail.said = "by the hub"; v = { stream: homeBase() + r.stream }; }   // DRAFT
         else if (r.audioBase64) { trail.said = "by the hub"; v = { audioBase64: r.audioBase64 }; }   // DRAFT
       } catch { /* the phone's voice */ }
     }

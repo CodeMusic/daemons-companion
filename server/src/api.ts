@@ -792,6 +792,14 @@ export function tailnetName(): string | null {
   const n = hostname().split(".")[0].toLowerCase();
   return on && /^[a-z0-9-]+$/.test(n) ? n : null;
 }
+// The way home on the tailnet, as an address (the user, 2026-11-16, away on Tailscale: the phone had only the home
+// Wi-Fi's 10.0.0.69, which no node on the tailnet routes, so it went through the relay and spoke in its own voice).
+// The 100.x address, not the MagicDNS name, so it works with MagicDNS off. Null when this machine is on no tailnet.
+export function tailnetHome(port: number): string | null {
+  for (const a of Object.values(networkInterfaces()).flat())
+    if (a && a.family === "IPv4" && tailnetAddress(a.address)) return `http://${a.address}:${port}`;
+  return null;
+}
 
 // C-15: the beacon tags our own companions have used lately -- never a meeting
 const OWN_KEEP_MS = 48 * 3600000;
@@ -1656,7 +1664,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!pairing.take(b.code)) return send(res, 403, { error: "that code is not right, or has run out -- show a new one on the site" });
         const token = randomBytes(24).toString("base64url");
         store.addPhone(token, name);
-        return send(res, 200, { token, name, away: store.getSetting("relay.url") });   // C-56: the way back from anywhere
+        return send(res, 200, { token, name, away: store.getSetting("relay.url"), tailnet: tailnetHome(cfg.port) });   // C-56: the way back from anywhere
       }
       if (req.method === "GET" && path === "/api/pair/phones") return send(res, 200, store.phones());
       // C-337: a paired phone's own name on this companion -- read and changed by the phone itself, with its own key
@@ -1857,7 +1865,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-91: which build the companion is, and -- given the phone's build -- whether the app has changed since it
       if (req.method === "GET" && path === "/api/version") {
         const build = url.searchParams.get("build") ?? "";
-        return send(res, 200, { server: REPO_COMMIT, appChanged: /^[0-9a-f]{7,40}$/.test(build) ? appChangedSince(build) : null });
+        return send(res, 200, { server: REPO_COMMIT, appChanged: /^[0-9a-f]{7,40}$/.test(build) ? appChangedSince(build) : null,
+                                tailnet: tailnetHome(cfg.port) });   // the way home on the tailnet, for a phone paired at home
       }
       if (req.method === "POST" && path === "/api/devices/carry") {     // C-80: put this daemon in that device (null: none)
         const b = await body(req);

@@ -6,7 +6,7 @@
 import { Directory, File, Paths } from "expo-file-system";
 import { FileSystemUploadType, uploadAsync } from "expo-file-system/legacy";
 import { RecordingPresets, type RecordingOptions } from "expo-audio";
-import { asThisDevice, ON_PHONE, SERVER, TOKEN } from "./net";
+import { asThisDevice, ON_PHONE, homeBase, TOKEN } from "./net";
 
 // speech, not music: mono, 16 kHz, 32 kbps AAC -- about 14 MB an hour (HIGH_QUALITY would be 60), and the hub hears 16 kHz
 export const MEETING_RECORDING: RecordingOptions = {
@@ -22,7 +22,7 @@ const path = (s: Sending) => `/api/meeting/import?from=${s.from}${s.at ? `&at=${
 
 // sent, and the hub's meeting id; throws with why it could not be
 export async function sendMeeting(s: Sending): Promise<number> {
-  const url = SERVER + await asThisDevice(path(s)), auth: Record<string, string> = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
+  const url = homeBase() + await asThisDevice(path(s)), auth: Record<string, string> = TOKEN ? { authorization: `Bearer ${TOKEN}` } : {};
   if (!ON_PHONE) {
     const blob = await (await fetch(s.uri)).blob();
     const r = await fetch(url, { method: "POST", headers: { "content-type": "application/octet-stream", ...auth }, body: blob });

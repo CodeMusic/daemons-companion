@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { WebView } from "react-native-webview";
 import { Text, XStack, YStack } from "tamagui";
-import { ALONE, isAway, SERVER, TOKEN } from "../../platform/net";
+import { ALONE, isAway, homeBase, TOKEN } from "../../platform/net";
 import { Small } from "../../ui/ui";
 
 const SEATS = [{ seat: 0, edition: "CONTENT" }, { seat: 1, edition: "CONTEXT" }] as const;
@@ -26,7 +26,7 @@ export function LinkView({ edition, onBack }: { edition: string; onBack: () => v
         {SEATS.map((s) => chip(`PLAYER ${s.seat + 1} · ${s.edition}`, seat === s.seat, () => setSeat(s.seat), `sit at player ${s.seat + 1}`))}
       </XStack>
       {can ? (
-        <WebView key={seat} source={{ uri: `${SERVER}/link/` }} injectedJavaScriptBeforeContentLoaded={hand}
+        <WebView key={seat} source={{ uri: `${homeBase()}/link/` }} injectedJavaScriptBeforeContentLoaded={hand}
                  originWhitelist={["*"]} style={{ flex: 1, backgroundColor: "#0f1115" }}
                  scrollEnabled={false} bounces={false} />
       ) : (

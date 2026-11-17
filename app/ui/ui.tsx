@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Image, Platform, useWindowDimensions } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
-import { ALONE, ART, artByJson, FRESH_ART, isAway, KEYED, ON_PHONE, pairAgain, SERVER } from "../platform/net";
+import { ALONE, ART, artByJson, FRESH_ART, isAway, KEYED, ON_PHONE, pairAgain, homeBase, SERVER } from "../platform/net";
 import { Link } from "../state/types";
  // C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
 export const { careSound }: typeof import("../sound/careSound") = ON_PHONE ? require("../sound/careSound") : { careSound: () => "" };
@@ -13,7 +13,7 @@ export const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" 
 type ArtProps = { path: string; size: number; height?: number; fit?: "contain"; smooth?: boolean };   // C-320: smooth, for a cover drawn larger than shown
 export const Art = (p: ArtProps) => <ArtOf key={p.path} {...p} />;
 function ArtOf({ path, size, height, fit, smooth }: ArtProps) {   // C-158: height, for a hat; T-423: fit, for pictures of differing heights
-  const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && (isAway() || ALONE) ? null : SERVER + path));
+  const [uri, setUri] = useState<string | null>(ART.get(path) ?? (ON_PHONE && (isAway() || ALONE) ? null : homeBase() + path));
   const viaJson = useCallback(() => { artByJson(path).then(setUri).catch(() => {}); }, [path]);
   useEffect(() => { if (!uri || (path.startsWith("/art/party/") && uri.startsWith("data:") && !FRESH_ART.has(path))) viaJson(); }, [uri, viaJson, path]);
   const style = [{ width: size, height: height ?? size }, smooth ? {} : PIXELATED as any];

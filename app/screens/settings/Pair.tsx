@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import { Linking, Platform } from "react-native";
 import { Input, Text, YStack } from "tamagui";
-import { api, AWAY, hostAlone, KEEP, keepSiteToken, LOCAL, ON_PHONE, SERVER, setConnection, WIDGET } from "../../platform/net";
+import { api, AWAY, hostAlone, KEEP, keepSiteToken, keepTailnet, LOCAL, ON_PHONE, SERVER, setConnection, WIDGET } from "../../platform/net";
 import { Action, Choice, Small } from "../../ui/ui";
 
 export function PairScreen({ onPaired }: { onPaired: () => void }) {
@@ -25,6 +25,7 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
       await SecureStore.setItemAsync("server", base, KEEP);
       await SecureStore.setItemAsync("token", j.token, KEEP);
       if (j.away) { await SecureStore.setItemAsync("away", j.away, KEEP); setConnection({ away: j.away }); }   // C-56
+      await keepTailnet(j.tailnet);                                   // the way home on the tailnet, from anywhere
       setConnection({ server: base, token: j.token });
       WIDGET?.shareWithWidget({ server: base, token: j.token, away: AWAY });   // C-100
       onPaired();

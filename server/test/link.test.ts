@@ -147,6 +147,9 @@ describe("pairing a phone (C-53)", () => {
     expect((await post("/api/pair", { code: "000000" === code ? "111111" : "000000", name: "x" })).status).toBe(403);
     const r = await post("/api/pair", { code, name: "CodeMusicai" });
     expect(r.json.token.length).toBeGreaterThan(20);
+    // the way home on the tailnet: this machine's 100.x address and port, or null off any tailnet (2026-11-16)
+    expect(r.json.tailnet === null || /^http:\/\/100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.\d+\.\d+:\d+$/.test(r.json.tailnet)).toBe(true);
+    expect((await get("/api/version")).tailnet).toBe(r.json.tailnet);
     expect((await post("/api/pair", { code, name: "again" })).status).toBe(403);      // used once
     expect((await get("/api/pair/phones")).map((p: any) => p.name)).toContain("CodeMusicai");
   });

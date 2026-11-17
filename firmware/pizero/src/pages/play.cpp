@@ -34,7 +34,7 @@ struct Play : Page {
   void enter() override {
     soundOn = sound::on() && !headless;
     Bytes mine;
-    readFile(inData("daemons.sav"), mine);
+    readFile(savePath(), mine);
     if (unsaved(mine)) mine.clear();
     settling = true;
     note.clear();
@@ -48,19 +48,19 @@ struct Play : Page {
     note = in.why;
     if (!note.empty()) fprintf(stderr, "mirror: %s\n", note.c_str());
     if (in.took) {
-      writeFileAtomic(inData("daemons.sav"), in.save);
+      writeFileAtomic(savePath(), in.save);
       if (emu.loaded()) emu.restore(in.save);   // the game starts again from it (CONTINUE)
     }
     if (!emu.loaded()) {
       Bytes save;
       std::string why;
-      readFile(inData("daemons.sav"), save);
+      readFile(savePath(), save);
       if (!emu.load(romPath(), save, why)) { fprintf(stderr, "play: %s\n", why.c_str()); go(PageId::Home); return; }
     }
     // this device's save, newer than the one the hub holds (kept while it was away), goes out now -- as the app's open does
     if (!in.took && mirror::mode() == mirror::Mode::Send) {
       Bytes f;
-      if (readFile(inData("daemons.sav"), f) && !unsaved(f) && sha1Hex(f) != mirror::agreed()) mirror::pushLater(f);
+      if (readFile(savePath(), f) && !unsaved(f) && sha1Hex(f) != mirror::agreed()) mirror::pushLater(f);
     }
     next = Clock::now();
   }
@@ -71,7 +71,7 @@ struct Play : Page {
   void runOne() {
     emu.frame(gameKeysHeld(held));
     Bytes s;
-    if (emu.settledSave(s) && writeFileAtomic(inData("daemons.sav"), s)) {
+    if (emu.settledSave(s) && writeFileAtomic(savePath(), s)) {
       savedAt = Clock::now();
       mirror::pushLater(s);   // C-380: to the hub (sent only in Send mode; pushLater says how it went)
     }

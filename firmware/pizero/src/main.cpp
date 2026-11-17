@@ -4,9 +4,13 @@
 //   daemons-zero                       HOME (the device, or a window on a computer)
 //   daemons-zero --scale 4             the window bigger
 //   daemons-zero --hub http://h:4730   the hub to ask (else ~/.config/daemons/hub; "none" asks nothing)
-//   daemons-zero --make FILE.gba       make the game from the player's own ROM, say each step, and stop
+//   daemons-zero --make FILE.gba       make the game from the player's own ROM, say each step, choose it, and stop
+//   daemons-zero --make content|context  the newest release of that edition, from the original kept or found (C-395)
+//   daemons-zero --make-testing content|context  its TESTING build, from the paired hub's DEBUG patch (C-216, C-395)
+//   daemons-zero --game KEY            choose the game PLAY plays: content, context, content-testing, context-testing
+//   daemons-zero --games               say every game kept here and every original found, and stop
 //   daemons-zero --rom FILE.gba        play any ROM as it is (a DEBUG build: testing)
-//   daemons-zero --page care           start on a page (home, play, make, link, care, step, party, say)
+//   daemons-zero --page care           start on a page (home, play, games, link, care, step, party, say)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
 //                                      run N frames unseen, keys pressed at those frames, a picture at the end
 //                                      (and every 100 frames: out_<frame>.bmp)
@@ -72,9 +76,9 @@ PageId current() { return now; }
 void keepSave() {
   if (!emu.loaded()) return;
   Bytes s = emu.save(), kept;
-  if (readFile(inData("daemons.sav"), kept) && kept == s) return;
+  if (readFile(savePath(), kept) && kept == s) return;
   if (kept.empty() && std::all_of(s.begin(), s.end(), [](uint8_t b) { return b == 0xFF; })) return;   // never saved
-  writeFileAtomic(inData("daemons.sav"), s);
+  writeFileAtomic(savePath(), s);
 }
 
 std::string clockNow() {
@@ -125,7 +129,7 @@ static void onSignal(int) { quitting = true; }
 static int bench(int frames) {
   Bytes save;
   std::string why;
-  readFile(inData("daemons.sav"), save);
+  readFile(savePath(), save);
   if (!emu.load(romPath(), save, why)) { fprintf(stderr, "bench: %s\n", why.c_str()); return 1; }
   auto t0 = std::chrono::steady_clock::now();
   for (int i = 0; i < frames; i++) emu.frame(i % 120 < 6 ? 1u << GBA_A : 0);   // A now and then, past the title
@@ -136,7 +140,8 @@ static int bench(int frames) {
 
 int main(int argc, char **argv) {
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
-  std::string start = "home", shot, makeFrom, romFrom, hubArg, pairCode;
+  std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode;
+  bool listGames = false;
   bool mirrorIn = false, sendSave = false, syncOnce = false, keepThere = false;
   std::map<uint64_t, std::vector<Key>> presses;
   for (int i = 1; i < argc; i++) {
@@ -150,6 +155,9 @@ int main(int argc, char **argv) {
     else if (a == "--page") start = val();
     else if (a == "--make") makeFrom = val();
     else if (a == "--rom") romFrom = val();
+    else if (a == "--make-testing") makeTestingOf = val();
+    else if (a == "--game") gameKey = val();
+    else if (a == "--games") listGames = true;
     else if (a == "--hub") hubArg = val();
     else if (a == "--bench") benchFrames = atoi(val().c_str());
     else if (a == "--pair") pairCode = val();
@@ -184,13 +192,29 @@ int main(int argc, char **argv) {
   signal(SIGTERM, onSignal);
   gameKeysLoad();
 
-  if (!makeFrom.empty()) {
+  auto say = [](const std::string &s) { printf("%s\n", s.c_str()); fflush(stdout); };
+  auto editionOf = [](std::string k) { for (auto &c : k) c = (char)toupper((unsigned char)c); return k; };
+  if (listGames) {
+    Game now;
+    bool any = heldGame(now);
+    for (const Game &g : heldGames())
+      printf("%-16s %-10s %s%s\n", g.key().c_str(), g.release.c_str(), g.sha1.c_str(), any && g.key() == now.key() ? "  (chosen)" : "");
+    for (const Original &o : originals()) printf("original %-8s %s  %s\n", o.edition.c_str(), o.name.c_str(), o.path.c_str());
+    return 0;
+  }
+  if (!makeFrom.empty() || !makeTestingOf.empty()) {
     try {
-      Game g = makeGame(makeFrom, [](const std::string &s) { printf("%s\n", s.c_str()); fflush(stdout); });
-      printf("made %s %s (%s) -> %s\n", g.edition.c_str(), g.release.c_str(), g.sha1.c_str(), romPath().c_str());
+      if (!makeTestingOf.empty()) hub::begin(hal::deviceId());
+      Game g = !makeTestingOf.empty() ? makeTesting(editionOf(makeTestingOf), say)
+               : (makeFrom == "content" || makeFrom == "context") ? makeRelease(editionOf(makeFrom), say)
+               : makeGame(makeFrom, say);
+      chooseGame(g.key());
+      printf("made %s %s%s (%s) -> %s\n", g.edition.c_str(), g.release.c_str(), g.testing ? " TESTING" : "", g.sha1.c_str(), romPath().c_str());
+      if (!makeTestingOf.empty()) hub::end();
       return 0;
     } catch (const std::exception &e) { fprintf(stderr, "%s\n", e.what()); return 1; }
   }
+  if (!gameKey.empty() && !chooseGame(gameKey)) { fprintf(stderr, "no game %s is kept here (--games lists them)\n", gameKey.c_str()); return 1; }
   if (!romFrom.empty()) {
     try { Game g = takeAsTesting(romFrom); printf("playing %s as it is (testing, %s)\n", romFrom.c_str(), g.edition.c_str()); }
     catch (const std::exception &e) { fprintf(stderr, "%s\n", e.what()); return 1; }
@@ -211,17 +235,17 @@ int main(int argc, char **argv) {
     }
     if (mirrorIn && rc == 0) {
       Bytes mine;
-      readFile(inData("daemons.sav"), mine);
+      readFile(savePath(), mine);
       if (std::all_of(mine.begin(), mine.end(), [](uint8_t b) { return b == 0xFF; })) mine.clear();
       mirror::In in = mirror::pull(mine);
-      if (in.took && !writeFileAtomic(inData("daemons.sav"), in.save)) { fprintf(stderr, "the hub's copy could not be kept\n"); rc = 1; }
+      if (in.took && !writeFileAtomic(savePath(), in.save)) { fprintf(stderr, "the hub's copy could not be kept\n"); rc = 1; }
       printf("mirror in (%s): %s%s%s\n", mirror::modeName(mirror::mode()), in.choice.empty() ? "nothing" : in.choice.c_str(),
              in.why.empty() ? "" : " -- ", in.why.c_str());
       if (in.took) printf("this device's save is now %s\n", sha1Hex(in.save).c_str());
     }
     if (sendSave && rc == 0) {
       Bytes mine;
-      if (!readFile(inData("daemons.sav"), mine) || mine.empty()) { fprintf(stderr, "no save kept here\n"); rc = 1; }
+      if (!readFile(savePath(), mine) || mine.empty()) { fprintf(stderr, "no save kept here\n"); rc = 1; }
       else {
         mirror::Out o = mirror::push(mine);
         printf("send (%s): %s -- %s\n", mirror::modeName(mirror::mode()),
@@ -231,7 +255,7 @@ int main(int argc, char **argv) {
     }
     if (keepThere && rc == 0) {   // C-215's yes: this game kept on the hub as a save of its own, now and at each save
       Bytes mine;
-      readFile(inData("daemons.sav"), mine);
+      readFile(savePath(), mine);
       mirror::keepHere(true);
       mirror::Out o = mirror::keepThere(mine);
       printf("keep there: %s -- %s\n", o.kept ? "kept" : "not kept", o.why.c_str());
@@ -239,9 +263,9 @@ int main(int argc, char **argv) {
     }
     if (syncOnce && rc == 0) {   // C-380: as HOME's SYNC does it
       Bytes mine;
-      readFile(inData("daemons.sav"), mine);
+      readFile(savePath(), mine);
       mirror::Synced s = mirror::syncNow(mine);
-      if (s.took) writeFileAtomic(inData("daemons.sav"), s.save);
+      if (s.took) writeFileAtomic(savePath(), s.save);
       printf("sync: %s -- %s (arrived %zu, received %zu, returned %zu)\n", s.ok ? "ran" : "did not run", s.why.c_str(), s.arrived, s.received, s.returned);
       if (s.took) printf("this device's save is now %s\n", sha1Hex(s.save).c_str());
       if (!s.ok) rc = 1;
@@ -254,7 +278,7 @@ int main(int argc, char **argv) {
   if (!hal::begin(scale, headless)) { fprintf(stderr, "no screen\n"); return 1; }
   if (!headless && !sound::begin()) fprintf(stderr, "sound: none found; the game plays silent\n");
   hub::begin(hal::deviceId());
-  const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "link", PageId::Pair },
+  const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "games", PageId::Make }, { "link", PageId::Pair },
                                            { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say } };
   go(pages.count(start) ? pages.at(start) : PageId::Home);
 

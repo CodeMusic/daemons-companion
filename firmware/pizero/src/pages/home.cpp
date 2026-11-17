@@ -20,7 +20,7 @@ const uint16_t SOFT = 0xC639, DIM = 0x8432;   // rgb(c8,c8,d0) and rgb(80,84,90)
 struct Home : Page {
   Choices choices;
   Game game;
-  bool hasGame = false;
+  bool hasGame = false, followed = false;
   std::string lastSeen;
   // C-380: a SYNC asked here, the game paused; C-215: the hub refused this game's save -- keep it there as its own?
   std::future<mirror::Synced> syncing;
@@ -40,8 +40,9 @@ struct Home : Page {
     items.push_back({ "STEP", PageId::Step });
     items.push_back({ "PARTY", PageId::Party });
     items.push_back({ "SAY", PageId::Say });
-    items.push_back({ hasGame ? "NEW RELEASE" : "MAKE THE GAME", PageId::Make });
-    if (hub::paired() && mirror::mode() == mirror::Mode::Send) items.push_back({ "SYNC", PageId::Home });   // C-380
+    items.push_back({ hasGame ? "GAMES" : "MAKE THE GAME", PageId::Make });   // C-395
+    // C-380: a SYNC, for the release of the game the hub follows only (C-395: a testing build's save stays here)
+    if (hub::paired() && mirror::mode() == mirror::Mode::Send && followed) items.push_back({ "SYNC", PageId::Home });
     if (!hub::paired()) items.push_back({ "LINK", PageId::Pair });   // C-380
     items.push_back({ "LEAVE", PageId::Home });
     choices.items.clear();
@@ -49,7 +50,13 @@ struct Home : Page {
     choices.sel = 0;
     for (size_t i = 0; i < choices.items.size(); i++) if (choices.items[i] == was) choices.sel = (int)i;
   }
-  void enter() override { hasGame = heldGame(game); build(); offer = mirror::mode() == mirror::Mode::Send && mirror::offered(); }
+  void enter() override {
+    hasGame = heldGame(game);
+    const std::string ed = hub::view().edition;   // the edition the hub follows, as it last said (C-395)
+    followed = hasGame && !game.testing && (ed.empty() || ed == game.edition);
+    build();
+    offer = mirror::mode() == mirror::Mode::Send && mirror::offered();
+  }
   static bool busy(const std::future<mirror::Synced> &f) { return f.valid() && f.wait_for(std::chrono::seconds(0)) != std::future_status::ready; }
   static bool busy(const std::future<mirror::Out> &f) { return f.valid() && f.wait_for(std::chrono::seconds(0)) != std::future_status::ready; }
   void key(const KeyEvent &e) override {
@@ -59,7 +66,7 @@ struct Home : Page {
         offer = false;
         mirror::keepHere(true);
         Bytes mine;
-        readFile(inData("daemons.sav"), mine);
+        readFile(savePath(), mine);
         told = "...";
         keepingIt = std::async(std::launch::async, [mine] { return mirror::keepThere(mine); });
       } else if (e.key == Key::Esc) { offer = false; mirror::notNow(); told = "Kept on this device only."; }   // DRAFT
@@ -73,7 +80,7 @@ struct Home : Page {
       else if (w == "SYNC") {
         keepSave();   // the game's save as it stands, the game paused here
         Bytes mine;
-        readFile(inData("daemons.sav"), mine);
+        readFile(savePath(), mine);
         told = "SYNCING...";   // DRAFT
         syncing = std::async(std::launch::async, [mine] { return mirror::syncNow(mine); });
       } else go(it.to);
@@ -83,7 +90,7 @@ struct Home : Page {
     if (syncing.valid() && !busy(syncing)) {
       mirror::Synced s = syncing.get();
       if (s.took) {
-        writeFileAtomic(inData("daemons.sav"), s.save);
+        writeFileAtomic(savePath(), s.save);
         if (emu.loaded()) emu.restore(s.save);   // the game starts again from what the SYNC wrote (CONTINUE)
       }
       told = s.why;

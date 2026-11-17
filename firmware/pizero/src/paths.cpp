@@ -25,6 +25,7 @@ std::string configDir() {
   return ensured(home() + "/.config/daemons");
 }
 std::string inData(const std::string &name) { return dataDir() + "/" + name; }
+std::string dataSub(const std::string &dir) { return ensured(dataDir() + "/" + dir); }
 std::string inConfig(const std::string &name) { return configDir() + "/" + name; }
 
 bool readFile(const std::string &path, Bytes &out) {

@@ -7,6 +7,7 @@
 std::string dataDir();     // ~/.local/share/daemons: the game, the player's original, the save, patches.json
 std::string configDir();   // ~/.config/daemons: the hub's address, the keys
 std::string inData(const std::string &name);
+std::string dataSub(const std::string &dir);   // a folder of <data> (made when missing), no slash at its end
 std::string inConfig(const std::string &name);
 
 bool readFile(const std::string &path, Bytes &out);

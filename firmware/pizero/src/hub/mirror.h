@@ -22,6 +22,10 @@ Mode modeByName(const std::string &name, Mode otherwise);
 
 std::string agreed();
 
+// C-395: only the release of the edition the hub follows is mirrored. Another edition's save, or a testing build's,
+// stays on this device: pull, push and SYNC each say so and do nothing
+bool follows(std::string *why = nullptr);
+
 struct In {
   std::string choice;     // "same", "take", "replace", "keep", or "" when nothing came (no mirror yet, away, not paired)
   std::string why;        // what happened, in words (DRAFT)

@@ -1,6 +1,6 @@
 #pragma once
 // C-379: the game, on mGBA's core (the one EmulatorJS runs in the app and the playground, so a save moves between them
-// unchanged). The save memory is ours, not a file mGBA writes: the program writes daemons.sav itself once the game's
+// unchanged). The save memory is ours, not a file mGBA writes: the program writes the game's .sav itself once the game's
 // save has settled, and sends it to the hub (C-380) -- the one rule kept: never written while the game is writing it.
 #include <cstdint>
 #include <string>

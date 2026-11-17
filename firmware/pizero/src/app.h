@@ -24,7 +24,7 @@ extern Emu emu;
 extern bool held[(size_t)Key::Count];
 extern volatile bool quitting;
 extern bool headless;
-void keepSave();                                // the game's save into daemons.sav, if it moved since it was kept
+void keepSave();                                // the game's save into its own file (savePath), if it moved since kept
 
 // drawing shared by the pages
 void drawBand(const char *title, uint16_t colour);   // the top 14 px: a title, the hour and the cell

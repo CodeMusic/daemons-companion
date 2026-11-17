@@ -20,8 +20,15 @@ Needs CMake, a C++17 compiler, SDL2 and libcurl (macOS: `brew install sdl2`; cur
 
 - **The keys**: the arrows or **F Z X C** move; **L** is A, **K** is B, **ENTER** START, **SPACE** SELECT, **Q** and **P** L and R;
   **ESC** leaves the game for HOME. **F1** is SYM and **F2** is FN, as in M5Stack's own simulator.
-- **Making the game**: `build/window/daemons-zero --make FireRed.gba`. It checks your ROM against `server/data/patches.json`,
-  fetches our patch from the release, applies and checks it, and keeps the game in `~/.local/share/daemons/`.
+- **Making the game**: `build/window/daemons-zero --make FireRed.gba`. It checks your ROM against `server/data/patches.json`
+  (read from GitHub as the app reads it), fetches our patch from the release, applies and checks it, and keeps the game in
+  `~/.local/share/daemons/`.
+- **Both games (C-395)**: **GAMES** on HOME keeps CONTENT (from FireRed) and CONTEXT (from LeafGreen), each as the newest
+  release or as the **TESTING** build. The testing build is made with the DEBUG patch the paired hub holds (C-216: at home only;
+  `./syncCompanion.sh debug` sends the newest). ENTER plays the game chosen, or makes it first, or remakes it when a newer one is
+  out. Each game has a save of its own. Only the release of the edition the hub follows is mirrored; another edition's save
+  and a testing build's save stay on the device. From the command line: `--make content|context`, `--make-testing
+  content|context`, `--game content-testing` (choose), `--games` (list).
 - **A testing build**: `--rom engineGba/daemonsContent_debug.gba` plays any ROM as it is.
 - **The hub**: `--hub http://<hub>:4730`, or one line in `~/.config/daemons/hub`. `none` asks nothing.
 - **Never on your own save**: `DAEMONS_HOME=/some/scratch` moves everything it keeps (the game, the save, settings).
@@ -62,7 +69,7 @@ you, and the hub lists the device among its phones. From then on the save is kep
 - **PARTY:** the party's routines.
 - **SAY:** a word to every daemon nearby, as the one carried.
 
-`--page care` (or `step`, `party`, `say`, `make`, `link`, `play`) starts on one.
+`--page care` (or `step`, `party`, `say`, `games`, `link`, `play`) starts on one.
 
 **Pictures without a window**, for review sheets:
 
@@ -98,9 +105,9 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | `src/canvas.*` | the 320x170 LovyanGFX sprite every page draws into, and a picture of it |
 | `src/keys.*` | the device's keys by name, and the game's map (`~/.config/daemons/keys.conf`, `A = L`) |
 | `src/sound.*` | miniaudio, and a ring between the game and the speaker |
-| `src/game/` | SHA-1 and CRC32, BPS (a port of `server/src/game/bps.ts`), the ROM made (C-187's rules), mGBA's core |
+| `src/game/` | SHA-1 and CRC32, BPS (a port of `server/src/game/bps.ts`), the games made (C-187's rules; both editions, release or testing: `games/`, `saves/`, `originals/`), mGBA's core |
 | `src/hub/` | libcurl; the device state asked every thirty seconds as every board asks it, and pairing (`hub.cpp`); the save's mirror (`mirror.cpp`) |
-| `src/pages/` | HOME, PLAY, MAKE THE GAME, LINK, CARE, STEP, PARTY, SAY, and what they share (`parts.*`) |
+| `src/pages/` | HOME, PLAY, GAMES (`make.cpp`), LINK, CARE, STEP, PARTY, SAY, and what they share (`parts.*`) |
 | `test/` | the checks `./build.sh` runs |
 | `tools/` | `install.sh`, `probe.sh`, `make_deb.sh` |
 | `packaging/` | the launcher's entry and icon |

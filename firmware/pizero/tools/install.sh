@@ -20,7 +20,8 @@ fi
 
 echo "copying the source to $host:daemons-zero/src"
 tar -C "$here" --exclude ./build --exclude '*.gba' --exclude '*.sav' --exclude '*.bps' --exclude '*.deb' -czf - . |
-  ssh "$host" 'rm -rf ~/daemons-zero/src && mkdir -p ~/daemons-zero/src && tar -xzf - -C ~/daemons-zero/src'
+  ssh "$host" 'mkdir -p ~/daemons-zero/src && find ~/daemons-zero/src -mindepth 1 -maxdepth 1 ! -name build -exec rm -rf {} + &&
+               tar -xzf - -C ~/daemons-zero/src'   # the source replaced, its build kept: a second install builds only what changed
 scp -q "$repo/server/data/patches.json" "$host:daemons-zero/src/patches.json"
 
 ssh "$host" 'bash -s' <<'EOF'

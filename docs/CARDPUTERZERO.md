@@ -44,7 +44,14 @@ file times**, older than the device's objects, so a second install remade nothin
 with `rsync -c`, so the device remakes exactly what changed, and keeps its own `build/`.
 
 **Both games (C-395)**: the player's FireRed and LeafGreen are kept on it, and GAMES makes CONTENT and CONTEXT, each as
-a release or a TESTING build, each with its own save (`firmware/pizero/README.md`).
+a release or a TESTING build (`firmware/pizero/README.md`). The testing builds come from the hub's DEBUG patches, which
+a release does not send there: `./syncCompanion.sh debug` after each release (the hub held 11.315.4 until it was run).
+
+**One save, and RECEIVED (C-397)**: every game plays the one save the hub mirrors (C-395's save per game was reversed
+the same day). Back on HOME after the game saved, the Zero SYNCs as the app does after each save (C-261), shows RECEIVED
+for each arrival, and puts a daemon SENT from the party in the Zero when it carries none. Seen against a scratch companion
+on the Mac; not yet on the device, which was off. **Later**: the SYNC's save written into the running game, as the app's
+live write does (`server/src/game/live.ts`), so play goes on from the same frame instead of CONTINUE.
 
 ## Where it stands (2026-11-16, before the device)
 

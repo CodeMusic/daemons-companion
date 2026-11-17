@@ -172,7 +172,11 @@ String wifiStatus() {
   return String("WIFI mode ") + WiFi.getMode() + " status " + WiFi.status() + " scanning " + wifiScanning +
          " lastScan " + wifiLastScan + " tried " + (wifiLastBest >= 0 && wifiLastBest < knownCount ? knownSsid[wifiLastBest] : String("-")) +
          " dropped " + wifiDropReason + " known " + knownCount + " server " + (serverUrl.length() ? serverUrl : String("-")) +
-         " night " + nightQuiet() + " heard" + (wifiSeen.length() ? wifiSeen : String(" -"));
+         " night " + nightQuiet() + " heard" + (wifiSeen.length() ? wifiSeen : String(" -")) +
+         // the phone's Bluetooth link comes first (C-55): whether a phone is linked, when it last spoke, and the relay away
+         " phone " + (linkPhoneHere() ? "linked" : "none") +
+         (phoneSeen ? " heard " + String((millis() - phoneSeen) / 1000) + "s ago" : String(" never heard")) +
+         " relay " + (relaySet() ? (viaRelay() ? "in use" : "kept") : "none");
 }
 void uplinkLoop(uint32_t now) {
   if (!wifiEventsOn) {

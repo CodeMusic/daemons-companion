@@ -31,7 +31,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { artName, awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -44,7 +44,7 @@ import { checkNight, dreamsOf, keepNight, rested, titleOf, type Dream } from "./
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./evolve.js";
 import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
-import { openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches
+import { faceOf, openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
 import { thriveOf } from "./thrive.js";   // C-207
 import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
@@ -401,7 +401,8 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const vesselUnder = vessel && save && readSubtle(save).held ? VESSEL_UNDER : null;
   const mask = !!(d && save && readSubtle(save).held && maskOf(store, now).mask);   // C-357, THE MASK
   return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null,
-            thrive: thriveOf(store, now), vesselUnder, mask, maskUnder: mask ? MASK_UNDER : null });   // C-119; C-207: the week, for the den's glow and marks
+            thrive: thriveOf(store, now), vesselUnder, mask, maskUnder: mask ? MASK_UNDER : null,
+            maskEyes: mask && form !== null ? faceOf(artName(form))?.eyes ?? null : null });   // C-119; C-207: the week, for the den's glow and marks; C-357: its eyes, checked (faces.json)
 }
 
 // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's

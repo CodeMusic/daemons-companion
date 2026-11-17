@@ -154,7 +154,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both} veiled={!!l.mask && !masked}   // C-113, C-119; C-240: Halloween shimmers all day; C-357: THE MASK
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both} veiled={l.mask && !masked ? (l.maskEyes ?? []) : null}   // C-113, C-119; C-240: Halloween shimmers all day; C-357: THE MASK
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={together?.daemon ? 108 : 144} />} height={180}
                 together={together?.daemon ? { mine: together.side, art: <Art key={together.daemon.artKey} path={together.daemon.art} size={108} /> } : null} />

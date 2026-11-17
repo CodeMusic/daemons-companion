@@ -85,10 +85,10 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null, both = false, together = null, veiled = false }:
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, aurora = null, both = false, together = null, veiled = null }:
   { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
     witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; aurora?: string | null; both?: boolean;
-    together?: Together | null; veiled?: boolean }) {   // C-357, THE MASK: a week unanswered, a small mask on its face   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
+    together?: Together | null; veiled?: [number, number, number, number][] | null }) {   // C-357, THE MASK: a week unanswered, a small mask over its eyes   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
   const pose = expression?.pose, still = pose ? pose.still : asleep;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
@@ -157,7 +157,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
               <View key={i} style={{ position: "absolute", left: (p.x * side) / 64, top: (p.y * side) / 64, width: (p.w * side) / 64 + 0.5,
                                      height: (p.h * side) / 64 + 0.5, backgroundColor: `rgb(${p.rgb.join(",")})` }} />
             ))}
-            {veiled ? <Veil patches={expression?.patch ?? []} side={side} /> : null}
+            {veiled ? <Veil eyes={veiled.length ? veiled : (expression?.patch ?? []).map((p) => [p.x, p.y, p.w, p.h] as [number, number, number, number])} side={side} /> : null}
           </View>
           {witching ? <WitchShimmer side={side} level={shimmer} /> : null}
           <DawnRim side={side} level={dawn} />
@@ -197,26 +197,25 @@ function Pixels({ rows, px, colour, style }: { rows: string[]; px: number; colou
   );
 }
 // C-357, THE MASK (the user's pick, 2026-11-17): a daemon whose reads and leans have gone a week unanswered wears a small
-// mask -- a dark band across its eyes, drawn in the sprite's own 64 x 64 frame, the eyes showing through as holes. Where
-// the server gave no eyes (no expression), the band sits where a face's eyes usually are. Answer one in READS, and it
-// comes off. DRAFT.
+// mask -- a dark band across its eyes with the eyes left open, drawn in the sprite's own 64 x 64 frame from the eye boxes a
+// person checked (server data/faces.json), or the expression's eye patches. With neither, a band where a face's eyes
+// usually are. Answer one in READS, and it comes off. DRAFT.
 const VEIL = "#211a26";
-function Veil({ patches, side }: { patches: NonNullable<Drawn["patch"]>; side: number }) {
+type Box = [number, number, number, number];
+function Veil({ eyes, side }: { eyes: Box[]; side: number }) {
   const u = side / 64;
-  const box = patches.length
-    ? { x: Math.min(...patches.map((p) => p.x)) - 3, y: Math.min(...patches.map((p) => p.y)) - 2,
-        r: Math.max(...patches.map((p) => p.x + p.w)) + 3, b: Math.max(...patches.map((p) => p.y + p.h)) + 2 }
-    : { x: 18, y: 20, r: 46, b: 27 };
-  return (
-    <>
-      <View style={{ position: "absolute", left: box.x * u, top: box.y * u, width: (box.r - box.x) * u, height: (box.b - box.y) * u,
-                     borderRadius: 2 * u, backgroundColor: VEIL, opacity: 0.94 }} />
-      {patches.map((p, i) => (                                  // the eyes, through the mask's holes
-        <View key={i} style={{ position: "absolute", left: p.x * u, top: p.y * u, width: p.w * u + 0.5, height: p.h * u + 0.5,
-                               backgroundColor: `rgb(${p.rgb.join(",")})` }} />
-      ))}
-    </>
-  );
+  const rect = (x: number, y: number, w: number, h: number, k: string) => w > 0 && h > 0
+    ? <View key={k} style={{ position: "absolute", left: x * u, top: y * u, width: w * u + 0.5, height: h * u + 0.5, backgroundColor: VEIL, opacity: 0.94 }} />
+    : null;
+  if (!eyes.length) return rect(18, 20, 28, 7, "band");
+  const row = [...eyes].sort((a, b) => a[0] - b[0]);
+  const ey0 = Math.min(...row.map((e) => e[1])), ey1 = Math.max(...row.map((e) => e[1] + e[3]));
+  const x0 = row[0][0] - 3, x1 = Math.max(...row.map((e) => e[0] + e[2])) + 3, y0 = ey0 - 2, y1 = ey1 + 2;
+  const parts = [rect(x0, y0, x1 - x0, ey0 - y0, "top"), rect(x0, ey1, x1 - x0, y1 - ey1, "bottom")];
+  let from = x0;                                               // across the eyes' row: everything but the eyes
+  row.forEach((e, i) => { parts.push(rect(from, ey0, e[0] - from, ey1 - ey0, `gap${i}`)); from = Math.max(from, e[0] + e[2]); });
+  parts.push(rect(from, ey0, x1 - from, ey1 - ey0, "end"));
+  return <>{parts}</>;
 }
 
 function WeekMarks({ thrive, w, fy, ink }: { thrive: Thrive; w: number; fy: number; ink: string }) {

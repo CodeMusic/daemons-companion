@@ -1,9 +1,30 @@
 {
- "latest": 984,
+ "latest": 985,
  "builds": [
   {
+   "build": 985,
+   "commit": "a1535d4",
+   "date": "2026-11-16",
+   "sections": [
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.380.1"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "The handheld's bridge names the board, never the phone (C-391)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 984,
-   "commit": "7ca175e",
+   "commit": "e883891",
    "date": "2026-11-16",
    "sections": [
     {
@@ -78,7 +99,8 @@
      "title": "ALSO",
      "lines": [
       "A network's name is kept as typed: the hub trimmed 'RevivalNetwork ' into a network that does not exist (C-93)",
-      "Away on Tailscale, the phone reaches home on the tailnet before the relay (C-389)"
+      "Away on Tailscale, the phone reaches home on the tailnet before the relay (C-389)",
+      "WHAT'S NEW for build 984"
      ]
     }
    ]
